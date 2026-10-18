@@ -24,7 +24,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 /**
  * Raw resources (DESIGN.md §5): ores in every host rock, raw materials, ingots, powders, storage blocks, and the
  * End's exotic-matter crystals. Each ore records what it drops and which tool tier it needs so loot tables and
- * tags are generated from here.
+ * tags are generated from here. Declaration order is the creative-tab order (ores, materials, blocks, exotic).
  */
 public final class GZResources {
     /** Host rock of an ore variant; decides hardness, sound and which worldgen target it replaces. */
@@ -37,6 +37,24 @@ public final class GZResources {
     public record Ore(String family, Host host, WithItem<Block> block, Supplier<? extends Item> drop, int min, int max, Tier tier) {}
 
     private static final List<Ore> ORES = new ArrayList<>();
+
+    // --- ores -------------------------------------------------------------------------------------------------------------
+    public static final WithItem<Block> URANIUM_ORE = ore("uranium", Host.STONE, "Uranium Ore", () -> GZResources.RAW_URANIUM.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> DEEPSLATE_URANIUM_ORE = ore("uranium", Host.DEEPSLATE, "Deepslate Uranium Ore", () -> GZResources.RAW_URANIUM.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> LITHIUM_ORE = ore("lithium", Host.STONE, "Lithium Ore", () -> GZResources.RAW_LITHIUM.get(), 1, 1, Tier.STONE);
+    public static final WithItem<Block> DEEPSLATE_LITHIUM_ORE = ore("lithium", Host.DEEPSLATE, "Deepslate Lithium Ore", () -> GZResources.RAW_LITHIUM.get(), 1, 1, Tier.STONE);
+    public static final WithItem<Block> SULFUR_ORE = ore("sulfur", Host.STONE, "Sulfur Ore", () -> GZResources.SULFUR_DUST.get(), 2, 4, Tier.STONE);
+    public static final WithItem<Block> DEEPSLATE_SULFUR_ORE = ore("sulfur", Host.DEEPSLATE, "Deepslate Sulfur Ore", () -> GZResources.SULFUR_DUST.get(), 2, 4, Tier.STONE);
+    public static final WithItem<Block> NETHER_SULFUR_ORE = ore("sulfur", Host.NETHERRACK, "Nether Sulfur Ore", () -> GZResources.SULFUR_DUST.get(), 2, 4, Tier.STONE);
+    public static final WithItem<Block> SALTPETER_ORE = ore("saltpeter", Host.STONE, "Saltpeter Ore", () -> GZResources.SALTPETER_DUST.get(), 2, 3, Tier.STONE);
+    public static final WithItem<Block> DEEPSLATE_SALTPETER_ORE = ore("saltpeter", Host.DEEPSLATE, "Deepslate Saltpeter Ore", () -> GZResources.SALTPETER_DUST.get(), 2, 3, Tier.STONE);
+    public static final WithItem<Block> SANDSTONE_SALTPETER_ORE = ore("saltpeter", Host.SANDSTONE, "Sandstone Saltpeter Ore", () -> GZResources.SALTPETER_DUST.get(), 2, 3, Tier.STONE);
+    public static final WithItem<Block> TUNGSTEN_ORE = ore("tungsten", Host.STONE, "Tungsten Ore", () -> GZResources.RAW_TUNGSTEN.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> DEEPSLATE_TUNGSTEN_ORE = ore("tungsten", Host.DEEPSLATE, "Deepslate Tungsten Ore", () -> GZResources.RAW_TUNGSTEN.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> LEAD_ORE = ore("lead", Host.STONE, "Lead Ore", () -> GZResources.RAW_LEAD.get(), 1, 1, Tier.STONE);
+    public static final WithItem<Block> DEEPSLATE_LEAD_ORE = ore("lead", Host.DEEPSLATE, "Deepslate Lead Ore", () -> GZResources.RAW_LEAD.get(), 1, 1, Tier.STONE);
+    public static final WithItem<Block> RARE_EARTH_ORE = ore("rare_earth", Host.STONE, "Rare-Earth Ore", () -> GZResources.RAW_RARE_EARTH.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> DEEPSLATE_RARE_EARTH_ORE = ore("rare_earth", Host.DEEPSLATE, "Deepslate Rare-Earth Ore", () -> GZResources.RAW_RARE_EARTH.get(), 1, 1, Tier.IRON);
 
     // --- raw materials & products --------------------------------------------------------------------------------
     public static final DeferredItem<Item> RAW_URANIUM = GZItems.simple("raw_uranium", "Raw Uranium", GZTab.RESOURCES);
@@ -51,24 +69,6 @@ public final class GZResources {
     public static final DeferredItem<Item> TUNGSTEN_INGOT = GZItems.simple("tungsten_ingot", "Tungsten Ingot", GZTab.RESOURCES);
     public static final DeferredItem<Item> EXOTIC_SHARD = GZItems.simple("exotic_shard", "Exotic Matter Shard", GZTab.RESOURCES,
             p -> p.rarity(net.minecraft.world.item.Rarity.RARE));
-
-    // --- ores -------------------------------------------------------------------------------------------------------------
-    public static final WithItem<Block> URANIUM_ORE = ore("uranium", Host.STONE, "Uranium Ore", RAW_URANIUM, 1, 1, Tier.IRON);
-    public static final WithItem<Block> DEEPSLATE_URANIUM_ORE = ore("uranium", Host.DEEPSLATE, "Deepslate Uranium Ore", RAW_URANIUM, 1, 1, Tier.IRON);
-    public static final WithItem<Block> LITHIUM_ORE = ore("lithium", Host.STONE, "Lithium Ore", RAW_LITHIUM, 1, 1, Tier.STONE);
-    public static final WithItem<Block> DEEPSLATE_LITHIUM_ORE = ore("lithium", Host.DEEPSLATE, "Deepslate Lithium Ore", RAW_LITHIUM, 1, 1, Tier.STONE);
-    public static final WithItem<Block> SULFUR_ORE = ore("sulfur", Host.STONE, "Sulfur Ore", SULFUR_DUST, 2, 4, Tier.STONE);
-    public static final WithItem<Block> DEEPSLATE_SULFUR_ORE = ore("sulfur", Host.DEEPSLATE, "Deepslate Sulfur Ore", SULFUR_DUST, 2, 4, Tier.STONE);
-    public static final WithItem<Block> NETHER_SULFUR_ORE = ore("sulfur", Host.NETHERRACK, "Nether Sulfur Ore", SULFUR_DUST, 2, 4, Tier.STONE);
-    public static final WithItem<Block> SALTPETER_ORE = ore("saltpeter", Host.STONE, "Saltpeter Ore", SALTPETER_DUST, 2, 3, Tier.STONE);
-    public static final WithItem<Block> DEEPSLATE_SALTPETER_ORE = ore("saltpeter", Host.DEEPSLATE, "Deepslate Saltpeter Ore", SALTPETER_DUST, 2, 3, Tier.STONE);
-    public static final WithItem<Block> SANDSTONE_SALTPETER_ORE = ore("saltpeter", Host.SANDSTONE, "Sandstone Saltpeter Ore", SALTPETER_DUST, 2, 3, Tier.STONE);
-    public static final WithItem<Block> TUNGSTEN_ORE = ore("tungsten", Host.STONE, "Tungsten Ore", RAW_TUNGSTEN, 1, 1, Tier.IRON);
-    public static final WithItem<Block> DEEPSLATE_TUNGSTEN_ORE = ore("tungsten", Host.DEEPSLATE, "Deepslate Tungsten Ore", RAW_TUNGSTEN, 1, 1, Tier.IRON);
-    public static final WithItem<Block> LEAD_ORE = ore("lead", Host.STONE, "Lead Ore", RAW_LEAD, 1, 1, Tier.STONE);
-    public static final WithItem<Block> DEEPSLATE_LEAD_ORE = ore("lead", Host.DEEPSLATE, "Deepslate Lead Ore", RAW_LEAD, 1, 1, Tier.STONE);
-    public static final WithItem<Block> RARE_EARTH_ORE = ore("rare_earth", Host.STONE, "Rare-Earth Ore", RAW_RARE_EARTH, 1, 1, Tier.IRON);
-    public static final WithItem<Block> DEEPSLATE_RARE_EARTH_ORE = ore("rare_earth", Host.DEEPSLATE, "Deepslate Rare-Earth Ore", RAW_RARE_EARTH, 1, 1, Tier.IRON);
 
     // --- storage blocks ------------------------------------------------------------------------------------------------------
     public static final WithItem<Block> URANIUM_BLOCK = metalBlock("uranium_block", "Block of Natural Uranium", MapColor.COLOR_GREEN, 5f, 6f);

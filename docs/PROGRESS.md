@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 3 (resources & world generation) — content, art and datagen done; in-game verification pending. Phases 0–2 done.
+**Current phase:** Phase 3 built and tested (8/8 GameTests); waiting on the user's in-game check before Phase 4.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -15,7 +15,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** |
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
-| 3 | Resources & world generation | in progress (built; needs in-game test) |
+| 3 | Resources & world generation | **done** (needs in-game test) |
 | 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | todo |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
@@ -91,15 +91,18 @@ checklist for the user.
 ## Phase 3 — Resources & world generation
 | Item | Status |
 |---|---|
-| Common config (ore toggles) | todo |
-| Ores: uranium, lithium, sulfur (+nether), saltpeter (+sandstone), tungsten, lead, rare earth — stone & deepslate | todo |
-| Exotic crystal cluster, voidstone, End void-geode feature | todo |
-| Raw items, dusts, ingots, nuggets, plates/rods/wire placeholders → real items | todo |
-| Storage blocks (raw & ingot) | todo |
-| Ore features, placed features, biome modifiers | todo |
-| Vanilla sulfur/cinnabar crushing integration | todo |
-| Radioactive item/block tags (emission values) | todo |
-| Textures for all of the above (reviewed) | todo |
+| Common config (`LOCAL`): per-resource worldgen toggles via `groundzero:config_toggle` placement filter | done |
+| 16 ore blocks: uranium, lithium, sulfur (+nether), saltpeter (+sandstone), tungsten, lead, rare earth — stone & deepslate | needs in-game test (art approved; GameTests pass) |
+| Raw items, ingots (U, Pb, W), sulfur/saltpeter dust, exotic shard | needs in-game test |
+| Storage blocks (U, Pb, W) + raw-ore blocks (5) | needs in-game test |
+| Voidstone, budding voidstone (slow growth), small/large exotic bud, exotic crystal cluster | needs in-game test (growth GameTest passes) |
+| Ore features + placements + biome modifiers (incl. badlands/mountain/desert extras, Nether sulfur) | done (GameTests: features place ore; modifiers applied) |
+| End void geodes (outer islands, anchored in end stone) | needs in-game test |
+| Loot tables (Fortune, Silk Touch, explosion decay), smelting/blasting, storage recipes, black-powder gunpowder | done (drop GameTest passes) |
+| Tags: tool tiers, `c:` ores/raw/ingots/dusts/gems/storage, `groundzero:radioactive` | done |
+| Vanilla sulfur / cinnabar crushing | moved to Phase 4 (needs the Ore Crusher) |
+| Radiation strength data map for the radioactive tag | Phase 12 |
+| Textures for all of the above (reviewed via `tools/out/previews/ores_review.png`, `items_review.png`, `blocks_review.png`) | done |
 
 ## Phase 4 — Power, machines, multiblocks
 | Item | Status |

@@ -34,6 +34,8 @@ public final class GZGameTests {
 
     /** Structure with a 16x16 smooth-stone floor at y=0 and 15 blocks of air above. */
     public static final Identifier FLOOR_16 = GroundZero.id("gametest/floor_16");
+    /** A solid 12x12x12 cube of stone (rock for ore features to replace). */
+    public static final Identifier STONE_12 = GroundZero.id("gametest/stone_12");
 
     private static final List<TestSpec> SPECS = new ArrayList<>();
 
@@ -56,11 +58,13 @@ public final class GZGameTests {
                     helper.assertTrue(GZLang.has(entry.get().getDescriptionId()), "Block has no English name: " + entry.getId()));
             helper.succeed();
         });
+
+        ResourceTests.register();
     }
 
     private GZGameTests() {}
 
-    private static void test(String name, Identifier structure, int maxTicks, Consumer<GameTestHelper> body) {
+    static void test(String name, Identifier structure, int maxTicks, Consumer<GameTestHelper> body) {
         SPECS.add(new TestSpec(FUNCTIONS.register(name, () -> body), structure, maxTicks));
     }
 

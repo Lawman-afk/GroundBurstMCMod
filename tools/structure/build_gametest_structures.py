@@ -20,8 +20,16 @@ def floor(size: int, height: int) -> Template:
     return t
 
 
+def solid(size: int, block: str) -> Template:
+    """A cube of one block: rock for ore features to replace."""
+    t = Template(size, size, size)
+    t.fill(0, 0, 0, size - 1, size - 1, size - 1, block)
+    return t
+
+
 def main() -> None:
     floor(16, 16).save(OUT / "floor_16.nbt")
+    solid(12, "minecraft:stone").save(OUT / "stone_12.nbt")
     print(f"Wrote gametest structures to {OUT}")
 
 
