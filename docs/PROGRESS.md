@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 0 complete; waiting for design sign-off before Phase 1.
+**Current phase:** Phase 0 complete and decisions D1–D6 made; waiting for the go-ahead to start Phase 1.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -12,7 +12,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** (awaiting sign-off) |
+| 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** |
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | in progress (skeleton + deploy done) |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | todo |
 | 3 | Resources & world generation | todo |
@@ -45,7 +45,8 @@ checklist for the user.
 | Zero Hour research (generals & superweapon variants) | done |
 | DESIGN.md v1 | done |
 | Phased roadmap (this file) | done |
-| Design sign-off + decisions D1–D6 | **waiting on user** |
+| Decisions D1–D6 (see DESIGN.md §29) | done |
+| Go-ahead to start Phase 1 | waiting on user |
 
 ## Phase 1 — Skeleton & foundations
 | Item | Status |
@@ -60,7 +61,7 @@ checklist for the user.
 | Networking base (payload registration, handlers) | todo |
 | Datagen harness (models, blockstates, lang, tags, loot, recipes, sounds.json) | todo |
 | GameTest harness (26.x test-instance API) | todo |
-| Final mod name/ID applied (rename if D1 changes) | todo |
+| Final mod name/ID applied | done (Ground Zero / `groundzero` confirmed) |
 
 ## Phase 2 — Asset pipeline
 | Item | Status |
@@ -182,7 +183,7 @@ checklist for the user.
 | Radar Station multiblock + spinning dish + CRT GUI + comparator output | todo |
 | Interceptor Battery + interceptor missile + kill probability | todo |
 | Phased-Array module | todo |
-| Point-Defence Laser (if D5 approved) | todo |
+| Point-Defence Laser | todo |
 
 ## Phase 11 — Special weapons
 | Item | Status |
@@ -194,7 +195,6 @@ checklist for the user.
 | EMP bomb | todo |
 | Satellite Uplink + Kinetic Strike Satellite + orbital rods | todo |
 | Gas grid simulation + toxin/anthrax agents | todo |
-| Tectonic charge, Gravity repulsor (if D5 approved) | todo |
 
 ## Phase 12 — Aftermath
 | Item | Status |
@@ -261,7 +261,7 @@ checklist for the user.
 _None yet._
 
 ## Open decisions
-See DESIGN.md §29 (D1–D6). Waiting on the user.
+None. D1–D6 were resolved on 2026-10-19 (DESIGN.md §29).
 
 ## Environment notes
 - Gradle must run on JDK 25: set `JAVA_HOME` to CurseForge's runtime

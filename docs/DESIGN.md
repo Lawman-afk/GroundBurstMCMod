@@ -1,6 +1,6 @@
 # Ground Zero — Design Document
 
-> Status: **DRAFT v1 — awaiting sign-off** (session 1, 2026-10-19).
+> Status: **v1 — decisions D1–D6 resolved by the user** (session 1, 2026-10-19).
 > This is the single source of truth for what the mod contains. Every item, block, weapon, component, recipe,
 > multiblock and system lives here with its stats. When a decision is made during implementation it is recorded
 > here (and in the "Decision log" at the end) so future sessions never have to re-derive it.
@@ -13,10 +13,10 @@
 
 | | |
 |---|---|
-| Name (proposed) | **Ground Zero** |
+| Name | **Ground Zero** (confirmed by the user) |
 | Mod ID | `groundzero` |
 | Java package | `dev.groundzero` |
-| Alternatives offered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`) |
+| Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`) |
 | Tagline | "Assemble it. Launch it. Watch the horizon." |
 
 **Design pillars**
@@ -77,7 +77,7 @@ These replace what older (1.20/1.21) knowledge would assume. Re-verify against t
 | **JEI** | NeoForge 26.3 builds (31.x, beta-tagged, updated 2026-10-18) | **Optional integration** (compile against API, `localRuntime` for dev). Custom categories for every machine and the assembly bench. |
 | **EMI** | No 26.3 build found | Not used. Re-check each session; the integration layer is written so EMI could be added. |
 | **Patchouli** | No 26.3 build found (stops at 26.1.2) | Not usable. |
-| **Modonomicon** | NeoForge 26.3 build 2.17.1 (2026-10-11) | Available, but **recommended against** — see open decision D3. Default plan: a **native guide book** ("Field Manual"). |
+| **Modonomicon** | NeoForge 26.3 build 2.17.1 (2026-10-11) | Available but **not used** (decision D3): the guide is a **native Field Manual**. |
 
 **Dependency policy:** one hard dependency (GeckoLib). Everything else is optional and detected at runtime.
 
@@ -238,8 +238,7 @@ enriched uranium in your inventory hurts).
 
 ## 7. Power
 
-All machines use **NeoForge Energy (FE)** so they interoperate with other tech mods. (Open decision D2 — the
-alternative is fuel-only machines.)
+All machines use **NeoForge Energy (FE)** so they interoperate with other tech mods (decision D2).
 
 | Block | Output / capacity | Notes |
 |---|---|---|
@@ -650,13 +649,10 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   soil" that re-emits weakly for a day, partially penetrates gas-mask filters).
 - Weapons: toxin grenade, chemical bomb, SCUD Storm payloads, toxin 40 mm round, chemical warhead for missiles.
 
-### 16.8 Proposed extras (beyond the brief — approve or cut)
-- **Tectonic Charge** — earthquake r 40 for 15 s: camera shake, ground fissures that open in random-walk lines,
-  unsupported blocks fall (falling-block physics), structures crack.
-- **Gravity Repulsor Bomb** — no destruction; hurls entities and loose blocks (falling blocks) outward violently in
-  r 24. A fun counter-singularity.
-- **Thermite & Breaching charges** (already in §14) — utility demolition.
-- **Railgun** and **Point-Defense Laser** (§20, §18).
+### 16.8 Extras beyond the brief (decision D5)
+- **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
+- **Kept as part of the conventional roster:** Thermite charge, Breaching charge, Smoke grenade (§14).
+- **Cut:** Tectonic Charge, Gravity Repulsor Bomb.
 
 ---
 
@@ -735,7 +731,7 @@ switch, **LAUNCH** (guarded red button), status lamps (POWER / ARMED / FUEL / EM
 - Superweapon strikes (silo nuke, SCUDs) are interceptable at half the normal probability; the particle beam and
   orbital rods are not.
 
-### 18.3 Point-Defense Laser (proposed, tier 5)
+### 18.3 Point-Defence Laser (tier 5)
 Rapid-tracking laser turret effective against rockets, cruise missiles and SCUDs at short range (64), visible beam.
 
 ---
@@ -830,7 +826,7 @@ disabled by EMP.
 | **Flamethrower** | fuel canister / napalm canister | stream range 10 (napalm 14, sticky fire), pilot light | ignites blocks and entities | twin-tank pack-style body, wand with pilot flame |
 | **Grenade Launcher** | 40 mm: HE, incendiary, cryo, toxin, EMP, smoke | 6-round revolving cylinder, per-shell reload | HE blast 2.5 | revolver-cylinder launcher with folding stock |
 | **EMP Gun** | EMP cell | 30° cone, 12 range | disables machines 15 s; disarms electronic fuzes; downs missiles in the cone; disables powered items of players hit; stuns iron golems | dish-muzzled pistol-grip device with crackling coil |
-| **Railgun** *(proposed)* | tungsten slugs | 1 s charge; hitscan; pierces 8 entities; breaks soft blocks (glass, leaves, wood) along 32 blocks | 40 dmg | long twin-rail barrel, capacitor banks, sonic crack |
+| **Railgun** | tungsten slugs | 1 s charge; hitscan; pierces 8 entities; breaks soft blocks (glass, leaves, wood) along 32 blocks | 40 dmg | long twin-rail barrel, capacitor banks, sonic crack |
 
 ---
 
@@ -1296,15 +1292,17 @@ TIER 5  EXOTIC       the End: void geodes → exotic shards → Exotic Matter Fa
 
 ---
 
-## 29. Open decisions (need the user's call)
-| # | Decision | Recommendation |
+## 29. Decisions made by the user
+| # | Decision | Outcome (2026-10-19) |
 |---|---|---|
-| D1 | Mod name and ID | **Ground Zero** (`groundzero`); alternatives *Critical Mass*, *Doomsday Arsenal* |
-| D2 | Power system | **NeoForge Energy (FE)** with our generators + interoperability (Generals-style "low power pauses superweapons"). Alternative: fuel-only machines, no cables. |
-| D3 | Guide book | **Native Field Manual** (no extra dependency, full military styling, reuses our multiblock renderer). Alternative: Modonomicon (available for 26.3; less work, adds a 2nd hard dependency, generic look). |
-| D4 | GeckoLib as the one hard dependency | **Yes** (brief suggests it; available for 26.3 from day one). |
-| D5 | Proposed extras (Tectonic Charge, Gravity Repulsor, Railgun, Point-Defence Laser, Thermite/Breaching charges, smoke grenade) | Include |
-| D6 | Superweapon announcements to all players in the dimension | On by default (config) |
+| D1 | Mod name and ID | **Ground Zero** (`groundzero`) |
+| D2 | Power system | **NeoForge Energy (FE)** with generators, cables and capacitor banks; low power pauses superweapon charge |
+| D3 | Guide book | **Native Field Manual** (no Modonomicon) |
+| D4 | GeckoLib as the one hard dependency | **Yes** (default kept; no objection) |
+| D5 | Extras beyond the brief | **Railgun** and **Point-Defence Laser** in; Tectonic Charge and Gravity Repulsor cut |
+| D6 | Superweapon announcements to all players in the dimension | **On** by default, configurable (default kept) |
+
+No open decisions right now. New ones get added here as they come up.
 
 ## 30. Decision log
 | Date | Decision |
@@ -1318,3 +1316,4 @@ TIER 5  EXOTIC       the End: void geodes → exotic shards → Exotic Matter Fa
 | 2026-10-19 | Nuclear bombs never chain-detonate (they fizzle and spread radiation). |
 | 2026-10-19 | Long-range missiles are simulated analytically above build height (MissileTracker) instead of force-loading the whole path. |
 | 2026-10-19 | Blast profiles are a datapack registry so radii live in one place for damage and visuals. |
+| 2026-10-19 | User decisions D1–D6 recorded in §29 (Ground Zero, FE power, native Field Manual, GeckoLib, Railgun + Point-Defence Laser, announcements on). |
