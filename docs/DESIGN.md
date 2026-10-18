@@ -69,6 +69,21 @@ These replace what older (1.20/1.21) knowledge would assume. Re-verify against t
 - **Vanilla now has sulfur.** 26.2 "Chaos Cubed" added Sulfur Caves, sulfur/cinnabar block families, potent sulfur
   and the Sulfur Cube mob. Our sulfur resource integrates with it (see §5) instead of ignoring it.
 
+Learned while building (verified against the 26.3.0.92 sources):
+- **Config types** are `LOCAL`, `CLIENT`, `SYNCED`, `STARTUP` (no more COMMON/SERVER). Server-authoritative settings
+  use `SYNCED` → file `groundzero-synced.toml`; client settings → `groundzero-client.toml`.
+- `Holder#getKey()` is deprecated for removal; use `key()` / `keyOrNull()`.
+- **Transfer API:** energy is `Capabilities.Energy.BLOCK` → `EnergyHandler` (`transfer.energy`, `SimpleEnergyHandler`);
+  items and fluids are `ResourceHandler<ItemResource>` / `ResourceHandler<FluidResource>` with transactions
+  (`transfer.transaction.Transaction`). The old `IItemHandler` / `IEnergyStorage` are gone.
+- **GameTests:** test functions are entries in the vanilla `TEST_FUNCTION` registry; instances
+  (`FunctionGameTestInstance` + `TestData` with a structure id) are registered on NeoForge's `RegisterGameTestsEvent`.
+  The structure's (0,0,0) sits at test block + (0,1,1).
+- **Structure NBT** block states use lowercase `id` / `properties` (older versions: `Name` / `Properties`).
+  Data version for 26.3 is **5023**.
+- **Datagen** fires `GatherDataEvent.Client` for the `clientData` run (covers client and server data).
+- Client-bound payload handlers register on `RegisterClientPayloadHandlersEvent` (client side only).
+
 ### 2.2 Libraries available for 26.3 and what we do with them
 
 | Library | 26.3 status | Decision |
@@ -452,7 +467,7 @@ messages.
   `data/groundzero/blasts/<id>.bin`. On world load, jobs resume and clients re-sync their visuals.
 - Jobs never depend on a player being nearby; they finish while the server runs.
 
-### 11.6 Server config (`groundzero-server.toml`), with dramatic defaults
+### 11.6 Server config (`groundzero-synced.toml`), with dramatic defaults
 | Key | Default | Meaning |
 |---|---|---|
 | `blast.destroyBlocks` | true | master switch for terrain damage |
@@ -470,6 +485,10 @@ messages.
 | `emp.affectsVanillaRedstone` | true | |
 | `reactor.meltdowns` | false | |
 | `singularity.maxBlocksRipped` | 20 000 | |
+| `superweapons.announce`, `superweapons.maxRange`, `superweapons.chargeTimeMultiplier` | true, 4 096, 1.0 | |
+
+Client config (`groundzero-client.toml`): `fx.quality` (low/medium/high/ultra, default high), `fx.flashStrength`
+(1.0), `fx.cameraShake` (1.0), `fx.farClouds` (true), `hud.geigerCorner` (bottom right).
 
 ---
 

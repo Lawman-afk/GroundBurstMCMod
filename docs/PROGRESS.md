@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 0 complete and decisions D1–D6 made; waiting for the go-ahead to start Phase 1.
+**Current phase:** Phase 2 (asset pipeline). Phases 0–1 done.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -13,8 +13,8 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** |
-| 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | in progress (skeleton + deploy done) |
-| 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | todo |
+| 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
+| 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | in progress |
 | 3 | Resources & world generation | todo |
 | 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | todo |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
@@ -46,7 +46,7 @@ checklist for the user.
 | DESIGN.md v1 | done |
 | Phased roadmap (this file) | done |
 | Decisions D1–D6 (see DESIGN.md §29) | done |
-| Go-ahead to start Phase 1 | waiting on user |
+| Go-ahead to start Phase 1 | done (2026-10-19) |
 
 ## Phase 1 — Skeleton & foundations
 | Item | Status |
@@ -55,12 +55,15 @@ checklist for the user.
 | `deployToInstance` task (runs after `build`, removes old jars, copies new) | done (verified: jar landed in instance `mods/`) |
 | `runClient` works in dev | done (reached title screen with the mod loaded) |
 | git repository + first commit | done |
-| Registry framework (blocks, items, BEs, entities, menus, sounds, particles, data components, attachments, recipe types, datapack registries) | todo |
-| Configs: server (blast safety limits), common, client (fx quality) | todo |
-| Creative tabs (7) | todo |
-| Networking base (payload registration, handlers) | todo |
-| Datagen harness (models, blockstates, lang, tags, loot, recipes, sounds.json) | todo |
-| GameTest harness (26.x test-instance API) | todo |
+| Registry framework: `GZBlocks` / `GZItems` helpers that record English name + creative tab at registration (`GZLang`) | done |
+| Further registers (BEs, entities, menus, sounds, particles, data components, attachments, recipes, datapack registries) | added with the first feature that needs each (no empty registers) |
+| Configs: server (`SYNCED`, blast/radiation/terrain/missiles/EMP/reactor/singularity/superweapon limits) and client (fx, HUD) | done (values are read by their systems as those phases land) |
+| Common config | moved to Phase 3 (first option: ore toggles) |
+| Creative tabs (7, chained after Combat; hidden until they contain items; icon = first item) | done |
+| Networking base (`GZNetwork` registrar + type helper; client handlers via `RegisterClientPayloadHandlersEvent`) | done (first payloads in Phase 4/5) |
+| Datagen harness (`runData` → `src/generated/resources`; en_us generated from `GZLang`) | done (verified) |
+| GameTest harness (TEST_FUNCTION registry + `RegisterGameTestsEvent`; NBT test structures from `tools/structure`) | done (3/3 pass: harness floor, names & tabs, vanilla) |
+| Smoke test: build + deploy + dev client to title screen | done |
 | Final mod name/ID applied | done (Ground Zero / `groundzero` confirmed) |
 
 ## Phase 2 — Asset pipeline
@@ -72,7 +75,7 @@ checklist for the user.
 | GeckoLib geo + animation JSON export | todo |
 | `tools/preview/render.py` software renderer + contact sheets | todo |
 | `tools/sound/synth.py` synthesis toolkit + OGG export + distance variants | todo |
-| `tools/structure/nbt.py` NBT writer | todo |
+| `tools/structure/nbt.py` NBT writer + `template.py` structure templates | done (used for GameTest structures) |
 | GUI texture toolkit (panels, CRT, gauges, buttons, bars, stencil font) | todo |
 | Style guide page with palette swatches & sample assets | todo |
 | Pilot assets approved (1 ore, 1 machine, 1 bomb, 1 sound) | todo |
@@ -80,6 +83,7 @@ checklist for the user.
 ## Phase 3 — Resources & world generation
 | Item | Status |
 |---|---|
+| Common config (ore toggles) | todo |
 | Ores: uranium, lithium, sulfur (+nether), saltpeter (+sandstone), tungsten, lead, rare earth — stone & deepslate | todo |
 | Exotic crystal cluster, voidstone, End void-geode feature | todo |
 | Raw items, dusts, ingots, nuggets, plates/rods/wire placeholders → real items | todo |
