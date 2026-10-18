@@ -3,6 +3,7 @@ package dev.groundzero.datagen;
 import java.util.concurrent.CompletableFuture;
 
 import dev.groundzero.GroundZero;
+import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.content.resource.GZResources.Ore;
 import dev.groundzero.registry.GZBlocks.WithItem;
@@ -78,6 +79,8 @@ public final class GZTagProviders {
                     GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key(),
                     GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
             tag(BlockTags.NEEDS_IRON_TOOL).add(GZResources.VOIDSTONE.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.COMBUSTION_GENERATOR.block().key(), GZMachines.ORE_CRUSHER.block().key());
+            GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
             tag(Tags.BlockItems.CLUSTERS.block()).add(GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
@@ -112,8 +115,18 @@ public final class GZTagProviders {
             item("ingots/tungsten", GZResources.TUNGSTEN_INGOT, Tags.Items.INGOTS);
             item("dusts/sulfur", GZResources.SULFUR_DUST, Tags.Items.DUSTS);
             item("dusts/saltpeter", GZResources.SALTPETER_DUST, Tags.Items.DUSTS);
+            item("dusts/uranium", GZResources.URANIUM_DUST, Tags.Items.DUSTS);
+            item("dusts/lithium", GZResources.LITHIUM_DUST, Tags.Items.DUSTS);
+            item("dusts/tungsten", GZResources.TUNGSTEN_DUST, Tags.Items.DUSTS);
+            item("dusts/lead", GZResources.LEAD_DUST, Tags.Items.DUSTS);
+            item("dusts/rare_earth", GZResources.RARE_EARTH_DUST, Tags.Items.DUSTS);
+            item("dusts/cobalt", GZResources.COBALT_DUST, Tags.Items.DUSTS);
+            item("dusts/iron", GZResources.IRON_DUST, Tags.Items.DUSTS);
+            item("dusts/gold", GZResources.GOLD_DUST, Tags.Items.DUSTS);
+            item("dusts/copper", GZResources.COPPER_DUST, Tags.Items.DUSTS);
+            item("dusts/cinnabar", GZResources.CINNABAR_DUST, Tags.Items.DUSTS);
             item("gems/exotic_matter", GZResources.EXOTIC_SHARD, Tags.Items.GEMS);
-            tag(GZTags.RADIOACTIVE.item()).add(GZResources.RAW_URANIUM.key(), GZResources.URANIUM_INGOT.key());
+            tag(GZTags.RADIOACTIVE.item()).add(GZResources.RAW_URANIUM.key(), GZResources.URANIUM_INGOT.key(), GZResources.URANIUM_DUST.key());
         }
 
         private void item(String path, DeferredItem<?> item, TagKey<net.minecraft.world.item.Item> parent) {

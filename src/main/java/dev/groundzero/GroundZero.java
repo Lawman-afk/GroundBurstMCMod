@@ -6,11 +6,15 @@ import com.mojang.logging.LogUtils;
 
 import dev.groundzero.config.GZCommonConfig;
 import dev.groundzero.config.GZServerConfig;
+import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.recipe.GZRecipes;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.datagen.GZDataGen;
 import dev.groundzero.gametest.GZGameTests;
 import dev.groundzero.network.GZNetwork;
+import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZBlocks;
+import dev.groundzero.registry.GZMenus;
 import dev.groundzero.registry.GZCreativeTabs;
 import dev.groundzero.registry.GZItems;
 import dev.groundzero.registry.GZLang;
@@ -29,9 +33,14 @@ public class GroundZero {
 
     public GroundZero(IEventBus modBus, ModContainer modContainer) {
         GZResources.init();
+        GZMachines.init();
 
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);
+        GZBlockEntities.BLOCK_ENTITIES.register(modBus);
+        GZMenus.MENUS.register(modBus);
+        GZRecipes.register(modBus);
+        modBus.addListener(GZBlockEntities::registerCapabilities);
         GZCreativeTabs.TABS.register(modBus);
         GZSounds.SOUNDS.register(modBus);
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);

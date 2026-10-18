@@ -1,0 +1,127 @@
+package dev.groundzero.content.recipe;
+
+import java.util.List;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
+
+/**
+ * One machine process: counted item inputs -> outputs (each with a chance), taking `time` ticks at
+ * `energyPerTick` FE/t. Every processing machine uses this shape; the {@link ProcessingKind} decides which
+ * machine runs it.
+ */
+public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick)
+        implements Recipe<MachineRecipeInput> {
+
+    /** A product; `chance` < 1 makes it a byproduct. */
+    public record Output(ItemStackTemplate item, float chance) {
+        public static final Codec<Output> CODEC = RecordCodecBuilder.create(i -> i.group(
+                ItemStackTemplate.CODEC.fieldOf("item").forGetter(Output::item),
+                ExtraCodecs.floatRange(0, 1).optionalFieldOf("chance", 1f).forGetter(Output::chance)
+        ).apply(i, Output::new));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Output> STREAM_CODEC = StreamCodec.composite(
+                ItemStackTemplate.STREAM_CODEC, Output::item, ByteBufCodecs.FLOAT, Output::chance, Output::new);
+    }
+
+    static MapCodec<ProcessingRecipe> codec(ProcessingKind kind) {
+        return RecordCodecBuilder.mapCodec(i -> i.group(
+                SizedIngredient.NESTED_CODEC.listOf(1, 9).fieldOf("inputs").forGetter(ProcessingRecipe::inputs),
+                Output.CODEC.listOf(1, 9).fieldOf("outputs").forGetter(ProcessingRecipe::outputs),
+                ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
+                ExtraCodecs.NON_NEGATIVE_INT.fieldOf("energy_per_tick").forGetter(ProcessingRecipe::energyPerTick)
+        ).apply(i, (in, out, time, fe) -> new ProcessingRecipe(kind, in, out, time, fe)));
+    }
+
+    static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
+        return StreamCodec.composite(
+                SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
+                Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
+                ByteBufCodecs.VAR_INT, ProcessingRecipe::time,
+                ByteBufCodecs.VAR_INT, ProcessingRecipe::energyPerTick,
+                (in, out, time, fe) -> new ProcessingRecipe(kind, in, out, time, fe));
+    }
+
+    /** Every ingredient must be satisfied by a different input slot holding at least its count. */
+    @Override
+    public boolean matches(MachineRecipeInput input, Level level) {
+        return assignSlots(input) != null;
+    }
+
+    /** Slot index used for each ingredient, or null if the inputs don't satisfy the recipe. */
+    public int[] assignSlots(MachineRecipeInput input) {
+        int[] assignment = new int[this.inputs.size()];
+        boolean[] used = new boolean[input.size()];
+        for (int n = 0; n < this.inputs.size(); n++) {
+            SizedIngredient need = this.inputs.get(n);
+            int found = -1;
+            for (int s = 0; s < input.size(); s++) {
+                ItemStack stack = input.getItem(s);
+                if (!used[s] && need.test(stack)) {
+                    found = s;
+                    break;
+                }
+            }
+            if (found < 0) {
+                return null;
+            }
+            used[found] = true;
+            assignment[n] = found;
+        }
+        return assignment;
+    }
+
+    @Override
+    public ItemStack assemble(MachineRecipeInput input) {
+        return this.outputs.getFirst().item().create();
+    }
+
+    @Override
+    public boolean showNotification() {
+        return false;
+    }
+
+    @Override
+    public String group() {
+        return "";
+    }
+
+    @Override
+    public boolean isSpecial() {
+        return true;   // not shown in the vanilla recipe book
+    }
+
+    @Override
+    public RecipeSerializer<? extends Recipe<MachineRecipeInput>> getSerializer() {
+        return GZRecipes.serializer(this.kind);
+    }
+
+    @Override
+    public RecipeType<? extends Recipe<MachineRecipeInput>> getType() {
+        return GZRecipes.type(this.kind);
+    }
+
+    @Override
+    public PlacementInfo placementInfo() {
+        return PlacementInfo.NOT_PLACEABLE;
+    }
+
+    @Override
+    public RecipeBookCategory recipeBookCategory() {
+        return GZRecipes.MACHINE_CATEGORY.get();
+    }
+}

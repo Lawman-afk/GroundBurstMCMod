@@ -1,0 +1,18 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/gold"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:gold_dust"
+      }
+    }
+  ],
+  "time": 100
+}

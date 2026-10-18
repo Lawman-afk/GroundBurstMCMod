@@ -28,6 +28,6 @@ public final class GZDataGen {
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         GZWorldgenData.gather(event);
         event.lootTable(new LootTableProvider.SubProviderEntry(GZBlockLoot::new, LootContextParamSets.BLOCK));
-        event.recipe(GZRecipes::new);
+        event.recipe(GZRecipeProvider::new);
     }
 }

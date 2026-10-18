@@ -1,7 +1,7 @@
 {
   "format_version": "1.8.0",
   "animations": {
-    "animation.ore_crusher.working": {
+    "working": {
       "animation_length": 1.0,
       "bones": {
         "roller_n": {

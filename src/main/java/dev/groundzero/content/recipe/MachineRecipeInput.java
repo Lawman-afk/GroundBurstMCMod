@@ -1,0 +1,19 @@
+package dev.groundzero.content.recipe;
+
+import java.util.List;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeInput;
+
+/** A machine's input slots as a recipe input. */
+public record MachineRecipeInput(List<ItemStack> stacks) implements RecipeInput {
+    @Override
+    public ItemStack getItem(int index) {
+        return this.stacks.get(index);
+    }
+
+    @Override
+    public int size() {
+        return this.stacks.size();
+    }
+}

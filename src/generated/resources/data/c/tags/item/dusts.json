@@ -1,6 +1,16 @@
 {
   "values": [
     "#c:dusts/sulfur",
-    "#c:dusts/saltpeter"
+    "#c:dusts/saltpeter",
+    "#c:dusts/uranium",
+    "#c:dusts/lithium",
+    "#c:dusts/tungsten",
+    "#c:dusts/lead",
+    "#c:dusts/rare_earth",
+    "#c:dusts/cobalt",
+    "#c:dusts/iron",
+    "#c:dusts/gold",
+    "#c:dusts/copper",
+    "#c:dusts/cinnabar"
   ]
 }

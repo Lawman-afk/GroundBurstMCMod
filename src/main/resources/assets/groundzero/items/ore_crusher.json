@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/ore_crusher",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

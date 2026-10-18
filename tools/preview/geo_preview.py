@@ -82,7 +82,7 @@ def load_animation(model_id: str, anim: str) -> dict:
     ns, p = R._split_id(model_id)
     kind, name = p.split("/", 1)
     data = json.loads((paths.ANIMATIONS / kind / f"{name}.animation.json").read_text(encoding="utf-8"))
-    key = f"animation.{name}.{anim}"
+    key = anim if anim in data["animations"] else f"animation.{name}.{anim}"
     if key not in data["animations"]:
         raise KeyError(f"{key} not in {list(data['animations'])}")
     return data["animations"][key]

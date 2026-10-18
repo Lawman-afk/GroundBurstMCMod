@@ -189,5 +189,5 @@ class Animation:
 
 def save_animations(model_name: str, animations: list[Animation], kind: str = "block") -> Path:
     data = {"format_version": "1.8.0",
-            "animations": {f"animation.{model_name}.{a.name}": a.to_json() for a in animations}}
+            "animations": {a.name: a.to_json() for a in animations}}
     return write_json(paths.ANIMATIONS / kind / f"{model_name}.animation.json", data)

@@ -56,6 +56,16 @@ public final class GZItems {
         return item;
     }
 
+    /** Registers a custom BlockItem subclass for a block. */
+    @SuppressWarnings("unchecked")
+    public static <B extends Block> DeferredItem<BlockItem> blockItem(DeferredBlock<B> block, GZTab tab,
+            java.util.function.BiFunction<B, Item.Properties, ? extends BlockItem> factory) {
+        DeferredItem<BlockItem> item = (DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.registerItem(block.getId().getPath(),
+                props -> factory.apply(block.get(), props), Item.Properties::useBlockDescriptionPrefix);
+        addToTab(item, tab);
+        return item;
+    }
+
     private static void addToTab(DeferredItem<? extends Item> item, GZTab tab) {
         TAB_CONTENTS.computeIfAbsent(tab, t -> new ArrayList<>()).add(item);
         TAB_OF.put(item, tab);

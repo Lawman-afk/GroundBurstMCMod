@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:potent_sulfur"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 6,
+        "id": "groundzero:sulfur_dust"
+      }
+    }
+  ],
+  "time": 120
+}

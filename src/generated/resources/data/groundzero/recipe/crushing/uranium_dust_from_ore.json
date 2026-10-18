@@ -1,0 +1,25 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ores/uranium"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundzero:uranium_dust"
+      }
+    },
+    {
+      "chance": 0.5,
+      "item": {
+        "id": "groundzero:uranium_dust"
+      }
+    }
+  ],
+  "time": 240
+}

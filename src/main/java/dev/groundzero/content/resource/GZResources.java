@@ -64,6 +64,16 @@ public final class GZResources {
     public static final DeferredItem<Item> RAW_RARE_EARTH = GZItems.simple("raw_rare_earth", "Raw Rare Earths", GZTab.RESOURCES);
     public static final DeferredItem<Item> SULFUR_DUST = GZItems.simple("sulfur_dust", "Sulfur Dust", GZTab.RESOURCES);
     public static final DeferredItem<Item> SALTPETER_DUST = GZItems.simple("saltpeter_dust", "Saltpeter Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> URANIUM_DUST = GZItems.simple("uranium_dust", "Uranium Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> LITHIUM_DUST = GZItems.simple("lithium_dust", "Lithium Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> TUNGSTEN_DUST = GZItems.simple("tungsten_dust", "Tungsten Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> LEAD_DUST = GZItems.simple("lead_dust", "Lead Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> RARE_EARTH_DUST = GZItems.simple("rare_earth_dust", "Rare-Earth Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> COBALT_DUST = GZItems.simple("cobalt_dust", "Cobalt Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> IRON_DUST = GZItems.simple("iron_dust", "Iron Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> GOLD_DUST = GZItems.simple("gold_dust", "Gold Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> COPPER_DUST = GZItems.simple("copper_dust", "Copper Dust", GZTab.RESOURCES);
+    public static final DeferredItem<Item> CINNABAR_DUST = GZItems.simple("cinnabar_dust", "Cinnabar Dust", GZTab.RESOURCES);
     public static final DeferredItem<Item> URANIUM_INGOT = GZItems.simple("uranium_ingot", "Natural Uranium Ingot", GZTab.RESOURCES);
     public static final DeferredItem<Item> LEAD_INGOT = GZItems.simple("lead_ingot", "Lead Ingot", GZTab.RESOURCES);
     public static final DeferredItem<Item> TUNGSTEN_INGOT = GZItems.simple("tungsten_ingot", "Tungsten Ingot", GZTab.RESOURCES);

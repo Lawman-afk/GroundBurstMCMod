@@ -1,0 +1,136 @@
+{
+  "textures": {
+    "cable": "groundzero:block/hv_cable",
+    "particle": "groundzero:block/hv_cable"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        10.5,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "up": {
+          "uv": [
+            12,
+            0,
+            16,
+            4
+          ],
+          "texture": "#cable",
+          "cullface": "up"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        13,
+        5
+      ],
+      "to": [
+        11,
+        14,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": "#cable"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": "#cable"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": "#cable"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": "#cable"
+        },
+        "up": {
+          "uv": [
+            8,
+            8,
+            14,
+            14
+          ],
+          "texture": "#cable"
+        },
+        "down": {
+          "uv": [
+            8,
+            8,
+            14,
+            14
+          ],
+          "texture": "#cable"
+        }
+      }
+    }
+  ]
+}

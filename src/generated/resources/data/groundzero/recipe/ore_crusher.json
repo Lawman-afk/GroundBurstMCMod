@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:grindstone",
+    "I": "minecraft:iron_ingot",
+    "P": "minecraft:piston",
+    "S": "minecraft:stonecutter"
+  },
+  "pattern": [
+    "ISI",
+    "PGP",
+    "I I"
+  ],
+  "result": {
+    "id": "groundzero:ore_crusher"
+  }
+}

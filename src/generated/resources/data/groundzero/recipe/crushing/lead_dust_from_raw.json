@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:raw_materials/lead"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundzero:lead_dust"
+      }
+    }
+  ],
+  "time": 200
+}

@@ -1,0 +1,24 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:cobblestone"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "minecraft:gravel"
+      }
+    },
+    {
+      "chance": 0.1,
+      "item": {
+        "id": "minecraft:flint"
+      }
+    }
+  ],
+  "time": 100
+}

@@ -28,6 +28,11 @@
     "groundzero:budding_voidstone",
     "groundzero:small_exotic_bud",
     "groundzero:large_exotic_bud",
-    "groundzero:exotic_crystal_cluster"
+    "groundzero:exotic_crystal_cluster",
+    "groundzero:combustion_generator",
+    "groundzero:ore_crusher",
+    "groundzero:copper_cable",
+    "groundzero:insulated_cable",
+    "groundzero:hv_cable"
   ]
 }

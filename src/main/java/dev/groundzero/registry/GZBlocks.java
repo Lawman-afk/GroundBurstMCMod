@@ -40,6 +40,14 @@ public final class GZBlocks {
         return register(name, english, tab, factory, properties, UnaryOperator.identity());
     }
 
+    /** A block whose item form is a custom BlockItem subclass (e.g. a GeckoLib-rendered item). */
+    public static <B extends Block> WithItem<B> registerWithItem(String name, String english, GZTab tab,
+            Function<BlockBehaviour.Properties, ? extends B> factory, UnaryOperator<BlockBehaviour.Properties> properties,
+            java.util.function.BiFunction<B, Item.Properties, ? extends BlockItem> itemFactory) {
+        DeferredBlock<B> block = blockOnly(name, english, factory, properties);
+        return new WithItem<>(block, GZItems.blockItem(block, tab, itemFactory));
+    }
+
     public static WithItem<Block> simple(String name, String english, GZTab tab, UnaryOperator<BlockBehaviour.Properties> properties) {
         return register(name, english, tab, Block::new, properties);
     }

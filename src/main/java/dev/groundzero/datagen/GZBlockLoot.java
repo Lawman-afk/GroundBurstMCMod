@@ -2,6 +2,7 @@ package dev.groundzero.datagen;
 
 import java.util.Set;
 
+import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.content.resource.GZResources.Ore;
 import dev.groundzero.registry.GZBlocks;
@@ -39,6 +40,9 @@ public class GZBlockLoot extends BlockLootSubProvider {
                 GZResources.RAW_LEAD_BLOCK, GZResources.RAW_RARE_EARTH_BLOCK, GZResources.VOIDSTONE)) {
             dropSelf(b.block().get());
         }
+        dropSelf(GZMachines.COMBUSTION_GENERATOR.block().get());
+        dropSelf(GZMachines.ORE_CRUSHER.block().get());
+        GZMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());
         add(GZResources.SMALL_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.SMALL_EXOTIC_BUD.block().get()));
         add(GZResources.LARGE_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.LARGE_EXOTIC_BUD.block().get()));

@@ -144,10 +144,43 @@ def build_ingots() -> None:
 
 # --- powders & shard -------------------------------------------------------------------------------------------------------
 
+# Crusher dusts (DESIGN.md §6): one heap silhouette for the family; metal dusts catch a couple of glints so they
+# read differently from the mineral powders.
+URANIUM_DUST = fixed("uranium_dust", "#121a10", "#24321e", "#3a4c2c", "#55693c", "#71864c", "#97ab66", "#cce0a0")
+COBALT_DUST = fixed("cobalt_dust", "#0c1430", "#18285a", "#24408a", "#3260b4", "#4f84d4", "#82acec", "#c8dcff")
+IRON_DUST = fixed("iron_dust", "#2a2422", "#463c38", "#665a54", "#877a72", "#a89a90", "#c8bcb2", "#ece4dc")
+GOLD_DUST = fixed("gold_dust", "#4a2c06", "#7a4a0a", "#b07412", "#d89a1e", "#f0bc34", "#fad866", "#fff4b8")
+COPPER_DUST = fixed("copper_dust", "#3a160a", "#64280e", "#8e3e18", "#b45a26", "#d27a3c", "#eaa062", "#fcd2a4")
+TUNGSTEN_DUST = fixed("tungsten_dust", "#121418", "#202329", "#33373f", "#484d56", "#626872", "#868d98", "#bcc3cc")
+RARE_EARTH_DUST = fixed("rare_earth_dust", "#2e200e", "#4e3618", "#705024", "#906c34", "#ae8a4a", "#ccaa6c", "#ecd4a4")
+CINNABAR_DUST = fixed("cinnabar_dust", "#3a0808", "#640e0c", "#901812", "#b8261a", "#d6402a", "#ec6c50", "#ffb09a")
+
+DUSTS = [
+    # name, ramp, seed, metallic glints
+    ("sulfur_dust", M.SULFUR, 7, False),
+    ("saltpeter_dust", M.NITER, 8, False),
+    ("uranium_dust", URANIUM_DUST, 11, True),
+    ("lithium_dust", M.SPODUMENE, 12, False),
+    ("tungsten_dust", TUNGSTEN_DUST, 13, True),
+    ("lead_dust", M.GALENA, 14, True),
+    ("rare_earth_dust", RARE_EARTH_DUST, 15, False),
+    ("cobalt_dust", COBALT_DUST, 16, True),
+    ("iron_dust", IRON_DUST, 17, True),
+    ("gold_dust", GOLD_DUST, 18, True),
+    ("copper_dust", COPPER_DUST, 19, True),
+    ("cinnabar_dust", CINNABAR_DUST, 20, False),
+]
+
+
 def build_powders() -> None:
-    for name, ramp, seed in (("sulfur_dust", M.SULFUR, 7), ("saltpeter_dust", M.NITER, 8)):
+    for name, ramp, seed, metallic in DUSTS:
         t = Tex(16, 16)
         pts = powder_pile(t, 8, 13, 8, 6.0, ramp, seed)
+        if metallic:
+            rng = random.Random(seed * 31)
+            inner = sorted(p for p in pts if (p[0] - 1, p[1]) in pts and (p[0] + 1, p[1]) in pts and p[1] < 13)
+            for p in rng.sample(inner, 3):
+                t.px(*p, ramp.shine)
         outline(t, pts, ramp.outline)
         save_item(name, t)
 

@@ -60,6 +60,7 @@ public final class GZGameTests {
         });
 
         ResourceTests.register();
+        MachineTests.register();
     }
 
     private GZGameTests() {}

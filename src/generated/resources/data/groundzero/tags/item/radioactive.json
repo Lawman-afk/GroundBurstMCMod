@@ -2,6 +2,7 @@
   "values": [
     "groundzero:raw_uranium",
     "groundzero:uranium_ingot",
+    "groundzero:uranium_dust",
     "groundzero:uranium_ore",
     "groundzero:deepslate_uranium_ore",
     "groundzero:uranium_block",

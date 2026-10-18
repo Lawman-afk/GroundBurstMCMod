@@ -1,0 +1,18 @@
+{
+  "type": "groundzero:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:gravel"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "minecraft:sand"
+      }
+    }
+  ],
+  "time": 100
+}

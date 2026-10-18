@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 3 built and tested (8/8 GameTests); waiting on the user's in-game check before Phase 4.
+**Current phase:** Phase 4 in progress — slice 1 (machine framework, cables, Combustion Generator, Ore Crusher) built and tested (15/15 GameTests).
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -16,7 +16,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
-| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | todo |
+| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slice 1 done) |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
@@ -100,18 +100,18 @@ checklist for the user.
 | End void geodes (outer islands, anchored in end stone) | needs in-game test |
 | Loot tables (Fortune, Silk Touch, explosion decay), smelting/blasting, storage recipes, black-powder gunpowder | done (drop GameTest passes) |
 | Tags: tool tiers, `c:` ores/raw/ingots/dusts/gems/storage, `groundzero:radioactive` | done |
-| Vanilla sulfur / cinnabar crushing | moved to Phase 4 (needs the Ore Crusher) |
+| Vanilla sulfur / cinnabar crushing | done in Phase 4 (Ore Crusher recipes) |
 | Radiation strength data map for the radioactive tag | Phase 12 |
 | Textures for all of the above (reviewed via `tools/out/previews/ores_review.png`, `items_review.png`, `blocks_review.png`) | done |
 
 ## Phase 4 — Power, machines, multiblocks
 | Item | Status |
 |---|---|
-| GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | todo |
-| Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | todo |
-| Cables (copper, insulated, HV) with connected models | todo |
-| Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | todo |
-| Ore Crusher | todo |
+| GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | started: `tools/assets/gui.py` generates layout-driven machine GUIs + `MachineLayouts.java`; generic `MachineScreen` (energy bar, progress, flame, status lamp, redstone button, CRT readout, tooltips). Guarded buttons/gauges come with later machines |
+| Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | done except side config + sounds: `MachineBlockEntity`/`ProcessingBlockEntity`, `MachineBlock` (facing + active), `MachineMenu`, automation view (inputs in / outputs out), recipe-filtered inputs, redstone modes, status reasons, EMP hook, GeckoLib `AnimatedMachine` |
+| Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated/HV recipes wait for plastic/tungsten filament |
+| Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | Combustion Generator done (GeckoLib model, firebox glow, flywheel, GUI, recipe); rest todo |
+| Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
 | Arc Furnace | todo |
 | Industrial Press | todo |
 | Chemical Plant | todo |
@@ -125,6 +125,8 @@ checklist for the user.
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | todo |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
+| Machine sounds (crusher/generator loops, start/stop) | todo (next slice) |
+| GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests; 15/15 total pass) |
 | Machine recipes (custom recipe types + datagen) | todo |
 | Models/animations/GUIs/sounds for every machine (reviewed) | todo |
 

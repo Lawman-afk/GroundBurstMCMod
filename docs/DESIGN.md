@@ -83,6 +83,8 @@ Learned while building (verified against the 26.3.0.92 sources):
   Data version for 26.3 is **5023**.
 - **Datagen** fires `GatherDataEvent.Client` for the `clientData` run (covers client and server data).
 - Client-bound payload handlers register on `RegisterClientPayloadHandlersEvent` (client side only).
+- **Blocks have no `codec()`** in 26.3 (`simpleCodec` / `MapCodec` overrides are gone).
+- **GeckoLib animations** are looked up by their exact key in `animations{}`; we export plain names (`working`).
 
 ### 2.2 Libraries available for 26.3 and what we do with them
 
@@ -1351,3 +1353,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Ores are three coplanar layers: vanilla host texture + our mineral overlay (cutout) + optional emissive glint layer — resource-pack friendly, nothing vanilla copied. |
 | 2026-10-19 | Bombs lie along Z with the nose north; M-class bombs are two blocks long (bed-like). Round bodies are stepped pixel cylinders with baked lighting (`shade:false`). |
 | 2026-10-19 | Sounds are reviewed visually (waveform + spectrogram) since they can't be auditioned here; the user auditions them in game with `/playsound`. |
+| 2026-10-19 | Machine inputs (GUI, hoppers, pipes) only accept items that are an ingredient of some recipe of that machine's kind; outputs are extract-only for automation. |
+| 2026-10-19 | Cables hold no energy: offers are delivered straight to the network's consumers, capped by the weakest cable tier on the network. |
+| 2026-10-19 | GeckoLib machines render their item form with GeckoLib's special item model over a `block/block`-parented base model (standard display transforms). |
