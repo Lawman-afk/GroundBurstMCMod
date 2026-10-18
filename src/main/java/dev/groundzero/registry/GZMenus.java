@@ -19,6 +19,9 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ORE_CRUSHER = machine("ore_crusher", () -> MachineLayouts.ORE_CRUSHER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> COMBUSTION_GENERATOR = machine("combustion_generator", () -> MachineLayouts.COMBUSTION_GENERATOR);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ARC_FURNACE = machine("arc_furnace", () -> MachineLayouts.ARC_FURNACE);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> INDUSTRIAL_PRESS = machine("industrial_press", () -> MachineLayouts.INDUSTRIAL_PRESS);
+
     private GZMenus() {}
 
     @SuppressWarnings("unchecked")

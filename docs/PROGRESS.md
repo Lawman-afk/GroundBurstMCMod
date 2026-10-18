@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slice 1 (machine framework, cables, Combustion Generator, Ore Crusher) built and tested (15/15 GameTests).
+**Current phase:** Phase 4 in progress — slices 1–2 built and tested (20/20 GameTests): machine framework, cables, Combustion Generator, Ore Crusher, Arc Furnace, Industrial Press, parts, machine sounds.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -16,7 +16,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
-| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slice 1 done) |
+| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–2 done) |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
@@ -112,8 +112,8 @@ checklist for the user.
 | Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated/HV recipes wait for plastic/tungsten filament |
 | Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | Combustion Generator done (GeckoLib model, firebox glow, flywheel, GUI, recipe); rest todo |
 | Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
-| Arc Furnace | todo |
-| Industrial Press | todo |
+| Arc Furnace | done (2-tall GeckoLib model: electrodes lower, melt + port glow; 8 recipes: steel, tungsten, carbide, magnet, cobalt, lead) |
+| Industrial Press | done (2-tall C-frame, ram stroke synced to sound; 4 dies as non-consumed catalysts; 11 recipes) |
 | Chemical Plant | todo |
 | Gas Centrifuge (+ cascade bonus) | todo |
 | Electrolytic Separator | todo |
@@ -125,8 +125,11 @@ checklist for the user.
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | todo |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
-| Machine sounds (crusher/generator loops, start/stop) | todo (next slice) |
-| GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests; 15/15 total pass) |
+| Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press; client fades them in/out with the ACTIVE state |
+| GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
+| Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |
+| Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |
+| Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done |
 | Machine recipes (custom recipe types + datagen) | todo |
 | Models/animations/GUIs/sounds for every machine (reviewed) | todo |
 

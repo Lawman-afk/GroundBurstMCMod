@@ -201,6 +201,17 @@ def fade(x: np.ndarray, fade_in: float = 0.0, fade_out: float = 0.05) -> np.ndar
     return x
 
 
+def seamless_loop(x: np.ndarray, length: float, xfade: float = 0.15, preroll: float = 0.25) -> np.ndarray:
+    """Cuts a click-free loop of `length` seconds from x, which must be at least preroll + length + xfade long.
+    The preroll lets filters settle; the tail past the loop end is cross-faded (equal power) into the head."""
+    s0, n, nx = int(preroll * SR), int(length * SR), int(xfade * SR)
+    body = x[s0:s0 + n].copy()
+    tail = x[s0 + n:s0 + n + nx]
+    k = np.linspace(0, np.pi / 2, nx)
+    body[:nx] = body[:nx] * np.sin(k) + tail * np.cos(k)
+    return body
+
+
 def trim_silence(x: np.ndarray, threshold_db: float = -60) -> np.ndarray:
     level = 10 ** (threshold_db / 20) * np.max(np.abs(x))
     idx = np.where(np.abs(x) > level)[0]

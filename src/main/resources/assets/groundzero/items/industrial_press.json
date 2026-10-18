@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/industrial_press",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

@@ -22,6 +22,7 @@ from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 
 GECKO_MACHINES = ["combustion_generator", "ore_crusher"]
+TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press"]
 
 # --- GeckoLib machines -------------------------------------------------------------------------------------------------
 
@@ -37,16 +38,34 @@ def machine_particle() -> None:
     t.save(paths.TEXTURES / "block" / "machine_particle.png")
 
 
-def gecko_machine(name: str) -> None:
+# Two-block-tall machines shrink in the GUI and hands so the whole model fits (GeckoLib draws it from the base).
+TALL_DISPLAY = {
+    "gui": {"rotation": [30, 225, 0], "translation": [0, -3.2, 0], "scale": [0.36, 0.36, 0.36]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 1.5, 0], "scale": [0.18, 0.18, 0.18]},
+    "fixed": {"rotation": [0, 0, 0], "translation": [0, -4, 0], "scale": [0.4, 0.4, 0.4]},
+    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 1.5, 0], "scale": [0.28, 0.28, 0.28]},
+    "thirdperson_lefthand": {"rotation": [75, 45, 0], "translation": [0, 1.5, 0], "scale": [0.28, 0.28, 0.28]},
+    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -1, 0], "scale": [0.3, 0.3, 0.3]},
+    "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, -1, 0], "scale": [0.3, 0.3, 0.3]},
+}
+
+
+def gecko_machine(name: str, tall: bool = False) -> None:
     particle = {"textures": {"particle": "groundzero:block/machine_particle"}}
     write_json(paths.MODELS / "block" / f"{name}.json", particle)
     variants = {}
     for facing in ("north", "east", "south", "west"):
         for active in ("false", "true"):
-            variants[f"active={active},facing={facing}"] = {"model": f"groundzero:block/{name}"}
+            if tall:
+                for half in ("lower", "upper"):
+                    variants[f"active={active},facing={facing},half={half}"] = {"model": f"groundzero:block/{name}"}
+            else:
+                variants[f"active={active},facing={facing}"] = {"model": f"groundzero:block/{name}"}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
-    write_json(paths.MODELS / "item" / f"{name}.json",
-               {"parent": "minecraft:block/block", "textures": {"particle": "groundzero:block/machine_particle"}})
+    item_model = {"parent": "minecraft:block/block", "textures": {"particle": "groundzero:block/machine_particle"}}
+    if tall:
+        item_model["display"] = TALL_DISPLAY
+    write_json(paths.MODELS / "item" / f"{name}.json", item_model)
     write_json(paths.ASSETS / "items" / f"{name}.json",
                {"model": {"type": "minecraft:special", "base": f"groundzero:item/{name}", "model": {"type": "geckolib:geckolib"}}})
 
@@ -178,6 +197,8 @@ if __name__ == "__main__":
     machine_particle()
     for m in GECKO_MACHINES:
         gecko_machine(m)
+    for m in TALL_GECKO_MACHINES:
+        gecko_machine(m, tall=True)
     for c in CABLES:
         cable_texture(c)
         cable_models(c)

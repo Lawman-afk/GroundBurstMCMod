@@ -1,9 +1,10 @@
 package dev.groundzero;
 
-import com.geckolib.renderer.GeoBlockRenderer;
-
+import dev.groundzero.client.render.MachineGeoRenderer;
 import dev.groundzero.client.screen.MachineScreen;
+import dev.groundzero.client.sound.MachineSounds;
 import dev.groundzero.config.GZClientConfig;
+import dev.groundzero.content.machine.MachineClientHooks;
 import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZMenus;
 import net.neoforged.api.distmarker.Dist;
@@ -23,6 +24,7 @@ public class GroundZeroClient {
         container.registerConfig(ModConfig.Type.CLIENT, GZClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
+        MachineClientHooks.clientTick = MachineSounds::tick;
         modBus.addListener(GroundZeroClient::registerScreens);
         modBus.addListener(GroundZeroClient::registerRenderers);
     }
@@ -30,10 +32,14 @@ public class GroundZeroClient {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(GZMenus.ORE_CRUSHER.get(), MachineScreen::new);
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
+        event.register(GZMenus.ARC_FURNACE.get(), MachineScreen::new);
+        event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new GeoBlockRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get()));
-        event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new GeoBlockRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get()));
+        event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.ARC_FURNACE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ARC_FURNACE.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.INDUSTRIAL_PRESS.get(), 2));
     }
 }

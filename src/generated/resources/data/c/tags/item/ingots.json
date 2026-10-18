@@ -2,6 +2,9 @@
   "values": [
     "#c:ingots/uranium",
     "#c:ingots/lead",
-    "#c:ingots/tungsten"
+    "#c:ingots/tungsten",
+    "#c:ingots/steel",
+    "#c:ingots/cobalt",
+    "#c:ingots/tungsten_carbide"
   ]
 }

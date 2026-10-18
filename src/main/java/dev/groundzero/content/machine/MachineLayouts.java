@@ -14,6 +14,22 @@ public final class MachineLayouts {
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
             null, 28, 6);
 
+    public static final MachineLayout ARC_FURNACE = new MachineLayout(
+            GroundZero.id("textures/gui/machine/arc_furnace.png"), 176, 166, List.of(new MachineLayout.Pos(56, 25), new MachineLayout.Pos(56, 47), new MachineLayout.Pos(116, 35), new MachineLayout.Pos(146, 35)), 8, 84,
+            new MachineLayout.Rect(8, 16, 14, 54), 180, 0,
+            new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            null, 28, 6);
+
+    public static final MachineLayout INDUSTRIAL_PRESS = new MachineLayout(
+            GroundZero.id("textures/gui/machine/industrial_press.png"), 176, 166, List.of(new MachineLayout.Pos(56, 25), new MachineLayout.Pos(56, 47), new MachineLayout.Pos(116, 35)), 8, 84,
+            new MachineLayout.Rect(8, 16, 14, 54), 180, 0,
+            new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            null, 28, 6);
+
     public static final MachineLayout COMBUSTION_GENERATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/combustion_generator.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
             new MachineLayout.Rect(8, 16, 14, 54), 180, 0,

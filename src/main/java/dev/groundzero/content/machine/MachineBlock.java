@@ -87,8 +87,11 @@ public class MachineBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide() || type != this.type.get()) {
+        if (type != this.type.get()) {
             return null;
+        }
+        if (level.isClientSide()) {
+            return (lvl, pos, st, be) -> MachineClientHooks.clientTick.accept((MachineBlockEntity) be);
         }
         return (lvl, pos, st, be) -> ((MachineBlockEntity) be).serverTick((ServerLevel) lvl);
     }

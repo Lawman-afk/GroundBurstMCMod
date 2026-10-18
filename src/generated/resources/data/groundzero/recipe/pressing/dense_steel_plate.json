@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:pressing",
+  "catalyst": "groundzero:plate_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "#c:plates/steel"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:dense_steel_plate"
+      }
+    }
+  ],
+  "time": 200
+}

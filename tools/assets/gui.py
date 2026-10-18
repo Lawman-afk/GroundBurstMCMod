@@ -39,6 +39,28 @@ LAYOUTS = {
         "readout": None,
         "inventory": (8, 84),
     },
+    "arc_furnace": {
+        "title": (28, 6),
+        "slots": [("in", 56, 25), ("in", 56, 47), ("out_big", 116, 35), ("out", 146, 35)],
+        "energy": (8, 16, 14, 54),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
+    "industrial_press": {
+        "title": (28, 6),
+        "slots": [("in", 56, 25), ("die", 56, 47), ("out_big", 116, 35)],
+        "energy": (8, 16, 14, 54),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     "combustion_generator": {
         "title": (28, 6),
         "slots": [("fuel", 56, 53)],
@@ -94,6 +116,21 @@ def big_slot(t: Tex, x: int, y: int) -> None:
     t.panel(x - 4, y - 4, 26, 26, PANEL, base=2, style="inset")
     t.outline(x - 4, y - 4, 26, 26, PANEL.outline)
     slot(t, x, y)
+
+
+DIE_GHOST = ["................", "................", "................", "................", "......####......",
+             "....##....##....", "...#..####..#...", "...#.#....#.#...", "...##.####.##...", "...#.##..##.#...",
+             "...#...##...#...", "....##....##....", "......####......", "................", "................",
+             "................"]
+
+
+def die_slot(t: Tex, x: int, y: int) -> None:
+    """Catalyst slot with a ghosted die outline so players know what goes there."""
+    slot(t, x, y)
+    for yy, row in enumerate(DIE_GHOST):
+        for xx, c in enumerate(row):
+            if c == "#":
+                t.px(x + 1 + xx, y + 1 + yy, PANEL[2])
 
 
 def gauge_frame(t: Tex, x: int, y: int, w: int, h: int) -> None:
@@ -216,7 +253,7 @@ def build(name: str, spec: dict) -> Path:
     t = Tex(256, 256)
     window(t)
     for kind, x, y in spec["slots"]:
-        (big_slot if kind == "out_big" else slot)(t, x - 1, y - 1)
+        {"out_big": big_slot, "die": die_slot}.get(kind, slot)(t, x - 1, y - 1)
     ex, ey, ew, eh = spec["energy"]
     gauge_frame(t, ex, ey, ew, eh)
     t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)

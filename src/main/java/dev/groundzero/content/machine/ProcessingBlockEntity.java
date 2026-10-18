@@ -28,6 +28,9 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     private final ProcessingKind kind;
     private final int inputCount;
+    /** Index of the catalyst (die) slot, or -1. Sits between the inputs and the outputs. */
+    private final int catalystSlot;
+    private final int outputStart;
     private final int outputCount;
     private int progress;
     private int maxProgress;
@@ -35,9 +38,17 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
             int inputCount, int outputCount, int energyCapacity, int maxInsert) {
-        super(type, pos, state, energyCapacity, maxInsert, 0, inputCount + outputCount, range(0, inputCount), range(inputCount, outputCount));
+        this(type, pos, state, kind, inputCount, false, outputCount, energyCapacity, maxInsert);
+    }
+
+    protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
+            int inputCount, boolean catalyst, int outputCount, int energyCapacity, int maxInsert) {
+        super(type, pos, state, energyCapacity, maxInsert, 0, inputCount + (catalyst ? 1 : 0) + outputCount,
+                range(0, inputCount + (catalyst ? 1 : 0)), range(inputCount + (catalyst ? 1 : 0), outputCount));
         this.kind = kind;
         this.inputCount = inputCount;
+        this.catalystSlot = catalyst ? inputCount : -1;
+        this.outputStart = inputCount + (catalyst ? 1 : 0);
         this.outputCount = outputCount;
     }
 
@@ -51,17 +62,24 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        if (slot >= this.inputCount) {
+        if (slot >= this.outputStart) {
             return false;                // outputs are filled by the machine only
         }
         // Recipes live on the server; the client side of a menu stays permissive and the server corrects it.
-        return !(this.level instanceof ServerLevel server) || isRecipeInput(server, stack);
+        return !(this.level instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
     }
 
-    /** True if some recipe of this machine's kind uses the item as an ingredient. */
-    private boolean isRecipeInput(ServerLevel level, ItemStack stack) {
+    /** True if some recipe of this machine's kind uses the item as an ingredient (or as its catalyst). */
+    private boolean usedByRecipe(ServerLevel level, ItemStack stack, boolean asCatalyst) {
         for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GZRecipes.type(this.kind))) {
-            for (var ingredient : holder.value().inputs()) {
+            ProcessingRecipe recipe = holder.value();
+            if (asCatalyst) {
+                if (recipe.catalyst().isPresent() && recipe.catalyst().get().test(stack)) {
+                    return true;
+                }
+                continue;
+            }
+            for (var ingredient : recipe.inputs()) {
                 if (ingredient.ingredient().test(stack)) {
                     return true;
                 }
@@ -75,7 +93,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         for (int i = 0; i < this.inputCount; i++) {
             stacks.add(this.inventory.getItem(i));
         }
-        return new MachineRecipeInput(stacks);
+        return new MachineRecipeInput(stacks, this.catalystSlot >= 0 ? this.inventory.getItem(this.catalystSlot) : ItemStack.EMPTY);
     }
 
     private Optional<RecipeHolder<ProcessingRecipe>> findRecipe(ServerLevel level, MachineRecipeInput input) {
@@ -127,7 +145,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     private boolean outputsFit(ProcessingRecipe recipe) {
         List<ItemStack> simulated = new ArrayList<>();
         for (int i = 0; i < this.outputCount; i++) {
-            simulated.add(this.inventory.getItem(this.inputCount + i).copy());
+            simulated.add(this.inventory.getItem(this.outputStart + i).copy());
         }
         for (ProcessingRecipe.Output out : recipe.outputs()) {
             ItemStack remaining = out.item().create();
@@ -163,7 +181,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
             }
             ItemStack remaining = out.item().create();
             for (int i = 0; i < this.outputCount && !remaining.isEmpty(); i++) {
-                remaining = this.inventory.insertDirect(this.inputCount + i, remaining, false);
+                remaining = this.inventory.insertDirect(this.outputStart + i, remaining, false);
             }
         }
     }

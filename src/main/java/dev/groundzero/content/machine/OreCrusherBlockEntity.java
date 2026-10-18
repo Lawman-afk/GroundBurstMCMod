@@ -6,7 +6,9 @@ import com.geckolib.util.GeckoLibUtil;
 import dev.groundzero.content.recipe.ProcessingKind;
 import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZMenus;
+import dev.groundzero.registry.GZSounds;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -31,5 +33,10 @@ public class OreCrusherBlockEntity extends ProcessingBlockEntity implements Anim
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
+    }
+
+    @Override
+    public SoundEvent loopSound() {
+        return GZSounds.MACHINE_ORE_CRUSHER.get();
     }
 }

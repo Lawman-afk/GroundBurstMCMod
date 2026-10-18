@@ -3,6 +3,7 @@ package dev.groundzero.datagen;
 import java.util.Set;
 
 import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.machine.TallMachineBlock;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.content.resource.GZResources.Ore;
 import dev.groundzero.registry.GZBlocks;
@@ -11,6 +12,7 @@ import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
@@ -43,6 +45,9 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.COMBUSTION_GENERATOR.block().get());
         dropSelf(GZMachines.ORE_CRUSHER.block().get());
         GZMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
+        for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS)) {
+            add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
+        }
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());
         add(GZResources.SMALL_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.SMALL_EXOTIC_BUD.block().get()));
         add(GZResources.LARGE_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.LARGE_EXOTIC_BUD.block().get()));

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "D": "groundzero:dense_steel_plate",
+    "R": "#c:rods/steel"
+  },
+  "pattern": [
+    " D ",
+    "DRD",
+    " D "
+  ],
+  "result": {
+    "id": "groundzero:pressure_vessel"
+  }
+}

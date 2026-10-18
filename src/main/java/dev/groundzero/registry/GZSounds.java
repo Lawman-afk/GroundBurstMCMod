@@ -37,6 +37,16 @@ public final class GZSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_VERY_FAR =
             register("blast.nuke.very_far", "Far-off rumble", List.of("blast/nuke_very_far"), true, 4096);
 
+    // Machine work loops (2 s, seamless); played by the client while a machine's ACTIVE state is set.
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_COMBUSTION_GENERATOR =
+            register("machine.combustion_generator", "Generator chugs", List.of("machine/combustion_generator"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_ORE_CRUSHER =
+            register("machine.ore_crusher", "Ore Crusher grinds", List.of("machine/ore_crusher"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_ARC_FURNACE =
+            register("machine.arc_furnace", "Arc Furnace crackles", List.of("machine/arc_furnace"), false, 20);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_INDUSTRIAL_PRESS =
+            register("machine.industrial_press", "Industrial Press thumps", List.of("machine/industrial_press"), false, 20);
+
     private GZSounds() {}
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name, String subtitle, List<String> files,

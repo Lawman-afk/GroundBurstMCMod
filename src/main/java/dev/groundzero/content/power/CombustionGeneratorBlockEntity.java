@@ -12,9 +12,11 @@ import dev.groundzero.content.machine.MachineMenu;
 import dev.groundzero.content.machine.MachineStatus;
 import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZMenus;
+import dev.groundzero.registry.GZSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -143,5 +145,10 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
         super.loadAdditional(input);
         this.burn = input.getIntOr("burn", 0);
         this.burnTotal = input.getIntOr("burn_total", 0);
+    }
+
+    @Override
+    public SoundEvent loopSound() {
+        return GZSounds.MACHINE_COMBUSTION_GENERATOR.get();
     }
 }

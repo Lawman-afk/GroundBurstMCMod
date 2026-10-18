@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:pressing",
+  "catalyst": "groundzero:rod_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/tungsten"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:tungsten_rod"
+      }
+    }
+  ],
+  "time": 160
+}

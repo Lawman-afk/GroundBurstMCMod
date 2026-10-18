@@ -1356,3 +1356,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Machine inputs (GUI, hoppers, pipes) only accept items that are an ingredient of some recipe of that machine's kind; outputs are extract-only for automation. |
 | 2026-10-19 | Cables hold no energy: offers are delivered straight to the network's consumers, capped by the weakest cable tier on the network. |
 | 2026-10-19 | GeckoLib machines render their item form with GeckoLib's special item model over a `block/block`-parented base model (standard display transforms). |
+| 2026-10-19 | Two-block machines are door-style `TallMachineBlock`s: the lower half owns the block entity and loot; the upper half forwards use and capabilities. |
+| 2026-10-19 | Industrial Press dies are recipe catalysts (`catalyst` field), never consumed; dies are cheap iron crafts so the press is part of the bootstrap. |
+| 2026-10-19 | Machine work sounds are 2 s seamless loops whose rhythm matches each model's animation (press impact at 1.0 s). |

@@ -1,0 +1,22 @@
+{
+  "type": "groundzero:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/iron"
+    },
+    {
+      "count": 1,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:steel_ingot"
+      }
+    }
+  ],
+  "time": 200
+}

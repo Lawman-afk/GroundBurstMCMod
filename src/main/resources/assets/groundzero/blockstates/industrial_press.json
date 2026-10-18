@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "active=false,facing=north,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=north,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=north,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=north,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=east,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=east,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=east,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=east,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=south,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=south,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=south,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=south,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=west,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=false,facing=west,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=west,half=lower": {
+      "model": "groundzero:block/industrial_press"
+    },
+    "active=true,facing=west,half=upper": {
+      "model": "groundzero:block/industrial_press"
+    }
+  }
+}

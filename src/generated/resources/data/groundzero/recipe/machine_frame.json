@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "#groundzero:basic_circuits",
+    "P": "#c:plates/steel",
+    "R": "#c:rods/steel"
+  },
+  "pattern": [
+    "RPR",
+    "PCP",
+    "RPR"
+  ],
+  "result": {
+    "id": "groundzero:machine_frame"
+  }
+}

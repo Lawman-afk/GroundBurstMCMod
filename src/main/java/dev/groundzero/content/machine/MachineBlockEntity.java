@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.ContainerData;
@@ -103,6 +104,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     /** EMP hook: Phase 12 makes EMP fields disable machines here. Until then nothing can disable a machine. */
     protected boolean isEmpDisabled() {
         return false;
+    }
+
+    /** The work loop the client plays while this machine is ACTIVE, or null for a silent machine. */
+    public @Nullable SoundEvent loopSound() {
+        return null;
     }
 
     // --- capabilities ------------------------------------------------------------------------------------------------------

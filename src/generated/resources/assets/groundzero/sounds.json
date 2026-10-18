@@ -47,5 +47,35 @@
       "groundzero:geiger/click4"
     ],
     "subtitle": "subtitles.groundzero.geiger.click"
+  },
+  "machine.arc_furnace": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/arc_furnace"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.arc_furnace"
+  },
+  "machine.combustion_generator": {
+    "sounds": [
+      "groundzero:machine/combustion_generator"
+    ],
+    "subtitle": "subtitles.groundzero.machine.combustion_generator"
+  },
+  "machine.industrial_press": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/industrial_press"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.industrial_press"
+  },
+  "machine.ore_crusher": {
+    "sounds": [
+      "groundzero:machine/ore_crusher"
+    ],
+    "subtitle": "subtitles.groundzero.machine.ore_crusher"
   }
 }

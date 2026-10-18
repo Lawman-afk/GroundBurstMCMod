@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 
 import dev.groundzero.GroundZero;
 import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.part.GZParts;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.content.resource.GZResources.Ore;
 import dev.groundzero.registry.GZBlocks.WithItem;
@@ -79,7 +80,8 @@ public final class GZTagProviders {
                     GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key(),
                     GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
             tag(BlockTags.NEEDS_IRON_TOOL).add(GZResources.VOIDSTONE.block().key());
-            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.COMBUSTION_GENERATOR.block().key(), GZMachines.ORE_CRUSHER.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.COMBUSTION_GENERATOR.block().key(), GZMachines.ORE_CRUSHER.block().key(),
+                    GZMachines.ARC_FURNACE.block().key(), GZMachines.INDUSTRIAL_PRESS.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
@@ -126,6 +128,19 @@ public final class GZTagProviders {
             item("dusts/copper", GZResources.COPPER_DUST, Tags.Items.DUSTS);
             item("dusts/cinnabar", GZResources.CINNABAR_DUST, Tags.Items.DUSTS);
             item("gems/exotic_matter", GZResources.EXOTIC_SHARD, Tags.Items.GEMS);
+            item("ingots/steel", GZParts.STEEL_INGOT, Tags.Items.INGOTS);
+            item("ingots/cobalt", GZParts.COBALT_INGOT, Tags.Items.INGOTS);
+            item("ingots/tungsten_carbide", GZParts.TUNGSTEN_CARBIDE_INGOT, Tags.Items.INGOTS);
+            item("plates/steel", GZParts.STEEL_PLATE, GZTags.commonItem("plates"));
+            item("plates/copper", GZParts.COPPER_PLATE, GZTags.commonItem("plates"));
+            item("plates/lead", GZParts.LEAD_PLATE, GZTags.commonItem("plates"));
+            item("plates/tungsten", GZParts.TUNGSTEN_PLATE, GZTags.commonItem("plates"));
+            item("rods/steel", GZParts.STEEL_ROD, Tags.Items.RODS);
+            item("rods/tungsten", GZParts.TUNGSTEN_ROD, Tags.Items.RODS);
+            item("wires/copper", GZParts.COPPER_WIRE, GZTags.commonItem("wires"));
+            item("wires/gold", GZParts.GOLD_WIRE, GZTags.commonItem("wires"));
+            tag(GZTags.BASIC_CIRCUITS).add(GZParts.HANDMADE_CIRCUIT_BOARD.key());
+            tag(GZTags.PRESS_DIES).add(GZParts.PLATE_DIE.key(), GZParts.ROD_DIE.key(), GZParts.WIRE_DIE.key(), GZParts.CANISTER_DIE.key());
             tag(GZTags.RADIOACTIVE.item()).add(GZResources.RAW_URANIUM.key(), GZResources.URANIUM_INGOT.key(), GZResources.URANIUM_DUST.key());
         }
 

@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:pressing",
+  "catalyst": "groundzero:plate_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/lead"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:lead_plate"
+      }
+    }
+  ],
+  "time": 100
+}

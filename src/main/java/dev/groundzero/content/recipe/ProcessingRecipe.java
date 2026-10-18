@@ -1,6 +1,7 @@
 package dev.groundzero.content.recipe;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -12,6 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
@@ -22,11 +24,16 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /**
  * One machine process: counted item inputs -> outputs (each with a chance), taking `time` ticks at
- * `energyPerTick` FE/t. Every processing machine uses this shape; the {@link ProcessingKind} decides which
- * machine runs it.
+ * `energyPerTick` FE/t. An optional catalyst (e.g. an Industrial Press die) must sit in the machine's catalyst slot
+ * and is not consumed. Every processing machine uses this shape; the {@link ProcessingKind} decides which machine
+ * runs it.
  */
-public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick)
-        implements Recipe<MachineRecipeInput> {
+public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst, List<Output> outputs,
+        int time, int energyPerTick) implements Recipe<MachineRecipeInput> {
+
+    public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick) {
+        this(kind, inputs, Optional.empty(), outputs, time, energyPerTick);
+    }
 
     /** A product; `chance` < 1 makes it a byproduct. */
     public record Output(ItemStackTemplate item, float chance) {
@@ -41,24 +48,29 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     static MapCodec<ProcessingRecipe> codec(ProcessingKind kind) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 SizedIngredient.NESTED_CODEC.listOf(1, 9).fieldOf("inputs").forGetter(ProcessingRecipe::inputs),
+                Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
                 Output.CODEC.listOf(1, 9).fieldOf("outputs").forGetter(ProcessingRecipe::outputs),
                 ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
                 ExtraCodecs.NON_NEGATIVE_INT.fieldOf("energy_per_tick").forGetter(ProcessingRecipe::energyPerTick)
-        ).apply(i, (in, out, time, fe) -> new ProcessingRecipe(kind, in, out, time, fe)));
+        ).apply(i, (in, cat, out, time, fe) -> new ProcessingRecipe(kind, in, cat, out, time, fe)));
     }
 
     static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
         return StreamCodec.composite(
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
+                Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, ProcessingRecipe::catalyst,
                 Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::time,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::energyPerTick,
-                (in, out, time, fe) -> new ProcessingRecipe(kind, in, out, time, fe));
+                (in, cat, out, time, fe) -> new ProcessingRecipe(kind, in, cat, out, time, fe));
     }
 
     /** Every ingredient must be satisfied by a different input slot holding at least its count. */
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
+        if (this.catalyst.isPresent() && !this.catalyst.get().test(input.catalyst())) {
+            return false;
+        }
         return assignSlots(input) != null;
     }
 

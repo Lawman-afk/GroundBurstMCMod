@@ -13,6 +13,11 @@ public final class GZTags {
     /** Blocks and items that emit radiation (strength comes from a data map in Phase 12). */
     public static final BlockItemTagId RADIOACTIVE = BlockItemTagId.create(GroundZero.id("radioactive"), GroundZero.id("radioactive"));
 
+    /** Anything that counts as a basic circuit in recipes (the Handmade Circuit Board until the Circuit Fabricator). */
+    public static final TagKey<Item> BASIC_CIRCUITS = TagKey.create(Registries.ITEM, GroundZero.id("basic_circuits"));
+    /** Industrial Press dies. */
+    public static final TagKey<Item> PRESS_DIES = TagKey.create(Registries.ITEM, GroundZero.id("press_dies"));
+
     private GZTags() {}
 
     /** A convention tag pair like c:ores/uranium. */
