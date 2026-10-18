@@ -1,0 +1,42 @@
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+### IDEs ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+.run/
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+.vscode/
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Minecraft modding ###
+run/
+!**/src/**/run/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
+### Asset pipeline ###
+__pycache__/
+*.pyc
+tools/out/

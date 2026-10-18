@@ -1,0 +1,174 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+sourceSets.main.resources {
+    // Resources produced by the data generators (models, blockstates, recipes, loot, tags, lang).
+    srcDir('src/generated/resources')
+
+    exclude("**/*.bbmodel")
+    exclude("src/generated/**/.cache")
+}
+
+repositories {
+    // Optional integrations (GeckoLib, JEI, Modonomicon) get their repositories here when their phase starts.
+}
+
+base {
+    archivesName = mod_id
+}
+
+// Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // Launches a GameTestServer, runs every registered gametest for this mod, then exits.
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            clientData()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// Runtime-only dependencies for dev testing that must not leak into the published metadata.
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Deployment: every `build` ends with the fresh jar in the CurseForge test instance.
+// ---------------------------------------------------------------------------------------------
+
+abstract class DeployToInstance extends DefaultTask {
+    @InputFile
+    abstract RegularFileProperty getJarFile()
+
+    @Internal
+    abstract DirectoryProperty getModsDir()
+
+    @Input
+    abstract Property<String> getModId()
+
+    @Inject
+    abstract FileSystemOperations getFs()
+
+    @TaskAction
+    void deploy() {
+        File dir = modsDir.get().asFile
+        if (!dir.parentFile.isDirectory()) {
+            throw new GradleException("CurseForge instance not found at ${dir.parentFile}. " +
+                    "Set deploy_instance_dir in gradle.properties or pass -Pdeploy_instance_dir=<path>.")
+        }
+        dir.mkdirs()
+
+        // Remove every previous build of this mod (any version) so only one copy is ever loaded.
+        String prefix = modId.get() + '-'
+        dir.listFiles()
+                .findAll { it.isFile() && it.name.startsWith(prefix) && it.name.endsWith('.jar') }
+                .each { old ->
+                    if (!old.delete()) {
+                        throw new GradleException("Could not delete ${old} - is Minecraft still running from that instance?")
+                    }
+                    logger.lifecycle("Removed old jar ${old.name}")
+                }
+
+        File jar = jarFile.get().asFile
+        fs.copy {
+            from jar
+            into dir
+        }
+        logger.lifecycle("Deployed ${jar.name} -> ${dir}")
+    }
+}
+
+var instanceDir = providers.gradleProperty('deploy_instance_dir')
+        .filter { !it.isBlank() }
+        .orElse(providers.environmentVariable('USERPROFILE').map { "${it}/curseforge/minecraft/Instances/Mod Testing" })
+
+var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
+    group = 'deployment'
+    description = 'Copies the built mod jar into the CurseForge test instance, replacing older builds.'
+    jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
+    modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
+    modId = project.mod_id
+    outputs.upToDateWhen { false }
+}
+
+tasks.named('build') {
+    finalizedBy deployToInstance
+}
