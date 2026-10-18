@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 3 (resources & world generation) is next. Phases 0–2 done.
+**Current phase:** Phase 3 (resources & world generation) — content, art and datagen done; in-game verification pending. Phases 0–2 done.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -15,7 +15,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** |
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
-| 3 | Resources & world generation | todo |
+| 3 | Resources & world generation | in progress (built; needs in-game test) |
 | 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | todo |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |

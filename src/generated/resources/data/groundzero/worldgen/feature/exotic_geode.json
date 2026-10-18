@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:geode",
+  "blocks": {
+    "alternate_inner_layer_provider": {
+      "id": "groundzero:budding_voidstone"
+    },
+    "cannot_replace": "#minecraft:features_cannot_replace",
+    "filling_provider": {
+      "id": "minecraft:air"
+    },
+    "inner_layer_provider": {
+      "id": "groundzero:voidstone"
+    },
+    "inner_placements": [
+      "groundzero:small_exotic_bud",
+      "groundzero:large_exotic_bud",
+      "groundzero:exotic_crystal_cluster"
+    ],
+    "invalid_blocks": "#minecraft:geode_invalid_blocks",
+    "middle_layer_provider": {
+      "id": "minecraft:obsidian"
+    },
+    "outer_layer_provider": {
+      "id": "minecraft:crying_obsidian"
+    }
+  },
+  "crack": {
+    "generate_crack_chance": 0.6
+  },
+  "invalid_blocks_threshold": 1,
+  "layers": {},
+  "use_alternate_layer0_chance": 0.06,
+  "use_potential_placements_chance": 0.12
+}

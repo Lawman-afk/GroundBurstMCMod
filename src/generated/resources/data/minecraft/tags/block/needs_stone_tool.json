@@ -1,0 +1,17 @@
+{
+  "values": [
+    "groundzero:lithium_ore",
+    "groundzero:deepslate_lithium_ore",
+    "groundzero:sulfur_ore",
+    "groundzero:deepslate_sulfur_ore",
+    "groundzero:nether_sulfur_ore",
+    "groundzero:saltpeter_ore",
+    "groundzero:deepslate_saltpeter_ore",
+    "groundzero:sandstone_saltpeter_ore",
+    "groundzero:lead_ore",
+    "groundzero:deepslate_lead_ore",
+    "groundzero:lead_block",
+    "groundzero:raw_lithium_block",
+    "groundzero:raw_lead_block"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_lead_block": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:raw_lead_block"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:raw_lead_from_raw_lead_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_lead_block"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:raw_lead_from_raw_lead_block"
+    ]
+  }
+}

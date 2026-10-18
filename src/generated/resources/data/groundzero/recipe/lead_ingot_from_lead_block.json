@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundzero:lead_block"
+  ],
+  "result": {
+    "count": 9,
+    "id": "groundzero:lead_ingot"
+  }
+}

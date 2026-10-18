@@ -1,0 +1,16 @@
+{
+  "values": [
+    "groundzero:uranium_ore",
+    "groundzero:deepslate_uranium_ore",
+    "groundzero:tungsten_ore",
+    "groundzero:deepslate_tungsten_ore",
+    "groundzero:rare_earth_ore",
+    "groundzero:deepslate_rare_earth_ore",
+    "groundzero:uranium_block",
+    "groundzero:tungsten_block",
+    "groundzero:raw_uranium_block",
+    "groundzero:raw_tungsten_block",
+    "groundzero:raw_rare_earth_block",
+    "groundzero:voidstone"
+  ]
+}

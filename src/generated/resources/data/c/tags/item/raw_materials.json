@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#c:raw_materials/uranium",
+    "#c:raw_materials/lithium",
+    "#c:raw_materials/tungsten",
+    "#c:raw_materials/lead",
+    "#c:raw_materials/rare_earth"
+  ]
+}

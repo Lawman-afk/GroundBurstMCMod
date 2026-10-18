@@ -158,20 +158,99 @@ def all_faces(tex_id: str) -> dict[str, str]:
     return {d: tex_id for d in DIRS}
 
 
+def side_top_bottom(side: str, top: str, bottom: str) -> dict[str, str]:
+    return {"north": side, "south": side, "east": side, "west": side, "up": top, "down": bottom}
+
+
+STONE = all_faces("minecraft:block/stone")
+DEEPSLATE = all_faces("minecraft:block/deepslate")
+NETHERRACK = all_faces("minecraft:block/netherrack")
+SANDSTONE = side_top_bottom("minecraft:block/sandstone", "minecraft:block/sandstone_top", "minecraft:block/sandstone_bottom")
+
+
+def _ore(name: str, host: dict[str, str], paint: Callable[[Tex], None], glint: Tex | None = None) -> Path:
+    ore = Tex(16, 16)
+    paint(ore)
+    ore.save(paths.TEXTURES / "block" / "ore" / f"{name}.png")
+    glint_id = None
+    if glint is not None:
+        glint.save(paths.TEXTURES / "block" / "ore" / f"{name}_glint.png")
+        glint_id = f"groundzero:block/ore/{name}_glint"
+    return write_json(paths.MODELS / "block" / f"{name}.json", ore_model(name, host, f"groundzero:block/ore/{name}", glint_id))
+
+
 def build_uranium() -> list[Path]:
     out = []
     for variant, deposits, crusts, host, seed in (
-        ("uranium_ore", URANIUM_STONE, URANIUM_STONE_CRUSTS, all_faces("minecraft:block/stone"), 11),
-        ("deepslate_uranium_ore", URANIUM_DEEPSLATE, URANIUM_DEEPSLATE_CRUSTS, all_faces("minecraft:block/deepslate"), 23),
+        ("uranium_ore", URANIUM_STONE, URANIUM_STONE_CRUSTS, STONE, 11),
+        ("deepslate_uranium_ore", URANIUM_DEEPSLATE, URANIUM_DEEPSLATE_CRUSTS, DEEPSLATE, 23),
     ):
         ore, glint = paint_pitchblende(deposits, crusts, glint_pick=3, seed=seed)
-        ore.save(paths.TEXTURES / "block" / "ore" / f"{variant}.png")
-        glint.save(paths.TEXTURES / "block" / "ore" / f"{variant}_glint.png")
-        model = ore_model(variant, host, f"groundzero:block/ore/{variant}", f"groundzero:block/ore/{variant}_glint")
-        out.append(write_json(paths.MODELS / "block" / f"{variant}.json", model))
+        out.append(_ore(variant, host, lambda t, ore=ore: t.blit(ore, 0, 0), glint))
+    return out
+
+
+def build_others() -> list[Path]:
+    import minerals as M
+    out = []
+    # Lithium: spodumene laths in crossing sprays.
+
+    out.append(_ore("lithium_ore", STONE, lambda t: M.spodumene(t, [(2, 7, 3, 6, 1), (6, 6, 2, 4, 2), (10, 6, 3, 5, -1), (4, 15, 3, 5, 2), (10, 15, 2, 4, -2), (13, 14, 2, 3, 0)])))
+    out.append(_ore("deepslate_lithium_ore", DEEPSLATE, lambda t: M.spodumene(t, [(1, 6, 2, 4, 1), (4, 7, 3, 6, -1), (11, 5, 3, 5, 1), (7, 14, 3, 6, 1), (12, 15, 2, 4, -2), (2, 15, 2, 3, 0)])))
+    # Sulfur: crusts; nether variant denser and warmer.
+    out.append(_ore("sulfur_ore", STONE, lambda t: M.granular(t, M.SULFUR, [(4, 4, 2.4, 1.8), (11.5, 3.5, 1.8, 1.5), (6, 11, 2.6, 2.0), (12.5, 11.5, 1.6, 1.8), (1.5, 8.5, 1.0, 1.0)], 31)))
+    out.append(_ore("deepslate_sulfur_ore", DEEPSLATE, lambda t: M.granular(t, M.SULFUR, [(5, 3, 2.2, 1.6), (12, 6, 2.0, 2.0), (3.5, 11.5, 2.0, 1.6), (10.5, 12.5, 2.4, 1.7), (8, 8, 1.0, 0.9)], 32)))
+    out.append(_ore("nether_sulfur_ore", NETHERRACK, lambda t: M.granular(t, M.SULFUR, [(3.5, 3.5, 2.2, 2.0), (10, 2.5, 2.6, 1.6), (13, 8, 1.8, 2.2), (5, 9.5, 2.4, 1.8), (10, 13, 2.6, 1.8), (2, 14, 1.2, 1.0)], 33)))
+    # Saltpeter: white crusts with needles; sandstone variant sits on desert rock.
+    out.append(_ore("saltpeter_ore", STONE, lambda t: M.niter(t, [(4, 5, 2.4, 1.6), (12, 4, 1.8, 1.4), (7, 12, 2.6, 1.6), (13, 12, 1.4, 1.2)], 41)))
+    out.append(_ore("deepslate_saltpeter_ore", DEEPSLATE, lambda t: M.niter(t, [(5, 4, 2.2, 1.6), (12, 8, 2.0, 1.5), (4, 12, 2.4, 1.5), (11.5, 13, 1.6, 1.2)], 42)))
+    out.append(_ore("sandstone_saltpeter_ore", SANDSTONE, lambda t: M.niter(t, [(3.5, 3.5, 2.0, 1.4), (11, 4.5, 2.4, 1.6), (5, 11, 2.6, 1.6), (12.5, 12, 1.8, 1.3)], 43)))
+    # Tungsten: dark tabular wolframite.
+    out.append(_ore("tungsten_ore", STONE, lambda t: M.wolframite(t, [(2, 2, 4, 3), (10, 3, 3, 4), (5, 9, 5, 3), (12, 11, 3, 3), (1, 12, 2, 2)])))
+    out.append(_ore("deepslate_tungsten_ore", DEEPSLATE, lambda t: M.wolframite(t, [(3, 1, 3, 4), (9, 2, 5, 3), (2, 9, 4, 4), (10, 10, 4, 3), (7, 7, 2, 2)])))
+    # Lead: galena cubes.
+    out.append(_ore("lead_ore", STONE, lambda t: M.galena(t, [(2, 2, 3), (6, 4, 2), (11, 2, 3), (4, 10, 3), (9, 9, 2), (12, 11, 3), (1, 7, 2)])))
+    out.append(_ore("deepslate_lead_ore", DEEPSLATE, lambda t: M.galena(t, [(3, 1, 3), (10, 3, 3), (7, 7, 2), (2, 11, 3), (11, 11, 2), (13, 8, 2), (6, 13, 2)])))
+    # Rare earths: monazite grains.
+    out.append(_ore("rare_earth_ore", STONE, lambda t: M.monazite(t, [(3.5, 3.5, 1.6), (6, 5.5, 1.0), (12, 4, 1.4), (5, 11.5, 1.7), (11.5, 11, 1.3), (13.5, 13.5, 0.9), (9, 8, 0.8)])))
+    out.append(_ore("deepslate_rare_earth_ore", DEEPSLATE, lambda t: M.monazite(t, [(4, 3, 1.4), (11, 2.5, 1.6), (13, 7, 1.0), (3, 10, 1.6), (10, 11.5, 1.5), (7, 13.5, 1.0), (7.5, 7, 0.9)])))
+    return out
+
+
+ALL_ORES = ["uranium_ore", "deepslate_uranium_ore", "lithium_ore", "deepslate_lithium_ore", "sulfur_ore",
+            "deepslate_sulfur_ore", "nether_sulfur_ore", "saltpeter_ore", "deepslate_saltpeter_ore",
+            "sandstone_saltpeter_ore", "tungsten_ore", "deepslate_tungsten_ore", "lead_ore", "deepslate_lead_ore",
+            "rare_earth_ore", "deepslate_rare_earth_ore"]
+
+
+def review_sheet(names: list[str], out_name: str, cell: int = 200) -> Path:
+    """Front-face close-up + iso view of each block side by side, labelled."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
+    import numpy as np
+    from PIL import Image, ImageDraw
+    import render as R
+    cols = 4
+    rows = (len(names) + cols - 1) // cols
+    sheet = Image.new("RGB", (cols * cell * 2, rows * (cell + 16)), (30, 32, 36))
+    d = ImageDraw.Draw(sheet)
+    light = np.array([0.4, 0.8, 0.45]); light /= np.linalg.norm(light)
+    for i, n in enumerate(names):
+        model = R.load_model(f"groundzero:block/{n}")
+        quads = R.build_quads(model)
+        c, e = R.model_bounds(quads)
+        x0, y0 = (i % cols) * cell * 2, (i // cols) * (cell + 16)
+        for k, (pitch, yaw, ext) in enumerate(((30, 225, e), (0, 180, 16.2))):
+            tile = R._checker(cell).convert("RGBA")
+            tile.alpha_composite(R.render(quads, cell, pitch, yaw, c, ext, light_dir=light))
+            sheet.paste(tile.convert("RGB"), (x0 + k * cell, y0))
+        d.text((x0 + 4, y0 + cell + 2), n, fill=(220, 220, 220))
+    out = paths.PREVIEWS / out_name
+    out.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(out)
     return out
 
 
 if __name__ == "__main__":
-    for p in build_uranium():
+    for p in build_uranium() + build_others():
         print(p)
+    print(review_sheet(ALL_ORES, "ores_review.png"))

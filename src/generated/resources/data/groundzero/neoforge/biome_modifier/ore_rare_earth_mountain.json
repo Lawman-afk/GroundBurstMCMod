@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#c:is_mountain",
+  "features": "groundzero:ore_rare_earth_mountain",
+  "step": "underground_ores"
+}

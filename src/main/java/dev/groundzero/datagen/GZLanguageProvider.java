@@ -18,6 +18,7 @@ public class GZLanguageProvider extends LanguageProvider {
         // Config classes record their labels in static initialisers; make sure both have run.
         GZServerConfig.SPEC.getClass();
         GZClientConfig.SPEC.getClass();
+        dev.groundzero.config.GZCommonConfig.SPEC.getClass();
 
         GZLang.entries().forEach(this::add);
     }

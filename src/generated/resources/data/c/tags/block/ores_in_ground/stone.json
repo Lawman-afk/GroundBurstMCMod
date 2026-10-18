@@ -1,0 +1,12 @@
+{
+  "values": [
+    "groundzero:uranium_ore",
+    "groundzero:lithium_ore",
+    "groundzero:sulfur_ore",
+    "groundzero:saltpeter_ore",
+    "groundzero:sandstone_saltpeter_ore",
+    "groundzero:tungsten_ore",
+    "groundzero:lead_ore",
+    "groundzero:rare_earth_ore"
+  ]
+}

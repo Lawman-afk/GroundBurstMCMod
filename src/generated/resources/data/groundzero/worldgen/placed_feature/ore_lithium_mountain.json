@@ -1,0 +1,31 @@
+{
+  "feature": "groundzero:ore_lithium_mountain",
+  "placement": [
+    {
+      "type": "groundzero:config_toggle",
+      "toggle": "lithium"
+    },
+    {
+      "type": "minecraft:count",
+      "count": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 128
+        },
+        "min_inclusive": {
+          "absolute": 16
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

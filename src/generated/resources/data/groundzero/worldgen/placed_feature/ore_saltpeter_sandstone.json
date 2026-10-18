@@ -1,0 +1,31 @@
+{
+  "feature": "groundzero:ore_saltpeter_sandstone",
+  "placement": [
+    {
+      "type": "groundzero:config_toggle",
+      "toggle": "saltpeter"
+    },
+    {
+      "type": "minecraft:count",
+      "count": 8
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 100
+        },
+        "min_inclusive": {
+          "absolute": 40
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

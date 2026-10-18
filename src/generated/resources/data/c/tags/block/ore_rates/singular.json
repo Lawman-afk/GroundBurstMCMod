@@ -1,0 +1,14 @@
+{
+  "values": [
+    "groundzero:uranium_ore",
+    "groundzero:deepslate_uranium_ore",
+    "groundzero:lithium_ore",
+    "groundzero:deepslate_lithium_ore",
+    "groundzero:tungsten_ore",
+    "groundzero:deepslate_tungsten_ore",
+    "groundzero:lead_ore",
+    "groundzero:deepslate_lead_ore",
+    "groundzero:rare_earth_ore",
+    "groundzero:deepslate_rare_earth_ore"
+  ]
+}

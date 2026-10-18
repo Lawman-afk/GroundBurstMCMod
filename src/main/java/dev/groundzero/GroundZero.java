@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import dev.groundzero.config.GZCommonConfig;
 import dev.groundzero.config.GZServerConfig;
+import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.datagen.GZDataGen;
 import dev.groundzero.gametest.GZGameTests;
 import dev.groundzero.network.GZNetwork;
@@ -13,6 +15,7 @@ import dev.groundzero.registry.GZCreativeTabs;
 import dev.groundzero.registry.GZItems;
 import dev.groundzero.registry.GZLang;
 import dev.groundzero.registry.GZSounds;
+import dev.groundzero.world.GZWorldgen;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -25,10 +28,13 @@ public class GroundZero {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public GroundZero(IEventBus modBus, ModContainer modContainer) {
+        GZResources.init();
+
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);
         GZCreativeTabs.TABS.register(modBus);
         GZSounds.SOUNDS.register(modBus);
+        GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);
 
         GZNetwork.register(modBus);
         GZDataGen.register(modBus);
@@ -36,6 +42,7 @@ public class GroundZero {
 
         GZLang.add(MODID + ".configuration.title", "Ground Zero Settings");
         modContainer.registerConfig(ModConfig.Type.SYNCED, GZServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.LOCAL, GZCommonConfig.SPEC);
     }
 
     public static Identifier id(String path) {

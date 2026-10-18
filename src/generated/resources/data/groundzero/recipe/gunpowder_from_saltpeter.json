@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundzero:saltpeter_dust",
+    "groundzero:saltpeter_dust",
+    "groundzero:sulfur_dust",
+    "minecraft:charcoal"
+  ],
+  "result": {
+    "count": 4,
+    "id": "minecraft:gunpowder"
+  }
+}

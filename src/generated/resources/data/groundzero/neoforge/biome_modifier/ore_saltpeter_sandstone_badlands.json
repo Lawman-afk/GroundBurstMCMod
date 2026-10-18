@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_badlands",
+  "features": "groundzero:ore_saltpeter_sandstone_badlands",
+  "step": "underground_ores"
+}

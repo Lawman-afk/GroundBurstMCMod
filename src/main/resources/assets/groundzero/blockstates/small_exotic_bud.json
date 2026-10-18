@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "groundzero:block/small_exotic_bud"
+    },
+    "facing=down": {
+      "model": "groundzero:block/small_exotic_bud",
+      "x": 180
+    },
+    "facing=north": {
+      "model": "groundzero:block/small_exotic_bud",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "groundzero:block/small_exotic_bud",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east": {
+      "model": "groundzero:block/small_exotic_bud",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west": {
+      "model": "groundzero:block/small_exotic_bud",
+      "x": 90,
+      "y": 270
+    }
+  }
+}
