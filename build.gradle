@@ -20,7 +20,15 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Optional integrations (GeckoLib, JEI, Modonomicon) get their repositories here when their phase starts.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'GeckoLib'
+                url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+            }
+        }
+        filter { includeGroup 'com.geckolib' }
+    }
 }
 
 base {
@@ -77,6 +85,8 @@ configurations {
 }
 
 dependencies {
+    // Animated models (missiles, launchers, silo doors, radar dishes, guns, machines). The one hard dependency.
+    implementation "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -90,6 +100,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_version            : mod_version,
             mod_authors            : mod_authors,
             mod_description        : mod_description,
+            geckolib_version       : geckolib_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -124,6 +135,10 @@ abstract class DeployToInstance extends DefaultTask {
     @Input
     abstract Property<String> getModId()
 
+    /** Required mods (e.g. GeckoLib) to install if the instance has no copy of them yet. */
+    @InputFiles
+    abstract ConfigurableFileCollection getDependencyJars()
+
     @Inject
     abstract FileSystemOperations getFs()
 
@@ -153,7 +168,34 @@ abstract class DeployToInstance extends DefaultTask {
             into dir
         }
         logger.lifecycle("Deployed ${jar.name} -> ${dir}")
+
+        // Required dependencies: install only when the instance has none, so a copy installed through the
+        // CurseForge app (any version) is never duplicated or replaced.
+        dependencyJars.files.each { dep ->
+            String key = dep.name.toLowerCase(Locale.ROOT).split('-')[0]
+            File existing = dir.listFiles().find { it.isFile() && it.name.toLowerCase(Locale.ROOT).startsWith(key) && it.name.endsWith('.jar') }
+            if (existing != null) {
+                logger.lifecycle("Dependency ${key} already present (${existing.name})")
+            } else {
+                fs.copy {
+                    from dep
+                    into dir
+                }
+                logger.lifecycle("Installed dependency ${dep.name} -> ${dir}")
+            }
+        }
     }
+}
+
+configurations {
+    deployDependencies {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+
+dependencies {
+    deployDependencies "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
 }
 
 var instanceDir = providers.gradleProperty('deploy_instance_dir')
@@ -166,6 +208,7 @@ var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
+    dependencyJars.from(configurations.deployDependencies)
     outputs.upToDateWhen { false }
 }
 

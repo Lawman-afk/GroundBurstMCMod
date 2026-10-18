@@ -1,0 +1,51 @@
+{
+  "blast.nuke.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/nuke_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.nuke.far"
+  },
+  "blast.nuke.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/nuke_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.nuke.mid"
+  },
+  "blast.nuke.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/nuke_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.nuke.near"
+  },
+  "blast.nuke.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 4096,
+        "name": "groundzero:blast/nuke_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.nuke.very_far"
+  },
+  "geiger.click": {
+    "sounds": [
+      "groundzero:geiger/click1",
+      "groundzero:geiger/click2",
+      "groundzero:geiger/click3",
+      "groundzero:geiger/click4"
+    ],
+    "subtitle": "subtitles.groundzero.geiger.click"
+  }
+}

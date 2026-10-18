@@ -16,5 +16,6 @@ public final class GZDataGen {
 
     private static void gather(GatherDataEvent.Client event) {
         event.createProvider(GZLanguageProvider::new);
+        event.createProvider(GZSoundDefinitions::new);
     }
 }

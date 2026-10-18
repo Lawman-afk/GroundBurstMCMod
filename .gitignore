@@ -40,3 +40,4 @@ repo/
 __pycache__/
 *.pyc
 tools/out/
+tools/.venv/

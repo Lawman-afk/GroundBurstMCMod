@@ -52,5 +52,10 @@
   "itemGroup.groundzero.nuclear": "Ground Zero: Nuclear & Special",
   "itemGroup.groundzero.ordnance": "Ground Zero: Ordnance",
   "itemGroup.groundzero.resources": "Ground Zero: Resources",
-  "itemGroup.groundzero.superweapons": "Ground Zero: Superweapons"
+  "itemGroup.groundzero.superweapons": "Ground Zero: Superweapons",
+  "subtitles.groundzero.blast.nuke.far": "Distant nuclear detonation",
+  "subtitles.groundzero.blast.nuke.mid": "Nuclear detonation rumbles",
+  "subtitles.groundzero.blast.nuke.near": "Nuclear detonation",
+  "subtitles.groundzero.blast.nuke.very_far": "Far-off rumble",
+  "subtitles.groundzero.geiger.click": "Geiger counter clicks"
 }

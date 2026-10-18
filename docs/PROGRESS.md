@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 2 (asset pipeline). Phases 0–1 done.
+**Current phase:** Phase 3 (resources & world generation) is next. Phases 0–2 done.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -14,7 +14,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 |---|---|---|
 | 0 | Research & design: toolchain, instance, DESIGN.md, roadmap | **done** |
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
-| 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | in progress |
+| 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | todo |
 | 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | todo |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
@@ -69,16 +69,24 @@ checklist for the user.
 ## Phase 2 — Asset pipeline
 | Item | Status |
 |---|---|
-| `tools/gz/palette.py` material ramps | todo |
-| `tools/gz/tex.py` pixel-art primitives (bevels, rivets, seams, stripes, decals, stencil font, wear, emissive masks) | todo |
-| `tools/gz/model.py` model DSL → block/item JSON with display transforms | todo |
-| GeckoLib geo + animation JSON export | todo |
-| `tools/preview/render.py` software renderer + contact sheets | todo |
-| `tools/sound/synth.py` synthesis toolkit + OGG export + distance variants | todo |
+| Project Python venv (`tools/.venv`, `tools/requirements.txt`) | done |
+| `tools/gz/palette.py` material ramps (OKLCH, hue-shifted) | done |
+| `tools/gz/tex.py` pixel-art primitives (bevels, rivets, seams, stripes, decals, stencil font, trefoil/placards, seeded wear, glow layers) | done |
+| `tools/gz/model.py` block/item model DSL (auto UV layout, face painting, display fitting) | done |
+| `tools/gz/shapes.py` stepped cylinders with baked curvature lighting | done |
+| `tools/gz/geo.py` GeckoLib geo + animation export (conventions verified against GeckoLib 5.5.7 source) | done (GeckoLib loads it: "Loaded 1 models and 1 animations") |
+| `tools/preview/render.py` block-model renderer + contact sheets + true-size inventory icon | done |
+| `tools/preview/geo_preview.py` GeckoLib renderer + animation frames | done |
+| `tools/sound/synth.py`, `recipes.py`, `review.py` (synthesis, OGG, distance variants, spectrogram review) | done |
 | `tools/structure/nbt.py` NBT writer + `template.py` structure templates | done (used for GameTest structures) |
-| GUI texture toolkit (panels, CRT, gauges, buttons, bars, stencil font) | todo |
-| Style guide page with palette swatches & sample assets | todo |
-| Pilot assets approved (1 ore, 1 machine, 1 bomb, 1 sound) | todo |
+| GeckoLib dependency + auto-install into the test instance | done |
+| `GZSounds` registry + `sounds.json` datagen with subtitles | done |
+| GUI texture toolkit (panels, CRT, gauges, buttons, bars) | moved to Phase 4 (built with the first machine GUI) |
+| Style guide (`docs/style/`: palette swatches + pilot previews) | done |
+| Pilot: uranium ore (stone + deepslate, 3-layer with glints) | previewed → revised ×3 → approved for pipeline; final pass with all ores in Phase 3 |
+| Pilot: Fission Bomb block model (87 elements) | previewed → revised ×4; final pass in Phase 8 |
+| Pilot: Ore Crusher GeckoLib model + "working" animation | previewed → revised ×1; final pass in Phase 4 |
+| Pilot: sounds — Geiger clicks ×4, nuclear blast near/mid/far/very far | spectrogram-reviewed; **needs in-game listen** (`/playsound`) |
 
 ## Phase 3 — Resources & world generation
 | Item | Status |
@@ -96,6 +104,7 @@ checklist for the user.
 ## Phase 4 — Power, machines, multiblocks
 | Item | Status |
 |---|---|
+| GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | todo |
 | Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | todo |
 | Cables (copper, insulated, HV) with connected models | todo |
 | Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | todo |

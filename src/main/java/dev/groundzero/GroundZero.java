@@ -12,6 +12,7 @@ import dev.groundzero.registry.GZBlocks;
 import dev.groundzero.registry.GZCreativeTabs;
 import dev.groundzero.registry.GZItems;
 import dev.groundzero.registry.GZLang;
+import dev.groundzero.registry.GZSounds;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -27,6 +28,7 @@ public class GroundZero {
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);
         GZCreativeTabs.TABS.register(modBus);
+        GZSounds.SOUNDS.register(modBus);
 
         GZNetwork.register(modBus);
         GZDataGen.register(modBus);

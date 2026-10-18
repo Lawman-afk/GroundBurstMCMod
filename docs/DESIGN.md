@@ -163,15 +163,26 @@ tune radii without code, and keeps the visual and damage numbers in one place.
 - **Original assets only.** C&C Generals / Rival Rebels / ICBM inspire *themes*; no textures, models or sounds are
   copied or traced.
 
-### 4.2 Pipeline (`tools/`)
+### 4.2 Pipeline (`tools/`, built in Phase 2)
+Run everything with the project venv: `tools\.venv\Scripts\python.exe` (numpy, Pillow, scipy, soundfile — see
+`tools/requirements.txt`; create with `python -m venv tools\.venv` + `pip install -r tools\requirements.txt`).
+
 | Tool | Purpose |
 |---|---|
-| `tools/gz/palette.py`, `tex.py` | Palette ramps + pixel-art primitives: bevelled panels, rivets, seams, stripes, decals, stencil font, wear stamps, emissive masks. Each texture is a short script composed from these. |
-| `tools/gz/model.py` | Python DSL for models. Emits **Blockbench-compatible block/item JSON** (with `display` transforms for GUI, ground, fixed, 1st/3rd person) and **GeckoLib geo + animation JSON** (bones, pivots, per-face UV). Auto-UV packing into a per-model texture. |
-| `tools/preview/render.py` | Software rasteriser (numpy): loads model JSON/geo + textures, renders front/side/back/top/¾ views, GUI icon, in-hand and on-ground views, emissive glow pass, into a contact sheet PNG. Every model is reviewed through this before it is marked done. |
-| `tools/sound/synth.py` | numpy synthesis toolkit: noise generators, filters, envelopes, convolution reverb, distortion/saturation, pitch sweeps, layering. Outputs mono 44.1 kHz → OGG Vorbis. Distance variants generated from the same source (low-pass + reverb tail). |
-| `tools/structure/nbt.py` | NBT writer for structure templates (abandoned silos, bunkers…) built from Python layouts. |
-| `tools/build_assets.py` | Regenerates every asset deterministically; assets are committed. |
+| `tools/gz/palette.py` | OKLCH-generated 7-step ramps (`outline, deep, shadow, base, light, highlight, shine`) with hue shifting: shadows toward purple-blue (via red for warm hues, so yellows never turn green), highlights toward yellow. Hand-picked ramps for hazard colours. Swatches: `docs/style/palettes.png`. |
+| `tools/gz/tex.py` | `Tex` canvas + primitives: bevelled panels, rivets, seams, vents, grilles, hazard stripes, 3×5 stencil font, decals, trefoil, placards, seeded wear (corner-biased edge chips, scratches, drips, sparse speckle). |
+| `tools/gz/model.py` | Block/item model DSL: boxes → automatic shelf-packed per-face texture layout (texture height shrinks to fit) → paint each face as seen from outside → block JSON with `display` transforms. `fit_display()` fits oversized models into every slot (GUI fitted by projected silhouette). Supports XYZ/axis element rotation and `light_emission` (both verified in 26.3). |
+| `tools/gz/shapes.py` | Pixel-stepped cylinders and lathe profiles from non-overlapping row bands; `band_tone()` bakes smooth curvature lighting so round bodies don't look ribbed (those boxes use `shade:false`). |
+| `tools/gz/geo.py` | GeckoLib model + animation DSL authored in the same world orientation and paint conventions, exported to Bedrock geometry the way GeckoLib 5.5.7 reads it (X negated, up/down UVs rotated 180°, rotation X/Y negated). Files go to `assets/groundzero/geckolib/models/` and `geckolib/animations/`; glow layers as `<texture>_glowmask.png`. |
+| `tools/preview/render.py` | Numpy rasteriser replicating vanilla face/UV orientation, element rotations, directional shade, cutout, light emission; renders 8 views + true-size inventory icon into a contact sheet. |
+| `tools/preview/geo_preview.py` | Same for GeckoLib models, following GeckoLib's baking maths; renders animation frames. |
+| `tools/sound/synth.py`, `recipes.py`, `review.py` | Synthesis toolkit (noise colours, sweeps, grains, filters incl. time-varying low-pass, saturation, convolution reverb, echo, limiter, distance re-rendering) → mono 44.1 kHz OGG Vorbis; recipes per sound; review renders waveform + log spectrogram with peak/RMS/clipping readout. |
+| `tools/structure/nbt.py`, `template.py` | NBT writer and structure templates (26.3 block-state keys `id`/`properties`, data version 5023). |
+| `tools/assets/*.py` | One script per asset family (ores, fission bomb, ore crusher, …). Assets are generated deterministically and committed. |
+| `tools/style_guide.py` | Rebuilds `docs/style/` (palette swatches + reviewed pilot previews). |
+
+**Model conventions:** a model's front is its **north** face (like vanilla furnaces); block models use 0–16 units,
+GeckoLib models are centred on the block's bottom centre (x, z −8…8). 16 texture pixels per block everywhere.
 
 Each asset gets a "review" status in PROGRESS.md: *drafted → previewed → revised → approved*.
 
@@ -1336,3 +1347,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Long-range missiles are simulated analytically above build height (MissileTracker) instead of force-loading the whole path. |
 | 2026-10-19 | Blast profiles are a datapack registry so radii live in one place for damage and visuals. |
 | 2026-10-19 | User decisions D1–D6 recorded in §29 (Ground Zero, FE power, native Field Manual, GeckoLib, Railgun + Point-Defence Laser, announcements on). |
+| 2026-10-19 | GeckoLib is `com.geckolib:geckolib-neoforge-26.3:5.5.7` from the Cloudsmith repo. `deployToInstance` also installs the GeckoLib jar into the instance when no GeckoLib jar is present (never duplicates or replaces one installed via CurseForge). |
+| 2026-10-19 | Ores are three coplanar layers: vanilla host texture + our mineral overlay (cutout) + optional emissive glint layer — resource-pack friendly, nothing vanilla copied. |
+| 2026-10-19 | Bombs lie along Z with the nose north; M-class bombs are two blocks long (bed-like). Round bodies are stepped pixel cylinders with baked lighting (`shade:false`). |
+| 2026-10-19 | Sounds are reviewed visually (waveform + spectrogram) since they can't be auditioned here; the user auditions them in game with `/playsound`. |
