@@ -42,6 +42,8 @@
     "groundzero:item_port",
     "groundzero:reactor_glass",
     "groundzero:fluid_pipe",
+    "groundzero:copper_fluid_pipe",
+    "groundzero:pressurized_fluid_pipe",
     "groundzero:copper_cable",
     "groundzero:insulated_cable",
     "groundzero:hv_cable"

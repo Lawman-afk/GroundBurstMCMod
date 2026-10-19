@@ -1,7 +1,8 @@
-"""Fluid pipe (DESIGN.md §6.4): texture, multipart block models, item model.
+"""Fluid pipes (DESIGN.md §6.4), three tiers like the cables: texture, multipart block models, item model each.
 
-Look: a 6 px brushed-steel pipe with a bolted gunmetal flange at every joint, meeting the next pipe flange-to-flange
-at the block edge, and a squat bolted junction box at the centre. Same multipart scheme as the cables: a core model
+Look: a 6 px pipe with a bolted flange at every joint, meeting the next pipe flange-to-flange at the block edge, and
+a squat bolted junction box at the centre. Copper: copper tube, brass fittings. Steel: brushed steel, gunmetal
+fittings. Pressurized: dark armoured tube with red high-pressure fittings. Same multipart scheme as the cables: a core model
 plus one arm model rotated to each connected side; a side set to pull (Wrench) also gets a hazard-striped collar.
 """
 from __future__ import annotations
@@ -16,8 +17,12 @@ from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 
-NAME = "fluid_pipe"
-S, G = P.STEEL, P.GUNMETAL
+# id -> (tube ramp, fittings ramp, bolt colour)
+TIERS = {
+    "copper_fluid_pipe": (P.COPPER, P.BRASS, P.BRASS[6]),
+    "fluid_pipe": (P.STEEL, P.GUNMETAL, P.STEEL[5]),
+    "pressurized_fluid_pipe": (P.BLACK_PAINT, P.WARNING_RED, P.STEEL[5]),
+}
 
 # Texture regions (u0, v0, u1, v1).
 ARM_SIDE = (0, 0, 6, 4)       # pipe wall, 6 across x 3.5 long (stretched to 4)
@@ -28,7 +33,7 @@ COLLAR_FACE = (0, 9, 7, 16)   # pull collar ring (top/bottom)
 COLLAR_SIDE = (8, 15, 15, 16) # pull collar rim: hazard stripes mark an extracting side
 
 
-def texture() -> Tex:
+def texture(NAME: str, S, G, BOLT) -> Tex:
     t = Tex(16, 16)
     # Pipe wall: round tube shading across its width (lit edge, body, shadowed edge).
     for y in range(4):
@@ -41,7 +46,7 @@ def texture() -> Tex:
     t.hline(7, 6, 7, G[1])
     t.vline(13, 0, 7, G[2])
     for x, y in ((8, 1), (12, 1), (8, 5), (12, 5)):
-        t.px(x, y, S[5])
+        t.px(x, y, BOLT)
     t.rect(9, 2, 3, 3, G[4])                                   # raised boss
     t.hline(9, 2, 3, G[5])
     t.px(11, 4, G[2])
@@ -53,7 +58,7 @@ def texture() -> Tex:
     t.rect(10, 10, 3, 3, P.BLACK_PAINT.deep)                  # bore
     t.px(10, 10, G[1])
     for x, y in ((9, 9), (13, 9), (9, 13), (13, 13)):
-        t.px(x, y, S[5])                                       # bolts
+        t.px(x, y, BOLT)                                       # bolts
     # Pull collar: hazard-striped band, so an extracting side reads at a glance.
     for x in range(7):
         t.px(8 + x, 15, P.HAZARD_YELLOW[4] if (x // 2) % 2 == 0 else P.HAZARD_BLACK[3])
@@ -73,7 +78,7 @@ def face(uv, rotation: int = 0, cull: str | None = None) -> dict:
     return f
 
 
-def models() -> None:
+def models(NAME: str) -> None:
     tex = {"pipe": f"groundzero:block/{NAME}", "particle": f"groundzero:block/{NAME}"}
     core = {"from": [4.5, 4.5, 4.5], "to": [11.5, 11.5, 11.5],
             "faces": {d: face(CORE) for d in ("north", "south", "east", "west", "up", "down")}}
@@ -116,6 +121,7 @@ def models() -> None:
 
 
 if __name__ == "__main__":
-    texture()
-    models()
-    print("fluid pipe written")
+    for name, (tube, fit, bolt) in TIERS.items():
+        texture(name, tube, fit, bolt)
+        models(name)
+    print("fluid pipes written")

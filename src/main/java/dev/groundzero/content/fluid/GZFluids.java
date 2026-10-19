@@ -67,10 +67,20 @@ public final class GZFluids {
     public static final ChemFluid URANIUM_HEXAFLUORIDE = gas("uranium_hexafluoride", "Uranium Hexafluoride", 0xFFC6D06A, Hazard.TOXIC,
             GZChemicals.UF6_CANISTER);
 
-    /** Steel pipe that carries fluids between machines and tanks. */
-    public static final GZBlocks.WithItem<FluidPipeBlock> FLUID_PIPE = GZBlocks.register("fluid_pipe", "Fluid Pipe", GZTab.MACHINES,
-            FluidPipeBlock::new, p -> p.mapColor(MapColor.METAL).strength(2f, 6f).requiresCorrectToolForDrops()
-                    .sound(SoundType.COPPER).noOcclusion().forceSolidOn());
+    /** Fluid pipes in three tiers, like the cables (see {@link FluidPipeTier}). */
+    public static final GZBlocks.WithItem<FluidPipeBlock> COPPER_FLUID_PIPE = pipe(FluidPipeTier.COPPER);
+    public static final GZBlocks.WithItem<FluidPipeBlock> FLUID_PIPE = pipe(FluidPipeTier.STEEL);
+    public static final GZBlocks.WithItem<FluidPipeBlock> PRESSURIZED_FLUID_PIPE = pipe(FluidPipeTier.PRESSURIZED);
+
+    public static List<GZBlocks.WithItem<FluidPipeBlock>> pipes() {
+        return List.of(COPPER_FLUID_PIPE, FLUID_PIPE, PRESSURIZED_FLUID_PIPE);
+    }
+
+    private static GZBlocks.WithItem<FluidPipeBlock> pipe(FluidPipeTier tier) {
+        return GZBlocks.register(tier.id(), tier.english(), GZTab.MACHINES, p -> new FluidPipeBlock(p, tier),
+                p -> p.mapColor(tier == FluidPipeTier.COPPER ? MapColor.COLOR_ORANGE : MapColor.METAL).strength(2f, 6f)
+                        .requiresCorrectToolForDrops().sound(SoundType.COPPER).noOcclusion().forceSolidOn());
+    }
 
     /** Expandable fluid tank: blocks join into tanks up to 3x3x5 (see {@link FluidTankStructure}). */
     public static final GZBlocks.WithItem<FluidTankBlock> FLUID_TANK = GZBlocks.register("fluid_tank", "Fluid Tank", GZTab.MACHINES,
@@ -127,7 +137,8 @@ public final class GZFluids {
         }
         event.registerBlock(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,
                 (level, pos, state, be, side) -> side != null && FluidPipeBlock.mode(state, side) == FluidPipeBlock.Mode.DISABLED
-                        ? null : FluidPipeNetwork.handler(level, pos, side), FLUID_PIPE.block().get());
+                        ? null : FluidPipeNetwork.handler(level, pos, side),
+                pipes().stream().map(p -> (net.minecraft.world.level.block.Block) p.block().get()).toArray(net.minecraft.world.level.block.Block[]::new));
     }
 
     private static ChemFluid liquid(String name, String english, Look look, int color, Hazard hazard, int density, int viscosityFactor,

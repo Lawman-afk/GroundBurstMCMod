@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "pipe": "groundzero:block/copper_fluid_pipe",
+    "particle": "groundzero:block/copper_fluid_pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        4.7,
+        13.3,
+        4.7
+      ],
+      "to": [
+        11.3,
+        14.3,
+        11.3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            15,
+            15,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "south": {
+          "uv": [
+            8,
+            15,
+            15,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "east": {
+          "uv": [
+            8,
+            15,
+            15,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "west": {
+          "uv": [
+            8,
+            15,
+            15,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "up": {
+          "uv": [
+            0,
+            9,
+            7,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "down": {
+          "uv": [
+            0,
+            9,
+            7,
+            16
+          ],
+          "texture": "#pipe"
+        }
+      }
+    }
+  ]
+}

@@ -30,6 +30,7 @@ final class FluidSystemTests {
 
     static void register() {
         GZGameTests.test("pipe_carries_fluid", GZGameTests.FLOOR_16, 20, FluidSystemTests::pipe);
+        GZGameTests.test("pipe_run_limited_by_weakest_tier", GZGameTests.FLOOR_16, 20, FluidSystemTests::pipeTiers);
         GZGameTests.test("condenser_ejects_into_plant", GZGameTests.FLOOR_16, 400, FluidSystemTests::ejectIntoPlant);
         GZGameTests.test("plant_two_fluid_recipe", GZGameTests.FLOOR_16, 400, FluidSystemTests::rocketFuel);
         GZGameTests.test("plant_dump", GZGameTests.FLOOR_16, 40, FluidSystemTests::dump);
@@ -70,6 +71,28 @@ final class FluidSystemTests {
             tx.commit();
         }
         helper.assertTrue(sep.tank(0).amount() == 1_500, "water reaches the separator, has " + sep.tank(0).amount());
+        helper.succeed();
+    }
+
+    /** A steel run with one copper pipe in it carries only copper's 1000 mB a tick; pressurized alone carries 16000. */
+    private static void pipeTiers(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(3, 1, 3), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        helper.setBlock(new BlockPos(4, 1, 3), GZFluids.FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(5, 1, 3), GZFluids.COPPER_FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(6, 1, 3), GZFluids.FLUID_PIPE.block().get());
+        var level = helper.getLevel();
+        var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(6, 1, 3)), Direction.EAST);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 1_000, "a copper pipe in the run caps it at 1000 mB/t");
+            tx.commit();
+        }
+        helper.setBlock(new BlockPos(3, 1, 8), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        helper.setBlock(new BlockPos(4, 1, 8), GZFluids.PRESSURIZED_FLUID_PIPE.block().get());
+        var fast = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(4, 1, 8)), Direction.EAST);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(fast.insert(FluidResource.of(Fluids.WATER), 20_000, tx) == 16_000, "pressurized carries 16000 mB/t (the separator holds 16000)");
+            tx.commit();
+        }
         helper.succeed();
     }
 

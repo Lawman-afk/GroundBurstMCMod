@@ -53,7 +53,9 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
         dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());
-        dropSelf(dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().get());
+        for (var pipe : dev.groundzero.content.fluid.GZFluids.pipes()) {
+            dropSelf(pipe.block().get());
+        }
         for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }

@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system, Water Pump and Fluid Tank from slice 4 feedback and the Wrench with pipe/cable connection modes (49/49 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
+**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system, Water Pump and Fluid Tank from slice 4 feedback and the Wrench with pipe/cable connection modes and three fluid pipe tiers (50/50 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
 **Last updated:** 2026-10-19 (session 1)
 
 ---

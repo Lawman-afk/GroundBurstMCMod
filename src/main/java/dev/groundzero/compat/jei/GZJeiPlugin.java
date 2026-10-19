@@ -87,7 +87,7 @@ public final class GZJeiPlugin implements IModPlugin {
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_WRENCH));
         registration.addIngredientInfo(List.of(GZMachines.WATER_PUMP.item().get().getDefaultInstance()),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_WATER_PUMP));
-        registration.addIngredientInfo(List.of(dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.item().get().getDefaultInstance()),
+        registration.addIngredientInfo(dev.groundzero.content.fluid.GZFluids.pipes().stream().map(p -> p.item().get().getDefaultInstance()).toList(),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_FLUID_PIPE));
         registration.addIngredientInfo(dev.groundzero.content.fluid.GZFluids.all().stream()
                         .map(f -> f.bucket().get().getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,

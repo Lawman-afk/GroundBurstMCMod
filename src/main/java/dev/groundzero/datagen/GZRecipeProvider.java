@@ -317,6 +317,18 @@ public class GZRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
                 .save(output);
         // Fluid pipe: steel plates round a glass sight-tube.
+        // Copper pipe: the starter tier.
+        shaped(RecipeCategory.REDSTONE, GZFluids.COPPER_FLUID_PIPE.item(), 6)
+                .define('P', GZTags.commonItem("plates/copper")).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+                .pattern("PPP").pattern("GGG").pattern("PPP")
+                .unlockedBy(getHasName(GZParts.COPPER_PLATE), has(GZParts.COPPER_PLATE))
+                .save(output);
+        // Pressurized pipe: steel pipes wrapped in tungsten and plastic.
+        shaped(RecipeCategory.REDSTONE, GZFluids.PRESSURIZED_FLUID_PIPE.item(), 4)
+                .define('T', GZTags.commonItem("plates/tungsten")).define('P', GZFluids.FLUID_PIPE.item()).define('S', GZChemicals.PLASTIC_SHEET)
+                .pattern("TPT").pattern("PSP").pattern("TPT")
+                .unlockedBy(getHasName(GZFluids.FLUID_PIPE.item()), has(GZFluids.FLUID_PIPE.item()))
+                .save(output);
         shaped(RecipeCategory.REDSTONE, GZFluids.FLUID_PIPE.item(), 6)
                 .define('P', GZTags.commonItem("plates/steel")).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
                 .pattern("PPP").pattern("GGG").pattern("PPP")

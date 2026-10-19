@@ -103,7 +103,9 @@ public final class GZTagProviders {
                     GZMachines.ELECTROLYTIC_SEPARATOR.block().key(), GZMachines.CRYOGENIC_CONDENSER.block().key(),
                     GZMachines.CHEMICAL_PLANT.block().key(), GZMachines.WATER_PUMP.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().key(),
                     GZMultiblocks.MACHINE_CASING.block().key(), GZMultiblocks.ITEM_PORT.block().key(),
-                    GZMultiblocks.REACTOR_GLASS.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().key());
+                    GZMultiblocks.REACTOR_GLASS.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().key(),
+                    dev.groundzero.content.fluid.GZFluids.COPPER_FLUID_PIPE.block().key(),
+                    dev.groundzero.content.fluid.GZFluids.PRESSURIZED_FLUID_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());

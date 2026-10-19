@@ -24,22 +24,25 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 /**
  * A connected run of fluid pipes (pipes joined by sides in {@code normal} mode). Pipes hold nothing: whatever a
  * machine pushes into the run, or a {@code pull} side draws in, is passed straight on to the tanks on the run's
- * {@code normal} sides, shared round-robin, never back to where it came from, up to {@link #RATE} mB per tick.
+ * {@code normal} sides, shared round-robin, never back to where it came from, up to the weakest pipe tier's rate per
+ * tick.
  * Breaking a pipe therefore never spills or loses fluid.
  */
 public final class FluidPipeNetwork {
-    public static final int RATE = 2_000;
     private static final int MAX_PIPES = 4096;
     private static final Map<Level, Map<BlockPos, FluidPipeNetwork>> CACHE = new WeakHashMap<>();
 
     private final Set<BlockPos> pipes;
+    /** mB per tick: the weakest pipe tier on the run. */
+    private final int rate;
     private long tick = Long.MIN_VALUE;
     private int transferred;
     private int roundRobin;
     private final Journal journal = new Journal();
 
-    private FluidPipeNetwork(Set<BlockPos> pipes) {
+    private FluidPipeNetwork(Set<BlockPos> pipes, int rate) {
         this.pipes = pipes;
+        this.rate = rate;
     }
 
     public static void invalidate(Level level) {
@@ -70,7 +73,13 @@ public final class FluidPipeNetwork {
                     }
                 }
             }
-            net = new FluidPipeNetwork(seen);
+            int rate = Integer.MAX_VALUE;
+            for (BlockPos p : seen) {
+                if (level.getBlockState(p).getBlock() instanceof FluidPipeBlock pipeBlock) {
+                    rate = Math.min(rate, pipeBlock.tier().rate());
+                }
+            }
+            net = new FluidPipeNetwork(seen, rate);
             for (BlockPos p : seen) {
                 byPos.put(p, net);
             }
@@ -85,7 +94,7 @@ public final class FluidPipeNetwork {
             this.tick = now;
             this.transferred = 0;
         }
-        int allowed = Math.min(amount, RATE - this.transferred);
+        int allowed = Math.min(amount, this.rate - this.transferred);
         if (allowed <= 0) {
             return 0;
         }
@@ -144,7 +153,8 @@ public final class FluidPipeNetwork {
 
             @Override
             public long getCapacityAsLong(int index, FluidResource resource) {
-                return RATE;
+                FluidPipeNetwork net = of(level, pipe);
+                return net == null ? 0 : net.rate;
             }
 
             @Override

@@ -57,8 +57,8 @@ public class FluidPipeBlock extends Block {
     }
 
     public static final Map<Direction, EnumProperty<Mode>> SIDES = new EnumMap<>(Direction.class);
-    /** Ticks between pulls, and how much one pulling side draws each time. */
-    public static final int PULL_INTERVAL = 2, PULL_AMOUNT = 1_000;
+    /** Ticks between pulls (each pulling side draws up to the tier's per-tick rate each time). */
+    public static final int PULL_INTERVAL = 2;
     private static final Map<Direction, VoxelShape> ARMS = new EnumMap<>(Direction.class);
     private static final VoxelShape CORE = Block.box(4.5, 4.5, 4.5, 11.5, 11.5, 11.5);
 
@@ -74,8 +74,11 @@ public class FluidPipeBlock extends Block {
         ARMS.put(Direction.UP, Block.box(5, 11, 5, 11, 16, 11));
     }
 
-    public FluidPipeBlock(Properties properties) {
+    private final FluidPipeTier tier;
+
+    public FluidPipeBlock(Properties properties, FluidPipeTier tier) {
         super(properties);
+        this.tier = tier;
         BlockState state = this.stateDefinition.any();
         for (EnumProperty<Mode> p : SIDES.values()) {
             state = state.setValue(p, Mode.NONE);
@@ -86,6 +89,10 @@ public class FluidPipeBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SIDES.values().toArray(new EnumProperty[0]));
+    }
+
+    public FluidPipeTier tier() {
+        return this.tier;
     }
 
     public static Mode mode(BlockState state, Direction side) {
@@ -208,7 +215,7 @@ public class FluidPipeBlock extends Block {
             BlockPos source = pos.relative(d);
             ResourceHandler<FluidResource> from = level.getCapability(Capabilities.Fluid.BLOCK, source, d.getOpposite());
             if (from != null) {
-                ResourceHandlerUtil.move(from, FluidPipeNetwork.handler(level, pos, d), r -> true, PULL_AMOUNT, null);
+                ResourceHandlerUtil.move(from, FluidPipeNetwork.handler(level, pos, d), r -> true, this.tier.rate(), null);
             }
         }
         level.scheduleTick(pos, this, PULL_INTERVAL);
