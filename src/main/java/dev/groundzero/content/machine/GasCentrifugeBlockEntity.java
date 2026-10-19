@@ -24,9 +24,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * Gas Centrifuge (DESIGN.md §8): UF6 from its gas tank into enriched uranium nuggets and depleted uranium dust;
  * 50 FE/t. Two blocks tall. Slots: 0-1 outputs.
  *
- * <p><b>Cascade bonus:</b> centrifuges standing side by side in a straight line (east-west or north-south, same
- * height) form a cascade. Every centrifuge in it runs 15% faster for each other centrifuge in the line, counting at
- * most {@value #MAX_CASCADE} (so up to +105%). The longer of a centrifuge's two lines counts.
+ * <p><b>Cascade bonus:</b> centrifuges joined flange to flange form a cascade. The header flanges sit on a
+ * centrifuge's left and right sides, so a cascade is a straight line along that axis of centrifuges at the same height
+ * whose flanges line up (each faces the same way or the opposite way). Every centrifuge in it runs 15% faster for each
+ * other centrifuge in the line, counting at most {@value #MAX_CASCADE} (so up to +105%). A neighbour turned a quarter
+ * (flanges pointing elsewhere) breaks the line, so crossing lines never share centrifuges.
  */
 public class GasCentrifugeBlockEntity extends ProcessingBlockEntity implements AnimatedMachine {
     public static final int ENERGY_PER_TICK = 50;
@@ -55,25 +57,27 @@ public class GasCentrifugeBlockEntity extends ProcessingBlockEntity implements A
         return 1f + CASCADE_BONUS * (Math.min(size, MAX_CASCADE) - 1);
     }
 
-    /** Re-counts the cascade: the longer straight line of centrifuges through this one, along X or Z. */
+    /** Re-counts the cascade: the line of flange-aligned centrifuges through this one, along its flange axis. */
     public void updateCascade(Level level) {
-        int size = Math.max(line(level, Direction.Axis.X), line(level, Direction.Axis.Z));
-        this.cascade = Math.min(size, MAX_CASCADE);
-        this.scanned = true;
-    }
-
-    private int line(Level level, Direction.Axis axis) {
+        Direction.Axis facing = facing(getBlockState());
+        Direction.Axis flanges = facing == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
         int n = 1;
         for (Direction.AxisDirection sign : Direction.AxisDirection.values()) {
-            Direction d = Direction.fromAxisAndDirection(axis, sign);
+            Direction d = Direction.fromAxisAndDirection(flanges, sign);
             BlockPos p = this.worldPosition.relative(d);
-            // Lower halves only: the upper half of a tall machine has no block entity.
-            while (n < MAX_CASCADE * 2 && level.isLoaded(p) && level.getBlockEntity(p) instanceof GasCentrifugeBlockEntity) {
+            // Lower halves only (the upper half has no block entity), and only with flanges on the same axis.
+            while (n < MAX_CASCADE * 2 && level.isLoaded(p) && level.getBlockEntity(p) instanceof GasCentrifugeBlockEntity other
+                    && facing(other.getBlockState()) == facing) {
                 n++;
                 p = p.relative(d);
             }
         }
-        return n;
+        this.cascade = Math.min(n, MAX_CASCADE);
+        this.scanned = true;
+    }
+
+    private static Direction.Axis facing(BlockState state) {
+        return state.hasProperty(MachineBlock.FACING) ? state.getValue(MachineBlock.FACING).getAxis() : Direction.Axis.Z;
     }
 
     @Override

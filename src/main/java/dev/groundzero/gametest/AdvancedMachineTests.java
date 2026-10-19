@@ -90,7 +90,10 @@ final class AdvancedMachineTests {
         });
     }
 
-    /** Three side by side form a cascade of 3; a gap breaks the line; ten in a row count as eight. */
+    /**
+     * Three side by side along their flange axis form a cascade of 3; a gap breaks the line; ten in a row count as eight;
+     * a line along the other axis, or a neighbour turned a quarter, does not count.
+     */
     private static void cascadeLine(GameTestHelper helper) {
         var block = GZMachines.GAS_CENTRIFUGE.block().get();
         GasCentrifugeBlockEntity[] row = new GasCentrifugeBlockEntity[3];
@@ -111,6 +114,22 @@ final class AdvancedMachineTests {
         helper.assertTrue(alone.cascade() == 1, "a centrifuge one block away is not in the cascade, got " + alone.cascade());
         long_[0].updateCascade(level);
         helper.assertTrue(long_[0].cascade() == GasCentrifugeBlockEntity.MAX_CASCADE, "a cascade counts at most 8, got " + long_[0].cascade());
+        // North-facing centrifuges have their flanges east and west: a north-south column is not a cascade.
+        GasCentrifugeBlockEntity[] column = new GasCentrifugeBlockEntity[2];
+        for (int i = 0; i < 2; i++) {
+            column[i] = place(helper, new BlockPos(13, 1, 2 + i), block, GasCentrifugeBlockEntity.class);
+        }
+        column[0].updateCascade(level);
+        helper.assertTrue(column[0].cascade() == 1, "neighbours off the flange axis do not count, got " + column[0].cascade());
+        // Turn the middle of the three-row a quarter: its flanges no longer meet, so the row splits.
+        BlockPos mid = helper.absolutePos(new BlockPos(2, 1, 2));
+        level.setBlock(mid, level.getBlockState(mid).setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.EAST), 3);
+        row[0].updateCascade(level);
+        helper.assertTrue(row[0].cascade() == 1, "a neighbour turned a quarter breaks the line, got " + row[0].cascade());
+        // Facing the opposite way keeps the flanges on the same axis, so the line holds.
+        level.setBlock(mid, level.getBlockState(mid).setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.SOUTH), 3);
+        row[0].updateCascade(level);
+        helper.assertTrue(row[0].cascade() == 3, "a neighbour facing the opposite way still joins, got " + row[0].cascade());
         helper.assertTrue(Math.abs(GasCentrifugeBlockEntity.speedFor(3) - 1.30f) < 1e-4f, "3 centrifuges run 30% faster");
         helper.assertTrue(Math.abs(GasCentrifugeBlockEntity.speedFor(20) - 2.05f) < 1e-4f, "the bonus stops at +105%");
         helper.succeed();

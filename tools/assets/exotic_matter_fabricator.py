@@ -74,7 +74,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("emitter", g.box("pad_lo", (-2.5, HOUSING_Y, -2.5), (2.5, HOUSING_Y + 1, 2.5), bone=F))
     add("lens", g.box("lens_lo", (-1.5, HOUSING_Y + 1, -1.5), (1.5, HOUSING_Y + 1.4, 1.5), faces=("north", "south", "east", "west", "up"), shade=False, bone=F))
     for i, (x, z) in enumerate(((-7.5, -7.5), (6.25, -7.5), (-7.5, 6.25), (6.25, 6.25))):
-        add("post", g.box(f"post{i}", (x, HOUSING_Y, z), (x + 1.25, CANOPY_Y, z + 1.25), faces=("north", "south", "east", "west"), bone=F))
+        add("post", g.box(f"post{i}", (x, 3, z), (x + 1.25, CANOPY_Y, z + 1.25), faces=("north", "south", "east", "west"), bone=F))
     add("canopy", g.box("canopy", (-7.5, CANOPY_Y, -7.5), (7.5, CANOPY_Y + 1.5, 7.5), bone=F))
     add("cap", g.box("cap", (-3, CANOPY_Y + 1.5, -3), (3, CANOPY_Y + 2.5, 3), bone=F))
     add("emitter", g.box("pad_hi", (-2.5, CANOPY_Y - 1, -2.5), (2.5, CANOPY_Y, 2.5), faces=("north", "south", "east", "west", "down"), bone=F))

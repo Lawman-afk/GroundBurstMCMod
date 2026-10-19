@@ -65,7 +65,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("crosshead", g.box("crosshead", (CX - 3.6, 15.2, -1.0), (CX + 3.6, 16.0, 1.0), bone=F))
     add("cylinder", g.box("cylinder", (CX - 1.1, 13.4, -1.1), (CX + 1.1, 15.2, 1.1), faces=("north", "south", "east", "west", "down"), bone=F))
     add("gland", g.box("gland", (CX - 0.9, DOME_Y1, -0.9), (CX + 0.9, 12.2, 0.9), faces=("north", "south", "east", "west", "up"), bone=F))
-    add("ram", g.box("ram_rod", (RAM_X[0], 12.0, -0.4), (RAM_X[1], 13.6, 0.4), faces=("north", "south", "east", "west"), bone="ram"))
+    add("ram", g.box("ram_rod", (RAM_X[0], 12.0, -0.4), (RAM_X[1], 15.0, 0.4), faces=("north", "south", "east", "west"), bone="ram"))
     # Viewport on the front of the chamber: frame, dark window, glowing core, frost (front to back: frost, core, window).
     add("vframe", g.box("vframe", (CX - 2.2, 3.6, -5.6), (CX + 2.2, 7.8, -5.0), faces=("north", "east", "west", "up", "down"), bone=F))
     window = add("window", g.box("window", (CX - 1.5, 4.3, -5.7), (CX + 1.5, 7.1, -5.6), faces=("north",), bone=F))

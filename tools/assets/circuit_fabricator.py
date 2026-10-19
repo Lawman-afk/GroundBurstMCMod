@@ -77,7 +77,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for i, z in enumerate((-5.6, 4.8)):
         add("truck", g.box(f"truck{i}", (-1.0, RAIL_Y - 0.9, z), (1.0, RAIL_Y - 0.6, z + 0.8), bone="gantry"))
     add("carriage", g.box("carriage", (-1.1, RAIL_Y - 1.7, -1.0), (1.1, RAIL_Y - 0.6, 1.0), bone="head"))
-    add("quill", g.box("quill", (-0.35, CAB_TOP + 2.0, -0.35), (0.35, RAIL_Y - 1.7, 0.35), faces=("north", "south", "east", "west"), bone="arm"))
+    add("quill", g.box("quill", (-0.35, CAB_TOP + 2.0, -0.35), (0.35, RAIL_Y - 0.2, 0.35), faces=("north", "south", "east", "west"), bone="arm"))
     add("gripper", g.box("gripper", (-0.7, CAB_TOP + 1.4, -0.7), (0.7, CAB_TOP + 2.0, 0.7), bone="arm"))
     add("chip", g.box("chip_box", (-0.6, CAB_TOP + 1.0, -0.6), (0.6, CAB_TOP + 1.4, 0.6), faces=("north", "south", "east", "west", "down"), bone="chip"))
     # Cable trunk from the cabinet up the back post to the gantry rail.
