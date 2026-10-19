@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "#groundzero:basic_circuits",
+    "A": "#c:circuits/advanced",
     "F": "groundzero:machine_frame",
     "M": "groundzero:electric_motor",
     "P": "#c:plates/copper",
@@ -11,7 +11,7 @@
   "pattern": [
     "PMP",
     "PFP",
-    "BV "
+    "AV "
   ],
   "result": {
     "id": "groundzero:cryogenic_condenser"

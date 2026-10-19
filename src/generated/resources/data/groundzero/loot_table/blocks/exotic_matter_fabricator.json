@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "groundzero:exotic_matter_fabricator",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "groundzero:exotic_matter_fabricator"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundzero:blocks/exotic_matter_fabricator"
+}

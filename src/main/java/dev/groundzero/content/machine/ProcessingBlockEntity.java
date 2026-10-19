@@ -36,6 +36,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     private int progress;
     private int maxProgress;
     private @Nullable RecipeHolder<ProcessingRecipe> cached;
+    private float speedCarry;
 
     protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
             int inputCount, int outputCount, int energyCapacity, int maxInsert) {
@@ -57,6 +58,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         this.catalystSlot = catalyst ? inputCount : -1;
         this.outputStart = inputCount + (catalyst ? 1 : 0);
         this.outputCount = outputCount;
+    }
+
+    /** Recipe progress per tick (1 = the recipe's own time); energy is still drawn once per tick. */
+    protected float speedMultiplier() {
+        return 1f;
     }
 
     public ProcessingKind kind() {
@@ -198,7 +204,14 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         }
         this.status = MachineStatus.RUNNING;
         this.maxProgress = recipe.time();
-        if (++this.progress >= this.maxProgress) {
+        // Faster machines (a centrifuge cascade) bank the fraction of a step they gain each tick.
+        this.progress++;
+        this.speedCarry += speedMultiplier() - 1f;
+        while (this.speedCarry >= 1f) {
+            this.progress++;
+            this.speedCarry -= 1f;
+        }
+        if (this.progress >= this.maxProgress) {
             finish(level, recipe, input);
             this.progress = 0;
         }
@@ -206,7 +219,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         return true;
     }
 
-    /** Whether some recipe has everything but enough of its fluids (so the GUI can say "needs more fluid"). */
+    /**
+     * Whether some recipe is only waiting for fluid, so the GUI can say "needs more fluid" rather than "no valid
+     * input": its items (and catalyst) are all there but its fluids are missing or short. A recipe without items
+     * counts once one of its fluids is in a tank (a separator with a single bucket of water).
+     */
     private boolean shortOfFluid(ServerLevel level, MachineRecipeInput input) {
         for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GZRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
@@ -214,9 +231,9 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
                     || recipe.catalyst().isPresent() && !recipe.catalyst().get().test(input.catalyst())) {
                 continue;
             }
-            boolean allPresent = recipe.fluids().stream().allMatch(need -> input.fluids().stream()
+            boolean started = !recipe.inputs().isEmpty() || recipe.fluids().stream().anyMatch(need -> input.fluids().stream()
                     .anyMatch(have -> !have.isEmpty() && need.ingredient().test(have)));
-            if (allPresent) {
+            if (started && recipe.assignTanks(input) == null) {
                 return true;
             }
         }

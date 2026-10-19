@@ -26,6 +26,11 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRYOGENIC_CONDENSER = machine("cryogenic_condenser", () -> MachineLayouts.CRYOGENIC_CONDENSER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> WATER_PUMP = machine("water_pump", () -> MachineLayouts.WATER_PUMP);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CIRCUIT_FABRICATOR = machine("circuit_fabricator", () -> MachineLayouts.CIRCUIT_FABRICATOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> GAS_CENTRIFUGE = machine("gas_centrifuge", () -> MachineLayouts.GAS_CENTRIFUGE);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FUSION_FUEL_SYNTHESIZER = machine("fusion_fuel_synthesizer", () -> MachineLayouts.FUSION_FUEL_SYNTHESIZER);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> EXOTIC_MATTER_FABRICATOR = machine("exotic_matter_fabricator", () -> MachineLayouts.EXOTIC_MATTER_FABRICATOR);
+
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
 
     private GZMenus() {}

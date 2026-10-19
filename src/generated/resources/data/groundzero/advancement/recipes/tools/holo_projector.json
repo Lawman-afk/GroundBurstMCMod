@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_basic_circuit": {
+    "has_advanced_circuit": {
       "conditions": {
         "items": [
           {
-            "items": "#groundzero:basic_circuits"
+            "items": "#c:circuits/advanced"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_basic_circuit"
+      "has_advanced_circuit"
     ]
   ],
   "rewards": {

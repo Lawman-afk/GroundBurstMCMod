@@ -1,0 +1,26 @@
+{
+  "type": "groundzero:fabricating",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:military_circuit"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:stabilised_exotic_matter"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:superconducting_coil"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:quantum_circuit"
+      }
+    }
+  ],
+  "time": 600
+}

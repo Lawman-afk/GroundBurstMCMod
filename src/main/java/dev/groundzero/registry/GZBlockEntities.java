@@ -44,6 +44,19 @@ public final class GZBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CryogenicCondenserBlockEntity>> CRYOGENIC_CONDENSER =
             BLOCK_ENTITIES.register("cryogenic_condenser", () -> new BlockEntityType<>(CryogenicCondenserBlockEntity::new, GZMachines.CRYOGENIC_CONDENSER.block().get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.CircuitFabricatorBlockEntity>> CIRCUIT_FABRICATOR =
+            BLOCK_ENTITIES.register("circuit_fabricator", () -> new BlockEntityType<>(dev.groundzero.content.machine.CircuitFabricatorBlockEntity::new,
+                    GZMachines.CIRCUIT_FABRICATOR.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.GasCentrifugeBlockEntity>> GAS_CENTRIFUGE =
+            BLOCK_ENTITIES.register("gas_centrifuge", () -> new BlockEntityType<>(dev.groundzero.content.machine.GasCentrifugeBlockEntity::new,
+                    GZMachines.GAS_CENTRIFUGE.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.FusionFuelSynthesizerBlockEntity>> FUSION_FUEL_SYNTHESIZER =
+            BLOCK_ENTITIES.register("fusion_fuel_synthesizer", () -> new BlockEntityType<>(dev.groundzero.content.machine.FusionFuelSynthesizerBlockEntity::new,
+                    GZMachines.FUSION_FUEL_SYNTHESIZER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.ExoticMatterFabricatorBlockEntity>> EXOTIC_MATTER_FABRICATOR =
+            BLOCK_ENTITIES.register("exotic_matter_fabricator", () -> new BlockEntityType<>(dev.groundzero.content.machine.ExoticMatterFabricatorBlockEntity::new,
+                    GZMachines.EXOTIC_MATTER_FABRICATOR.block().get()));
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GZMachines.CHEMICAL_PLANT.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
@@ -57,12 +70,16 @@ public final class GZBlockEntities {
         machine(event, ELECTROLYTIC_SEPARATOR.get());
         machine(event, CHEMICAL_PLANT.get());
         machine(event, WATER_PUMP.get());
+        machine(event, CIRCUIT_FABRICATOR.get());
+        machine(event, FUSION_FUEL_SYNTHESIZER.get());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_TANK.get(), (be, side) -> be.handler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_PORT.get(), PortBlockEntity::items);
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());
+        tallMachine(event, GZMachines.GAS_CENTRIFUGE.block().get());
+        tallMachine(event, GZMachines.EXOTIC_MATTER_FABRICATOR.block().get());
         GZMachines.registerCableCapabilities(event);
         dev.groundzero.content.fluid.GZFluids.registerCapabilities(event);
     }

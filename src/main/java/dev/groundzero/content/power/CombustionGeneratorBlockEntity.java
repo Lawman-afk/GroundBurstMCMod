@@ -114,6 +114,16 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
     }
 
     @Override
+    public java.util.List<net.minecraft.network.chat.Component> readout(MachineMenu menu) {
+        int cap = Math.max(1, menu.capacity());
+        boolean burning = menu.extra(DATA_BURN) > 0;
+        return java.util.List.of(
+                net.minecraft.network.chat.Component.translatable(dev.groundzero.content.machine.MachineText.OUTPUT, burning ? RATE : 0),
+                net.minecraft.network.chat.Component.translatable(dev.groundzero.content.machine.MachineText.STORED, (int) ((long) menu.energy() * 100 / cap)),
+                net.minecraft.network.chat.Component.translatable(menu.status().translationKey()));
+    }
+
+    @Override
     protected int extraDataCount() {
         return 2;
     }

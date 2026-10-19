@@ -3,8 +3,8 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system, Water Pump and Fluid Tank from slice 4 feedback and the Wrench with pipe/cable connection modes and three fluid pipe tiers (50/50 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
-**Last updated:** 2026-10-19 (session 1)
+**Current phase:** Phase 4 in progress — slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Last updated:** 2026-10-20
 
 ---
 
@@ -16,7 +16,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
-| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–4 done) |
+| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–5 done) |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
@@ -109,20 +109,20 @@ checklist for the user.
 |---|---|
 | GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | started: `tools/assets/gui.py` generates layout-driven machine GUIs + `MachineLayouts.java`; generic `MachineScreen` (energy bar, progress, flame, status lamp, redstone button, CRT readout, tooltips). Guarded buttons/gauges come with later machines |
 | Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | done (side config: per-face item mode + energy switch + auto-eject, GUI tab): `MachineBlockEntity`/`ProcessingBlockEntity`, `MachineBlock` (facing + active), `MachineMenu`, automation view (inputs in / outputs out), recipe-filtered inputs, redstone modes, status reasons, EMP hook, GeckoLib `AnimatedMachine` |
-| Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated/HV recipes wait for plastic/tungsten filament |
+| Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated recipe added in slice 5; HV recipe waits (design lists 10 ingredients) |
 | Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | Combustion Generator done (GeckoLib model, firebox glow, flywheel, GUI, recipe); rest todo |
 | Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
 | Arc Furnace | done (2-tall GeckoLib model: electrodes lower, melt + port glow; 8 recipes: steel, tungsten, carbide, magnet, cobalt, lead) |
 | Industrial Press | done (2-tall C-frame, ram stroke synced to sound; 4 dies as non-consumed catalysts; 11 recipes) |
 | Chemical Plant | done (slice 4: 2x2x2 multiblock, controller GUI with 3 inputs + water tank, formed GeckoLib model with tanks/stirrer, loop sound; 13 chemistry recipes + Arc Furnace mercury flask; 14 chemistry items) — needs in-game test |
-| Gas Centrifuge (+ cascade bonus) | todo |
+| Gas Centrifuge (+ cascade bonus) | done (slice 5: 2-tall GeckoLib model, rotor marks sweep a sight slit, header flanges join a line; UF6 tank; cascade +15% per centrifuge in a straight line, max 8, CRT readout) — needs in-game test |
 | Electrolytic Separator | done (slice 3: water tank, bucket slot, deuterium from 8000 mB + gas canister; dithered-water GeckoLib model) |
-| Fusion Fuel Synthesizer | todo |
-| Cryogenic Condenser | done (slice 3: 2-tall, oxygen/nitrogen membranes as catalysts; frost shows only while running). Recipe uses a basic circuit until the Circuit Fabricator exists |
-| Circuit Fabricator | todo |
-| Exotic Matter Fabricator | todo |
+| Fusion Fuel Synthesizer | done (slice 5: pressure chamber, pellet press ram, gauges, viewport glows and frosts while running; deuterium tank) — needs in-game test |
+| Cryogenic Condenser | done (slice 3: 2-tall, oxygen/nitrogen membranes as catalysts; frost shows only while running). Recipe now takes an advanced circuit (slice 5) |
+| Circuit Fabricator | done (slice 5: glass clean box with pick-and-place gantry; 4 inputs + LN2 coolant tank; basic/advanced/military/quantum circuits, sensor array, superconducting coil) — needs in-game test |
+| Exotic Matter Fabricator | done (slice 5: 2-tall cage of three tumbling ring gimbals round a floating shard; stabilised exotic matter, containment cell, singularity seed; 400 FE/t) — needs in-game test |
 | Battery Charger, Decontamination Shower | todo |
-| Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
+| Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (Holo-Projector on its final recipe since slice 5; slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
@@ -130,9 +130,10 @@ checklist for the user.
 | Water Pump (infinite water from a source block, pushes into pipes) | done (slice 4 feedback 2) — needs in-game test |
 | Fluid Tank (expandable to 3x3x5, connected frame, renders contents; passive, piped in and out) | done (slice 4 feedback 2/3) — needs in-game test |
 | Wrench (pipe sides normal/pull/off, cable sides on/off, rotate machines, sneak to pick up) | done (slice 4 feedback 3) — needs in-game test |
-| Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press, separator, condenser, chemical plant; client fades them in/out with the ACTIVE state |
+| Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press, separator, condenser, chemical plant, water pump, circuit fabricator, gas centrifuge, fusion fuel synthesizer, exotic matter fabricator; client fades them in/out with the ACTIVE state |
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |
+| Slice 5 items: 4 circuit tiers, sensor array, superconducting coil, battery, enriched uranium nugget/ingot, depleted uranium dust/ingot, lithium deuteride pellet, stabilised exotic matter, containment cell, singularity seed | done (sprites in `tools/assets/advanced_parts.py`, `tools/assets/nuclear.py`; c: tags) |
 | Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |
 | Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done; the press shows the loaded die on its model |
 | JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — confirmed in game by the user |

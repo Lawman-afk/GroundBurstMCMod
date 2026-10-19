@@ -1,5 +1,6 @@
 {
   "values": [
-    "groundzero:handmade_circuit_board"
+    "groundzero:handmade_circuit_board",
+    "#c:circuits/basic"
   ]
 }

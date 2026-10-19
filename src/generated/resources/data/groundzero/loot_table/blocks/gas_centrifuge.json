@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "groundzero:gas_centrifuge",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "groundzero:gas_centrifuge"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundzero:blocks/gas_centrifuge"
+}

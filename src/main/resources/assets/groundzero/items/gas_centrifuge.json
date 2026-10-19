@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/gas_centrifuge",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

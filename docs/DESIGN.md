@@ -243,7 +243,7 @@ enriched uranium in your inventory hurts).
 | Toxin precursor, Anthrax α/β/γ cultures | Chemical Plant | rotten flesh + spider eye + sulfuric acid (+ tiers add fermented spider eye / exotic shard) |
 | Yellowcake | Chemical Plant | uranium dust + sulfuric acid |
 | UF₆ canister | Chemical Plant | yellowcake + sulfuric acid + empty gas canister *(gameplay simplification of fluorination)* |
-| Enriched uranium (U-235) nugget/ingot | Gas Centrifuge | UF₆ canister → 2 U-235 nuggets + 1 depleted uranium dust |
+| Enriched uranium (U-235) nugget/ingot | Gas Centrifuge | 1 000 mB UF₆ gas (piped into its tank) → 2 enriched uranium nuggets + 1 depleted uranium dust; 9 nuggets = 1 ingot |
 | Depleted uranium ingot | Furnace | depleted uranium dust (dense penetrators, tampers, AP rounds) |
 | Uranium fuel rod | Assembly (crafting) | 3 natural uranium ingot + zircaloy… → **simplified:** 3 natural U ingot + 2 steel rod |
 | Depleted-uranium target rod / Lithium-6 target rod | Crafting | DU ingot ×3 + steel rod ×2 / Li-6 dust ×3 + steel rod ×2 |
@@ -252,7 +252,7 @@ enriched uranium in your inventory hurts).
 | Mercury flask | Arc Furnace (roasting) | 4 cinnabar dust (from crushing **vanilla cinnabar** blocks) + empty canister |
 | Lithium-6 dust | Chemical Plant ("COLEX" process) | 4 lithium dust + mercury flask → 1 Li-6 dust + 3 lithium dust; flask returned 90% of the time |
 | Deuterium canister | Electrolytic Separator | water (8 000 mB) + empty gas canister |
-| Lithium deuteride pellet | Fusion Fuel Synthesizer | Li-6 dust + deuterium canister |
+| Lithium deuteride pellet | Fusion Fuel Synthesizer | Li-6 dust + 1 000 mB deuterium gas (piped into its tank) |
 | Cobalt-59 jacket | Arc Furnace → Press | cobalt dust ×8 → cobalt ingot → jacket |
 | Neodymium magnet | Arc Furnace | rare-earth dust ×2 + iron dust |
 | Circuits: basic / advanced / military / quantum | Circuit Fabricator | see §26 |
@@ -328,7 +328,7 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Fusion Fuel Synthesizer** | 1 block | 120 FE/t | Li-6 + D → LiD pellets | Pressure chamber with gauges and a frosted viewport; pellet press clunk. |
 | **Cryogenic Condenser** | 1×2 tall | 100 FE/t | LOX, LN₂, cryo cores | Frosted coils, vapour vents, ice crust grows on the model while working. |
 | **Circuit Fabricator** | 1 block | 40 FE/t | circuits, sensor arrays, superconducting coils | Glass-topped clean box, robotic arm (animated) placing chips; green PCB visible. |
-| **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
+| **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t (needs insulated or HV cable) | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
 | **Particle Accelerator** | multiblock ring 9×9×3 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
 | **Breeder Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
@@ -1130,6 +1130,14 @@ Fabricator · **PA** Particle Accelerator · **BR** Breeder Reactor · **AB** As
 Ingredient lists are final in content; exact crafting-grid shapes are fixed in datagen and shown in JEI and the
 manual. Processing times/energy are tuned in implementation and recorded here then.
 
+**Slice 5 machine recipes (times in ticks, at the machine's FE/t):**
+| Machine | Recipe | Time |
+|---|---|---|
+| Circuit Fabricator (40 FE/t) | basic circuit ×2 / advanced / military / quantum / sensor array / superconducting coil | 200 / 300 / 400 / 600 / 300 / 400 |
+| Gas Centrifuge (50 FE/t) | 1 000 mB UF₆ → 2 enriched uranium nuggets + 1 DU dust | 600 (cascade: ÷ 1.15 per extra centrifuge in line, up to 8) |
+| Fusion Fuel Synthesizer (120 FE/t) | Li-6 dust + 1 000 mB deuterium → LiD pellet | 300 |
+| Exotic Matter Fabricator (400 FE/t) | stabilised exotic matter / containment cell / singularity seed | 600 / 400 / 1 200 |
+
 ### 26.1 Bootstrap (vanilla materials only — gets you into the power + machine loop)
 | Output | Station | Ingredients |
 |---|---|---|
@@ -1169,7 +1177,7 @@ manual. Processing times/energy are tuned in implementation and recorded here th
 | Military circuit | CF | 2 advanced circuit, tungsten filament, diamond, rare-earth dust ×2 |
 | Quantum circuit | CF | military circuit, stabilised exotic matter, superconducting coil |
 | Sensor array | CF | advanced circuit, glass, rare-earth dust, 2 gold wire |
-| Superconducting coil | CF | 2 tungsten filament, rare-earth dust, 2 gold wire, LN₂ canister |
+| Superconducting coil | CF | 2 tungsten filament, rare-earth dust, 2 gold wire, 1 000 mB LN₂ (coolant tank) |
 | Battery | CT | copper plate, redstone, 2 lithium dust, plastic sheet |
 
 ### 26.3 Chemistry and nuclear processing
@@ -1417,3 +1425,10 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Pipes have no push mode: a pass-through network already delivers to every normal side, so Mekanism's separate push adds nothing here. Pull is per side; disconnected sides are remembered in the block state. |
 | 2026-10-19 | Model export closes every visible opening (a left-out face nothing covers) and drops faces buried in solid geometry; deliberate openings are listed per model (open_ok). |
 | 2026-10-20 | Fluid pipes have three tiers like cables (copper / steel / pressurized: 150 / 600 / 2,400 mB/t, set against Mekanism and Pipez tiers and our 5-20 mB/t machines and 50 mB/t pumps); the steel tier keeps the id `fluid_pipe` so pipes already placed stay. |
+| 2026-10-20 | Slice 5 machines take their gases and coolant as fluids from tanks, like the Chemical Plant: the Gas Centrifuge pipes in UF₆, the Fusion Fuel Synthesizer deuterium, and the Circuit Fabricator has a coolant tank whose liquid nitrogen superconducting coils use (1 000 mB each). |
+| 2026-10-20 | Centrifuge cascade: centrifuges (lower halves) standing side by side in one straight east-west or north-south line form a cascade; each runs +15% per other centrifuge in its longer line, counting up to 8 (+105%). Counted once a second. The bonus speeds progress; energy per tick is unchanged, so a cascade also costs less energy per run. The model's header flanges sit at the block edges so a line visibly joins up. |
+| 2026-10-20 | Circuits use the common Mekanism-style tags c:circuits/basic and c:circuits/advanced (the mod's basic/advanced circuits are in them); groundzero:basic_circuits = Handmade Circuit Board + c:circuits/basic. Military and quantum circuits are this mod's own items. New common tags: c:nuggets/enriched_uranium, c:ingots/enriched_uranium, c:dusts/depleted_uranium, c:ingots/depleted_uranium, c:dusts/lithium_6. |
+| 2026-10-20 | Interim recipes resolved: the Holo-Projector takes glass panes, a diamond, an advanced circuit and a battery (§26.8); the Cryogenic Condenser an advanced circuit (§26.4); the Electrolytic Separator keeps its basic circuit as designed. The Battery exists from slice 5 as a crafting part; charging comes with the Battery Charger (slice 6). |
+| 2026-10-20 | Insulated cable recipe added (6 copper cable + plastic sheet, §26.4) because the Exotic Matter Fabricator draws 400 FE/t and copper cable carries 256. The HV cable recipe still waits: §26.4 lists 10 ingredients (6 insulated + 3 filament + plastic), more than a crafting grid holds. |
+| 2026-10-20 | "Needs more fluid" also shows when a recipe's items are all loaded but its fluid tank is empty (it only showed for a partly filled tank). A fluid-only recipe counts once one of its fluids is in a tank. |
+| 2026-10-20 | The GUI's CRT readout is filled by the block entity (generator output and buffer; centrifuge cascade size and speed bonus). |

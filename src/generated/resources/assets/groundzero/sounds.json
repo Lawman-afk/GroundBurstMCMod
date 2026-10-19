@@ -66,6 +66,12 @@
     ],
     "subtitle": "subtitles.groundzero.machine.chemical_plant"
   },
+  "machine.circuit_fabricator": {
+    "sounds": [
+      "groundzero:machine/circuit_fabricator"
+    ],
+    "subtitle": "subtitles.groundzero.machine.circuit_fabricator"
+  },
   "machine.combustion_generator": {
     "sounds": [
       "groundzero:machine/combustion_generator"
@@ -86,6 +92,30 @@
       "groundzero:machine/electrolytic_separator"
     ],
     "subtitle": "subtitles.groundzero.machine.electrolytic_separator"
+  },
+  "machine.exotic_matter_fabricator": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundzero:machine/exotic_matter_fabricator"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.exotic_matter_fabricator"
+  },
+  "machine.fusion_fuel_synthesizer": {
+    "sounds": [
+      "groundzero:machine/fusion_fuel_synthesizer"
+    ],
+    "subtitle": "subtitles.groundzero.machine.fusion_fuel_synthesizer"
+  },
+  "machine.gas_centrifuge": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/gas_centrifuge"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.gas_centrifuge"
   },
   "machine.industrial_press": {
     "sounds": [

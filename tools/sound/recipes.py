@@ -226,6 +226,69 @@ def water_pump_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -8)
 
 
+def circuit_fabricator_loop() -> np.ndarray:
+    """Circuit Fabricator, one 2 s pick-and-place cycle (matches the gantry animation): a clean-box blower hum, servo
+    whirs while the gantry travels (0.5-0.95 s and 1.45-1.9 s), a soft vacuum-gripper tick at the pick (0.15 s) and a
+    placement click at 1.15 s."""
+    t = S.t_axis(TOTAL) - PRE
+    phase = np.mod(t, LOOP)
+    blower = S.bandpass(S.pink(TOTAL, 111), 300, 2500) * 0.08 + (S.tone(TOTAL, 140) * 0.3 + S.tone(TOTAL, 280) * 0.1) * 0.15
+    moving = ((phase > 0.5) & (phase < 0.95)) | ((phase > 1.45) & (phase < 1.9))
+    env = np.convolve(moving.astype(float), np.ones(800) / 800, mode="same")
+    servo_f = 520 + 160 * np.sin(np.pi * np.clip((np.mod(phase, 0.95) - 0.5) / 0.45, 0, 1))
+    servo = (np.sin(2 * np.pi * np.cumsum(servo_f) / S.SR) * 0.5 + np.sin(2 * np.pi * np.cumsum(servo_f * 2) / S.SR) * 0.2) * env * 0.35
+    tick = S.highpass(S.white(0.02, 112), 2500) * S.exp_decay(int(0.02 * S.SR), 0.003) * 0.25
+    click = S.mix((S.bandpass(S.white(0.04, 113), 1500, 6000) * S.exp_decay(int(0.04 * S.SR), 0.006), 1.0),
+                  (S.tone(0.04, 1800) * S.exp_decay(int(0.04 * S.SR), 0.01) * 0.4, 1.0)) * 0.4
+    hits = [k * LOOP for k in range(-1, 2)]
+    x = S.mix((blower, 1.0), (servo, 1.0), (_pulses([h + 0.15 for h in hits], tick), 1.0),
+              (_pulses([h + 1.15 for h in hits], click), 1.0), (_pulses([h + 0.32 for h in hits], tick * 0.6), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -8)
+
+
+def gas_centrifuge_loop() -> np.ndarray:
+    """Gas Centrifuge: the high whine of a rotor at speed (900 Hz and a 903 Hz partner beating at 3 Hz, plus its
+    octave), a soft motor hum underneath and a faint airy hiss from the casing. Frequencies fit whole cycles in 2 s."""
+    t = S.t_axis(TOTAL)
+    whine = (np.sin(2 * np.pi * 900 * t) + 0.8 * np.sin(2 * np.pi * 903 * t)) * 0.18 + np.sin(2 * np.pi * 1800 * t) * 0.06
+    whine += np.sin(2 * np.pi * 2700 * t) * 0.02
+    hum = (S.tone(TOTAL, 50) * 0.5 + S.tone(TOTAL, 100) * 0.25) * 0.25
+    hiss = S.bandpass(S.white(TOTAL, 121), 4000, 9000) * 0.05
+    x = S.mix((whine, 1.0), (hum, 1.0), (hiss, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -9)
+
+
+def fusion_fuel_synthesizer_loop() -> np.ndarray:
+    """Fusion Fuel Synthesizer, one 2 s press cycle (matches the ram animation): a gas-feed hiss, the pump's whine
+    climbing as pressure builds, the pellet press clunking down at 1.0 s, then a sharp pressure release."""
+    t = S.t_axis(TOTAL) - PRE
+    phase = np.mod(t, LOOP)
+    feed = S.bandpass(S.white(TOTAL, 131), 2500, 7000) * 0.06
+    freq = 140 + 120 * np.clip(phase / 1.0, 0, 1) * (phase < 1.0) + 120 * (phase >= 1.0) * np.exp(-(phase - 1.0) * 4)
+    pump = (np.sin(2 * np.pi * np.cumsum(freq) / S.SR) * 0.5 + np.sin(2 * np.pi * np.cumsum(freq * 2) / S.SR) * 0.15) * 0.25
+    clunk = S.mix((S.saturate(S.lowpass(S.white(0.18, 132), 260) * S.exp_decay(int(0.18 * S.SR), 0.035) * 4, 2), 1.0),
+                  (S.tone(0.3, 70) * S.exp_decay(int(0.3 * S.SR), 0.08), 0.9),
+                  (S.bandpass(S.white(0.12, 133), 1800, 5000) * S.exp_decay(int(0.12 * S.SR), 0.02) * 0.5, 1.0))
+    release = S.highpass(S.white(0.4, 134), 2000) * S.breakpoints(int(0.4 * S.SR), [(0, 0), (0.02, 0.45), (0.4, 0)])
+    hits = [1.0 + k * LOOP for k in range(-1, 2)]
+    x = S.mix((feed, 1.0), (pump, 1.0), (_pulses(hits, clunk), 1.0), (_pulses([h + 0.25 for h in hits], release), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -5)
+
+
+def exotic_matter_fabricator_loop() -> np.ndarray:
+    """Exotic Matter Fabricator: a deep 45 Hz throb (with partials small speakers can carry) pulsing once a second, a magnetic 100 Hz buzz, a glassy shimmer of
+    high partials drifting in and out of phase (every rate fits the 2 s loop), and sparse static crackles."""
+    t = S.t_axis(TOTAL)
+    throb = (np.sin(2 * np.pi * 45 * t) + 0.6 * np.sin(2 * np.pi * 90 * t) + 0.25 * np.sin(2 * np.pi * 135 * t))         * (0.6 + 0.4 * np.sin(2 * np.pi * 1.0 * t) ** 2) * 0.4
+    buzz = S.lowpass(S.tone(TOTAL, 100, "saw"), 600) * 0.07
+    shimmer = sum(np.sin(2 * np.pi * f * t + 2 * np.sin(2 * np.pi * r * t)) * a
+                  for f, r, a in ((1320, 0.5, 0.05), (1980, 1.0, 0.04), (2640, 1.5, 0.03), (3300, 0.5, 0.02)))
+    shimmer *= 0.6 + 0.4 * np.sin(2 * np.pi * 0.5 * t) ** 2
+    crackle = S.highpass(S.grains(TOTAL, 6, 3, 141), 3000) * 0.25
+    x = S.mix((throb, 1.0), (buzz, 1.0), (shimmer, 1.0), (crackle, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -236,6 +299,10 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/cryogenic_condenser": condenser_loop(),
         "machine/chemical_plant": chemical_plant_loop(),
         "machine/water_pump": water_pump_loop(),
+        "machine/circuit_fabricator": circuit_fabricator_loop(),
+        "machine/gas_centrifuge": gas_centrifuge_loop(),
+        "machine/fusion_fuel_synthesizer": fusion_fuel_synthesizer_loop(),
+        "machine/exotic_matter_fabricator": exotic_matter_fabricator_loop(),
     }
 
 

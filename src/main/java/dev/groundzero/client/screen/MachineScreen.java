@@ -36,8 +36,6 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static final String KEY_ENERGY = MachineText.ENERGY;
     private static final String KEY_PROGRESS = MachineText.PROGRESS;
     private static final String KEY_BURN = MachineText.BURN;
-    private static final String KEY_OUTPUT = MachineText.OUTPUT;
-    private static final String KEY_STORED = MachineText.STORED;
     private static final String KEY_REDSTONE = MachineText.REDSTONE;
 
     private final MachineLayout layout;
@@ -136,16 +134,15 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         // No "Inventory" label: it collides with the machine widgets and the slots speak for themselves.
         MachineLayout.Rect ro = this.layout.readout();
         if (ro != null) {
-            int cap = Math.max(1, this.menu.capacity());
-            boolean burning = this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN) > 0;
             // The CRT uses a 3/4-scale font so long status lines fit inside the glass.
             g.pose().pushMatrix();
             g.pose().translate(ro.x() + 3, ro.y() + 3);
             g.pose().scale(CRT_SCALE, CRT_SCALE);
             int line = (int) Math.ceil(10 / CRT_SCALE);
-            g.text(this.font, Component.translatable(KEY_OUTPUT, burning ? CombustionGeneratorBlockEntity.RATE : 0), 0, 0, CRT_TEXT, false);
-            g.text(this.font, Component.translatable(KEY_STORED, (int) ((long) this.menu.energy() * 100 / cap)), 0, line, CRT_TEXT, false);
-            g.text(this.font, Component.translatable(this.menu.status().translationKey()), 0, line * 2, CRT_TEXT, false);
+            List<Component> lines = this.menu.machine().readout(this.menu);
+            for (int i = 0; i < lines.size(); i++) {
+                g.text(this.font, lines.get(i), 0, line * i, CRT_TEXT, false);
+            }
             g.pose().popMatrix();
         }
     }

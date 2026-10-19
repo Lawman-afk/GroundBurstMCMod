@@ -51,6 +51,20 @@ public final class GZMachines {
                     Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 16, 14)),
                     Shapes.or(Block.box(2, 0, 2, 14, 13, 14), Block.box(5, 13, 5, 11, 16, 11))));
 
+    // Slice 5 (DESIGN.md §8): circuits, enrichment, fusion fuel, exotic matter.
+    public static final WithItem<MachineBlock> CIRCUIT_FABRICATOR = machine("circuit_fabricator", "Circuit Fabricator",
+            p -> new MachineBlock(p, GZBlockEntities.CIRCUIT_FABRICATOR, true, Shapes.block()));
+    public static final WithItem<TallMachineBlock> GAS_CENTRIFUGE = tallMachine("gas_centrifuge", "Gas Centrifuge",
+            p -> new TallMachineBlock(p, GZBlockEntities.GAS_CENTRIFUGE, true,
+                    Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2.5, 3, 2.5, 13.5, 7, 13.5), Block.box(4, 7, 4, 12, 16, 12)),
+                    Shapes.or(Block.box(4, 0, 4, 12, 14, 12), Block.box(0, 12.4, 6.8, 16, 14.8, 9.2))));
+    public static final WithItem<MachineBlock> FUSION_FUEL_SYNTHESIZER = machine("fusion_fuel_synthesizer", "Fusion Fuel Synthesizer",
+            p -> new MachineBlock(p, GZBlockEntities.FUSION_FUEL_SYNTHESIZER, true, Shapes.block()));
+    public static final WithItem<TallMachineBlock> EXOTIC_MATTER_FABRICATOR = tallMachine("exotic_matter_fabricator", "Exotic Matter Fabricator",
+            p -> new TallMachineBlock(p, GZBlockEntities.EXOTIC_MATTER_FABRICATOR, true,
+                    Block.box(0, 0, 0, 16, 16, 16),
+                    Block.box(0, 0, 0, 16, 15, 16)));
+
     public static final WithItem<MultiblockControllerBlock> CHEMICAL_PLANT = GZBlocks.register("chemical_plant", "Chemical Plant Controller",
             GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.CHEMICAL_PLANT),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));

@@ -21,8 +21,9 @@ from gz.model import write_json  # noqa: E402
 from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 
-GECKO_MACHINES = ["combustion_generator", "ore_crusher", "electrolytic_separator", "water_pump"]
-TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser"]
+GECKO_MACHINES = ["combustion_generator", "ore_crusher", "electrolytic_separator", "water_pump", "circuit_fabricator",
+                  "fusion_fuel_synthesizer"]
+TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser", "gas_centrifuge", "exotic_matter_fabricator"]
 
 # --- GeckoLib machines -------------------------------------------------------------------------------------------------
 

@@ -1,0 +1,22 @@
+{
+  "type": "groundzero:exotic_fabricating",
+  "energy_per_tick": 400,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "#c:gems/exotic_matter"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:neodymium_magnet"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:stabilised_exotic_matter"
+      }
+    }
+  ],
+  "time": 600
+}

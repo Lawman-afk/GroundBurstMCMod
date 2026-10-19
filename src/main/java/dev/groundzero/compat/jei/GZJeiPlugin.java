@@ -50,6 +50,10 @@ public final class GZJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.ELECTROLYSIS, GZMachines.ELECTROLYTIC_SEPARATOR.item().get());
         m.put(ProcessingKind.CRYO_CONDENSING, GZMachines.CRYOGENIC_CONDENSER.item().get());
         m.put(ProcessingKind.CHEMISTRY, GZMachines.CHEMICAL_PLANT.item().get());
+        m.put(ProcessingKind.FABRICATING, GZMachines.CIRCUIT_FABRICATOR.item().get());
+        m.put(ProcessingKind.CENTRIFUGING, GZMachines.GAS_CENTRIFUGE.item().get());
+        m.put(ProcessingKind.FUSION_SYNTHESIS, GZMachines.FUSION_FUEL_SYNTHESIZER.item().get());
+        m.put(ProcessingKind.EXOTIC_FABRICATING, GZMachines.EXOTIC_MATTER_FABRICATOR.item().get());
         return m;
     }
 
@@ -97,9 +101,22 @@ public final class GZJeiPlugin implements IModPlugin {
                 Component.translatable(MachineText.INFO_MEMBRANE));
         registration.addIngredientInfo(List.of(GZMachines.COMBUSTION_GENERATOR.item().get(), GZMachines.ORE_CRUSHER.item().get(),
                         GZMachines.ARC_FURNACE.item().get(), GZMachines.INDUSTRIAL_PRESS.item().get(),
-                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get(), GZMachines.CHEMICAL_PLANT.item().get())
+                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get(), GZMachines.CHEMICAL_PLANT.item().get(),
+                        GZMachines.CIRCUIT_FABRICATOR.item().get(), GZMachines.GAS_CENTRIFUGE.item().get(),
+                        GZMachines.FUSION_FUEL_SYNTHESIZER.item().get(), GZMachines.EXOTIC_MATTER_FABRICATOR.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
+        info(registration, MachineText.INFO_CIRCUIT_FABRICATOR, GZMachines.CIRCUIT_FABRICATOR.item().get());
+        info(registration, MachineText.INFO_GAS_CENTRIFUGE, GZMachines.GAS_CENTRIFUGE.item().get(),
+                dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_NUGGET.get());
+        info(registration, MachineText.INFO_FUSION_FUEL_SYNTHESIZER, GZMachines.FUSION_FUEL_SYNTHESIZER.item().get(),
+                dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET.get());
+        info(registration, MachineText.INFO_EXOTIC_MATTER_FABRICATOR, GZMachines.EXOTIC_MATTER_FABRICATOR.item().get());
+    }
+
+    private static void info(IRecipeRegistration registration, String key, ItemLike... items) {
+        registration.addIngredientInfo(java.util.Arrays.stream(items).map(i -> i.asItem().getDefaultInstance()).toList(),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(key));
     }
 
     @Override

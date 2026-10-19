@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_nuggets_enriched_uranium": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:nuggets/enriched_uranium"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:enriched_uranium_ingot"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_nuggets_enriched_uranium"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:enriched_uranium_ingot"
+    ]
+  }
+}

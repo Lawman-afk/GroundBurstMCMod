@@ -1,0 +1,26 @@
+{
+  "type": "groundzero:exotic_fabricating",
+  "energy_per_tick": 400,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "groundzero:stabilised_exotic_matter"
+    },
+    {
+      "count": 4,
+      "ingredient": "#c:storage_blocks/tungsten"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:quantum_circuit"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:singularity_seed"
+      }
+    }
+  ],
+  "time": 1200
+}

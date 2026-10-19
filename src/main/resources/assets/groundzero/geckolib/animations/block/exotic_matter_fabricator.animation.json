@@ -1,0 +1,181 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "working": {
+      "animation_length": 4.0,
+      "bones": {
+        "ring_a": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "4": [
+              -0.0,
+              -360.0,
+              0.0
+            ]
+          }
+        },
+        "ring_b": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "4": [
+              720.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "ring_c": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "4": [
+              -0.0,
+              -0.0,
+              360.0
+            ]
+          }
+        },
+        "shard": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "4": [
+              -0.0,
+              360.0,
+              0.0
+            ]
+          },
+          "position": {
+            "0": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "1": {
+              "vector": [
+                -0.0,
+                0.3,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3": {
+              "vector": [
+                -0.0,
+                -0.3,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "4": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        },
+        "sparks": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "4": [
+              -0.0,
+              -720.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": true
+    },
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "ring_a": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "ring_b": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "ring_c": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "shard": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          },
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "sparks": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

@@ -44,6 +44,10 @@ public class GroundZeroClient {
         event.register(GZMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
         event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
         event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
+        event.register(GZMenus.CIRCUIT_FABRICATOR.get(), MachineScreen::new);
+        event.register(GZMenus.GAS_CENTRIFUGE.get(), MachineScreen::new);
+        event.register(GZMenus.FUSION_FUEL_SYNTHESIZER.get(), MachineScreen::new);
+        event.register(GZMenus.EXOTIC_MATTER_FABRICATOR.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -54,6 +58,10 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.CIRCUIT_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CIRCUIT_FABRICATOR.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.GAS_CENTRIFUGE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.GAS_CENTRIFUGE.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.EXOTIC_MATTER_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.EXOTIC_MATTER_FABRICATOR.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.FLUID_TANK.get(), ctx -> new dev.groundzero.client.render.FluidTankRenderer());
         // The formed Chemical Plant spans 2x2x2 from its controller in any rotation.
         event.registerBlockEntityRenderer(GZBlockEntities.CHEMICAL_PLANT.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CHEMICAL_PLANT.get(), 2, 1));

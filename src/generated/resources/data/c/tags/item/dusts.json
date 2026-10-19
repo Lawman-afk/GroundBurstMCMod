@@ -11,6 +11,8 @@
     "#c:dusts/iron",
     "#c:dusts/gold",
     "#c:dusts/copper",
-    "#c:dusts/cinnabar"
+    "#c:dusts/cinnabar",
+    "#c:dusts/lithium_6",
+    "#c:dusts/depleted_uranium"
   ]
 }

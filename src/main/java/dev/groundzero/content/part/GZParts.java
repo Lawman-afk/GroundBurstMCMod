@@ -31,6 +31,17 @@ public final class GZParts {
     public static final DeferredItem<Item> PRESSURE_VESSEL = GZItems.simple("pressure_vessel", "Pressure Vessel", GZTab.MACHINES);
     public static final DeferredItem<Item> HEATING_ELEMENT = GZItems.simple("heating_element", "Heating Element", GZTab.MACHINES);
     public static final DeferredItem<Item> SERVO = GZItems.simple("servo", "Servo", GZTab.MACHINES);
+    /** Crafting part for now; the Battery Charger (slice 6) gives it a charge. */
+    public static final DeferredItem<Item> BATTERY = GZItems.simple("battery", "Battery", GZTab.MACHINES);
+
+    // --- Circuit Fabricator products (DESIGN.md §26.2) -----------------------------------------------------------------------
+    public static final DeferredItem<Item> BASIC_CIRCUIT = GZItems.simple("basic_circuit", "Basic Circuit", GZTab.MACHINES);
+    public static final DeferredItem<Item> ADVANCED_CIRCUIT = GZItems.simple("advanced_circuit", "Advanced Circuit", GZTab.MACHINES);
+    public static final DeferredItem<Item> MILITARY_CIRCUIT = GZItems.simple("military_circuit", "Military Circuit", GZTab.MACHINES);
+    public static final DeferredItem<Item> QUANTUM_CIRCUIT = GZItems.simple("quantum_circuit", "Quantum Circuit", GZTab.MACHINES,
+            p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
+    public static final DeferredItem<Item> SENSOR_ARRAY = GZItems.simple("sensor_array", "Sensor Array", GZTab.MACHINES);
+    public static final DeferredItem<Item> SUPERCONDUCTING_COIL = GZItems.simple("superconducting_coil", "Superconducting Coil", GZTab.MACHINES);
 
     // --- press dies (not consumed) -----------------------------------------------------------------------------------------
     public static final DeferredItem<Item> PLATE_DIE = die("plate_die", "Plate Die");

@@ -49,6 +49,8 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
         dropSelf(GZMachines.CHEMICAL_PLANT.block().get());
         dropSelf(GZMachines.WATER_PUMP.block().get());
+        dropSelf(GZMachines.CIRCUIT_FABRICATOR.block().get());
+        dropSelf(GZMachines.FUSION_FUEL_SYNTHESIZER.block().get());
         dropSelf(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().get());
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
@@ -56,7 +58,8 @@ public class GZBlockLoot extends BlockLootSubProvider {
         for (var pipe : dev.groundzero.content.fluid.GZFluids.pipes()) {
             dropSelf(pipe.block().get());
         }
-        for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER)) {
+        for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER,
+                GZMachines.GAS_CENTRIFUGE, GZMachines.EXOTIC_MATTER_FABRICATOR)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());

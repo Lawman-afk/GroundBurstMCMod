@@ -116,6 +116,7 @@ public class GZRecipeProvider extends RecipeProvider {
         parts();
         gases();
         chemistry();
+        slice5();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -221,8 +222,7 @@ public class GZRecipeProvider extends RecipeProvider {
                 .save(output);
         membrane(GZParts.OXYGEN_MEMBRANE, Items.LAPIS_LAZULI);
         membrane(GZParts.NITROGEN_MEMBRANE, Items.QUARTZ);
-        // DESIGN.md §26.4. The condenser calls for an advanced circuit; until the Circuit Fabricator exists
-        // (Phase 4, slice 5) it takes any basic circuit.
+        // DESIGN.md §26.4: the separator takes a basic circuit, the condenser an advanced one.
         shaped(RecipeCategory.REDSTONE, GZMachines.ELECTROLYTIC_SEPARATOR.item(), 1)
                 .define('W', GZTags.commonItem("wires/gold")).define('G', Items.GLASS).define('P', GZTags.commonItem("plates/copper"))
                 .define('F', GZParts.MACHINE_FRAME).define('B', GZTags.BASIC_CIRCUITS).define('K', Items.CAULDRON)
@@ -231,8 +231,8 @@ public class GZRecipeProvider extends RecipeProvider {
                 .save(output);
         shaped(RecipeCategory.REDSTONE, GZMachines.CRYOGENIC_CONDENSER.item(), 1)
                 .define('P', GZTags.commonItem("plates/copper")).define('M', GZParts.ELECTRIC_MOTOR).define('F', GZParts.MACHINE_FRAME)
-                .define('V', GZParts.PRESSURE_VESSEL).define('B', GZTags.BASIC_CIRCUITS)
-                .pattern("PMP").pattern("PFP").pattern("BV ")
+                .define('V', GZParts.PRESSURE_VESSEL).define('A', GZTags.ADVANCED_CIRCUITS)
+                .pattern("PMP").pattern("PFP").pattern("AV ")
                 .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL))
                 .save(output);
     }
@@ -334,17 +334,121 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("PPP").pattern("GGG").pattern("PPP")
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
                 .save(output);
-        // Interim recipe until advanced circuits and batteries arrive (DESIGN.md §26 lists both).
+        // DESIGN.md §26.8: glass, diamond, advanced circuit, battery.
         shaped(RecipeCategory.TOOLS, GZMultiblocks.HOLO_PROJECTOR.get(), 1)
-                .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('D', Tags.Items.GEMS_DIAMOND).define('B', GZTags.BASIC_CIRCUITS)
-                .define('P', GZTags.commonItem("plates/steel")).define('R', Tags.Items.DUSTS_REDSTONE)
-                .pattern("GDG").pattern("RBR").pattern(" P ")
-                .unlockedBy("has_basic_circuit", has(GZTags.BASIC_CIRCUITS))
+                .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('D', Tags.Items.GEMS_DIAMOND).define('A', GZTags.ADVANCED_CIRCUITS)
+                .define('B', GZParts.BATTERY)
+                .pattern("GDG").pattern(" A ").pattern(" B ")
+                .unlockedBy("has_advanced_circuit", has(GZTags.ADVANCED_CIRCUITS))
                 .save(output);
         shapeless(RecipeCategory.REDSTONE, GZMultiblocks.ITEM_PORT.item(), 1)
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(Items.HOPPER)
                 .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
                 .save(output);
+    }
+
+    /**
+     * Slice 5 (DESIGN.md §26.2-26.4): Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer and Exotic Matter
+     * Fabricator recipes, their machines, the battery, enriched/depleted uranium and insulated cable. Game abstractions:
+     * one machine step each.
+     */
+    private void slice5() {
+        Ingredient rareEarth = tag(GZTags.commonItem("dusts/rare_earth"));
+        Ingredient goldWire = tag(GZTags.commonItem("wires/gold"));
+        Ingredient filament = Ingredient.of(GZParts.TUNGSTEN_FILAMENT);
+        Ingredient advanced = tag(GZTags.ADVANCED_CIRCUITS);
+
+        // Circuit Fabricator: circuits, sensor arrays, superconducting coils (coils use liquid nitrogen from the coolant tank).
+        fab("basic_circuit", List.of(in(tag(GZTags.commonItem("wires/copper")), 2), in(tag(Tags.Items.DUSTS_REDSTONE), 2),
+                in(Ingredient.of(GZChemicals.PLASTIC_SHEET), 1)), List.of(), out(GZParts.BASIC_CIRCUIT, 2), 200);
+        fab("advanced_circuit", List.of(in(tag(GZTags.BASIC_CIRCUITS), 2), in(goldWire, 2), in(rareEarth, 1), in(tag(Tags.Items.GEMS_QUARTZ), 1)),
+                List.of(), out(GZParts.ADVANCED_CIRCUIT, 1), 300);
+        fab("military_circuit", List.of(in(advanced, 2), in(filament, 1), in(tag(Tags.Items.GEMS_DIAMOND), 1), in(rareEarth, 2)),
+                List.of(), out(GZParts.MILITARY_CIRCUIT, 1), 400);
+        fab("quantum_circuit", List.of(in(Ingredient.of(GZParts.MILITARY_CIRCUIT), 1),
+                in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.STABILISED_EXOTIC_MATTER), 1), in(Ingredient.of(GZParts.SUPERCONDUCTING_COIL), 1)),
+                List.of(), out(GZParts.QUANTUM_CIRCUIT, 1), 600);
+        fab("sensor_array", List.of(in(advanced, 1), in(tag(Tags.Items.GLASS_BLOCKS_COLORLESS), 1), in(rareEarth, 1), in(goldWire, 2)),
+                List.of(), out(GZParts.SENSOR_ARRAY, 1), 300);
+        fab("superconducting_coil", List.of(in(filament, 2), in(rareEarth, 1), in(goldWire, 2)),
+                List.of(fluid(GZFluids.LIQUID_NITROGEN, 1_000)), out(GZParts.SUPERCONDUCTING_COIL, 1), 400);
+
+        // Gas Centrifuge: one run of UF6 gives enriched uranium nuggets and depleted uranium dust (cascades run faster).
+        machine(ProcessingKind.CENTRIFUGING, "centrifuging/enriched_uranium", List.of(), null,
+                List.of(fluid(GZFluids.URANIUM_HEXAFLUORIDE, 1_000)),
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_NUGGET, 2), out(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_DUST, 1)),
+                List.of(), 600, dev.groundzero.content.machine.GasCentrifugeBlockEntity.ENERGY_PER_TICK);
+        storage("nuggets/enriched_uranium", "ingots/enriched_uranium", dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_NUGGET,
+                dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_INGOT);
+        cook("dusts/depleted_uranium", dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_DUST,
+                dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT, 0.3f);
+        crush("crushing/depleted_uranium_dust_from_ingot", tag(GZTags.commonItem("ingots/depleted_uranium")), 1,
+                dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_DUST, 1, null, 0, 100);
+
+        // Fusion Fuel Synthesizer: lithium-6 dust and deuterium gas into a lithium deuteride pellet.
+        machine(ProcessingKind.FUSION_SYNTHESIS, "fusion_synthesis/lithium_deuteride_pellet",
+                List.of(in(tag(GZTags.commonItem("dusts/lithium_6")), 1)), null, List.of(fluid(GZFluids.DEUTERIUM, 1_000)),
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET, 1)), List.of(), 300,
+                dev.groundzero.content.machine.FusionFuelSynthesizerBlockEntity.ENERGY_PER_TICK);
+
+        // Exotic Matter Fabricator.
+        int ef = dev.groundzero.content.machine.ExoticMatterFabricatorBlockEntity.ENERGY_PER_TICK;
+        machine(ProcessingKind.EXOTIC_FABRICATING, "exotic_fabricating/stabilised_exotic_matter",
+                List.of(in(tag(GZTags.commonItem("gems/exotic_matter")), 4), in(Ingredient.of(GZParts.NEODYMIUM_MAGNET), 1)), null,
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.STABILISED_EXOTIC_MATTER, 1)), 600, ef);
+        machine(ProcessingKind.EXOTIC_FABRICATING, "exotic_fabricating/containment_cell",
+                List.of(in(tag(GZTags.commonItem("plates/tungsten")), 2), in(Ingredient.of(GZParts.SUPERCONDUCTING_COIL), 2),
+                        in(tag(Tags.Items.GLASS_BLOCKS_COLORLESS), 1)), null,
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.CONTAINMENT_CELL, 1)), 400, ef);
+        machine(ProcessingKind.EXOTIC_FABRICATING, "exotic_fabricating/singularity_seed",
+                List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.STABILISED_EXOTIC_MATTER), 4),
+                        in(tag(GZTags.commonItem("storage_blocks/tungsten")), 4), in(Ingredient.of(GZParts.QUANTUM_CIRCUIT), 1)), null,
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.SINGULARITY_SEED, 1)), 1200, ef);
+
+        // Battery (DESIGN.md §26.2): a crafting part until the Battery Charger arrives.
+        shaped(RecipeCategory.MISC, GZParts.BATTERY, 1)
+                .define('C', GZTags.commonItem("plates/copper")).define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('L', GZTags.commonItem("dusts/lithium")).define('P', GZChemicals.PLASTIC_SHEET)
+                .pattern(" C ").pattern("LRL").pattern(" P ")
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_SHEET), has(GZChemicals.PLASTIC_SHEET))
+                .save(output);
+        // Insulated cable (DESIGN.md §26.4): six copper cables wrapped in plastic. The Exotic Matter Fabricator draws
+        // 400 FE/t, more than a copper run carries.
+        shapeless(RecipeCategory.REDSTONE, GZMachines.CABLES.get(1).item(), 6)
+                .requires(GZMachines.CABLES.get(0).item(), 6).requires(GZChemicals.PLASTIC_SHEET)
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_SHEET), has(GZChemicals.PLASTIC_SHEET))
+                .save(output);
+
+        // The machines (DESIGN.md §26.4).
+        shaped(RecipeCategory.REDSTONE, GZMachines.CIRCUIT_FABRICATOR.item(), 1)
+                .define('G', Tags.Items.GLASS_BLOCKS_COLORLESS).define('S', GZParts.SERVO).define('F', GZParts.MACHINE_FRAME)
+                .define('H', GZParts.HANDMADE_CIRCUIT_BOARD)
+                .pattern(" G ").pattern("SFS").pattern(" H ")
+                .unlockedBy(getHasName(GZParts.SERVO), has(GZParts.SERVO))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.GAS_CENTRIFUGE.item(), 1)
+                .define('R', GZTags.commonItem("rods/tungsten")).define('M', GZParts.ELECTRIC_MOTOR).define('F', GZParts.MACHINE_FRAME)
+                .define('D', GZParts.DENSE_STEEL_PLATE).define('A', GZTags.ADVANCED_CIRCUITS)
+                .pattern("DRD").pattern("MFM").pattern(" A ")
+                .unlockedBy("has_advanced_circuit", has(GZTags.ADVANCED_CIRCUITS))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.FUSION_FUEL_SYNTHESIZER.item(), 1)
+                .define('V', GZParts.PRESSURE_VESSEL).define('T', GZTags.commonItem("plates/tungsten")).define('F', GZParts.MACHINE_FRAME)
+                .define('H', GZParts.HEATING_ELEMENT).define('A', GZTags.ADVANCED_CIRCUITS)
+                .pattern(" T ").pattern("VFV").pattern("HA ")
+                .unlockedBy("has_advanced_circuit", has(GZTags.ADVANCED_CIRCUITS))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.EXOTIC_MATTER_FABRICATOR.item(), 1)
+                .define('C', GZParts.SUPERCONDUCTING_COIL).define('E', Items.ENDER_EYE).define('T', GZTags.commonItem("plates/tungsten"))
+                .define('F', GZParts.MACHINE_FRAME).define('M', GZParts.MILITARY_CIRCUIT)
+                .pattern("CEC").pattern("TFT").pattern("CMC")
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT))
+                .save(output);
+    }
+
+    private void fab(String name, List<SizedIngredient> inputs, List<SizedFluidIngredient> fluids, ProcessingRecipe.Output result, int time) {
+        machine(ProcessingKind.FABRICATING, "fabricating/" + name, inputs, null, fluids, List.of(result), List.of(), time,
+                dev.groundzero.content.machine.CircuitFabricatorBlockEntity.ENERGY_PER_TICK);
     }
 
     private void chem(String name, List<SizedIngredient> inputs, List<SizedFluidIngredient> fluids, List<ProcessingRecipe.Output> outputs,

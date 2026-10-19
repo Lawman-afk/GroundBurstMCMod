@@ -5,6 +5,8 @@
     "#c:ingots/tungsten",
     "#c:ingots/steel",
     "#c:ingots/cobalt",
-    "#c:ingots/tungsten_carbide"
+    "#c:ingots/tungsten_carbide",
+    "#c:ingots/depleted_uranium",
+    "#c:ingots/enriched_uranium"
   ]
 }

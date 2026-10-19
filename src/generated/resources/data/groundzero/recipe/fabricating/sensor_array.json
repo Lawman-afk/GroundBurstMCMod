@@ -1,0 +1,30 @@
+{
+  "type": "groundzero:fabricating",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:circuits/advanced"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:glass_blocks/colorless"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/rare_earth"
+    },
+    {
+      "count": 2,
+      "ingredient": "#c:wires/gold"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:sensor_array"
+      }
+    }
+  ],
+  "time": 300
+}

@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=true,facing=north": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=false,facing=east": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=true,facing=east": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=false,facing=south": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=true,facing=south": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=false,facing=west": {
+      "model": "groundzero:block/circuit_fabricator"
+    },
+    "active=true,facing=west": {
+      "model": "groundzero:block/circuit_fabricator"
+    }
+  }
+}

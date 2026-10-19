@@ -193,6 +193,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         setChanged();
     }
 
+    /** Lines for the GUI's CRT readout (layouts that have one), built from the menu's synced values. */
+    public List<Component> readout(MachineMenu menu) {
+        return List.of();
+    }
+
     protected int extraDataCount() {
         return 0;
     }
@@ -405,6 +410,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     public ContainerData data() {
         return data;
+    }
+
+    /** Why the machine is (not) running, as of its last tick. */
+    public MachineStatus status() {
+        return status;
     }
 
     public void cycleRedstoneMode() {

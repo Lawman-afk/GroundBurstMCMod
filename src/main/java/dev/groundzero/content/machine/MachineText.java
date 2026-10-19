@@ -61,6 +61,16 @@ public final class MachineText {
             "Right-click a side of a fluid pipe to cycle it: Normal (fluid travels both ways), Pull (draws fluid out of the tank or machine it touches; shown by a striped collar), Disconnected. Right-click a cable side to connect or disconnect it. Right-click a machine to turn it. Sneak-right-click a pipe, cable, machine, tank or structure block to pick it up.");
     public static final String INFO_FLUIDS = GZLang.add(GroundZero.MODID + ".info.fluids",
             "Chemical fluids live in machine tanks, pipes, canisters and (liquids only) buckets. Spilled acids burn, napalm ignites and liquid oxygen or nitrogen freeze anything standing in them.");
+    public static final String CASCADE = GZLang.add(GroundZero.MODID + ".gui.cascade", "CASCADE %s/%s");
+    public static final String CASCADE_SPEED = GZLang.add(GroundZero.MODID + ".gui.cascade_speed", "SPEED +%s%%");
+    public static final String INFO_GAS_CENTRIFUGE = GZLang.add(GroundZero.MODID + ".info.gas_centrifuge",
+            "Pipe uranium hexafluoride gas from the Chemical Plant into the Gas Centrifuge to get enriched uranium nuggets and depleted uranium dust. Cascade: centrifuges standing side by side in a straight line run 15% faster for every other centrifuge in the line, counting up to 8 (+105%). The screen shows the cascade size.");
+    public static final String INFO_CIRCUIT_FABRICATOR = GZLang.add(GroundZero.MODID + ".info.circuit_fabricator",
+            "Makes basic, advanced, military and quantum circuits, sensor arrays and superconducting coils. Coils need liquid nitrogen: pipe it into the coolant tank from a Cryogenic Condenser, or pour in a canister.");
+    public static final String INFO_FUSION_FUEL_SYNTHESIZER = GZLang.add(GroundZero.MODID + ".info.fusion_fuel_synthesizer",
+            "Presses lithium-6 dust with deuterium gas (piped in from an Electrolytic Separator) into lithium deuteride pellets, the fuel of thermonuclear weapons.");
+    public static final String INFO_EXOTIC_MATTER_FABRICATOR = GZLang.add(GroundZero.MODID + ".info.exotic_matter_fabricator",
+            "Holds exotic matter in a spinning magnetic cage to make stabilised exotic matter, containment cells and singularity seeds. It draws 400 FE a tick, more than copper cable carries: feed it with insulated or high-voltage cable.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

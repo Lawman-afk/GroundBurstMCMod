@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "#c:circuits/advanced",
+    "F": "groundzero:machine_frame",
+    "H": "groundzero:heating_element",
+    "T": "#c:plates/tungsten",
+    "V": "groundzero:pressure_vessel"
+  },
+  "pattern": [
+    " T ",
+    "VFV",
+    "HA "
+  ],
+  "result": {
+    "id": "groundzero:fusion_fuel_synthesizer"
+  }
+}

@@ -13,8 +13,10 @@ public final class GZTags {
     /** Blocks and items that emit radiation (strength comes from a data map in Phase 12). */
     public static final BlockItemTagId RADIOACTIVE = BlockItemTagId.create(GroundZero.id("radioactive"), GroundZero.id("radioactive"));
 
-    /** Anything that counts as a basic circuit in recipes (the Handmade Circuit Board until the Circuit Fabricator). */
+    /** Anything that counts as a basic circuit in recipes: the Handmade Circuit Board and every c:circuits/basic. */
     public static final TagKey<Item> BASIC_CIRCUITS = TagKey.create(Registries.ITEM, GroundZero.id("basic_circuits"));
+    /** Advanced circuits (ours and any mod's c:circuits/advanced). */
+    public static final TagKey<Item> ADVANCED_CIRCUITS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "circuits/advanced"));
     /** Industrial Press dies. */
     public static final TagKey<Item> PRESS_DIES = TagKey.create(Registries.ITEM, GroundZero.id("press_dies"));
 

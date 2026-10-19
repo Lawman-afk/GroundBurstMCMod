@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundzero:copper_cable",
+    "groundzero:copper_cable",
+    "groundzero:copper_cable",
+    "groundzero:copper_cable",
+    "groundzero:copper_cable",
+    "groundzero:copper_cable",
+    "groundzero:plastic_sheet"
+  ],
+  "result": {
+    "count": 6,
+    "id": "groundzero:insulated_cable"
+  }
+}
