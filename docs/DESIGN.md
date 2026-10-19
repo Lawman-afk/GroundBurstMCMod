@@ -301,13 +301,21 @@ All machines use **NeoForge Energy (FE)** so they interoperate with other tech m
 | Block | Output / capacity | Notes |
 |---|---|---|
 | Combustion Generator | 60 FE/t | Burns any furnace fuel; synthetic fuel canister = 24 000 FE. Exhaust smoke, rumble loop. |
-| Diesel Generator | 180 FE/t | Burns synthetic/liquid fuel canisters only. Piston animation. |
+| Diesel Generator | 180 FE/t | Burns synthetic fuel or liquid rocket fuel piped into its tank (canisters/buckets pour in). Piston animation. |
 | RTG (radioisotope thermoelectric generator) | 40 FE/t forever-ish | Plutonium ingot lasts 10 in-game days; emits low radiation if not shielded by lead blocks. Glowing fins. |
-| Breeder Reactor (multiblock) | 1 200 FE/t | Burns uranium fuel rods, breeds plutonium from DU target rods and tritium from Li-6 target rods. Cherenkov-blue core. Needs water coolant; overheats & SCRAMs if starved (no meltdown griefing by default; meltdown is a config option). |
+| Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown is a config option, off by default. Cherenkov-blue core. |
+| Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas or LiD pellets. Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
+| Singularity Reactor ("special" multiblock) | up to ~25 000 FE/t | A singularity seed held in a containment cage (a large version of the Exotic Matter Fabricator's ring cage). Feed it any items or blocks; it turns their matter into energy, and the accretion glow brightens as it is fed. Holding the cage costs a little power from its own buffer; if the buffer runs dry the core collapses: by default it just pops and the seed is lost; as a config option it sets off a small version of the Phase 11 singularity effect. |
 | Capacitor Bank (T1/T2/T3) | 100k / 1M / 10M FE | Superweapons draw from these during charge. Charge gauge on the model. |
 | Power cables: copper (256 FE/t), insulated (1 024), high-voltage (8 192) | — | Connected-texture cable models with insulators on HV; HV cable arcs when EMPed. |
 
 Superweapons and large machines need power while charging (as in Generals: low power pauses the countdown).
+
+**Power ladder** (agreed with the user 2026-10-20): Combustion Generator 60 → Diesel Generator 180 / RTG 40 (slice 6,
+with Capacitor Banks to buffer the big reactors and superweapons) → Fission Reactor ~1 200 (slice 7, with the
+Particle Accelerator) → Fusion Reactor ~6 000 and Singularity Reactor ~25 000 (slice 8). For scale: the Exotic Matter
+Fabricator (400 FE/t) needs 7 Combustion Generators, 3 Diesel Generators, or a third of a Fission Reactor. All three
+reactors are game abstractions (invented parts, simple fuel-in/energy-out rules), never real reactor designs (§30).
 
 ---
 
@@ -330,7 +338,9 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Circuit Fabricator** | 1 block | 40 FE/t | circuits, sensor arrays, superconducting coils | Glass-topped clean box, robotic arm (animated) placing chips; green PCB visible. |
 | **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t (needs insulated or HV cable) | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
 | **Particle Accelerator** | multiblock ring 9×9×3 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
-| **Breeder Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
+| **Fission Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
+| **Fusion Reactor** | multiblock ring 7×7×3 | generates (ignition from capacitor banks) | power | See §7. |
+| **Singularity Reactor** | multiblock 5×5×5 | generates (feeds on matter) | power | See §7. |
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
 | **Decontamination Shower** | 1×2 tall | 20 FE/t | removes contamination from player & items | Shower frame with yellow nozzles, water + foam particles. |
 | **Battery Charger** | 1 block | — | recharges energy cells/guns/Geiger | Cradle with charge LEDs. |
@@ -1019,7 +1029,7 @@ Layer `y0` is the bottom. `X` = controller, `R` = reinforced concrete, `H` = haz
 `C` = capacitor cell, `S` = magnet segment, `E` = energy port, `I` = item port, `W` = coolant port, `U` = fuel port,
 `.` = air (required empty), `*` = any.
 
-**Breeder Reactor** (3×3×4):
+**Fission Reactor** (3×3×4, formerly the Breeder Reactor):
 ```
 y0: LLL / LWL / LXL      (X faces out of the front middle)
 y1: LGL / G.G / LGL      (core space: rendered fuel rods + Cherenkov glow)
@@ -1027,6 +1037,16 @@ y2: LGL / G.G / LGL
 y3: LUL / LEL / LIL
 ```
 **Chemical Plant** (2×2×2): `y0: XM / MI`, `y1: GG / GG` (tanks rendered inside).
+
+**Fusion Reactor** (7×7×3 ring, first draft; `T` = toroidal field coil, `V` = vacuum vessel casing): a hollow square
+ring 1 wide. `y0` ring of `M` with `X` at the front midpoint, `E` at the back midpoint; `y1` ring of `T` coils with `G`
+viewports at the four side midpoints and `U` (fuel) / `W` (liquid nitrogen) ports at the corners; `y2` ring of `V`.
+Interior 5×5 is free (the plasma ring is rendered along the vessel).
+
+**Singularity Reactor** (5×5×5, first draft; `Q` = containment emitter, `K` = core cradle): `y0` 5×5 `M` with `X`
+front-middle, `I` (matter feed) and `E` at the sides; `y1–y3` `F` posts at the four corners, `Q` emitters at the four
+face midpoints of `y2`, `G` elsewhere on the faces, 3×3×3 interior air with the `K` cradle at its centre holding the
+seed; `y4` 5×5 `M` roof with a `Q` emitter at the centre.
 
 **Particle Accelerator** (9×9×3 ring): a hollow square ring 1 wide on y1 made of 28 `S` magnet segments with `I`
 injector and target chamber at opposite midpoints, `X` beside the injector; y0 ring of `P` under it; y2 ring of `F`
@@ -1125,7 +1145,7 @@ Tesla/Particle/Antimatter/EMP cells, Field Manual.
 Stations: **CT** crafting table · **FU** furnace/blast furnace · **OC** Ore Crusher · **AF** Arc Furnace ·
 **IP** Industrial Press · **CP** Chemical Plant · **GC** Gas Centrifuge · **ES** Electrolytic Separator ·
 **FS** Fusion Fuel Synthesizer · **CC** Cryogenic Condenser · **CF** Circuit Fabricator · **EF** Exotic Matter
-Fabricator · **PA** Particle Accelerator · **BR** Breeder Reactor · **AB** Assembly Bench (Fabricate tab = 3×3 grid
+Fabricator · **PA** Particle Accelerator · **FR** Fission Reactor · **AB** Assembly Bench (Fabricate tab = 3×3 grid
 + 2 precision slots; Bomb/Missile/Ammo tabs = component slots).
 Ingredient lists are final in content; exact crafting-grid shapes are fixed in datagen and shown in JEI and the
 manual. Processing times/energy are tuned in implementation and recorded here then.
@@ -1186,7 +1206,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 |---|---|---|
 | Uranium fuel rod | CT | 3 natural uranium ingot, 2 steel rod |
 | DU target rod / Li-6 target rod | CT | 3 DU ingot / 3 Li-6 dust, 2 steel rod |
-| Irradiated target rod | BR | target rod (in the breeding slots, over time) |
+| Irradiated target rod | FR | target rod (in the breeding slots, over time) |
 | Salvaged U-235 / Pu nuggets | CP | damaged warhead (loot) + sulfuric acid |
 | Cobalt ingot | AF | 8 cobalt dust |
 | Cobalt-59 jacket | IP | 4 cobalt ingot |
@@ -1213,7 +1233,9 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Battery Charger | CT | machine frame, 2 capacitor, basic circuit |
 | Decontamination Shower | CT | 3 steel plate, 2 iron bars, water bucket, basic circuit, electric motor |
 | Ordnance Assembly Bench | CT | 3 steel plate, crafting table, anvil, servo, basic circuit, chest |
-| Breeder reactor parts | CT | casing: lead plate + dense steel plate + concrete; glass: lead plate + glass; ports: casing + hopper/bucket/cable; controller: casing + military circuit + CRT display |
+| Fission reactor parts | CT | casing: lead plate + dense steel plate + concrete; glass: lead plate + glass; ports: casing + hopper/bucket/cable; controller: casing + military circuit + CRT display |
+| Fusion reactor parts (first draft) | CT | toroidal field coil: 4 superconducting coil + 2 dense steel plate + tungsten plate; vacuum vessel casing: machine casing + 2 tungsten plate; viewport: reactor glass + tungsten plate; controller: machine casing + military circuit + 2 CRT display + pressure vessel |
+| Singularity reactor parts (first draft) | CT / EF | containment emitter (EF): containment cell + 2 superconducting coil + military circuit; core cradle (EF): stabilised exotic matter + 4 tungsten plate + neodymium magnet; controller (CT): machine casing + quantum circuit + 2 CRT display; the core itself is a singularity seed placed in the cradle |
 | Accelerator parts | CT | magnet segment: 2 superconducting coil + 4 dense steel plate + copper wire; injector/target: segment + military circuit; controller: casing + quantum circuit + CRT display |
 | Structural blocks | CT | reinforced concrete ×8: 8 concrete (any colour) + steel rod; hazard concrete: reinforced concrete + yellow & black dye; steel frame ×4: 4 steel rod + steel plate; steel plating ×4: 4 steel plate; machine casing: machine frame + 4 steel plate; dish panel ×2: 2 steel plate + copper plate |
 
@@ -1330,18 +1352,18 @@ TIER 2  MISSILE AGE  rare earths → Circuit Fabricator (basic/advanced circuits
    │      Cryogenic Condenser (LOX/LN₂) → cryo gun, liquid-fuel stage
    │
 TIER 3  ATOMIC       uranium → yellowcake → UF₆ → Gas Centrifuge cascade (U-235)
-   │    Breeder Reactor (power, plutonium, tritium) · hazmat · Geiger · RTG · decon
+   │    Fission Reactor (power, plutonium, tritium) · hazmat · Geiger · RTG · decon
    │    ⇒ tactical nuke, fission, boosted fission, dirty bomb, mini-nuke launcher, Launch Complex,
    │      GPS/laser guidance, Launch Control Station, designator, SCUD Storm (+ Anthrax Beta)
    │
 TIER 4  THERMONUCLEAR  lithium + cinnabar mercury → Li-6 · Electrolytic Separator → deuterium
-   │    Fusion Fuel Synthesizer (LiD) · military circuits · superconducting coils
+   │    Fusion Fuel Synthesizer (LiD) · military circuits · superconducting coils · Fusion Reactor
    │    ⇒ H-bomb, Tsar, neutron, cobalt, MIRV, ICBM boosters, Missile Silo, storm bomb, cryo bomb,
    │      EMP bomb, tesla rifle, EMP gun, railgun, lead-lined hazmat, Nuclear Missile Silo (China),
    │      Anthrax Gamma, Satellite Uplink + orbital rods
    │
 TIER 5  EXOTIC       the End: void geodes → exotic shards → Exotic Matter Fabricator
-        Particle Accelerator (antimatter) · quantum circuits
+        Particle Accelerator (antimatter) · quantum circuits · Singularity Reactor
         ⇒ antimatter bomb, singularity bomb, antimatter rifle, singularity cannon, particle beam rifle,
           Particle Uplink Cannon (USA), Advanced CBRN suit, point-defence laser
 ```
@@ -1432,3 +1454,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Insulated cable recipe added (6 copper cable + plastic sheet, §26.4) because the Exotic Matter Fabricator draws 400 FE/t and copper cable carries 256. The HV cable recipe still waits: §26.4 lists 10 ingredients (6 insulated + 3 filament + plastic), more than a crafting grid holds. |
 | 2026-10-20 | "Needs more fluid" also shows when a recipe's items are all loaded but its fluid tank is empty (it only showed for a partly filled tank). A fluid-only recipe counts once one of its fluids is in a tank. |
 | 2026-10-20 | The GUI's CRT readout is filled by the block entity (generator output and buffer; centrifuge cascade size and speed bonus). |
+| 2026-10-20 | Late-game power ladder (agreed with the user): Diesel Generator, RTG and Capacitor Banks in slice 6; the Breeder Reactor becomes the **Fission Reactor** (heat, control-rod slider, piped water coolant, SCRAM; damaging meltdown only by config) in slice 7 with the Particle Accelerator; a **Fusion Reactor** (tokamak ring, capacitor-bank ignition, LN₂ for its magnets, ~6 000 FE/t) and a **Singularity Reactor** (matter-fed singularity in a containment cage, ~25 000 FE/t, collapses if its cage loses power) in slice 8. Layouts and part recipes in §23.3/§26.4 are first drafts, fixed when each slice is built. |

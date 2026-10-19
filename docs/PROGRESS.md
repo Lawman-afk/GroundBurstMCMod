@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -16,7 +16,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
-| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–5 done) |
+| 4 | Power, cables, processing machines, multiblock framework, Fission Reactor, Particle Accelerator, Fusion and Singularity Reactors | **in progress** (slices 1–5 done; 6: diesel/RTG/capacitors/charger/decon; 7: Fission Reactor + Particle Accelerator; 8: Fusion + Singularity Reactors) |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
@@ -123,7 +123,9 @@ checklist for the user.
 | Exotic Matter Fabricator | done (slice 5: 2-tall cage of three tumbling ring gimbals round a floating shard; stabilised exotic matter, containment cell, singularity seed; 400 FE/t) — needs in-game test |
 | Battery Charger, Decontamination Shower | todo |
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (Holo-Projector on its final recipe since slice 5; slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
-| Breeder Reactor multiblock | todo |
+| Fission Reactor multiblock (formerly Breeder Reactor; heat, control rods, coolant, SCRAM) | todo (slice 7) |
+| Fusion Reactor multiblock (tokamak, capacitor ignition, LN2 magnets) | todo (slice 8) |
+| Singularity Reactor multiblock (matter-fed, containment cage) | todo (slice 8) |
 | Particle Accelerator multiblock | todo |
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
 | Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases as rising clouds with upside-down buckets), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
