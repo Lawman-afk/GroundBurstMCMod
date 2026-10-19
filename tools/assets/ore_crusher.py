@@ -26,8 +26,10 @@ def tone(d: str) -> int:
 def build() -> tuple[GeoModel, Tex, Tex]:
     g = GeoModel(NAME, tex_size=(128, 128))
     g.bone("frame")
-    g.bone("roller_n", pivot=(0, 12.5, -2.5), parent="frame")
-    g.bone("roller_s", pivot=(0, 12.5, 2.5), parent="frame")
+    # Roller axes sit high enough that the spinning teeth never dip through the throat plate (y 12).
+    RY = 14.2
+    g.bone("roller_n", pivot=(0, RY, -2.5), parent="frame")
+    g.bone("roller_s", pivot=(0, RY, 2.5), parent="frame")
     g.bone("pulley", pivot=(11.5, 6.5, 0), parent="frame")
 
     F = "frame"
@@ -46,11 +48,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         add("post", g.box(f"post{i}", (x, 2, z), (x + 1, 11, z + 1), faces=("north", "south", "east", "west"), bone=F))
 
     # Hopper walls, splayed outward 18 degrees around their bottom edge.
-    add("hopper", g.box("hop_n", (-7, 12, -7), (7, 16, -6), rotation={"origin": (0, 12, -6.5), "x": 18}, bone=F))
-    add("hopper", g.box("hop_s", (-7, 12, 6), (7, 16, 7), rotation={"origin": (0, 12, 6.5), "x": -18}, bone=F))
-    add("hopper", g.box("hop_e", (6, 12, -6), (7, 16, 6), rotation={"origin": (6.5, 12, 0), "z": -18}, bone=F))
-    add("hopper", g.box("hop_w", (-7, 12, -6), (-6, 16, 6), rotation={"origin": (-6.5, 12, 0), "z": 18}, bone=F))
-    add("throat", g.box("throat", (-6, 11.5, -6), (6, 12, 6), faces=("up",), bone=F))
+    # The walls start 0.3 above the throat plate so their tilted lower edges never cut through it.
+    add("hopper", g.box("hop_n", (-7, 12.3, -7), (7, 16, -6), rotation={"origin": (0, 12.3, -6.5), "x": 18}, bone=F))
+    add("hopper", g.box("hop_s", (-7, 12.3, 6), (7, 16, 7), rotation={"origin": (0, 12.3, 6.5), "x": -18}, bone=F))
+    add("hopper", g.box("hop_e", (6, 12.3, -6), (7, 16, 6), rotation={"origin": (6.5, 12.3, 0), "z": -18}, bone=F))
+    add("hopper", g.box("hop_w", (-7, 12.3, -6), (-6, 16, 6), rotation={"origin": (-6.5, 12.3, 0), "z": 18}, bone=F))
+    add("throat", g.box("throat", (-7.5, 11.5, -7.5), (7.5, 12, 7.5), faces=("up",), bone=F))
 
     # Front: discharge chute + dust tray, status lamp, kick plate.
     add("chute", g.box("chute", (-3, 2, -8.5), (3, 6, -7), faces=("north", "east", "west", "up"), bone=F))
@@ -72,12 +75,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     # Rollers: octagonal cores with eight teeth each, along X.
     for rn, zc in (("roller_n", -2.5), ("roller_s", 2.5)):
-        add("roller", g.box(f"{rn}_core", (-5.5, 11.2, zc - 1.3), (5.5, 13.8, zc + 1.3), bone=rn))
-        add("roller", g.box(f"{rn}_core45", (-5.35, 11.2, zc - 1.3), (5.35, 13.8, zc + 1.3),
-                            rotation={"origin": (0, 12.5, zc), "x": 45}, bone=rn))
+        add("roller", g.box(f"{rn}_core", (-5.5, RY - 1.0, zc - 1.0), (5.5, RY + 1.0, zc + 1.0), bone=rn))
+        add("roller", g.box(f"{rn}_core45", (-5.35, RY - 1.0, zc - 1.0), (5.35, RY + 1.0, zc + 1.0),
+                            rotation={"origin": (0, RY, zc), "x": 45}, bone=rn))
         for k in range(8):
-            add("tooth", g.box(f"{rn}_tooth{k}", (-5, 14, zc - 0.5), (5, 14.8, zc + 0.5), faces=("up", "north", "south"),
-                               rotation={"origin": (0, 12.5, zc), "x": k * 45 + 22.5}, bone=rn))
+            add("tooth", g.box(f"{rn}_tooth{k}", (-5, RY + 1.05, zc - 0.4), (5, RY + 1.65, zc + 0.4), faces=("up", "north", "south"),
+                               rotation={"origin": (0, RY, zc), "x": k * 45 + 22.5}, bone=rn))
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -118,7 +121,11 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             else:
                 t.rect(x, y, w, h, steel[tone(d)])
         g.paint_all(tex, b, hop)
-    g.paint_all(tex, parts["throat"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT.deep))
+    def throat(t, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, P.GUNMETAL[2])                     # ledge under the hopper walls
+        t.rect(x + 2, y + 2, w - 4, h - 4, P.BLACK_PAINT.deep)
+    g.paint_all(tex, parts["throat"][0], throat)
     for b in parts["chute"] + parts["tray"]:
         def chute(t, r, d, b=b):
             x, y, w, h = r

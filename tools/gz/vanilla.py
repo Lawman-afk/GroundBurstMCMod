@@ -42,51 +42,51 @@ def _outline(t: Tex, pts: set[tuple[int, int]], color) -> None:
 
 # --- ingot ---------------------------------------------------------------------------------------------------------------
 
-def ingot(ramp: Ramp, mark=None) -> Tex:
-    """A cast bar lying diagonally (long axis rising to the right), filling the cell width like vanilla's ingots.
+# Every vanilla ingot shares one silhouette; ours use the same outline so all ingots line up exactly. Row spans.
+INGOT_ROWS = {2: (10, 11), 3: (7, 12), 4: (4, 13), 5: (1, 14), 6: (0, 15), 7: (0, 15), 8: (0, 15), 9: (0, 15),
+              10: (0, 14), 11: (1, 12), 12: (2, 9), 13: (3, 6)}
 
-    Built from a long axis u, a depth axis v and a height h: lit top face (tones 5-6, bright back edge), front face
-    (tone 3-4, darker toward the right and along its foot), left end (tone 4). The outline is the ramp's darkest
-    shade. `mark(t, faces)` can stamp a detail afterwards.
-    """
+
+def ingot(ramp: Ramp, mark=None) -> Tex:
+    """An ingot on the shared vanilla outline (a bar lying diagonally, rising to the right), shaded with our own
+    rules: lit top face with a bright ridge along its upper edge, darker front face below the crease line, a lit
+    right end, and an outline in the material's own darks (mid-dark up-left, darkest down-right).
+    `mark(t, faces)` can stamp a detail afterwards."""
     t = Tex(16, 16)
-    ux, uy = 10.0, -4.4      # long axis
-    vx, vy = 4.2, 2.0        # depth (toward the viewer)
-    h = 4.0                  # bar height
-    a = (0.7, 7.2)
-    b = (a[0] + ux, a[1] + uy)
-    c = (a[0] + vx, a[1] + vy)
-    d = (c[0] + ux, c[1] + uy)
-    top = [a, b, d, c]
-    front = [c, d, (d[0], d[1] + h), (c[0], c[1] + h)]
-    left = [a, c, (c[0], c[1] + h), (a[0], a[1] + h)]
+    shape = {(x, y) for y, (x0, x1) in INGOT_ROWS.items() for x in range(x0, x1 + 1)}
+    edge = {p for p in shape if any((p[0] + ox, p[1] + oy) not in shape for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    body = shape - edge
+
+    def crease(x: float) -> float:
+        return 12.4 - 0.48 * x         # top face above this line, front face below
+
     faces: dict[str, set[tuple[int, int]]] = {"top": set(), "front": set(), "end": set()}
-    for y in range(16):
-        for x in range(16):
-            p = (x + 0.5, y + 0.5)
-            if _poly(top, *p):
-                faces["top"].add((x, y))
-            elif _poly(front, *p):
-                faces["front"].add((x, y))
-            elif _poly(left, *p):
-                faces["end"].add((x, y))
-    top_pts, front_pts, end_pts = faces["top"], faces["front"], faces["end"]
-    for (x, y) in top_pts:
+    for (x, y) in body:
+        if x >= 13 and 6 <= y <= 9:
+            faces["end"].add((x, y))
+        elif y + 0.5 < crease(x + 0.5):
+            faces["top"].add((x, y))
+        else:
+            faces["front"].add((x, y))
+    for (x, y) in faces["top"]:
         t.px(x, y, ramp[5])
-        if (x, y - 1) not in top_pts:
-            t.px(x, y, ramp[6])                               # lit back edge
-        elif (x, y + 1) not in top_pts and (x, y + 1) in front_pts:
+    for (x, y) in faces["top"]:
+        if (x, y - 1) not in faces["top"]:
+            t.px(x, y, ramp[6])                               # lit ridge along the back edge
+        elif (x, y + 1) in faces["front"]:
             t.px(x, y, ramp[4])                               # crease into the front face
-    for (x, y) in front_pts:
-        k = (x - c[0]) / ux                                   # 0 at the left end, 1 at the right
-        t.px(x, y, ramp[4] if k < 0.35 else ramp[3])
-        if (x, y + 1) not in front_pts:
+    for (x, y) in faces["front"]:
+        t.px(x, y, ramp[4] if x < 6 else ramp[3])
+        if (x, y + 1) not in shape - edge:
             t.px(x, y, ramp[2])                               # foot of the bar in shadow
-    for (x, y) in end_pts:
-        t.px(x, y, ramp[4] if (x + 1, y) in end_pts else ramp[3])
-    for q in (min(top_pts, key=lambda q: (q[0] - 5) ** 2 + (q[1] - 6) ** 2), min(top_pts, key=lambda q: (q[0] - 10) ** 2 + (q[1] - 4) ** 2)):
-        t.px(*q, ramp[6])                                     # specular glints
-    _outline(t, top_pts | front_pts | end_pts, ramp[1])
+    for (x, y) in faces["end"]:
+        t.px(x, y, ramp[6] if y <= 7 else ramp[5] if y == 8 else ramp[4])   # the right end catches the light
+    for q in ((4, 7), (8, 5)):
+        if q in faces["top"]:
+            t.px(*q, ramp[6])                                 # specular glints
+    for (x, y) in edge:
+        lower_right = (x + 1, y) not in shape or (x, y + 1) not in shape
+        t.px(x, y, ramp[0] if lower_right else ramp[2])
     if mark:
         mark(t, faces)
     return t
@@ -271,31 +271,34 @@ def raw(ramp: Ramp, variant: str = "a", detail=None) -> Tex:
 
 
 # --- dust (v2) ------------------------------------------------------------------------------------------------------------
-# Vanilla dusts: a hexagonal mound, its surface a checker dither of two tones per region (lighter up-left), with a few
-# 2-pixel bright clumps; dark outline.
-DUST_ROWS = [(6, 9), (5, 10), (4, 11), (3, 12), (2, 13), (2, 13), (2, 13), (3, 12), (4, 11), (5, 10)]   # y = 3..12
+# Every vanilla dust shares one silhouette: a point at the top, widest across rows 8-10, rounded at the bottom
+# (x 2..13, y 3..13, outline included). Ours use the same outline; the inside is our own shading: a checker dither
+# of two tones per region (lighter toward the upper left), a few bright clumps, darker grains toward the base.
+DUST_ROWS = {3: (7, 8), 4: (6, 9), 5: (5, 10), 6: (4, 11), 7: (3, 12), 8: (2, 13), 9: (2, 13), 10: (2, 13),
+             11: (3, 12), 12: (4, 11), 13: (6, 9)}
 
 
 def dust2(ramp: Ramp, seed: int, sparkle: bool = False) -> Tex:
     t = Tex(16, 16)
     rng = random.Random(seed)
-    pts = set()
-    for i, (x0, x1) in enumerate(DUST_ROWS):
-        y = 3 + i
-        for x in range(x0, x1 + 1):
-            pts.add((x, y))
-    cx, cy = 7.5, 7.5
-    for (x, y) in pts:
-        k = (-(x + 0.5 - cx) * 0.55 - (y + 0.5 - cy) * 0.85) / 6.0     # >0 toward the upper left
-        hi, lo = (5, 4) if k > 0.25 else (4, 3) if k > -0.2 else (3, 2)
+    shape = {(x, y) for y, (x0, x1) in DUST_ROWS.items() for x in range(x0, x1 + 1)}
+    edge = {p for p in shape if any((p[0] + ox, p[1] + oy) not in shape for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    body = shape - edge
+    cx, cy = 7.5, 8.0
+    for (x, y) in body:
+        k = (-(x + 0.5 - cx) * 0.55 - (y + 0.5 - cy) * 0.85) / 5.0     # > 0 toward the upper left
+        hi, lo = (5, 4) if k > 0.3 else (4, 3) if k > -0.25 else (3, 2)
         t.px(x, y, ramp[hi] if (x + y) % 2 == 0 else ramp[lo])
-    # Bright clumps toward the lit side, a couple of dark grains toward the shade.
-    lit = sorted(p for p in pts if p[0] + p[1] < 15 and (p[0] + 1, p[1]) in pts and (p[0], p[1] + 1) in pts)
-    for (x, y) in rng.sample(lit, min(4, len(lit))):
+    lit = sorted(p for p in body if p[0] + p[1] < 15 and (p[0] + 1, p[1]) in body)
+    for (x, y) in rng.sample(lit, min(3, len(lit))):
         t.px(x, y, ramp[6] if sparkle else ramp[5])
         t.px(x + 1, y, ramp[5])
-    dark = sorted(p for p in pts if p[0] + p[1] > 17)
+    dark = sorted(p for p in body if p[0] + p[1] > 17)
     for p in rng.sample(dark, min(3, len(dark))):
         t.px(*p, ramp[1])
-    _outline(t, pts, ramp[0])
+    # Outline: the material's own darks, a touch lighter along the upper-left edges.
+    for (x, y) in edge:
+        upper_left = (x - 1, y) not in shape or (x, y - 1) not in shape
+        lower_right = (x + 1, y) not in shape or (x, y + 1) not in shape
+        t.px(x, y, ramp[1] if upper_left and not lower_right else ramp[0])
     return t

@@ -47,8 +47,11 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for i, (z0, z1, hw) in enumerate(bands):
         add("shell", g.box(f"shell{i}", (-hw, 2, CZ + z0), (hw, 11, CZ + z1), faces=("north", "south", "east", "west"), bone=F))
         # Hoops overlap their neighbours by 0.3 so their step faces never sit on the shell's step faces.
-        add("band", g.box(f"hoop{i}", (-hw - 0.3, 4, CZ + z0 - 0.3), (hw + 0.3, 5, CZ + z1 + 0.3),
-                          faces=("north", "south", "east", "west"), bone=F))
+        # Hoops are closed boxes that abut (never overlap) and step 0.3 px outside the shell's steps, so no hoop
+        # face shares a plane with a shell face or with another hoop.
+        hz0 = z0 - 0.3 if z0 < 0 else z0 + 0.3
+        hz1 = z1 + 0.3 if z1 > 0 else z1 - 0.3
+        add("band", g.box(f"hoop{i}", (-hw - 0.3, 4, CZ + hz0), (hw + 0.3, 5, CZ + hz1), bone=F))
     # Roof: the same stepped outline in brick-lined steel, with an open throat (|x|, |z| < 2.5).
     roof_boxes = []
     for i, (z0, z1, hw) in enumerate(bands):
@@ -63,6 +66,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for name, (x0, z0), (x1, z1) in roof_boxes:
         add("roof", g.box(name, (x0, 11, CZ + z0), (x1, 12.5, CZ + z1), faces=("north", "south", "east", "west", "up"), bone=F))
     add("lining", g.box("throat_floor", (-2.5, 10, CZ - 2.5), (2.5, 10.01, CZ + 2.5), faces=("up",), bone=F))
+    # Brick lining for the throat between its floor and the roof, facing into the hole (otherwise you would see
+    # through the crucible's hollow inside).
+    add("liner", g.box("liner_n", (-2.5, 10, CZ - 2.6), (2.5, 11, CZ - 2.5), faces=("south",), bone=F))
+    add("liner", g.box("liner_s", (-2.5, 10, CZ + 2.5), (2.5, 11, CZ + 2.6), faces=("north",), bone=F))
+    add("liner", g.box("liner_w", (-2.6, 10, CZ - 2.5), (-2.5, 11, CZ + 2.5), faces=("east",), bone=F))
+    add("liner", g.box("liner_e", (2.5, 10, CZ - 2.5), (2.6, 11, CZ + 2.5), faces=("west",), bone=F))
     # Melt surface: tucked below the throat floor at rest, rises into view while working.
     melt = add("melt", g.box("melt", (-2.4, 9.2, CZ - 2.4), (2.4, 9.3, CZ + 2.4), faces=("up",), shade=False, bone="melt"))
     # Pouring spout and inspection port on the front.
@@ -128,6 +137,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.hline(x, y, w, steel[5])
     for b in parts["roof"]:
         g.paint_all(tex, b, roof)
+    for b in parts["liner"]:
+        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, BRICK[2]), t.hline(r[0], r[1], r[2], BRICK[1])))
     g.paint_all(tex, parts["lining"][0], lambda t, r, d: (t.rect(*r, BRICK[1]), t.speckle(*r, [P.BLACK_PAINT[1]], seed=4, density=0.3)))
 
     def melt_paint(t, r, d):

@@ -1365,3 +1365,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Cobalt is a byproduct of copper (15%) and iron (10%) crushing; monazite (rare earths) yields 5% uranium dust. |
 | 2026-10-19 | Every generated model texture uses a 1-texel gutter around each face, filled with the face's edge colour, to stop UV edge bleed (seam flicker). |
 | 2026-10-19 | Side-config faces only offer the item directions a machine has slots for (a generator's faces are None/Input). |
+| 2026-10-19 | Ingots and dusts use vanilla's shared item silhouettes (one outline for all ingots, one for all dusts) so mod items line up with vanilla's; the shading inside is our own. |
