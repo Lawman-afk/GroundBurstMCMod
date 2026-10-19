@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#c:dusts/lithium_6",
+    "#c:dusts/lithium_6",
+    "#c:dusts/lithium_6",
+    "#c:rods/steel",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundzero:li6_target_rod"
+  }
+}

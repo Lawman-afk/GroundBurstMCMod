@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "#c:plates/steel",
+    "R": "#c:rods/steel"
+  },
+  "pattern": [
+    "R R",
+    " P ",
+    "R R"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundzero:steel_frame"
+  }
+}

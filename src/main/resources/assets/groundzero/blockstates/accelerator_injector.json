@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/accelerator_injector"
+    },
+    "formed=true": {
+      "model": "groundzero:block/accelerator_injector_formed"
+    }
+  }
+}

@@ -193,6 +193,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         setChanged();
     }
 
+    /** A machine control button from the GUI (layout controls of kind "button"); returns whether it did anything. */
+    public boolean handleButton(int button) {
+        return false;
+    }
+
     /** Lines for the GUI's CRT readout (layouts that have one), built from the menu's synced values. */
     public List<Component> readout(MachineMenu menu) {
         return List.of();

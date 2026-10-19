@@ -22,6 +22,10 @@ from gz import paths  # noqa: E402
 import geo_preview as G  # noqa: E402
 
 
+#: Bone-name prefixes of variant sets the renderer shows one at a time.
+EXCLUSIVE_PREFIXES = ("die_", "rods")
+
+
 def _clip(subject: list[np.ndarray], clip: list[np.ndarray]) -> list[np.ndarray]:
     """Sutherland-Hodgman: convex polygon intersection in 2D."""
     out = subject
@@ -114,8 +118,8 @@ def check(quads, labels, tol: float = 0.05, min_area: float = 0.01) -> list[str]
                 d2 = -d2
             if abs(d1 - d2) > tol:
                 continue
-            if l1.startswith("die_") and l2.startswith("die_"):
-                continue   # press die variants: only one is ever drawn
+            if any(l1.startswith(v) and l2.startswith(v) and _cube(l1) != _cube(l2) for v in EXCLUSIVE_PREFIXES):
+                continue   # variants of one part (press dies, reactor control-rod positions): only one is ever drawn
             # 2D basis on the shared plane.
             u = p1[1] - p1[0]
             u = u / (np.linalg.norm(u) + 1e-12)

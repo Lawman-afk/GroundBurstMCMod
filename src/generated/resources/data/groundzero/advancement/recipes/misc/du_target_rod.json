@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_depleted_uranium_ingot": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:depleted_uranium_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:du_target_rod"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_depleted_uranium_ingot"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:du_target_rod"
+    ]
+  }
+}

@@ -22,6 +22,7 @@ public final class GZChemicals {
     public static final DeferredItem<Item> LIQUID_ROCKET_FUEL_CANISTER = GZItems.simple("liquid_rocket_fuel_canister", "Liquid Rocket Fuel Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> THERMOBARIC_SLURRY_CANISTER = GZItems.simple("thermobaric_slurry_canister", "Thermobaric Slurry Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> NAPALM_CANISTER = GZItems.simple("napalm_canister", "Napalm Gel Canister", GZTab.RESOURCES);
+    public static final DeferredItem<Item> TRITIUM_CANISTER = GZItems.simple("tritium_canister", "Tritium Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> UF6_CANISTER = GZItems.simple("uf6_canister", "UF6 Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> MERCURY_FLASK = GZItems.simple("mercury_flask", "Mercury Flask", GZTab.RESOURCES);
     public static final DeferredItem<Item> PLASTIC_SHEET = GZItems.simple("plastic_sheet", "Plastic Sheet", GZTab.RESOURCES);

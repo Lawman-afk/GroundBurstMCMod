@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "groundzero:superconducting_coil",
+    "D": "groundzero:dense_steel_plate",
+    "W": "#c:wires/copper"
+  },
+  "pattern": [
+    "DCD",
+    " W ",
+    "DCD"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundzero:magnet_segment"
+  }
+}

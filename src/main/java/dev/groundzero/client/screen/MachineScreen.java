@@ -116,6 +116,24 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             }
         }
 
+        // Machine controls: gauges fill bottom-up (heat runs green to amber to red), buttons light up under the mouse.
+        for (MachineLayout.Control c : this.layout.controls()) {
+            MachineLayout.Rect cr = c.rect();
+            if (c.isButton()) {
+                if (cr.contains(mouseX - x, mouseY - y)) {
+                    g.fill(x + cr.x() + 1, y + cr.y() + 1, x + cr.x() + cr.w() - 1, y + cr.y() + cr.h() - 1, 0x40FFFFFF);
+                }
+                continue;
+            }
+            float frac = Math.max(0, Math.min(1, this.menu.extra(c.data()) / (float) Math.max(1, c.max())));
+            int fh = Math.round(frac * cr.h());
+            if (fh > 0) {
+                int col = c.kind().equals("heat") ? heatColor(frac) : 0xFF8A949C;
+                g.fill(x + cr.x(), y + cr.y() + cr.h() - fh, x + cr.x() + cr.w(), y + cr.y() + cr.h(), col);
+                g.fill(x + cr.x(), y + cr.y() + cr.h() - fh, x + cr.x() + cr.w(), y + cr.y() + cr.h() - fh + 1, 0x80FFFFFF);
+            }
+        }
+
         // Status lamp with a 1-px glow highlight.
         MachineLayout.Rect s = this.layout.status();
         int color = this.menu.status().lampColor();
@@ -157,6 +175,19 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             }
             g.pose().popMatrix();
         }
+    }
+
+    private static int heatColor(float frac) {
+        return frac < 0.55f ? 0xFF4AD06A : frac < 0.8f ? 0xFFFFB020 : 0xFFFF3A2A;
+    }
+
+    private MachineLayout.@org.jspecify.annotations.Nullable Control controlAt(int mx, int my) {
+        for (MachineLayout.Control c : this.layout.controls()) {
+            if (c.rect().contains(mx, my)) {
+                return c;
+            }
+        }
+        return null;
     }
 
     /** Tank whose gauge is under the (window-relative) point, or -1. */
@@ -213,6 +244,10 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         } else if (dumpAt(mx, my) >= 0) {
             g.setTooltipForNextFrame(this.font, List.of(Component.translatable(MachineText.DUMP),
                     Component.translatable(MachineText.DUMP_HINT).withColor(0xFF9AA0A8)), java.util.Optional.empty(), mouseX, mouseY);
+        } else if (controlAt(mx, my) != null) {
+            MachineLayout.Control c = controlAt(mx, my);
+            g.setTooltipForNextFrame(c.isButton() ? Component.translatable(c.tooltip())
+                    : Component.translatable(c.tooltip(), this.menu.extra(c.data())), mouseX, mouseY);
         } else if (this.layout.status().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(this.menu.status().translationKey()), mouseX, mouseY);
         } else if (this.layout.redstone().contains(mx, my)) {
@@ -239,6 +274,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                 this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, MachineMenu.BUTTON_DUMP + dump);
                 this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BUCKET_EMPTY, 1.0f));
             }
+            return true;
+        }
+        MachineLayout.Control control = controlAt(mx, my);
+        if (control != null && control.isButton() && this.minecraft != null && this.minecraft.gameMode != null) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, MachineMenu.BUTTON_MACHINE + control.button());
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, control.kind().equals("scram") ? 0.7f : 1.0f));
             return true;
         }
         if (this.layout.redstone().contains(mx, my) && this.minecraft != null && this.minecraft.gameMode != null) {

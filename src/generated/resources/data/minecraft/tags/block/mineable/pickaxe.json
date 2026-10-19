@@ -57,6 +57,15 @@
     "groundzero:hv_cable",
     "groundzero:capacitor_bank",
     "groundzero:advanced_capacitor_bank",
-    "groundzero:superconducting_capacitor_bank"
+    "groundzero:superconducting_capacitor_bank",
+    "groundzero:fission_reactor",
+    "groundzero:particle_accelerator",
+    "groundzero:lead_lined_casing",
+    "groundzero:energy_port",
+    "groundzero:steel_plating",
+    "groundzero:steel_frame",
+    "groundzero:magnet_segment",
+    "groundzero:accelerator_injector",
+    "groundzero:accelerator_target_chamber"
   ]
 }

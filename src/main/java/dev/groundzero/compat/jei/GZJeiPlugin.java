@@ -54,6 +54,7 @@ public final class GZJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.CENTRIFUGING, GZMachines.GAS_CENTRIFUGE.item().get());
         m.put(ProcessingKind.FUSION_SYNTHESIS, GZMachines.FUSION_FUEL_SYNTHESIZER.item().get());
         m.put(ProcessingKind.EXOTIC_FABRICATING, GZMachines.EXOTIC_MATTER_FABRICATOR.item().get());
+        m.put(ProcessingKind.ACCELERATING, GZMachines.PARTICLE_ACCELERATOR.item().get());
         return m;
     }
 
@@ -108,6 +109,12 @@ public final class GZJeiPlugin implements IModPlugin {
                         GZMachines.DECONTAMINATION_SHOWER.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
+        info(registration, MachineText.INFO_FISSION_REACTOR, GZMachines.FISSION_REACTOR.item().get(), GZMultiblocks.LEAD_LINED_CASING.item().get(),
+                GZMultiblocks.ENERGY_PORT.item().get(), GZMultiblocks.FISSION_REACTOR_SPAWNER.get(), dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD.get(),
+                dev.groundzero.content.nuclear.GZNuclear.DU_TARGET_ROD.get(), dev.groundzero.content.nuclear.GZNuclear.LI6_TARGET_ROD.get());
+        info(registration, MachineText.INFO_PARTICLE_ACCELERATOR, GZMachines.PARTICLE_ACCELERATOR.item().get(), GZMultiblocks.MAGNET_SEGMENT.item().get(),
+                GZMultiblocks.INJECTOR.item().get(), GZMultiblocks.TARGET_CHAMBER.item().get(), GZMultiblocks.STEEL_PLATING.item().get(),
+                GZMultiblocks.STEEL_FRAME.item().get(), GZMultiblocks.PARTICLE_ACCELERATOR_SPAWNER.get());
         info(registration, MachineText.INFO_DIESEL_GENERATOR, GZMachines.DIESEL_GENERATOR.item().get());
         info(registration, MachineText.INFO_RTG, GZMachines.RTG.item().get());
         info(registration, MachineText.INFO_CAPACITOR_BANK, GZMachines.CAPACITOR_BANKS.stream().map(b -> (ItemLike) b.item().get()).toArray(ItemLike[]::new));

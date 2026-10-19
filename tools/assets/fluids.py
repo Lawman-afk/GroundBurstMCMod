@@ -111,7 +111,7 @@ FLUIDS = [
     ("sulfuric_acid", "liquid", False), ("nitric_acid", "liquid", False), ("synthetic_fuel", "liquid", False),
     ("liquid_rocket_fuel", "liquid", False), ("thermobaric_slurry", "thick", False), ("napalm", "thick", False),
     ("liquid_oxygen", "liquid", False), ("liquid_nitrogen", "liquid", False),
-    ("deuterium", "gas", True), ("uranium_hexafluoride", "gas", True),
+    ("deuterium", "gas", True), ("uranium_hexafluoride", "gas", True), ("tritium", "gas", True),
 ]
 
 
@@ -181,7 +181,7 @@ def write_blocks_and_buckets() -> None:
 TINTS = {
     "sulfuric_acid": 0xD8CE4A, "nitric_acid": 0xE8A050, "synthetic_fuel": 0x7A5420, "liquid_rocket_fuel": 0xD04838,
     "thermobaric_slurry": 0x8C949C, "napalm": 0xE2742A, "liquid_oxygen": 0x9CC4FF, "liquid_nitrogen": 0xD8E8F2,
-    "deuterium": 0xA4BCFF, "uranium_hexafluoride": 0xC6D06A,
+    "deuterium": 0xA4BCFF, "uranium_hexafluoride": 0xC6D06A, "tritium": 0xB8F0D0,
 }
 
 

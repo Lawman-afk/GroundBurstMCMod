@@ -35,6 +35,7 @@ public final class GZParts {
     public static final DeferredItem<dev.groundzero.content.power.BatteryItem> BATTERY = GZItems.register("battery", "Battery", GZTab.MACHINES,
             dev.groundzero.content.power.BatteryItem::new);
 
+    public static final DeferredItem<Item> CRT_DISPLAY = GZItems.simple("crt_display", "CRT Display", GZTab.MACHINES);
     public static final DeferredItem<Item> CAPACITOR = GZItems.simple("capacitor", "Capacitor", GZTab.MACHINES);
 
     // --- Circuit Fabricator products (DESIGN.md §26.2) -----------------------------------------------------------------------

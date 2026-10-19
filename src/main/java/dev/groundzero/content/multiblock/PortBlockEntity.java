@@ -42,14 +42,28 @@ public class PortBlockEntity extends BlockEntity {
         return this.level.getBlockEntity(this.controller) instanceof MachineBlockEntity m ? m : null;
     }
 
+    private boolean isEnergyPort() {
+        return getBlockState().getBlock() instanceof EnergyPortBlock;
+    }
+
+    /** The structure this port belongs to, once formed (null otherwise). */
+    public @Nullable BlockPos controller() {
+        return this.controller;
+    }
+
     public @Nullable ResourceHandler<ItemResource> items(@Nullable Direction side) {
         MachineBlockEntity m = machine();
-        return m == null ? null : m.portItems();
+        return m == null || isEnergyPort() ? null : m.portItems();
     }
 
     public @Nullable ResourceHandler<FluidResource> fluids(@Nullable Direction side) {
         MachineBlockEntity m = machine();
-        return m == null || m.tanks().isEmpty() ? null : m.fluidHandler();
+        return m == null || isEnergyPort() || m.tanks().isEmpty() ? null : m.fluidHandler();
+    }
+
+    public net.neoforged.neoforge.transfer.energy.@Nullable EnergyHandler energy(@Nullable Direction side) {
+        MachineBlockEntity m = machine();
+        return m == null || !isEnergyPort() ? null : m.energyFor(null);
     }
 
     @Override

@@ -112,6 +112,10 @@ public final class GZTagProviders {
                     dev.groundzero.content.fluid.GZFluids.PRESSURIZED_FLUID_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),
+                    GZMultiblocks.LEAD_LINED_CASING.block().key(), GZMultiblocks.ENERGY_PORT.block().key(), GZMultiblocks.STEEL_PLATING.block().key(),
+                    GZMultiblocks.STEEL_FRAME.block().key(), GZMultiblocks.MAGNET_SEGMENT.block().key(), GZMultiblocks.INJECTOR.block().key(),
+                    GZMultiblocks.TARGET_CHAMBER.block().key());
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
             tag(Tags.BlockItems.CLUSTERS.block()).add(GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
@@ -180,7 +184,13 @@ public final class GZTagProviders {
             tag(GZTags.PRESS_DIES).add(GZParts.PLATE_DIE.key(), GZParts.ROD_DIE.key(), GZParts.WIRE_DIE.key(), GZParts.CANISTER_DIE.key());
             tag(GZTags.RADIOACTIVE.item()).add(GZResources.RAW_URANIUM.key(), GZResources.URANIUM_INGOT.key(), GZResources.URANIUM_DUST.key(),
                     dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_NUGGET.key(), dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_INGOT.key(),
-                    dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_DUST.key(), dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT.key());
+                    dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_DUST.key(), dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT.key(),
+                    dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD.key(), dev.groundzero.content.nuclear.GZNuclear.SPENT_FUEL_ROD.key(),
+                    dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_DU_TARGET_ROD.key(), dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_LI6_TARGET_ROD.key(),
+                    dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET.key(), dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT.key(),
+                    dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE.key());
+            item("nuggets/plutonium", dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET, Tags.Items.NUGGETS);
+            item("ingots/plutonium", dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT, Tags.Items.INGOTS);
         }
 
         private void item(String path, DeferredItem<?> item, TagKey<net.minecraft.world.item.Item> parent) {

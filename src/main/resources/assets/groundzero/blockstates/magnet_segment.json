@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/magnet_segment"
+    },
+    "formed=true": {
+      "model": "groundzero:block/magnet_segment_formed"
+    }
+  }
+}

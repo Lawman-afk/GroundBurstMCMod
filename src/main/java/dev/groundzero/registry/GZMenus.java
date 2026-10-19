@@ -37,6 +37,9 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> BATTERY_CHARGER = machine("battery_charger", () -> MachineLayouts.BATTERY_CHARGER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DECONTAMINATION_SHOWER = machine("decontamination_shower", () -> MachineLayouts.DECONTAMINATION_SHOWER);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FISSION_REACTOR = machine("fission_reactor", () -> MachineLayouts.FISSION_REACTOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> PARTICLE_ACCELERATOR = machine("particle_accelerator", () -> MachineLayouts.PARTICLE_ACCELERATOR);
+
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
 
     private GZMenus() {}

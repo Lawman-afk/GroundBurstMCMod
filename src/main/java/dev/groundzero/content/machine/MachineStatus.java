@@ -16,7 +16,9 @@ public enum MachineStatus {
     EMP("Disabled by EMP"),
     INCOMPLETE("Structure incomplete"),
     NEED_FLUID("Needs more fluid"),
-    NO_WATER("No water source below");
+    NO_WATER("No water source below"),
+    SCRAM("SCRAM: the core overheated"),
+    OVERHEATING("Core overheating");
 
     private final String translationKey;
 
@@ -32,7 +34,7 @@ public enum MachineStatus {
     public int lampColor() {
         return switch (this) {
             case RUNNING -> 0xFF4AFF6A;
-            case IDLE, NO_RECIPE, BUFFER_FULL, NEED_FLUID -> 0xFFFFB020;
+            case IDLE, NO_RECIPE, BUFFER_FULL, NEED_FLUID, OVERHEATING -> 0xFFFFB020;
             default -> 0xFFFF3A2A;
         };
     }

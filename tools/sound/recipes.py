@@ -340,6 +340,31 @@ def decontamination_shower_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -8)
 
 
+def fission_reactor_loop() -> np.ndarray:
+    """Fission Reactor: a deep, steady plant hum (coolant pumps at 50 Hz with harmonics), water rushing through the
+    core, a low transformer drone, and the odd soft relay tick from the control-rod drives."""
+    t = S.t_axis(TOTAL)
+    pumps = (np.sin(2 * np.pi * 50 * t) * 0.5 + np.sin(2 * np.pi * 100 * t) * 0.3 + np.sin(2 * np.pi * 150 * t) * 0.12) * 0.3
+    flow = S.bandpass(S.pink(TOTAL, 191), 150, 1200) * (0.8 + 0.2 * np.sin(2 * np.pi * 0.5 * t)) * 0.35
+    drone = S.lowpass(S.brown(TOTAL, 192), 90) * 0.3
+    tick = S.bandpass(S.white(0.02, 193), 1500, 5000) * S.exp_decay(int(0.02 * S.SR), 0.004) * 0.2
+    x = S.mix((pumps, 1.0), (flow, 1.0), (drone, 1.0), (_pulses([0.7, -1.3, 2.7], tick), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
+def particle_accelerator_loop() -> np.ndarray:
+    """Particle Accelerator: a heavy magnet-supply buzz, a high RF cavity tone that swells as the bunch passes the
+    injector once a second (matches the 1 s lap), and a faint vacuum-pump chatter."""
+    t = S.t_axis(TOTAL)
+    supply = S.lowpass(S.tone(TOTAL, 120, "saw"), 900) * 0.15 + np.sin(2 * np.pi * 60 * t) * 0.2
+    lap = np.exp(-((np.mod(t - PRE, 1.0) - 0.0) ** 2) / 0.01) + np.exp(-((np.mod(t - PRE, 1.0) - 1.0) ** 2) / 0.01)
+    rf = (np.sin(2 * np.pi * 2200 * t) * 0.06 + np.sin(2 * np.pi * 4400 * t) * 0.02) * (0.4 + 0.6 * lap)
+    swish = S.bandpass(S.white(TOTAL, 201), 2000, 8000) * (0.05 + 0.25 * lap)
+    vacuum = S.bandpass(S.grains(TOTAL, 18, 5, 202), 400, 2500) * 0.08
+    x = S.mix((supply, 1.0), (rf, 1.0), (swish, 1.0), (vacuum, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -358,6 +383,8 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/rtg": rtg_loop(),
         "machine/battery_charger": battery_charger_loop(),
         "machine/decontamination_shower": decontamination_shower_loop(),
+        "machine/fission_reactor": fission_reactor_loop(),
+        "machine/particle_accelerator": particle_accelerator_loop(),
     }
 
 

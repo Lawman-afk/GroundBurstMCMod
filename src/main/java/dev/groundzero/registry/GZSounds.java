@@ -70,6 +70,10 @@ public final class GZSounds {
             register("machine.battery_charger", "Battery Charger whines", List.of("machine/battery_charger"), false, 10);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_DECONTAMINATION_SHOWER =
             register("machine.decontamination_shower", "Decontamination Shower sprays", List.of("machine/decontamination_shower"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =
+            register("machine.fission_reactor", "Reactor hums", List.of("machine/fission_reactor"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_PARTICLE_ACCELERATOR =
+            register("machine.particle_accelerator", "Particle Accelerator thrums", List.of("machine/particle_accelerator"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CHEMICAL_PLANT =
             register("machine.chemical_plant", "Chemical Plant churns", List.of("machine/chemical_plant"), false, 20);
 

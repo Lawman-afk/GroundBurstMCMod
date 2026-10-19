@@ -45,6 +45,8 @@ public class GroundZeroClient {
         event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
         event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
         event.register(GZMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
+        event.register(GZMenus.FISSION_REACTOR.get(), MachineScreen::new);
+        event.register(GZMenus.PARTICLE_ACCELERATOR.get(), MachineScreen::new);
         event.register(GZMenus.RTG.get(), MachineScreen::new);
         event.register(GZMenus.CAPACITOR_BANK.get(), MachineScreen::new);
         event.register(GZMenus.BATTERY_CHARGER.get(), MachineScreen::new);
@@ -63,6 +65,10 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
+        // Multiblocks: the formed model reaches beyond the controller (reactor 1 block each side, accelerator ring 8).
+        event.registerBlockEntityRenderer(GZBlockEntities.FISSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FISSION_REACTOR.get(), 4, 3));
+        event.registerBlockEntityRenderer(GZBlockEntities.PARTICLE_ACCELERATOR.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.PARTICLE_ACCELERATOR.get(), 3, 9));
         event.registerBlockEntityRenderer(GZBlockEntities.DIESEL_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.DIESEL_GENERATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.RTG.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.RTG.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.BATTERY_CHARGER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.BATTERY_CHARGER.get(), 1));

@@ -118,6 +118,7 @@ public class GZRecipeProvider extends RecipeProvider {
         chemistry();
         slice5();
         slice6();
+        slice7();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -494,6 +495,100 @@ public class GZRecipeProvider extends RecipeProvider {
                 .define('B', GZTags.BASIC_CIRCUITS).define('M', GZParts.ELECTRIC_MOTOR)
                 .pattern("PPP").pattern("IWI").pattern("BM ")
                 .unlockedBy(getHasName(GZParts.ELECTRIC_MOTOR), has(GZParts.ELECTRIC_MOTOR))
+                .save(output);
+    }
+
+    /**
+     * Slice 7 (DESIGN.md §6, §26.3-26.4, §26.7): reactor fuel and breeding targets, their reprocessing in the Chemical
+     * Plant, plutonium, antimatter, and the parts of the Fission Reactor and Particle Accelerator. Game abstractions.
+     */
+    private void slice7() {
+        Ingredient steelRod = tag(GZTags.commonItem("rods/steel"));
+        // Display used by controllers (DESIGN.md §26.2).
+        shaped(RecipeCategory.MISC, GZParts.CRT_DISPLAY, 1)
+                .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('L', Tags.Items.DUSTS_GLOWSTONE).define('B', GZTags.BASIC_CIRCUITS)
+                .define('R', Tags.Items.DUSTS_REDSTONE).define('P', GZTags.commonItem("plates/steel"))
+                .pattern(" G ").pattern("LBR").pattern(" P ")
+                .unlockedBy("has_basic_circuit", has(GZTags.BASIC_CIRCUITS))
+                .save(output);
+        // Fuel and targets (DESIGN.md §26.3).
+        shapeless(RecipeCategory.MISC, dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD, 1)
+                .requires(GZTags.commonItem("ingots/uranium")).requires(GZTags.commonItem("ingots/uranium")).requires(GZTags.commonItem("ingots/uranium"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZResources.URANIUM_INGOT), has(GZResources.URANIUM_INGOT))
+                .save(output);
+        shapeless(RecipeCategory.MISC, dev.groundzero.content.nuclear.GZNuclear.DU_TARGET_ROD, 1)
+                .requires(GZTags.commonItem("ingots/depleted_uranium")).requires(GZTags.commonItem("ingots/depleted_uranium"))
+                .requires(GZTags.commonItem("ingots/depleted_uranium")).requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT), has(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT))
+                .save(output);
+        shapeless(RecipeCategory.MISC, dev.groundzero.content.nuclear.GZNuclear.LI6_TARGET_ROD, 1)
+                .requires(GZTags.commonItem("dusts/lithium_6")).requires(GZTags.commonItem("dusts/lithium_6")).requires(GZTags.commonItem("dusts/lithium_6"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZChemicals.LITHIUM6_DUST), has(GZChemicals.LITHIUM6_DUST))
+                .save(output);
+        storage("nuggets/plutonium", "ingots/plutonium", dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET,
+                dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT);
+        // Reprocessing in the Chemical Plant: plutonium from DU targets, tritium from Li-6 targets, uranium back out of
+        // spent fuel. The steel rods come back too.
+        int fe = ChemicalPlantBlockEntity.ENERGY_PER_TICK;
+        chem("plutonium", List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_DU_TARGET_ROD), 1)),
+                List.of(fluid(GZFluids.SULFURIC_ACID, 1_000)),
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET, 3), out(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE, 1)),
+                null, 400, fe);
+        chem("tritium", List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_LI6_TARGET_ROD), 1)), List.of(),
+                List.of(out(GZParts.STEEL_ROD, 2)), GZFluids.TRITIUM, 300, fe);
+        chem("spent_fuel_reprocessing", List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.SPENT_FUEL_ROD), 1)),
+                List.of(fluid(GZFluids.SULFURIC_ACID, 1_000)),
+                List.of(out(GZResources.URANIUM_DUST, 2), out(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE, 1)), null, 400, fe);
+        // Antimatter (Particle Accelerator): slow and very power-hungry.
+        machine(ProcessingKind.ACCELERATING, "accelerating/antimatter_cell",
+                List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.CONTAINMENT_CELL), 1)), null,
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.ANTIMATTER_CELL, 1)), 3_600,
+                dev.groundzero.content.machine.ParticleAcceleratorBlockEntity.ENERGY_PER_TICK);
+
+        // Fission Reactor parts (DESIGN.md §26.4).
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.LEAD_LINED_CASING.item(), 4)
+                .define('L', GZTags.commonItem("plates/lead")).define('D', GZParts.DENSE_STEEL_PLATE).define('C', Tags.Items.CONCRETES)
+                .pattern("LDL").pattern("DCD").pattern("LDL")
+                .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE))
+                .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMultiblocks.ENERGY_PORT.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZMachines.CABLES.get(1).item()).requires(Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
+                .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMachines.FISSION_REACTOR.item(), 1)
+                .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT))
+                .save(output);
+        // Structural steel and the accelerator ring (DESIGN.md §26.4).
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.STEEL_PLATING.item(), 4)
+                .define('P', GZTags.commonItem("plates/steel"))
+                .pattern("PP").pattern("PP")
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.STEEL_FRAME.item(), 4)
+                .define('R', steelRod).define('P', GZTags.commonItem("plates/steel"))
+                .pattern("R R").pattern(" P ").pattern("R R")
+                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.MAGNET_SEGMENT.item(), 4)
+                .define('D', GZParts.DENSE_STEEL_PLATE).define('C', GZParts.SUPERCONDUCTING_COIL).define('W', GZTags.commonItem("wires/copper"))
+                .pattern("DCD").pattern(" W ").pattern("DCD")
+                .unlockedBy(getHasName(GZParts.SUPERCONDUCTING_COIL), has(GZParts.SUPERCONDUCTING_COIL))
+                .save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.INJECTOR.item(), 1)
+                .requires(GZMultiblocks.MAGNET_SEGMENT.item()).requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(GZMultiblocks.MAGNET_SEGMENT.item()), has(GZMultiblocks.MAGNET_SEGMENT.item()))
+                .save(output);
+        // The target chamber also takes reactor glass (its viewing window), so its recipe differs from the injector's.
+        shapeless(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.TARGET_CHAMBER.item(), 1)
+                .requires(GZMultiblocks.MAGNET_SEGMENT.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZMultiblocks.REACTOR_GLASS.item())
+                .unlockedBy(getHasName(GZMultiblocks.MAGNET_SEGMENT.item()), has(GZMultiblocks.MAGNET_SEGMENT.item()))
+                .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMachines.PARTICLE_ACCELERATOR.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.QUANTUM_CIRCUIT).requires(GZParts.CRT_DISPLAY)
+                .unlockedBy(getHasName(GZParts.QUANTUM_CIRCUIT), has(GZParts.QUANTUM_CIRCUIT))
                 .save(output);
     }
 

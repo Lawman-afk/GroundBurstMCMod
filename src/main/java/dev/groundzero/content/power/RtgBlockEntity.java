@@ -32,7 +32,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 /**
  * RTG, radioisotope thermoelectric generator (DESIGN.md §7): a steady 40 FE/t from a radioisotope fuel slug. The
  * fuel decays whether or not the power is used (it is radioactive decay), so an RTG is best wired to something that
- * always draws. Fuel: enriched uranium ingot (2 in-game days) until plutonium arrives with the Fission Reactor.
+ * always draws. Fuel: a plutonium ingot (10 in-game days) or an enriched uranium ingot (2 days).
  */
 public class RtgBlockEntity extends MachineBlockEntity implements AnimatedMachine {
     public static final int RATE = 40;
@@ -44,7 +44,8 @@ public class RtgBlockEntity extends MachineBlockEntity implements AnimatedMachin
     /** A fuel and how many ticks one item lasts. */
     public record Fuel(TagKey<Item> tag, int ticks) {}
 
-    public static final List<Fuel> FUELS = List.of(new Fuel(GZTags.commonItem("ingots/enriched_uranium"), 48_000));
+    public static final List<Fuel> FUELS = List.of(new Fuel(GZTags.commonItem("ingots/plutonium"), 240_000),
+            new Fuel(GZTags.commonItem("ingots/enriched_uranium"), 48_000));
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int decay;

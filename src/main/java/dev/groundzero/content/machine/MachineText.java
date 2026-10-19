@@ -84,6 +84,15 @@ public final class MachineText {
             "A walk-in booth: pipe water in and power it, then step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. Radiation contamination will wash off too once radiation exists.");
     public static final String INFO_BATTERY = GZLang.add(GroundZero.MODID + ".info.battery",
             "Holds 50,000 FE. Charge it in the Battery Charger; later gear (Geiger counter, guns) runs on it.");
+    public static final String HEAT_TIP = GZLang.add(GroundZero.MODID + ".gui.heat", "Core temperature: %s °C (it SCRAMs at 900)");
+    public static final String RODS_TIP = GZLang.add(GroundZero.MODID + ".gui.rods_gauge", "Control rods: %s%% in");
+    public static final String WITHDRAW_TIP = GZLang.add(GroundZero.MODID + ".gui.withdraw", "Withdraw the control rods 10% (more power, more heat)");
+    public static final String INSERT_TIP = GZLang.add(GroundZero.MODID + ".gui.insert", "Insert the control rods 10%");
+    public static final String SCRAM_TIP = GZLang.add(GroundZero.MODID + ".gui.scram", "SCRAM: drop every control rod in at once");
+    public static final String INFO_FISSION_REACTOR = GZLang.add(GroundZero.MODID + ".info.fission_reactor",
+            "Fission Reactor (3x3x4): lead-lined casing round an empty two-block core with reactor glass on all four sides; the controller at the front of the bottom layer and an Item Port under the core; on top an Item Port, an Energy Port in the middle and a second Item Port. Right-click the controller or hold a Holo-Projector to see where each block goes. Load uranium fuel rods, pipe in water, and withdraw the control rods: up to 1,200 FE a tick out of the Energy Port and the controller. More power means more heat and more water (up to 25 mB a tick); without enough water the core heats up and at 900 C it SCRAMs. Target rods in the breeding slots come out irradiated: DU rods for plutonium, lithium-6 rods for tritium (reprocess them in the Chemical Plant).");
+    public static final String INFO_PARTICLE_ACCELERATOR = GZLang.add(GroundZero.MODID + ".info.particle_accelerator",
+            "Particle Accelerator (9x9x3 ring): a hollow square ring one block wide. Bottom layer Steel Plating, top layer Steel Frame, middle layer Accelerator Magnet Segments with the Injector at the front middle, the controller beside it, the Target Chamber at the back middle and an Energy Port at the left middle. Use a Holo-Projector to place it. It fills a containment cell with antimatter at 2,000 FE a tick: feed power into the Energy Port and the controller (insulated cable carries 1,024 FE a tick per run).");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

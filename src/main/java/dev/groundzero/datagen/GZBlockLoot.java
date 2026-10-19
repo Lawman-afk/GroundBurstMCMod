@@ -65,6 +65,13 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
         dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());
+        dropSelf(GZMachines.FISSION_REACTOR.block().get());
+        dropSelf(GZMachines.PARTICLE_ACCELERATOR.block().get());
+        for (var part : java.util.List.of(GZMultiblocks.LEAD_LINED_CASING, GZMultiblocks.STEEL_PLATING, GZMultiblocks.STEEL_FRAME,
+                GZMultiblocks.MAGNET_SEGMENT, GZMultiblocks.INJECTOR, GZMultiblocks.TARGET_CHAMBER)) {
+            dropSelf(part.block().get());
+        }
+        dropSelf(GZMultiblocks.ENERGY_PORT.block().get());
         for (var pipe : dev.groundzero.content.fluid.GZFluids.pipes()) {
             dropSelf(pipe.block().get());
         }

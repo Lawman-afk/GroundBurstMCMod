@@ -219,6 +219,38 @@ LAYOUTS = {
         "readout": (64, 22, 96, 14),
         "inventory": (8, 84),
     },
+    # Slice 7. Fission Reactor: water tank, 4 fuel rods, 2 breeding targets, 3 outputs, heat and control-rod gauges,
+    # rod buttons (withdraw / insert / SCRAM) and a CRT with output and core temperature.
+    "fission_reactor": {
+        "title": (8, 6),
+        "size": (176, 194),
+        "slots": [("rod", 46, 21), ("rod", 64, 21), ("rod", 46, 39), ("rod", 64, 39), ("target", 46, 61), ("target", 64, 61),
+                  ("out", 92, 21), ("out", 92, 39), ("out", 92, 61)],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(26, 20, 12, 46, "H2O", False)],
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 82, 18, 18),
+        "readout": (11, 82, 132, 18),
+        "controls": [("heat", 116, 20, 8, 58, 0, 1000, -1, "groundzero.gui.heat"),
+                     ("rods", 128, 20, 8, 58, 1, 100, -1, "groundzero.gui.rods_gauge"),
+                     ("up", 140, 20, 18, 14, -1, 0, 0, "groundzero.gui.withdraw"),
+                     ("down", 140, 36, 18, 14, -1, 0, 1, "groundzero.gui.insert"),
+                     ("scram", 140, 54, 18, 22, -1, 0, 2, "groundzero.gui.scram")],
+        "inventory": (8, 112),
+    },
+    "particle_accelerator": {
+        "title": (8, 6),
+        "slots": [("canister", 56, 35), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     "combustion_generator": {
         "title": (8, 6),
         "slots": [("fuel", 56, 53)],
@@ -308,6 +340,16 @@ BATTERY_GHOST = ["................", "................", "......####......", "..
                  "....#......#....", "....#..#...#....", "....#.##...#....", "....#..##..#....", "....#...#..#....",
                  "....#......#....", "....#......#....", "....########....", "................", "................",
                  "................"]
+
+
+ROD_GHOST = ["................", "................", ".......##.......", "......#..#......", "......#..#......",
+             "......#..#......", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
+             "......#..#......", "......#..#......", "......#..#......", ".......##.......", "................",
+             "................"]
+TARGET_GHOST = ["................", "................", ".......##.......", "......#..#......", "......####......",
+                "......#..#......", "......#..#......", "......####......", "......#..#......", "......#..#......",
+                "......####......", "......#..#......", "......#..#......", ".......##.......", "................",
+                "................"]
 
 
 def ghost_slot(rows: list[str]):
@@ -441,6 +483,33 @@ def button(t: Tex, x: int, y: int, w: int, h: int) -> None:
     t.outline(x, y, w, h, PANEL.outline)
 
 
+ARROW_UP = ["...#...", "..###..", ".#####.", "#######", "..###..", "..###..", "..###.."]
+
+
+def control(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
+    """Machine controls: vertical gauges (filled live by the screen) and push buttons with their icon."""
+    if kind in ("heat", "rods"):
+        gauge_frame(t, x, y, w, h)
+        if kind == "heat":
+            # Red warning band at the top tenth (900 °C and up): where the core SCRAMs.
+            t.rect(x - 2, y, 1, max(1, h // 10), P.WARNING_RED.base)
+        return
+    if kind == "scram":
+        t.stripes(x - 1, y - 1, w + 2, h + 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)   # guard collar
+        t.panel(x + 2, y + 2, w - 4, h - 4, P.WARNING_RED, base=4, style="raised")
+        t.outline(x + 2, y + 2, w - 4, h - 4, P.WARNING_RED.outline)
+        t.rect(x + w // 2 - 3, y + h // 2 - 3, 6, 6, P.WARNING_RED[5])                                 # mushroom head
+        t.outline(x + w // 2 - 3, y + h // 2 - 3, 6, 6, P.WARNING_RED[2])
+        return
+    button(t, x, y, w, h)
+    rows = ARROW_UP if kind == "up" else ARROW_UP[::-1]
+    gx, gy = x + (w - 7) // 2, y + (h - 7) // 2
+    for yy, row in enumerate(rows):
+        for xx, c in enumerate(row):
+            if c == "#":
+                t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
+
+
 def redstone_icons(t: Tex) -> None:
     """Ignore (grey dust), active-high (lit torch), active-low (dark torch)."""
     x0, y0 = REDSTONE_ICONS
@@ -475,7 +544,8 @@ def build(name: str, spec: dict) -> Path:
     window(t, w, h, spec["inventory"][1])
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
-         "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
+         "rod": ghost_slot(ROD_GHOST), "target": ghost_slot(TARGET_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills
@@ -501,6 +571,8 @@ def build(name: str, spec: dict) -> Path:
     button(t, *spec["redstone"])
     if spec["readout"]:
         readout_panel(t, *spec["readout"])
+    for kind, cx, cy, cw, ch, *_ in spec.get("controls", []):
+        control(t, kind, cx, cy, cw, ch)
     ix, iy = spec["inventory"]
     for row in range(3):
         for col in range(9):
@@ -546,7 +618,10 @@ def write_java() -> Path:
         lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0]}, {REDSTONE_ICONS[1]},")
         gauges = ", ".join(f"new MachineLayout.Gauge({java_rect(tk[:4])}, {java_rect(dump_rect(*tk[:4]) if tk[5] else None)})"
                            for tk in s.get("tanks", []))
-        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, List.of({gauges}));")
+        controls = ", ".join(f"new MachineLayout.Control(\"{c[0]}\", {java_rect(c[1:5])}, {c[5]}, {c[6]}, {c[7]}, \"{c[8]}\")"
+                             for c in s.get("controls", []))
+        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, List.of({gauges}),")
+        lines.append(f"            List.of({controls}));")
         lines.append("")
     lines.append("    private MachineLayouts() {}")
     lines.append("}")

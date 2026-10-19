@@ -18,6 +18,23 @@ public final class GZNuclear {
     public static final DeferredItem<Item> DEPLETED_URANIUM_DUST = GZItems.simple("depleted_uranium_dust", "Depleted Uranium Dust", GZTab.RESOURCES);
     public static final DeferredItem<Item> DEPLETED_URANIUM_INGOT = GZItems.simple("depleted_uranium_ingot", "Depleted Uranium Ingot", GZTab.RESOURCES);
 
+    // --- Fission Reactor (slice 7): fuel, breeding targets and what comes out -------------------------------------------
+    public static final DeferredItem<Item> URANIUM_FUEL_ROD = GZItems.simple("uranium_fuel_rod", "Uranium Fuel Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<Item> SPENT_FUEL_ROD = GZItems.simple("spent_fuel_rod", "Spent Fuel Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<Item> DU_TARGET_ROD = GZItems.simple("du_target_rod", "Depleted Uranium Target Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<Item> LI6_TARGET_ROD = GZItems.simple("li6_target_rod", "Lithium-6 Target Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<Item> IRRADIATED_DU_TARGET_ROD = GZItems.simple("irradiated_du_target_rod", "Irradiated DU Target Rod", GZTab.NUCLEAR,
+            p -> p.stacksTo(16));
+    public static final DeferredItem<Item> IRRADIATED_LI6_TARGET_ROD = GZItems.simple("irradiated_li6_target_rod", "Irradiated Lithium-6 Target Rod",
+            GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<Item> PLUTONIUM_NUGGET = GZItems.simple("plutonium_nugget", "Plutonium Nugget", GZTab.RESOURCES);
+    public static final DeferredItem<Item> PLUTONIUM_INGOT = GZItems.simple("plutonium_ingot", "Plutonium Ingot", GZTab.RESOURCES);
+    public static final DeferredItem<Item> NUCLEAR_WASTE = GZItems.simple("nuclear_waste", "Nuclear Waste", GZTab.NUCLEAR);
+
+    // --- Particle Accelerator ------------------------------------------------------------------------------------------------
+    public static final DeferredItem<Item> ANTIMATTER_CELL = GZItems.simple("antimatter_cell", "Antimatter Cell", GZTab.NUCLEAR,
+            p -> p.rarity(Rarity.RARE).stacksTo(16));
+
     // --- Fusion Fuel Synthesizer ---------------------------------------------------------------------------------------------
     public static final DeferredItem<Item> LITHIUM_DEUTERIDE_PELLET = GZItems.simple("lithium_deuteride_pellet", "Lithium Deuteride Pellet", GZTab.NUCLEAR);
 

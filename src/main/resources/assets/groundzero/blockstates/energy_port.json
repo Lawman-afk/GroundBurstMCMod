@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/energy_port"
+    },
+    "formed=true": {
+      "model": "groundzero:block/energy_port_formed"
+    }
+  }
+}

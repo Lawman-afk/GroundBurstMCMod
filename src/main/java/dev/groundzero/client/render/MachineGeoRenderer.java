@@ -143,6 +143,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     @Override
     public AABB getRenderBoundingBox(T blockEntity) {
-        return new AABB(blockEntity.getBlockPos()).inflate(0.25 + this.reach, 0, 0.25 + this.reach).expandTowards(0, this.height - 1, 0);
+        // Structures may also reach one block below the controller (the accelerator ring's plinth).
+        return new AABB(blockEntity.getBlockPos()).inflate(0.25 + this.reach, 0, 0.25 + this.reach).expandTowards(0, this.height - 1, 0)
+                .expandTowards(0, this.reach > 0 ? -1 : 0, 0);
     }
 }

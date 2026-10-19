@@ -166,8 +166,9 @@ def _load_tex(ident: str) -> np.ndarray:
             _tex_cache[ident] = t
         else:
             img = Image.open(p).convert("RGBA")
-            # Animated textures: use the first frame.
-            if img.height > img.width and img.height % img.width == 0:
+            # Animated textures (a strip with an .mcmeta, as the game requires): use the first frame. A tall texture
+            # without one is an ordinary texture (large GeckoLib models use 256x512).
+            if img.height > img.width and img.height % img.width == 0 and Path(str(p) + ".mcmeta").exists():
                 img = img.crop((0, 0, img.width, img.width))
             _tex_cache[ident] = np.array(img, np.uint8)
     return _tex_cache[ident]

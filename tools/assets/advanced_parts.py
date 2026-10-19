@@ -184,12 +184,38 @@ def capacitor() -> None:
     save("capacitor", t)
 
 
+def crt_display() -> None:
+    """A small military CRT: steel bezel, rounded green phosphor screen with a trace, two knobs below."""
+    rows = [
+        "................",
+        "................",
+        "..oooooooooooo..",
+        ".o566666666665o.",
+        ".o5ooooooooo4o..",
+        ".o5oSSSSSSSo4o..",
+        ".o5oSsSSSsSo4o..",
+        ".o5oSSsSsSSo3o..",
+        ".o5oSSSsSSSo3o..",
+        ".o4oSSSSSSSo3o..",
+        ".o4ooooooooo3o..",
+        ".o4K3333K3333o..",
+        ".o222222222222o.",
+        "..oooooooooooo..",
+        "................",
+        "................",
+    ]
+    legend = {"o": STEEL.outline, "S": P.INDICATOR_GREEN[1], "s": P.INDICATOR_GREEN[4], "K": P.BLACK_PAINT[1]}
+    t, _ = PT.template([r[:16] for r in rows], legend, STEEL)
+    save("crt_display", t)
+
+
 def build() -> None:
     circuits()
     sensor_array()
     superconducting_coil()
     battery()
     capacitor()
+    crt_display()
 
 
 if __name__ == "__main__":

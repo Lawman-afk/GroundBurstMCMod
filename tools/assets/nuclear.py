@@ -162,6 +162,114 @@ def singularity_seed() -> None:
     save("singularity_seed", t)
 
 
+PLUTONIUM = fixed("plutonium", "#1e1918", "#332b28", "#4c413c", "#685a53", "#887770", "#ad9d95", "#ddd2cb")
+ZIRC = fixed("zircaloy", "#1c1e20", "#2e3134", "#45494d", "#5f6469", "#7c8287", "#a0a6ab", "#d0d5d9")
+
+# A thick fuel/target rod lying diagonally: tube tone digits, 'B' = the pellet band colour showing through the
+# cladding's inspection slots, 'C' = the end cap, 'o' = outline.
+ROD_ROWS = [
+    "................",
+    "...........ooo..",
+    "..........oCCCo.",
+    ".........o6CCCo.",
+    "........o65CCo..",
+    ".......o6B5oo...",
+    "......o65B4o....",
+    ".....o6B54o.....",
+    "....o65B4o......",
+    "...o6B54o.......",
+    "..o65B4o........",
+    ".o6554o.........",
+    ".o544o..........",
+    ".o33o...........",
+    "..oo............",
+    "................",
+]
+
+
+def fuel_rod(name: str, band, cap, cladding=None, glow=None) -> None:
+    """Fuel and target rods share one drawing; the pellet bands and the end cap say which is which. Irradiated
+    rods carry a few bright specks of glow on the cladding."""
+    from gz.sprite import outline as _outline  # noqa: PLC0415
+    clad = cladding or ZIRC
+    t = Tex(16, 16)
+    pts = set()
+    for y, row in enumerate(ROD_ROWS):
+        for x, c in enumerate(row):
+            if c == ".":
+                continue
+            if c == "o":
+                t.px(x, y, clad.outline)
+            elif c == "B":
+                t.px(x, y, band)
+            elif c == "C":
+                t.px(x, y, cap)
+            else:
+                t.px(x, y, clad[int(c)])
+            pts.add((x, y))
+    if glow is not None:
+        for x, y in ((6, 6), (9, 4), (4, 9)):
+            t.px(x, y, glow)
+    save(name, t)
+
+
+def waste_drum() -> None:
+    """A yellow waste drum with black hoops and a trefoil, a green drip down its side."""
+    rows = [
+        "................",
+        "....oooooooo....",
+        "...o56666665o...",
+        "...oKKKKKKKKo...",
+        "...o45555554o...",
+        "...o455TT554o...",
+        "...o45T55T54o...",
+        "...o455TT554o...",
+        "...o45T5T554o...",
+        "...o45555554o...",
+        "...oKKKKKKKKo...",
+        "...o34444443o...",
+        "...o3G333333o...",
+        "...o2G222221o...",
+        "....oGooooo.....",
+        ".....G..........",
+    ]
+    legend = {"o": P.HAZARD_YELLOW[0], "K": P.HAZARD_BLACK[2], "T": P.HAZARD_BLACK[2], "G": P.TOXIN[4]}
+    t, _ = PT.template(rows, legend, P.HAZARD_YELLOW)
+    save("nuclear_waste", t)
+
+
+def antimatter_cell() -> None:
+    """The containment cell, now holding a violet-white antimatter glow between its field rings."""
+    rows = [
+        "................",
+        ".....oooooo.....",
+        "....o566665o....",
+        "....o455554o....",
+        "....oooooooo....",
+        "....ogGGGGGo....",
+        "....oCCCCCCo....",
+        "....ogAaaAko....",
+        "....ogaWWako....",
+        "....ogAaaAko....",
+        "....oCCCCCCo....",
+        "....ogGGGGko....",
+        "....oooooooo....",
+        "....o455554o....",
+        ".....o3333o.....",
+        "......oooo......",
+    ]
+    legend = {"o": STEEL.outline, "g": (170, 200, 214, 255), "G": (120, 150, 166, 255), "k": (64, 84, 98, 255),
+              "C": P.CHERENKOV[5], "A": SHARD[4], "a": SHARD[5], "W": SHARD[6]}
+    t = Tex(16, 16)
+    for y, row in enumerate(rows):
+        for x, c in enumerate(row):
+            if c.isdigit():
+                t.px(x, y, STEEL[int(c)])
+            elif c != ".":
+                t.px(x, y, legend[c])
+    save("antimatter_cell", t)
+
+
 def build() -> None:
     nugget("enriched_uranium_nugget", ENRICHED)
     save("enriched_uranium_ingot", V.ingot(ENRICHED))
@@ -171,6 +279,16 @@ def build() -> None:
     stabilised_exotic_matter()
     containment_cell()
     singularity_seed()
+    fuel_rod("uranium_fuel_rod", P.URANIUM_GLOW[3], P.STEEL[5])
+    fuel_rod("spent_fuel_rod", P.NUCLEAR_AMBER[2], P.STEEL[3], glow=P.NUCLEAR_AMBER[5])
+    fuel_rod("du_target_rod", DEPLETED[3], P.CHERENKOV[4])
+    fuel_rod("li6_target_rod", P.WHITE_CERAMIC[4], P.CHERENKOV[4])
+    fuel_rod("irradiated_du_target_rod", DEPLETED[3], P.CHERENKOV[4], glow=P.URANIUM_GLOW[5])
+    fuel_rod("irradiated_li6_target_rod", P.WHITE_CERAMIC[4], P.CHERENKOV[4], glow=P.CHERENKOV[6])
+    nugget("plutonium_nugget", PLUTONIUM)
+    save("plutonium_ingot", V.ingot(PLUTONIUM))
+    waste_drum()
+    antimatter_cell()
 
 
 if __name__ == "__main__":

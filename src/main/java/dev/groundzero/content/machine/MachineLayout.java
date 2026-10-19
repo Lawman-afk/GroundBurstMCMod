@@ -19,18 +19,30 @@ import net.minecraft.resources.Identifier;
  * @param redstone   redstone-mode button; icons at {@code redstoneU/V}, 16 px apart per mode
  * @param readout    CRT text panel for live values (generators), or null
  * @param tank       fluid gauge for the machine's input tank, or null
+ * @param controls   machine-specific gauges and buttons (reactor heat and control rods)
  */
 public record MachineLayout(Identifier texture, int width, int height, List<Pos> slots, int inventoryX, int inventoryY,
                             Rect energy, int energyFillU, int energyFillV,
                             @Nullable Rect progress, int progressFillU, int progressFillV,
                             @Nullable Rect flame, int flameFillU, int flameFillV,
                             Rect status, Rect redstone, int redstoneU, int redstoneV, @Nullable Rect readout, int titleX, int titleY,
-                            List<Gauge> tanks) {
+                            List<Gauge> tanks, List<Control> controls) {
 
     public record Pos(int x, int y) {}
 
     /** A tank gauge (one per machine tank, in tank order) and its dump button, if the tank can be dumped. */
     public record Gauge(Rect rect, @Nullable Rect dump) {}
+
+    /**
+     * A machine control. Gauges ("heat", "rods") fill bottom-up with extra data slot {@code data} out of {@code max};
+     * buttons ("up", "down", "scram") send machine button {@code button}. {@code tooltip} is a translation key (gauges
+     * get the value as %s).
+     */
+    public record Control(String kind, Rect rect, int data, int max, int button, String tooltip) {
+        public boolean isButton() {
+            return this.button >= 0;
+        }
+    }
 
     public record Rect(int x, int y, int w, int h) {
         public boolean contains(int px, int py) {

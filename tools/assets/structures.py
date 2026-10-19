@@ -78,7 +78,32 @@ def item_port() -> Tex:
     return t
 
 
-def controller_front() -> Tex:
+def flask_placard(t: Tex) -> None:
+    """Chemical Plant: a flask."""
+    t.rect(4, 9, 4, 4, P.WHITE_CERAMIC[5])
+    t.px(5, 10, P.TOXIN[4])
+    t.px(6, 10, P.TOXIN[4])
+    t.hline(5, 11, 2, P.TOXIN[3])
+
+
+def trefoil_placard(t: Tex) -> None:
+    """Fission Reactor: a tiny radiation sign."""
+    t.rect(4, 9, 4, 4, P.HAZARD_YELLOW.base)
+    t.px(5, 10, P.HAZARD_BLACK.base)
+    t.px(6, 10, P.HAZARD_BLACK.base)
+    t.px(4, 12, P.HAZARD_BLACK.base)
+    t.px(7, 12, P.HAZARD_BLACK.base)
+    t.px(5, 9, P.HAZARD_BLACK.base)
+
+
+def orbit_placard(t: Tex) -> None:
+    """Particle Accelerator: a ring with a bright bunch on it."""
+    t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
+    t.outline(4, 9, 4, 4, P.CHERENKOV[3])
+    t.px(7, 9, P.CHERENKOV.shine)
+
+
+def controller_front(placard=None) -> Tex:
     t = Tex(16, 16)
     frame(t)
     t.panel(2, 2, 12, 12, OLIVE, base=3, style="raised")
@@ -89,14 +114,100 @@ def controller_front() -> Tex:
     t.px(4, 4, P.INDICATOR_GREEN[5])
     for i, c in enumerate((P.INDICATOR_GREEN.base, P.HAZARD_YELLOW.base, P.WARNING_RED.base)):
         t.px(11 + (i % 2) * 2, 4 + (i // 2) * 2, c)           # status buttons
-    # Flask placard: what this controller runs.
-    t.rect(4, 9, 4, 4, P.WHITE_CERAMIC[5])
-    t.px(5, 10, P.TOXIN[4])
-    t.px(6, 10, P.TOXIN[4])
-    t.hline(5, 11, 2, P.TOXIN[3])
+    # Placard: what this controller runs.
+    (placard or flask_placard)(t)
     t.stripes(2, 13, 12, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
     t.rect(10, 9, 3, 3, GUN[2])                               # dial
     t.px(11, 10, P.WHITE_CERAMIC[6])
+    return t
+
+
+def lead_casing() -> Tex:
+    """Lead-lined casing: dull lead plates bolted into the steel frame, a seam across the middle."""
+    t = Tex(16, 16)
+    frame(t)
+    t.panel(2, 2, 12, 12, P.LEAD, base=3, style="inset")
+    t.hline(2, 8, 12, P.LEAD.shadow)
+    t.hline(2, 9, 12, P.LEAD.light)
+    for x, y in ((3, 3), (12, 3), (3, 12), (12, 12), (3, 6), (12, 6)):
+        t.px(x, y, P.LEAD[5])
+    return t
+
+
+def energy_port() -> Tex:
+    t = Tex(16, 16)
+    frame(t)
+    t.stripes(2, 2, 12, 12, P.WARNING_RED[3], P.HAZARD_BLACK.base, width=2)
+    t.rect(4, 4, 8, 8, P.BLACK_PAINT.deep)
+    t.outline(4, 4, 8, 8, GUN[1])
+    for x, y in ((8, 5), (7, 6), (6, 7), (7, 7), (8, 7), (9, 7), (8, 8), (7, 9), (6, 10)):
+        t.px(x, y, P.HAZARD_YELLOW[5])                         # lightning bolt
+    return t
+
+
+def steel_plating() -> Tex:
+    """Riveted steel deck plates with a raised diamond tread."""
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, STEEL[3])
+    t.outline(0, 0, 16, 16, STEEL[2])
+    t.hline(0, 0, 16, STEEL[4])
+    for y in range(2, 14, 4):
+        for x in range(2 + (y // 4) % 2 * 2, 14, 4):
+            t.px(x, y, STEEL[5])
+            t.px(x + 1, y + 1, STEEL[1])
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        t.px(x, y, STEEL[6])
+    return t
+
+
+def steel_frame() -> Tex:
+    """An open steel truss: edge members and one diagonal brace, see-through between them (cutout)."""
+    t = Tex(16, 16)
+    for i in range(16):
+        for w in (0, 1):
+            t.px(i, w, STEEL[4])
+            t.px(i, 15 - w, STEEL[2])
+            t.px(w, i, STEEL[4])
+            t.px(15 - w, i, STEEL[2])
+    for i in range(2, 14):
+        t.px(i, 15 - i, STEEL[3])
+        t.px(i + 1, 15 - i, STEEL[2])
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        t.px(x, y, STEEL[6])
+    return t
+
+
+def magnet_segment() -> Tex:
+    """A dipole magnet: red yoke, copper windings either side of the dark beam pipe."""
+    t = Tex(16, 16)
+    frame(t, P.PRIMER_RED)
+    for x in (3, 4, 11, 12):
+        for y in range(3, 13):
+            t.px(x, y, P.COPPER[4] if y % 2 else P.COPPER[3])
+    t.rect(6, 6, 4, 4, P.BLACK_PAINT.deep)                    # beam pipe
+    t.outline(6, 6, 4, 4, STEEL[4])
+    return t
+
+
+def injector() -> Tex:
+    t = Tex(16, 16)
+    frame(t)
+    t.panel(2, 2, 12, 12, P.GUNMETAL, base=3, style="inset")
+    t.rect(5, 5, 6, 6, P.BLACK_PAINT.deep)
+    t.outline(5, 5, 6, 6, P.CHERENKOV[3])
+    t.rect(7, 7, 2, 2, P.CHERENKOV.shine)                     # source glow
+    t.stripes(2, 13, 12, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+    return t
+
+
+def target_chamber() -> Tex:
+    t = Tex(16, 16)
+    frame(t)
+    t.panel(2, 2, 12, 12, P.GUNMETAL, base=3, style="inset")
+    t.rect(4, 4, 8, 8, P.ANTIMATTER[2])
+    t.outline(4, 4, 8, 8, STEEL[5])
+    t.rect(6, 6, 4, 4, P.ANTIMATTER[5])                       # trapped antimatter glow
+    t.px(7, 7, P.ANTIMATTER.shine)
     return t
 
 
@@ -110,11 +221,13 @@ def particle_model(tex: str) -> dict:
     return {"textures": {"particle": tex}}
 
 
-def part_block(name: str, tex: Tex, translucent: bool = False) -> None:
+def part_block(name: str, tex: Tex, translucent: bool = False, cutout: bool = False) -> None:
     tex.save(paths.TEXTURES / "block" / f"{name}.png")
     model = {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundzero:block/{name}"}}
     if translucent:
         model["render_type"] = "minecraft:translucent"
+    elif cutout:
+        model["render_type"] = "minecraft:cutout"
     write_json(paths.MODELS / "block" / f"{name}.json", model)
     write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundzero:block/{name}"))
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {
@@ -148,4 +261,14 @@ if __name__ == "__main__":
     part_block("reactor_glass", reactor_glass(), translucent=True)
     part_block("item_port", item_port())
     controller("chemical_plant", controller_front(), controller_top(), casing())
+    # Slice 7.
+    part_block("lead_lined_casing", lead_casing())
+    part_block("energy_port", energy_port())
+    part_block("steel_plating", steel_plating())
+    part_block("steel_frame", steel_frame(), cutout=True)
+    part_block("magnet_segment", magnet_segment())
+    part_block("accelerator_injector", injector())
+    part_block("accelerator_target_chamber", target_chamber())
+    controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing())
+    controller("particle_accelerator", controller_front(orbit_placard), controller_top(), casing())
     print("structures written")

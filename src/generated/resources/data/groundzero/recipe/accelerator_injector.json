@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundzero:magnet_segment",
+    "groundzero:military_circuit"
+  ],
+  "result": {
+    "id": "groundzero:accelerator_injector"
+  }
+}

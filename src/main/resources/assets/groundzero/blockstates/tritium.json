@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "volume=1": {
+      "model": "groundzero:block/tritium_1"
+    },
+    "volume=2": {
+      "model": "groundzero:block/tritium_2"
+    },
+    "volume=3": {
+      "model": "groundzero:block/tritium_3"
+    },
+    "volume=4": {
+      "model": "groundzero:block/tritium_4"
+    },
+    "volume=5": {
+      "model": "groundzero:block/tritium_5"
+    },
+    "volume=6": {
+      "model": "groundzero:block/tritium_6"
+    },
+    "volume=7": {
+      "model": "groundzero:block/tritium_7"
+    },
+    "volume=8": {
+      "model": "groundzero:block/tritium_8"
+    }
+  }
+}

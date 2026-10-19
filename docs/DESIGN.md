@@ -1029,13 +1029,15 @@ Layer `y0` is the bottom. `X` = controller, `R` = reinforced concrete, `H` = haz
 `C` = capacitor cell, `S` = magnet segment, `E` = energy port, `I` = item port, `W` = coolant port, `U` = fuel port,
 `.` = air (required empty), `*` = any.
 
-**Fission Reactor** (3×3×4, formerly the Breeder Reactor):
+**Fission Reactor** (3×3×4, formerly the Breeder Reactor; rows written front first):
 ```
-y0: LLL / LWL / LXL      (X faces out of the front middle)
-y1: LGL / G.G / LGL      (core space: rendered fuel rods + Cherenkov glow)
+y0: LXL / LWL / LLL      (X at the front middle)
+y1: LGL / G.G / LGL      (core space: rendered fuel bundle, control rods, water, Cherenkov glow)
 y2: LGL / G.G / LGL
 y3: LUL / LEL / LIL
 ```
+W, U and I are all Item Ports (a port carries items and fluids: coolant in at W, fuel/targets at U, products at I);
+E is an Energy Port (power out).
 **Chemical Plant** (2×2×2): `y0: XM / MI`, `y1: GG / GG` (tanks rendered inside).
 
 **Fusion Reactor** (7×7×3 ring, first draft; `T` = toroidal field coil, `V` = vacuum vessel casing): a hollow square
@@ -1048,9 +1050,10 @@ front-middle, `I` (matter feed) and `E` at the sides; `y1–y3` `F` posts at the
 face midpoints of `y2`, `G` elsewhere on the faces, 3×3×3 interior air with the `K` cradle at its centre holding the
 seed; `y4` 5×5 `M` roof with a `Q` emitter at the centre.
 
-**Particle Accelerator** (9×9×3 ring): a hollow square ring 1 wide on y1 made of 28 `S` magnet segments with `I`
-injector and target chamber at opposite midpoints, `X` beside the injector; y0 ring of `P` under it; y2 ring of `F`
-above it. Interior 7×7 is free.
+**Particle Accelerator** (9×9×3 ring): a hollow square ring 1 wide on y1 made of 28 `S` magnet segments, the
+injector `J` at the front midpoint with `X` beside it (west), the target chamber `T` at the back midpoint and an Energy
+Port `E` at the west midpoint; y0 ring of `P` (steel plating) under it; y2 ring of `F` (steel frame) above it. Interior
+7×7 is free. The controller sits in the middle layer, so the ring reaches one block below it.
 
 **Radar Station** (3×3×5): `y0: PEP / PXP / PPP`, `y1–y3: .F. / FFF / .F.` (mast), `y4: DDD / DFD / DDD` (dish mount).
 
@@ -1233,10 +1236,16 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Battery Charger | CT | machine frame, 2 capacitor, basic circuit |
 | Decontamination Shower | CT | 3 steel plate, 2 iron bars, water bucket, basic circuit, electric motor |
 | Ordnance Assembly Bench | CT | 3 steel plate, crafting table, anvil, servo, basic circuit, chest |
-| Fission reactor parts | CT | casing: lead plate + dense steel plate + concrete; glass: lead plate + glass; ports: casing + hopper/bucket/cable; controller: casing + military circuit + CRT display |
+| Fission reactor parts | CT | lead-lined casing ×4: 4 lead plate + 4 dense steel plate + concrete; glass: Reactor Glass; ports: Item Port (machine casing + hopper), Energy Port (machine casing + insulated cable + redstone); controller: lead-lined casing + military circuit + CRT display |
+| Uranium fuel rod / DU target rod / Li-6 target rod | CT | 3 uranium ingot / 3 DU ingot / 3 Li-6 dust, + 2 steel rod (shapeless) |
+| Plutonium (3 nuggets) + nuclear waste | CP | irradiated DU target rod + 1 000 mB sulfuric acid |
+| Tritium (1 000 mB gas) + 2 steel rod back | CP | irradiated Li-6 target rod |
+| 2 uranium dust + nuclear waste | CP | spent fuel rod + 1 000 mB sulfuric acid |
+| Antimatter cell | PA | containment cell, 3 600 ticks at 2 000 FE/t |
+| CRT display | CT | glass pane, glowstone dust, basic circuit, redstone, steel plate |
 | Fusion reactor parts (first draft) | CT | toroidal field coil: 4 superconducting coil + 2 dense steel plate + tungsten plate; vacuum vessel casing: machine casing + 2 tungsten plate; viewport: reactor glass + tungsten plate; controller: machine casing + military circuit + 2 CRT display + pressure vessel |
 | Singularity reactor parts (first draft) | CT / EF | containment emitter (EF): containment cell + 2 superconducting coil + military circuit; core cradle (EF): stabilised exotic matter + 4 tungsten plate + neodymium magnet; controller (CT): machine casing + quantum circuit + 2 CRT display; the core itself is a singularity seed placed in the cradle |
-| Accelerator parts | CT | magnet segment: 2 superconducting coil + 4 dense steel plate + copper wire; injector/target: segment + military circuit; controller: casing + quantum circuit + CRT display |
+| Accelerator parts | CT | magnet segment ×4: 2 superconducting coil + 4 dense steel plate + copper wire; injector: segment + military circuit; target chamber: segment + military circuit + reactor glass; controller: machine casing + quantum circuit + CRT display; steel plating ×4: 4 steel plate; steel frame ×4: 4 steel rod + steel plate |
 | Structural blocks | CT | reinforced concrete ×8: 8 concrete (any colour) + steel rod; hazard concrete: reinforced concrete + yellow & black dye; steel frame ×4: 4 steel rod + steel plate; steel plating ×4: 4 steel plate; machine casing: machine frame + 4 steel plate; dish panel ×2: 2 steel plate + copper plate |
 
 ### 26.5 Ordnance (crafting table unless noted)
@@ -1462,3 +1471,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | The Decontamination Shower is a walk-in booth (the collision shape leaves the inside open) that sprays whoever stands in it while powered and watered; until radiation exists it puts out fire and washes off poison, wither and nausea. |
 | 2026-10-20 | Machine collision shapes now turn with the machine's facing (they were fixed to north, which only mattered for the asymmetric tall machines). Block items draw machines idle and empty (no running-only parts). |
 | 2026-10-20 | Slice 6 feedback: the Battery Charger charges at 512 FE/t (it is an early machine and 2 048 FE/t drained small networks). Generators and chargers count as running for a moment after their last transfer, so a load that draws less than they make no longer blinks their light and animation; the Diesel Generator's readout shows its output averaged over about a second. The Industrial Press loses its front guard posts and light curtains (they ended short of the crown), and its gauge sits on the crown. Machine GUI titles start at the left edge and shrink to fit before the status lamp; the RTG is called "Radioisotope Generator" in game. |
+| 2026-10-20 | Slice 7 Fission Reactor (a game abstraction): power = 1 200 FE/t x (fuel slots loaded / 4) x (rods withdrawn); one rod lasts 12 000 full-power ticks and comes out spent; target rods irradiate after 6 000. Water coolant up to 25 mB/t at full power; cooled, the core settles at 20 + 480 x power °C, uncooled it heats fast and SCRAMs at 900 °C (rods drop in, stays SCRAMmed until rods are withdrawn). Rods move in 10% steps from GUI buttons. A damaging meltdown is left for when the explosion engine exists (Phase 5), as a server config option. |
+| 2026-10-20 | Multiblock ports: an Item Port carries both items and fluids, so the reactor's coolant, fuel and product ports are all Item Ports; a new Energy Port hands cables the controller's energy (a reactor pushes out of it, the accelerator takes power in through it). |
+| 2026-10-20 | Machine GUIs gained generic controls in their generated layout (vertical gauges filled from sync data, buttons that send machine button ids), first used by the reactor's heat and rod gauges and its withdraw / insert / SCRAM buttons. |
+| 2026-10-20 | Tritium is a gas fluid (Chemical Plant product from irradiated Li-6 target rods), with a gas canister and gas bucket like deuterium. The RTG also burns plutonium ingots (10 in-game days). The target chamber's recipe adds reactor glass so it differs from the injector's. |
+| 2026-10-20 | Tool fix: the preview renderer only treats tall textures as animation strips when an .mcmeta exists (the accelerator's 256x512 texture was being cropped), matching the game; the 3D z-fight checker skips any variant-bone set (press dies, reactor rod positions). |

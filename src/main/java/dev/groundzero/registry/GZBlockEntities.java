@@ -94,8 +94,15 @@ public final class GZBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GZMachines.CHEMICAL_PLANT.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.FissionReactorBlockEntity>> FISSION_REACTOR =
+            BLOCK_ENTITIES.register("fission_reactor", () -> new BlockEntityType<>(dev.groundzero.content.machine.FissionReactorBlockEntity::new,
+                    GZMachines.FISSION_REACTOR.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.ParticleAcceleratorBlockEntity>> PARTICLE_ACCELERATOR =
+            BLOCK_ENTITIES.register("particle_accelerator", () -> new BlockEntityType<>(dev.groundzero.content.machine.ParticleAcceleratorBlockEntity::new,
+                    GZMachines.PARTICLE_ACCELERATOR.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
-            BLOCK_ENTITIES.register("item_port", () -> new BlockEntityType<>(PortBlockEntity::new, GZMultiblocks.ITEM_PORT.block().get()));
+            BLOCK_ENTITIES.register("item_port", () -> new BlockEntityType<>(PortBlockEntity::new, GZMultiblocks.ITEM_PORT.block().get(),
+                    GZMultiblocks.ENERGY_PORT.block().get()));
 
     private GZBlockEntities() {}
 
@@ -119,6 +126,9 @@ public final class GZBlockEntities {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_TANK.get(), (be, side) -> be.handler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_PORT.get(), PortBlockEntity::items);
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ITEM_PORT.get(), PortBlockEntity::energy);
+        machine(event, FISSION_REACTOR.get());
+        machine(event, PARTICLE_ACCELERATOR.get());
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());

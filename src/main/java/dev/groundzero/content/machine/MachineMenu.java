@@ -23,6 +23,8 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30, BUTTON_FLUID = 40;
     /** + tank index: empty that tank. */
     public static final int BUTTON_DUMP = 50;
+    /** + n: a machine's own control button n (e.g. reactor control rods), see MachineBlockEntity#handleButton. */
+    public static final int BUTTON_MACHINE = 70;
 
     private final MachineBlockEntity machine;
     private final MachineLayout layout;
@@ -114,6 +116,9 @@ public class MachineMenu extends AbstractContainerMenu {
         if (id == BUTTON_AUTO_EJECT) {
             this.machine.changeSides(SideConfig::toggleAutoEject);
             return true;
+        }
+        if (id >= BUTTON_MACHINE && id < BUTTON_MACHINE + 10) {
+            return this.machine.handleButton(id - BUTTON_MACHINE);
         }
         if (id >= BUTTON_DUMP && id < BUTTON_DUMP + MachineBlockEntity.MAX_TANKS) {
             this.machine.dumpTank(id - BUTTON_DUMP);

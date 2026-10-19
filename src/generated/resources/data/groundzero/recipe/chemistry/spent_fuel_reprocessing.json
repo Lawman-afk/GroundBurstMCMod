@@ -1,0 +1,30 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:spent_fuel_rod"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundzero:uranium_dust"
+      }
+    },
+    {
+      "item": {
+        "id": "groundzero:nuclear_waste"
+      }
+    }
+  ],
+  "time": 400
+}

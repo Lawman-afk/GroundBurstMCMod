@@ -126,6 +126,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.exotic_matter_fabricator"
   },
+  "machine.fission_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundzero:machine/fission_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.fission_reactor"
+  },
   "machine.fusion_fuel_synthesizer": {
     "sounds": [
       "groundzero:machine/fusion_fuel_synthesizer"
@@ -155,6 +164,15 @@
       "groundzero:machine/ore_crusher"
     ],
     "subtitle": "subtitles.groundzero.machine.ore_crusher"
+  },
+  "machine.particle_accelerator": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundzero:machine/particle_accelerator"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.particle_accelerator"
   },
   "machine.rtg": {
     "sounds": [

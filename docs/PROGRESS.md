@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; 70/70 GameTests); next: slice 8 (Fusion and Singularity Reactors) after the user's check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -123,10 +123,10 @@ checklist for the user.
 | Exotic Matter Fabricator | done (slice 5: 2-tall cage of three tumbling ring gimbals round a floating shard; stabilised exotic matter, containment cell, singularity seed; 400 FE/t) — needs in-game test |
 | Battery Charger, Decontamination Shower | done (slice 6: charger for any FE item with chasing LEDs; walk-in shower with water spray) — needs in-game test |
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (Holo-Projector on its final recipe since slice 5; slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
-| Fission Reactor multiblock (formerly Breeder Reactor; heat, control rods, coolant, SCRAM) | todo (slice 7) |
+| Fission Reactor multiblock (formerly Breeder Reactor; heat, control rods, coolant, SCRAM) | done (slice 7: 3x3x4 lead vessel with window bays onto the water-filled core, rod positions and Cherenkov glow on the model; fuel/target/spent rods, plutonium, tritium, waste; GUI with heat/rod gauges and SCRAM) — needs in-game test |
 | Fusion Reactor multiblock (tokamak, capacitor ignition, LN2 magnets) | todo (slice 8) |
 | Singularity Reactor multiblock (matter-fed, containment cage) | todo (slice 8) |
-| Particle Accelerator multiblock | todo |
+| Particle Accelerator multiblock | done (slice 7: 9x9x3 ring of 28 magnets, injector, target chamber, energy port; a glowing bunch laps the ring; antimatter cells from containment cells at 2,000 FE/t) — needs in-game test |
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
 | Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases as rising clouds with upside-down buckets), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
 | Water Pump (infinite water from a source block, pushes into pipes) | done (slice 4 feedback 2) — needs in-game test |

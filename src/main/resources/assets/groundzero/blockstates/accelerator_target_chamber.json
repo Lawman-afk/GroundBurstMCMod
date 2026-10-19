@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/accelerator_target_chamber"
+    },
+    "formed=true": {
+      "model": "groundzero:block/accelerator_target_chamber_formed"
+    }
+  }
+}
