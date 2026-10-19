@@ -302,11 +302,11 @@ All machines use **NeoForge Energy (FE)** so they interoperate with other tech m
 |---|---|---|
 | Combustion Generator | 60 FE/t | Burns any furnace fuel; synthetic fuel canister = 24 000 FE. Exhaust smoke, rumble loop. |
 | Diesel Generator | 180 FE/t | Burns synthetic fuel or liquid rocket fuel piped into its tank (canisters/buckets pour in). Piston animation. |
-| RTG (radioisotope thermoelectric generator) | 40 FE/t forever-ish | Plutonium ingot lasts 10 in-game days; emits low radiation if not shielded by lead blocks. Glowing fins. |
+| RTG (radioisotope thermoelectric generator) | 40 FE/t forever-ish | Fuel slug in a slot: enriched uranium ingot lasts 2 in-game days now; plutonium ingot (Fission Reactor) will last 10. The slug decays whether or not the power is used. Emits low radiation if not shielded by lead blocks (Phase 12). Glowing fins. |
 | Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown is a config option, off by default. Cherenkov-blue core. |
 | Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas or LiD pellets. Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
 | Singularity Reactor ("special" multiblock) | up to ~25 000 FE/t | A singularity seed held in a containment cage (a large version of the Exotic Matter Fabricator's ring cage). Feed it any items or blocks; it turns their matter into energy, and the accretion glow brightens as it is fed. Holding the cage costs a little power from its own buffer; if the buffer runs dry the core collapses: by default it just pops and the seed is lost; as a config option it sets off a small version of the Phase 11 singularity effect. |
-| Capacitor Bank (T1/T2/T3) | 100k / 1M / 10M FE | Superweapons draw from these during charge. Charge gauge on the model. |
+| Capacitor Bank / Advanced / Superconducting | 100k / 1M / 10M FE, 1 024 / 8 192 / 32 768 FE/t | Every face takes power in except the front, which pushes it out; keeps its charge when picked up; comparator output; 8-bar charge gauge on the model. Superweapons draw from these during charge. |
 | Power cables: copper (256 FE/t), insulated (1 024), high-voltage (8 192) | — | Connected-texture cable models with insulators on HV; HV cable arcs when EMPed. |
 
 Superweapons and large machines need power while charging (as in Generals: low power pauses the countdown).
@@ -342,8 +342,8 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Fusion Reactor** | multiblock ring 7×7×3 | generates (ignition from capacitor banks) | power | See §7. |
 | **Singularity Reactor** | multiblock 5×5×5 | generates (feeds on matter) | power | See §7. |
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
-| **Decontamination Shower** | 1×2 tall | 20 FE/t | removes contamination from player & items | Shower frame with yellow nozzles, water + foam particles. |
-| **Battery Charger** | 1 block | — | recharges energy cells/guns/Geiger | Cradle with charge LEDs. |
+| **Decontamination Shower** | 1×2 tall, walk-in | 20 FE/t + 10 mB water/t while spraying | puts out fire, washes off poison/wither/nausea; radiation contamination from Phase 12 | Booth with yellow nozzles, falling water + splash/foam particles. |
+| **Battery Charger** | 1 block | up to 2 048 FE/t from cables | recharges batteries and any mod's FE item (energy cells/guns/Geiger later) | Cradle with chasing charge LEDs. |
 
 ---
 
@@ -1227,7 +1227,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Circuit Fabricator | CT | machine frame, 2 servo, glass, handmade circuit board |
 | Exotic Matter Fabricator | CT | machine frame, 4 superconducting coil, military circuit, 2 tungsten plate, ender eye |
 | Diesel Generator | CT | machine frame, electric motor, pressure vessel, combustion generator |
-| RTG | CT | 4 lead plate, plutonium ingot, 2 copper wire, 2 tungsten plate |
+| RTG | CT | 4 lead plate, advanced circuit, 2 copper wire, 2 tungsten plate (fuel goes in its slot) |
 | Capacitor Bank T1 / T2 / T3 | CT | 4 capacitor + machine frame / T1 + 4 gold wire + advanced circuit / T2 + 4 superconducting coil + military circuit |
 | Insulated / HV cable ×6 | CT | 6 copper cable + plastic sheet / 6 insulated cable + 3 tungsten filament + plastic |
 | Battery Charger | CT | machine frame, 2 capacitor, basic circuit |
@@ -1455,3 +1455,9 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | "Needs more fluid" also shows when a recipe's items are all loaded but its fluid tank is empty (it only showed for a partly filled tank). A fluid-only recipe counts once one of its fluids is in a tank. |
 | 2026-10-20 | The GUI's CRT readout is filled by the block entity (generator output and buffer; centrifuge cascade size and speed bonus). |
 | 2026-10-20 | Late-game power ladder (agreed with the user): Diesel Generator, RTG and Capacitor Banks in slice 6; the Breeder Reactor becomes the **Fission Reactor** (heat, control-rod slider, piped water coolant, SCRAM; damaging meltdown only by config) in slice 7 with the Particle Accelerator; a **Fusion Reactor** (tokamak ring, capacitor-bank ignition, LN₂ for its magnets, ~6 000 FE/t) and a **Singularity Reactor** (matter-fed singularity in a containment cage, ~25 000 FE/t, collapses if its cage loses power) in slice 8. Layouts and part recipes in §23.3/§26.4 are first drafts, fixed when each slice is built. |
+| 2026-10-20 | Slice 6: the Diesel Generator burns fluid fuels from its tank by common tag (synthetic fuel 90 FE/mB, liquid rocket fuel 140, other mods' c:diesel 90 / c:biodiesel 80) in 10 mB sips, pausing when its buffer is full. |
+| 2026-10-20 | The RTG takes its fuel in a slot instead of in its recipe (an advanced circuit replaces the plutonium ingot there). Until plutonium exists (slice 7), an enriched uranium ingot runs it for 2 in-game days; the slug decays whether or not the power is used. |
+| 2026-10-20 | Capacitor banks: Capacitor Bank / Advanced / Superconducting, moving 1 024 / 8 192 / 32 768 FE/t (matching the cable tiers). The front face only outputs (and pushes), every other face only inputs, so banks chain and never feed themselves; they keep their charge in the item (an `energy` data component) and give a comparator signal. Upgrading a bank by crafting does not carry its charge over. |
+| 2026-10-20 | The Battery becomes a real 50 000 FE item (FE item capability, charge bar and tooltip); the Battery Charger charges any item with the FE item capability, then moves it to its output slot. |
+| 2026-10-20 | The Decontamination Shower is a walk-in booth (the collision shape leaves the inside open) that sprays whoever stands in it while powered and watered; until radiation exists it puts out fire and washes off poison, wither and nausea. |
+| 2026-10-20 | Machine collision shapes now turn with the machine's facing (they were fixed to north, which only mattered for the asymmetric tall machines). Block items draw machines idle and empty (no running-only parts). |

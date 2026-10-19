@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/advanced_capacitor_bank",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

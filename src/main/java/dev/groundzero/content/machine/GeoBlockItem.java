@@ -21,7 +21,10 @@ import net.minecraft.world.level.block.Block;
 
 /** Item form of a GeckoLib-rendered block: draws the block's geo model in hand, in the GUI and in item frames. */
 public class GeoBlockItem extends BlockItem implements GeoItem {
-    private static final java.util.List<String> OPTIONAL_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister");
+    /** Bones that only show in a running or loaded machine: items draw the machine idle and empty. */
+    private static final java.util.List<String> OPTIONAL_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister",
+            "chip", "frost", "core", "sparks", "puff0", "puff1", "puff2", "spray", "led0", "led1", "led2", "led3", "led4",
+            "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Identifier modelId;
@@ -61,6 +64,17 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
                 return this.renderer;
             }
         });
+    }
+
+    /** Blocks picked up with stored energy (capacitor banks) show it. */
+    @Override
+    @SuppressWarnings("deprecation")
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display,
+            Consumer<net.minecraft.network.chat.Component> builder, net.minecraft.world.item.TooltipFlag flag) {
+        Integer stored = stack.get(dev.groundzero.registry.GZDataComponents.ENERGY.get());
+        if (stored != null && getBlock() instanceof dev.groundzero.content.power.CapacitorBankBlock bank) {
+            builder.accept(dev.groundzero.content.power.BatteryItem.chargeLine(stored, bank.tier().capacity()));
+        }
     }
 
     @Override

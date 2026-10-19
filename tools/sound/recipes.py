@@ -289,6 +289,57 @@ def exotic_matter_fabricator_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
 
 
+def diesel_generator_loop() -> np.ndarray:
+    """Diesel Generator: a twin at 2 rev/s (matches the 0.5 s piston animation), firing alternately: deep knocking
+    combustion thumps at 4 Hz with diesel clatter, a low block resonance, and exhaust breath."""
+    stroke = S.saturate(S.lowpass(S.white(0.14, 151), 200) * S.exp_decay(int(0.14 * S.SR), 0.035) * 4, 2.2)
+    stroke = stroke + S.tone(0.14, 36) * S.exp_decay(int(0.14 * S.SR), 0.06) * 0.9
+    clatter = S.bandpass(S.white(0.03, 152), 1800, 5000) * S.exp_decay(int(0.03 * S.SR), 0.006) * 0.35
+    rng = np.random.default_rng(153)
+    times = [k / 4 + rng.normal(0, 0.003) for k in range(-1, int(TOTAL * 4) + 1)]
+    thumps = _pulses(times, stroke)
+    knocks = _pulses([t + 0.01 for t in times], clatter)
+    block = S.lowpass(S.brown(TOTAL, 154), 140) * 0.35
+    breath = S.bandpass(S.pink(TOTAL, 155), 300, 1500) * 0.08
+    x = S.mix((thumps, 1.0), (knocks, 1.0), (block, 1.0), (breath, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -5)
+
+
+def rtg_loop() -> np.ndarray:
+    """RTG: nearly silent. A faint thermoelectric converter hum and, now and then, the tick of decay picked up by
+    the casing's own counter (sparse, irregular clicks)."""
+    hum = (S.tone(TOTAL, 60) * 0.5 + S.tone(TOTAL, 180) * 0.15) * 0.12
+    air = S.bandpass(S.pink(TOTAL, 161), 200, 1200) * 0.03
+    click = S.resonator(np.r_[1.0, -0.6, np.zeros(int(0.02 * S.SR))], 2900, q=8) * 0.5
+    rng = np.random.default_rng(162)
+    ticks = sorted(rng.uniform(-PRE, LOOP + XF, 7))
+    x = S.mix((hum, 1.0), (air, 1.0), (_pulses(list(ticks), click), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -22)
+
+
+def battery_charger_loop() -> np.ndarray:
+    """Battery Charger: transformer hum (100 Hz), a thin high coil whine, and a soft relay tick each second when the
+    LED chase restarts (matches the 1 s animation)."""
+    t = S.t_axis(TOTAL)
+    hum = (np.sin(2 * np.pi * 100 * t) * 0.5 + np.sin(2 * np.pi * 200 * t) * 0.25 + np.sin(2 * np.pi * 300 * t) * 0.1) * 0.2
+    whine = np.sin(2 * np.pi * 7500 * t) * 0.012 * (0.7 + 0.3 * np.sin(2 * np.pi * 1.0 * t) ** 2)
+    tick = S.bandpass(S.white(0.02, 171), 1500, 6000) * S.exp_decay(int(0.02 * S.SR), 0.004) * 0.25
+    x = S.mix((hum, 1.0), (whine, 1.0), (_pulses([0.1 + k for k in range(-1, 3)], tick), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -12)
+
+
+def decontamination_shower_loop() -> np.ndarray:
+    """Decontamination Shower: a hard spray of water (broadband hiss shaped like falling water) with splashes on the
+    grate, a pump hum, and a gurgle from the drain."""
+    t = S.t_axis(TOTAL)
+    spray = S.bandpass(S.white(TOTAL, 181), 900, 9000) * (0.85 + 0.15 * np.sin(2 * np.pi * 1.5 * t)) * 0.35
+    splash = S.bandpass(S.grains(TOTAL, 40, 8, 182), 600, 5000) * 0.35
+    pump = (S.tone(TOTAL, 120) * 0.4 + S.tone(TOTAL, 240) * 0.15) * 0.15
+    gurgle = S.lowpass(S.brown(TOTAL, 183), 250) * 0.3
+    x = S.mix((spray, 1.0), (splash, 1.0), (pump, 1.0), (gurgle, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -8)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -303,6 +354,10 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/gas_centrifuge": gas_centrifuge_loop(),
         "machine/fusion_fuel_synthesizer": fusion_fuel_synthesizer_loop(),
         "machine/exotic_matter_fabricator": exotic_matter_fabricator_loop(),
+        "machine/diesel_generator": diesel_generator_loop(),
+        "machine/rtg": rtg_loop(),
+        "machine/battery_charger": battery_charger_loop(),
+        "machine/decontamination_shower": decontamination_shower_loop(),
     }
 
 

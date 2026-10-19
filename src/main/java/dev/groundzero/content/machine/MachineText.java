@@ -71,6 +71,19 @@ public final class MachineText {
             "Presses lithium-6 dust with deuterium gas (piped in from an Electrolytic Separator) into lithium deuteride pellets, the fuel of thermonuclear weapons.");
     public static final String INFO_EXOTIC_MATTER_FABRICATOR = GZLang.add(GroundZero.MODID + ".info.exotic_matter_fabricator",
             "Holds exotic matter in a spinning magnetic cage to make stabilised exotic matter, containment cells and singularity seeds. It draws 400 FE a tick, more than copper cable carries: feed it with insulated or high-voltage cable.");
+    public static final String FUEL_LEFT = GZLang.add(GroundZero.MODID + ".gui.fuel_left", "FUEL %s min");
+    public static final String INFO_DIESEL_GENERATOR = GZLang.add(GroundZero.MODID + ".info.diesel_generator",
+            "Burns liquid fuel piped into its tank (or poured in from a canister) for 180 FE a tick: synthetic fuel gives 90 FE per mB, liquid rocket fuel 140; other mods' diesel works too. It pushes power out of its energy faces and pauses when its buffer is full.");
+    public static final String INFO_RTG = GZLang.add(GroundZero.MODID + ".info.rtg",
+            "A steady 40 FE a tick from a radioisotope slug. An enriched uranium ingot lasts two in-game days (plutonium, from the Fission Reactor, will last ten). The slug decays whether the power is used or not, so wire it to something that always draws.");
+    public static final String INFO_CAPACITOR_BANK = GZLang.add(GroundZero.MODID + ".info.capacitor_bank",
+            "Stores power: 100,000 / 1,000,000 / 10,000,000 FE, moving 1,024 / 8,192 / 32,768 FE a tick. Every face takes power in except the front, which pushes it out (turn it with the Wrench). It keeps its charge when picked up, and a comparator reads how full it is.");
+    public static final String INFO_BATTERY_CHARGER = GZLang.add(GroundZero.MODID + ".info.battery_charger",
+            "Charges a battery (or any other mod's chargeable item) at up to 2,048 FE a tick from the power its cables bring, then moves it to the output slot.");
+    public static final String INFO_DECONTAMINATION_SHOWER = GZLang.add(GroundZero.MODID + ".info.decontamination_shower",
+            "A walk-in booth: pipe water in and power it, then step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. Radiation contamination will wash off too once radiation exists.");
+    public static final String INFO_BATTERY = GZLang.add(GroundZero.MODID + ".info.battery",
+            "Holds 50,000 FE. Charge it in the Battery Charger; later gear (Geiger counter, guns) runs on it.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

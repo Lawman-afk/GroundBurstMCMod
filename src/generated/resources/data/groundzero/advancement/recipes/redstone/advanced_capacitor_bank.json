@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_capacitor_bank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:capacitor_bank"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:advanced_capacitor_bank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_capacitor_bank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:advanced_capacitor_bank"
+    ]
+  }
+}

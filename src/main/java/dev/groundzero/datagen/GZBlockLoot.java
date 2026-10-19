@@ -51,6 +51,16 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.WATER_PUMP.block().get());
         dropSelf(GZMachines.CIRCUIT_FABRICATOR.block().get());
         dropSelf(GZMachines.FUSION_FUEL_SYNTHESIZER.block().get());
+        dropSelf(GZMachines.DIESEL_GENERATOR.block().get());
+        dropSelf(GZMachines.RTG.block().get());
+        dropSelf(GZMachines.BATTERY_CHARGER.block().get());
+        // Capacitor banks keep their charge in the dropped item.
+        for (var bank : GZMachines.CAPACITOR_BANKS) {
+            Block block = bank.block().get();
+            add(block, createSingleItemTable(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
+                    .copyComponentsFromBlockEntity(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY)
+                    .include(dev.groundzero.registry.GZDataComponents.ENERGY.get())));
+        }
         dropSelf(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().get());
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
@@ -59,7 +69,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
             dropSelf(pipe.block().get());
         }
         for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER,
-                GZMachines.GAS_CENTRIFUGE, GZMachines.EXOTIC_MATTER_FABRICATOR)) {
+                GZMachines.GAS_CENTRIFUGE, GZMachines.EXOTIC_MATTER_FABRICATOR, GZMachines.DECONTAMINATION_SHOWER)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());

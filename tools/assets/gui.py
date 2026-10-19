@@ -159,6 +159,66 @@ LAYOUTS = {
         "readout": None,
         "inventory": (8, 84),
     },
+    # Slice 6. Diesel Generator: fuel tank, burn flame, output readout.
+    "diesel_generator": {
+        "title": (28, 6),
+        "slots": [],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(30, 20, 12, 42, None, True)],
+        "progress": None,
+        "flame": (57, 34, 14, 14),
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (88, 20, 78, 34),
+        "inventory": (8, 84),
+    },
+    # RTG: fuel slug slot, decay flame, readout with the fuel time left.
+    "rtg": {
+        "title": (28, 6),
+        "slots": [("fuel", 56, 53)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": (57, 34, 14, 14),
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (88, 20, 78, 34),
+        "inventory": (8, 84),
+    },
+    "capacitor_bank": {
+        "title": (28, 6),
+        "slots": [],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (40, 22, 100, 24),
+        "inventory": (8, 84),
+    },
+    # Battery Charger: the arrow fills with the item's charge.
+    "battery_charger": {
+        "title": (28, 6),
+        "slots": [("battery", 56, 35), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
+    "decontamination_shower": {
+        "title": (28, 6),
+        "slots": [],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(40, 20, 12, 46, "H2O", False)],
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (64, 22, 96, 14),
+        "inventory": (8, 84),
+    },
     "combustion_generator": {
         "title": (28, 6),
         "slots": [("fuel", 56, 53)],
@@ -242,6 +302,12 @@ MEMBRANE_GHOST = ["................", "................", "...##########...", ".
                   "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..",
                   "...##########...", "................", "................", "................", "................",
                   "................"]
+
+
+BATTERY_GHOST = ["................", "................", "......####......", ".....#....#.....", "....########....",
+                 "....#......#....", "....#..#...#....", "....#.##...#....", "....#..##..#....", "....#...#..#....",
+                 "....#......#....", "....#......#....", "....########....", "................", "................",
+                 "................"]
 
 
 def ghost_slot(rows: list[str]):
@@ -409,7 +475,7 @@ def build(name: str, spec: dict) -> Path:
     window(t, w, h, spec["inventory"][1])
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
-         "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills

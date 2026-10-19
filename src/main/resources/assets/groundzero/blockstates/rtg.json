@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=true,facing=north": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=false,facing=east": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=true,facing=east": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=false,facing=south": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=true,facing=south": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=false,facing=west": {
+      "model": "groundzero:block/rtg"
+    },
+    "active=true,facing=west": {
+      "model": "groundzero:block/rtg"
+    }
+  }
+}

@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -110,7 +110,7 @@ checklist for the user.
 | GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | started: `tools/assets/gui.py` generates layout-driven machine GUIs + `MachineLayouts.java`; generic `MachineScreen` (energy bar, progress, flame, status lamp, redstone button, CRT readout, tooltips). Guarded buttons/gauges come with later machines |
 | Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | done (side config: per-face item mode + energy switch + auto-eject, GUI tab): `MachineBlockEntity`/`ProcessingBlockEntity`, `MachineBlock` (facing + active), `MachineMenu`, automation view (inputs in / outputs out), recipe-filtered inputs, redstone modes, status reasons, EMP hook, GeckoLib `AnimatedMachine` |
 | Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated recipe added in slice 5; HV recipe waits (design lists 10 ingredients) |
-| Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | Combustion Generator done (GeckoLib model, firebox glow, flywheel, GUI, recipe); rest todo |
+| Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | done (slice 6: diesel twin with pistons/flywheel burning piped fuel; RTG with hot fins; three bank tiers with charge gauge, front output, charge kept in the item, comparator) — slice 6 needs in-game test |
 | Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
 | Arc Furnace | done (2-tall GeckoLib model: electrodes lower, melt + port glow; 8 recipes: steel, tungsten, carbide, magnet, cobalt, lead) |
 | Industrial Press | done (2-tall C-frame, ram stroke synced to sound; 4 dies as non-consumed catalysts; 11 recipes) |
@@ -121,7 +121,7 @@ checklist for the user.
 | Cryogenic Condenser | done (slice 3: 2-tall, oxygen/nitrogen membranes as catalysts; frost shows only while running). Recipe now takes an advanced circuit (slice 5) |
 | Circuit Fabricator | done (slice 5: glass clean box with pick-and-place gantry; 4 inputs + LN2 coolant tank; basic/advanced/military/quantum circuits, sensor array, superconducting coil) — needs in-game test |
 | Exotic Matter Fabricator | done (slice 5: 2-tall cage of three tumbling ring gimbals round a floating shard; stabilised exotic matter, containment cell, singularity seed; 400 FE/t) — needs in-game test |
-| Battery Charger, Decontamination Shower | todo |
+| Battery Charger, Decontamination Shower | done (slice 6: charger for any FE item with chasing LEDs; walk-in shower with water spray) — needs in-game test |
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (Holo-Projector on its final recipe since slice 5; slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
 | Fission Reactor multiblock (formerly Breeder Reactor; heat, control rods, coolant, SCRAM) | todo (slice 7) |
 | Fusion Reactor multiblock (tokamak, capacitor ignition, LN2 magnets) | todo (slice 8) |

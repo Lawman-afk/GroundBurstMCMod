@@ -159,11 +159,37 @@ def battery() -> None:
     save("battery", t)
 
 
+def capacitor() -> None:
+    """An electrolytic capacitor can: blue sleeve with a white polarity stripe, scored steel top, two copper legs."""
+    rows = [
+        "................",
+        "................",
+        ".....oooooo.....",
+        "....o566o65o....",
+        "....o5oooo5o....",
+        "....o665o56o....",
+        "....oBBBBWBo....",
+        "....oBbBBWBo....",
+        "....oBbBBWBo....",
+        "....oBbBBWBo....",
+        "....oBbBBWBo....",
+        "....obbbbWbo....",
+        ".....oooooo.....",
+        "......c..c......",
+        "......c..c......",
+        "................",
+    ]
+    legend = {"o": STEEL.outline, "B": P.CHERENKOV[3], "b": P.CHERENKOV[2], "W": P.WHITE_CERAMIC[5], "c": PT.COPPER[5]}
+    t, _ = PT.template(rows, legend, STEEL)
+    save("capacitor", t)
+
+
 def build() -> None:
     circuits()
     sensor_array()
     superconducting_coil()
     battery()
+    capacitor()
 
 
 if __name__ == "__main__":

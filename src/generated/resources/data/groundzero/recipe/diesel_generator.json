@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "F": "groundzero:machine_frame",
+    "G": "groundzero:combustion_generator",
+    "M": "groundzero:electric_motor",
+    "V": "groundzero:pressure_vessel"
+  },
+  "pattern": [
+    "MV",
+    "GF"
+  ],
+  "result": {
+    "id": "groundzero:diesel_generator"
+  }
+}

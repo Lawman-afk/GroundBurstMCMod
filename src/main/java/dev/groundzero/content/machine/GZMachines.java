@@ -65,6 +65,20 @@ public final class GZMachines {
                     Block.box(0, 0, 0, 16, 16, 16),
                     Block.box(0, 0, 0, 16, 15, 16)));
 
+    // Slice 6 (DESIGN.md §7-8): mid-game power, storage, charging, decontamination.
+    public static final WithItem<MachineBlock> DIESEL_GENERATOR = machine("diesel_generator", "Diesel Generator",
+            p -> new MachineBlock(p, GZBlockEntities.DIESEL_GENERATOR, true, Shapes.block()));
+    public static final WithItem<MachineBlock> RTG = machine("rtg", "Radioisotope Thermoelectric Generator",
+            p -> new MachineBlock(p, GZBlockEntities.RTG, true, Shapes.block()));
+    public static final WithItem<MachineBlock> BATTERY_CHARGER = machine("battery_charger", "Battery Charger",
+            p -> new MachineBlock(p, GZBlockEntities.BATTERY_CHARGER, true, Block.box(0, 0, 0, 16, 9, 16)));
+    /** Walk-in booth: open front (north), thin side walls, back wall, floor grate, canopy high enough to stand under. */
+    public static final WithItem<TallMachineBlock> DECONTAMINATION_SHOWER = tallMachine("decontamination_shower", "Decontamination Shower",
+            p -> new TallMachineBlock(p, GZBlockEntities.DECONTAMINATION_SHOWER, true,
+                    Shapes.or(Block.box(0, 0, 0, 16, 1, 16), Block.box(0, 0, 15, 16, 16, 16), Block.box(0, 0, 0, 1, 16, 16), Block.box(15, 0, 0, 16, 16, 16)),
+                    Shapes.or(Block.box(0, 14.5, 0, 16, 16, 16), Block.box(0, 0, 15, 16, 16, 16), Block.box(0, 0, 0, 1, 16, 16), Block.box(15, 0, 0, 16, 16, 16))));
+    public static final List<WithItem<dev.groundzero.content.power.CapacitorBankBlock>> CAPACITOR_BANKS = new ArrayList<>();
+
     public static final WithItem<MultiblockControllerBlock> CHEMICAL_PLANT = GZBlocks.register("chemical_plant", "Chemical Plant Controller",
             GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.CHEMICAL_PLANT),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -72,6 +86,12 @@ public final class GZMachines {
     public static final List<WithItem<CableBlock>> CABLES = new ArrayList<>();
 
     static {
+        for (var tier : dev.groundzero.content.power.CapacitorBankBlockEntity.Tier.values()) {
+            CAPACITOR_BANKS.add(GZBlocks.registerWithItem(tier.id(), tier.english(), GZTab.MACHINES,
+                    p -> new dev.groundzero.content.power.CapacitorBankBlock(p, GZBlockEntities.capacitorBank(tier), tier),
+                    p -> p.mapColor(MapColor.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion(),
+                    (block, props) -> new GeoBlockItem(block, props, GroundZero.id(tier.id()))));
+        }
         for (CableTier tier : CableTier.values()) {
             CABLES.add(GZBlocks.register(tier.id(), tier.english(), GZTab.MACHINES, p -> new CableBlock(p, tier),
                     p -> p.mapColor(MapColor.COLOR_ORANGE).strength(0.8f).sound(SoundType.COPPER).noOcclusion()));

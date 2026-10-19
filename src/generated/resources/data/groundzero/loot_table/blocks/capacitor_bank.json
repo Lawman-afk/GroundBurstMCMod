@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "modifier": {
+    "type": "minecraft:copy_components",
+    "include": [
+      "groundzero:energy"
+    ],
+    "source": "block_entity"
+  },
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundzero:capacitor_bank"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundzero:blocks/capacitor_bank"
+}

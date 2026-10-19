@@ -117,6 +117,7 @@ public class GZRecipeProvider extends RecipeProvider {
         gases();
         chemistry();
         slice5();
+        slice6();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -443,6 +444,56 @@ public class GZRecipeProvider extends RecipeProvider {
                 .define('F', GZParts.MACHINE_FRAME).define('M', GZParts.MILITARY_CIRCUIT)
                 .pattern("CEC").pattern("TFT").pattern("CMC")
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT))
+                .save(output);
+    }
+
+    /** Slice 6 (DESIGN.md §26.2, §26.4): mid-game power, storage, charging and the decontamination shower. */
+    private void slice6() {
+        shaped(RecipeCategory.MISC, GZParts.CAPACITOR, 1)
+                .define('P', GZTags.commonItem("plates/copper")).define('S', GZChemicals.PLASTIC_SHEET).define('W', GZTags.commonItem("wires/gold"))
+                .pattern("PSP").pattern(" W ")
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_SHEET), has(GZChemicals.PLASTIC_SHEET))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.DIESEL_GENERATOR.item(), 1)
+                .define('M', GZParts.ELECTRIC_MOTOR).define('V', GZParts.PRESSURE_VESSEL).define('F', GZParts.MACHINE_FRAME)
+                .define('G', GZMachines.COMBUSTION_GENERATOR.item())
+                .pattern("MV").pattern("GF")
+                .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL))
+                .save(output);
+        // The RTG's design recipe carried a plutonium charge; its fuel now goes in a slot, so an advanced circuit
+        // (the thermocouple controller) takes that place.
+        shaped(RecipeCategory.REDSTONE, GZMachines.RTG.item(), 1)
+                .define('L', GZTags.commonItem("plates/lead")).define('T', GZTags.commonItem("plates/tungsten"))
+                .define('W', GZTags.commonItem("wires/copper")).define('A', GZTags.ADVANCED_CIRCUITS)
+                .pattern("LTL").pattern("WAW").pattern("LTL")
+                .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE))
+                .save(output);
+        var banks = GZMachines.CAPACITOR_BANKS;
+        shaped(RecipeCategory.REDSTONE, banks.get(0).item(), 1)
+                .define('C', GZParts.CAPACITOR).define('F', GZParts.MACHINE_FRAME)
+                .pattern("C C").pattern(" F ").pattern("C C")
+                .unlockedBy(getHasName(GZParts.CAPACITOR), has(GZParts.CAPACITOR))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, banks.get(1).item(), 1)
+                .define('W', GZTags.commonItem("wires/gold")).define('B', banks.get(0).item()).define('A', GZTags.ADVANCED_CIRCUITS)
+                .pattern("W W").pattern(" B ").pattern("WAW")
+                .unlockedBy(getHasName(banks.get(0).item()), has(banks.get(0).item()))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, banks.get(2).item(), 1)
+                .define('C', GZParts.SUPERCONDUCTING_COIL).define('B', banks.get(1).item()).define('M', GZParts.MILITARY_CIRCUIT)
+                .pattern("C C").pattern(" B ").pattern("CMC")
+                .unlockedBy(getHasName(banks.get(1).item()), has(banks.get(1).item()))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.BATTERY_CHARGER.item(), 1)
+                .define('C', GZParts.CAPACITOR).define('B', GZTags.BASIC_CIRCUITS).define('F', GZParts.MACHINE_FRAME)
+                .pattern("CBC").pattern(" F ")
+                .unlockedBy(getHasName(GZParts.CAPACITOR), has(GZParts.CAPACITOR))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.DECONTAMINATION_SHOWER.item(), 1)
+                .define('P', GZTags.commonItem("plates/steel")).define('I', Items.IRON_BARS).define('W', Items.WATER_BUCKET)
+                .define('B', GZTags.BASIC_CIRCUITS).define('M', GZParts.ELECTRIC_MOTOR)
+                .pattern("PPP").pattern("IWI").pattern("BM ")
+                .unlockedBy(getHasName(GZParts.ELECTRIC_MOTOR), has(GZParts.ELECTRIC_MOTOR))
                 .save(output);
     }
 

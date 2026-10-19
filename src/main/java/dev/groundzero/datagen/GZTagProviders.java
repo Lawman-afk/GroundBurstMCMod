@@ -103,12 +103,15 @@ public final class GZTagProviders {
                     GZMachines.ELECTROLYTIC_SEPARATOR.block().key(), GZMachines.CRYOGENIC_CONDENSER.block().key(),
                     GZMachines.CHEMICAL_PLANT.block().key(), GZMachines.WATER_PUMP.block().key(),
                     GZMachines.CIRCUIT_FABRICATOR.block().key(), GZMachines.GAS_CENTRIFUGE.block().key(),
-                    GZMachines.FUSION_FUEL_SYNTHESIZER.block().key(), GZMachines.EXOTIC_MATTER_FABRICATOR.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().key(),
+                    GZMachines.FUSION_FUEL_SYNTHESIZER.block().key(), GZMachines.EXOTIC_MATTER_FABRICATOR.block().key(),
+                    GZMachines.DIESEL_GENERATOR.block().key(), GZMachines.RTG.block().key(), GZMachines.BATTERY_CHARGER.block().key(),
+                    GZMachines.DECONTAMINATION_SHOWER.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().key(),
                     GZMultiblocks.MACHINE_CASING.block().key(), GZMultiblocks.ITEM_PORT.block().key(),
                     GZMultiblocks.REACTOR_GLASS.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().key(),
                     dev.groundzero.content.fluid.GZFluids.COPPER_FLUID_PIPE.block().key(),
                     dev.groundzero.content.fluid.GZFluids.PRESSURIZED_FLUID_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
+            GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
             tag(Tags.BlockItems.CLUSTERS.block()).add(GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());

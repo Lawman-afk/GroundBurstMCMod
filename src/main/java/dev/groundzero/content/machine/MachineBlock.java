@@ -44,13 +44,14 @@ public class MachineBlock extends BaseEntityBlock {
 
     private final Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type;
     private final boolean geckoRendered;
-    private final VoxelShape shape;
+    /** Collision/outline shape per facing; shapes are authored for a north-facing machine. */
+    private final java.util.Map<Direction, VoxelShape> shapes;
 
     public MachineBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type, boolean geckoRendered, VoxelShape shape) {
         super(properties);
         this.type = type;
         this.geckoRendered = geckoRendered;
-        this.shape = shape;
+        this.shapes = net.minecraft.world.phys.shapes.Shapes.rotateHorizontal(shape);
         registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
     }
 
@@ -81,7 +82,7 @@ public class MachineBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, CollisionContext context) {
-        return this.shape;
+        return this.shapes.get(state.getValue(FACING));
     }
 
     @Override

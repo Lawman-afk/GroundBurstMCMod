@@ -47,6 +47,7 @@ public class GroundZero {
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);
         GZBlockEntities.BLOCK_ENTITIES.register(modBus);
+        dev.groundzero.registry.GZDataComponents.COMPONENTS.register(modBus);
         GZMenus.MENUS.register(modBus);
         GZRecipes.register(modBus);
         modBus.addListener(GZBlockEntities::registerCapabilities);

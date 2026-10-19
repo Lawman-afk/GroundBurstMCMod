@@ -31,6 +31,12 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FUSION_FUEL_SYNTHESIZER = machine("fusion_fuel_synthesizer", () -> MachineLayouts.FUSION_FUEL_SYNTHESIZER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> EXOTIC_MATTER_FABRICATOR = machine("exotic_matter_fabricator", () -> MachineLayouts.EXOTIC_MATTER_FABRICATOR);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DIESEL_GENERATOR = machine("diesel_generator", () -> MachineLayouts.DIESEL_GENERATOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> RTG = machine("rtg", () -> MachineLayouts.RTG);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CAPACITOR_BANK = machine("capacitor_bank", () -> MachineLayouts.CAPACITOR_BANK);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> BATTERY_CHARGER = machine("battery_charger", () -> MachineLayouts.BATTERY_CHARGER);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DECONTAMINATION_SHOWER = machine("decontamination_shower", () -> MachineLayouts.DECONTAMINATION_SHOWER);
+
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
 
     private GZMenus() {}

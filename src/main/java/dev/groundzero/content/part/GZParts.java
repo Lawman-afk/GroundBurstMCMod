@@ -31,8 +31,11 @@ public final class GZParts {
     public static final DeferredItem<Item> PRESSURE_VESSEL = GZItems.simple("pressure_vessel", "Pressure Vessel", GZTab.MACHINES);
     public static final DeferredItem<Item> HEATING_ELEMENT = GZItems.simple("heating_element", "Heating Element", GZTab.MACHINES);
     public static final DeferredItem<Item> SERVO = GZItems.simple("servo", "Servo", GZTab.MACHINES);
-    /** Crafting part for now; the Battery Charger (slice 6) gives it a charge. */
-    public static final DeferredItem<Item> BATTERY = GZItems.simple("battery", "Battery", GZTab.MACHINES);
+    /** Rechargeable FE cell (charged in the Battery Charger). */
+    public static final DeferredItem<dev.groundzero.content.power.BatteryItem> BATTERY = GZItems.register("battery", "Battery", GZTab.MACHINES,
+            dev.groundzero.content.power.BatteryItem::new);
+
+    public static final DeferredItem<Item> CAPACITOR = GZItems.simple("capacitor", "Capacitor", GZTab.MACHINES);
 
     // --- Circuit Fabricator products (DESIGN.md §26.2) -----------------------------------------------------------------------
     public static final DeferredItem<Item> BASIC_CIRCUIT = GZItems.simple("basic_circuit", "Basic Circuit", GZTab.MACHINES);

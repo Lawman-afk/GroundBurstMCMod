@@ -1,0 +1,54 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "working": {
+      "animation_length": 3.0,
+      "bones": {
+        "core": {
+          "scale": {
+            "0": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "1.5": {
+              "vector": [
+                1.12,
+                1.4,
+                1.12
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        }
+      },
+      "loop": true
+    },
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "core": {
+          "scale": {
+            "0": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

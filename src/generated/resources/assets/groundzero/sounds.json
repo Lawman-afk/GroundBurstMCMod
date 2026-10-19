@@ -57,6 +57,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.arc_furnace"
   },
+  "machine.battery_charger": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "groundzero:machine/battery_charger"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.battery_charger"
+  },
   "machine.chemical_plant": {
     "sounds": [
       {
@@ -86,6 +95,21 @@
       }
     ],
     "subtitle": "subtitles.groundzero.machine.cryogenic_condenser"
+  },
+  "machine.decontamination_shower": {
+    "sounds": [
+      "groundzero:machine/decontamination_shower"
+    ],
+    "subtitle": "subtitles.groundzero.machine.decontamination_shower"
+  },
+  "machine.diesel_generator": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/diesel_generator"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.diesel_generator"
   },
   "machine.electrolytic_separator": {
     "sounds": [
@@ -131,6 +155,15 @@
       "groundzero:machine/ore_crusher"
     ],
     "subtitle": "subtitles.groundzero.machine.ore_crusher"
+  },
+  "machine.rtg": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "groundzero:machine/rtg"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.rtg"
   },
   "machine.water_pump": {
     "sounds": [

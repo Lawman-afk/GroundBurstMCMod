@@ -41,6 +41,10 @@
     "groundzero:gas_centrifuge",
     "groundzero:fusion_fuel_synthesizer",
     "groundzero:exotic_matter_fabricator",
+    "groundzero:diesel_generator",
+    "groundzero:rtg",
+    "groundzero:battery_charger",
+    "groundzero:decontamination_shower",
     "groundzero:fluid_tank",
     "groundzero:machine_casing",
     "groundzero:item_port",
@@ -50,6 +54,9 @@
     "groundzero:pressurized_fluid_pipe",
     "groundzero:copper_cable",
     "groundzero:insulated_cable",
-    "groundzero:hv_cable"
+    "groundzero:hv_cable",
+    "groundzero:capacitor_bank",
+    "groundzero:advanced_capacitor_bank",
+    "groundzero:superconducting_capacitor_bank"
   ]
 }

@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=true,facing=north": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=false,facing=east": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=true,facing=east": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=false,facing=south": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=true,facing=south": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=false,facing=west": {
+      "model": "groundzero:block/battery_charger"
+    },
+    "active=true,facing=west": {
+      "model": "groundzero:block/battery_charger"
+    }
+  }
+}

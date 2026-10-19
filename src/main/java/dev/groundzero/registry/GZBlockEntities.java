@@ -57,6 +57,41 @@ public final class GZBlockEntities {
             BLOCK_ENTITIES.register("exotic_matter_fabricator", () -> new BlockEntityType<>(dev.groundzero.content.machine.ExoticMatterFabricatorBlockEntity::new,
                     GZMachines.EXOTIC_MATTER_FABRICATOR.block().get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.DieselGeneratorBlockEntity>> DIESEL_GENERATOR =
+            BLOCK_ENTITIES.register("diesel_generator", () -> new BlockEntityType<>(dev.groundzero.content.power.DieselGeneratorBlockEntity::new,
+                    GZMachines.DIESEL_GENERATOR.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.RtgBlockEntity>> RTG =
+            BLOCK_ENTITIES.register("rtg", () -> new BlockEntityType<>(dev.groundzero.content.power.RtgBlockEntity::new, GZMachines.RTG.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.BatteryChargerBlockEntity>> BATTERY_CHARGER =
+            BLOCK_ENTITIES.register("battery_charger", () -> new BlockEntityType<>(dev.groundzero.content.power.BatteryChargerBlockEntity::new,
+                    GZMachines.BATTERY_CHARGER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.DecontaminationShowerBlockEntity>> DECONTAMINATION_SHOWER =
+            BLOCK_ENTITIES.register("decontamination_shower", () -> new BlockEntityType<>(dev.groundzero.content.machine.DecontaminationShowerBlockEntity::new,
+                    GZMachines.DECONTAMINATION_SHOWER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> CAPACITOR_BANK = bank(0);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> ADVANCED_CAPACITOR_BANK = bank(1);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> SUPERCONDUCTING_CAPACITOR_BANK = bank(2);
+
+    /** One block entity type per bank tier, so each tier gets its own GeckoLib model. */
+    @SuppressWarnings("unchecked")
+    private static DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> bank(int ordinal) {
+        var tier = dev.groundzero.content.power.CapacitorBankBlockEntity.Tier.values()[ordinal];
+        DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>>[] self = new DeferredHolder[1];
+        self[0] = BLOCK_ENTITIES.register(tier.id(), () -> new BlockEntityType<>(
+                (pos, state) -> new dev.groundzero.content.power.CapacitorBankBlockEntity(self[0].get(), tier, pos, state),
+                GZMachines.CAPACITOR_BANKS.get(ordinal).block().get()));
+        return self[0];
+    }
+
+    public static DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> capacitorBank(
+            dev.groundzero.content.power.CapacitorBankBlockEntity.Tier tier) {
+        return switch (tier) {
+            case BASIC -> CAPACITOR_BANK;
+            case ADVANCED -> ADVANCED_CAPACITOR_BANK;
+            case SUPERCONDUCTING -> SUPERCONDUCTING_CAPACITOR_BANK;
+        };
+    }
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GZMachines.CHEMICAL_PLANT.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
@@ -72,6 +107,15 @@ public final class GZBlockEntities {
         machine(event, WATER_PUMP.get());
         machine(event, CIRCUIT_FABRICATOR.get());
         machine(event, FUSION_FUEL_SYNTHESIZER.get());
+        machine(event, DIESEL_GENERATOR.get());
+        machine(event, RTG.get());
+        machine(event, BATTERY_CHARGER.get());
+        machine(event, CAPACITOR_BANK.get());
+        machine(event, ADVANCED_CAPACITOR_BANK.get());
+        machine(event, SUPERCONDUCTING_CAPACITOR_BANK.get());
+        event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access,
+                GZDataComponents.ENERGY.get(), dev.groundzero.content.power.BatteryItem.CAPACITY, dev.groundzero.content.power.BatteryItem.TRANSFER),
+                dev.groundzero.content.part.GZParts.BATTERY.get());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_TANK.get(), (be, side) -> be.handler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_PORT.get(), PortBlockEntity::items);
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
@@ -80,6 +124,7 @@ public final class GZBlockEntities {
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());
         tallMachine(event, GZMachines.GAS_CENTRIFUGE.block().get());
         tallMachine(event, GZMachines.EXOTIC_MATTER_FABRICATOR.block().get());
+        tallMachine(event, GZMachines.DECONTAMINATION_SHOWER.block().get());
         GZMachines.registerCableCapabilities(event);
         dev.groundzero.content.fluid.GZFluids.registerCapabilities(event);
     }

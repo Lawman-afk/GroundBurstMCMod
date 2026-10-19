@@ -44,6 +44,11 @@ public class GroundZeroClient {
         event.register(GZMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
         event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
         event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
+        event.register(GZMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
+        event.register(GZMenus.RTG.get(), MachineScreen::new);
+        event.register(GZMenus.CAPACITOR_BANK.get(), MachineScreen::new);
+        event.register(GZMenus.BATTERY_CHARGER.get(), MachineScreen::new);
+        event.register(GZMenus.DECONTAMINATION_SHOWER.get(), MachineScreen::new);
         event.register(GZMenus.CIRCUIT_FABRICATOR.get(), MachineScreen::new);
         event.register(GZMenus.GAS_CENTRIFUGE.get(), MachineScreen::new);
         event.register(GZMenus.FUSION_FUEL_SYNTHESIZER.get(), MachineScreen::new);
@@ -58,6 +63,14 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.DIESEL_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.DIESEL_GENERATOR.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.RTG.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.RTG.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.BATTERY_CHARGER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.BATTERY_CHARGER.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.DECONTAMINATION_SHOWER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.DECONTAMINATION_SHOWER.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.CAPACITOR_BANK.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CAPACITOR_BANK.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.ADVANCED_CAPACITOR_BANK.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ADVANCED_CAPACITOR_BANK.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.SUPERCONDUCTING_CAPACITOR_BANK.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.SUPERCONDUCTING_CAPACITOR_BANK.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CIRCUIT_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CIRCUIT_FABRICATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.GAS_CENTRIFUGE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.GAS_CENTRIFUGE.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), 1));

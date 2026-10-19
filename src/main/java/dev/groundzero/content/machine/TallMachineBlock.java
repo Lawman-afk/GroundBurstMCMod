@@ -36,12 +36,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TallMachineBlock extends MachineBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
 
-    private final VoxelShape upperShape;
+    private final java.util.Map<net.minecraft.core.Direction, VoxelShape> upperShapes;
 
     public TallMachineBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type,
             boolean geckoRendered, VoxelShape lowerShape, VoxelShape upperShape) {
         super(properties, type, geckoRendered, lowerShape);
-        this.upperShape = upperShape;
+        this.upperShapes = net.minecraft.world.phys.shapes.Shapes.rotateHorizontal(upperShape);
         registerDefaultState(defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER));
     }
 
@@ -117,6 +117,6 @@ public class TallMachineBlock extends MachineBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(HALF) == DoubleBlockHalf.UPPER ? this.upperShape : super.getShape(state, level, pos, context);
+        return state.getValue(HALF) == DoubleBlockHalf.UPPER ? this.upperShapes.get(state.getValue(FACING)) : super.getShape(state, level, pos, context);
     }
 }
