@@ -422,7 +422,7 @@ def dies() -> None:
 def build() -> None:
     bar_ingot("steel_ingot", STEEL)
     bar_ingot("cobalt_ingot", COBALT)
-    bar_ingot("tungsten_carbide_ingot", CARBIDE, lambda t, f: [t.px(x, y, CARBIDE[5]) for (x, y) in f["front"] if (x * 3 + y) % 7 == 0])
+    bar_ingot("tungsten_carbide_ingot", CARBIDE)
     plate("steel_plate", STEEL)
     plate("copper_plate", COPPER)
     plate("lead_plate", R.LEAD_METAL)

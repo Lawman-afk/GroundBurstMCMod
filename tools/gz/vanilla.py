@@ -42,53 +42,46 @@ def _outline(t: Tex, pts: set[tuple[int, int]], color) -> None:
 
 # --- ingot ---------------------------------------------------------------------------------------------------------------
 
-# Every vanilla ingot shares one silhouette; ours use the same outline so all ingots line up exactly. Row spans.
-INGOT_ROWS = {2: (10, 11), 3: (7, 12), 4: (4, 13), 5: (1, 14), 6: (0, 15), 7: (0, 15), 8: (0, 15), 9: (0, 15),
-              10: (0, 14), 11: (1, 12), 12: (2, 9), 13: (3, 6)}
+# Ingots follow vanilla's shared ingot layout exactly: the outline, the three bright lines along the bar, and the
+# shadows on the front face and foot. Digits are tone levels 1 (darkest) .. 8 (brightest) as the vanilla ingots use
+# them; each mod ingot maps them onto its own material ramp, so only the colours differ.
+INGOT_TONES = [
+    "................",
+    "................",
+    "..........33....",
+    ".......333664...",
+    "....3336777764..",
+    ".33367777777764.",
+    "3877777777778874",
+    "3687777778887461",
+    "3668778887544561",
+    "3666887544446661",
+    "356675444466511.",
+    ".356754455111...",
+    "..35652111......",
+    "...3311.........",
+    "................",
+    "................",
+]
+#: tone level -> index in a 7-step material ramp (0 darkest .. 6 brightest)
+INGOT_RAMP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 4, 7: 5, 8: 6}
 
 
 def ingot(ramp: Ramp, mark=None) -> Tex:
-    """An ingot on the shared vanilla outline (a bar lying diagonally, rising to the right), shaded with our own
-    rules: lit top face with a bright ridge along its upper edge, darker front face below the crease line, a lit
-    right end, and an outline in the material's own darks (mid-dark up-left, darkest down-right).
-    `mark(t, faces)` can stamp a detail afterwards."""
+    """An ingot on vanilla's ingot layout in this material's colours. `mark(t, faces)` can stamp a small detail
+    (faces: 'top' = the lit upper face, 'front' = the shaded front)."""
     t = Tex(16, 16)
-    shape = {(x, y) for y, (x0, x1) in INGOT_ROWS.items() for x in range(x0, x1 + 1)}
-    edge = {p for p in shape if any((p[0] + ox, p[1] + oy) not in shape for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
-    body = shape - edge
-
-    def crease(x: float) -> float:
-        return 12.4 - 0.48 * x         # top face above this line, front face below
-
     faces: dict[str, set[tuple[int, int]]] = {"top": set(), "front": set(), "end": set()}
-    for (x, y) in body:
-        if x >= 13 and 6 <= y <= 9:
-            faces["end"].add((x, y))
-        elif y + 0.5 < crease(x + 0.5):
-            faces["top"].add((x, y))
-        else:
-            faces["front"].add((x, y))
-    for (x, y) in faces["top"]:
-        t.px(x, y, ramp[5])
-    for (x, y) in faces["top"]:
-        if (x, y + 1) in faces["front"] or (x + 1, y + 1) in faces["front"]:
-            t.px(x, y, ramp[6])                               # near top edge: the brightest line, it faces the viewer
-        elif (x, y - 1) not in faces["top"]:
-            t.px(x, y, ramp[6] if x % 3 else ramp[5])         # far ridge, softer
-    for (x, y) in faces["front"]:
-        t.px(x, y, ramp[3] if x < 7 else ramp[2])             # front face clearly darker than the top
-        if (x, y - 1) not in faces["front"] and (x, y - 1) in faces["top"]:
-            t.px(x, y, ramp[4])                               # just under the edge: reflected light
-        if (x, y + 1) not in shape - edge:
-            t.px(x, y, ramp[1])                               # foot of the bar in shadow
-    for (x, y) in faces["end"]:
-        t.px(x, y, ramp[6] if y <= 7 else ramp[5] if y == 8 else ramp[4])   # the right end catches the light
-    for q in ((4, 7), (8, 5)):
-        if q in faces["top"]:
-            t.px(*q, ramp[6])                                 # specular glints
-    for (x, y) in edge:
-        lower_right = (x + 1, y) not in shape or (x, y + 1) not in shape
-        t.px(x, y, ramp[0] if lower_right else ramp[2])
+    for y, row in enumerate(INGOT_TONES):
+        for x, c in enumerate(row):
+            if c == ".":
+                continue
+            level = int(c)
+            t.px(x, y, ramp[INGOT_RAMP[level]])
+            if level == 7:
+                faces["top"].add((x, y))
+            elif level in (4, 5) and y >= 8:
+                faces["front"].add((x, y))
     if mark:
         mark(t, faces)
     return t

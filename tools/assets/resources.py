@@ -121,7 +121,7 @@ def ingot(name: str, ramp, mark) -> None:
 def build_ingots() -> None:
     def trefoil_mark(t, f):
         # An amber radiation pip stamped into the top face.
-        cx, cy = sorted(f["top"], key=lambda q: (q[0] - 8) ** 2 + (q[1] - 6) ** 2)[0]
+        cx, cy = sorted(f["top"], key=lambda q: (q[0] - 6) ** 2 + (q[1] - 7) ** 2)[0]
         t.px(cx, cy, P.NUCLEAR_AMBER.light)
         t.px(cx + 1, cy, P.NUCLEAR_AMBER.shadow)
     ingot("uranium_ingot", URANIUM_METAL, trefoil_mark)
@@ -131,7 +131,7 @@ def build_ingots() -> None:
         for (x, y) in f["front"]:
             if (x + 2 * y) % 5 == 0 and (x, y + 1) in f["front"]:
                 t.px(x, y, TUNGSTEN_METAL[4])          # machining lines on the flank
-    ingot("tungsten_ingot", TUNGSTEN_METAL, tung)
+    ingot("tungsten_ingot", TUNGSTEN_METAL, lambda t, f: None)
 
 
 # --- powders & shard -------------------------------------------------------------------------------------------------------
