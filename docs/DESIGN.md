@@ -1369,3 +1369,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | At the user's request ingots use vanilla's ingot light/shadow layout as well as its outline (a palette swap onto each material's ramp, as many mods do), so every ingot reads exactly like vanilla's. |
 | 2026-10-19 | Machines with a fluid input have one fill-only tank fed by pipes, a bucket slot or a bucket click; liquids and gases for crafting travel as canister items. |
 | 2026-10-19 | The Cryogenic Condenser picks oxygen or nitrogen with a separation membrane in a catalyst slot (like press dies) instead of a mode button. |
+| 2026-10-19 | All material inputs in recipes use common c: tags (and NeoForge's vanilla-material tags), and all our materials are in those tags, so equivalent items from other mods are interchangeable. |
+| 2026-10-19 | Tanks that show their contents render the real fluid (its texture and tint, translucent) at the real fill level, synced to clients in coarse steps. |
+| 2026-10-19 | Realism boundary: chemistry and nuclear steps are deliberate game abstractions (one machine, one recipe, no quantities, conditions or designs that would teach a real process). Keep it that way. |

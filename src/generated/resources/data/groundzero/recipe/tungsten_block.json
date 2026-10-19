@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundzero:tungsten_ingot"
+    "#": "#c:ingots/tungsten"
   },
   "pattern": [
     "###",

@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_raw_uranium": {
+    "has_raw_materials_uranium": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:raw_uranium"
+            "items": "#c:raw_materials/uranium"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_raw_uranium"
+      "has_raw_materials_uranium"
     ]
   ],
   "rewards": {

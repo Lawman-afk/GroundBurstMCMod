@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundzero:uranium_ingot"
+    "#": "#c:ingots/uranium"
   },
   "pattern": [
     "###",

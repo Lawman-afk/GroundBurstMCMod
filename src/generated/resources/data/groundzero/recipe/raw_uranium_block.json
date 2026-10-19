@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundzero:raw_uranium"
+    "#": "#c:raw_materials/uranium"
   },
   "pattern": [
     "###",

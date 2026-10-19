@@ -2,7 +2,7 @@
   "type": "minecraft:blasting",
   "cookingtime": 100,
   "experience": 0.3,
-  "ingredient": "groundzero:lead_dust",
+  "ingredient": "#c:dusts/lead",
   "result": {
     "id": "groundzero:lead_ingot"
   }

@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundzero:uranium_block"
+    "#c:storage_blocks/uranium"
   ],
   "result": {
     "count": 9,

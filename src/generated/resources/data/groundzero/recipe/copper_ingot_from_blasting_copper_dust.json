@@ -2,7 +2,7 @@
   "type": "minecraft:blasting",
   "cookingtime": 100,
   "experience": 0.3,
-  "ingredient": "groundzero:copper_dust",
+  "ingredient": "#c:dusts/copper",
   "result": {
     "id": "minecraft:copper_ingot"
   }

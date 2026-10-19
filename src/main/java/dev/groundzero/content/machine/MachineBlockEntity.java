@@ -87,7 +87,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         super(type, pos, state);
         this.energy = new MachineEnergy(energyCapacity, maxInsert, maxExtract, this::setChanged);
         this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
-        this.tank = tankSpec == null ? null : new MachineTank(tankSpec, this::setChanged);
+        this.tank = tankSpec == null ? null : new MachineTank(tankSpec, this::onTankChanged);
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
         this.sides.restrict(allowedItemModes());
@@ -103,6 +103,19 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected abstract boolean tickMachine(ServerLevel level);
 
     protected abstract boolean isItemValid(int slot, ItemStack stack);
+
+    /** The tank's contents changed. Machines that show their fluid on the model sync it to clients here. */
+    protected void onTankChanged() {
+        setChanged();
+    }
+
+    /** Where the model shows the tank's fluid (model pixels, machine facing north), or null if it does not. */
+    public @Nullable TankRender tankRender() {
+        return null;
+    }
+
+    /** A box in model pixels (x/z centred on the block, y from the bottom) that the renderer fills with fluid. */
+    public record TankRender(float x0, float y0, float z0, float x1, float y1, float z1) {}
 
     /** A slot changed (-1: any slot may have). Subclasses that show slot contents on the model sync here. */
     protected void onSlotChanged(int slot) {

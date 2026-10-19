@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_raw_rare_earth": {
+    "has_raw_materials_rare_earth": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:raw_rare_earth"
+            "items": "#c:raw_materials/rare_earth"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_raw_rare_earth"
+      "has_raw_materials_rare_earth"
     ]
   ],
   "rewards": {

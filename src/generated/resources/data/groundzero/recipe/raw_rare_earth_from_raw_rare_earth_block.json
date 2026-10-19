@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundzero:raw_rare_earth_block"
+    "#c:storage_blocks/raw_rare_earth"
   ],
   "result": {
     "count": 9,

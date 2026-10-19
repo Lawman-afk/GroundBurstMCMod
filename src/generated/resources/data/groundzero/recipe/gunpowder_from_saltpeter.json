@@ -1,9 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundzero:saltpeter_dust",
-    "groundzero:saltpeter_dust",
-    "groundzero:sulfur_dust",
+    "#c:dusts/saltpeter",
+    "#c:dusts/saltpeter",
+    "#c:dusts/sulfur",
     "minecraft:charcoal"
   ],
   "result": {

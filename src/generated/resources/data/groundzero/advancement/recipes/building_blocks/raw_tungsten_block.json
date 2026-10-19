@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_raw_tungsten": {
+    "has_raw_materials_tungsten": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:raw_tungsten"
+            "items": "#c:raw_materials/tungsten"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_raw_tungsten"
+      "has_raw_materials_tungsten"
     ]
   ],
   "rewards": {

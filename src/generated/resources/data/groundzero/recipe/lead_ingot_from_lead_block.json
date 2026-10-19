@@ -1,7 +1,7 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundzero:lead_block"
+    "#c:storage_blocks/lead"
   ],
   "result": {
     "count": 9,

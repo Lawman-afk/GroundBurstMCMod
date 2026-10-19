@@ -119,12 +119,7 @@ def ingot(name: str, ramp, mark) -> None:
 
 
 def build_ingots() -> None:
-    def trefoil_mark(t, f):
-        # An amber radiation pip stamped into the top face.
-        cx, cy = sorted(f["top"], key=lambda q: (q[0] - 6) ** 2 + (q[1] - 7) ** 2)[0]
-        t.px(cx, cy, P.NUCLEAR_AMBER.light)
-        t.px(cx + 1, cy, P.NUCLEAR_AMBER.shadow)
-    ingot("uranium_ingot", URANIUM_METAL, trefoil_mark)
+    ingot("uranium_ingot", URANIUM_METAL, lambda t, f: None)
     ingot("lead_ingot", LEAD_METAL, lambda t, f: None)
 
     def tung(t, f):

@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_raw_lithium_block": {
+    "has_storage_blocks_raw_lithium": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:raw_lithium_block"
+            "items": "#c:storage_blocks/raw_lithium"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_raw_lithium_block"
+      "has_storage_blocks_raw_lithium"
     ]
   ],
   "rewards": {

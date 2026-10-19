@@ -33,7 +33,7 @@ def tone(d: str) -> int:
 def build() -> tuple[GeoModel, Tex, Tex]:
     g = GeoModel(NAME, tex_size=(128, 128))
     g.bone("frame")
-    g.bone("fan", pivot=(-6.5, 6, 0), parent="frame")
+    g.bone("fan", pivot=(-7.75, 5, 0), parent="frame")
     g.bone("frost", pivot=(0, 15, 0), parent="frame")
     for i in range(3):
         g.bone(f"puff{i}", pivot=(0, 30, 0), parent="frame")
@@ -55,9 +55,10 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         add("coil", g.box(f"coil_ns{i}", (-5.4, y, -5.4), (5.4, y + 1, 5.4), faces=("north", "south", "east", "west"), bone=F))
         add("frost", g.box(f"frost{i}", (-5.7, y - 0.4, -5.7), (5.7, y + 1.4, 5.7), faces=("north", "south", "east", "west", "up"), bone="frost"))
     # Compressor at the foot (west) with a fan grille.
-    add("compressor", g.box("compressor", (-7.5, 3, -4), (-5.4, 9, 4), faces=("north", "south", "west", "up"), bone=F))
-    fan = add("fan", g.box("fan_blades", (-7.9, 4.5, -1.5), (-7.6, 7.5, 1.5), faces=("west",), bone="fan"))
-    add("fan", g.box("fan_blades45", (-7.8, 4.5, -1.5), (-7.6, 7.5, 1.5), faces=("west",), rotation={"origin": (-7.75, 6, 0), "x": 45}, bone="fan"))
+    # Solid housing that runs back into the column (no gap, no open back), its top just under the first coil.
+    add("compressor", g.box("compressor", (-7.5, 3, -3.8), (-3.6, 6.6, 3.8), faces=("north", "south", "west", "up"), bone=F))
+    fan = add("fan", g.box("fan_blades", (-7.9, 3.6, -1.4), (-7.6, 6.4, 1.4), faces=("west",), bone="fan"))
+    add("fan", g.box("fan_blades45", (-7.8, 3.6, -1.4), (-7.6, 6.4, 1.4), faces=("west",), rotation={"origin": (-7.75, 5, 0), "x": 45}, bone="fan"))
     # Filling port on the front.
     add("port", g.box("port", (-2, 9, -6.8), (2, 13, -5), faces=("north", "east", "west", "up", "down"), bone=F))
     window = add("window", g.box("window", (-1.2, 10, -7.0), (1.2, 12, -6.8), faces=("north",), shade=False, bone=F))

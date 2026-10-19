@@ -3,7 +3,7 @@
   "category": "redstone",
   "key": {
     "G": "minecraft:grindstone",
-    "I": "minecraft:iron_ingot",
+    "I": "#c:ingots/iron",
     "P": "minecraft:piston",
     "S": "minecraft:stonecutter"
   },

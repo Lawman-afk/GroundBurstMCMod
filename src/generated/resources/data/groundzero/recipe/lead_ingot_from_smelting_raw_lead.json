@@ -2,7 +2,7 @@
   "type": "minecraft:smelting",
   "cookingtime": 200,
   "experience": 0.5,
-  "ingredient": "groundzero:raw_lead",
+  "ingredient": "#c:raw_materials/lead",
   "result": {
     "id": "groundzero:lead_ingot"
   }

@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_lead_dust": {
+    "has_dusts_lead": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:lead_dust"
+            "items": "#c:dusts/lead"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_lead_dust"
+      "has_dusts_lead"
     ]
   ],
   "rewards": {

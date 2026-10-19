@@ -3,9 +3,9 @@
   "category": "redstone",
   "key": {
     "A": "minecraft:anvil",
-    "I": "minecraft:iron_ingot",
+    "I": "#c:ingots/iron",
     "P": "minecraft:piston",
-    "R": "minecraft:redstone"
+    "R": "#c:dusts/redstone"
   },
   "pattern": [
     "IAI",

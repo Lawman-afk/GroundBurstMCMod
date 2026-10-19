@@ -3,8 +3,8 @@
 Look: on the shared hazard-striped plinth, a glass-walled electrolysis cell (steel corner posts, a lid with cable
 glands) full of water, two electrodes hanging into it and bubble streams rising off them while running. Two gas
 bottles stand on the east side, fed by pipes from the lid: oxygen (white shoulder) and deuterium (blue band). A
-small control panel with a lamp faces the front (north). Glass panes are mostly transparent so the water, electrodes
-and bubbles show through.
+small control panel with a lamp faces the front (north). Glass panes are mostly transparent; the renderer fills the
+cell with the tank's actual fluid (texture, tint and level), so the electrodes and bubbles show through it.
 """
 from __future__ import annotations
 
@@ -42,8 +42,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         return box
 
     add("plinth", g.box("plinth", (-8, 0, -8), (8, 2, 8), bone=F))
-    # Water, a little inside the glass so no faces meet.
-    add("water", g.box("water", (X0 + 0.4, Y0 + 0.01, Z0 + 0.4), (X1 - 0.4, 10.5, Z1 - 0.4), faces=("north", "south", "east", "west", "up"), bone=F))
+    # No water geometry: the renderer draws the tank's real fluid at its real fill level inside the glass.
     # Glass panes (thin, mostly transparent) between the corner posts.
     add("glass", g.box("glass_n", (X0 + 1, Y0, Z0), (X1 - 1, Y1, Z0 + 0.2), faces=("north",), bone=F))
     add("glass", g.box("glass_s", (X0 + 1, Y0, Z1 - 0.2), (X1 - 1, Y1, Z1), faces=("south",), bone=F))
@@ -80,24 +79,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
         t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
         t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
-
-    def water(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, WATER[3])
-        if d == "up":
-            for yy in range(y, y + h, 2):
-                t.hline(x + (yy // 2) % 3, yy, max(1, w - 3), WATER[4])     # ripples
-            t.px(x + 1, y + 1, WATER[6])
-        else:
-            # Cutout rendering has no translucency: a 50% pixel dither lets the electrodes and bubbles show through.
-            for yy in range(y, y + h):
-                for xx in range(x, x + w):
-                    if (xx + yy) % 2 == 0:
-                        t.px(xx, yy, WATER[4] if yy < y + h // 2 else WATER[3])
-                    else:
-                        t.px(xx, yy, CLEAR)
-            t.hline(x, y, w, WATER[5])                                       # surface line seen through glass
-    g.paint_all(tex, parts["water"][0], water)
 
     def glass(t, r, d):
         x, y, w, h = r

@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundzero:raw_rare_earth"
+    "#": "#c:raw_materials/rare_earth"
   },
   "pattern": [
     "###",

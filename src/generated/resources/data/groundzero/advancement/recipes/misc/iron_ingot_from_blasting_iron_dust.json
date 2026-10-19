@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_iron_dust": {
+    "has_dusts_iron": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:iron_dust"
+            "items": "#c:dusts/iron"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_iron_dust"
+      "has_dusts_iron"
     ]
   ],
   "rewards": {

@@ -56,32 +56,33 @@ public class GZRecipeProvider extends RecipeProvider {
     @Override
     protected void buildRecipes() {
         // Furnace-grade metals. Tungsten is too refractory for a furnace: Arc Furnace only (Phase 4).
-        cook(GZResources.RAW_URANIUM, GZResources.URANIUM_INGOT, 0.7f);
-        cook(GZResources.RAW_LEAD, GZResources.LEAD_INGOT, 0.5f);
+        // Every material input is a common (c:) tag, so other mods' uranium, lead, dusts etc. work here too.
+        cook("raw_materials/uranium", GZResources.RAW_URANIUM, GZResources.URANIUM_INGOT, 0.7f);
+        cook("raw_materials/lead", GZResources.RAW_LEAD, GZResources.LEAD_INGOT, 0.5f);
 
-        storage(GZResources.URANIUM_INGOT, GZResources.URANIUM_BLOCK.item());
-        storage(GZResources.LEAD_INGOT, GZResources.LEAD_BLOCK.item());
-        storage(GZResources.TUNGSTEN_INGOT, GZResources.TUNGSTEN_BLOCK.item());
-        storage(GZResources.RAW_URANIUM, GZResources.RAW_URANIUM_BLOCK.item());
-        storage(GZResources.RAW_LITHIUM, GZResources.RAW_LITHIUM_BLOCK.item());
-        storage(GZResources.RAW_TUNGSTEN, GZResources.RAW_TUNGSTEN_BLOCK.item());
-        storage(GZResources.RAW_LEAD, GZResources.RAW_LEAD_BLOCK.item());
-        storage(GZResources.RAW_RARE_EARTH, GZResources.RAW_RARE_EARTH_BLOCK.item());
+        storage("ingots/uranium", "storage_blocks/uranium", GZResources.URANIUM_INGOT, GZResources.URANIUM_BLOCK.item());
+        storage("ingots/lead", "storage_blocks/lead", GZResources.LEAD_INGOT, GZResources.LEAD_BLOCK.item());
+        storage("ingots/tungsten", "storage_blocks/tungsten", GZResources.TUNGSTEN_INGOT, GZResources.TUNGSTEN_BLOCK.item());
+        storage("raw_materials/uranium", "storage_blocks/raw_uranium", GZResources.RAW_URANIUM, GZResources.RAW_URANIUM_BLOCK.item());
+        storage("raw_materials/lithium", "storage_blocks/raw_lithium", GZResources.RAW_LITHIUM, GZResources.RAW_LITHIUM_BLOCK.item());
+        storage("raw_materials/tungsten", "storage_blocks/raw_tungsten", GZResources.RAW_TUNGSTEN, GZResources.RAW_TUNGSTEN_BLOCK.item());
+        storage("raw_materials/lead", "storage_blocks/raw_lead", GZResources.RAW_LEAD, GZResources.RAW_LEAD_BLOCK.item());
+        storage("raw_materials/rare_earth", "storage_blocks/raw_rare_earth", GZResources.RAW_RARE_EARTH, GZResources.RAW_RARE_EARTH_BLOCK.item());
 
         // Black powder: a renewable gunpowder source from mined saltpeter and sulfur.
         shapeless(RecipeCategory.MISC, Items.GUNPOWDER, 4)
-                .requires(GZResources.SALTPETER_DUST, 2)
-                .requires(GZResources.SULFUR_DUST)
+                .requires(GZTags.commonItem("dusts/saltpeter")).requires(GZTags.commonItem("dusts/saltpeter"))
+                .requires(GZTags.commonItem("dusts/sulfur"))
                 .requires(Items.CHARCOAL)
                 .unlockedBy(getHasName(GZResources.SALTPETER_DUST), has(GZResources.SALTPETER_DUST))
                 .save(output, id("gunpowder_from_saltpeter"));
 
         // Dusts smelt back to ingots (tungsten dust waits for the Arc Furnace).
-        cook(GZResources.URANIUM_DUST, GZResources.URANIUM_INGOT, 0.3f);
-        cook(GZResources.LEAD_DUST, GZResources.LEAD_INGOT, 0.3f);
-        cook(GZResources.IRON_DUST, Items.IRON_INGOT, 0.3f);
-        cook(GZResources.GOLD_DUST, Items.GOLD_INGOT, 0.3f);
-        cook(GZResources.COPPER_DUST, Items.COPPER_INGOT, 0.3f);
+        cook("dusts/uranium", GZResources.URANIUM_DUST, GZResources.URANIUM_INGOT, 0.3f);
+        cook("dusts/lead", GZResources.LEAD_DUST, GZResources.LEAD_INGOT, 0.3f);
+        cook("dusts/iron", GZResources.IRON_DUST, Items.IRON_INGOT, 0.3f);
+        cook("dusts/gold", GZResources.GOLD_DUST, Items.GOLD_INGOT, 0.3f);
+        cook("dusts/copper", GZResources.COPPER_DUST, Items.COPPER_INGOT, 0.3f);
 
         bootstrap();
         crushing();
@@ -94,17 +95,17 @@ public class GZRecipeProvider extends RecipeProvider {
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
     private void bootstrap() {
         shaped(RecipeCategory.REDSTONE, GZMachines.COMBUSTION_GENERATOR.item(), 1)
-                .define('I', Items.IRON_INGOT).define('F', Items.FURNACE).define('C', Items.COPPER_INGOT).define('R', Items.REDSTONE)
+                .define('I', Tags.Items.INGOTS_IRON).define('F', Items.FURNACE).define('C', Tags.Items.INGOTS_COPPER).define('R', Tags.Items.DUSTS_REDSTONE)
                 .pattern("III").pattern("CFC").pattern("IRI")
                 .unlockedBy(getHasName(Items.FURNACE), has(Items.FURNACE))
                 .save(output);
         shaped(RecipeCategory.REDSTONE, GZMachines.ORE_CRUSHER.item(), 1)
-                .define('I', Items.IRON_INGOT).define('S', Items.STONECUTTER).define('P', Items.PISTON).define('G', Items.GRINDSTONE)
+                .define('I', Tags.Items.INGOTS_IRON).define('S', Items.STONECUTTER).define('P', Items.PISTON).define('G', Items.GRINDSTONE)
                 .pattern("ISI").pattern("PGP").pattern("I I")
                 .unlockedBy(getHasName(Items.GRINDSTONE), has(Items.GRINDSTONE))
                 .save(output);
         shaped(RecipeCategory.REDSTONE, GZMachines.CABLES.get(0).item(), 6)
-                .define('C', Items.COPPER_INGOT).define('K', Items.DRIED_KELP)
+                .define('C', Tags.Items.INGOTS_COPPER).define('K', Items.DRIED_KELP)
                 .pattern("KKK").pattern("CCC").pattern("KKK")
                 .unlockedBy(getHasName(Items.COPPER_INGOT), has(Items.COPPER_INGOT))
                 .save(output);
@@ -266,13 +267,13 @@ public class GZRecipeProvider extends RecipeProvider {
     /** Crafting-table parts, machines and dies (DESIGN.md §26.1-26.2, §26.4). */
     private void parts() {
         shaped(RecipeCategory.REDSTONE, GZMachines.ARC_FURNACE.item(), 1)
-                .define('B', Items.IRON_BLOCK).define('K', Items.CAULDRON).define('C', Items.COPPER_INGOT)
-                .define('F', Items.BLAST_FURNACE).define('R', Items.REDSTONE_BLOCK)
+                .define('B', Tags.Items.STORAGE_BLOCKS_IRON).define('K', Items.CAULDRON).define('C', Tags.Items.INGOTS_COPPER)
+                .define('F', Items.BLAST_FURNACE).define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE)
                 .pattern("BKB").pattern("CFC").pattern("BRB")
                 .unlockedBy(getHasName(Items.BLAST_FURNACE), has(Items.BLAST_FURNACE))
                 .save(output);
         shaped(RecipeCategory.REDSTONE, GZMachines.INDUSTRIAL_PRESS.item(), 1)
-                .define('I', Items.IRON_INGOT).define('A', Items.ANVIL).define('P', Items.PISTON).define('R', Items.REDSTONE)
+                .define('I', Tags.Items.INGOTS_IRON).define('A', Items.ANVIL).define('P', Items.PISTON).define('R', Tags.Items.DUSTS_REDSTONE)
                 .pattern("IAI").pattern("PRP").pattern("I I")
                 .unlockedBy(getHasName(Items.ANVIL), has(Items.ANVIL))
                 .save(output);
@@ -282,7 +283,7 @@ public class GZRecipeProvider extends RecipeProvider {
         die(GZParts.CANISTER_DIE, Items.BUCKET);
 
         shaped(RecipeCategory.MISC, GZParts.HANDMADE_CIRCUIT_BOARD, 1)
-                .define('C', Items.COPPER_INGOT).define('R', Items.REDSTONE).define('P', Items.PAPER).define('G', Items.GOLD_NUGGET)
+                .define('C', Tags.Items.INGOTS_COPPER).define('R', Tags.Items.DUSTS_REDSTONE).define('P', Items.PAPER).define('G', Tags.Items.NUGGETS_GOLD)
                 .pattern("CRC").pattern("RPG")
                 .unlockedBy(getHasName(Items.REDSTONE), has(Items.REDSTONE))
                 .save(output);
@@ -316,30 +317,33 @@ public class GZRecipeProvider extends RecipeProvider {
 
     private void die(ItemLike die, ItemLike shape) {
         shaped(RecipeCategory.TOOLS, die, 1)
-                .define('I', Items.IRON_INGOT).define('X', shape)
+                .define('I', Tags.Items.INGOTS_IRON).define('X', shape)
                 .pattern(" I ").pattern("IXI").pattern(" I ")
                 .unlockedBy(getHasName(GZMachines.INDUSTRIAL_PRESS.item()), has(GZMachines.INDUSTRIAL_PRESS.item()))
                 .save(output);
     }
 
-    private void cook(ItemLike raw, ItemLike result, float xp) {
-        SimpleCookingRecipeBuilder.generic(Ingredient.of(raw), RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 200, SmeltingRecipe::new)
-                .unlockedBy(getHasName(raw), has(raw))
-                .save(output, id(getItemName(result) + "_from_smelting_" + getItemName(raw)));
-        SimpleCookingRecipeBuilder.generic(Ingredient.of(raw), RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 100, BlastingRecipe::new)
-                .unlockedBy(getHasName(raw), has(raw))
-                .save(output, id(getItemName(result) + "_from_blasting_" + getItemName(raw)));
+    /** Smelting + blasting from a c: tag (`named` only names the recipe and unlocks it). */
+    private void cook(String inputTag, ItemLike named, ItemLike result, float xp) {
+        Ingredient input = tag(GZTags.commonItem(inputTag));
+        SimpleCookingRecipeBuilder.generic(input, RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 200, SmeltingRecipe::new)
+                .unlockedBy("has_" + inputTag.replace('/', '_'), has(GZTags.commonItem(inputTag)))
+                .save(output, id(getItemName(result) + "_from_smelting_" + getItemName(named)));
+        SimpleCookingRecipeBuilder.generic(input, RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 100, BlastingRecipe::new)
+                .unlockedBy("has_" + inputTag.replace('/', '_'), has(GZTags.commonItem(inputTag)))
+                .save(output, id(getItemName(result) + "_from_blasting_" + getItemName(named)));
     }
 
-    private void storage(ItemLike unit, ItemLike block) {
+    /** 9 units <-> 1 block, both directions taking any item in the c: tags. */
+    private void storage(String unitTag, String blockTag, ItemLike unit, ItemLike block) {
         shaped(RecipeCategory.BUILDING_BLOCKS, block, 1)
-                .define('#', unit)
+                .define('#', GZTags.commonItem(unitTag))
                 .pattern("###").pattern("###").pattern("###")
-                .unlockedBy(getHasName(unit), has(unit))
+                .unlockedBy("has_" + unitTag.replace('/', '_'), has(GZTags.commonItem(unitTag)))
                 .save(output);   // default id: the result's own id (groundzero:<block>)
         shapeless(RecipeCategory.MISC, unit, 9)
-                .requires(block)
-                .unlockedBy(getHasName(block), has(block))
+                .requires(GZTags.commonItem(blockTag))
+                .unlockedBy("has_" + blockTag.replace('/', '_'), has(GZTags.commonItem(blockTag)))
                 .save(output, id(getItemName(unit) + "_from_" + getItemName(block)));
     }
 }

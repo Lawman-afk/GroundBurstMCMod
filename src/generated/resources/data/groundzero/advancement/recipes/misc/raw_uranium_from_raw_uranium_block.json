@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_raw_uranium_block": {
+    "has_storage_blocks_raw_uranium": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:raw_uranium_block"
+            "items": "#c:storage_blocks/raw_uranium"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_raw_uranium_block"
+      "has_storage_blocks_raw_uranium"
     ]
   ],
   "rewards": {
