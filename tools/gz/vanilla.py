@@ -71,14 +71,16 @@ def ingot(ramp: Ramp, mark=None) -> Tex:
     for (x, y) in faces["top"]:
         t.px(x, y, ramp[5])
     for (x, y) in faces["top"]:
-        if (x, y - 1) not in faces["top"]:
-            t.px(x, y, ramp[6])                               # lit ridge along the back edge
-        elif (x, y + 1) in faces["front"]:
-            t.px(x, y, ramp[4])                               # crease into the front face
+        if (x, y + 1) in faces["front"] or (x + 1, y + 1) in faces["front"]:
+            t.px(x, y, ramp[6])                               # near top edge: the brightest line, it faces the viewer
+        elif (x, y - 1) not in faces["top"]:
+            t.px(x, y, ramp[6] if x % 3 else ramp[5])         # far ridge, softer
     for (x, y) in faces["front"]:
-        t.px(x, y, ramp[4] if x < 6 else ramp[3])
+        t.px(x, y, ramp[3] if x < 7 else ramp[2])             # front face clearly darker than the top
+        if (x, y - 1) not in faces["front"] and (x, y - 1) in faces["top"]:
+            t.px(x, y, ramp[4])                               # just under the edge: reflected light
         if (x, y + 1) not in shape - edge:
-            t.px(x, y, ramp[2])                               # foot of the bar in shadow
+            t.px(x, y, ramp[1])                               # foot of the bar in shadow
     for (x, y) in faces["end"]:
         t.px(x, y, ramp[6] if y <= 7 else ramp[5] if y == 8 else ramp[4])   # the right end catches the light
     for q in ((4, 7), (8, 5)):
