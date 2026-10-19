@@ -1,0 +1,28 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:synthetic_fuel_canister"
+    },
+    {
+      "count": 1,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 4,
+        "id": "groundzero:plastic_sheet"
+      }
+    },
+    {
+      "item": {
+        "id": "groundzero:empty_canister"
+      }
+    }
+  ],
+  "time": 200
+}

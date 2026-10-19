@@ -2,6 +2,9 @@ package dev.groundzero.registry;
 
 import dev.groundzero.GroundZero;
 import dev.groundzero.content.machine.ArcFurnaceBlockEntity;
+import dev.groundzero.content.machine.ChemicalPlantBlockEntity;
+import dev.groundzero.content.multiblock.GZMultiblocks;
+import dev.groundzero.content.multiblock.PortBlockEntity;
 import dev.groundzero.content.machine.CryogenicCondenserBlockEntity;
 import dev.groundzero.content.machine.ElectrolyticSeparatorBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
@@ -36,12 +39,20 @@ public final class GZBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CryogenicCondenserBlockEntity>> CRYOGENIC_CONDENSER =
             BLOCK_ENTITIES.register("cryogenic_condenser", () -> new BlockEntityType<>(CryogenicCondenserBlockEntity::new, GZMachines.CRYOGENIC_CONDENSER.block().get()));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
+            BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GZMachines.CHEMICAL_PLANT.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
+            BLOCK_ENTITIES.register("item_port", () -> new BlockEntityType<>(PortBlockEntity::new, GZMultiblocks.ITEM_PORT.block().get()));
+
     private GZBlockEntities() {}
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         machine(event, ORE_CRUSHER.get());
         machine(event, COMBUSTION_GENERATOR.get());
         machine(event, ELECTROLYTIC_SEPARATOR.get());
+        machine(event, CHEMICAL_PLANT.get());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_PORT.get(), PortBlockEntity::items);
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());

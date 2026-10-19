@@ -208,6 +208,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return sides;
     }
 
+    /** What a multiblock's item ports expose: inputs in, products out, regardless of the side configuration. */
+    public ResourceHandler<ItemResource> portItems() {
+        return this.automation[SideConfig.ItemMode.BOTH.ordinal()] != null
+                ? this.automation[SideConfig.ItemMode.BOTH.ordinal()] : this.inventory;
+    }
+
     /** The item modes a face may take: only directions this machine actually has slots for. */
     public java.util.Set<SideConfig.ItemMode> allowedItemModes() {
         java.util.Set<SideConfig.ItemMode> modes = java.util.EnumSet.of(SideConfig.ItemMode.NONE);

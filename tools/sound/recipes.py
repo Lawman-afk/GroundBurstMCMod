@@ -192,6 +192,29 @@ def condenser_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
 
 
+def chemical_plant_loop() -> np.ndarray:
+    """Chemical plant: stirrer motor drone (90 Hz with harmonics) and the paddle's 2 Hz swish through liquid, slow
+    deep bubbling from two tanks, a pipe gurgle, and a valve hiss once per 2 s loop (matches the model's cycle)."""
+    t = S.t_axis(TOTAL)
+    motor = (S.tone(TOTAL, 90) * 0.4 + S.tone(TOTAL, 180) * 0.2 + S.tone(TOTAL, 270) * 0.08) * 0.3
+    swish = S.bandpass(S.pink(TOTAL, 91), 200, 900) * (0.4 + 0.6 * np.sin(2 * np.pi * 2 * t) ** 4) * 0.5
+    blubs = np.zeros(int(TOTAL * S.SR))
+    rng = np.random.default_rng(92)
+    tt = 0.0
+    while tt < TOTAL:
+        tt += rng.exponential(1 / 9)
+        i = int(tt * S.SR)
+        f = rng.uniform(140, 420)
+        n = int(0.09 * S.SR)
+        blub = np.sin(2 * np.pi * np.cumsum(np.linspace(f, f * 1.8, n)) / S.SR) * S.exp_decay(n, 0.025) * rng.uniform(0.4, 1.0)
+        seg = blub[: max(0, len(blubs) - i)]
+        blubs[i:i + len(seg)] += seg
+    gurgle = S.lowpass(S.brown(TOTAL, 93), 260) * 0.35
+    hiss = S.bandpass(S.white(0.45, 94), 2000, 7000) * S.breakpoints(int(0.45 * S.SR), [(0, 0), (0.05, 0.4), (0.45, 0)])
+    x = S.mix((motor, 1.0), (swish, 1.0), (blubs, 0.7), (gurgle, 1.0), (_pulses([1.4, -0.6, 3.4], hiss), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -200,6 +223,7 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/industrial_press": press_loop(),
         "machine/electrolytic_separator": separator_loop(),
         "machine/cryogenic_condenser": condenser_loop(),
+        "machine/chemical_plant": chemical_plant_loop(),
     }
 
 

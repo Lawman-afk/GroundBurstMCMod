@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "#groundzero:basic_circuits",
+    "D": "#c:gems/diamond",
+    "G": "#c:glass_panes/colorless",
+    "P": "#c:plates/steel",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "GDG",
+    "RBR",
+    " P "
+  ],
+  "result": {
+    "id": "groundzero:holo_projector"
+  }
+}

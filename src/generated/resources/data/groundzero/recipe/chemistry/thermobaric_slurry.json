@@ -1,0 +1,26 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:synthetic_fuel_canister"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:rdx_crystals"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/iron"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:thermobaric_slurry_canister"
+      }
+    }
+  ],
+  "time": 300
+}

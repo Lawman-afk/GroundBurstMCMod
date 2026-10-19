@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.groundzero.GroundZero;
+import dev.groundzero.content.multiblock.MultiblockControllerBlock;
 import dev.groundzero.content.power.CableBlock;
 import dev.groundzero.content.power.CableNetwork;
 import dev.groundzero.content.power.CableTier;
@@ -44,6 +45,10 @@ public final class GZMachines {
             p -> new TallMachineBlock(p, GZBlockEntities.CRYOGENIC_CONDENSER, true,
                     Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 16, 14)),
                     Shapes.or(Block.box(2, 0, 2, 14, 13, 14), Block.box(5, 13, 5, 11, 16, 11))));
+
+    public static final WithItem<MultiblockControllerBlock> CHEMICAL_PLANT = GZBlocks.register("chemical_plant", "Chemical Plant Controller",
+            GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.CHEMICAL_PLANT),
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
 
     public static final List<WithItem<CableBlock>> CABLES = new ArrayList<>();
 

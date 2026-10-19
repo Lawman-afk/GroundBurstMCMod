@@ -57,6 +57,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.arc_furnace"
   },
+  "machine.chemical_plant": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/chemical_plant"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.chemical_plant"
+  },
   "machine.combustion_generator": {
     "sounds": [
       "groundzero:machine/combustion_generator"

@@ -1372,3 +1372,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | All material inputs in recipes use common c: tags (and NeoForge's vanilla-material tags), and all our materials are in those tags, so equivalent items from other mods are interchangeable. |
 | 2026-10-19 | Tanks that show their contents render the real fluid (its texture and tint, translucent) at the real fill level, synced to clients in coarse steps. |
 | 2026-10-19 | Realism boundary: chemistry and nuclear steps are deliberate game abstractions (one machine, one recipe, no quantities, conditions or designs that would teach a real process). Keep it that way. |
+| 2026-10-19 | Multiblock patterns are written for a north-facing controller and rotate with it (columns to the controller's right, rows behind it), matching how the formed GeckoLib model rotates. Required-air cells are `.`. |
+| 2026-10-19 | Right-clicking an unfinished controller toggles its ghost preview and reports missing/wrong counts; sneak-right-click opens the controller's GUI before the structure is finished. |
+| 2026-10-19 | Chemical Plant recipes take at most three item inputs (plus water from the tank); solid propellant drops the slimeball binder to fit. Lithium-6 needs a mercury flask that comes back 90% of the time (a game stand-in, not a process). |
+| 2026-10-19 | The Holo-Projector uses an interim recipe (basic circuit) until advanced circuits and batteries exist; revisit in slice 5/6. |

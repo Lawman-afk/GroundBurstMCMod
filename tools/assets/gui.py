@@ -84,6 +84,18 @@ LAYOUTS = {
         "readout": None,
         "inventory": (8, 84),
     },
+    "chemical_plant": {
+        "title": (28, 6),
+        "slots": [("in", 48, 22), ("in", 66, 22), ("in", 48, 44), ("bucket", 66, 44), ("out_big", 124, 33), ("out", 150, 33)],
+        "energy": (8, 20, 14, 46),
+        "tank": (28, 20, 14, 46),
+        "progress": (90, 32, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     "combustion_generator": {
         "title": (28, 6),
         "slots": [("fuel", 56, 53)],

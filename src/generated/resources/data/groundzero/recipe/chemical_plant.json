@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "#groundzero:basic_circuits",
+    "F": "groundzero:machine_frame",
+    "G": "#c:glass_blocks/colorless",
+    "K": "minecraft:cauldron",
+    "M": "groundzero:electric_motor",
+    "V": "groundzero:pressure_vessel"
+  },
+  "pattern": [
+    "GVG",
+    "MFB",
+    "GKG"
+  ],
+  "result": {
+    "id": "groundzero:chemical_plant"
+  }
+}

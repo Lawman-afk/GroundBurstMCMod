@@ -10,6 +10,7 @@ import dev.groundzero.GroundZero;
 import dev.groundzero.client.recipe.ClientRecipes;
 import dev.groundzero.client.screen.MachineScreen;
 import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.machine.MachineBlockEntity;
 import dev.groundzero.content.machine.MachineLayout;
 import dev.groundzero.content.machine.MachineText;
@@ -48,6 +49,7 @@ public final class GZJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.PRESSING, GZMachines.INDUSTRIAL_PRESS.item().get());
         m.put(ProcessingKind.ELECTROLYSIS, GZMachines.ELECTROLYTIC_SEPARATOR.item().get());
         m.put(ProcessingKind.CRYO_CONDENSING, GZMachines.CRYOGENIC_CONDENSER.item().get());
+        m.put(ProcessingKind.CHEMISTRY, GZMachines.CHEMICAL_PLANT.item().get());
         return m;
     }
 
@@ -74,12 +76,17 @@ public final class GZJeiPlugin implements IModPlugin {
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));
+        registration.addIngredientInfo(List.of(GZMachines.CHEMICAL_PLANT.item().get(), GZMultiblocks.MACHINE_CASING.item().get(),
+                        GZMultiblocks.REACTOR_GLASS.item().get(), GZMultiblocks.ITEM_PORT.item().get(), GZMultiblocks.HOLO_PROJECTOR.get(),
+                        GZMultiblocks.CHEMICAL_PLANT_SPAWNER.get())
+                .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                Component.translatable(MachineText.INFO_CHEMICAL_PLANT));
         registration.addIngredientInfo(List.of(GZParts.OXYGEN_MEMBRANE.get(), GZParts.NITROGEN_MEMBRANE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_MEMBRANE));
         registration.addIngredientInfo(List.of(GZMachines.COMBUSTION_GENERATOR.item().get(), GZMachines.ORE_CRUSHER.item().get(),
                         GZMachines.ARC_FURNACE.item().get(), GZMachines.INDUSTRIAL_PRESS.item().get(),
-                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get())
+                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get(), GZMachines.CHEMICAL_PLANT.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
     }

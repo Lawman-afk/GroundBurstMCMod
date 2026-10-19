@@ -52,6 +52,9 @@ public final class GZSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CRYOGENIC_CONDENSER =
             register("machine.cryogenic_condenser", "Cryogenic Condenser hisses", List.of("machine/cryogenic_condenser"), false, 20);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CHEMICAL_PLANT =
+            register("machine.chemical_plant", "Chemical Plant churns", List.of("machine/chemical_plant"), false, 20);
+
     private GZSounds() {}
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name, String subtitle, List<String> files,

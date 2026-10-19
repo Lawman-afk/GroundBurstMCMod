@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/machine_casing"
+    },
+    "formed=true": {
+      "model": "groundzero:block/machine_casing_formed"
+    }
+  }
+}

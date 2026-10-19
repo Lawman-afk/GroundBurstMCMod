@@ -44,6 +44,8 @@ public final class MachineText {
             "Goes in the Industrial Press die slot and picks what the press makes. Dies are never used up.");
     public static final String INFO_MEMBRANE = GZLang.add(GroundZero.MODID + ".info.membrane",
             "Goes in the Cryogenic Condenser's membrane slot and picks which gas it liquefies. Membranes are never used up.");
+    public static final String INFO_CHEMICAL_PLANT = GZLang.add(GroundZero.MODID + ".info.chemical_plant",
+            "Chemical Plant (2x2x2): put the controller down, then add Machine Casing beside it and behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). Feed items through the Item Port or the controller, water through either or with a bucket.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

@@ -1,0 +1,26 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "fluid": {
+    "amount": 1000,
+    "ingredient": "minecraft:water"
+  },
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/sulfur"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:empty_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:sulfuric_acid_canister"
+      }
+    }
+  ],
+  "time": 200
+}

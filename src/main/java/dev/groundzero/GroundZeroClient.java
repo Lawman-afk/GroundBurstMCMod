@@ -2,6 +2,7 @@ package dev.groundzero;
 
 import dev.groundzero.client.recipe.ClientRecipes;
 import dev.groundzero.client.render.MachineGeoRenderer;
+import dev.groundzero.client.render.MultiblockPreview;
 import dev.groundzero.client.screen.MachineScreen;
 import dev.groundzero.client.sound.MachineSounds;
 import dev.groundzero.config.GZClientConfig;
@@ -27,6 +28,7 @@ public class GroundZeroClient {
 
         MachineClientHooks.clientTick = MachineSounds::tick;
         ClientRecipes.register();
+        MultiblockPreview.register();
         modBus.addListener(GroundZeroClient::registerScreens);
         modBus.addListener(GroundZeroClient::registerRenderers);
     }
@@ -38,6 +40,7 @@ public class GroundZeroClient {
         event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
         event.register(GZMenus.ELECTROLYTIC_SEPARATOR.get(), MachineScreen::new);
         event.register(GZMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
+        event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -47,5 +50,7 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.INDUSTRIAL_PRESS.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
+        // The formed Chemical Plant spans 2x2x2 from its controller in any rotation.
+        event.registerBlockEntityRenderer(GZBlockEntities.CHEMICAL_PLANT.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CHEMICAL_PLANT.get(), 2, 1));
     }
 }

@@ -8,6 +8,7 @@ import dev.groundzero.config.GZCommonConfig;
 import dev.groundzero.config.GZServerConfig;
 import dev.groundzero.content.chem.GZChemicals;
 import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.part.GZParts;
 import dev.groundzero.content.recipe.GZRecipes;
 import dev.groundzero.content.resource.GZResources;
@@ -38,6 +39,7 @@ public class GroundZero {
         GZMachines.init();
         GZParts.init();
         GZChemicals.init();
+        GZMultiblocks.init();
 
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);

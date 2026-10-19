@@ -1,0 +1,31 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:yellowcake"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:sulfuric_acid_canister"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:empty_gas_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:uf6_canister"
+      }
+    },
+    {
+      "item": {
+        "id": "groundzero:empty_canister"
+      }
+    }
+  ],
+  "time": 400
+}

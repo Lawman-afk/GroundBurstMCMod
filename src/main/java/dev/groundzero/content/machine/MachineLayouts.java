@@ -46,6 +46,14 @@ public final class MachineLayouts {
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
             null, 28, 6, null);
 
+    public static final MachineLayout CHEMICAL_PLANT = new MachineLayout(
+            GroundZero.id("textures/gui/machine/chemical_plant.png"), 176, 166, List.of(new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(48, 44), new MachineLayout.Pos(66, 44), new MachineLayout.Pos(124, 33), new MachineLayout.Pos(150, 33)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            new MachineLayout.Rect(90, 32, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            null, 28, 6, new MachineLayout.Rect(28, 20, 14, 46));
+
     public static final MachineLayout COMBUSTION_GENERATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/combustion_generator.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

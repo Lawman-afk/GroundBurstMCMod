@@ -36,10 +36,17 @@ import net.minecraft.world.phys.AABB;
 /** GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. */
 public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
     private final int height;
+    private final int reach;
 
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height) {
+        this(context, type, height, 0);
+    }
+
+    /** {@code reach}: how many blocks the model extends sideways beyond its own (multiblock structures). */
+    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach) {
         super(context, type);
         this.height = height;
+        this.reach = reach;
     }
 
     private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundzero_hidden_bones", new TypeToken<Set<String>>() {});
@@ -59,7 +66,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         Set<String> hidden = (Set<String>) renderPassInfo.getGeckolibData(HIDDEN_BONES);
         if (hidden != null) {
             for (String bone : hidden) {
-                snapshots.ifPresent(bone, snapshot -> snapshot.skipRender(true));
+                snapshots.ifPresent(bone, snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
             }
         }
     }
@@ -123,6 +130,6 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     @Override
     public AABB getRenderBoundingBox(T blockEntity) {
-        return new AABB(blockEntity.getBlockPos()).inflate(0.25, 0, 0.25).expandTowards(0, this.height - 1, 0);
+        return new AABB(blockEntity.getBlockPos()).inflate(0.25 + this.reach, 0, 0.25 + this.reach).expandTowards(0, this.height - 1, 0);
     }
 }

@@ -7,6 +7,8 @@ import java.util.Optional;
 import dev.groundzero.GroundZero;
 import dev.groundzero.content.chem.GZChemicals;
 import dev.groundzero.content.machine.ArcFurnaceBlockEntity;
+import dev.groundzero.content.machine.ChemicalPlantBlockEntity;
+import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.machine.CryogenicCondenserBlockEntity;
 import dev.groundzero.content.machine.ElectrolyticSeparatorBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
@@ -90,6 +92,7 @@ public class GZRecipeProvider extends RecipeProvider {
         pressing();
         parts();
         gases();
+        chemistry();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -209,6 +212,84 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("PMP").pattern("PFP").pattern("BV ")
                 .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL))
                 .save(output);
+    }
+
+    /**
+     * Chemical Plant (DESIGN.md §6). Game abstractions: each step is one machine recipe with a few ingredients and no
+     * real-world quantities or conditions. Spent canisters come back as the second output.
+     */
+    private void chemistry() {
+        int fe = ChemicalPlantBlockEntity.ENERGY_PER_TICK;
+        Ingredient canister = Ingredient.of(GZParts.EMPTY_CANISTER);
+        Ingredient sulfuric = Ingredient.of(GZChemicals.SULFURIC_ACID_CANISTER);
+        Ingredient nitric = Ingredient.of(GZChemicals.NITRIC_ACID_CANISTER);
+        Ingredient fuel = Ingredient.of(GZChemicals.SYNTHETIC_FUEL_CANISTER);
+        Ingredient coal = tag(ItemTags.COALS);
+        ProcessingRecipe.Output emptyBack = out(GZParts.EMPTY_CANISTER, 1);
+        chem("sulfuric_acid", List.of(in(tag(GZTags.commonItem("dusts/sulfur")), 1), in(canister, 1)), 1_000,
+                List.of(out(GZChemicals.SULFURIC_ACID_CANISTER, 1)), 200, fe);
+        chem("nitric_acid", List.of(in(tag(GZTags.commonItem("dusts/saltpeter")), 1), in(sulfuric, 1)), 0,
+                List.of(out(GZChemicals.NITRIC_ACID_CANISTER, 1)), 200, fe);
+        chem("synthetic_fuel", List.of(in(coal, 2), in(canister, 1)), 1_000,
+                List.of(out(GZChemicals.SYNTHETIC_FUEL_CANISTER, 1)), 240, fe);
+        chem("plastic_sheet", List.of(in(fuel, 1), in(coal, 1)), 0,
+                List.of(out(GZChemicals.PLASTIC_SHEET, 4), emptyBack), 200, fe);
+        chem("rdx_crystals", List.of(in(nitric, 1), in(coal, 1)), 500,
+                List.of(out(GZChemicals.RDX_CRYSTALS, 2), emptyBack), 300, fe);
+        chem("plastic_explosive", List.of(in(Ingredient.of(GZChemicals.RDX_CRYSTALS), 1), in(Ingredient.of(GZChemicals.PLASTIC_SHEET), 1),
+                in(tag(Tags.Items.SLIME_BALLS), 1)), 0, List.of(out(GZChemicals.PLASTIC_EXPLOSIVE, 2)), 200, fe);
+        chem("thermobaric_slurry", List.of(in(fuel, 1), in(Ingredient.of(GZChemicals.RDX_CRYSTALS), 1), in(tag(GZTags.commonItem("dusts/iron")), 1)), 0,
+                List.of(out(GZChemicals.THERMOBARIC_SLURRY_CANISTER, 1)), 300, fe);
+        chem("napalm", List.of(in(fuel, 1), in(Ingredient.of(GZChemicals.PLASTIC_SHEET), 1), in(tag(Tags.Items.SLIME_BALLS), 1)), 0,
+                List.of(out(GZChemicals.NAPALM_CANISTER, 1)), 200, fe);
+        chem("solid_propellant", List.of(in(tag(GZTags.commonItem("dusts/saltpeter")), 1), in(sulfuric, 1), in(tag(GZTags.commonItem("dusts/iron")), 1)), 0,
+                List.of(out(GZChemicals.SOLID_PROPELLANT, 2), emptyBack), 300, fe);
+        chem("liquid_rocket_fuel", List.of(in(fuel, 1), in(Ingredient.of(GZChemicals.LIQUID_OXYGEN_CANISTER), 1)), 0,
+                List.of(out(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER, 1), emptyBack), 300, fe);
+        chem("yellowcake", List.of(in(tag(GZTags.commonItem("dusts/uranium")), 2), in(sulfuric, 1)), 0,
+                List.of(out(GZChemicals.YELLOWCAKE, 2), emptyBack), 300, fe);
+        chem("uf6_canister", List.of(in(Ingredient.of(GZChemicals.YELLOWCAKE), 1), in(sulfuric, 1), in(Ingredient.of(GZChemicals.EMPTY_GAS_CANISTER), 1)), 0,
+                List.of(out(GZChemicals.UF6_CANISTER, 1), emptyBack), 400, fe);
+        // Lithium-6: two lithium dust and a mercury flask give one Li-6 dust; the flask usually comes back.
+        chem("lithium6_dust", List.of(in(tag(GZTags.commonItem("dusts/lithium")), 2), in(Ingredient.of(GZChemicals.MERCURY_FLASK), 1)), 0,
+                List.of(out(GZChemicals.LITHIUM6_DUST, 1), new ProcessingRecipe.Output(new ItemStackTemplate(GZChemicals.MERCURY_FLASK.get(), 1), 0.9f)), 300, fe);
+        // Mercury flask from cinnabar: Arc Furnace (roasting).
+        machine(ProcessingKind.ARC_SMELTING, "arc_smelting/mercury_flask", List.of(in(tag(GZTags.commonItem("dusts/cinnabar")), 4), in(canister, 1)), null,
+                List.of(out(GZChemicals.MERCURY_FLASK, 1)), 300, ArcFurnaceBlockEntity.ENERGY_PER_TICK);
+
+        // The plant's blocks (DESIGN.md §26.4).
+        shaped(RecipeCategory.REDSTONE, GZMachines.CHEMICAL_PLANT.item(), 1)
+                .define('F', GZParts.MACHINE_FRAME).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS).define('V', GZParts.PRESSURE_VESSEL)
+                .define('M', GZParts.ELECTRIC_MOTOR).define('B', GZTags.BASIC_CIRCUITS).define('K', Items.CAULDRON)
+                .pattern("GVG").pattern("MFB").pattern("GKG")
+                .unlockedBy(getHasName(GZParts.MACHINE_FRAME), has(GZParts.MACHINE_FRAME))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.MACHINE_CASING.item(), 2)
+                .define('P', GZTags.commonItem("plates/steel")).define('F', GZParts.MACHINE_FRAME)
+                .pattern(" P ").pattern("PFP").pattern(" P ")
+                .unlockedBy(getHasName(GZParts.MACHINE_FRAME), has(GZParts.MACHINE_FRAME))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.REACTOR_GLASS.item(), 4)
+                .define('L', GZTags.commonItem("plates/lead")).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+                .pattern("LGL").pattern("G G").pattern("LGL")
+                .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE))
+                .save(output);
+        // Interim recipe until advanced circuits and batteries arrive (DESIGN.md §26 lists both).
+        shaped(RecipeCategory.TOOLS, GZMultiblocks.HOLO_PROJECTOR.get(), 1)
+                .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('D', Tags.Items.GEMS_DIAMOND).define('B', GZTags.BASIC_CIRCUITS)
+                .define('P', GZTags.commonItem("plates/steel")).define('R', Tags.Items.DUSTS_REDSTONE)
+                .pattern("GDG").pattern("RBR").pattern(" P ")
+                .unlockedBy("has_basic_circuit", has(GZTags.BASIC_CIRCUITS))
+                .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMultiblocks.ITEM_PORT.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(Items.HOPPER)
+                .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
+                .save(output);
+    }
+
+    private void chem(String name, List<SizedIngredient> inputs, int water, List<ProcessingRecipe.Output> outputs, int time, int fe) {
+        machine(ProcessingKind.CHEMISTRY, "chemistry/" + name, inputs, null, water > 0 ? SizedFluidIngredient.of(Fluids.WATER, water) : null,
+                outputs, time, fe);
     }
 
     private void membrane(ItemLike membrane, ItemLike sieve) {

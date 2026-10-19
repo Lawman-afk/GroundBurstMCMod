@@ -25,6 +25,8 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", () -> MachineLayouts.ELECTROLYTIC_SEPARATOR);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRYOGENIC_CONDENSER = machine("cryogenic_condenser", () -> MachineLayouts.CRYOGENIC_CONDENSER);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
+
     private GZMenus() {}
 
     @SuppressWarnings("unchecked")

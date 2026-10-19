@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–3 built and tested (29/29 GameTests). Next: slice 4 (multiblock framework + Chemical Plant).
+**Current phase:** Phase 4 in progress — slices 1–4 built and tested (35/35 GameTests). Slice 4 awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -16,7 +16,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 1 | Project skeleton, deploy task, registries framework, configs, creative tabs, networking base | **done** |
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
-| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–2 done) |
+| 4 | Power, cables, processing machines, multiblock framework, Breeder Reactor, Particle Accelerator | **in progress** (slices 1–4 done) |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
@@ -114,7 +114,7 @@ checklist for the user.
 | Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
 | Arc Furnace | done (2-tall GeckoLib model: electrodes lower, melt + port glow; 8 recipes: steel, tungsten, carbide, magnet, cobalt, lead) |
 | Industrial Press | done (2-tall C-frame, ram stroke synced to sound; 4 dies as non-consumed catalysts; 11 recipes) |
-| Chemical Plant | todo |
+| Chemical Plant | done (slice 4: 2x2x2 multiblock, controller GUI with 3 inputs + water tank, formed GeckoLib model with tanks/stirrer, loop sound; 13 chemistry recipes + Arc Furnace mercury flask; 14 chemistry items) — needs in-game test |
 | Gas Centrifuge (+ cascade bonus) | todo |
 | Electrolytic Separator | done (slice 3: water tank, bucket slot, deuterium from 8000 mB + gas canister; dithered-water GeckoLib model) |
 | Fusion Fuel Synthesizer | todo |
@@ -122,11 +122,11 @@ checklist for the user.
 | Circuit Fabricator | todo |
 | Exotic Matter Fabricator | todo |
 | Battery Charger, Decontamination Shower | todo |
-| Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | todo |
+| Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3) |
-| Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press; client fades them in/out with the ACTIVE state |
+| Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press, separator, condenser, chemical plant; client fades them in/out with the ACTIVE state |
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |
 | Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |

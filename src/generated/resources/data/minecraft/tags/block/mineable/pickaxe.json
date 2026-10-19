@@ -35,6 +35,10 @@
     "groundzero:industrial_press",
     "groundzero:electrolytic_separator",
     "groundzero:cryogenic_condenser",
+    "groundzero:chemical_plant",
+    "groundzero:machine_casing",
+    "groundzero:item_port",
+    "groundzero:reactor_glass",
     "groundzero:copper_cable",
     "groundzero:insulated_cable",
     "groundzero:hv_cable"

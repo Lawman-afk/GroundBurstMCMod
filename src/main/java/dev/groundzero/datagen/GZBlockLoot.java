@@ -3,6 +3,7 @@ package dev.groundzero.datagen;
 import java.util.Set;
 
 import dev.groundzero.content.machine.GZMachines;
+import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.machine.TallMachineBlock;
 import dev.groundzero.content.resource.GZResources;
 import dev.groundzero.content.resource.GZResources.Ore;
@@ -46,6 +47,10 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.ORE_CRUSHER.block().get());
         GZMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
         dropSelf(GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        dropSelf(GZMachines.CHEMICAL_PLANT.block().get());
+        dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
+        dropSelf(GZMultiblocks.ITEM_PORT.block().get());
+        dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());
         for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }

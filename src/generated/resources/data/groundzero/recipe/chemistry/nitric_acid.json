@@ -1,0 +1,22 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/saltpeter"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundzero:sulfuric_acid_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:nitric_acid_canister"
+      }
+    }
+  ],
+  "time": 200
+}

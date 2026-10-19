@@ -13,7 +13,8 @@ public enum MachineStatus {
     NO_FUEL("No fuel"),
     BUFFER_FULL("Energy buffer full"),
     REDSTONE("Halted by redstone"),
-    EMP("Disabled by EMP");
+    EMP("Disabled by EMP"),
+    INCOMPLETE("Structure incomplete");
 
     private final String translationKey;
 
