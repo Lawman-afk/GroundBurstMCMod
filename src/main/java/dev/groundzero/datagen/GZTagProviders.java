@@ -40,6 +40,23 @@ public final class GZTagProviders {
             GZTags.common("storage_blocks/raw_rare_earth"),
     };
 
+    /** Common (c:) tags for our fluids so other mods' acids, fuels and gases are interchangeable with ours. */
+    public static class FluidTags extends net.minecraft.data.tags.FluidTagsProvider {
+        public FluidTags(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
+            super(output, lookup, GroundZero.MODID);
+        }
+
+        @Override
+        protected void addTags(HolderLookup.Provider registries) {
+            for (dev.groundzero.content.fluid.ChemFluid f : dev.groundzero.content.fluid.GZFluids.all()) {
+                tag(f.commonTag()).add(f.source().getKey(), f.flowing().getKey());
+                if (f.isGas()) {
+                    tag(Tags.Fluids.GASEOUS).add(f.source().getKey(), f.flowing().getKey());
+                }
+            }
+        }
+    }
+
     public static class Blocks extends BlockTagsProvider {
         public Blocks(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
             super(output, lookup, GroundZero.MODID);
@@ -85,7 +102,7 @@ public final class GZTagProviders {
                     GZMachines.ARC_FURNACE.block().key(), GZMachines.INDUSTRIAL_PRESS.block().key(),
                     GZMachines.ELECTROLYTIC_SEPARATOR.block().key(), GZMachines.CRYOGENIC_CONDENSER.block().key(),
                     GZMachines.CHEMICAL_PLANT.block().key(), GZMultiblocks.MACHINE_CASING.block().key(), GZMultiblocks.ITEM_PORT.block().key(),
-                    GZMultiblocks.REACTOR_GLASS.block().key());
+                    GZMultiblocks.REACTOR_GLASS.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());

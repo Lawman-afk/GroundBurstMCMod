@@ -21,6 +21,8 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_AUTO_EJECT = 1;
     /** + face ordinal: next / previous item mode; toggle energy. */
     public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30, BUTTON_FLUID = 40;
+    /** + tank index: empty that tank. */
+    public static final int BUTTON_DUMP = 50;
 
     private final MachineBlockEntity machine;
     private final MachineLayout layout;
@@ -82,13 +84,13 @@ public class MachineMenu extends AbstractContainerMenu {
         return MachineStatus.byId(data.get(MachineBlockEntity.DATA_STATUS));
     }
 
-    public int tankAmount() {
-        return data.get(MachineBlockEntity.DATA_TANK_AMOUNT);
+    public int tankAmount(int tank) {
+        return data.get(MachineBlockEntity.DATA_TANKS + tank * 2);
     }
 
-    /** The tank's fluid as last synced (empty fluid when the tank is empty). */
-    public net.minecraft.world.level.material.Fluid tankFluid() {
-        return net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(data.get(MachineBlockEntity.DATA_TANK_FLUID));
+    /** A tank's fluid as last synced (empty fluid when the tank is empty). */
+    public net.minecraft.world.level.material.Fluid tankFluid(int tank) {
+        return net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(data.get(MachineBlockEntity.DATA_TANKS + tank * 2 + 1));
     }
 
     /** Machine-specific value (see each block entity's getExtraData). */
@@ -113,10 +115,17 @@ public class MachineMenu extends AbstractContainerMenu {
             this.machine.changeSides(SideConfig::toggleAutoEject);
             return true;
         }
+        if (id >= BUTTON_DUMP && id < BUTTON_DUMP + MachineBlockEntity.MAX_TANKS) {
+            this.machine.dumpTank(id - BUTTON_DUMP);
+            return true;
+        }
         int faces = SideConfig.Face.values().length;
         for (int base : new int[] {BUTTON_ITEMS_NEXT, BUTTON_ITEMS_PREV, BUTTON_ENERGY, BUTTON_FLUID}) {
             if (id >= base && id < base + faces) {
                 SideConfig.Face face = SideConfig.Face.values()[id - base];
+                if (!this.machine.faceOpen(face)) {
+                    return false;                      // covered by the machine's own structure
+                }
                 this.machine.changeSides(c -> {
                     if (base == BUTTON_ENERGY) {
                         c.toggleEnergy(face);

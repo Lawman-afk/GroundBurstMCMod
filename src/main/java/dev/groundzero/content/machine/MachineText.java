@@ -16,6 +16,10 @@ public final class MachineText {
     public static final String REDSTONE = GZLang.add(GroundZero.MODID + ".gui.redstone", "Redstone: %s");
 
     public static final String TANK = GZLang.add(GroundZero.MODID + ".gui.tank", "%s: %s / %s mB");
+    public static final String TANK_INPUT = GZLang.add(GroundZero.MODID + ".gui.tank_input", "Input tank: fill with pipes, buckets or canisters");
+    public static final String TANK_OUTPUT = GZLang.add(GroundZero.MODID + ".gui.tank_output", "Product tank: drain with pipes, buckets or canisters");
+    public static final String DUMP = GZLang.add(GroundZero.MODID + ".gui.dump", "Dump tank");
+    public static final String DUMP_HINT = GZLang.add(GroundZero.MODID + ".gui.dump_hint", "Shift-click to empty it (the fluid is lost)");
     public static final String TANK_EMPTY = GZLang.add(GroundZero.MODID + ".gui.tank_empty", "Empty: 0 / %s mB");
 
     // Side configuration tab
@@ -33,6 +37,7 @@ public final class MachineText {
     public static final String AUTO_EJECT_TIP = GZLang.add(GroundZero.MODID + ".gui.sides.auto_eject.tip", "Push finished products out of every Output face");
     public static final String HINT_CYCLE = GZLang.add(GroundZero.MODID + ".gui.sides.hint_cycle", "Left-click: next, right-click: previous");
     public static final String HINT_TOGGLE = GZLang.add(GroundZero.MODID + ".gui.sides.hint_toggle", "Click to toggle");
+    public static final String FACE_COVERED = GZLang.add(GroundZero.MODID + ".gui.sides.covered", "%s: inside the structure (nothing can connect)");
     public static final String FACE_MODE = GZLang.add(GroundZero.MODID + ".gui.sides.face", "%s: %s");
 
     // Recipe viewer (JEI) texts
@@ -45,7 +50,11 @@ public final class MachineText {
     public static final String INFO_MEMBRANE = GZLang.add(GroundZero.MODID + ".info.membrane",
             "Goes in the Cryogenic Condenser's membrane slot and picks which gas it liquefies. Membranes are never used up.");
     public static final String INFO_CHEMICAL_PLANT = GZLang.add(GroundZero.MODID + ".info.chemical_plant",
-            "Chemical Plant (2x2x2): put the controller down, then add Machine Casing beside it and behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). Feed items through the Item Port or the controller, water through either or with a bucket.");
+            "Chemical Plant (2x2x2): put the controller down, then add Machine Casing beside it and behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). Feed items and fluids through the Item Port or the controller's open faces; buckets and canisters go in the fill slot.");
+    public static final String INFO_FLUID_PIPE = GZLang.add(GroundZero.MODID + ".info.fluid_pipe",
+            "Fluid pipes carry what machines push out of faces with auto-eject and fluids switched on, sharing it between every tank the pipe run touches. Pipes hold nothing themselves, so breaking one never spills. Up to 2,000 mB per tick per run.");
+    public static final String INFO_FLUIDS = GZLang.add(GroundZero.MODID + ".info.fluids",
+            "Chemical fluids live in machine tanks, pipes, canisters and (liquids only) buckets. Spilled acids burn, napalm ignites and liquid oxygen or nitrogen freeze anything standing in them.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

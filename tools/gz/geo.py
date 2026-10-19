@@ -80,9 +80,41 @@ class GeoModel(BlockModel):
             return {"uv": [x + fw, y + fh], "uv_size": [-fw, -fh]}
         return {"uv": [x, y], "uv_size": [fw, fh]}
 
+    def hidden_faces(self, tol: float = 0.05) -> set[tuple[str, str]]:
+        """(box, face) pairs that are never visible: a face lying in the same plane as an opposite-facing face of
+        another unrotated box in the same bone, and wholly covered by it. GeckoLib's cutout pipeline draws back faces
+        (no culling in 26.x), so such back-to-back pairs flicker; only the covering face is kept. Of two identical
+        faces the later box's is dropped."""
+        axis = {"east": (0, 1), "west": (0, -1), "up": (1, 1), "down": (1, -1), "south": (2, 1), "north": (2, -1)}
+        hidden: set[tuple[str, str]] = set()
+        for bone in self.bones:
+            boxes = [b for b in bone.boxes if not b.rotation]
+            for i, a in enumerate(boxes):
+                for d in list(a.faces):
+                    ax, sign = axis[d]
+                    plane = (a.to if sign > 0 else a.frm)[ax]
+                    others = [k for k in range(3) if k != ax]
+                    for j, c in enumerate(boxes):
+                        if j == i:
+                            continue
+                        od = next(n for n, (x, s_) in axis.items() if x == ax and s_ == -sign)
+                        if od not in c.faces or (c.name, od) in hidden:
+                            continue
+                        cplane = (c.to if -sign > 0 else c.frm)[ax]
+                        if abs(cplane - plane) > tol:
+                            continue
+                        if all(c.frm[k] - tol <= a.frm[k] and a.to[k] <= c.to[k] + tol for k in others):
+                            identical = all(abs(c.frm[k] - a.frm[k]) <= tol and abs(c.to[k] - a.to[k]) <= tol for k in others)
+                            if identical and j > i:
+                                continue          # keep the earlier box's face; the later one is dropped
+                            hidden.add((a.name, d))
+                            break
+        return hidden
+
     def to_geo_json(self) -> dict:
         if not self._laid_out:
             raise RuntimeError("call layout() first")
+        hidden = self.hidden_faces()
         bones_json = []
         for bone in self.bones:
             bj: dict = {"name": bone.name, "pivot": [-bone.pivot[0], bone.pivot[1], bone.pivot[2]]}
@@ -104,8 +136,9 @@ class GeoModel(BlockModel):
                     cj["rotation"] = [-r[0], -r[1], r[2]]
                 if b.__dict__.get("inflate"):
                     cj["inflate"] = b.__dict__["inflate"]
-                cj["uv"] = {d: self._face_uv(b, d) for d in b.faces}
-                cubes.append(cj)
+                cj["uv"] = {d: self._face_uv(b, d) for d in b.faces if (b.name, d) not in hidden}
+                if cj["uv"]:
+                    cubes.append(cj)
             if cubes:
                 bj["cubes"] = cubes
             bones_json.append(bj)

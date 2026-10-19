@@ -1,14 +1,16 @@
 {
   "type": "groundzero:chemistry",
   "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
   "inputs": [
     {
       "count": 2,
       "ingredient": "#c:dusts/uranium"
-    },
-    {
-      "count": 1,
-      "ingredient": "groundzero:sulfuric_acid_canister"
     }
   ],
   "outputs": [
@@ -16,11 +18,6 @@
       "item": {
         "count": 2,
         "id": "groundzero:yellowcake"
-      }
-    },
-    {
-      "item": {
-        "id": "groundzero:empty_canister"
       }
     }
   ],

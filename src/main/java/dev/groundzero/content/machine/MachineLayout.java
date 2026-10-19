@@ -25,9 +25,12 @@ public record MachineLayout(Identifier texture, int width, int height, List<Pos>
                             @Nullable Rect progress, int progressFillU, int progressFillV,
                             @Nullable Rect flame, int flameFillU, int flameFillV,
                             Rect status, Rect redstone, int redstoneU, int redstoneV, @Nullable Rect readout, int titleX, int titleY,
-                            @Nullable Rect tank) {
+                            List<Gauge> tanks) {
 
     public record Pos(int x, int y) {}
+
+    /** A tank gauge (one per machine tank, in tank order) and its dump button, if the tank can be dumped. */
+    public record Gauge(Rect rect, @Nullable Rect dump) {}
 
     public record Rect(int x, int y, int w, int h) {
         public boolean contains(int px, int py) {

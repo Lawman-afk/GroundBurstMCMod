@@ -31,7 +31,8 @@ public class ElectrolyticSeparatorBlockEntity extends ProcessingBlockEntity impl
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public ElectrolyticSeparatorBlockEntity(BlockPos pos, BlockState state) {
-        super(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), pos, state, ProcessingKind.ELECTROLYSIS, 2, false, 1, 30_000, 300, MachineTank.Spec.water(16_000, 1));
+        super(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), pos, state, ProcessingKind.ELECTROLYSIS, 0, false, 0, 30_000, 300,
+                java.util.List.of(MachineTank.Spec.water(16_000), MachineTank.Spec.output(8_000)));
     }
 
     @Override
@@ -39,47 +40,20 @@ public class ElectrolyticSeparatorBlockEntity extends ProcessingBlockEntity impl
         return new MachineMenu(GZMenus.ELECTROLYTIC_SEPARATOR.get(), containerId, inventory, this, MachineLayouts.ELECTROLYTIC_SEPARATOR, this.data);
     }
 
-    /** The cell interior inside the glass (see tools/assets/electrolytic_separator.py). */
-    private static final TankRender CELL = new TankRender(-6.1f, 2.01f, -5.1f, 2.1f, 12.9f, 5.1f);
-    /** Fill steps clients are told about: enough for a smooth-looking level without a packet per millibucket. */
-    private static final int SYNC_STEPS = 48;
-    private int lastSyncedStep = -1;
-    private int lastSyncedFluid = -1;
+    /** The cell interior inside the glass shows the water tank (see tools/assets/electrolytic_separator.py). */
+    private static final java.util.List<TankRender> CELL = java.util.List.of(new TankRender(0, -6.1f, 2.01f, -5.1f, 2.1f, 12.9f, 5.1f));
 
     @Override
-    public TankRender tankRender() {
+    public java.util.List<TankRender> tankRenders() {
         return CELL;
-    }
-
-    @Override
-    protected void onTankChanged() {
-        super.onTankChanged();
-        if (this.level != null && !this.level.isClientSide() && this.tank != null) {
-            int step = (int) ((long) this.tank.amount() * SYNC_STEPS / this.tank.capacity());
-            if (step != this.lastSyncedStep || this.tank.fluidId() != this.lastSyncedFluid) {
-                this.lastSyncedStep = step;
-                this.lastSyncedFluid = this.tank.fluidId();
-                this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            }
-        }
     }
 
     /** Bubbles only rise while the electrodes are under water. */
     @Override
     public java.util.Set<String> hiddenBones() {
-        boolean submerged = this.tank != null && this.tank.amount() * 100L / this.tank.capacity() >= 55;
+        boolean submerged = tank(0).amount() * 100L / tank(0).capacity() >= 55;
         return submerged ? java.util.Set.of()
                 : java.util.Set.of("bubble0", "bubble1", "bubble2", "bubble3", "bubble4", "bubble5");
-    }
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
-    }
-
-    @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

@@ -105,9 +105,10 @@ public class MachineBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockPos base = TallMachineBlock.base(pos, state);
-        if (level.getBlockEntity(base) instanceof MachineBlockEntity machine && machine.tank() != null
+        if (level.getBlockEntity(base) instanceof MachineBlockEntity machine && !machine.tanks().isEmpty()
                 && stack.getCapability(Capabilities.Fluid.ITEM, ItemAccess.forPlayerInteraction(player, hand)) != null) {
-            if (!level.isClientSide() && FluidUtil.interactWithFluidHandler(player, hand, pos, machine.tank().fillOnly(), null)) {
+            // Full containers fill input tanks; empty ones draw from output tanks.
+            if (!level.isClientSide() && FluidUtil.interactWithFluidHandler(player, hand, pos, machine.fluidHandler(), null)) {
                 return InteractionResult.SUCCESS_SERVER;
             }
             return InteractionResult.SUCCESS;

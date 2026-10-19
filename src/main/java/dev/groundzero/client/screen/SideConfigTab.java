@@ -64,7 +64,7 @@ final class SideConfigTab {
 
     private List<Channel> channels() {
         List<Channel> list = new ArrayList<>(List.of(Channel.ITEMS, Channel.ENERGY));
-        if (this.menu.machine().tank() != null) {
+        if (!this.menu.machine().tanks().isEmpty()) {
             list.add(Channel.FLUID);
         }
         return list;
@@ -105,6 +105,13 @@ final class SideConfigTab {
             int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx, fy, FRAME_U, 0, 18, 18, 256, 256);
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx + 1, fy + 1, face == Face.FRONT ? FRONT_U : ICON_U, 0, 16, 16, 256, 256);
+            if (!this.menu.machine().faceOpen(face)) {
+                blocked(g, fx, fy);
+                if (mouseX >= fx && mouseX < fx + 18 && mouseY >= fy && mouseY < fy + 18) {
+                    g.setTooltipForNextFrame(Component.translatable(MachineText.FACE_COVERED, Component.translatable(face.translationKey())), mouseX, mouseY);
+                }
+                continue;
+            }
             switch (channel) {
                 case ENERGY -> toggleOverlay(g, fx, fy, sides.energy(face), 0x90FFD23C, ICON_ENERGY_U, ICON_V);
                 case FLUID -> toggleOverlay(g, fx, fy, sides.fluid(face), 0x903C78FF, ICON_FLUID_U, ICON_FLUID_V);
@@ -137,6 +144,15 @@ final class SideConfigTab {
                     Optional.empty(), mouseX, mouseY);
         } else if (eject && inside(mouseX, mouseY, x + 6, y + 95, 90, 14)) {
             g.setTooltipForNextFrame(Component.translatable(MachineText.AUTO_EJECT_TIP), mouseX, mouseY);
+        }
+    }
+
+    /** A face against the machine's own structure: dark, with a cross through it. */
+    private static void blocked(GuiGraphicsExtractor g, int fx, int fy) {
+        g.fill(fx + 1, fy + 1, fx + 17, fy + 17, 0xE00A0C0E);
+        for (int i = 0; i < 10; i++) {
+            g.fill(fx + 4 + i, fy + 4 + i, fx + 5 + i, fy + 5 + i, 0xFF5A3030);
+            g.fill(fx + 13 - i, fy + 4 + i, fx + 14 - i, fy + 5 + i, 0xFF5A3030);
         }
     }
 
@@ -204,6 +220,9 @@ final class SideConfigTab {
         for (Face face : Face.values()) {
             int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
             if (inside(mx, my, fx, fy, 18, 18)) {
+                if (!this.menu.machine().faceOpen(face)) {
+                    return true;
+                }
                 int id = switch (channel) {
                     case ENERGY -> MachineMenu.BUTTON_ENERGY;
                     case FLUID -> MachineMenu.BUTTON_FLUID;

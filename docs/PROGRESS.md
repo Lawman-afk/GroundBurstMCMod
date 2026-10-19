@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–4 built and tested (35/35 GameTests). Slice 4 awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
+**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system from slice 4 feedback (42/42 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -125,7 +125,8 @@ checklist for the user.
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | done (slice 4: `MultiblockDefinition` patterns, part blocks with `formed` state, Item Port, connected Reactor Glass, right-click ghost preview + status, Holo-Projector with layer stepping, Structure Spawner; 6 GameTests) — needs in-game test |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
-| Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3) |
+| Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
+| Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
 | Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press, separator, condenser, chemical plant; client fades them in/out with the ACTIVE state |
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |

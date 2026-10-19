@@ -1,6 +1,7 @@
 package dev.groundzero.gametest;
 
 import dev.groundzero.content.chem.GZChemicals;
+import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.machine.CryogenicCondenserBlockEntity;
 import dev.groundzero.content.machine.ElectrolyticSeparatorBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
@@ -35,12 +36,12 @@ final class FluidMachineTests {
 
     private static void bucketSlot(GameTestHelper helper) {
         ElectrolyticSeparatorBlockEntity sep = separator(helper, new BlockPos(3, 1, 3));
-        helper.assertTrue(!sep.inventory().canPlaceItem(1, new ItemStack(Items.LAVA_BUCKET)), "the bucket slot must refuse lava");
-        helper.assertTrue(sep.inventory().canPlaceItem(1, new ItemStack(Items.WATER_BUCKET)), "the bucket slot must take water");
-        sep.inventory().setItem(1, new ItemStack(Items.WATER_BUCKET));
+        helper.assertTrue(sep.inventory().canPlaceItem(0, new ItemStack(Items.WATER_BUCKET)), "the fill slot must take a water bucket");
+        helper.assertTrue(!sep.inventory().canPlaceItem(0, new ItemStack(Items.STONE)), "the fill slot only takes fluid containers");
+        sep.inventory().setItem(0, new ItemStack(Items.WATER_BUCKET));
         helper.succeedWhen(() -> {
-            helper.assertTrue(sep.tank().amount() == 1000, "one bucket should give 1000 mB, have " + sep.tank().amount());
-            helper.assertTrue(sep.inventory().getItem(1).is(Items.BUCKET), "the emptied bucket stays in the slot");
+            helper.assertTrue(sep.tank(0).amount() == 1000, "one bucket should give 1000 mB, have " + sep.tank(0).amount());
+            helper.assertTrue(sep.inventory().getItem(1).is(Items.BUCKET), "the emptied bucket comes out of the second slot");
         });
     }
 
@@ -57,7 +58,7 @@ final class FluidMachineTests {
             helper.assertTrue(handler.extract(0, FluidResource.of(Fluids.WATER), 100, tx) == 0, "pipes cannot drain the tank");
             tx.commit();
         }
-        helper.assertTrue(sep.tank().amount() == 5000, "tank should hold 5000 mB");
+        helper.assertTrue(sep.tank(0).amount() == 5000, "tank should hold 5000 mB");
         sep.changeSides(c -> c.toggleFluid(Face.TOP));
         helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(pos), Direction.UP) == null, "fluid switched off on top");
         helper.succeed();
@@ -67,13 +68,14 @@ final class FluidMachineTests {
         ElectrolyticSeparatorBlockEntity sep = separator(helper, new BlockPos(3, 1, 3));
         sep.energy().generate(30_000);
         try (var tx = Transaction.openRoot()) {
-            sep.tank().insert(0, FluidResource.of(Fluids.WATER), 10_000, tx);
+            sep.tank(0).insert(0, FluidResource.of(Fluids.WATER), 10_000, tx);
             tx.commit();
         }
         sep.inventory().setItem(0, new ItemStack(GZChemicals.EMPTY_GAS_CANISTER.get()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(sep.inventory().getItem(2).is(GZChemicals.DEUTERIUM_CANISTER.get()), "expected a deuterium canister");
-            helper.assertTrue(sep.tank().amount() == 2_000, "8000 mB of water should be used, tank has " + sep.tank().amount());
+            helper.assertTrue(sep.tank(0).amount() == 2_000, "8000 mB of water should be used, tank has " + sep.tank(0).amount());
+            helper.assertTrue(sep.inventory().getItem(1).is(GZChemicals.DEUTERIUM_CANISTER.get()), "the gas canister is filled from the product tank");
+            helper.assertTrue(sep.tank(1).isEmpty(), "filling the canister takes the 1000 mB");
         });
     }
 
@@ -84,11 +86,11 @@ final class FluidMachineTests {
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(pos), block.defaultBlockState(), null, ItemStack.EMPTY);
         CryogenicCondenserBlockEntity cond = helper.getBlockEntity(pos, CryogenicCondenserBlockEntity.class);
         cond.energy().generate(50_000);
-        cond.inventory().setItem(0, new ItemStack(GZParts.EMPTY_CANISTER.get()));
-        cond.inventory().setItem(1, new ItemStack(GZParts.NITROGEN_MEMBRANE.get()));
+        cond.inventory().setItem(0, new ItemStack(GZParts.NITROGEN_MEMBRANE.get()));
+        cond.inventory().setItem(1, new ItemStack(GZParts.EMPTY_CANISTER.get()));
         helper.succeedWhen(() -> {
             helper.assertTrue(cond.inventory().getItem(2).is(GZChemicals.LIQUID_NITROGEN_CANISTER.get()), "nitrogen membrane should make LN2");
-            helper.assertTrue(cond.inventory().getItem(1).is(GZParts.NITROGEN_MEMBRANE.get()), "the membrane is not consumed");
+            helper.assertTrue(cond.inventory().getItem(0).is(GZParts.NITROGEN_MEMBRANE.get()), "the membrane is not consumed");
         });
     }
 }

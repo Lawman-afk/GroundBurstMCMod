@@ -1,26 +1,20 @@
 {
   "type": "groundzero:chemistry",
   "energy_per_tick": 60,
-  "inputs": [
+  "fluid_outputs": [
     {
-      "count": 1,
-      "ingredient": "groundzero:synthetic_fuel_canister"
-    },
-    {
-      "count": 1,
-      "ingredient": "groundzero:liquid_oxygen_canister"
+      "amount": 1000,
+      "id": "groundzero:liquid_rocket_fuel"
     }
   ],
-  "outputs": [
+  "fluids": [
     {
-      "item": {
-        "id": "groundzero:liquid_rocket_fuel_canister"
-      }
+      "amount": 1000,
+      "ingredient": "#c:synthetic_fuel"
     },
     {
-      "item": {
-        "id": "groundzero:empty_canister"
-      }
+      "amount": 1000,
+      "ingredient": "#c:liquid_oxygen"
     }
   ],
   "time": 300

@@ -3,9 +3,12 @@ controller, which sits at the front-left (north-west) bottom; the model spans x 
 north-facing frame (model origin = controller block bottom centre).
 
 Look: a steel skid with a hazard-striped front edge; two tall round process tanks (stepped pixel circles) with a
-vertical glass window on the front showing the liquid inside (acid green, fuel amber) and bubbles rising through it;
-a stirrer motor on the left tank turning a paddle shaft you can see through the window; a manifold of pipes and red
-hand-wheel valves between the tanks; a ladder on the back; the control station (green CRT) at the controller corner.
+vertical window slot on the front. The renderer draws each tank's real fluid behind its window at its real level
+(water in the left tank, the product in the right one); bubbles rise through it while running. A stirrer motor on the
+left tank turns a paddle shaft you can see through the window; a header pipe with red hand-wheel valves runs across
+the front and turns back into both tanks; a ladder climbs the back of the left tank. Pipes and cables need something
+solid to meet: a control cabinet fills the controller's open faces (front and outer side, green CRT on the front)
+and a hatched connection housing fills the Item Port's two open faces.
 """
 from __future__ import annotations
 
@@ -27,7 +30,9 @@ TANK_Y0, TANK_Y1 = 3.0, 26.0
 TANKS = [(0.0, 8.0, ACID), (16.0, 8.0, FUEL)]
 # Stepped round tank: (dz0, dz1, half-width in x) around the tank centre.
 BANDS = [(-6.5, -5.0, 3.0), (-5.0, -3.5, 5.0), (-3.5, 3.5, 6.5), (3.5, 5.0, 5.0), (5.0, 6.5, 3.0)]
-WINDOW = (-1.5, 1.5)          # x range of the window slot on the front band (relative to tank centre)
+WINDOW = 2.0                  # half-width of the window slot on the front band (tank centre +- this)
+# Where the renderer draws each tank's fluid (model px, north-facing frame): just behind the window slot.
+FLUID_BOXES = [(cx - 1.9, TANK_Y0 + 0.5, cz - 6.3, cx + 1.9, TANK_Y1 - 0.5, cz - 5.2) for cx, cz, _ in TANKS]
 
 
 def tone(d: str) -> int:
@@ -58,10 +63,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         # Dome: two stepped caps.
         add(f"dome{ti}", g.box(f"dome{ti}_a", (cx - 5, TANK_Y1, cz - 5), (cx + 5, TANK_Y1 + 1.5, cz + 5), bone=F))
         add(f"dome{ti}", g.box(f"dome{ti}_b", (cx - 3, TANK_Y1 + 1.5, cz - 3), (cx + 3, TANK_Y1 + 2.5, cz + 3), bone=F))
-        # Liquid seen through the window: a face just behind the front band, bubbles in front of it.
-        add(f"liquid{ti}", g.box(f"liquid{ti}", (cx - 1.4, TANK_Y0 + 0.5, cz - 5.5), (cx + 1.4, 18.0, cz - 5.4),
-                                 faces=("north",), shade=False, bone=F))
-        add(f"liquid_back{ti}", g.box(f"liquid_back{ti}", (cx - 1.4, 18.0, cz - 5.5), (cx + 1.4, TANK_Y1 - 0.5, cz - 5.4),
+        # Dark tank interior behind the window; the renderer draws the real fluid in front of it.
+        add(f"liquid_back{ti}", g.box(f"liquid_back{ti}", (cx - WINDOW, TANK_Y0, cz - 5.15), (cx + WINDOW, TANK_Y1, cz - 5.1),
                                       faces=("north",), bone=F))
         for i in range(4):
             bx = cx + (-1.2, -0.7, 0.7, 1.2)[i]            # clear of the stirrer shaft
@@ -78,22 +81,30 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("paddle", g.box("paddle", (-1.3, 6.0, 2.0), (1.3, 7.5, 2.4), faces=("north", "south", "east", "west", "up", "down"), bone="stirrer"))
 
     # Manifold between the tanks: a header pipe at the front, risers into each tank, valves with red hand-wheels.
-    add("pipe", g.box("header", (-1.0, 9.0, -4.0), (17.0, 10.5, -2.5), faces=("north", "south", "up", "down"), bone=F))
+    add("pipe", g.box("header", (-3.1, 9.0, -4.0), (19.1, 10.5, -2.5), faces=("north", "south", "up", "down"), bone=F))
+    # Elbows: the header's ends turn back and enter each tank's shoulder (beside the front window band).
+    for i, (x0, x1) in enumerate(((-4.6, -3.1), (19.1, 20.6))):
+        add("pipe", g.box(f"elbow{i}", (x0, 9.0, -4.0), (x1, 10.5, 3.0), faces=("north", "east", "west", "up", "down"), bone=F))
+        fx0, fx1 = (x0 - 0.3, x1 + 0.1) if i == 0 else (x0 - 0.1, x1 + 0.3)
+        add("flange", g.box(f"flange{i}", (fx0, 8.7, 2.2), (fx1, 10.8, 2.9), faces=("north", "east", "west", "up", "down"), bone=F))
     for i, x in enumerate((4.0, 8.0, 12.0)):
         add("pipe", g.box(f"riser{i}", (x - 0.6, 3.0, -3.85), (x + 0.6, 9.0, -2.65), faces=("north", "south", "east", "west"), bone=F))
         add("valve", g.box(f"valve{i}", (x - 0.8, 10.5, -3.9), (x + 0.8, 11.5, -2.6), faces=("north", "south", "east", "west", "up"), bone=F))
         add("wheel", g.box(f"wheel{i}", (x - 1.4, 11.5, -3.9), (x + 1.4, 11.9, -2.6), faces=("north", "south", "east", "west", "up", "down"), bone=F))
     add("pipe", g.box("crossover", (5.0, 20.0, 7.2), (11.0, 21.4, 8.8), faces=("north", "south", "up", "down"), bone=F))
 
-    # Control station at the controller corner (front-left).
-    add("station", g.box("station", (-7.5, 3, -7.5), (-2.5, 13, -5.5), bone=F))
-    screen = add("screen", g.box("screen", (-6.8, 8.5, -7.7), (-3.2, 11.5, -7.5), faces=("north",), shade=False, bone=F))
+    # Control cabinet filling the controller's open faces (front and outer side), CRT on the front.
+    add("cabinet", g.box("cabinet_front", (-7.9, 3, -7.9), (2.0, 11.5, -5.2), bone=F))
+    add("cabinet", g.box("cabinet_side", (-7.9, 3, -5.2), (-5.2, 11.5, 2.0), bone=F))
+    # Connection housing filling the Item Port's open faces (east and south of the far corner).
+    add("housing_e", g.box("housing_e", (19.2, 3, 13.2), (23.9, 13, 23.9), bone=F))
+    add("housing_s", g.box("housing_s", (13.2, 3, 19.2), (19.2, 13, 23.9), bone=F))
 
-    # Ladder on the back of the right tank.
-    for i, x in enumerate((14.5, 17.5)):
-        add("ladder", g.box(f"rail{i}", (x, 3, 21.2), (x + 0.6, 28, 21.8), faces=("north", "south", "east", "west"), bone=F))
-    for k in range(7):
-        add("ladder", g.box(f"rung{k}", (15.1, 6 + k * 3, 21.3), (17.5, 6.5 + k * 3, 21.7), faces=("south", "up", "down"), bone=F))
+    # Ladder up the back of the left tank, standing just off its back band.
+    for i, x in enumerate((-2.0, 1.4)):
+        add("ladder", g.box(f"rail{i}", (x, 3, 14.7), (x + 0.6, 29, 15.7), faces=("north", "south", "east", "west", "up"), bone=F))
+    for k in range(8):
+        add("ladder", g.box(f"rung{k}", (-1.4, 5.5 + k * 3, 15.1), (1.4, 6.0 + k * 3, 15.5), faces=("north", "south", "up", "down"), bone=F))
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -121,14 +132,13 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.vline(x, y, h, steel[5])
             if front and d == "north":
                 # Window slot (transparent) framed in brass, liquid and bubbles show through.
+                # Window slot (transparent) framed in brass; the real fluid shows through it.
                 cx = x + w // 2
-                t.rect(cx - 2, y + 2, 4, h - 4, CLEAR)
-                t.vline(cx - 3, y + 1, h - 2, P.BRASS[3])
-                t.vline(cx + 2, y + 1, h - 2, P.BRASS[3])
-                t.hline(cx - 3, y + 1, 6, P.BRASS[4])
-                t.hline(cx - 3, y + h - 2, 6, P.BRASS[2])
+                t.rect(cx - 2, y + 1, 4, h - 2, CLEAR)
+                t.vline(cx - 3, y, h, P.BRASS[3])
+                t.vline(cx + 2, y, h, P.BRASS[3])
                 for yy in range(y + 4, y + h - 2, 4):
-                    t.px(cx + 3, yy, liquid[5])                                # level marks
+                    t.px(cx - 3, yy, P.BRASS[5])                               # level marks
         return paint
     for ti, (_, _, liquid) in enumerate(TANKS):
         for b in parts[f"tank{ti}"]:
@@ -138,14 +148,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         for b in parts[f"dome{ti}"]:
             g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.outline(*r, steel[2]) if d == "up" and min(r[2], r[3]) > 4 else None))
 
-        def liquid_paint(t, r, d, liquid=liquid):
-            x, y, w, h = r
-            t.gradient_v(x, y, w, h, liquid[5], liquid[3])
-            t.hline(x, y, w, liquid[6])                                         # surface
-            for yy in range(y + 3, y + h, 5):
-                t.px(x + (yy % 2), yy, liquid[6])
-        g.paint_all(tex, parts[f"liquid{ti}"][0], liquid_paint)
-        g.paint_all(tex, parts[f"liquid_back{ti}"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))   # headspace
+        g.paint_all(tex, parts[f"liquid_back{ti}"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))   # tank interior
     for b in parts["bubble"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, (235, 250, 225, 255)))
     for b in parts["hoop"]:
@@ -157,29 +160,55 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, parts["paddle"][0], lambda t, r, d: (t.rect(*r, steel[4]), t.px(r[0], r[1], P.WARNING_RED.base)))
     for b in parts["pipe"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if r[3] > 1 else None))
+    for b in parts["flange"]:
+        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.outline(*r, gun[2]) if min(r[2], r[3]) > 2 else None))
     for b in parts["valve"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
     for b in parts["wheel"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d) + 1]), t.px(r[0] + r[2] // 2, r[1], P.WARNING_RED[6]) if d == "up" else None))
 
-    def station(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d)])
-        if d == "north":
-            t.outline(x, y, w, h, P.OLIVE[1])
-            t.rect(x + 1, y + h - 4, w - 2, 2, P.BLACK_PAINT.base)            # keyboard shelf
-            for xx in range(x + 1, x + w - 1, 2):
-                t.px(xx, y + h - 4, P.WHITE_CERAMIC[4])
-    g.paint_all(tex, parts["station"][0], station)
+    def port(t, cx, cy):
+        """A 4x4 connection socket centred on (cx, cy): gunmetal ring, dark bore, four bolts."""
+        t.rect(cx - 2, cy - 2, 4, 4, gun[4])
+        t.rect(cx - 1, cy - 1, 2, 2, P.BLACK_PAINT.deep)
+        for px, py in ((cx - 3, cy - 3), (cx + 2, cy - 3), (cx - 3, cy + 2), (cx + 2, cy + 2)):
+            t.px(px, py, steel[5])
 
-    def screen_paint(t, r, d):
+    def screen_paint(t, r):
         x, y, w, h = r
         t.rect(x, y, w, h, P.BLACK_PAINT.deep)
         for xx in range(x, x + w):
             t.px(xx, y + h // 2 + (xx % 3 == 0) - (xx % 3 == 1), P.INDICATOR_GREEN[4])
         t.px(x, y, P.INDICATOR_GREEN[5])
-    g.paint_all(tex, screen, screen_paint)
-    g.paint_all(glow, screen, screen_paint)
+
+    def cabinet(t, r, d, socket_u=None):
+        x, y, w, h = r
+        t.rect(x, y, w, h, P.OLIVE[tone(d)])
+        if d in ("north", "south", "east", "west"):
+            t.outline(x, y, w, h, P.OLIVE[1])
+            t.hline(x + 1, y + 1, w - 2, P.OLIVE[4])
+            if socket_u is not None:
+                port(t, x + socket_u, y + h - 5)                               # at block-centre height (y 8)
+            if d == "north" and w > 8:
+                screen_paint(t, (x + 6, y + 1, 4, 4))                          # green CRT beside the socket
+    # Sockets where the controller block's centre meets its open faces: front (x ~ 0) and outer side (z = 0).
+    g.paint_all(tex, parts["cabinet"][0], lambda t, r, d: cabinet(t, r, d, 3 if d == "north" else None))
+    g.paint_all(tex, parts["cabinet"][1], lambda t, r, d: cabinet(t, r, d, 5 if d == "west" else None))
+
+    def housing(t, r, d, socket_face, socket_u):
+        x, y, w, h = r
+        t.rect(x, y, w, h, gun[tone(d)])
+        if d == socket_face:
+            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+            t.rect(x + 1, y + 1, w - 2, h - 2, gun[3])
+            port(t, x + socket_u, y + h - 5)
+        elif d == "up":
+            t.outline(x, y, w, h, gun[2])
+    # The Item Port's centre is (16, 8, 16): the east face's socket sits 7.9 px from its south edge, the south
+    # face's 2.8 px from its west edge.
+    g.paint_all(tex, parts["housing_e"][0], lambda t, r, d: housing(t, r, d, "east", 8))
+    g.paint_all(tex, parts["housing_s"][0], lambda t, r, d: housing(t, r, d, "south", 3))
+
     for b in parts["ladder"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.HAZARD_YELLOW[tone(d)]))
     return g, tex, glow

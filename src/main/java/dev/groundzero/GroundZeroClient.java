@@ -31,6 +31,7 @@ public class GroundZeroClient {
         MultiblockPreview.register();
         modBus.addListener(GroundZeroClient::registerScreens);
         modBus.addListener(GroundZeroClient::registerRenderers);
+        modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {

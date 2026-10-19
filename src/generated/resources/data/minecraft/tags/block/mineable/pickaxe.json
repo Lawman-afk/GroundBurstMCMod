@@ -39,6 +39,7 @@
     "groundzero:machine_casing",
     "groundzero:item_port",
     "groundzero:reactor_glass",
+    "groundzero:fluid_pipe",
     "groundzero:copper_cable",
     "groundzero:insulated_cable",
     "groundzero:hv_cable"

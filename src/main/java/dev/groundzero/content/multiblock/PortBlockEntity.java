@@ -49,7 +49,7 @@ public class PortBlockEntity extends BlockEntity {
 
     public @Nullable ResourceHandler<FluidResource> fluids(@Nullable Direction side) {
         MachineBlockEntity m = machine();
-        return m == null || m.tank() == null ? null : m.tank().fillOnly();
+        return m == null || m.tanks().isEmpty() ? null : m.fluidHandler();
     }
 
     @Override

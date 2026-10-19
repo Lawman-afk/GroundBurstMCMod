@@ -22,6 +22,7 @@ public final class GZDataGen {
         event.createProvider(GZLanguageProvider::new);
         event.createProvider(GZSoundDefinitions::new);
         event.createBlockAndItemTags(GZTagProviders.Blocks::new, GZTagProviders.Items::new);
+        event.createProvider(GZTagProviders.FluidTags::new);
     }
 
     /** Datapack registry content: worldgen, loot tables, recipes. */

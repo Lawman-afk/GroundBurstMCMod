@@ -1,8 +1,16 @@
 package dev.groundzero.content.machine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +19,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,22 +32,29 @@ import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
- * Shared base of every powered machine: FE buffer, item slots, redstone control, the EMP hook, ACTIVE block
- * state upkeep, client sync of GUI values, and save/load.
+ * Shared base of every powered machine: FE buffer, item slots, fluid tanks, redstone control, the EMP hook, ACTIVE
+ * block state upkeep, client sync of GUI values (and of tank levels for models that show them), and save/load.
  */
 public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider {
     // Sync slots shared by every machine menu. Ints are sent as shorts by vanilla, so 32-bit values use two.
     public static final int DATA_ENERGY_LO = 0, DATA_ENERGY_HI = 1, DATA_CAPACITY_LO = 2, DATA_CAPACITY_HI = 3,
-            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7, DATA_TANK_AMOUNT = 8,
-            DATA_TANK_FLUID = 9, DATA_BASE_COUNT = 10;
-    private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16;
+            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7,
+            DATA_TANKS = 8, DATA_BASE_COUNT = 16;
+    /** Tanks a menu can show (two sync slots each: amount, fluid id). Amounts stay below 32768 mB to fit a short. */
+    public static final int MAX_TANKS = 4;
+    private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16, FLUID_EJECT_BATCH = 2000;
 
     protected final MachineEnergy energy;
     protected final MachineInventory inventory;
-    /** Input fluid tank, or null for machines without one. */
-    protected final @Nullable MachineTank tank;
+    /** Fluid tanks in GUI order (empty for machines without any). */
+    protected final List<MachineTank> tanks;
+    private final MachineFluidHandler fluidHandler;
+    /** Slots that fill or empty fluid containers (buckets, canisters, other mods' tanks), or -1. */
+    protected final int containerIn, containerOut;
     /** Automation views by item mode (NONE has none). */
     private final AutomationView[] automation = new AutomationView[SideConfig.ItemMode.values().length];
     private final int[] inputSlots;
@@ -60,9 +76,16 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 case DATA_STATUS -> status.ordinal();
                 case DATA_SIDE_ITEMS -> sides.packItems();
                 case DATA_SIDE_FLAGS -> sides.packFlags();
-                case DATA_TANK_AMOUNT -> tank == null ? 0 : tank.amount();
-                case DATA_TANK_FLUID -> tank == null ? 0 : tank.fluidId();
-                default -> getExtraData(index - DATA_BASE_COUNT);
+                default -> {
+                    if (index >= DATA_TANKS && index < DATA_BASE_COUNT) {
+                        int t = (index - DATA_TANKS) / 2;
+                        if (t >= tanks.size()) {
+                            yield 0;
+                        }
+                        yield (index - DATA_TANKS) % 2 == 0 ? tanks.get(t).amount() : tanks.get(t).fluidId();
+                    }
+                    yield getExtraData(index - DATA_BASE_COUNT);
+                }
             };
         }
 
@@ -79,15 +102,28 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
             int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots) {
-        this(type, pos, state, energyCapacity, maxInsert, maxExtract, slotCount, inputSlots, outputSlots, null);
+        this(type, pos, state, energyCapacity, maxInsert, maxExtract, slotCount, inputSlots, outputSlots, List.of(), -1, -1);
     }
 
+    /** With tanks: {@code containerIn}/{@code containerOut} are the slot pair that fills and empties fluid containers. */
     protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
-            int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots, MachineTank.@Nullable Spec tankSpec) {
+            int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots, List<MachineTank.Spec> tankSpecs,
+            int containerIn, int containerOut) {
         super(type, pos, state);
+        if (tankSpecs.size() > MAX_TANKS) {
+            throw new IllegalArgumentException("at most " + MAX_TANKS + " tanks");
+        }
         this.energy = new MachineEnergy(energyCapacity, maxInsert, maxExtract, this::setChanged);
         this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
-        this.tank = tankSpec == null ? null : new MachineTank(tankSpec, this::onTankChanged);
+        List<MachineTank> list = new ArrayList<>();
+        for (int i = 0; i < tankSpecs.size(); i++) {
+            int index = i;
+            list.add(new MachineTank(tankSpecs.get(i), r -> acceptsFluid(index, r), this::onTankChanged));
+        }
+        this.tanks = List.copyOf(list);
+        this.fluidHandler = new MachineFluidHandler(this.tanks);
+        this.containerIn = containerIn;
+        this.containerOut = containerOut;
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
         this.sides.restrict(allowedItemModes());
@@ -104,18 +140,60 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     protected abstract boolean isItemValid(int slot, ItemStack stack);
 
-    /** The tank's contents changed. Machines that show their fluid on the model sync it to clients here. */
+    /** Whether input tank {@code tank} may take this fluid (beyond its spec's filter), e.g. "a recipe uses it". */
+    protected boolean acceptsFluid(int tank, FluidResource resource) {
+        return true;
+    }
+
+    /** Where the model shows tank contents (model pixels, machine facing north); empty if it shows none. */
+    public List<TankRender> tankRenders() {
+        return List.of();
+    }
+
+    /** Whether the model currently shows its tanks (a multiblock only does once formed). */
+    public boolean showsTanks() {
+        return true;
+    }
+
+    /** A box in model pixels (x/z centred on the block, y from the bottom) that the renderer fills with tank {@code tank}'s fluid. */
+    public record TankRender(int tank, float x0, float y0, float z0, float x1, float y1, float z1) {}
+
+    /** Fill steps clients are told about: enough for a smooth-looking level without a packet per millibucket. */
+    private static final int SYNC_STEPS = 48;
+    private final int[] syncedLevel = new int[MAX_TANKS];
+    {
+        java.util.Arrays.fill(this.syncedLevel, -1);
+    }
+
+    /** A tank's contents changed: save, and if the model shows that tank, tell clients when its level moves a step. */
     protected void onTankChanged() {
         setChanged();
+        if (this.level == null || this.level.isClientSide() || tankRenders().isEmpty()) {
+            return;
+        }
+        boolean changed = false;
+        for (TankRender r : tankRenders()) {
+            MachineTank t = this.tanks.get(r.tank());
+            int key = t.fluidId() * (SYNC_STEPS + 1) + (int) ((long) t.amount() * SYNC_STEPS / t.capacity());
+            if (key != this.syncedLevel[r.tank()]) {
+                this.syncedLevel[r.tank()] = key;
+                changed = true;
+            }
+        }
+        if (changed) {
+            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
-    /** Where the model shows the tank's fluid (model pixels, machine facing north), or null if it does not. */
-    public @Nullable TankRender tankRender() {
-        return null;
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return tankRenders().isEmpty() ? super.getUpdateTag(registries) : saveCustomOnly(registries);
     }
 
-    /** A box in model pixels (x/z centred on the block, y from the bottom) that the renderer fills with fluid. */
-    public record TankRender(float x0, float y0, float z0, float x1, float y1, float z1) {}
+    @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return tankRenders().isEmpty() ? super.getUpdatePacket() : ClientboundBlockEntityDataPacket.create(this);
+    }
 
     /** A slot changed (-1: any slot may have). Subclasses that show slot contents on the model sync here. */
     protected void onSlotChanged(int slot) {
@@ -142,9 +220,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         } else {
             active = tickMachine(level);
         }
-        drainContainerSlot();
-        if (this.sides.autoEject() && this.outputSlots.length > 0 && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
-            autoEject(level);
+        handleContainers();
+        if (this.sides.autoEject() && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
+            if (this.outputSlots.length > 0) {
+                autoEject(level);
+            }
+            autoEjectFluids(level);
         }
         BlockState state = getBlockState();
         if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != active) {
@@ -152,18 +233,64 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
-    /** Empties a fluid container (bucket, tank item) sitting in the tank's container slot into the tank. */
-    private void drainContainerSlot() {
-        if (this.tank == null || this.tank.spec().containerSlot() < 0) {
+    /**
+     * The container slot pair: a container holding fluid empties into the input tank that takes it; an empty one is
+     * filled from the first output tank it can hold. One item is handled at a time and the result goes to the out
+     * slot, so a stack of buckets or canisters works through one by one.
+     */
+    private void handleContainers() {
+        if (this.containerIn < 0 || this.tanks.isEmpty()) {
             return;
         }
-        int slot = this.tank.spec().containerSlot();
-        if (this.inventory.getItem(slot).isEmpty() || this.tank.amount() >= this.tank.capacity()) {
+        ItemStack in = this.inventory.getItem(this.containerIn);
+        if (in.isEmpty()) {
             return;
         }
-        ResourceHandler<FluidResource> item = ItemAccess.forHandlerIndex(this.inventory, slot).getCapability(Capabilities.Fluid.ITEM);
-        if (item != null) {
-            ResourceHandlerUtil.move(item, this.tank, r -> this.tank.isValid(0, r), this.tank.capacity() - this.tank.amount(), null);
+        ItemStacksResourceHandler temp = new ItemStacksResourceHandler(1);
+        temp.set(0, ItemResource.of(in), 1);
+        ResourceHandler<FluidResource> item = ItemAccess.forHandlerIndexStrict(temp, 0).getCapability(Capabilities.Fluid.ITEM);
+        if (item == null) {
+            return;
+        }
+        boolean holdsFluid = false;
+        for (int i = 0; i < item.size(); i++) {
+            holdsFluid |= item.getAmountAsLong(i) > 0;
+        }
+        int moved = 0;
+        try (Transaction tx = Transaction.openRoot()) {
+            if (holdsFluid) {
+                moved = ResourceHandlerUtil.move(item, this.fluidHandler, r -> true, Integer.MAX_VALUE, tx);
+            } else {
+                for (MachineTank tank : this.tanks) {
+                    if (!tank.isInput() && !tank.isEmpty()) {
+                        moved = ResourceHandlerUtil.move(tank, item, r -> true, Integer.MAX_VALUE, tx);
+                        if (moved > 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (moved <= 0) {
+                return;
+            }
+            ItemStack result = temp.getResource(0).toStack(temp.getAmountAsInt(0));
+            ItemStack out = this.inventory.getItem(this.containerOut);
+            if (!result.isEmpty()) {
+                if (!out.isEmpty() && (!ItemStack.isSameItemSameComponents(out, result) || out.getCount() + result.getCount() > out.getMaxStackSize())) {
+                    return;                                   // nowhere to put the result: try again later
+                }
+            }
+            tx.commit();
+            in.shrink(1);
+            this.inventory.setItem(this.containerIn, in.isEmpty() ? ItemStack.EMPTY : in);
+            if (!result.isEmpty()) {
+                if (out.isEmpty()) {
+                    this.inventory.setItem(this.containerOut, result);
+                } else {
+                    out.grow(result.getCount());
+                    this.inventory.setItem(this.containerOut, out);
+                }
+            }
         }
     }
 
@@ -185,23 +312,81 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return SideConfig.Face.of(side, facing);
     }
 
+    /**
+     * Whether anything can connect to a face. A multiblock controller's faces that lie against its own structure
+     * cannot: they expose nothing and the side tab shows them blocked.
+     */
+    public boolean faceOpen(SideConfig.Face face) {
+        return true;
+    }
+
+    /** Pours output tanks into the fluid handlers beside every face whose fluid switch is on. */
+    private void autoEjectFluids(ServerLevel level) {
+        if (this.tanks.stream().allMatch(t -> t.isInput() || t.isEmpty())) {
+            return;
+        }
+        Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
+        for (SideConfig.Face face : SideConfig.Face.values()) {
+            if (!this.sides.fluid(face) || !faceOpen(face)) {
+                continue;
+            }
+            Direction dir = face.toDirection(facing);
+            BlockPos target = this.worldPosition.relative(dir);
+            if (getBlockState().getBlock() instanceof TallMachineBlock && dir == Direction.UP) {
+                target = target.above();
+            }
+            ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, target, dir.getOpposite());
+            if (handler == null) {
+                continue;
+            }
+            for (MachineTank tank : this.tanks) {
+                if (!tank.isInput() && !tank.isEmpty()) {
+                    ResourceHandlerUtil.move(tank, handler, r -> true, FLUID_EJECT_BATCH, null);
+                }
+            }
+        }
+    }
+
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
+        if (side != null && !faceOpen(face(side))) {
+            return null;
+        }
         return side == null || this.sides.energy(face(side)) ? this.energy : null;
     }
 
     public @Nullable ResourceHandler<FluidResource> fluidsFor(@Nullable Direction side) {
-        if (this.tank == null) {
+        if (this.tanks.isEmpty() || side != null && !faceOpen(face(side))) {
             return null;
         }
-        return side == null || this.sides.fluid(face(side)) ? this.tank.fillOnly() : null;
+        return side == null || this.sides.fluid(face(side)) ? this.fluidHandler : null;
     }
 
-    public @Nullable MachineTank tank() {
-        return tank;
+    /** Every tank, in GUI order. */
+    public List<MachineTank> tanks() {
+        return this.tanks;
+    }
+
+    public MachineTank tank(int index) {
+        return this.tanks.get(index);
+    }
+
+    /** What item ports, buckets clicked on the block and the side-less capability see: fill inputs, drain outputs. */
+    public MachineFluidHandler fluidHandler() {
+        return this.fluidHandler;
+    }
+
+    /** Empties a dumpable tank (the GUI's dump button). */
+    public void dumpTank(int index) {
+        if (index >= 0 && index < this.tanks.size() && this.tanks.get(index).spec().dumpable()) {
+            this.tanks.get(index).dump();
+        }
     }
 
     public @Nullable ResourceHandler<ItemResource> itemsFor(@Nullable Direction side) {
-        return side == null ? this.inventory : this.automation[this.sides.items(face(side)).ordinal()];
+        if (side == null) {
+            return this.inventory;
+        }
+        return faceOpen(face(side)) ? this.automation[this.sides.items(face(side)).ordinal()] : null;
     }
 
     public SideConfig sides() {
@@ -258,7 +443,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
         AutomationView out = new AutomationView(this.inventory, new int[0], this.outputSlots, false, true);
         for (SideConfig.Face face : SideConfig.Face.values()) {
-            if (!this.sides.items(face).canExtract()) {
+            if (!this.sides.items(face).canExtract() || !faceOpen(face)) {
                 continue;
             }
             Direction dir = face.toDirection(facing);
@@ -304,8 +489,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inventory.serialize(output.child("items"));
         output.putInt("redstone", this.redstoneMode.ordinal());
         this.sides.save(output.child("sides"));
-        if (this.tank != null) {
-            this.tank.serialize(output.child("tank"));
+        for (int i = 0; i < this.tanks.size(); i++) {
+            this.tanks.get(i).serialize(output.child("tank" + i));
         }
     }
 
@@ -317,8 +502,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
         this.sides.load(input.childOrEmpty("sides"));
         this.sides.restrict(allowedItemModes());
-        if (this.tank != null) {
-            this.tank.deserialize(input.childOrEmpty("tank"));
+        for (int i = 0; i < this.tanks.size(); i++) {
+            this.tanks.get(i).deserialize(input.childOrEmpty("tank" + i));
         }
     }
 

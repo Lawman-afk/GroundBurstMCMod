@@ -39,8 +39,10 @@ public class GroundZero {
         GZMachines.init();
         GZParts.init();
         GZChemicals.init();
+        dev.groundzero.content.fluid.GZFluids.init();
         GZMultiblocks.init();
 
+        dev.groundzero.content.fluid.GZFluids.register(modBus);
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);
         GZBlockEntities.BLOCK_ENTITIES.register(modBus);

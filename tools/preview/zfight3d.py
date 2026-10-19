@@ -1,6 +1,8 @@
 r"""Rendered-geometry z-fighting check for GeckoLib models: builds the exact quads GeckoLib draws (bone pivots and
-rotations, rotated cubes, animation poses) and reports pairs of front faces that lie in the same plane and overlap.
-Back faces are culled in game (entityCutout), so only faces pointing the same way can fight.
+rotations, rotated cubes, animation poses) and reports pairs of faces that lie in the same plane and overlap.
+GeckoLib's entity cutout pipeline does not cull back faces in 26.x, so faces pointing opposite ways fight too. Those
+back-to-back pairs are only reported when one of the two cubes can be seen into (it lacks a face or has transparent
+texels); two closed solid cubes that abut hide their shared faces.
 
     tools\.venv\Scripts\python.exe tools\preview\zfight3d.py                 (all machines, rest + animation frames)
     tools\.venv\Scripts\python.exe tools\preview\zfight3d.py arc_furnace
@@ -69,9 +71,28 @@ def _ccw(poly):
     return poly if s > 0 else poly[::-1]
 
 
+def _cube(label: str) -> str:
+    return label.split("/")[0]
+
+
+def _open_cubes(quads, labels) -> set[str]:
+    """Cubes you can see into: fewer than six faces, or a face with see-through texels."""
+    faces: dict[str, int] = {}
+    holey: set[str] = set()
+    for q, lab in zip(quads, labels):
+        c = _cube(lab)
+        faces[c] = faces.get(c, 0) + 1
+        u0, v0 = np.floor(q.uv.min(axis=0)).astype(int)
+        u1, v1 = np.ceil(q.uv.max(axis=0)).astype(int)
+        if u1 > u0 and v1 > v0 and (q.tex[v0:v1, u0:u1, 3] < 128).any():
+            holey.add(c)
+    return {c for c, n in faces.items() if n < 6} | holey
+
+
 def check(quads, labels, tol: float = 0.05, min_area: float = 0.01) -> list[str]:
     issues = []
     data = []
+    open_cubes = _open_cubes(quads, labels)
     for q, lab in zip(quads, labels):
         n = q.normal / np.linalg.norm(q.normal)
         d = float(np.dot(n, q.pos[0]))
@@ -80,7 +101,16 @@ def check(quads, labels, tol: float = 0.05, min_area: float = 0.01) -> list[str]
         n1, d1, p1, l1 = data[i]
         for j in range(i + 1, len(data)):
             n2, d2, p2, l2 = data[j]
-            if np.dot(n1, n2) < 0.9995 or abs(d1 - d2) > tol:
+            # GeckoLib's entity cutout pipeline draws back faces too (withCull(false) in 26.x), so faces that share a
+            # plane fight whichever way they point.
+            c = float(np.dot(n1, n2))
+            if abs(c) < 0.9995:
+                continue
+            if c < 0:
+                if _cube(l1) not in open_cubes and _cube(l2) not in open_cubes:
+                    continue
+                d2 = -d2
+            if abs(d1 - d2) > tol:
                 continue
             if l1.startswith("die_") and l2.startswith("die_"):
                 continue   # press die variants: only one is ever drawn

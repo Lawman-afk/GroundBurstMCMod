@@ -6,29 +6,47 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
- * A machine's single input fluid tank (e.g. water for the Electrolytic Separator). Pipes may fill it through faces
- * whose fluid switch is on; nothing may drain it from outside (it only feeds the machine's recipes).
+ * One of a machine's fluid tanks. Input tanks feed recipes and may be filled from outside (pipes, buckets, canisters);
+ * output tanks collect products and may be drained from outside. The machine itself moves fluid in and out with
+ * {@link #drainInternal} and {@link #fillInternal}.
  */
 public class MachineTank extends FluidStacksResourceHandler {
-    /** Tank size, which fluids it takes, and which item slot empties fluid containers (buckets) into it (-1: none). */
-    public record Spec(int capacity, Predicate<FluidResource> filter, int containerSlot) {
-        public static Spec water(int capacity, int containerSlot) {
-            return new Spec(capacity, r -> r.getFluid().isSame(Fluids.WATER), containerSlot);
+    public enum Role { INPUT, OUTPUT }
+
+    /**
+     * @param filter   which fluids the tank takes (the machine adds its own recipe check for input tanks)
+     * @param dumpable whether the GUI offers a dump button (the water tank never does: it only ever holds water)
+     */
+    public record Spec(int capacity, Role role, Predicate<FluidResource> filter, boolean dumpable) {
+        /** An input tank that only ever holds water. */
+        public static Spec water(int capacity) {
+            return new Spec(capacity, Role.INPUT, r -> r.getFluid().isSame(Fluids.WATER), false);
+        }
+
+        /** An input tank for whatever fluid a recipe needs (never water: machines that use water have a water tank). */
+        public static Spec input(int capacity) {
+            return new Spec(capacity, Role.INPUT, r -> !r.getFluid().isSame(Fluids.WATER), true);
+        }
+
+        /** A product tank. */
+        public static Spec output(int capacity) {
+            return new Spec(capacity, Role.OUTPUT, r -> true, true);
         }
     }
 
     private final Spec spec;
+    private final Predicate<FluidResource> accepts;
     private final Runnable onChanged;
 
-    public MachineTank(Spec spec, Runnable onChanged) {
+    /** {@code accepts}: the machine's extra check (e.g. "some recipe uses this fluid"), on top of the spec's filter. */
+    public MachineTank(Spec spec, Predicate<FluidResource> accepts, Runnable onChanged) {
         super(1, spec.capacity());
         this.spec = spec;
+        this.accepts = accepts;
         this.onChanged = onChanged;
     }
 
@@ -36,9 +54,13 @@ public class MachineTank extends FluidStacksResourceHandler {
         return spec;
     }
 
+    public boolean isInput() {
+        return this.spec.role() == Role.INPUT;
+    }
+
     @Override
     public boolean isValid(int index, FluidResource resource) {
-        return this.spec.filter().test(resource);
+        return this.spec.filter().test(resource) && (this.spec.role() == Role.OUTPUT || this.accepts.test(resource));
     }
 
     @Override
@@ -58,6 +80,19 @@ public class MachineTank extends FluidStacksResourceHandler {
         return this.capacity;
     }
 
+    public boolean isEmpty() {
+        return this.stacks.get(0).isEmpty();
+    }
+
+    /** Room left for this fluid (0 if the tank holds something else). */
+    public int space(Fluid fluid) {
+        FluidStack current = this.stacks.get(0);
+        if (!current.isEmpty() && !current.getFluid().isSame(fluid)) {
+            return 0;
+        }
+        return this.capacity - current.getAmount();
+    }
+
     /** Removes fluid for a finished recipe (machine-internal, no transaction needed). */
     public void drainInternal(int amount) {
         FluidStack current = this.stacks.get(0);
@@ -65,50 +100,20 @@ public class MachineTank extends FluidStacksResourceHandler {
         set(0, left == 0 ? FluidResource.EMPTY : FluidResource.of(current), left);
     }
 
+    /** Adds a recipe's fluid product (machine-internal; the caller checked {@link #space}). */
+    public void fillInternal(FluidStack stack) {
+        int total = Math.min(this.capacity, amount() + stack.getAmount());
+        set(0, FluidResource.of(stack), total);
+    }
+
+    /** Empties the tank (the GUI's dump button). */
+    public void dump() {
+        set(0, FluidResource.EMPTY, 0);
+    }
+
     /** Fluid registry id of the contents, for menu sync (0 = empty). */
     public int fluidId() {
         Fluid fluid = this.stacks.get(0).getFluid();
         return this.stacks.get(0).isEmpty() ? 0 : BuiltInRegistries.FLUID.getId(fluid);
-    }
-
-    /** What pipes see: fill only. */
-    public ResourceHandler<FluidResource> fillOnly() {
-        MachineTank tank = this;
-        return new ResourceHandler<>() {
-            @Override
-            public int size() {
-                return 1;
-            }
-
-            @Override
-            public FluidResource getResource(int index) {
-                return tank.getResource(0);
-            }
-
-            @Override
-            public long getAmountAsLong(int index) {
-                return tank.getAmountAsLong(0);
-            }
-
-            @Override
-            public long getCapacityAsLong(int index, FluidResource resource) {
-                return tank.getCapacityAsLong(0, resource);
-            }
-
-            @Override
-            public boolean isValid(int index, FluidResource resource) {
-                return tank.isValid(0, resource);
-            }
-
-            @Override
-            public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                return tank.insert(0, resource, amount, transaction);
-            }
-
-            @Override
-            public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                return 0;
-            }
-        };
     }
 }

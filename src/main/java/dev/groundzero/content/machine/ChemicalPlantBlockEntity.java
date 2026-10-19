@@ -35,8 +35,9 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public ChemicalPlantBlockEntity(BlockPos pos, BlockState state) {
-        super(GZBlockEntities.CHEMICAL_PLANT.get(), pos, state, ProcessingKind.CHEMISTRY, 4, false, 2, 60_000, 600,
-                MachineTank.Spec.water(16_000, 3));
+        super(GZBlockEntities.CHEMICAL_PLANT.get(), pos, state, ProcessingKind.CHEMISTRY, 3, false, 2, 60_000, 600,
+                java.util.List.of(MachineTank.Spec.water(16_000), MachineTank.Spec.input(8_000), MachineTank.Spec.input(8_000),
+                        MachineTank.Spec.output(8_000)));
     }
 
     // --- multiblock -------------------------------------------------------------------------------------------------------
@@ -53,6 +54,13 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
     @Override
     public Direction controllerFacing() {
         return getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
+    }
+
+    /** Faces against the plant's own casing and glass (the side and back, the top) cannot connect to anything. */
+    @Override
+    public boolean faceOpen(SideConfig.Face face) {
+        BlockPos neighbour = this.worldPosition.relative(face.toDirection(controllerFacing()));
+        return !definition().contains(this.worldPosition, controllerFacing(), neighbour);
     }
 
     @Override
@@ -94,10 +102,43 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
     }
 
     // --- rendering ----------------------------------------------------------------------------------------------------------
-    /** Unformed, the controller is an ordinary block; the structure model only draws once formed. */
+    public static final int TANK_WATER = 0, TANK_PRODUCT = 3;
+    /** The two process tanks' windows: water on the left (controller side), the product on the right. */
+    private static final java.util.List<TankRender> WINDOWS = java.util.List.of(
+            new TankRender(TANK_WATER, -1.9f, 3.5f, 1.7f, 1.9f, 25.5f, 2.8f),
+            new TankRender(TANK_PRODUCT, 14.1f, 3.5f, 1.7f, 17.9f, 25.5f, 2.8f));
+
+    @Override
+    public java.util.List<TankRender> tankRenders() {
+        return WINDOWS;
+    }
+
+    @Override
+    public boolean showsTanks() {
+        return isFormed();
+    }
+
+    /**
+     * Unformed, the controller is an ordinary block; the structure model only draws once formed. Bubbles rise in a tank
+     * only while the plant runs and the liquid reaches above them.
+     */
     @Override
     public Set<String> hiddenBones() {
-        return isFormed() ? Set.of() : Set.of("frame");
+        if (!isFormed()) {
+            return Set.of("frame");
+        }
+        boolean active = getBlockState().hasProperty(MachineBlock.ACTIVE) && getBlockState().getValue(MachineBlock.ACTIVE);
+        Set<String> hidden = new java.util.HashSet<>();
+        int[] shown = {TANK_WATER, TANK_PRODUCT};
+        for (int t = 0; t < 2; t++) {
+            MachineTank tank = tank(shown[t]);
+            if (!active || tank.amount() * 100L / tank.capacity() < 70) {
+                for (int i = 0; i < 4; i++) {
+                    hidden.add("bubble" + t + "_" + i);
+                }
+            }
+        }
+        return hidden;
     }
 
     @Override

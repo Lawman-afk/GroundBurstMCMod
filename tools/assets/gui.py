@@ -63,9 +63,9 @@ LAYOUTS = {
     },
     "electrolytic_separator": {
         "title": (28, 6),
-        "slots": [("canister", 52, 25), ("bucket", 52, 53), ("out_big", 116, 35)],
+        "slots": [("fill_in", 48, 22), ("fill_out", 48, 50)],
         "energy": (8, 20, 14, 46),
-        "tank": (30, 20, 14, 46),
+        "tanks": [(28, 20, 12, 46, "H2O", False), (112, 20, 12, 42, None, True)],
         "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -75,9 +75,10 @@ LAYOUTS = {
     },
     "cryogenic_condenser": {
         "title": (28, 6),
-        "slots": [("canister", 56, 25), ("membrane", 56, 47), ("out_big", 116, 35)],
+        "slots": [("membrane", 46, 35), ("fill_in", 128, 22), ("fill_out", 128, 50)],
         "energy": (8, 20, 14, 46),
-        "progress": (79, 34, 24, 17),
+        "tanks": [(106, 20, 12, 42, None, True)],
+        "progress": (72, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
         "redstone": (151, 58, 18, 18),
@@ -86,15 +87,18 @@ LAYOUTS = {
     },
     "chemical_plant": {
         "title": (28, 6),
-        "slots": [("in", 48, 22), ("in", 66, 22), ("in", 48, 44), ("bucket", 66, 44), ("out_big", 124, 33), ("out", 150, 33)],
+        "size": (176, 190),
+        "slots": [("in", 76, 20), ("in", 76, 38), ("in", 76, 56), ("out", 128, 27), ("out", 128, 49),
+                  ("fill_in", 100, 76), ("fill_out", 126, 76)],
         "energy": (8, 20, 14, 46),
-        "tank": (28, 20, 14, 46),
-        "progress": (90, 32, 24, 17),
+        "tanks": [(26, 20, 12, 46, "H2O", False), (42, 20, 12, 42, None, True), (58, 20, 12, 42, None, True),
+                  (150, 20, 12, 42, None, True)],
+        "progress": (98, 38, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
-        "redstone": (151, 58, 18, 18),
+        "redstone": (150, 80, 18, 18),
         "readout": None,
-        "inventory": (8, 84),
+        "inventory": (8, 108),
     },
     "combustion_generator": {
         "title": (28, 6),
@@ -112,8 +116,9 @@ LAYOUTS = {
 
 # --- widgets ---------------------------------------------------------------------------------------------------------
 
-def window(t: Tex) -> None:
+def window(t: Tex, W: int = W, H: int = H, inv_y: int = 84) -> None:
     """Riveted gunmetal panel with a header strip and an inventory section separated by a seam."""
+    seam = inv_y - 8
     t.rect(0, 0, W, H, PANEL.base)
     t.outline(0, 0, W, H, PANEL.outline)
     t.hline(1, 1, W - 2, PANEL.highlight)
@@ -126,11 +131,11 @@ def window(t: Tex) -> None:
     t.stripes(W - 30, 4, 26, 11, P.HAZARD_YELLOW.shadow, P.HAZARD_BLACK.base, width=3)
     t.outline(W - 31, 3, 28, 13, PANEL.outline)
     # Inventory section
-    t.seam_h(3, 76, W - 6, PANEL)
-    t.rect(3, 78, W - 6, H - 81, PANEL[3])
-    t.hline(3, 78, W - 6, PANEL.shadow)
+    t.seam_h(3, seam, W - 6, PANEL)
+    t.rect(3, seam + 2, W - 6, H - seam - 5, PANEL[3])
+    t.hline(3, seam + 2, W - 6, PANEL.shadow)
     # Corner rivets and a few along the edges
-    for x, y in ((4, 18), (W - 6, 18), (4, H - 6), (W - 6, H - 6), (4, 72), (W - 6, 72)):
+    for x, y in ((4, 18), (W - 6, 18), (4, H - 6), (W - 6, H - 6), (4, seam - 4), (W - 6, seam - 4)):
         t.rivet(x, y, PANEL, size=2)
     # Subtle panel wear
     t.scratches(30, 20, 110, 50, (*PANEL.light[:3], 90), seed=5, count=4, length=4)
@@ -190,6 +195,28 @@ def ghost_slot(rows: list[str]):
                 if c == "#":
                     t.px(x + 1 + xx, y + 1 + yy, PANEL[2])
     return draw
+
+
+DUMP = ["..#..", "..#..", "#.#.#", ".###.", "..#.."]
+
+
+def dump_button(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """Small dump button under a tank gauge: raised red plate with a down-arrow into a drain bar."""
+    t.panel(x, y, w, h, P.PRIMER_RED, base=3, style="raised")
+    t.outline(x, y, w, h, PANEL.outline)
+    gx, gy = x + (w - 5) // 2, y + 1
+    for yy, row in enumerate(DUMP):
+        for xx, c in enumerate(row):
+            if c == "#":
+                t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
+    t.hline(gx - 1, y + h - 2, 7, P.WHITE_CERAMIC[3])            # the drain the arrow points into
+
+
+def fill_chevron(t: Tex, x: int, y: int, horizontal: bool) -> None:
+    """Small arrow between the fill-in and fill-out slots."""
+    pts = [(0, 0), (1, 1), (2, 2), (1, 3), (0, 4)] if horizontal else [(0, 0), (1, 1), (2, 2), (3, 1), (4, 0)]
+    for dx, dy in pts:
+        t.px(x + dx, y + dy, PANEL.highlight)
 
 
 def tank_frame(t: Tex, x: int, y: int, w: int, h: int) -> None:
@@ -319,17 +346,27 @@ def readout_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
 
 def build(name: str, spec: dict) -> Path:
     t = Tex(256, 256)
-    window(t)
+    w, h = spec.get("size", (W, H))
+    window(t, w, h, spec["inventory"][1])
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
-         "membrane": ghost_slot(MEMBRANE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+    fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
+    if len(fills) == 2:
+        (ax, ay), (bx, by) = fills
+        if ay == by:
+            fill_chevron(t, (ax + 17 + bx - 1) // 2 - 1, ay + 6, True)
+        else:
+            fill_chevron(t, ax + 6, (ay + 17 + by - 1) // 2 - 2, False)
     ex, ey, ew, eh = spec["energy"]
     gauge_frame(t, ex, ey, ew, eh)
     t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)
-    if spec.get("tank"):
-        tx, ty, tw, th = spec["tank"]
+    for tx, ty, tw, th, label, dumpable in spec.get("tanks", []):
         tank_frame(t, tx, ty, tw, th)
-        t.text(tx + 1, ty + th + 3, "H2O", PANEL.highlight)
+        if label:
+            t.text(tx, ty + th + 3, label, PANEL.highlight)
+        if dumpable:
+            dump_button(t, *dump_rect(tx, ty, tw, th))
     if spec["progress"]:
         progress_track(t, *spec["progress"])
     if spec["flame"]:
@@ -352,6 +389,10 @@ def build(name: str, spec: dict) -> Path:
     return t.save(paths.TEXTURES / "gui" / "machine" / f"{name}.png")
 
 
+def dump_rect(tx: int, ty: int, tw: int, th: int) -> tuple[int, int, int, int]:
+    return tx, ty + th + 3, tw, 8
+
+
 def java_rect(r) -> str:
     return "null" if r is None else f"new MachineLayout.Rect({r[0]}, {r[1]}, {r[2]}, {r[3]})"
 
@@ -372,12 +413,15 @@ def write_java() -> Path:
         p = s["progress"]
         f = s["flame"]
         lines.append(f"    public static final MachineLayout {name.upper()} = new MachineLayout(")
-        lines.append(f"            GroundZero.id(\"textures/gui/machine/{name}.png\"), {W}, {H}, List.of({slots}), {s['inventory'][0]}, {s['inventory'][1]},")
+        w, h = s.get("size", (W, H))
+        lines.append(f"            GroundZero.id(\"textures/gui/machine/{name}.png\"), {w}, {h}, List.of({slots}), {s['inventory'][0]}, {s['inventory'][1]},")
         lines.append(f"            {java_rect(s['energy'])}, {ENERGY_FILL[0]}, {ENERGY_FILL[1]},")
         lines.append(f"            {java_rect(p)}, {PROGRESS_FILL[0]}, {PROGRESS_FILL[1]},")
         lines.append(f"            {java_rect(f)}, {FLAME_FILL[0]}, {FLAME_FILL[1]},")
         lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0]}, {REDSTONE_ICONS[1]},")
-        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, {java_rect(s.get('tank'))});")
+        gauges = ", ".join(f"new MachineLayout.Gauge({java_rect(tk[:4])}, {java_rect(dump_rect(*tk[:4]) if tk[5] else None)})"
+                           for tk in s.get("tanks", []))
+        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, List.of({gauges}));")
         lines.append("")
     lines.append("    private MachineLayouts() {}")
     lines.append("}")

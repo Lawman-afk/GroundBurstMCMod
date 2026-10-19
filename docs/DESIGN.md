@@ -264,6 +264,21 @@ enriched uranium in your inventory hurts).
 
 ---
 
+### 6.4 Fluids
+- Chemical fluids: sulfuric acid, nitric acid, synthetic fuel, liquid rocket fuel, thermobaric slurry, napalm gel,
+  liquid oxygen, liquid nitrogen (liquids: bucket + placeable flowing block) and deuterium, uranium hexafluoride
+  (gases: tanks, pipes and gas canisters only). Every fluid is tagged `c:<name>`; recipe fluid inputs use the tag.
+- Canisters are 1000 mB containers: an empty canister fills like a bucket (liquids in liquid canisters, gases in gas
+  canisters) and a filled one pours out. Canister items stay the ingredient form for later weapons.
+- Spills: acids deal acid damage, napalm sets things alight, LOX/LN2 freeze like powder snow. Fuels and slurry are inert.
+- Machines have up to four tanks: input tanks (filled from outside; a water tank only ever holds water and has no
+  dump) and product tanks (drained from outside). Two GUI slots fill and empty buckets, canisters and other mods'
+  containers: a full container empties into the input tank that takes it, an empty one fills from a product tank.
+  Every tank except water has a dump button (shift-click). Recipes take fluids from distinct input tanks and must
+  fit every fluid product before they run.
+- Fluid pipes form pass-through networks with no buffer (2000 mB/t): machines push product tanks out of faces with
+  auto-eject and fluids on; the run shares it among every tank it touches, never back to the source.
+
 ## 7. Power
 
 All machines use **NeoForge Energy (FE)** so they interoperate with other tech mods (decision D2).
@@ -1376,3 +1391,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Right-clicking an unfinished controller toggles its ghost preview and reports missing/wrong counts; sneak-right-click opens the controller's GUI before the structure is finished. |
 | 2026-10-19 | Chemical Plant recipes take at most three item inputs (plus water from the tank); solid propellant drops the slimeball binder to fit. Lithium-6 needs a mercury flask that comes back 90% of the time (a game stand-in, not a process). |
 | 2026-10-19 | The Holo-Projector uses an interim recipe (basic circuit) until advanced circuits and batteries exist; revisit in slice 5/6. |
+| 2026-10-19 | GeckoLib's cutout pipeline does not cull back faces in 26.x, so model export drops any face wholly covered by an opposite-facing face of another box in the same bone, and the 3D checker flags back-to-back pairs on open or see-through cubes. |
+| 2026-10-19 | A multiblock controller's faces that lie against its own structure expose nothing and show as blocked in the side tab. The formed model puts something solid on every open face (control cabinet, port housing) so pipes and cables meet a surface. |
+| 2026-10-19 | Liquids get buckets and in-world blocks; gases are tank/pipe/canister only. Chemistry runs on fluids in tanks; canisters fill from product tanks. Solid propellant gets its slimeball binder back (fluids freed item slots). |
+| 2026-10-19 | Fluid pipes are bufferless pass-through networks driven by machine auto-eject (no pull mode yet); a water pump for automated water is a follow-up. |

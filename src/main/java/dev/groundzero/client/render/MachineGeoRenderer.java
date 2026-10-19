@@ -1,6 +1,8 @@
 package dev.groundzero.client.render;
 
 import com.geckolib.animatable.GeoAnimatable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -17,15 +19,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import dev.groundzero.content.machine.AnimatedMachine;
 import dev.groundzero.content.machine.MachineBlockEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BiomeColors;
+import dev.groundzero.content.machine.MachineTank;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -71,51 +71,64 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         }
     }
 
-    /** What the tank shows this frame: fluid, fill fraction, tint and the box to fill. */
+    /** What one tank window shows this frame: fluid, fill fraction, tint and the box to fill. */
     private record TankSnapshot(Fluid fluid, float fill, int color, MachineBlockEntity.TankRender box) {}
 
-    private static final DataTicket<TankSnapshot> TANK = DataTicket.create("groundzero_tank", TankSnapshot.class);
+    private static final DataTicket<List<TankSnapshot>> TANKS = DataTicket.create("groundzero_tanks", new TypeToken<List<TankSnapshot>>() {});
 
     private static void captureTank(BlockEntity be, GeoRenderState state) {
-        if (!(be instanceof MachineBlockEntity machine) || machine.tankRender() == null || machine.tank() == null
-                || machine.tank().amount() <= 0 || be.getLevel() == null) {
+        if (!(be instanceof MachineBlockEntity machine) || !machine.showsTanks() || be.getLevel() == null) {
             return;
         }
-        Fluid fluid = machine.tank().fluid().getFluid();
-        float fill = Math.min(1f, machine.tank().amount() / (float) machine.tank().capacity());
-        int color = fluid.isSame(Fluids.WATER) ? 0xC0000000 | ((be.getLevel() instanceof net.minecraft.client.renderer.block.BlockAndTintGetter tint ? BiomeColors.getAverageWaterColor(tint, be.getBlockPos()) : 0x3F76E4) & 0xFFFFFF) : 0xE0FFFFFF;
-        state.addGeckolibData(TANK, new TankSnapshot(fluid, fill, color, machine.tankRender()));
+        List<TankSnapshot> shown = new ArrayList<>();
+        for (MachineBlockEntity.TankRender r : machine.tankRenders()) {
+            MachineTank tank = machine.tank(r.tank());
+            if (tank.amount() <= 0) {
+                continue;
+            }
+            Fluid fluid = tank.fluid().getFluid();
+            float fill = Math.min(1f, tank.amount() / (float) tank.capacity());
+            int tint = FluidVisuals.tintInWorld(fluid, be.getLevel(), be.getBlockPos());
+            shown.add(new TankSnapshot(fluid, fill, 0xD0000000 | (tint & 0xFFFFFF), r));
+        }
+        if (!shown.isEmpty()) {
+            state.addGeckolibData(TANKS, shown);
+        }
     }
 
-    /** Draws the tank's fluid (its own still texture, translucent) after the model, turned with the block. */
+    /** Draws each tank's fluid (its own still texture, translucent) after the model, turned with the block. */
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void postRenderPass(RenderPassInfo renderPassInfo, SubmitNodeCollector renderTasks) {
-        TankSnapshot tank = (TankSnapshot) renderPassInfo.getGeckolibData(TANK);
-        if (tank == null) {
+        List<TankSnapshot> tanks = (List<TankSnapshot>) renderPassInfo.getGeckolibData(TANKS);
+        if (tanks == null) {
             return;
         }
         PoseStack poseStack = renderPassInfo.poseStack();
         int light = ((BlockEntityRenderState) renderPassInfo.renderState()).lightCoords;
-        TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(tank.fluid().defaultFluidState()).stillMaterial().sprite();
-        MachineBlockEntity.TankRender b = tank.box();
-        float x0 = b.x0() / 16f, x1 = b.x1() / 16f, z0 = b.z0() / 16f, z1 = b.z1() / 16f;
-        float y0 = b.y0() / 16f, y1 = (b.y0() + (b.y1() - b.y0()) * tank.fill()) / 16f;
         poseStack.pushPose();
         poseStack.translate(0.5, 0, 0.5);
         tryRotateByBlockstate(renderPassInfo, poseStack);
-        renderTasks.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
-            float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
-            float vSide = v0 + (v1 - v0) * Math.min(1f, (y1 - y0) * 16f / 16f);
+        for (TankSnapshot tank : tanks) {
+            TextureAtlasSprite sprite = FluidVisuals.still(tank.fluid());
+            MachineBlockEntity.TankRender b = tank.box();
+            float x0 = b.x0() / 16f, x1 = b.x1() / 16f, z0 = b.z0() / 16f, z1 = b.z1() / 16f;
+            float y0 = b.y0() / 16f, y1 = (b.y0() + (b.y1() - b.y0()) * tank.fill()) / 16f;
             int c = tank.color();
-            // top
-            quad(buffer, pose, c, light, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, u0, v0, u1, v1);
-            // sides (north, south, west, east)
-            quad(buffer, pose, c, light, 0, 0, -1, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0, u0, v0, u1, vSide);
-            quad(buffer, pose, c, light, 0, 0, 1, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1, u0, v0, u1, vSide);
-            quad(buffer, pose, c, light, -1, 0, 0, x0, y1, z0, x0, y0, z0, x0, y0, z1, x0, y1, z1, u0, v0, u1, vSide);
-            quad(buffer, pose, c, light, 1, 0, 0, x1, y1, z1, x1, y0, z1, x1, y0, z0, x1, y1, z0, u0, v0, u1, vSide);
-        });
+            renderTasks.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+                float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
+                quad(buffer, pose, c, light, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, u0, v0, u1, v1);
+                // Sides tiled in one-block pieces so tall tanks keep the texture's scale.
+                for (float ya = y0; ya < y1 - 1e-4f; ya += 1f) {
+                    float yb = Math.min(y1, ya + 1f);
+                    float vb = v0 + (v1 - v0) * (yb - ya);
+                    quad(buffer, pose, c, light, 0, 0, -1, x1, yb, z0, x1, ya, z0, x0, ya, z0, x0, yb, z0, u0, v0, u1, vb);
+                    quad(buffer, pose, c, light, 0, 0, 1, x0, yb, z1, x0, ya, z1, x1, ya, z1, x1, yb, z1, u0, v0, u1, vb);
+                    quad(buffer, pose, c, light, -1, 0, 0, x0, yb, z0, x0, ya, z0, x0, ya, z1, x0, yb, z1, u0, v0, u1, vb);
+                    quad(buffer, pose, c, light, 1, 0, 0, x1, yb, z1, x1, ya, z1, x1, ya, z0, x1, yb, z0, u0, v0, u1, vb);
+                }
+            });
+        }
         poseStack.popPose();
     }
 

@@ -1,11 +1,19 @@
 {
   "type": "groundzero:chemistry",
   "energy_per_tick": 60,
-  "inputs": [
+  "fluid_outputs": [
     {
-      "count": 1,
-      "ingredient": "groundzero:synthetic_fuel_canister"
-    },
+      "amount": 1000,
+      "id": "groundzero:napalm"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:synthetic_fuel"
+    }
+  ],
+  "inputs": [
     {
       "count": 1,
       "ingredient": "groundzero:plastic_sheet"
@@ -13,13 +21,6 @@
     {
       "count": 1,
       "ingredient": "#c:slime_balls"
-    }
-  ],
-  "outputs": [
-    {
-      "item": {
-        "id": "groundzero:napalm_canister"
-      }
     }
   ],
   "time": 200

@@ -21,24 +21,28 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 /**
- * One machine process: counted item inputs -> outputs (each with a chance), taking `time` ticks at
- * `energyPerTick` FE/t. An optional catalyst (e.g. an Industrial Press die) must sit in the machine's catalyst slot
- * and is not consumed. Every processing machine uses this shape; the {@link ProcessingKind} decides which machine
- * runs it.
+ * One machine process: counted item inputs and fluid inputs -> item outputs (each with a chance) and fluid outputs,
+ * taking `time` ticks at `energyPerTick` FE/t. An optional catalyst (e.g. an Industrial Press die) must sit in the
+ * machine's catalyst slot and is not consumed. Fluid inputs come from the machine's input tanks (each from a
+ * different tank), fluid outputs go to its output tanks. Every processing machine uses this shape; the
+ * {@link ProcessingKind} decides which machine runs it.
  */
 public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst,
-        Optional<SizedFluidIngredient> fluid, List<Output> outputs, int time, int energyPerTick) implements Recipe<MachineRecipeInput> {
+        List<SizedFluidIngredient> fluids, List<Output> outputs, List<FluidStackTemplate> fluidOutputs, int time, int energyPerTick)
+        implements Recipe<MachineRecipeInput> {
 
     public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick) {
-        this(kind, inputs, Optional.empty(), Optional.empty(), outputs, time, energyPerTick);
+        this(kind, inputs, Optional.empty(), List.of(), outputs, List.of(), time, energyPerTick);
     }
 
     public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst, List<Output> outputs,
             int time, int energyPerTick) {
-        this(kind, inputs, catalyst, Optional.empty(), outputs, time, energyPerTick);
+        this(kind, inputs, catalyst, List.of(), outputs, List.of(), time, energyPerTick);
     }
 
     /** A product; `chance` < 1 makes it a byproduct. */
@@ -53,36 +57,35 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
 
     static MapCodec<ProcessingRecipe> codec(ProcessingKind kind) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
-                SizedIngredient.NESTED_CODEC.listOf(1, 9).fieldOf("inputs").forGetter(ProcessingRecipe::inputs),
+                SizedIngredient.NESTED_CODEC.listOf(0, 9).optionalFieldOf("inputs", List.of()).forGetter(ProcessingRecipe::inputs),
                 Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
-                SizedFluidIngredient.CODEC.optionalFieldOf("fluid").forGetter(ProcessingRecipe::fluid),
-                Output.CODEC.listOf(1, 9).fieldOf("outputs").forGetter(ProcessingRecipe::outputs),
+                SizedFluidIngredient.CODEC.listOf(0, 4).optionalFieldOf("fluids", List.of()).forGetter(ProcessingRecipe::fluids),
+                Output.CODEC.listOf(0, 9).optionalFieldOf("outputs", List.of()).forGetter(ProcessingRecipe::outputs),
+                FluidStackTemplate.CODEC.listOf(0, 4).optionalFieldOf("fluid_outputs", List.of()).forGetter(ProcessingRecipe::fluidOutputs),
                 ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
                 ExtraCodecs.NON_NEGATIVE_INT.fieldOf("energy_per_tick").forGetter(ProcessingRecipe::energyPerTick)
-        ).apply(i, (in, cat, fl, out, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, time, fe)));
+        ).apply(i, (in, cat, fl, out, flOut, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, flOut, time, fe)));
     }
 
     static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
         return StreamCodec.composite(
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
                 Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, ProcessingRecipe::catalyst,
-                ByteBufCodecs.optional(SizedFluidIngredient.STREAM_CODEC), ProcessingRecipe::fluid,
+                SizedFluidIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluids,
                 Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
+                FluidStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluidOutputs,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::time,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::energyPerTick,
-                (in, cat, fl, out, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, time, fe));
+                (in, cat, fl, out, flOut, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, flOut, time, fe));
     }
 
-    /** Every ingredient must be satisfied by a different input slot holding at least its count. */
+    /** Every ingredient must be satisfied by a different input slot, every fluid by a different input tank. */
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
         if (this.catalyst.isPresent() && !this.catalyst.get().test(input.catalyst())) {
             return false;
         }
-        if (this.fluid.isPresent() && !this.fluid.get().test(input.fluid())) {
-            return false;
-        }
-        return assignSlots(input) != null;
+        return assignSlots(input) != null && assignTanks(input) != null;
     }
 
     /** Slot index used for each ingredient, or null if the inputs don't satisfy the recipe. */
@@ -108,9 +111,32 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
         return assignment;
     }
 
+    /** Input tank (index into {@code input.fluids()}) used for each fluid ingredient, or null if unsatisfied. */
+    public int[] assignTanks(MachineRecipeInput input) {
+        int[] assignment = new int[this.fluids.size()];
+        boolean[] used = new boolean[input.fluids().size()];
+        for (int n = 0; n < this.fluids.size(); n++) {
+            SizedFluidIngredient need = this.fluids.get(n);
+            int found = -1;
+            for (int t = 0; t < input.fluids().size(); t++) {
+                FluidStack stack = input.fluids().get(t);
+                if (!used[t] && need.test(stack)) {
+                    found = t;
+                    break;
+                }
+            }
+            if (found < 0) {
+                return null;
+            }
+            used[found] = true;
+            assignment[n] = found;
+        }
+        return assignment;
+    }
+
     @Override
     public ItemStack assemble(MachineRecipeInput input) {
-        return this.outputs.getFirst().item().create();
+        return this.outputs.isEmpty() ? ItemStack.EMPTY : this.outputs.getFirst().item().create();
     }
 
     @Override

@@ -24,7 +24,8 @@ public class CryogenicCondenserBlockEntity extends ProcessingBlockEntity impleme
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public CryogenicCondenserBlockEntity(BlockPos pos, BlockState state) {
-        super(GZBlockEntities.CRYOGENIC_CONDENSER.get(), pos, state, ProcessingKind.CRYO_CONDENSING, 1, true, 1, 50_000, 500);
+        super(GZBlockEntities.CRYOGENIC_CONDENSER.get(), pos, state, ProcessingKind.CRYO_CONDENSING, 0, true, 0, 50_000, 500,
+                java.util.List.of(MachineTank.Spec.output(8_000)));
     }
 
     @Override

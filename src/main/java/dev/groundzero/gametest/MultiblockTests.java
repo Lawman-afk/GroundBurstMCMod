@@ -1,6 +1,7 @@
 package dev.groundzero.gametest;
 
 import dev.groundzero.content.chem.GZChemicals;
+import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.machine.ChemicalPlantBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.machine.MachineBlock;
@@ -111,7 +112,7 @@ final class MultiblockTests {
             tx.commit();
         }
         helper.assertTrue(plant.inventory().countItem(GZResources.SULFUR_DUST.get()) == 4, "sulfur dust arrives in the controller");
-        helper.assertTrue(plant.tank().amount() == 2000, "water arrives in the controller's tank");
+        helper.assertTrue(plant.tank(0).amount() == 2000, "water arrives in the controller's tank");
         level.destroyBlock(plant.controllerPos().above(), true);
         helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, portPos, Direction.EAST) == null, "an unformed port exposes nothing");
         helper.succeed();
@@ -134,14 +135,14 @@ final class MultiblockTests {
         ChemicalPlantBlockEntity plant = build(helper, new BlockPos(4, 1, 4), Direction.NORTH);
         plant.energy().generate(50_000);
         try (var tx = Transaction.openRoot()) {
-            plant.tank().insert(0, FluidResource.of(Fluids.WATER), 4_000, tx);
+            plant.tank(0).insert(0, FluidResource.of(Fluids.WATER), 4_000, tx);
             tx.commit();
         }
         plant.inventory().setItem(0, new ItemStack(GZResources.SULFUR_DUST.get()));
-        plant.inventory().setItem(1, new ItemStack(GZParts.EMPTY_CANISTER.get()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(plant.inventory().countItem(GZChemicals.SULFURIC_ACID_CANISTER.get()) == 1, "expected a sulfuric acid canister");
-            helper.assertTrue(plant.tank().amount() == 3_000, "1000 mB of water should be used, tank has " + plant.tank().amount());
+            helper.assertTrue(plant.tank(3).amount() == 1_000 && plant.tank(3).fluid().getFluid() == GZFluids.SULFURIC_ACID.source().get(),
+                    "expected 1000 mB of sulfuric acid in the product tank");
+            helper.assertTrue(plant.tank(0).amount() == 3_000, "1000 mB of water should be used, tank has " + plant.tank(0).amount());
         });
     }
 }

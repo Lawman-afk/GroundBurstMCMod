@@ -57,6 +57,7 @@ public final class GZBlockEntities {
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());
         GZMachines.registerCableCapabilities(event);
+        dev.groundzero.content.fluid.GZFluids.registerCapabilities(event);
     }
 
     /** Both halves of a tall machine expose the lower half's block entity (cables and pipes may attach to either). */
