@@ -282,8 +282,9 @@ enriched uranium in your inventory hurts).
 - Fluid Tank: 16,000 mB per block; touching tanks join when they fill a box with a square base up to 3x3 and up to
   5 high (720,000 mB). Breaking a block splits the tank, the rest keeps its share. Passive: fluid moves in and out
   only by pipe.
-- Fluid pipes come in three tiers like the cables: copper 1,000, steel 4,000, pressurized 16,000 mB/t; a run carries
-  as much as its weakest pipe, and a pulling side draws up to that rate per pull. They form pass-through networks
+- Fluid pipes come in three tiers like the cables: copper 150, steel 600, pressurized 2,400 mB/t (a little above
+  Mekanism's and Pipez's matching tiers of roughly 100 / 500 / 2,000); a run carries as much as its weakest pipe, and a
+  pulling side draws at that rate. They form pass-through networks
   with no buffer. Each pipe side is normal (in and out), pull
   (draws from the tank or machine it touches, up to 1000 mB every 2 ticks; hazard-striped collar) or disconnected.
   Machines push product tanks out of faces with auto-eject and fluids on; pull sides draw; the run delivers to its
@@ -1415,4 +1416,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Machine inventories keep their own slot count when loading saves (NeoForge's handler adopts the saved size, which crashed the plant screen after its layout changed). |
 | 2026-10-19 | Pipes have no push mode: a pass-through network already delivers to every normal side, so Mekanism's separate push adds nothing here. Pull is per side; disconnected sides are remembered in the block state. |
 | 2026-10-19 | Model export closes every visible opening (a left-out face nothing covers) and drops faces buried in solid geometry; deliberate openings are listed per model (open_ok). |
-| 2026-10-20 | Fluid pipes have three tiers like cables (copper / steel / pressurized: 1,000 / 4,000 / 16,000 mB/t); the steel tier keeps the id `fluid_pipe` so pipes already placed stay. |
+| 2026-10-20 | Fluid pipes have three tiers like cables (copper / steel / pressurized: 150 / 600 / 2,400 mB/t, set against Mekanism and Pipez tiers and our 5-20 mB/t machines and 50 mB/t pumps); the steel tier keeps the id `fluid_pipe` so pipes already placed stay. |

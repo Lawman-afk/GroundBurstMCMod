@@ -57,8 +57,8 @@ public class FluidPipeBlock extends Block {
     }
 
     public static final Map<Direction, EnumProperty<Mode>> SIDES = new EnumMap<>(Direction.class);
-    /** Ticks between pulls (each pulling side draws up to the tier's per-tick rate each time). */
-    public static final int PULL_INTERVAL = 2;
+    /** Ticks between pulls (each pulling side draws up to the tier's per-tick rate each time, so it pulls at full rate). */
+    public static final int PULL_INTERVAL = 1;
     private static final Map<Direction, VoxelShape> ARMS = new EnumMap<>(Direction.class);
     private static final VoxelShape CORE = Block.box(4.5, 4.5, 4.5, 11.5, 11.5, 11.5);
 

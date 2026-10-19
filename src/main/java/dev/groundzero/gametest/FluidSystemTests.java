@@ -66,15 +66,15 @@ final class FluidSystemTests {
         var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(7, 1, 3)), Direction.EAST);
         helper.assertTrue(end != null, "a pipe takes fluid");
         try (var tx = Transaction.openRoot()) {
-            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 1_500, tx) == 1_500, "the pipe passes 1500 mB on");
+            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 500, tx) == 500, "the pipe passes 500 mB on");
             helper.assertTrue(end.extract(FluidResource.of(Fluids.WATER), 100, tx) == 0, "pipes hold nothing to drain");
             tx.commit();
         }
-        helper.assertTrue(sep.tank(0).amount() == 1_500, "water reaches the separator, has " + sep.tank(0).amount());
+        helper.assertTrue(sep.tank(0).amount() == 500, "water reaches the separator, has " + sep.tank(0).amount());
         helper.succeed();
     }
 
-    /** A steel run with one copper pipe in it carries only copper's 1000 mB a tick; pressurized alone carries 16000. */
+    /** A steel run with one copper pipe in it carries only copper's 150 mB a tick; pressurized alone carries 2400. */
     private static void pipeTiers(GameTestHelper helper) {
         helper.setBlock(new BlockPos(3, 1, 3), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
         helper.setBlock(new BlockPos(4, 1, 3), GZFluids.FLUID_PIPE.block().get());
@@ -83,14 +83,14 @@ final class FluidSystemTests {
         var level = helper.getLevel();
         var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(6, 1, 3)), Direction.EAST);
         try (var tx = Transaction.openRoot()) {
-            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 1_000, "a copper pipe in the run caps it at 1000 mB/t");
+            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 150, "a copper pipe in the run caps it at 150 mB/t");
             tx.commit();
         }
         helper.setBlock(new BlockPos(3, 1, 8), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
         helper.setBlock(new BlockPos(4, 1, 8), GZFluids.PRESSURIZED_FLUID_PIPE.block().get());
         var fast = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(4, 1, 8)), Direction.EAST);
         try (var tx = Transaction.openRoot()) {
-            helper.assertTrue(fast.insert(FluidResource.of(Fluids.WATER), 20_000, tx) == 16_000, "pressurized carries 16000 mB/t (the separator holds 16000)");
+            helper.assertTrue(fast.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 2_400, "pressurized carries 2400 mB/t");
             tx.commit();
         }
         helper.succeed();
