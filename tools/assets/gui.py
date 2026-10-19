@@ -316,20 +316,23 @@ def write_java() -> Path:
 # --- side-configuration tab (shared by every machine) -----------------------------------------------------------------
 # Layout constants mirrored in MachineScreen.SideTab.
 TAB = (0, 0, 24, 26)            # collapsed tab
-PANEL_RECT = (0, 32, 82, 112)   # expanded panel
-FACE_FRAME = (100, 0)           # 18x18
+PANEL_RECT = (0, 32, 92, 112)   # expanded panel
+FACE_FRAME = (100, 0)           # 18x18 (sprites moved right of the wider panel)
 FACE_ICON = (120, 0)            # 16x16 plain face
 FACE_FRONT = (140, 0)           # 16x16 front face
-CHANNEL_ON = (100, 24)          # 36x12
-CHANNEL_OFF = (100, 40)         # 36x12
+CHANNEL_ON = (100, 24)          # 40x12
+CHANNEL_OFF = (100, 40)         # 40x12
 CHECK_OFF = (100, 56)           # 10x10
 CHECK_ON = (112, 56)            # 10x10
-ICON_ITEMS = (140, 24)          # 8x8
-ICON_ENERGY = (150, 24)         # 8x8
-ICON_WRENCH = (160, 24)         # 12x12
+ICON_ITEMS = (144, 24)          # 8x8
+ICON_ENERGY = (154, 24)         # 8x8
+ICON_WRENCH = (164, 24)         # 12x12
 
-WRENCH = [".##.........", "#..#........", "#...........", ".#..#.......", "..####......", "....###.....",
-          ".....###....", "......###...", ".......###..", "........###.", ".........##.", "............"]
+# Open-end spanner: forked jaw top-right, handle running down-left to a rounded end. 'h' = lit edge, 's' = shade.
+# Open-end spanner: a forked jaw (two prongs round a notch) top-right, a 3-px handle running down-left.
+# 'h' = lit metal, 's' = shade.
+WRENCH = [".......hh...", "......hhh.h.", "......hh..hh", "......hhh.hs", ".....hhhhhs.", "....hhhss...",
+          "...hhhs.....", "..hhhs......", ".hhhs.......", "hhhs........", "hhs.........", ".s.........."]
 BOLT = ["...##...", "..##....", ".##.....", "######..", "...##...", "..##....", ".##.....", "........"]
 CRATE = ["........", ".######.", ".#....#.", ".######.", ".#.##.#.", ".#.##.#.", ".######.", "........"]
 
@@ -355,20 +358,22 @@ def tab_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
     t.rivet(x + w - 5, y + h - 5, PANEL)
 
 
-def glyph(t: Tex, rows: list[str], x: int, y: int, c) -> None:
+def glyph(t: Tex, rows: list[str], x: int, y: int, c, shade=None) -> None:
     for yy, row in enumerate(rows):
         for xx, ch in enumerate(row):
-            if ch == "#":
+            if ch in "#h":
                 t.px(x + xx, y + yy, c)
+            elif ch == "s":
+                t.px(x + xx, y + yy, shade if shade is not None else c)
 
 
 def side_config_texture() -> Path:
     t = Tex(256, 256)
     tab_panel(t, *TAB)
-    glyph(t, WRENCH, TAB[0] + 5, TAB[1] + 7, P.HAZARD_YELLOW.light)
+    glyph(t, WRENCH, TAB[0] + 5, TAB[1] + 7, P.STEEL.highlight, P.STEEL.shadow)
     tab_panel(t, *PANEL_RECT)
     px_, py_ = PANEL_RECT[0], PANEL_RECT[1]
-    glyph(t, WRENCH, px_ + 5, py_ + 4, P.HAZARD_YELLOW.light)
+    glyph(t, WRENCH, px_ + 5, py_ + 4, P.STEEL.highlight, P.STEEL.shadow)
     t.hline(px_ + 3, py_ + 17, PANEL_RECT[2] - 8, PANEL.shadow)
     t.hline(px_ + 3, py_ + 18, PANEL_RECT[2] - 8, PANEL.light)
     # Face frame + face icons.
@@ -386,11 +391,11 @@ def side_config_texture() -> Path:
     t.stripes(gx + 1, gy + 12, 14, 3, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
     # Channel buttons (selected / not), checkbox, icons.
     cx, cy = CHANNEL_ON
-    t.panel(cx, cy, 36, 12, PANEL, base=4, style="inset")
-    t.outline(cx, cy, 36, 12, P.HAZARD_YELLOW.shadow)
+    t.panel(cx, cy, 40, 12, PANEL, base=4, style="inset")
+    t.outline(cx, cy, 40, 12, P.HAZARD_YELLOW.shadow)
     cx, cy = CHANNEL_OFF
-    t.panel(cx, cy, 36, 12, PANEL, base=3, style="raised")
-    t.outline(cx, cy, 36, 12, PANEL.outline)
+    t.panel(cx, cy, 40, 12, PANEL, base=3, style="raised")
+    t.outline(cx, cy, 40, 12, PANEL.outline)
     for (bx, by), on in ((CHECK_OFF, False), (CHECK_ON, True)):
         t.rect(bx, by, 10, 10, PANEL.deep)
         t.outline(bx, by, 10, 10, PANEL.outline)
@@ -400,7 +405,7 @@ def side_config_texture() -> Path:
                 t.px(bx + xx, by + yy - 1, P.INDICATOR_GREEN.base)
     glyph(t, CRATE, *ICON_ITEMS, P.DESERT_TAN.light)
     glyph(t, BOLT, *ICON_ENERGY, P.HAZARD_YELLOW.light)
-    glyph(t, WRENCH, *ICON_WRENCH, P.HAZARD_YELLOW.light)
+    glyph(t, WRENCH, *ICON_WRENCH, P.STEEL.highlight, P.STEEL.shadow)
     return t.save(paths.TEXTURES / "gui" / "machine" / "side_config.png")
 
 

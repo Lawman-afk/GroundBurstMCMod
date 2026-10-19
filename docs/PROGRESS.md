@@ -130,9 +130,9 @@ checklist for the user.
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |
 | Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |
 | Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done; the press shows the loaded die on its model |
-| JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — JEI loads cleanly; categories **not yet seen in a live world** |
+| JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — confirmed in game by the user |
 | Vanilla-style ores / ingots / dusts (`tools/gz/vanilla.py`) | done (needs in-game look) |
-| Z-fighting checker (`tools/preview/zfight.py`, runs on every geo export) | done — 0 coplanar faces |
+| Z-fighting checkers (`zfight.py` on export, `zfight3d.py` on rendered quads + animation frames) and 1-texel UV gutters with edge bleed | done — 0 issues; flicker fix needs in-game confirmation |
 | Machine recipes (custom recipe types + datagen) | todo |
 | Models/animations/GUIs/sounds for every machine (reviewed) | todo |
 

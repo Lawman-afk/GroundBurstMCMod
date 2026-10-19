@@ -30,12 +30,12 @@ import net.minecraft.sounds.SoundEvents;
 final class SideConfigTab {
     private static final Identifier TEXTURE = GroundZero.id("textures/gui/machine/side_config.png");
     // Sprite positions, mirrored from tools/assets/gui.py.
-    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 82, PANEL_H = 112;
+    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 92, PANEL_H = 112;
     private static final int FRAME_U = 100, ICON_U = 120, FRONT_U = 140, CHANNEL_ON_V = 24, CHANNEL_OFF_V = 40;
     private static final int CHECK_V = 56, CHECK_OFF_U = 100, CHECK_ON_U = 112;
-    private static final int ICON_ITEMS_U = 140, ICON_ENERGY_U = 150, ICON_V = 24;
+    private static final int ICON_ITEMS_U = 144, ICON_ENERGY_U = 154, ICON_V = 24, CHANNEL_W = 40;
     private static final int TEXT = 0xFFE6E2D2, TEXT_DIM = 0xFF9AA0A8;
-    private static final int GRID_X = 11, GRID_Y = 34, CELL = 20;
+    private static final int GRID_X = 17, GRID_Y = 34, CELL = 20;
     /** Unfolded-cube layout: column, row of each face. */
     private static final int[][] CELLS = new int[Face.values().length][];
 
@@ -78,7 +78,7 @@ final class SideConfigTab {
 
         boolean fuel = this.menu.machine().itemsAreFuel();
         channelButton(g, font, x + 6, y + 20, !energyChannel, ICON_ITEMS_U, Component.translatable(fuel ? MachineText.CHANNEL_FUEL : MachineText.CHANNEL_ITEMS));
-        channelButton(g, font, x + 42, y + 20, energyChannel, ICON_ENERGY_U, Component.translatable(MachineText.CHANNEL_ENERGY));
+        channelButton(g, font, x + 46, y + 20, energyChannel, ICON_ENERGY_U, Component.translatable(MachineText.CHANNEL_ENERGY));
 
         SideConfig sides = this.menu.sides();
         @Nullable Face hovered = null;
@@ -116,13 +116,13 @@ final class SideConfigTab {
             g.setTooltipForNextFrame(font, List.of(
                     Component.translatable(MachineText.FACE_MODE, Component.translatable(hovered.translationKey()), value),
                     Component.translatable(energyChannel ? MachineText.HINT_TOGGLE : MachineText.HINT_CYCLE).withColor(TEXT_DIM)), Optional.empty(), mouseX, mouseY);
-        } else if (eject && inside(mouseX, mouseY, x + 6, y + 95, 70, 14)) {
+        } else if (eject && inside(mouseX, mouseY, x + 6, y + 95, 80, 14)) {
             g.setTooltipForNextFrame(Component.translatable(MachineText.AUTO_EJECT_TIP), mouseX, mouseY);
         }
     }
 
     private static void channelButton(GuiGraphicsExtractor g, Font font, int x, int y, boolean selected, int iconU, Component label) {
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, FRAME_U, selected ? CHANNEL_ON_V : CHANNEL_OFF_V, 36, 12, 256, 256);
+        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, FRAME_U, selected ? CHANNEL_ON_V : CHANNEL_OFF_V, CHANNEL_W, 12, 256, 256);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x + 2, y + 2, iconU, ICON_V, 8, 8, 256, 256);
         small(g, font, label, x + 11, y + 3, selected ? TEXT : TEXT_DIM);
     }
@@ -157,12 +157,12 @@ final class SideConfigTab {
             sound();
             return true;
         }
-        if (inside(mx, my, x + 6, y + 20, 36, 12)) {
+        if (inside(mx, my, x + 6, y + 20, CHANNEL_W, 12)) {
             energyChannel = false;
             sound();
             return true;
         }
-        if (inside(mx, my, x + 42, y + 20, 36, 12)) {
+        if (inside(mx, my, x + 46, y + 20, CHANNEL_W, 12)) {
             energyChannel = true;
             sound();
             return true;
@@ -175,7 +175,7 @@ final class SideConfigTab {
                 return true;
             }
         }
-        if (this.menu.machine().hasOutputs() && inside(mx, my, x + 6, y + 95, 70, 14)) {
+        if (this.menu.machine().hasOutputs() && inside(mx, my, x + 6, y + 95, 80, 14)) {
             send(MachineMenu.BUTTON_AUTO_EJECT);
             return true;
         }

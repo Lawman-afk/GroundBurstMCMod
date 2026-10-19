@@ -112,7 +112,7 @@ public class MachineMenu extends AbstractContainerMenu {
                     if (base == BUTTON_ENERGY) {
                         c.toggleEnergy(face);
                     } else {
-                        c.cycleItems(face, base == BUTTON_ITEMS_NEXT);
+                        c.cycleItems(face, base == BUTTON_ITEMS_NEXT, this.machine.allowedItemModes());
                     }
                 });
                 return true;

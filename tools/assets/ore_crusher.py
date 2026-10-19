@@ -64,7 +64,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         add("fin", g.box(f"fin{i}", (7, 9, z), (10.5, 9.5, z + 0.5), faces=("north", "south", "east", "up"), bone=F))
     add("pulley", g.box("pulley_hub", (10.5, 5.5, -1), (11.5, 7.5, 1), faces=("north", "south", "east", "up", "down"), bone="pulley"))
     add("pulley", g.box("pulley_disc", (11.5, 4, -2.5), (12.5, 9, 2.5), faces=("north", "south", "east", "up", "down"), bone="pulley"))
-    add("pulley", g.box("pulley_disc2", (11.5, 4, -2.5), (12.5, 9, 2.5), faces=("north", "south", "east", "up", "down"),
+    add("pulley", g.box("pulley_disc2", (11.65, 4, -2.5), (12.35, 9, 2.5), faces=("north", "south", "east", "up", "down"),
                         rotation={"origin": (12, 6.5, 0), "x": 45}, bone="pulley"))
 
     # Back: power inlet.
@@ -73,7 +73,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # Rollers: octagonal cores with eight teeth each, along X.
     for rn, zc in (("roller_n", -2.5), ("roller_s", 2.5)):
         add("roller", g.box(f"{rn}_core", (-5.5, 11.2, zc - 1.3), (5.5, 13.8, zc + 1.3), bone=rn))
-        add("roller", g.box(f"{rn}_core45", (-5.5, 11.2, zc - 1.3), (5.5, 13.8, zc + 1.3),
+        add("roller", g.box(f"{rn}_core45", (-5.35, 11.2, zc - 1.3), (5.35, 13.8, zc + 1.3),
                             rotation={"origin": (0, 12.5, zc), "x": 45}, bone=rn))
         for k in range(8):
             add("tooth", g.box(f"{rn}_tooth{k}", (-5, 14, zc - 0.5), (5, 14.8, zc + 0.5), faces=("up", "north", "south"),

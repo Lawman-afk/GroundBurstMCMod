@@ -197,3 +197,105 @@ def ore_overlay(ramp: Ramp, stamps: list[str], seed: int, rim=None, accent=None,
     if accent:
         accent(t, rng, painted)
     return t, highlights
+
+
+# --- raw materials -------------------------------------------------------------------------------------------------------
+# Vanilla raw ores are a wide, faceted lump: a big upper-left mass and a smaller lower-right one with a dark crease
+# between, shaded in flat planes (bright top facets, mid sides, dark undersides) rather than noise.
+RAW_LOBES = {
+    # Back lump (upper right), main lump (left), front lump (lower right); irregular outlines with a notch or two.
+    "a": [[(7.6, 3.6), (10.4, 1.6), (13.6, 2.4), (14.4, 5.6), (12.4, 7.4), (8.6, 6.8)],
+          [(0.8, 7.4), (2.4, 3.6), (5.6, 2.4), (8.4, 3.4), (10.8, 5.6), (10.6, 9.0), (7.0, 11.6), (3.6, 11.8), (1.0, 10.6)],
+          [(7.4, 10.4), (9.6, 7.6), (12.4, 6.8), (15.2, 8.8), (15.2, 11.8), (13.2, 13.6), (9.4, 13.8), (7.6, 12.6)]],
+    "b": [[(1.6, 4.6), (4.0, 2.4), (7.0, 2.6), (8.4, 5.0), (6.4, 7.0), (2.6, 7.2)],
+          [(4.6, 6.4), (8.0, 3.0), (12.0, 3.2), (14.8, 5.6), (14.6, 9.4), (11.4, 11.4), (7.0, 11.2), (4.8, 9.6)],
+          [(0.8, 10.0), (3.0, 8.0), (7.4, 8.4), (9.0, 11.0), (7.6, 13.8), (3.4, 14.0), (1.0, 12.4)]],
+}
+
+
+def _facet_tone(px: float, py: float, cx: float, cy: float, r: float) -> int:
+    """Flat facet shading round a lump's centre: light from the upper left, a bright plateau on top."""
+    dx, dy = px - cx, py - cy
+    dist = math.hypot(dx, dy) / r
+    if dist < 0.30:
+        return 5
+    ang = math.degrees(math.atan2(dy, dx)) % 360        # 0 = right, 90 = down
+    if 180 <= ang < 250:
+        return 6                                         # upper-left facet: lit
+    if 250 <= ang < 300:
+        return 6 if dist < 0.7 else 5                   # top
+    if 300 <= ang < 345:
+        return 4                                         # upper right
+    if 135 <= ang < 180:
+        return 4                                         # left
+    if 345 <= ang or ang < 40:
+        return 3                                         # right
+    if 40 <= ang < 95:
+        return 2                                         # underside
+    return 3                                             # lower left
+
+
+def raw(ramp: Ramp, variant: str = "a", detail=None) -> Tex:
+    """A raw-ore lump in vanilla's construction (own silhouettes): lumps drawn back to front, each shaded in flat
+    facets, dark creases where a nearer lump sits on a farther one, lit rims on the nearer lump.
+    `detail(t, rng, top_pixels)` adds mineral marks on the lit facets."""
+    t = Tex(16, 16)
+    masks = [{(x, y) for y in range(16) for x in range(16) if _poly(poly, x + 0.5, y + 0.5)} for poly in RAW_LOBES[variant]]
+    drawn: set[tuple[int, int]] = set()
+    lit: list[tuple[int, int]] = []
+    for m in masks:
+        xs = [p[0] for p in m]
+        ys = [p[1] for p in m]
+        cx, cy = (min(xs) + max(xs) + 1) / 2 - 0.6, (min(ys) + max(ys) + 1) / 2 - 0.8
+        r = max(max(xs) - min(xs), max(ys) - min(ys)) / 2 + 0.5
+        for (x, y) in m:
+            tone = _facet_tone(x + 0.5, y + 0.5, cx, cy, r)
+            t.px(x, y, ramp[tone])
+            if tone >= 5:
+                lit.append((x, y))
+        for (x, y) in drawn - m:                         # crease on the farther lump
+            if any((x + ox, y + oy) in m for ox, oy in ((1, 0), (0, 1), (1, 1))):
+                t.px(x, y, ramp[1])
+        for (x, y) in m:                                 # lit rim on the nearer lump
+            if any((x + ox, y + oy) in drawn - m for ox, oy in ((-1, 0), (0, -1))):
+                t.px(x, y, ramp[5])
+        drawn |= m
+    if detail:
+        detail(t, random.Random(len(lit)), sorted(p for p in lit if t.get(*p)[3]))
+    for (x, y) in list(drawn):
+        for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + ox, y + oy)
+            if q not in drawn and 0 <= q[0] < 16 and 0 <= q[1] < 16 and t.get(*q)[3] == 0:
+                t.px(*q, ramp[0] if (ox > 0 or oy > 0) else ramp[1])
+    return t
+
+
+# --- dust (v2) ------------------------------------------------------------------------------------------------------------
+# Vanilla dusts: a hexagonal mound, its surface a checker dither of two tones per region (lighter up-left), with a few
+# 2-pixel bright clumps; dark outline.
+DUST_ROWS = [(6, 9), (5, 10), (4, 11), (3, 12), (2, 13), (2, 13), (2, 13), (3, 12), (4, 11), (5, 10)]   # y = 3..12
+
+
+def dust2(ramp: Ramp, seed: int, sparkle: bool = False) -> Tex:
+    t = Tex(16, 16)
+    rng = random.Random(seed)
+    pts = set()
+    for i, (x0, x1) in enumerate(DUST_ROWS):
+        y = 3 + i
+        for x in range(x0, x1 + 1):
+            pts.add((x, y))
+    cx, cy = 7.5, 7.5
+    for (x, y) in pts:
+        k = (-(x + 0.5 - cx) * 0.55 - (y + 0.5 - cy) * 0.85) / 6.0     # >0 toward the upper left
+        hi, lo = (5, 4) if k > 0.25 else (4, 3) if k > -0.2 else (3, 2)
+        t.px(x, y, ramp[hi] if (x + y) % 2 == 0 else ramp[lo])
+    # Bright clumps toward the lit side, a couple of dark grains toward the shade.
+    lit = sorted(p for p in pts if p[0] + p[1] < 15 and (p[0] + 1, p[1]) in pts and (p[0], p[1] + 1) in pts)
+    for (x, y) in rng.sample(lit, min(4, len(lit))):
+        t.px(x, y, ramp[6] if sparkle else ramp[5])
+        t.px(x + 1, y, ramp[5])
+    dark = sorted(p for p in pts if p[0] + p[1] > 17)
+    for p in rng.sample(dark, min(3, len(dark))):
+        t.px(*p, ramp[1])
+    _outline(t, pts, ramp[0])
+    return t

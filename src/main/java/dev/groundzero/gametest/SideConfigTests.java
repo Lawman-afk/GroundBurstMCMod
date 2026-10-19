@@ -27,6 +27,7 @@ final class SideConfigTests {
         GZGameTests.test("side_config_energy_switch", GZGameTests.FLOOR_16, 20, SideConfigTests::energySwitch);
         GZGameTests.test("side_config_auto_eject", GZGameTests.FLOOR_16, 300, SideConfigTests::autoEject);
         GZGameTests.test("press_shows_loaded_die", GZGameTests.FLOOR_16, 20, SideConfigTests::pressDie);
+        GZGameTests.test("generator_faces_input_only", GZGameTests.FLOOR_16, 20, SideConfigTests::generatorModes);
     }
 
     private static OreCrusherBlockEntity crusher(GameTestHelper helper, BlockPos pos) {
@@ -123,6 +124,23 @@ final class SideConfigTests {
         press.inventory().setItem(press.catalystSlot(), new ItemStack(GZParts.WIRE_DIE.get()));
         helper.assertTrue(!press.hiddenBones().contains("die_wire") && press.hiddenBones().size() == 3, "wire die should show");
         helper.assertTrue(press.getUpdateTag(helper.getLevel().registryAccess()).contains("items"), "the update tag must carry the die");
+        helper.succeed();
+    }
+
+    private static void generatorModes(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, GZMachines.COMBUSTION_GENERATOR.block().get());
+        var gen = helper.getBlockEntity(pos, dev.groundzero.content.power.CombustionGeneratorBlockEntity.class);
+        helper.assertTrue(gen.allowedItemModes().equals(java.util.EnumSet.of(ItemMode.NONE, ItemMode.INPUT)), "generator only takes fuel in");
+        for (Face f : Face.values()) {
+            helper.assertTrue(gen.sides().items(f) == ItemMode.INPUT, "default generator faces should be Input, " + f + " is " + gen.sides().items(f));
+        }
+        java.util.Set<ItemMode> seen = java.util.EnumSet.noneOf(ItemMode.class);
+        for (int i = 0; i < 4; i++) {
+            gen.changeSides(c -> c.cycleItems(Face.TOP, true, gen.allowedItemModes()));
+            seen.add(gen.sides().items(Face.TOP));
+        }
+        helper.assertTrue(seen.equals(java.util.EnumSet.of(ItemMode.NONE, ItemMode.INPUT)), "cycling must skip Output modes, saw " + seen);
         helper.succeed();
     }
 }

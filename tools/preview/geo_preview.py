@@ -90,7 +90,7 @@ def load_animation(model_id: str, anim: str) -> dict:
 
 # --- geometry ------------------------------------------------------------------------------------------------------------
 
-def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0) -> list[R.Quad]:
+def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0, labels: list | None = None) -> list[R.Quad]:
     ns, p = R._split_id(model_id)
     kind, name = p.split("/", 1)
     geo = json.loads((paths.GEO / kind / f"{name}.geo.json").read_text(encoding="utf-8"))["minecraft:geometry"][0]
@@ -121,7 +121,7 @@ def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0) -
     quads: list[R.Quad] = []
     for bname, b in bones.items():
         bm = bone_matrix(bname)
-        for c in b.get("cubes", []):
+        for ci, c in enumerate(b.get("cubes", [])):
             ox, oy, oz = c["origin"]
             sx, sy, sz = c["size"]
             inf = c.get("inflate", 0)
@@ -160,6 +160,8 @@ def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0) -
                 if np.dot(n, full[:3, :3] @ expected) < 0:
                     n = -n
                 shade = 0.6 * n[0] ** 2 + 0.8 * n[2] ** 2 + (1.0 if n[1] > 0 else 0.5) * n[1] ** 2
+                if labels is not None:
+                    labels.append(f"{bname}#{ci}/{d}")
                 quads.append(R.Quad(wp + np.array([8.0, 0.0, 8.0]), uvp * np.array([tex.shape[1] / tw, tex.shape[0] / th]),
                                     tex, shade, False, n, True))
     return quads

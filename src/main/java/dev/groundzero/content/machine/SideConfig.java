@@ -2,6 +2,7 @@ package dev.groundzero.content.machine;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 
 import dev.groundzero.GroundZero;
 import dev.groundzero.registry.GZLang;
@@ -109,6 +110,31 @@ public final class SideConfig {
 
     public void cycleItems(Face face, boolean forward) {
         this.items[face.ordinal()] = this.items[face.ordinal()].cycle(forward);
+    }
+
+    /** Cycles a face through only the modes the machine supports (e.g. no Output on an input-only generator). */
+    public void cycleItems(Face face, boolean forward, Set<ItemMode> allowed) {
+        ItemMode mode = this.items[face.ordinal()];
+        do {
+            mode = mode.cycle(forward);
+        } while (!allowed.contains(mode));
+        this.items[face.ordinal()] = mode;
+    }
+
+    /** Replaces modes the machine cannot use: Both falls back to whichever direction it has, anything else to None. */
+    public void restrict(Set<ItemMode> allowed) {
+        for (int i = 0; i < 6; i++) {
+            ItemMode mode = this.items[i];
+            if (allowed.contains(mode)) {
+                continue;
+            }
+            if (mode == ItemMode.BOTH) {
+                mode = allowed.contains(ItemMode.INPUT) ? ItemMode.INPUT : allowed.contains(ItemMode.OUTPUT) ? ItemMode.OUTPUT : ItemMode.NONE;
+            } else {
+                mode = ItemMode.NONE;
+            }
+            this.items[i] = mode;
+        }
     }
 
     public void toggleEnergy(Face face) {

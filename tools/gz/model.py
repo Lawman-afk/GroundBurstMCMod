@@ -75,7 +75,7 @@ DISPLAY_BLOCK = {
 
 class BlockModel:
     def __init__(self, name: str, tex_size: tuple[int, int] = (64, 64), kind: str = "block",
-                 render_type: str | None = None, ambient_occlusion: bool = True, padding: int = 0):
+                 render_type: str | None = None, ambient_occlusion: bool = True, padding: int = 1):
         self.name = name
         self.kind = kind                      # "block" or "item": decides model/texture folders
         self.tex_w, self.tex_h = tex_size
@@ -251,7 +251,28 @@ class BlockModel:
     def texture_path(self) -> Path:
         return paths.TEXTURES / self.kind / f"{self.name}.png"
 
+    def bleed(self, tex) -> None:
+        """Copies every face's edge pixels one texel outward into the layout gutter. Sampling a face right at its UV
+        edge (rounding, mip-free nearest filtering at grazing angles) then still lands on the face's own colour
+        instead of a neighbour's, which otherwise shows as shimmering seams."""
+        rects = {f.rect for b in self.boxes for f in b.faces.values() if f.rect is not None}
+        snapshot = tex.copy()
+        for (x, y, w, h) in rects:
+            for i in range(-1, w + 1):
+                for j in range(-1, h + 1):
+                    if 0 <= i < w and 0 <= j < h:
+                        continue
+                    tx, ty = x + i, y + j
+                    if not tex.inside(tx, ty) or snapshot.get(tx, ty)[3] != 0:
+                        continue
+                    src = snapshot.get(x + min(max(i, 0), w - 1), y + min(max(j, 0), h - 1))
+                    if src[3] != 0 and tex.get(tx, ty)[3] == 0:
+                        tex.px(tx, ty, src)
+
     def save(self, tex: Tex, emissive: Tex | None = None) -> tuple[Path, Path]:
+        self.bleed(tex)
+        if emissive is not None:
+            self.bleed(emissive)
         mp = self.model_path()
         mp.parent.mkdir(parents=True, exist_ok=True)
         mp.write_text(json.dumps(self.to_json(), indent=2) + "\n", encoding="utf-8")

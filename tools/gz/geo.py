@@ -40,7 +40,7 @@ class Bone:
 class GeoModel(BlockModel):
     """Reuses BlockModel's face layout and painting; exports Bedrock geometry instead of block JSON."""
 
-    def __init__(self, name: str, tex_size: tuple[int, int] = (64, 64), kind: str = "block", padding: int = 0):
+    def __init__(self, name: str, tex_size: tuple[int, int] = (64, 64), kind: str = "block", padding: int = 1):
         super().__init__(name, tex_size=tex_size, kind=kind, padding=padding)
         self.bones: list[Bone] = []
         self._bone_of: dict[str, str] = {}
@@ -152,6 +152,9 @@ class GeoModel(BlockModel):
     def save(self, tex, emissive=None):  # type: ignore[override]
         for issue in self.zfight():
             print(f"  z-fight warning [{self.name}]: {issue}")
+        self.bleed(tex)
+        if emissive is not None:
+            self.bleed(emissive)
         gp = write_json(self.geo_path(), self.to_geo_json())
         tp = tex.save(self.texture_path())
         if emissive is not None:

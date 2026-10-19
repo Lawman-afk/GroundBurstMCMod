@@ -80,7 +80,7 @@ def build() -> tuple[BlockModel, Tex]:
     rot = lambda a: {"origin": (CX, CY, 27), "axis": "z", "angle": a}  # noqa: E731
     add("strut",
         m.box("strut_a", (CX - 0.5, ylo + 1.5, z0 + 1), (CX + 0.5, yhi - 1.5, z1 - 1), rotation=rot(45)),
-        m.box("strut_b", (CX - 0.5, ylo + 1.5, z0 + 1), (CX + 0.5, yhi - 1.5, z1 - 1), rotation=rot(-45)))
+        m.box("strut_b", (CX - 0.5, ylo + 1.5, z0 + 1.15), (CX + 0.5, yhi - 1.5, z1 - 1.15), rotation=rot(-45)))
 
     # --- lifting lug on the flange ---------------------------------------------------------------------------------
     add("lug",

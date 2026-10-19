@@ -1363,3 +1363,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | JEI is an optional dependency; machine recipe types are synced to clients (OnDatapackSyncEvent) because 1.21.2+ servers no longer send recipes. |
 | 2026-10-19 | Resource item/ore textures follow vanilla conventions (studied, not copied): full-width ingots, rounded dust heaps, small lit ore clusters. |
 | 2026-10-19 | Cobalt is a byproduct of copper (15%) and iron (10%) crushing; monazite (rare earths) yields 5% uranium dust. |
+| 2026-10-19 | Every generated model texture uses a 1-texel gutter around each face, filled with the face's edge colour, to stop UV edge bleed (seam flicker). |
+| 2026-10-19 | Side-config faces only offer the item directions a machine has slots for (a generator's faces are None/Input). |

@@ -95,23 +95,21 @@ def _spots(t: Tex, pts, coords, colors):
 
 
 def build_raw_items() -> None:
-    raw_item("raw_uranium", O.PITCHBLENDE, lambda t, p: _spots(t, p, [(5, 7), (10, 5), (9, 11), (4, 11), (11, 8)],
-             [O.URANIUM_GLINT, O.AUTUNITE.light, O.URANIUM_GLINT, O.AUTUNITE.base, O.AUTUNITE.light]), 1)
-    def lith(t, p):
-        for x, y in ((5, 9), (6, 8), (7, 7), (9, 10), (10, 9), (11, 8)):
-            if (x, y) in p:
-                t.px(x, y, M.SPODUMENE.shine)
-    raw_item("raw_lithium", M.SPODUMENE, lith, 2)
-    raw_item("raw_tungsten", M.WOLFRAMITE, lambda t, p: _spots(t, p, [(5, 6), (6, 6), (9, 5), (8, 10), (11, 9)],
-             [M.WOLFRAMITE.shine, M.WOLFRAMITE.highlight, M.WOLFRAMITE.highlight, M.WOLFRAMITE.highlight, M.WOLFRAMITE.shine]), 3)
-    def gal(t, p):
-        for x, y in ((5, 8), (9, 6), (8, 11)):
-            for dx, dy, tone in ((0, 0, 6), (1, 0, 5), (0, 1, 4), (1, 1, 2)):
-                if (x + dx, y + dy) in p:
-                    t.px(x + dx, y + dy, M.GALENA[tone])
-    raw_item("raw_lead", M.GALENA, gal, 4)
-    raw_item("raw_rare_earth", M.MONAZITE, lambda t, p: _spots(t, p, [(5, 7), (9, 6), (7, 10), (11, 9)],
-             [M.MONAZITE.shine, M.MONAZITE.highlight, M.MONAZITE.shine, M.MONAZITE.highlight]), 5)
+    def spots(colors, count):
+        def detail(t, rng, lit):
+            for p in rng.sample(lit, min(count, len(lit))):
+                t.px(*p, rng.choice(colors))
+        return detail
+
+    def uranium(t, rng, lit):
+        # Pitchblende with yellow autunite crust and a couple of faint green glints.
+        for p in rng.sample(lit, min(5, len(lit))):
+            t.px(*p, rng.choice([O.AUTUNITE.light, O.AUTUNITE.base, O.URANIUM_GLINT]))
+    save_item("raw_uranium", V.raw(O.PITCHBLENDE, "a", uranium))
+    save_item("raw_lithium", V.raw(M.SPODUMENE, "b", spots([M.SPODUMENE.shine], 4)))
+    save_item("raw_tungsten", V.raw(M.WOLFRAMITE, "a", spots([M.WOLFRAMITE.shine, M.WOLFRAMITE.highlight], 5)))
+    save_item("raw_lead", V.raw(M.GALENA, "b", spots([M.GALENA.shine], 4)))
+    save_item("raw_rare_earth", V.raw(M.MONAZITE, "a", spots([M.MONAZITE.shine, M.MONAZITE.highlight], 4)))
 
 
 # --- ingots --------------------------------------------------------------------------------------------------------------
@@ -168,7 +166,7 @@ DUSTS = [
 
 def build_powders() -> None:
     for name, ramp, seed, metallic in DUSTS:
-        save_item(name, V.dust(ramp, seed, sparkle=metallic))
+        save_item(name, V.dust2(ramp, seed, sparkle=metallic))
 
     # Exotic shard: a faceted crystal growing up-right with a smaller one at its foot (hand-pixelled).
     shard = [

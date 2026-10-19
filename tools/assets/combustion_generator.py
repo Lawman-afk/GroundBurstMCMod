@@ -69,7 +69,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # West: flywheel on a stub axle.
     add("axle", g.box("axle", (-8, 5.25, -0.75), (-7, 6.75, 0.75), faces=("north", "south", "up", "down"), bone=F))
     add("wheel", g.box("wheel", (-9.5, 2.5, -3.5), (-8, 9.5, 3.5), faces=("north", "south", "west", "east", "up", "down"), bone="flywheel"))
-    add("wheel", g.box("wheel45", (-9.5, 2.5, -3.5), (-8, 9.5, 3.5), faces=("north", "south", "west", "east", "up", "down"),
+    add("wheel", g.box("wheel45", (-9.35, 2.5, -3.5), (-8.15, 9.5, 3.5), faces=("north", "south", "west", "east", "up", "down"),
                        rotation={"origin": (-8.75, 6, 0), "x": 45}, bone="flywheel"))
     add("hub", g.box("hub", (-10, 5, -1), (-9.5, 7, 1), faces=("west", "north", "south", "up", "down"), bone="flywheel"))
     # Back: copper output terminals.

@@ -77,6 +77,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
+        this.sides.restrict(allowedItemModes());
         for (SideConfig.ItemMode mode : SideConfig.ItemMode.values()) {
             if (mode != SideConfig.ItemMode.NONE) {
                 this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract());
@@ -152,6 +153,21 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     public SideConfig sides() {
         return sides;
+    }
+
+    /** The item modes a face may take: only directions this machine actually has slots for. */
+    public java.util.Set<SideConfig.ItemMode> allowedItemModes() {
+        java.util.Set<SideConfig.ItemMode> modes = java.util.EnumSet.of(SideConfig.ItemMode.NONE);
+        if (this.inputSlots.length > 0) {
+            modes.add(SideConfig.ItemMode.INPUT);
+        }
+        if (this.outputSlots.length > 0) {
+            modes.add(SideConfig.ItemMode.OUTPUT);
+        }
+        if (this.inputSlots.length > 0 && this.outputSlots.length > 0) {
+            modes.add(SideConfig.ItemMode.BOTH);
+        }
+        return modes;
     }
 
     /** Whether this machine has output slots (auto-eject is offered only then). */
@@ -238,6 +254,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inventory.deserialize(input.childOrEmpty("items"));
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
         this.sides.load(input.childOrEmpty("sides"));
+        this.sides.restrict(allowedItemModes());
     }
 
     @Override
