@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
+from gz import vanilla as V  # noqa: E402
 from gz.model import write_json  # noqa: E402
 from gz.palette import fixed  # noqa: E402
 from gz.sprite import faceted_blob, iso_bar, outline, powder_pile  # noqa: E402
@@ -116,29 +117,22 @@ def build_raw_items() -> None:
 # --- ingots --------------------------------------------------------------------------------------------------------------
 
 def ingot(name: str, ramp, mark) -> None:
-    t = Tex(16, 16)
-    faces = iso_bar(t, 6.0, 4.0, 9, 4, 3, ramp, taper=0.7)
-    pts = set().union(*faces.values())
-    # Rim light on the top face's far edges and a hot specular on the near corner.
-    for (x, y) in faces["top"]:
-        if (x, y - 1) not in faces["top"]:
-            t.px(x, y, ramp.highlight)
-    outline(t, pts, ramp.outline)
-    mark(t, faces)
-    save_item(name, t)
+    save_item(name, V.ingot(ramp, mark))
 
 
 def build_ingots() -> None:
     def trefoil_mark(t, f):
-        cx = sorted(f["top"])[len(f["top"]) // 2]
-        t.px(cx[0], cx[1], P.NUCLEAR_AMBER.base)
-        t.px(cx[0] + 1, cx[1], P.NUCLEAR_AMBER.shadow)
+        # An amber radiation pip stamped into the top face.
+        cx, cy = sorted(f["top"], key=lambda q: (q[0] - 8) ** 2 + (q[1] - 6) ** 2)[0]
+        t.px(cx, cy, P.NUCLEAR_AMBER.light)
+        t.px(cx + 1, cy, P.NUCLEAR_AMBER.shadow)
     ingot("uranium_ingot", URANIUM_METAL, trefoil_mark)
     ingot("lead_ingot", LEAD_METAL, lambda t, f: None)
+
     def tung(t, f):
         for (x, y) in f["front"]:
-            if (x + y) % 4 == 0:
-                t.px(x, y, TUNGSTEN_METAL.light)      # machining lines on the flank
+            if (x + 2 * y) % 5 == 0 and (x, y + 1) in f["front"]:
+                t.px(x, y, TUNGSTEN_METAL[4])          # machining lines on the flank
     ingot("tungsten_ingot", TUNGSTEN_METAL, tung)
 
 
@@ -174,15 +168,7 @@ DUSTS = [
 
 def build_powders() -> None:
     for name, ramp, seed, metallic in DUSTS:
-        t = Tex(16, 16)
-        pts = powder_pile(t, 8, 13, 8, 6.0, ramp, seed)
-        if metallic:
-            rng = random.Random(seed * 31)
-            inner = sorted(p for p in pts if (p[0] - 1, p[1]) in pts and (p[0] + 1, p[1]) in pts and p[1] < 13)
-            for p in rng.sample(inner, 3):
-                t.px(*p, ramp.shine)
-        outline(t, pts, ramp.outline)
-        save_item(name, t)
+        save_item(name, V.dust(ramp, seed, sparkle=metallic))
 
     # Exotic shard: a faceted crystal growing up-right with a smaller one at its foot (hand-pixelled).
     shard = [

@@ -75,7 +75,7 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
                 this.status = MachineStatus.NO_FUEL;
             }
         }
-        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT);
+        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
         return running;
     }
 
@@ -150,5 +150,10 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
     @Override
     public SoundEvent loopSound() {
         return GZSounds.MACHINE_COMBUSTION_GENERATOR.get();
+    }
+
+    @Override
+    public boolean itemsAreFuel() {
+        return true;
     }
 }

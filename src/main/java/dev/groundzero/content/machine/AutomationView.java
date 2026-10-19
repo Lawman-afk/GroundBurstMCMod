@@ -5,8 +5,9 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
- * What pipes and hoppers see of a machine: they may only insert into input slots and only extract from output
- * slots (like a furnace). Indexes are remapped onto the listed machine slots.
+ * What pipes and hoppers see of a machine through one face: they may only insert into input slots and only extract
+ * from output slots (like a furnace), and only as far as that face's {@link SideConfig.ItemMode} allows. Indexes
+ * are remapped onto the listed machine slots.
  */
 public class AutomationView implements ResourceHandler<ItemResource> {
     private final MachineInventory inventory;
@@ -14,7 +15,16 @@ public class AutomationView implements ResourceHandler<ItemResource> {
     private final boolean[] insertable;
     private final boolean[] extractable;
 
+    private final boolean allowInsert;
+    private final boolean allowExtract;
+
     public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots) {
+        this(inventory, inputSlots, outputSlots, true, true);
+    }
+
+    public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots, boolean allowInsert, boolean allowExtract) {
+        this.allowInsert = allowInsert;
+        this.allowExtract = allowExtract;
         this.inventory = inventory;
         this.slots = new int[inputSlots.length + outputSlots.length];
         this.insertable = new boolean[this.slots.length];
@@ -52,16 +62,16 @@ public class AutomationView implements ResourceHandler<ItemResource> {
 
     @Override
     public boolean isValid(int index, ItemResource resource) {
-        return this.insertable[index] && this.inventory.isValid(this.slots[index], resource);
+        return this.allowInsert && this.insertable[index] && this.inventory.isValid(this.slots[index], resource);
     }
 
     @Override
     public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
-        return this.insertable[index] ? this.inventory.insert(this.slots[index], resource, amount, transaction) : 0;
+        return this.allowInsert && this.insertable[index] ? this.inventory.insert(this.slots[index], resource, amount, transaction) : 0;
     }
 
     @Override
     public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
-        return this.extractable[index] ? this.inventory.extract(this.slots[index], resource, amount, transaction) : 0;
+        return this.allowExtract && this.extractable[index] ? this.inventory.extract(this.slots[index], resource, amount, transaction) : 0;
     }
 }

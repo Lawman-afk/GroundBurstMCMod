@@ -52,6 +52,15 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         this.outputCount = outputCount;
     }
 
+    public ProcessingKind kind() {
+        return this.kind;
+    }
+
+    /** Index of the catalyst (die) slot, or -1 for machines without one. */
+    public int catalystSlot() {
+        return this.catalystSlot;
+    }
+
     private static int[] range(int start, int count) {
         int[] r = new int[count];
         for (int i = 0; i < count; i++) {

@@ -62,6 +62,7 @@ public final class GZGameTests {
         ResourceTests.register();
         MachineTests.register();
         TallMachineTests.register();
+        SideConfigTests.register();
     }
 
     private GZGameTests() {}

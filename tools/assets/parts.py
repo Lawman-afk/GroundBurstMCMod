@@ -17,6 +17,7 @@ from gz import palette as P  # noqa: E402
 from gz.palette import fixed  # noqa: E402
 from gz.sprite import iso_bar, outline  # noqa: E402
 from gz.tex import Tex  # noqa: E402
+from gz import vanilla as V  # noqa: E402
 import resources as R  # noqa: E402
 
 STEEL = fixed("steel_metal", "#14181e", "#252b33", "#39414b", "#525c68", "#717c89", "#98a3ae", "#d2dae2")
@@ -56,16 +57,7 @@ def template(rows: list[str], legend: dict[str, tuple], primary=None, edge=None)
 # --- bars & plates ------------------------------------------------------------------------------------------------------
 
 def bar_ingot(name: str, ramp, mark=None) -> None:
-    t = Tex(16, 16)
-    faces = iso_bar(t, 6.0, 4.0, 9, 4, 3, ramp, taper=0.7)
-    pts = set().union(*faces.values())
-    for (x, y) in faces["top"]:
-        if (x, y - 1) not in faces["top"]:
-            t.px(x, y, ramp.highlight)
-    outline(t, pts, ramp.outline)
-    if mark:
-        mark(t, faces)
-    save(name, t)
+    save(name, V.ingot(ramp, mark))
 
 
 def plate(name: str, ramp, dense: bool = False) -> None:
@@ -430,7 +422,7 @@ def dies() -> None:
 def build() -> None:
     bar_ingot("steel_ingot", STEEL)
     bar_ingot("cobalt_ingot", COBALT)
-    bar_ingot("tungsten_carbide_ingot", CARBIDE, lambda t, f: [t.px(x, y, CARBIDE[5]) for (x, y) in f["front"] if (x + y) % 3 == 0])
+    bar_ingot("tungsten_carbide_ingot", CARBIDE, lambda t, f: [t.px(x, y, CARBIDE[5]) for (x, y) in f["front"] if (x * 3 + y) % 7 == 0])
     plate("steel_plate", STEEL)
     plate("copper_plate", COPPER)
     plate("lead_plate", R.LEAD_METAL)

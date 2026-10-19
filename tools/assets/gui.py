@@ -31,7 +31,7 @@ LAYOUTS = {
     "ore_crusher": {
         "title": (28, 6),
         "slots": [("in", 56, 35), ("out_big", 116, 35), ("out", 146, 35)],
-        "energy": (8, 16, 14, 54),
+        "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -42,7 +42,7 @@ LAYOUTS = {
     "arc_furnace": {
         "title": (28, 6),
         "slots": [("in", 56, 25), ("in", 56, 47), ("out_big", 116, 35), ("out", 146, 35)],
-        "energy": (8, 16, 14, 54),
+        "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -53,7 +53,7 @@ LAYOUTS = {
     "industrial_press": {
         "title": (28, 6),
         "slots": [("in", 56, 25), ("die", 56, 47), ("out_big", 116, 35)],
-        "energy": (8, 16, 14, 54),
+        "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -64,7 +64,7 @@ LAYOUTS = {
     "combustion_generator": {
         "title": (28, 6),
         "slots": [("fuel", 56, 53)],
-        "energy": (8, 16, 14, 54),
+        "energy": (8, 20, 14, 46),
         "progress": None,
         "flame": (57, 34, 14, 14),
         "status": (160, 5, 8, 8),
@@ -313,7 +313,99 @@ def write_java() -> Path:
     return out
 
 
+# --- side-configuration tab (shared by every machine) -----------------------------------------------------------------
+# Layout constants mirrored in MachineScreen.SideTab.
+TAB = (0, 0, 24, 26)            # collapsed tab
+PANEL_RECT = (0, 32, 82, 112)   # expanded panel
+FACE_FRAME = (100, 0)           # 18x18
+FACE_ICON = (120, 0)            # 16x16 plain face
+FACE_FRONT = (140, 0)           # 16x16 front face
+CHANNEL_ON = (100, 24)          # 36x12
+CHANNEL_OFF = (100, 40)         # 36x12
+CHECK_OFF = (100, 56)           # 10x10
+CHECK_ON = (112, 56)            # 10x10
+ICON_ITEMS = (140, 24)          # 8x8
+ICON_ENERGY = (150, 24)         # 8x8
+ICON_WRENCH = (160, 24)         # 12x12
+
+WRENCH = [".##.........", "#..#........", "#...........", ".#..#.......", "..####......", "....###.....",
+          ".....###....", "......###...", ".......###..", "........###.", ".........##.", "............"]
+BOLT = ["...##...", "..##....", ".##.....", "######..", "...##...", "..##....", ".##.....", "........"]
+CRATE = ["........", ".######.", ".#....#.", ".######.", ".#.##.#.", ".#.##.#.", ".######.", "........"]
+
+
+def tab_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """A tab panel that grows out of the GUI's right edge: flat left side, bevelled right side and corners."""
+    t.rect(x, y, w, h, PANEL.base)
+    t.hline(x, y, w - 2, PANEL.outline)
+    t.hline(x, y + h - 1, w - 2, PANEL.outline)
+    t.vline(x + w - 1, y + 2, h - 4, PANEL.outline)
+    t.px(x + w - 2, y + 1, PANEL.outline)
+    t.px(x + w - 2, y + h - 2, PANEL.outline)
+    t.px(x + w - 1, y, (0, 0, 0, 0))
+    t.px(x + w - 1, y + 1, (0, 0, 0, 0))
+    t.px(x + w - 1, y + h - 1, (0, 0, 0, 0))
+    t.px(x + w - 1, y + h - 2, (0, 0, 0, 0))
+    t.px(x + w - 2, y, (0, 0, 0, 0))
+    t.px(x + w - 2, y + h - 1, (0, 0, 0, 0))
+    t.hline(x, y + 1, w - 3, PANEL.highlight)
+    t.hline(x, y + h - 2, w - 3, PANEL.deep)
+    t.vline(x + w - 2, y + 2, h - 4, PANEL.deep)
+    t.rivet(x + w - 5, y + 3, PANEL)
+    t.rivet(x + w - 5, y + h - 5, PANEL)
+
+
+def glyph(t: Tex, rows: list[str], x: int, y: int, c) -> None:
+    for yy, row in enumerate(rows):
+        for xx, ch in enumerate(row):
+            if ch == "#":
+                t.px(x + xx, y + yy, c)
+
+
+def side_config_texture() -> Path:
+    t = Tex(256, 256)
+    tab_panel(t, *TAB)
+    glyph(t, WRENCH, TAB[0] + 5, TAB[1] + 7, P.HAZARD_YELLOW.light)
+    tab_panel(t, *PANEL_RECT)
+    px_, py_ = PANEL_RECT[0], PANEL_RECT[1]
+    glyph(t, WRENCH, px_ + 5, py_ + 4, P.HAZARD_YELLOW.light)
+    t.hline(px_ + 3, py_ + 17, PANEL_RECT[2] - 8, PANEL.shadow)
+    t.hline(px_ + 3, py_ + 18, PANEL_RECT[2] - 8, PANEL.light)
+    # Face frame + face icons.
+    slot(t, *FACE_FRAME)
+    fx, fy = FACE_ICON
+    t.panel(fx, fy, 16, 16, P.OLIVE, base=3, style="raised")
+    t.outline(fx + 2, fy + 2, 12, 12, P.OLIVE.shadow)
+    for rx, ry in ((fx + 1, fy + 1), (fx + 14, fy + 1), (fx + 1, fy + 14), (fx + 14, fy + 14)):
+        t.rivet(rx, ry, P.OLIVE)
+    gx, gy = FACE_FRONT
+    t.panel(gx, gy, 16, 16, P.OLIVE, base=3, style="raised")
+    t.rect(gx + 3, gy + 3, 7, 3, P.BLACK_PAINT.base)           # nameplate
+    t.hline(gx + 4, gy + 4, 5, P.HAZARD_YELLOW.base)
+    t.rect(gx + 11, gy + 3, 2, 2, P.INDICATOR_GREEN.base)      # status lamp
+    t.stripes(gx + 1, gy + 12, 14, 3, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+    # Channel buttons (selected / not), checkbox, icons.
+    cx, cy = CHANNEL_ON
+    t.panel(cx, cy, 36, 12, PANEL, base=4, style="inset")
+    t.outline(cx, cy, 36, 12, P.HAZARD_YELLOW.shadow)
+    cx, cy = CHANNEL_OFF
+    t.panel(cx, cy, 36, 12, PANEL, base=3, style="raised")
+    t.outline(cx, cy, 36, 12, PANEL.outline)
+    for (bx, by), on in ((CHECK_OFF, False), (CHECK_ON, True)):
+        t.rect(bx, by, 10, 10, PANEL.deep)
+        t.outline(bx, by, 10, 10, PANEL.outline)
+        if on:
+            for i, (xx, yy) in enumerate(((2, 5), (3, 6), (4, 7), (5, 6), (6, 5), (7, 4), (7, 3))):
+                t.px(bx + xx, by + yy, P.INDICATOR_GREEN.light)
+                t.px(bx + xx, by + yy - 1, P.INDICATOR_GREEN.base)
+    glyph(t, CRATE, *ICON_ITEMS, P.DESERT_TAN.light)
+    glyph(t, BOLT, *ICON_ENERGY, P.HAZARD_YELLOW.light)
+    glyph(t, WRENCH, *ICON_WRENCH, P.HAZARD_YELLOW.light)
+    return t.save(paths.TEXTURES / "gui" / "machine" / "side_config.png")
+
+
 if __name__ == "__main__":
+    print(side_config_texture())
     for n, spec in LAYOUTS.items():
         print(build(n, spec))
     print(write_java())

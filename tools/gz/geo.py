@@ -18,6 +18,8 @@ south). The exporter converts to Bedrock space the way GeckoLib reads it back (v
 """
 from __future__ import annotations
 
+import sys
+
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -128,7 +130,28 @@ class GeoModel(BlockModel):
     def geo_path(self) -> Path:
         return paths.GEO / self.kind / f"{self.name}.geo.json"
 
+    #: Groups of bones that are never drawn at the same time (the renderer shows one of them).
+    exclusive: list[set[str]] = []
+
+    def zfight(self, tol: float = 0.1) -> list[str]:
+        """Coplanar overlapping faces (see tools/preview/zfight.py), by box name. Ignores rotated boxes/bones."""
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
+        import zfight  # noqa: PLC0415
+        rotated = {b.name for b in self.bones if any(b.rotation)}
+        bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
+        boxes = [(b.name, tuple(b.frm), tuple(b.to), list(b.faces)) for b in self.boxes
+                 if not b.rotation and bone_of.get(b.name) not in rotated]
+        issues = []
+        for issue in zfight.check(boxes, tol):
+            a, b = issue.split(" vs ")[0].split("/")[0], issue.split(" vs ")[1].split("/")[0]
+            if any(bone_of.get(a) in grp and bone_of.get(b) in grp for grp in self.exclusive):
+                continue   # never drawn together
+            issues.append(issue)
+        return issues
+
     def save(self, tex, emissive=None):  # type: ignore[override]
+        for issue in self.zfight():
+            print(f"  z-fight warning [{self.name}]: {issue}")
         gp = write_json(self.geo_path(), self.to_geo_json())
         tp = tex.save(self.texture_path())
         if emissive is not None:
@@ -187,7 +210,21 @@ class Animation:
         return out
 
 
+def rest_pose(animations: list[Animation], name: str = "idle") -> Animation:
+    """A held rest pose covering every bone/channel the other animations touch, so a controller can ease the model
+    back to rest (GeckoLib only stops a looping animation by switching to another one)."""
+    idle = Animation(name, 0.05, loop="hold_on_last_frame")
+    for a in animations:
+        for bone, channels in a.bones.items():
+            for ch in channels:
+                rest = (1.0, 1.0, 1.0) if ch == "scale" else (0.0, 0.0, 0.0)
+                idle.bones.setdefault(bone, {})[ch] = {0.0: rest}
+    return idle
+
+
 def save_animations(model_name: str, animations: list[Animation], kind: str = "block") -> Path:
+    if not any(a.name == "idle" for a in animations):
+        animations = [*animations, rest_pose(animations)]
     data = {"format_version": "1.8.0",
             "animations": {a.name: a.to_json() for a in animations}}
     return write_json(paths.ANIMATIONS / kind / f"{model_name}.animation.json", data)

@@ -29,6 +29,18 @@ repositories {
         }
         filter { includeGroup 'com.geckolib' }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'BlameJared (JEI)'
+                url = 'https://maven.blamejared.com/'
+            }
+        }
+        filter {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
 }
 
 base {
@@ -87,6 +99,11 @@ configurations {
 dependencies {
     // Animated models (missiles, launchers, silo doors, radar dishes, guns, machines). The one hard dependency.
     implementation "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+
+    // JEI integration (optional at runtime): compile against the API, run the full mod in the dev client.
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

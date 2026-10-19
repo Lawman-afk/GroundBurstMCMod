@@ -103,6 +103,39 @@
         }
       },
       "loop": true
+    },
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "ram": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "gauge_needle": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "frame": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
     }
   }
 }

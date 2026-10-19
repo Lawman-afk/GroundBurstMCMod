@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–2 built and tested (20/20 GameTests): machine framework, cables, Combustion Generator, Ore Crusher, Arc Furnace, Industrial Press, parts, machine sounds.
+**Current phase:** Phase 4 in progress — slices 1–2 plus the user-feedback pass built and tested (24/24 GameTests): side configuration, JEI integration, vanilla-style resource textures.
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -108,7 +108,7 @@ checklist for the user.
 | Item | Status |
 |---|---|
 | GUI texture toolkit (riveted panels, CRT screens, gauges, guarded buttons, segmented bars, slots) | started: `tools/assets/gui.py` generates layout-driven machine GUIs + `MachineLayouts.java`; generic `MachineScreen` (energy bar, progress, flame, status lamp, redstone button, CRT readout, tooltips). Guarded buttons/gauges come with later machines |
-| Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | done except side config + sounds: `MachineBlockEntity`/`ProcessingBlockEntity`, `MachineBlock` (facing + active), `MachineMenu`, automation view (inputs in / outputs out), recipe-filtered inputs, redstone modes, status reasons, EMP hook, GeckoLib `AnimatedMachine` |
+| Machine base (FE, inventories, side config, redstone control, EMP hook, sounds, GUI base) | done (side config: per-face item mode + energy switch + auto-eject, GUI tab): `MachineBlockEntity`/`ProcessingBlockEntity`, `MachineBlock` (facing + active), `MachineMenu`, automation view (inputs in / outputs out), recipe-filtered inputs, redstone modes, status reasons, EMP hook, GeckoLib `AnimatedMachine` |
 | Cables (copper, insulated, HV) with connected models | done (multipart models, network rate = weakest tier); insulated/HV recipes wait for plastic/tungsten filament |
 | Combustion Generator, Diesel Generator, RTG, Capacitor Banks T1–T3 | Combustion Generator done (GeckoLib model, firebox glow, flywheel, GUI, recipe); rest todo |
 | Ore Crusher | done (GeckoLib model, GUI, 29 crushing recipes incl. vanilla sulfur/cinnabar, cobalt byproducts, 10 new dusts + smelting) — loop sounds todo |
@@ -129,7 +129,10 @@ checklist for the user.
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |
 | Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |
-| Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done |
+| Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done; the press shows the loaded die on its model |
+| JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — JEI loads cleanly; categories **not yet seen in a live world** |
+| Vanilla-style ores / ingots / dusts (`tools/gz/vanilla.py`) | done (needs in-game look) |
+| Z-fighting checker (`tools/preview/zfight.py`, runs on every geo export) | done — 0 coplanar faces |
 | Machine recipes (custom recipe types + datagen) | todo |
 | Models/animations/GUIs/sounds for every machine (reviewed) | todo |
 

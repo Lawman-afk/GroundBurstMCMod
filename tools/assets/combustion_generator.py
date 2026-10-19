@@ -30,7 +30,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.bone("fire", pivot=(0, 5, -6), parent="frame")
     g.bone("flywheel", pivot=(-9.5, 6, 0), parent="frame")
     g.bone("cap", pivot=(4.5, 16, 4.5), parent="frame")
-    g.bone("needle", pivot=(0, 11, -7.2), parent="frame")
+    g.bone("needle", pivot=(0, 10.1, -7.6), parent="frame")
 
     F = "frame"
     parts: dict[str, list] = {}
@@ -48,7 +48,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("front", g.box("front_b", (-3, 2, -7), (3, 3, -5), faces=("north", "up"), bone=F))
     add("lid", g.box("lid", (-7.5, 12, -7.5), (7.5, 13, 7.5), bone=F))
     # Firebox: soot-black back wall, a fire panel just behind it at rest, grille bars and door frame in front.
-    add("firebox", g.box("firebox_back", (-3, 3, -5.01), (3, 7, -5), faces=("north",), bone=F))
+    add("firebox", g.box("firebox_back", (-3, 3, -5.2), (3, 7, -5.15), faces=("north",), bone=F))
     fire = add("fire", g.box("fire_panel", (-2.8, 3.1, -4.6), (2.8, 6.9, -4.5), faces=("north",), shade=False, bone="fire"))
     for i, x in enumerate((-1.75, -0.25, 1.25)):
         add("bar", g.box(f"bar{i}", (x, 3, -7.1), (x + 0.5, 7, -6.8), faces=("north", "east", "west"), bone=F))
@@ -56,8 +56,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("doorframe", g.box("door_bot", (-3.5, 2.5, -7.5), (3.5, 3, -7), faces=("north", "up", "east", "west"), bone=F))
     add("handle", g.box("handle", (3.5, 4.5, -8), (4.5, 5.5, -7), faces=("north", "east", "up", "down"), bone=F))
     # Pressure gauge above the door.
-    add("gauge", g.box("gauge", (-1.5, 9.5, -7.4), (1.5, 12.5, -7), faces=("north", "east", "west", "up", "down"), bone=F))
-    add("needle", g.box("needle", (-0.15, 11, -7.5), (0.15, 12.2, -7.4), faces=("north",), shade=False, bone="needle"))
+    add("gauge", g.box("gauge", (-1.5, 8.6, -7.4), (1.5, 11.6, -7), faces=("north", "east", "west", "up", "down"), bone=F))
+    add("needle", g.box("needle", (-0.15, 10.1, -7.65), (0.15, 11.3, -7.6), faces=("north",), shade=False, bone="needle"))
     # Exhaust stack (back-east corner) with a rain cap that chatters while running.
     add("stack", g.box("stack", (3, 13, 3), (6, 19, 6), faces=("north", "south", "east", "west"), bone=F))
     add("stack_top", g.box("stack_top", (3, 18.99, 3), (6, 19, 6), faces=("up",), bone=F))
@@ -195,7 +195,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 def animations() -> list[Animation]:
     working = Animation("working", 1.0, loop=True)
     # The fire panel slides from behind the soot wall to just in front of it and flickers.
-    working.move("fire", {0: (0, 0, -0.6), 0.25: (0, 0, -0.65), 0.5: (0, 0, -0.6), 0.75: (0, 0, -0.65), 1: (0, 0, -0.6)})
+    working.move("fire", {0: (0, 0, -0.9), 0.25: (0, 0, -0.95), 0.5: (0, 0, -0.9), 0.75: (0, 0, -0.95), 1: (0, 0, -0.9)})
     working.scale("fire", {0: (1, 1, 1), 0.2: (1, 0.92, 1), 0.45: (1, 1.0, 1), 0.7: (1, 0.95, 1), 1: (1, 1, 1)})
     working.rotate("flywheel", {0: (0, 0, 0), 1: (-720, 0, 0)})
     working.rotate("cap", {0: (0, 0, 0), 0.125: (4, 0, 2), 0.25: (0, 0, 0), 0.375: (-3, 0, -2), 0.5: (0, 0, 0),

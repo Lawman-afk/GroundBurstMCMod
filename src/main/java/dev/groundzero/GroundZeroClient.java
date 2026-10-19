@@ -1,5 +1,6 @@
 package dev.groundzero;
 
+import dev.groundzero.client.recipe.ClientRecipes;
 import dev.groundzero.client.render.MachineGeoRenderer;
 import dev.groundzero.client.screen.MachineScreen;
 import dev.groundzero.client.sound.MachineSounds;
@@ -25,6 +26,7 @@ public class GroundZeroClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         MachineClientHooks.clientTick = MachineSounds::tick;
+        ClientRecipes.register();
         modBus.addListener(GroundZeroClient::registerScreens);
         modBus.addListener(GroundZeroClient::registerRenderers);
     }

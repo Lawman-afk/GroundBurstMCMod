@@ -110,10 +110,11 @@ public class GZRecipeProvider extends RecipeProvider {
         crushOre("lithium", GZResources.LITHIUM_DUST, null, 0);
         crushOre("tungsten", GZResources.TUNGSTEN_DUST, null, 0);
         crushOre("lead", GZResources.LEAD_DUST, null, 0);
-        crushOre("rare_earth", GZResources.RARE_EARTH_DUST, GZResources.COBALT_DUST, 0.10f);
-        crushOre("iron", GZResources.IRON_DUST, GZResources.COBALT_DUST, 0.15f);
+        // Monazite carries thorium and a little uranium; cobalt comes with copper (Copperbelt-style) and some iron ores.
+        crushOre("rare_earth", GZResources.RARE_EARTH_DUST, GZResources.URANIUM_DUST, 0.05f);
+        crushOre("iron", GZResources.IRON_DUST, GZResources.COBALT_DUST, 0.10f);
         crushOre("gold", GZResources.GOLD_DUST, null, 0);
-        crushOre("copper", GZResources.COPPER_DUST, null, 0);
+        crushOre("copper", GZResources.COPPER_DUST, GZResources.COBALT_DUST, 0.15f);
         for (String metal : new String[] {"uranium", "lead", "tungsten", "iron", "gold", "copper"}) {
             ItemLike dust = switch (metal) {
                 case "uranium" -> GZResources.URANIUM_DUST;

@@ -72,8 +72,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     # Rollers: octagonal cores with eight teeth each, along X.
     for rn, zc in (("roller_n", -2.5), ("roller_s", 2.5)):
-        add("roller", g.box(f"{rn}_core", (-5.5, 11, zc - 1.5), (5.5, 14, zc + 1.5), bone=rn))
-        add("roller", g.box(f"{rn}_core45", (-5.5, 11, zc - 1.5), (5.5, 14, zc + 1.5),
+        add("roller", g.box(f"{rn}_core", (-5.5, 11.2, zc - 1.3), (5.5, 13.8, zc + 1.3), bone=rn))
+        add("roller", g.box(f"{rn}_core45", (-5.5, 11.2, zc - 1.3), (5.5, 13.8, zc + 1.3),
                             rotation={"origin": (0, 12.5, zc), "x": 45}, bone=rn))
         for k in range(8):
             add("tooth", g.box(f"{rn}_tooth{k}", (-5, 14, zc - 0.5), (5, 14.8, zc + 0.5), faces=("up", "north", "south"),

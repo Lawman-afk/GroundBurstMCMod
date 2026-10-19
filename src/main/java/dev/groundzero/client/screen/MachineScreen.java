@@ -12,6 +12,7 @@ import dev.groundzero.content.power.CombustionGeneratorBlockEntity;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.player.Inventory;
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static final int TEXT = 0xFFE6E2D2;
     private static final int CRT_TEXT = 0xFFFFB84A;
+    private static final float CRT_SCALE = 0.75f;
     private static final NumberFormat NUM = NumberFormat.getIntegerInstance(Locale.ROOT);
     private static final String KEY_ENERGY = MachineText.ENERGY;
     private static final String KEY_PROGRESS = MachineText.PROGRESS;
@@ -34,14 +36,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static final String KEY_REDSTONE = MachineText.REDSTONE;
 
     private final MachineLayout layout;
+    private final SideConfigTab sideTab;
 
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, menu.layout().width(), menu.layout().height());
         this.layout = menu.layout();
+        this.sideTab = new SideConfigTab(menu);
         this.titleLabelX = this.layout.titleX();
         this.titleLabelY = this.layout.titleY();
-        this.inventoryLabelX = this.layout.inventoryX();
-        this.inventoryLabelY = this.layout.inventoryY() - 11;
     }
 
     @Override
@@ -97,20 +99,37 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         g.text(this.font, this.title, this.titleLabelX, this.titleLabelY, TEXT, false);
-        g.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, TEXT, false);
+        // No "Inventory" label: it collides with the machine widgets and the slots speak for themselves.
         MachineLayout.Rect ro = this.layout.readout();
         if (ro != null) {
             int cap = Math.max(1, this.menu.capacity());
             boolean burning = this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN) > 0;
-            g.text(this.font, Component.translatable(KEY_OUTPUT, burning ? CombustionGeneratorBlockEntity.RATE : 0), ro.x() + 4, ro.y() + 4, CRT_TEXT, false);
-            g.text(this.font, Component.translatable(KEY_STORED, (int) ((long) this.menu.energy() * 100 / cap)), ro.x() + 4, ro.y() + 14, CRT_TEXT, false);
-            g.text(this.font, Component.translatable(this.menu.status().translationKey()), ro.x() + 4, ro.y() + 24, CRT_TEXT, false);
+            // The CRT uses a 3/4-scale font so long status lines fit inside the glass.
+            g.pose().pushMatrix();
+            g.pose().translate(ro.x() + 3, ro.y() + 3);
+            g.pose().scale(CRT_SCALE, CRT_SCALE);
+            int line = (int) Math.ceil(10 / CRT_SCALE);
+            g.text(this.font, Component.translatable(KEY_OUTPUT, burning ? CombustionGeneratorBlockEntity.RATE : 0), 0, 0, CRT_TEXT, false);
+            g.text(this.font, Component.translatable(KEY_STORED, (int) ((long) this.menu.energy() * 100 / cap)), 0, line, CRT_TEXT, false);
+            g.text(this.font, Component.translatable(this.menu.status().translationKey()), 0, line * 2, CRT_TEXT, false);
+            g.pose().popMatrix();
         }
+    }
+
+    /** Screen areas outside the main window (the side-config tab), for JEI to keep clear of. */
+    public List<Rect2i> extraAreas() {
+        return List.of(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
+        return super.hasClickedOutside(mx, my, xo, yo) && !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
         super.extractRenderState(g, mouseX, mouseY, partial);
+        this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
         int mx = mouseX - this.leftPos;
         int my = mouseY - this.topPos;
         if (this.layout.energy().contains(mx, my)) {
@@ -130,6 +149,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (this.sideTab.click(event.x(), event.y(), event.button(), this.leftPos, this.topPos, this.imageWidth)) {
+            return true;
+        }
         int mx = (int) event.x() - this.leftPos;
         int my = (int) event.y() - this.topPos;
         if (this.layout.redstone().contains(mx, my) && this.minecraft != null && this.minecraft.gameMode != null) {
@@ -140,8 +162,4 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         return super.mouseClicked(event, doubleClick);
     }
 
-    @SuppressWarnings("unused")
-    private static List<Component> lines(Component... c) {
-        return List.of(c);
-    }
 }

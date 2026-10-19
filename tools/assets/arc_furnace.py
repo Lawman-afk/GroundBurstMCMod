@@ -46,7 +46,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     bands = [(-6, -5, 3.5), (-5, -3.5, 5), (-3.5, 3.5, 6), (3.5, 5, 5), (5, 6, 3.5)]
     for i, (z0, z1, hw) in enumerate(bands):
         add("shell", g.box(f"shell{i}", (-hw, 2, CZ + z0), (hw, 11, CZ + z1), faces=("north", "south", "east", "west"), bone=F))
-        add("band", g.box(f"hoop{i}", (-hw - 0.3, 4, CZ + z0 - (0.3 if z0 == -6 else 0)), (hw + 0.3, 5, CZ + z1 + (0.3 if z1 == 6 else 0)),
+        # Hoops overlap their neighbours by 0.3 so their step faces never sit on the shell's step faces.
+        add("band", g.box(f"hoop{i}", (-hw - 0.3, 4, CZ + z0 - 0.3), (hw + 0.3, 5, CZ + z1 + 0.3),
                           faces=("north", "south", "east", "west"), bone=F))
     # Roof: the same stepped outline in brick-lined steel, with an open throat (|x|, |z| < 2.5).
     roof_boxes = []
@@ -69,8 +70,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("spout_lip", g.box("spout_lip", (-1.5, 9, CZ - 8), (-1, 10, CZ - 5.5), faces=("north", "east", "west", "up"), bone=F))
     add("spout_lip", g.box("spout_lip2", (1, 9, CZ - 8), (1.5, 10, CZ - 5.5), faces=("north", "east", "west", "up"), bone=F))
     add("port", g.box("port", (-2.5, 4.5, CZ - 6.6), (2.5, 7.5, CZ - 6), faces=("north", "east", "west", "up", "down"), bone=F))
-    add("port_back", g.box("port_back", (-2, 5, CZ - 6.05), (2, 7, CZ - 6.04), faces=("north",), bone=F))
-    glow = add("port_glow", g.box("port_glow", (-1.8, 5.6, CZ - 5.9), (1.8, 6.4, CZ - 5.85), faces=("north",), shade=False, bone="port_glow"))
+    add("port_back", g.box("port_back", (-2, 5, CZ - 6.3), (2, 7, CZ - 6.25), faces=("north",), bone=F))
+    glow = add("port_glow", g.box("port_glow", (-1.8, 5.6, CZ - 5.55), (1.8, 6.4, CZ - 5.5), faces=("north",), shade=False, bone="port_glow"))
     # Mast (back-west) and the transformer (back).
     add("mast", g.box("mast", (-7.5, 2, 4.5), (-5, 30, 7), bone=F))
     add("mast_cap", g.box("mast_cap", (-8, 30, 4), (-4.5, 31, 7.5), bone=F))
@@ -85,12 +86,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for i, (ex, ez) in enumerate(((0, CZ - 1.3), (-1.2, CZ + 0.8), (1.2, CZ + 0.8))):
         add("electrode", g.box(f"electrode{i}", (ex - 0.6, 12, ez - 0.6), (ex + 0.6, 27, ez + 0.6), faces=("north", "south", "east", "west", "up"), bone=E))
         add("clamp", g.box(f"clamp{i}", (ex - 0.9, 23.5, ez - 0.9), (ex + 0.9, 25, ez + 0.9), faces=("north", "south", "east", "west", "up", "down"), bone=E))
-    add("arm", g.box("arm", (-5, 23.8, CZ - 0.5), (1.5, 24.8, CZ + 1.5), faces=("north", "south", "up", "down", "east"), bone=E))
-    add("arm", g.box("arm_back", (-5, 23.8, CZ + 1.5), (-4, 24.8, 4.5), faces=("east", "west", "up", "down"), bone=E))
+    add("arm", g.box("arm", (-5, 23.8, CZ - 0.5), (1.5, 24.8, CZ + 2.0), faces=("north", "south", "up", "down", "east"), bone=E))
+    add("arm", g.box("arm_back", (-5, 23.8, CZ + 2.0), (-4, 24.8, 4.5), faces=("east", "west", "up", "down"), bone=E))
     add("carriage", g.box("carriage", (-8, 22.5, 4), (-4.5, 26, 7.5), bone=E))
     # Heavy cables from the bushings up to the carriage (flexible, so they ride with it).
     add("cable", g.box("cable_v", (-3, 12, 6.5), (-2, 23, 7.5), faces=("north", "south", "east", "west"), bone=E))
-    add("cable", g.box("cable_h", (-3, 11.5, 6.5), (4, 12.5, 7.5), faces=("north", "south", "up", "down", "east"), bone=F))
+    add("cable", g.box("cable_h", (-2.8, 11.65, 6.7), (4, 12.35, 7.3), faces=("north", "south", "up", "down", "east"), bone=F))
 
     g.layout()
     tex, glowmask = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -205,7 +206,7 @@ def animations() -> list[Animation]:
     working.move("electrodes", {0: (0, -4, 0), 0.3: (0, -4.6, 0), 0.7: (0, -3.8, 0), 1.0: (0, -4.4, 0), 1.4: (0, -3.9, 0),
                                 1.7: (0, -4.5, 0), 2.0: (0, -4, 0)})
     working.move("melt", {0: (0, 1.0, 0), 1.0: (0, 1.1, 0), 2.0: (0, 1.0, 0)})
-    working.move("port_glow", {0: (0, 0, -0.35), 2.0: (0, 0, -0.35)})
+    working.move("port_glow", {0: (0, 0, -0.95), 2.0: (0, 0, -0.95)})
     working.scale("port_glow", {0: (1, 1, 1), 0.25: (1, 0.6, 1), 0.5: (1, 1.1, 1), 0.9: (1, 0.7, 1), 1.3: (1, 1.2, 1), 1.6: (1, 0.8, 1), 2.0: (1, 1, 1)})
     return [working]
 

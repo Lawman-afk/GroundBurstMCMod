@@ -4,6 +4,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -96,6 +99,16 @@ public class CableBlock extends Block {
             }
         }
         return shape;
+    }
+
+    /** A neighbour's capabilities can change without a block change (e.g. a machine's side configuration). */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
+        BlockState updated = connections(level, pos, state);
+        if (updated != state) {
+            level.setBlock(pos, updated, Block.UPDATE_CLIENTS);
+            CableNetwork.invalidate(level);
+        }
     }
 
     @Override

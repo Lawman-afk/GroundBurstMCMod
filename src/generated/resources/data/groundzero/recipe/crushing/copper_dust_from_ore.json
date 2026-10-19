@@ -15,9 +15,9 @@
       }
     },
     {
-      "chance": 0.5,
+      "chance": 0.15,
       "item": {
-        "id": "groundzero:copper_dust"
+        "id": "groundzero:cobalt_dust"
       }
     }
   ],

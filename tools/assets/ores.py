@@ -16,6 +16,7 @@ from typing import Callable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from gz import paths  # noqa: E402
+from gz import vanilla as V  # noqa: E402
 from gz.model import write_json  # noqa: E402
 from gz.palette import RGBA, fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -179,13 +180,26 @@ def _ore(name: str, host: dict[str, str], paint: Callable[[Tex], None], glint: T
     return write_json(paths.MODELS / "block" / f"{name}.json", ore_model(name, host, f"groundzero:block/ore/{name}", glint_id))
 
 
+# --- vanilla-style overlays: small lit mineral clusters (see gz/vanilla.py) -------------------------------------------
+
+def _clusters(ramp, stamps, seed, rim=None, accent=None):
+    return V.ore_overlay(ramp, stamps, seed, rim=rim, accent=accent)
+
+
 def build_uranium() -> list[Path]:
     out = []
-    for variant, deposits, crusts, host, seed in (
-        ("uranium_ore", URANIUM_STONE, URANIUM_STONE_CRUSTS, STONE, 11),
-        ("deepslate_uranium_ore", URANIUM_DEEPSLATE, URANIUM_DEEPSLATE_CRUSTS, DEEPSLATE, 23),
-    ):
-        ore, glint = paint_pitchblende(deposits, crusts, glint_pick=3, seed=seed)
+    stamps = ["round", "blob3", "pair", "bar", "tall", "ell", "speck", "blob3", "pair", "speck"]
+    for variant, host, seed in (("uranium_ore", STONE, 11), ("deepslate_uranium_ore", DEEPSLATE, 23)):
+        def autunite(t, rng, painted):
+            # Yellow autunite crusts on a few clusters: pitchblende's tell-tale secondary mineral.
+            for x, y in rng.sample(sorted(painted), 4):
+                t.px(x, y, AUTUNITE[5] if rng.random() < 0.5 else AUTUNITE[4])
+        ore, highlights = _clusters(PITCHBLENDE, stamps, seed, accent=autunite)
+        glint = Tex(16, 16)
+        rng = random.Random(seed + 1)
+        for x, y in rng.sample(sorted(highlights), min(3, len(highlights))):
+            ore.px(x, y, PITCHBLENDE.shine)
+            glint.px(x, y, URANIUM_GLINT)
         out.append(_ore(variant, host, lambda t, ore=ore: t.blit(ore, 0, 0), glint))
     return out
 
@@ -193,27 +207,27 @@ def build_uranium() -> list[Path]:
 def build_others() -> list[Path]:
     import minerals as M
     out = []
-    # Lithium: spodumene laths in crossing sprays.
-
-    out.append(_ore("lithium_ore", STONE, lambda t: M.spodumene(t, [(2, 7, 3, 6, 1), (6, 6, 2, 4, 2), (10, 6, 3, 5, -1), (4, 15, 3, 5, 2), (10, 15, 2, 4, -2), (13, 14, 2, 3, 0)])))
-    out.append(_ore("deepslate_lithium_ore", DEEPSLATE, lambda t: M.spodumene(t, [(1, 6, 2, 4, 1), (4, 7, 3, 6, -1), (11, 5, 3, 5, 1), (7, 14, 3, 6, 1), (12, 15, 2, 4, -2), (2, 15, 2, 3, 0)])))
-    # Sulfur: crusts; nether variant denser and warmer.
-    out.append(_ore("sulfur_ore", STONE, lambda t: M.granular(t, M.SULFUR, [(4, 4, 2.4, 1.8), (11.5, 3.5, 1.8, 1.5), (6, 11, 2.6, 2.0), (12.5, 11.5, 1.6, 1.8), (1.5, 8.5, 1.0, 1.0)], 31)))
-    out.append(_ore("deepslate_sulfur_ore", DEEPSLATE, lambda t: M.granular(t, M.SULFUR, [(5, 3, 2.2, 1.6), (12, 6, 2.0, 2.0), (3.5, 11.5, 2.0, 1.6), (10.5, 12.5, 2.4, 1.7), (8, 8, 1.0, 0.9)], 32)))
-    out.append(_ore("nether_sulfur_ore", NETHERRACK, lambda t: M.granular(t, M.SULFUR, [(3.5, 3.5, 2.2, 2.0), (10, 2.5, 2.6, 1.6), (13, 8, 1.8, 2.2), (5, 9.5, 2.4, 1.8), (10, 13, 2.6, 1.8), (2, 14, 1.2, 1.0)], 33)))
-    # Saltpeter: white crusts with needles; sandstone variant sits on desert rock.
-    out.append(_ore("saltpeter_ore", STONE, lambda t: M.niter(t, [(4, 5, 2.4, 1.6), (12, 4, 1.8, 1.4), (7, 12, 2.6, 1.6), (13, 12, 1.4, 1.2)], 41)))
-    out.append(_ore("deepslate_saltpeter_ore", DEEPSLATE, lambda t: M.niter(t, [(5, 4, 2.2, 1.6), (12, 8, 2.0, 1.5), (4, 12, 2.4, 1.5), (11.5, 13, 1.6, 1.2)], 42)))
-    out.append(_ore("sandstone_saltpeter_ore", SANDSTONE, lambda t: M.niter(t, [(3.5, 3.5, 2.0, 1.4), (11, 4.5, 2.4, 1.6), (5, 11, 2.6, 1.6), (12.5, 12, 1.8, 1.3)], 43)))
-    # Tungsten: dark tabular wolframite.
-    out.append(_ore("tungsten_ore", STONE, lambda t: M.wolframite(t, [(2, 2, 4, 3), (10, 3, 3, 4), (5, 9, 5, 3), (12, 11, 3, 3), (1, 12, 2, 2)])))
-    out.append(_ore("deepslate_tungsten_ore", DEEPSLATE, lambda t: M.wolframite(t, [(3, 1, 3, 4), (9, 2, 5, 3), (2, 9, 4, 4), (10, 10, 4, 3), (7, 7, 2, 2)])))
-    # Lead: galena cubes.
-    out.append(_ore("lead_ore", STONE, lambda t: M.galena(t, [(2, 2, 3), (6, 4, 2), (11, 2, 3), (4, 10, 3), (9, 9, 2), (12, 11, 3), (1, 7, 2)])))
-    out.append(_ore("deepslate_lead_ore", DEEPSLATE, lambda t: M.galena(t, [(3, 1, 3), (10, 3, 3), (7, 7, 2), (2, 11, 3), (11, 11, 2), (13, 8, 2), (6, 13, 2)])))
-    # Rare earths: monazite grains.
-    out.append(_ore("rare_earth_ore", STONE, lambda t: M.monazite(t, [(3.5, 3.5, 1.6), (6, 5.5, 1.0), (12, 4, 1.4), (5, 11.5, 1.7), (11.5, 11, 1.3), (13.5, 13.5, 0.9), (9, 8, 0.8)])))
-    out.append(_ore("deepslate_rare_earth_ore", DEEPSLATE, lambda t: M.monazite(t, [(4, 3, 1.4), (11, 2.5, 1.6), (13, 7, 1.0), (3, 10, 1.6), (10, 11.5, 1.5), (7, 13.5, 1.0), (7.5, 7, 0.9)])))
+    common = ["round", "blob3", "bar", "pair", "tall", "ell", "speck", "blob3", "pair", "speck"]
+    plans = [
+        # name, host, ramp, stamps, seed, rim, tone shift
+        ("lithium_ore", STONE, M.SPODUMENE, ["prism", "prism_s", "prism_s", "prism", "prism_s", "pair", "speck", "speck"], 51, None, 0),
+        ("deepslate_lithium_ore", DEEPSLATE, M.SPODUMENE, ["prism", "prism_s", "prism", "prism_s", "prism_s", "pair", "speck"], 52, None, 0),
+        ("sulfur_ore", STONE, M.SULFUR, common, 31, None, 0),
+        ("deepslate_sulfur_ore", DEEPSLATE, M.SULFUR, common, 32, None, 0),
+        ("nether_sulfur_ore", NETHERRACK, M.SULFUR, common + ["round", "blob3"], 33, None, 0),
+        ("saltpeter_ore", STONE, M.NITER, ["crust", "crust_s", "crust", "crust_s", "crust_s", "pair", "speck", "speck"], 41, M.NITER[1], 1),
+        ("deepslate_saltpeter_ore", DEEPSLATE, M.NITER, ["crust", "crust_s", "crust_s", "crust", "pair", "speck", "speck"], 42, M.NITER[1], 1),
+        ("sandstone_saltpeter_ore", SANDSTONE, M.NITER, ["crust", "crust", "crust_s", "crust_s", "pair", "speck"], 43, M.NITER[1], 1),
+        ("tungsten_ore", STONE, M.WOLFRAMITE, ["tab", "tab", "bar", "tall", "pair", "ell", "speck", "speck"], 61, None, 0),
+        ("deepslate_tungsten_ore", DEEPSLATE, M.WOLFRAMITE, ["tab", "bar", "tab", "tall", "pair", "ell", "speck"], 62, None, 0),
+        ("lead_ore", STONE, M.GALENA, ["cube", "cube_s", "cube", "cube_s", "cube_s", "pair", "speck", "speck"], 71, M.GALENA[0], 1),
+        ("deepslate_lead_ore", DEEPSLATE, M.GALENA, ["cube", "cube_s", "cube_s", "cube", "cube_s", "speck", "speck"], 72, M.GALENA[0], 1),
+        ("rare_earth_ore", STONE, M.MONAZITE, common, 81, None, 0),
+        ("deepslate_rare_earth_ore", DEEPSLATE, M.MONAZITE, common, 82, None, 0),
+    ]
+    for name, host, ramp, stamps, seed, rim, shift in plans:
+        ore, _ = V.ore_overlay(ramp, stamps, seed, rim=rim, shift=shift)
+        out.append(_ore(name, host, lambda t, ore=ore: t.blit(ore, 0, 0)))
     return out
 
 

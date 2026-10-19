@@ -200,9 +200,9 @@ Each asset gets a "review" status in PROGRESS.md: *drafted → previewed → rev
 | **Saltpeter** (niter) | `saltpeter_ore`, `deepslate_saltpeter_ore`, `sandstone_saltpeter_ore` | Overworld Y 0…80; sandstone variant in deserts/badlands near the surface | 7, 4/chunk | Drops 2–3 saltpeter dust |
 | **Tungsten** (wolframite) | `tungsten_ore`, `deepslate_tungsten_ore` | Overworld Y −64…0, peak −40 | 5, 2/chunk | Raw tungsten → crush → 2 tungsten dust → **Arc Furnace only** → ingot (too hot for a furnace) |
 | **Lead** (galena) | `lead_ore`, `deepslate_lead_ore` | Overworld Y −32…48 | 8, 5/chunk | Raw lead → smelt/crush. Radiation shielding, hazmat lining, ammo. *(Added: shielding needs a material.)* |
-| **Rare earths** (monazite) | `rare_earth_ore`, `deepslate_rare_earth_ore` | Overworld Y −32…48; +100% in mountains | 4, 2/chunk | Raw → crush → rare-earth dust (10% chance thorium-free cobalt byproduct) |
+| **Rare earths** (monazite) | `rare_earth_ore`, `deepslate_rare_earth_ore` | Overworld Y −32…48; +100% in mountains | 4, 2/chunk | Raw → crush → rare-earth dust (5% uranium dust byproduct: monazite carries thorium and some uranium) |
 | **Mercury** (vanilla cinnabar) | — (uses vanilla 26.2 cinnabar blocks from Sulfur Caves) | Sulfur Caves | — | Cinnabar → crush → cinnabar dust → Arc Furnace → mercury flask (lithium-6 enrichment). |
-| **Cobalt** (byproduct) | — | — | — | 15% byproduct when crushing raw iron, 10% from rare earths → cobalt dust (for salted bombs). No new ore: keeps the ore list focused. |
+| **Cobalt** (byproduct) | — | — | — | Byproduct of crushing copper (15%, as in real copper–cobalt ores) and iron (10%) → cobalt dust (for salted bombs). No new ore: keeps the ore list focused. |
 | **Exotic matter** | `exotic_crystal_cluster` (+ budding `voidstone`) | **End**: "void geodes" hanging under outer End islands (rare, 1 per ~12 chunks). Fragments also in Ancient City loot. | geode ~11 blocks | Exotic shard → Exotic Matter Fabricator. Clusters hum and distort light (subtle shader lensing). |
 
 All ore blocks have stone/deepslate (and nether/sandstone where listed) textures with the ore drawn as real
@@ -1359,3 +1359,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Two-block machines are door-style `TallMachineBlock`s: the lower half owns the block entity and loot; the upper half forwards use and capabilities. |
 | 2026-10-19 | Industrial Press dies are recipe catalysts (`catalyst` field), never consumed; dies are cheap iron crafts so the press is part of the bootstrap. |
 | 2026-10-19 | Machine work sounds are 2 s seamless loops whose rhythm matches each model's animation (press impact at 1.0 s). |
+| 2026-10-19 | Side configuration is per machine-relative face: item mode (None/Input/Output/Both) + energy on/off, plus auto-eject; edited in a right-edge GUI tab. Defaults: every face Both + energy on (old behaviour). |
+| 2026-10-19 | JEI is an optional dependency; machine recipe types are synced to clients (OnDatapackSyncEvent) because 1.21.2+ servers no longer send recipes. |
+| 2026-10-19 | Resource item/ore textures follow vanilla conventions (studied, not copied): full-width ingots, rounded dust heaps, small lit ore clusters. |
+| 2026-10-19 | Cobalt is a byproduct of copper (15%) and iron (10%) crushing; monazite (rare earths) yields 5% uranium dust. |

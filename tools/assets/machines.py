@@ -40,13 +40,13 @@ def machine_particle() -> None:
 
 # Two-block-tall machines shrink in the GUI and hands so the whole model fits (GeckoLib draws it from the base).
 TALL_DISPLAY = {
-    "gui": {"rotation": [30, 225, 0], "translation": [0, -3.2, 0], "scale": [0.36, 0.36, 0.36]},
-    "ground": {"rotation": [0, 0, 0], "translation": [0, 1.5, 0], "scale": [0.18, 0.18, 0.18]},
-    "fixed": {"rotation": [0, 0, 0], "translation": [0, -4, 0], "scale": [0.4, 0.4, 0.4]},
-    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 1.5, 0], "scale": [0.28, 0.28, 0.28]},
-    "thirdperson_lefthand": {"rotation": [75, 45, 0], "translation": [0, 1.5, 0], "scale": [0.28, 0.28, 0.28]},
-    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -1, 0], "scale": [0.3, 0.3, 0.3]},
-    "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, -1, 0], "scale": [0.3, 0.3, 0.3]},
+    "gui": {"rotation": [30, 225, 0], "translation": [0, -2.6, 0], "scale": [0.38, 0.38, 0.38]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 1, 0], "scale": [0.18, 0.18, 0.18]},
+    "fixed": {"rotation": [0, 0, 0], "translation": [0, -3.2, 0], "scale": [0.4, 0.4, 0.4]},
+    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 0.5, 0], "scale": [0.28, 0.28, 0.28]},
+    "thirdperson_lefthand": {"rotation": [75, 45, 0], "translation": [0, 0.5, 0], "scale": [0.28, 0.28, 0.28]},
+    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.3, 0.3, 0.3]},
+    "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, -2, 0], "scale": [0.3, 0.3, 0.3]},
 }
 
 

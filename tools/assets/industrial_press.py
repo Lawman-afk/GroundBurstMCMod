@@ -27,7 +27,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g = GeoModel(NAME, tex_size=(128, 128))
     g.bone("frame")
     g.bone("ram", pivot=(0, 20, -1), parent="frame")
-    g.bone("gauge_needle", pivot=(6.6, 22, -3), parent="frame")
+    g.bone("gauge_needle", pivot=(7.15, 22, -3), parent="frame")
     F = "frame"
     parts: dict[str, list] = {}
 
@@ -37,8 +37,15 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     add("plinth", g.box("plinth", (-8, 0, -8), (8, 2, 8), bone=F))
     add("bed", g.box("bed", (-6.5, 2, -7), (6.5, 7, 4), bone=F))
-    add("die", g.box("die", (-3.5, 7, -4.5), (3.5, 9, 1.5), bone=F))
-    add("die_cavity", g.box("die_cavity", (-2, 8.99, -3), (2, 9, 0), faces=("up",), bone=F))
+    # One die block per die type; the renderer shows only the die loaded in the press (none when empty).
+    DIES = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV}
+    g.exclusive = [set(DIES)]
+    for name in DIES:
+        g.bone(name, pivot=(0, 7, -1.5), parent="frame")
+        add(name, g.box(name, (-3.5, 7, -4.5), (3.5, 9, 1.5), faces=("north", "south", "east", "west", "up"), bone=name))
+    # Locating pins on the empty bed.
+    for i, x in enumerate((-4.5, 3.5)):
+        add("pin", g.box(f"pin{i}", (x, 7, -2), (x + 1, 8, -1), faces=("north", "south", "east", "west", "up"), bone=F))
     # Spine and crown (the C-frame), with gusset ribs.
     add("spine", g.box("spine", (-4.5, 2, 4), (4.5, 30, 8), bone=F))
     add("crown", g.box("crown", (-5.5, 24, -6), (5.5, 30, 4), faces=("north", "east", "west", "up", "down"), bone=F))
@@ -52,7 +59,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("cyl_body", g.box("cyl_body", (-2.5, 21.5, -3.5), (2.5, 24, 1.5), faces=("north", "south", "east", "west", "down"), bone=F))
     # Ram: polished rod + heavy platen; at rest the platen hangs 7 px above the die.
     R = "ram"
-    add("rod", g.box("rod", (-1.25, 16, -2.25), (1.25, 21.5, 0.25), faces=("north", "south", "east", "west"), bone=R))
+    # The rod runs up inside the cylinder so it never shows a gap at full stroke (5.6 px).
+    add("rod", g.box("rod", (-1.25, 16, -2.25), (1.25, 28, 0.25), faces=("north", "south", "east", "west"), bone=R))
     add("platen", g.box("platen", (-4, 14, -5), (4, 16, 2), bone=R))
     add("punch", g.box("punch", (-2, 13, -3), (2, 14, 0), faces=("north", "south", "east", "west", "down"), bone=R))
     # Guard posts with light-curtain emitters at the front corners.
@@ -65,7 +73,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("hose", g.box("hose_v", (6.5, 8, 1.5), (7.5, 26, 2.5), faces=("north", "south", "east", "west"), bone=F))
     add("hose", g.box("hose_h", (3, 26, 1.5), (7.5, 27, 2.5), faces=("north", "south", "up", "down"), bone=F))
     add("gauge", g.box("gauge", (6.5, 20.5, -4.5), (7, 23.5, -1.5), faces=("east", "north", "south", "up", "down"), bone=F))
-    add("needle", g.box("needle", (7, 21.9, -3.1), (7.1, 23.2, -2.9), faces=("east",), shade=False, bone="gauge_needle"))
+    add("needle", g.box("needle", (7.15, 21.9, -3.1), (7.2, 23.2, -2.9), faces=("east",), shade=False, bone="gauge_needle"))
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -95,14 +103,33 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.hline(x + w // 2 - 2, y + 1, 4, P.HAZARD_YELLOW[3])
     g.paint_all(tex, parts["crown"][0], crown_front)
 
-    def die(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        t.hline(x, y, w, steel[5])
-        if d == "north" and h >= 2:
-            t.hline(x, y + 1, w, P.HAZARD_YELLOW[3])           # die colour band
-    g.paint_all(tex, parts["die"][0], die)
-    g.paint_all(tex, parts["die_cavity"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[1]), t.outline(*r, steel[2])))
+    def die_painter(name, band):
+        def paint(t, r, d):
+            x, y, w, h = r
+            t.rect(x, y, w, h, steel[tone(d)])
+            if d == "up":
+                t.outline(x, y, w, h, steel[2])
+                cx, cy = x + w // 2, y + h // 2
+                cav = P.BLACK_PAINT[1]
+                if name == "die_plate":
+                    t.rect(x + 1, cy - 1, w - 2, 2, cav)                 # long shallow slot
+                elif name == "die_rod":
+                    t.rect(cx - 1, cy - 1, 2, 2, cav)                    # round bore
+                elif name == "die_wire":
+                    for dx in (-2, 0, 2):
+                        t.px(cx + dx, cy, cav)                           # drawing holes
+                else:
+                    t.rect(cx - 2, cy - 2, 4, 4, cav)                    # deep cylindrical cavity
+                    t.outline(cx - 2, cy - 2, 4, 4, P.BLACK_PAINT[2])
+                t.px(x + 1, y + 1, band[4])                              # colour-coded corner mark
+            else:
+                t.hline(x, y, w, steel[5])
+                t.hline(x, y + 1, w, band[4])                            # die colour band
+        return paint
+    for name, band in DIES.items():
+        g.paint_all(tex, parts[name][0], die_painter(name, band))
+    for b in parts["pin"]:
+        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.px(r[0], r[1], steel[6])))
 
     for b in parts["cylinder"] + parts["cyl_body"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.hline(r[0], r[1], r[2], gun[5]),

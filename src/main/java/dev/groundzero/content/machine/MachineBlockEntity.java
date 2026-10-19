@@ -16,7 +16,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
@@ -27,11 +29,16 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider {
     // Sync slots shared by every machine menu. Ints are sent as shorts by vanilla, so 32-bit values use two.
     public static final int DATA_ENERGY_LO = 0, DATA_ENERGY_HI = 1, DATA_CAPACITY_LO = 2, DATA_CAPACITY_HI = 3,
-            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_BASE_COUNT = 6;
+            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7, DATA_BASE_COUNT = 8;
+    private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16;
 
     protected final MachineEnergy energy;
     protected final MachineInventory inventory;
-    protected final AutomationView automation;
+    /** Automation views by item mode (NONE has none). */
+    private final AutomationView[] automation = new AutomationView[SideConfig.ItemMode.values().length];
+    private final int[] inputSlots;
+    private final int[] outputSlots;
+    protected final SideConfig sides = new SideConfig();
     protected RedstoneMode redstoneMode = RedstoneMode.IGNORE;
     /** Why the machine is (not) running; shown in the GUI. */
     protected MachineStatus status = MachineStatus.IDLE;
@@ -46,6 +53,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 case DATA_CAPACITY_HI -> energy.capacity() >>> 16;
                 case DATA_REDSTONE -> redstoneMode.ordinal();
                 case DATA_STATUS -> status.ordinal();
+                case DATA_SIDE_ITEMS -> sides.packItems();
+                case DATA_SIDE_FLAGS -> sides.packFlags();
                 default -> getExtraData(index - DATA_BASE_COUNT);
             };
         }
@@ -65,8 +74,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots) {
         super(type, pos, state);
         this.energy = new MachineEnergy(energyCapacity, maxInsert, maxExtract, this::setChanged);
-        this.inventory = new MachineInventory(slotCount, this::isItemValid, this::setChanged);
-        this.automation = new AutomationView(this.inventory, inputSlots, outputSlots);
+        this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
+        this.inputSlots = inputSlots;
+        this.outputSlots = outputSlots;
+        for (SideConfig.ItemMode mode : SideConfig.ItemMode.values()) {
+            if (mode != SideConfig.ItemMode.NONE) {
+                this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract());
+            }
+        }
     }
 
     // --- subclass contract ----------------------------------------------------------------------------------------
@@ -74,6 +89,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected abstract boolean tickMachine(ServerLevel level);
 
     protected abstract boolean isItemValid(int slot, ItemStack stack);
+
+    /** A slot changed (-1: any slot may have). Subclasses that show slot contents on the model sync here. */
+    protected void onSlotChanged(int slot) {
+        setChanged();
+    }
 
     protected int extraDataCount() {
         return 0;
@@ -95,6 +115,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         } else {
             active = tickMachine(level);
         }
+        if (this.sides.autoEject() && this.outputSlots.length > 0 && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
+            autoEject(level);
+        }
         BlockState state = getBlockState();
         if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != active) {
             level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, active), 3);
@@ -111,13 +134,68 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return null;
     }
 
-    // --- capabilities ------------------------------------------------------------------------------------------------------
+    // --- capabilities & side configuration ----------------------------------------------------------------------------------
+    /** The machine face a world direction falls on. */
+    public SideConfig.Face face(Direction side) {
+        BlockState state = getBlockState();
+        Direction facing = state.hasProperty(MachineBlock.FACING) ? state.getValue(MachineBlock.FACING) : Direction.NORTH;
+        return SideConfig.Face.of(side, facing);
+    }
+
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
-        return this.energy;
+        return side == null || this.sides.energy(face(side)) ? this.energy : null;
     }
 
     public @Nullable ResourceHandler<ItemResource> itemsFor(@Nullable Direction side) {
-        return side == null ? this.inventory : this.automation;
+        return side == null ? this.inventory : this.automation[this.sides.items(face(side)).ordinal()];
+    }
+
+    public SideConfig sides() {
+        return sides;
+    }
+
+    /** Whether this machine has output slots (auto-eject is offered only then). */
+    public boolean hasOutputs() {
+        return this.outputSlots.length > 0;
+    }
+
+    /** Whether the item channel is fuel (generators) rather than inputs and products; only changes GUI wording. */
+    public boolean itemsAreFuel() {
+        return false;
+    }
+
+    /** Applies a side-config change from the GUI and tells cables, pipes and capability caches about it. */
+    public void changeSides(java.util.function.Consumer<SideConfig> change) {
+        change.accept(this.sides);
+        setChanged();
+        if (this.level != null) {
+            this.level.invalidateCapabilities(this.worldPosition);
+            this.level.updateNeighborsAt(this.worldPosition, getBlockState().getBlock());
+            if (getBlockState().getBlock() instanceof TallMachineBlock) {
+                this.level.invalidateCapabilities(this.worldPosition.above());
+                this.level.updateNeighborsAt(this.worldPosition.above(), getBlockState().getBlock());
+            }
+        }
+    }
+
+    /** Pushes output slots into the item handlers beside every output face. */
+    private void autoEject(ServerLevel level) {
+        Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
+        AutomationView out = new AutomationView(this.inventory, new int[0], this.outputSlots, false, true);
+        for (SideConfig.Face face : SideConfig.Face.values()) {
+            if (!this.sides.items(face).canExtract()) {
+                continue;
+            }
+            Direction dir = face.toDirection(facing);
+            BlockPos target = this.worldPosition.relative(dir);
+            if (getBlockState().getBlock() instanceof TallMachineBlock && dir == Direction.UP) {
+                target = target.above();
+            }
+            ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, target, dir.getOpposite());
+            if (handler != null) {
+                ResourceHandlerUtil.moveStacking(out, handler, r -> true, EJECT_BATCH, null);
+            }
+        }
     }
 
     // --- accessors -------------------------------------------------------------------------------------------------------
@@ -150,6 +228,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.energy.serialize(output.child("energy"));
         this.inventory.serialize(output.child("items"));
         output.putInt("redstone", this.redstoneMode.ordinal());
+        this.sides.save(output.child("sides"));
     }
 
     @Override
@@ -158,6 +237,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.energy.deserialize(input.childOrEmpty("energy"));
         this.inventory.deserialize(input.childOrEmpty("items"));
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
+        this.sides.load(input.childOrEmpty("sides"));
     }
 
     @Override

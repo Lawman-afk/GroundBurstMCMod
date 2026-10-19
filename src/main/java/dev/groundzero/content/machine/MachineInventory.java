@@ -1,6 +1,7 @@
 package dev.groundzero.content.machine;
 
 import java.util.function.BiPredicate;
+import java.util.function.IntConsumer;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -14,9 +15,10 @@ import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
  */
 public class MachineInventory extends ItemStacksResourceHandler implements Container {
     private final BiPredicate<Integer, ItemStack> validator;
-    private final Runnable onChanged;
+    private final IntConsumer onChanged;
 
-    public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, Runnable onChanged) {
+    /** {@code onChanged} receives the slot that changed, or -1 when any slot may have. */
+    public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, IntConsumer onChanged) {
         super(size);
         this.validator = validator;
         this.onChanged = onChanged;
@@ -30,7 +32,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
 
     @Override
     protected void onContentsChanged(int index, ItemStack previousContents) {
-        this.onChanged.run();
+        this.onChanged.accept(index);
     }
 
     // --- direct access for machine logic -----------------------------------------------------------------------------
@@ -43,7 +45,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
     @Override
     public void setItem(int index, ItemStack stack) {
         this.stacks.set(index, stack);
-        this.onChanged.run();
+        this.onChanged.accept(index);
     }
 
     /** Inserts into a slot as far as stacking allows; returns what did not fit. */
@@ -109,7 +111,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
 
     @Override
     public void setChanged() {
-        this.onChanged.run();
+        this.onChanged.accept(-1);
     }
 
     @Override
@@ -122,6 +124,6 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
         for (int i = 0; i < this.stacks.size(); i++) {
             this.stacks.set(i, ItemStack.EMPTY);
         }
-        this.onChanged.run();
+        this.onChanged.accept(-1);
     }
 }

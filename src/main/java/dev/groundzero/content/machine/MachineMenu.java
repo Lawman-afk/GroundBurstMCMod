@@ -18,6 +18,9 @@ import net.minecraft.world.item.ItemStack;
  */
 public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_REDSTONE = 0;
+    public static final int BUTTON_AUTO_EJECT = 1;
+    /** + face ordinal: next / previous item mode; toggle energy. */
+    public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30;
 
     private final MachineBlockEntity machine;
     private final MachineLayout layout;
@@ -84,11 +87,36 @@ public class MachineMenu extends AbstractContainerMenu {
         return data.get(MachineBlockEntity.DATA_BASE_COUNT + index);
     }
 
+    /** The side configuration as last synced (client) or live (server). */
+    public SideConfig sides() {
+        SideConfig config = new SideConfig();
+        config.unpack(data.get(MachineBlockEntity.DATA_SIDE_ITEMS), data.get(MachineBlockEntity.DATA_SIDE_FLAGS));
+        return config;
+    }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id == BUTTON_REDSTONE) {
             this.machine.cycleRedstoneMode();
             return true;
+        }
+        if (id == BUTTON_AUTO_EJECT) {
+            this.machine.changeSides(SideConfig::toggleAutoEject);
+            return true;
+        }
+        int faces = SideConfig.Face.values().length;
+        for (int base : new int[] {BUTTON_ITEMS_NEXT, BUTTON_ITEMS_PREV, BUTTON_ENERGY}) {
+            if (id >= base && id < base + faces) {
+                SideConfig.Face face = SideConfig.Face.values()[id - base];
+                this.machine.changeSides(c -> {
+                    if (base == BUTTON_ENERGY) {
+                        c.toggleEnergy(face);
+                    } else {
+                        c.cycleItems(face, base == BUTTON_ITEMS_NEXT);
+                    }
+                });
+                return true;
+            }
         }
         return false;
     }

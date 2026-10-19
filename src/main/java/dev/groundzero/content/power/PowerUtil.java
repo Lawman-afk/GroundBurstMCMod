@@ -1,5 +1,7 @@
 package dev.groundzero.content.power;
 
+import java.util.function.Predicate;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +17,11 @@ public final class PowerUtil {
 
     /** Offers up to {@code maxPerTick} FE from a buffer to every neighbouring energy handler, round-robin by side. */
     public static void pushToNeighbours(ServerLevel level, BlockPos pos, MachineEnergy source, int maxPerTick) {
+        pushToNeighbours(level, pos, source, maxPerTick, side -> true);
+    }
+
+    /** As above, only through the sides {@code allowed} accepts (a machine's energy-enabled faces). */
+    public static void pushToNeighbours(ServerLevel level, BlockPos pos, MachineEnergy source, int maxPerTick, Predicate<Direction> allowed) {
         int budget = Math.min(maxPerTick, source.stored());
         if (budget <= 0) {
             return;
@@ -22,6 +29,9 @@ public final class PowerUtil {
         int start = (int) (level.getGameTime() % 6);
         for (int k = 0; k < 6 && budget > 0; k++) {
             Direction side = Direction.values()[(start + k) % 6];
+            if (!allowed.test(side)) {
+                continue;
+            }
             EnergyHandler target = level.getCapability(Capabilities.Energy.BLOCK, pos.relative(side), side.getOpposite());
             if (target == null) {
                 continue;

@@ -9,6 +9,8 @@ import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -38,6 +40,17 @@ public final class GZRecipes {
         TYPES.register(modBus);
         SERIALIZERS.register(modBus);
         BOOK_CATEGORIES.register(modBus);
+        NeoForge.EVENT_BUS.addListener(GZRecipes::syncToClients);
+    }
+
+    /**
+     * Since 1.21.2 the server keeps recipes to itself. Machine recipes are sent to every client so recipe viewers
+     * (JEI) can show them; the client keeps them in {@code ClientRecipes}.
+     */
+    private static void syncToClients(OnDatapackSyncEvent event) {
+        for (ProcessingKind kind : ProcessingKind.values()) {
+            event.sendRecipes(type(kind));
+        }
     }
 
     public static RecipeType<ProcessingRecipe> type(ProcessingKind kind) {

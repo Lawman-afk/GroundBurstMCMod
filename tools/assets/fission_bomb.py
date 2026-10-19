@@ -54,8 +54,10 @@ def build() -> tuple[BlockModel, Tex]:
     disc("nose1", 1.5, 3, 8, dark)
     disc("shoulder", 3, 5, 12, ochre)
     disc("band", 5, 6, 14, red)
-    main = disc("main", 6, 21, 14, ochre)
+    # The main body stops at the flange instead of running through it, so no faces sit on top of each other.
+    main_fore = disc("main", 6, 12, 14, ochre)
     disc("flange", 12, 14, 16, gun)
+    main_aft = disc("main_aft", 14, 21, 14, ochre)
     disc("aft0", 21, 23, 12, ochre)
     disc("aft1", 23, 25, 10, ochre)
     disc("aft2", 25, 26, 8, ochre)
@@ -84,7 +86,7 @@ def build() -> tuple[BlockModel, Tex]:
     add("lug",
         m.box("lug_post_n", (7, 17, 12), (9, 19, 12.75)),
         m.box("lug_post_s", (7, 17, 13.25), (9, 19, 14)),
-        m.box("lug_bar", (7, 18.5, 12), (9, 19.5, 14)))
+        m.box("lug_bar", (6.75, 18.75, 11.75), (9.25, 19.5, 14.25)))
 
     # --- cradle ------------------------------------------------------------------------------------------------------
     for i, (za, zb) in enumerate(((7, 10), (17, 20))):
@@ -116,17 +118,18 @@ def build() -> tuple[BlockModel, Tex]:
                     tex.px(k, y + (h - 1) // 2, gun.shine)
 
     # Main body markings on the tall central band.
-    centre_band = max(main.boxes, key=lambda bx: bx.size()[1])
-    # West side (image x runs north -> south, z 6..21): inset access hatch forward of the flange.
-    x, y, w, h = m.rect(centre_band, "west")
+    fore_band = max(main_fore.boxes, key=lambda bx: bx.size()[1])
+    aft_band = max(main_aft.boxes, key=lambda bx: bx.size()[1])
+    # West side (image x runs north -> south): inset access hatch forward of the flange.
+    x, y, w, h = m.rect(fore_band, "west")
     tex.panel(x + 1, y + 1, 5, h - 2, ochre, base=3, style="inset")
     for px_, py_ in ((x + 1, y + 1), (x + 5, y + 1), (x + 1, y + h - 2), (x + 5, y + h - 2)):
         tex.px(px_, py_, ochre.deep)
     # East side (image x runs south -> north): stencilled serial aft of the flange.
-    x, y, w, h = m.rect(centre_band, "east")
+    x, y, w, h = m.rect(aft_band, "east")
     tex.text(x + 1, y, "15", P.BLACK_PAINT.base)
     # Sparse paint wear on the main body's side faces.
-    for i, b in enumerate(main.boxes):
+    for i, b in enumerate(main_fore.boxes + main_aft.boxes):
         for d in ("east", "west"):
             if d in b.faces:
                 rx, ry, rw, rh = m.rect(b, d)
