@@ -66,6 +66,7 @@ public final class GZGameTests {
         FluidMachineTests.register();
         MultiblockTests.register();
         FluidSystemTests.register();
+        TankPumpTests.register();
     }
 
     private GZGameTests() {}

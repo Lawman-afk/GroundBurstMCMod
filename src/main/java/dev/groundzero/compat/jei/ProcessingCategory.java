@@ -48,8 +48,11 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
         }
         for (SizedFluidIngredient fluid : recipe.fluids()) {
             IRecipeSlotBuilder slot = builder.addInputSlot(cellX(cell), cellY(cell)).setStandardSlotBackground();
+            // Tags hold flowing variants too; showing them would make the slot blink through an invisible fluid.
             for (var f : fluid.ingredient().fluids()) {
-                slot.add(f.value(), fluid.amount());
+                if (f.value().isSource(f.value().defaultFluidState())) {
+                    slot.add(f.value(), fluid.amount());
+                }
             }
             cell++;
         }

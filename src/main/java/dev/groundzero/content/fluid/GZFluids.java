@@ -63,13 +63,19 @@ public final class GZFluids {
             1140, 1, 90, GZChemicals.LIQUID_OXYGEN_CANISTER, GZParts.EMPTY_CANISTER, MapColor.COLOR_LIGHT_BLUE);
     public static final ChemFluid LIQUID_NITROGEN = liquid("liquid_nitrogen", "Liquid Nitrogen", Look.LIQUID, 0xFFD8E8F2, Hazard.CRYO,
             810, 1, 77, GZChemicals.LIQUID_NITROGEN_CANISTER, GZParts.EMPTY_CANISTER, MapColor.SNOW);
-    public static final ChemFluid DEUTERIUM = gas("deuterium", "Deuterium", 0xFFA4BCFF, GZChemicals.DEUTERIUM_CANISTER);
-    public static final ChemFluid URANIUM_HEXAFLUORIDE = gas("uranium_hexafluoride", "Uranium Hexafluoride", 0xFFC6D06A, GZChemicals.UF6_CANISTER);
+    public static final ChemFluid DEUTERIUM = gas("deuterium", "Deuterium", 0xFFA4BCFF, Hazard.NONE, GZChemicals.DEUTERIUM_CANISTER);
+    public static final ChemFluid URANIUM_HEXAFLUORIDE = gas("uranium_hexafluoride", "Uranium Hexafluoride", 0xFFC6D06A, Hazard.TOXIC,
+            GZChemicals.UF6_CANISTER);
 
     /** Steel pipe that carries fluids between machines and tanks. */
     public static final GZBlocks.WithItem<FluidPipeBlock> FLUID_PIPE = GZBlocks.register("fluid_pipe", "Fluid Pipe", GZTab.MACHINES,
             FluidPipeBlock::new, p -> p.mapColor(MapColor.METAL).strength(2f, 6f).requiresCorrectToolForDrops()
                     .sound(SoundType.COPPER).noOcclusion().forceSolidOn());
+
+    /** Expandable fluid tank: blocks join into tanks up to 3x3x5 (see {@link FluidTankStructure}). */
+    public static final GZBlocks.WithItem<FluidTankBlock> FLUID_TANK = GZBlocks.register("fluid_tank", "Fluid Tank", GZTab.MACHINES,
+            FluidTankBlock::new, p -> p.mapColor(MapColor.METAL).strength(3f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
 
     private GZFluids() {}
 
@@ -112,6 +118,13 @@ public final class GZFluids {
         }
         event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM, (stack, access) -> new CanisterFluidHandler(access),
                 canisters.toArray(Item[]::new));
+        // Gas buckets are BucketItem subclasses, which NeoForge only gives the bucket capability for the exact class.
+        for (ChemFluid f : ALL) {
+            if (f.isGas()) {
+                event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
+                        (stack, access) -> new net.neoforged.neoforge.transfer.fluid.BucketResourceHandler(access), f.bucket().get());
+            }
+        }
         event.registerBlock(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,
                 (level, pos, state, be, side) -> FluidPipeNetwork.handler(level, pos, side), FLUID_PIPE.block().get());
     }
@@ -136,21 +149,28 @@ public final class GZFluids {
                         .noLootTable().liquid().sound(SoundType.EMPTY).lightLevel(s -> hazard == Hazard.FIRE ? 3 : 0));
         h.bucket = GZItems.register(name + "_bucket", english + " Bucket", GZTab.RESOURCES, p -> new BucketItem(h.source.get(), p),
                 p -> p.craftRemainder(Items.BUCKET).stacksTo(1));
-        ChemFluid fluid = new ChemFluid(name, look, color, hazard, type, h.source, h.flowing, h.block, h.bucket, canister, empty);
+        ChemFluid fluid = new ChemFluid(name, look, color, hazard, type, h.source, h.flowing, h.block, null, h.bucket, canister, empty);
         ALL.add(fluid);
         return fluid;
     }
 
-    private static ChemFluid gas(String name, String english, int color, Supplier<? extends Item> canister) {
+    /** Gases: lighter than air, so their buckets hang upside down and released gas rises (see {@link GasCloudBlock}). */
+    private static ChemFluid gas(String name, String english, int color, Hazard hazard, Supplier<? extends Item> canister) {
         DeferredHolder<FluidType, FluidType> type = FLUID_TYPES.register(name, () -> new FluidType(FluidType.Properties.create()
                 .density(-500).viscosity(100).temperature(300).canSwim(false).canDrown(false).supportsBoating(false)
                 .canConvertToSource(false).canHydrate(false)));
         GZLang.add("fluid_type." + GroundZero.MODID + "." + name, english);
         Holders h = new Holders();
-        BaseFlowingFluid.Properties props = new BaseFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get());
+        BaseFlowingFluid.Properties props = new BaseFlowingFluid.Properties(type, () -> h.source.get(), () -> h.flowing.get())
+                .bucket(() -> h.gasBucket.get());
         h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
-        ChemFluid fluid = new ChemFluid(name, Look.GAS, color, Hazard.NONE, type, h.source, h.flowing, null, null, canister,
+        DeferredBlock<GasCloudBlock> cloud = GZBlocks.blockOnly(name, english, p -> new GasCloudBlock(p, hazard),
+                p -> p.mapColor(MapColor.NONE).replaceable().noCollision().noOcclusion().strength(0f).pushReaction(PushReaction.POPPED)
+                        .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
+        h.gasBucket = GZItems.register(name + "_bucket", english + " Bucket", GZTab.RESOURCES,
+                p -> new GasBucketItem(h.source.get(), cloud, p), p -> p.craftRemainder(Items.BUCKET).stacksTo(1));
+        ChemFluid fluid = new ChemFluid(name, Look.GAS, color, hazard, type, h.source, h.flowing, null, cloud, h.gasBucket, canister,
                 GZChemicals.EMPTY_GAS_CANISTER);
         ALL.add(fluid);
         return fluid;
@@ -162,5 +182,6 @@ public final class GZFluids {
         DeferredHolder<Fluid, BaseFlowingFluid.Flowing> flowing;
         DeferredBlock<ChemLiquidBlock> block;
         DeferredItem<BucketItem> bucket;
+        DeferredItem<GasBucketItem> gasBucket;
     }
 }

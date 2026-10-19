@@ -298,6 +298,19 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("LGL").pattern("G G").pattern("LGL")
                 .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE))
                 .save(output);
+        // Water pump: motor and pressure vessel over an intake pipe.
+        shaped(RecipeCategory.REDSTONE, GZMachines.WATER_PUMP.item(), 1)
+                .define('M', GZParts.ELECTRIC_MOTOR).define('V', GZParts.PRESSURE_VESSEL).define('F', GZParts.MACHINE_FRAME)
+                .define('P', GZFluids.FLUID_PIPE.item()).define('B', Items.BUCKET)
+                .pattern(" M ").pattern("PFP").pattern("VBV")
+                .unlockedBy(getHasName(GZParts.MACHINE_FRAME), has(GZParts.MACHINE_FRAME))
+                .save(output);
+        // Fluid tank: a steel-framed glass box.
+        shaped(RecipeCategory.REDSTONE, GZFluids.FLUID_TANK.item(), 1)
+                .define('P', GZTags.commonItem("plates/steel")).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS).define('R', GZTags.commonItem("rods/steel"))
+                .pattern("RPR").pattern("G G").pattern("RPR")
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
+                .save(output);
         // Fluid pipe: steel plates round a glass sight-tube.
         shaped(RecipeCategory.REDSTONE, GZFluids.FLUID_PIPE.item(), 6)
                 .define('P', GZTags.commonItem("plates/steel")).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)

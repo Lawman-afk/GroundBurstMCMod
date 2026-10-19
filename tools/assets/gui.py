@@ -63,9 +63,9 @@ LAYOUTS = {
     },
     "electrolytic_separator": {
         "title": (28, 6),
-        "slots": [("fill_in", 48, 22), ("fill_out", 48, 50)],
+        "slots": [],
         "energy": (8, 20, 14, 46),
-        "tanks": [(28, 20, 12, 46, "H2O", False), (112, 20, 12, 42, None, True)],
+        "tanks": [(40, 20, 12, 46, "H2O", False), (116, 20, 12, 42, None, True)],
         "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -75,10 +75,10 @@ LAYOUTS = {
     },
     "cryogenic_condenser": {
         "title": (28, 6),
-        "slots": [("membrane", 46, 35), ("fill_in", 128, 22), ("fill_out", 128, 50)],
+        "slots": [("membrane", 52, 35)],
         "energy": (8, 20, 14, 46),
-        "tanks": [(106, 20, 12, 42, None, True)],
-        "progress": (72, 34, 24, 17),
+        "tanks": [(116, 20, 12, 42, None, True)],
+        "progress": (79, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
         "redstone": (151, 58, 18, 18),
@@ -87,18 +87,28 @@ LAYOUTS = {
     },
     "chemical_plant": {
         "title": (28, 6),
-        "size": (176, 190),
-        "slots": [("in", 76, 20), ("in", 76, 38), ("in", 76, 56), ("out", 128, 27), ("out", 128, 49),
-                  ("fill_in", 100, 76), ("fill_out", 126, 76)],
+        "slots": [("in", 76, 20), ("in", 76, 38), ("in", 76, 56), ("out", 126, 25), ("out", 126, 47)],
         "energy": (8, 20, 14, 46),
         "tanks": [(26, 20, 12, 46, "H2O", False), (42, 20, 12, 42, None, True), (58, 20, 12, 42, None, True),
                   (150, 20, 12, 42, None, True)],
-        "progress": (98, 38, 24, 17),
+        "progress": (98, 34, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
-        "redstone": (150, 80, 18, 18),
+        "redstone": (101, 56, 18, 18),
         "readout": None,
-        "inventory": (8, 108),
+        "inventory": (8, 84),
+    },
+    "water_pump": {
+        "title": (28, 6),
+        "slots": [],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(82, 20, 12, 42, None, True)],
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
     },
     "combustion_generator": {
         "title": (28, 6),
@@ -128,8 +138,6 @@ def window(t: Tex, W: int = W, H: int = H, inv_y: int = 84) -> None:
     # Header strip
     t.rect(3, 3, W - 6, 13, PANEL.shadow)
     t.hline(3, 16, W - 6, PANEL.light)
-    t.stripes(W - 30, 4, 26, 11, P.HAZARD_YELLOW.shadow, P.HAZARD_BLACK.base, width=3)
-    t.outline(W - 31, 3, 28, 13, PANEL.outline)
     # Inventory section
     t.seam_h(3, seam, W - 6, PANEL)
     t.rect(3, seam + 2, W - 6, H - seam - 5, PANEL[3])
@@ -197,19 +205,18 @@ def ghost_slot(rows: list[str]):
     return draw
 
 
-DUMP = ["..#..", "..#..", "#.#.#", ".###.", "..#.."]
+DUMP = ["..##..", "..##..", "..##..", "######", ".####.", "..##.."]
 
 
 def dump_button(t: Tex, x: int, y: int, w: int, h: int) -> None:
     """Small dump button under a tank gauge: raised red plate with a down-arrow into a drain bar."""
     t.panel(x, y, w, h, P.PRIMER_RED, base=3, style="raised")
     t.outline(x, y, w, h, PANEL.outline)
-    gx, gy = x + (w - 5) // 2, y + 1
+    gx, gy = x + (w - len(DUMP[0])) // 2, y + (h - len(DUMP)) // 2
     for yy, row in enumerate(DUMP):
         for xx, c in enumerate(row):
             if c == "#":
-                t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
-    t.hline(gx - 1, y + h - 2, 7, P.WHITE_CERAMIC[3])            # the drain the arrow points into
+                t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[3])
 
 
 def fill_chevron(t: Tex, x: int, y: int, horizontal: bool) -> None:
@@ -307,6 +314,9 @@ def flame_fill(t: Tex) -> None:
 
 
 def lamp_bezel(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """Status lamp in a thin hazard-striped warning frame."""
+    t.stripes(x - 3, y - 3, w + 6, h + 6, P.HAZARD_YELLOW.shadow, P.HAZARD_BLACK.base, width=2)
+    t.outline(x - 4, y - 4, w + 8, h + 8, PANEL.outline)
     t.rect(x - 1, y - 1, w + 2, h + 2, PANEL.outline)
     t.rect(x, y, w, h, GLASS.base)
 
@@ -390,7 +400,7 @@ def build(name: str, spec: dict) -> Path:
 
 
 def dump_rect(tx: int, ty: int, tw: int, th: int) -> tuple[int, int, int, int]:
-    return tx, ty + th + 3, tw, 8
+    return tx, ty + th + 2, tw, 10
 
 
 def java_rect(r) -> str:

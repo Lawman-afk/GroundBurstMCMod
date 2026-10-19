@@ -24,6 +24,23 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
         this.onChanged = onChanged;
     }
 
+    /**
+     * Loads saved contents but keeps this machine's slot count: NeoForge's handler would adopt the saved list's size,
+     * so a machine saved before its slot layout changed would come back with the wrong number of slots.
+     */
+    @Override
+    public void deserialize(net.minecraft.world.level.storage.ValueInput input) {
+        int size = this.stacks.size();
+        super.deserialize(input);
+        if (this.stacks.size() != size) {
+            net.minecraft.core.NonNullList<ItemStack> fixed = net.minecraft.core.NonNullList.withSize(size, ItemStack.EMPTY);
+            for (int i = 0; i < Math.min(size, this.stacks.size()); i++) {
+                fixed.set(i, this.stacks.get(i));
+            }
+            setStacks(fixed);
+        }
+    }
+
     // --- ResourceHandler side ----------------------------------------------------------------------------------
     @Override
     public boolean isValid(int index, ItemResource resource) {

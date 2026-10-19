@@ -62,11 +62,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         add("bubble", g.box(f"bub{i}", (x - 0.3, 4.0, z - 0.3), (x + 0.3, 4.6, z + 0.3), faces=("north", "south", "east", "west", "up"), bone=f"bubble{i}"))
     # Gas bottles on the east side with a pipe run from the lid.
     for i, (z, cap) in enumerate(((-3.0, P.WHITE_CERAMIC), (2.6, P.CHERENKOV))):
-        add(f"bottle{i}", g.box(f"bottle{i}", (4.2, 2, z - 1.6), (7.4, 12, z + 1.6), faces=("north", "south", "east", "west"), bone=F))
+        add(f"bottle{i}", g.box(f"bottle{i}", (4.2, 2, z - 1.6), (7.4, 12, z + 1.6), faces=("north", "south", "east", "west", "up"), bone=F))
         add(f"shoulder{i}", g.box(f"shoulder{i}", (4.6, 12, z - 1.2), (7.0, 13, z + 1.2), faces=("north", "south", "east", "west", "up"), bone=F))
         add("valve", g.box(f"valve{i}", (5.4, 13, z - 0.4), (6.2, 14, z + 0.4), faces=("north", "south", "east", "west", "up"), bone=F))
         add("pipe", g.box(f"pipe_up{i}", (5.55, 14, z - 0.25), (6.05, 14.6, z + 0.25), faces=("north", "south", "east", "west"), bone=F))
-        add("pipe", g.box(f"pipe_run{i}", (X1 + 0.3, 14.6, z - 0.25), (6.05, 15.1, z + 0.25), faces=("north", "south", "up", "down"), bone=F))
+        # Runs across the lid into the header pipe, so each bottle is plumbed to the cell.
+        add("pipe", g.box(f"pipe_run{i}", (0.5, 14.6, z - 0.25), (6.05, 15.1, z + 0.25), faces=("north", "south", "east", "up", "down"), bone=F))
     add("pipe", g.box("pipe_drop", (0.0, Y1 + 1.2, -3.25), (0.5, 15.1, 2.85), faces=("north", "south", "east", "west", "up"), bone=F))
     # Front control panel with a lamp and a little dial.
     add("panel", g.box("panel", (3.6, 3, -7.4), (7.6, 9, -5.6), faces=("north", "east", "west", "up", "down"), bone=F))

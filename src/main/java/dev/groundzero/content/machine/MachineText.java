@@ -50,9 +50,13 @@ public final class MachineText {
     public static final String INFO_MEMBRANE = GZLang.add(GroundZero.MODID + ".info.membrane",
             "Goes in the Cryogenic Condenser's membrane slot and picks which gas it liquefies. Membranes are never used up.");
     public static final String INFO_CHEMICAL_PLANT = GZLang.add(GroundZero.MODID + ".info.chemical_plant",
-            "Chemical Plant (2x2x2): put the controller down, then add Machine Casing beside it and behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). Feed items and fluids through the Item Port or the controller's open faces; buckets and canisters go in the fill slot.");
+            "Chemical Plant (2x2x2): put the controller down, then add Machine Casing beside it and behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). Feed items through the Item Port or the controller's open faces and pipe fluids in (a Water Pump supplies water). Right-click with a bucket or canister to pour it in, sneak-right-click with an empty one to draw off the product.");
     public static final String INFO_FLUID_PIPE = GZLang.add(GroundZero.MODID + ".info.fluid_pipe",
             "Fluid pipes carry what machines push out of faces with auto-eject and fluids switched on, sharing it between every tank the pipe run touches. Pipes hold nothing themselves, so breaking one never spills. Up to 2,000 mB per tick per run.");
+    public static final String INFO_WATER_PUMP = GZLang.add(GroundZero.MODID + ".info.water_pump",
+            "Place on a water source block and power it: it draws 50 mB of water a tick (the source is never used up) and pushes it into pipes, tanks and machines on every side with fluids switched on.");
+    public static final String INFO_FLUID_TANK = GZLang.add(GroundZero.MODID + ".info.fluid_tank",
+            "Each Fluid Tank holds 16,000 mB. Touching tanks join into one when together they fill a box with a square base up to 3x3 and up to 5 high (720,000 mB). Pipes fill it from any side; it lets liquids out of its bottom (gases out of its top) into whatever is there.");
     public static final String INFO_FLUIDS = GZLang.add(GroundZero.MODID + ".info.fluids",
             "Chemical fluids live in machine tanks, pipes, canisters and (liquids only) buckets. Spilled acids burn, napalm ignites and liquid oxygen or nitrogen freeze anything standing in them.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",

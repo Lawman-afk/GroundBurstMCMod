@@ -32,6 +32,7 @@ public class GroundZeroClient {
         modBus.addListener(GroundZeroClient::registerScreens);
         modBus.addListener(GroundZeroClient::registerRenderers);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
+        modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
@@ -42,6 +43,7 @@ public class GroundZeroClient {
         event.register(GZMenus.ELECTROLYTIC_SEPARATOR.get(), MachineScreen::new);
         event.register(GZMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
         event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
+        event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -51,6 +53,8 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.INDUSTRIAL_PRESS.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.FLUID_TANK.get(), ctx -> new dev.groundzero.client.render.FluidTankRenderer());
         // The formed Chemical Plant spans 2x2x2 from its controller in any rotation.
         event.registerBlockEntityRenderer(GZBlockEntities.CHEMICAL_PLANT.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CHEMICAL_PLANT.get(), 2, 1));
     }

@@ -32,7 +32,7 @@ final class FluidSystemTests {
         GZGameTests.test("pipe_carries_fluid", GZGameTests.FLOOR_16, 20, FluidSystemTests::pipe);
         GZGameTests.test("condenser_ejects_into_plant", GZGameTests.FLOOR_16, 400, FluidSystemTests::ejectIntoPlant);
         GZGameTests.test("plant_two_fluid_recipe", GZGameTests.FLOOR_16, 400, FluidSystemTests::rocketFuel);
-        GZGameTests.test("plant_dump_and_canister_fill", GZGameTests.FLOOR_16, 40, FluidSystemTests::dumpAndFill);
+        GZGameTests.test("plant_dump", GZGameTests.FLOOR_16, 40, FluidSystemTests::dump);
         GZGameTests.test("canister_and_bucket_containers", GZGameTests.FLOOR_16, 20, FluidSystemTests::containers);
         GZGameTests.test("liquid_in_world", GZGameTests.FLOOR_16, 20, FluidSystemTests::world);
         GZGameTests.test("plant_covered_faces_closed", GZGameTests.FLOOR_16, 20, FluidSystemTests::coveredFaces);
@@ -105,7 +105,7 @@ final class FluidSystemTests {
                 "expected 1000 mB of rocket fuel"));
     }
 
-    private static void dumpAndFill(GameTestHelper helper) {
+    private static void dump(GameTestHelper helper) {
         ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(4, 1, 4));
         insert(plant, GZFluids.NITRIC_ACID, 3_000);
         try (var tx = Transaction.openRoot()) {
@@ -116,14 +116,7 @@ final class FluidSystemTests {
         plant.dumpTank(0);
         helper.assertTrue(plant.tank(1).isEmpty(), "a chemical tank dumps");
         helper.assertTrue(plant.tank(0).amount() == 5_000, "the water tank cannot be dumped");
-        // Put product in the output tank and fill canisters from it through the container slots.
-        plant.tank(ChemicalPlantBlockEntity.TANK_PRODUCT).fillInternal(new net.neoforged.neoforge.fluids.FluidStack(GZFluids.NAPALM.source().get(), 2_000));
-        plant.inventory().setItem(5, new ItemStack(GZParts.EMPTY_CANISTER.get(), 3));
-        helper.succeedWhen(() -> {
-            helper.assertTrue(plant.inventory().getItem(6).is(GZChemicals.NAPALM_CANISTER.get()) && plant.inventory().getItem(6).getCount() == 2,
-                    "two napalm canisters filled, have " + plant.inventory().getItem(6));
-            helper.assertTrue(plant.inventory().getItem(5).getCount() == 1, "one empty canister left over");
-        });
+        helper.succeed();
     }
 
     /** Canisters and our buckets fill and pour like vanilla buckets. */
@@ -140,7 +133,8 @@ final class FluidSystemTests {
         ItemStack bucket = new ItemStack(GZFluids.NAPALM.bucket().get());
         var b = ItemAccess.forStack(bucket).getCapability(Capabilities.Fluid.ITEM);
         helper.assertTrue(b != null && b.getResource(0).getFluid() == GZFluids.NAPALM.source().get(), "the napalm bucket holds napalm");
-        helper.assertTrue(GZFluids.DEUTERIUM.bucket() == null, "gases have no bucket");
+        var gasBucket = ItemAccess.forStack(new ItemStack(GZFluids.DEUTERIUM.bucket().get())).getCapability(Capabilities.Fluid.ITEM);
+        helper.assertTrue(gasBucket != null && gasBucket.getResource(0).getFluid() == GZFluids.DEUTERIUM.source().get(), "a gas bucket holds its gas");
         helper.assertTrue(new ItemStack(Items.BUCKET).getCapability(Capabilities.Fluid.ITEM, ItemAccess.forStack(new ItemStack(Items.BUCKET))) != null,
                 "vanilla buckets still work");
         helper.succeed();

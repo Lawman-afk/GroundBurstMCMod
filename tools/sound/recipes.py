@@ -215,6 +215,17 @@ def chemical_plant_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
 
 
+def water_pump_loop() -> np.ndarray:
+    """Water pump: motor hum and fan whirr, a soft 4 Hz impeller pulse, water rushing through the outlets."""
+    t = S.t_axis(TOTAL)
+    motor = (S.tone(TOTAL, 100) * 0.4 + S.tone(TOTAL, 200) * 0.2 + S.tone(TOTAL, 300) * 0.07) * 0.3
+    whirr = S.bandpass(S.white(TOTAL, 101), 600, 2200) * (0.6 + 0.4 * np.sin(2 * np.pi * 12 * t) ** 2) * 0.12
+    rush = S.bandpass(S.pink(TOTAL, 102), 250, 1800) * (0.55 + 0.45 * np.sin(2 * np.pi * 4 * t) ** 2) * 0.5
+    gurgle = S.lowpass(S.brown(TOTAL, 103), 300) * 0.3
+    x = S.mix((motor, 1.0), (whirr, 1.0), (rush, 1.0), (gurgle, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -8)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -224,6 +235,7 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/electrolytic_separator": separator_loop(),
         "machine/cryogenic_condenser": condenser_loop(),
         "machine/chemical_plant": chemical_plant_loop(),
+        "machine/water_pump": water_pump_loop(),
     }
 
 

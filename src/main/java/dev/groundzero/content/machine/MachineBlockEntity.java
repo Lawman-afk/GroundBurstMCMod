@@ -32,8 +32,6 @@ import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
  * Shared base of every powered machine: FE buffer, item slots, fluid tanks, redstone control, the EMP hook, ACTIVE
@@ -53,8 +51,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     /** Fluid tanks in GUI order (empty for machines without any). */
     protected final List<MachineTank> tanks;
     private final MachineFluidHandler fluidHandler;
-    /** Slots that fill or empty fluid containers (buckets, canisters, other mods' tanks), or -1. */
-    protected final int containerIn, containerOut;
     /** Automation views by item mode (NONE has none). */
     private final AutomationView[] automation = new AutomationView[SideConfig.ItemMode.values().length];
     private final int[] inputSlots;
@@ -102,13 +98,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
             int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots) {
-        this(type, pos, state, energyCapacity, maxInsert, maxExtract, slotCount, inputSlots, outputSlots, List.of(), -1, -1);
+        this(type, pos, state, energyCapacity, maxInsert, maxExtract, slotCount, inputSlots, outputSlots, List.of());
     }
 
-    /** With tanks: {@code containerIn}/{@code containerOut} are the slot pair that fills and empties fluid containers. */
+    /** With tanks (filled and drained by pipes; buckets only as a click shortcut, see {@link MachineFluidInteraction}). */
     protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
-            int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots, List<MachineTank.Spec> tankSpecs,
-            int containerIn, int containerOut) {
+            int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots, List<MachineTank.Spec> tankSpecs) {
         super(type, pos, state);
         if (tankSpecs.size() > MAX_TANKS) {
             throw new IllegalArgumentException("at most " + MAX_TANKS + " tanks");
@@ -122,8 +117,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
         this.tanks = List.copyOf(list);
         this.fluidHandler = new MachineFluidHandler(this.tanks);
-        this.containerIn = containerIn;
-        this.containerOut = containerOut;
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
         this.sides.restrict(allowedItemModes());
@@ -220,77 +213,15 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         } else {
             active = tickMachine(level);
         }
-        handleContainers();
         if (this.sides.autoEject() && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
             if (this.outputSlots.length > 0) {
                 autoEject(level);
             }
-            autoEjectFluids(level);
+            pushFluids(level);
         }
         BlockState state = getBlockState();
         if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != active) {
             level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, active), 3);
-        }
-    }
-
-    /**
-     * The container slot pair: a container holding fluid empties into the input tank that takes it; an empty one is
-     * filled from the first output tank it can hold. One item is handled at a time and the result goes to the out
-     * slot, so a stack of buckets or canisters works through one by one.
-     */
-    private void handleContainers() {
-        if (this.containerIn < 0 || this.tanks.isEmpty()) {
-            return;
-        }
-        ItemStack in = this.inventory.getItem(this.containerIn);
-        if (in.isEmpty()) {
-            return;
-        }
-        ItemStacksResourceHandler temp = new ItemStacksResourceHandler(1);
-        temp.set(0, ItemResource.of(in), 1);
-        ResourceHandler<FluidResource> item = ItemAccess.forHandlerIndexStrict(temp, 0).getCapability(Capabilities.Fluid.ITEM);
-        if (item == null) {
-            return;
-        }
-        boolean holdsFluid = false;
-        for (int i = 0; i < item.size(); i++) {
-            holdsFluid |= item.getAmountAsLong(i) > 0;
-        }
-        int moved = 0;
-        try (Transaction tx = Transaction.openRoot()) {
-            if (holdsFluid) {
-                moved = ResourceHandlerUtil.move(item, this.fluidHandler, r -> true, Integer.MAX_VALUE, tx);
-            } else {
-                for (MachineTank tank : this.tanks) {
-                    if (!tank.isInput() && !tank.isEmpty()) {
-                        moved = ResourceHandlerUtil.move(tank, item, r -> true, Integer.MAX_VALUE, tx);
-                        if (moved > 0) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (moved <= 0) {
-                return;
-            }
-            ItemStack result = temp.getResource(0).toStack(temp.getAmountAsInt(0));
-            ItemStack out = this.inventory.getItem(this.containerOut);
-            if (!result.isEmpty()) {
-                if (!out.isEmpty() && (!ItemStack.isSameItemSameComponents(out, result) || out.getCount() + result.getCount() > out.getMaxStackSize())) {
-                    return;                                   // nowhere to put the result: try again later
-                }
-            }
-            tx.commit();
-            in.shrink(1);
-            this.inventory.setItem(this.containerIn, in.isEmpty() ? ItemStack.EMPTY : in);
-            if (!result.isEmpty()) {
-                if (out.isEmpty()) {
-                    this.inventory.setItem(this.containerOut, result);
-                } else {
-                    out.grow(result.getCount());
-                    this.inventory.setItem(this.containerOut, out);
-                }
-            }
         }
     }
 
@@ -321,7 +252,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     /** Pours output tanks into the fluid handlers beside every face whose fluid switch is on. */
-    private void autoEjectFluids(ServerLevel level) {
+    protected void pushFluids(ServerLevel level) {
         if (this.tanks.stream().allMatch(t -> t.isInput() || t.isEmpty())) {
             return;
         }

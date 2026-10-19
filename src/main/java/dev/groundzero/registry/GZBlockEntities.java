@@ -36,6 +36,11 @@ public final class GZBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ElectrolyticSeparatorBlockEntity>> ELECTROLYTIC_SEPARATOR =
             BLOCK_ENTITIES.register("electrolytic_separator", () -> new BlockEntityType<>(ElectrolyticSeparatorBlockEntity::new, GZMachines.ELECTROLYTIC_SEPARATOR.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.WaterPumpBlockEntity>> WATER_PUMP =
+            BLOCK_ENTITIES.register("water_pump", () -> new BlockEntityType<>(dev.groundzero.content.machine.WaterPumpBlockEntity::new, GZMachines.WATER_PUMP.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.fluid.FluidTankBlockEntity>> FLUID_TANK =
+            BLOCK_ENTITIES.register("fluid_tank", () -> new BlockEntityType<>(dev.groundzero.content.fluid.FluidTankBlockEntity::new,
+                    dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CryogenicCondenserBlockEntity>> CRYOGENIC_CONDENSER =
             BLOCK_ENTITIES.register("cryogenic_condenser", () -> new BlockEntityType<>(CryogenicCondenserBlockEntity::new, GZMachines.CRYOGENIC_CONDENSER.block().get()));
 
@@ -51,6 +56,8 @@ public final class GZBlockEntities {
         machine(event, COMBUSTION_GENERATOR.get());
         machine(event, ELECTROLYTIC_SEPARATOR.get());
         machine(event, CHEMICAL_PLANT.get());
+        machine(event, WATER_PUMP.get());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_TANK.get(), (be, side) -> be.handler());
         event.registerBlockEntity(Capabilities.Item.BLOCK, ITEM_PORT.get(), PortBlockEntity::items);
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());

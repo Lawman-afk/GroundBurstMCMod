@@ -47,16 +47,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         this(type, pos, state, kind, inputCount, catalyst, outputCount, energyCapacity, maxInsert, List.of());
     }
 
-    /**
-     * With tanks: recipe fluids come from the input tanks and fluid products go to the output tanks. Two extra slots
-     * follow the outputs: a fluid container goes in the first and comes out of the second, filled or emptied.
-     */
+    /** With tanks: recipe fluids come from the input tanks and fluid products go to the output tanks. */
     protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
             int inputCount, boolean catalyst, int outputCount, int energyCapacity, int maxInsert, List<MachineTank.Spec> tanks) {
-        super(type, pos, state, energyCapacity, maxInsert, 0, slotCount(inputCount, catalyst, outputCount, tanks),
-                automationInputs(inputCount, catalyst, outputCount, tanks), automationOutputs(inputCount, catalyst, outputCount, tanks),
-                tanks, tanks.isEmpty() ? -1 : inputCount + (catalyst ? 1 : 0) + outputCount,
-                tanks.isEmpty() ? -1 : inputCount + (catalyst ? 1 : 0) + outputCount + 1);
+        super(type, pos, state, energyCapacity, maxInsert, 0, inputCount + (catalyst ? 1 : 0) + outputCount,
+                range(0, inputCount + (catalyst ? 1 : 0)), range(inputCount + (catalyst ? 1 : 0), outputCount), tanks);
         this.kind = kind;
         this.inputCount = inputCount;
         this.catalystSlot = catalyst ? inputCount : -1;
@@ -73,32 +68,6 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         return this.catalystSlot;
     }
 
-    private static int slotCount(int inputCount, boolean catalyst, int outputCount, List<MachineTank.Spec> tanks) {
-        return inputCount + (catalyst ? 1 : 0) + outputCount + (tanks.isEmpty() ? 0 : 2);
-    }
-
-    /** Hoppers and pipes may insert into the inputs, the catalyst slot and the container-in slot. */
-    private static int[] automationInputs(int inputCount, boolean catalyst, int outputCount, List<MachineTank.Spec> tanks) {
-        int[] base = range(0, inputCount + (catalyst ? 1 : 0));
-        if (tanks.isEmpty()) {
-            return base;
-        }
-        int[] r = java.util.Arrays.copyOf(base, base.length + 1);
-        r[base.length] = inputCount + (catalyst ? 1 : 0) + outputCount;
-        return r;
-    }
-
-    /** ... and take from the outputs and the container-out slot. */
-    private static int[] automationOutputs(int inputCount, boolean catalyst, int outputCount, List<MachineTank.Spec> tanks) {
-        int[] base = range(inputCount + (catalyst ? 1 : 0), outputCount);
-        if (tanks.isEmpty()) {
-            return base;
-        }
-        int[] r = java.util.Arrays.copyOf(base, base.length + 1);
-        r[base.length] = inputCount + (catalyst ? 1 : 0) + outputCount + 1;
-        return r;
-    }
-
     private static int[] range(int start, int count) {
         int[] r = new int[count];
         for (int i = 0; i < count; i++) {
@@ -109,12 +78,8 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        if (slot == this.containerIn) {
-            return !stack.isEmpty() && stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
-                    net.neoforged.neoforge.transfer.access.ItemAccess.forStack(stack.copyWithCount(1))) != null;
-        }
         if (slot >= this.outputStart) {
-            return false;                // outputs (and the container-out slot) are filled by the machine only
+            return false;                // outputs are filled by the machine only
         }
         // Recipes live on the server; the client side of a menu stays permissive and the server corrects it.
         return !(this.level instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
@@ -219,7 +184,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         Optional<RecipeHolder<ProcessingRecipe>> holder = input.isEmpty() ? Optional.empty() : findRecipe(level, input);
         if (holder.isEmpty()) {
             resetProgress();
-            this.status = input.isEmpty() ? MachineStatus.IDLE : MachineStatus.NO_RECIPE;
+            this.status = input.isEmpty() ? MachineStatus.IDLE : shortOfFluid(level, input) ? MachineStatus.NEED_FLUID : MachineStatus.NO_RECIPE;
             return false;
         }
         ProcessingRecipe recipe = holder.get().value();
@@ -239,6 +204,23 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         }
         setChanged();
         return true;
+    }
+
+    /** Whether some recipe has everything but enough of its fluids (so the GUI can say "needs more fluid"). */
+    private boolean shortOfFluid(ServerLevel level, MachineRecipeInput input) {
+        for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GZRecipes.type(this.kind))) {
+            ProcessingRecipe recipe = holder.value();
+            if (recipe.fluids().isEmpty() || recipe.assignSlots(input) == null
+                    || recipe.catalyst().isPresent() && !recipe.catalyst().get().test(input.catalyst())) {
+                continue;
+            }
+            boolean allPresent = recipe.fluids().stream().allMatch(need -> input.fluids().stream()
+                    .anyMatch(have -> !have.isEmpty() && need.ingredient().test(have)));
+            if (allPresent) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void resetProgress() {

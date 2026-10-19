@@ -15,8 +15,9 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
- * One of the mod's chemical fluids (DESIGN.md §6): its fluid type, still and flowing fluids, and for liquids the
- * in-world block and bucket. Every one also has a canister item that holds 1000 mB of it.
+ * One of the mod's chemical fluids (DESIGN.md §6.4): its fluid type, still and flowing fluids, its bucket, and its
+ * in-world form: a flowing liquid block, or for gases a rising gas cloud. Every one also has a canister item that holds
+ * 1000 mB of it.
  *
  * @param look      which shared animated texture set it uses (tinted by {@code color})
  * @param color     ARGB tint for the texture, GUI gauges, tank windows and buckets
@@ -27,7 +28,8 @@ public record ChemFluid(String name, Look look, int color, Hazard hazard,
                         DeferredHolder<FluidType, FluidType> type,
                         DeferredHolder<net.minecraft.world.level.material.Fluid, BaseFlowingFluid.Source> source,
                         DeferredHolder<net.minecraft.world.level.material.Fluid, BaseFlowingFluid.Flowing> flowing,
-                        @Nullable DeferredBlock<? extends LiquidBlock> block, @Nullable DeferredItem<BucketItem> bucket,
+                        @Nullable DeferredBlock<? extends LiquidBlock> block, @Nullable DeferredBlock<GasCloudBlock> cloud,
+                        DeferredItem<? extends BucketItem> bucket,
                         Supplier<? extends Item> canister, Supplier<? extends Item> emptyCanister) {
 
     /** Shared texture sets: thin watery liquid, thick gel or slurry, and gas (never placed in the world). */
@@ -40,7 +42,7 @@ public record ChemFluid(String name, Look look, int color, Hazard hazard,
     }
 
     /** What a spilled liquid does to things standing in it. */
-    public enum Hazard { NONE, ACID, FIRE, CRYO }
+    public enum Hazard { NONE, ACID, FIRE, CRYO, TOXIC }
 
     /** The common tag other mods use for this fluid, e.g. {@code c:sulfuric_acid}; recipes take it, not our fluid. */
     public net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> commonTag() {

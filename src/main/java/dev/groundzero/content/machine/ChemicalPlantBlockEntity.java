@@ -102,11 +102,16 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
     }
 
     // --- rendering ----------------------------------------------------------------------------------------------------------
-    public static final int TANK_WATER = 0, TANK_PRODUCT = 3;
-    /** The two process tanks' windows: water on the left (controller side), the product on the right. */
+    public static final int TANK_WATER = 0, TANK_INPUT_A = 1, TANK_INPUT_B = 2, TANK_PRODUCT = 3;
+    /**
+     * Tank windows (see tools/assets/chemical_plant.py): the process tanks show water (left, controller side) and the
+     * product (right); the two feed silos behind them show the chemical inputs.
+     */
     private static final java.util.List<TankRender> WINDOWS = java.util.List.of(
             new TankRender(TANK_WATER, -1.9f, 3.5f, 1.7f, 1.9f, 25.5f, 2.8f),
-            new TankRender(TANK_PRODUCT, 14.1f, 3.5f, 1.7f, 17.9f, 25.5f, 2.8f));
+            new TankRender(TANK_PRODUCT, 14.1f, 3.5f, 1.7f, 17.9f, 25.5f, 2.8f),
+            new TankRender(TANK_INPUT_A, -4.35f, 3.5f, 22.7f, -2.65f, 17.5f, 23.35f),
+            new TankRender(TANK_INPUT_B, 4.65f, 3.5f, 22.7f, 6.35f, 17.5f, 23.35f));
 
     @Override
     public java.util.List<TankRender> tankRenders() {

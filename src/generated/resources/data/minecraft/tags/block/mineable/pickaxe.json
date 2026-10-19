@@ -36,6 +36,8 @@
     "groundzero:electrolytic_separator",
     "groundzero:cryogenic_condenser",
     "groundzero:chemical_plant",
+    "groundzero:water_pump",
+    "groundzero:fluid_tank",
     "groundzero:machine_casing",
     "groundzero:item_port",
     "groundzero:reactor_glass",

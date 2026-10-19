@@ -57,6 +57,8 @@ public class GroundZero {
         GZDataGen.register(modBus);
         GZGameTests.register(modBus);
 
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundzero.content.machine.MachineFluidInteraction::onRightClickBlock);
+
         GZLang.add(MODID + ".configuration.title", "Ground Zero Settings");
         modContainer.registerConfig(ModConfig.Type.SYNCED, GZServerConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.LOCAL, GZCommonConfig.SPEC);

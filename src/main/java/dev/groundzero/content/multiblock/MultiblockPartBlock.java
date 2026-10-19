@@ -57,6 +57,16 @@ public class MultiblockPartBlock extends Block {
         Multiblocks.notifyChanged(level, pos);
     }
 
+    /** Buckets on any formed part pour into (or sneaking, fill from) the controller's tanks. */
+    @Override
+    protected InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+            net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
+        if (!state.getValue(FORMED)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        return dev.groundzero.content.machine.MachineBlock.useFluidContainer(state, level, pos, player, hand);
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!state.getValue(FORMED)) {

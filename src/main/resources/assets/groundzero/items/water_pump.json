@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/water_pump",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

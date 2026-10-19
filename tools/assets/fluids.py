@@ -115,22 +115,65 @@ FLUIDS = [
 ]
 
 
+# Where the 26.x vanilla bucket's opening is (rows 2-5): the fluid shows through exactly these pixels, so the bucket
+# looks like vanilla's water and lava buckets. Shape only; the bucket itself is vanilla's own texture.
+BUCKET_OPENING = [
+    "................",
+    "................",
+    ".....######.....",
+    "...##########...",
+    "...##########...",
+    ".....######.....",
+] + ["................"] * 10
+
+
+def write_bucket_mask() -> Path:
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y, row in enumerate(BUCKET_OPENING):
+        for x, c in enumerate(row):
+            if c == "#":
+                img.putpixel((x, y), (255, 255, 255, 255))
+    p = paths.TEXTURES / "item" / "mask" / "bucket_fluid.png"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    img.save(p)
+    return p
+
+
+def gas_cloud_models(name: str) -> None:
+    """A released gas: a translucent layer hanging from the top of the block, 2 px deeper per part (1-8)."""
+    variants = {}
+    for v in range(1, 9):
+        y0 = 16 - 2 * v
+        faces = {}
+        for d in ("north", "south", "east", "west"):
+            faces[d] = {"uv": [0, 0, 16, 2 * v], "texture": "#gas", "tintindex": 0}
+        faces["up"] = {"uv": [0, 0, 16, 16], "texture": "#gas", "tintindex": 0}
+        faces["down"] = {"uv": [0, 0, 16, 16], "texture": "#gas", "tintindex": 0}
+        write_json(paths.MODELS / "block" / f"{name}_{v}.json", {
+            "render_type": "minecraft:translucent",
+            "textures": {"gas": "groundzero:block/fluid/gas_still", "particle": "groundzero:block/fluid/gas_still"},
+            "elements": [{"from": [0, y0, 0], "to": [16, 16, 16], "shade": False, "faces": faces}],
+        })
+        variants[f"volume={v}"] = {"model": f"groundzero:block/{name}_{v}"}
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
+
+
 def write_blocks_and_buckets() -> None:
+    write_bucket_mask()
     for name, look, gas in FLUIDS:
         if gas:
-            continue
-        # Liquid blocks are drawn by the fluid renderer; the block model only names the particle texture.
-        write_json(paths.MODELS / "block" / f"{name}.json", {"textures": {"particle": f"groundzero:block/fluid/{look}_still"}})
-        write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
-        # Buckets: vanilla's bucket with the fluid's own (tinted) texture masked in, exactly like water/lava buckets.
+            gas_cloud_models(name)
+        else:
+            # Liquid blocks are drawn by the fluid renderer; the block model only names the particle texture.
+            write_json(paths.MODELS / "block" / f"{name}.json", {"textures": {"particle": f"groundzero:block/fluid/{look}_still"}})
+            write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
+        # Buckets: vanilla's bucket with the fluid's own tinted texture showing through its opening; gas buckets are
+        # flipped upside down (NeoForge flips any lighter-than-air fluid's container).
         write_json(paths.ASSETS / "items" / f"{name}_bucket.json", {"model": {
             "type": "neoforge:fluid_container",
             "fluid": f"groundzero:{name}",
-            "textures": {
-                "base": "minecraft:item/bucket",
-                "fluid": "neoforge:item/mask/bucket_fluid",
-                "cover": "neoforge:item/mask/bucket_fluid_cover",
-            },
+            "flip_gas": True,
+            "textures": {"base": "minecraft:item/bucket", "fluid": "groundzero:item/mask/bucket_fluid"},
         }})
 
 

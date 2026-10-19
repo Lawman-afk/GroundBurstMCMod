@@ -48,6 +48,8 @@ public class GZBlockLoot extends BlockLootSubProvider {
         GZMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
         dropSelf(GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
         dropSelf(GZMachines.CHEMICAL_PLANT.block().get());
+        dropSelf(GZMachines.WATER_PUMP.block().get());
+        dropSelf(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().get());
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
         dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());

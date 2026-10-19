@@ -41,6 +41,8 @@ public final class GZMachines {
 
     public static final WithItem<MachineBlock> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", "Electrolytic Separator",
             p -> new MachineBlock(p, GZBlockEntities.ELECTROLYTIC_SEPARATOR, true, Shapes.block()));
+    public static final WithItem<MachineBlock> WATER_PUMP = machine("water_pump", "Water Pump",
+            p -> new MachineBlock(p, GZBlockEntities.WATER_PUMP, true, Shapes.block()));
     public static final WithItem<TallMachineBlock> CRYOGENIC_CONDENSER = tallMachine("cryogenic_condenser", "Cryogenic Condenser",
             p -> new TallMachineBlock(p, GZBlockEntities.CRYOGENIC_CONDENSER, true,
                     Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 16, 14)),

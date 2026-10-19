@@ -14,7 +14,9 @@ public enum MachineStatus {
     BUFFER_FULL("Energy buffer full"),
     REDSTONE("Halted by redstone"),
     EMP("Disabled by EMP"),
-    INCOMPLETE("Structure incomplete");
+    INCOMPLETE("Structure incomplete"),
+    NEED_FLUID("Needs more fluid"),
+    NO_WATER("No water source below");
 
     private final String translationKey;
 
@@ -30,7 +32,7 @@ public enum MachineStatus {
     public int lampColor() {
         return switch (this) {
             case RUNNING -> 0xFF4AFF6A;
-            case IDLE, NO_RECIPE, BUFFER_FULL -> 0xFFFFB020;
+            case IDLE, NO_RECIPE, BUFFER_FULL, NEED_FLUID -> 0xFFFFB020;
             default -> 0xFFFF3A2A;
         };
     }

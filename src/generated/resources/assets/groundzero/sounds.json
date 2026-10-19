@@ -101,5 +101,11 @@
       "groundzero:machine/ore_crusher"
     ],
     "subtitle": "subtitles.groundzero.machine.ore_crusher"
+  },
+  "machine.water_pump": {
+    "sounds": [
+      "groundzero:machine/water_pump"
+    ],
+    "subtitle": "subtitles.groundzero.machine.water_pump"
   }
 }

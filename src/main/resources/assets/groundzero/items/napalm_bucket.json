@@ -2,10 +2,10 @@
   "model": {
     "type": "neoforge:fluid_container",
     "fluid": "groundzero:napalm",
+    "flip_gas": true,
     "textures": {
       "base": "minecraft:item/bucket",
-      "fluid": "neoforge:item/mask/bucket_fluid",
-      "cover": "neoforge:item/mask/bucket_fluid_cover"
+      "fluid": "groundzero:item/mask/bucket_fluid"
     }
   }
 }

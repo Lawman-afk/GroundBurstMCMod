@@ -12,6 +12,15 @@ import net.neoforged.neoforge.client.fluid.FluidTintSources;
 public final class GZFluidModels {
     private GZFluidModels() {}
 
+    /** Released gas clouds are tinted with their gas's colour. */
+    public static void registerTints(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.BlockTintSources event) {
+        for (ChemFluid f : GZFluids.all()) {
+            if (f.cloud() != null) {
+                event.register(java.util.List.of(FluidTintSources.constant(f.color())), f.cloud().get());
+            }
+        }
+    }
+
     public static void register(RegisterFluidModelsEvent event) {
         for (ChemFluid f : GZFluids.all()) {
             String look = f.look().texture();

@@ -49,6 +49,8 @@ public final class GZSounds {
 
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_ELECTROLYTIC_SEPARATOR =
             register("machine.electrolytic_separator", "Electrolytic Separator bubbles", List.of("machine/electrolytic_separator"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_WATER_PUMP =
+            register("machine.water_pump", "Water Pump runs", List.of("machine/water_pump"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CRYOGENIC_CONDENSER =
             register("machine.cryogenic_condenser", "Cryogenic Condenser hisses", List.of("machine/cryogenic_condenser"), false, 20);
 

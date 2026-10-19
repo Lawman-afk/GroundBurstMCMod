@@ -267,15 +267,20 @@ enriched uranium in your inventory hurts).
 ### 6.4 Fluids
 - Chemical fluids: sulfuric acid, nitric acid, synthetic fuel, liquid rocket fuel, thermobaric slurry, napalm gel,
   liquid oxygen, liquid nitrogen (liquids: bucket + placeable flowing block) and deuterium, uranium hexafluoride
-  (gases: tanks, pipes and gas canisters only). Every fluid is tagged `c:<name>`; recipe fluid inputs use the tag.
+  (gases: an upside-down bucket; released gas is a rising cloud that pools under ceilings, spreads sideways and thins
+  under open sky; UF6 is toxic). Every fluid is tagged `c:<name>`; recipe fluid inputs use the tag.
 - Canisters are 1000 mB containers: an empty canister fills like a bucket (liquids in liquid canisters, gases in gas
   canisters) and a filled one pours out. Canister items stay the ingredient form for later weapons.
 - Spills: acids deal acid damage, napalm sets things alight, LOX/LN2 freeze like powder snow. Fuels and slurry are inert.
 - Machines have up to four tanks: input tanks (filled from outside; a water tank only ever holds water and has no
-  dump) and product tanks (drained from outside). Two GUI slots fill and empty buckets, canisters and other mods'
-  containers: a full container empties into the input tank that takes it, an empty one fills from a product tank.
-  Every tank except water has a dump button (shift-click). Recipes take fluids from distinct input tanks and must
-  fit every fluid product before they run.
+  dump) and product tanks (drained from outside). Fluids are meant to move by pipe; by hand there is only
+  right-click with a full bucket/canister (pours into the input tank that takes it) and sneak-right-click with an
+  empty one (fills from a product tank). Every tank except water has a dump button (shift-click). Recipes take
+  fluids from distinct input tanks and must fit every fluid product before they run.
+- Water Pump: on a water source block, 50 mB/t for 20 FE/t, source never used up; pushes out of every open face.
+- Fluid Tank: 16,000 mB per block; touching tanks join when they fill a box with a square base up to 3x3 and up to
+  5 high (720,000 mB). Breaking a block splits the tank, the rest keeps its share. Liquids drain out of the bottom
+  (gases out of the top) into whatever is there.
 - Fluid pipes form pass-through networks with no buffer (2000 mB/t): machines push product tanks out of faces with
   auto-eject and fluids on; the run shares it among every tank it touches, never back to the source.
 
@@ -1395,3 +1400,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | A multiblock controller's faces that lie against its own structure expose nothing and show as blocked in the side tab. The formed model puts something solid on every open face (control cabinet, port housing) so pipes and cables meet a surface. |
 | 2026-10-19 | Liquids get buckets and in-world blocks; gases are tank/pipe/canister only. Chemistry runs on fluids in tanks; canisters fill from product tanks. Solid propellant gets its slimeball binder back (fluids freed item slots). |
 | 2026-10-19 | Fluid pipes are bufferless pass-through networks driven by machine auto-eject (no pull mode yet); a water pump for automated water is a follow-up. |
+| 2026-10-19 | Fluids move by machines and pipes, not by hand: the GUI fill/empty slots are gone; buckets work only as right-click (pour in) and sneak-right-click (draw out) shortcuts. Water comes from the Water Pump. |
+| 2026-10-19 | Released gases are rising cloud blocks (1-8 parts, hanging from the block top), not inverted flowing fluids: a true upside-down FlowingFluid would need a re-implemented fluid engine and renderer. |
+| 2026-10-19 | Buckets use our own fluid mask matched to the 26.x vanilla bucket's opening (NeoForge's mask fits the old bucket shape). |
+| 2026-10-19 | Machine inventories keep their own slot count when loading saves (NeoForge's handler adopts the saved size, which crashed the plant screen after its layout changed). |

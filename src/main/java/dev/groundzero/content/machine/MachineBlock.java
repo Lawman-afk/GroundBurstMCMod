@@ -33,7 +33,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 
 /**
  * A horizontal-facing machine block (front = the side facing the player when placed). GeckoLib-rendered machines
@@ -101,19 +100,26 @@ public class MachineBlock extends BaseEntityBlock {
         return (lvl, pos, st, be) -> ((MachineBlockEntity) be).serverTick((ServerLevel) lvl);
     }
 
-    /** Right-click with a bucket (or any fluid container) fills a machine's tank. */
+    /** Right-click with a full bucket or canister pours it in; sneak-right-click with an empty one fills it from a product tank. */
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        BlockPos base = TallMachineBlock.base(pos, state);
-        if (level.getBlockEntity(base) instanceof MachineBlockEntity machine && !machine.tanks().isEmpty()
-                && stack.getCapability(Capabilities.Fluid.ITEM, ItemAccess.forPlayerInteraction(player, hand)) != null) {
-            // Full containers fill input tanks; empty ones draw from output tanks.
-            if (!level.isClientSide() && FluidUtil.interactWithFluidHandler(player, hand, pos, machine.fluidHandler(), null)) {
-                return InteractionResult.SUCCESS_SERVER;
-            }
+        return useFluidContainer(state, level, pos, player, hand);
+    }
+
+    /** Shared with formed multiblock parts, which pass the click on to their controller. */
+    public static InteractionResult useFluidContainer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+        MachineBlockEntity machine = MachineFluidInteraction.machineAt(level, pos, state);
+        if (machine == null || machine.tanks().isEmpty() || !MachineFluidInteraction.isFluidContainer(player, hand)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (MachineFluidInteraction.use(machine, level, pos, player, hand)) {
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        // Nothing to pour or fill: sneaking does nothing, a plain click opens the machine.
+        return player.isSecondaryUseActive() ? InteractionResult.CONSUME : InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "volume=1": {
+      "model": "groundzero:block/deuterium_1"
+    },
+    "volume=2": {
+      "model": "groundzero:block/deuterium_2"
+    },
+    "volume=3": {
+      "model": "groundzero:block/deuterium_3"
+    },
+    "volume=4": {
+      "model": "groundzero:block/deuterium_4"
+    },
+    "volume=5": {
+      "model": "groundzero:block/deuterium_5"
+    },
+    "volume=6": {
+      "model": "groundzero:block/deuterium_6"
+    },
+    "volume=7": {
+      "model": "groundzero:block/deuterium_7"
+    },
+    "volume=8": {
+      "model": "groundzero:block/deuterium_8"
+    }
+  }
+}

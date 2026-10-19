@@ -34,6 +34,13 @@ WINDOW = 2.0                  # half-width of the window slot on the front band 
 # Where the renderer draws each tank's fluid (model px, north-facing frame): just behind the window slot.
 FLUID_BOXES = [(cx - 1.9, TANK_Y0 + 0.5, cz - 6.3, cx + 1.9, TANK_Y1 - 0.5, cz - 5.2) for cx, cz, _ in TANKS]
 
+# Two smaller feed silos behind the process tanks hold the plant's two chemical inputs; each has a window on its back
+# (south) face and a feed pipe into the left process tank, where the stirrer mixes everything.
+SILOS = [(-3.5, 20.0), (5.5, 20.0)]
+SILO_Y1 = 18.0
+SILO_BANDS = [(-3.5, -2.5, 1.8), (-2.5, -1.5, 2.9), (-1.5, 1.5, 3.5), (1.5, 2.5, 2.9), (2.5, 3.5, 1.8)]
+SILO_FLUID_BOXES = [(cx - 0.85, TANK_Y0 + 0.5, cz + 2.7, cx + 0.85, SILO_Y1 - 0.5, cz + 3.35) for cx, cz in SILOS]
+
 
 def tone(d: str) -> int:
     return {"up": 4, "down": 2}.get(d, 3)
@@ -73,6 +80,21 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         # Hoop bands and a nameplate on each tank.
         for hi, y in enumerate((8.0, 17.0)):
             add("hoop", g.box(f"hoop{ti}_{hi}", (cx - 6.8, y, cz - 3.2), (cx + 6.8, y + 0.8, cz + 3.2), faces=("east", "west"), bone=F))
+
+    # Feed silos for the two chemical inputs, windows facing back.
+    for si, (cx, cz) in enumerate(SILOS):
+        for bi, (z0, z1, hw) in enumerate(SILO_BANDS):
+            back = bi == len(SILO_BANDS) - 1
+            add("silo_window" if back else "silo", g.box(f"silo{si}_b{bi}", (cx - hw, TANK_Y0, cz + z0), (cx + hw, SILO_Y1, cz + z1),
+                                                      faces=("north", "south", "east", "west"), bone=F))
+        add("silo_dome", g.box(f"silo{si}_dome_a", (cx - 2.5, SILO_Y1, cz - 2.5), (cx + 2.5, SILO_Y1 + 1.0, cz + 2.5), bone=F))
+        add("silo_dome", g.box(f"silo{si}_dome_b", (cx - 1.5, SILO_Y1 + 1.0, cz - 1.5), (cx + 1.5, SILO_Y1 + 1.8, cz + 1.5), bone=F))
+        add(f"liquid_back_silo{si}", g.box(f"liquid_back_silo{si}", (cx - 1.8, TANK_Y0, cz + 2.62), (cx + 1.8, SILO_Y1, cz + 2.65),
+                                           faces=("south",), bone=F))
+        add("hoop", g.box(f"silo{si}_hoop", (cx - 3.7, 10.0, cz - 1.3), (cx + 3.7, 10.8, cz + 1.3), faces=("east", "west"), bone=F))
+    # Feed pipes from each silo into the left process tank.
+    add("pipe", g.box("feed0", (-5.1, 5.4, 13.0), (-3.9, 6.6, 16.5), faces=("east", "west", "up", "down"), bone=F))
+    add("pipe", g.box("feed1", (5.2, 5.4, 11.5), (6.4, 6.6, 16.5), faces=("east", "west", "up", "down"), bone=F))
 
     # Stirrer motor on the left tank, shaft and paddle (spins) visible through the window.
     add("motor", g.box("motor", (-2.5, TANK_Y1 + 2.5, 5.5), (2.5, TANK_Y1 + 5.5, 10.5), bone=F))
@@ -140,6 +162,26 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 for yy in range(y + 4, y + h - 2, 4):
                     t.px(cx - 3, yy, P.BRASS[5])                               # level marks
         return paint
+    def silo_paint(window: bool):
+        def paint(t, r, d):
+            x, y, w, h = r
+            t.rect(x, y, w, h, steel[4] if d in ("north", "west") else steel[3])
+            for yy in range(y + 3, y + h, 5):
+                t.hline(x, yy, w, steel[2])
+            t.vline(x, y, h, steel[5])
+            if window and d == "south":
+                t.rect(x + 1, y + 1, w - 2, h - 2, CLEAR)                       # window slot over the real fluid
+                t.vline(x, y, h, P.BRASS[3])
+                t.vline(x + w - 1, y, h, P.BRASS[3])
+        return paint
+    for b in parts["silo"]:
+        g.paint_all(tex, b, silo_paint(False))
+    for b in parts["silo_window"]:
+        g.paint_all(tex, b, silo_paint(True))
+    for b in parts["silo_dome"]:
+        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
+    for si in range(len(SILOS)):
+        g.paint_all(tex, parts[f"liquid_back_silo{si}"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))
     for ti, (_, _, liquid) in enumerate(TANKS):
         for b in parts[f"tank{ti}"]:
             g.paint_all(tex, b, tank_paint(liquid, False))

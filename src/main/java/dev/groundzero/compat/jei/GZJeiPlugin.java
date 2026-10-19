@@ -81,9 +81,13 @@ public final class GZJeiPlugin implements IModPlugin {
                         GZMultiblocks.CHEMICAL_PLANT_SPAWNER.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_CHEMICAL_PLANT));
+        registration.addIngredientInfo(List.of(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.item().get().getDefaultInstance()),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_FLUID_TANK));
+        registration.addIngredientInfo(List.of(GZMachines.WATER_PUMP.item().get().getDefaultInstance()),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_WATER_PUMP));
         registration.addIngredientInfo(List.of(dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.item().get().getDefaultInstance()),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_FLUID_PIPE));
-        registration.addIngredientInfo(dev.groundzero.content.fluid.GZFluids.all().stream().filter(f -> f.bucket() != null)
+        registration.addIngredientInfo(dev.groundzero.content.fluid.GZFluids.all().stream()
                         .map(f -> f.bucket().get().getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_FLUIDS));
         registration.addIngredientInfo(List.of(GZParts.OXYGEN_MEMBRANE.get(), GZParts.NITROGEN_MEMBRANE.get())
