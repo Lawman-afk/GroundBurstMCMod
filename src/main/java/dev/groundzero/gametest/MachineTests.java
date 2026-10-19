@@ -1,5 +1,7 @@
 package dev.groundzero.gametest;
 
+import dev.groundzero.content.power.CableBlock;
+
 import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.machine.MachineBlockEntity;
@@ -15,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
-import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -97,11 +98,11 @@ final class MachineTests {
         helper.setBlock(m, GZMachines.ORE_CRUSHER.block().get());
         helper.setBlock(new BlockPos(3, 2, 3), Blocks.STONE);
         BlockState sa = helper.getBlockState(a), sb = helper.getBlockState(b);
-        helper.assertTrue(sa.getValue(PipeBlock.EAST), "cable should join the cable to its east");
-        helper.assertTrue(sb.getValue(PipeBlock.WEST), "cable should join the cable to its west");
-        helper.assertTrue(sb.getValue(PipeBlock.SOUTH), "cable should connect to the machine to its south");
-        helper.assertTrue(!sa.getValue(PipeBlock.UP), "cable must not connect to plain stone");
-        helper.assertTrue(!sa.getValue(PipeBlock.NORTH), "cable must not connect to air");
+        helper.assertTrue(CableBlock.side(sa, Direction.EAST) == CableBlock.Side.CONNECTED, "cable should join the cable to its east");
+        helper.assertTrue(CableBlock.side(sb, Direction.WEST) == CableBlock.Side.CONNECTED, "cable should join the cable to its west");
+        helper.assertTrue(CableBlock.side(sb, Direction.SOUTH) == CableBlock.Side.CONNECTED, "cable should connect to the machine to its south");
+        helper.assertTrue(CableBlock.side(sa, Direction.UP) != CableBlock.Side.CONNECTED, "cable must not connect to plain stone");
+        helper.assertTrue(CableBlock.side(sa, Direction.NORTH) != CableBlock.Side.CONNECTED, "cable must not connect to air");
         helper.succeed();
     }
 

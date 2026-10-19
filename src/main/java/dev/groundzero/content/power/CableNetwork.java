@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
@@ -75,9 +76,12 @@ public final class CableNetwork {
                 continue;
             }
             rate = Math.min(rate, cable.tier().rate());
+            BlockState ps = level.getBlockState(p);
             for (Direction d : Direction.values()) {
                 BlockPos n = p.relative(d);
-                if (!seen.contains(n) && level.isLoaded(n) && level.getBlockState(n).getBlock() instanceof CableBlock) {
+                if (!seen.contains(n) && level.isLoaded(n) && level.getBlockState(n).getBlock() instanceof CableBlock
+                        && CableBlock.side(ps, d) == CableBlock.Side.CONNECTED
+                        && CableBlock.side(level.getBlockState(n), d.getOpposite()) == CableBlock.Side.CONNECTED) {
                     seen.add(n);
                     queue.add(n);
                 }
@@ -100,7 +104,11 @@ public final class CableNetwork {
         List<EnergyHandler> consumers = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
         for (BlockPos cable : this.cables) {
+            BlockState state = level.getBlockState(cable);
             for (Direction d : Direction.values()) {
+                if (!(state.getBlock() instanceof CableBlock) || CableBlock.side(state, d) != CableBlock.Side.CONNECTED) {
+                    continue;
+                }
                 BlockPos target = cable.relative(d);
                 if (target.equals(source) || this.cables.contains(target) || !visited.add(target.immutable())) {
                     continue;

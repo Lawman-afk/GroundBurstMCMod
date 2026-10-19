@@ -41,6 +41,9 @@ public final class GZMachines {
 
     public static final WithItem<MachineBlock> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", "Electrolytic Separator",
             p -> new MachineBlock(p, GZBlockEntities.ELECTROLYTIC_SEPARATOR, true, Shapes.block()));
+    /** Configures pipe and cable sides, turns machines, picks blocks up (see {@link WrenchItem}). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<WrenchItem> WRENCH = dev.groundzero.registry.GZItems.register(
+            "wrench", "Wrench", GZTab.MACHINES, WrenchItem::new, p -> p.stacksTo(1));
     public static final WithItem<MachineBlock> WATER_PUMP = machine("water_pump", "Water Pump",
             p -> new MachineBlock(p, GZBlockEntities.WATER_PUMP, true, Shapes.block()));
     public static final WithItem<TallMachineBlock> CRYOGENIC_CONDENSER = tallMachine("cryogenic_condenser", "Cryogenic Condenser",
@@ -82,6 +85,7 @@ public final class GZMachines {
 
     public static void registerCableCapabilities(RegisterCapabilitiesEvent event) {
         Block[] cables = CABLES.stream().map(c -> (Block) c.block().get()).toArray(Block[]::new);
-        event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) -> CableNetwork.handler(level, pos, side), cables);
+        event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
+                side != null && CableBlock.side(state, side) == CableBlock.Side.DISABLED ? null : CableNetwork.handler(level, pos, side), cables);
     }
 }

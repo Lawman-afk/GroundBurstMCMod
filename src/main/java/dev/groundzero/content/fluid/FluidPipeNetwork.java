@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -21,9 +22,10 @@ import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
- * A connected run of fluid pipes. Pipes hold nothing: whatever a machine (or another mod's pump) pushes into one pipe
- * is passed straight on to the other tanks the run touches, shared round-robin, never back to where it came from,
- * up to {@link #RATE} mB per tick. Breaking a pipe therefore never spills or loses fluid.
+ * A connected run of fluid pipes (pipes joined by sides in {@code normal} mode). Pipes hold nothing: whatever a
+ * machine pushes into the run, or a {@code pull} side draws in, is passed straight on to the tanks on the run's
+ * {@code normal} sides, shared round-robin, never back to where it came from, up to {@link #RATE} mB per tick.
+ * Breaking a pipe therefore never spills or loses fluid.
  */
 public final class FluidPipeNetwork {
     public static final int RATE = 2_000;
@@ -57,9 +59,12 @@ public final class FluidPipeNetwork {
             seen.add(pipe.immutable());
             while (!queue.isEmpty() && seen.size() <= MAX_PIPES) {
                 BlockPos p = queue.poll();
+                BlockState ps = level.getBlockState(p);
                 for (Direction d : Direction.values()) {
                     BlockPos n = p.relative(d);
-                    if (!seen.contains(n) && level.isLoaded(n) && level.getBlockState(n).getBlock() instanceof FluidPipeBlock) {
+                    if (!seen.contains(n) && level.isLoaded(n) && level.getBlockState(n).getBlock() instanceof FluidPipeBlock
+                            && ps.getBlock() instanceof FluidPipeBlock && FluidPipeBlock.mode(ps, d) == FluidPipeBlock.Mode.NORMAL
+                            && FluidPipeBlock.mode(level.getBlockState(n), d.getOpposite()) == FluidPipeBlock.Mode.NORMAL) {
                         seen.add(n);
                         queue.add(n);
                     }
@@ -87,7 +92,11 @@ public final class FluidPipeNetwork {
         List<ResourceHandler<FluidResource>> consumers = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
         for (BlockPos pipe : this.pipes) {
+            BlockState state = level.getBlockState(pipe);
             for (Direction d : Direction.values()) {
+                if (!(state.getBlock() instanceof FluidPipeBlock) || FluidPipeBlock.mode(state, d) != FluidPipeBlock.Mode.NORMAL) {
+                    continue;          // only normal sides receive; pull sides only give
+                }
                 BlockPos target = pipe.relative(d);
                 if (target.equals(source) || this.pipes.contains(target) || !visited.add(target.immutable())
                         || level.getBlockState(target).getBlock() instanceof FluidPipeBlock) {

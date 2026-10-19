@@ -105,7 +105,7 @@ final class SideConfigTab {
             int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx, fy, FRAME_U, 0, 18, 18, 256, 256);
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx + 1, fy + 1, face == Face.FRONT ? FRONT_U : ICON_U, 0, 16, 16, 256, 256);
-            if (!this.menu.machine().faceOpen(face)) {
+            if (!this.menu.machine().faceOpen(face) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
                 blocked(g, fx, fy);
                 if (mouseX >= fx && mouseX < fx + 18 && mouseY >= fy && mouseY < fy + 18) {
                     g.setTooltipForNextFrame(Component.translatable(MachineText.FACE_COVERED, Component.translatable(face.translationKey())), mouseX, mouseY);
@@ -220,7 +220,7 @@ final class SideConfigTab {
         for (Face face : Face.values()) {
             int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
             if (inside(mx, my, fx, fy, 18, 18)) {
-                if (!this.menu.machine().faceOpen(face)) {
+                if (!this.menu.machine().faceOpen(face) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
                     return true;
                 }
                 int id = switch (channel) {

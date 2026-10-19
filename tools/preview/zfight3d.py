@@ -1,8 +1,9 @@
 r"""Rendered-geometry z-fighting check for GeckoLib models: builds the exact quads GeckoLib draws (bone pivots and
 rotations, rotated cubes, animation poses) and reports pairs of faces that lie in the same plane and overlap.
-GeckoLib's entity cutout pipeline does not cull back faces in 26.x, so faces pointing opposite ways fight too. Those
-back-to-back pairs are only reported when one of the two cubes can be seen into (it lacks a face or has transparent
-texels); two closed solid cubes that abut hide their shared faces.
+GeckoLib's entity cutout pipeline does not cull back faces in 26.x, so faces pointing opposite ways fight too. A
+back-to-back pair lies between the two boxes it belongs to, so it can only be seen when one of them can be seen
+through: transparent texels, or a zero-thickness plane. Export closes every other visible opening (GeoModel.holes),
+so those are the only pairs reported.
 
     tools\.venv\Scripts\python.exe tools\preview\zfight3d.py                 (all machines, rest + animation frames)
     tools\.venv\Scripts\python.exe tools\preview\zfight3d.py arc_furnace
@@ -76,7 +77,7 @@ def _cube(label: str) -> str:
 
 
 def _open_cubes(quads, labels) -> set[str]:
-    """Cubes you can see into: fewer than six faces, or a face with see-through texels."""
+    """Cubes you can see through: a face with see-through texels, or a plane (no thickness to hide behind)."""
     faces: dict[str, int] = {}
     holey: set[str] = set()
     for q, lab in zip(quads, labels):
@@ -86,7 +87,8 @@ def _open_cubes(quads, labels) -> set[str]:
         u1, v1 = np.ceil(q.uv.max(axis=0)).astype(int)
         if u1 > u0 and v1 > v0 and (q.tex[v0:v1, u0:u1, 3] < 128).any():
             holey.add(c)
-    return {c for c, n in faces.items() if n < 6} | holey
+    planes = {c for c, n in faces.items() if n <= 2}     # one- or two-sided planes (glass, backings) have no volume
+    return holey | planes
 
 
 def check(quads, labels, tol: float = 0.05, min_area: float = 0.01) -> list[str]:

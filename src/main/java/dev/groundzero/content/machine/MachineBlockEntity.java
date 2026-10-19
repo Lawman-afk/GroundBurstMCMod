@@ -258,7 +258,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
         for (SideConfig.Face face : SideConfig.Face.values()) {
-            if (!this.sides.fluid(face) || !faceOpen(face)) {
+            if (!this.sides.fluid(face) || !faceOpen(face) || !fluidFaceAllowed(face)) {
                 continue;
             }
             Direction dir = face.toDirection(facing);
@@ -278,6 +278,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
+    /** Whether fluids can pass through a face at all (a pump only has outlets on two sides). */
+    public boolean fluidFaceAllowed(SideConfig.Face face) {
+        return true;
+    }
+
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
         if (side != null && !faceOpen(face(side))) {
             return null;
@@ -286,7 +291,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     public @Nullable ResourceHandler<FluidResource> fluidsFor(@Nullable Direction side) {
-        if (this.tanks.isEmpty() || side != null && !faceOpen(face(side))) {
+        if (this.tanks.isEmpty() || side != null && (!faceOpen(face(side)) || !fluidFaceAllowed(face(side)))) {
             return null;
         }
         return side == null || this.sides.fluid(face(side)) ? this.fluidHandler : null;

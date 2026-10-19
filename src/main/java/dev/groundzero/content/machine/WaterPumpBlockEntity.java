@@ -21,8 +21,8 @@ import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
  * Water Pump (DESIGN.md §6.4): stands on a water source block and, while powered, draws water from it without using
- * it up (like an infinite spring) and pushes it out of every face with fluids switched on into pipes, tanks and
- * machines. Its bottom face is the intake and never connects.
+ * it up (like an infinite spring) and pushes it out of its two side outlets into pipes, tanks and machines. Its
+ * bottom face is the intake and never connects.
  */
 public class WaterPumpBlockEntity extends MachineBlockEntity implements AnimatedMachine {
     public static final int ENERGY_PER_TICK = 20, RATE = 50;
@@ -54,6 +54,12 @@ public class WaterPumpBlockEntity extends MachineBlockEntity implements Animated
         tank.fillInternal(new FluidStack(Fluids.WATER, RATE));
         this.status = MachineStatus.RUNNING;
         return true;
+    }
+
+    /** Water leaves only through the two flanged outlets on the model's sides. */
+    @Override
+    public boolean fluidFaceAllowed(SideConfig.Face face) {
+        return face == SideConfig.Face.LEFT || face == SideConfig.Face.RIGHT;
     }
 
     /** The bottom is the intake pipe in the water. */

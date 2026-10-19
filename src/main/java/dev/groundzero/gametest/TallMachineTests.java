@@ -16,7 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -105,7 +104,7 @@ final class TallMachineTests {
         Block copper = GZMachines.CABLES.get(0).block().get();
         // setBlock skips placement logic, so resolve the cable's connections the way placing it would.
         helper.setBlock(cable, Block.updateFromNeighbourShapes(copper.defaultBlockState(), helper.getLevel(), helper.absolutePos(cable)));
-        helper.assertTrue(helper.getBlockState(cable).getValue(PipeBlock.WEST), "cable should connect to the upper half");
+        helper.assertTrue(dev.groundzero.content.power.CableBlock.side(helper.getBlockState(cable), net.minecraft.core.Direction.WEST) == dev.groundzero.content.power.CableBlock.Side.CONNECTED, "cable should connect to the upper half");
         helper.succeed();
     }
 }

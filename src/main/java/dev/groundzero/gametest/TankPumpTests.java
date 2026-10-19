@@ -1,5 +1,6 @@
 package dev.groundzero.gametest;
 
+import dev.groundzero.content.fluid.FluidPipeBlock;
 import dev.groundzero.content.fluid.FluidTankBlockEntity;
 import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.fluid.GasCloudBlock;
@@ -9,6 +10,14 @@ import dev.groundzero.content.machine.WaterPumpBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import dev.groundzero.content.power.CableBlock;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.material.Fluids;
@@ -24,7 +33,8 @@ final class TankPumpTests {
         GZGameTests.test("tanks_merge_into_a_box", GZGameTests.FLOOR_16, 40, TankPumpTests::merge);
         GZGameTests.test("tanks_need_a_square_box", GZGameTests.FLOOR_16, 40, TankPumpTests::invalidShape);
         GZGameTests.test("tank_split_keeps_shares", GZGameTests.FLOOR_16, 40, TankPumpTests::split);
-        GZGameTests.test("tank_drains_into_machine_below", GZGameTests.FLOOR_16, 40, TankPumpTests::drainDown);
+        GZGameTests.test("tank_empties_only_through_pull_pipe", GZGameTests.FLOOR_16, 60, TankPumpTests::pullFromTank);
+        GZGameTests.test("wrench_cycles_pipe_and_cable_sides", GZGameTests.FLOOR_16, 20, TankPumpTests::wrench);
         GZGameTests.test("pump_feeds_separator_through_pipe", GZGameTests.FLOOR_16, 100, TankPumpTests::pump);
         GZGameTests.test("gas_cloud_rises_and_pools", GZGameTests.FLOOR_16, 200, TankPumpTests::gasRises);
     }
@@ -94,12 +104,57 @@ final class TankPumpTests {
         });
     }
 
-    private static void drainDown(GameTestHelper helper) {
-        helper.setBlock(new BlockPos(4, 1, 4), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
-        ElectrolyticSeparatorBlockEntity sep = helper.getBlockEntity(new BlockPos(4, 1, 4), ElectrolyticSeparatorBlockEntity.class);
+    /** A tank never pushes by itself; a pipe side set to pull draws from it and delivers to the separator. */
+    private static void pullFromTank(GameTestHelper helper) {
         tankAt(helper, new BlockPos(4, 2, 4));
+        helper.setBlock(new BlockPos(5, 2, 4), GZFluids.FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(6, 2, 4), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        ElectrolyticSeparatorBlockEntity sep = helper.getBlockEntity(new BlockPos(6, 2, 4), ElectrolyticSeparatorBlockEntity.class);
         helper.runAfterDelay(3, () -> fill(helper, new BlockPos(4, 2, 4), 5_000));
-        helper.succeedWhen(() -> helper.assertTrue(sep.tank(0).amount() == 5_000, "the tank empties into the machine below, has " + sep.tank(0).amount()));
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(sep.tank(0).amount() == 0, "a normal pipe does not pull: the tank keeps its water");
+            BlockPos pipe = helper.absolutePos(new BlockPos(5, 2, 4));
+            var level = helper.getLevel();
+            var state = level.getBlockState(pipe).setValue(FluidPipeBlock.SIDES.get(Direction.WEST), FluidPipeBlock.Mode.PULL);
+            level.setBlock(pipe, state, net.minecraft.world.level.block.Block.UPDATE_ALL);
+            FluidPipeBlock.changed(level, pipe, state);
+        });
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(sep.tank(0).amount() == 5_000, "the pulling side empties the tank into the separator, has " + sep.tank(0).amount());
+            helper.succeed();
+        });
+    }
+
+    /** The Wrench cycles a pipe side normal -> pull -> off -> normal, and switches a cable join off on both cables. */
+    private static void wrench(GameTestHelper helper) {
+        tankAt(helper, new BlockPos(4, 2, 4));
+        helper.setBlock(new BlockPos(5, 2, 4), GZFluids.FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(4, 2, 6), GZMachines.CABLES.get(0).block().get());
+        helper.setBlock(new BlockPos(5, 2, 6), GZMachines.CABLES.get(0).block().get());
+        var level = helper.getLevel();
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack wrench = new ItemStack(GZMachines.WRENCH.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, wrench);
+        BlockPos pipe = helper.absolutePos(new BlockPos(5, 2, 4));
+        // Click the west arm of the pipe (the side touching the tank).
+        Vec3 armPoint = new Vec3(pipe.getX() + 0.1, pipe.getY() + 0.5, pipe.getZ() + 0.5);
+        java.util.function.Supplier<FluidPipeBlock.Mode> west = () -> FluidPipeBlock.mode(level.getBlockState(pipe), Direction.WEST);
+        helper.assertTrue(west.get() == FluidPipeBlock.Mode.NORMAL, "the pipe connects to the tank");
+        for (FluidPipeBlock.Mode expected : new FluidPipeBlock.Mode[] {FluidPipeBlock.Mode.PULL, FluidPipeBlock.Mode.DISABLED, FluidPipeBlock.Mode.NORMAL}) {
+            wrench.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(armPoint, Direction.UP, pipe, false)));
+            helper.assertTrue(west.get() == expected, "expected " + expected + ", got " + west.get());
+        }
+        BlockPos a = helper.absolutePos(new BlockPos(4, 2, 6)), b = helper.absolutePos(new BlockPos(5, 2, 6));
+        Vec3 cableArm = new Vec3(a.getX() + 0.9, a.getY() + 0.5, a.getZ() + 0.5);
+        wrench.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(cableArm, Direction.UP, a, false)));
+        helper.assertTrue(CableBlock.side(level.getBlockState(a), Direction.EAST) == CableBlock.Side.DISABLED
+                && CableBlock.side(level.getBlockState(b), Direction.WEST) == CableBlock.Side.DISABLED, "both cables switch the join off");
+        helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, a, Direction.EAST) == null, "a switched-off cable side exposes nothing");
+        // Sneak-click picks the pipe up.
+        player.setShiftKeyDown(true);
+        wrench.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(armPoint, Direction.UP, pipe, false)));
+        helper.assertTrue(level.getBlockState(pipe).isAir(), "sneak-wrench dismantles the pipe");
+        helper.succeed();
     }
 
     private static void pump(GameTestHelper helper) {
@@ -111,6 +166,10 @@ final class TankPumpTests {
         helper.setBlock(new BlockPos(6, 2, 4), GZFluids.FLUID_PIPE.block().get());
         helper.setBlock(new BlockPos(7, 2, 4), GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
         ElectrolyticSeparatorBlockEntity sep = helper.getBlockEntity(new BlockPos(7, 2, 4), ElectrolyticSeparatorBlockEntity.class);
+        var level = helper.getLevel();
+        BlockPos p = helper.absolutePos(new BlockPos(4, 2, 4));
+        helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, p, Direction.SOUTH) == null
+                && level.getCapability(Capabilities.Fluid.BLOCK, p, Direction.EAST) != null, "water only leaves by the two side outlets");
         helper.succeedWhen(() -> helper.assertTrue(sep.tank(0).amount() >= 2_000, "pumped water reaches the separator, has " + sep.tank(0).amount()));
     }
 

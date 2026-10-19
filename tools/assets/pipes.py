@@ -2,7 +2,7 @@
 
 Look: a 6 px brushed-steel pipe with a bolted gunmetal flange at every joint, meeting the next pipe flange-to-flange
 at the block edge, and a squat bolted junction box at the centre. Same multipart scheme as the cables: a core model
-plus one arm model rotated to each connected side.
+plus one arm model rotated to each connected side; a side set to pull (Wrench) also gets a hazard-striped collar.
 """
 from __future__ import annotations
 
@@ -24,6 +24,8 @@ ARM_SIDE = (0, 0, 6, 4)       # pipe wall, 6 across x 3.5 long (stretched to 4)
 CORE = (7, 0, 14, 7)          # junction box face
 FLANGE_SIDE = (0, 8, 7, 9)    # flange rim
 FLANGE_END = (8, 8, 15, 15)   # flange face with the bore
+COLLAR_FACE = (0, 9, 7, 16)   # pull collar ring (top/bottom)
+COLLAR_SIDE = (8, 15, 15, 16) # pull collar rim: hazard stripes mark an extracting side
 
 
 def texture() -> Tex:
@@ -52,6 +54,12 @@ def texture() -> Tex:
     t.px(10, 10, G[1])
     for x, y in ((9, 9), (13, 9), (9, 13), (13, 13)):
         t.px(x, y, S[5])                                       # bolts
+    # Pull collar: hazard-striped band, so an extracting side reads at a glance.
+    for x in range(7):
+        t.px(8 + x, 15, P.HAZARD_YELLOW[4] if (x // 2) % 2 == 0 else P.HAZARD_BLACK[3])
+    t.rect(0, 9, 7, 7, P.HAZARD_YELLOW[4])
+    t.outline(0, 9, 7, 7, P.HAZARD_YELLOW[2])
+    t.rect(2, 11, 3, 3, P.HAZARD_BLACK[2])
     t.save(paths.TEXTURES / "block" / f"{NAME}.png")
     return t
 
@@ -77,12 +85,18 @@ def models() -> None:
               "faces": {**{d: face(FLANGE_SIDE) for d in ("north", "south", "east", "west")},
                         "up": face(FLANGE_END, cull="up"), "down": face(FLANGE_END)}}
     write_json(paths.MODELS / "block" / f"{NAME}_arm.json", {"textures": tex, "elements": [pipe, flange]})
+    # Pull side: a striped collar round the arm, just inside the flange.
+    collar = {"from": [4.7, 13.3, 4.7], "to": [11.3, 14.3, 11.3],
+              "faces": {**{d: face(COLLAR_SIDE) for d in ("north", "south", "east", "west")},
+                        "up": face(COLLAR_FACE), "down": face(COLLAR_FACE)}}
+    write_json(paths.MODELS / "block" / f"{NAME}_pull.json", {"textures": tex, "elements": [collar]})
 
     rot = {"up": {}, "down": {"x": 180}, "north": {"x": 90}, "east": {"x": 90, "y": 90},
            "south": {"x": 90, "y": 180}, "west": {"x": 90, "y": 270}}
     multipart = [{"apply": {"model": f"groundzero:block/{NAME}_core"}}]
     for d, r in rot.items():
-        multipart.append({"when": {d: "true"}, "apply": {"model": f"groundzero:block/{NAME}_arm", **r}})
+        multipart.append({"when": {d: "normal|pull"}, "apply": {"model": f"groundzero:block/{NAME}_arm", **r}})
+        multipart.append({"when": {d: "pull"}, "apply": {"model": f"groundzero:block/{NAME}_pull", **r}})
     write_json(paths.ASSETS / "blockstates" / f"{NAME}.json", {"multipart": multipart})
 
     # Inventory: a straight east-west run through the junction box, flanged at both ends.

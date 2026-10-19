@@ -7,7 +7,7 @@
     },
     {
       "when": {
-        "up": "true"
+        "up": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm"
@@ -15,7 +15,7 @@
     },
     {
       "when": {
-        "down": "true"
+        "down": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm",
@@ -24,7 +24,7 @@
     },
     {
       "when": {
-        "north": "true"
+        "north": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm",
@@ -33,7 +33,7 @@
     },
     {
       "when": {
-        "east": "true"
+        "east": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm",
@@ -43,7 +43,7 @@
     },
     {
       "when": {
-        "south": "true"
+        "south": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm",
@@ -53,7 +53,7 @@
     },
     {
       "when": {
-        "west": "true"
+        "west": "connected"
       },
       "apply": {
         "model": "groundzero:block/hv_cable_arm",

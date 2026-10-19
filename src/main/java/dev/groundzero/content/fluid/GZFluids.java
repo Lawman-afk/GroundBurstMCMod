@@ -126,7 +126,8 @@ public final class GZFluids {
             }
         }
         event.registerBlock(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,
-                (level, pos, state, be, side) -> FluidPipeNetwork.handler(level, pos, side), FLUID_PIPE.block().get());
+                (level, pos, state, be, side) -> side != null && FluidPipeBlock.mode(state, side) == FluidPipeBlock.Mode.DISABLED
+                        ? null : FluidPipeNetwork.handler(level, pos, side), FLUID_PIPE.block().get());
     }
 
     private static ChemFluid liquid(String name, String english, Look look, int color, Hazard hazard, int density, int viscosityFactor,

@@ -277,12 +277,19 @@ enriched uranium in your inventory hurts).
   right-click with a full bucket/canister (pours into the input tank that takes it) and sneak-right-click with an
   empty one (fills from a product tank). Every tank except water has a dump button (shift-click). Recipes take
   fluids from distinct input tanks and must fit every fluid product before they run.
-- Water Pump: on a water source block, 50 mB/t for 20 FE/t, source never used up; pushes out of every open face.
+- Water Pump: on a water source block, 50 mB/t for 20 FE/t, source never used up; pushes out of its two side
+  outlets only (the flanges on the model).
 - Fluid Tank: 16,000 mB per block; touching tanks join when they fill a box with a square base up to 3x3 and up to
-  5 high (720,000 mB). Breaking a block splits the tank, the rest keeps its share. Liquids drain out of the bottom
-  (gases out of the top) into whatever is there.
-- Fluid pipes form pass-through networks with no buffer (2000 mB/t): machines push product tanks out of faces with
-  auto-eject and fluids on; the run shares it among every tank it touches, never back to the source.
+  5 high (720,000 mB). Breaking a block splits the tank, the rest keeps its share. Passive: fluid moves in and out
+  only by pipe.
+- Fluid pipes form pass-through networks with no buffer (2000 mB/t). Each pipe side is normal (in and out), pull
+  (draws from the tank or machine it touches, up to 1000 mB every 2 ticks; hazard-striped collar) or disconnected.
+  Machines push product tanks out of faces with auto-eject and fluids on; pull sides draw; the run delivers to its
+  normal sides, never back to the source.
+- Wrench (conventions of Mekanism's configurator / Pipez's wrench): right-click a pipe side cycles normal -> pull ->
+  disconnected (pipe-to-pipe joins: on/off, both pipes); right-click a cable side connects/disconnects it (cables
+  have no push/pull); right-click a machine turns it; sneak-right-click picks up pipes, cables, machines, tanks and
+  structure blocks.
 
 ## 7. Power
 
@@ -1404,3 +1411,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Released gases are rising cloud blocks (1-8 parts, hanging from the block top), not inverted flowing fluids: a true upside-down FlowingFluid would need a re-implemented fluid engine and renderer. |
 | 2026-10-19 | Buckets use our own fluid mask matched to the 26.x vanilla bucket's opening (NeoForge's mask fits the old bucket shape). |
 | 2026-10-19 | Machine inventories keep their own slot count when loading saves (NeoForge's handler adopts the saved size, which crashed the plant screen after its layout changed). |
+| 2026-10-19 | Pipes have no push mode: a pass-through network already delivers to every normal side, so Mekanism's separate push adds nothing here. Pull is per side; disconnected sides are remembered in the block state. |
+| 2026-10-19 | Model export closes every visible opening (a left-out face nothing covers) and drops faces buried in solid geometry; deliberate openings are listed per model (open_ok). |

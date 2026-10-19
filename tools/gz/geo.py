@@ -111,10 +111,42 @@ class GeoModel(BlockModel):
                             break
         return hidden
 
+    def enclosed_faces(self, plane: float = 0.3, eps: float = 0.02, step: float = 0.25) -> set[tuple[str, str]]:
+        """(box, face) pairs buried in solid geometry: every point just outside the face lies inside another solid
+        box of the same bone (e.g. a dome's underside resting on its tank). Never visible, and drawing them only risks
+        fighting the faces they rest on."""
+        rotated = {b.name for b in self.bones if any(b.rotation)}
+        axis = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
+        out: set[tuple[str, str]] = set()
+        for bone in self.bones:
+            if bone.name in rotated:
+                continue
+            solid = [b for b in bone.boxes if not b.rotation and all(b.to[k] - b.frm[k] >= plane for k in range(3))]
+            for b in solid:
+                for d in b.faces:
+                    ax, side = axis[d]
+                    o = [k for k in range(3) if k != ax]
+                    buried = True
+                    u = b.frm[o[0]] + step / 2
+                    while u < b.to[o[0]] and buried:
+                        v = b.frm[o[1]] + step / 2
+                        while v < b.to[o[1]]:
+                            p = [0.0, 0.0, 0.0]
+                            p[o[0]], p[o[1]] = u, v
+                            p[ax] = b.to[ax] + eps if side else b.frm[ax] - eps
+                            if not any(c is not b and all(c.frm[k] - 1e-6 <= p[k] <= c.to[k] + 1e-6 for k in range(3)) for c in solid):
+                                buried = False
+                                break
+                            v += step
+                        u += step
+                    if buried:
+                        out.add((b.name, d))
+        return out
+
     def to_geo_json(self) -> dict:
         if not self._laid_out:
             raise RuntimeError("call layout() first")
-        hidden = self.hidden_faces()
+        hidden = self.hidden_faces() | self.enclosed_faces()
         bones_json = []
         for bone in self.bones:
             bj: dict = {"name": bone.name, "pivot": [-bone.pivot[0], bone.pivot[1], bone.pivot[2]]}
@@ -182,9 +214,63 @@ class GeoModel(BlockModel):
             issues.append(issue)
         return issues
 
+    #: (box name, face) openings that are meant to be seen into (a hopper mouth, a vent).
+    open_ok: set[tuple[str, str]] = set()
+
+    def holes(self, plane: float = 0.3, eps: float = 0.02, step: float = 0.25) -> list[str]:
+        """Missing faces you can see into: on a solid box (thicker than a plane), the part of a left-out face that no
+        other box covers. A face may be left out only where another box hides it. Ignores rotated boxes/bones."""
+        rotated = {b.name for b in self.bones if any(b.rotation)}
+        bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
+        solid = [b for b in self.boxes if not b.rotation and bone_of.get(b.name) not in rotated]
+        axis = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
+        issues = []
+        for b in solid:
+            lo, hi = b.frm, b.to
+            if any(hi[k] - lo[k] < plane for k in range(3)) or (b.name, "*") in self.open_ok:
+                continue
+            for d, (ax, side) in axis.items():
+                if d in b.faces or (b.name, d) in self.open_ok:
+                    continue
+                o = [k for k in range(3) if k != ax]
+                open_n = 0
+                u = lo[o[0]] + step / 2
+                while u < hi[o[0]]:
+                    v = lo[o[1]] + step / 2
+                    while v < hi[o[1]]:
+                        p = [0.0, 0.0, 0.0]
+                        p[o[0]], p[o[1]] = u, v
+                        p[ax] = hi[ax] + eps if side else lo[ax] - eps
+                        if not any(c is not b and all(c.frm[k] - 2 * eps <= p[k] <= c.to[k] + 2 * eps for k in range(3)) for c in solid):
+                            open_n += 1
+                        v += step
+                    u += step
+                if open_n * step * step > 0.2:
+                    issues.append(f"{b.name} has no {d} face: {open_n * step * step:.2f} px2 open")
+        return issues
+
+    def close_holes(self) -> list[str]:
+        """Adds every left-out face that you could see into (see holes()), except openings listed in open_ok.
+        Called by layout(), so the new faces get texture space and are painted like the box's other faces."""
+        from gz.model import Face  # noqa: PLC0415
+        added = []
+        for issue in self.holes():
+            name, rest = issue.split(" has no ")
+            d = rest.split(" face")[0]
+            box = next(b for b in self.boxes if b.name == name)
+            box.faces[d] = Face()
+            added.append(f"{name}/{d}")
+        return added
+
+    def layout(self) -> None:  # type: ignore[override]
+        self.close_holes()
+        super().layout()
+
     def save(self, tex, emissive=None):  # type: ignore[override]
         for issue in self.zfight():
             print(f"  z-fight warning [{self.name}]: {issue}")
+        for issue in self.holes():
+            print(f"  open-face warning [{self.name}]: {issue}")
         self.bleed(tex)
         if emissive is not None:
             self.bleed(emissive)

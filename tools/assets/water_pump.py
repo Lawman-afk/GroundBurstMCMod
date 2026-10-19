@@ -1,8 +1,9 @@
 """Water Pump (GeckoLib block model + animation), DESIGN.md §6.4. Sits on a water source and pushes water into pipes.
 
 Look: the shared hazard-striped plinth with a drab-green pump casing on it; an electric motor lies on top with a
-cooling fan at its east end (spins while pumping); a flanged outlet on the east, west and south faces, reaching the
-block edge at pipe height so fluid pipes meet a solid flange; a pressure gauge and a status lamp on the front.
+cooling fan at its east end (spins while pumping); a flanged outlet on each side (east and west, the only faces
+water leaves by), reaching the block edge at pipe height so fluid pipes meet a solid flange; a pressure gauge and a
+status lamp on the front.
 """
 from __future__ import annotations
 
@@ -46,10 +47,9 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     outlets = {
         "east": ((5, 6.4, -1.5), (7.4, 9.6, 1.5), (7.4, 5.5, -2.5), (7.9, 10.5, 2.5)),
         "west": ((-7.4, 6.4, -1.5), (-5, 9.6, 1.5), (-7.9, 5.5, -2.5), (-7.4, 10.5, 2.5)),
-        "south": ((-1.5, 6.4, 5), (1.5, 9.6, 7.4), (-2.5, 5.5, 7.4), (2.5, 10.5, 7.9)),
     }
     for side, (s0, s1, f0, f1) in outlets.items():
-        stub_faces = ("north", "south", "up", "down") if side != "south" else ("east", "west", "up", "down")
+        stub_faces = ("north", "south", "up", "down")
         add("stub", g.box(f"stub_{side}", s0, s1, faces=stub_faces, bone=F))
         add("flange", g.box(f"flange_{side}", f0, f1, bone=F))
     # Front: pressure gauge and lamp.

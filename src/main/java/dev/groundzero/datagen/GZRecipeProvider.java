@@ -298,6 +298,11 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("LGL").pattern("G G").pattern("LGL")
                 .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE))
                 .save(output);
+        shaped(RecipeCategory.TOOLS, GZMachines.WRENCH.get(), 1)
+                .define('I', GZTags.commonItem("ingots/steel"))
+                .pattern("I I").pattern(" I ").pattern(" I ")
+                .unlockedBy(getHasName(GZParts.STEEL_INGOT), has(GZParts.STEEL_INGOT))
+                .save(output);
         // Water pump: motor and pressure vessel over an intake pipe.
         shaped(RecipeCategory.REDSTONE, GZMachines.WATER_PUMP.item(), 1)
                 .define('M', GZParts.ELECTRIC_MOTOR).define('V', GZParts.PRESSURE_VESSEL).define('F', GZParts.MACHINE_FRAME)

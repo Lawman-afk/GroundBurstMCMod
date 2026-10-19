@@ -187,7 +187,7 @@ def cable_models(tier: str) -> None:
            "south": {"x": 90, "y": 180}, "west": {"x": 90, "y": 270}}
     multipart = [{"apply": {"model": f"groundzero:block/{tier}_core"}}]
     for d, r in rot.items():
-        multipart.append({"when": {d: "true"}, "apply": {"model": f"groundzero:block/{tier}_arm", **r}})
+        multipart.append({"when": {d: "connected"}, "apply": {"model": f"groundzero:block/{tier}_arm", **r}})
     write_json(paths.ASSETS / "blockstates" / f"{tier}.json", {"multipart": multipart})
 
 

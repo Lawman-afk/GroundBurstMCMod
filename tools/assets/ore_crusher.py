@@ -43,6 +43,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("plinth", g.box("plinth", (-8, 0, -8), (8, 2, 8), bone=F))
     add("housing", g.box("housing", (-7, 2, -7), (7, 11, 7), bone=F))
     add("rim", g.box("rim", (-7.5, 11, -7.5), (7.5, 12, 7.5), faces=("north", "south", "east", "west", "down"), bone=F))
+    g.open_ok = {("rim", "up")}                     # the hopper mouth: you look down past the rim to the rollers
     # Corner posts give the housing a framed, fabricated look.
     for i, (x, z) in enumerate(((-7.5, -7.5), (6.5, -7.5), (-7.5, 6.5), (6.5, 6.5))):
         add("post", g.box(f"post{i}", (x, 2, z), (x + 1, 11, z + 1), faces=("north", "south", "east", "west"), bone=F))

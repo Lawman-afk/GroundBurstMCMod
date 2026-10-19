@@ -6,7 +6,6 @@ import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 import dev.groundzero.GroundZero;
-import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZLang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,8 +24,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -66,15 +63,6 @@ public class FluidTankBlock extends Block implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new FluidTankBlockEntity(pos, state);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide() || type != GZBlockEntities.FLUID_TANK.get()) {
-            return null;
-        }
-        return (lvl, pos, st, be) -> ((FluidTankBlockEntity) be).serverTick((ServerLevel) lvl);
     }
 
     // The block entity exists only after placement finishes, so joining up happens on the next tick.

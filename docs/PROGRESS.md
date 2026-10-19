@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system, Water Pump and Fluid Tank from slice 4 feedback (48/48 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
+**Current phase:** Phase 4 in progress — slices 1–4 built and tested, plus the fluid system, Water Pump and Fluid Tank from slice 4 feedback and the Wrench with pipe/cable connection modes (49/49 GameTests). Awaits the user's in-game check; next: slice 5 (Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter Fabricator).
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -128,7 +128,8 @@ checklist for the user.
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
 | Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases as rising clouds with upside-down buckets), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
 | Water Pump (infinite water from a source block, pushes into pipes) | done (slice 4 feedback 2) — needs in-game test |
-| Fluid Tank (expandable to 3x3x5, connected frame, renders contents, drains down / gases up) | done (slice 4 feedback 2) — needs in-game test |
+| Fluid Tank (expandable to 3x3x5, connected frame, renders contents; passive, piped in and out) | done (slice 4 feedback 2/3) — needs in-game test |
+| Wrench (pipe sides normal/pull/off, cable sides on/off, rotate machines, sneak to pick up) | done (slice 4 feedback 3) — needs in-game test |
 | Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press, separator, condenser, chemical plant; client fades them in/out with the ACTIVE state |
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |

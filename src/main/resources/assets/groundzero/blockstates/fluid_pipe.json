@@ -7,7 +7,7 @@
     },
     {
       "when": {
-        "up": "true"
+        "up": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm"
@@ -15,7 +15,15 @@
     },
     {
       "when": {
-        "down": "true"
+        "up": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull"
+      }
+    },
+    {
+      "when": {
+        "down": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm",
@@ -24,7 +32,16 @@
     },
     {
       "when": {
-        "north": "true"
+        "down": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "north": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm",
@@ -33,7 +50,16 @@
     },
     {
       "when": {
-        "east": "true"
+        "north": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "east": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm",
@@ -43,7 +69,17 @@
     },
     {
       "when": {
-        "south": "true"
+        "east": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm",
@@ -53,10 +89,30 @@
     },
     {
       "when": {
-        "west": "true"
+        "south": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "normal|pull"
       },
       "apply": {
         "model": "groundzero:block/fluid_pipe_arm",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "pull"
+      },
+      "apply": {
+        "model": "groundzero:block/fluid_pipe_pull",
         "x": 90,
         "y": 270
       }

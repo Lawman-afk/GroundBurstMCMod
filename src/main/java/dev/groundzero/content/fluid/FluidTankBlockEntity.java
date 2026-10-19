@@ -4,7 +4,6 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundzero.registry.GZBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -17,22 +16,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 
 /**
  * One block of a fluid tank. A tank is a box of these (see {@link FluidTankStructure}); its lowest north-west block is
  * the controller and holds the fluid for the whole box, the others point at it. Every block exposes the controller's
- * fluid to pipes and machines. Each tick the controller lets liquids out of the bottom of the tank (gases out of the
- * top) into whatever sits there: a pipe, a machine, another mod's tank.
+ * fluid on every side. A tank is passive: fluid goes in and out only through pipes (a pipe set to pull empties it).
  */
 public class FluidTankBlockEntity extends BlockEntity {
     public static final int CAPACITY_PER_BLOCK = 16_000;
-    public static final int OUTFLOW_PER_TICK = 1_000;
     private static final int SYNC_STEPS = 64;
 
     /** The controller's position, or null when this block is the controller (of a single block or a whole box). */
@@ -116,29 +111,6 @@ public class FluidTankBlockEntity extends BlockEntity {
     /** What pipes and machines see on any side of any block of the tank. */
     public ResourceHandler<FluidResource> handler() {
         return controllerEntity().tank;
-    }
-
-    // --- ticking -------------------------------------------------------------------------------------------------------------
-    public void serverTick(ServerLevel level) {
-        if (!isController() || this.tank.fluid().isEmpty()) {
-            return;
-        }
-        boolean gas = this.tank.fluid().getFluidType().isLighterThanAir();
-        int y = gas ? this.worldPosition.getY() + this.height : this.worldPosition.getY() - 1;
-        Direction from = gas ? Direction.DOWN : Direction.UP;
-        int left = OUTFLOW_PER_TICK;
-        for (int dx = 0; dx < this.width && left > 0; dx++) {
-            for (int dz = 0; dz < this.width && left > 0; dz++) {
-                BlockPos target = new BlockPos(this.worldPosition.getX() + dx, y, this.worldPosition.getZ() + dz);
-                if (level.getBlockState(target).getBlock() instanceof FluidTankBlock) {
-                    continue;
-                }
-                ResourceHandler<FluidResource> h = level.getCapability(Capabilities.Fluid.BLOCK, target, from);
-                if (h != null) {
-                    left -= ResourceHandlerUtil.move(this.tank, h, r -> true, left, null);
-                }
-            }
-        }
     }
 
     // --- sync and persistence ----------------------------------------------------------------------------------------------------
