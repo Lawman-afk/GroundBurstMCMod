@@ -79,7 +79,7 @@ public final class MachineText {
     public static final String INFO_CAPACITOR_BANK = GZLang.add(GroundZero.MODID + ".info.capacitor_bank",
             "Stores power: 100,000 / 1,000,000 / 10,000,000 FE, moving 1,024 / 8,192 / 32,768 FE a tick. Every face takes power in except the front, which pushes it out (turn it with the Wrench). It keeps its charge when picked up, and a comparator reads how full it is.");
     public static final String INFO_BATTERY_CHARGER = GZLang.add(GroundZero.MODID + ".info.battery_charger",
-            "Charges a battery (or any other mod's chargeable item) at up to 2,048 FE a tick from the power its cables bring, then moves it to the output slot.");
+            "Charges a battery (or any other mod's chargeable item) at up to 512 FE a tick from the power its cables bring, then moves it to the output slot.");
     public static final String INFO_DECONTAMINATION_SHOWER = GZLang.add(GroundZero.MODID + ".info.decontamination_shower",
             "A walk-in booth: pipe water in and power it, then step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. Radiation contamination will wash off too once radiation exists.");
     public static final String INFO_BATTERY = GZLang.add(GroundZero.MODID + ".info.battery",

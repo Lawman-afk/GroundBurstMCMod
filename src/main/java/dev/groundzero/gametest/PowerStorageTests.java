@@ -42,7 +42,7 @@ final class PowerStorageTests {
         GZGameTests.test("rtg_decays_its_slug", GZGameTests.FLOOR_16, 40, PowerStorageTests::rtg);
         GZGameTests.test("capacitor_bank_front_outputs_sides_input", GZGameTests.FLOOR_16, 40, PowerStorageTests::bankFaces);
         GZGameTests.test("capacitor_bank_keeps_charge_when_broken", GZGameTests.FLOOR_16, 20, PowerStorageTests::bankKeepsCharge);
-        GZGameTests.test("charger_fills_battery", GZGameTests.FLOOR_16, 80, PowerStorageTests::charger);
+        GZGameTests.test("charger_fills_battery", GZGameTests.FLOOR_16, 160, PowerStorageTests::charger);
         GZGameTests.test("shower_washes_off_poison_and_fire", GZGameTests.FLOOR_16, 60, PowerStorageTests::shower);
     }
 
@@ -122,12 +122,12 @@ final class PowerStorageTests {
         helper.succeed();
     }
 
-    /** An empty battery charges to full and moves to the output slot. */
+    /** An empty battery charges to full (at 512 FE/t, so about 100 ticks) and moves to the output slot. */
     private static void charger(GameTestHelper helper) {
         BlockPos pos = new BlockPos(3, 1, 3);
         helper.setBlock(pos, GZMachines.BATTERY_CHARGER.block().get());
         BatteryChargerBlockEntity charger = helper.getBlockEntity(pos, BatteryChargerBlockEntity.class);
-        charger.energy().generate(BatteryChargerBlockEntity.CAPACITY);
+        helper.onEachTick(() -> charger.energy().generate(BatteryChargerBlockEntity.RATE));
         helper.assertTrue(charger.inventory().canPlaceItem(0, new ItemStack(GZParts.BATTERY.get())), "a battery fits the cradle");
         helper.assertFalse(charger.inventory().canPlaceItem(0, new ItemStack(GZParts.STEEL_PLATE.get())), "a plate does not");
         charger.inventory().setItem(0, new ItemStack(GZParts.BATTERY.get()));

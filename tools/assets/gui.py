@@ -29,7 +29,7 @@ REDSTONE_ICONS = (180, 56)    # 3 icons, 16 x 16 each
 
 LAYOUTS = {
     "ore_crusher": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 56, 35), ("out_big", 116, 35), ("out", 146, 35)],
         "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
@@ -40,7 +40,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "arc_furnace": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 56, 25), ("in", 56, 47), ("out_big", 116, 35), ("out", 146, 35)],
         "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
@@ -51,7 +51,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "industrial_press": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 56, 25), ("die", 56, 47), ("out_big", 116, 35)],
         "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
@@ -62,7 +62,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "electrolytic_separator": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [],
         "energy": (8, 20, 14, 46),
         "tanks": [(40, 20, 12, 46, "H2O", False), (116, 20, 12, 42, None, True)],
@@ -74,7 +74,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "cryogenic_condenser": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("membrane", 52, 35)],
         "energy": (8, 20, 14, 46),
         "tanks": [(116, 20, 12, 42, None, True)],
@@ -86,7 +86,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "chemical_plant": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 76, 20), ("in", 76, 38), ("in", 76, 56), ("out", 126, 25), ("out", 126, 47)],
         "energy": (8, 20, 14, 46),
         "tanks": [(26, 20, 12, 46, "H2O", False), (42, 20, 12, 42, None, True), (58, 20, 12, 42, None, True),
@@ -99,7 +99,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "water_pump": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [],
         "energy": (8, 20, 14, 46),
         "tanks": [(82, 20, 12, 42, None, True)],
@@ -112,7 +112,7 @@ LAYOUTS = {
     },
     # Slice 5. Circuit Fabricator: four inputs in a 2x2 grid, liquid nitrogen coolant tank for the coils.
     "circuit_fabricator": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 48, 26), ("in", 66, 26), ("in", 48, 44), ("in", 66, 44), ("out_big", 124, 35)],
         "energy": (8, 20, 14, 46),
         "tanks": [(28, 20, 12, 42, None, True)],
@@ -125,7 +125,7 @@ LAYOUTS = {
     },
     # Gas Centrifuge: UF6 tank, two products, and a CRT showing the cascade size and speed bonus.
     "gas_centrifuge": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("out", 78, 25), ("out", 78, 47)],
         "energy": (8, 20, 14, 46),
         "tanks": [(28, 20, 12, 42, None, True)],
@@ -137,7 +137,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "fusion_fuel_synthesizer": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 56, 35), ("out_big", 116, 35)],
         "energy": (8, 20, 14, 46),
         "tanks": [(28, 20, 12, 42, None, True)],
@@ -149,7 +149,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "exotic_matter_fabricator": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("in", 50, 20), ("in", 50, 38), ("in", 50, 56), ("out_big", 116, 35)],
         "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
@@ -161,7 +161,7 @@ LAYOUTS = {
     },
     # Slice 6. Diesel Generator: fuel tank, burn flame, output readout.
     "diesel_generator": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [],
         "energy": (8, 20, 14, 46),
         "tanks": [(30, 20, 12, 42, None, True)],
@@ -174,7 +174,7 @@ LAYOUTS = {
     },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("fuel", 56, 53)],
         "energy": (8, 20, 14, 46),
         "progress": None,
@@ -185,7 +185,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "capacitor_bank": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [],
         "energy": (8, 20, 14, 46),
         "progress": None,
@@ -197,7 +197,7 @@ LAYOUTS = {
     },
     # Battery Charger: the arrow fills with the item's charge.
     "battery_charger": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("battery", 56, 35), ("out_big", 116, 35)],
         "energy": (8, 20, 14, 46),
         "progress": (79, 34, 24, 17),
@@ -208,7 +208,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "decontamination_shower": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [],
         "energy": (8, 20, 14, 46),
         "tanks": [(40, 20, 12, 46, "H2O", False)],
@@ -220,7 +220,7 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     "combustion_generator": {
-        "title": (28, 6),
+        "title": (8, 6),
         "slots": [("fuel", 56, 53)],
         "energy": (8, 20, 14, 46),
         "progress": None,

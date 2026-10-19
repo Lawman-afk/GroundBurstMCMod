@@ -3,7 +3,7 @@
 Look: a twin-cylinder stationary engine on the shared hazard-striped plinth. Olive crankcase with a radiator grille on
 the front, two cylinder barrels on top whose piston crowns (bones "piston0", "piston1") rise and fall in turn, a
 spoked flywheel on the east side ("flywheel"), a fuel tank along the west side with a fuel-coloured band, and an
-exhaust stack at the back corner that puffs smoke while running ("puff0".."puff2"). A small panel with a lamp and a
+exhaust stack at the back corner fed by a manifold from both barrels that puffs smoke while running ("puff0".."puff2"). A small panel with a lamp and a
 gauge faces the front.
 """
 from __future__ import annotations
@@ -63,7 +63,10 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # Exhaust stack at the back-west corner with a rain cap.
     add("stack", g.box("stack", (-7.0, 2, 4.6), (-5.5, 14.5, 6.2), faces=("north", "south", "east", "west"), bone=F))
     add("stack_cap", g.box("stack_cap", (-7.4, 14.5, 4.2), (-5.1, 15.0, 6.6), bone=F))
-    add("pipe", g.box("manifold", (-5.5, 10.4, 4.9), (2.4, 11.2, 5.7), faces=("north", "south", "up", "down", "east"), bone=F))
+    # Exhaust manifold from the stack along the back to the far cylinder, with a port into the back of each barrel.
+    add("pipe", g.box("manifold", (-5.5, 10.4, 4.9), (CYL_X[1] + 0.4, 11.2, 5.7), faces=("north", "south", "up", "down", "east"), bone=F))
+    for i, x in enumerate(CYL_X):
+        add("pipe", g.box(f"port{i}", (x - 0.4, 10.4, 2.2), (x + 0.4, 11.2, 4.9), faces=("east", "west", "up", "down"), bone=F))
     for i in range(3):
         px, pz = (-6.2, -5.6, -6.6)[i], (5.6, 5.0, 5.2)[i]
         add("puff", g.box(f"puff_box{i}", (px - 0.6, 15.3 + i * 0.3, pz - 0.6), (px + 0.6, 16.3 + i * 0.3, pz + 0.6), faces=("north", "south", "east", "west", "up"), bone=f"puff{i}"))

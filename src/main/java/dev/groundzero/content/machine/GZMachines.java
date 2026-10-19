@@ -34,10 +34,8 @@ public final class GZMachines {
                     Shapes.or(Block.box(4.5, 0, 4, 11.5, 15, 11), Block.box(0, 0, 12, 4, 15, 16))));
     public static final WithItem<TallMachineBlock> INDUSTRIAL_PRESS = tallMachine("industrial_press", "Industrial Press",
             p -> new TallMachineBlock(p, GZBlockEntities.INDUSTRIAL_PRESS, true,
-                    Shapes.or(Block.box(0, 0, 0, 16, 9, 16), Block.box(3.5, 9, 12, 12.5, 16, 16), Block.box(1.5, 9, 1, 3, 16, 2.5),
-                            Block.box(13, 9, 1, 14.5, 16, 2.5)),
-                    Shapes.or(Block.box(3.5, 0, 12, 12.5, 16, 16), Block.box(2.5, 8, 2, 13.5, 16, 12), Block.box(1.5, 0, 1, 3, 7, 2.5),
-                            Block.box(13, 0, 1, 14.5, 7, 2.5))));
+                    Shapes.or(Block.box(0, 0, 0, 16, 9, 16), Block.box(3.5, 9, 12, 12.5, 16, 16)),
+                    Shapes.or(Block.box(3.5, 0, 12, 12.5, 16, 16), Block.box(2.5, 8, 2, 13.5, 16, 12))));
 
     public static final WithItem<MachineBlock> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", "Electrolytic Separator",
             p -> new MachineBlock(p, GZBlockEntities.ELECTROLYTIC_SEPARATOR, true, Shapes.block()));
@@ -68,7 +66,7 @@ public final class GZMachines {
     // Slice 6 (DESIGN.md §7-8): mid-game power, storage, charging, decontamination.
     public static final WithItem<MachineBlock> DIESEL_GENERATOR = machine("diesel_generator", "Diesel Generator",
             p -> new MachineBlock(p, GZBlockEntities.DIESEL_GENERATOR, true, Shapes.block()));
-    public static final WithItem<MachineBlock> RTG = machine("rtg", "Radioisotope Thermoelectric Generator",
+    public static final WithItem<MachineBlock> RTG = machine("rtg", "Radioisotope Generator",
             p -> new MachineBlock(p, GZBlockEntities.RTG, true, Shapes.block()));
     public static final WithItem<MachineBlock> BATTERY_CHARGER = machine("battery_charger", "Battery Charger",
             p -> new MachineBlock(p, GZBlockEntities.BATTERY_CHARGER, true, Block.box(0, 0, 0, 16, 9, 16)));

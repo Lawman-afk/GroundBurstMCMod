@@ -37,13 +37,17 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  * Slots: 0 charging, 1 charged.
  */
 public class BatteryChargerBlockEntity extends MachineBlockEntity implements AnimatedMachine {
-    public static final int RATE = 2_048;
-    public static final int CAPACITY = 50_000;
+    public static final int RATE = 512;
+    public static final int CAPACITY = 10_000;
+    /** The charging lights stay on this long after the last transfer, so an uneven supply does not blink them. */
+    private static final int RUN_ON = 20;
     /** Sync slots shaped like a processing machine's (progress, max) so the GUI arrow fills with the item's charge. */
     public static final int DATA_ITEM_PERCENT = 0, DATA_HUNDRED = 1;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int itemPercent = -1;
+    private long lastCharge = Long.MIN_VALUE / 2;
+    private boolean showsBattery;
 
     public BatteryChargerBlockEntity(BlockPos pos, BlockState state) {
         super(GZBlockEntities.BATTERY_CHARGER.get(), pos, state, CAPACITY, RATE, 0, 2, new int[] {0}, new int[] {1});
@@ -92,18 +96,48 @@ public class BatteryChargerBlockEntity extends MachineBlockEntity implements Ani
             if (accepted > 0) {
                 tx.commit();
                 this.energy.consume(accepted);
+                this.lastCharge = level.getGameTime();
             }
             this.status = accepted > 0 ? MachineStatus.RUNNING : MachineStatus.NO_RECIPE;
-            return accepted > 0;
+        }
+        return level.getGameTime() - this.lastCharge < RUN_ON;
+    }
+
+    // --- the model shows a battery only while one is in the charger -------------------------------------------------
+    @Override
+    protected void onSlotChanged(int slot) {
+        super.onSlotChanged(slot);
+        boolean loaded = !this.inventory.getItem(0).isEmpty() || !this.inventory.getItem(1).isEmpty();
+        if (loaded != this.showsBattery && this.level != null && !this.level.isClientSide()) {
+            this.showsBattery = loaded;
+            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
     }
 
-    /** The charge LEDs only chase while charging. */
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        return saveCustomOnly(registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /** The charge LEDs only chase while charging; the battery in the cradle only shows while one is loaded. */
     @Override
     public java.util.Set<String> hiddenBones() {
         boolean active = getBlockState().hasProperty(dev.groundzero.content.machine.MachineBlock.ACTIVE)
                 && getBlockState().getValue(dev.groundzero.content.machine.MachineBlock.ACTIVE);
-        return active ? java.util.Set.of() : java.util.Set.of("led0", "led1", "led2", "led3", "led4");
+        boolean loaded = !this.inventory.getItem(0).isEmpty() || !this.inventory.getItem(1).isEmpty();
+        java.util.Set<String> hidden = new java.util.HashSet<>();
+        if (!active) {
+            hidden.addAll(java.util.List.of("led0", "led1", "led2", "led3", "led4"));
+        }
+        if (!loaded) {
+            hidden.add("battery");
+        }
+        return hidden;
     }
 
     @Override

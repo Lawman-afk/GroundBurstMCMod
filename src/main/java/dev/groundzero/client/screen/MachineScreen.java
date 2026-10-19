@@ -130,7 +130,19 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(this.font, this.title, this.titleLabelX, this.titleLabelY, TEXT, false);
+        // Long names shrink to fit between the left edge and the status lamp rather than running under it.
+        int room = this.layout.status().x() - 6 - this.titleLabelX;
+        int width = this.font.width(this.title);
+        if (width > room) {
+            float scale = room / (float) width;
+            g.pose().pushMatrix();
+            g.pose().translate(this.titleLabelX, this.titleLabelY + (1 - scale) * this.font.lineHeight / 2f);
+            g.pose().scale(scale, scale);
+            g.text(this.font, this.title, 0, 0, TEXT, false);
+            g.pose().popMatrix();
+        } else {
+            g.text(this.font, this.title, this.titleLabelX, this.titleLabelY, TEXT, false);
+        }
         // No "Inventory" label: it collides with the machine widgets and the slots speak for themselves.
         MachineLayout.Rect ro = this.layout.readout();
         if (ro != null) {

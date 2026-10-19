@@ -44,7 +44,10 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     public static final int OUTPUT = 720;
     /** Fuel is drawn in sips of this many mB. */
     public static final int SIP = 10;
-    public static final int DATA_BURN = 0, DATA_BURN_TOTAL = 1, DATA_FUEL_VALUE = 2;
+    /** Sync slots: running flag shown as the GUI flame (1/1 = full), and the averaged output in FE/t. */
+    public static final int DATA_BURN = 0, DATA_BURN_TOTAL = 1, DATA_OUTPUT = 2;
+    /** The engine counts as running for this long after it last burnt fuel, so a full buffer does not blink it off. */
+    private static final int RUN_ON = 40;
 
     /** FE per mB for each accepted fuel (by common tag). */
     public record Fuel(TagKey<Fluid> tag, int fePerMb) {}
@@ -59,6 +62,9 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     private int burn;
     private int burnTotal;
     private int fuelValue;
+    private long lastBurn = Long.MIN_VALUE / 2;
+    /** Output averaged over about a second, for a steady readout. */
+    private float averageOutput;
 
     public DieselGeneratorBlockEntity(BlockPos pos, BlockState state) {
         super(GZBlockEntities.DIESEL_GENERATOR.get(), pos, state, CAPACITY, 0, OUTPUT, 0, new int[0], new int[0],
@@ -91,7 +97,7 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
 
     @Override
     protected boolean tickMachine(ServerLevel level) {
-        boolean running = false;
+        int generated = 0;
         if (this.energy.stored() >= this.energy.capacity()) {
             this.status = MachineStatus.BUFFER_FULL;
         } else {
@@ -100,14 +106,20 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
             }
             if (this.burn > 0) {
                 this.burn--;
-                this.energy.generate(RATE);
+                generated = this.energy.generate(RATE);
+                this.lastBurn = level.getGameTime();
                 this.status = MachineStatus.RUNNING;
-                running = true;
             } else {
                 this.status = MachineStatus.NO_FUEL;
             }
         }
         PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, OUTPUT, side -> this.sides.energy(face(side)));
+        this.averageOutput += (generated - this.averageOutput) * 0.05f;
+        // A buffer only topped up now and then (the load draws less than 180 FE/t) still counts as running.
+        boolean running = level.getGameTime() - this.lastBurn < RUN_ON;
+        if (running && this.status == MachineStatus.BUFFER_FULL) {
+            this.status = MachineStatus.RUNNING;
+        }
         return running;
     }
 
@@ -128,8 +140,7 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     @Override
     public List<Component> readout(MachineMenu menu) {
         int cap = Math.max(1, menu.capacity());
-        boolean burning = menu.extra(DATA_BURN) > 0;
-        return List.of(Component.translatable(MachineText.OUTPUT, burning ? RATE : 0),
+        return List.of(Component.translatable(MachineText.OUTPUT, menu.extra(DATA_OUTPUT)),
                 Component.translatable(MachineText.STORED, (int) ((long) menu.energy() * 100 / cap)),
                 Component.translatable(menu.status().translationKey()));
     }
@@ -141,10 +152,11 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
 
     @Override
     protected int getExtraData(int index) {
+        boolean running = this.level != null && this.level.getGameTime() - this.lastBurn < RUN_ON;
         return switch (index) {
-            case DATA_BURN -> this.burn;
-            case DATA_BURN_TOTAL -> this.burnTotal;
-            case DATA_FUEL_VALUE -> this.fuelValue;
+            case DATA_BURN -> running ? 1 : 0;
+            case DATA_BURN_TOTAL -> 1;
+            case DATA_OUTPUT -> Math.round(this.averageOutput);
             default -> 0;
         };
     }

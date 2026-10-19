@@ -2,8 +2,8 @@
 
 Look: a heavy C-frame press. A cast bed with a die block sits on the plinth; a thick spine rises at the back to a
 crown that overhangs the bed and carries the hydraulic cylinder. The ram and platen stroke down onto the die once
-per 2 s cycle (timed with the press sound: impact at 1.0 s). Hazard-striped guard posts with red light-curtain
-emitters flank the opening; a pump and hydraulic hoses sit on the east flank. Front = north.
+per 2 s cycle (timed with the press sound: impact at 1.0 s). A pump and hydraulic hoses sit on the east flank,
+with a pressure gauge on the crown. Front = north.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g = GeoModel(NAME, tex_size=(128, 128))
     g.bone("frame")
     g.bone("ram", pivot=(0, 20, -1), parent="frame")
-    g.bone("gauge_needle", pivot=(7.15, 22, -3), parent="frame")
+    g.bone("gauge_needle", pivot=(6.15, 26.5, -3), parent="frame")
     F = "frame"
     parts: dict[str, list] = {}
 
@@ -63,17 +63,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("rod", g.box("rod", (-1.25, 16, -2.25), (1.25, 28, 0.25), faces=("north", "south", "east", "west"), bone=R))
     add("platen", g.box("platen", (-4, 14, -5), (4, 16, 2), bone=R))
     add("punch", g.box("punch", (-2, 13, -3), (2, 14, 0), faces=("north", "south", "east", "west", "down"), bone=R))
-    # Guard posts with light-curtain emitters at the front corners.
-    for i, x in enumerate((-6.5, 5)):
-        add("post", g.box(f"post{i}", (x, 7, -7), (x + 1.5, 23, -5.5), faces=("north", "south", "east", "west"), bone=F))
-        add("emitter", g.box(f"emitter{i}", (x + (1.5 if i == 0 else -0.2), 10, -6.8), (x + (1.7 if i == 0 else 0), 21, -5.7),
-                             faces=("east",) if i == 0 else ("west",), shade=False, bone=F))
-    # East flank: pump with motor, hoses up to the cylinder, pressure gauge.
+    # East flank: pump with motor, hoses up to the cylinder; a pressure gauge mounted on the crown's east face.
     add("pump", g.box("pump", (6.5, 2, -1), (8.5, 8, 4), faces=("north", "south", "east", "up"), bone=F))
     add("hose", g.box("hose_v", (6.5, 8, 1.5), (7.5, 26, 2.5), faces=("north", "south", "east", "west"), bone=F))
     add("hose", g.box("hose_h", (3, 26, 1.5), (7.5, 27, 2.5), faces=("north", "south", "up", "down"), bone=F))
-    add("gauge", g.box("gauge", (6.5, 20.5, -4.5), (7, 23.5, -1.5), faces=("east", "north", "south", "up", "down"), bone=F))
-    add("needle", g.box("needle", (7.15, 21.9, -3.1), (7.2, 23.2, -2.9), faces=("east",), shade=False, bone="gauge_needle"))
+    add("gauge", g.box("gauge", (5.5, 25, -4.5), (6.0, 28, -1.5), faces=("east", "north", "south", "up", "down"), bone=F))
+    add("needle", g.box("needle", (6.15, 26.4, -3.1), (6.2, 27.7, -2.9), faces=("east",), shade=False, bone="gauge_needle"))
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -145,21 +140,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 t.stripes(x + 1, y + h - 1, w - 2, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=1)
     g.paint_all(tex, parts["platen"][0], platen)
     g.paint_all(tex, parts["punch"][0], lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
-
-    def post(t, r, d):
-        x, y, w, h = r
-        t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2, flip=d in ("east", "south"))
-    for b in parts["post"]:
-        g.paint_all(tex, b, post)
-
-    def emitter(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[2])
-        for yy in range(y, y + h, 2):
-            t.px(x + w // 2, yy, P.INDICATOR_RED[4])
-    for b in parts["emitter"]:
-        g.paint_all(tex, b, emitter)
-        g.paint_all(glow, b, lambda t, r, d: [t.px(r[0] + r[2] // 2, yy, P.INDICATOR_RED[4]) for yy in range(r[1], r[1] + r[3], 2)])
 
     for b in parts["tie"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), [t.px(r[0], yy, steel[5]) for yy in range(r[1], r[1] + r[3], 7)]))

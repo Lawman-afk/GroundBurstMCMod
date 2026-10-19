@@ -12,7 +12,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of());
+            null, 8, 6, List.of());
 
     public static final MachineLayout ARC_FURNACE = new MachineLayout(
             GroundZero.id("textures/gui/machine/arc_furnace.png"), 176, 166, List.of(new MachineLayout.Pos(56, 25), new MachineLayout.Pos(56, 47), new MachineLayout.Pos(116, 35), new MachineLayout.Pos(146, 35)), 8, 84,
@@ -20,7 +20,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of());
+            null, 8, 6, List.of());
 
     public static final MachineLayout INDUSTRIAL_PRESS = new MachineLayout(
             GroundZero.id("textures/gui/machine/industrial_press.png"), 176, 166, List.of(new MachineLayout.Pos(56, 25), new MachineLayout.Pos(56, 47), new MachineLayout.Pos(116, 35)), 8, 84,
@@ -28,7 +28,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of());
+            null, 8, 6, List.of());
 
     public static final MachineLayout ELECTROLYTIC_SEPARATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/electrolytic_separator.png"), 176, 166, List.of(), 8, 84,
@@ -36,7 +36,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(40, 20, 12, 46), null), new MachineLayout.Gauge(new MachineLayout.Rect(116, 20, 12, 42), new MachineLayout.Rect(116, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(40, 20, 12, 46), null), new MachineLayout.Gauge(new MachineLayout.Rect(116, 20, 12, 42), new MachineLayout.Rect(116, 64, 12, 10))));
 
     public static final MachineLayout CRYOGENIC_CONDENSER = new MachineLayout(
             GroundZero.id("textures/gui/machine/cryogenic_condenser.png"), 176, 166, List.of(new MachineLayout.Pos(52, 35)), 8, 84,
@@ -44,7 +44,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(116, 20, 12, 42), new MachineLayout.Rect(116, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(116, 20, 12, 42), new MachineLayout.Rect(116, 64, 12, 10))));
 
     public static final MachineLayout CHEMICAL_PLANT = new MachineLayout(
             GroundZero.id("textures/gui/machine/chemical_plant.png"), 176, 166, List.of(new MachineLayout.Pos(76, 20), new MachineLayout.Pos(76, 38), new MachineLayout.Pos(76, 56), new MachineLayout.Pos(126, 25), new MachineLayout.Pos(126, 47)), 8, 84,
@@ -52,7 +52,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(98, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(101, 56, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(26, 20, 12, 46), null), new MachineLayout.Gauge(new MachineLayout.Rect(42, 20, 12, 42), new MachineLayout.Rect(42, 64, 12, 10)), new MachineLayout.Gauge(new MachineLayout.Rect(58, 20, 12, 42), new MachineLayout.Rect(58, 64, 12, 10)), new MachineLayout.Gauge(new MachineLayout.Rect(150, 20, 12, 42), new MachineLayout.Rect(150, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(26, 20, 12, 46), null), new MachineLayout.Gauge(new MachineLayout.Rect(42, 20, 12, 42), new MachineLayout.Rect(42, 64, 12, 10)), new MachineLayout.Gauge(new MachineLayout.Rect(58, 20, 12, 42), new MachineLayout.Rect(58, 64, 12, 10)), new MachineLayout.Gauge(new MachineLayout.Rect(150, 20, 12, 42), new MachineLayout.Rect(150, 64, 12, 10))));
 
     public static final MachineLayout WATER_PUMP = new MachineLayout(
             GroundZero.id("textures/gui/machine/water_pump.png"), 176, 166, List.of(), 8, 84,
@@ -60,7 +60,7 @@ public final class MachineLayouts {
             null, 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(82, 20, 12, 42), new MachineLayout.Rect(82, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(82, 20, 12, 42), new MachineLayout.Rect(82, 64, 12, 10))));
 
     public static final MachineLayout CIRCUIT_FABRICATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/circuit_fabricator.png"), 176, 166, List.of(new MachineLayout.Pos(48, 26), new MachineLayout.Pos(66, 26), new MachineLayout.Pos(48, 44), new MachineLayout.Pos(66, 44), new MachineLayout.Pos(124, 35)), 8, 84,
@@ -68,7 +68,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(90, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
 
     public static final MachineLayout GAS_CENTRIFUGE = new MachineLayout(
             GroundZero.id("textures/gui/machine/gas_centrifuge.png"), 176, 166, List.of(new MachineLayout.Pos(78, 25), new MachineLayout.Pos(78, 47)), 8, 84,
@@ -76,7 +76,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(48, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(104, 21, 62, 25), 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
+            new MachineLayout.Rect(104, 21, 62, 25), 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
 
     public static final MachineLayout FUSION_FUEL_SYNTHESIZER = new MachineLayout(
             GroundZero.id("textures/gui/machine/fusion_fuel_synthesizer.png"), 176, 166, List.of(new MachineLayout.Pos(56, 35), new MachineLayout.Pos(116, 35)), 8, 84,
@@ -84,7 +84,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10))));
 
     public static final MachineLayout EXOTIC_MATTER_FABRICATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/exotic_matter_fabricator.png"), 176, 166, List.of(new MachineLayout.Pos(50, 20), new MachineLayout.Pos(50, 38), new MachineLayout.Pos(50, 56), new MachineLayout.Pos(116, 35)), 8, 84,
@@ -92,7 +92,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of());
+            null, 8, 6, List.of());
 
     public static final MachineLayout DIESEL_GENERATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/diesel_generator.png"), 176, 166, List.of(), 8, 84,
@@ -100,7 +100,7 @@ public final class MachineLayouts {
             null, 196, 0,
             new MachineLayout.Rect(57, 34, 14, 14), 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(88, 20, 78, 34), 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(30, 20, 12, 42), new MachineLayout.Rect(30, 64, 12, 10))));
+            new MachineLayout.Rect(88, 20, 78, 34), 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(30, 20, 12, 42), new MachineLayout.Rect(30, 64, 12, 10))));
 
     public static final MachineLayout RTG = new MachineLayout(
             GroundZero.id("textures/gui/machine/rtg.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
@@ -108,7 +108,7 @@ public final class MachineLayouts {
             null, 196, 0,
             new MachineLayout.Rect(57, 34, 14, 14), 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(88, 20, 78, 34), 28, 6, List.of());
+            new MachineLayout.Rect(88, 20, 78, 34), 8, 6, List.of());
 
     public static final MachineLayout CAPACITOR_BANK = new MachineLayout(
             GroundZero.id("textures/gui/machine/capacitor_bank.png"), 176, 166, List.of(), 8, 84,
@@ -116,7 +116,7 @@ public final class MachineLayouts {
             null, 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(40, 22, 100, 24), 28, 6, List.of());
+            new MachineLayout.Rect(40, 22, 100, 24), 8, 6, List.of());
 
     public static final MachineLayout BATTERY_CHARGER = new MachineLayout(
             GroundZero.id("textures/gui/machine/battery_charger.png"), 176, 166, List.of(new MachineLayout.Pos(56, 35), new MachineLayout.Pos(116, 35)), 8, 84,
@@ -124,7 +124,7 @@ public final class MachineLayouts {
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            null, 28, 6, List.of());
+            null, 8, 6, List.of());
 
     public static final MachineLayout DECONTAMINATION_SHOWER = new MachineLayout(
             GroundZero.id("textures/gui/machine/decontamination_shower.png"), 176, 166, List.of(), 8, 84,
@@ -132,7 +132,7 @@ public final class MachineLayouts {
             null, 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(64, 22, 96, 14), 28, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(40, 20, 12, 46), null)));
+            new MachineLayout.Rect(64, 22, 96, 14), 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(40, 20, 12, 46), null)));
 
     public static final MachineLayout COMBUSTION_GENERATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/combustion_generator.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
@@ -140,7 +140,7 @@ public final class MachineLayouts {
             null, 196, 0,
             new MachineLayout.Rect(57, 34, 14, 14), 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(88, 20, 78, 34), 28, 6, List.of());
+            new MachineLayout.Rect(88, 20, 78, 34), 8, 6, List.of());
 
     private MachineLayouts() {}
 }

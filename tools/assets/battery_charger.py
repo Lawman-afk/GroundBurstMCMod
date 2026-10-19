@@ -1,7 +1,7 @@
 """Battery Charger (GeckoLib block model + animation), DESIGN.md §8. Just over half a block tall.
 
-Look: a low gunmetal bench on the shared hazard-striped plinth. A battery lies in a padded cradle on top between two
-spring clamps, its copper terminal against a contact block fed by a cable from the back. A row of five charge LEDs on
+Look: a low gunmetal bench on the shared hazard-striped plinth. While one is loaded, a battery (bone "battery")
+lies in a padded cradle on top between two spring clamps, its copper terminal against a contact block fed by a cable from the back. A row of five charge LEDs on
 the front edge chases while it charges (bones "led0".."led4", hidden when idle); a vent grille runs along the sides.
 """
 from __future__ import annotations
@@ -26,6 +26,7 @@ def tone(d: str) -> int:
 def build() -> tuple[GeoModel, Tex, Tex]:
     g = GeoModel(NAME, tex_size=(64, 64))
     g.bone("frame")
+    g.bone("battery", pivot=(0, TOP + 2, 0), parent="frame")
     for i in range(5):
         g.bone(f"led{i}", pivot=(-3.2 + i * 1.6, 4.6, -6.6), parent="frame")
     F = "frame"
@@ -42,8 +43,9 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for i, x in enumerate((-3.6, 1.6)):
         add("clamp", g.box(f"clamp{i}", (x, TOP + 0.8, -2.1), (x + 0.8, TOP + 2.6, 2.1), bone=F))
     # The battery lying in the cradle, terminal to the east.
-    add("cell", g.box("cell", (-3.8, TOP + 1.0, -1.4), (3.0, TOP + 3.2, 1.4), bone=F))
-    add("cap", g.box("cap", (3.0, TOP + 1.5, -0.7), (3.6, TOP + 2.7, 0.7), faces=("north", "south", "east", "up", "down"), bone=F))
+    # The battery (bone "battery") only shows while one is loaded; the renderer hides it otherwise.
+    add("cell", g.box("cell", (-3.8, TOP + 1.0, -1.4), (3.0, TOP + 3.2, 1.4), bone="battery"))
+    add("cap", g.box("cap", (3.0, TOP + 1.5, -0.7), (3.6, TOP + 2.7, 0.7), faces=("north", "south", "east", "up", "down"), bone="battery"))
     add("contact", g.box("contact", (3.6, TOP + 0.6, -1.6), (5.4, TOP + 3.0, 1.6), bone=F))
     add("cable", g.box("cable", (4.2, TOP + 0.6, 1.6), (4.8, TOP + 1.2, 6.8), faces=("east", "west", "up"), bone=F))
     # LED row on the front edge: dark sockets in the bench face, lit lenses in front of them (bones).
