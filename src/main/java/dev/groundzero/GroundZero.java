@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 
 import dev.groundzero.config.GZCommonConfig;
 import dev.groundzero.config.GZServerConfig;
+import dev.groundzero.content.chem.GZChemicals;
 import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.part.GZParts;
 import dev.groundzero.content.recipe.GZRecipes;
@@ -36,6 +37,7 @@ public class GroundZero {
         GZResources.init();
         GZMachines.init();
         GZParts.init();
+        GZChemicals.init();
 
         GZBlocks.BLOCKS.register(modBus);
         GZItems.ITEMS.register(modBus);

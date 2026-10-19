@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress — slices 1–2 plus the user-feedback pass built and tested (24/24 GameTests): side configuration, JEI integration, vanilla-style resource textures.
+**Current phase:** Phase 4 in progress — slices 1–3 built and tested (29/29 GameTests). Next: slice 4 (multiblock framework + Chemical Plant).
 **Last updated:** 2026-10-19 (session 1)
 
 ---
@@ -116,15 +116,16 @@ checklist for the user.
 | Industrial Press | done (2-tall C-frame, ram stroke synced to sound; 4 dies as non-consumed catalysts; 11 recipes) |
 | Chemical Plant | todo |
 | Gas Centrifuge (+ cascade bonus) | todo |
-| Electrolytic Separator | todo |
+| Electrolytic Separator | done (slice 3: water tank, bucket slot, deuterium from 8000 mB + gas canister; dithered-water GeckoLib model) |
 | Fusion Fuel Synthesizer | todo |
-| Cryogenic Condenser | todo |
+| Cryogenic Condenser | done (slice 3: 2-tall, oxygen/nitrogen membranes as catalysts; frost shows only while running). Recipe uses a basic circuit until the Circuit Fabricator exists |
 | Circuit Fabricator | todo |
 | Exotic Matter Fabricator | todo |
 | Battery Charger, Decontamination Shower | todo |
 | Multiblock framework (validation, rotations, formed state, ghost preview, Holo-Projector, creative spawners) | todo |
 | Breeder Reactor multiblock | todo |
 | Particle Accelerator multiblock | todo |
+| Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3) |
 | Machine sounds | done: seamless 2 s work loops for generator, crusher, arc furnace, press; client fades them in/out with the ACTIVE state |
 | GameTests: crushing, no-power, generator→cable→crusher, cable connections, redstone, hopper automation, drops | done (7 tests) |
 | Tall-machine framework (`TallMachineBlock`: door-style halves, upper half forwards use/capabilities, lower-half loot, culling-safe renderer) | done (5 tests; 20/20 total pass) |

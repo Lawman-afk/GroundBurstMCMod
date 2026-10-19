@@ -33,6 +33,8 @@
     "groundzero:ore_crusher",
     "groundzero:arc_furnace",
     "groundzero:industrial_press",
+    "groundzero:electrolytic_separator",
+    "groundzero:cryogenic_condenser",
     "groundzero:copper_cable",
     "groundzero:insulated_cable",
     "groundzero:hv_cable"

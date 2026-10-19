@@ -18,12 +18,14 @@ import net.minecraft.resources.Identifier;
  * @param status     status lamp position
  * @param redstone   redstone-mode button; icons at {@code redstoneU/V}, 16 px apart per mode
  * @param readout    CRT text panel for live values (generators), or null
+ * @param tank       fluid gauge for the machine's input tank, or null
  */
 public record MachineLayout(Identifier texture, int width, int height, List<Pos> slots, int inventoryX, int inventoryY,
                             Rect energy, int energyFillU, int energyFillV,
                             @Nullable Rect progress, int progressFillU, int progressFillV,
                             @Nullable Rect flame, int flameFillU, int flameFillV,
-                            Rect status, Rect redstone, int redstoneU, int redstoneV, @Nullable Rect readout, int titleX, int titleY) {
+                            Rect status, Rect redstone, int redstoneU, int redstoneV, @Nullable Rect readout, int titleX, int titleY,
+                            @Nullable Rect tank) {
 
     public record Pos(int x, int y) {}
 

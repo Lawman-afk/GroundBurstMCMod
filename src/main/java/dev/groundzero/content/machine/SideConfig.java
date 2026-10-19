@@ -89,11 +89,13 @@ public final class SideConfig {
 
     private final ItemMode[] items = new ItemMode[6];
     private final boolean[] energy = new boolean[6];
+    private final boolean[] fluid = new boolean[6];
     private boolean autoEject;
 
     public SideConfig() {
         Arrays.fill(this.items, ItemMode.BOTH);
         Arrays.fill(this.energy, true);
+        Arrays.fill(this.fluid, true);
     }
 
     public ItemMode items(Face face) {
@@ -102,6 +104,14 @@ public final class SideConfig {
 
     public boolean energy(Face face) {
         return this.energy[face.ordinal()];
+    }
+
+    public boolean fluid(Face face) {
+        return this.fluid[face.ordinal()];
+    }
+
+    public void toggleFluid(Face face) {
+        this.fluid[face.ordinal()] = !this.fluid[face.ordinal()];
     }
 
     public boolean autoEject() {
@@ -155,11 +165,12 @@ public final class SideConfig {
         return v;
     }
 
-    /** Energy switches (bit per face) and auto-eject (bit 6). */
+    /** Energy switches (bits 0-5), auto-eject (bit 6) and fluid switches (bits 7-12). */
     public int packFlags() {
         int v = 0;
         for (int i = 0; i < 6; i++) {
             v |= (this.energy[i] ? 1 : 0) << i;
+            v |= (this.fluid[i] ? 1 : 0) << (7 + i);
         }
         return v | (this.autoEject ? 1 << 6 : 0);
     }
@@ -168,6 +179,7 @@ public final class SideConfig {
         for (int i = 0; i < 6; i++) {
             this.items[i] = ItemMode.values()[(items >> (i * 2)) & 3];
             this.energy[i] = ((flags >> i) & 1) != 0;
+            this.fluid[i] = ((flags >> (7 + i)) & 1) != 0;
         }
         this.autoEject = ((flags >> 6) & 1) != 0;
     }

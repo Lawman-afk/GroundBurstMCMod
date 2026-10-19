@@ -1367,3 +1367,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-19 | Side-config faces only offer the item directions a machine has slots for (a generator's faces are None/Input). |
 | 2026-10-19 | Ingots and dusts use vanilla's shared item silhouettes (one outline for all ingots, one for all dusts) so mod items line up with vanilla's; the shading inside is our own. |
 | 2026-10-19 | At the user's request ingots use vanilla's ingot light/shadow layout as well as its outline (a palette swap onto each material's ramp, as many mods do), so every ingot reads exactly like vanilla's. |
+| 2026-10-19 | Machines with a fluid input have one fill-only tank fed by pipes, a bucket slot or a bucket click; liquids and gases for crafting travel as canister items. |
+| 2026-10-19 | The Cryogenic Condenser picks oxygen or nitrogen with a separation membrane in a catalyst slot (like press dies) instead of a mode button. |

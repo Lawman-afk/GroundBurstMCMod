@@ -36,6 +36,8 @@ public class GroundZeroClient {
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GZMenus.ARC_FURNACE.get(), MachineScreen::new);
         event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
+        event.register(GZMenus.ELECTROLYTIC_SEPARATOR.get(), MachineScreen::new);
+        event.register(GZMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -43,5 +45,7 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ARC_FURNACE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ARC_FURNACE.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.INDUSTRIAL_PRESS.get(), 2));
+        event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
     }
 }

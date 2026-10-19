@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:clay_ball",
+    "L": "minecraft:lapis_lazuli",
+    "R": "#c:rods/steel"
+  },
+  "pattern": [
+    "RCR",
+    "CLC",
+    "RCR"
+  ],
+  "result": {
+    "id": "groundzero:oxygen_membrane"
+  }
+}

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import dev.groundzero.content.machine.MachineLayout;
+import dev.groundzero.content.machine.MachineTank;
 import dev.groundzero.content.machine.MachineText;
 import dev.groundzero.content.machine.MachineMenu;
 import dev.groundzero.content.machine.ProcessingBlockEntity;
@@ -12,8 +13,12 @@ import dev.groundzero.content.power.CombustionGeneratorBlockEntity;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -60,6 +65,24 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         if (fill > 0) {
             g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x + e.x() + 1, y + e.y() + 1 + (e.h() - 2 - fill),
                     this.layout.energyFillU(), this.layout.energyFillV() + (e.h() - 2 - fill), e.w() - 2, fill, 256, 256);
+        }
+
+        // Input tank: the fluid's own still texture, tiled bottom-up.
+        MachineLayout.Rect tank = this.layout.tank();
+        MachineTank machineTank = this.menu.machine().tank();
+        if (tank != null && machineTank != null && this.menu.tankAmount() > 0) {
+            Fluid fluid = this.menu.tankFluid();
+            int h = Math.max(1, (int) ((long) this.menu.tankAmount() * tank.h() / machineTank.capacity()));
+            TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(fluid.defaultFluidState()).stillMaterial().sprite();
+            int color = fluid.isSame(Fluids.WATER) ? 0xFF3F76E4 : 0xFFFFFFFF;
+            int bottom = y + tank.y() + tank.h();
+            for (int drawn = 0; drawn < h; drawn += 16) {
+                int piece = Math.min(16, h - drawn);
+                g.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x + tank.x(), bottom - drawn - piece, tank.w(), piece, color);
+            }
+            for (int yy = tank.h() - 1; yy > 0; yy -= 5) {
+                g.fill(x + tank.x() + tank.w() - 3, y + tank.y() + yy, x + tank.x() + tank.w(), y + tank.y() + yy + 1, 0xA0E6E2D2);
+            }
         }
 
         // Progress arrow: fill left-to-right.
@@ -134,6 +157,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         int my = mouseY - this.topPos;
         if (this.layout.energy().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(KEY_ENERGY, NUM.format(this.menu.energy()), NUM.format(this.menu.capacity())), mouseX, mouseY);
+        } else if (this.layout.tank() != null && this.menu.machine().tank() != null && this.layout.tank().contains(mx, my)) {
+            int cap = this.menu.machine().tank().capacity();
+            g.setTooltipForNextFrame(this.menu.tankAmount() <= 0 ? Component.translatable(MachineText.TANK_EMPTY, NUM.format(cap))
+                    : Component.translatable(MachineText.TANK, this.menu.tankFluid().getFluidType().getDescription(),
+                    NUM.format(this.menu.tankAmount()), NUM.format(cap)), mouseX, mouseY);
         } else if (this.layout.status().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(this.menu.status().translationKey()), mouseX, mouseY);
         } else if (this.layout.redstone().contains(mx, my)) {

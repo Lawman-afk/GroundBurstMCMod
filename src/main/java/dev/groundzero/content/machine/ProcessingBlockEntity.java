@@ -13,6 +13,7 @@ import dev.groundzero.content.recipe.ProcessingRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,8 +44,14 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
             int inputCount, boolean catalyst, int outputCount, int energyCapacity, int maxInsert) {
+        this(type, pos, state, kind, inputCount, catalyst, outputCount, energyCapacity, maxInsert, null);
+    }
+
+    /** With a tank, recipes that name a fluid draw it from the tank; the tank's container slot is one of the inputs. */
+    protected ProcessingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ProcessingKind kind,
+            int inputCount, boolean catalyst, int outputCount, int energyCapacity, int maxInsert, MachineTank.@Nullable Spec tankSpec) {
         super(type, pos, state, energyCapacity, maxInsert, 0, inputCount + (catalyst ? 1 : 0) + outputCount,
-                range(0, inputCount + (catalyst ? 1 : 0)), range(inputCount + (catalyst ? 1 : 0), outputCount));
+                range(0, inputCount + (catalyst ? 1 : 0)), range(inputCount + (catalyst ? 1 : 0), outputCount), tankSpec);
         this.kind = kind;
         this.inputCount = inputCount;
         this.catalystSlot = catalyst ? inputCount : -1;
@@ -74,8 +81,33 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         if (slot >= this.outputStart) {
             return false;                // outputs are filled by the machine only
         }
+        if (slot == containerSlot()) {
+            return holdsTankFluid(stack);
+        }
         // Recipes live on the server; the client side of a menu stays permissive and the server corrects it.
         return !(this.level instanceof ServerLevel server) || usedByRecipe(server, stack, slot == this.catalystSlot);
+    }
+
+    private int containerSlot() {
+        return this.tank != null ? this.tank.spec().containerSlot() : -1;
+    }
+
+    /**
+     * Whether the item is a fluid container (bucket, tank item) that is empty or holds something the tank accepts.
+     * Empty containers must be allowed: emptying a bucket swaps it for an empty one in the same slot.
+     */
+    private boolean holdsTankFluid(ItemStack stack) {
+        var handler = stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
+                net.neoforged.neoforge.transfer.access.ItemAccess.forStack(stack));
+        if (handler == null || this.tank == null) {
+            return false;
+        }
+        for (int i = 0; i < handler.size(); i++) {
+            if (!handler.getResource(i).isEmpty() && !this.tank.isValid(0, handler.getResource(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** True if some recipe of this machine's kind uses the item as an ingredient (or as its catalyst). */
@@ -98,11 +130,14 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     }
 
     private MachineRecipeInput input() {
-        List<ItemStack> stacks = new ArrayList<>(this.inputCount);
-        for (int i = 0; i < this.inputCount; i++) {
+        // The tank's container slot (always the last input) feeds the tank, not the recipe.
+        int recipeInputs = containerSlot() == this.inputCount - 1 ? this.inputCount - 1 : this.inputCount;
+        List<ItemStack> stacks = new ArrayList<>(recipeInputs);
+        for (int i = 0; i < recipeInputs; i++) {
             stacks.add(this.inventory.getItem(i));
         }
-        return new MachineRecipeInput(stacks, this.catalystSlot >= 0 ? this.inventory.getItem(this.catalystSlot) : ItemStack.EMPTY);
+        return new MachineRecipeInput(stacks, this.catalystSlot >= 0 ? this.inventory.getItem(this.catalystSlot) : ItemStack.EMPTY,
+                this.tank != null ? this.tank.fluid() : FluidStack.EMPTY);
     }
 
     private Optional<RecipeHolder<ProcessingRecipe>> findRecipe(ServerLevel level, MachineRecipeInput input) {
@@ -183,6 +218,9 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         }
         for (int n = 0; n < slots.length; n++) {
             this.inventory.removeItem(slots[n], recipe.inputs().get(n).count());
+        }
+        if (this.tank != null && recipe.fluid().isPresent()) {
+            this.tank.drainInternal(recipe.fluid().get().amount());
         }
         for (ProcessingRecipe.Output out : recipe.outputs()) {
             if (out.chance() < 1f && level.getRandom().nextFloat() >= out.chance()) {

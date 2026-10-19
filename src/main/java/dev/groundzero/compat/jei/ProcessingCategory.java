@@ -43,6 +43,12 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
             int x = 1 + (i % 2) * 18, y = 1 + (i / 2) * 18;
             builder.addInputSlot(x, y).setStandardSlotBackground().addItemStacks(stacks(in.ingredient(), in.count()));
         }
+        recipe.fluid().ifPresent(fluid -> {
+            IRecipeSlotBuilder slot = builder.addInputSlot(1 + 18 * Math.min(2, inputs.size()), 1).setStandardSlotBackground();
+            for (var f : fluid.ingredient().fluids()) {
+                slot.add(f.value(), fluid.amount());
+            }
+        });
         recipe.catalyst().ifPresent(die -> builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 1, 21 + ((inputs.size() - 1) / 2) * 18)
                 .setStandardSlotBackground().add(die)
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(MachineText.RECIPE_NOT_CONSUMED).withStyle(ChatFormatting.GRAY))));
@@ -60,7 +66,7 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<ProcessingRecipe> holder, IFocusGroup focuses) {
         ProcessingRecipe recipe = holder.value();
-        builder.addAnimatedRecipeArrow(recipe.time()).setPosition(45, 11);
+        builder.addAnimatedRecipeArrowWidget(recipe.time()).setPosition(45, 11);
         String seconds = String.format(Locale.ROOT, "%.1f", recipe.time() / 20f);
         builder.addText(Component.translatable(MachineText.RECIPE_TIME_ENERGY, seconds, NUM.format(recipe.energyPerTick())), WIDTH, 10)
                 .setPosition(0, HEIGHT - 10)

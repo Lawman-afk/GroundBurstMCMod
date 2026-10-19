@@ -46,6 +46,8 @@ public final class GZJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.CRUSHING, GZMachines.ORE_CRUSHER.item().get());
         m.put(ProcessingKind.ARC_SMELTING, GZMachines.ARC_FURNACE.item().get());
         m.put(ProcessingKind.PRESSING, GZMachines.INDUSTRIAL_PRESS.item().get());
+        m.put(ProcessingKind.ELECTROLYSIS, GZMachines.ELECTROLYTIC_SEPARATOR.item().get());
+        m.put(ProcessingKind.CRYO_CONDENSING, GZMachines.CRYOGENIC_CONDENSER.item().get());
         return m;
     }
 
@@ -72,8 +74,12 @@ public final class GZJeiPlugin implements IModPlugin {
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));
+        registration.addIngredientInfo(List.of(GZParts.OXYGEN_MEMBRANE.get(), GZParts.NITROGEN_MEMBRANE.get())
+                .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                Component.translatable(MachineText.INFO_MEMBRANE));
         registration.addIngredientInfo(List.of(GZMachines.COMBUSTION_GENERATOR.item().get(), GZMachines.ORE_CRUSHER.item().get(),
-                        GZMachines.ARC_FURNACE.item().get(), GZMachines.INDUSTRIAL_PRESS.item().get())
+                        GZMachines.ARC_FURNACE.item().get(), GZMachines.INDUSTRIAL_PRESS.item().get(),
+                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
     }

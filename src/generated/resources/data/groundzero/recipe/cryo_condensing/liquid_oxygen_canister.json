@@ -1,0 +1,19 @@
+{
+  "type": "groundzero:cryo_condensing",
+  "catalyst": "groundzero:oxygen_membrane",
+  "energy_per_tick": 100,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:empty_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:liquid_oxygen_canister"
+      }
+    }
+  ],
+  "time": 300
+}

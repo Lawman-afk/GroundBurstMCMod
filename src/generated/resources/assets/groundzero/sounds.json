@@ -63,6 +63,21 @@
     ],
     "subtitle": "subtitles.groundzero.machine.combustion_generator"
   },
+  "machine.cryogenic_condenser": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundzero:machine/cryogenic_condenser"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.cryogenic_condenser"
+  },
+  "machine.electrolytic_separator": {
+    "sounds": [
+      "groundzero:machine/electrolytic_separator"
+    ],
+    "subtitle": "subtitles.groundzero.machine.electrolytic_separator"
+  },
   "machine.industrial_press": {
     "sounds": [
       {

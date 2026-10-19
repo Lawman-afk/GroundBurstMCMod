@@ -61,6 +61,29 @@ LAYOUTS = {
         "readout": None,
         "inventory": (8, 84),
     },
+    "electrolytic_separator": {
+        "title": (28, 6),
+        "slots": [("canister", 52, 25), ("bucket", 52, 53), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "tank": (30, 20, 14, 46),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
+    "cryogenic_condenser": {
+        "title": (28, 6),
+        "slots": [("canister", 56, 25), ("membrane", 56, 47), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     "combustion_generator": {
         "title": (28, 6),
         "slots": [("fuel", 56, 53)],
@@ -131,6 +154,39 @@ def die_slot(t: Tex, x: int, y: int) -> None:
         for xx, c in enumerate(row):
             if c == "#":
                 t.px(x + 1 + xx, y + 1 + yy, PANEL[2])
+
+
+BUCKET_GHOST = ["................", "................", "................", "...##########...", "...#........#...",
+                "...##########...", "....#......#....", "....#......#....", "....#......#....", ".....#....#.....",
+                ".....#....#.....", ".....######.....", "................", "................", "................",
+                "................"]
+CANISTER_GHOST = ["................", "......####......", ".....#....#.....", ".....######.....", "....#......#....",
+                  "....#......#....", "....#......#....", "....########....", "....#......#....", "....########....",
+                  "....#......#....", "....#......#....", "....#......#....", ".....######.....", "................",
+                  "................"]
+MEMBRANE_GHOST = ["................", "................", "...##########...", "...#.#.#.#.#.#..", "...##########...",
+                  "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..",
+                  "...##########...", "................", "................", "................", "................",
+                  "................"]
+
+
+def ghost_slot(rows: list[str]):
+    def draw(t: Tex, x: int, y: int) -> None:
+        slot(t, x, y)
+        for yy, row in enumerate(rows):
+            for xx, c in enumerate(row):
+                if c == "#":
+                    t.px(x + 1 + xx, y + 1 + yy, PANEL[2])
+    return draw
+
+
+def tank_frame(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """Fluid gauge: dark glass with bright graduation ticks on the right so the level reads against the fluid."""
+    t.rect(x - 1, y - 1, w + 2, h + 2, PANEL.outline)
+    t.rect(x, y, w, h, GLASS.base)
+    for yy in range(y + h - 1, y, -5):
+        t.hline(x + w - 3, yy, 3, PANEL.highlight)
+    t.hline(x - 1, y + h + 1, w + 2, PANEL.light)
 
 
 def gauge_frame(t: Tex, x: int, y: int, w: int, h: int) -> None:
@@ -253,10 +309,15 @@ def build(name: str, spec: dict) -> Path:
     t = Tex(256, 256)
     window(t)
     for kind, x, y in spec["slots"]:
-        {"out_big": big_slot, "die": die_slot}.get(kind, slot)(t, x - 1, y - 1)
+        {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
+         "membrane": ghost_slot(MEMBRANE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     ex, ey, ew, eh = spec["energy"]
     gauge_frame(t, ex, ey, ew, eh)
     t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)
+    if spec.get("tank"):
+        tx, ty, tw, th = spec["tank"]
+        tank_frame(t, tx, ty, tw, th)
+        t.text(tx + 1, ty + th + 3, "H2O", PANEL.highlight)
     if spec["progress"]:
         progress_track(t, *spec["progress"])
     if spec["flame"]:
@@ -304,7 +365,7 @@ def write_java() -> Path:
         lines.append(f"            {java_rect(p)}, {PROGRESS_FILL[0]}, {PROGRESS_FILL[1]},")
         lines.append(f"            {java_rect(f)}, {FLAME_FILL[0]}, {FLAME_FILL[1]},")
         lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0]}, {REDSTONE_ICONS[1]},")
-        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]});")
+        lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, {java_rect(s.get('tank'))});")
         lines.append("")
     lines.append("    private MachineLayouts() {}")
     lines.append("}")
@@ -316,17 +377,18 @@ def write_java() -> Path:
 # --- side-configuration tab (shared by every machine) -----------------------------------------------------------------
 # Layout constants mirrored in MachineScreen.SideTab.
 TAB = (0, 0, 24, 26)            # collapsed tab
-PANEL_RECT = (0, 32, 92, 112)   # expanded panel
-FACE_FRAME = (100, 0)           # 18x18 (sprites moved right of the wider panel)
-FACE_ICON = (120, 0)            # 16x16 plain face
-FACE_FRONT = (140, 0)           # 16x16 front face
-CHANNEL_ON = (100, 24)          # 40x12
-CHANNEL_OFF = (100, 40)         # 40x12
-CHECK_OFF = (100, 56)           # 10x10
-CHECK_ON = (112, 56)            # 10x10
-ICON_ITEMS = (144, 24)          # 8x8
-ICON_ENERGY = (154, 24)         # 8x8
-ICON_WRENCH = (164, 24)         # 12x12
+PANEL_RECT = (0, 32, 112, 112)  # expanded panel: channel buttons stacked on the left, face grid on the right
+FACE_FRAME = (120, 0)           # 18x18
+FACE_ICON = (140, 0)            # 16x16 plain face
+FACE_FRONT = (160, 0)           # 16x16 front face
+CHANNEL_ON = (120, 24)          # 40x12
+CHANNEL_OFF = (120, 40)         # 40x12
+CHECK_OFF = (120, 56)           # 10x10
+CHECK_ON = (132, 56)            # 10x10
+ICON_ITEMS = (164, 24)          # 8x8
+ICON_ENERGY = (174, 24)         # 8x8
+ICON_WRENCH = (184, 24)         # 12x12
+ICON_FLUID = (164, 36)          # 8x8
 
 # Open-end spanner: forked jaw top-right, handle running down-left to a rounded end. 'h' = lit edge, 's' = shade.
 # Open-end spanner: a forked jaw (two prongs round a notch) top-right, a 3-px handle running down-left.
@@ -334,6 +396,7 @@ ICON_WRENCH = (164, 24)         # 12x12
 WRENCH = [".......hh...", "......hhh.h.", "......hh..hh", "......hhh.hs", ".....hhhhhs.", "....hhhss...",
           "...hhhs.....", "..hhhs......", ".hhhs.......", "hhhs........", "hhs.........", ".s.........."]
 BOLT = ["...##...", "..##....", ".##.....", "######..", "...##...", "..##....", ".##.....", "........"]
+DROP = ["...#....", "...#....", "..###...", ".#####..", ".##.##..", ".#.###..", "..###...", "........"]
 CRATE = ["........", ".######.", ".#....#.", ".######.", ".#.##.#.", ".#.##.#.", ".######.", "........"]
 
 
@@ -405,6 +468,7 @@ def side_config_texture() -> Path:
                 t.px(bx + xx, by + yy - 1, P.INDICATOR_GREEN.base)
     glyph(t, CRATE, *ICON_ITEMS, P.DESERT_TAN.light)
     glyph(t, BOLT, *ICON_ENERGY, P.HAZARD_YELLOW.light)
+    glyph(t, DROP, *ICON_FLUID, P.CHERENKOV.light)
     glyph(t, WRENCH, *ICON_WRENCH, P.STEEL.highlight, P.STEEL.shadow)
     return t.save(paths.TEXTURES / "gui" / "machine" / "side_config.png")
 

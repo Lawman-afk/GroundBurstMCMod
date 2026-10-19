@@ -21,6 +21,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 /**
  * One machine process: counted item inputs -> outputs (each with a chance), taking `time` ticks at
@@ -28,11 +29,16 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  * and is not consumed. Every processing machine uses this shape; the {@link ProcessingKind} decides which machine
  * runs it.
  */
-public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst, List<Output> outputs,
-        int time, int energyPerTick) implements Recipe<MachineRecipeInput> {
+public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst,
+        Optional<SizedFluidIngredient> fluid, List<Output> outputs, int time, int energyPerTick) implements Recipe<MachineRecipeInput> {
 
     public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, List<Output> outputs, int time, int energyPerTick) {
-        this(kind, inputs, Optional.empty(), outputs, time, energyPerTick);
+        this(kind, inputs, Optional.empty(), Optional.empty(), outputs, time, energyPerTick);
+    }
+
+    public ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs, Optional<Ingredient> catalyst, List<Output> outputs,
+            int time, int energyPerTick) {
+        this(kind, inputs, catalyst, Optional.empty(), outputs, time, energyPerTick);
     }
 
     /** A product; `chance` < 1 makes it a byproduct. */
@@ -49,26 +55,31 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 SizedIngredient.NESTED_CODEC.listOf(1, 9).fieldOf("inputs").forGetter(ProcessingRecipe::inputs),
                 Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
+                SizedFluidIngredient.CODEC.optionalFieldOf("fluid").forGetter(ProcessingRecipe::fluid),
                 Output.CODEC.listOf(1, 9).fieldOf("outputs").forGetter(ProcessingRecipe::outputs),
                 ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
                 ExtraCodecs.NON_NEGATIVE_INT.fieldOf("energy_per_tick").forGetter(ProcessingRecipe::energyPerTick)
-        ).apply(i, (in, cat, out, time, fe) -> new ProcessingRecipe(kind, in, cat, out, time, fe)));
+        ).apply(i, (in, cat, fl, out, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, time, fe)));
     }
 
     static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
         return StreamCodec.composite(
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
                 Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, ProcessingRecipe::catalyst,
+                ByteBufCodecs.optional(SizedFluidIngredient.STREAM_CODEC), ProcessingRecipe::fluid,
                 Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::time,
                 ByteBufCodecs.VAR_INT, ProcessingRecipe::energyPerTick,
-                (in, cat, out, time, fe) -> new ProcessingRecipe(kind, in, cat, out, time, fe));
+                (in, cat, fl, out, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, time, fe));
     }
 
     /** Every ingredient must be satisfied by a different input slot holding at least its count. */
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
         if (this.catalyst.isPresent() && !this.catalyst.get().test(input.catalyst())) {
+            return false;
+        }
+        if (this.fluid.isPresent() && !this.fluid.get().test(input.fluid())) {
             return false;
         }
         return assignSlots(input) != null;

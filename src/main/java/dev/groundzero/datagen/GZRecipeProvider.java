@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.groundzero.GroundZero;
+import dev.groundzero.content.chem.GZChemicals;
 import dev.groundzero.content.machine.ArcFurnaceBlockEntity;
+import dev.groundzero.content.machine.CryogenicCondenserBlockEntity;
+import dev.groundzero.content.machine.ElectrolyticSeparatorBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.machine.IndustrialPressBlockEntity;
 import dev.groundzero.content.machine.OreCrusherBlockEntity;
@@ -18,9 +21,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import dev.groundzero.content.resource.GZResources;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -83,6 +88,7 @@ public class GZRecipeProvider extends RecipeProvider {
         arcSmelting();
         pressing();
         parts();
+        gases();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -162,8 +168,54 @@ public class GZRecipeProvider extends RecipeProvider {
 
     private void machine(ProcessingKind kind, String name, List<SizedIngredient> inputs, Ingredient catalyst,
             List<ProcessingRecipe.Output> outputs, int time, int energyPerTick) {
-        ProcessingRecipe recipe = new ProcessingRecipe(kind, inputs, Optional.ofNullable(catalyst), outputs, time, energyPerTick);
+        machine(kind, name, inputs, catalyst, null, outputs, time, energyPerTick);
+    }
+
+    private void machine(ProcessingKind kind, String name, List<SizedIngredient> inputs, Ingredient catalyst, SizedFluidIngredient fluid,
+            List<ProcessingRecipe.Output> outputs, int time, int energyPerTick) {
+        ProcessingRecipe recipe = new ProcessingRecipe(kind, inputs, Optional.ofNullable(catalyst), Optional.ofNullable(fluid), outputs, time, energyPerTick);
         output.accept(ResourceKey.create(Registries.RECIPE, GroundZero.id(name)), recipe, null);
+    }
+
+    /** Electrolytic Separator and Cryogenic Condenser (DESIGN.md §6): deuterium, liquid oxygen, liquid nitrogen. */
+    private void gases() {
+        machine(ProcessingKind.ELECTROLYSIS, "electrolysis/deuterium_canister", List.of(in(Ingredient.of(GZChemicals.EMPTY_GAS_CANISTER), 1)), null,
+                SizedFluidIngredient.of(Fluids.WATER, 8_000), List.of(out(GZChemicals.DEUTERIUM_CANISTER, 1)), 400,
+                ElectrolyticSeparatorBlockEntity.ENERGY_PER_TICK);
+        int cryo = CryogenicCondenserBlockEntity.ENERGY_PER_TICK;
+        machine(ProcessingKind.CRYO_CONDENSING, "cryo_condensing/liquid_oxygen_canister", List.of(in(Ingredient.of(GZParts.EMPTY_CANISTER), 1)),
+                Ingredient.of(GZParts.OXYGEN_MEMBRANE), List.of(out(GZChemicals.LIQUID_OXYGEN_CANISTER, 1)), 300, cryo);
+        machine(ProcessingKind.CRYO_CONDENSING, "cryo_condensing/liquid_nitrogen_canister", List.of(in(Ingredient.of(GZParts.EMPTY_CANISTER), 1)),
+                Ingredient.of(GZParts.NITROGEN_MEMBRANE), List.of(out(GZChemicals.LIQUID_NITROGEN_CANISTER, 1)), 300, cryo);
+
+        shapeless(RecipeCategory.MISC, GZChemicals.EMPTY_GAS_CANISTER, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(Items.GLASS)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
+                .save(output);
+        membrane(GZParts.OXYGEN_MEMBRANE, Items.LAPIS_LAZULI);
+        membrane(GZParts.NITROGEN_MEMBRANE, Items.QUARTZ);
+        // DESIGN.md §26.4. The condenser calls for an advanced circuit; until the Circuit Fabricator exists
+        // (Phase 4, slice 5) it takes any basic circuit.
+        shaped(RecipeCategory.REDSTONE, GZMachines.ELECTROLYTIC_SEPARATOR.item(), 1)
+                .define('W', GZTags.commonItem("wires/gold")).define('G', Items.GLASS).define('P', GZTags.commonItem("plates/copper"))
+                .define('F', GZParts.MACHINE_FRAME).define('B', GZTags.BASIC_CIRCUITS).define('K', Items.CAULDRON)
+                .pattern("WGW").pattern("PFP").pattern("BK ")
+                .unlockedBy(getHasName(GZParts.MACHINE_FRAME), has(GZParts.MACHINE_FRAME))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.CRYOGENIC_CONDENSER.item(), 1)
+                .define('P', GZTags.commonItem("plates/copper")).define('M', GZParts.ELECTRIC_MOTOR).define('F', GZParts.MACHINE_FRAME)
+                .define('V', GZParts.PRESSURE_VESSEL).define('B', GZTags.BASIC_CIRCUITS)
+                .pattern("PMP").pattern("PFP").pattern("BV ")
+                .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL))
+                .save(output);
+    }
+
+    private void membrane(ItemLike membrane, ItemLike sieve) {
+        shaped(RecipeCategory.TOOLS, membrane, 1)
+                .define('R', GZTags.commonItem("rods/steel")).define('C', Items.CLAY_BALL).define('L', sieve)
+                .pattern("RCR").pattern("CLC").pattern("RCR")
+                .unlockedBy(getHasName(Items.CLAY_BALL), has(Items.CLAY_BALL))
+                .save(output);
     }
 
     /** Arc Furnace (DESIGN.md §26.2-26.3): steel, refractory metals, carbide, magnets, cobalt. */

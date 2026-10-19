@@ -172,27 +172,88 @@ def filament(name: str) -> None:
 
 # --- canisters, magnets, boards ---------------------------------------------------------------------------------------
 
-def canister() -> None:
+CANISTER_ROWS = [
+    "................",
+    "......oooo......",
+    ".....o5665o.....",
+    ".....o3443o.....",
+    "....oo4444oo....",
+    "...o55666554o...",
+    "...o45566544o...",
+    "...o45566543o...",
+    "...oYYYYYYYYo...",
+    "...oKKKKKKKKo...",
+    "...oYYYYYYYYo...",
+    "...o45566543o...",
+    "...o34455432o...",
+    "...o23344321o...",
+    "....oooooooo....",
+    "................",
+]
+# Gas canister: a taller pressure bottle with a valve hand-wheel and a gauge.
+GAS_ROWS = [
+    "......vvvv......",
+    ".......vv.......",
+    "......oooo......",
+    ".....o5665og....",
+    "....o566665oG...",
+    "...o56666655o...",
+    "...o45666654o...",
+    "...oYYYYYYYYo...",
+    "...oKKKKKKKKo...",
+    "...oYYYYYYYYo...",
+    "...o45566543o...",
+    "...o45566543o...",
+    "...o34455432o...",
+    "...o23344321o...",
+    "....oooooooo....",
+    "................",
+]
+
+
+def canister_sprite(name: str, rows: list[str], band, mark, frost: bool = False) -> None:
+    """Canister family: steel body, two-tone contents band (Y light / K dark) colour-coding what is inside."""
+    legend = {"o": STEEL.outline, "Y": band[4], "K": mark, "v": P.WARNING_RED[4], "g": P.WHITE_CERAMIC[5], "G": P.BRASS[4]}
+    t, pts = template(rows, legend, STEEL)
+    if frost:
+        for (x, y) in ((5, 6), (10, 11), (6, 12), (11, 5), (4, 11)):
+            if (x, y) in pts:
+                t.px(x, y, P.WHITE_CERAMIC[6])                  # frost specks on a cryogenic canister
+    save(name, t)
+
+
+def canisters() -> None:
+    canister_sprite("empty_canister", CANISTER_ROWS, P.HAZARD_YELLOW, P.HAZARD_BLACK[3])
+    canister_sprite("empty_gas_canister", GAS_ROWS, P.HAZARD_YELLOW, P.HAZARD_BLACK[3])
+    canister_sprite("deuterium_canister", GAS_ROWS, P.CHERENKOV, P.WHITE_CERAMIC[6])
+    canister_sprite("liquid_oxygen_canister", CANISTER_ROWS, P.CRYO, P.CHERENKOV[2], frost=True)
+    canister_sprite("liquid_nitrogen_canister", CANISTER_ROWS, P.WHITE_CERAMIC, P.CRYO[2], frost=True)
+
+
+def membrane(name: str, tint) -> None:
+    """Separation membrane: a zeolite sieve cartridge in a steel frame; the sieve colour tells O2 from N2."""
     rows = [
         "................",
-        "......oooo......",
-        ".....o5665o.....",
-        ".....o3443o.....",
-        "....oo4444oo....",
-        "...o55666554o...",
-        "...o45566544o...",
-        "...o45566543o...",
-        "...oYYYYYYYYo...",
-        "...oKKKKKKKKo...",
-        "...oYYYYYYYYo...",
-        "...o45566543o...",
-        "...o34455432o...",
-        "...o23344321o...",
-        "....oooooooo....",
+        "................",
+        "..oooooooooooo..",
+        "..o5555555555o..",
+        "..o5abababab4o..",
+        "..o5babababa3o..",
+        "..o5abababab3o..",
+        "..o4babababa3o..",
+        "..o4abababab3o..",
+        "..o4babababa2o..",
+        "..o3abababab2o..",
+        "..o3322222222o..",
+        "..oooooooooooo..",
+        "................",
+        "................",
         "................",
     ]
-    t, _ = template(rows, {"o": STEEL.outline, "Y": P.HAZARD_YELLOW[4], "K": P.HAZARD_BLACK[3]}, STEEL)
-    save("empty_canister", t)
+    t, _ = template(rows, {"o": STEEL.outline, "a": tint[4], "b": tint[3]}, STEEL)
+    for x, y in ((4, 4), (5, 5)):
+        t.px(x, y, tint[6])                                    # sheen on the sieve
+    save(name, t)
 
 
 def magnet() -> None:
@@ -433,7 +494,9 @@ def build() -> None:
     spool("copper_wire", COPPER)
     spool("gold_wire", GOLD)
     filament("tungsten_filament")
-    canister()
+    canisters()
+    membrane("oxygen_membrane", P.CRYO)
+    membrane("nitrogen_membrane", P.TOXIN)
     magnet()
     circuit_board()
     machine_frame()

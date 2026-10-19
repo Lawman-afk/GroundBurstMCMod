@@ -20,7 +20,7 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_REDSTONE = 0;
     public static final int BUTTON_AUTO_EJECT = 1;
     /** + face ordinal: next / previous item mode; toggle energy. */
-    public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30;
+    public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30, BUTTON_FLUID = 40;
 
     private final MachineBlockEntity machine;
     private final MachineLayout layout;
@@ -82,6 +82,15 @@ public class MachineMenu extends AbstractContainerMenu {
         return MachineStatus.byId(data.get(MachineBlockEntity.DATA_STATUS));
     }
 
+    public int tankAmount() {
+        return data.get(MachineBlockEntity.DATA_TANK_AMOUNT);
+    }
+
+    /** The tank's fluid as last synced (empty fluid when the tank is empty). */
+    public net.minecraft.world.level.material.Fluid tankFluid() {
+        return net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(data.get(MachineBlockEntity.DATA_TANK_FLUID));
+    }
+
     /** Machine-specific value (see each block entity's getExtraData). */
     public int extra(int index) {
         return data.get(MachineBlockEntity.DATA_BASE_COUNT + index);
@@ -105,12 +114,14 @@ public class MachineMenu extends AbstractContainerMenu {
             return true;
         }
         int faces = SideConfig.Face.values().length;
-        for (int base : new int[] {BUTTON_ITEMS_NEXT, BUTTON_ITEMS_PREV, BUTTON_ENERGY}) {
+        for (int base : new int[] {BUTTON_ITEMS_NEXT, BUTTON_ITEMS_PREV, BUTTON_ENERGY, BUTTON_FLUID}) {
             if (id >= base && id < base + faces) {
                 SideConfig.Face face = SideConfig.Face.values()[id - base];
                 this.machine.changeSides(c -> {
                     if (base == BUTTON_ENERGY) {
                         c.toggleEnergy(face);
+                    } else if (base == BUTTON_FLUID) {
+                        c.toggleFluid(face);
                     } else {
                         c.cycleItems(face, base == BUTTON_ITEMS_NEXT, this.machine.allowedItemModes());
                     }

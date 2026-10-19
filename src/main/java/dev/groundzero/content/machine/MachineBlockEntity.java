@@ -19,7 +19,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
@@ -29,11 +31,14 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider {
     // Sync slots shared by every machine menu. Ints are sent as shorts by vanilla, so 32-bit values use two.
     public static final int DATA_ENERGY_LO = 0, DATA_ENERGY_HI = 1, DATA_CAPACITY_LO = 2, DATA_CAPACITY_HI = 3,
-            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7, DATA_BASE_COUNT = 8;
+            DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7, DATA_TANK_AMOUNT = 8,
+            DATA_TANK_FLUID = 9, DATA_BASE_COUNT = 10;
     private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16;
 
     protected final MachineEnergy energy;
     protected final MachineInventory inventory;
+    /** Input fluid tank, or null for machines without one. */
+    protected final @Nullable MachineTank tank;
     /** Automation views by item mode (NONE has none). */
     private final AutomationView[] automation = new AutomationView[SideConfig.ItemMode.values().length];
     private final int[] inputSlots;
@@ -55,6 +60,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 case DATA_STATUS -> status.ordinal();
                 case DATA_SIDE_ITEMS -> sides.packItems();
                 case DATA_SIDE_FLAGS -> sides.packFlags();
+                case DATA_TANK_AMOUNT -> tank == null ? 0 : tank.amount();
+                case DATA_TANK_FLUID -> tank == null ? 0 : tank.fluidId();
                 default -> getExtraData(index - DATA_BASE_COUNT);
             };
         }
@@ -72,9 +79,15 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
             int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots) {
+        this(type, pos, state, energyCapacity, maxInsert, maxExtract, slotCount, inputSlots, outputSlots, null);
+    }
+
+    protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int energyCapacity, int maxInsert,
+            int maxExtract, int slotCount, int[] inputSlots, int[] outputSlots, MachineTank.@Nullable Spec tankSpec) {
         super(type, pos, state);
         this.energy = new MachineEnergy(energyCapacity, maxInsert, maxExtract, this::setChanged);
         this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
+        this.tank = tankSpec == null ? null : new MachineTank(tankSpec, this::setChanged);
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
         this.sides.restrict(allowedItemModes());
@@ -116,12 +129,28 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         } else {
             active = tickMachine(level);
         }
+        drainContainerSlot();
         if (this.sides.autoEject() && this.outputSlots.length > 0 && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
             autoEject(level);
         }
         BlockState state = getBlockState();
         if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != active) {
             level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, active), 3);
+        }
+    }
+
+    /** Empties a fluid container (bucket, tank item) sitting in the tank's container slot into the tank. */
+    private void drainContainerSlot() {
+        if (this.tank == null || this.tank.spec().containerSlot() < 0) {
+            return;
+        }
+        int slot = this.tank.spec().containerSlot();
+        if (this.inventory.getItem(slot).isEmpty() || this.tank.amount() >= this.tank.capacity()) {
+            return;
+        }
+        ResourceHandler<FluidResource> item = ItemAccess.forHandlerIndex(this.inventory, slot).getCapability(Capabilities.Fluid.ITEM);
+        if (item != null) {
+            ResourceHandlerUtil.move(item, this.tank, r -> this.tank.isValid(0, r), this.tank.capacity() - this.tank.amount(), null);
         }
     }
 
@@ -145,6 +174,17 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
         return side == null || this.sides.energy(face(side)) ? this.energy : null;
+    }
+
+    public @Nullable ResourceHandler<FluidResource> fluidsFor(@Nullable Direction side) {
+        if (this.tank == null) {
+            return null;
+        }
+        return side == null || this.sides.fluid(face(side)) ? this.tank.fillOnly() : null;
+    }
+
+    public @Nullable MachineTank tank() {
+        return tank;
     }
 
     public @Nullable ResourceHandler<ItemResource> itemsFor(@Nullable Direction side) {
@@ -245,6 +285,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inventory.serialize(output.child("items"));
         output.putInt("redstone", this.redstoneMode.ordinal());
         this.sides.save(output.child("sides"));
+        if (this.tank != null) {
+            this.tank.serialize(output.child("tank"));
+        }
     }
 
     @Override
@@ -255,6 +298,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
         this.sides.load(input.childOrEmpty("sides"));
         this.sides.restrict(allowedItemModes());
+        if (this.tank != null) {
+            this.tank.deserialize(input.childOrEmpty("tank"));
+        }
     }
 
     @Override

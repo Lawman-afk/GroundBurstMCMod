@@ -15,12 +15,18 @@ public final class MachineText {
     public static final String STORED = GZLang.add(GroundZero.MODID + ".gui.stored", "BUF %s%%");
     public static final String REDSTONE = GZLang.add(GroundZero.MODID + ".gui.redstone", "Redstone: %s");
 
+    public static final String TANK = GZLang.add(GroundZero.MODID + ".gui.tank", "%s: %s / %s mB");
+    public static final String TANK_EMPTY = GZLang.add(GroundZero.MODID + ".gui.tank_empty", "Empty: 0 / %s mB");
+
     // Side configuration tab
     public static final String SIDES_TITLE = GZLang.add(GroundZero.MODID + ".gui.sides", "Configuration");
     public static final String SIDES_TAB = GZLang.add(GroundZero.MODID + ".gui.sides.tab", "Side configuration");
     public static final String CHANNEL_ITEMS = GZLang.add(GroundZero.MODID + ".gui.sides.items", "Items");
     public static final String CHANNEL_FUEL = GZLang.add(GroundZero.MODID + ".gui.sides.fuel", "Fuel");
     public static final String CHANNEL_ENERGY = GZLang.add(GroundZero.MODID + ".gui.sides.energy", "Energy");
+    public static final String CHANNEL_FLUID = GZLang.add(GroundZero.MODID + ".gui.sides.fluid", "Fluids");
+    public static final String FLUID_ON = GZLang.add(GroundZero.MODID + ".gui.sides.fluid_on", "Pipes can fill the tank");
+    public static final String FLUID_OFF = GZLang.add(GroundZero.MODID + ".gui.sides.fluid_off", "Fluid disconnected");
     public static final String ENERGY_ON = GZLang.add(GroundZero.MODID + ".gui.sides.energy_on", "Energy connected");
     public static final String ENERGY_OFF = GZLang.add(GroundZero.MODID + ".gui.sides.energy_off", "Energy disconnected");
     public static final String AUTO_EJECT = GZLang.add(GroundZero.MODID + ".gui.sides.auto_eject", "Auto-eject");
@@ -36,6 +42,8 @@ public final class MachineText {
     public static final String RECIPE_NOT_CONSUMED = GZLang.add(GroundZero.MODID + ".recipe.not_consumed", "Die: not consumed");
     public static final String INFO_DIE = GZLang.add(GroundZero.MODID + ".info.die",
             "Goes in the Industrial Press die slot and picks what the press makes. Dies are never used up.");
+    public static final String INFO_MEMBRANE = GZLang.add(GroundZero.MODID + ".info.membrane",
+            "Goes in the Cryogenic Condenser's membrane slot and picks which gas it liquefies. Membranes are never used up.");
     public static final String INFO_SIDES = GZLang.add(GroundZero.MODID + ".info.sides",
             "Every machine has a side-configuration tab (the wrench on the right of its screen): choose which faces accept items, give out products and connect to power, and switch on auto-eject.");
 

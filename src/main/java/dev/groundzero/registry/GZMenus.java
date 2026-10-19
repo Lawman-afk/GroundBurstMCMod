@@ -22,6 +22,9 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ARC_FURNACE = machine("arc_furnace", () -> MachineLayouts.ARC_FURNACE);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> INDUSTRIAL_PRESS = machine("industrial_press", () -> MachineLayouts.INDUSTRIAL_PRESS);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", () -> MachineLayouts.ELECTROLYTIC_SEPARATOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRYOGENIC_CONDENSER = machine("cryogenic_condenser", () -> MachineLayouts.CRYOGENIC_CONDENSER);
+
     private GZMenus() {}
 
     @SuppressWarnings("unchecked")

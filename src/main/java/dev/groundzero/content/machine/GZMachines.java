@@ -38,6 +38,13 @@ public final class GZMachines {
                     Shapes.or(Block.box(3.5, 0, 12, 12.5, 16, 16), Block.box(2.5, 8, 2, 13.5, 16, 12), Block.box(1.5, 0, 1, 3, 7, 2.5),
                             Block.box(13, 0, 1, 14.5, 7, 2.5))));
 
+    public static final WithItem<MachineBlock> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", "Electrolytic Separator",
+            p -> new MachineBlock(p, GZBlockEntities.ELECTROLYTIC_SEPARATOR, true, Shapes.block()));
+    public static final WithItem<TallMachineBlock> CRYOGENIC_CONDENSER = tallMachine("cryogenic_condenser", "Cryogenic Condenser",
+            p -> new TallMachineBlock(p, GZBlockEntities.CRYOGENIC_CONDENSER, true,
+                    Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 16, 14)),
+                    Shapes.or(Block.box(2, 0, 2, 14, 13, 14), Block.box(5, 13, 5, 11, 16, 11))));
+
     public static final List<WithItem<CableBlock>> CABLES = new ArrayList<>();
 
     static {

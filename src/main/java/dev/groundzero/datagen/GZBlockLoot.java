@@ -45,7 +45,8 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.COMBUSTION_GENERATOR.block().get());
         dropSelf(GZMachines.ORE_CRUSHER.block().get());
         GZMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
-        for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS)) {
+        dropSelf(GZMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        for (var tall : java.util.List.of(GZMachines.ARC_FURNACE, GZMachines.INDUSTRIAL_PRESS, GZMachines.CRYOGENIC_CONDENSER)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());

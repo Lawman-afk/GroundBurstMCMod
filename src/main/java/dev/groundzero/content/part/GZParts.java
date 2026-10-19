@@ -38,6 +38,10 @@ public final class GZParts {
     public static final DeferredItem<Item> WIRE_DIE = die("wire_die", "Wire Die");
     public static final DeferredItem<Item> CANISTER_DIE = die("canister_die", "Canister Die");
 
+    // --- condenser membranes (not consumed) ----------------------------------------------------------------------------------
+    public static final DeferredItem<Item> OXYGEN_MEMBRANE = GZItems.simple("oxygen_membrane", "Oxygen Separation Membrane", GZTab.MACHINES, p -> p.stacksTo(1));
+    public static final DeferredItem<Item> NITROGEN_MEMBRANE = GZItems.simple("nitrogen_membrane", "Nitrogen Separation Membrane", GZTab.MACHINES, p -> p.stacksTo(1));
+
     private GZParts() {}
 
     public static void init() {}

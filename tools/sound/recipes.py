@@ -159,12 +159,47 @@ def press_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x[:n], LOOP, XF, PRE), -4)
 
 
+def separator_loop() -> np.ndarray:
+    """Electrolysis cell: steady bubbling (many small resonant pops), a soft 50 Hz transformer hum, a gentle
+    water slosh underneath."""
+    pops = np.zeros(int(TOTAL * S.SR))
+    rng = np.random.default_rng(71)
+    t = 0.0
+    while t < TOTAL:
+        t += rng.exponential(1 / 26)
+        i = int(t * S.SR)
+        f = rng.uniform(500, 1600)
+        n = int(0.03 * S.SR)
+        pop = np.sin(2 * np.pi * np.cumsum(np.linspace(f, f * 1.6, n)) / S.SR) * S.exp_decay(n, 0.008) * rng.uniform(0.3, 1.0)
+        seg = pop[: max(0, len(pops) - i)]
+        pops[i:i + len(seg)] += seg
+    hum = (S.tone(TOTAL, 50) * 0.5 + S.tone(TOTAL, 100) * 0.3 + S.tone(TOTAL, 150) * 0.1) * 0.25
+    slosh = S.lowpass(S.brown(TOTAL, 72), 220) * 0.4
+    x = S.mix((pops, 0.8), (hum, 1.0), (slosh, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
+def condenser_loop() -> np.ndarray:
+    """Cryogenic condenser: compressor drone with a 4 Hz piston pulse, a steady high cold-gas hiss, and a brief
+    vapour vent sigh twice per loop."""
+    t = S.t_axis(TOTAL)
+    drone = (S.tone(TOTAL, 60, "saw") * 0.3 + S.tone(TOTAL, 120) * 0.2)
+    drone = S.lowpass(drone, 400) * (0.75 + 0.25 * np.sin(2 * np.pi * 4 * t) ** 2)
+    hiss = S.bandpass(S.white(TOTAL, 81), 3000, 9000) * 0.18
+    sigh = S.highpass(S.white(0.6, 82), 1200) * S.breakpoints(int(0.6 * S.SR), [(0, 0), (0.08, 0.6), (0.6, 0)])
+    vents = _pulses([0.3, 1.3, -0.7, 2.3], sigh)
+    x = S.mix((drone, 1.0), (hiss, 1.0), (vents, 0.8))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
         "machine/ore_crusher": crusher_loop(),
         "machine/arc_furnace": arc_loop(),
         "machine/industrial_press": press_loop(),
+        "machine/electrolytic_separator": separator_loop(),
+        "machine/cryogenic_condenser": condenser_loop(),
     }
 
 
