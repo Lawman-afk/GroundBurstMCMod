@@ -166,16 +166,22 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         // No "Inventory" label: it collides with the machine widgets and the slots speak for themselves.
         MachineLayout.Rect ro = this.layout.readout();
         if (ro != null) {
-            // The CRT uses a 3/4-scale font so long status lines fit inside the glass.
-            g.pose().pushMatrix();
-            g.pose().translate(ro.x() + 3, ro.y() + 3);
-            g.pose().scale(CRT_SCALE, CRT_SCALE);
+            // The CRT uses a 3/4-scale font so long status lines fit inside the glass. Lines stack down the glass; when
+            // the glass is too short for them all (a wide, low CRT), they go side by side in columns, centred.
             int line = (int) Math.ceil(10 / CRT_SCALE);
             List<Component> lines = this.menu.machine().readout(this.menu);
+            float step = line * CRT_SCALE, glyph = this.font.lineHeight * CRT_SCALE;
+            int rows = Math.max(1, (int) ((ro.h() - 6 - glyph) / step) + 1);
+            int cols = Math.max(1, (lines.size() + rows - 1) / rows);
+            float top = cols == 1 ? ro.y() + 3 : ro.y() + (ro.h() - (Math.min(rows, lines.size()) - 1) * step - glyph) / 2f + 0.5f;
+            float colWidth = (ro.w() - 6) / (float) cols;
             for (int i = 0; i < lines.size(); i++) {
-                g.text(this.font, lines.get(i), 0, line * i, CRT_TEXT, false);
+                g.pose().pushMatrix();
+                g.pose().translate(ro.x() + 3 + (i / rows) * colWidth, top + (i % rows) * step);
+                g.pose().scale(CRT_SCALE, CRT_SCALE);
+                g.text(this.font, lines.get(i), 0, 0, CRT_TEXT, false);
+                g.pose().popMatrix();
             }
-            g.pose().popMatrix();
         }
     }
 

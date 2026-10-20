@@ -5,7 +5,7 @@ controller, which sits in the middle layer of the front row, one block west of t
 Look: a steel-plated plinth ring with hazard edging; on it the beam line, a square ring of beam pipe threaded through
 28 red dipole magnets (copper windings on top, bending magnets at the corners) with short bare lengths of pipe and
 flanges between them. The injector (blue source glow), the controller's control cabinet, the violet target chamber
-and the energy terminal sit in the ring; an open steel truss (closed at the corners) rides on top. While running, a glowing particle bunch
+the energy terminal (west) and the item hatch (east) sit in the ring; an open steel truss of two closed loops rides on top. While running, a glowing particle bunch
 (bone "bunch") races round the ring once a second, flashing in the gaps between magnets.
 """
 from __future__ import annotations
@@ -39,7 +39,7 @@ def ring_cells() -> list[tuple[int, int]]:
     return out
 
 
-SPECIAL = {(3, 0): "controller", (4, 0): "injector", (4, 8): "target", (0, 4): "energy"}
+SPECIAL = {(3, 0): "controller", (4, 0): "injector", (4, 8): "target", (0, 4): "energy", (8, 4): "items"}
 
 
 def tone(d: str) -> int:
@@ -110,57 +110,54 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         elif kind == "target":
             add("target", g.box("target", (cx - 7, 0, cz - 7), (cx + 7, 15, cz + 7), bone=F))
             add("window", g.box("window", (cx - 4, 4, cz + 7), (cx + 4, 12, cz + 7.3), faces=("south",), shade=False, bone=F))
+        elif kind == "items":
+            add("item_box", g.box("item_box", (cx - 7, 0, cz - 7), (cx + 7, 14, cz + 7), bone=F))
         elif kind == "energy":
             add("terminal_box", g.box("terminal_box", (cx - 7, 0, cz - 7), (cx + 7, 14, cz + 7), bone=F))
             for i, dz in enumerate((-3.5, 0.0, 3.5)):
                 add("insulator", g.box(f"insulator{i}", (cx - 9.5, 6, cz + dz - 1), (cx - 7, 9, cz + dz + 1), faces=("west", "north", "south", "up", "down"), bone=F))
-    # Top truss (top layer): an outer and an inner loop of 2x2 chords at the bottom (y 16) and top (y 30) of the layer,
-    # closed at every corner; at each cell boundary a post at both loops and a crossbar between them at both levels,
-    # so the corner cells are closed squares like the rest. Node start positions along x and z: the outer edges, the
-    # inner edges (which are also the corner cells' inner boundaries) and the boundaries between the other cells.
+    # Top truss (top layer): two closed rectangular loops, one along the ring's outer edge and one along its inner edge.
+    # Each loop has a full-height 2x2 column at its four corners and the same four sides at the bottom (y 16) and top
+    # (y 30) of the layer running corner column to corner column, so all four corners look alike. Posts stand at every
+    # cell boundary along both loops and crossbars join the loops there at both levels. Node start positions along x and
+    # z: the outer edge, the inner edge, the boundaries between the other cells (symmetric about the ring's centre).
     xs = [X_MIN, X_MIN + 14] + [X_MIN + 16 * k - 1 for k in range(2, 8)] + [X_MAX - 16, X_MAX - 2]
     zs = [Z_MIN, Z_MIN + 14] + [Z_MIN + 16 * k - 1 for k in range(2, 8)] + [Z_MAX - 16, Z_MAX - 2]
-    XO0, XI0, XI1, XO1 = xs[0], xs[1], xs[-2], xs[-1]
-    ZO0, ZI0, ZI1, ZO1 = zs[0], zs[1], zs[-2], zs[-1]
     along_x = ("north", "south", "up", "down")
     along_z = ("east", "west", "up", "down")
-
-    def run_x(name, x0, x1, z, y0):
-        shared("chord", g.box(name, (x0, y0, z), (x1, y0 + 2, z + 2), faces=along_x, bone=F))
-
-    def run_z(name, x, z0, z1, y0):
-        shared("chord", g.box(name, (x, y0, z0), (x + 2, y0 + 2, z1), faces=along_z, bone=F))
-
+    loops = {"o": (xs[0], xs[-1], zs[0], zs[-1]), "i": (xs[1], xs[-2], zs[1], zs[-2])}
+    for name, (x0, x1, z0, z1) in loops.items():
+        for cx, cz in ((x0, z0), (x1, z0), (x0, z1), (x1, z1)):
+            shared("corner", g.box(f"corner_{name}_{int(cx)}_{int(cz)}", (cx, 16, cz), (cx + 2, 32, cz + 2), bone=F))
+        for y0 in (16.0, 30.0):
+            lv = int(y0)
+            for side, z in (("n", z0), ("s", z1)):
+                shared("chord", g.box(f"ch_{name}{side}_{lv}", (x0 + 2, y0, z), (x1, y0 + 2, z + 2), faces=along_x, bone=F))
+            for side, x in (("w", x0), ("e", x1)):
+                shared("chord", g.box(f"ch_{name}{side}_{lv}", (x, y0, z0 + 2), (x + 2, y0 + 2, z1), faces=along_z, bone=F))
+    ox0, ox1, oz0, oz1 = loops["o"]
+    ix0, ix1, iz0, iz1 = loops["i"]
     for y0 in (16.0, 30.0):
         lv = int(y0)
-        # Outer loop: front and back full width, the sides between them.
-        run_x(f"ch_on_{lv}", X_MIN, X_MAX, ZO0, y0)
-        run_x(f"ch_os_{lv}", X_MIN, X_MAX, ZO1, y0)
-        run_z(f"ch_ow_{lv}", XO0, ZO0 + 2, ZO1, y0)
-        run_z(f"ch_oe_{lv}", XO1, ZO0 + 2, ZO1, y0)
-        # Inner loop: front and back from outer side to outer side, the sides in three pieces around them.
-        run_x(f"ch_in_{lv}", XO0 + 2, XO1, ZI0, y0)
-        run_x(f"ch_is_{lv}", XO0 + 2, XO1, ZI1, y0)
-        for side, x in (("w", XI0), ("e", XI1)):
-            run_z(f"ch_i{side}a_{lv}", x, ZO0 + 2, ZI0, y0)
-            run_z(f"ch_i{side}b_{lv}", x, ZI0 + 2, ZI1, y0)
-            run_z(f"ch_i{side}c_{lv}", x, ZI1 + 2, ZO1, y0)
-        # Crossbars at the boundaries between the non-corner cells.
-        for k, x in enumerate(xs[2:-2]):
-            run_z(f"bar_n{k}_{lv}", x, ZO0 + 2, ZI0, y0)
-            run_z(f"bar_s{k}_{lv}", x, ZI1 + 2, ZO1, y0)
-        for k, z in enumerate(zs[2:-2]):
-            run_x(f"bar_w{k}_{lv}", XO0 + 2, XI0, z, y0)
-            run_x(f"bar_e{k}_{lv}", XI1 + 2, XO1, z, y0)
-    # Posts at every node of both loops.
+        # Crossbars from the outer loop to the inner one at every boundary, including the inner loop's corners.
+        for k, x in enumerate(xs[1:-1]):
+            shared("chord", g.box(f"bar_n{k}_{lv}", (x, y0, oz0 + 2), (x + 2, y0 + 2, iz0), faces=along_z, bone=F))
+            shared("chord", g.box(f"bar_s{k}_{lv}", (x, y0, iz1 + 2), (x + 2, y0 + 2, oz1), faces=along_z, bone=F))
+        for k, z in enumerate(zs[1:-1]):
+            shared("chord", g.box(f"bar_w{k}_{lv}", (ox0 + 2, y0, z), (ix0, y0 + 2, z + 2), faces=along_x, bone=F))
+            shared("chord", g.box(f"bar_e{k}_{lv}", (ix1 + 2, y0, z), (ox1, y0 + 2, z + 2), faces=along_x, bone=F))
+    # Posts at every node of both loops except the corners (which have their columns).
+    corners = {(x, z) for x0, x1, z0, z1 in loops.values() for x in (x0, x1) for z in (z0, z1)}
     nodes = set()
-    for x in xs:
-        for z in (ZO0, ZI0, ZI1, ZO1):
-            nodes.add((x, z))
-    for z in zs:
-        for x in (XO0, XI0, XI1, XO1):
-            nodes.add((x, z))
-    for n, (x, z) in enumerate(sorted(nodes)):
+    for x in xs[1:-1]:
+        nodes |= {(x, oz0), (x, oz1)}
+    for z in zs[1:-1]:
+        nodes |= {(ox0, z), (ox1, z)}
+    for x in xs[1:-1]:
+        nodes |= {(x, iz0), (x, iz1)}
+    for z in zs[1:-1]:
+        nodes |= {(ix0, z), (ix1, z)}
+    for n, (x, z) in enumerate(sorted(nodes - corners)):
         shared("post", g.box(f"post{n}", (x, 18, z), (x + 2, 30, z + 2), faces=("north", "south", "east", "west"), bone=F))
     # The bunch and its trail.
     add("bunch", g.box("bunch_head", (CENTRE_W - 2, BEAM_Y - 2, CENTRE_N - 2), (CENTRE_W + 2, BEAM_Y + 2, CENTRE_N + 2), shade=False, bone="bunch"))
@@ -247,6 +244,17 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         t.rect(x + 2, y + 2, w - 4, h - 4, P.ANTIMATTER[6])
     g.paint_all(tex, parts["window"][0], window)
     g.paint_all(glow, parts["window"][0], window)
+    def item_box(t, r, d):
+        """The Item Port's housing: gunmetal, with a yellow-and-black hatched ring round a dark opening facing out."""
+        x, y, w, h = r
+        t.rect(x, y, w, h, gun[tone(d)])
+        if d == "east":
+            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+            t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
+            t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
+        elif min(w, h) >= 4:
+            t.outline(x, y, w, h, gun[1])
+    g.paint_all(tex, parts["item_box"][0], item_box)
     g.paint_all(tex, parts["terminal_box"][0], lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d)]), t.outline(*r, P.WARNING_RED[1]) if min(r[2], r[3]) >= 4 else None))
     for b in parts["insulator"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]),
@@ -254,6 +262,9 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for b in parts["chord"]:
         if b is first.get(f"chord:{tuple(round(bb - aa, 3) for aa, bb in zip(b.frm, b.to))}:{sorted(b.faces)}"):
             g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d in ("north", "south", "east", "west") else None))
+    for b in parts["corner"]:
+        if b is first.get(f"corner:{tuple(round(bb - aa, 3) for aa, bb in zip(b.frm, b.to))}:{sorted(b.faces)}"):
+            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5]) if d not in ("up", "down") else None))
     for b in parts["post"]:
         if b is first.get(f"post:{tuple(round(bb - aa, 3) for aa, bb in zip(b.frm, b.to))}:{sorted(b.faces)}"):
             g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[3]), t.vline(r[0], r[1], r[3], steel[5])))

@@ -56,11 +56,16 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
         return getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
     }
 
-    /** Faces against the plant's own casing and glass (the side and back, the top) cannot connect to anything. */
+    /** The controller connects to nothing: items, fluids and power all go through the structure's ports. */
     @Override
     public boolean faceOpen(SideConfig.Face face) {
-        BlockPos neighbour = this.worldPosition.relative(face.toDirection(controllerFacing()));
-        return !definition().contains(this.worldPosition, controllerFacing(), neighbour);
+        return false;
+    }
+
+    /** Nothing to configure: the side tab is hidden. */
+    @Override
+    public boolean hasSideConfig() {
+        return false;
     }
 
     @Override
@@ -110,8 +115,8 @@ public class ChemicalPlantBlockEntity extends ProcessingBlockEntity implements A
     private static final java.util.List<TankRender> WINDOWS = java.util.List.of(
             new TankRender(TANK_WATER, -1.9f, 3.5f, 1.7f, 1.9f, 25.5f, 2.8f),
             new TankRender(TANK_PRODUCT, 14.1f, 3.5f, 1.7f, 17.9f, 25.5f, 2.8f),
-            new TankRender(TANK_INPUT_A, -4.35f, 3.5f, 22.7f, -2.65f, 17.5f, 23.35f),
-            new TankRender(TANK_INPUT_B, 4.65f, 3.5f, 22.7f, 6.35f, 17.5f, 23.35f));
+            new TankRender(TANK_INPUT_A, 4.15f, 3.5f, 19.9f, 5.85f, 17.5f, 20.3f),
+            new TankRender(TANK_INPUT_B, 10.05f, 3.5f, 19.9f, 11.75f, 17.5f, 20.3f));
 
     @Override
     public java.util.List<TankRender> tankRenders() {

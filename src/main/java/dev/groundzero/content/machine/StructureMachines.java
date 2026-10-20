@@ -35,12 +35,6 @@ final class StructureMachines {
         }
     }
 
-    /** Faces against the structure's own blocks cannot connect to anything. */
-    static boolean faceOpen(MultiblockController controller, SideConfig.Face face) {
-        BlockPos neighbour = controller.controllerPos().relative(face.toDirection(controller.controllerFacing()));
-        return !controller.definition().contains(controller.controllerPos(), controller.controllerFacing(), neighbour);
-    }
-
     /** Breaking a formed controller un-forms its parts. */
     static void unformOnRemove(MachineBlockEntity machine, MultiblockController controller, BlockState state) {
         Level level = machine.getLevel();

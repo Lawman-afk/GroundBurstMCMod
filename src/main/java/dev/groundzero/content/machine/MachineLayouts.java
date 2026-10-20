@@ -157,7 +157,7 @@ public final class MachineLayouts {
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 82, 18, 18), 180, 56,
             new MachineLayout.Rect(11, 82, 132, 18), 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(26, 20, 12, 42), new MachineLayout.Rect(26, 64, 12, 10))),
-            List.of(new MachineLayout.Control("heat", new MachineLayout.Rect(116, 20, 8, 58), 0, 1000, -1, "groundzero.gui.heat"), new MachineLayout.Control("rods", new MachineLayout.Rect(128, 20, 8, 58), 1, 100, -1, "groundzero.gui.rods_gauge"), new MachineLayout.Control("up", new MachineLayout.Rect(140, 20, 18, 14), -1, 0, 0, "groundzero.gui.withdraw"), new MachineLayout.Control("down", new MachineLayout.Rect(140, 36, 18, 14), -1, 0, 1, "groundzero.gui.insert"), new MachineLayout.Control("scram", new MachineLayout.Rect(140, 54, 18, 22), -1, 0, 2, "groundzero.gui.scram")));
+            List.of(new MachineLayout.Control("heat", new MachineLayout.Rect(116, 20, 8, 56), 0, 1000, -1, "groundzero.gui.heat"), new MachineLayout.Control("rods", new MachineLayout.Rect(128, 20, 8, 56), 1, 100, -1, "groundzero.gui.rods_gauge"), new MachineLayout.Control("up", new MachineLayout.Rect(140, 20, 18, 14), -1, 0, 0, "groundzero.gui.withdraw"), new MachineLayout.Control("down", new MachineLayout.Rect(140, 36, 18, 14), -1, 0, 1, "groundzero.gui.insert"), new MachineLayout.Control("scram", new MachineLayout.Rect(140, 54, 18, 22), -1, 0, 2, "groundzero.gui.scram")));
 
     public static final MachineLayout PARTICLE_ACCELERATOR = new MachineLayout(
             GroundZero.id("textures/gui/machine/particle_accelerator.png"), 176, 166, List.of(new MachineLayout.Pos(56, 35), new MachineLayout.Pos(116, 35)), 8, 84,

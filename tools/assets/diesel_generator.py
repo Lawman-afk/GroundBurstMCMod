@@ -63,10 +63,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # Exhaust stack at the back-west corner with a rain cap.
     add("stack", g.box("stack", (-7.0, 2, 4.6), (-5.5, 14.5, 6.2), faces=("north", "south", "east", "west"), bone=F))
     add("stack_cap", g.box("stack_cap", (-7.4, 14.5, 4.2), (-5.1, 15.0, 6.6), bone=F))
-    # Exhaust manifold from the stack along the back to the far cylinder, with a port into the back of each barrel.
-    add("pipe", g.box("manifold", (-5.5, 10.4, 4.9), (CYL_X[1] + 0.4, 11.2, 5.7), faces=("north", "south", "up", "down", "east"), bone=F))
+    # Exhaust manifold lying on the crankcase's back ledge behind the deck: it runs from the stack to a capped end
+    # behind the far barrel, and each barrel's exhaust port runs along the deck straight into it.
+    add("pipe", g.box("manifold", (-5.5, 9.0, 4.5), (CYL_X[1] + 0.4, 10.8, 5.5), faces=("north", "south", "up"), bone=F))
+    add("pipe_cap", g.box("manifold_cap", (CYL_X[1] + 0.4, 9.0, 4.5), (CYL_X[1] + 1.0, 11.0, 5.6), faces=("north", "south", "east", "west", "up"), bone=F))
     for i, x in enumerate(CYL_X):
-        add("pipe", g.box(f"port{i}", (x - 0.4, 10.4, 2.2), (x + 0.4, 11.2, 4.9), faces=("east", "west", "up", "down"), bone=F))
+        add("pipe", g.box(f"port{i}", (x - 0.4, 9.8, 2.2), (x + 0.4, 10.6, 4.5), faces=("east", "west", "up"), bone=F))
     for i in range(3):
         px, pz = (-6.2, -5.6, -6.6)[i], (5.6, 5.0, 5.2)[i]
         add("puff", g.box(f"puff_box{i}", (px - 0.6, 15.3 + i * 0.3, pz - 0.6), (px + 0.6, 16.3 + i * 0.3, pz + 0.6), faces=("north", "south", "east", "west", "up"), bone=f"puff{i}"))
@@ -139,7 +141,9 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, parts["tank_cap"][0], lambda t, r, d: t.rect(*r, P.BRASS[tone(d)]))
     g.paint_all(tex, parts["stack"][0], lambda t, r, d: (t.rect(*r, P.RUST[tone(d)]), t.hline(r[0], r[1], r[2], P.BLACK_PAINT[2])))
     g.paint_all(tex, parts["stack_cap"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[tone(d) + 1]))
-    g.paint_all(tex, parts["pipe"][0], lambda t, r, d: t.rect(*r, P.RUST[tone(d) + 1]))
+    for b in parts["pipe"]:
+        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.RUST[tone(d) + 1]))
+    g.paint_all(tex, parts["pipe_cap"][0], lambda t, r, d: t.rect(*r, P.GUNMETAL[tone(d) + 1]))
     for b in parts["puff"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, SMOKE[5] if d == "up" else SMOKE[4]))
 

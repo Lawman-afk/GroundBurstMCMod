@@ -53,13 +53,13 @@ public final class GZMultiblocks {
     /**
      * Fission Reactor (3x3x4, DESIGN.md §23.3): lead-lined casing round a core shaft two blocks tall (required air,
      * the formed model draws the fuel bundle there), reactor glass windows on all four sides of it, the controller at
-     * the front of the bottom layer with a Fluid Port under the core (coolant in), and on top an Item Port (fuel and
+     * the front of the bottom layer and a Fluid Port at the back of it (coolant in), and on top an Item Port (fuel and
      * targets in), an Energy Port (power out) and a second Item Port (products out). The controller itself connects to
      * nothing: everything goes through the ports.
      */
     public static final MultiblockDefinition FISSION_REACTOR = new MultiblockDefinition(GroundZero.id("fission_reactor"),
             new String[][] {
-                    {"LXL", "LWL", "LLL"},
+                    {"LXL", "LLL", "LWL"},
                     {"LGL", "G.G", "LGL"},
                     {"LGL", "G.G", "LGL"},
                     {"LUL", "LEL", "LIL"},
@@ -78,12 +78,13 @@ public final class GZMultiblocks {
     public static final MultiblockDefinition PARTICLE_ACCELERATOR = new MultiblockDefinition(GroundZero.id("particle_accelerator"),
             new String[][] {
                     ring('P'),
-                    {"SSSXJSSSS", "S       S", "S       S", "S       S", "E       S", "S       S", "S       S", "S       S", "SSSSTSSSS"},
+                    {"SSSXJSSSS", "S       S", "S       S", "S       S", "E       I", "S       S", "S       S", "S       S", "SSSSTSSSS"},
                     ring('F'),
             },
             Map.of('P', Entry.of(() -> STEEL_PLATING.block().get()), 'F', Entry.of(() -> STEEL_FRAME.block().get()),
                     'S', Entry.of(() -> MAGNET_SEGMENT.block().get()), 'J', Entry.of(() -> INJECTOR.block().get()),
                     'T', Entry.of(() -> TARGET_CHAMBER.block().get()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
+                    'I', Entry.of(ITEM_PORT.block()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.PARTICLE_ACCELERATOR.block().get())));
 
     /** A 9x9 hollow ring layer of one block. */
@@ -94,15 +95,16 @@ public final class GZMultiblocks {
     }
 
     /**
-     * Chemical Plant (2x2x2): controller front-left with casing beside it, a Fluid Port behind it and the Item Port at
-     * the back right; a roof of reactor glass. The formed model shows two windowed tanks, a manifold and a stirrer.
+     * Chemical Plant (2x2x2): controller front-left with an Energy Port beside it, a Fluid Port behind it and the Item
+     * Port at the back right; a roof of reactor glass. The controller connects to nothing: everything goes through the
+     * ports. The formed model shows two windowed tanks, a manifold and a stirrer.
      */
     public static final MultiblockDefinition CHEMICAL_PLANT = new MultiblockDefinition(GroundZero.id("chemical_plant"),
             new String[][] {
-                    {"XM", "FI"},
+                    {"XE", "FI"},
                     {"GG", "GG"},
             },
-            Map.of('M', Entry.of(MACHINE_CASING.block()), 'I', Entry.of(ITEM_PORT.block()), 'G', Entry.of(REACTOR_GLASS.block()),
+            Map.of('E', Entry.of(() -> ENERGY_PORT.block().get()), 'I', Entry.of(ITEM_PORT.block()), 'G', Entry.of(REACTOR_GLASS.block()),
                     'F', Entry.of(() -> FLUID_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.CHEMICAL_PLANT.block().get())));
 

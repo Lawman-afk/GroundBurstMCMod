@@ -206,7 +206,25 @@ final class ReactorTests {
         build(helper, rel, Direction.NORTH, GZMachines.PARTICLE_ACCELERATOR.block().get(), GZMultiblocks.PARTICLE_ACCELERATOR);
         ParticleAcceleratorBlockEntity pa = helper.getBlockEntity(rel, ParticleAcceleratorBlockEntity.class);
         helper.assertTrue(pa.isFormed(), "the accelerator ring forms");
-        pa.inventory().setItem(0, new ItemStack(GZNuclear.CONTAINMENT_CELL.get()));
+        var level = helper.getLevel();
+        for (Direction d : Direction.values()) {
+            helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, pa.controllerPos(), d) == null
+                    && level.getCapability(Capabilities.Energy.BLOCK, pa.controllerPos(), d) == null, "the controller exposes nothing on " + d);
+        }
+        // A containment cell goes in through the ring's Item Port.
+        BlockPos itemPort = pa.definition().cells(pa.controllerPos(), pa.controllerFacing()).stream()
+                .filter(c -> c.key() == 'I').findFirst().orElseThrow().pos();
+        var items = level.getCapability(Capabilities.Item.BLOCK, itemPort, Direction.EAST);
+        helper.assertTrue(items != null, "the Item Port carries items");
+        try (var tx = Transaction.openRoot()) {
+            int in = 0;
+            for (int i = 0; i < items.size() && in == 0; i++) {
+                in += items.insert(i, net.neoforged.neoforge.transfer.item.ItemResource.of(GZNuclear.CONTAINMENT_CELL.get()), 1, tx);
+            }
+            helper.assertTrue(in == 1, "a containment cell goes in");
+            tx.commit();
+        }
+        helper.assertTrue(pa.inventory().getItem(0).is(GZNuclear.CONTAINMENT_CELL.get()), "it reaches the controller's input slot");
         helper.onEachTick(() -> pa.energy().generate(ParticleAcceleratorBlockEntity.ENERGY_PER_TICK));
         helper.runAfterDelay(20, () -> {
             helper.assertTrue(pa.status() == MachineStatus.RUNNING, "running, status " + pa.status());

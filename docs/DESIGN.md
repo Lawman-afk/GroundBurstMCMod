@@ -1031,15 +1031,16 @@ Layer `y0` is the bottom. `X` = controller, `R` = reinforced concrete, `H` = haz
 
 **Fission Reactor** (3×3×4, formerly the Breeder Reactor; rows written front first):
 ```
-y0: LXL / LWL / LLL      (X at the front middle)
+y0: LXL / LLL / LWL      (X at the front middle, W the Fluid Port at the back middle)
 y1: LGL / G.G / LGL      (core space: rendered fuel bundle, control rods, water, Cherenkov glow)
 y2: LGL / G.G / LGL
 y3: LUL / LEL / LIL
 ```
 W is a Fluid Port (coolant in), U and I are Item Ports (fuel/targets in, products out), E is an Energy Port (power
 out). The controller itself connects to nothing and has no side-configuration tab.
-**Chemical Plant** (2×2×2): `y0: XM / FI` (F = Fluid Port behind the controller, I = Item Port), `y1: GG / GG`
-(tanks rendered inside). Its controller keeps its own open faces for pipes and conveyors too.
+**Chemical Plant** (2×2×2): `y0: XE / FI` (E = Energy Port beside the controller, F = Fluid Port behind it, I =
+Item Port), `y1: GG / GG` (tanks rendered inside). The controller connects to nothing; every input and output goes
+through the three ports.
 
 **Fusion Reactor** (7×7×3 ring, first draft; `T` = toroidal field coil, `V` = vacuum vessel casing): a hollow square
 ring 1 wide. `y0` ring of `M` with `X` at the front midpoint, `E` at the back midpoint; `y1` ring of `T` coils with `G`
@@ -1052,8 +1053,8 @@ face midpoints of `y2`, `G` elsewhere on the faces, 3×3×3 interior air with th
 seed; `y4` 5×5 `M` roof with a `Q` emitter at the centre.
 
 **Particle Accelerator** (9×9×3 ring): a hollow square ring 1 wide on y1 made of 28 `S` magnet segments, the
-injector `J` at the front midpoint with `X` beside it (west), the target chamber `T` at the back midpoint and an Energy
-Port `E` at the west midpoint; y0 ring of `P` (steel plating) under it; y2 ring of `F` (steel frame) above it. Interior
+injector `J` at the front midpoint with `X` beside it (west), the target chamber `T` at the back midpoint, an Energy
+Port `E` at the west midpoint and an Item Port `I` at the east midpoint (containment cells in, antimatter out); y0 ring of `P` (steel plating) under it; y2 ring of `F` (steel frame) above it. Interior
 7×7 is free. The controller sits in the middle layer, so the ring reaches one block below it.
 
 **Radar Station** (3×3×5): `y0: PEP / PXP / PPP`, `y1–y3: .F. / FFF / .F.` (mast), `y4: DDD / DFD / DDD` (dish mount).
@@ -1485,3 +1486,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Reactor heat balance replaces the slice 7 rule: with coolant the core heads for 20 + 1 150 x power / quality °C (1%/tick). Water (quality 1) is safe to about 70% power and SCRAMs past ~78%; heavy water (quality 1.6, Chemical Plant from deuterium + liquid oxygen) settles near 740 °C at full power and is used at a fifth of water's 25 mB/t. The coolant tank takes either and has a dump button. |
 | 2026-10-20 | Reactor meltdown: planned for Phase 5 (explosion engine). A core left past SCRAM conditions (SCRAM disabled or failed) will melt down with a damaging blast and contamination; a server config toggle turns it off. |
 | 2026-10-20 | Creative Capacitor Bank (creative menu only, not craftable): refills itself every tick, pushes up to 1 000 000 FE/t from its front. Nuclear waste is fire- and lava-proof (dropped stacks still despawn). The GUI flame tooltip is per machine: the RTG shows minutes of decay left, the diesel engine its fuel in mB. Steel Frame no longer culls its neighbours' faces (it is see-through). |
+| 2026-10-20 | Multiblocks connect only through their ports, on every structure: no controller exposes items, fluids or power and none has a side-configuration tab. The Chemical Plant's casing beside the controller becomes an Energy Port (`XE / FI`); the Particle Accelerator gains an Item Port at the east midpoint of its ring; the reactor's Fluid Port moves to the back middle of the bottom layer (it was under the core, reachable only from below). Built structures need those blocks swapped. |
+| 2026-10-20 | Machine CRTs: when a readout's glass is too low for its lines to stack, the lines sit side by side in columns, centred (the reactor's OUT and CORE). |
+| 2026-10-20 | Field Manual (the native in-game guide, §24.2) gets its own slice after the slice 7 fixes, ahead of slice 8: researched against how the major tech mods do theirs, with info pages, recipes and pictures. |

@@ -8,7 +8,8 @@ pane at the core so you look into the water-filled core (the renderer draws the 
 Inside, a 3x3 fuel bundle between grid plates, four control-rod blades shown at the set insertion (bones "rods0"
 .."rods4", one shown at a time) and a Cherenkov-blue glow round the bundle while it runs (bone "glow"). The head
 carries two port hatches (fuel in at the front, products out at the back), a central energy terminal on ceramic
-insulators, four control-rod drive housings, and coolant pipes run down the back.
+insulators and four control-rod drive housings. The coolant inlet (the Fluid Port, blue-hatched) sits low on the back
+of the base, with a header feeding the two coolant pipes that run up the back.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ from gz.tex import Tex  # noqa: E402
 NAME = "fission_reactor"
 LEAD = P.LEAD
 CLEAR = (0, 0, 0, 0)
+FLUID_BLUE = fixed("reactor_fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3a6ec8", "#6a98e0", "#a8c8f4")
 GLASS_TINT = fixed("lead_glass", "#141a1e", "#1e262c", "#2a343c", "#36424c", "#4a5864", "#6a7a88", "#a4b4c0")
 FUEL = fixed("zircaloy", "#2a2c2e", "#3e4144", "#575b5f", "#71767b", "#8d9398", "#acb2b7", "#d4d9dd")
 BASE_Y, HEAD_Y, TOP = 16.0, 48.0, 64.0
@@ -100,6 +102,10 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # Control cabinet on the base front (the controller), coolant pipes down the back.
     add("cabinet", g.box("cabinet", (-7, 1.5, -9), (7, 14.5, -8), faces=("north", "east", "west", "up", "down"), bone=F))
     lamps = add("lamps", g.box("lamps", (2.5, 9, -9.2), (6, 10.5, -9), faces=("north",), shade=False, bone=F))
+    # Coolant inlet (the Fluid Port's open face, back middle of the base) and a header out to both back pipes.
+    add("inlet", g.box("inlet", (-6, 2, 40), (6, 14, 41.5), faces=("south", "east", "west", "up", "down"), bone=F))
+    add("pipe", g.box("header_w", (-14, 6.75, 40), (-6, 9.25, 42.5), faces=("south", "up", "down"), bone=F))
+    add("pipe", g.box("header_e", (6, 6.75, 40), (14, 9.25, 42.5), faces=("south", "up", "down"), bone=F))
     for i, x in enumerate((-16, 16)):
         add("pipe", g.box(f"pipe{i}", (x - 1.5, 4, 40), (x + 1.5, 60, 42.5), faces=("east", "west", "south", "up", "down"), bone=F))
         for y in (8, 32, 56):
@@ -131,7 +137,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         x, y, w, h = r
         if d in ("north", "south", "east", "west"):
             t.stripes(x, y, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-            if d in ("east", "west", "south"):
+            if d in ("east", "west"):
                 cx = x + w // 2
                 t.rect(cx - 3, y + 5, 6, 6, P.HAZARD_YELLOW.base)
                 t.trefoil(cx, y + 8, 2.6, P.HAZARD_BLACK.base)
@@ -179,6 +185,16 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.outline(x + 3, y + 3, w - 6, h - 6, P.GUNMETAL[2])
     for b in parts["hatch"]:
         g.paint_all(tex, b, hatch)
+
+    def inlet(t, r, d):
+        """The Fluid Port's face: a blue-and-black hatched ring round a dark bore, like the item hatches."""
+        x, y, w, h = r
+        t.rect(x, y, w, h, steel[tone(d)])
+        if d == "south":
+            t.stripes(x, y, w, h, FLUID_BLUE[4], P.HAZARD_BLACK.base, width=2)
+            t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
+            t.outline(x + 3, y + 3, w - 6, h - 6, P.GUNMETAL[2])
+    g.paint_all(tex, parts["inlet"][0], inlet)
     g.paint_all(tex, parts["terminal"][0], lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d) + 1]), t.outline(*r, P.WARNING_RED[2]) if d == "up" else None))
     for b in parts["insulator"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]),

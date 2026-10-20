@@ -23,7 +23,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Particle Accelerator (DESIGN.md §8, §23.3): a 9x9x3 ring run from this controller. Fills containment cells with
- * antimatter slowly, at 2 000 FE/t; power comes in through the controller's open faces and the ring's Energy Port.
+ * antimatter slowly, at 2 000 FE/t. The controller connects to nothing: power comes in through the ring's Energy Port,
+ * containment cells go in and antimatter cells come out through its Item Port.
  * Slots: 0 containment cell, 1 antimatter cell.
  */
 public class ParticleAcceleratorBlockEntity extends ProcessingBlockEntity implements AnimatedMachine, MultiblockController {
@@ -61,9 +62,16 @@ public class ParticleAcceleratorBlockEntity extends ProcessingBlockEntity implem
         StructureMachines.revalidate(this, this);
     }
 
+    /** The controller connects to nothing: items, fluids and power all go through the structure's ports. */
     @Override
     public boolean faceOpen(SideConfig.Face face) {
-        return StructureMachines.faceOpen(this, face);
+        return false;
+    }
+
+    /** Nothing to configure: the side tab is hidden. */
+    @Override
+    public boolean hasSideConfig() {
+        return false;
     }
 
     @Override

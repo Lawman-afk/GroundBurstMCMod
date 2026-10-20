@@ -36,7 +36,7 @@ final class FluidSystemTests {
         GZGameTests.test("plant_dump", GZGameTests.FLOOR_16, 40, FluidSystemTests::dump);
         GZGameTests.test("canister_and_bucket_containers", GZGameTests.FLOOR_16, 20, FluidSystemTests::containers);
         GZGameTests.test("liquid_in_world", GZGameTests.FLOOR_16, 20, FluidSystemTests::world);
-        GZGameTests.test("plant_covered_faces_closed", GZGameTests.FLOOR_16, 20, FluidSystemTests::coveredFaces);
+        GZGameTests.test("plant_connects_only_through_ports", GZGameTests.FLOOR_16, 20, FluidSystemTests::coveredFaces);
     }
 
     private static ChemicalPlantBlockEntity plant(GameTestHelper helper, BlockPos rel) {
@@ -99,11 +99,12 @@ final class FluidSystemTests {
     /** A condenser with auto-eject pours its liquid oxygen down a pipe into the plant's chemical input tank. */
     private static void ejectIntoPlant(GameTestHelper helper) {
         ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(8, 1, 8));
-        // Controller front faces north: pipe from z=5 to z=7, condenser at z=4.
-        for (int z = 5; z <= 7; z++) {
-            helper.setBlock(new BlockPos(8, 1, z), GZFluids.FLUID_PIPE.block().get());
+        // Controller faces north, so the Fluid Port is behind it at (8, 1, 9) with its west face open: pipe from x=5 to
+        // x=7 along z=9, condenser at x=4.
+        for (int x = 5; x <= 7; x++) {
+            helper.setBlock(new BlockPos(x, 1, 9), GZFluids.FLUID_PIPE.block().get());
         }
-        BlockPos condPos = new BlockPos(8, 1, 4);
+        BlockPos condPos = new BlockPos(4, 1, 9);
         TallMachineBlock block = GZMachines.CRYOGENIC_CONDENSER.block().get();
         helper.setBlock(condPos, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(condPos), block.defaultBlockState(), null, ItemStack.EMPTY);
@@ -163,20 +164,25 @@ final class FluidSystemTests {
         helper.succeed();
     }
 
-    /** The controller's faces against its own casing and glass expose nothing; its open faces do. */
+    /** The plant's controller exposes nothing on any face; power goes in through the Energy Port beside it. */
     private static void coveredFaces(GameTestHelper helper) {
         ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(4, 1, 4));
         var level = helper.getLevel();
         BlockPos c = plant.controllerPos();
-        // Facing north, the structure lies east (the controller's side) and south (its back), and above.
-        for (Direction covered : new Direction[] {Direction.EAST, Direction.SOUTH, Direction.UP}) {
-            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, c, covered) == null
-                    && level.getCapability(Capabilities.Fluid.BLOCK, c, covered) == null
-                    && level.getCapability(Capabilities.Item.BLOCK, c, covered) == null, "face " + covered + " is inside the structure");
+        for (Direction d : Direction.values()) {
+            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, c, d) == null
+                    && level.getCapability(Capabilities.Fluid.BLOCK, c, d) == null
+                    && level.getCapability(Capabilities.Item.BLOCK, c, d) == null, "the controller exposes nothing on " + d);
         }
-        for (Direction open : new Direction[] {Direction.NORTH, Direction.WEST, Direction.DOWN}) {
-            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, c, open) != null, "face " + open + " is open");
+        BlockPos port = c.east();                            // facing north, the Energy Port is to the controller's right
+        var energy = level.getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);
+        helper.assertTrue(energy != null, "the Energy Port takes power");
+        int in;
+        try (var tx = Transaction.openRoot()) {
+            in = energy.insert(200, tx);
+            tx.commit();
         }
+        helper.assertTrue(in > 0 && plant.energy().stored() == in, "the power reaches the controller, " + in + " in, have " + plant.energy().stored());
         helper.succeed();
     }
 

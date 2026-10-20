@@ -102,7 +102,7 @@ public final class GZJeiPlugin implements IModPlugin {
                 Component.translatable(MachineText.INFO_MEMBRANE));
         registration.addIngredientInfo(List.of(GZMachines.COMBUSTION_GENERATOR.item().get(), GZMachines.ORE_CRUSHER.item().get(),
                         GZMachines.ARC_FURNACE.item().get(), GZMachines.INDUSTRIAL_PRESS.item().get(),
-                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get(), GZMachines.CHEMICAL_PLANT.item().get(),
+                        GZMachines.ELECTROLYTIC_SEPARATOR.item().get(), GZMachines.CRYOGENIC_CONDENSER.item().get(),
                         GZMachines.CIRCUIT_FABRICATOR.item().get(), GZMachines.GAS_CENTRIFUGE.item().get(),
                         GZMachines.FUSION_FUEL_SYNTHESIZER.item().get(), GZMachines.EXOTIC_MATTER_FABRICATOR.item().get(),
                         GZMachines.DIESEL_GENERATOR.item().get(), GZMachines.RTG.item().get(), GZMachines.BATTERY_CHARGER.item().get(),

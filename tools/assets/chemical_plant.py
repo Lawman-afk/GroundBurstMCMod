@@ -7,9 +7,10 @@ vertical window slot on the front. The renderer draws each tank's real fluid beh
 (water in the left tank, the product in the right one); bubbles rise through it while running. A stirrer motor on the
 left tank turns a paddle shaft you can see through the window; a header pipe with red hand-wheel valves runs across
 the front and turns back into both tanks; a ladder climbs the back of the left tank. Pipes and cables need something
-solid to meet: a control cabinet fills the controller's open faces (front and outer side, green CRT on the front),
-a yellow-hatched connection housing fills the Item Port's two open faces, and blue-hatched ones the Fluid Port's (a
-flange plate down the west side, a narrow manifold between the silos at the back).
+solid to meet, and the plant connects only through its ports: a red-hatched housing on the Energy Port's two open
+faces (front right), a yellow-hatched one on the Item Port's (back right) and a blue-hatched one on the Fluid Port's
+(back left), each an L wrapping its cell's outer corner; the two feed silos stand between the back two. The
+controller's corner carries a control cabinet with a green CRT.
 """
 from __future__ import annotations
 
@@ -36,12 +37,12 @@ WINDOW = 2.0                  # half-width of the window slot on the front band 
 # Where the renderer draws each tank's fluid (model px, north-facing frame): just behind the window slot.
 FLUID_BOXES = [(cx - 1.9, TANK_Y0 + 0.5, cz - 6.3, cx + 1.9, TANK_Y1 - 0.5, cz - 5.2) for cx, cz, _ in TANKS]
 
-# Two smaller feed silos behind the process tanks hold the plant's two chemical inputs; each has a window on its back
-# (south) face and a feed pipe into the left process tank, where the stirrer mixes everything.
-SILOS = [(-3.5, 20.0), (5.5, 20.0)]
+# Two smaller feed silos behind the process tanks, between the Fluid Port and Item Port housings, hold the plant's two
+# chemical inputs; each has a window on its back (south) face and a feed pipe into a process tank.
+SILOS = [(5.0, 17.6), (10.9, 17.6)]
 SILO_Y1 = 18.0
-SILO_BANDS = [(-3.5, -2.5, 1.8), (-2.5, -1.5, 2.9), (-1.5, 1.5, 3.5), (1.5, 2.5, 2.9), (2.5, 3.5, 1.8)]
-SILO_FLUID_BOXES = [(cx - 0.85, TANK_Y0 + 0.5, cz + 2.7, cx + 0.85, SILO_Y1 - 0.5, cz + 3.35) for cx, cz in SILOS]
+SILO_BANDS = [(-2.8, -2.1, 1.8), (-2.1, -1.2, 2.4), (-1.2, 1.2, 2.8), (1.2, 2.1, 2.4), (2.1, 2.8, 1.8)]
+SILO_FLUID_BOXES = [(cx - 0.85, TANK_Y0 + 0.5, cz + 2.3, cx + 0.85, SILO_Y1 - 0.5, cz + 2.7) for cx, cz in SILOS]
 
 
 def tone(d: str) -> int:
@@ -89,14 +90,15 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             back = bi == len(SILO_BANDS) - 1
             add("silo_window" if back else "silo", g.box(f"silo{si}_b{bi}", (cx - hw, TANK_Y0, cz + z0), (cx + hw, SILO_Y1, cz + z1),
                                                       faces=("north", "south", "east", "west"), bone=F))
-        add("silo_dome", g.box(f"silo{si}_dome_a", (cx - 2.5, SILO_Y1, cz - 2.5), (cx + 2.5, SILO_Y1 + 1.0, cz + 2.5), bone=F))
-        add("silo_dome", g.box(f"silo{si}_dome_b", (cx - 1.5, SILO_Y1 + 1.0, cz - 1.5), (cx + 1.5, SILO_Y1 + 1.8, cz + 1.5), bone=F))
-        add(f"liquid_back_silo{si}", g.box(f"liquid_back_silo{si}", (cx - 1.8, TANK_Y0, cz + 2.62), (cx + 1.8, SILO_Y1, cz + 2.65),
+        add("silo_dome", g.box(f"silo{si}_dome_a", (cx - 2.0, SILO_Y1, cz - 2.0), (cx + 2.0, SILO_Y1 + 1.0, cz + 2.0), bone=F))
+        add("silo_dome", g.box(f"silo{si}_dome_b", (cx - 1.2, SILO_Y1 + 1.0, cz - 1.2), (cx + 1.2, SILO_Y1 + 1.8, cz + 1.2), bone=F))
+        add(f"liquid_back_silo{si}", g.box(f"liquid_back_silo{si}", (cx - 1.8, TANK_Y0, cz + 2.22), (cx + 1.8, SILO_Y1, cz + 2.25),
                                            faces=("south",), bone=F))
-        add("hoop", g.box(f"silo{si}_hoop", (cx - 3.7, 10.0, cz - 1.3), (cx + 3.7, 10.8, cz + 1.3), faces=("east", "west"), bone=F))
-    # Feed pipes from each silo into the left process tank.
-    add("pipe", g.box("feed0", (-5.1, 5.4, 13.0), (-3.9, 6.6, 16.5), faces=("east", "west", "up", "down"), bone=F))
-    add("pipe", g.box("feed1", (5.2, 5.4, 11.5), (6.4, 6.6, 16.5), faces=("east", "west", "up", "down"), bone=F))
+        hy = 10.0 + 2.5 * si                                   # staggered: the two hoops would meet
+        add("hoop", g.box(f"silo{si}_hoop", (cx - 3.0, hy, cz - 1.0), (cx + 3.0, hy + 0.8, cz + 1.0), faces=("east", "west"), bone=F))
+    # Feed pipes from the silos' fronts into the process tanks' back shoulders.
+    add("pipe", g.box("feed0", (3.8, 5.4, 13.0), (5.0, 6.6, 15.0), faces=("east", "west", "up", "down"), bone=F))
+    add("pipe", g.box("feed1", (11.2, 5.4, 13.0), (12.4, 6.6, 15.0), faces=("east", "west", "up", "down"), bone=F))
 
     # Stirrer motor on the left tank, shaft and paddle (spins) visible through the window.
     add("motor", g.box("motor", (-2.5, TANK_Y1 + 2.5, 5.5), (2.5, TANK_Y1 + 5.5, 10.5), bone=F))
@@ -117,16 +119,20 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         add("wheel", g.box(f"wheel{i}", (x - 1.4, 11.5, -3.9), (x + 1.4, 11.9, -2.6), faces=("north", "south", "east", "west", "up", "down"), bone=F))
     add("pipe", g.box("crossover", (5.0, 20.0, 7.2), (11.0, 21.4, 8.8), faces=("north", "south", "up", "down"), bone=F))
 
-    # Control cabinet filling the controller's open faces (front and outer side), CRT on the front.
+    # Control cabinet round the controller's outer corner, CRT on the front (the controller itself has no sockets).
     add("cabinet", g.box("cabinet_front", (-7.9, 3, -7.9), (2.0, 11.5, -5.2), bone=F))
     add("cabinet", g.box("cabinet_side", (-7.9, 3, -5.2), (-5.2, 11.5, 2.0), bone=F))
     # Connection housing filling the Item Port's open faces (east and south of the far corner).
     add("housing_e", g.box("housing_e", (19.2, 3, 13.2), (23.9, 13, 23.9), bone=F))
-    add("housing_s", g.box("housing_s", (13.2, 3, 19.2), (19.2, 13, 23.9), bone=F))
-    # Fluid Port (behind the controller, x -8..8, z 8..24): a flange plate on its west face, clear of the tank and the
-    # left silo, and a manifold on its south face in the gap between the two silos' back windows.
-    add("fhousing_w", g.box("fhousing_w", (-7.9, 3, 9.0), (-7.4, 13, 23.9), bone=F))
-    add("fhousing_s", g.box("fhousing_s", (-1.2, 3, 22.6), (3.3, 13, 23.9), bone=F))
+    add("housing_s", g.box("housing_s", (14.0, 3, 19.2), (19.2, 13, 23.9), bone=F))
+    # Energy Port (beside the controller, x 8..24, z -8..8): a shallow arm across the front, clear of the header pipe,
+    # and an arm down the east side, clear of the header's elbow and the product tank.
+    add("ehousing_n", g.box("ehousing_n", (13.5, 3, -7.9), (23.9, 13, -6.4), bone=F))
+    add("ehousing_e", g.box("ehousing_e", (21.2, 3, -6.4), (23.9, 13, 2.9), bone=F))
+    # Fluid Port (behind the controller, x -8..8, z 8..24): the same kind of L-shaped housing round its outer corner,
+    # its west arm clear of the left tank's shoulder, its south arm clear of the left silo.
+    add("fhousing_w", g.box("fhousing_w", (-7.9, 3, 12.0), (-5.2, 13, 23.9), bone=F))
+    add("fhousing_s", g.box("fhousing_s", (-5.2, 3, 19.2), (1.8, 13, 23.9), bone=F))
 
     # Ladder up the back of the left tank, standing just off its back band.
     for i, x in enumerate((-2.0, 1.4)):
@@ -240,10 +246,9 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             if socket_u is not None:
                 port(t, x + socket_u, y + h - 5)                               # at block-centre height (y 8)
             if d == "north" and w > 8:
-                screen_paint(t, (x + 6, y + 1, 4, 4))                          # green CRT beside the socket
-    # Sockets where the controller block's centre meets its open faces: front (x ~ 0) and outer side (z = 0).
-    g.paint_all(tex, parts["cabinet"][0], lambda t, r, d: cabinet(t, r, d, 3 if d == "north" else None))
-    g.paint_all(tex, parts["cabinet"][1], lambda t, r, d: cabinet(t, r, d, 5 if d == "west" else None))
+                screen_paint(t, (x + 3, y + 2, 4, 4))                          # green CRT
+    for b in parts["cabinet"]:
+        g.paint_all(tex, b, cabinet)
 
     def housing(t, r, d, socket_face, socket_u, stripe=P.HAZARD_YELLOW.base):
         x, y, w, h = r
@@ -255,13 +260,17 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         elif d == "up":
             t.outline(x, y, w, h, gun[2])
     # The Item Port's centre is (16, 8, 16): the east face's socket sits 7.9 px from its south edge, the south
-    # face's 2.8 px from its west edge.
+    # face's 2 px from its west edge.
     g.paint_all(tex, parts["housing_e"][0], lambda t, r, d: housing(t, r, d, "east", 8))
-    g.paint_all(tex, parts["housing_s"][0], lambda t, r, d: housing(t, r, d, "south", 3))
-    # The Fluid Port's centre is (0, 8, 16): 7 px from the plate's north edge, 1.2 px from the manifold's west edge
-    # (its socket is drawn at 2 so the ring fits on the face).
-    g.paint_all(tex, parts["fhousing_w"][0], lambda t, r, d: housing(t, r, d, "west", 7, FLUID_BLUE[4]))
-    g.paint_all(tex, parts["fhousing_s"][0], lambda t, r, d: housing(t, r, d, "south", 2, FLUID_BLUE[4]))
+    g.paint_all(tex, parts["housing_s"][0], lambda t, r, d: housing(t, r, d, "south", 2))
+    # The Fluid Port's centre is (0, 8, 16): 4 px from the west arm's north edge, 5.2 px from the south arm's west
+    # edge.
+    g.paint_all(tex, parts["fhousing_w"][0], lambda t, r, d: housing(t, r, d, "west", 4, FLUID_BLUE[4]))
+    g.paint_all(tex, parts["fhousing_s"][0], lambda t, r, d: housing(t, r, d, "south", 5, FLUID_BLUE[4]))
+    # The Energy Port's centre is (16, 8, 0): 7.9 px from the front arm's east edge, 2.9 px from the side arm's south
+    # edge (an east face's u runs from its south edge).
+    g.paint_all(tex, parts["ehousing_n"][0], lambda t, r, d: housing(t, r, d, "north", 8, P.WARNING_RED[3]))
+    g.paint_all(tex, parts["ehousing_e"][0], lambda t, r, d: housing(t, r, d, "east", 3, P.WARNING_RED[3]))
 
     for b in parts["ladder"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.HAZARD_YELLOW[tone(d)]))
