@@ -19,16 +19,16 @@ import net.minecraft.world.phys.Vec3;
  * (the cap climbs to {@code H} = 2 craters above the burst, approached exponentially; the ring widens to 0.42 H). Each
  * cap cloudlet has its own shell, a fraction of the minor radius {@code r = 0.55 R}, and is pulled onto it while it is
  * carried round the core circle: up the inside, out over the top, down the outside, as rising fireballs roll. The roll
- * slows over minutes. The stem is fed from the ground under the burst: cloudlets drawn inward and up (a wide skirt at the
- * foot, narrowing above) until they reach the cap's underside and join its roll from the inside. A white collar rings
- * the stem under the cap, and for the first seconds a white condensation shell (the Wilson cloud) spreads round the
- * fireball and evaporates.
+ * slows over a minute or so. The stem is fed from the ground under the burst: cloudlets drawn inward and up (a wide
+ * skirt at the foot, narrowing above) until they reach the cap's underside and join its roll from the inside. A white
+ * collar rings the stem under the cap, and for the first seconds a white condensation shell (the Wilson cloud) spreads
+ * round the fireball and evaporates.
  *
  * <p><b>Look.</b> Cloudlets are lit like clouds ({@link FxLight}): a normal out from the core circle (cap) or the axis
  * (stem), sunlight from the sun's direction, the sky's colour in the shade, undersides darker. Near the core the cap
  * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The whole cloud drifts with the
- * wind and thins out over its last minutes. It is drawn with the far-cloud pipeline, so it shows above the horizon from
- * well beyond the render distance.
+ * wind and thins out over its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it
+ * shows above the horizon from well beyond the render distance.
  */
 final class MushroomCloud {
     private enum Role { CAP, STEM, COLLAR, SHELL }
@@ -88,7 +88,7 @@ final class MushroomCloud {
     }
 
     // --- the shape over time ---------------------------------------------------------------------------------------------------
-    private static final double RISE = 260, WIDEN = 420, SPIN_FADE = 2400, COOL = 650;
+    private static final double RISE = 260, WIDEN = 420, SPIN_FADE = 1200, COOL = 550;
 
     double capY(double t) {
         return this.center.y + this.height * (1 - Math.exp(-t / RISE));
@@ -130,6 +130,11 @@ final class MushroomCloud {
     /** The whole cloud's opacity: thinning out over the last 30% of its life. */
     private double fade(double t) {
         return Math.max(0, Math.min(1, (this.life - t) / (this.life * 0.3)));
+    }
+
+    /** The stem is fed from the ground until the cloud starts thinning out. */
+    private double stemFeed() {
+        return this.life * 0.7;
     }
 
     boolean done(double t) {
@@ -213,13 +218,13 @@ final class MushroomCloud {
             c.scale = 0.7f + 0.45f * this.random.nextFloat();
             add(c);
         }
-        // The stem: fed from the ground, most at first, thinning out.
-        if (t > 12 && t < 1600) {
-            int stemDue = (int) (this.stemCount * (1 - Math.exp(-(t - 12) / 550)));
+        // The stem: fed from the ground, most at first, then a trickle that keeps it standing until the cloud thins out.
+        if (t > 12 && t < stemFeed()) {
+            int stemDue = (int) (this.stemCount * (1 - Math.exp(-(t - 12) / 300)) + (t - 12) * 0.35 * this.quality);
             double ax = axisX(t), az = axisZ(t);
             while (this.stemSent < stemDue) {
                 this.stemSent++;
-                Cloudlet c = cloudlet(Role.STEM, t, 2400 + this.random.nextInt(1200));
+                Cloudlet c = cloudlet(Role.STEM, t, 1300 + this.random.nextInt(600));
                 c.shell = (float) Math.sqrt(this.random.nextDouble());
                 c.phi = this.random.nextFloat() * 6.283f;
                 double rho = c.shell * stemRadius(t, 0);
@@ -299,11 +304,11 @@ final class MushroomCloud {
             c.z = az + Math.sin(phi) * rho;
             add(c);
         }
-        if (t < 1600) {
+        if (t < stemFeed()) {
             this.stemSent = this.stemCount;
             double underside = capY - small * 0.6;
             for (int i = 0; i < this.stemCount / 2; i++) {
-                Cloudlet c = cloudlet(Role.STEM, t - this.random.nextInt(100), 2400);
+                Cloudlet c = cloudlet(Role.STEM, t - this.random.nextInt(100), 1300);
                 c.shell = (float) Math.sqrt(this.random.nextDouble());
                 c.phi = this.random.nextFloat() * 6.283f;
                 double h = this.random.nextDouble();
@@ -350,7 +355,7 @@ final class MushroomCloud {
                     size = (float) (c.scale * small * 0.95);
                     alpha = 0.72f;
                     // Reddish-brown while the cap still holds its hot gases, greying as it ages.
-                    albedo = Puffs.lerpRgb(CAP_BROWN, CAP_ALBEDO, (float) Math.max(0, Math.min(1, (t - 300) / 1500)));
+                    albedo = Puffs.lerpRgb(CAP_BROWN, CAP_ALBEDO, (float) Math.max(0, Math.min(1, (t - 200) / 800)));
                     // The core glows, hottest at first; for the first seconds the whole cap is the fireball.
                     glow = heat * (Math.exp(-Math.pow(dist / (0.8 * small), 2)) + Math.max(0, 1 - t / 90) * 0.8);
                 }

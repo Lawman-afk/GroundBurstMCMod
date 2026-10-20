@@ -36,7 +36,7 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
     public static final FxPreset LARGE = new FxPreset(0.65f, 34, 0.5f, 60, 0.55f, 8, 0.85f,
             90, 60, 90, 80, 300, 0.25f, 0.22f, 0.35f, 1800, 50, 1.3f, 0);
     public static final FxPreset NUKE = new FxPreset(0.6f, 70, 0.6f, 120, 1.0f, 14, 1.0f,
-            160, 110, 40, 200, 600, 0.18f, 0.28f, 0.4f, 6000, 60, 2.5f, 6000);
+            160, 110, 40, 200, 600, 0.18f, 0.28f, 0.4f, 3000, 60, 2.5f, 3000);
 
     public static FxPreset byName(String name) {
         return switch (name) {

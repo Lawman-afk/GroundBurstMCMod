@@ -79,7 +79,7 @@ def streak(d, seed: int):
 def factor(d, seed: int, streaks: float):
     """Energy and reach multiplier of a ray by direction: strong directions carve fingers past the mean crater radius
     and spikes into its floor."""
-    return np.clip(1 + streaks * 1.9 * streak(d, seed), 0.45, 1.8)
+    return np.clip(1 + streaks * 1.7 * streak(d, seed), 0.45, 1.8)
 
 
 # --- the field ---------------------------------------------------------------------------------------------------------

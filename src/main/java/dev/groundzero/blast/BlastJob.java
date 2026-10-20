@@ -473,6 +473,9 @@ final class BlastJob implements Blast {
         float spoke = StreakNoise.at((float) Math.cos(az), 0, (float) Math.sin(az), this.streakSeed);
         float edge = p.streaks() > 0 ? 0.72f + 0.6f * spoke * (1 + p.streaks()) : 1;
         BlockPos above = this.pos.above();
+        // Water (and lava, kelp, anything holding fluid) is a surface to the burst but not ground: rubble sinks through
+        // it and nothing catches fire on it.
+        boolean wet = !this.level.getBlockState(this.pos).getFluidState().isEmpty();
         if (dist <= p.scorch() && dist / p.scorch() < edge && this.random.nextFloat() > 0.08f) {
             BlockState scorched = this.table.scorched(this.level.getBlockState(this.pos));
             if (scorched != null) {
@@ -482,12 +485,12 @@ final class BlastJob implements Blast {
                 }
             }
         }
-        if (dist <= p.fire() && this.random.nextFloat() < 0.6f * (1 - dist / Math.max(1, p.fire()))) {
+        if (!wet && dist <= p.fire() && this.random.nextFloat() < 0.6f * (1 - dist / Math.max(1, p.fire()))) {
             if (this.level.getBlockState(above).isAir() && BaseFireBlock.canBePlacedAt(this.level, above, Direction.UP)) {
                 write(above, BaseFireBlock.getState(this.level, above));
             }
         }
-        if (p.ejecta() > 0 && dist >= p.crater() * 0.8f && dist <= p.crater() * 1.9f) {
+        if (!wet && p.ejecta() > 0 && dist >= p.crater() * 0.8f && dist <= p.crater() * 1.9f) {
             float t = Math.max(0, (dist - p.crater()) / (0.9f * p.crater()));
             float chance = p.ejecta() * Math.max(0, spoke + 0.05f) * 3 * (float) Math.pow(1 - t, 1.5);
             if (this.random.nextFloat() < chance) {

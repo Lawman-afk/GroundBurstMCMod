@@ -33,6 +33,7 @@ final class BlastTests {
         GZGameTests.test("blast_streaks_make_a_ragged_crater", GZGameTests.FLOOR_16, 20, BlastTests::streaks);
         GZGameTests.test("blast_scorches_only_what_it_sees", GZGameTests.FLOOR_16, 20, BlastTests::scorchShadow);
         GZGameTests.test("blast_throws_out_rubble", GZGameTests.FLOOR_16, 20, BlastTests::ejecta);
+        GZGameTests.test("blast_rubble_sinks_in_water", GZGameTests.FLOOR_16, 20, BlastTests::ejectaOverWater);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -219,6 +220,23 @@ final class BlastTests {
             }
         }
         helper.assertTrue(rubble >= 3, "rubble lands round the crater (" + rubble + " blocks)");
+        helper.succeed();
+    }
+
+    /** The same charge on the bed of a pool: no rubble is left sitting on the water's surface. */
+    private static void ejectaOverWater(GameTestHelper helper) {
+        fill(helper, 0, 1, 0, 15, 2, 15, Blocks.STONE);
+        fill(helper, 0, 3, 0, 15, 4, 15, Blocks.WATER);                    // a pool two deep, surface at y = 4
+        BlockPos burst = new BlockPos(8, 3, 8);
+        Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(burst)), Blasts.profile("test/ejecta"), null);
+        for (int x = 0; x <= 15; x++) {
+            for (int z = 0; z <= 15; z++) {
+                for (int y = 5; y <= 6; y++) {
+                    var state = helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(x, y, z)));
+                    helper.assertTrue(state.isAir(), "nothing above the water at " + x + ", " + y + ", " + z + " (found " + state + ")");
+                }
+            }
+        }
         helper.succeed();
     }
 }

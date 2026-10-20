@@ -47,7 +47,7 @@ public final class FxPhotographer {
         List<Integer> moments = List.of(1, 3, 6, 10, 16, 25, 40, 70, 120, 200);
         for (Scene s : List.of(new Scene("small", "test/small", 14, 8, moments), new Scene("medium", "test/medium", 42, 0, moments),
                 new Scene("large", "test/large", 95, -8, moments),
-                new Scene("nuclear", "test/nuclear", 230, -16, List.of(1, 3, 6, 10, 20, 40, 80, 160, 300, 600, 1000, 1600)),
+                new Scene("nuclear", "test/nuclear", 230, -16, List.of(1, 3, 6, 10, 20, 40, 80, 160, 300, 600, 1200, 2400)),
                 new Scene("nuclear_close", "test/nuclear", 130, -32, List.of(30, 120, 300, 700)),
                 new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"))) {
             if (only.isEmpty() || s.name().startsWith(only)) {

@@ -583,14 +583,15 @@ messages.
 After the first in-game look the user asked for craters with the radial line patterns of good explosion mods, not
 smooth spheres. Prototyped in `tools/preview/crater_preview.py` (numpy mirror of the engine on flat ground: top view
 plus cross-section), tuned there, then ported with the same formulas.
-- **Streaks:** each ray has a *grain*, `clamp(1 + streaks x 1.9 x noise(direction), 0.45, 1.8)`, where the noise is
+- **Streaks:** each ray has a *grain*, `clamp(1 + streaks x 1.7 x noise(direction), 0.45, 1.8)`, where the noise is
   3-octave value noise over the direction (lattice frequencies 7 / 15 / 31, weights 0.5 / 0.3 / 0.2, a 32-bit integer
   hash seeded by the blast; `StreakNoise`, mirrored exactly by the preview). Grain multiplies the ray's starting energy
   and its crater reach (`crater x grain`); split children take their own grain and the parent's energy rescaled by
   child / parent grain, so the streaks sharpen as rays multiply. Because rays run straight out, neighbouring strong and
   weak rays draw radial lines: a starburst rim with fingers past the mean radius and a spiky crater floor. (A version
   that damped the grain for downward rays, giving a smooth bowl, was tried; the user preferred the spiky floor, toned
-  down slightly: factor 2.2 to 1.9.) Profile field `streaks` (default 0.3; 0 = smooth).
+  down slightly: factor 2.2 to 1.9, and after the in-game look again to 1.7.) Profile field `streaks` (default 0.3;
+  0 = smooth).
 - **Ground pass:** pressure rays no longer scorch or light fires (grazing rays and the cube-face grid made rings and
   seams). After each shell the columns whose centre lies in (r - 1, r] are visited. A column's ground is its highest
   motion-blocking block at or below the fireball (the burst plus max(1.5, crater / 4)), so floors under roofs and in
@@ -599,7 +600,8 @@ plus cross-section), tuned there, then ported with the same formulas.
   hidden and spared. Visible columns: scorch where `dist / scorch < 0.72 + 0.6 x spoke x (1 + streaks)` (spoke = the
   same noise on the horizontal direction, so scorch spokes line up with the crater's fingers; a full disc when
   streaks is 0) with 8% speckle; fire with chance `0.6 x (1 - dist / fire)`; columns the crater dug or will dig
-  (inside 0.45 crater) are skipped.
+  (inside 0.45 crater) are skipped. A column whose surface holds fluid (water, lava, kelp) gets no fire and no
+  rubble (it would float on the surface; it sinks instead).
 - **Ejecta:** from 0.8 to 1.9 crater radii, rubble lands on visible ground with chance
   `ejecta x 3 x max(0, spoke + 0.05) x (1 - t)^1.5`, `t = max(0, (dist - crater) / (0.9 crater))`: rays of debris along
   the spokes. Its material follows what the crater dug (stone: cobblestone or gravel; deepslate: cobbled deepslate or
@@ -735,17 +737,18 @@ condensation cloud, a spreading base surge). Our own design from that:
   front, spiky fire puffs bursting out of the fireball along the spokes, and lit smoke.
 
 As built (2026-10-21):
-- `MushroomCloud` (nuke preset, 6000 ticks): ~900 cap, ~900 stem, ~260 collar and ~220 condensation cloudlets at high
+- `MushroomCloud` (nuke preset, 3000 ticks, halved from 6000 after the in-game look): ~900 cap, ~900 stem, ~260 collar and ~220 condensation cloudlets at high
   quality. Cap height H = clamp(2 craters, 40, 400) reached as `1 - e^(-t/260)`; core ring radius from 0.55 fireball to
-  0.42 H (`e^(-t/420)`); minor radius 0.55 R; roll one turn per 5.5 s slowing over 2 minutes (`e^(-t/2400)`). A cap
+  0.42 H (`e^(-t/420)`); minor radius 0.55 R; roll one turn per 5.5 s slowing over a minute (`e^(-t/1200)`). A cap
   cloudlet moves each tick by the roll (perpendicular to its offset from the core circle, up on the inside), a pull
   of 0.035 a tick toward its own shell, the torus's climb and widening, and a little jitter. Stem cloudlets are fed
-  from the ground (most in the first 30 s, none after 80 s) at the stem radius (0.3 R narrowing to 0.18 R, plus a skirt
+  from the ground (most in the first 15 s, then a trickle of 0.35 a tick until 70% of the cloud's life, so the stem
+  stands until the cloud thins out) at the stem radius (0.3 R narrowing to 0.18 R, plus a skirt
   at the foot), rise at 0.22 + 1.2 x the cap's climb, and join the cap's roll at its underside. The collar rides under
   the cap from 2.5 s to 22 s; the Wilson shell spreads round the fireball for about 7 s. The nuclear fireball rides the
   cap. Late joiners get the cloud laid out as it would be (`prefill`), not replayed. Wind drift 0.015 blocks a tick.
-- Colour: cap reddish-brown greying over 75 s; glow `heat x (e^(-(d / 0.8 r)^2) + early boost)` with heat
-  `e^(-t/650)`, added on top through the fire heat ramp; collar and shell white. Lighting: `FxLight` (sun direction
+- Colour: cap reddish-brown greying over 40 s; glow `heat x (e^(-(d / 0.8 r)^2) + early boost)` with heat
+  `e^(-t/550)`, added on top through the fire heat ramp; collar and shell white. Lighting: `FxLight` (sun direction
   from the sky state's sun angle, sun colour warmed by the sunrise/sunset glow, ambient = the sky colour greyed and
   dimmed, wrapped diffuse), cap shadowed toward its underside, stem toward its top.
 - Render types: lit puffs and cloudlets share one depth-writing "cloud" type on one texture sheet, so they sort as one
@@ -1759,3 +1762,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Crater character (user feedback: round craters are dull): rays get a seeded streak grain that scales energy and crater reach, giving starburst rims and a spiky floor (the user chose the spiky floor over a smoothed bowl); scorch and fire move from pressure rays to a per-shell ground pass with an azimuth horizon (hidden ground is spared, scorch falls in spokes matching the crater's fingers); new ejecta rubble along the spokes, made of what was dug. New profile fields `streaks` and `ejecta`. |
 | 2026-10-21 | Slice 5c Spectacle built on vanilla's emissive entity shader with two pipelines of our own (additive glow, alpha-blended fire; two-sided, OIT sets), no custom GLSL. The fireball needs both: additive alone washes out to white against daylight. Debris is client-only and made from blocks sampled on the client before the block updates arrive. Shake is timed to the sound's arrival; the sky tint greys before warming so a blue sky does not turn lavender. |
 | 2026-10-21 | Spectacle v2 after the user asked for much better effects: researched HBM's Torex cloud, game VFX practice and test footage; built our own toroidal-vortex mushroom cloud (cap roll, ground-fed stem, collar, Wilson shell), cloud-style CPU lighting from the real sun and sky for every smoke puff, a far-cloud shader (haze instead of render-distance fog, depth-writing with cut-out fringe), dirt and fire jets and a flare for conventional blasts. Smoke and cloudlets share one texture sheet so they sort as one batch. |
+| 2026-10-21 | After the in-game look: mushroom cloud life halved to 2.5 minutes (nuke sky tint too), its stem fed by a trickle so it stands until the cloud thins; crater grain factor 1.9 to 1.7; the ground pass leaves fluid surfaces alone (rubble was being set on top of water). |

@@ -33,7 +33,7 @@ public final class StreakNoise {
      * floor, weak ones stop short.
      */
     static float factor(float dx, float dy, float dz, int seed, float streaks) {
-        return Math.max(0.45f, Math.min(1.8f, 1 + streaks * 1.9f * at(dx, dy, dz, seed)));
+        return Math.max(0.45f, Math.min(1.8f, 1 + streaks * 1.7f * at(dx, dy, dz, seed)));
     }
 
     /** One octave of the value noise at a point, in about [-1, 1] (smooth, a feature per lattice unit). */
