@@ -179,7 +179,7 @@ public final class Charges {
 
     public static Vec3 laserStart(BlockPos pos, BlockState state) {
         Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i());
-        return Vec3.atBottomCenterOf(pos).add(0, 6.5 / 16, 0).add(dir.scale(0.2));
+        return Vec3.atBottomCenterOf(pos).add(0, 4.5 / 16, 0).add(dir.scale(0.1));    // its lens
     }
 
     /** How far the claymore's laser reaches before something solid stops it. */
@@ -217,7 +217,7 @@ public final class Charges {
     /** The claymore: a bang at its face (harmless in itself) and 60 fragments in a 60 degree cone ahead, a little upward. */
     private static void claymore(ServerLevel level, BlockPos pos, Direction facing, @Nullable Entity by) {
         Vec3 dir = Vec3.atLowerCornerOf(facing.getUnitVec3i());
-        Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.4, 0).add(dir.scale(0.4));
+        Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.25, 0).add(dir.scale(0.25));
         Blasts.detonate(level, front, Blasts.profile("claymore"), by, 1f);
         var r = level.getRandom();
         for (int i = 0; i < CLAYMORE_FRAGMENTS; i++) {

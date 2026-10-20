@@ -14,8 +14,8 @@ regardless of the light), and the Remote Detonator sprite.
   item, and the bouncing mine's popped-up canister, show all of it.
   - Landmine: an olive disc with a steel pressure plate in the middle and a lamp on its rim.
   - Bouncing Mine: an olive canister with a yellow band, a gunmetal cap and three trigger prongs above the ground.
-  - Claymore: a curved olive box on two pairs of scissor legs, a sight on top, the red laser lens in the middle of its
-    front over a yellow arrow; the lens is its lamp.
+  - Claymore: a thin, curved olive box on two pairs of scissor legs, a sight on top, the red laser lens in the middle
+    of its face over a yellow chevron; the lens is its lamp.
 """
 from __future__ import annotations
 
@@ -292,16 +292,19 @@ def bouncing_mine() -> list[str]:
 
 
 def claymore() -> list[str]:
+    """Thin and curved like the real thing (about 6 : 2.3 : 1 wide, high, deep): the face section bows forward, the
+    wings sit 0.7 px further back. The wings keep their inner faces, so behind the face section, where they stand
+    proud of it, there is no gap to see through."""
     m = BlockModel("claymore", tex_size=(64, 64), kind="block")
-    m.box("front", (4, 1, 6), (12, 8, 11))                           # the face, bowed toward the enemy, as deep as the wings
-    m.box("wing_w", (2, 1, 6.6), (4, 8, 11), faces=("north", "south", "west", "up", "down"))
-    m.box("wing_e", (12, 1, 6.6), (14, 8, 11), faces=("north", "south", "east", "up", "down"))
+    m.box("front", (4, 1, 7), (12, 6, 9))
+    m.box("wing_w", (2, 1, 7.7), (4, 6, 9.7))
+    m.box("wing_e", (12, 1, 7.7), (14, 6, 9.7))
     legs = []
-    for i, (x, z) in enumerate(((3, 7.5), (3, 9.5), (12.5, 7.5), (12.5, 9.5))):
+    for i, (x, z) in enumerate(((2.8, 8.0), (2.8, 9.0), (12.7, 8.0), (12.7, 9.0))):
         legs.append(f"leg{i}")
         m.box(legs[-1], (x, 0, z), (x + 0.5, 1, z + 0.5), faces=("north", "south", "east", "west"))
-    m.box("sight", (7.5, 8, 7.5), (8.5, 9, 9), faces=("north", "south", "east", "west", "up"))
-    lamp(m, (7.5, 6, 5.6), (8.5, 7, 6), faces=("north", "east", "west", "up", "down"))
+    m.box("sight", (7.5, 6, 7.4), (8.5, 7, 8.6), faces=("north", "south", "east", "west", "up"))
+    lamp(m, (7.5, 4, 6.6), (8.5, 5, 7), faces=("north", "east", "west", "up", "down"))
     m.layout()
 
     def paint(m: BlockModel, t: Tex, lamp_colour) -> None:
@@ -310,7 +313,7 @@ def claymore() -> list[str]:
             x, y, w, h = r
             if d == "north" and w >= 8:
                 t.outline(x, y, w, h, P.OLIVE.light)                 # the moulded rim of the face
-                t.decal("arrow_up5", x + (w - 5) // 2, y + h - 6, P.HAZARD_YELLOW[4])
+                t.decal("chevron5x3", x + (w - 5) // 2, y + h - 4, P.HAZARD_YELLOW[4])   # under the lens
         fill_all(m, t, ["front", "wing_w", "wing_e"], body)
         fill_all(m, t, legs, shaded(GUNMETAL))
         m.paint_all(t, "sight", shaded(GUNMETAL))

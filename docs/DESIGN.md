@@ -961,8 +961,9 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   the plate's click, the canister's launch.
 - **After the in-game look (feedback pass):** no arming grace: a mine is live the moment it is armed. The claymore's
   blast (`claymore` profile) now has no entity damage or knockback, only the bang, flash and a tiny crater, so only
-  its forward cone of fragments hurts; its model's face section runs the full depth of its wings (no gaps at the
-  back). Toxins: gas (the gas grenade, toxic gas clouds) gives Poison III; toxin (the splash, the sludge, the liquid)
+  its forward cone of fragments hurts. Its model was then made thin and curved like the real thing (about 6 : 2.3 : 1
+  wide, high, deep): the face section bows forward and the wings sit 0.7 px back, keeping their inner faces so no gap
+  shows behind; the lens (and the laser) is 4.5 px up. Toxins: gas (the gas grenade, toxic gas clouds) gives Poison III; toxin (the splash, the sludge, the liquid)
   gives Poison IV and 10 s of nausea. The arming messages' language keys moved to `ChargeBlock` (the packet class
   was never loaded by data generation, so they had no English text).
 

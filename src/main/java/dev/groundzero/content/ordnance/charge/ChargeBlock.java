@@ -131,7 +131,7 @@ public class ChargeBlock extends Block implements EntityBlock {
             case TIMED_BOMB -> Block.box(1, 0, 2, 15, 11, 14);
             case LANDMINE -> Block.box(3, 0, 3, 13, 1.5, 13);
             case BOUNCING_MINE -> Block.box(4, 0, 4, 12, 2.5, 12);
-            case CLAYMORE -> Block.box(2, 0, 6, 14, 9, 11);
+            case CLAYMORE -> Block.box(2, 0, 6.6, 14, 7, 9.7);
         };
     }
 
