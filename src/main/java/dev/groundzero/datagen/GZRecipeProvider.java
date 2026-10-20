@@ -277,9 +277,6 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(Items.CLOCK).requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE), has(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE))
                 .save(output);
-        shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.ARMING_KEY, 1)
-                .requires(GZTags.commonItem("ingots/steel")).requires(Items.IRON_NUGGET).requires(Tags.Items.DYES_RED)
-                .unlockedBy(getHasName(GZParts.STEEL_INGOT), has(GZParts.STEEL_INGOT)).save(output);
         shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
                 .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
                 .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)

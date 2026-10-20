@@ -24,18 +24,21 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * (four wires), and the Remote Detonator's frequency.
  */
 public final class ChargeScreens {
-    private static final String T_REMOTE = GZLang.add(GroundZero.MODID + ".charge.remote", "Remote");
+    private static final String T_REMOTE = GZLang.add(GroundZero.MODID + ".charge.remote", "At once");
     private static final String T_TIMER = GZLang.add(GroundZero.MODID + ".charge.timer", "Timer");
     private static final String T_FREQUENCY = GZLang.add(GroundZero.MODID + ".charge.frequency", "Frequency (0-9999)");
     private static final String T_SECONDS = GZLang.add(GroundZero.MODID + ".charge.seconds", "Timer, seconds (1-600)");
     private static final String T_DONE = GZLang.add(GroundZero.MODID + ".charge.done", "Done");
     private static final String T_STATE_SAFE = GZLang.add(GroundZero.MODID + ".charge.state_safe", "SAFE");
     private static final String T_STATE_ARMED = GZLang.add(GroundZero.MODID + ".charge.state_armed", "ARMED");
-    private static final String T_LOCKED = GZLang.add(GroundZero.MODID + ".charge.locked", "Make it safe with the Arming Key to change its fuze");
-    private static final String T_HINT = GZLang.add(GroundZero.MODID + ".charge.hint", "Sneak-use an Arming Key on it to arm it");
+    private static final String T_LOCKED = GZLang.add(GroundZero.MODID + ".charge.locked", "Make it safe to change its fuze");
+    private static final String T_HINT = GZLang.add(GroundZero.MODID + ".charge.hint", "Armed: a detonator or redstone sets it off");
+    private static final String T_HINT_TIMER = GZLang.add(GroundZero.MODID + ".charge.hint_timer", "Armed: a detonator or redstone starts its timer");
+    private static final String T_ARM = GZLang.add(GroundZero.MODID + ".charge.arm", "Arm");
+    private static final String T_MAKE_SAFE = GZLang.add(GroundZero.MODID + ".charge.make_safe", "Make safe");
     private static final String T_DEFUSE = GZLang.add(GroundZero.MODID + ".charge.defuse", "Cut a wire");
     private static final String T_DEFUSE_HINT = GZLang.add(GroundZero.MODID + ".charge.defuse_hint",
-            "One stops it. One sets it off. The others speed it up.");
+            "One stops it, one sets it off, two speed it up");
     private static final String[] T_WIRES = {
             GZLang.add(GroundZero.MODID + ".charge.wire.red", "Red"), GZLang.add(GroundZero.MODID + ".charge.wire.blue", "Blue"),
             GZLang.add(GroundZero.MODID + ".charge.wire.yellow", "Yellow"), GZLang.add(GroundZero.MODID + ".charge.wire.green", "Green")};
@@ -60,6 +63,11 @@ public final class ChargeScreens {
         mc.gui.setScreen(be.kind() == ChargeKind.TIMED_BOMB && be.counting() ? new Defuse(pos) : new Settings(pos, be));
     }
 
+    private static Component chosen(String key, boolean chosen) {
+        Component label = Component.translatable(key);
+        return chosen ? Component.literal("> ").append(label).append(" <").withStyle(net.minecraft.ChatFormatting.YELLOW) : label;
+    }
+
     private static int parse(String s, int fallback, int min, int max) {
         try {
             return Math.clamp(Integer.parseInt(s.trim()), min, max);
@@ -77,9 +85,12 @@ public final class ChargeScreens {
         g.text(font, text, cx - font.width(text) / 2, y, color);
     }
 
-    /** Fuze settings: Remote (frequency) or Timer (seconds); locked while armed. */
+    /**
+     * Fuze settings and arming: its frequency, At once or Timer (if the charge has the choice) and the time, and Arm
+     * (or Make safe). Only the rows the charge has are shown; the settings are locked while it is armed.
+     */
     static final class Settings extends Screen {
-        private static final int W = 220, H = 150;
+        private static final int W = 244, ROW = 24;
         private final BlockPos pos;
         private final ChargeKind kind;
         private final boolean armed;
@@ -87,6 +98,8 @@ public final class ChargeScreens {
         private final int frequency, seconds;
         private @Nullable EditBox frequencyBox, secondsBox;
         private @Nullable Button remoteButton, timerButton;
+        private int frequencyRow = -1, secondsRow = -1, hintRow, height;
+        private boolean sent;
 
         Settings(BlockPos pos, ChargeBlockEntity be) {
             super(be.getBlockState().getBlock().getName());
@@ -98,67 +111,110 @@ public final class ChargeScreens {
             this.seconds = be.timer();
         }
 
+        private int top() {
+            return (this.height == 0 ? 0 : (super.height - this.height) / 2);
+        }
+
         @Override
         protected void init() {
-            int x = (this.width - W) / 2, y = (this.height - H) / 2;
-            if (this.kind.fuzeChoice) {
-                this.remoteButton = addRenderableWidget(Button.builder(Component.translatable(T_REMOTE), b -> setTimer(false))
-                        .bounds(x + 10, y + 30, 97, 20).build());
-                this.timerButton = addRenderableWidget(Button.builder(Component.translatable(T_TIMER), b -> setTimer(true))
-                        .bounds(x + 113, y + 30, 97, 20).build());
+            // Lay the rows out first (only those this charge has), so the panel is just as tall as it needs to be.
+            int y = 24;
+            int choiceRow = -1;
+            if (this.kind.fuzeChoice()) {
+                choiceRow = y;
+                y += ROW + 2;
             }
-            this.frequencyBox = addRenderableWidget(new EditBox(this.font, x + 130, y + 60, 80, 18, Component.translatable(T_FREQUENCY)));
-            this.frequencyBox.setValue(Integer.toString(this.frequency));
-            this.frequencyBox.setMaxLength(4);
-            this.secondsBox = addRenderableWidget(new EditBox(this.font, x + 130, y + 84, 80, 18, Component.translatable(T_SECONDS)));
-            this.secondsBox.setValue(Integer.toString(this.seconds));
-            this.secondsBox.setMaxLength(3);
-            addRenderableWidget(Button.builder(Component.translatable(T_DONE), b -> onClose()).bounds(x + 60, y + H - 28, 100, 20).build());
-            setTimer(this.timer || !this.kind.fuzeChoice);
+            if (this.kind.remote) {
+                this.frequencyRow = y;
+                y += ROW;
+            }
+            if (this.kind.timer) {
+                this.secondsRow = y;
+                y += ROW;
+            }
+            this.hintRow = y + 2;
+            y += 16;
+            int buttonsRow = y;
+            this.height = y + 28;
+            int x = (this.width - W) / 2, top = top();
+            if (choiceRow >= 0) {
+                this.remoteButton = addRenderableWidget(Button.builder(Component.translatable(T_REMOTE), b -> setTimer(false))
+                        .bounds(x + 10, top + choiceRow, 109, 20).build());
+                this.timerButton = addRenderableWidget(Button.builder(Component.translatable(T_TIMER), b -> setTimer(true))
+                        .bounds(x + 125, top + choiceRow, 109, 20).build());
+            }
+            if (this.frequencyRow >= 0) {
+                this.frequencyBox = addRenderableWidget(new EditBox(this.font, x + 150, top + this.frequencyRow, 84, 18, Component.translatable(T_FREQUENCY)));
+                this.frequencyBox.setValue(Integer.toString(this.frequency));
+                this.frequencyBox.setMaxLength(4);
+            }
+            if (this.secondsRow >= 0) {
+                this.secondsBox = addRenderableWidget(new EditBox(this.font, x + 150, top + this.secondsRow, 84, 18, Component.translatable(T_SECONDS)));
+                this.secondsBox.setValue(Integer.toString(this.seconds));
+                this.secondsBox.setMaxLength(3);
+            }
+            Component act = Component.translatable(this.armed ? T_MAKE_SAFE : T_ARM);
+            addRenderableWidget(Button.builder(act, b -> send(this.armed ? ChargePayloads.SAFE : ChargePayloads.ARM))
+                    .bounds(x + 10, top + buttonsRow, 109, 20).build());
+            addRenderableWidget(Button.builder(Component.translatable(T_DONE), b -> onClose()).bounds(x + 125, top + buttonsRow, 109, 20).build());
+            setTimer(this.kind.fuzeChoice() ? this.timer : this.kind.defaultMode() == ChargeBlockEntity.Mode.TIMER);
         }
 
         private void setTimer(boolean on) {
             this.timer = on;
+            boolean choice = this.kind.fuzeChoice();
             if (this.remoteButton != null && this.timerButton != null) {
-                this.remoteButton.active = !this.armed && on;
-                this.timerButton.active = !this.armed && !on;
+                // Both stay clickable; the chosen one is marked (a greyed-out button reads as unavailable).
+                this.remoteButton.active = this.timerButton.active = !this.armed;
+                this.remoteButton.setMessage(chosen(T_REMOTE, !on));
+                this.timerButton.setMessage(chosen(T_TIMER, on));
             }
-            if (this.frequencyBox != null && this.secondsBox != null) {
-                this.frequencyBox.active = !this.armed && !on;
-                this.frequencyBox.visible = this.kind.fuzeChoice;
-                this.secondsBox.active = !this.armed && on;
+            if (this.frequencyBox != null) {
+                this.frequencyBox.active = !this.armed;
+            }
+            if (this.secondsBox != null) {
+                this.secondsBox.active = !this.armed && (!choice || on);
             }
         }
 
-        @Override
-        public void onClose() {
-            if (!this.armed && this.frequencyBox != null && this.secondsBox != null) {
+        /** Sends the settings (and arms it or makes it safe), then closes. */
+        private void send(int action) {
+            if (!this.sent) {
+                this.sent = true;
                 ClientPacketDistributor.sendToServer(new ChargePayloads.Settings(this.pos, this.timer,
-                        parse(this.frequencyBox.getValue(), this.frequency, 0, ChargeKind.MAX_FREQUENCY),
-                        parse(this.secondsBox.getValue(), this.seconds, 1, ChargeKind.MAX_TIMER)));
+                        this.frequencyBox == null ? this.frequency : parse(this.frequencyBox.getValue(), this.frequency, 0, ChargeKind.MAX_FREQUENCY),
+                        this.secondsBox == null ? this.seconds : parse(this.secondsBox.getValue(), this.seconds, 1, ChargeKind.MAX_TIMER), action));
             }
             super.onClose();
         }
 
         @Override
+        public void onClose() {
+            send(ChargePayloads.SAVE);
+        }
+
+        @Override
         public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
             super.extractBackground(g, mouseX, mouseY, partial);
-            int x = (this.width - W) / 2, y = (this.height - H) / 2;
-            panel(g, x, y, W, H);
+            panel(g, (this.width - W) / 2, top(), W, this.height);
         }
 
         @Override
         public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
             super.extractRenderState(g, mouseX, mouseY, partial);
-            int x = (this.width - W) / 2, y = (this.height - H) / 2;
-            centred(g, this.font, this.title, this.width / 2, y + 8, TEXT);
+            int x = (this.width - W) / 2, top = top();
+            centred(g, this.font, this.title, this.width / 2, top + 8, TEXT);
             Component state = Component.translatable(this.armed ? T_STATE_ARMED : T_STATE_SAFE);
-            g.text(this.font, state, x + W - 8 - this.font.width(state), y + 8, this.armed ? RED : GREEN);
-            if (this.kind.fuzeChoice) {
-                g.text(this.font, Component.translatable(T_FREQUENCY), x + 10, y + 65, this.timer ? DIM : TEXT);
+            g.text(this.font, state, x + W - 8 - this.font.width(state), top + 8, this.armed ? RED : GREEN);
+            boolean choice = this.kind.fuzeChoice();
+            if (this.frequencyRow >= 0) {
+                g.text(this.font, Component.translatable(T_FREQUENCY), x + 10, top + this.frequencyRow + 5, TEXT);
             }
-            g.text(this.font, Component.translatable(T_SECONDS), x + 10, y + 89, this.timer ? TEXT : DIM);
-            centred(g, this.font, Component.translatable(this.armed ? T_LOCKED : T_HINT), this.width / 2, y + 108, DIM);
+            if (this.secondsRow >= 0) {
+                g.text(this.font, Component.translatable(T_SECONDS), x + 10, top + this.secondsRow + 5, choice && !this.timer ? DIM : TEXT);
+            }
+            Component hint = Component.translatable(this.armed ? T_LOCKED : this.timer ? T_HINT_TIMER : T_HINT);
+            centred(g, this.font, hint, this.width / 2, top + this.hintRow, DIM);
         }
 
         @Override
@@ -169,7 +225,7 @@ public final class ChargeScreens {
 
     /** The timed bomb counting down: four wires to cut. */
     static final class Defuse extends Screen {
-        private static final int W = 230, H = 140;
+        private static final int W = 230, H = 116;
         private final BlockPos pos;
         private final Button[] wires = new Button[ChargeBlockEntity.WIRES];
 
@@ -190,7 +246,7 @@ public final class ChargeScreens {
                 int wire = i;
                 this.wires[i] = addRenderableWidget(Button.builder(Component.translatable(T_WIRES[i]),
                         b -> ClientPacketDistributor.sendToServer(new ChargePayloads.CutWire(this.pos, wire)))
-                        .bounds(x + 12 + i * 52, y + 92, 50, 20).build());
+                        .bounds(x + 12 + i * 52, y + 88, 50, 20).build());
             }
         }
 
@@ -216,10 +272,10 @@ public final class ChargeScreens {
             for (int i = 0; i < ChargeBlockEntity.WIRES; i++) {
                 int wx = x + 12 + i * 52 + 23;
                 if ((cut & 1 << i) == 0) {
-                    g.fill(wx, y + 54, wx + 4, y + 90, WIRE_COLORS[i]);
+                    g.fill(wx, y + 50, wx + 4, y + 86, WIRE_COLORS[i]);
                 } else {                                                 // snipped: two loose ends
-                    g.fill(wx, y + 54, wx + 4, y + 68, WIRE_COLORS[i]);
-                    g.fill(wx + 2, y + 76, wx + 6, y + 90, WIRE_COLORS[i]);
+                    g.fill(wx, y + 50, wx + 4, y + 64, WIRE_COLORS[i]);
+                    g.fill(wx + 2, y + 72, wx + 6, y + 86, WIRE_COLORS[i]);
                 }
             }
         }
@@ -232,8 +288,8 @@ public final class ChargeScreens {
             int ticks = be == null ? 0 : Math.max(0, be.countdown());
             String clock = String.format("%d:%02d", ticks / 1200, ticks / 20 % 60);
             centred(g, this.font, this.title, this.width / 2, y + 8, TEXT);
-            centred(g, this.font, Component.literal(clock), this.width / 2, y + 24, RED);
-            centred(g, this.font, Component.translatable(T_DEFUSE_HINT), this.width / 2, y + 38, DIM);
+            centred(g, this.font, Component.literal(clock), this.width / 2, y + 22, RED);
+            centred(g, this.font, Component.translatable(T_DEFUSE_HINT), this.width / 2, y + 35, DIM);
         }
 
         @Override

@@ -68,8 +68,6 @@ public final class GZOrdnance {
             dev.groundzero.registry.GZBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
                     dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
                     THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get()));
-    public static final DeferredItem<dev.groundzero.content.ordnance.charge.ArmingKeyItem> ARMING_KEY = GZItems.register("arming_key", "Arming Key",
-            GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.ArmingKeyItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

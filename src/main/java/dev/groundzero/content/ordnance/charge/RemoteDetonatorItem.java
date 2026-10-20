@@ -21,14 +21,15 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 /**
- * The Remote Detonator (DESIGN.md §9.4): press it to set off every armed charge on its frequency with a Remote fuze
- * within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in.
+ * The Remote Detonator (DESIGN.md §9.4): press it to set off every armed charge on its frequency within 256 blocks
+ * (those on a timer start counting down). Sneak-use it on a charge to take that charge's frequency, or in the air to
+ * type one in.
  */
 public class RemoteDetonatorItem extends Item {
     private static final String TIP_FREQ = GZLang.add(GroundZero.MODID + ".tooltip.detonator_frequency", "Frequency: %s");
     private static final String TIP_USE = GZLang.add(GroundZero.MODID + ".tooltip.detonator", "Use to fire; sneak-use on a charge to link to it, in the air to set the frequency");
     static final String LINKED = GZLang.add(GroundZero.MODID + ".detonator.linked", "Linked: frequency %s");
-    static final String FIRED = GZLang.add(GroundZero.MODID + ".detonator.fired", "%s charge(s) set off");
+    static final String FIRED = GZLang.add(GroundZero.MODID + ".detonator.fired", "%s charge(s) triggered");
     static final String NOTHING = GZLang.add(GroundZero.MODID + ".detonator.nothing", "No armed charges on frequency %s in range");
 
     /** Client hook: opens the frequency screen for the detonator in a hand (set by the client). */

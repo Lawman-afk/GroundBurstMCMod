@@ -40,10 +40,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A placed charge (DESIGN.md §9.4, §14): safe when placed, armed with the Arming Key (an armed charge blinks a red lamp),
- * set off by its fuze (a Remote Detonator on its frequency, or its timer), by redstone once armed, or by another blast
- * whatever its state. Right-click it with an empty hand for its fuze settings (or, on a timed bomb that is counting
- * down, to try to defuse it). {@code FACING} points out of the face it is stuck to; the timed bomb faces its front.
+ * A placed charge (DESIGN.md §9.4, §14): safe when placed, armed from its screen (right-click it with an empty hand;
+ * an armed charge blinks a red lamp), set off by its fuze (a Remote Detonator on its frequency, or its timer), by
+ * redstone once armed, or by another blast whatever its state. Right-clicking a timed bomb that is counting down
+ * opens its wires instead, to try to defuse it. {@code FACING} points out of the face it is stuck to; the timed bomb faces its front.
  */
 public class ChargeBlock extends Block implements EntityBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
@@ -177,7 +177,7 @@ public class ChargeBlock extends Block implements EntityBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        if (this.kind == ChargeKind.C4 && stack.is(asItem())) {
+        if (this.kind == ChargeKind.C4 && stack.is(asItem()) && !player.isSecondaryUseActive()) {
             // Stack another block of C4 on this one.
             int n = state.getValue(COUNT);
             if (n >= 4 || state.getValue(ARMED)) {

@@ -1,6 +1,10 @@
 package dev.groundzero.content.ordnance.charge;
 
+import dev.groundzero.GroundZero;
 import dev.groundzero.network.GZNetwork;
+import dev.groundzero.registry.GZLang;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import dev.groundzero.registry.GZDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -14,18 +18,26 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Server-bound packets from the charge screens: fuze settings, cutting a wire, a detonator's frequency. */
+/** Server-bound packets from the charge screens: fuze settings (and arming), cutting a wire, a detonator's frequency. */
 public final class ChargePayloads {
     /** How close a player has to be to a charge to change it. */
     private static final double REACH = 8;
 
     private ChargePayloads() {}
 
-    public record Settings(BlockPos pos, boolean timer, int frequency, int seconds) implements CustomPacketPayload {
+    /** Save the settings; save them and arm it; make it safe. */
+    public static final int SAVE = 0, ARM = 1, SAFE = 2;
+
+    static final String ARMED = GZLang.add(GroundZero.MODID + ".charge.armed", "Armed: frequency %s");
+    static final String ARMED_TIMER = GZLang.add(GroundZero.MODID + ".charge.armed_timer", "Armed: frequency %s, %s s timer");
+    static final String MADE_SAFE = GZLang.add(GroundZero.MODID + ".charge.safe", "Safe");
+    static final String MUST_DEFUSE = GZLang.add(GroundZero.MODID + ".charge.must_defuse", "It is counting down: cut the right wire to stop it");
+
+    public record Settings(BlockPos pos, boolean timer, int frequency, int seconds, int action) implements CustomPacketPayload {
         public static final Type<Settings> TYPE = GZNetwork.type("charge_settings");
         public static final StreamCodec<RegistryFriendlyByteBuf, Settings> CODEC = StreamCodec.composite(
                 BlockPos.STREAM_CODEC, Settings::pos, ByteBufCodecs.BOOL, Settings::timer, ByteBufCodecs.VAR_INT, Settings::frequency,
-                ByteBufCodecs.VAR_INT, Settings::seconds, Settings::new);
+                ByteBufCodecs.VAR_INT, Settings::seconds, ByteBufCodecs.VAR_INT, Settings::action, Settings::new);
 
         @Override
         public Type<Settings> type() {
@@ -35,8 +47,19 @@ public final class ChargePayloads {
         public static void handle(Settings p, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player && near(player, p.pos())) {
                 ChargeBlockEntity be = ChargeBlock.at(player.level(), p.pos());
-                if (be != null) {
-                    be.configure(p.timer() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE, p.frequency(), p.seconds());
+                if (be == null) {
+                    return;
+                }
+                ServerLevel level = (ServerLevel) player.level();
+                be.configure(p.timer() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE, p.frequency(), p.seconds());
+                if (p.action() == ARM && !be.armed()) {
+                    be.arm(level, player);
+                    player.sendOverlayMessage(be.mode() == ChargeBlockEntity.Mode.TIMER
+                            ? Component.translatable(ARMED_TIMER, be.frequency(), be.timer()).withStyle(ChatFormatting.RED)
+                            : Component.translatable(ARMED, be.frequency()).withStyle(ChatFormatting.RED));
+                } else if (p.action() == SAFE && be.armed()) {
+                    player.sendOverlayMessage(be.disarm(level) ? Component.translatable(MADE_SAFE).withStyle(ChatFormatting.GREEN)
+                            : Component.translatable(MUST_DEFUSE).withStyle(ChatFormatting.GOLD));
                 }
             }
         }

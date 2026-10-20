@@ -19,7 +19,8 @@ final class ChargeTests {
     static void register() {
         GZGameTests.test("charge_is_safe_until_armed", GZGameTests.FLOOR_16, 40, ChargeTests::safe);
         GZGameTests.test("detonator_sets_off_only_its_frequency", GZGameTests.FLOOR_16, 40, ChargeTests::detonator);
-        GZGameTests.test("c4_timer_counts_down", GZGameTests.FLOOR_16, 80, ChargeTests::timer);
+        GZGameTests.test("detonator_starts_a_timer", GZGameTests.FLOOR_16, 80, ChargeTests::timer);
+        GZGameTests.test("c4_has_no_timer", GZGameTests.FLOOR_16, 20, ChargeTests::noTimer);
         GZGameTests.test("c4_stacks_up_to_four", GZGameTests.FLOOR_16, 20, ChargeTests::stacking);
         GZGameTests.test("charges_set_each_other_off", GZGameTests.FLOOR_16, 60, ChargeTests::sympathetic);
         GZGameTests.test("breaching_charge_cuts_a_3x3_hole_3_deep", GZGameTests.FLOOR_16, 40, ChargeTests::breach);
@@ -61,7 +62,7 @@ final class ChargeTests {
         });
     }
 
-    /** A detonator on 42 sets off the charge on 42, not the one on 7. */
+    /** A detonator on 42 sets off the armed charge on 42; not the one on 7, nor a safe one on 42 (it is not armed). */
     private static void detonator(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
         BlockPos a = new BlockPos(3, 2, 3), b = new BlockPos(13, 2, 13);
@@ -69,27 +70,46 @@ final class ChargeTests {
         ChargeBlockEntity on7 = place(helper, GZOrdnance.BREACHING_CHARGE.block().get(), b, Direction.UP);
         on42.setFrequency(42);
         on7.setFrequency(7);
+        BlockPos c = new BlockPos(13, 2, 3);
+        ChargeBlockEntity safe42 = place(helper, GZOrdnance.BREACHING_CHARGE.block().get(), c, Direction.UP);
+        safe42.setFrequency(42);
         on42.arm(helper.getLevel(), null);
         on7.arm(helper.getLevel(), null);
         int fired = Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 42, null);
         helper.assertTrue(fired == 1, "one charge on 42 (" + fired + ")");
         helper.assertTrue(!is(helper, a, GZOrdnance.BREACHING_CHARGE.block().get()), "the one on 42 went off");
         helper.assertTrue(is(helper, b, GZOrdnance.BREACHING_CHARGE.block().get()), "the one on 7 is still there");
+        helper.assertTrue(is(helper, c, GZOrdnance.BREACHING_CHARGE.block().get()) && !safe42.counting(), "the safe one on 42 ignored it");
         helper.succeed();
     }
 
-    /** On a 1 s timer, an armed C4 waits, then goes off. */
+    /** A breaching charge on a 1 s timer: arming it starts nothing; the detonator starts the clock; a second later it goes. */
     private static void timer(GameTestHelper helper) {
         fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.C4.block().get(), at, Direction.UP);
-        be.configure(ChargeBlockEntity.Mode.TIMER, 0, 1);
+        ChargeBlockEntity be = place(helper, GZOrdnance.BREACHING_CHARGE.block().get(), at, Direction.UP);
+        be.configure(ChargeBlockEntity.Mode.TIMER, 5, 1);
         be.arm(helper.getLevel(), null);
-        helper.assertTrue(be.counting(), "counting down");
+        helper.assertTrue(!be.counting(), "arming does not start the clock");
+        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 5, null) == 1 && be.counting(),
+                "the detonator starts it");
         helper.runAfterDelay(10, () -> {
-            helper.assertTrue(is(helper, at, GZOrdnance.C4.block().get()), "still waiting at half a second");
-            helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.C4.block().get()), "gone off after a second"));
+            helper.assertTrue(is(helper, at, GZOrdnance.BREACHING_CHARGE.block().get()), "still waiting at half a second");
+            helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.BREACHING_CHARGE.block().get()), "gone off after a second"));
         });
+    }
+
+    /** C4 goes off at once: asked for a timer, it stays as it is, and a detonator sets it straight off. */
+    private static void noTimer(GameTestHelper helper) {
+        fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
+        BlockPos at = new BlockPos(8, 2, 8);
+        ChargeBlockEntity be = place(helper, GZOrdnance.C4.block().get(), at, Direction.UP);
+        be.configure(ChargeBlockEntity.Mode.TIMER, 3, 20);
+        helper.assertTrue(be.mode() == ChargeBlockEntity.Mode.REMOTE, "no timer on C4");
+        be.arm(helper.getLevel(), null);
+        Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 3, null);
+        helper.assertTrue(!is(helper, at, GZOrdnance.C4.block().get()), "gone off at once");
+        helper.succeed();
     }
 
     /** Using C4 on placed C4 stacks it, up to four; armed, it cannot be added to. */
@@ -169,8 +189,9 @@ final class ChargeTests {
         ChargeBlockEntity be = place(helper, GZOrdnance.TIMED_BOMB.block().get(), at, Direction.NORTH);
         be.configure(ChargeBlockEntity.Mode.TIMER, 0, 60);
         be.arm(helper.getLevel(), null);
+        be.trigger(helper.getLevel(), null);
         var level = helper.getLevel();
-        helper.assertTrue(be.counting() && !be.disarm(level), "counting, and the key cannot stop it");
+        helper.assertTrue(be.counting() && !be.disarm(level), "counting, and it cannot simply be made safe");
         int right = be.defuseWireForTest(), boom = be.boomWireForTest();
         int dummy = 0;
         while (dummy == right || dummy == boom) {

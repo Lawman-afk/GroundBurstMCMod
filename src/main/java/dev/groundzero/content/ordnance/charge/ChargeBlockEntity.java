@@ -21,11 +21,13 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 /**
- * A placed charge's fuze (DESIGN.md §9.4): Remote (a detonator on its frequency sets it off) or Timer (arming it
- * starts the countdown), the frequency and timer, the countdown, the thermite burn, and the timed bomb's wires. Synced
+ * A placed charge's fuze (DESIGN.md §9.4): its frequency, and whether a trigger (a detonator on that frequency, or
+ * redstone, once armed) sets it off at once or starts its timer; the countdown, the thermite burn, and the timed
+ * bomb's wires. Armed and made safe from its screen ({@link ChargePayloads.Settings}). Synced
  * to clients for the settings and defuse screens and the timed bomb's clock face.
  */
 public class ChargeBlockEntity extends BlockEntity {
+    /** What a trigger does: set it off at once (REMOTE), or start its countdown (TIMER). */
     public enum Mode { REMOTE, TIMER }
 
     /** Timed bomb wires: red, blue, yellow, green. One defuses it, one sets it off, the other two halve the time left. */
@@ -43,8 +45,8 @@ public class ChargeBlockEntity extends BlockEntity {
 
     public ChargeBlockEntity(BlockPos pos, BlockState state) {
         super(GZOrdnance.CHARGE.get(), pos, state);
-        this.timer = kind().timer;
-        this.mode = kind().fuzeChoice ? Mode.REMOTE : Mode.TIMER;
+        this.timer = kind().seconds;
+        this.mode = kind().defaultMode();
     }
 
     public ChargeKind kind() {
@@ -92,7 +94,7 @@ public class ChargeBlockEntity extends BlockEntity {
         if (armed()) {
             return;
         }
-        this.mode = kind().fuzeChoice ? mode : Mode.TIMER;
+        this.mode = kind().fuzeChoice() ? mode : kind().defaultMode();
         this.frequency = Math.clamp(frequency, 0, ChargeKind.MAX_FREQUENCY);
         this.timer = Math.clamp(timer, 1, ChargeKind.MAX_TIMER);
         sync();
@@ -105,7 +107,7 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     // --- arming ----------------------------------------------------------------------------------------------------------
-    /** Arms it (a timer fuze starts counting down). */
+    /** Arms it: from now on a detonator on its frequency, or redstone, sets it off (or starts its timer). */
     public void arm(ServerLevel level, @Nullable Entity by) {
         if (armed() || burning()) {
             return;
@@ -113,9 +115,6 @@ public class ChargeBlockEntity extends BlockEntity {
         this.owner = by == null ? null : by.getUUID();
         level.setBlock(this.worldPosition, getBlockState().setValue(ChargeBlock.ARMED, true), Block.UPDATE_ALL);
         level.playSound(null, this.worldPosition, GZOrdnance.CHARGE_ARM.get(), SoundSource.BLOCKS, 0.8f, 1f);
-        if (this.mode == Mode.TIMER) {
-            startCountdown(level);
-        }
         sync();
     }
 
@@ -142,16 +141,18 @@ public class ChargeBlockEntity extends BlockEntity {
         sync();
     }
 
-    /** Set off (redstone, a detonator, a timer running out): a timer starts counting, anything else goes off. */
-    public void trigger(ServerLevel level, @Nullable Entity by) {
-        if (!armed() || burning()) {
-            return;
+    /** Set off (a detonator, redstone): on its timer it starts counting down; otherwise it goes off. False if it is not armed or already going. */
+    public boolean trigger(ServerLevel level, @Nullable Entity by) {
+        if (!armed() || burning() || counting()) {
+            return false;
         }
-        if (this.mode == Mode.TIMER && !counting()) {
+        if (this.mode == Mode.TIMER) {
             startCountdown(level);
-        } else if (this.mode != Mode.TIMER || this.countdown == 0) {
+            level.playSound(null, this.worldPosition, GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 1f, 1.2f);
+        } else {
             goOff(level, by);
         }
+        return true;
     }
 
     private void goOff(ServerLevel level, @Nullable Entity by) {

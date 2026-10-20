@@ -144,7 +144,9 @@ final class BlastFx {
                 continue;
             }
             BlockState state = level.getBlockState(pos);
-            if (state.isAir() || !state.getFluidState().isEmpty() || state.getDestroySpeed(level, pos) < 0) {
+            // The charge that set it off (still standing here until its removal reaches this client) is not debris.
+            if (state.isAir() || !state.getFluidState().isEmpty() || state.getDestroySpeed(level, pos) < 0
+                    || state.getBlock() instanceof dev.groundzero.content.ordnance.charge.ChargeBlock) {
                 continue;
             }
             this.candidates.add(new Candidate(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, d, state, Debris.tint(state, level, pos)));

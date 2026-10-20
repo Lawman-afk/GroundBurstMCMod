@@ -926,7 +926,7 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   one block every 6 ticks along a 1x1 shaft into what it is on, 8 deep, stopping at resistance 50+ (obsidian),
   unbreakable blocks or water (steam); the last melted block becomes magma (slag), then the pot is gone. Anything
   alive next to it burns.
-- **Timed Bomb** (`timed_bomb` profile: core 2.5, crater 6, lethal 6, damage 14): a `TimedBombRenderer` draws the
+- **Timed Bomb** (`timed_bomb` profile: core 2.5, crater 6, lethal 6, damage 14; 3.5 / 9 / 9 / 20 after feedback): a `TimedBombRenderer` draws the
   time on its display (red counting, dim green safe). Defusing: right-click while it counts opens four wires (red,
   blue, yellow, green; random each arming): one defuses it (safe, kept), one sets it off, the other two halve the time
   left (at least 3 s). Breaking it while it counts sets it off.
@@ -934,6 +934,12 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   string, basic circuit), Thermite (terracotta, 2 iron dust, gunpowder, redstone), Timed Bomb (3 dynamite, 2 steel
   plate, clock, basic circuit), Arming Key (steel ingot, iron nugget, red dye), Remote Detonator (basic circuit, steel
   plate, steel rod, redstone, stone button). Sounds: arm, disarm, beep, thermite roar, detonator, wire snip.
+- **After the in-game look (feedback pass):** no Arming Key. Every charge's screen sets its frequency (all charges have
+  one) and, where it has a timer, At once or Timer and the time, and has **Arm** / **Make safe** buttons (the rows
+  shown are only those the charge has). Arming only makes it live: a Remote Detonator on its frequency, or redstone,
+  then sets it off, or starts its timer if it is on one (the timed bomb is always on its timer). A safe charge ignores
+  both. C4 has no timer (that is the timed bomb's job). Timed bomb blast: core 3.5, crater 9, lethal 9, damage 20.
+  Blast debris no longer samples the charge block itself (still standing on clients when the blast packet arrives).
 
 ## 15. Nuclear weapons
 
@@ -1884,3 +1890,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Grenade feedback: gas grenade is a smoke-style chlorine cloud (not block gas, per the user); toxin is a made-up liquid and its grenade leaves a decaying sludge film (C&C GLA style); one `Toxins` path for every chemical hazard so hazmat suits protect against all of them by piece share; salt comes from dried kelp so a water-only recipe cannot hijack other Chemical Plant recipes. |
 | 2026-10-21 | After the in-game look: toxin grenade becomes a glass vial (it already shattered with a glass sound); Molotov cocktail added as the no-blast fire grenade, made from synthetic fuel so it sits beside the incendiary rather than before dynamite. |
 | 2026-10-21 | Slice 6b placed charges: one block + block entity for every charge; screens open client-side from synced block-entity data (no container menus); arming a Timer fuze starts its countdown; a counting timed bomb can only be defused (four wires: defuse / boom / two halve the time); charges caught in any blast go off armed or not; thermite stays put while it eats its support. |
+| 2026-10-21 | Slice 6b feedback: arming moves into the charge's own screen (no Arming Key); arming makes a charge live and the detonator or redstone triggers it, starting the timer where there is one (never overriding a safe charge); C4 is instant only; every charge has a frequency; the timed bomb's blast grows to crater 9. |

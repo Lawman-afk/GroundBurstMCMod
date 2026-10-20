@@ -1,6 +1,6 @@
 """Placed charges (DESIGN.md §14, Phase 6 slice 6b): block models lying on the floor (the blockstate turns them to the
 face they are stuck to), each with an armed twin whose red lamp blinks (a two-frame animated texture, the lamp lit
-regardless of the light), and the Arming Key and Remote Detonator sprites.
+regardless of the light), and the Remote Detonator sprite.
 
 - C4 Charge: one to four stacked off-white putty blocks in olive film, two bands of black tape round the stack, a
   grey detonator with red and black leads and its lamp.
@@ -14,7 +14,6 @@ regardless of the light), and the Arming Key and Remote Detonator sprites.
 from __future__ import annotations
 
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -273,35 +272,6 @@ def blockstates() -> None:
 
 
 # --- item sprites ----------------------------------------------------------------------------------------------------------
-def _seg(px, py, ax, ay, bx, by):
-    vx, vy = bx - ax, by - ay
-    t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy)))
-    return math.hypot(px - (ax + t * vx), py - (ay + t * vy)), t
-
-
-def arming_key() -> Tex:
-    """A steel key held diagonally (bit bottom-left), its bow covered in red rubber with a hole for a lanyard."""
-    t = Tex(16, 16)
-    s, red = STEEL, P.WARNING_RED
-    bow = (11.0, 5.0)
-    for y in range(16):
-        for x in range(16):
-            cx, cy = x + 0.5, y + 0.5
-            d, along = _seg(cx, cy, 2.5, 13.5, 9.0, 7.0)
-            rb = math.hypot(cx - bow[0], cy - bow[1])
-            tooth = (along < 0.35 and ((cx - 2.5) + (cy - 13.5) * -1) > 0 and d < 2.2 and
-                     int((along * 10)) % 2 == 0 and (cx + cy) > 15.2)
-            if 1.3 < rb <= 3.9:
-                light = (cx - bow[0]) + (cy - bow[1]) < 0
-                t.px(x, y, red.light if light else red.shadow if rb > 3.1 else red.base)
-            elif d <= 0.9 or tooth:
-                t.px(x, y, s.light if (cx + cy) < 16.3 else s.shadow)
-    for x, y in ((4, 13), (5, 13), (4, 14), (6, 12), (6, 13)):        # the bit's teeth, below the shaft near its tip
-        t.px(x, y, s.shadow)
-    _outline(t, P.HAZARD_BLACK[1])
-    return t
-
-
 def _outline(t: Tex, c) -> None:
     filled = {(x, y) for y in range(16) for x in range(16) if t.get(x, y)[3] > 0}
     for (x, y) in list(filled):
@@ -341,7 +311,6 @@ def main() -> None:
     names += thermite(True)
     names += timed_bomb()
     blockstates()
-    R.save_item("arming_key", arming_key())
     R.save_item("remote_detonator", remote_detonator())
     print("charges written:", ", ".join(names))
 

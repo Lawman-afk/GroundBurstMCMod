@@ -7,18 +7,17 @@
     "groundzero:breaching_charge",
     "groundzero:thermite_charge",
     "groundzero:timed_bomb",
-    "groundzero:arming_key",
     "groundzero:remote_detonator"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "Charges are placed like blocks and are **safe** when placed. To use one:\n\n- Right-click it with an empty hand to set its fuze: **Remote** (a frequency, 0-9999) or **Timer** (1-600 seconds).\n- Sneak-use an **Arming Key** on it to arm it. An armed charge blinks a red lamp.\n- Set it off with a **Remote Detonator** on its frequency, by its timer (which starts when you arm it), or with redstone.\n\nSneak-use the key again to make it safe. A charge caught in another blast goes off a moment later, armed or not."
+      "text": "Charges are placed like blocks and are **safe** when placed. Right-click one with an empty hand to open it:\n\n- Set its **frequency** (0-9999), and for those with a timer, whether it goes off **at once** or on its **timer** (1-600 seconds).\n- Press **Arm**. An armed charge blinks a red lamp; press **Make safe** to undo it.\n- Armed, a **Remote Detonator** on its frequency (or a redstone signal) sets it off, or starts its timer.\n\nA safe charge ignores the detonator. A charge caught in another blast goes off a moment later, armed or not."
     },
     {
       "type": "spotlight",
       "item": "groundzero:c4",
-      "text": "Sticks to any face. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide."
+      "text": "Sticks to any face and goes off at once. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide."
     },
     {
       "type": "spotlight",
@@ -33,12 +32,12 @@
     {
       "type": "spotlight",
       "item": "groundzero:timed_bomb",
-      "text": "Stands on the floor; its clock shows the time set, and once armed it counts down, beeping faster near the end. The key cannot stop it: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off."
+      "text": "A big blast on a clock. Armed, the detonator (or redstone) starts its countdown, shown on its face and beeping faster near the end. Once counting it cannot be made safe: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off."
     },
     {
       "type": "spotlight",
       "item": "groundzero:remote_detonator",
-      "text": "Press to set off every armed charge on its frequency with a Remote fuze within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in."
+      "text": "Press to trigger every armed charge on its frequency within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in."
     },
     {
       "type": "crafting",
@@ -58,11 +57,6 @@
     {
       "type": "crafting",
       "item": "groundzero:timed_bomb",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:arming_key",
       "text": ""
     },
     {

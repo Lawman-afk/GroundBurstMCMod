@@ -778,19 +778,19 @@ For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical).
     craft("molotov_cocktail"),
 ])
 
-entry("ordnance/charges", "Placed charges", "c4", ["c4", "breaching_charge", "thermite_charge", "timed_bomb", "arming_key",
+entry("ordnance/charges", "Placed charges", "c4", ["c4", "breaching_charge", "thermite_charge", "timed_bomb",
                                                   "remote_detonator"], [
     text("""
-Charges are placed like blocks and are **safe** when placed. To use one:
+Charges are placed like blocks and are **safe** when placed. Right-click one with an empty hand to open it:
 
-- Right-click it with an empty hand to set its fuze: **Remote** (a frequency, 0-9999) or **Timer** (1-600 seconds).
-- Sneak-use an **Arming Key** on it to arm it. An armed charge blinks a red lamp.
-- Set it off with a **Remote Detonator** on its frequency, by its timer (which starts when you arm it), or with redstone.
+- Set its **frequency** (0-9999), and for those with a timer, whether it goes off **at once** or on its **timer** (1-600 seconds).
+- Press **Arm**. An armed charge blinks a red lamp; press **Make safe** to undo it.
+- Armed, a **Remote Detonator** on its frequency (or a redstone signal) sets it off, or starts its timer.
 
-Sneak-use the key again to make it safe. A charge caught in another blast goes off a moment later, armed or not.
+A safe charge ignores the detonator. A charge caught in another blast goes off a moment later, armed or not.
 """),
     spot("c4", """
-Sticks to any face. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide.
+Sticks to any face and goes off at once. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide.
 """),
     spot("breaching_charge", """
 Cuts a clean 3x3 hole 3 blocks deep into whatever it is stuck to, short of obsidian, and nothing else. Anyone in or just past the hole is knocked through it.
@@ -799,16 +799,15 @@ Cuts a clean 3x3 hole 3 blocks deep into whatever it is stuck to, short of obsid
 Burns a 1x1 shaft 8 blocks deep into what it is stuck to, through anything softer than obsidian; water stops it. It leaves molten slag at the bottom. Keep clear while it burns.
 """),
     spot("timed_bomb", """
-Stands on the floor; its clock shows the time set, and once armed it counts down, beeping faster near the end. The key cannot stop it: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off.
+A big blast on a clock. Armed, the detonator (or redstone) starts its countdown, shown on its face and beeping faster near the end. Once counting it cannot be made safe: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off.
 """),
     spot("remote_detonator", """
-Press to set off every armed charge on its frequency with a Remote fuze within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in.
+Press to trigger every armed charge on its frequency within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in.
 """),
     craft("c4"),
     craft("breaching_charge"),
     craft("thermite_charge"),
     craft("timed_bomb"),
-    craft("arming_key"),
     craft("remote_detonator"),
 ])
 

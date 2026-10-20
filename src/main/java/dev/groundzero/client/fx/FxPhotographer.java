@@ -56,7 +56,8 @@ public final class FxPhotographer {
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
                 new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)),
                 new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)),
-                new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)))) {
+                new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)),
+                new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -110,7 +111,13 @@ public final class FxPhotographer {
                 new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE.get()));
     }
 
-    /** Placed charges facing the camera: stacked C4 and a timed bomb on the ground, breaching and thermite on a wall. */
+    /** Where the charges scene put its charges, for the charge_ui scene to open their screens: breaching, C4, timed bomb. */
+    private static final net.minecraft.core.BlockPos[] UI_CHARGES = new net.minecraft.core.BlockPos[3];
+
+    /**
+     * Placed charges facing the camera: stacked C4 and a timed bomb on the ground, breaching and thermite on a wall; all
+     * armed, the thermite lit and the bomb counting, except the breaching charge (left safe, for its screen).
+     */
     private static void charges(ServerLevel level, int x, int ground) {
         for (int z = -3; z <= 3; z++) {
             for (int y = 0; y < 4; y++) {
@@ -130,14 +137,17 @@ public final class FxPhotographer {
         var thermite = new net.minecraft.core.BlockPos(x + 2, ground + 1, 2);
         level.setBlockAndUpdate(thermite, dev.groundzero.content.ordnance.GZOrdnance.THERMITE_CHARGE.block().get().defaultBlockState()
                 .setValue(F, net.minecraft.core.Direction.WEST));
-        for (var p : java.util.List.of(c4, bomb, breach, thermite)) {
+        UI_CHARGES[0] = breach;
+        UI_CHARGES[1] = c4;
+        UI_CHARGES[2] = bomb;
+        for (var p : java.util.List.of(c4, bomb, thermite)) {
             var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, p);
             if (be != null) {
                 if (p == bomb) {
                     be.configure(dev.groundzero.content.ordnance.charge.ChargeBlockEntity.Mode.TIMER, 0, 45);
                 }
                 be.arm(level, null);
-                if (p == thermite) {
+                if (p == thermite || p == bomb) {
                     be.trigger(level, null);
                 }
             }
@@ -235,6 +245,9 @@ public final class FxPhotographer {
             step = 0;
             clock = 0;
             return;
+        }
+        if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
+            dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
             String name = "fx_" + scene.name() + "_" + clock + ".png";

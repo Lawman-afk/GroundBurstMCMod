@@ -80,8 +80,8 @@ public final class Charges {
     }
 
     /**
-     * A Remote Detonator pressed at {@code from}: every armed charge on {@code frequency} with a Remote fuze within
-     * range goes off. Returns how many did.
+     * A Remote Detonator pressed at {@code from}: every armed charge on {@code frequency} within range goes off, or starts
+     * its timer. Returns how many did.
      */
     public static int remote(ServerLevel level, Vec3 from, int frequency, @Nullable Entity by) {
         LongOpenHashSet set = LOADED.get(level.dimension());
@@ -92,9 +92,8 @@ public final class Charges {
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
             ChargeBlockEntity be = ChargeBlock.at(level, p);
-            if (be != null && be.armed() && be.mode() == ChargeBlockEntity.Mode.REMOTE && be.frequency() == frequency
-                    && Vec3.atCenterOf(p).distanceTo(from) <= DETONATOR_RANGE) {
-                be.trigger(level, by);
+            if (be != null && be.frequency() == frequency && Vec3.atCenterOf(p).distanceTo(from) <= DETONATOR_RANGE
+                    && be.trigger(level, by)) {
                 n++;
             }
         }
@@ -152,7 +151,7 @@ public final class Charges {
                 Vec3 at = c.add(Vec3.atLowerCornerOf(facing.getOpposite().getUnitVec3i()).scale(0.35));
                 Blasts.detonate(level, at, Blasts.profile("c4"), by, (float) Math.cbrt(count));
             }
-            case TIMED_BOMB -> Blasts.detonate(level, c, Blasts.profile("timed_bomb"), by, 1f);
+            case TIMED_BOMB -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("timed_bomb"), by, 1f);
             case BREACHING -> breach(level, pos, facing, by);
             case THERMITE -> {
             }
