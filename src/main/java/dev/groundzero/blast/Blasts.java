@@ -7,7 +7,6 @@ import org.jspecify.annotations.Nullable;
 import dev.groundzero.GroundZero;
 import dev.groundzero.config.GZServerConfig;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -50,10 +49,7 @@ public final class Blasts {
         }
         BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.identifier(), level.getGameTime(), center, profile,
                 level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
-        // The sound is the clients' (distance-delayed, BlastSounds); until the Spectacle effects arrive (slice 5c) a
-        // vanilla explosion particle marks the burst.
-        float size = Math.max(1, profile.crater());
-        level.sendParticles(size > 4 ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0);
+        // Sound and visuals are the clients' (ClientBlasts, Spectacle), from the blast_start packet.
         BlastManager.of(level).add(job);
         return job;
     }

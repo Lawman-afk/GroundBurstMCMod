@@ -35,6 +35,8 @@ public class GroundZeroClient {
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);
         dev.groundzero.client.blast.ClientBlasts.register(modBus);
+        dev.groundzero.client.fx.Spectacle.register(modBus);
+        dev.groundzero.client.fx.FxPhotographer.register();
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {

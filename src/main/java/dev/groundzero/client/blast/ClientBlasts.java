@@ -8,6 +8,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 import dev.groundzero.blast.BlastPayloads;
+import dev.groundzero.client.fx.Spectacle;
 import dev.groundzero.registry.GZSounds;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -22,8 +23,8 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
- * The client's view of blasts (DESIGN.md §12-13): what the server said about each running blast (for the Spectacle
- * effects in slice 5c), and the distance-delayed sound.
+ * The client's view of blasts (DESIGN.md §12-13): what the server said about each running blast (passed on to the
+ * {@link Spectacle} for the visuals), and the distance-delayed sound.
  *
  * <p><b>Sound.</b> A blast is heard {@code distance / 17.15} ticks after it goes off (sound covers 343 blocks a
  * second; the flash, in 5c, arrives at once). How it sounds depends on distance measured in its own size
@@ -70,8 +71,12 @@ public final class ClientBlasts {
                 if (b != null) {
                     b.radius = payload.radius();
                 }
+                Spectacle.front(payload.id(), payload.radius());
             });
-            event.register(BlastPayloads.End.TYPE, (payload, context) -> ACTIVE.remove(payload.id()));
+            event.register(BlastPayloads.End.TYPE, (payload, context) -> {
+                ACTIVE.remove(payload.id());
+                Spectacle.end(payload.id());
+            });
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick());
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
@@ -91,6 +96,7 @@ public final class ClientBlasts {
 
     private static void started(BlastPayloads.Start start) {
         ACTIVE.put(start.id(), new Blast(start));
+        Spectacle.start(start);
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             return;
