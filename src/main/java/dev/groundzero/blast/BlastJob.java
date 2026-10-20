@@ -37,7 +37,8 @@ import net.minecraft.world.phys.Vec3;
  * behind them; inside the core it destroys everything breakable for free. Past the crater a surviving ray becomes a
  * pressure ray: in the structural band it blows light blocks out of its way, in the scorch band it scorches the first
  * surface it hits, in the fire band it may set that surface alight, and then it stops. Bedrock and other unbreakable
- * blocks stop every ray (a shadow behind them). A ray climbing above the terrain, with nothing left to hit, is dropped.
+ * blocks stop every ray (a shadow behind them). A ray that is not heading down and has climbed above the highest block
+ * anywhere in the blast's reach can hit nothing more, and is dropped.
  *
  * <p><b>Writing.</b> Blocks are set with flags that skip neighbour updates, drops, block-entity side effects (no
  * item spew) and on-place hooks; heightmaps, lighting and the batched client updates still happen. When the front has
@@ -67,6 +68,8 @@ final class BlastJob implements Blast {
     private final @Nullable BlockPos protectedCenter;
     private final int protectedRadius;
     private final RandomSource random;
+    /** The highest block anywhere within the terrain radius (loaded chunks): rays not heading down above it are done. */
+    private final int ceiling;
 
     private RayField rays;
     private int shell;
@@ -94,6 +97,7 @@ final class BlastJob implements Blast {
         this.protectedCenter = protectedCenter;
         this.protectedRadius = protectedRadius;
         this.random = RandomSource.create(seed);
+        this.ceiling = highestBlock(level, center, profile.terrainRadius());
         Lobes lobes = new Lobes(seed, profile.lobes());
         float stone = cost(6f);
         float base = profile.crater() * stone;
@@ -121,6 +125,28 @@ final class BlastJob implements Blast {
     @Override
     public int blocksChanged() {
         return this.blocksChanged;
+    }
+
+    /** The top of the highest block in the loaded chunks within {@code radius} of {@code center} (horizontally). */
+    private static int highestBlock(ServerLevel level, Vec3 center, float radius) {
+        int top = level.getMinY();
+        int r = (int) Math.ceil(radius) + 1;
+        int cx0 = ((int) Math.floor(center.x) - r) >> 4, cx1 = ((int) Math.floor(center.x) + r) >> 4;
+        int cz0 = ((int) Math.floor(center.z) - r) >> 4, cz1 = ((int) Math.floor(center.z) + r) >> 4;
+        for (int cx = cx0; cx <= cx1; cx++) {
+            for (int cz = cz0; cz <= cz1; cz++) {
+                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunkSource().getChunkNow(cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        top = Math.max(top, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z));
+                    }
+                }
+            }
+        }
+        return top;
     }
 
     /** Block cost of entering a block of this explosion resistance. */
@@ -198,8 +224,9 @@ final class BlastJob implements Blast {
             BlockState state = this.level.getBlockState(this.pos);
             if (state.isAir()) {
                 f.energy[k] -= AIR_COST;
-                // Climbing above everything there is to hit: nothing more for this ray to do.
-                if (f.dy[k] > 0.05f && by > this.level.getHeight(Heightmap.Types.WORLD_SURFACE, bx, bz)) {
+                // Above everything there is to hit in the whole blast, and not coming down: nothing more to do.
+                // (Not the ground under the ray itself: a tree or a hill further out may still be in its path.)
+                if (f.dy[k] >= 0 && by > this.ceiling) {
                     f.mode[k] = RayField.DEAD;
                 }
                 continue;

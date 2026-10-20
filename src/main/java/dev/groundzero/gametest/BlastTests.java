@@ -25,6 +25,7 @@ final class BlastTests {
         GZGameTests.test("blast_front_takes_several_ticks", GZGameTests.FLOOR_16, 80, BlastTests::slowFront);
         GZGameTests.test("blast_damage_follows_exposure", GZGameTests.FLOOR_16, 20, BlastTests::exposure);
         GZGameTests.test("blast_voids_destroyed_containers", GZGameTests.FLOOR_16, 20, BlastTests::noSpew);
+        GZGameTests.test("blast_reaches_blocks_above_it", GZGameTests.FLOOR_16, 20, BlastTests::upward);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -108,6 +109,23 @@ final class BlastTests {
         helper.assertTrue(air(helper, 1, 0, 0), "the chest is gone");
         AABB area = new AABB(helper.absolutePos(C)).inflate(8);
         helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, area).isEmpty(), "no items spilled");
+        helper.succeed();
+    }
+
+    /**
+     * A burst on open ground still destroys what stands above it within the crater: a block straight overhead and one
+     * up and to the side, over ground lower than it (the rays to them pass over that low ground first).
+     */
+    private static void upward(GameTestHelper helper) {
+        fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);                    // open ground
+        BlockPos burst = new BlockPos(8, 2, 8);
+        helper.setBlock(burst.offset(0, 5, 0), Blocks.STONE);              // overhead
+        helper.setBlock(burst.offset(4, 3, 0), Blocks.STONE);              // up and to the side
+        helper.setBlock(burst.offset(-3, 4, 0), Blocks.OAK_LOG);           // a tree trunk up the other way
+        Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(burst)), Blasts.profile("test/crater_only"), null);
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(burst.offset(0, 5, 0))).isAir(), "the block overhead is destroyed");
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(burst.offset(4, 3, 0))).isAir(), "the block up and to the side is destroyed");
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(burst.offset(-3, 4, 0))).isAir(), "the log is destroyed");
         helper.succeed();
     }
 }

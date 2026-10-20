@@ -545,7 +545,9 @@ messages.
 - Ray energy: a ray starts with `crater x cost(stone)` x direction factor (straight down x `crater_depth`) x lobe noise
   (seeded sum of 4 sines over the sphere). Entering a block costs `0.3 + resistance^0.75` (stone 4.1, dirt 0.9, obsidian
   ~204); air 0.05, liquids 0.6 (vaporised). Inside `core` everything breakable goes free. Bedrock-like blocks and the
-  protected spawn stop rays. Rays rising above the world surface are dropped (nothing left to hit).
+  protected spawn stop rays. A ray not heading down is dropped once it is above the highest block anywhere
+  within the blast's reach (not just the ground under it: a fix after the first in-game test, which showed only the
+  downward half destroying anything).
 - Pressure rays: structural band blows out glass, panes, leaves, doors, trapdoors, flowers, torches, lanterns, snow
   layers and other replaceable plants and carries on; scorch band scorches the first surface (grass/mycelium/podzol to
   dirt, coarse dirt for the nuclear table; snow melts; farmland and paths to dirt) and stops; fire band may light it
