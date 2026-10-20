@@ -1,0 +1,19 @@
+{
+  "title": "Reactor safety",
+  "icon": "groundzero:lead_lined_casing",
+  "order": 2,
+  "items": [
+    "groundzero:nuclear_waste"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out.\n\nA reactor that overheats with nothing to stop it will one day melt down, when the mod's explosion engine arrives; a server setting will turn that off."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:nuclear_waste",
+      "text": "What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item."
+    }
+  ]
+}

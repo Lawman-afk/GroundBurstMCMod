@@ -1,0 +1,31 @@
+{
+  "title": "Cables",
+  "icon": "groundzero:copper_cable",
+  "order": 1,
+  "items": [
+    "groundzero:copper_cable",
+    "groundzero:insulated_cable",
+    "groundzero:hv_cable"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Cables join up with each other and with machines. A run carries as much as its weakest cable each tick:\n\n- **Copper cable:** 256 FE\n- **Insulated cable:** 1,024 FE\n- **High-voltage cable:** 8,192 FE\n\nEach tier is made from the one below. Use the [Wrench](getting_started/wrench) on a cable side to cut or join a connection."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:copper_cable",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:insulated_cable",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hv_cable",
+      "text": ""
+    }
+  ]
+}

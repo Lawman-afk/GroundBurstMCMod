@@ -1,0 +1,82 @@
+{
+  "title": "Fission Reactor",
+  "icon": "groundzero:fission_reactor",
+  "order": 2,
+  "items": [
+    "groundzero:fission_reactor",
+    "groundzero:fission_reactor_spawner",
+    "groundzero:lead_lined_casing"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundzero:textures/gui/manual/plates/fission_reactor.png",
+      "width": 240,
+      "height": 260,
+      "text": "The formed Fission Reactor."
+    },
+    {
+      "type": "text",
+      "text": "A 3x3x4 structure of lead-lined casing round a two-block core, with reactor glass windows on all four sides. Load up to four uranium fuel rods and **withdraw the control rods**: up to **1,200 FE a tick** out of its Energy Port.\n\nEverything goes through its ports: coolant into the **Fluid Port** at the back of the bottom layer, fuel and target rods into the front **Item Port** on top, products out of the back one."
+    },
+    {
+      "type": "structure",
+      "structure": "groundzero:fission_reactor",
+      "text": "Controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port in the middle and a second Item Port."
+    },
+    {
+      "type": "text",
+      "text": "**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again.\n\n- **Water:** safe up to about 70% rods out; further than that and the core climbs to the SCRAM point. Up to 25 mB a tick.\n- **Heavy water:** keeps the core well below the SCRAM point even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.\n\nThe coolant gauge has a dump button to empty it. The heat and rod gauges sit beside the rod buttons; the red button is the manual SCRAM."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Full power",
+          "1,200 FE/t"
+        ],
+        [
+          "Fuel rod lasts",
+          "12,000 ticks"
+        ],
+        [
+          "Target rod",
+          "6,000 ticks"
+        ],
+        [
+          "SCRAM at",
+          "900 C"
+        ],
+        [
+          "Water",
+          "25 mB/t"
+        ],
+        [
+          "Heavy water",
+          "5 mB/t"
+        ]
+      ],
+      "text": "",
+      "title": "At full power"
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:fission_reactor",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:lead_lined_casing",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "nuclear/fuel",
+        "nuclear/reprocessing",
+        "safety/reactor_safety"
+      ],
+      "text": ""
+    }
+  ]
+}

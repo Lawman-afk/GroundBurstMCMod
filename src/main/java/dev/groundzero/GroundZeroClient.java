@@ -30,6 +30,7 @@ public class GroundZeroClient {
         ClientRecipes.register();
         MultiblockPreview.register();
         modBus.addListener(GroundZeroClient::registerScreens);
+        dev.groundzero.client.manual.ManualHotkey.register(modBus);
         modBus.addListener(GroundZeroClient::registerRenderers);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);

@@ -134,6 +134,20 @@ public final class GZMultiblocks {
                     'F', Entry.of(() -> FLUID_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.CHEMICAL_PLANT.block().get())));
 
+    /** Every structure, for lookups by id (the Field Manual's structure pages). */
+    public static java.util.List<MultiblockDefinition> all() {
+        return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR);
+    }
+
+    public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {
+        for (MultiblockDefinition def : all()) {
+            if (def.id().equals(id)) {
+                return def;
+            }
+        }
+        return null;
+    }
+
     public static final DeferredItem<HoloProjectorItem> HOLO_PROJECTOR = GZItems.register("holo_projector", "Holo-Projector", GZTab.MACHINES,
             HoloProjectorItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<StructureSpawnerItem> CHEMICAL_PLANT_SPAWNER = GZItems.register("chemical_plant_spawner",

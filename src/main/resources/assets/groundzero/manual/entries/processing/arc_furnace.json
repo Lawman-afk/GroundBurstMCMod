@@ -1,0 +1,25 @@
+{
+  "title": "Arc Furnace",
+  "icon": "groundzero:arc_furnace",
+  "order": 1,
+  "items": [
+    "groundzero:arc_furnace"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:arc_furnace",
+      "text": "A two-block-tall electric furnace for steel and the metals a furnace cannot melt. Draws 80 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:arc_furnace",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": ""
+    }
+  ]
+}

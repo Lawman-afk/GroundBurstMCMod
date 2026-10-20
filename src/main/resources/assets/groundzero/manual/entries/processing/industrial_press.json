@@ -1,0 +1,49 @@
+{
+  "title": "Industrial Press",
+  "icon": "groundzero:industrial_press",
+  "order": 2,
+  "items": [
+    "groundzero:industrial_press",
+    "groundzero:plate_die",
+    "groundzero:rod_die",
+    "groundzero:wire_die",
+    "groundzero:canister_die"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:industrial_press",
+      "text": "Presses ingots into parts. The **die** in its die slot picks what it makes; dies are never used up. Draws 40 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:industrial_press",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:plate_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:rod_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:wire_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:canister_die",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "pressing",
+      "text": ""
+    }
+  ]
+}

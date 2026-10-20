@@ -1,0 +1,34 @@
+{
+  "title": "Fuel and target rods",
+  "icon": "groundzero:uranium_fuel_rod",
+  "order": 1,
+  "items": [
+    "groundzero:uranium_fuel_rod",
+    "groundzero:spent_fuel_rod",
+    "groundzero:du_target_rod",
+    "groundzero:li6_target_rod",
+    "groundzero:irradiated_du_target_rod",
+    "groundzero:irradiated_li6_target_rod"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor); it comes out as a **spent fuel rod**.\n\n**Target rods** ride along in the reactor's breeding slots and come out irradiated: depleted uranium rods for plutonium, lithium-6 rods for tritium. See [Breeding and reprocessing](nuclear/reprocessing)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:uranium_fuel_rod",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:du_target_rod",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:li6_target_rod",
+      "text": ""
+    }
+  ]
+}

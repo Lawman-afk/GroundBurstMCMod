@@ -1129,15 +1129,37 @@ superweapon controllers, timed bomb, arming key / fuze settings, remote detonato
 Geiger HUD, dosimeter HUD.
 
 ### 24.2 Field Manual (native guide book)
-- Item: **"Field Manual GZ-1"** (olive hardcover with a stencilled trefoil), given on first join (config).
-- Two-page spread GUI in a field-manual style (typewritten body text, stamped "RESTRICTED" headers, paperclipped
-  photos). Chapters: Getting Started · Resources · Power · Processing · Components · Assembly · Ordnance ·
-  Nuclear · Special Weapons · Launching · Air Defence · Superweapons · Guns · Aftermath & Safety · Structures & Lore.
-- Page types: text (markdown-lite), item spotlight, live crafting/machine recipes (read from the actual recipe
-  registry), stats tables, image plates (pre-rendered model shots from our preview tool), **rotating 3D multiblock
-  viewer with a layer slider** (reads the same definitions as the game), and links.
-- Search, bookmarks, "new entry" markers. Content is data-driven JSON under `assets/groundzero/manual/`.
-- Optional "classified" mode (off by default): entries appear redacted until you obtain a related item.
+**What the big tech mods do (researched 2026-10-20).** Immersive Engineering's Engineer's Manual and Botania's Lexica
+(both now on Patchouli), AE2's guidebook (GuideME), Modonomicon books and Create's Ponder share a core: a book item
+opened from the hand; a landing page of categories, then entry lists, then two-page spreads; page types for text,
+item spotlights, crafting and machine recipes read live from the recipe registry, images, and multiblocks shown in 3D
+(Patchouli and Modonomicon also project a "ghost" of the structure into the world, IE uses that for building); links
+between entries and "related" lists; read/unread markers; search (GuideME: full text); and a jump from any item's
+tooltip to its page (GuideME: hold G). Ponder adds animated scenes; heavy, and not needed for a reference book.
+
+**Ours, slice "Field Manual" (built 2026-10-20):**
+- Item **"Field Manual GZ-1"** (olive hardcover, stencilled trefoil), crafted from a book and gunpowder, given once on
+  first join (server config, default on).
+- Two-page spread GUI in a field-manual style: cream pages in an olive binding, typed text, red "RESTRICTED" stamp on
+  the header. Home spread: title, search box, chapter list. Chapter spread: entry list with icons and an unread dot.
+  Entry spreads: two pages at a time; text pages flow onto as many pages as they need. Turn with the arrows, the mouse
+  wheel or the arrow keys; Back returns to the previous view, Home to the start; the book reopens where you left it.
+- Page types: **text** (paragraphs, `**bold**`, `*italic*`, `- ` bullets, `[label](chapter/entry)` links),
+  **spotlight** (an item, large, with text), **crafting** (a live crafting recipe for an item: 3×3 grid, ingredient
+  alternatives cycle), **machine** (the item's machine recipes from our recipe types: inputs, fluids, outputs, chance,
+  time and FE/t), **structure** (the multiblock in 3D: drag to turn, buttons to show one layer at a time, a block list
+  with counts), **image** (a plate rendered by our preview tool, e.g. a formed structure, with a caption), **table**
+  (rows of label/value), **links** (related entries).
+- Search: entry titles, the items an entry covers and its text. Bookmarks: up to six tabs on the book's edge.
+  Read entries and bookmarks are kept per player on the client (`config/groundzero-manual.json`).
+- Tooltip jump: items with an entry show "Press [H]: Field Manual"; pressing the key (rebindable) over the item opens
+  that entry, in any screen and inside the manual itself (clicking an item in a recipe does the same).
+- Content is data-driven JSON under `assets/groundzero/manual/` (chapters and entries), generated from
+  `tools/manual/content.py`; a GameTest checks every item, recipe and structure the content names exists.
+- Chapters follow the build: Getting Started, Resources, Power, Processing, Components, Nuclear, Safety now; Ordnance,
+  Special Weapons, Launching, Air Defence, Superweapons, Guns arrive with their phases.
+- Later: "classified" mode (entries redacted until you hold a related item), in-world "Visualize" from the structure
+  page.
 
 ### 24.3 JEI (optional)
 Custom categories for every machine, the assembly bench (component combinations and resulting stats), multiblock
@@ -1506,3 +1528,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Field Manual (the native in-game guide, §24.2) gets its own slice after the slice 7 fixes, ahead of slice 8: researched against how the major tech mods do theirs, with info pages, recipes and pictures. |
 | 2026-10-20 | Particle Accelerator redesigned (user feedback: inconsistent right-click areas, a hovering truss, too square): a two-layer octagonal ring 9 blocks across (steel plating under magnet segments, 32 cells a layer) with the controller at the front centre. The formed model is a true octagonal beam line (corner bending magnets, long dipoles on the diagonals, quadrupoles on the sides) kept entirely inside the structure's cells, so what you see is what you can click. The top steel-frame layer is gone, and the Steel Frame block with it until the structures that use it (Radar Station, Launch Complex) are built. |
 | 2026-10-20 | Particle Accelerator corners sloped (user request): the formed plinth is a true octagonal ring, and formed part blocks can carry a corner cut (`cut` block-state property, set by the controller from the pattern's cut map and turned with the structure) whose outline and collision follow a 45° slope, built from 2-px slices. |
+| 2026-10-20 | Field Manual design settled after a survey of Patchouli (IE, Botania), GuideME (AE2), Modonomicon and Ponder: native book with home/chapter/entry spreads, text/spotlight/crafting/machine/structure/image/table/links pages, live recipes, a 3D structure viewer, search, bookmarks, unread markers and a tooltip hotkey (§24.2). Crafting recipes are synced to clients for it, as machine recipes already are. |

@@ -45,12 +45,16 @@ public final class GZRecipes {
 
     /**
      * Since 1.21.2 the server keeps recipes to itself. Machine recipes are sent to every client so recipe viewers
-     * (JEI) can show them; the client keeps them in {@code ClientRecipes}.
+     * (JEI) can show them, and crafting and furnace recipes for the Field Manual; the client keeps them in
+     * {@code ClientRecipes}.
      */
     private static void syncToClients(OnDatapackSyncEvent event) {
         for (ProcessingKind kind : ProcessingKind.values()) {
             event.sendRecipes(type(kind));
         }
+        // The Field Manual shows crafting and furnace recipes too.
+        event.sendRecipes(net.minecraft.world.item.crafting.RecipeType.CRAFTING, net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                net.minecraft.world.item.crafting.RecipeType.BLASTING);
     }
 
     public static RecipeType<ProcessingRecipe> type(ProcessingKind kind) {

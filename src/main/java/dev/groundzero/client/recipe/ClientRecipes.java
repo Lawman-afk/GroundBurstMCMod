@@ -21,6 +21,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class ClientRecipes {
     private static final Map<ProcessingKind, List<RecipeHolder<ProcessingRecipe>>> RECIPES = new EnumMap<>(ProcessingKind.class);
+    private static List<RecipeHolder<?>> crafting = List.of(), smelting = List.of();
 
     private ClientRecipes() {}
 
@@ -33,15 +34,51 @@ public final class ClientRecipes {
         return Collections.unmodifiableList(RECIPES.getOrDefault(kind, List.of()));
     }
 
+    /**
+     * How every crafting-table (or, with {@code smelting}, furnace and blast furnace) recipe that makes {@code item}
+     * displays, for the Field Manual.
+     */
+    public static List<net.minecraft.world.item.crafting.display.RecipeDisplay> crafting(net.minecraft.world.item.Item item, boolean smelting) {
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        if (level == null) {
+            return List.of();
+        }
+        var context = net.minecraft.world.item.crafting.display.SlotDisplayContext.fromLevel(level);
+        List<net.minecraft.world.item.crafting.display.RecipeDisplay> out = new ArrayList<>();
+        for (RecipeHolder<?> holder : smelting ? ClientRecipes.smelting : ClientRecipes.crafting) {
+            for (var display : holder.value().display()) {
+                if (display.result().resolveForFirstStack(context).is(item)) {
+                    out.add(display);
+                }
+            }
+        }
+        return out;
+    }
+
     private static void received(RecipesReceivedEvent event) {
         for (ProcessingKind kind : ProcessingKind.values()) {
             if (event.getRecipeTypes().contains(GZRecipes.type(kind))) {
                 RECIPES.put(kind, new ArrayList<>(event.getRecipeMap().byType(GZRecipes.type(kind))));
             }
         }
+        var types = event.getRecipeTypes();
+        var map = event.getRecipeMap();
+        if (types.contains(net.minecraft.world.item.crafting.RecipeType.CRAFTING)) {
+            crafting = List.copyOf(map.byType(net.minecraft.world.item.crafting.RecipeType.CRAFTING));
+        }
+        List<RecipeHolder<?>> furnace = new ArrayList<>();
+        if (types.contains(net.minecraft.world.item.crafting.RecipeType.SMELTING)) {
+            furnace.addAll(map.byType(net.minecraft.world.item.crafting.RecipeType.SMELTING));
+        }
+        if (types.contains(net.minecraft.world.item.crafting.RecipeType.BLASTING)) {
+            furnace.addAll(map.byType(net.minecraft.world.item.crafting.RecipeType.BLASTING));
+        }
+        smelting = List.copyOf(furnace);
     }
 
     private static void loggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
         RECIPES.clear();
+        crafting = List.of();
+        smelting = List.of();
     }
 }

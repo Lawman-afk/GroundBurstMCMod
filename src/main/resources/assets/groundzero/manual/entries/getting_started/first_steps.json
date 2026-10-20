@@ -1,0 +1,23 @@
+{
+  "title": "First steps",
+  "icon": "groundzero:iron_dust",
+  "order": 1,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Ground Zero is a long climb from hand tools to superweapons. Everything runs on **power** (FE), made by generators and carried by cables.\n\n- Mine the new ores: uranium, lead, lithium, rare earths, saltpeter, sulfur and tungsten. See [Ores](resources/ores).\n- Build a [Combustion Generator](power/combustion_generator) and some [Copper Cable](power/cables).\n- Build an [Ore Crusher](processing/ore_crusher): two dusts per ore, smelted into two ingots.\n- Build an [Arc Furnace](processing/arc_furnace) to make **steel**, which nearly everything else needs.\n- With an [Industrial Press](processing/industrial_press) you can make plates, rods, wire and canisters.\n\nFrom there, fluids, chemistry and circuits open up; then nuclear power."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "getting_started/machines",
+        "getting_started/wrench",
+        "getting_started/multiblocks",
+        "resources/ores",
+        "power/combustion_generator"
+      ],
+      "text": ""
+    }
+  ]
+}

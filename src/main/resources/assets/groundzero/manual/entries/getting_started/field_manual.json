@@ -1,0 +1,24 @@
+{
+  "title": "Using this manual",
+  "icon": "groundzero:field_manual",
+  "order": 0,
+  "items": [
+    "groundzero:field_manual"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:field_manual",
+      "text": "Every new player is handed one on their first join. Right-click to open it; it reopens where you left it."
+    },
+    {
+      "type": "text",
+      "text": "**Turning pages:** the arrows at the bottom, the mouse wheel, or the left and right arrow keys.\n\n**Getting around:** the house at the top left goes back to the contents; the curled arrow (or a right-click, or Backspace) goes back one step.\n\n**Links:** underlined words open another entry. Items in recipes open their own entry when clicked.\n\n**Search:** type on the first page. It looks through titles, the items each entry covers and the text.\n\n**Bookmarks:** the grey ribbon on the book's edge bookmarks the open entry; right-click a red ribbon to remove it. Six at most.\n\n**From any screen:** hover over an item and press **H** (change it in Controls) to open its entry."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:field_manual",
+      "text": "A spare copy: a book and some gunpowder."
+    }
+  ]
+}

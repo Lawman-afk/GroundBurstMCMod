@@ -1,0 +1,19 @@
+{
+  "title": "Working machines",
+  "icon": "groundzero:machine_frame",
+  "order": 2,
+  "items": [
+    "groundzero:machine_frame"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Every machine has the same screen layout:\n\n- **Energy gauge** on the left: the stored FE. Hover for the numbers.\n- **Status lamp** at the top right: green while working; hover to see what it is waiting for (power, input, room for its output...).\n- **Redstone button**: ignore redstone, run only with a signal, or only without one.\n- **Side tab** (the wrench on the right edge): pick which faces take items in, give products out, connect to power and fluids, and turn on **auto-eject** to push products into whatever is next to it.\n\nMachines keep working while you are away as long as their chunk is loaded. Most need a [Machine Frame](components/parts) to build."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:machine_frame",
+      "text": ""
+    }
+  ]
+}

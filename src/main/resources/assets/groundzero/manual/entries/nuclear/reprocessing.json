@@ -1,0 +1,33 @@
+{
+  "title": "Breeding and reprocessing",
+  "icon": "groundzero:plutonium_ingot",
+  "order": 3,
+  "items": [
+    "groundzero:plutonium_nugget",
+    "groundzero:plutonium_ingot",
+    "groundzero:tritium_canister"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Irradiated target rods from the [Fission Reactor](nuclear/fission_reactor) go into the [Chemical Plant](processing/chemical_plant):\n\n- An irradiated **depleted uranium** rod gives **plutonium** nuggets and some nuclear waste.\n- An irradiated **lithium-6** rod gives **tritium** gas, and the steel rods back.\n- A spent fuel rod gives back some uranium dust, and waste.\n\nPlutonium powers the [RTG](power/rtg) for ten days a slug; both plutonium and tritium matter for the weapons to come."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "item": "groundzero:plutonium_nugget"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundzero:tritium"
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:plutonium_ingot",
+      "text": ""
+    }
+  ]
+}

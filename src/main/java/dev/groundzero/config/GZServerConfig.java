@@ -170,6 +170,16 @@ public final class GZServerConfig {
 
     static {
         B.pop();
+        B.translation(GZLang.config("manual", "Field Manual")).comment("The in-game guide book.").push("manual");
+    }
+
+    public static final ModConfigSpec.BooleanValue GIVE_MANUAL = B
+            .comment("Give each player a Field Manual the first time they join the world.")
+            .translation(GZLang.config("manual.giveOnFirstJoin", "Give on first join"))
+            .define("giveOnFirstJoin", true);
+
+    static {
+        B.pop();
     }
 
     public static final ModConfigSpec SPEC = B.build();

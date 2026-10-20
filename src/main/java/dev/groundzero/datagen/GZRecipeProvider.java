@@ -346,6 +346,11 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("GDG").pattern(" A ").pattern(" B ")
                 .unlockedBy("has_advanced_circuit", has(GZTags.ADVANCED_CIRCUITS))
                 .save(output);
+        // The Field Manual: a book and some gunpowder.
+        shapeless(RecipeCategory.MISC, dev.groundzero.content.manual.GZManual.FIELD_MANUAL.get(), 1)
+                .requires(Items.BOOK).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(Items.BOOK), has(Items.BOOK))
+                .save(output);
         shapeless(RecipeCategory.REDSTONE, GZMultiblocks.ITEM_PORT.item(), 1)
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(Items.HOPPER)
                 .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))

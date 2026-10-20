@@ -1,0 +1,79 @@
+{
+  "title": "Capacitor Banks",
+  "icon": "groundzero:capacitor_bank",
+  "order": 4,
+  "items": [
+    "groundzero:capacitor_bank",
+    "groundzero:advanced_capacitor_bank",
+    "groundzero:superconducting_capacitor_bank",
+    "groundzero:creative_capacitor_bank"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Banks store power. Every face takes it in except the **front**, which pushes it out; turn a bank with the [Wrench](getting_started/wrench)."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Capacitor Bank",
+          ""
+        ],
+        [
+          "  stores",
+          "100,000 FE"
+        ],
+        [
+          "  moves",
+          "1,024 FE/t"
+        ],
+        [
+          "Advanced",
+          ""
+        ],
+        [
+          "  stores",
+          "1,000,000 FE"
+        ],
+        [
+          "  moves",
+          "8,192 FE/t"
+        ],
+        [
+          "Superconducting",
+          ""
+        ],
+        [
+          "  stores",
+          "10,000,000 FE"
+        ],
+        [
+          "  moves",
+          "32,768 FE/t"
+        ]
+      ],
+      "text": "",
+      "title": "Tiers"
+    },
+    {
+      "type": "text",
+      "text": "A bank keeps its charge when you pick it up, and a comparator reads how full it is.\n\nThe **Creative Capacitor Bank** (creative menu only) is always full and pushes up to a million FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:capacitor_bank",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:advanced_capacitor_bank",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:superconducting_capacitor_bank",
+      "text": ""
+    }
+  ]
+}

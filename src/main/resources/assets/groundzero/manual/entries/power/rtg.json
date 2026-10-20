@@ -1,0 +1,20 @@
+{
+  "title": "Radioisotope Generator",
+  "icon": "groundzero:rtg",
+  "order": 3,
+  "items": [
+    "groundzero:rtg"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:rtg",
+      "text": "A steady **40 FE a tick** from a radioisotope slug, with no moving parts. An enriched uranium ingot lasts two in-game days, a plutonium ingot ten.\n\nThe slug decays whether the power is used or not, so give it something that always draws, or a capacitor bank."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:rtg",
+      "text": ""
+    }
+  ]
+}

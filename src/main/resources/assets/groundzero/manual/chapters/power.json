@@ -1,0 +1,6 @@
+{
+  "title": "Power",
+  "icon": "groundzero:combustion_generator",
+  "order": 2,
+  "text": "Machines run on Forge Energy (FE). Generators make it, cables carry it and capacitor banks store it. Any other mod's FE cables, generators and batteries work too."
+}

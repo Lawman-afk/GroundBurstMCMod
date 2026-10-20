@@ -1,0 +1,12 @@
+{
+  "title": "Chemical hazards",
+  "icon": "groundzero:sulfuric_acid_canister",
+  "order": 1,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Spilled chemicals are dangerous:\n\n- **Acids** burn whatever stands in them.\n- **Napalm gel** sets things alight.\n- **Liquid oxygen and nitrogen** freeze anything in them.\n- **Gases** released into the world drift upward as a cloud until they disperse.\n\nKeep fluids in tanks, pipes and canisters. The [Decontamination Shower](safety/decontamination_shower) puts out fire and washes off poison."
+    }
+  ]
+}

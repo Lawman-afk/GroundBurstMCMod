@@ -59,6 +59,13 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
+        // Makes a flat creative world, opens the Field Manual on a set of pages, screenshots each into
+        // run/screenshots/manual_<n>.png and quits (see ManualPhotographer).
+        manualShots {
+            client()
+            systemProperty 'groundzero.manualShots', 'true'
+        }
+
         server {
             server()
             programArgument '--nogui'

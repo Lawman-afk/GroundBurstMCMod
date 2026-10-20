@@ -1,0 +1,20 @@
+{
+  "title": "The Wrench",
+  "icon": "groundzero:wrench",
+  "order": 3,
+  "items": [
+    "groundzero:wrench"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:wrench",
+      "text": "- Right-click a machine to turn it.\n- Right-click a side of a fluid pipe to cycle it: Normal, Pull (draws fluid out of what it touches) and Disconnected.\n- Right-click a cable side to connect or disconnect it.\n- Sneak-right-click a machine, pipe, cable, tank or structure block to pick it up, contents and all for capacitor banks."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:wrench",
+      "text": ""
+    }
+  ]
+}

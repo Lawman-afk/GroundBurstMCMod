@@ -1,0 +1,20 @@
+{
+  "title": "Nuclear power",
+  "icon": "groundzero:uranium_fuel_rod",
+  "order": 6,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "For the late game, a [Fission Reactor](nuclear/fission_reactor) makes up to 1,200 FE a tick from uranium fuel rods, and breeds plutonium and tritium on the side.\n\nFusion and singularity reactors will follow."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "nuclear/fission_reactor",
+        "nuclear/fuel"
+      ],
+      "text": ""
+    }
+  ]
+}

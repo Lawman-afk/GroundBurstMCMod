@@ -42,6 +42,7 @@ public class GroundZero {
         dev.groundzero.content.nuclear.GZNuclear.init();
         dev.groundzero.content.fluid.GZFluids.init();
         GZMultiblocks.init();
+        dev.groundzero.content.manual.GZManual.init();
 
         dev.groundzero.content.fluid.GZFluids.register(modBus);
         GZBlocks.BLOCKS.register(modBus);

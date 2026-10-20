@@ -1,0 +1,25 @@
+{
+  "title": "Ore Crusher",
+  "icon": "groundzero:ore_crusher",
+  "order": 0,
+  "items": [
+    "groundzero:ore_crusher"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:ore_crusher",
+      "text": "Grinds raw ores into two dusts each, and a few other things into powder. Draws 20 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:ore_crusher",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "crushing",
+      "text": ""
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; two slice 7 feedback passes done: Fluid Port, reactor heat balance and heavy water, creative capacitor bank, every multiblock ports-only; 75/75 GameTests); next: the Field Manual slice (the user asked for it before slice 8), then slice 8 (Fusion and Singularity Reactors). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 40 entries, 77/77 GameTests); next: slice 8 (Fusion and Singularity Reactors) after the user's check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -28,7 +28,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 13 | Guns | todo |
 | 14 | Superweapons + Zero Hour doctrine modules | todo |
 | 15 | World structures & loot | todo |
-| 16 | Field Manual & JEI | todo |
+| 16 | Field Manual & JEI | in progress (Field Manual built early, 2026-10-20; JEI categories exist since Phase 4) |
 | 17 | Polish pass (every model, texture, sound, effect) + performance pass | todo |
 
 Each phase ends with: build green, deployed jar, PROGRESS/SESSION_LOG updated, git commit, and an in-game test
@@ -276,9 +276,9 @@ checklist for the user.
 ## Phase 16 — Guide & recipe viewer
 | Item | Status |
 |---|---|
-| Field Manual GUI + layout engine + page types | todo |
-| Manual content: every resource, machine, component, weapon, multiblock, system | todo |
-| 3D multiblock viewer with layer slider | todo |
+| Field Manual GUI + layout engine + page types | done (book item, home/chapter/entry spreads, flowing layout, text/spotlight/crafting/smelting/machine/structure/image/table/links pages, search, bookmarks, unread dots, tooltip key) — needs in-game test |
+| Manual content: every resource, machine, component, weapon, multiblock, system | partly (everything built so far: 7 chapters, 40 entries; weapons etc. arrive with their phases) |
+| 3D multiblock viewer with layer slider | done (real block models in a GUI picture-in-picture; drag to turn, layer buttons, block list) |
 | JEI plugin + custom categories | todo |
 
 ## Phase 17 — Polish
