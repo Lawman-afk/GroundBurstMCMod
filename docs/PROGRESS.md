@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits, 110/110 GameTests. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, 116/116 GameTests. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -18,7 +18,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 3 | Resources & world generation | **done** (needs in-game test) |
 | 4 | Power, cables, processing machines, multiblock framework, Fission Reactor, Particle Accelerator, Fusion and Singularity Reactors | **in progress** (slices 1–8 built; 6: diesel/RTG/capacitors/charger/decon; 7: Fission Reactor + Particle Accelerator; 8: Fusion + Singularity Reactors) — needs in-game test |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **done, awaiting the user's in-game check** (5a server engine, 5b sync/persistence/sound, crater character, 5c Spectacle and its v2 with the mushroom cloud, 5d reactor meltdown; heat haze deferred) |
-| 6 | Conventional explosives | todo |
+| 6 | Conventional explosives | **in progress** (6a thrown done; next 6b placed charges and fuzes) |
 | 7 | Components & Assembly Bench | todo |
 | 8 | Nuclear weapons | todo |
 | 9 | Launch platforms, missile flight, launch control, designators | todo |
@@ -168,10 +168,15 @@ checklist for the user.
 | GameTests: radius, shielding, budget, persistence | done (instant, shielding, multi-tick front, exposure, no spew, upward reach, save and resume, ragged rim, scorch shadow, ejecta, no rubble on water) |
 
 ## Phase 6 — Conventional explosives
+Slices (DESIGN §30, 2026-10-21): 6a thrown · 6b placed charges + fuzes · 6c mines · 6d bombs (direct recipes until the
+Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / EMP / cryo grenades + chemical bomb.
+
 | Item | Status |
 |---|---|
-| Dynamite | todo |
-| Frag / incendiary / sticky / toxin / cryo / EMP / smoke grenades | todo |
+| Thrown-explosive framework (throw, bounce, stick, fuse, tumbling render) | done (6a) — needs in-game look |
+| Dynamite | done (6a) |
+| Frag / incendiary / sticky / smoke grenades | done (6a) |
+| Toxin / cryo / EMP grenades (with gas grid, freezing, EMP fields) | todo (6e) |
 | C4 + Remote Detonator + stacking | todo |
 | Breaching charge, Thermite charge | todo |
 | Timed bomb (+ defuse mini-GUI) | todo |

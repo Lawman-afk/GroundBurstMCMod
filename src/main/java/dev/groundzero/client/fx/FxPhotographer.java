@@ -53,7 +53,8 @@ public final class FxPhotographer {
                 new Scene("meltdown", "reactor_meltdown", 55, 2, List.of(2, 8, 20, 60, 160, 400)),
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
-                new Scene("suits_back", "suits_back", 3, 12, List.of(15)))) {
+                new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
+                new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -77,6 +78,30 @@ public final class FxPhotographer {
             }
             level.addFreshEntity(stand);
         }
+    }
+
+    /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
+    private static void grenades(ServerLevel level, int x, int ground) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.CREATIVE);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE.get()));
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE.get(), new Vec3(x - 3, ground + 0.05, -1.2), Vec3.ZERO, 400);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE.get(), new Vec3(x + 2, ground + 0.05, 2.5), Vec3.ZERO, 20);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE.get(), new Vec3(x - 4, ground + 2.5, 3),
+                new Vec3(0.35, 0.25, -0.45), 70);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.INCENDIARY_GRENADE.get(), new Vec3(x + 3, ground + 6, -2.5),
+                new Vec3(0, -0.05, 0), -1);
+    }
+
+    private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
+        var g = new dev.groundzero.content.ordnance.ThrownExplosive(level, player, new net.minecraft.world.item.ItemStack(item));
+        g.setPos(at);
+        g.setDeltaMovement(velocity);
+        if (fuse >= 0) {
+            g.setFuseForTest(fuse);
+        }
+        level.addFreshEntity(g);
     }
 
     private static void tick() {
@@ -136,6 +161,10 @@ public final class FxPhotographer {
                 ServerLevel level = server.overworld();
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
+                if (s.profile().equals("grenades")) {
+                    grenades(level, x, ground);
+                    return;
+                }
                 if (s.profile().startsWith("suits")) {
                     suits(level, x, ground, s.profile().endsWith("back"));    // armour stands wearing the suits, no blast
                     return;

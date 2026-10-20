@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:steel_plate",
+    "#c:dusts/saltpeter",
+    "#c:dusts/saltpeter",
+    "minecraft:charcoal"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundzero:smoke_grenade"
+  }
+}

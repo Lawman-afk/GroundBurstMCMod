@@ -852,6 +852,27 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 | **MOAB** | bomb / warhead (XL) | 28 | structural 40, lethal 40, damage 70; grey dust mushroom; flash (weak); parachute drop | huge orange-and-olive bomb with lattice fins |
 | **Chemical Bomb** | bomb / warhead (S) | 3 | toxin cloud r 24, 120 s (α/β/γ strength) | green bomb with biohazard decal |
 
+### 14.1 As built: thrown explosives (Phase 6 slice 6a)
+- One entity, `groundzero:thrown_explosive` (`ThrownExplosive`), for every thrown kind (`GrenadeType`), told apart
+  by the item it carries. Own flight: gravity 0.045 a tick, drag 0.985 (0.8 in water), hit-tested along each step.
+  On a hit it **bounces** (speed into the surface x 0.35 comes back out, speed along it x 0.7; at rest below 0.063
+  blocks a tick on a floor), **sticks** (to the block face, or riding a creature at its offset), or **goes off**
+  (impact). The fuse counts from the throw. Thrown at 0.9-1.1 blocks a tick, 0.5 s cooldown, stacks of 16.
+- Dynamite (3 s, bounce; crater 2.5), Frag Grenade (4 s, bounce; crater 2, weak, plus 24 `Shrapnel` projectiles on a
+  Fibonacci sphere flattened 30% toward the horizontal, 1.8-2.4 blocks a tick, 6 damage `groundzero:shrapnel`
+  (a projectile damage type), life 14 ticks, never saved), Sticky Grenade (4 s, stick; crater 3), Incendiary Grenade
+  (impact; crater 1 plus fire on 85% of the floor within 4 blocks, found by searching down from the burst so a roof
+  does not count, and everything alive there burning 8 s), Smoke Grenade (2 s, bounce; then smokes 30 s: the cloud
+  billows to radius 5 over 3 s; every 10 ticks mobs in it, or whose target is in it, lose their target).
+- Client: `GrenadeRenderer` draws the 3D item model turned to the direction of flight and tumbling at 45 degrees per
+  block a tick of speed; `ShrapnelRenderer` an additive streak; the smoke cloud is lit puffs in the Spectacle; the
+  dynamite fuse spits flame, smoke and sparks.
+- Models: 3D item models (`tools/assets/grenades.py`): rounded "plus" prisms (core box plus two side boxes, never
+  overlapping); sounds pin, three bounces, dynamite strike and fizz, sticky slap, smoke hiss (`ordnance_sounds`).
+  Recipes: dynamite x2 (paper, gunpowder, string), frag x2 (iron nuggets, steel plate, gunpowder), sticky (frag +
+  slime ball), incendiary x2 (napalm canister, steel plate, gunpowder), smoke x2 (steel plate, saltpeter x2,
+  charcoal). Field Manual: new Ordnance chapter.
+
 ## 15. Nuclear weapons
 
 | Weapon | Class | Yield (flavour) | Core | Crater (depth) | Structural | Fire | Lethal | Damage | Radiation (half-life) | Look |
@@ -1796,3 +1817,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Fission Reactor meltdown built (§7.1): opt-in, no automatic SCRAM; a critical phase with runaway heat, klaxon, warnings and venting gives 15-40 s to SCRAM; at 1 400 °C a dirty blast, corium (cools in ~10 min) and a one-day contaminated zone. Contamination is a stand-in until Phase 12's radiation field: zones apply a new Radiation Sickness effect (hunger, then armour-bypassing radiation damage), which the shower washes off and Phase 12 will drive from dose instead. |
 | 2026-10-21 | Reactor meltdowns are on by default (the user asked); `reactor.meltdowns = false` brings back the automatic SCRAM. |
 | 2026-10-21 | After the in-game look at the meltdown: critical cores keep heating with coolant (water used to hold one at ~1 295 °C forever), the meltdown blast roughly doubled (crater 16, not instant; corium poured after it), contamination radius 48, Radiation Sickness much harsher per level (0.5 / 1.5 / 4 / 8 damage a second, slowness), and the Hazmat Suit and Lead-Lined Hazmat Suit built (75% / 92% radiation protection). "Hazmat" covers radioactive contamination too; lead lining is what stops more of the radiation itself. |
+| 2026-10-21 | Phase 6 plan (agreed with the user): slices 6a thrown (grenade framework; Dynamite, Frag with real shrapnel, Sticky, Incendiary, Smoke), 6b placed charges and fuzes (Arming Key, Remote Detonator, C4 with stacking, Breaching, Thermite, Timed Bomb with defuse GUI), 6c mines (Landmine, Bouncing Mine, Claymore), 6d bombs as armable placed blocks (HE, Heavy, Thermobaric, Cluster, Bunker Buster, Napalm, MOAB), 6e effect systems (toxin gas grid §16.7, EMP fields §21.4, freezing) with the Toxin, EMP and Cryo grenades and the Chemical Bomb. Bombs get direct crafting recipes now; the Assembly Bench (Phase 7) replaces them and adds fuze choice. The gas, EMP and frost systems are built in Phase 6 rather than waiting for Phase 12. |
+| 2026-10-21 | Slice 6a thrown explosives: one projectile entity for every kind with our own bounce / stick / impact physics, real shrapnel projectiles for the frag, a floor search (not the heightmap) for the incendiary's fire carpet so it works under roofs, smoke that breaks mob targeting; grenades get 3D item models rather than flat sprites, so they tumble properly in flight. |

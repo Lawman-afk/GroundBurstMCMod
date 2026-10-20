@@ -730,6 +730,45 @@ Holding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a 
 ])
 
 # =========================================================================================================================
+chapter("ordnance", "Ordnance", "frag_grenade", """
+Explosives you throw, place and drop. Everything here goes off with the mod's own explosion engine: craters, fire, shock and all.
+""")
+
+entry("ordnance/thrown", "Thrown explosives", "frag_grenade", ["dynamite", "frag_grenade", "sticky_grenade",
+                                                                 "incendiary_grenade", "smoke_grenade"], [
+    text("""
+Right-click to throw. Most bounce and roll before they go off, so bank them off walls and down slopes; their fuse starts the moment they leave your hand.
+"""),
+    table([
+        ["Dynamite", "3 s"],
+        ["Frag", "4 s"],
+        ["Sticky", "4 s"],
+        ["Incendiary", "on impact"],
+        ["Smoke", "2 s, 30 s"],
+    ], "Fuses"),
+    spot("dynamite", """
+The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast.
+"""),
+    spot("frag_grenade", """
+A small blast and **24 shrapnel fragments** that fly out in every direction, 6 damage each to whatever they hit. Keep behind cover, yourself included.
+"""),
+    spot("sticky_grenade", """
+Sticks to the first thing it hits, wall or creature, and goes off where it stuck. A frag grenade with a slime ball.
+"""),
+    spot("incendiary_grenade", """
+Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds.
+"""),
+    spot("smoke_grenade", """
+Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target: they cannot see through it.
+"""),
+    craft("dynamite"),
+    craft("frag_grenade"),
+    craft("sticky_grenade"),
+    craft("incendiary_grenade"),
+    craft("smoke_grenade"),
+])
+
+# =========================================================================================================================
 chapter("safety", "Safety", "decontamination_shower", """
 Hazards the mod adds, and how to deal with them.
 """)

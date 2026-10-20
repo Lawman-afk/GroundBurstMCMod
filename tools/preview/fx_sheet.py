@@ -42,7 +42,7 @@ def sheet(profile: str) -> Path | None:
 
 
 def main() -> None:
-    profiles = sys.argv[1:] or ["small", "medium", "large", "nuclear", "nuclear_close", "nuclear_night", "meltdown", "meltdown_dusk", "suits", "suits_back"]
+    profiles = sys.argv[1:] or ["small", "medium", "large", "nuclear", "nuclear_close", "nuclear_night", "meltdown", "meltdown_dusk", "suits", "suits_back", "grenades"]
     for profile in profiles:
         print(sheet(profile))
 

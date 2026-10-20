@@ -74,6 +74,7 @@ public final class Spectacle {
 
     public static void register(IEventBus modBus) {
         FxRenderTypes.register(modBus);
+        dev.groundzero.content.ordnance.ThrownExplosive.smokeHook = Spectacle::grenadeSmoke;
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundZero.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -147,6 +148,46 @@ public final class Spectacle {
         BlastFx fx = BLASTS.get(id);
         if (fx != null) {
             fx.ended = true;
+        }
+    }
+
+    /**
+     * A smoking smoke grenade, once a client tick: dense, pale, lit puffs filling a dome round it as the cloud billows
+     * out; none in the last three seconds, so it thins away.
+     */
+    public static void grenadeSmoke(dev.groundzero.content.ordnance.ThrownExplosive grenade) {
+        if (grenade.smokeTicks() > dev.groundzero.content.ordnance.ThrownExplosive.SMOKE_TICKS - 60) {
+            return;
+        }
+        var random = grenade.level().getRandom();
+        float radius = grenade.smokeRadius();
+        float q = quality();
+        float rate = q * 2.5f;
+        int count = (int) rate + (random.nextFloat() < rate - (int) rate ? 1 : 0);
+        for (int i = 0; i < count; i++) {
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            double a = random.nextDouble() * 2 * Math.PI, d = Math.sqrt(random.nextDouble()) * radius * 0.8;
+            p.x = grenade.getX() + Math.cos(a) * d;
+            p.y = grenade.getY() + 0.3 + random.nextDouble() * radius * 0.5;
+            p.z = grenade.getZ() + Math.sin(a) * d;
+            p.vx = (float) (Math.cos(a) * 0.05);
+            p.vz = (float) (Math.sin(a) * 0.05);
+            p.drag = 0.05f;
+            p.rise = 0.004f;
+            p.birth = ticks;
+            p.life = 120 + random.nextInt(60);
+            p.size0 = 2f;
+            p.size1 = 4.5f + random.nextFloat() * 1.5f;
+            p.color0 = 0xE2E2E0;
+            p.color1 = 0xCACAC8;
+            p.alpha = 0.8f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            p.spin = (random.nextFloat() - 0.5f) * 0.01f;
+            p.axisX = grenade.getX();
+            p.axisZ = grenade.getZ();
+            PUFFS.add(p, q);
         }
     }
 

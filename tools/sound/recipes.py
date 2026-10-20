@@ -501,6 +501,52 @@ def reactor_alarm() -> dict[str, np.ndarray]:
     return {"reactor/alarm": S.normalize(S.fade(out, 0.0, 0.08), -3)}
 
 
+def _ring(seconds: float, modes: list[tuple[float, float, float]], seed: int) -> np.ndarray:
+    """A struck piece of metal: a click of noise exciting a few decaying resonant modes (freq Hz, decay s, gain)."""
+    n = int(seconds * S.SR)
+    t = S.t_axis(seconds)
+    hit = S.highpass(S.white(seconds, seed), 1500) * S.exp_decay(n, 0.003)
+    x = hit * 0.6
+    for freq, decay, gain in modes:
+        x = x + np.sin(2 * np.pi * freq * t) * np.exp(-t / decay) * gain
+    return x
+
+
+def ordnance_sounds() -> dict[str, np.ndarray]:
+    """Thrown explosives (Phase 6): the pin pulled, a can bouncing, a fuse lit, a sticky grenade slapping on, smoke
+    pouring out."""
+    out = {}
+    # Pin: a scrape and click of the pin, then the spoon flying off with a small metallic ping.
+    pull = S.bandpass(S.white(0.08, 401), 2000, 7000) * S.exp_decay(int(0.08 * S.SR), 0.02) * 0.6
+    click = _ring(0.12, [(3100, 0.012, 0.5), (5200, 0.008, 0.3)], 402)
+    ping = _ring(0.45, [(2650, 0.09, 0.6), (4180, 0.06, 0.35), (6900, 0.03, 0.2)], 403)
+    x = S.mix((S.place(pull, 0.0, 0.7), 1.0), (S.place(click, 0.07, 0.7), 1.0), (S.place(ping, 0.22, 0.7), 0.8))
+    out["ordnance/grenade_pin"] = S.normalize(S.fade(x, 0, 0.05), -3)
+    # Bounce: a hollow metal can knocking on the ground, three pitches.
+    for i, base in enumerate((620, 700, 560)):
+        x = _ring(0.3, [(base, 0.05, 0.7), (base * 2.7, 0.03, 0.4), (base * 5.1, 0.015, 0.2)], 410 + i)
+        thud = S.lowpass(S.white(0.3, 420 + i), 300) * S.exp_decay(int(0.3 * S.SR), 0.02) * 1.2
+        out[f"ordnance/grenade_bounce{i + 1}"] = S.normalize(S.fade(S.mix((x, 1.0), (thud, 1.0)), 0, 0.04), -4)
+    # Dynamite: a match struck, then the fuse sputtering and fizzing for its three seconds.
+    strike = S.bandpass(S.white(0.25, 430), 1500, 8000) * S.breakpoints(int(0.25 * S.SR), [(0, 0), (0.02, 1), (0.25, 0)])
+    fizz_len = 3.0
+    fizz = S.bandpass(S.white(fizz_len, 431), 2500, 9000) * 0.35
+    crackle = S.grains(fizz_len, rate=55, grain_ms=3, seed=432) * 0.5
+    sputter = 0.7 + 0.3 * np.sin(2 * np.pi * 9 * S.t_axis(fizz_len)) * np.sin(2 * np.pi * 2.3 * S.t_axis(fizz_len))
+    x = S.mix((S.place(strike, 0, 3.3), 1.0), (S.place((fizz + crackle) * sputter, 0.15, 3.3), 1.0))
+    out["ordnance/dynamite_light"] = S.normalize(S.fade(x, 0, 0.2), -4)
+    # Sticky: a wet slap (a low thump and a short squelch).
+    thump = S.lowpass(S.white(0.3, 440), 400) * S.exp_decay(int(0.3 * S.SR), 0.03) * 1.5
+    squelch = S.bandpass(S.white(0.3, 441), 300, 1800) * S.breakpoints(int(0.3 * S.SR), [(0, 0), (0.01, 1), (0.08, 0.4), (0.3, 0)])
+    out["ordnance/sticky_stick"] = S.normalize(S.fade(S.mix((thump, 1.0), (squelch, 0.7)), 0, 0.05), -3)
+    # Smoke: a steady pressurised hiss with a little flutter (played every 3 s while the grenade pours smoke).
+    hiss_len = 3.2
+    hiss = S.bandpass(S.pink(hiss_len, 450), 1200, 7000)
+    flutter = 0.8 + 0.2 * np.sin(2 * np.pi * 13 * S.t_axis(hiss_len))
+    out["ordnance/smoke_hiss"] = S.normalize(S.fade(hiss * flutter, 0.15, 0.3), -6)
+    return out
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -527,7 +573,7 @@ def machine_loops() -> dict[str, np.ndarray]:
     }
 
 
-RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm]
+RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds]
 
 
 def build_sounds() -> list[Path]:

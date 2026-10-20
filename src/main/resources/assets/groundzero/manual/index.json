@@ -6,6 +6,7 @@
     "processing",
     "components",
     "nuclear",
+    "ordnance",
     "safety"
   ],
   "entries": [
@@ -50,6 +51,7 @@
     "nuclear/particle_accelerator",
     "nuclear/fusion_reactor",
     "nuclear/singularity_reactor",
+    "ordnance/thrown",
     "safety/decontamination_shower",
     "safety/chemical_hazards",
     "safety/reactor_safety",

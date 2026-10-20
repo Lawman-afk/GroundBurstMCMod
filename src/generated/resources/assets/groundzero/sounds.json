@@ -159,6 +159,12 @@
     ],
     "subtitle": "subtitles.groundzero.blast.small.very_far"
   },
+  "dynamite.light": {
+    "sounds": [
+      "groundzero:ordnance/dynamite_light"
+    ],
+    "subtitle": "subtitles.groundzero.dynamite.light"
+  },
   "geiger.click": {
     "sounds": [
       "groundzero:geiger/click1",
@@ -167,6 +173,20 @@
       "groundzero:geiger/click4"
     ],
     "subtitle": "subtitles.groundzero.geiger.click"
+  },
+  "grenade.bounce": {
+    "sounds": [
+      "groundzero:ordnance/grenade_bounce1",
+      "groundzero:ordnance/grenade_bounce2",
+      "groundzero:ordnance/grenade_bounce3"
+    ],
+    "subtitle": "subtitles.groundzero.grenade.bounce"
+  },
+  "grenade.pin": {
+    "sounds": [
+      "groundzero:ordnance/grenade_pin"
+    ],
+    "subtitle": "subtitles.groundzero.grenade.pin"
   },
   "machine.arc_furnace": {
     "sounds": [
@@ -353,5 +373,20 @@
       }
     ],
     "subtitle": "subtitles.groundzero.reactor.singularity_collapse"
+  },
+  "smoke.hiss": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundzero:ordnance/smoke_hiss"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.smoke.hiss"
+  },
+  "sticky.stick": {
+    "sounds": [
+      "groundzero:ordnance/sticky_stick"
+    ],
+    "subtitle": "subtitles.groundzero.sticky.stick"
   }
 }

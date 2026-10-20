@@ -52,6 +52,16 @@ public final class GZBlastData {
         // §7.1). Not instant: its front takes a few ticks, and the corium is poured once it has passed.
         ctx.register(Blasts.profile("reactor_meltdown"), new BlastProfile(5, 16, 28, 30, 24, new BlastProfile.EntityZones(16, 36, 80, 20, 3.0f), 3,
                 0.6f, 0.15f, 0.35f, 0.35f, 0f, TerrainTable.CONVENTIONAL, Optional.of(false), Optional.of("large"), Optional.of("meltdown")));
+        // Thrown explosives (DESIGN.md §14), all instant: small.
+        // core, crater, structural, scorch, fire, lethal, damage, speed, depth, lobes, streaks, ejecta, lethal dmg, edge dmg, knockback
+        ctx.register(Blasts.profile("dynamite"), profile(1, 2.5f, 4, 3, 0, 2.5f, 6, 4, 0.7f, 0.1f, 0.3f, 0.3f, 24, 8, 1.2f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("frag_grenade"), profile(0.5f, 2, 3, 2, 0, 4, 8, 4, 0.5f, 0.1f, 0.25f, 0.2f, 20, 6, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("incendiary_grenade"), profile(0, 1, 2, 4, 4, 1.5f, 4, 4, 0.7f, 0f, 0f, 0f, 8, 4, 0.6f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
@@ -68,6 +78,8 @@ public final class GZBlastData {
 
     private static void damageTypes(BootstrapContext<DamageType> ctx) {
         ctx.register(Blasts.BLAST_DAMAGE, new DamageType(GroundZero.MODID + ".blast", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1f));
+        ctx.register(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL_DAMAGE,
+                new DamageType(GroundZero.MODID + ".shrapnel", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1f));
         ctx.register(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE,
                 new DamageType(GroundZero.MODID + ".radiation", DamageScaling.NEVER, 0f));
     }
@@ -81,6 +93,7 @@ public final class GZBlastData {
         @Override
         protected void addTags(HolderLookup.Provider registries) {
             tag(DamageTypeTags.IS_EXPLOSION).add(Blasts.BLAST_DAMAGE);
+            tag(DamageTypeTags.IS_PROJECTILE).add(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL_DAMAGE);
             // Radiation sickness: armour does not help, and it does not push anyone about.
             tag(DamageTypeTags.BYPASSES_ARMOR).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);
             tag(DamageTypeTags.NO_KNOCKBACK).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);

@@ -1,0 +1,95 @@
+{
+  "title": "Thrown explosives",
+  "icon": "groundzero:frag_grenade",
+  "order": 0,
+  "items": [
+    "groundzero:dynamite",
+    "groundzero:frag_grenade",
+    "groundzero:sticky_grenade",
+    "groundzero:incendiary_grenade",
+    "groundzero:smoke_grenade"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Right-click to throw. Most bounce and roll before they go off, so bank them off walls and down slopes; their fuse starts the moment they leave your hand."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Dynamite",
+          "3 s"
+        ],
+        [
+          "Frag",
+          "4 s"
+        ],
+        [
+          "Sticky",
+          "4 s"
+        ],
+        [
+          "Incendiary",
+          "on impact"
+        ],
+        [
+          "Smoke",
+          "2 s, 30 s"
+        ]
+      ],
+      "text": "",
+      "title": "Fuses"
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:dynamite",
+      "text": "The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:frag_grenade",
+      "text": "A small blast and **24 shrapnel fragments** that fly out in every direction, 6 damage each to whatever they hit. Keep behind cover, yourself included."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:sticky_grenade",
+      "text": "Sticks to the first thing it hits, wall or creature, and goes off where it stuck. A frag grenade with a slime ball."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:incendiary_grenade",
+      "text": "Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:smoke_grenade",
+      "text": "Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target: they cannot see through it."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:dynamite",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:frag_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:sticky_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:incendiary_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:smoke_grenade",
+      "text": ""
+    }
+  ]
+}

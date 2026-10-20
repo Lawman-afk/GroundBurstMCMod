@@ -104,6 +104,17 @@ public final class GZSounds {
             register("machine.singularity_reactor", "Singularity Reactor thrums", List.of("machine/singularity_reactor"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_COLLAPSE =
             register("reactor.singularity_collapse", "Singularity collapses", List.of("reactor/singularity_collapse"), false, 64);
+    // Thrown explosives (Phase 6).
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRENADE_PIN =
+            register("grenade.pin", "Grenade pin pulled", List.of("ordnance/grenade_pin"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> GRENADE_BOUNCE =
+            register("grenade.bounce", "Grenade bounces", variants("ordnance/grenade_bounce", 3), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> DYNAMITE_LIGHT =
+            register("dynamite.light", "Fuse fizzes", List.of("ordnance/dynamite_light"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STICKY_STICK =
+            register("sticky.stick", "Sticky grenade sticks", List.of("ordnance/sticky_stick"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SMOKE_HISS =
+            register("smoke.hiss", "Smoke hisses", List.of("ordnance/smoke_hiss"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

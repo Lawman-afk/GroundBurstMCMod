@@ -226,6 +226,30 @@ public class GZRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(GZParts.EMPTY_CANISTER), has(GZParts.EMPTY_CANISTER))
                 .save(output);
         suits();
+        grenades();
+    }
+
+    /** Thrown explosives (DESIGN.md §14). */
+    private void grenades() {
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE, 2)
+                .define('S', Items.STRING).define('P', Items.PAPER).define('G', Items.GUNPOWDER)
+                .pattern(" S ").pattern("PGP").pattern("PGP")
+                .unlockedBy(getHasName(Items.GUNPOWDER), has(Items.GUNPOWDER)).save(output);
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE, 2)
+                .define('N', Items.IRON_NUGGET).define('P', GZParts.STEEL_PLATE).define('G', Items.GUNPOWDER)
+                .pattern("NPN").pattern("NGN").pattern("NNN")
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.STICKY_GRENADE, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(Items.SLIME_BALL)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE),
+                        has(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.INCENDIARY_GRENADE, 2)
+                .requires(GZChemicals.NAPALM_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE, 2)
+                .requires(GZParts.STEEL_PLATE).requires(GZTags.commonItem("dusts/saltpeter")).requires(GZTags.commonItem("dusts/saltpeter"))
+                .requires(Items.CHARCOAL)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
     }
 
     /**

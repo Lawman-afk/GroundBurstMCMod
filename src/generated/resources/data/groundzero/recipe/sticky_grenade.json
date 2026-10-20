@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:frag_grenade",
+    "minecraft:slime_ball"
+  ],
+  "result": {
+    "id": "groundzero:sticky_grenade"
+  }
+}
