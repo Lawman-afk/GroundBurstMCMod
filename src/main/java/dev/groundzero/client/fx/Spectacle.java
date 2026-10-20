@@ -46,7 +46,10 @@ import net.neoforged.neoforge.common.NeoForge;
  * <li><b>Shock front</b>: a pale, fading shell at the front's radius, and dust kicked up off the ground (coloured by
  * that ground) all along the ring where it sweeps the surface.</li>
  * <li><b>Debris</b> ({@link Debris}): chunks of the blocks that were there, thrown along the crater's spokes.</li>
- * <li><b>Sparks and smoke</b> ({@link Puffs}): embers out of the fireball; a smoke plume off the crater.</li>
+ * <li><b>Sparks, jets and smoke</b> ({@link Puffs}): a flare, embers, dirt jets thrown up in a cone along the spokes, fire
+ * jets out of the fireball, a smoke plume off the crater, all smoke lit by the sun and sky ({@link FxLight}).</li>
+ * <li><b>Mushroom cloud</b> ({@link MushroomCloud}) for nukes: a rolling toroidal cap on a ground-fed stem, collar and
+ * condensation shell, seen from far beyond the render distance.</li>
  * <li><b>Camera shake</b>: trauma added when the shock (with the sound) reaches the player, decaying over a second or
  * two.</li>
  * <li><b>Sky and fog</b>: after large blasts the sky, fog and clouds nearby turn a smoky orange-brown for minutes.</li>
@@ -232,17 +235,17 @@ public final class Spectacle {
     }
 
     private static void extract(ExtractLevelRenderStateEvent event) {
-        float a = skyTint();
-        if (a <= 0) {
-            return;
-        }
         var sky = event.getRenderState().skyRenderState;
-        if (sky.skyColor != null) {
-            sky.skyColor = smoky(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), a);
+        float a = skyTint();
+        if (a > 0) {
+            if (sky.skyColor != null) {
+                sky.skyColor = smoky(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), a);
+            }
+            int cloud = event.getRenderState().cloudColor;
+            Vector3f c = smoky(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, a * 0.8f);
+            event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
-        int cloud = event.getRenderState().cloudColor;
-        Vector3f c = smoky(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, a * 0.8f);
-        event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
+        FxLight.update(sky);                               // smoke is lit by this frame's (tinted) sky
     }
 
     // --- drawing ---------------------------------------------------------------------------------------------------------------
@@ -270,8 +273,14 @@ public final class Spectacle {
             collector.submitCustomGeometry(poseStack, FxRenderTypes.fire(FIREBALL), (pose, buffer) -> spheres(buffer, pose, fire));
             collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
         }
+        float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        for (BlastFx fx : BLASTS.values()) {
+            if (fx.mushroom != null) {
+                fx.mushroom.submit(collector, poseStack, camera.pos, camera.orientation, fx.age(now), partial);
+            }
+        }
         PUFFS.submit(collector, poseStack, level, camera.pos, camera.orientation, now);
-        DEBRIS.submit(collector, poseStack, level, camera.pos, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        DEBRIS.submit(collector, poseStack, level, camera.pos, partial);
     }
 
     /** Colour of fire cooling from {@code u} = 0 (white-hot) to 1 (dull red). */
@@ -300,7 +309,7 @@ public final class Spectacle {
         float big = fx.fireballRadius();
         float r = big * (float) (1 - Math.exp(-t / Math.max(0.8, life * 0.08)));
         float alpha = u < 0.6f ? 1 : 1 - (u - 0.6f) / 0.4f;
-        Vec3 c = fx.start.center().add(0, fx.preset.fireballRise() * fx.crater() / 20 * t, 0);
+        Vec3 c = fx.fireballCentre(t);
         // Outer turbulent shell (blended), then a hotter core that adds light.
         out.add(sphere(c, camera, r, heat(u * 1.1f + 0.12f), alpha * 0.9f, 0.22f, (float) t * 0.05f, (float) t * 0.012f, 1, fx.noiseSeed));
         cores.add(sphere(c, camera, r * 0.7f, heat(u * 0.9f), alpha * 0.55f * (1 - u * 0.5f), 0.1f, (float) t * 0.07f + 3, (float) -t * 0.02f,

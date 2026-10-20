@@ -4,9 +4,11 @@ These are not pixel-art block textures: they are soft, smooth effect sprites dra
 vertex colour in game (so they are mostly greyscale) and seen at any size. They are made from seeded spectral noise
 (tileable by construction where they wrap round a sphere) and radial falloffs.
 
-- ``textures/fx/puffs.png`` (256x256, a 4x4 sheet of 64 px cells, cell n at column n % 4, row n // 4):
+- ``textures/fx/puffs.png`` (512x640, a 4x5 sheet of 128 px cells, cell n at column n % 4, row n // 4):
   0-7 smoke (billowy, lit from above-left), 8-11 glow (hot cores with wisps, for the fireball body),
-  12 spark (a point with a halo), 13-15 dust (grainier, flatter, ragged edges).
+  12 spark (a point with a halo), 13-15 dust (grainier, flatter, ragged edges), 16-19 mushroom-cloud cloudlets (soft
+  cauliflower billows with no baked light direction: the game lights each one from the sun). One sheet, so smoke and
+  cloudlets are drawn in one sorted batch.
 - ``textures/fx/fireball.png`` (128x128, tileable): boiling fire; bright veins on a darker body, alpha mostly high.
 - ``textures/fx/shock.png`` (64x64, tileable): faint streaky haze for the shock shell.
 """
@@ -23,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from gz import paths  # noqa: E402
 
 OUT = paths.TEXTURES / "fx"
-CELL = 64
+CELL = 128
 
 
 def spectral(size: int, beta: float, seed: int, aniso: tuple[float, float] = (1.0, 1.0)) -> np.ndarray:
@@ -71,7 +73,7 @@ def smoke(seed: int, grain: float = 1.0, flat: float = 1.0) -> np.ndarray:
     # Dense in the middle, thinning toward a frayed edge (smoke, not cotton wool).
     alpha = smoothstep(0.0, 0.3, height + 0.06 * grain * (fine - 0.5)) * (0.62 + 0.38 * fine)
     alpha = np.clip(alpha, 0, 1)
-    alpha = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.6 * grain)), float) / 255
+    alpha = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.6 * grain * CELL / 64)), float) / 255
     gy, gx = np.gradient(height * CELL / 2)
     nz = 1.0 / np.sqrt(1 + gx * gx + gy * gy)
     light = np.clip((-gx * -0.45 + -gy * -0.6) * nz + 0.65 * nz, 0, 1)    # lit from the upper left
@@ -102,9 +104,9 @@ def spark() -> np.ndarray:
 
 
 def puffs() -> Image.Image:
-    sheet = np.zeros((CELL * 4, CELL * 4, 4))
+    sheet = np.zeros((CELL * 5, CELL * 4, 4))
     cells = [smoke(10 + i) for i in range(8)] + [glow(40 + i) for i in range(4)] + [spark()] \
-        + [smoke(70 + i, grain=1.6, flat=1.25) for i in range(3)]
+        + [smoke(70 + i, grain=1.6, flat=1.25) for i in range(3)] + [cloudlet(300 + i) for i in range(4)]
     for n, cell in enumerate(cells):
         cx, cy = n % 4, n // 4
         sheet[cy * CELL:(cy + 1) * CELL, cx * CELL:(cx + 1) * CELL] = cell
@@ -131,6 +133,30 @@ def shock() -> Image.Image:
     alpha = np.clip(0.55 + 0.45 * (0.75 * haze + 0.25 * fine), 0, 1)
     rgb = np.ones((size, size, 3))
     return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
+def cloudlet(seed: int) -> np.ndarray:
+    """A big soft billow cluster: brighter where it is thick, no light direction, edges frayed by noise."""
+    size = CELL
+    rng = np.random.default_rng(seed)
+    c = (np.arange(size) + 0.5) / size * 2 - 1
+    x, y = np.meshgrid(c, c)
+    height = np.zeros((size, size))
+    blobs = [(0.0, 0.0, 0.48)]
+    for _ in range(9 + rng.integers(0, 5)):
+        a = rng.uniform(0, 2 * np.pi)
+        d = rng.uniform(0.2, 0.52)
+        blobs.append((np.cos(a) * d, np.sin(a) * d, rng.uniform(0.2, 0.34)))
+    for bx, by, br in blobs:
+        r2 = ((x - bx) ** 2 + (y - by) ** 2) / (br * br)
+        height = np.maximum(height, np.sqrt(np.clip(1 - r2, 0, 1)) * br)
+    fine = spectral(size, 1.7, seed + 7)
+    body = spectral(size, 2.4, seed + 8)
+    alpha = smoothstep(0.0, 0.32, height + 0.07 * (fine - 0.5)) * (0.7 + 0.3 * body)
+    alpha = np.asarray(Image.fromarray((np.clip(alpha, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.4)), float) / 255
+    shade = np.clip(0.72 + 0.5 * height + 0.12 * (body - 0.5) + 0.06 * (fine - 0.5), 0.6, 1.0)
+    rgb = np.stack([shade, shade, shade], -1)
+    return np.concatenate([rgb, alpha[..., None]], -1)
 
 
 def main() -> None:

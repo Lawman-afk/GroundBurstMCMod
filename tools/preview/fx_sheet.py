@@ -20,7 +20,8 @@ COLS, WIDTH = 4, 480
 
 
 def sheet(profile: str) -> Path | None:
-    shots = sorted(SHOTS.glob(f"fx_{profile}_*.png"), key=lambda p: int(re.search(r"_(\d+)\.png$", p.name).group(1)))
+    shots = [p for p in SHOTS.glob(f"fx_{profile}_*.png") if re.fullmatch(rf"fx_{profile}_\d+\.png", p.name)]
+    shots.sort(key=lambda p: int(re.search(r"_(\d+)\.png$", p.name).group(1)))
     if not shots:
         return None
     first = Image.open(shots[0])
@@ -41,7 +42,7 @@ def sheet(profile: str) -> Path | None:
 
 
 def main() -> None:
-    profiles = sys.argv[1:] or ["small", "medium", "large", "nuclear"]
+    profiles = sys.argv[1:] or ["small", "medium", "large", "nuclear", "nuclear_close", "nuclear_night"]
     for profile in profiles:
         print(sheet(profile))
 

@@ -26,7 +26,12 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * overlapping layers brighten toward white instead of hiding one another. Its OIT set is the entity one with the
  * shader's additive switch, as vanilla does for lightning.</li>
  * <li><b>fire</b>: blended over what is behind (like vanilla "eyes", but two-sided). The fireball's body, which must stay
- * orange against a bright sky, where additive light would wash out to white.</li>
+ * orange against a bright sky, where additive light would wash out to white, and every smoke and dust puff (lit on the
+ * CPU, {@link FxLight}).</li>
+ * <li><b>cloud</b>: as fire, but with our own fragment shader ({@code shaders/core/fx_cloud.fsh}) that hazes toward the
+ * fog colour instead of fading into the render-distance fog, and fades out at the clouds' range like vanilla clouds: a
+ * mushroom cloud stands over the horizon far beyond the loaded terrain. It cuts out its faint fringe and writes depth
+ * (drawn back to front), so vanilla's clouds, drawn after it, do not show through it.</li>
  * </ul>
  */
 final class FxRenderTypes {
@@ -49,6 +54,20 @@ final class FxRenderTypes {
     static final OitPipelineSet OIT_FIRE = OitPipelineSet.builder(GroundZero.id("fire"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false)).build();
 
+    private static final Identifier CLOUD_SHADER = GroundZero.id("core/fx_cloud");
+    static final RenderPipeline CLOUD_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+            .withLocation(GroundZero.id("pipeline/cloud"))
+            .withFragmentShader(CLOUD_SHADER)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+            .withCull(false)
+            .build();
+    static final OitPipelineSet OIT_CLOUD = OitPipelineSet.builder(GroundZero.id("cloud"),
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER).withCull(false))
+            .build();
+
+    private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundZero.MODID + "_cloud",
+            RenderSetup.builder(CLOUD_PIPELINE).setOitPipelines(OIT_CLOUD).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
     private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundZero.MODID + "_fire",
             RenderSetup.builder(FIRE_PIPELINE).setOitPipelines(OIT_FIRE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
     private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundZero.MODID + "_glow",
@@ -62,12 +81,19 @@ final class FxRenderTypes {
             event.registerOitPipelineSet(OIT_GLOW);
             event.registerPipeline(FIRE_PIPELINE);
             event.registerOitPipelineSet(OIT_FIRE);
+            event.registerPipeline(CLOUD_PIPELINE);
+            event.registerOitPipelineSet(OIT_CLOUD);
         });
     }
 
     /** Blended, unlit, two-sided, with this texture. */
     static RenderType fire(Identifier texture) {
         return FIRE.apply(texture);
+    }
+
+    /** Blended, unlit, two-sided, seen far beyond the render distance, with this texture. */
+    static RenderType cloud(Identifier texture) {
+        return CLOUD.apply(texture);
     }
 
     /** Additive, unlit, two-sided, with this texture. */

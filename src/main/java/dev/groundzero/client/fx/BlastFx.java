@@ -15,9 +15,10 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * One blast as the client shows it (DESIGN.md §12): the timeline of its fireball, flash, shock front, debris, sparks,
- * smoke and sky tint, all measured from the moment it went off. The shock front follows the server's (sent every 4
- * ticks), predicted forward between updates; an instant blast's front is drawn racing out at a visual speed.
+ * One blast as the client shows it (DESIGN.md §12): the timeline of its fireball, flash, shock front, debris, dirt and
+ * fire jets, sparks, smoke, sky tint and (for nukes) mushroom cloud, all measured from the moment it went off. The
+ * shock front follows the server's (sent every 4 ticks), predicted forward between updates; an instant blast's front is
+ * drawn racing out at a visual speed.
  */
 final class BlastFx {
     /** How fast an instant blast's front is drawn to move, in blocks a tick. */
@@ -41,6 +42,11 @@ final class BlastFx {
     private boolean fireballSmoked;
     /** Blocks sampled where the crater will be, released as debris when the front passes them. */
     private final List<Candidate> candidates = new ArrayList<>();
+    /** The ground's height under the burst, and its colour (soil for grass and plants). */
+    private final double ground;
+    private final int earth;
+    /** The mushroom cloud, for nukes. */
+    final MushroomCloud mushroom;
 
     private record Candidate(double x, double y, double z, float r, BlockState state, int tint) {}
 
@@ -52,6 +58,15 @@ final class BlastFx {
         this.born = now - Math.max(0, level.getGameTime() - start.startTick());
         this.distance = camera.distanceTo(start.center());
         this.reaches = this.distance / Math.max(8, start.reach());
+        Vec3 c = start.center();
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos((int) Math.floor(c.x), 0, (int) Math.floor(c.z));
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, at.getX(), at.getZ());
+        this.ground = top > c.y + crater() || top <= level.getMinY() ? c.y - 0.5 : top;
+        at.setY((int) Math.floor(this.ground) - 1);
+        this.earth = earthColor(level, at);
+        this.mushroom = this.preset.mushroom() > 0
+                ? new MushroomCloud(c, this.ground, fireballRadius(), crater(), start.seed(), Spectacle.quality(), this.earth, this.preset.mushroom())
+                : null;
         double t = now - this.born;
         if (t > 20) {
             // Heard of late (logged in or arrived while it runs): show what is still going, not a replay of what passed.
@@ -59,6 +74,9 @@ final class BlastFx {
             this.dustRadius = frontRadius(t);
             this.fireballSmoked = t > this.preset.fireballLife() * 0.55;
             this.smokeSent = smokeDue(t);
+            if (this.mushroom != null && t < this.preset.mushroom()) {
+                this.mushroom.prefill(t);
+            }
         } else {
             sampleCrater(level);
         }
@@ -76,6 +94,21 @@ final class BlastFx {
         return Math.max(1.5f, this.preset.fireball() * crater());
     }
 
+    /** Where the fireball's centre is at {@code t} ticks: rising, or riding the mushroom cloud's cap. */
+    Vec3 fireballCentre(double t) {
+        Vec3 c = this.start.center();
+        if (this.mushroom != null) {
+            return new Vec3(c.x, this.mushroom.capY(t), c.z);
+        }
+        return c.add(0, this.preset.fireballRise() * crater() / 20 * t, 0);
+    }
+
+    /** The colour of the ground at {@code at}: soil for grass and plants (they are torn up). */
+    private static int earthColor(ClientLevel level, BlockPos at) {
+        MapColor map = level.getBlockState(at).getMapColor(level, at);
+        return map == MapColor.GRASS || map == MapColor.PLANT || map == MapColor.NONE ? MapColor.DIRT.col : map.col;
+    }
+
     /** The shock front's radius at {@code t} ticks: the server's, moved on between its updates. */
     float frontRadius(double t) {
         float speed = this.start.frontSpeed() > 0 ? this.start.frontSpeed() : INSTANT_FRONT;
@@ -91,7 +124,7 @@ final class BlastFx {
         double t = age(now);
         FxPreset p = this.preset;
         return this.ended && t > p.fireballLife() + 5 && t > p.smokeTicks() && t > p.skyTicks() && this.candidates.isEmpty()
-                && frontRadius(t) >= this.start.outer() - 0.5f && t > p.flashTicks() * 4 + 10;
+                && frontRadius(t) >= this.start.outer() - 0.5f && t > p.flashTicks() * 4 + 10 && (this.mushroom == null || this.mushroom.done(t));
     }
 
     // --- set-up ----------------------------------------------------------------------------------------------------------------
@@ -118,12 +151,29 @@ final class BlastFx {
         }
     }
 
-    /** Effects that start the moment it goes off: the fireball's body and its sparks. */
+    /** Effects that start the moment it goes off: the flare, the fireball's body, fire and dirt jets, sparks. */
     void ignite(Puffs puffs, double now, float quality) {
         Vec3 c = this.start.center();
         float big = fireballRadius();
         int life = this.preset.fireballLife();
-        float rise = this.preset.fireballRise() * crater() / 20;
+        float rise = this.mushroom != null ? (float) ((this.mushroom.capY(life * 0.5) - c.y) / (life * 0.5))
+                : this.preset.fireballRise() * crater() / 20;
+        // The flare: a huge soft glow for the first instants, before the fireball has grown.
+        Puffs.Puff flare = new Puffs.Puff();
+        flare.kind = Puffs.Kind.SPARK;
+        flare.x = c.x;
+        flare.y = c.y + big * 0.2;
+        flare.z = c.z;
+        flare.drag = 0;
+        flare.birth = this.born;
+        flare.life = 4 + this.preset.flashTicks();
+        flare.size0 = big * 2.5f;
+        flare.size1 = big * 5f;
+        flare.color0 = 0xFFF6E0;
+        flare.color1 = 0xFFC070;
+        flare.alpha = 0.9f;
+        puffs.add(flare, 1);
+        jets(puffs, quality, big, life);
         for (int i = 0; i < this.preset.glow() * quality; i++) {
             Puffs.Puff p = new Puffs.Puff();
             boolean hot = i % 4 == 0;                      // one in four adds light; the rest is the fire's body
@@ -175,6 +225,87 @@ final class BlastFx {
         }
     }
 
+    /**
+     * Dirt jets: soil thrown up out of the crater in a cone, as streaks, mostly along the crater's strong spokes; and
+     * fire jets bursting out of the fireball along the same spokes, breaking up its round outline.
+     */
+    private void jets(Puffs puffs, float quality, float big, int fireLife) {
+        Vec3 c = this.start.center();
+        float scale = 1 + crater() / 15;
+        float speed = (float) Math.sqrt(crater()) * 0.42f;
+        int dirt = Puffs.lerpRgb(this.earth, 0x3E3026, 0.5f);
+        for (int i = 0; i < this.preset.jets() * quality; i++) {
+            double az = spokeAzimuth();
+            double elev = Math.toRadians(48 + this.random.nextFloat() * 38);
+            float v = speed * (0.7f + 0.6f * this.random.nextFloat());
+            float vx = (float) (Math.cos(az) * Math.cos(elev)), vy = (float) Math.sin(elev), vz = (float) (Math.sin(az) * Math.cos(elev));
+            // A jet is a few puffs thrown one after another along the same path: a column fanning out behind its head.
+            int parts = 4 + this.random.nextInt(3);
+            for (int k = 0; k < parts; k++) {
+                Puffs.Puff p = new Puffs.Puff();
+                p.kind = Puffs.Kind.DUST;
+                p.x = c.x;
+                p.y = Math.max(this.ground, c.y - 0.5);
+                p.z = c.z;
+                float f = 1 - 0.13f * k;
+                p.vx = vx * v * f;
+                p.vy = vy * v * f;
+                p.vz = vz * v * f;
+                p.drag = 0.025f;
+                p.gravity = 0.04f;
+                p.birth = this.born + k * 0.8;
+                p.life = (int) ((28 + this.random.nextInt(22)) * Math.min(2.2f, 0.9f + crater() / 40));
+                p.size0 = 0.9f * scale;
+                p.size1 = (2.2f + 0.8f * this.random.nextFloat()) * scale * (1 + 0.2f * k);
+                p.stretch = 1.1f;
+                p.color0 = dirt;
+                p.color1 = Puffs.lerpRgb(this.earth, 0x6E645A, 0.5f);
+                p.alpha = 0.9f - 0.1f * k;
+                p.variant = this.random.nextInt(3);
+                p.axisX = c.x;
+                p.axisZ = c.z;
+                puffs.add(p, quality);
+            }
+        }
+        int fireJets = this.mushroom != null ? 0 : (int) (this.preset.jets() * 0.4f * quality);    // a nuclear fireball is smooth
+        for (int i = 0; i < fireJets; i++) {
+            double az = spokeAzimuth();
+            double elev = Math.toRadians(10 + this.random.nextFloat() * 70);
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.FIRE;
+            p.x = c.x;
+            p.y = c.y;
+            p.z = c.z;
+            float v = big * (0.9f + 0.5f * this.random.nextFloat()) * 0.18f;
+            p.drag = 0.18f;
+            p.vx = (float) (Math.cos(az) * Math.cos(elev)) * v;
+            p.vy = (float) Math.sin(elev) * v;
+            p.vz = (float) (Math.sin(az) * Math.cos(elev)) * v;
+            p.birth = this.born;
+            p.life = (int) (fireLife * (0.35f + 0.25f * this.random.nextFloat()));
+            p.size0 = big * 0.3f;
+            p.size1 = big * 0.5f;
+            p.stretch = 2f;
+            p.color0 = 0xFFE0A0;
+            p.color1 = 0xA03410;
+            p.alpha = 0.85f;
+            p.variant = this.random.nextInt(4);
+            puffs.add(p, quality);
+        }
+    }
+
+    /** An azimuth, more often along the crater's strong spokes. */
+    private double spokeAzimuth() {
+        for (int tries = 0; tries < 6; tries++) {
+            double az = this.random.nextDouble() * 2 * Math.PI;
+            float spoke = StreakNoise.at((float) Math.cos(az), 0, (float) Math.sin(az), this.noiseSeed);
+            if (this.random.nextFloat() < 0.35f + spoke) {
+                return az;
+            }
+        }
+        return this.random.nextDouble() * 2 * Math.PI;
+    }
+
     /** A random unit direction, leaning upward by {@code lift}. */
     private float[] direction(float lift) {
         double gx = this.random.nextGaussian(), gy = this.random.nextGaussian() + lift * 2, gz = this.random.nextGaussian();
@@ -185,6 +316,9 @@ final class BlastFx {
     // --- each tick -------------------------------------------------------------------------------------------------------------
     void tick(ClientLevel level, Puffs puffs, Debris debris, double now, float quality, Vec3 camera) {
         double t = age(now);
+        if (this.mushroom != null && t >= 0 && !this.mushroom.done(t)) {
+            this.mushroom.tick(t);
+        }
         float front = frontRadius(t);
         releaseDebris(level, debris, front, quality);
         dust(level, puffs, front, now, quality);
@@ -239,9 +373,7 @@ final class BlastFx {
                     continue;                              // a cliff or a deep valley: no ground to sweep here
                 }
                 pos.set(Math.floor(x), ground - 1, Math.floor(z));
-                MapColor map = level.getBlockState(pos).getMapColor(level, pos);
-                // Grass and plants are torn up: the dust is the soil under them.
-                int earth = map == MapColor.GRASS || map == MapColor.PLANT || map == MapColor.NONE ? MapColor.DIRT.col : map.col;
+                int earth = earthColor(level, pos);
                 Puffs.Puff p = new Puffs.Puff();
                 p.kind = Puffs.Kind.DUST;
                 p.x = x;
@@ -254,9 +386,12 @@ final class BlastFx {
                 p.vy = 0.02f + 0.04f * this.random.nextFloat();
                 p.rise = 0.004f;
                 p.birth = now;
-                p.life = (int) ((40 + this.random.nextInt(50)) * Math.min(2.5f, 0.8f + crater() / 30));
+                float surge = this.preset.surge();
+                p.life = (int) ((40 + this.random.nextInt(50)) * Math.min(2.5f, 0.8f + crater() / 30) * surge);
                 p.size0 = 0.8f * scale;
-                p.size1 = (3f + 1.5f * this.random.nextFloat()) * scale * (1 - 0.45f * r / outer);
+                p.size1 = (3f + 1.5f * this.random.nextFloat()) * scale * (1 - 0.45f * r / outer) * (0.6f + 0.4f * surge);
+                p.axisX = c.x;
+                p.axisZ = c.z;
                 p.color0 = Puffs.lerpRgb(earth, 0xB0A898, 0.35f);
                 p.color1 = Puffs.lerpRgb(earth, 0xC8C2B8, 0.6f);
                 p.alpha = 0.55f * (1 - 0.6f * r / outer);
@@ -276,7 +411,10 @@ final class BlastFx {
         float windX = 0.012f + 0.01f * (this.noiseSeed & 7) / 7f, windZ = 0.006f * (((this.noiseSeed >> 3) & 7) - 3.5f) / 3.5f;
         if (!this.fireballSmoked && t >= pr.fireballLife() * 0.55) {
             this.fireballSmoked = true;
-            double cy = c.y + pr.fireballRise() * crater() / 20 * t;
+            if (this.mushroom != null) {
+                return;                                    // the mushroom cloud is its smoke
+            }
+            double cy = fireballCentre(t).y;
             for (int i = 0; i < pr.smoke() * 0.35f * quality; i++) {
                 float[] d = direction(0.3f);
                 float at = big * (float) Math.cbrt(this.random.nextFloat());
@@ -337,6 +475,8 @@ final class BlastFx {
         p.variant = this.random.nextInt(8);
         p.rot = this.random.nextFloat() * 6.283f;
         p.spin = (this.random.nextFloat() - 0.5f) * 0.01f;
+        p.axisX = this.start.center().x;
+        p.axisZ = this.start.center().z;
         return p;
     }
 

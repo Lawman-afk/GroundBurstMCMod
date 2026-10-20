@@ -23,8 +23,12 @@ import net.neoforged.neoforge.common.NeoForge;
  * review the Spectacle effects without playing.
  */
 public final class FxPhotographer {
-    /** A blast to photograph: profile, how far away to stand, camera pitch, and the moments (ticks after) to shoot. */
-    private record Scene(String profile, int distance, float pitch, List<Integer> moments) {}
+    /** A blast to photograph: shot name, profile, how far away to stand, camera pitch, and the moments (ticks after) to shoot. */
+    private record Scene(String name, String profile, int distance, float pitch, List<Integer> moments, String time) {
+        Scene(String name, String profile, int distance, float pitch, List<Integer> moments) {
+            this(name, profile, distance, pitch, moments, "noon");
+        }
+    }
 
     private static final Deque<Scene> SCENES = new ArrayDeque<>();
     private static Scene scene;
@@ -41,9 +45,12 @@ public final class FxPhotographer {
         }
         String only = System.getProperty("groundzero.fxShots.only", "");
         List<Integer> moments = List.of(1, 3, 6, 10, 16, 25, 40, 70, 120, 200);
-        for (Scene s : List.of(new Scene("test/small", 14, 8, moments), new Scene("test/medium", 42, 0, moments),
-                new Scene("test/large", 95, -8, moments), new Scene("test/nuclear", 180, -14, moments))) {
-            if (only.isEmpty() || s.profile().endsWith(only)) {
+        for (Scene s : List.of(new Scene("small", "test/small", 14, 8, moments), new Scene("medium", "test/medium", 42, 0, moments),
+                new Scene("large", "test/large", 95, -8, moments),
+                new Scene("nuclear", "test/nuclear", 230, -16, List.of(1, 3, 6, 10, 20, 40, 80, 160, 300, 600, 1000, 1600)),
+                new Scene("nuclear_close", "test/nuclear", 130, -32, List.of(30, 120, 300, 700)),
+                new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"))) {
+            if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
         }
@@ -87,7 +94,7 @@ public final class FxPhotographer {
             int x = site * 1200;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
-                server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "time set noon");
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "time set " + s.time());
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "gamerule doDaylightCycle false");
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 player.setGameMode(GameType.SPECTATOR);
@@ -113,7 +120,7 @@ public final class FxPhotographer {
             return;
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
-            String name = "fx_" + scene.profile().replace("test/", "") + "_" + clock + ".png";
+            String name = "fx_" + scene.name() + "_" + clock + ".png";
             Screenshot.grab(mc.gameDirectory, name, mc.gameRenderer.mainRenderTarget(), 1,
                     msg -> GroundZero.LOGGER.info("Fx shot: {}", msg.getString()));
             step++;
