@@ -1,6 +1,7 @@
 {
   "core": 1.0,
   "crater": 3.0,
+  "ejecta": 0.3,
   "entities": {
     "damage": 6.0,
     "edge_damage": 8.0,

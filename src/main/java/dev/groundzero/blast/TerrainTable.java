@@ -12,9 +12,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
 
 /**
- * What the shock does to blocks past the crater (DESIGN.md §11.1 terrain table), applied by pressure rays: in the
- * structural band light blocks are blown out and the ray carries on through the gap; in the scorch band exposed
- * surfaces are scorched and the ray stops there. A blast profile names its table. Tables are code for now; they move
+ * What the shock does to blocks past the crater (DESIGN.md §11.1 terrain table): in the structural band pressure rays
+ * blow light blocks out and carry on through the gap; in the scorch band the ground pass scorches the ground the
+ * fireball can see (§11.4c). A blast profile names its table. Tables are code for now; they move
  * to a datapack registry when the aftermath blocks (scorched earth, ash, trinitite) arrive in Phase 12.
  */
 public enum TerrainTable {

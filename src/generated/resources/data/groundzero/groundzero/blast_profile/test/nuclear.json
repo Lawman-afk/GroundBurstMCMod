@@ -13,6 +13,7 @@
   "front_speed": 3.0,
   "lobes": 0.2,
   "scorch": 120.0,
+  "streaks": 0.35,
   "structural": 140.0,
   "terrain": "groundzero:nuclear"
 }

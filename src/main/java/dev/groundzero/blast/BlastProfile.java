@@ -24,6 +24,9 @@ import net.minecraft.resources.ResourceKey;
  * @param frontSpeed  how fast the destruction and shock front travels, in blocks a tick
  * @param craterDepth energy of a straight-down ray relative to a sideways one (below 1: bowl craters, not spheres)
  * @param lobes       how irregular the crater rim is (0: round; 0.3: clearly lobed)
+ * @param streaks     how uneven neighbouring rays are (0: smooth; 0.35: a starburst crater with fingers past the rim, a
+ *                    spiky floor, and scorch and ejecta in spokes)
+ * @param ejecta      how much rubble is thrown out past the rim, along the spokes (0: none)
  * @param drops       chance each destroyed block drops itself (0 for anything big)
  * @param terrain     the terrain table for the structural and scorch bands ({@link TerrainTable})
  * @param instant     whether the whole blast happens in one tick (small charges); by default when it is small
@@ -31,7 +34,7 @@ import net.minecraft.resources.ResourceKey;
  * @param visual      the client visual preset (Phase 5, slice 5c); by default chosen by the crater's size
  */
 public record BlastProfile(float core, float crater, float structural, float scorch, float fire, EntityZones entities,
-        float frontSpeed, float craterDepth, float lobes, float drops, Identifier terrain, Optional<Boolean> instant,
+        float frontSpeed, float craterDepth, float lobes, float streaks, float ejecta, float drops, Identifier terrain, Optional<Boolean> instant,
         Optional<String> sound, Optional<String> visual) {
 
     public static final ResourceKey<Registry<BlastProfile>> REGISTRY = ResourceKey.createRegistryKey(GroundZero.id("blast_profile"));
@@ -64,6 +67,8 @@ public record BlastProfile(float core, float crater, float structural, float sco
             Codec.FLOAT.optionalFieldOf("front_speed", 2f).forGetter(BlastProfile::frontSpeed),
             Codec.FLOAT.optionalFieldOf("crater_depth", 0.7f).forGetter(BlastProfile::craterDepth),
             Codec.FLOAT.optionalFieldOf("lobes", 0.15f).forGetter(BlastProfile::lobes),
+            Codec.FLOAT.optionalFieldOf("streaks", 0.3f).forGetter(BlastProfile::streaks),
+            Codec.FLOAT.optionalFieldOf("ejecta", 0.4f).forGetter(BlastProfile::ejecta),
             Codec.FLOAT.optionalFieldOf("drops", 0f).forGetter(BlastProfile::drops),
             Identifier.CODEC.optionalFieldOf("terrain", TerrainTable.CONVENTIONAL).forGetter(BlastProfile::terrain),
             Codec.BOOL.optionalFieldOf("instant").forGetter(BlastProfile::instant),
@@ -107,12 +112,17 @@ public record BlastProfile(float core, float crater, float structural, float sco
         return new BlastProfile(Math.min(max, core * k), Math.min(max, crater * k), Math.min(max, structural * k),
                 Math.min(max, scorch * k), Math.min(max, fire * k),
                 new EntityZones(Math.min(max, e.lethal() * k), Math.min(max, e.damage() * k), e.lethalDamage(), e.edgeDamage(), e.knockback()),
-                frontSpeed, craterDepth, lobes, drops, terrain, instant, sound, visual);
+                frontSpeed, craterDepth, lobes, streaks, ejecta, drops, terrain, instant, sound, visual);
     }
 
-    /** The radius the block work runs to (crater and the bands beyond it). */
+    /** The radius the block work runs to (the crater with its longest fingers, and the bands beyond it). */
     public float terrainRadius() {
-        return Math.max(Math.max(crater, structural), Math.max(scorch, fire));
+        return Math.max(Math.max(crater * (streaks > 0 ? 1.8f : 1), structural), groundRadius());
+    }
+
+    /** The radius the ground pass runs to (scorch, fire, and ejecta, which lands up to 1.9 craters out). */
+    public float groundRadius() {
+        return Math.max(Math.max(scorch, fire), ejecta > 0 ? crater * 1.9f : 0);
     }
 
     /** The radius the whole blast runs to (terrain and entity zones). */

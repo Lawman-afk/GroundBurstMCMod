@@ -2,6 +2,7 @@
   "core": 3.0,
   "crater": 12.0,
   "crater_depth": 0.6,
+  "ejecta": 0.5,
   "entities": {
     "damage": 22.0,
     "knockback": 2.0,
@@ -11,5 +12,6 @@
   "fire": 10.0,
   "front_speed": 3.0,
   "scorch": 16.0,
+  "streaks": 0.35,
   "structural": 18.0
 }

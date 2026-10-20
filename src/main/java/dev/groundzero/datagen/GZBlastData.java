@@ -31,28 +31,35 @@ public final class GZBlastData {
     }
 
     private static BlastProfile profile(float core, float crater, float structural, float scorch, float fire, float lethal, float damage,
-            float frontSpeed, float craterDepth, float lobes, float lethalDamage, float edgeDamage, float knockback, Identifier terrain,
-            Optional<Boolean> instant) {
+            float frontSpeed, float craterDepth, float lobes, float streaks, float ejecta, float lethalDamage, float edgeDamage,
+            float knockback, Identifier terrain, Optional<Boolean> instant) {
         return new BlastProfile(core, crater, structural, scorch, fire,
-                new BlastProfile.EntityZones(lethal, damage, lethalDamage, edgeDamage, knockback), frontSpeed, craterDepth, lobes, 0f,
-                terrain, instant, Optional.empty(), Optional.empty());
+                new BlastProfile.EntityZones(lethal, damage, lethalDamage, edgeDamage, knockback), frontSpeed, craterDepth, lobes, streaks,
+                ejecta, 0f, terrain, instant, Optional.empty(), Optional.empty());
     }
 
     private static void profiles(BootstrapContext<BlastProfile> ctx) {
-        // core, crater, structural, scorch, fire, lethal, damage, speed, depth, lobes, lethal dmg, edge dmg, knockback
-        ctx.register(Blasts.profile("test/small"), profile(1, 3, 5, 4, 0, 3, 6, 4, 0.7f, 0.1f, 30, 8, 1.0f,
+        // core, crater, structural, scorch, fire, lethal, damage, speed, depth, lobes, streaks, ejecta, lethal dmg, edge dmg, knockback
+        ctx.register(Blasts.profile("test/small"), profile(1, 3, 5, 4, 0, 3, 6, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.empty()));
-        ctx.register(Blasts.profile("test/medium"), profile(3, 12, 18, 16, 10, 10, 22, 3, 0.6f, 0.15f, 120, 20, 2.0f,
+        ctx.register(Blasts.profile("test/medium"), profile(3, 12, 18, 16, 10, 10, 22, 3, 0.6f, 0.15f, 0.35f, 0.5f, 120, 20, 2.0f,
                 TerrainTable.CONVENTIONAL, Optional.empty()));
-        ctx.register(Blasts.profile("test/large"), profile(8, 32, 48, 44, 30, 28, 60, 4, 0.55f, 0.18f, 400, 30, 2.5f,
+        ctx.register(Blasts.profile("test/large"), profile(8, 32, 48, 44, 30, 28, 60, 4, 0.55f, 0.18f, 0.35f, 0.5f, 400, 30, 2.5f,
                 TerrainTable.CONVENTIONAL, Optional.empty()));
-        ctx.register(Blasts.profile("test/nuclear"), profile(16, 60, 140, 120, 100, 90, 180, 3, 0.5f, 0.2f, 1000, 40, 3.0f,
+        ctx.register(Blasts.profile("test/nuclear"), profile(16, 60, 140, 120, 100, 90, 180, 3, 0.5f, 0.2f, 0.35f, 0.4f, 1000, 40, 3.0f,
                 TerrainTable.NUCLEAR, Optional.empty()));
-        // GameTest profiles: a crater-only charge, and a slow one that must take several ticks.
-        ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0, 0, 0,
+        // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
+        ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
-        ctx.register(Blasts.profile("test/slow"), profile(1, 5, 0, 0, 0, 4, 6, 0.5f, 1.0f, 0f, 50, 8, 1.0f,
+        ctx.register(Blasts.profile("test/slow"), profile(1, 5, 0, 0, 0, 4, 6, 0.5f, 1.0f, 0f, 0f, 0f, 50, 8, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(false)));
+        // ...and one each for the crater's streaks, the ground pass's scorch, and the ejecta.
+        ctx.register(Blasts.profile("test/streaky"), profile(0, 5, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0.5f, 0f, 0, 0, 0,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("test/scorch"), profile(0, 2, 0, 7, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("test/ejecta"), profile(0, 4, 0, 0, 0, 0, 0, 4, 0.7f, 0f, 0.35f, 1.0f, 0, 0, 0,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
     }
 
     private static void damageTypes(BootstrapContext<DamageType> ctx) {

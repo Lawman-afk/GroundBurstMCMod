@@ -15,7 +15,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** Phase 5 slice 5a: the explosion engine (instant blasts, shielding, a front that takes several ticks, exposure, no item spew). */
+/**
+ * Phase 5: the explosion engine (instant blasts, shielding, a front that takes several ticks, exposure, no item spew,
+ * saving, the crater's streaks, the ground pass, ejecta).
+ */
 final class BlastTests {
     private BlastTests() {}
 
@@ -27,6 +30,9 @@ final class BlastTests {
         GZGameTests.test("blast_voids_destroyed_containers", GZGameTests.FLOOR_16, 20, BlastTests::noSpew);
         GZGameTests.test("blast_reaches_blocks_above_it", GZGameTests.FLOOR_16, 20, BlastTests::upward);
         GZGameTests.test("blast_saves_and_resumes", GZGameTests.FLOOR_16, 40, BlastTests::persistence);
+        GZGameTests.test("blast_streaks_make_a_ragged_crater", GZGameTests.FLOOR_16, 20, BlastTests::streaks);
+        GZGameTests.test("blast_scorches_only_what_it_sees", GZGameTests.FLOOR_16, 20, BlastTests::scorchShadow);
+        GZGameTests.test("blast_throws_out_rubble", GZGameTests.FLOOR_16, 20, BlastTests::ejecta);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -57,7 +63,7 @@ final class BlastTests {
         helper.assertTrue(blast != null, "the profile exists");
         helper.assertTrue(blast.isDone(), "a small blast finishes at once");
         helper.assertTrue(air(helper, 0, 0, 0) && air(helper, 1, 0, 0) && air(helper, 0, 1, 0) && air(helper, -1, 0, 1), "the middle is cleared");
-        helper.assertTrue(!air(helper, 5, 0, 0) && !air(helper, 0, 0, -5), "stone further out stays");
+        helper.assertTrue(!air(helper, 6, 0, 0) && !air(helper, 0, 0, -6), "stone further out stays");
         helper.succeed();
     }
 
@@ -141,5 +147,78 @@ final class BlastTests {
             helper.assertTrue(copy != null && !copy.isDone(), "it comes back from saving at radius " + blast.radius());
             helper.succeed();
         });
+    }
+
+    /** How far out from the burst, along a horizontal direction, the crater runs (up to {@code max}). */
+    private static int dug(GameTestHelper helper, double angle, int max) {
+        for (int d = 1; d <= max; d++) {
+            if (!air(helper, (int) Math.round(d * Math.cos(angle)), 0, (int) Math.round(d * Math.sin(angle)))) {
+                return d - 1;
+            }
+        }
+        return max;
+    }
+
+    /** A streaky charge in solid stone digs a ragged crater: much further in some directions than in others. */
+    private static void streaks(GameTestHelper helper) {
+        fill(helper, 1, 1, 1, 15, 7, 15, Blocks.STONE);
+        Blasts.detonate(helper.getLevel(), center(helper), Blasts.profile("test/streaky"), null);
+        int shortest = Integer.MAX_VALUE, longest = 0;
+        for (int i = 0; i < 32; i++) {
+            int d = dug(helper, i * Math.PI / 16, 7);
+            shortest = Math.min(shortest, d);
+            longest = Math.max(longest, d);
+        }
+        helper.assertTrue(longest - shortest >= 2, "the rim is ragged (dug " + shortest + " to " + longest + " blocks)");
+        helper.succeed();
+    }
+
+    /**
+     * Grass the burst can see is scorched to dirt; grass the same distance away behind a wall is untouched.
+     */
+    private static void scorchShadow(GameTestHelper helper) {
+        fill(helper, 1, 1, 1, 15, 1, 15, Blocks.DIRT);
+        fill(helper, 1, 2, 1, 15, 2, 15, Blocks.GRASS_BLOCK);              // the ground, top at y = 2
+        fill(helper, 11, 3, 6, 11, 6, 10, Blocks.OBSIDIAN);                // a wall 3 blocks out on +x
+        BlockPos burst = new BlockPos(8, 3, 8);
+        Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(burst)), Blasts.profile("test/scorch"), null);
+        for (int d = 5; d <= 6; d++) {
+            for (int side = -1; side <= 1; side++) {
+                BlockPos hidden = burst.offset(d, -1, side);
+                helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(hidden)).is(Blocks.GRASS_BLOCK),
+                        "grass behind the wall is untouched at " + hidden);
+            }
+        }
+        int open = 0, scorched = 0;
+        for (int d = 3; d <= 6; d++) {
+            for (int side = -2; side <= 2; side++) {
+                open++;
+                if (helper.getLevel().getBlockState(helper.absolutePos(burst.offset(-d, -1, side))).is(Blocks.DIRT)) {
+                    scorched++;
+                }
+            }
+        }
+        helper.assertTrue(scorched * 10 >= open * 6, "most grass in the open is scorched (" + scorched + " of " + open + ")");
+        helper.succeed();
+    }
+
+    /** A charge buried at the surface of stone throws cobblestone and gravel out past its crater. */
+    private static void ejecta(GameTestHelper helper) {
+        fill(helper, 0, 1, 0, 15, 3, 15, Blocks.STONE);
+        BlockPos burst = new BlockPos(8, 4, 8);
+        Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(burst)), Blasts.profile("test/ejecta"), null);
+        int rubble = 0;
+        for (int x = 0; x <= 15; x++) {
+            for (int z = 0; z <= 15; z++) {
+                for (int y = 2; y <= 5; y++) {
+                    var state = helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(x, y, z)));
+                    if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.GRAVEL)) {
+                        rubble++;
+                    }
+                }
+            }
+        }
+        helper.assertTrue(rubble >= 3, "rubble lands round the crater (" + rubble + " blocks)");
+        helper.succeed();
     }
 }

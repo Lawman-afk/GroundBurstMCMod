@@ -514,8 +514,9 @@ visual, sound  ids of the client visual preset and sound set
 - Each ray carries **energy**. Entering a block costs `air_cost + resistanceScale × resistance^k`. Inside `r_core`
   everything breakable goes; beyond it blocks are destroyed while energy remains, so dense materials **shield what is
   behind them** (an obsidian bunker 30 blocks from a fission blast survives; bedrock casts a "shadow").
-- Initial energy varies by direction (downward rays get `crater_depth`× energy, giving bowl craters, not spheres) and
-  by smooth noise over the sphere (lobed, irregular rims). Seeded, so client and server agree.
+- Initial energy varies by direction (downward rays get `crater_depth`× energy, giving bowl craters, not spheres), by
+  smooth noise over the sphere (lobed, irregular rims) and by fine streak noise (a starburst rim and spiky floor,
+  §11.4c). Seeded, so client and server agree.
 - A ray whose energy is spent continues as a **pressure ray** through the structural/scorch/fire bands, applying the
   conversion table instead of destroying.
 - A per-section bitset prevents double-processing where split rays overlap.
@@ -572,11 +573,40 @@ messages.
   background; the front waits for the answer). Leftover tickets are dropped on world load. The ray ceiling rises as
   far chunks load.
 - Saving: the level's blasts are its saved data `data/groundzero/blasts.dat` (codec: id, profile id and the scaled
-  profile, centre, seed, terrain flags, front radius, age, phase, the live rays packed at 18 bytes each, the crater rim,
+  profile, centre, seed, terrain flags, front radius, age, phase, the live rays packed at 18 bytes each, 22 since §11.4c, the crater rim,
   start tick). They resume on load, queued in order.
 - Client sync: `blast_start` (sound set, visual, centre, crater, reach, outer radius, front speed, seed, start tick),
   `blast_front` (radius, every 4 ticks), `blast_end`, sent to every player in the dimension; a player who logs in or
   changes dimension is sent the running ones. Network protocol version 2.
+
+### 11.4c Crater character: streaks, ground pass, ejecta
+After the first in-game look the user asked for craters with the radial line patterns of good explosion mods, not
+smooth spheres. Prototyped in `tools/preview/crater_preview.py` (numpy mirror of the engine on flat ground: top view
+plus cross-section), tuned there, then ported with the same formulas.
+- **Streaks:** each ray has a *grain*, `clamp(1 + streaks x 1.9 x noise(direction), 0.45, 1.8)`, where the noise is
+  3-octave value noise over the direction (lattice frequencies 7 / 15 / 31, weights 0.5 / 0.3 / 0.2, a 32-bit integer
+  hash seeded by the blast; `StreakNoise`, mirrored exactly by the preview). Grain multiplies the ray's starting energy
+  and its crater reach (`crater x grain`); split children take their own grain and the parent's energy rescaled by
+  child / parent grain, so the streaks sharpen as rays multiply. Because rays run straight out, neighbouring strong and
+  weak rays draw radial lines: a starburst rim with fingers past the mean radius and a spiky crater floor. (A version
+  that damped the grain for downward rays, giving a smooth bowl, was tried; the user preferred the spiky floor, toned
+  down slightly: factor 2.2 to 1.9.) Profile field `streaks` (default 0.3; 0 = smooth).
+- **Ground pass:** pressure rays no longer scorch or light fires (grazing rays and the cube-face grid made rings and
+  seams). After each shell the columns whose centre lies in (r - 1, r] are visited. A column's ground is its highest
+  motion-blocking block at or below the fireball (the burst plus max(1.5, crater / 4)), so floors under roofs and in
+  caves count and walls at that height shadow what is behind them. A 720+ bucket azimuth horizon keeps the steepest
+  angle seen so far; each column raises it across its own width; a column below the horizon (minus 0.02 rad) is
+  hidden and spared. Visible columns: scorch where `dist / scorch < 0.72 + 0.6 x spoke x (1 + streaks)` (spoke = the
+  same noise on the horizontal direction, so scorch spokes line up with the crater's fingers; a full disc when
+  streaks is 0) with 8% speckle; fire with chance `0.6 x (1 - dist / fire)`; columns the crater dug or will dig
+  (inside 0.45 crater) are skipped.
+- **Ejecta:** from 0.8 to 1.9 crater radii, rubble lands on visible ground with chance
+  `ejecta x 3 x max(0, spoke + 0.05) x (1 - t)^1.5`, `t = max(0, (dist - crater) / (0.9 crater))`: rays of debris along
+  the spokes. Its material follows what the crater dug (stone: cobblestone or gravel; deepslate: cobbled deepslate or
+  gravel; soil: dirt or coarse dirt; sand: sand), or the ground it lands on for a blast resumed after a restart.
+  Profile field `ejecta` (default 0.4).
+- Saved rays carry their grain (22 bytes each, with a version marker; older saves load with grain 1). The ground
+  pass's horizon is not saved: after a restart it starts empty.
 
 ### 11.5 Chunks, persistence, absence
 - A `TicketController` (`groundzero:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
@@ -1635,3 +1665,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Phase 5 is built in slices: 5a the server engine (profiles, ray field, writer, budget scheduler, entities, instant mode, config, test command); 5b chunk tickets, persistence and resume, client sync packets, distance-delayed sound; 5c the Spectacle effects (flash, fireball, shockwave, debris, smoke, shake, sky tint); 5d the mushroom cloud and the reactor meltdown. |
 | 2026-10-20 | Slice 5a engine choices: block cost 0.3 + resistance^0.75 against a starting ray energy of crater x cost(stone); terrain written through Level.setBlock with no-neighbour/no-drop/no-side-effect flags rather than raw section writes (simpler and keeps lighting, heightmaps and client batching correct; revisit if profiling shows it is the bottleneck). |
 | 2026-10-20 | Slice 5b: blasts force-load their active chunk band with a NeoForge ticket controller and never generate chunks unless the server allows it (existence read from disk first); running blasts are the level's saved data and resume after a restart; clients get start / front / end packets; blast sound is distance-delayed and banded by the blast's own size, played at a virtual distance in the true direction. |
+| 2026-10-21 | Crater character (user feedback: round craters are dull): rays get a seeded streak grain that scales energy and crater reach, giving starburst rims and a spiky floor (the user chose the spiky floor over a smoothed bowl); scorch and fire move from pressure rays to a per-shell ground pass with an azimuth horizon (hidden ground is spared, scorch falls in spokes matching the crater's fingers); new ejecta rubble along the spokes, made of what was dug. New profile fields `streaks` and `ejecta`. |

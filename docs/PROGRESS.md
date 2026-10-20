@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, 101/101 GameTests. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta), 104/104 GameTests. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -152,7 +152,7 @@ checklist for the user.
 | Item | Status |
 |---|---|
 | BlastProfile datapack registry + terrain tables | done (5a: synced registry, 6 test profiles; terrain tables in code until Phase 12 blocks) |
-| Adaptive shell ray field | done (5a: cube-sphere rays splitting at 0.7 blocks, energy/shielding, lobes, crater depth, pressure bands) |
+| Adaptive shell ray field | done (5a: cube-sphere rays splitting at 0.7 blocks, energy/shielding, lobes, crater depth, pressure bands; streak grain for starburst craters with spiky floors) |
 | Section writer, relight batching, packets | done (5a: flagged Level.setBlock writes, rim neighbour updates; 5b: blast start/front/end packets) |
 | Budget scheduler (ms + block budgets, fair sharing) | done (5a) |
 | Entity damage/exposure/knockback/fire | done (5a: groundzero:blast damage type) |
@@ -163,7 +163,8 @@ checklist for the user.
 | Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | todo |
 | Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | todo |
 | Distance-delayed sound scheduler + virtual-distance big sounds | done (5b: small/medium/large/nuke sets, 4 bands each) — needs in-game listen |
-| GameTests: radius, shielding, budget, persistence | done (instant, shielding, multi-tick front, exposure, no spew, upward reach, save and resume) |
+| Ground pass: line-of-sight scorch and fire in spokes, ejecta rubble | done (crater character pass; tuned with tools/preview/crater_preview.py) — needs in-game look |
+| GameTests: radius, shielding, budget, persistence | done (instant, shielding, multi-tick front, exposure, no spew, upward reach, save and resume, ragged rim, scorch shadow, ejecta) |
 
 ## Phase 6 — Conventional explosives
 | Item | Status |
