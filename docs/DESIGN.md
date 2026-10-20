@@ -328,7 +328,7 @@ All machines use **NeoForge Energy (FE)** so they interoperate with other tech m
 | Combustion Generator | 60 FE/t | Burns any furnace fuel; synthetic fuel canister = 24 000 FE. Exhaust smoke, rumble loop. |
 | Diesel Generator | 180 FE/t | Burns synthetic fuel or liquid rocket fuel piped into its tank (canisters/buckets pour in). Piston animation. |
 | RTG, "Radioisotope Generator" in game | 40 FE/t forever-ish | Fuel slug in a slot: enriched uranium ingot lasts 2 in-game days now; plutonium ingot (Fission Reactor) will last 10. The slug decays whether or not the power is used. Emits low radiation if not shielded by lead blocks (Phase 12). Glowing fins. |
-| Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown is a config option, off by default (§7.1). Cherenkov-blue core. |
+| Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown unless SCRAMmed in time, on by default (§7.1; the server can turn it off). Cherenkov-blue core. |
 | Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas (LiD pellets are kept for the thermonuclear weapons). Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
 | Singularity Reactor ("special" multiblock) | up to 25 000 FE/t | A singularity seed sits in the controller (it stays there, like a battery in the charger) and is held in a powered containment cage. It eats items, any items: each is worth 10 000 FE and it eats at most 50 a second, so its output is set by the feed rate (10 items/s = 5 000 FE/t, 50 items/s = 25 000 FE/t). Holding the cage costs 1 000 FE/t (2 items/s). Built to need automatic cobblestone or tree farms. Taking the seed out shuts it down safely; if the cage runs dry or the structure is broken while it holds the seed, the core collapses and the seed is destroyed (a destructive collapse, a small Phase 11 singularity effect, will be a config option). |
 | Capacitor Bank / Advanced / Superconducting | 100k / 1M / 10M FE, 1 024 / 8 192 / 32 768 FE/t | Every face takes power in except the front, which pushes it out; keeps its charge when picked up; comparator output; 8-bar charge gauge on the model. Superweapons draw from these during charge. |
@@ -343,8 +343,8 @@ Fabricator (400 FE/t) needs 7 Combustion Generators, 3 Diesel Generators, or a t
 reactors are game abstractions (invented parts, simple fuel-in/energy-out rules), never real reactor designs (§30).
 
 ### 7.1 Fission Reactor meltdown (as built, Phase 5)
-A game abstraction of a reactor accident, opt-in by the server config `reactor.meltdowns` (default off; off, the
-reactor SCRAMs at 900 °C as before).
+A game abstraction of a reactor accident, on by default (the user's call); the server config `reactor.meltdowns` turns
+it off, and then the reactor SCRAMs at 900 °C.
 - **Critical.** With meltdowns on there is no automatic SCRAM. Past 900 °C with the rods out the core is critical:
   it gains 0.35 + 0.9 x power °C a tick even when cooled (heating without coolant slows to a tenth, so this runaway
   sets the pace): about 15 s to 40 s of warning, by power. A klaxon (`reactor.alarm`, two alternating tones) sounds
@@ -656,7 +656,7 @@ plus cross-section), tuned there, then ported with the same formulas.
 | `terrain.convertBiomes` | true | paint the wasteland biome around nuclear craters |
 | `missiles.maxRange`, `missiles.loadChunksAlongPath` | 30 000, true | |
 | `emp.affectsVanillaRedstone` | true | |
-| `reactor.meltdowns` | false | a critical reactor melts down instead of SCRAMming (§7.1) |
+| `reactor.meltdowns` | true | a critical reactor melts down unless SCRAMmed; false: it SCRAMs at 900 °C (§7.1) |
 | `singularity.maxBlocksRipped` | 20 000 | |
 | `superweapons.announce`, `superweapons.maxRange`, `superweapons.chargeTimeMultiplier` | true, 4 096, 1.0 | |
 
@@ -1787,3 +1787,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Spectacle v2 after the user asked for much better effects: researched HBM's Torex cloud, game VFX practice and test footage; built our own toroidal-vortex mushroom cloud (cap roll, ground-fed stem, collar, Wilson shell), cloud-style CPU lighting from the real sun and sky for every smoke puff, a far-cloud shader (haze instead of render-distance fog, depth-writing with cut-out fringe), dirt and fire jets and a flare for conventional blasts. Smoke and cloudlets share one texture sheet so they sort as one batch. |
 | 2026-10-21 | After the in-game look: mushroom cloud life halved to 2.5 minutes (nuke sky tint too), its stem fed by a trickle so it stands until the cloud thins; crater grain factor 1.9 to 1.7; the ground pass leaves fluid surfaces alone (rubble was being set on top of water). |
 | 2026-10-21 | Fission Reactor meltdown built (§7.1): opt-in, no automatic SCRAM; a critical phase with runaway heat, klaxon, warnings and venting gives 15-40 s to SCRAM; at 1 400 °C a dirty blast, corium (cools in ~10 min) and a one-day contaminated zone. Contamination is a stand-in until Phase 12's radiation field: zones apply a new Radiation Sickness effect (hunger, then armour-bypassing radiation damage), which the shower washes off and Phase 12 will drive from dose instead. |
+| 2026-10-21 | Reactor meltdowns are on by default (the user asked); `reactor.meltdowns = false` brings back the automatic SCRAM. |

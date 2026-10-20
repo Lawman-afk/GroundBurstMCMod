@@ -607,10 +607,10 @@ Everything goes through its ports: coolant into the **Fluid Port** at the back o
 """),
     structure("fission_reactor", "Controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port in the middle and a second Item Port."),
     text("""
-**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again. On servers with meltdowns turned on there is no automatic SCRAM: see [Reactor safety](safety/reactor_safety).
+**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. Past **900 C** the core goes **critical**: press the red **SCRAM** button (every rod drops in) or it melts down. See [Reactor safety](safety/reactor_safety).
 
-- **Water:** safe up to about 70% rods out; further than that and the core climbs to the SCRAM point. Up to 25 mB a tick.
-- **Heavy water:** keeps the core well below the SCRAM point even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.
+- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. Up to 25 mB a tick.
+- **Heavy water:** keeps the core well below 900 C even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.
 
 The coolant gauge has a dump button to empty it. The heat and rod gauges sit beside the rod buttons; the red button is the manual SCRAM.
 """),
@@ -618,7 +618,7 @@ The coolant gauge has a dump button to empty it. The heat and rod gauges sit bes
         ["Full power", "1,200 FE/t"],
         ["Fuel rod lasts", "12,000 ticks"],
         ["Target rod", "6,000 ticks"],
-        ["SCRAM at", "900 C"],
+        ["Critical at", "900 C"],
         ["Water", "25 mB/t"],
         ["Heavy water", "5 mB/t"],
     ], "At full power"),
@@ -756,10 +756,10 @@ Keep fluids in tanks, pipes and canisters. The [Decontamination Shower](safety/d
 
 entry("safety/reactor_safety", "Reactor safety", "lead_lined_casing", ["nuclear_waste", "corium", "cooled_corium"], [
     text("""
-The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out.
+Keep the [Fission Reactor](nuclear/fission_reactor) below 900 C: keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out. The red button is the **SCRAM**: every control rod drops in and the reactor stays down until you withdraw them.
 """),
     text("""
-**Meltdowns.** A server can turn meltdowns on (they are off unless it does). Then nothing SCRAMs the reactor for you. Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.
+**Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.
 
 **Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day.
 """),

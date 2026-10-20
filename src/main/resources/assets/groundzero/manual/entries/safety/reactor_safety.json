@@ -10,11 +10,11 @@
   "pages": [
     {
       "type": "text",
-      "text": "The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out."
+      "text": "Keep the [Fission Reactor](nuclear/fission_reactor) below 900 C: keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out. The red button is the **SCRAM**: every control rod drops in and the reactor stays down until you withdraw them."
     },
     {
       "type": "text",
-      "text": "**Meltdowns.** A server can turn meltdowns on (they are off unless it does). Then nothing SCRAMs the reactor for you. Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day."
+      "text": "**Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day."
     },
     {
       "type": "table",

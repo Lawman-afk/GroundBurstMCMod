@@ -159,7 +159,7 @@ checklist for the user.
 | Chunk tickets, SavedData persistence, resume | done (5b: ticket band, no generation unless allowed, blasts.dat, resume) |
 | Instant mode for small blasts | done (5a) |
 | Server config limits | done (5a: destroy switch, multiplier, max radius, budgets, concurrency, protected spawn/dimensions) |
-| Fission Reactor meltdown (blast + contamination when the core overheats with SCRAM off; server config toggle) | done (critical phase, klaxon, meltdown blast, corium, contaminated zones, Radiation Sickness) — needs in-game look |
+| Fission Reactor meltdown (blast + contamination when the core overheats with SCRAM off; server config toggle) | done (critical phase, klaxon, meltdown blast, corium, contaminated zones, Radiation Sickness; on by default) — needs in-game look |
 | Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | done (5c; heat haze deferred) — reviewed with runFxShots, needs in-game look |
 | Mushroom cloud (toroidal cap, stem, collar, Wilson shell), cloud lighting, far clouds, dirt/fire jets, flare | done (Spectacle v2) — reviewed with runFxShots, needs in-game look |
 | Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | partly (glow, fire and cloud pipelines with OIT sets; our own fx_cloud fragment shader; heat haze still to do) |

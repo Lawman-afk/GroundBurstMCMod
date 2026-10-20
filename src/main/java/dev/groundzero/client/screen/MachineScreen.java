@@ -190,8 +190,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         }
     }
 
+    /** The reactor's heat gauge (0 to 1 400 °C): green below 700, amber to 900, red when critical. */
     private static int heatColor(float frac) {
-        return frac < 0.55f ? 0xFF4AD06A : frac < 0.8f ? 0xFFFFB020 : 0xFFFF3A2A;
+        return frac < 0.5f ? 0xFF4AD06A : frac < 0.643f ? 0xFFFFB020 : 0xFFFF3A2A;
     }
 
     private MachineLayout.@org.jspecify.annotations.Nullable Control controlAt(int mx, int my) {
@@ -261,8 +262,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                     Component.translatable(MachineText.DUMP_HINT).withColor(0xFF9AA0A8)), java.util.Optional.empty(), mouseX, mouseY);
         } else if (controlAt(mx, my) != null) {
             MachineLayout.Control c = controlAt(mx, my);
-            g.setTooltipForNextFrame(c.isButton() ? Component.translatable(c.tooltip())
-                    : Component.translatable(c.tooltip(), this.menu.extra(c.data())), mouseX, mouseY);
+            String key = c.tooltip();
+            if (c.kind().equals("heat") && dev.groundzero.config.GZServerConfig.REACTOR_MELTDOWNS.get()) {
+                key = MachineText.HEAT_TIP_MELTDOWN;                // critical at 900, melts down at 1 400
+            }
+            g.setTooltipForNextFrame(c.isButton() ? Component.translatable(key)
+                    : Component.translatable(key, this.menu.extra(c.data())), mouseX, mouseY);
         } else if (this.layout.status().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(this.menu.status().translationKey()), mouseX, mouseY);
         } else if (this.layout.redstone().contains(mx, my)) {

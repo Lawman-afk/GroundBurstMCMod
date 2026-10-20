@@ -53,9 +53,9 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
  * <li>Coolant: water or heavy water. With coolant flowing the core heads for 20 + 1 150 x power / quality °C (1% of the
  *     way each tick): water has quality 1, so past about 70% power the core would pass 900 °C; heavy water has
  *     quality 1.6, so even full power settles near 740 °C. Water is used at up to 25 mB a tick, heavy water at a fifth
- *     of that. Without enough coolant the core heats up quickly. At 900 °C it SCRAMs (all rods in) until the rods are
- *     withdrawn again.</li>
- * <li>Meltdown (server config {@code reactor.meltdowns}, off by default): there is no automatic SCRAM. Past 900 °C with
+ *     of that. Without enough coolant the core heats up quickly. With meltdowns turned off, at 900 °C it SCRAMs (all
+ *     rods in) until the rods are withdrawn again.</li>
+ * <li>Meltdown (server config {@code reactor.meltdowns}, on by default): there is no automatic SCRAM. Past 900 °C with
  *     the rods out the core is <b>critical</b>: it runs away, gaining 0.35 + 0.9 x power °C a tick even when cooled
  *     (heating without coolant slows to a tenth, so the runaway sets the pace), a klaxon sounds, nearby players are
  *     warned and steam vents from the top. SCRAM (or all rods in) still saves it. At 1 400 °C it melts down: the

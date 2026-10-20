@@ -104,9 +104,10 @@ final class ReactorTests {
         });
     }
 
-    /** No water: the core heats until it SCRAMs and drops every rod in. */
+    /** Meltdowns off: no water, the core heats until it SCRAMs and drops every rod in. */
     private static void reactorScrams(GameTestHelper helper) {
         FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        r.setMeltdownsForTest(false);
         fuel(r, 4);
         withdrawAll(r);
         helper.succeedWhen(() -> {
@@ -116,9 +117,10 @@ final class ReactorTests {
         });
     }
 
-    /** Water coolant at full power: the core heads past 900 C and SCRAMs, with water still in the tank. */
+    /** Meltdowns off, water coolant at full power: the core heads past 900 C and SCRAMs, with water still in the tank. */
     private static void waterOverheats(GameTestHelper helper) {
         FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        r.setMeltdownsForTest(false);
         fuel(r, 4);
         r.tank(0).fillInternal(new FluidStack(Fluids.WATER, 16_000));
         withdrawAll(r);
@@ -272,7 +274,8 @@ final class ReactorTests {
     private static void meltdown(GameTestHelper helper) {
         FissionReactorBlockEntity r = reactor(helper, new BlockPos(7, 1, 6));
         BlockPos ctrl = r.controllerPos();
-        r.setMeltdownsForTest(true);
+        helper.assertTrue(dev.groundzero.config.GZServerConfig.REACTOR_MELTDOWNS.getDefault(), "meltdowns are on by default");
+        r.setMeltdownsForTest(true);                       // whatever this run's config file says
         fuel(r, 4);
         withdrawAll(r);
         r.setHeatForTest(FissionReactorBlockEntity.MELTDOWN_HEAT - 120);

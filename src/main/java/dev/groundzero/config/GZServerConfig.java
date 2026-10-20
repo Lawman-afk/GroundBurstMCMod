@@ -134,9 +134,10 @@ public final class GZServerConfig {
     }
 
     public static final ModConfigSpec.BooleanValue REACTOR_MELTDOWNS = B
-            .comment("When true, an overheating reactor melts down instead of shutting itself down (SCRAM).")
+            .comment("When true (the default), an overheating reactor goes critical and melts down unless SCRAMmed in time.",
+                    "When false, it shuts itself down (SCRAM) at 900 C instead.")
             .translation(GZLang.config("reactor.meltdowns", "Meltdowns"))
-            .define("meltdowns", false);
+            .define("meltdowns", true);
 
     static {
         B.pop();
