@@ -1,8 +1,6 @@
 package dev.groundzero.content.ordnance.charge;
 
-import dev.groundzero.GroundZero;
 import dev.groundzero.network.GZNetwork;
-import dev.groundzero.registry.GZLang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import dev.groundzero.registry.GZDataComponents;
@@ -28,10 +26,6 @@ public final class ChargePayloads {
     /** Save the settings; save them and arm it; make it safe. */
     public static final int SAVE = 0, ARM = 1, SAFE = 2;
 
-    static final String ARMED = GZLang.add(GroundZero.MODID + ".charge.armed", "Armed: frequency %s");
-    static final String ARMED_TIMER = GZLang.add(GroundZero.MODID + ".charge.armed_timer", "Armed: frequency %s, %s s timer");
-    static final String MADE_SAFE = GZLang.add(GroundZero.MODID + ".charge.safe", "Safe");
-    static final String MUST_DEFUSE = GZLang.add(GroundZero.MODID + ".charge.must_defuse", "It is counting down: cut the right wire to stop it");
 
     public record Settings(BlockPos pos, boolean timer, int frequency, int seconds, int action) implements CustomPacketPayload {
         public static final Type<Settings> TYPE = GZNetwork.type("charge_settings");
@@ -54,12 +48,12 @@ public final class ChargePayloads {
                 be.configure(p.timer() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE, p.frequency(), p.seconds());
                 if (p.action() == ARM && !be.armed()) {
                     be.arm(level, player);
-                    player.sendOverlayMessage(be.mode() == ChargeBlockEntity.Mode.TIMER
-                            ? Component.translatable(ARMED_TIMER, be.frequency(), be.timer()).withStyle(ChatFormatting.RED)
-                            : Component.translatable(ARMED, be.frequency()).withStyle(ChatFormatting.RED));
+                    String key = be.kind().sensor != ChargeKind.Sensor.NONE && !be.kind().remote ? ChargeBlock.MSG_ARMED_MINE
+                            : be.mode() == ChargeBlockEntity.Mode.TIMER ? ChargeBlock.MSG_ARMED_TIMER : ChargeBlock.MSG_ARMED;
+                    player.sendOverlayMessage(Component.translatable(key, be.frequency(), be.timer()).withStyle(ChatFormatting.RED));
                 } else if (p.action() == SAFE && be.armed()) {
-                    player.sendOverlayMessage(be.disarm(level) ? Component.translatable(MADE_SAFE).withStyle(ChatFormatting.GREEN)
-                            : Component.translatable(MUST_DEFUSE).withStyle(ChatFormatting.GOLD));
+                    player.sendOverlayMessage(be.disarm(level) ? Component.translatable(ChargeBlock.MSG_SAFE).withStyle(ChatFormatting.GREEN)
+                            : Component.translatable(ChargeBlock.MSG_MUST_DEFUSE).withStyle(ChatFormatting.GOLD));
                 }
             }
         }

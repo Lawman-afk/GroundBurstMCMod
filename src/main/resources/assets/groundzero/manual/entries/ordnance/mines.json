@@ -10,7 +10,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Mines are placed on the ground and are safe until armed: right-click one with an empty hand and press **Arm**. It beeps for 3 seconds while you get clear, then it is live. **Make safe** from the same screen to pick one up again. Redstone, or another blast, sets one off too."
+      "text": "Mines are placed on the ground and are safe until armed: right-click one with an empty hand and press **Arm**. It is live at once, so arm it from a step away. **Make safe** from the same screen to pick one up again. Redstone, or another blast, sets one off too."
     },
     {
       "type": "spotlight",

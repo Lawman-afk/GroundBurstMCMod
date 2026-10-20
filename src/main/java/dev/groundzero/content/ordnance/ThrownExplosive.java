@@ -371,7 +371,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         }
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(TOXIN_RADIUS))) {
             if (e.position().distanceTo(at) <= TOXIN_RADIUS) {
-                Toxins.expose(level, e, 3f, 160, 1);
+                Toxins.expose(level, e, 3f, 160, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
             }
         }
         level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0x8CE040, 1.6f), at.x, at.y + 0.3, at.z, 60,
@@ -387,7 +387,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         Vec3 c = position();
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(radius + 1))) {
             if (e.getEyePosition().distanceTo(c) <= radius || e.position().distanceTo(c) <= radius) {
-                Toxins.expose(level, e, 1f, 100, 1);
+                Toxins.expose(level, e, 1f, 100, Toxins.GAS);
             }
         }
     }

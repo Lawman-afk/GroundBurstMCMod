@@ -293,7 +293,7 @@ def bouncing_mine() -> list[str]:
 
 def claymore() -> list[str]:
     m = BlockModel("claymore", tex_size=(64, 64), kind="block")
-    m.box("front", (4, 1, 6), (12, 8, 10.5))                         # the face, bowed toward the enemy
+    m.box("front", (4, 1, 6), (12, 8, 11))                           # the face, bowed toward the enemy, as deep as the wings
     m.box("wing_w", (2, 1, 6.6), (4, 8, 11), faces=("north", "south", "west", "up", "down"))
     m.box("wing_e", (12, 1, 6.6), (14, 8, 11), faces=("north", "south", "east", "up", "down"))
     legs = []

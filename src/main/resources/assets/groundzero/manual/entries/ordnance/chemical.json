@@ -19,12 +19,12 @@
     {
       "type": "spotlight",
       "item": "groundzero:gas_grenade",
-      "text": "A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it is poisoned and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it."
+      "text": "A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it gets **Poison III** and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it."
     },
     {
       "type": "spotlight",
       "item": "groundzero:toxin_grenade",
-      "text": "A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes."
+      "text": "A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash gets **Poison IV** and nausea, and the glowing green sludge it leaves does the same to anything that walks through it. The sludge dries out over about two minutes."
     },
     {
       "type": "machine",

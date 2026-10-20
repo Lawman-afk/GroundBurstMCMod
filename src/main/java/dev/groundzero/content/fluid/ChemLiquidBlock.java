@@ -56,7 +56,8 @@ public class ChemLiquidBlock extends LiquidBlock {
             }
             case TOXIC -> {
                 if (living.tickCount % 10 == 0) {
-                    dev.groundzero.content.ordnance.Toxins.expose(server, living, 1f, 100, 1);
+                    dev.groundzero.content.ordnance.Toxins.expose(server, living, 1f, 100, dev.groundzero.content.ordnance.Toxins.TOXIN,
+                            dev.groundzero.content.ordnance.Toxins.TOXIN_NAUSEA);
                 }
             }
             case NONE -> {

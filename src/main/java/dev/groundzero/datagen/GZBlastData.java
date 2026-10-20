@@ -70,7 +70,8 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("bouncing_mine"), profile(0.3f, 1, 3, 2, 0, 4, 9, 4, 0.5f, 0, 0.1f, 0.1f, 25, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
-        ctx.register(Blasts.profile("claymore"), profile(0, 0.5f, 2, 1, 0, 1.5f, 4, 4, 0.5f, 0, 0, 0, 10, 4, 1.0f,
+        // The claymore's blast is only the bang and flash: its fragments, all fired ahead, do the harm.
+        ctx.register(Blasts.profile("claymore"), profile(0, 0.3f, 1, 1, 0, 0, 0, 4, 0.5f, 0, 0, 0, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

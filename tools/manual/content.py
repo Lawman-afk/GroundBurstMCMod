@@ -813,7 +813,7 @@ Press to trigger every armed charge on its frequency within 256 blocks. Sneak-us
 
 entry("ordnance/mines", "Mines", "landmine", ["landmine", "bouncing_mine", "claymore"], [
     text("""
-Mines are placed on the ground and are safe until armed: right-click one with an empty hand and press **Arm**. It beeps for 3 seconds while you get clear, then it is live. **Make safe** from the same screen to pick one up again. Redstone, or another blast, sets one off too.
+Mines are placed on the ground and are safe until armed: right-click one with an empty hand and press **Arm**. It is live at once, so arm it from a step away. **Make safe** from the same screen to pick one up again. Redstone, or another blast, sets one off too.
 """),
     spot("landmine", """
 Sits half buried with only its pressure plate showing. Anything that steps on it once it is live sets it off.
@@ -835,10 +835,10 @@ entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "
 Grenades that poison rather than blow up. Both are made in the [Chemical Plant](processing/chemical_plant) and both are stopped by a [hazmat suit](safety/hazmat_suits): each piece keeps out its share, and a full suit of either kind keeps out all of it.
 """),
     spot("gas_grenade", """
-A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it is poisoned and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
+A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it gets **Poison III** and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
 """),
     spot("toxin_grenade", """
-A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes.
+A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash gets **Poison IV** and nausea, and the glowing green sludge it leaves does the same to anything that walks through it. The sludge dries out over about two minutes.
 """),
     machine("chemistry", "", item="salt"),
     machine("chemistry", "", fluid="chlorine"),

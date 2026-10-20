@@ -84,7 +84,7 @@ public class ToxicSludgeBlock extends Block {
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (level instanceof ServerLevel server && entity instanceof LivingEntity living && living.tickCount % 10 == 0) {
-            Toxins.expose(server, living, 1.5f, 80, 1);
+            Toxins.expose(server, living, 1.5f, 80, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
         }
     }
 

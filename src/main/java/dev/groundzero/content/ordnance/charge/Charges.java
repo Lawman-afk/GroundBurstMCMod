@@ -214,7 +214,7 @@ public final class Charges {
         return zone != null && !level.getEntitiesOfClass(LivingEntity.class, zone, e -> e.isAlive() && !e.isSpectator()).isEmpty();
     }
 
-    /** The claymore: a small blast at its face and 60 fragments in a 60 degree cone ahead, a little upward. */
+    /** The claymore: a bang at its face (harmless in itself) and 60 fragments in a 60 degree cone ahead, a little upward. */
     private static void claymore(ServerLevel level, BlockPos pos, Direction facing, @Nullable Entity by) {
         Vec3 dir = Vec3.atLowerCornerOf(facing.getUnitVec3i());
         Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.4, 0).add(dir.scale(0.4));

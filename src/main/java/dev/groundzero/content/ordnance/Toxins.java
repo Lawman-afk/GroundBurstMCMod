@@ -21,6 +21,16 @@ public final class Toxins {
      * {@code amplifier} for {@code poisonTicks}, both cut by the suit.
      */
     public static void expose(ServerLevel level, LivingEntity entity, float damage, int poisonTicks, int amplifier) {
+        expose(level, entity, damage, poisonTicks, amplifier, 0);
+    }
+
+    /** Poison gas (chlorine, toxic gas clouds): Poison III. */
+    public static final int GAS = 2;
+    /** Toxin (the grenade's splash, its sludge, the liquid): Poison IV, and nausea. */
+    public static final int TOXIN = 3, TOXIN_NAUSEA = 200;
+
+    /** As above, with nausea for {@code nauseaTicks} too (cut by the suit like the rest). */
+    public static void expose(ServerLevel level, LivingEntity entity, float damage, int poisonTicks, int amplifier, int nauseaTicks) {
         float keep = 1 - GZArmor.chemicalProtection(entity);
         if (keep < 0.05f) {
             return;
@@ -32,6 +42,10 @@ public final class Toxins {
         int ticks = Math.round(poisonTicks * keep);
         if (ticks > 0) {
             entity.addEffect(new MobEffectInstance(MobEffects.POISON, ticks, amplifier));
+        }
+        int nausea = Math.round(nauseaTicks * keep);
+        if (nausea > 0) {
+            entity.addEffect(new MobEffectInstance(MobEffects.NAUSEA, nausea, 0));
         }
     }
 }

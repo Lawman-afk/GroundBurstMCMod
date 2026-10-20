@@ -28,7 +28,7 @@ public enum ChargeKind {
     /** A curved box of fragments facing the enemy: a laser tripwire (or a detonator on its frequency) fires them in a 60 degree cone. */
     CLAYMORE("claymore", false, true, false, 0, Sensor.TRIPWIRE);
 
-    /** What sets it off by itself once armed (after a few seconds' grace to get clear). */
+    /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
 
     public final String id;

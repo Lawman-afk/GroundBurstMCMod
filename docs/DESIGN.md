@@ -959,6 +959,12 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 - Recipes: Landmine x2 (steel plate, stone pressure plate, 2 gunpowder), Bouncing Mine (frag grenade, steel plate,
   stone pressure plate, gunpowder), Claymore (plastic explosive, 4 iron nuggets, steel plate, basic circuit). Sounds:
   the plate's click, the canister's launch.
+- **After the in-game look (feedback pass):** no arming grace: a mine is live the moment it is armed. The claymore's
+  blast (`claymore` profile) now has no entity damage or knockback, only the bang, flash and a tiny crater, so only
+  its forward cone of fragments hurts; its model's face section runs the full depth of its wings (no gaps at the
+  back). Toxins: gas (the gas grenade, toxic gas clouds) gives Poison III; toxin (the splash, the sludge, the liquid)
+  gives Poison IV and 10 s of nausea. The arming messages' language keys moved to `ChargeBlock` (the packet class
+  was never loaded by data generation, so they had no English text).
 
 ## 15. Nuclear weapons
 
@@ -1911,3 +1917,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6b placed charges: one block + block entity for every charge; screens open client-side from synced block-entity data (no container menus); arming a Timer fuze starts its countdown; a counting timed bomb can only be defused (four wires: defuse / boom / two halve the time); charges caught in any blast go off armed or not; thermite stays put while it eats its support. |
 | 2026-10-21 | Slice 6b feedback: arming moves into the charge's own screen (no Arming Key); arming makes a charge live and the detonator or redstone triggers it, starting the timer where there is one (never overriding a safe charge); C4 is instant only; every charge has a frequency; the timed bomb's blast grows to crater 9. |
 | 2026-10-21 | Slice 6c mines: built on the placed-charge framework (same screen, arming, redstone, sympathetic detonation) with sensors and a 3 s arming grace; mines are modelled sunk into the ground; the bouncing mine's canister reuses the thrown-explosive entity; the claymore's laser is drawn as geometry, not particles (block display ticks were too sparse to show it). |
+| 2026-10-21 | Slice 6c feedback: mines are live as soon as armed (no grace); the claymore hurts only through its forward fragments; gas Poison III, toxin Poison IV with nausea. |

@@ -54,6 +54,15 @@ public class ChargeBlock extends Block implements EntityBlock {
     /** Thermite only: burning. */
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
+    // Messages for arming and making safe (here, not in the packet class, so the language data always has them).
+    public static final String MSG_ARMED = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed", "Armed: frequency %s");
+    public static final String MSG_ARMED_TIMER = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed_timer",
+            "Armed: frequency %s, %s s timer");
+    public static final String MSG_ARMED_MINE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed_mine", "Armed: live");
+    public static final String MSG_SAFE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.safe", "Safe");
+    public static final String MSG_MUST_DEFUSE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.must_defuse",
+            "It is counting down: cut the right wire to stop it");
+
     /** Client hook: opens the settings or defuse screen for the charge at a position (set by the client). */
     public static Consumer<BlockPos> screenHook = p -> {};
 

@@ -15,16 +15,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** Phase 6 slice 6c: mines (pressure, the arming grace, the bouncing canister, the claymore's laser and cone). */
+/** Phase 6 slice 6c: mines (pressure, the bouncing canister, the claymore's laser and cone, forward only). */
 final class MineTests {
     private MineTests() {}
 
     static void register() {
-        GZGameTests.test("landmine_ignores_steps_until_armed", GZGameTests.FLOOR_16, 140, MineTests::safeAndGrace);
+        GZGameTests.test("landmine_ignores_steps_until_armed", GZGameTests.FLOOR_16, 40, MineTests::safeAndGrace);
         GZGameTests.test("landmine_goes_off_when_stepped_on", GZGameTests.FLOOR_16, 120, MineTests::landmine);
         GZGameTests.test("bouncing_mine_pops_up_and_bursts", GZGameTests.FLOOR_16, 120, MineTests::bouncing);
         GZGameTests.test("claymore_laser_fires_a_cone_ahead", GZGameTests.FLOOR_16, 120, MineTests::claymore);
         GZGameTests.test("mines_take_no_detonator_signal", GZGameTests.FLOOR_16, 20, MineTests::noRemote);
+        GZGameTests.test("claymore_spares_what_is_behind_it", GZGameTests.FLOOR_16, 60, MineTests::behind);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -44,7 +45,7 @@ final class MineTests {
         return helper.getLevel().getBlockState(helper.absolutePos(rel)).is(block);
     }
 
-    /** A pig standing on a safe landmine does nothing; armed, it waits out its grace with the pig on it, then goes. */
+    /** A pig standing on a safe landmine does nothing; arming it sets it off at once. */
     private static void safeAndGrace(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
@@ -54,10 +55,7 @@ final class MineTests {
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(is(helper, at, GZOrdnance.LANDMINE.block().get()), "safe: stepped on, nothing");
             mine.arm(helper.getLevel(), null);
-            helper.runAfterDelay(ChargeBlockEntity.ARMING_GRACE - 20, () -> {
-                helper.assertTrue(is(helper, at, GZOrdnance.LANDMINE.block().get()) && !mine.live(), "still in its grace");
-                helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.LANDMINE.block().get()), "live, and it goes off"));
-            });
+            helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.LANDMINE.block().get()), "armed, it goes off"));
         });
     }
 
@@ -67,7 +65,7 @@ final class MineTests {
         BlockPos at = new BlockPos(8, 2, 8);
         ChargeBlockEntity mine = place(helper, GZOrdnance.LANDMINE.block().get(), at, Direction.NORTH);
         mine.arm(helper.getLevel(), null);
-        helper.runAfterDelay(ChargeBlockEntity.ARMING_GRACE + 2, () -> {
+        helper.runAfterDelay(2, () -> {
             helper.assertTrue(mine.live(), "live");
             var pig = helper.spawn(EntityTypes.PIG, at);
             pig.setNoAi(true);
@@ -86,7 +84,7 @@ final class MineTests {
         mine.arm(helper.getLevel(), null);
         AABB area = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).expandTowards(16, 12, 16);
         double ground = helper.absolutePos(at).getY();
-        helper.runAfterDelay(ChargeBlockEntity.ARMING_GRACE + 2, () -> {
+        helper.runAfterDelay(2, () -> {
             var pig = helper.spawn(EntityTypes.PIG, at);
             pig.setNoAi(true);
             helper.runAfterDelay(4, () -> {
@@ -106,7 +104,7 @@ final class MineTests {
         ChargeBlockEntity mine = place(helper, GZOrdnance.CLAYMORE.block().get(), at, Direction.EAST);
         mine.arm(helper.getLevel(), null);
         AABB area = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).expandTowards(16, 12, 16);
-        helper.runAfterDelay(ChargeBlockEntity.ARMING_GRACE + 2, () -> {
+        helper.runAfterDelay(2, () -> {
             double reach = Charges.laserLength(helper.getLevel(), helper.absolutePos(at), helper.getLevel().getBlockState(helper.absolutePos(at)));
             helper.assertTrue(reach >= Charges.LASER_RANGE - 0.01, "the laser reaches its full range (" + reach + ")");
             var pig = helper.spawn(EntityTypes.PIG, new BlockPos(7, 2, 8));
@@ -130,5 +128,21 @@ final class MineTests {
         Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 0, null, 10);
         helper.assertTrue(is(helper, at, GZOrdnance.LANDMINE.block().get()), "still there");
         helper.succeed();
+    }
+
+    /** A pig right behind a claymore, and one ahead in its cone: it fires; the one behind is unhurt. */
+    private static void behind(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(6, 2, 8);
+        ChargeBlockEntity mine = place(helper, GZOrdnance.CLAYMORE.block().get(), at, Direction.EAST);
+        var back = helper.spawn(EntityTypes.PIG, new BlockPos(5, 2, 8));
+        back.setNoAi(true);
+        mine.arm(helper.getLevel(), null);
+        mine.trigger(helper.getLevel(), null);
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(!is(helper, at, GZOrdnance.CLAYMORE.block().get()), "gone off");
+            helper.assertTrue(back.isAlive() && back.getHealth() == back.getMaxHealth(), "the pig behind it is unhurt (" + back.getHealth() + ")");
+            helper.succeed();
+        });
     }
 }
