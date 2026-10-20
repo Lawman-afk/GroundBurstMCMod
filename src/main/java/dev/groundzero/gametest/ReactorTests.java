@@ -213,6 +213,21 @@ final class ReactorTests {
                     "the part at " + part + " leads to the controller");
         }
         helper.assertTrue(pa.definition().partPositions(pa.controllerPos(), pa.controllerFacing()).size() == 63, "63 parts and the controller");
+        // The staircase corners are cut to the octagon's slope: the front-left outer stair (pattern column 2, row 0)
+        // loses its north-west corner, on both layers.
+        for (MultiblockDefinition.Cell cell : pa.definition().cells(pa.controllerPos(), pa.controllerFacing())) {
+            if (cell.col() == 2 && cell.row() == 0) {
+                var state = level.getBlockState(cell.pos());
+                helper.assertTrue(state.getValue(dev.groundzero.content.multiblock.MultiblockPartBlock.CUT) == dev.groundzero.content.multiblock.PartCut.NORTH_WEST,
+                        "the outer stair is cut north-west, got " + state);
+                var shape = state.getShape(level, cell.pos());
+                helper.assertTrue(shape.toAabbs().stream().noneMatch(b -> b.contains(0.05, 0.5, 0.05)), "its north-west corner is open");
+                helper.assertTrue(shape.toAabbs().stream().anyMatch(b -> b.contains(0.95, 0.5, 0.95)), "its south-east corner is solid");
+            }
+        }
+        helper.assertTrue(dev.groundzero.content.multiblock.PartCut.NORTH_WEST.rotated(Direction.EAST) == dev.groundzero.content.multiblock.PartCut.NORTH_EAST
+                && dev.groundzero.content.multiblock.PartCut.NORTH_WEST.rotated(Direction.SOUTH) == dev.groundzero.content.multiblock.PartCut.SOUTH_EAST,
+                "cuts turn with the structure");
         for (Direction d : Direction.values()) {
             helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, pa.controllerPos(), d) == null
                     && level.getCapability(Capabilities.Energy.BLOCK, pa.controllerPos(), d) == null, "the controller exposes nothing on " + d);

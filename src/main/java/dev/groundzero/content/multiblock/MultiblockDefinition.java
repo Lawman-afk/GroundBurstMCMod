@@ -21,8 +21,19 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * @param layers  layers[y][row] is a string of legend characters, one per column; '.' = must be air, ' ' = anything
  * @param legend  what each character accepts, plus the block shown for it in previews and placed by the spawner
+ * @param cuts    pattern cells (column, row; every layer) whose formed blocks have a corner cut on a slope, with the
+ *                corner as written for a controller facing north
  */
-public record MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend) {
+public record MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend, Map<Long, PartCut> cuts) {
+    public MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend) {
+        this(id, layers, legend, Map.of());
+    }
+
+    /** Key for {@link #cuts}. */
+    public static long cutKey(int col, int row) {
+        return ((long) col << 32) | (row & 0xFFFFFFFFL);
+    }
+
     /** The controller's character in every pattern. */
     public static final char CONTROLLER = 'X';
 
@@ -34,7 +45,7 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
     }
 
     /** One expected block: where, which legend character, which layer (0 = bottom). */
-    public record Cell(BlockPos pos, char key, int layer) {}
+    public record Cell(BlockPos pos, char key, int layer, int col, int row) {}
 
     /** A cell whose block is wrong (missing or a different block). */
     public record Mismatch(BlockPos pos, char key, boolean empty, int layer) {}
@@ -70,7 +81,7 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
                 for (int x = 0; x < row.length(); x++) {
                     char key = row.charAt(x);
                     if (key != ' ') {
-                        out.add(new Cell(cellPos(controller, facing, x, y, z), key, y));
+                        out.add(new Cell(cellPos(controller, facing, x, y, z), key, y, x, z));
                     }
                 }
             }
@@ -81,6 +92,11 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
     /** Parts only (no controller, no required-air cells). */
     public List<BlockPos> partPositions(BlockPos controller, Direction facing) {
         return cells(controller, facing).stream().filter(c -> c.key() != CONTROLLER && c.key() != '.').map(Cell::pos).toList();
+    }
+
+    /** The corner cut of a cell's formed block for a controller facing {@code facing}. */
+    public PartCut cutFor(Cell cell, Direction facing) {
+        return this.cuts.getOrDefault(cutKey(cell.col(), cell.row()), PartCut.NONE).rotated(facing);
     }
 
     /** Wrong or missing blocks; empty means the structure is complete. */

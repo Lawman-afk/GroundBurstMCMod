@@ -1068,7 +1068,9 @@ y0:  ..PPPPP..   y1:  ..SSXJS..
 injector `J` beside it, the target chamber `T` at the back centre, an Energy Port `E` and an Item Port `I` (containment
 cells in, antimatter out) in the middle of the sides. The controller is in the top layer, so the ring reaches one block
 below it. The formed model's beam line is a true octagon (straight runs on the sides, 45° runs through the corner
-staircases) kept inside these cells, so every part on show is a block you can click.
+staircases) and its plinth a true octagonal ring 16 px wide, with sloped faces across the staircases. When the ring
+forms, each staircase block (both layers) gets a corner cut to that slope (`MultiblockPartBlock.CUT`: the three outer
+stairs lose their outer corner, the two inner stairs their inner corner), so outlines and collision follow the model.
 
 **Radar Station** (3×3×5): `y0: PEP / PXP / PPP`, `y1–y3: .F. / FFF / .F.` (mast), `y4: DDD / DFD / DDD` (dish mount).
 
@@ -1503,3 +1505,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Machine CRTs: when a readout's glass is too low for its lines to stack, the lines sit side by side in columns, centred (the reactor's OUT and CORE). |
 | 2026-10-20 | Field Manual (the native in-game guide, §24.2) gets its own slice after the slice 7 fixes, ahead of slice 8: researched against how the major tech mods do theirs, with info pages, recipes and pictures. |
 | 2026-10-20 | Particle Accelerator redesigned (user feedback: inconsistent right-click areas, a hovering truss, too square): a two-layer octagonal ring 9 blocks across (steel plating under magnet segments, 32 cells a layer) with the controller at the front centre. The formed model is a true octagonal beam line (corner bending magnets, long dipoles on the diagonals, quadrupoles on the sides) kept entirely inside the structure's cells, so what you see is what you can click. The top steel-frame layer is gone, and the Steel Frame block with it until the structures that use it (Radar Station, Launch Complex) are built. |
+| 2026-10-20 | Particle Accelerator corners sloped (user request): the formed plinth is a true octagonal ring, and formed part blocks can carry a corner cut (`cut` block-state property, set by the controller from the pattern's cut map and turned with the structure) whose outline and collision follow a 45° slope, built from 2-px slices. |

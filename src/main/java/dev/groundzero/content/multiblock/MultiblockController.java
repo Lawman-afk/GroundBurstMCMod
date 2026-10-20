@@ -22,12 +22,21 @@ public interface MultiblockController {
         return definition().contains(controllerPos(), controllerFacing(), pos);
     }
 
-    /** Sets the formed flag on every part block that has one (and points ports at the controller). */
+    /** Sets the formed flag (and corner cut) on every part block that has one, and points ports at the controller. */
     static void setPartsFormed(Level level, MultiblockController controller, boolean formed) {
-        for (BlockPos pos : controller.definition().partPositions(controller.controllerPos(), controller.controllerFacing())) {
+        MultiblockDefinition def = controller.definition();
+        for (MultiblockDefinition.Cell cell : def.cells(controller.controllerPos(), controller.controllerFacing())) {
+            if (cell.key() == MultiblockDefinition.CONTROLLER || cell.key() == '.') {
+                continue;
+            }
+            BlockPos pos = cell.pos();
             var state = level.getBlockState(pos);
-            if (state.hasProperty(MultiblockPartBlock.FORMED) && state.getValue(MultiblockPartBlock.FORMED) != formed) {
-                level.setBlock(pos, state.setValue(MultiblockPartBlock.FORMED, formed), net.minecraft.world.level.block.Block.UPDATE_ALL);
+            if (state.hasProperty(MultiblockPartBlock.FORMED)) {
+                PartCut cut = formed ? def.cutFor(cell, controller.controllerFacing()) : PartCut.NONE;
+                var target = state.setValue(MultiblockPartBlock.FORMED, formed).setValue(MultiblockPartBlock.CUT, cut);
+                if (target != state) {
+                    level.setBlock(pos, target, net.minecraft.world.level.block.Block.UPDATE_ALL);
+                }
             }
             if (level.getBlockEntity(pos) instanceof PortBlockEntity port) {
                 port.setController(formed ? controller.controllerPos() : null);

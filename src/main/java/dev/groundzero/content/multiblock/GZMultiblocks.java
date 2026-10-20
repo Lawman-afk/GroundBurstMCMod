@@ -70,8 +70,8 @@ public final class GZMultiblocks {
      * cells on each side and a five-cell staircase at each corner, 32 cells a layer. Bottom layer steel plating; top
      * layer magnet segments with the controller at the front centre, the injector beside it, the target chamber at the
      * back centre, an Energy Port in the middle of one side and an Item Port in the middle of the other. The inside and
-     * the corners outside the octagon are free. The formed model's beam line keeps inside these cells, so every part
-     * you see is a part you can click.
+     * the corners outside the octagon are free. The formed model's beam line keeps inside these cells, and the formed
+     * corner blocks are cut to the plinth's slopes, so every part you see is a part you can click.
      */
     public static final MultiblockDefinition PARTICLE_ACCELERATOR = new MultiblockDefinition(GroundZero.id("particle_accelerator"),
             new String[][] {
@@ -82,7 +82,30 @@ public final class GZMultiblocks {
                     'S', Entry.of(() -> MAGNET_SEGMENT.block().get()), 'J', Entry.of(() -> INJECTOR.block().get()),
                     'T', Entry.of(() -> TARGET_CHAMBER.block().get()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
                     'I', Entry.of(ITEM_PORT.block()),
-                    MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.PARTICLE_ACCELERATOR.block().get())));
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.PARTICLE_ACCELERATOR.block().get())),
+            octagonCuts());
+
+    /**
+     * The accelerator's sloped corners: in each corner staircase the three outer cells lose their outer corner and the
+     * two inner cells their inner corner, so the formed blocks follow the octagonal plinth.
+     */
+    private static Map<Long, PartCut> octagonCuts() {
+        Map<Long, PartCut> cuts = new java.util.HashMap<>();
+        int[][] outer = {{2, 0}, {1, 1}, {0, 2}}, inner = {{2, 1}, {1, 2}};
+        PartCut[][] corners = {
+                {PartCut.NORTH_WEST, PartCut.SOUTH_EAST}, {PartCut.NORTH_EAST, PartCut.SOUTH_WEST},
+                {PartCut.SOUTH_WEST, PartCut.NORTH_EAST}, {PartCut.SOUTH_EAST, PartCut.NORTH_WEST}};
+        for (int q = 0; q < 4; q++) {
+            boolean flipX = q == 1 || q == 3, flipZ = q >= 2;
+            for (int[] c : outer) {
+                cuts.put(MultiblockDefinition.cutKey(flipX ? 8 - c[0] : c[0], flipZ ? 8 - c[1] : c[1]), corners[q][0]);
+            }
+            for (int[] c : inner) {
+                cuts.put(MultiblockDefinition.cutKey(flipX ? 8 - c[0] : c[0], flipZ ? 8 - c[1] : c[1]), corners[q][1]);
+            }
+        }
+        return Map.copyOf(cuts);
+    }
 
     /**
      * One layer of the accelerator's 9x9 stepped octagon (rows front first) made of {@code c}, with the front and back

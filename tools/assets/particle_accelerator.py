@@ -2,12 +2,14 @@
 blocks across, drawn from its controller at the front centre of the upper layer: in the north-facing frame (origin =
 controller block bottom centre) the ring spans x -72..72, z -8..136, y -16..16.
 
-The ring follows its blocks exactly, so everything you can see is a block you can click. The structure is a stepped
-octagon of 32 cells per layer (3 straight cells on each side, a 5-cell staircase at each corner); the beam line is a
-true octagon through it: straight runs along the side cells' centre lines and 45-degree runs through the staircases,
-which stay inside the staircase cells because the line keeps to the band where those cells overlap.
+The ring follows its blocks, so everything you can see is a block you can click. The structure is a stepped octagon
+of 32 cells per layer (3 straight cells on each side, a 5-cell staircase at each corner); the beam line is a true
+octagon through it: straight runs along the side cells' centre lines and 45-degree runs through the staircases. The
+plinth is a true octagonal ring 16 px wide all the way round: its sloped corner faces cut across the staircase cells
+(whose formed blocks are cut to the same slope, see MultiblockPartBlock.CUT) and poke at most 3.3 px past the stair
+corners.
 
-Look: a steel-plated stepped plinth with hazard edging (bottom layer). On it the beam line: a steel beam pipe, a
+Look: a steel-plated octagonal plinth with hazard edging (bottom layer). On it the beam line: a steel beam pipe, a
 red bending magnet at each of the eight corners (turned to the bisector), two long red dipoles with copper coil ends on
 every diagonal, short yellow focusing quadrupoles on the straight sides, flanges where the pipe shows. The control
 cabinet (green CRT) stands in front of the beam pipe at the front centre, with a beam pickup on the pipe behind it; the
@@ -33,13 +35,17 @@ CTRL_COL = 4
 BEAM_Y = 7.0
 # Octagon corners of the beam line, clockwise seen from above starting at the front-west corner.
 V = [(-24.0, 0.0), (24.0, 0.0), (64.0, 40.0), (64.0, 88.0), (24.0, 128.0), (-24.0, 128.0), (-64.0, 88.0), (-64.0, 40.0)]
-# Pattern cells per row (front row first): the stepped octagon. Mirrors GZMultiblocks.PARTICLE_ACCELERATOR.
-ROWS = [(2, 3, 4, 5, 6), (1, 2, 6, 7), (0, 1, 7, 8), (0, 8), (0, 8), (0, 8), (0, 1, 7, 8), (1, 2, 6, 7), (2, 3, 4, 5, 6)]
 SPECIAL = {(4, 0): "controller", (5, 0): "injector", (4, 8): "target", (0, 4): "energy", (8, 4): "items"}
 # Magnet widths: the diagonal band the beam line may use is 11.3 px wide, so nothing on the line is wider than 11.
 DIPOLE_L, DIPOLE_W = 18.0, 11.0
 BEND_L, BEND_W = 9.0, 11.0
 QUAD_L, QUAD_W = 6.0, 11.0
+# The diagonal plinth pieces sit this much lower than the straight ones, so where they overlap at the corners their
+# tops are not in one plane.
+DIAG_TOP = -0.2
+# How far each plinth piece runs past the beam line's corner so their outer edges meet in a sharp octagon corner:
+# 8 px (half the ring width) x tan(22.5 degrees).
+MITRE = 8.0 * math.tan(math.radians(22.5))
 
 
 def tone(d: str) -> int:
@@ -109,17 +115,14 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         box = g.box(name, frm, to, **kw)
         return shared(group, box) if share else add(group, box)
 
-    # --- plinth (bottom layer): the stepped octagon of steel plating, contiguous cells in a row merged ---------------
-    for row, cols in enumerate(ROWS):
-        runs, start = [], cols[0]
-        for a, b in zip(cols, cols[1:] + (None,)):
-            if b != a + 1:
-                runs.append((start, a))
-                start = b
-        for c0, c1 in runs:
-            x0, _, z0, z1 = cell_box(c0, row)
-            x1 = cell_box(c1, row)[1]
-            add("plinth", g.box(f"plinth_{row}_{c0}", (x0, -16, z0), (x1, 0, z1), bone=F))
+    # --- plinth (bottom layer): an octagonal ring 16 px wide, one slab per side of the octagon -----------------------
+    for i in range(8):
+        a, b = V[i], V[(i + 1) % 8]
+        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        n = math.hypot(b[0] - a[0], b[1] - a[1])
+        diagonal = abs(heading(a, b) % 90) > 1
+        top, bottom = (DIAG_TOP, -16 - DIAG_TOP) if diagonal else (0.0, -16.0)
+        oriented("plinth", f"plinth{i}", mid, n + 2 * MITRE, 16.0, bottom, top, heading(a, b), share=False)
 
     # --- beam pipe: one piece per side of the octagon (the corner magnets hide the joints) ---------------------------
     p = 1.5
@@ -138,7 +141,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         elif h0 - h1 > 180:
             h1 += 360
         ang = (h0 + h1) / 2
-        oriented("bend", f"bend{i}", v, BEND_L, BEND_W, 1, 13, ang)
+        oriented("bend", f"bend{i}", v, BEND_L, BEND_W, DIAG_TOP, 13, ang)
         oriented("bend_coil", f"bend{i}_coil", v, BEND_L + 1.0, BEND_W - 3, 13, 14, ang)
 
     # --- dipoles on the diagonals, quadrupoles on the straight sides, flanges where the pipe shows --------------------
@@ -149,16 +152,16 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         ang = heading(a, b)
         if abs(ang % 90) > 1:
             for k, dist in enumerate((17.0, n - 17.0)):
-                oriented("dipole", f"dip{i}_{k}", along(a, b, dist), DIPOLE_L - 4, DIPOLE_W - 1, 1.5, 12.5, ang)
+                oriented("dipole", f"dip{i}_{k}", along(a, b, dist), DIPOLE_L - 4, DIPOLE_W - 1, DIAG_TOP, 12.5, ang)
                 for s in (-1, 1):
-                    oriented("coil", f"dip{i}_{k}_coil{s}", along(a, b, dist + s * (DIPOLE_L / 2 - 1)), 2.0, DIPOLE_W, 1, 13, ang)
+                    oriented("coil", f"dip{i}_{k}_coil{s}", along(a, b, dist + s * (DIPOLE_L / 2 - 1)), 2.0, DIPOLE_W, DIAG_TOP, 13, ang)
             flanges.append(along(a, b, n / 2) + (ang,))
         else:
             for k, dist in enumerate((11.5, n - 11.5)):
                 c = along(a, b, dist)
                 if SPECIAL.get(cell_of(*c)) == "injector":
                     continue                                   # the injector takes this cell
-                oriented("quad", f"quad{i}_{k}", c, QUAD_L, QUAD_W, 1, 13, ang)
+                oriented("quad", f"quad{i}_{k}", c, QUAD_L, QUAD_W, 0, 13, ang)
                 flanges.append(along(a, b, dist + (QUAD_L / 2 + 2.0) * (1 if k == 0 else -1)) + (ang,))
     for j, (fx, fz, ang) in enumerate(flanges):
         oriented("flange", f"flange{j}", (fx, fz), 1.0, 5.0, BEAM_Y - 2.5, BEAM_Y + 2.5, ang)
@@ -206,7 +209,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         else:
             t.rect(x, y, w, h, gun[3])
             for xx in range(x + 15, x + w - 1, 16):
-                t.vline(xx, y + 3, h - 3, gun[2])                          # plate seams between blocks
+                t.vline(xx, y + 3, h - 3, gun[2])                          # plate seams
             t.stripes(x, y, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
     for b in parts["plinth"]:
         g.paint_all(tex, b, plinth)

@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -18,24 +20,32 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A structural multiblock block (casing, reactor glass, ...). Placing or breaking one tells nearby controllers to
  * re-check. While its structure is formed it is invisible (the controller draws one model for the whole thing),
- * stops occluding its neighbours, and right-clicking it opens the controller.
+ * stops occluding its neighbours, and right-clicking it opens the controller. A formed part on a structure's sloped
+ * edge has a corner cut away ({@link #CUT}) so its outline and collision follow the formed model.
  */
 public class MultiblockPartBlock extends Block {
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    /** Set by the controller while formed (see MultiblockDefinition#cuts); NONE otherwise. */
+    public static final EnumProperty<PartCut> CUT = EnumProperty.create("cut", PartCut.class);
 
     public MultiblockPartBlock(Properties properties) {
         super(properties);
-        registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        registerDefaultState(this.stateDefinition.any().setValue(FORMED, false).setValue(CUT, PartCut.NONE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(FORMED, CUT);
     }
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return state.getValue(FORMED) ? state.getValue(CUT).shape() : super.getShape(state, level, pos, context);
     }
 
     @Override
