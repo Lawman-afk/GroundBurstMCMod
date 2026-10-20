@@ -893,6 +893,13 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   every 10 ticks 1.5 toxin damage and 4 s of Poison II to whatever stands in it; dries in four stages of 30-40 s.
 - Recipes: gas grenade x2 (chlorine canister, steel plate, gunpowder), toxin grenade x2 (toxin canister, steel plate,
   gunpowder). Field Manual: "Chemical grenades" entry; the hazmat entry covers chemical protection.
+- The toxin grenade is a **glass vial** (translucent model: green toxin inside clear glass, black cap, brass impact
+  fuze), tossed with the splash-potion throw sound rather than a pin.
+- **Molotov Cocktail** (impact, thrown at 1.0): no blast; the incendiary's fire carpet at radius 3 (everything there
+  burns 8 s), glass break and whoosh, flame burst; the rag burns in flight and fizzes like the dynamite fuse. Recipe x2:
+  synthetic fuel canister, 2 glass bottles, 2 string. Model: brown glass bottle of amber fuel, rag in the neck.
+- Translucent item models put their opaque parts first: item quads are drawn in order with depth writes, so glass drawn
+  first hides what is inside it. Glass columns are built with no inner faces (`glass_prism`).
 
 ## 15. Nuclear weapons
 
@@ -1841,3 +1848,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 6 plan (agreed with the user): slices 6a thrown (grenade framework; Dynamite, Frag with real shrapnel, Sticky, Incendiary, Smoke), 6b placed charges and fuzes (Arming Key, Remote Detonator, C4 with stacking, Breaching, Thermite, Timed Bomb with defuse GUI), 6c mines (Landmine, Bouncing Mine, Claymore), 6d bombs as armable placed blocks (HE, Heavy, Thermobaric, Cluster, Bunker Buster, Napalm, MOAB), 6e effect systems (toxin gas grid §16.7, EMP fields §21.4, freezing) with the Toxin, EMP and Cryo grenades and the Chemical Bomb. Bombs get direct crafting recipes now; the Assembly Bench (Phase 7) replaces them and adds fuze choice. The gas, EMP and frost systems are built in Phase 6 rather than waiting for Phase 12. |
 | 2026-10-21 | Slice 6a thrown explosives: one projectile entity for every kind with our own bounce / stick / impact physics, real shrapnel projectiles for the frag, a floor search (not the heightmap) for the incendiary's fire carpet so it works under roofs, smoke that breaks mob targeting; grenades get 3D item models rather than flat sprites, so they tumble properly in flight. |
 | 2026-10-21 | Grenade feedback: gas grenade is a smoke-style chlorine cloud (not block gas, per the user); toxin is a made-up liquid and its grenade leaves a decaying sludge film (C&C GLA style); one `Toxins` path for every chemical hazard so hazmat suits protect against all of them by piece share; salt comes from dried kelp so a water-only recipe cannot hijack other Chemical Plant recipes. |
+| 2026-10-21 | After the in-game look: toxin grenade becomes a glass vial (it already shattered with a glass sound); Molotov cocktail added as the no-blast fire grenade, made from synthetic fuel so it sits beside the incendiary rather than before dynamite. |

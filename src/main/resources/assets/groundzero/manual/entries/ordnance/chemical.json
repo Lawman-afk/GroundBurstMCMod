@@ -24,7 +24,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:toxin_grenade",
-      "text": "Bursts on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes."
+      "text": "A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes."
     },
     {
       "type": "machine",

@@ -21,8 +21,10 @@ public enum GrenadeType {
     SMOKE("smoke_grenade", 40, Behaviour.BOUNCE, 1.1f),
     /** Like the smoke grenade, but the cloud is chlorine: 25 s of poison gas that also blinds. */
     POISON_GAS("gas_grenade", 40, Behaviour.BOUNCE, 1.1f),
-    /** Bursts on impact and splashes toxin over the ground round it. */
-    TOXIN("toxin_grenade", -1, Behaviour.IMPACT, 1.1f);
+    /** A glass vial that shatters on impact and splashes toxin over the ground round it. */
+    TOXIN("toxin_grenade", -1, Behaviour.IMPACT, 1.1f),
+    /** A bottle of fuel with a burning rag: shatters on impact into fire, with no blast. */
+    MOLOTOV("molotov_cocktail", -1, Behaviour.IMPACT, 1.0f);
 
     public enum Behaviour { BOUNCE, STICK, IMPACT }
 
@@ -36,6 +38,11 @@ public enum GrenadeType {
         this.fuse = fuse;
         this.behaviour = behaviour;
         this.speed = speed;
+    }
+
+    /** Lit before it is thrown (a fuse or a rag), rather than having a pin pulled. */
+    public boolean lit() {
+        return this == DYNAMITE || this == MOLOTOV;
     }
 
     /** How long it pours out its cloud once it pops (0: it makes no cloud). */

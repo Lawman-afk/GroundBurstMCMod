@@ -32,6 +32,7 @@ public final class GZOrdnance {
     public static final DeferredItem<GrenadeItem> SMOKE_GRENADE = grenade(GrenadeType.SMOKE, "Smoke Grenade");
     public static final DeferredItem<GrenadeItem> GAS_GRENADE = grenade(GrenadeType.POISON_GAS, "Poison Gas Grenade");
     public static final DeferredItem<GrenadeItem> TOXIN_GRENADE = grenade(GrenadeType.TOXIN, "Toxin Grenade");
+    public static final DeferredItem<GrenadeItem> MOLOTOV_COCKTAIL = grenade(GrenadeType.MOLOTOV, "Molotov Cocktail");
 
     /** The film of toxin a toxin grenade leaves on the ground. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundzero.registry.GZBlocks.blockOnly(

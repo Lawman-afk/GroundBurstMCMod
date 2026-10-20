@@ -252,6 +252,10 @@ public class GZRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE, 2)
                 .requires(GZChemicals.TOXIN_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
                 .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MOLOTOV_COCKTAIL, 2)
+                .requires(GZChemicals.SYNTHETIC_FUEL_CANISTER).requires(Items.GLASS_BOTTLE).requires(Items.GLASS_BOTTLE)
+                .requires(Items.STRING).requires(Items.STRING)
+                .unlockedBy(getHasName(GZChemicals.SYNTHETIC_FUEL_CANISTER), has(GZChemicals.SYNTHETIC_FUEL_CANISTER)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE, 2)
                 .requires(GZParts.STEEL_PLATE).requires(GZTags.commonItem("dusts/saltpeter")).requires(GZTags.commonItem("dusts/saltpeter"))
                 .requires(Items.CHARCOAL)

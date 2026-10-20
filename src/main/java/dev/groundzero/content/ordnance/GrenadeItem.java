@@ -28,14 +28,18 @@ public class GrenadeItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         float pitch = 0.95f + level.getRandom().nextFloat() * 0.1f;
-        if (this.type != GrenadeType.DYNAMITE) {
+        if (this.type == GrenadeType.TOXIN) {
+            // A glass vial: no pin, just tossed.
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), net.minecraft.sounds.SoundEvents.SPLASH_POTION_THROW,
+                    SoundSource.PLAYERS, 0.6f, pitch * 0.8f);
+        } else if (!this.type.lit()) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GZOrdnance.GRENADE_PIN.get(), SoundSource.PLAYERS, 0.8f, pitch);
         }
         if (level instanceof ServerLevel server) {
             ThrownExplosive thrown = Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack,
                     player, 0f, this.type.speed, 1.0f);
-            if (this.type == GrenadeType.DYNAMITE) {
-                // The lit fuse fizzes where the dynamite is, following it through the air.
+            if (this.type.lit()) {
+                // The lit fuse (or rag) fizzes where it is, following it through the air.
                 server.playSound(null, thrown, GZOrdnance.DYNAMITE_LIGHT.get(), SoundSource.PLAYERS, 0.8f, pitch);
             }
         }

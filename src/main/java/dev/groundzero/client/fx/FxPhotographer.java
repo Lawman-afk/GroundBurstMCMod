@@ -95,7 +95,7 @@ public final class FxPhotographer {
                 new Vec3(0, -0.05, 0), -1);
     }
 
-    /** The chemical grenades: a poison gas cloud, a toxin splash, and a stick of dynamite close up between them. */
+    /** The chemical grenades: a poison gas cloud, a toxin splash, dynamite, and a Molotov falling; a toxin vial in hand. */
     private static void chemical(ServerLevel level, int x, int ground) {
         ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
         player.setGameMode(GameType.CREATIVE);
@@ -103,6 +103,10 @@ public final class FxPhotographer {
         throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE.get(), new Vec3(x - 1, ground + 4, -2.5),
                 new Vec3(0, -0.2, 0), -1);
         throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE.get(), new Vec3(x - 4, ground + 0.05, 0.5), Vec3.ZERO, 4000);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.MOLOTOV_COCKTAIL.get(), new Vec3(x - 5, ground + 5, 4.5),
+                new Vec3(0, -0.05, 0), -1);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE.get()));
     }
 
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {

@@ -41,7 +41,8 @@ import net.minecraft.world.phys.Vec3;
  * as its type says. The fuse counts from the throw. Going off is the explosion engine's ({@link Blasts}), plus the
  * type's own extra: shrapnel for the frag, a carpet of fire for the incendiary. A smoke grenade instead stays where it
  * lies and pours out smoke for 30 s, during which mobs in or targeting something in the cloud lose their target; a
- * poison gas grenade does the same with chlorine, which also poisons. A toxin grenade splashes toxin over the ground.
+ * poison gas grenade does the same with chlorine, which also poisons. A toxin grenade splashes toxin over the ground,
+ * and a Molotov cocktail bursts into fire with no blast.
  */
 public class ThrownExplosive extends Projectile implements ItemSupplier {
     private static final EntityDataAccessor<ItemStack> ITEM = SynchedEntityData.defineId(ThrownExplosive.class, EntityDataSerializers.ITEM_STACK);
@@ -55,6 +56,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     public static final float SMOKE_RADIUS = 5;
     public static final int SHRAPNEL = 24;
     public static final float FIRE_RADIUS = 4;
+    public static final float MOLOTOV_RADIUS = 3;
     public static final float TOXIN_RADIUS = 3.5f;
 
     /** Client hook: the Spectacle pours smoke out of a smoking grenade (set by the client; a no-op on servers). */
@@ -262,11 +264,21 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             discard();
             return;
         }
+        if (type == GrenadeType.MOLOTOV) {
+            // No blast: the bottle breaks and the fuel goes up.
+            fireCarpet(level, at, MOLOTOV_RADIUS);
+            level.sendParticles(ParticleTypes.FLAME, at.x, at.y + 0.3, at.z, 50, 1.2, 0.3, 1.2, 0.06);
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 12, 0.8, 0.3, 0.8, 0.02);
+            level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GLASS_BREAK, SoundSource.NEUTRAL, 1f, 0.9f);
+            level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 1f, 0.8f);
+            discard();
+            return;
+        }
         Blasts.detonate(level, at, Blasts.profile(type.id), getOwner());
         if (type == GrenadeType.FRAG) {
             shrapnel(level, at);
         } else if (type == GrenadeType.INCENDIARY) {
-            fireCarpet(level, at);
+            fireCarpet(level, at, FIRE_RADIUS);
         }
         discard();
     }
@@ -284,13 +296,13 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         }
     }
 
-    /** Fire on every open surface within 4 blocks (most of them), and everything alive there set burning for 8 s. */
-    private void fireCarpet(ServerLevel level, Vec3 at) {
-        int r = (int) Math.ceil(FIRE_RADIUS);
+    /** Fire on every open surface within {@code radius} (most of them), and everything alive there set burning for 8 s. */
+    private void fireCarpet(ServerLevel level, Vec3 at, float radius) {
+        int r = (int) Math.ceil(radius);
         var pos = new BlockPos.MutableBlockPos();
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
-                if (dx * dx + dz * dz > FIRE_RADIUS * FIRE_RADIUS || this.random.nextFloat() > 0.85f) {
+                if (dx * dx + dz * dz > radius * radius || this.random.nextFloat() > 0.85f) {
                     continue;
                 }
                 floor(level, at, dx, dz, pos);
@@ -299,8 +311,8 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 }
             }
         }
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(FIRE_RADIUS))) {
-            if (e.position().distanceTo(at) <= FIRE_RADIUS && !e.fireImmune()) {
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius))) {
+            if (e.position().distanceTo(at) <= radius && !e.fireImmune()) {
                 e.igniteForSeconds(8);
             }
         }
@@ -404,6 +416,14 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             if (this.random.nextInt(3) == 0) {
                 level().addParticle(ParticleTypes.ELECTRIC_SPARK, p.x, p.y, p.z, (this.random.nextFloat() - 0.5) * 0.2,
                         this.random.nextFloat() * 0.15, (this.random.nextFloat() - 0.5) * 0.2);
+            }
+        }
+        if (type == GrenadeType.MOLOTOV) {
+            // The burning rag in the neck.
+            Vec3 p = position().add(0, 0.35, 0);
+            level().addParticle(ParticleTypes.FLAME, p.x, p.y, p.z, 0, 0.02, 0);
+            if (this.random.nextInt(2) == 0) {
+                level().addParticle(ParticleTypes.SMOKE, p.x, p.y + 0.1, p.z, 0, 0.03, 0);
             }
         }
     }

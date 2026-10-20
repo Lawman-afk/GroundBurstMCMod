@@ -31,6 +31,7 @@ final class OrdnanceTests {
         GZGameTests.test("toxin_grenade_splashes_sludge", GZGameTests.FLOOR_16, 40, OrdnanceTests::toxin);
         GZGameTests.test("toxic_sludge_dries_out_and_needs_a_floor", GZGameTests.FLOOR_16, 20, OrdnanceTests::sludge);
         GZGameTests.test("suit_pieces_share_chemical_protection", GZGameTests.FLOOR_16, 20, OrdnanceTests::shares);
+        GZGameTests.test("molotov_sets_fire_without_a_blast", GZGameTests.FLOOR_16, 40, OrdnanceTests::molotov);
     }
 
     private static void wear(net.minecraft.world.entity.Mob mob, java.util.List<? extends java.util.function.Supplier<? extends Item>> suit) {
@@ -195,6 +196,24 @@ final class OrdnanceTests {
             }
             helper.assertTrue(sludge >= 20, "a splash of sludge (" + sludge + ")");
             helper.assertTrue(!pig.isAlive() || pig.hasEffect(net.minecraft.world.effect.MobEffects.POISON), "the pig is poisoned");
+        });
+    }
+
+    /** A Molotov cocktail bursts into fire on landing, but blows no hole: the stone under it is all still there. */
+    private static void molotov(GameTestHelper helper) {
+        fill(helper, 1, 1, 1, 15, 1, 15, Blocks.STONE);
+        grenade(helper, GZOrdnance.MOLOTOV_COCKTAIL.get(), new Vec3(8.5, 4, 8.5), new Vec3(0, -0.3, 0));
+        helper.succeedWhen(() -> {
+            int fires = 0;
+            for (BlockPos p : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(4, 2, 4)), helper.absolutePos(new BlockPos(12, 2, 12)))) {
+                if (helper.getLevel().getBlockState(p).is(Blocks.FIRE)) {
+                    fires++;
+                }
+            }
+            helper.assertTrue(fires >= 8, "a pool of fire (" + fires + ")");
+            for (BlockPos p : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(6, 1, 6)), helper.absolutePos(new BlockPos(10, 1, 10)))) {
+                helper.assertTrue(helper.getLevel().getBlockState(p).is(Blocks.STONE), "no crater at " + p);
+            }
         });
     }
 

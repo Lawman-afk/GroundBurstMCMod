@@ -7,7 +7,8 @@
     "groundzero:frag_grenade",
     "groundzero:sticky_grenade",
     "groundzero:incendiary_grenade",
-    "groundzero:smoke_grenade"
+    "groundzero:smoke_grenade",
+    "groundzero:molotov_cocktail"
   ],
   "pages": [
     {
@@ -44,6 +45,10 @@
         [
           "Toxin",
           "on impact"
+        ],
+        [
+          "Molotov",
+          "on impact"
         ]
       ],
       "text": "",
@@ -68,6 +73,11 @@
       "type": "spotlight",
       "item": "groundzero:incendiary_grenade",
       "text": "Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:molotov_cocktail",
+      "text": "A bottle of fuel with a burning rag. It shatters where it lands into a pool of fire 3 blocks across, with no blast at all, so it will not dig into what it hits."
     },
     {
       "type": "spotlight",
@@ -101,6 +111,11 @@
     {
       "type": "crafting",
       "item": "groundzero:smoke_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:molotov_cocktail",
       "text": ""
     }
   ]

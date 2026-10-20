@@ -11,7 +11,8 @@ fight), which reads as a rounded can at this size. Faces are painted one model p
 - Incendiary Grenade: a red can with a white flame stencil on a white band, steel fuze head, spoon and pin.
 - Smoke Grenade: a grey can with a green cap and vent holes on top, a white band, spoon and pin.
 - Poison Gas Grenade: the smoke grenade's can in khaki, a yellow band and skull stencil, a yellow vented cap.
-- Toxin Grenade: a glossy toxic-green can with a black band and a black droplet stencil.
+- Toxin Grenade: a glass vial of glowing green toxin with a black cap and a brass impact fuze on top.
+- Molotov Cocktail: a brown glass bottle of amber fuel with a rag stuffed in the neck, hanging over the lip.
 - Toxic Sludge (block): the film a toxin grenade leaves, a glowing green splatter that gets patchier as it dries.
 """
 from __future__ import annotations
@@ -41,6 +42,8 @@ SMOKE_GREY = fixed("smoke_can", "#1e2224", "#30363a", "#454c50", "#5c6468", "#75
 CAP_GREEN = fixed("smoke_cap", "#0c2410", "#14381a", "#1e5426", "#2a7034", "#3a8c46", "#5aa862", "#8acc8e")
 WHITE = P.WHITE_CERAMIC
 KHAKI = fixed("gas_can", "#1e2010", "#33361c", "#4a4e2a", "#62673a", "#7c814c", "#999e66", "#c0c492")
+FUEL = fixed("molotov_fuel", "#3a1c04", "#5e300a", "#8a4a10", "#b46a1a", "#d48c30", "#e8ae5a", "#f8d8a0")
+RAG = fixed("rag", "#3e3226", "#5e4e3c", "#8a7a64", "#b0a28a", "#cbbfa8", "#e0d6c4", "#f4eee2")
 TOXIC = fixed("toxin", "#0c2a06", "#16480a", "#22680e", "#349014", "#4cb420", "#7cd83a", "#c0f480")
 
 
@@ -240,6 +243,92 @@ def stencil(t: Tex, decal: str, x: int, y: int, w: int, colour) -> None:
                 t.px(x + (c if w == 5 else c - 1), y + dy, colour)
 
 
+def glass_prism(m: BlockModel, name: str, cx: float, cz: float, r: float, w: float, y0: float, y1: float) -> list[str]:
+    """A rounded glass column with no faces inside it (so nothing shows through the glass that should not): a centre
+    square with only its top and bottom, and an arm on each side with its outer faces."""
+    m.box(f"{name}_c", (cx - w, y0, cz - w), (cx + w, y1, cz + w), faces=("up", "down"))
+    m.box(f"{name}_n", (cx - w, y0, cz - r), (cx + w, y1, cz - w), faces=("north", "east", "west", "up", "down"))
+    m.box(f"{name}_s", (cx - w, y0, cz + w), (cx + w, y1, cz + r), faces=("south", "east", "west", "up", "down"))
+    m.box(f"{name}_w", (cx - r, y0, cz - w), (cx - w, y1, cz + w), faces=("west", "north", "south", "up", "down"))
+    m.box(f"{name}_e", (cx + w, y0, cz - w), (cx + r, y1, cz + w), faces=("east", "north", "south", "up", "down"))
+    return [f"{name}_{k}" for k in "cnswe"]
+
+
+def glass(tint: tuple[int, int, int], alpha: int = 96):
+    """Clear glass: a faint tint, a bright glint down the lit edge, lighter rims top and bottom."""
+    def fn(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, (*tint, alpha))
+        rim = (min(255, tint[0] + 70), min(255, tint[1] + 70), min(255, tint[2] + 70), alpha + 70)
+        if d in ("north", "south", "east", "west"):
+            t.hline(x, y, w, rim)
+            t.hline(x, y + h - 1, w, rim)
+            if d in ("north", "west") and h > 3 and w >= 3:
+                t.vline(x + 1, y + 1, h - 2, (255, 255, 255, 150))   # the glint (only on the wide faces)
+        else:
+            t.outline(x, y, w, h, rim)
+    return fn
+
+
+def toxin_vial() -> None:
+    m = BlockModel("toxin_grenade", tex_size=(64, 64), kind="item", render_type="minecraft:translucent")
+    # Opaque parts first, glass last: item quads are drawn in order, and glass drawn first would hide what is inside.
+    liquid = prism(m, "toxin", 8, 8, 2, 1, 2, 7)
+    m.box("cap", (6.6, 10.5, 6.6), (9.4, 11.7, 9.4))
+    m.box("fuze", (7.5, 11.7, 7.5), (8.5, 12.4, 8.5))
+    bulb = glass_prism(m, "glass", 8, 8, 2.5, 1.5, 1.5, 8.5)
+    m.box("neck", (7, 8.5, 7), (9, 10.5, 9), faces=("north", "south", "east", "west"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    fill_all(m, t, bulb + ["neck"], glass((170, 220, 170), 72))
+
+    def toxin(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "up":
+            t.rect(x, y, w, h, TOXIC.light)                 # the surface, with a bubble or two
+            t.px(x + w // 2, y + h // 2, TOXIC.highlight)
+            return
+        t.rect(x, y, w, h, TOXIC.base if d in ("north", "west") else TOXIC.shadow)
+        if d != "down":
+            t.hline(x, y, w, TOXIC.light)                    # the meniscus
+            t.px(x + 1, y + h - 2, TOXIC.highlight)
+    fill_all(m, t, liquid, toxin)
+
+    def cap(t: Tex, r, d):
+        shaded(TAR)(t, r, d)
+        x, y, w, h = r
+        if d in ("north", "south", "east", "west"):
+            t.hline(x, y + h - 1, w, YELLOW.base)          # a yellow warning ring round the bottom of the cap
+    m.paint_all(t, "cap", cap)
+    m.paint_all(t, "fuze", shaded(BRASS))
+    finish(m, t)
+
+
+def molotov() -> None:
+    m = BlockModel("molotov_cocktail", tex_size=(64, 64), kind="item", render_type="minecraft:translucent")
+    fuel = prism(m, "fuel", 8, 8, 2, 1, 1.5, 6)                 # opaque parts first (see toxin_vial)
+    m.box("rag", (7.5, 9.2, 7.5), (8.5, 12.5, 8.5), faces=("north", "south", "east", "west", "down"))
+    m.box("tuft", (7.1, 12.5, 7.1), (8.9, 13.5, 8.9))
+    m.box("flap", (8.9, 10.2, 7.5), (9.3, 13.2, 8.5))
+    bottle = glass_prism(m, "glass", 8, 8, 2.5, 1.5, 1, 8)
+    m.box("shoulder", (6.8, 8, 6.8), (9.2, 9, 9.2), faces=("north", "south", "east", "west", "up"))
+    m.box("neck", (7.2, 9, 7.2), (8.8, 11.5, 8.8), faces=("north", "south", "east", "west"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    fill_all(m, t, bottle + ["shoulder", "neck"], glass((150, 120, 60), 110))
+    fill_all(m, t, fuel, shaded(FUEL))
+
+    def cloth(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, RAG.base if d in ("north", "west", "up") else RAG.shadow)
+        if w > 1 and h > 1:
+            t.px(x + w - 1, y + h - 1, RAG.deep)            # a smudge of fuel soaked into it
+        if d == "up":
+            t.px(x, y, TAR.light)                           # charred where it is lit
+    fill_all(m, t, ["rag", "tuft", "flap"], cloth)
+    finish(m, t)
+
+
 def can_grenade(name: str, ramp, band, decal: str | None, cap, vents: bool) -> None:
     m = BlockModel(name, tex_size=(32, 32), kind="item", render_type="minecraft:cutout")
     can = prism(m, "can", 8, 8, 2.5, 1.5, 2, 9.5)
@@ -325,8 +414,10 @@ def main() -> None:
     can_grenade("incendiary_grenade", CAN_RED, WHITE.light, "flame5x7", STEEL, vents=False)
     can_grenade("smoke_grenade", SMOKE_GREY, WHITE.light, None, CAP_GREEN, vents=True)
     can_grenade("gas_grenade", KHAKI, YELLOW.base, "skull5", YELLOW, vents=True)
-    can_grenade("toxin_grenade", TOXIC, TAR.base, ".....|..#..|.###.|#####|#####|.###.", TAR, vents=False)   # a droplet
-    item_defs(["frag_grenade", "dynamite", "sticky_grenade", "incendiary_grenade", "smoke_grenade", "gas_grenade", "toxin_grenade"])
+    toxin_vial()
+    molotov()
+    item_defs(["frag_grenade", "dynamite", "sticky_grenade", "incendiary_grenade", "smoke_grenade", "gas_grenade", "toxin_grenade",
+               "molotov_cocktail"])
     toxic_sludge()
     print("grenades written")
 

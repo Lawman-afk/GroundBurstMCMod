@@ -735,7 +735,7 @@ Explosives you throw, place and drop. Everything here goes off with the mod's ow
 """)
 
 entry("ordnance/thrown", "Thrown explosives", "frag_grenade", ["dynamite", "frag_grenade", "sticky_grenade",
-                                                                 "incendiary_grenade", "smoke_grenade"], [
+                                                                 "incendiary_grenade", "smoke_grenade", "molotov_cocktail"], [
     text("""
 Right-click to throw. Most bounce and roll before they go off, so bank them off walls and down slopes; their fuse starts the moment they leave your hand.
 """),
@@ -747,6 +747,7 @@ Right-click to throw. Most bounce and roll before they go off, so bank them off 
         ["Smoke", "2 s, 30 s"],
         ["Poison gas", "2 s, 25 s"],
         ["Toxin", "on impact"],
+        ["Molotov", "on impact"],
     ], "Fuses"),
     spot("dynamite", """
 The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast.
@@ -760,6 +761,9 @@ Sticks to the first thing it hits, wall or creature, and goes off where it stuck
     spot("incendiary_grenade", """
 Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds.
 """),
+    spot("molotov_cocktail", """
+A bottle of fuel with a burning rag. It shatters where it lands into a pool of fire 3 blocks across, with no blast at all, so it will not dig into what it hits.
+"""),
     spot("smoke_grenade", """
 Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target, and anyone standing in it is hard to spot: mobs notice you there only from a tenth of their usual range.
 """),
@@ -771,6 +775,7 @@ For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical).
     craft("sticky_grenade"),
     craft("incendiary_grenade"),
     craft("smoke_grenade"),
+    craft("molotov_cocktail"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
@@ -782,7 +787,7 @@ Grenades that poison rather than blow up. Both are made in the [Chemical Plant](
 A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it is poisoned and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
 """),
     spot("toxin_grenade", """
-Bursts on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes.
+A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes.
 """),
     machine("chemistry", "", item="salt"),
     machine("chemistry", "", fluid="chlorine"),
