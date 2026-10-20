@@ -110,7 +110,9 @@ public final class GZTagProviders {
                     GZMultiblocks.MACHINE_CASING.block().key(), GZMultiblocks.ITEM_PORT.block().key(),
                     GZMultiblocks.REACTOR_GLASS.block().key(), dev.groundzero.content.fluid.GZFluids.FLUID_PIPE.block().key(),
                     dev.groundzero.content.fluid.GZFluids.COPPER_FLUID_PIPE.block().key(),
-                    dev.groundzero.content.fluid.GZFluids.PRESSURIZED_FLUID_PIPE.block().key());
+                    dev.groundzero.content.fluid.GZFluids.PRESSURIZED_FLUID_PIPE.block().key(),
+                    dev.groundzero.content.pipe.GZPipes.IRON_ITEM_PIPE.block().key(), dev.groundzero.content.pipe.GZPipes.ITEM_PIPE.block().key(),
+                    dev.groundzero.content.pipe.GZPipes.PNEUMATIC_ITEM_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),

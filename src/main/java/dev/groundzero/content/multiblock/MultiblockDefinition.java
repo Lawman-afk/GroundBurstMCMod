@@ -72,8 +72,46 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
         return controller.relative(right, dx).relative(back, dz).above(dy);
     }
 
+    /**
+     * Each pattern's cells relative to its controller, per facing, worked out once: structures ask for their cells every
+     * tick (pushing power out of their ports) and every frame (previews, hidden model parts), and laying a pattern out
+     * from scratch scans it for the controller once per cell.
+     */
+    private static final Map<Identifier, List<Cell>[]> RELATIVE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @SuppressWarnings("unchecked")
+    private List<Cell> relative(Direction facing) {
+        List<Cell>[] byFacing = RELATIVE.computeIfAbsent(this.id, k -> new List[6]);
+        List<Cell> cells = byFacing[facing.get3DDataValue()];
+        if (cells == null) {
+            cells = List.copyOf(layOut(BlockPos.ZERO, facing));
+            byFacing[facing.get3DDataValue()] = cells;
+        }
+        return cells;
+    }
+
     /** Every non-wildcard cell, controller included, in placement order (bottom layer first). */
     public List<Cell> cells(BlockPos controller, Direction facing) {
+        List<Cell> rel = relative(facing);
+        List<Cell> out = new ArrayList<>(rel.size());
+        for (Cell c : rel) {
+            out.add(new Cell(controller.offset(c.pos()), c.key(), c.layer(), c.col(), c.row()));
+        }
+        return out;
+    }
+
+    /** Where the cells with legend character {@code key} are (e.g. a structure's Energy Ports), without building every cell. */
+    public List<BlockPos> positionsOf(char key, BlockPos controller, Direction facing) {
+        List<BlockPos> out = new ArrayList<>(2);
+        for (Cell c : relative(facing)) {
+            if (c.key() == key) {
+                out.add(controller.offset(c.pos()));
+            }
+        }
+        return out;
+    }
+
+    private List<Cell> layOut(BlockPos controller, Direction facing) {
         List<Cell> out = new ArrayList<>();
         for (int y = 0; y < layers.length; y++) {
             for (int z = 0; z < layers[y].length; z++) {

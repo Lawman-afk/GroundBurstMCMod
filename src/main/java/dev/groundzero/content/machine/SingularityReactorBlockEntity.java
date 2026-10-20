@@ -253,12 +253,8 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
 
     /** The middle of the cage (the core cradle's cell). */
     private Vec3 chamberCentre() {
-        for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
-            if (cell.key() == 'K') {
-                return Vec3.atCenterOf(cell.pos());
-            }
-        }
-        return Vec3.atCenterOf(this.worldPosition);
+        List<BlockPos> cradle = definition().positionsOf('K', this.worldPosition, controllerFacing());
+        return Vec3.atCenterOf(cradle.isEmpty() ? this.worldPosition : cradle.get(0));
     }
 
     /** Pushes power above the reserve out of the Energy Port. */
@@ -267,10 +263,8 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         if (spare <= 0) {
             return;
         }
-        for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
-            if (cell.key() == 'E') {
-                PowerUtil.pushToNeighbours(level, cell.pos(), this.energy, spare);
-            }
+        for (BlockPos port : definition().positionsOf('E', this.worldPosition, controllerFacing())) {
+            PowerUtil.pushToNeighbours(level, port, this.energy, spare);
         }
     }
 

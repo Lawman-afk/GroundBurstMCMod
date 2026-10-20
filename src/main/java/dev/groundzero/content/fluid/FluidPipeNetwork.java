@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import dev.groundzero.content.pipe.NetworkEndpoints;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -27,12 +28,18 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
  * {@code normal} sides, shared round-robin, never back to where it came from, up to the weakest pipe tier's rate per
  * tick.
  * Breaking a pipe therefore never spills or loses fluid.
+ *
+ * <p>Performance: the run and the tanks along it ({@link NetworkEndpoints}) are found once, when the network is first
+ * asked for after a change, and cached; delivering only looks at those tanks (through capability caches), never at the
+ * pipes themselves, so a long run costs no more per tick than a short one.
  */
 public final class FluidPipeNetwork {
     private static final int MAX_PIPES = 4096;
     private static final Map<Level, Map<BlockPos, FluidPipeNetwork>> CACHE = new WeakHashMap<>();
 
     private final Set<BlockPos> pipes;
+    /** The tanks and machines on the run's normal sides. */
+    private final NetworkEndpoints<ResourceHandler<FluidResource>> endpoints;
     /** mB per tick: the weakest pipe tier on the run. */
     private final int rate;
     private long tick = Long.MIN_VALUE;
@@ -40,8 +47,9 @@ public final class FluidPipeNetwork {
     private int roundRobin;
     private final Journal journal = new Journal();
 
-    private FluidPipeNetwork(Set<BlockPos> pipes, int rate) {
+    private FluidPipeNetwork(Set<BlockPos> pipes, NetworkEndpoints<ResourceHandler<FluidResource>> endpoints, int rate) {
         this.pipes = pipes;
+        this.endpoints = endpoints;
         this.rate = rate;
     }
 
@@ -74,12 +82,24 @@ public final class FluidPipeNetwork {
                 }
             }
             int rate = Integer.MAX_VALUE;
+            List<NetworkEndpoints.Endpoint> ends = new ArrayList<>();
+            Set<BlockPos> targets = new HashSet<>();
             for (BlockPos p : seen) {
-                if (level.getBlockState(p).getBlock() instanceof FluidPipeBlock pipeBlock) {
-                    rate = Math.min(rate, pipeBlock.tier().rate());
+                BlockState state = level.getBlockState(p);
+                if (!(state.getBlock() instanceof FluidPipeBlock pipeBlock)) {
+                    continue;
+                }
+                rate = Math.min(rate, pipeBlock.tier().rate());
+                for (Direction d : Direction.values()) {
+                    BlockPos target = p.relative(d);
+                    // Only normal sides receive (pull sides only give); a tank touching two pipes counts once.
+                    if (FluidPipeBlock.mode(state, d) == FluidPipeBlock.Mode.NORMAL && !seen.contains(target)
+                            && !(level.getBlockState(target).getBlock() instanceof FluidPipeBlock) && targets.add(target.immutable())) {
+                        ends.add(new NetworkEndpoints.Endpoint(target.immutable(), d.getOpposite()));
+                    }
                 }
             }
-            net = new FluidPipeNetwork(seen, rate);
+            net = new FluidPipeNetwork(seen, new NetworkEndpoints<>(Capabilities.Fluid.BLOCK, ends), rate);
             for (BlockPos p : seen) {
                 byPos.put(p, net);
             }
@@ -98,32 +118,21 @@ public final class FluidPipeNetwork {
         if (allowed <= 0) {
             return 0;
         }
-        List<ResourceHandler<FluidResource>> consumers = new ArrayList<>();
-        Set<BlockPos> visited = new HashSet<>();
-        for (BlockPos pipe : this.pipes) {
-            BlockState state = level.getBlockState(pipe);
-            for (Direction d : Direction.values()) {
-                if (!(state.getBlock() instanceof FluidPipeBlock) || FluidPipeBlock.mode(state, d) != FluidPipeBlock.Mode.NORMAL) {
-                    continue;          // only normal sides receive; pull sides only give
-                }
-                BlockPos target = pipe.relative(d);
-                if (target.equals(source) || this.pipes.contains(target) || !visited.add(target.immutable())
-                        || level.getBlockState(target).getBlock() instanceof FluidPipeBlock) {
-                    continue;
-                }
-                ResourceHandler<FluidResource> h = level.getCapability(Capabilities.Fluid.BLOCK, target, d.getOpposite());
-                if (h != null) {
-                    consumers.add(h);
-                }
-            }
-        }
-        if (consumers.isEmpty()) {
+        int n = this.endpoints.size();
+        if (n == 0) {
             return 0;
         }
         int sent = 0;
-        int start = this.roundRobin++ % consumers.size();
-        for (int k = 0; k < consumers.size() && sent < allowed; k++) {
-            sent += consumers.get((start + k) % consumers.size()).insert(resource, allowed - sent, transaction);
+        int start = Math.floorMod(this.roundRobin++, n);
+        for (int k = 0; k < n && sent < allowed; k++) {
+            int i = (start + k) % n;
+            if (this.endpoints.get(i).pos().equals(source)) {
+                continue;                                  // never back where it came from
+            }
+            ResourceHandler<FluidResource> h = this.endpoints.handler(level, i);
+            if (h != null) {
+                sent += h.insert(resource, allowed - sent, transaction);
+            }
         }
         if (sent > 0) {
             this.journal.updateSnapshots(transaction);

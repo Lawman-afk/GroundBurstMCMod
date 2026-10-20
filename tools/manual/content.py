@@ -442,6 +442,23 @@ The **Creative Fluid Tank** (creative only) never runs dry: pour any fluid in an
     machine("pressing", "", item="empty_canister"),
 ])
 
+entry("processing/item_pipes", "Item pipes", "item_pipe", ["iron_item_pipe", "item_pipe", "pneumatic_item_pipe"], [
+    text("""
+**Item pipes** move items between chests and machines. Set a pipe side to **Pull** with the [Wrench](getting_started/wrench) and it draws items out of what it touches (from a machine, only its outputs); machines with auto-eject and hoppers can push in too. The run hands everything straight to the chests and machines on its other sides, in turn, never back where it came from.
+
+Pipes hold nothing, so breaking one never drops items. A run moves as many items as its **weakest** pipe.
+"""),
+    table([
+        ["Iron", "8 items/s"],
+        ["Steel", "32 items/s"],
+        ["Pneumatic", "128 items/s"],
+        ["(a hopper)", "2.5 items/s"],
+    ], "Speed"),
+    craft("iron_item_pipe"),
+    craft("item_pipe"),
+    craft("pneumatic_item_pipe"),
+])
+
 entry("processing/canning_machine", "Canning Machine", "canning_machine", ["canning_machine"], [
     spot("canning_machine", """
 Fills and empties canisters, 1,000 mB at a time. Put an **empty canister** (liquids) or **gas canister** (gases) in and it fills from the **supply tank** on the left; put a filled canister in and it is poured into the **catch tank** on the right. Draws 20 FE a tick.
@@ -694,7 +711,7 @@ Holding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a 
     text("""
 **The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.
 
-**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second, so **swap more floor blocks for Item Ports** (do it before engaging) and feed each of them. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.
+**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second; an [item pipe](processing/item_pipes) up to 128. **Swap more floor blocks for Item Ports** (do it before engaging) to feed it from several pipes. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.
 
 **Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**.
 """),

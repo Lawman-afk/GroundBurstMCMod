@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "#c:plates/copper",
+    "M": "groundzero:electric_motor",
+    "P": "groundzero:item_pipe"
+  },
+  "pattern": [
+    "CPC",
+    "PMP",
+    "CPC"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundzero:pneumatic_item_pipe"
+  }
+}

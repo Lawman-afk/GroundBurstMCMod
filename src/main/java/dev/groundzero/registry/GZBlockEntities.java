@@ -156,6 +156,7 @@ public final class GZBlockEntities {
         tallMachine(event, GZMachines.DECONTAMINATION_SHOWER.block().get());
         GZMachines.registerCableCapabilities(event);
         dev.groundzero.content.fluid.GZFluids.registerCapabilities(event);
+        dev.groundzero.content.pipe.GZPipes.registerCapabilities(event);
     }
 
     /** Both halves of a tall machine expose the lower half's block entity (cables and pipes may attach to either). */

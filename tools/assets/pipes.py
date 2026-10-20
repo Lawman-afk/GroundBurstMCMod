@@ -1,9 +1,15 @@
-"""Fluid pipes (DESIGN.md §6.4), three tiers like the cables: texture, multipart block models, item model each.
+"""Fluid pipes (DESIGN.md §6.4) and item pipes (§6.5), three tiers each like the cables: texture, multipart block
+models, item model each.
 
 Look: a 6 px pipe with a bolted flange at every joint, meeting the next pipe flange-to-flange at the block edge, and
 a squat bolted junction box at the centre. Copper: copper tube, brass fittings. Steel: brushed steel, gunmetal
 fittings. Pressurized: dark armoured tube with red high-pressure fittings. Same multipart scheme as the cables: a core model
 plus one arm model rotated to each connected side; a side set to pull (Wrench) also gets a hazard-striped collar.
+
+Item pipes share the shape but read differently at a glance: the tube is a glass sight-tube in a metal frame (you see
+the light through it), with chevrons on the walls, and the junction box carries an item-slot window. Iron: pale iron
+frame, steel fittings. Steel: gunmetal frame, yellow fittings. Pneumatic: brass frame, copper fittings, blue-tinted
+glass.
 """
 from __future__ import annotations
 
@@ -22,6 +28,13 @@ TIERS = {
     "copper_fluid_pipe": (P.COPPER, P.BRASS, P.BRASS[6]),
     "fluid_pipe": (P.STEEL, P.GUNMETAL, P.STEEL[5]),
     "pressurized_fluid_pipe": (P.BLACK_PAINT, P.WARNING_RED, P.STEEL[5]),
+}
+
+# id -> (frame ramp, fittings ramp, glass colour)
+ITEM_TIERS = {
+    "iron_item_pipe": (P.STEEL, P.STEEL, (196, 214, 222, 255)),
+    "item_pipe": (P.GUNMETAL, P.HAZARD_YELLOW, (186, 206, 214, 255)),
+    "pneumatic_item_pipe": (P.BRASS, P.COPPER, (150, 196, 232, 255)),
 }
 
 # Texture regions (u0, v0, u1, v1).
@@ -65,6 +78,27 @@ def texture(NAME: str, S, G, BOLT) -> Tex:
     t.rect(0, 9, 7, 7, P.HAZARD_YELLOW[4])
     t.outline(0, 9, 7, 7, P.HAZARD_YELLOW[2])
     t.rect(2, 11, 3, 3, P.HAZARD_BLACK[2])
+    t.save(paths.TEXTURES / "block" / f"{NAME}.png")
+    return t
+
+
+def item_texture(NAME: str, S, G, GLASS) -> Tex:
+    """Same regions as a fluid pipe's texture, drawn as a glass sight-tube in a metal frame."""
+    t = texture(NAME, S, G, S[6])
+    # Tube wall: frame bars at both edges, glass between, with a flow chevron.
+    for y in range(4):
+        t.px(0, y, S[4])
+        t.px(5, y, S[2])
+        for x in range(1, 5):
+            t.px(x, y, GLASS)
+    shade = (GLASS[0] - 40, GLASS[1] - 40, GLASS[2] - 30, 255)
+    for x, y in ((1, 1), (2, 2), (3, 2), (4, 1)):
+        t.px(x, y, shade)                                       # chevron: items run along the tube
+    t.hline(1, 0, 4, (min(255, GLASS[0] + 30), min(255, GLASS[1] + 30), min(255, GLASS[2] + 25), 255))   # glint
+    # Junction box: an item-slot window in place of the raised boss.
+    t.rect(9, 2, 3, 3, (40, 44, 50, 255))
+    t.hline(9, 4, 3, S[5])
+    t.vline(11, 2, 3, S[5])
     t.save(paths.TEXTURES / "block" / f"{NAME}.png")
     return t
 
@@ -124,4 +158,7 @@ if __name__ == "__main__":
     for name, (tube, fit, bolt) in TIERS.items():
         texture(name, tube, fit, bolt)
         models(name)
-    print("fluid pipes written")
+    for name, (frame, fit, glass) in ITEM_TIERS.items():
+        item_texture(name, frame, fit, glass)
+        models(name)
+    print("fluid and item pipes written")

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "#c:glass_blocks/colorless",
+    "H": "minecraft:hopper",
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "III",
+    "GHG",
+    "III"
+  ],
+  "result": {
+    "count": 8,
+    "id": "groundzero:iron_item_pipe"
+  }
+}

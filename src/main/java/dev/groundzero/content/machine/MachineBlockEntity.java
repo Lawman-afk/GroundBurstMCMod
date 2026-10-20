@@ -45,6 +45,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     /** Tanks a menu can show (two sync slots each: amount, fluid id). Amounts stay below 32768 mB to fit a short. */
     public static final int MAX_TANKS = 4;
     private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16, FLUID_EJECT_BATCH = 2000;
+    /** Ticks a machine stays shown as working after it stops (see {@link #serverTick}). */
+    public static final int ACTIVE_LINGER = 10;
+    private int idleTicks = ACTIVE_LINGER;
 
     protected final MachineEnergy energy;
     protected final MachineInventory inventory;
@@ -229,9 +232,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             }
             pushFluids(level);
         }
+        // ACTIVE drives the model, light and sound. It turns on at once but only off after a short idle spell, so a machine
+        // that stutters (short of power, a slow feed) does not rewrite its block state every few ticks: each change makes
+        // clients rebuild the chunk's mesh. Neighbours are not told (their connections do not depend on it).
+        this.idleTicks = active ? 0 : this.idleTicks + 1;
+        boolean shown = active || this.idleTicks < ACTIVE_LINGER;
         BlockState state = getBlockState();
-        if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != active) {
-            level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, active), 3);
+        if (state.hasProperty(MachineBlock.ACTIVE) && state.getValue(MachineBlock.ACTIVE) != shown) {
+            level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, shown), Block.UPDATE_CLIENTS);
         }
     }
 

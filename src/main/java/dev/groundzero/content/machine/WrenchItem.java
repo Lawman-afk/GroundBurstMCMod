@@ -3,7 +3,7 @@ package dev.groundzero.content.machine;
 import java.util.function.Consumer;
 
 import dev.groundzero.GroundZero;
-import dev.groundzero.content.fluid.FluidPipeBlock;
+import dev.groundzero.content.pipe.PipeBlock;
 import dev.groundzero.content.fluid.FluidTankBlock;
 import dev.groundzero.content.multiblock.MultiblockControllerBlock;
 import dev.groundzero.content.multiblock.MultiblockPartBlock;
@@ -35,7 +35,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * The Wrench (DESIGN.md §25), following the common conventions (Mekanism's configurator, Pipez's wrench, Thermal's
  * hammer):
  * <ul>
- * <li>right-click a side of a fluid pipe: normal -> pull -> off -> normal (pipe-to-pipe joins: on / off);</li>
+ * <li>right-click a side of a fluid or item pipe: normal -> pull -> off -> normal (pipe-to-pipe joins: on / off);</li>
  * <li>right-click a side of a cable: connected / off (cables have no push or pull);</li>
  * <li>right-click a machine: turn it a quarter clockwise (not a multiblock controller: its structure fixes it);</li>
  * <li>sneak-right-click a pipe, cable, machine, tank or structure block: pick it up (drops as an item).</li>
@@ -50,7 +50,7 @@ public class WrenchItem extends Item {
     public static final String NOTHING = GZLang.add(GroundZero.MODID + ".wrench.nothing", "Nothing to connect on the %s side");
     public static final String FIXED = GZLang.add(GroundZero.MODID + ".wrench.fixed", "A structure's controller cannot be turned");
     private static final String MODE_NORMAL = GZLang.add(GroundZero.MODID + ".wrench.mode.normal", "Normal (in and out)");
-    private static final String MODE_PULL = GZLang.add(GroundZero.MODID + ".wrench.mode.pull", "Pull (draws fluid out)");
+    private static final String MODE_PULL = GZLang.add(GroundZero.MODID + ".wrench.mode.pull", "Pull (draws out of it)");
     private static final String MODE_OFF = GZLang.add(GroundZero.MODID + ".wrench.mode.off", "Disconnected");
     private static final String MODE_ON = GZLang.add(GroundZero.MODID + ".wrench.mode.on", "Connected");
 
@@ -71,7 +71,7 @@ public class WrenchItem extends Item {
             }
             return InteractionResult.SUCCESS;
         }
-        if (block instanceof FluidPipeBlock) {
+        if (block instanceof PipeBlock) {
             if (!level.isClientSide()) {
                 configurePipe(level, pos, state, side(ctx, pos, true), player);
             }
@@ -99,7 +99,7 @@ public class WrenchItem extends Item {
     }
 
     private static boolean dismantlable(Block block) {
-        return block instanceof MachineBlock || block instanceof FluidPipeBlock || block instanceof CableBlock
+        return block instanceof MachineBlock || block instanceof PipeBlock || block instanceof CableBlock
                 || block instanceof FluidTankBlock || block instanceof dev.groundzero.content.fluid.CreativeFluidTankBlock || block instanceof MultiblockPartBlock || block instanceof PortBlock;
     }
 
@@ -107,7 +107,7 @@ public class WrenchItem extends Item {
     private static Direction side(UseOnContext ctx, BlockPos pos, boolean pipe) {
         Vec3 local = ctx.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
         for (Direction d : Direction.values()) {
-            VoxelShape arm = pipe ? FluidPipeBlock.arm(d) : CableBlock.arm(d);
+            VoxelShape arm = pipe ? PipeBlock.arm(d) : CableBlock.arm(d);
             if (arm.bounds().inflate(0.01).contains(local)) {
                 return d;
             }
@@ -118,32 +118,32 @@ public class WrenchItem extends Item {
     private static void configurePipe(Level level, BlockPos pos, BlockState state, Direction d, Player player) {
         BlockPos other = pos.relative(d);
         BlockState there = level.getBlockState(other);
-        FluidPipeBlock.Mode current = FluidPipeBlock.mode(state, d);
-        FluidPipeBlock.Mode next;
-        if (there.getBlock() instanceof FluidPipeBlock) {
+        PipeBlock.Mode current = PipeBlock.mode(state, d);
+        PipeBlock.Mode next;
+        if (there.getBlock() instanceof PipeBlock && ((PipeBlock) state.getBlock()).isSameKind(there)) {
             // Pipe-to-pipe: join or split the run, on both pipes.
-            next = current == FluidPipeBlock.Mode.DISABLED ? FluidPipeBlock.Mode.NORMAL : FluidPipeBlock.Mode.DISABLED;
-            BlockState otherState = there.setValue(FluidPipeBlock.SIDES.get(d.getOpposite()), next);
+            next = current == PipeBlock.Mode.DISABLED ? PipeBlock.Mode.NORMAL : PipeBlock.Mode.DISABLED;
+            BlockState otherState = there.setValue(PipeBlock.SIDES.get(d.getOpposite()), next);
             level.setBlock(other, otherState, Block.UPDATE_ALL);
-            FluidPipeBlock.changed(level, other, otherState);
+            PipeBlock.changed(level, other, otherState);
         } else {
             next = switch (current) {
-                case NORMAL -> FluidPipeBlock.Mode.PULL;
-                case PULL -> FluidPipeBlock.Mode.DISABLED;
-                case DISABLED -> FluidPipeBlock.Mode.NORMAL;
-                case NONE -> FluidPipeBlock.Mode.NONE;
+                case NORMAL -> PipeBlock.Mode.PULL;
+                case PULL -> PipeBlock.Mode.DISABLED;
+                case DISABLED -> PipeBlock.Mode.NORMAL;
+                case NONE -> PipeBlock.Mode.NONE;
             };
-            if (next == FluidPipeBlock.Mode.NONE) {
+            if (next == PipeBlock.Mode.NONE) {
                 player.sendOverlayMessage(Component.translatable(NOTHING, d.getSerializedName()));
                 return;
             }
         }
-        BlockState updated = state.setValue(FluidPipeBlock.SIDES.get(d), next);
+        BlockState updated = state.setValue(PipeBlock.SIDES.get(d), next);
         level.setBlock(pos, updated, Block.UPDATE_ALL);
         // Re-enabling a side with nothing there any more settles back to "none".
         level.neighborChanged(pos, state.getBlock(), null);
-        FluidPipeBlock.changed(level, pos, level.getBlockState(pos));
-        String mode = switch (FluidPipeBlock.mode(level.getBlockState(pos), d)) {
+        PipeBlock.changed(level, pos, level.getBlockState(pos));
+        String mode = switch (PipeBlock.mode(level.getBlockState(pos), d)) {
             case NORMAL -> MODE_NORMAL;
             case PULL -> MODE_PULL;
             default -> MODE_OFF;

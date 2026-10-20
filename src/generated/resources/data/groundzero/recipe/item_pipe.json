@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "I": "groundzero:iron_item_pipe",
+    "P": "#c:plates/steel",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "PPP",
+    "IRI",
+    "PPP"
+  ],
+  "result": {
+    "count": 8,
+    "id": "groundzero:item_pipe"
+  }
+}

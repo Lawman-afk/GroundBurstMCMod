@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import dev.groundzero.content.pipe.NetworkEndpoints;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
@@ -24,6 +25,10 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
  * A connected set of cables. Energy inserted into any cable is delivered immediately to the consumers touching
  * the network (round-robin, so several machines share fairly), capped per tick by the weakest cable's rate.
  * Networks are cached per level and rebuilt lazily after any cable is placed or removed.
+ *
+ * <p>Performance: the consumers along the network ({@link NetworkEndpoints}) are found once, when the network is built,
+ * and read through capability caches; delivering never walks the cables, so generators pushing every tick cost the same
+ * on a long network as on a short one, and a consumer in an unloaded chunk is skipped rather than loaded.
  */
 public final class CableNetwork {
     /** Larger networks are cut off here; stops a pathological cable maze from stalling a tick. */
@@ -31,14 +36,16 @@ public final class CableNetwork {
     private static final Map<Level, Map<BlockPos, CableNetwork>> CACHE = new WeakHashMap<>();
 
     private final Set<BlockPos> cables;
+    private final NetworkEndpoints<EnergyHandler> endpoints;
     private final int rate;
     private long tick = Long.MIN_VALUE;
     private int transferred;
     private int roundRobin;
     private final Journal journal = new Journal();
 
-    private CableNetwork(Set<BlockPos> cables, int rate) {
+    private CableNetwork(Set<BlockPos> cables, NetworkEndpoints<EnergyHandler> endpoints, int rate) {
         this.cables = cables;
+        this.endpoints = endpoints;
         this.rate = rate;
     }
 
@@ -87,7 +94,23 @@ public final class CableNetwork {
                 }
             }
         }
-        return new CableNetwork(seen, rate);
+        // Consumers: whatever sits beside a connected side and is not a cable; a machine touching two cables counts once.
+        List<NetworkEndpoints.Endpoint> ends = new ArrayList<>();
+        Set<BlockPos> targets = new HashSet<>();
+        for (BlockPos p : seen) {
+            BlockState state = level.getBlockState(p);
+            if (!(state.getBlock() instanceof CableBlock)) {
+                continue;
+            }
+            for (Direction d : Direction.values()) {
+                BlockPos target = p.relative(d);
+                if (CableBlock.side(state, d) == CableBlock.Side.CONNECTED && !seen.contains(target)
+                        && !(level.getBlockState(target).getBlock() instanceof CableBlock) && targets.add(target.immutable())) {
+                    ends.add(new NetworkEndpoints.Endpoint(target.immutable(), d.getOpposite()));
+                }
+            }
+        }
+        return new CableNetwork(seen, new NetworkEndpoints<>(Capabilities.Energy.BLOCK, ends), rate);
     }
 
     /** Delivers up to {@code amount} FE to the network's consumers, never back into {@code source}. */
@@ -101,34 +124,21 @@ public final class CableNetwork {
         if (allowed <= 0) {
             return 0;
         }
-        List<EnergyHandler> consumers = new ArrayList<>();
-        Set<BlockPos> visited = new HashSet<>();
-        for (BlockPos cable : this.cables) {
-            BlockState state = level.getBlockState(cable);
-            for (Direction d : Direction.values()) {
-                if (!(state.getBlock() instanceof CableBlock) || CableBlock.side(state, d) != CableBlock.Side.CONNECTED) {
-                    continue;
-                }
-                BlockPos target = cable.relative(d);
-                if (target.equals(source) || this.cables.contains(target) || !visited.add(target.immutable())) {
-                    continue;
-                }
-                if (level.getBlockState(target).getBlock() instanceof CableBlock) {
-                    continue;   // a different network (e.g. beyond MAX_CABLES)
-                }
-                EnergyHandler h = level.getCapability(Capabilities.Energy.BLOCK, target, d.getOpposite());
-                if (h != null) {
-                    consumers.add(h);
-                }
-            }
-        }
-        if (consumers.isEmpty()) {
+        int n = this.endpoints.size();
+        if (n == 0) {
             return 0;
         }
         int sent = 0;
-        int start = this.roundRobin++ % consumers.size();
-        for (int k = 0; k < consumers.size() && sent < allowed; k++) {
-            sent += consumers.get((start + k) % consumers.size()).insert(allowed - sent, transaction);
+        int start = Math.floorMod(this.roundRobin++, n);
+        for (int k = 0; k < n && sent < allowed; k++) {
+            int i = (start + k) % n;
+            if (this.endpoints.get(i).pos().equals(source)) {
+                continue;                                  // never back into the block that pushed it
+            }
+            EnergyHandler h = this.endpoints.handler(level, i);
+            if (h != null) {
+                sent += h.insert(allowed - sent, transaction);
+            }
         }
         if (sent > 0) {
             this.journal.updateSnapshots(transaction);

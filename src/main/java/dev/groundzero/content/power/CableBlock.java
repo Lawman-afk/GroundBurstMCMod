@@ -45,6 +45,9 @@ public class CableBlock extends Block {
     public static final Map<Direction, EnumProperty<Side>> SIDES = new EnumMap<>(Direction.class);
     private static final Map<Direction, VoxelShape> ARMS = new EnumMap<>(Direction.class);
     private static final VoxelShape CORE = Block.box(5.5, 5.5, 5.5, 10.5, 10.5, 10.5);
+    /** Outline and collision for every combination of connected sides (bit i = Direction i), built once: the game asks
+     * for a block's shape constantly (collision, raycasts, mobs walking past), so it must not be rebuilt each time. */
+    private static final VoxelShape[] SHAPES = new VoxelShape[64];
 
     static {
         for (Direction d : Direction.values()) {
@@ -56,6 +59,15 @@ public class CableBlock extends Block {
         ARMS.put(Direction.EAST, Block.box(10, 6, 6, 16, 10, 10));
         ARMS.put(Direction.DOWN, Block.box(6, 0, 6, 10, 6, 10));
         ARMS.put(Direction.UP, Block.box(6, 10, 6, 10, 16, 10));
+        for (int mask = 0; mask < 64; mask++) {
+            VoxelShape shape = CORE;
+            for (Direction d : Direction.values()) {
+                if ((mask & (1 << d.ordinal())) != 0) {
+                    shape = Shapes.or(shape, ARMS.get(d));
+                }
+            }
+            SHAPES[mask] = shape.optimize();
+        }
     }
 
     private final CableTier tier;
@@ -124,13 +136,13 @@ public class CableBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = CORE;
+        int mask = 0;
         for (Direction d : Direction.values()) {
             if (side(state, d) == Side.CONNECTED) {
-                shape = Shapes.or(shape, ARMS.get(d));
+                mask |= 1 << d.ordinal();
             }
         }
-        return shape;
+        return SHAPES[mask];
     }
 
     /** A neighbour's capabilities can change without a block change (e.g. a machine's side configuration). */

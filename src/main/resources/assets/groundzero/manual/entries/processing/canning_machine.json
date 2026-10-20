@@ -1,7 +1,7 @@
 {
   "title": "Canning Machine",
   "icon": "groundzero:canning_machine",
-  "order": 7,
+  "order": 8,
   "items": [
     "groundzero:canning_machine"
   ],

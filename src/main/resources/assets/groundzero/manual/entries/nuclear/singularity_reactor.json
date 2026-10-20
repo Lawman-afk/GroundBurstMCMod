@@ -31,7 +31,7 @@
     },
     {
       "type": "text",
-      "text": "**The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.\n\n**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second, so **swap more floor blocks for Item Ports** (do it before engaging) and feed each of them. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.\n\n**Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**."
+      "text": "**The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.\n\n**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second; an [item pipe](processing/item_pipes) up to 128. **Swap more floor blocks for Item Ports** (do it before engaging) to feed it from several pipes. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.\n\n**Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**."
     },
     {
       "type": "table",

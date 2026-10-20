@@ -294,6 +294,31 @@ enriched uranium in your inventory hurts).
   have no push/pull); right-click a machine turns it; sneak-right-click picks up pipes, cables, machines, tanks and
   structure blocks.
 
+### 6.5 Item pipes
+- Three tiers like the fluid pipes and cables: iron 8, steel 32, pneumatic 128 items a second, moved in batches of
+  4 / 16 / 64 every half second. For reference: a vanilla hopper moves 2.5 items/s; Pipez moves 1 / 4 / 32 / 128 /
+  1 280 items/s with no / basic / improved / advanced / ultimate upgrade; Mekanism's transporters pull 1 / 16 / 32 / 64
+  items at a time. A run moves as many items as its weakest pipe.
+- Same rules as fluid pipes (they share one pipe block base): sides normal / pull / disconnected with the Wrench, pull
+  sides draw from the chest or machine they touch (a machine gives only what its side configuration offers, i.e. its
+  outputs), machines' auto-eject and hoppers can push in, and the run hands items straight to the inventories on its
+  normal sides, round-robin, never back to the source. Pipes hold nothing; there are no travelling item entities.
+- Look: the fluid pipe's shape, but a glass sight-tube in a metal frame with flow chevrons, and an item-slot window
+  on the junction box. Iron: pale iron. Steel: gunmetal with yellow fittings. Pneumatic: brass with copper fittings and
+  blue glass.
+
+### 6.6 Network performance rules
+- Cable, fluid pipe and item pipe networks are found once (breadth-first, capped at 4 096 blocks, never stepping into
+  unloaded chunks) after a change and cached per level; any pipe or cable change drops the level's cache and the next
+  use rebuilds lazily.
+- A network caches its endpoints (the blocks beside its connected, non-pipe sides) and reads them through NeoForge
+  `BlockCapabilityCache`s, so delivering costs one cached lookup per endpoint and never walks the pipes; an endpoint
+  in an unloaded chunk is skipped, never loaded.
+- Pipe and cable outline/collision shapes are built once for all 64 side combinations.
+- Machines show ACTIVE at once but drop it only after 10 idle ticks, and change it without neighbour updates, so a
+  stuttering machine does not rebuild client chunk meshes or make its neighbours re-check their connections.
+- Multiblock patterns lay out their cells once per facing; per-tick code asks for just the cells it needs (ports).
+
 ## 7. Power
 
 All machines use **NeoForge Energy (FE)** so they interoperate with other tech mods (decision D2).
@@ -1561,3 +1586,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Big reactors' Energy Ports use a gated view (ReactorEnergyView): power out only above the reactor's reserve, power in only while the reactor wants it (fusion ignition charge, singularity cage). Cable networks never route power back to the block that pushed it, so a two-way port does not loop. |
 | 2026-10-20 | Slice 8 feedback: the Fusion Reactor burns only deuterium + tritium gas; its pellet slot and Item Port are gone (lithium deuteride pellets are for the thermonuclear weapons). It gives no helium: nothing in the mod would use it. |
 | 2026-10-20 | Slice 8 feedback, Singularity Reactor reworked to be clear and hungry: the seed stays in its slot (taking it out shuts down safely; a collapse destroys it). One output rule: each item eaten is worth 10 000 FE (was 200 000) and it eats at most 50 items a second (2 and 3 on alternate ticks), which is what sets the 25 000 FE/t ceiling; a store of 50 items' worth smooths bursts. Upkeep 1 000 FE/t (2 items/s), engage at 500 000 FE, 500 000 FE reserve. Four feed slots; any floor block may be an Item Port (a hopper moves only 2.5 items/s), and the model shows a hatch on every outer floor cell that is one. The CRT shows items eaten per second. |
+| 2026-10-20 | Item pipes (user request): three tiers, iron 8 / steel 32 / pneumatic 128 items a second, researched against hoppers, Pipez and Mekanism (§6.5). They work like the fluid pipes (shared PipeBlock base, Wrench modes, instant pass-through delivery with no stored items). |
+| 2026-10-20 | Performance pass (user request): networks cache their endpoints through capability caches (delivery no longer walks every cable or pipe, and never loads chunks); pipe and cable shapes are precomputed; machine ACTIVE lingers 10 ticks and is set without neighbour updates; multiblock cell layouts are cached (§6.6). |

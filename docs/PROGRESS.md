@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; 7 chapters / 43 entries, 90/90 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -131,6 +131,8 @@ checklist for the user.
 | Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases as rising clouds with upside-down buckets), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
 | Water Pump (infinite water from a source block, pushes into pipes) | done (slice 4 feedback 2) — needs in-game test |
 | Fluid Tank (expandable to 3x3x5, connected frame, renders contents; passive, piped in and out) | done (slice 4 feedback 2/3) — needs in-game test |
+| Item pipes, three tiers (iron 8 / steel 32 / pneumatic 128 items/s; pull sides, auto-eject and hoppers in, round-robin out) | done (2026-10-20) — needs in-game test |
+| Performance pass: cached network endpoints, precomputed pipe/cable shapes, ACTIVE hysteresis, cached multiblock layouts | done (2026-10-20) |
 | Creative Fluid Tank (endless source of the first fluid poured in, violet frame) | done (2026-10-20) — needs in-game test |
 | Canning Machine (fills and empties canisters by `canning` recipes; supply and catch tanks; GeckoLib model, sound, JEI, manual) | done (2026-10-20) — needs in-game test |
 | Wrench (pipe sides normal/pull/off, cable sides on/off, rotate machines, sneak to pick up) | done (slice 4 feedback 3) — needs in-game test |

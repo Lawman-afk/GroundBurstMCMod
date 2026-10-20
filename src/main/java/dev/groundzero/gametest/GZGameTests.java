@@ -71,6 +71,7 @@ public final class GZGameTests {
         PowerStorageTests.register();
         ReactorTests.register();
         FusionSingularityTests.register();
+        PipeTests.register();
         ManualContentTests.register();
     }
 

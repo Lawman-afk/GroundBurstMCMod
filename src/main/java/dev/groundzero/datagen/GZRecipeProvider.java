@@ -359,6 +359,24 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("PPP").pattern("GGG").pattern("PPP")
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
                 .save(output);
+        // Item pipes (DESIGN.md §6.5): iron sight-tubes with a hopper's worth of iron, then steel, then pneumatic.
+        shaped(RecipeCategory.REDSTONE, dev.groundzero.content.pipe.GZPipes.IRON_ITEM_PIPE.item(), 8)
+                .define('I', Tags.Items.INGOTS_IRON).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS).define('H', Items.HOPPER)
+                .pattern("III").pattern("GHG").pattern("III")
+                .unlockedBy(getHasName(Items.HOPPER), has(Items.HOPPER))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundzero.content.pipe.GZPipes.ITEM_PIPE.item(), 8)
+                .define('P', GZTags.commonItem("plates/steel")).define('I', dev.groundzero.content.pipe.GZPipes.IRON_ITEM_PIPE.item())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .pattern("PPP").pattern("IRI").pattern("PPP")
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundzero.content.pipe.GZPipes.PNEUMATIC_ITEM_PIPE.item(), 4)
+                .define('C', GZTags.commonItem("plates/copper")).define('P', dev.groundzero.content.pipe.GZPipes.ITEM_PIPE.item())
+                .define('M', GZParts.ELECTRIC_MOTOR)
+                .pattern("CPC").pattern("PMP").pattern("CPC")
+                .unlockedBy(getHasName(GZParts.ELECTRIC_MOTOR), has(GZParts.ELECTRIC_MOTOR))
+                .save(output);
         // DESIGN.md §26.8: glass, diamond, advanced circuit, battery.
         shaped(RecipeCategory.TOOLS, GZMultiblocks.HOLO_PROJECTOR.get(), 1)
                 .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('D', Tags.Items.GEMS_DIAMOND).define('A', GZTags.ADVANCED_CIRCUITS)

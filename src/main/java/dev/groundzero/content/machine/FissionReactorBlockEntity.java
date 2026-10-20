@@ -322,10 +322,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
 
     /** Pushes power out of every Energy Port. */
     private void pushPower(ServerLevel level) {
-        for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
-            if (cell.key() == 'E') {
-                PowerUtil.pushToNeighbours(level, cell.pos(), this.energy, PUSH);
-            }
+        for (BlockPos port : definition().positionsOf('E', this.worldPosition, controllerFacing())) {
+            PowerUtil.pushToNeighbours(level, port, this.energy, PUSH);
         }
     }
 
