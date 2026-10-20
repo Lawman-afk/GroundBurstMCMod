@@ -50,13 +50,33 @@ public final class FxPhotographer {
                 new Scene("nuclear", "test/nuclear", 230, -16, List.of(1, 3, 6, 10, 20, 40, 80, 160, 300, 600, 1200, 2400)),
                 new Scene("nuclear_close", "test/nuclear", 130, -32, List.of(30, 120, 300, 700)),
                 new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"),
-                new Scene("meltdown", "reactor_meltdown", 30, 4, List.of(2, 8, 20, 60, 160, 400)),
-                new Scene("meltdown_dusk", "reactor_meltdown", 22, 14, List.of(30, 200), "13000"))) {
+                new Scene("meltdown", "reactor_meltdown", 55, 2, List.of(2, 8, 20, 60, 160, 400)),
+                new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
+                new Scene("suits", "suits", 3, 12, List.of(15)),
+                new Scene("suits_back", "suits_back", 3, 12, List.of(15)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
         }
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+    }
+
+    /** Two armour stands wearing the hazmat suits, side by side, facing the camera (or turned away). */
+    private static void suits(ServerLevel level, int x, int ground, boolean back) {
+        var sets = List.of(dev.groundzero.content.gear.GZArmor.HAZMAT_SET, dev.groundzero.content.gear.GZArmor.LEAD_HAZMAT_SET);
+        net.minecraft.world.entity.EquipmentSlot[] slots = {net.minecraft.world.entity.EquipmentSlot.HEAD,
+                net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS,
+                net.minecraft.world.entity.EquipmentSlot.FEET};
+        for (int i = 0; i < 2; i++) {
+            var stand = new net.minecraft.world.entity.decoration.ArmorStand(level, x + 0.5, ground, 0.5 + (i == 0 ? -0.8 : 0.8));
+            stand.setYRot(back ? -90 : 90);
+            stand.setYBodyRot(back ? -90 : 90);
+            stand.setShowArms(true);
+            for (int k = 0; k < 4; k++) {
+                stand.setItemSlot(slots[k], new net.minecraft.world.item.ItemStack(sets.get(i).get(k).get()));
+            }
+            level.addFreshEntity(stand);
+        }
     }
 
     private static void tick() {
@@ -116,9 +136,13 @@ public final class FxPhotographer {
                 ServerLevel level = server.overworld();
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
-                Blasts.detonate(level, at, Blasts.profile(s.profile()), null);
+                if (s.profile().startsWith("suits")) {
+                    suits(level, x, ground, s.profile().endsWith("back"));    // armour stands wearing the suits, no blast
+                    return;
+                }
+                var blast = Blasts.detonate(level, at, Blasts.profile(s.profile()), null);
                 if (s.profile().equals("reactor_meltdown")) {
-                    dev.groundzero.content.nuclear.Meltdown.aftermath(level, at);   // the corium a real meltdown leaves
+                    dev.groundzero.content.nuclear.Meltdown.afterBlast(level, at, blast);   // the corium a real meltdown leaves
                 }
             });
             step = 0;

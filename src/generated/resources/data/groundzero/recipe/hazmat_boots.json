@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "minecraft:leather",
+    "P": "groundzero:plastic_sheet"
+  },
+  "pattern": [
+    "P P",
+    "L L"
+  ],
+  "result": {
+    "id": "groundzero:hazmat_boots"
+  }
+}

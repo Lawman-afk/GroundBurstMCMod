@@ -1,0 +1,93 @@
+{
+  "title": "Hazmat suits",
+  "icon": "groundzero:hazmat_hood",
+  "order": 3,
+  "items": [
+    "groundzero:hazmat_hood",
+    "groundzero:hazmat_coat",
+    "groundzero:hazmat_trousers",
+    "groundzero:hazmat_boots",
+    "groundzero:lead_lined_hazmat_hood",
+    "groundzero:lead_lined_hazmat_coat",
+    "groundzero:lead_lined_hazmat_trousers",
+    "groundzero:lead_lined_hazmat_boots"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "\"Hazmat\" means hazardous materials, radioactive ones included. A **Hazmat Suit** is sealed plastic with a filter mask: it keeps radioactive dust off your skin and out of your lungs, which stops most of the harm of contaminated land, but it is thin protection against radiation itself.\n\nA **Lead-Lined Hazmat Suit** adds lead plates over the chest, back, shins, crown and boots. It stops far more, and its weight slows you a little."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Hazmat Suit",
+          "75%"
+        ],
+        [
+          "Lead-lined",
+          "92%"
+        ],
+        [
+          "Hood",
+          "1/5 of it"
+        ],
+        [
+          "Coat",
+          "7/20"
+        ],
+        [
+          "Trousers",
+          "3/10"
+        ],
+        [
+          "Boots",
+          "3/20"
+        ],
+        [
+          "Lead-lined",
+          "5% slower"
+        ]
+      ],
+      "text": "A full set gives the whole figure; each piece its share. Neither is much use as armour against blows.",
+      "title": "Radiation stopped"
+    },
+    {
+      "type": "text",
+      "text": "In the contaminated land round a [meltdown](safety/reactor_safety), a full Hazmat Suit keeps Radiation Sickness to its second level even at the crater, and the lead-lined suit to the first. Wash it off afterwards in a [Decontamination Shower](safety/decontamination_shower).\n\nThe hood needs plastic sheet, a glass pane for the visor and charcoal for the filter; the lead-lined suit is a Hazmat Suit piece with four lead plates round it."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hazmat_hood",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hazmat_coat",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hazmat_trousers",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hazmat_boots",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:lead_lined_hazmat_coat",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/reactor_safety",
+        "safety/decontamination_shower"
+      ],
+      "text": ""
+    }
+  ]
+}

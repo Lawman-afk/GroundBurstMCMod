@@ -152,6 +152,18 @@ public final class GZTagProviders {
             for (BlockItemTagId id : COPIED) {
                 copy(id);
             }
+            // Hazmat suits: repaired with what they are made of; armour tags for enchanting and other mods.
+            tag(dev.groundzero.content.gear.GZArmor.REPAIRS_HAZMAT).add(dev.groundzero.content.chem.GZChemicals.PLASTIC_SHEET.key());
+            tag(dev.groundzero.content.gear.GZArmor.REPAIRS_LEAD_HAZMAT).add(dev.groundzero.content.part.GZParts.LEAD_PLATE.key());
+            for (var set : java.util.List.of(dev.groundzero.content.gear.GZArmor.HAZMAT_SET, dev.groundzero.content.gear.GZArmor.LEAD_HAZMAT_SET)) {
+                tag(net.minecraft.tags.ItemTags.HEAD_ARMOR).add(set.get(0).key());
+                tag(net.minecraft.tags.ItemTags.CHEST_ARMOR).add(set.get(1).key());
+                tag(net.minecraft.tags.ItemTags.LEG_ARMOR).add(set.get(2).key());
+                tag(net.minecraft.tags.ItemTags.FOOT_ARMOR).add(set.get(3).key());
+                for (var piece : set) {
+                    tag(Tags.Items.ARMORS_HUMANOID).add(piece.key());
+                }
+            }
             item("raw_materials/uranium", GZResources.RAW_URANIUM, Tags.Items.RAW_MATERIALS);
             item("raw_materials/lithium", GZResources.RAW_LITHIUM, Tags.Items.RAW_MATERIALS);
             item("raw_materials/tungsten", GZResources.RAW_TUNGSTEN, Tags.Items.RAW_MATERIALS);

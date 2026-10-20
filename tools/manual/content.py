@@ -766,18 +766,52 @@ Keep the [Fission Reactor](nuclear/fission_reactor) below 900 C: keep coolant fl
     table([
         ["Critical from", "900 C"],
         ["Meltdown at", "1,400 C"],
-        ["Warning time", "15 to 40 s"],
-        ["Contaminated", "32 blocks, 1 day"],
+        ["Warning time", "15 to 45 s"],
+        ["  with coolant", "the longer"],
+        ["Contaminated", "48 blocks, 1 day"],
     ], "Meltdowns"),
     spot("corium", """
 Molten core. It burns anything that stands on it and sets fire to what is next to it, and cools into cooled corium over about ten minutes. Both are radioactive; mine them with an iron pickaxe or better.
 """),
     text("""
-**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**: it gets hungry fast, and nearer the reactor it takes damage that armour does not stop. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune.
+**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**, worse the nearer the crater: hunger, slowness and damage that ordinary armour does not stop, from half a heart every two seconds at level I to four hearts a second at level IV. A [hazmat suit](safety/hazmat_suits) stops most of it. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune.
 """),
     spot("nuclear_waste", """
 What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item.
 """),
+    links(["safety/hazmat_suits", "safety/decontamination_shower"]),
+])
+
+entry("safety/hazmat_suits", "Hazmat suits", "hazmat_hood", [
+    "hazmat_hood", "hazmat_coat", "hazmat_trousers", "hazmat_boots", "lead_lined_hazmat_hood", "lead_lined_hazmat_coat",
+    "lead_lined_hazmat_trousers", "lead_lined_hazmat_boots"], [
+    text("""
+"Hazmat" means hazardous materials, radioactive ones included. A **Hazmat Suit** is sealed plastic with a filter mask: it keeps radioactive dust off your skin and out of your lungs, which stops most of the harm of contaminated land, but it is thin protection against radiation itself.
+
+A **Lead-Lined Hazmat Suit** adds lead plates over the chest, back, shins, crown and boots. It stops far more, and its weight slows you a little.
+"""),
+    table([
+        ["Hazmat Suit", "75%"],
+        ["Lead-lined", "92%"],
+        ["Hood", "1/5 of it"],
+        ["Coat", "7/20"],
+        ["Trousers", "3/10"],
+        ["Boots", "3/20"],
+        ["Lead-lined", "5% slower"],
+    ], "Radiation stopped", """
+A full set gives the whole figure; each piece its share. Neither is much use as armour against blows.
+"""),
+    text("""
+In the contaminated land round a [meltdown](safety/reactor_safety), a full Hazmat Suit keeps Radiation Sickness to its second level even at the crater, and the lead-lined suit to the first. Wash it off afterwards in a [Decontamination Shower](safety/decontamination_shower).
+
+The hood needs plastic sheet, a glass pane for the visor and charcoal for the filter; the lead-lined suit is a Hazmat Suit piece with four lead plates round it.
+"""),
+    craft("hazmat_hood"),
+    craft("hazmat_coat"),
+    craft("hazmat_trousers"),
+    craft("hazmat_boots"),
+    craft("lead_lined_hazmat_coat"),
+    links(["safety/reactor_safety", "safety/decontamination_shower"]),
 ])
 
 

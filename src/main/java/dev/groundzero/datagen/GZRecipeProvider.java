@@ -225,6 +225,39 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern("PEP").pattern("GFG").pattern(" B ")
                 .unlockedBy(getHasName(GZParts.EMPTY_CANISTER), has(GZParts.EMPTY_CANISTER))
                 .save(output);
+        suits();
+    }
+
+    /**
+     * Hazmat suits (DESIGN.md §21.5): plastic sheeting, a glass visor and a charcoal filter in the hood, yellow dye in
+     * the coat; the lead-lined suit is the plain one with four lead plates round each piece.
+     */
+    private void suits() {
+        var plastic = dev.groundzero.content.chem.GZChemicals.PLASTIC_SHEET;
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.gear.GZArmor.HAZMAT_HOOD, 1)
+                .define('P', plastic).define('G', Items.GLASS_PANE).define('C', Items.CHARCOAL)
+                .pattern("PCP").pattern("PGP")
+                .unlockedBy(getHasName(plastic), has(plastic)).save(output);
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.gear.GZArmor.HAZMAT_COAT, 1)
+                .define('P', plastic).define('Y', Tags.Items.DYES_YELLOW)
+                .pattern("P P").pattern("PYP").pattern("PPP")
+                .unlockedBy(getHasName(plastic), has(plastic)).save(output);
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.gear.GZArmor.HAZMAT_TROUSERS, 1)
+                .define('P', plastic)
+                .pattern("PPP").pattern("P P").pattern("P P")
+                .unlockedBy(getHasName(plastic), has(plastic)).save(output);
+        shaped(RecipeCategory.COMBAT, dev.groundzero.content.gear.GZArmor.HAZMAT_BOOTS, 1)
+                .define('P', plastic).define('L', Items.LEATHER)
+                .pattern("P P").pattern("L L")
+                .unlockedBy(getHasName(plastic), has(plastic)).save(output);
+        var plain = dev.groundzero.content.gear.GZArmor.HAZMAT_SET;
+        var lined = dev.groundzero.content.gear.GZArmor.LEAD_HAZMAT_SET;
+        for (int i = 0; i < plain.size(); i++) {
+            shaped(RecipeCategory.COMBAT, lined.get(i), 1)
+                    .define('L', GZParts.LEAD_PLATE).define('H', plain.get(i))
+                    .pattern(" L ").pattern("LHL").pattern(" L ")
+                    .unlockedBy(getHasName(plain.get(i)), has(plain.get(i))).save(output);
+        }
     }
 
     /** Electrolytic Separator and Cryogenic Condenser (DESIGN.md §6): deuterium, liquid oxygen, liquid nitrogen. */

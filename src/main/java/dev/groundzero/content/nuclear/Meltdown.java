@@ -1,5 +1,13 @@
 package dev.groundzero.content.nuclear;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+import org.jspecify.annotations.Nullable;
+
+import dev.groundzero.blast.Blast;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -7,18 +15,48 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 /**
- * What a reactor meltdown leaves behind (DESIGN.md §7): a pool of molten Corium on the crater floor under the core, and
- * blobs of it thrown out onto the ground round the crater. Corium never lands on water or other fluids.
+ * What a reactor meltdown leaves behind (DESIGN.md §7.1): a pool of molten Corium on the crater floor under the core,
+ * and blobs of it thrown out onto the ground round the crater. Corium never lands on water or other fluids. It is
+ * poured once the blast has finished (so it does not destroy it), checked four times a second; if the server
+ * restarts in those few seconds the corium is not poured.
  */
 public final class Meltdown {
     /** Radius of the pool under the core, and how many blobs are thrown out, and how far. */
-    private static final double POOL = 2.3;
-    private static final int BLOBS = 10;
-    private static final double THROW_MIN = 5, THROW_MAX = 15;
+    private static final double POOL = 3.2;
+    private static final int BLOBS = 18;
+    private static final double THROW_MIN = 8, THROW_MAX = 26;
+
+    private record Pending(Vec3 centre, @Nullable Blast blast) {}
+
+    private static final Map<ServerLevel, List<Pending>> PENDING = new WeakHashMap<>();
 
     private Meltdown() {}
+
+    public static void register() {
+        NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
+            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 5 == 0) {
+                List<Pending> due = PENDING.get(level);
+                if (due != null) {
+                    due.removeIf(p -> {
+                        if (p.blast() == null || p.blast().isDone()) {
+                            aftermath(level, p.centre());
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+            }
+        });
+    }
+
+    /** Pours the corium at {@code centre} once {@code blast} (if any) has finished. */
+    public static void afterBlast(ServerLevel level, Vec3 centre, @Nullable Blast blast) {
+        PENDING.computeIfAbsent(level, l -> new ArrayList<>()).add(new Pending(centre, blast));
+    }
 
     public static void aftermath(ServerLevel level, Vec3 centre) {
         RandomSource random = RandomSource.create(BlockPos.containing(centre).asLong());
@@ -28,7 +66,7 @@ public final class Meltdown {
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
                 if (dx * dx + dz * dz <= POOL * POOL) {
-                    pour(level, new BlockPos(cx + dx, top, cz + dz), 16, corium);
+                    pour(level, new BlockPos(cx + dx, top, cz + dz), 24, corium);
                 }
             }
         }

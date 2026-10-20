@@ -29,11 +29,15 @@
         ],
         [
           "Warning time",
-          "15 to 40 s"
+          "15 to 45 s"
+        ],
+        [
+          "  with coolant",
+          "the longer"
         ],
         [
           "Contaminated",
-          "32 blocks, 1 day"
+          "48 blocks, 1 day"
         ]
       ],
       "text": "",
@@ -46,12 +50,20 @@
     },
     {
       "type": "text",
-      "text": "**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**: it gets hungry fast, and nearer the reactor it takes damage that armour does not stop. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune."
+      "text": "**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**, worse the nearer the crater: hunger, slowness and damage that ordinary armour does not stop, from half a heart every two seconds at level I to four hearts a second at level IV. A [hazmat suit](safety/hazmat_suits) stops most of it. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune."
     },
     {
       "type": "spotlight",
       "item": "groundzero:nuclear_waste",
       "text": "What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/hazmat_suits",
+        "safety/decontamination_shower"
+      ],
+      "text": ""
     }
   ]
 }

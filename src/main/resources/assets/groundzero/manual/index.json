@@ -52,6 +52,7 @@
     "nuclear/singularity_reactor",
     "safety/decontamination_shower",
     "safety/chemical_hazards",
-    "safety/reactor_safety"
+    "safety/reactor_safety",
+    "safety/hazmat_suits"
   ]
 }

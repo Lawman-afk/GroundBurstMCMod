@@ -56,9 +56,9 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
  *     of that. Without enough coolant the core heats up quickly. With meltdowns turned off, at 900 °C it SCRAMs (all
  *     rods in) until the rods are withdrawn again.</li>
  * <li>Meltdown (server config {@code reactor.meltdowns}, on by default): there is no automatic SCRAM. Past 900 °C with
- *     the rods out the core is <b>critical</b>: it runs away, gaining 0.35 + 0.9 x power °C a tick even when cooled
- *     (heating without coolant slows to a tenth, so the runaway sets the pace), a klaxon sounds, nearby players are
- *     warned and steam vents from the top. SCRAM (or all rods in) still saves it. At 1 400 °C it melts down: the
+ *     the rods out the core is <b>critical</b>: it runs away, gaining 0.35 + 0.9 x power °C a tick (plus a tenth of the
+ *     usual uncooled heating); coolant no longer holds it at any temperature but halves the climb. A klaxon sounds,
+ *     nearby players are warned and steam vents from the top. SCRAM (or all rods in) still saves it. At 1 400 °C it melts down: the
  *     reactor is destroyed with its fuel, a dirty blast goes off ({@code groundzero:reactor_meltdown}), molten Corium
  *     pools in the crater and is thrown round it, and a contaminated zone ({@link Contamination}) is left for a day.</li>
  * <li>Breeding: a DU or Li-6 target rod in a target slot becomes irradiated after 6 000 ticks of full power.</li>
@@ -79,7 +79,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     public static final float WATER_QUALITY = 1.0f, HEAVY_WATER_QUALITY = 1.6f;
     public static final int SCRAM_HEAT = 900, WARN_HEAT = 700, AMBIENT = 20, MELTDOWN_HEAT = 1_400;
     /** The contaminated zone a meltdown leaves: radius, and how long it lasts (one day). */
-    public static final float CONTAMINATION_RADIUS = 32;
+    public static final float CONTAMINATION_RADIUS = 48;
     public static final int CONTAMINATION_TICKS = 24_000;
     public static final int FUEL_SLOTS = 4, TARGET_START = 4, SPENT_SLOT = 6, IRRADIATED_START = 7;
     /** Sync slots: core heat (°C), rod insertion (%), output (FE/t), fuel burnup of the current rod (%). */
@@ -269,13 +269,15 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
         this.critical = meltdowns && lvl > 0 && this.heat >= SCRAM_HEAT;
         if (lvl <= 0) {
             this.heat += (AMBIENT - this.heat) * 0.003f;
+        } else if (this.critical) {
+            // Runaway: coolant can no longer hold the core at any temperature, only slow the climb (to half).
+            this.heat += (0.35f + 0.9f * lvl) * (cooled ? 0.5f : 1) + (cooled ? 0 : (1.5f + 3.5f * lvl) * 0.1f);
         } else if (cooled) {
             this.heat += (settle - this.heat) * 0.01f;
         } else {
-            this.heat += (1.5f + 3.5f * lvl) * (this.critical ? 0.1f : 1);
+            this.heat += 1.5f + 3.5f * lvl;
         }
         if (this.critical) {
-            this.heat += 0.35f + 0.9f * lvl;           // runaway: no coolant can hold it now
             warn(level);
             if (this.heat >= MELTDOWN_HEAT) {
                 meltdown(level);
@@ -423,8 +425,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
                         Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
             }
         }
-        Blasts.detonate(level, centre, Blasts.profile("reactor_meltdown"), null);
-        Meltdown.aftermath(level, centre);
+        Meltdown.afterBlast(level, centre, Blasts.detonate(level, centre, Blasts.profile("reactor_meltdown"), null));
         Contamination.of(level).add(new Contamination.Zone(centre, CONTAMINATION_RADIUS, 1f, level.getGameTime(), CONTAMINATION_TICKS));
     }
 

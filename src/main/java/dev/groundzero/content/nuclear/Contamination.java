@@ -22,10 +22,11 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 /**
- * Contaminated zones (DESIGN.md §7, meltdown): until the radiation field of Phase 12 exists, a meltdown leaves a zone
+ * Contaminated zones (DESIGN.md §7.1, meltdown): until the radiation field of Phase 12 exists, a meltdown leaves a zone
  * round the reactor. Once a second every living thing inside (undead excepted, and players in creative or spectator)
- * is given Radiation Sickness, stronger toward the centre: level = strength x (1 - distance / radius), and the
- * strength fades to nothing over the zone's life. Zones are the level's saved data ({@code contamination.dat}).
+ * is given Radiation Sickness, stronger toward the centre: level = strength x (1 - distance / radius) x (1 - suit
+ * protection), sickness level {@code min(IV, 1 + floor(4 x level))} above 0.05; the strength fades to nothing over the
+ * zone's life. Zones are the level's saved data ({@code contamination.dat}).
  */
 public final class Contamination extends SavedData {
     /** One zone: centre, radius, starting strength (0 to 1), when it began and how long it lasts (ticks). */
@@ -105,10 +106,12 @@ public final class Contamination extends SavedData {
         for (Zone z : this.zones) {
             AABB box = new AABB(z.center(), z.center()).inflate(z.radius());
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
-                if (e.is(EntityTypeTags.UNDEAD) || e instanceof Player p && (p.isCreative() || p.isSpectator())) {
+                if (e.is(EntityTypeTags.UNDEAD) || e instanceof net.minecraft.world.entity.decoration.ArmorStand
+                        || e instanceof Player p && (p.isCreative() || p.isSpectator())) {
                     continue;
                 }
-                float strength = levelAt(level, e.position());
+                // A hazmat suit stops most of it.
+                float strength = levelAt(level, e.position()) * (1 - dev.groundzero.content.gear.GZArmor.radiationProtection(e));
                 if (strength < 0.05f) {
                     continue;
                 }

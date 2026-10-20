@@ -1,21 +1,20 @@
 {
-  "core": 3.0,
-  "crater": 8.0,
+  "core": 5.0,
+  "crater": 16.0,
   "crater_depth": 0.6,
-  "ejecta": 0.3,
+  "ejecta": 0.35,
   "entities": {
-    "damage": 16.0,
-    "edge_damage": 14.0,
-    "knockback": 2.0,
-    "lethal": 8.0,
-    "lethal_damage": 60.0
+    "damage": 36.0,
+    "knockback": 3.0,
+    "lethal": 16.0,
+    "lethal_damage": 80.0
   },
-  "fire": 12.0,
+  "fire": 24.0,
   "front_speed": 3.0,
-  "instant": true,
-  "scorch": 14.0,
+  "instant": false,
+  "scorch": 30.0,
   "sound": "large",
   "streaks": 0.35,
-  "structural": 12.0,
+  "structural": 28.0,
   "visual": "meltdown"
 }

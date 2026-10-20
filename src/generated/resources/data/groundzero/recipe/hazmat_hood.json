@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:charcoal",
+    "G": "minecraft:glass_pane",
+    "P": "groundzero:plastic_sheet"
+  },
+  "pattern": [
+    "PCP",
+    "PGP"
+  ],
+  "result": {
+    "id": "groundzero:hazmat_hood"
+  }
+}

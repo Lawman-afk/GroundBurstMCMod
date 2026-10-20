@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": "groundzero:hazmat_boots",
+    "L": "groundzero:lead_plate"
+  },
+  "pattern": [
+    " L ",
+    "LHL",
+    " L "
+  ],
+  "result": {
+    "id": "groundzero:lead_lined_hazmat_boots"
+  }
+}

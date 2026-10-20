@@ -346,24 +346,31 @@ reactors are game abstractions (invented parts, simple fuel-in/energy-out rules)
 A game abstraction of a reactor accident, on by default (the user's call); the server config `reactor.meltdowns` turns
 it off, and then the reactor SCRAMs at 900 °C.
 - **Critical.** With meltdowns on there is no automatic SCRAM. Past 900 °C with the rods out the core is critical:
-  it gains 0.35 + 0.9 x power °C a tick even when cooled (heating without coolant slows to a tenth, so this runaway
-  sets the pace): about 15 s to 40 s of warning, by power. A klaxon (`reactor.alarm`, two alternating tones) sounds
+  it gains 0.35 + 0.9 x power °C a tick (plus a tenth of the usual uncooled heating); coolant cannot hold it at any
+  temperature any more, it only halves the climb. From critical to meltdown: about 14-22 s without coolant, about
+  40-47 s with water (an earlier version let water hold a critical core at ~1 295 °C forever; fixed). A klaxon (`reactor.alarm`, two alternating tones) sounds
   every 2 s, everyone within 64 blocks gets a red warning with the temperature, steam (and, past 1 150 °C, smoke)
   vents from the top. Status lamp: CORE CRITICAL. SCRAM, or every rod in, ends it.
 - **Meltdown at 1 400 °C.** The structure and its fuel are removed; the blast profile `groundzero:reactor_meltdown`
-  goes off at the core (core 3, crater 8, structural 12, scorch 14, fire 12, lethal 8, damage 16; instant; sound
-  large; visual `meltdown`: a dirty fireball and a heavy smoke plume, no mushroom cloud). Then **Corium** pours into the
-  crater under the core (a disc of radius 2.3 on the first solid floor) and ten blobs land on the ground 5-15 blocks
-  out; never on fluid.
+  goes off at the core (core 5, crater 16, structural 28, scorch 30, fire 24, lethal 16, damage 36; enlarged after the
+  user's look; not instant; sound large; visual `meltdown`: a dirty fireball and a heavy smoke plume, no mushroom
+  cloud). When the blast has finished, **Corium** pours into the crater under the core (a disc of radius 3.2 on the
+  first solid floor) and 18 blobs land on the ground 8-26 blocks out; never on fluid.
 - **Corium**: light 12, emissive, animated glowing cracks; burns (3 damage and 4 s of fire) whatever stands on it,
   lights flammable blocks beside it like lava, and cools into **Cooled Corium** (a random tick has a 10% chance:
   about ten minutes). Both radioactive-tagged, iron pickaxe, blast resistance 30; corium drops cooled corium.
-- **Contamination** (until the radiation field of Phase 12): a zone of radius 32 for one day (24 000 ticks), saved
-  with the level (`contamination.dat`). Every second, living things inside (not undead, not creative or spectator
-  players) get **Radiation Sickness** for 5 s at level `min(3, floor(4 x strength x (1 - d/r)))`, the strength fading
-  linearly over the day. Radiation Sickness: hunger drain at every level; from II, 1 damage (`groundzero:radiation`,
-  bypasses armour, no knockback) every 4 / 2 / 1 s. The Decontamination Shower washes it off. Phase 12 replaces the
-  zone with the field and drives the same effect from dose.
+- **Contamination** (until the radiation field of Phase 12): a zone of radius 48 for one day (24 000 ticks), saved
+  with the level (`contamination.dat`). Every second, living things inside (not undead, armour stands, creative or
+  spectator players) get **Radiation Sickness** for 5 s at amplifier `min(3, floor(4 x s))`, s = strength x
+  (1 - d/r) x (1 - suit protection), the strength fading linearly over the day. Radiation Sickness (made harsher after
+  the user's look): damage `groundzero:radiation` (bypasses armour, no knockback) of 0.5 / 1.5 / 4 / 8 per second at
+  I-IV, hunger drain growing per level, 5% slower per level. The Decontamination Shower washes it off. Phase 12
+  replaces the zone with the field and drives the same effect from dose.
+- **Hazmat suits** (§21.5, built now): Hazmat Suit (yellow plastic, filter hood; 75% radiation protection as a full
+  set; armour 1/2/2/1; plastic sheet, glass pane, charcoal, yellow dye) and Lead-Lined Hazmat Suit (orange, lead plates;
+  92%; armour 2/4/3/1, knockback resistance 0.05, 5% slower as a full set; a hazmat piece inside four lead plates).
+  Pieces carry the set's protection in shares hood 20%, coat 35%, trousers 30%, boots 15%. At the crater centre a full
+  hazmat suit keeps the sickness to II, the lead-lined suit to I.
 
 ---
 
@@ -1788,3 +1795,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | After the in-game look: mushroom cloud life halved to 2.5 minutes (nuke sky tint too), its stem fed by a trickle so it stands until the cloud thins; crater grain factor 1.9 to 1.7; the ground pass leaves fluid surfaces alone (rubble was being set on top of water). |
 | 2026-10-21 | Fission Reactor meltdown built (§7.1): opt-in, no automatic SCRAM; a critical phase with runaway heat, klaxon, warnings and venting gives 15-40 s to SCRAM; at 1 400 °C a dirty blast, corium (cools in ~10 min) and a one-day contaminated zone. Contamination is a stand-in until Phase 12's radiation field: zones apply a new Radiation Sickness effect (hunger, then armour-bypassing radiation damage), which the shower washes off and Phase 12 will drive from dose instead. |
 | 2026-10-21 | Reactor meltdowns are on by default (the user asked); `reactor.meltdowns = false` brings back the automatic SCRAM. |
+| 2026-10-21 | After the in-game look at the meltdown: critical cores keep heating with coolant (water used to hold one at ~1 295 °C forever), the meltdown blast roughly doubled (crater 16, not instant; corium poured after it), contamination radius 48, Radiation Sickness much harsher per level (0.5 / 1.5 / 4 / 8 damage a second, slowness), and the Hazmat Suit and Lead-Lined Hazmat Suit built (75% / 92% radiation protection). "Hazmat" covers radioactive contamination too; lead lining is what stops more of the radiation itself. |

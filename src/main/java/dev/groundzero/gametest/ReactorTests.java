@@ -9,6 +9,7 @@ import dev.groundzero.content.machine.OreCrusherBlockEntity;
 import dev.groundzero.content.machine.ParticleAcceleratorBlockEntity;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
+import dev.groundzero.content.gear.GZArmor;
 import dev.groundzero.content.nuclear.Contamination;
 import dev.groundzero.content.nuclear.GZEffects;
 import dev.groundzero.content.nuclear.GZNuclear;
@@ -45,6 +46,8 @@ final class ReactorTests {
         GZGameTests.test("reactor_melts_down_when_allowed", GZGameTests.FLOOR_16, 200, ReactorTests::meltdown);
         GZGameTests.test("reactor_critical_core_saved_by_scram", GZGameTests.FLOOR_16, 100, ReactorTests::criticalSaved);
         GZGameTests.test("contamination_sickens_the_living", GZGameTests.FLOOR_16, 60, ReactorTests::contamination);
+        GZGameTests.test("reactor_critical_with_coolant_still_melts_down", GZGameTests.FLOOR_16, 300, ReactorTests::cooledMeltdown);
+        GZGameTests.test("hazmat_suits_stop_radiation", GZGameTests.FLOOR_16, 20, ReactorTests::hazmat);
     }
 
     /** Builds a structure by hand around a controller placed at {@code rel}. */
@@ -328,5 +331,40 @@ final class ReactorTests {
             helper.assertTrue(sick != null && sick.getAmplifier() >= 2, "the pig is badly sick near the centre");
             helper.assertTrue(!zombie.hasEffect(GZEffects.RADIATION_SICKNESS), "the undead are immune");
         });
+    }
+
+    /** Critical with water still flowing: coolant only slows the runaway, it cannot hold the core; it melts down. */
+    private static void cooledMeltdown(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(7, 1, 6));
+        BlockPos ctrl = r.controllerPos();
+        r.setMeltdownsForTest(true);
+        fuel(r, 4);
+        r.tank(0).fillInternal(new FluidStack(Fluids.WATER, 16_000));
+        withdrawAll(r);
+        r.setHeatForTest(FissionReactorBlockEntity.MELTDOWN_HEAT - 60);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(r.critical() && r.tank(0).amount() > 0, "critical, with water in the tank");
+            helper.succeedWhen(() -> helper.assertTrue(!(helper.getLevel().getBlockEntity(ctrl) instanceof FissionReactorBlockEntity),
+                    "the cooled core still melts down"));
+        });
+    }
+
+    /** Suit protection: none, one piece, a full Hazmat Suit, a full lead-lined one. */
+    private static void hazmat(GameTestHelper helper) {
+        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        helper.assertTrue(GZArmor.radiationProtection(player) == 0, "no suit, no protection");
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(GZArmor.HAZMAT_HOOD.get()));
+        helper.assertTrue(Math.abs(GZArmor.radiationProtection(player) - 0.15f) < 1e-4f, "a hood alone: a fifth of 75%");
+        net.minecraft.world.entity.EquipmentSlot[] slots = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+        for (int i = 0; i < 4; i++) {
+            player.setItemSlot(slots[i], new ItemStack(GZArmor.HAZMAT_SET.get(i).get()));
+        }
+        helper.assertTrue(Math.abs(GZArmor.radiationProtection(player) - 0.75f) < 1e-4f, "a full Hazmat Suit: 75%");
+        for (int i = 0; i < 4; i++) {
+            player.setItemSlot(slots[i], new ItemStack(GZArmor.LEAD_HAZMAT_SET.get(i).get()));
+        }
+        helper.assertTrue(Math.abs(GZArmor.radiationProtection(player) - 0.92f) < 1e-4f, "a full lead-lined suit: 92%");
+        helper.succeed();
     }
 }

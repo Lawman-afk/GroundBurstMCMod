@@ -48,10 +48,10 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.empty()));
         ctx.register(Blasts.profile("test/nuclear"), profile(16, 60, 140, 120, 100, 90, 180, 3, 0.5f, 0.2f, 0.35f, 0.4f, 1000, 40, 3.0f,
                 TerrainTable.NUCLEAR, Optional.empty()));
-        // The Fission Reactor's meltdown: a dirty, smoky blast that wrecks the reactor hall (DESIGN.md §7). Instant (it is
-        // small), so the corium it leaves can be poured into the finished crater at once.
-        ctx.register(Blasts.profile("reactor_meltdown"), new BlastProfile(3, 8, 12, 14, 12, new BlastProfile.EntityZones(8, 16, 60, 14, 2.0f), 3,
-                0.6f, 0.15f, 0.35f, 0.3f, 0f, TerrainTable.CONVENTIONAL, Optional.of(true), Optional.of("large"), Optional.of("meltdown")));
+        // The Fission Reactor's meltdown: a dirty, smoky blast that takes the reactor hall and everything round it (DESIGN.md
+        // §7.1). Not instant: its front takes a few ticks, and the corium is poured once it has passed.
+        ctx.register(Blasts.profile("reactor_meltdown"), new BlastProfile(5, 16, 28, 30, 24, new BlastProfile.EntityZones(16, 36, 80, 20, 3.0f), 3,
+                0.6f, 0.15f, 0.35f, 0.35f, 0f, TerrainTable.CONVENTIONAL, Optional.of(false), Optional.of("large"), Optional.of("meltdown")));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

@@ -40,6 +40,7 @@ public class GroundZero {
         GZParts.init();
         GZChemicals.init();
         dev.groundzero.content.nuclear.GZNuclear.init();
+        dev.groundzero.content.gear.GZArmor.init();
         dev.groundzero.content.fluid.GZFluids.init();
         dev.groundzero.content.pipe.GZPipes.init();
         GZMultiblocks.init();
@@ -57,6 +58,7 @@ public class GroundZero {
         GZSounds.SOUNDS.register(modBus);
         dev.groundzero.content.nuclear.GZEffects.EFFECTS.register(modBus);
         dev.groundzero.content.nuclear.Contamination.register();
+        dev.groundzero.content.nuclear.Meltdown.register();
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);
 
         GZNetwork.register(modBus);

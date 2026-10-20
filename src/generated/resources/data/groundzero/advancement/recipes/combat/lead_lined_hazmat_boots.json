@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_hazmat_boots": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:hazmat_boots"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:lead_lined_hazmat_boots"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_hazmat_boots"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:lead_lined_hazmat_boots"
+    ]
+  }
+}
