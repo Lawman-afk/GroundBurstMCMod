@@ -6,7 +6,12 @@ import java.util.Set;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.util.GeckoLibUtil;
 
+import dev.groundzero.GroundZero;
+import dev.groundzero.blast.Blasts;
+import dev.groundzero.config.GZServerConfig;
 import dev.groundzero.content.fluid.GZFluids;
+import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.nuclear.Meltdown;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockController;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
@@ -18,6 +23,7 @@ import dev.groundzero.registry.GZSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -48,7 +54,13 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
  *     way each tick): water has quality 1, so past about 70% power the core would pass 900 °C; heavy water has
  *     quality 1.6, so even full power settles near 740 °C. Water is used at up to 25 mB a tick, heavy water at a fifth
  *     of that. Without enough coolant the core heats up quickly. At 900 °C it SCRAMs (all rods in) until the rods are
- *     withdrawn again. A damaging meltdown comes with the explosion engine (Phase 5), as a server config option.</li>
+ *     withdrawn again.</li>
+ * <li>Meltdown (server config {@code reactor.meltdowns}, off by default): there is no automatic SCRAM. Past 900 °C with
+ *     the rods out the core is <b>critical</b>: it runs away, gaining 0.35 + 0.9 x power °C a tick even when cooled
+ *     (heating without coolant slows to a tenth, so the runaway sets the pace), a klaxon sounds, nearby players are
+ *     warned and steam vents from the top. SCRAM (or all rods in) still saves it. At 1 400 °C it melts down: the
+ *     reactor is destroyed with its fuel, a dirty blast goes off ({@code groundzero:reactor_meltdown}), molten Corium
+ *     pools in the crater and is thrown round it, and a contaminated zone ({@link Contamination}) is left for a day.</li>
  * <li>Breeding: a DU or Li-6 target rod in a target slot becomes irradiated after 6 000 ticks of full power.</li>
  * </ul>
  * Slots: 0-3 fuel rods, 4-5 target rods, 6 spent fuel, 7-8 irradiated targets. Tank: coolant (dumpable).
@@ -65,7 +77,10 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     /** Core temperature rise at full power with water coolant; divided by the coolant's quality. */
     public static final float HEAT_RISE = 1_150;
     public static final float WATER_QUALITY = 1.0f, HEAVY_WATER_QUALITY = 1.6f;
-    public static final int SCRAM_HEAT = 900, WARN_HEAT = 700, AMBIENT = 20;
+    public static final int SCRAM_HEAT = 900, WARN_HEAT = 700, AMBIENT = 20, MELTDOWN_HEAT = 1_400;
+    /** The contaminated zone a meltdown leaves: radius, and how long it lasts (one day). */
+    public static final float CONTAMINATION_RADIUS = 32;
+    public static final int CONTAMINATION_TICKS = 24_000;
     public static final int FUEL_SLOTS = 4, TARGET_START = 4, SPENT_SLOT = 6, IRRADIATED_START = 7;
     /** Sync slots: core heat (°C), rod insertion (%), output (FE/t), fuel burnup of the current rod (%). */
     public static final int DATA_HEAT = 0, DATA_RODS = 1, DATA_POWER = 2, DATA_BURNUP = 3;
@@ -82,6 +97,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     private int power;
     /** Coolant used but not yet drawn (heavy water goes at fractions of a mB a tick). */
     private float coolantDebt;
+    /** For GameTests: meltdowns on or off for this reactor alone, whatever the server config says (null: the config). */
+    private Boolean meltdownsOverride;
+    private boolean critical;
 
     public FissionReactorBlockEntity(BlockPos pos, BlockState state) {
         super(GZBlockEntities.FISSION_REACTOR.get(), pos, state, CAPACITY, 0, PUSH, 9, new int[] {0, 1, 2, 3, 4, 5}, new int[] {6, 7, 8},
@@ -190,6 +208,26 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
         return this.scrammed;
     }
 
+    /** Whether this core melts down rather than SCRAMming (server config, or a GameTest's override). */
+    public boolean meltdowns() {
+        return this.meltdownsOverride != null ? this.meltdownsOverride : GZServerConfig.REACTOR_MELTDOWNS.get();
+    }
+
+    /** For GameTests: meltdowns on or off for this reactor only. */
+    public void setMeltdownsForTest(boolean on) {
+        this.meltdownsOverride = on;
+    }
+
+    /** For GameTests: sets the core temperature. */
+    public void setHeatForTest(float heat) {
+        this.heat = heat;
+    }
+
+    /** Whether the core is critical (past SCRAM heat with meltdowns on and the rods out). */
+    public boolean critical() {
+        return this.critical;
+    }
+
     /** Breeding progress of target slot {@code t} (0 or 1), in full-power ticks. */
     public float breedProgress(int t) {
         return this.breed[t];
@@ -227,14 +265,24 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
             coolant.drainInternal(need);
             this.coolantDebt -= need;
         }
+        boolean meltdowns = meltdowns();
+        this.critical = meltdowns && lvl > 0 && this.heat >= SCRAM_HEAT;
         if (lvl <= 0) {
             this.heat += (AMBIENT - this.heat) * 0.003f;
         } else if (cooled) {
             this.heat += (settle - this.heat) * 0.01f;
         } else {
-            this.heat += 1.5f + 3.5f * lvl;
+            this.heat += (1.5f + 3.5f * lvl) * (this.critical ? 0.1f : 1);
         }
-        if (this.heat >= SCRAM_HEAT && !this.scrammed) {
+        if (this.critical) {
+            this.heat += 0.35f + 0.9f * lvl;           // runaway: no coolant can hold it now
+            warn(level);
+            if (this.heat >= MELTDOWN_HEAT) {
+                meltdown(level);
+                return false;                          // this block entity is gone
+            }
+        }
+        if (this.heat >= SCRAM_HEAT && !this.scrammed && !meltdowns) {
             scram(level);
             lvl = 0;
         }
@@ -263,6 +311,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
         pushPower(level);
         if (this.scrammed) {
             this.status = MachineStatus.SCRAM;
+        } else if (this.critical) {
+            this.status = MachineStatus.CRITICAL;
         } else if (this.status == MachineStatus.OUTPUT_FULL && lvl == 0) {
             // keep OUTPUT_FULL
         } else if (lvl <= 0) {
@@ -318,6 +368,64 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
                 player.sendOverlayMessage(Component.translatable(MachineText.SCRAM_MESSAGE).withStyle(net.minecraft.ChatFormatting.RED));
             }
         }
+    }
+
+    /** While critical: steam venting from the top, the klaxon every 2 s, a warning to everyone near. */
+    private void warn(ServerLevel level) {
+        BlockPos top = BlockPos.containing(structureCentre()).above(2);
+        if (level.getGameTime() % 4 == 0) {
+            level.sendParticles(ParticleTypes.CLOUD, top.getX() + 0.5, top.getY() + 0.5, top.getZ() + 0.5, 3, 0.7, 0.2, 0.7, 0.04);
+            if (this.heat > 1_150) {
+                level.sendParticles(ParticleTypes.LARGE_SMOKE, top.getX() + 0.5, top.getY() + 0.5, top.getZ() + 0.5, 2, 0.6, 0.2, 0.6, 0.03);
+            }
+        }
+        if (level.getGameTime() % 40 == 0) {
+            level.playSound(null, top, GZSounds.REACTOR_ALARM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 4.0f, 1.0f);
+            Component message = Component.translatable(MachineText.CRITICAL_MESSAGE, Math.round(this.heat), MELTDOWN_HEAT)
+                    .withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD);
+            for (Player player : level.players()) {
+                if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(this.worldPosition)) < 64 * 64) {
+                    player.sendOverlayMessage(message);
+                }
+            }
+        }
+    }
+
+    /** The middle of the whole structure (the core). */
+    private net.minecraft.world.phys.Vec3 structureCentre() {
+        double x = 0, y = 0, z = 0;
+        int n = 0;
+        for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
+            if (cell.key() != '.') {
+                x += cell.pos().getX() + 0.5;
+                y += cell.pos().getY() + 0.5;
+                z += cell.pos().getZ() + 0.5;
+                n++;
+            }
+        }
+        return n == 0 ? net.minecraft.world.phys.Vec3.atCenterOf(this.worldPosition) : new net.minecraft.world.phys.Vec3(x / n, y / n, z / n);
+    }
+
+    /**
+     * The core melts down: the reactor and its fuel are destroyed, a dirty blast goes off, molten Corium pools in the
+     * crater and is thrown round it, and a contaminated zone is left (DESIGN.md §7).
+     */
+    private void meltdown(ServerLevel level) {
+        net.minecraft.world.phys.Vec3 centre = structureCentre();
+        List<MultiblockDefinition.Cell> cells = definition().cells(this.worldPosition, controllerFacing());
+        GroundZero.LOGGER.info("Fission Reactor at {} melted down", this.worldPosition);
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            this.inventory.setItem(i, ItemStack.EMPTY);   // the fuel is lost in the melt
+        }
+        for (MultiblockDefinition.Cell cell : cells) {
+            if (cell.key() != '.') {
+                level.setBlock(cell.pos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                        Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
+            }
+        }
+        Blasts.detonate(level, centre, Blasts.profile("reactor_meltdown"), null);
+        Meltdown.aftermath(level, centre);
+        Contamination.of(level).add(new Contamination.Zone(centre, CONTAMINATION_RADIUS, 1f, level.getGameTime(), CONTAMINATION_TICKS));
     }
 
     /** Pushes power out of every Energy Port. */

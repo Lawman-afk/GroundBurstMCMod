@@ -9,6 +9,8 @@ import dev.groundzero.content.machine.OreCrusherBlockEntity;
 import dev.groundzero.content.machine.ParticleAcceleratorBlockEntity;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
+import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.nuclear.GZEffects;
 import dev.groundzero.content.nuclear.GZNuclear;
 import dev.groundzero.content.power.RtgBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -24,7 +26,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
  * Phase 4 slice 7: the Fission Reactor (forming, power, coolant and heat balance, SCRAM, heavy water, breeding, ports)
- * and the Particle Accelerator.
+ * and the Particle Accelerator; Phase 5: the meltdown and contamination.
  */
 final class ReactorTests {
     private ReactorTests() {}
@@ -40,6 +42,9 @@ final class ReactorTests {
         GZGameTests.test("reactor_energy_port_pushes_power", GZGameTests.FLOOR_16, 60, ReactorTests::reactorEnergyPort);
         GZGameTests.test("accelerator_forms_and_runs", GZGameTests.FLOOR_16, 60, ReactorTests::accelerator);
         GZGameTests.test("rtg_burns_plutonium", GZGameTests.FLOOR_16, 20, ReactorTests::rtgPlutonium);
+        GZGameTests.test("reactor_melts_down_when_allowed", GZGameTests.FLOOR_16, 200, ReactorTests::meltdown);
+        GZGameTests.test("reactor_critical_core_saved_by_scram", GZGameTests.FLOOR_16, 100, ReactorTests::criticalSaved);
+        GZGameTests.test("contamination_sickens_the_living", GZGameTests.FLOOR_16, 60, ReactorTests::contamination);
     }
 
     /** Builds a structure by hand around a controller placed at {@code rel}. */
@@ -258,5 +263,67 @@ final class ReactorTests {
     private static void rtgPlutonium(GameTestHelper helper) {
         helper.assertTrue(RtgBlockEntity.fuelTicks(new ItemStack(GZNuclear.PLUTONIUM_INGOT.get())) == 240_000, "plutonium lasts ten days");
         helper.succeed();
+    }
+
+    /**
+     * Meltdowns on, no coolant, rods out, the core already near the end: it goes critical (no SCRAM), then melts down.
+     * The reactor is gone, corium lies in the test area and a contaminated zone is left.
+     */
+    private static void meltdown(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(7, 1, 6));
+        BlockPos ctrl = r.controllerPos();
+        r.setMeltdownsForTest(true);
+        fuel(r, 4);
+        withdrawAll(r);
+        r.setHeatForTest(FissionReactorBlockEntity.MELTDOWN_HEAT - 120);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(r.critical() && r.status() == MachineStatus.CRITICAL && !r.scrammed(), "critical, not SCRAMmed: " + r.status());
+            helper.succeedWhen(() -> {
+                var level = helper.getLevel();
+                helper.assertTrue(!(level.getBlockEntity(ctrl) instanceof FissionReactorBlockEntity), "the reactor is gone");
+                int corium = 0;
+                for (BlockPos pos : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(0, 0, 0)), helper.absolutePos(new BlockPos(15, 8, 15)))) {
+                    if (level.getBlockState(pos).is(GZNuclear.CORIUM.block().get())) {
+                        corium++;
+                    }
+                }
+                helper.assertTrue(corium > 0, "corium is left");
+                helper.assertTrue(Contamination.of(level).levelAt(level, net.minecraft.world.phys.Vec3.atCenterOf(ctrl)) > 0.5f,
+                        "the land round it is contaminated");
+            });
+        });
+    }
+
+    /** Meltdowns on, critical: SCRAM drops the rods in and the core cools instead of melting down. */
+    private static void criticalSaved(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        r.setMeltdownsForTest(true);
+        fuel(r, 4);
+        withdrawAll(r);
+        r.setHeatForTest(1_000);
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(r.critical(), "critical at 1 000 C");
+            r.handleButton(FissionReactorBlockEntity.BUTTON_SCRAM);
+            helper.runAfterDelay(40, () -> {
+                helper.assertTrue(!r.critical() && r.powerLevel() == 0, "SCRAM ends it");
+                helper.assertTrue(r.heat() < 1_000, "the core cools, " + r.heat());
+                helper.assertTrue(helper.getLevel().getBlockEntity(r.controllerPos()) == r, "and the reactor is still there");
+                helper.succeed();
+            });
+        });
+    }
+
+    /** A contaminated zone gives a pig radiation sickness, strongest near the centre; a zombie is immune. */
+    private static void contamination(GameTestHelper helper) {
+        var level = helper.getLevel();
+        net.minecraft.world.phys.Vec3 centre = helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 2, 8));
+        Contamination.of(level).add(new Contamination.Zone(centre, 10, 1f, level.getGameTime(), 200));
+        var pig = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new BlockPos(8, 2, 9));
+        var zombie = helper.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new BlockPos(9, 2, 8));
+        helper.succeedWhen(() -> {
+            var sick = pig.getEffect(GZEffects.RADIATION_SICKNESS);
+            helper.assertTrue(sick != null && sick.getAmplifier() >= 2, "the pig is badly sick near the centre");
+            helper.assertTrue(!zombie.hasEffect(GZEffects.RADIATION_SICKNESS), "the undead are immune");
+        });
     }
 }

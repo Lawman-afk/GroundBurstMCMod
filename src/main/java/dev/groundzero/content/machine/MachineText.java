@@ -100,6 +100,8 @@ public final class MachineText {
     public static final String CORE = GZLang.add(GroundZero.MODID + ".gui.core", "CORE %s C");
     public static final String NET = GZLang.add(GroundZero.MODID + ".gui.net", "NET %s FE/t");
     public static final String SCRAM_MESSAGE = GZLang.add(GroundZero.MODID + ".reactor.scram", "Reactor SCRAM: the core overheated. Check the coolant.");
+    public static final String CRITICAL_MESSAGE = GZLang.add(GroundZero.MODID + ".reactor.critical",
+            "REACTOR CORE CRITICAL: %s °C. SCRAM NOW or it melts down at %s °C.");
     public static final String HEAT_TIP = GZLang.add(GroundZero.MODID + ".gui.heat", "Core temperature: %s °C (it SCRAMs at 900)");
     public static final String RODS_TIP = GZLang.add(GroundZero.MODID + ".gui.rods_gauge", "Control rods: %s%% in");
     public static final String WITHDRAW_TIP = GZLang.add(GroundZero.MODID + ".gui.withdraw", "Withdraw the control rods 10% (more power, more heat)");

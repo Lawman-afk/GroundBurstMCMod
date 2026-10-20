@@ -11,6 +11,8 @@
     "groundzero:raw_uranium_block",
     "groundzero:raw_tungsten_block",
     "groundzero:raw_rare_earth_block",
+    "groundzero:corium",
+    "groundzero:cooled_corium",
     "groundzero:voidstone"
   ]
 }

@@ -93,6 +93,12 @@ public final class GZTagProviders {
             storage(GZResources.RAW_LEAD_BLOCK, "raw_lead", BlockTags.NEEDS_STONE_TOOL);
             storage(GZResources.RAW_RARE_EARTH_BLOCK, "raw_rare_earth", BlockTags.NEEDS_IRON_TOOL);
             tag(GZTags.RADIOACTIVE.block()).add(GZResources.URANIUM_BLOCK.block().key(), GZResources.RAW_URANIUM_BLOCK.block().key());
+            // What a reactor meltdown leaves: radioactive, and hard (an iron pickaxe or better).
+            var corium = dev.groundzero.content.nuclear.GZNuclear.CORIUM.block().key();
+            var cooledCorium = dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.block().key();
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(corium, cooledCorium);
+            tag(BlockTags.NEEDS_IRON_TOOL).add(corium, cooledCorium);
+            tag(GZTags.RADIOACTIVE.block()).add(corium, cooledCorium);
 
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZResources.VOIDSTONE.block().key(), GZResources.BUDDING_VOIDSTONE.block().key(),
                     GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key(),
@@ -194,7 +200,8 @@ public final class GZTagProviders {
                     dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD.key(), dev.groundzero.content.nuclear.GZNuclear.SPENT_FUEL_ROD.key(),
                     dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_DU_TARGET_ROD.key(), dev.groundzero.content.nuclear.GZNuclear.IRRADIATED_LI6_TARGET_ROD.key(),
                     dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET.key(), dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT.key(),
-                    dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE.key());
+                    dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE.key(), dev.groundzero.content.nuclear.GZNuclear.CORIUM.item().key(),
+                    dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.item().key());
             item("nuggets/plutonium", dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET, Tags.Items.NUGGETS);
             item("ingots/plutonium", dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT, Tags.Items.INGOTS);
         }

@@ -26,14 +26,15 @@ import net.minecraft.world.phys.AABB;
 /**
  * Decontamination Shower (DESIGN.md §8, §21.6): a walk-in booth, two blocks tall, with water piped into its tank.
  * While someone stands inside it sprays them (20 FE/t and 10 mB of water a tick): it puts out fire and washes off
- * chemical exposure (poison, wither, nausea). Radiation contamination joins the list when it arrives in Phase 12
- * ({@link #clean}).
+ * chemical exposure (poison, wither, nausea) and Radiation Sickness ({@link #clean}). Washing items and the dose of the
+ * radiation field come with Phase 12.
  */
 public class DecontaminationShowerBlockEntity extends MachineBlockEntity implements AnimatedMachine {
     public static final int ENERGY_PER_TICK = 20;
     public static final int WATER_PER_TICK = 10;
     /** Effects the shower washes off. */
-    public static final List<Holder<MobEffect>> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.NAUSEA);
+    public static final List<Holder<MobEffect>> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.NAUSEA,
+            dev.groundzero.content.nuclear.GZEffects.RADIATION_SICKNESS);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 

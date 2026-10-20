@@ -336,6 +336,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.water_pump"
   },
+  "reactor.alarm": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundzero:reactor/alarm"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.reactor.alarm"
+  },
   "reactor.singularity_collapse": {
     "sounds": [
       {

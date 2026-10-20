@@ -3,12 +3,50 @@
   "icon": "groundzero:lead_lined_casing",
   "order": 2,
   "items": [
-    "groundzero:nuclear_waste"
+    "groundzero:nuclear_waste",
+    "groundzero:corium",
+    "groundzero:cooled_corium"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out.\n\nA reactor that overheats with nothing to stop it will one day melt down, when the mod's explosion engine arrives; a server setting will turn that off."
+      "text": "The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out."
+    },
+    {
+      "type": "text",
+      "text": "**Meltdowns.** A server can turn meltdowns on (they are off unless it does). Then nothing SCRAMs the reactor for you. Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Critical from",
+          "900 C"
+        ],
+        [
+          "Meltdown at",
+          "1,400 C"
+        ],
+        [
+          "Warning time",
+          "15 to 40 s"
+        ],
+        [
+          "Contaminated",
+          "32 blocks, 1 day"
+        ]
+      ],
+      "text": "",
+      "title": "Meltdowns"
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:corium",
+      "text": "Molten core. It burns anything that stands on it and sets fire to what is next to it, and cools into cooled corium over about ten minutes. Both are radioactive; mine them with an iron pickaxe or better."
+    },
+    {
+      "type": "text",
+      "text": "**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**: it gets hungry fast, and nearer the reactor it takes damage that armour does not stop. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune."
     },
     {
       "type": "spotlight",

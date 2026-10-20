@@ -55,6 +55,8 @@ public class GroundZero {
         modBus.addListener(GZBlockEntities::registerCapabilities);
         GZCreativeTabs.TABS.register(modBus);
         GZSounds.SOUNDS.register(modBus);
+        dev.groundzero.content.nuclear.GZEffects.EFFECTS.register(modBus);
+        dev.groundzero.content.nuclear.Contamination.register();
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);
 
         GZNetwork.register(modBus);

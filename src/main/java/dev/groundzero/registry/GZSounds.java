@@ -104,6 +104,8 @@ public final class GZSounds {
             register("machine.singularity_reactor", "Singularity Reactor thrums", List.of("machine/singularity_reactor"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_COLLAPSE =
             register("reactor.singularity_collapse", "Singularity collapses", List.of("reactor/singularity_collapse"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
+            register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =
             register("machine.fission_reactor", "Reactor hums", List.of("machine/fission_reactor"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_PARTICLE_ACCELERATOR =

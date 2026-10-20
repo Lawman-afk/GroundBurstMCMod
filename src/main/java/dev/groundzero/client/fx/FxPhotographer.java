@@ -49,7 +49,9 @@ public final class FxPhotographer {
                 new Scene("large", "test/large", 95, -8, moments),
                 new Scene("nuclear", "test/nuclear", 230, -16, List.of(1, 3, 6, 10, 20, 40, 80, 160, 300, 600, 1200, 2400)),
                 new Scene("nuclear_close", "test/nuclear", 130, -32, List.of(30, 120, 300, 700)),
-                new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"))) {
+                new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"),
+                new Scene("meltdown", "reactor_meltdown", 30, 4, List.of(2, 8, 20, 60, 160, 400)),
+                new Scene("meltdown_dusk", "reactor_meltdown", 22, 14, List.of(30, 200), "13000"))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -113,7 +115,11 @@ public final class FxPhotographer {
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
-                Blasts.detonate(level, new Vec3(x + 0.5, ground + 0.5, 0.5), Blasts.profile(s.profile()), null);
+                Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
+                Blasts.detonate(level, at, Blasts.profile(s.profile()), null);
+                if (s.profile().equals("reactor_meltdown")) {
+                    dev.groundzero.content.nuclear.Meltdown.aftermath(level, at);   // the corium a real meltdown leaves
+                }
             });
             step = 0;
             clock = 0;

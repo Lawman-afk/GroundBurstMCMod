@@ -38,8 +38,13 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
     public static final FxPreset NUKE = new FxPreset(0.6f, 70, 0.6f, 120, 1.0f, 14, 1.0f,
             160, 110, 40, 200, 600, 0.18f, 0.28f, 0.4f, 3000, 60, 2.5f, 3000);
 
+    /** A reactor meltdown: a dirty fireball, then a long, heavy smoke plume (no mushroom cloud: it is no bomb). */
+    public static final FxPreset MELTDOWN = new FxPreset(0.8f, 26, 0.45f, 40, 0.35f, 6, 0.8f,
+            60, 40, 170, 600, 520, 0.3f, 0.2f, 0.25f, 2400, 30, 1.2f, 0);
+
     public static FxPreset byName(String name) {
         return switch (name) {
+            case "meltdown" -> MELTDOWN;
             case "small" -> SMALL;
             case "medium" -> MEDIUM;
             case "large" -> LARGE;

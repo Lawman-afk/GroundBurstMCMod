@@ -14,9 +14,13 @@
     "groundzero:plutonium_nugget",
     "groundzero:plutonium_ingot",
     "groundzero:nuclear_waste",
+    "groundzero:corium",
+    "groundzero:cooled_corium",
     "groundzero:uranium_ore",
     "groundzero:deepslate_uranium_ore",
     "groundzero:uranium_block",
-    "groundzero:raw_uranium_block"
+    "groundzero:raw_uranium_block",
+    "groundzero:corium",
+    "groundzero:cooled_corium"
   ]
 }

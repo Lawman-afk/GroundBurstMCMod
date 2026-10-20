@@ -26,7 +26,7 @@
     },
     {
       "type": "text",
-      "text": "**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again.\n\n- **Water:** safe up to about 70% rods out; further than that and the core climbs to the SCRAM point. Up to 25 mB a tick.\n- **Heavy water:** keeps the core well below the SCRAM point even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.\n\nThe coolant gauge has a dump button to empty it. The heat and rod gauges sit beside the rod buttons; the red button is the manual SCRAM."
+      "text": "**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again. On servers with meltdowns turned on there is no automatic SCRAM: see [Reactor safety](safety/reactor_safety).\n\n- **Water:** safe up to about 70% rods out; further than that and the core climbs to the SCRAM point. Up to 25 mB a tick.\n- **Heavy water:** keeps the core well below the SCRAM point even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.\n\nThe coolant gauge has a dump button to empty it. The heat and rod gauges sit beside the rod buttons; the red button is the manual SCRAM."
     },
     {
       "type": "table",

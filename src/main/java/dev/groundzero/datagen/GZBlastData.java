@@ -48,6 +48,10 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.empty()));
         ctx.register(Blasts.profile("test/nuclear"), profile(16, 60, 140, 120, 100, 90, 180, 3, 0.5f, 0.2f, 0.35f, 0.4f, 1000, 40, 3.0f,
                 TerrainTable.NUCLEAR, Optional.empty()));
+        // The Fission Reactor's meltdown: a dirty, smoky blast that wrecks the reactor hall (DESIGN.md §7). Instant (it is
+        // small), so the corium it leaves can be poured into the finished crater at once.
+        ctx.register(Blasts.profile("reactor_meltdown"), new BlastProfile(3, 8, 12, 14, 12, new BlastProfile.EntityZones(8, 16, 60, 14, 2.0f), 3,
+                0.6f, 0.15f, 0.35f, 0.3f, 0f, TerrainTable.CONVENTIONAL, Optional.of(true), Optional.of("large"), Optional.of("meltdown")));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
@@ -64,6 +68,8 @@ public final class GZBlastData {
 
     private static void damageTypes(BootstrapContext<DamageType> ctx) {
         ctx.register(Blasts.BLAST_DAMAGE, new DamageType(GroundZero.MODID + ".blast", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1f));
+        ctx.register(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE,
+                new DamageType(GroundZero.MODID + ".radiation", DamageScaling.NEVER, 0f));
     }
 
     /** {@code groundzero:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -75,6 +81,9 @@ public final class GZBlastData {
         @Override
         protected void addTags(HolderLookup.Provider registries) {
             tag(DamageTypeTags.IS_EXPLOSION).add(Blasts.BLAST_DAMAGE);
+            // Radiation sickness: armour does not help, and it does not push anyone about.
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);
         }
     }
 }

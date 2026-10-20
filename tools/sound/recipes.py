@@ -482,6 +482,25 @@ def singularity_collapse() -> dict[str, np.ndarray]:
     return {"reactor/singularity_collapse": S.normalize(S.fade(x, 0.0, 0.3), -1)}
 
 
+def reactor_alarm() -> dict[str, np.ndarray]:
+    """The Fission Reactor's critical klaxon (played every 2 s while the core is critical): two harsh alternating tones,
+    low then high, twice, with a buzzy edge from odd harmonics and a hall echo, so it carries and is unmistakable."""
+    length = 1.9
+    n = int(length * S.SR)
+    out = np.zeros(n)
+    beat = 0.42
+    for k, freq in enumerate((520.0, 690.0, 520.0, 690.0)):
+        t = S.t_axis(beat)
+        vib = 1 + 0.006 * np.sin(2 * np.pi * 7 * t)
+        phase = 2 * np.pi * freq * np.cumsum(vib) / S.SR
+        tone = np.sin(phase) + 0.45 * np.sin(3 * phase) + 0.22 * np.sin(5 * phase) + 0.1 * np.sin(7 * phase)
+        env = S.adsr(len(t), 0.012, 0.05, 0.85, 0.05)
+        out += S.place(S.saturate(tone * env * 0.6, 1.6), k * beat, length)
+    out = S.bandpass(out, 220, 5000)
+    out = S.reverb(out, seconds=1.2, mix=0.22)[:n]
+    return {"reactor/alarm": S.normalize(S.fade(out, 0.0, 0.08), -3)}
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -508,7 +527,7 @@ def machine_loops() -> dict[str, np.ndarray]:
     }
 
 
-RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse]
+RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm]
 
 
 def build_sounds() -> list[Path]:

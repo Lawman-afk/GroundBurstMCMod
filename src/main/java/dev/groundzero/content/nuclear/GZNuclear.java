@@ -1,9 +1,13 @@
 package dev.groundzero.content.nuclear;
 
+import dev.groundzero.registry.GZBlocks;
 import dev.groundzero.registry.GZItems;
 import dev.groundzero.registry.GZTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
@@ -46,6 +50,16 @@ public final class GZNuclear {
             p -> p.rarity(Rarity.UNCOMMON));
     public static final DeferredItem<Item> SINGULARITY_SEED = GZItems.simple("singularity_seed", "Singularity Seed", GZTab.NUCLEAR,
             p -> p.rarity(Rarity.EPIC).stacksTo(16));
+
+    // --- Reactor meltdown ----------------------------------------------------------------------------------------------------
+    /** What a melted-down core leaves: Corium cools into this. */
+    public static final GZBlocks.WithItem<Block> COOLED_CORIUM = GZBlocks.simple("cooled_corium", "Cooled Corium", GZTab.NUCLEAR,
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(5f, 30f).requiresCorrectToolForDrops().sound(SoundType.BASALT));
+    /** Molten core remains: glowing, burning, cooling over about ten minutes. */
+    public static final GZBlocks.WithItem<CoriumBlock> CORIUM = GZBlocks.register("corium", "Corium", GZTab.NUCLEAR,
+            p -> new CoriumBlock(p, COOLED_CORIUM.block()),
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(5f, 30f).requiresCorrectToolForDrops().sound(SoundType.BASALT)
+                    .lightLevel(s -> 12).randomTicks().isValidSpawn((s, l, pos, type) -> false).emissiveRendering(s -> true));
 
     private GZNuclear() {}
 

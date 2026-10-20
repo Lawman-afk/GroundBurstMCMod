@@ -19,6 +19,7 @@ public enum MachineStatus {
     NO_WATER("No water source below"),
     SCRAM("SCRAM: the core overheated"),
     OVERHEATING("Core overheating"),
+    CRITICAL("CORE CRITICAL: SCRAM now"),
     CHARGING("Charging up"),
     NO_CORE("No singularity core");
 

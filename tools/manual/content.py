@@ -607,7 +607,7 @@ Everything goes through its ports: coolant into the **Fluid Port** at the back o
 """),
     structure("fission_reactor", "Controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port in the middle and a second Item Port."),
     text("""
-**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again.
+**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. At **900 C** the reactor **SCRAMs**: every rod drops in and it stays shut down until you withdraw them again. On servers with meltdowns turned on there is no automatic SCRAM: see [Reactor safety](safety/reactor_safety).
 
 - **Water:** safe up to about 70% rods out; further than that and the core climbs to the SCRAM point. Up to 25 mB a tick.
 - **Heavy water:** keeps the core well below the SCRAM point even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.
@@ -736,7 +736,7 @@ Hazards the mod adds, and how to deal with them.
 
 entry("safety/decontamination_shower", "Decontamination Shower", "decontamination_shower", ["decontamination_shower"], [
     spot("decontamination_shower", """
-A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. Radioactive contamination will wash off too once radiation arrives.
+A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither, nausea and radiation sickness.
 """),
     craft("decontamination_shower"),
 ])
@@ -754,11 +754,26 @@ Keep fluids in tanks, pipes and canisters. The [Decontamination Shower](safety/d
 """),
 ])
 
-entry("safety/reactor_safety", "Reactor safety", "lead_lined_casing", ["nuclear_waste"], [
+entry("safety/reactor_safety", "Reactor safety", "lead_lined_casing", ["nuclear_waste", "corium", "cooled_corium"], [
     text("""
 The [Fission Reactor](nuclear/fission_reactor) SCRAMs at 900 C: every control rod drops in and it stays down until you withdraw them. Keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out.
+"""),
+    text("""
+**Meltdowns.** A server can turn meltdowns on (they are off unless it does). Then nothing SCRAMs the reactor for you. Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.
 
-A reactor that overheats with nothing to stop it will one day melt down, when the mod's explosion engine arrives; a server setting will turn that off.
+**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day.
+"""),
+    table([
+        ["Critical from", "900 C"],
+        ["Meltdown at", "1,400 C"],
+        ["Warning time", "15 to 40 s"],
+        ["Contaminated", "32 blocks, 1 day"],
+    ], "Meltdowns"),
+    spot("corium", """
+Molten core. It burns anything that stands on it and sets fire to what is next to it, and cools into cooled corium over about ten minutes. Both are radioactive; mine them with an iron pickaxe or better.
+"""),
+    text("""
+**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**: it gets hungry fast, and nearer the reactor it takes damage that armour does not stop. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune.
 """),
     spot("nuclear_waste", """
 What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item.
