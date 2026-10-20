@@ -150,6 +150,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.fusion_fuel_synthesizer"
   },
+  "machine.fusion_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundzero:machine/fusion_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.fusion_reactor"
+  },
   "machine.gas_centrifuge": {
     "sounds": [
       {
@@ -192,10 +201,28 @@
     ],
     "subtitle": "subtitles.groundzero.machine.rtg"
   },
+  "machine.singularity_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundzero:machine/singularity_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.singularity_reactor"
+  },
   "machine.water_pump": {
     "sounds": [
       "groundzero:machine/water_pump"
     ],
     "subtitle": "subtitles.groundzero.machine.water_pump"
+  },
+  "reactor.singularity_collapse": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundzero:reactor/singularity_collapse"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.reactor.singularity_collapse"
   }
 }

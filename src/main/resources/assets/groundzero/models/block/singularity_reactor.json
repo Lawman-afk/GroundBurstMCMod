@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundzero:block/singularity_reactor_front",
+    "side": "groundzero:block/singularity_reactor_side",
+    "top": "groundzero:block/singularity_reactor_top"
+  }
+}

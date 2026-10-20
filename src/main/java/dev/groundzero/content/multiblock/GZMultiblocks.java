@@ -41,6 +41,13 @@ public final class GZMultiblocks {
     public static final WithItem<MultiblockPartBlock> TARGET_CHAMBER = part("accelerator_target_chamber", "Accelerator Target Chamber",
             MapColor.COLOR_PURPLE);
 
+    // Slice 8 structural blocks.
+    public static final WithItem<MultiblockPartBlock> TOROIDAL_FIELD_COIL = part("toroidal_field_coil", "Toroidal Field Coil", MapColor.COLOR_ORANGE);
+    public static final WithItem<MultiblockPartBlock> VACUUM_VESSEL = part("vacuum_vessel_casing", "Vacuum Vessel Casing", MapColor.METAL);
+    public static final WithItem<MultiblockPartBlock> CENTRAL_SOLENOID = part("central_solenoid", "Central Solenoid", MapColor.COLOR_ORANGE);
+    public static final WithItem<MultiblockPartBlock> CONTAINMENT_EMITTER = part("containment_emitter", "Containment Emitter", MapColor.COLOR_PURPLE);
+    public static final WithItem<MultiblockPartBlock> CORE_CRADLE = part("core_cradle", "Core Cradle", MapColor.COLOR_PURPLE);
+
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color) {
         return GZBlocks.register(id, english, GZTab.MACHINES, MultiblockPartBlock::new,
                 p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -83,13 +90,15 @@ public final class GZMultiblocks {
                     'T', Entry.of(() -> TARGET_CHAMBER.block().get()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
                     'I', Entry.of(ITEM_PORT.block()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.PARTICLE_ACCELERATOR.block().get())),
-            octagonCuts());
+            octagonCuts(9));
 
     /**
-     * The accelerator's sloped corners: in each corner staircase the three outer cells lose their outer corner and the
-     * two inner cells their inner corner, so the formed blocks follow the octagonal plinth.
+     * The sloped corners of a stepped octagon {@code size} cells across (the accelerator, the fusion reactor): in each
+     * corner staircase the three outer cells lose their outer corner and the two inner cells their inner corner, so the
+     * formed blocks follow the octagonal ring.
      */
-    private static Map<Long, PartCut> octagonCuts() {
+    private static Map<Long, PartCut> octagonCuts(int size) {
+        int far = size - 1;
         Map<Long, PartCut> cuts = new java.util.HashMap<>();
         int[][] outer = {{2, 0}, {1, 1}, {0, 2}}, inner = {{2, 1}, {1, 2}};
         PartCut[][] corners = {
@@ -98,10 +107,10 @@ public final class GZMultiblocks {
         for (int q = 0; q < 4; q++) {
             boolean flipX = q == 1 || q == 3, flipZ = q >= 2;
             for (int[] c : outer) {
-                cuts.put(MultiblockDefinition.cutKey(flipX ? 8 - c[0] : c[0], flipZ ? 8 - c[1] : c[1]), corners[q][0]);
+                cuts.put(MultiblockDefinition.cutKey(flipX ? far - c[0] : c[0], flipZ ? far - c[1] : c[1]), corners[q][0]);
             }
             for (int[] c : inner) {
-                cuts.put(MultiblockDefinition.cutKey(flipX ? 8 - c[0] : c[0], flipZ ? 8 - c[1] : c[1]), corners[q][1]);
+                cuts.put(MultiblockDefinition.cutKey(flipX ? far - c[0] : c[0], flipZ ? far - c[1] : c[1]), corners[q][1]);
             }
         }
         return Map.copyOf(cuts);
@@ -134,9 +143,49 @@ public final class GZMultiblocks {
                     'F', Entry.of(() -> FLUID_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.CHEMICAL_PLANT.block().get())));
 
+    /**
+     * Fusion Reactor (DESIGN.md §23.3): a three-layer octagonal ring 9 blocks across, the Particle Accelerator's
+     * footprint (three straight cells on each side, a five-cell staircase at each corner, 32 cells a layer), round a
+     * central solenoid column. Bottom layer machine casing with the controller at the front centre, an Item Port in
+     * the middle of the left side, a Fluid Port in the middle of the right and an Energy Port at the back; middle layer
+     * toroidal field coils with reactor glass viewports in the middle of each side; top layer vacuum vessel casing. The
+     * rest of the inside is free. Corner cells are cut to the ring's slopes once formed.
+     */
+    public static final MultiblockDefinition FUSION_REACTOR = new MultiblockDefinition(GroundZero.id("fusion_reactor"),
+            new String[][] {
+                    {"  MMXMM  ", " MM   MM ", "MM     MM", "M       M", "I   S   F", "M       M", "MM     MM", " MM   MM ", "  MMEMM  "},
+                    {"  TTGTT  ", " TT   TT ", "TT     TT", "T       T", "G   S   G", "T       T", "TT     TT", " TT   TT ", "  TTGTT  "},
+                    {"  VVVVV  ", " VV   VV ", "VV     VV", "V       V", "V   S   V", "V       V", "VV     VV", " VV   VV ", "  VVVVV  "},
+            },
+            Map.ofEntries(Map.entry('M', Entry.of(MACHINE_CASING.block())), Map.entry('T', Entry.of(() -> TOROIDAL_FIELD_COIL.block().get())),
+                    Map.entry('V', Entry.of(() -> VACUUM_VESSEL.block().get())), Map.entry('S', Entry.of(() -> CENTRAL_SOLENOID.block().get())),
+                    Map.entry('G', Entry.of(REACTOR_GLASS.block())), Map.entry('I', Entry.of(ITEM_PORT.block())),
+                    Map.entry('F', Entry.of(() -> FLUID_PORT.block().get())), Map.entry('E', Entry.of(() -> ENERGY_PORT.block().get())),
+                    Map.entry(MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.FUSION_REACTOR.block().get()))),
+            octagonCuts(9));
+
+    /**
+     * Singularity Reactor (DESIGN.md §23.3): a 5x5x5 cage. Machine casing floor with the controller in the middle of
+     * the front, an Item Port on the left and an Energy Port on the right; steel plating posts up the four corners;
+     * reactor glass walls with a containment emitter in the middle of each; a machine casing roof with an emitter in
+     * its centre; and inside, an empty 3x3x3 chamber (required air) with the core cradle floating at its centre.
+     */
+    public static final MultiblockDefinition SINGULARITY_REACTOR = new MultiblockDefinition(GroundZero.id("singularity_reactor"),
+            new String[][] {
+                    {"MMXMM", "MMMMM", "IMMME", "MMMMM", "MMMMM"},
+                    {"PGGGP", "G...G", "G...G", "G...G", "PGGGP"},
+                    {"PGQGP", "G...G", "Q.K.Q", "G...G", "PGQGP"},
+                    {"PGGGP", "G...G", "G...G", "G...G", "PGGGP"},
+                    {"MMMMM", "MMMMM", "MMQMM", "MMMMM", "MMMMM"},
+            },
+            Map.of('M', Entry.of(MACHINE_CASING.block()), 'P', Entry.of(() -> STEEL_PLATING.block().get()), 'G', Entry.of(REACTOR_GLASS.block()),
+                    'Q', Entry.of(() -> CONTAINMENT_EMITTER.block().get()), 'K', Entry.of(() -> CORE_CRADLE.block().get()),
+                    'I', Entry.of(ITEM_PORT.block()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.SINGULARITY_REACTOR.block().get())));
+
     /** Every structure, for lookups by id (the Field Manual's structure pages). */
     public static java.util.List<MultiblockDefinition> all() {
-        return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR);
+        return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR);
     }
 
     public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {
@@ -159,6 +208,13 @@ public final class GZMultiblocks {
             p -> p.stacksTo(1).rarity(Rarity.EPIC));
     public static final DeferredItem<StructureSpawnerItem> PARTICLE_ACCELERATOR_SPAWNER = GZItems.register("particle_accelerator_spawner",
             "Structure Spawner: Particle Accelerator", GZTab.MACHINES, p -> new StructureSpawnerItem(p, () -> PARTICLE_ACCELERATOR),
+            p -> p.stacksTo(1).rarity(Rarity.EPIC));
+
+    public static final DeferredItem<StructureSpawnerItem> FUSION_REACTOR_SPAWNER = GZItems.register("fusion_reactor_spawner",
+            "Structure Spawner: Fusion Reactor", GZTab.MACHINES, p -> new StructureSpawnerItem(p, () -> FUSION_REACTOR),
+            p -> p.stacksTo(1).rarity(Rarity.EPIC));
+    public static final DeferredItem<StructureSpawnerItem> SINGULARITY_REACTOR_SPAWNER = GZItems.register("singularity_reactor_spawner",
+            "Structure Spawner: Singularity Reactor", GZTab.MACHINES, p -> new StructureSpawnerItem(p, () -> SINGULARITY_REACTOR),
             p -> p.stacksTo(1).rarity(Rarity.EPIC));
 
     private GZMultiblocks() {}

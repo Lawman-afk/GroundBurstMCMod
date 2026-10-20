@@ -12,7 +12,9 @@
       "type": "links",
       "entries": [
         "nuclear/fission_reactor",
-        "nuclear/fuel"
+        "nuclear/fuel",
+        "nuclear/fusion_reactor",
+        "nuclear/singularity_reactor"
       ],
       "text": ""
     }

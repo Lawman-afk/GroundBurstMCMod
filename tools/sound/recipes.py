@@ -386,6 +386,51 @@ def particle_accelerator_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
 
 
+def fusion_reactor_loop() -> np.ndarray:
+    """Fusion Reactor: a deep magnet-supply hum (the field coils), a hissing plasma roar that swells twice a second as
+    the bright streak laps the ring (matches the 0.5 s animation), and the chatter of the cryogenic pumps."""
+    t = S.t_axis(TOTAL)
+    hum = (np.sin(2 * np.pi * 50 * t) * 0.45 + np.sin(2 * np.pi * 100 * t) * 0.3 + np.sin(2 * np.pi * 150 * t) * 0.12) * 0.3
+    lap = 0.75 + 0.25 * np.sin(2 * np.pi * 2.0 * (t - PRE)) ** 2
+    roar = S.bandpass(S.pink(TOTAL, 221), 300, 5000) * lap * 0.35
+    sizzle = S.highpass(S.white(TOTAL, 222), 5000) * 0.05 * lap
+    pumps = S.bandpass(S.grains(TOTAL, 12, 6, 223), 600, 2400) * 0.12
+    x = S.mix((hum, 1.0), (roar, 1.0), (sizzle, 1.0), (pumps, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -6)
+
+
+def singularity_reactor_loop() -> np.ndarray:
+    """Singularity Reactor: a very low throb pulsing once a second, a glassy shimmer bent downward as if pulled in,
+    the electric whine of the five containment emitters, and a faint grainy rush of infalling matter."""
+    t = S.t_axis(TOTAL)
+    throb = (np.sin(2 * np.pi * 38 * t) + 0.6 * np.sin(2 * np.pi * 76 * t) + 0.3 * np.sin(2 * np.pi * 114 * t)) \
+        * (0.55 + 0.45 * np.sin(2 * np.pi * 1.0 * t) ** 2) * 0.35
+    shimmer = sum(np.sin(2 * np.pi * f * t - 3 * np.sin(2 * np.pi * r * t)) * a
+                  for f, r, a in ((880, 0.5, 0.04), (1320, 1.0, 0.03), (1760, 1.5, 0.02)))
+    whine = np.sin(2 * np.pi * 3400 * t) * 0.012 * (0.8 + 0.2 * np.sin(2 * np.pi * 2.0 * t))
+    rush = S.bandpass(S.pink(TOTAL, 231), 150, 900) * 0.18
+    x = S.mix((throb, 1.0), (shimmer, 1.0), (whine, 1.0), (rush, 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -6)
+
+
+def singularity_collapse() -> dict[str, np.ndarray]:
+    """The core collapses: a rising inward rush (reversed swell), a sudden cut, then a heavy sub-bass thump with a
+    rolling, darkening rumble and a glassy ring as the cage lets go."""
+    length = 4.0
+    n = int(length * S.SR)
+    swell_len = 1.2
+    m = int(swell_len * S.SR)
+    swell = S.bandpass(S.pink(swell_len, 241), 200, 6000) * np.linspace(0, 1, m) ** 3
+    swell = swell + S.sine_sweep(swell_len, 60, 900, curve=3.0) * np.linspace(0, 1, m) ** 2 * 0.3
+    thump = S.saturate(S.sine_sweep(2.0, 80, 22, curve=2.0) * S.exp_decay(int(2.0 * S.SR), 0.6) * 1.6, 1.8)
+    rumble = S.sweep_lowpass(S.brown(2.6, 242), 1800, 120) * S.breakpoints(int(2.6 * S.SR), [(0, 0), (0.03, 1.0), (1.0, 0.5), (2.6, 0)])
+    ring = (np.sin(2 * np.pi * 1180 * S.t_axis(2.6)) + 0.5 * np.sin(2 * np.pi * 1770 * S.t_axis(2.6))) * S.exp_decay(int(2.6 * S.SR), 0.7) * 0.08
+    x = S.mix((S.place(swell, 0.0, length), 1.0), (S.place(thump, swell_len, length), 1.0),
+              (S.place(rumble, swell_len, length), 0.6), (S.place(ring, swell_len + 0.05, length), 1.0))
+    x = S.reverb(x, seconds=2.0, mix=0.25)[:n]
+    return {"reactor/singularity_collapse": S.normalize(S.fade(x, 0.0, 0.3), -1)}
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -406,11 +451,13 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/battery_charger": battery_charger_loop(),
         "machine/decontamination_shower": decontamination_shower_loop(),
         "machine/fission_reactor": fission_reactor_loop(),
+        "machine/fusion_reactor": fusion_reactor_loop(),
+        "machine/singularity_reactor": singularity_reactor_loop(),
         "machine/particle_accelerator": particle_accelerator_loop(),
     }
 
 
-RECIPES = [geiger_clicks, nuke_set, machine_loops]
+RECIPES = [geiger_clicks, nuke_set, machine_loops, singularity_collapse]
 
 
 def build_sounds() -> list[Path]:

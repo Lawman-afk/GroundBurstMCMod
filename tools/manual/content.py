@@ -93,7 +93,8 @@ def entry(eid: str, title: str, icon: str, items: list[str], pages: list[dict]) 
 
 
 # Plates rendered by tools/manual/plates.py (width x height in pixels).
-PLATES = {"chemical_plant": (240, 220), "fission_reactor": (240, 260), "particle_accelerator": (240, 150)}
+PLATES = {"chemical_plant": (240, 220), "fission_reactor": (240, 260), "particle_accelerator": (240, 150),
+          "fusion_reactor": (240, 150), "singularity_reactor": (240, 240)}
 
 
 def plate(name: str, t: str = "") -> dict:
@@ -188,7 +189,8 @@ The controller itself has no faces to connect to and no side tab.
     craft("energy_port"),
     craft("machine_casing"),
     craft("reactor_glass"),
-    links(["processing/chemical_plant", "nuclear/fission_reactor", "nuclear/particle_accelerator"], "Structures"),
+    links(["processing/chemical_plant", "nuclear/fission_reactor", "nuclear/particle_accelerator", "nuclear/fusion_reactor",
+           "nuclear/singularity_reactor"], "Structures"),
 ])
 
 # =========================================================================================================================
@@ -359,7 +361,7 @@ For the late game, a [Fission Reactor](nuclear/fission_reactor) makes up to 1,20
 
 Fusion and singularity reactors will follow.
 """),
-    links(["nuclear/fission_reactor", "nuclear/fuel"]),
+    links(["nuclear/fission_reactor", "nuclear/fuel", "nuclear/fusion_reactor", "nuclear/singularity_reactor"]),
 ])
 
 # =========================================================================================================================
@@ -639,6 +641,65 @@ Steel plating underneath, magnet segments on top, with the controller at the fro
     craft("accelerator_target_chamber"),
     craft("steel_plating"),
     machine("accelerating"),
+])
+
+entry("nuclear/fusion_reactor", "Fusion Reactor", "fusion_reactor", ["fusion_reactor", "fusion_reactor_spawner", "toroidal_field_coil",
+                                                                     "vacuum_vessel_casing", "central_solenoid"], [
+    plate("fusion_reactor", "The formed Fusion Reactor."),
+    text("""
+A three-layer octagonal ring nine blocks across, the accelerator's footprint, round a **central solenoid** column. It makes **6,000 FE a tick** once its plasma is lit.
+
+Machine casing at the bottom, with the controller at the front, an **Item Port** on the left, a **Fluid Port** on the right and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle.
+"""),
+    structure("fusion_reactor", "When it forms, the corner blocks take the octagon's slope."),
+    text("""
+**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Instead of the gases it can burn **lithium deuteride pellets** from the Item Port, three minutes each.
+
+**Cold magnets.** Its coils need **liquid nitrogen**, 2 mB a tick, through the same Fluid Port. A [Cryogenic Condenser](processing/cryogenic_condenser) keeps up.
+
+**Ignition.** To light the plasma it needs a charge of **2,000,000 FE** through its Energy Port, more than any one cable carries in a tick: charge it from a big [capacitor bank](power/capacitor_banks). Once lit it pushes its power out of the same port. If the fuel or the nitrogen runs out, or redstone halts it, the plasma goes out and it needs a fresh charge.
+"""),
+    table([
+        ["Output", "6,000 FE/t"],
+        ["Ignition", "2,000,000 FE"],
+        ["Deuterium + tritium", "1 mB each / 4 t"],
+        ["Pellet lasts", "3,600 ticks"],
+        ["Liquid nitrogen", "2 mB/t"],
+    ], "Running"),
+    craft("fusion_reactor"),
+    craft("toroidal_field_coil"),
+    craft("vacuum_vessel_casing"),
+    craft("central_solenoid"),
+    links(["processing/fusion_fuel_synthesizer", "nuclear/reprocessing", "power/capacitor_banks"]),
+])
+
+entry("nuclear/singularity_reactor", "Singularity Reactor", "singularity_reactor", ["singularity_reactor", "singularity_reactor_spawner",
+                                                                               "containment_emitter", "core_cradle"], [
+    plate("singularity_reactor", "The formed Singularity Reactor, holding a core."),
+    text("""
+A 5x5x5 cage that holds a singularity and turns whatever matter you feed it into up to **25,000 FE a tick**.
+
+A machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber.
+"""),
+    structure("singularity_reactor", "The chamber inside must be empty but for the cradle."),
+    text("""
+**Engaging.** Put a **singularity seed** in the controller and charge the cage with **500,000 FE** through the Energy Port. The seed is drawn into the cage and held: it cannot be taken out again.
+
+**Feeding.** Any items fed to the Item Port become matter for the core, and the core turns it into power, up to 25,000 FE a tick. The accretion disk grows as it is fed.
+
+**Holding the cage** costs 1,000 FE a tick, always, and the reactor keeps 500,000 FE back for it, pushing out only what is above that. **If the cage ever runs dry, or any part of the structure is broken while it holds a core, the singularity collapses and the core is lost.**
+"""),
+    table([
+        ["Output", "up to 25,000 FE/t"],
+        ["Engage", "500,000 FE"],
+        ["Cage upkeep", "1,000 FE/t"],
+        ["Reserve kept", "500,000 FE"],
+        ["Per item fed", "200,000 FE"],
+    ], "The cage"),
+    craft("singularity_reactor"),
+    machine("exotic_fabricating", "", item="containment_emitter"),
+    machine("exotic_fabricating", "", item="core_cradle"),
+    links(["processing/exotic_matter_fabricator"]),
 ])
 
 # =========================================================================================================================

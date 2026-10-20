@@ -70,6 +70,7 @@ public final class GZGameTests {
         AdvancedMachineTests.register();
         PowerStorageTests.register();
         ReactorTests.register();
+        FusionSingularityTests.register();
         ManualContentTests.register();
     }
 

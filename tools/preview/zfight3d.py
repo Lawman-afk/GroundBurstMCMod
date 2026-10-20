@@ -22,8 +22,8 @@ from gz import paths  # noqa: E402
 import geo_preview as G  # noqa: E402
 
 
-#: Bone-name prefixes of variant sets the renderer shows one at a time.
-EXCLUSIVE_PREFIXES = ("die_", "rods")
+#: Bone-name prefixes of variant sets the renderer shows one at a time (press dies, reactor rods, singularity disks).
+EXCLUSIVE_PREFIXES = ("die_", "rods", "disk")
 
 
 def _clip(subject: list[np.ndarray], clip: list[np.ndarray]) -> list[np.ndarray]:

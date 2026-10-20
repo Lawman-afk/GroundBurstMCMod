@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "M": "groundzero:machine_casing",
+    "T": "#c:plates/tungsten"
+  },
+  "pattern": [
+    "TMT",
+    "M M",
+    "TMT"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundzero:vacuum_vessel_casing"
+  }
+}

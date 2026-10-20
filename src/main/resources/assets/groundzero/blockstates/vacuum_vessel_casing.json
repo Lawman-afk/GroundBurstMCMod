@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/vacuum_vessel_casing"
+    },
+    "formed=true": {
+      "model": "groundzero:block/vacuum_vessel_casing_formed"
+    }
+  }
+}

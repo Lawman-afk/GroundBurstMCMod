@@ -216,6 +216,96 @@ def target_chamber() -> Tex:
     return t
 
 
+def toroidal_field_coil() -> Tex:
+    """A toroidal field coil: a D-shaped loop of copper windings set in a gunmetal casing, cooling-line studs."""
+    t = Tex(16, 16)
+    frame(t, P.GUNMETAL)
+    t.panel(2, 2, 12, 12, P.GUNMETAL, base=2, style="inset")
+    # The D: straight leg on the left, curved back on the right, two strands of winding.
+    d_shape = ["..######....", ".#......##..", ".#........#.", ".#.........#", ".#.........#", ".#.........#",
+               ".#.........#", ".#.........#", ".#........#.", ".#......##..", "..######....", "............"]
+    for yy, row in enumerate(d_shape):
+        for xx, c in enumerate(row):
+            if c == "#":
+                t.px(2 + xx, 2 + yy, P.COPPER[4] if (xx + yy) % 2 else P.COPPER[3])
+    for yy in range(4, 11, 2):
+        t.px(4, yy, P.COPPER[5])                                    # bright turns on the straight leg
+    t.px(8, 7, P.CRYO[4])                                           # liquid nitrogen stud in the bore
+    t.px(8, 8, P.CRYO[3])
+    return t
+
+
+def vacuum_vessel() -> Tex:
+    """Vacuum vessel casing: polished steel plates round a bolted flange ring."""
+    t = Tex(16, 16)
+    frame(t)
+    t.panel(2, 2, 12, 12, STEEL, base=4, style="inset")
+    t.outline(4, 4, 8, 8, STEEL[2])
+    t.outline(5, 5, 6, 6, STEEL[5])
+    t.rect(6, 6, 4, 4, STEEL[3])
+    for x, y in ((4, 4), (11, 4), (4, 11), (11, 11), (7, 4), (4, 7), (11, 8), (8, 11)):
+        t.px(x, y, STEEL[6])                                        # flange bolts
+    t.hline(2, 2, 12, STEEL[5])
+    return t
+
+
+def central_solenoid() -> Tex:
+    """Central solenoid: tight copper windings between steel end bands."""
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, P.COPPER[3])
+    for y in range(16):
+        t.hline(2, y, 12, P.COPPER[4] if y % 2 else P.COPPER[3])
+        t.px(2 + (y * 5) % 12, y, P.COPPER[5])                     # glints along the turns
+    for x in (0, 1, 14, 15):
+        t.vline(x, 0, 16, STEEL[3] if x in (1, 14) else STEEL[2])
+    t.vline(1, 0, 16, STEEL[4])
+    return t
+
+
+def containment_emitter() -> Tex:
+    """Containment emitter: a dark field projector with a violet lens and brass mount bolts."""
+    t = Tex(16, 16)
+    frame(t, P.GUNMETAL)
+    t.panel(2, 2, 12, 12, P.BLACK_PAINT, base=2, style="inset")
+    t.rect(5, 5, 6, 6, P.SINGULARITY[2])
+    t.outline(4, 4, 8, 8, P.BRASS[3])
+    t.rect(6, 6, 4, 4, P.SINGULARITY[4])
+    t.rect(7, 7, 2, 2, P.ANTIMATTER[6])                             # lens glow
+    for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
+        t.px(x, y, P.BRASS[5])
+    return t
+
+
+def core_cradle() -> Tex:
+    """Core cradle: a violet gimbal ring round an empty black socket."""
+    t = Tex(16, 16)
+    frame(t, P.GUNMETAL)
+    t.rect(2, 2, 12, 12, P.BLACK_PAINT.deep)
+    ring = [(5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (4, 4), (11, 4), (3, 5), (12, 5), (3, 6), (12, 6), (3, 7), (12, 7),
+            (3, 8), (12, 8), (3, 9), (12, 9), (3, 10), (12, 10), (4, 11), (11, 11), (5, 12), (6, 12), (7, 12), (8, 12), (9, 12), (10, 12)]
+    for x, y in ring:
+        t.px(x, y, P.SINGULARITY[4] if y < 8 else P.SINGULARITY[3])
+    t.hline(6, 7, 4, P.BRASS[4])                                    # gimbal axle
+    t.hline(6, 8, 4, P.BRASS[2])
+    return t
+
+
+def torus_placard(t: Tex) -> None:
+    """Fusion Reactor: a glowing plasma ring."""
+    t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
+    t.outline(4, 9, 4, 4, P.ANTIMATTER[5])
+    t.px(5, 10, P.BLACK_PAINT[1])
+    t.px(4, 9, P.BLACK_PAINT[1])
+    t.px(7, 12, P.BLACK_PAINT[1])
+
+
+def singularity_placard(t: Tex) -> None:
+    """Singularity Reactor: a black core inside a violet ring."""
+    t.rect(4, 9, 4, 4, P.SINGULARITY[3])
+    t.rect(5, 10, 2, 2, P.BLACK_PAINT.deep)
+    t.px(4, 9, P.SINGULARITY[5])
+
+
 def controller_top() -> Tex:
     t = casing()
     t.vent(4, 4, 8, 8, GUN, slat=2)
@@ -276,4 +366,12 @@ if __name__ == "__main__":
     part_block("accelerator_target_chamber", target_chamber())
     controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing())
     controller("particle_accelerator", controller_front(orbit_placard), controller_top(), casing())
+    # Slice 8.
+    part_block("toroidal_field_coil", toroidal_field_coil())
+    part_block("vacuum_vessel_casing", vacuum_vessel())
+    part_block("central_solenoid", central_solenoid())
+    part_block("containment_emitter", containment_emitter())
+    part_block("core_cradle", core_cradle())
+    controller("fusion_reactor", controller_front(torus_placard), controller_top(), casing())
+    controller("singularity_reactor", controller_front(singularity_placard), controller_top(), casing())
     print("structures written")

@@ -92,6 +92,14 @@ public final class GZMachines {
             "Particle Accelerator Controller", GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.PARTICLE_ACCELERATOR),
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
 
+    // Slice 8 multiblock controllers (DESIGN.md §7, §23.3).
+    public static final WithItem<MultiblockControllerBlock> FUSION_REACTOR = GZBlocks.register("fusion_reactor", "Fusion Reactor Controller",
+            GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.FUSION_REACTOR),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final WithItem<MultiblockControllerBlock> SINGULARITY_REACTOR = GZBlocks.register("singularity_reactor",
+            "Singularity Reactor Controller", GZTab.MACHINES, p -> new MultiblockControllerBlock(p, GZBlockEntities.SINGULARITY_REACTOR),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+
     public static final List<WithItem<CableBlock>> CABLES = new ArrayList<>();
 
     static {

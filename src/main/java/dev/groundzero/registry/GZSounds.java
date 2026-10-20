@@ -72,6 +72,12 @@ public final class GZSounds {
             register("machine.battery_charger", "Battery Charger whines", List.of("machine/battery_charger"), false, 10);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_DECONTAMINATION_SHOWER =
             register("machine.decontamination_shower", "Decontamination Shower sprays", List.of("machine/decontamination_shower"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FUSION_REACTOR =
+            register("machine.fusion_reactor", "Fusion Reactor roars", List.of("machine/fusion_reactor"), false, 32);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_SINGULARITY_REACTOR =
+            register("machine.singularity_reactor", "Singularity Reactor thrums", List.of("machine/singularity_reactor"), false, 32);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_COLLAPSE =
+            register("reactor.singularity_collapse", "Singularity collapses", List.of("reactor/singularity_collapse"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =
             register("machine.fission_reactor", "Reactor hums", List.of("machine/fission_reactor"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_PARTICLE_ACCELERATOR =

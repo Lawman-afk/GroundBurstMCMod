@@ -47,6 +47,8 @@
     "nuclear/fission_reactor",
     "nuclear/reprocessing",
     "nuclear/particle_accelerator",
+    "nuclear/fusion_reactor",
+    "nuclear/singularity_reactor",
     "safety/decontamination_shower",
     "safety/chemical_hazards",
     "safety/reactor_safety"

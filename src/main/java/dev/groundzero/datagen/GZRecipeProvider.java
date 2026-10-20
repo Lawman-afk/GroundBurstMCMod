@@ -120,6 +120,7 @@ public class GZRecipeProvider extends RecipeProvider {
         slice5();
         slice6();
         slice7();
+        slice8();
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */
@@ -540,6 +541,47 @@ public class GZRecipeProvider extends RecipeProvider {
      * Slice 7 (DESIGN.md §6, §26.3-26.4, §26.7): reactor fuel and breeding targets, their reprocessing in the Chemical
      * Plant, plutonium, antimatter, and the parts of the Fission Reactor and Particle Accelerator. Game abstractions.
      */
+    /** Slice 8 (DESIGN.md §26.4): the Fusion and Singularity Reactors' parts and controllers. */
+    private void slice8() {
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.TOROIDAL_FIELD_COIL.item(), 4)
+                .define('D', GZParts.DENSE_STEEL_PLATE).define('C', GZParts.SUPERCONDUCTING_COIL).define('T', GZTags.commonItem("plates/tungsten"))
+                .define('N', GZParts.NEODYMIUM_MAGNET)
+                .pattern("DCD").pattern("TNT").pattern("DCD")
+                .unlockedBy(getHasName(GZParts.SUPERCONDUCTING_COIL), has(GZParts.SUPERCONDUCTING_COIL))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.VACUUM_VESSEL.item(), 4)
+                .define('T', GZTags.commonItem("plates/tungsten")).define('M', GZMultiblocks.MACHINE_CASING.item())
+                .pattern("TMT").pattern("M M").pattern("TMT")
+                .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
+                .save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.CENTRAL_SOLENOID.item(), 1)
+                .define('W', GZTags.commonItem("wires/copper")).define('C', GZParts.SUPERCONDUCTING_COIL)
+                .define('R', GZTags.commonItem("rods/tungsten")).define('D', GZParts.DENSE_STEEL_PLATE)
+                .pattern("WCW").pattern("WRW").pattern("WDW")
+                .unlockedBy(getHasName(GZParts.SUPERCONDUCTING_COIL), has(GZParts.SUPERCONDUCTING_COIL))
+                .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMachines.FUSION_REACTOR.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
+                .requires(GZParts.CRT_DISPLAY).requires(GZParts.PRESSURE_VESSEL)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT))
+                .save(output);
+        // The singularity cage's own parts are made in the Exotic Matter Fabricator.
+        int ef = dev.groundzero.content.machine.ExoticMatterFabricatorBlockEntity.ENERGY_PER_TICK;
+        machine(ProcessingKind.EXOTIC_FABRICATING, "exotic_fabricating/containment_emitter",
+                List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.CONTAINMENT_CELL), 1), in(Ingredient.of(GZParts.SUPERCONDUCTING_COIL), 2),
+                        in(Ingredient.of(GZParts.MILITARY_CIRCUIT), 1)), null,
+                List.of(out(GZMultiblocks.CONTAINMENT_EMITTER.item(), 1)), 400, ef);
+        machine(ProcessingKind.EXOTIC_FABRICATING, "exotic_fabricating/core_cradle",
+                List.of(in(Ingredient.of(dev.groundzero.content.nuclear.GZNuclear.STABILISED_EXOTIC_MATTER), 1),
+                        in(tag(GZTags.commonItem("plates/tungsten")), 4), in(Ingredient.of(GZParts.NEODYMIUM_MAGNET), 1)), null,
+                List.of(out(GZMultiblocks.CORE_CRADLE.item(), 1)), 400, ef);
+        shapeless(RecipeCategory.REDSTONE, GZMachines.SINGULARITY_REACTOR.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.QUANTUM_CIRCUIT).requires(GZParts.CRT_DISPLAY)
+                .requires(GZParts.CRT_DISPLAY).requires(dev.groundzero.content.nuclear.GZNuclear.STABILISED_EXOTIC_MATTER)
+                .unlockedBy(getHasName(GZParts.QUANTUM_CIRCUIT), has(GZParts.QUANTUM_CIRCUIT))
+                .save(output);
+    }
+
     private void slice7() {
         // Display used by controllers (DESIGN.md §26.2).
         shaped(RecipeCategory.MISC, GZParts.CRT_DISPLAY, 1)

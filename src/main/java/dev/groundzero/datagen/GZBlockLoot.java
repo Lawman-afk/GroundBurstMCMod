@@ -69,8 +69,11 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());
         dropSelf(GZMachines.FISSION_REACTOR.block().get());
         dropSelf(GZMachines.PARTICLE_ACCELERATOR.block().get());
+        dropSelf(GZMachines.FUSION_REACTOR.block().get());
+        dropSelf(GZMachines.SINGULARITY_REACTOR.block().get());
         for (var part : java.util.List.of(GZMultiblocks.LEAD_LINED_CASING, GZMultiblocks.STEEL_PLATING,
-                GZMultiblocks.MAGNET_SEGMENT, GZMultiblocks.INJECTOR, GZMultiblocks.TARGET_CHAMBER)) {
+                GZMultiblocks.MAGNET_SEGMENT, GZMultiblocks.INJECTOR, GZMultiblocks.TARGET_CHAMBER, GZMultiblocks.TOROIDAL_FIELD_COIL,
+                GZMultiblocks.VACUUM_VESSEL, GZMultiblocks.CENTRAL_SOLENOID, GZMultiblocks.CONTAINMENT_EMITTER, GZMultiblocks.CORE_CRADLE)) {
             dropSelf(part.block().get());
         }
         dropSelf(GZMultiblocks.ENERGY_PORT.block().get());

@@ -102,6 +102,12 @@ public final class GZBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GZMachines.CHEMICAL_PLANT.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.FusionReactorBlockEntity>> FUSION_REACTOR =
+            BLOCK_ENTITIES.register("fusion_reactor", () -> new BlockEntityType<>(dev.groundzero.content.machine.FusionReactorBlockEntity::new,
+                    GZMachines.FUSION_REACTOR.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.SingularityReactorBlockEntity>> SINGULARITY_REACTOR =
+            BLOCK_ENTITIES.register("singularity_reactor", () -> new BlockEntityType<>(dev.groundzero.content.machine.SingularityReactorBlockEntity::new,
+                    GZMachines.SINGULARITY_REACTOR.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.machine.FissionReactorBlockEntity>> FISSION_REACTOR =
             BLOCK_ENTITIES.register("fission_reactor", () -> new BlockEntityType<>(dev.groundzero.content.machine.FissionReactorBlockEntity::new,
                     GZMachines.FISSION_REACTOR.block().get()));
@@ -139,6 +145,8 @@ public final class GZBlockEntities {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ITEM_PORT.get(), PortBlockEntity::fluids);
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ITEM_PORT.get(), PortBlockEntity::energy);
         machine(event, FISSION_REACTOR.get());
+        machine(event, FUSION_REACTOR.get());
+        machine(event, SINGULARITY_REACTOR.get());
         machine(event, PARTICLE_ACCELERATOR.get());
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());

@@ -118,6 +118,11 @@ public final class GZJeiPlugin implements IModPlugin {
         info(registration, MachineText.INFO_PARTICLE_ACCELERATOR, GZMachines.PARTICLE_ACCELERATOR.item().get(), GZMultiblocks.MAGNET_SEGMENT.item().get(),
                 GZMultiblocks.INJECTOR.item().get(), GZMultiblocks.TARGET_CHAMBER.item().get(), GZMultiblocks.STEEL_PLATING.item().get(),
                 GZMultiblocks.PARTICLE_ACCELERATOR_SPAWNER.get());
+        info(registration, MachineText.INFO_FUSION_REACTOR, GZMachines.FUSION_REACTOR.item().get(), GZMultiblocks.TOROIDAL_FIELD_COIL.item().get(),
+                GZMultiblocks.VACUUM_VESSEL.item().get(), GZMultiblocks.CENTRAL_SOLENOID.item().get(), GZMultiblocks.FUSION_REACTOR_SPAWNER.get());
+        info(registration, MachineText.INFO_SINGULARITY_REACTOR, GZMachines.SINGULARITY_REACTOR.item().get(), GZMultiblocks.CONTAINMENT_EMITTER.item().get(),
+                GZMultiblocks.CORE_CRADLE.item().get(), GZMultiblocks.SINGULARITY_REACTOR_SPAWNER.get(),
+                dev.groundzero.content.nuclear.GZNuclear.SINGULARITY_SEED.get());
         info(registration, MachineText.INFO_DIESEL_GENERATOR, GZMachines.DIESEL_GENERATOR.item().get());
         info(registration, MachineText.INFO_RTG, GZMachines.RTG.item().get());
         info(registration, MachineText.INFO_CAPACITOR_BANK, GZMachines.CAPACITOR_BANKS.stream().map(b -> (ItemLike) b.item().get()).toArray(ItemLike[]::new));

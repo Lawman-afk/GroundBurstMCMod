@@ -1,0 +1,84 @@
+{
+  "title": "Singularity Reactor",
+  "icon": "groundzero:singularity_reactor",
+  "order": 6,
+  "items": [
+    "groundzero:singularity_reactor",
+    "groundzero:singularity_reactor_spawner",
+    "groundzero:containment_emitter",
+    "groundzero:core_cradle"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundzero:textures/gui/manual/plates/singularity_reactor.png",
+      "width": 240,
+      "height": 240,
+      "text": "The formed Singularity Reactor, holding a core."
+    },
+    {
+      "type": "text",
+      "text": "A 5x5x5 cage that holds a singularity and turns whatever matter you feed it into up to **25,000 FE a tick**.\n\nA machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber."
+    },
+    {
+      "type": "structure",
+      "structure": "groundzero:singularity_reactor",
+      "text": "The chamber inside must be empty but for the cradle."
+    },
+    {
+      "type": "text",
+      "text": "**Engaging.** Put a **singularity seed** in the controller and charge the cage with **500,000 FE** through the Energy Port. The seed is drawn into the cage and held: it cannot be taken out again.\n\n**Feeding.** Any items fed to the Item Port become matter for the core, and the core turns it into power, up to 25,000 FE a tick. The accretion disk grows as it is fed.\n\n**Holding the cage** costs 1,000 FE a tick, always, and the reactor keeps 500,000 FE back for it, pushing out only what is above that. **If the cage ever runs dry, or any part of the structure is broken while it holds a core, the singularity collapses and the core is lost.**"
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Output",
+          "up to 25,000 FE/t"
+        ],
+        [
+          "Engage",
+          "500,000 FE"
+        ],
+        [
+          "Cage upkeep",
+          "1,000 FE/t"
+        ],
+        [
+          "Reserve kept",
+          "500,000 FE"
+        ],
+        [
+          "Per item fed",
+          "200,000 FE"
+        ]
+      ],
+      "text": "",
+      "title": "The cage"
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:singularity_reactor",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "exotic_fabricating",
+      "text": "",
+      "item": "groundzero:containment_emitter"
+    },
+    {
+      "type": "machine",
+      "kind": "exotic_fabricating",
+      "text": "",
+      "item": "groundzero:core_cradle"
+    },
+    {
+      "type": "links",
+      "entries": [
+        "processing/exotic_matter_fabricator"
+      ],
+      "text": ""
+    }
+  ]
+}

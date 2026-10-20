@@ -254,6 +254,36 @@ LAYOUTS = {
                      ("scram", 140, 54, 18, 22, -1, 0, 2, "groundzero.gui.scram")],
         "inventory": (8, 112),
     },
+    # Fusion Reactor: deuterium, tritium and liquid nitrogen tanks, a pellet slot, the ignition-charge gauge.
+    "fusion_reactor": {
+        "title": (8, 6),
+        "size": (176, 194),
+        "slots": [("pellet", 96, 35)],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(30, 20, 12, 46, "D", False), (46, 20, 12, 46, "T", False), (62, 20, 12, 46, "LN2", False)],
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 82, 18, 18),
+        "readout": (11, 82, 132, 18),
+        "controls": [("charge", 140, 20, 8, 56, 0, 100, -1, "groundzero.gui.ignition")],
+        "inventory": (8, 112),
+    },
+    # Singularity Reactor: the seed slot (the core), the matter feed and the accreted-matter gauge.
+    "singularity_reactor": {
+        "title": (8, 6),
+        "size": (176, 194),
+        "slots": [("seed", 96, 35), ("matter", 50, 35)],
+        "chevrons": [(74, 41, True), (80, 41, True), (86, 41, True)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 82, 18, 18),
+        "readout": (11, 82, 132, 18),
+        "controls": [("mass", 140, 20, 8, 56, 0, 100, -1, "groundzero.gui.mass")],
+        "inventory": (8, 112),
+    },
     "particle_accelerator": {
         "title": (8, 6),
         "slots": [("canister", 56, 35), ("out_big", 116, 35)],
@@ -365,6 +395,23 @@ TARGET_GHOST = ["................", "................", ".......##.......", "...
                 "......#..#......", "......#..#......", "......####......", "......#..#......", "......#..#......",
                 "......####......", "......#..#......", "......#..#......", ".......##.......", "................",
                 "................"]
+
+
+# A lithium deuteride pellet (a squat cylinder) for the fusion fuel slot.
+PELLET_GHOST = ["................", "................", "................", "................", ".....######.....",
+                "....#......#....", "....########....", "....#+.+.+.#....", "....#.+.+.+#....", "....#+.+.+.#....",
+                "....#......#....", ".....######.....", "................", "................", "................",
+                "................"]
+# A singularity seed: a dark sphere in an orbit ring.
+SEED_GHOST = ["................", "................", "................", "......####......", ".....#++++#.....",
+              "..##########....", ".#..#++++#..#...", "..##########....", ".....#++++#.....", "......####......",
+              "................", "................", "................", "................", "................",
+              "................"]
+# Matter to feed the core: a block falling in.
+MATTER_GHOST = ["................", "................", "......###.......", "....##...##.....", "...#.......#....",
+                "...##.....##....", "...#.##.##.#....", "...#...#...#....", "...#...#...#....", "...#...#...#....",
+                "....##.#.##.....", "......###.......", "................", ".......+........", "......+++.......",
+                ".......+........"]
 
 
 def ghost_slot(rows: list[str]):
@@ -505,7 +552,7 @@ ARROW_UP = ["...#...", "..###..", ".#####.", "#######", "..###..", "..###..", ".
 
 def control(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
     """Machine controls: vertical gauges (filled live by the screen) and push buttons with their icon."""
-    if kind in ("heat", "rods"):
+    if kind in ("heat", "rods", "charge", "mass"):
         gauge_frame(t, x, y, w, h)
         if kind == "heat":
             # Red warning band at the top tenth (900 °C and up): where the core SCRAMs.
@@ -562,7 +609,8 @@ def build(name: str, spec: dict) -> Path:
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
          "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
-         "rod": ghost_slot(ROD_GHOST), "target": ghost_slot(TARGET_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "rod": ghost_slot(ROD_GHOST), "target": ghost_slot(TARGET_GHOST), "pellet": ghost_slot(PELLET_GHOST),
+         "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills
@@ -570,6 +618,8 @@ def build(name: str, spec: dict) -> Path:
             fill_chevron(t, (ax + 17 + bx - 1) // 2 - 1, ay + 6, True)
         else:
             fill_chevron(t, ax + 6, (ay + 17 + by - 1) // 2 - 2, False)
+    for cx, cy, horizontal in spec.get("chevrons", []):
+        fill_chevron(t, cx, cy, horizontal)
     ex, ey, ew, eh = spec["energy"]
     gauge_frame(t, ex, ey, ew, eh)
     t.text(ex + 3, ey + eh + 3, "FE", PANEL.highlight)

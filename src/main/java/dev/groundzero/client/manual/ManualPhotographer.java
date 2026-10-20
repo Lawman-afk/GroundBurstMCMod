@@ -61,6 +61,12 @@ public final class ManualPhotographer {
         SHOTS.add(new Shot("processing/canning_machine", 0, null));
         SHOTS.add(new Shot("processing/canning_machine", 1, null));
         SHOTS.add(new Shot("processing/fluids", 1, null));
+        SHOTS.add(new Shot("nuclear/fusion_reactor", 0, null));
+        SHOTS.add(new Shot("nuclear/fusion_reactor", 1, null));
+        SHOTS.add(new Shot("nuclear/fusion_reactor", 2, null));
+        SHOTS.add(new Shot("nuclear/singularity_reactor", 0, null));
+        SHOTS.add(new Shot("nuclear/singularity_reactor", 1, null));
+        SHOTS.add(new Shot("nuclear/singularity_reactor", 2, null));
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
     }
 

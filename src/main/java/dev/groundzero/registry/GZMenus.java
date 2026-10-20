@@ -39,6 +39,8 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DECONTAMINATION_SHOWER = machine("decontamination_shower", () -> MachineLayouts.DECONTAMINATION_SHOWER);
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FISSION_REACTOR = machine("fission_reactor", () -> MachineLayouts.FISSION_REACTOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FUSION_REACTOR = machine("fusion_reactor", () -> MachineLayouts.FUSION_REACTOR);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> SINGULARITY_REACTOR = machine("singularity_reactor", () -> MachineLayouts.SINGULARITY_REACTOR);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> PARTICLE_ACCELERATOR = machine("particle_accelerator", () -> MachineLayouts.PARTICLE_ACCELERATOR);
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);

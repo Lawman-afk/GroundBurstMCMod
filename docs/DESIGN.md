@@ -339,7 +339,7 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t (needs insulated or HV cable) | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
 | **Particle Accelerator** | octagonal multiblock ring, 9×9×2 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
 | **Fission Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
-| **Fusion Reactor** | multiblock ring 7×7×3 | generates (ignition from capacitor banks) | power | See §7. |
+| **Fusion Reactor** | multiblock octagonal ring 9×9×3 | generates (ignition from capacitor banks) | power | See §7. |
 | **Singularity Reactor** | multiblock 5×5×5 | generates (feeds on matter) | power | See §7. |
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
 | **Decontamination Shower** | 1×2 tall, walk-in | 20 FE/t + 10 mB water/t while spraying | puts out fire, washes off poison/wither/nausea; radiation contamination from Phase 12 | Booth with yellow nozzles, falling water + splash/foam particles. |
@@ -1042,15 +1042,37 @@ out). The controller itself connects to nothing and has no side-configuration ta
 Item Port), `y1: GG / GG` (tanks rendered inside). The controller connects to nothing; every input and output goes
 through the three ports.
 
-**Fusion Reactor** (7×7×3 ring, first draft; `T` = toroidal field coil, `V` = vacuum vessel casing): a hollow square
-ring 1 wide. `y0` ring of `M` with `X` at the front midpoint, `E` at the back midpoint; `y1` ring of `T` coils with `G`
-viewports at the four side midpoints and `U` (fuel) / `W` (liquid nitrogen) ports at the corners; `y2` ring of `V`.
-Interior 5×5 is free (the plasma ring is rendered along the vessel).
+**Fusion Reactor** (9×9×3 octagonal ring, the Particle Accelerator's footprint, built in slice 8; `T` = toroidal field
+coil, `V` = vacuum vessel casing, `S` = central solenoid, `F` = Fluid Port; rows front first, `.` = anything):
+```
+y0:  ..MMXMM..   y1:  ..TTGTT..   y2:  ..VVVVV..
+     .MM...MM.        .TT...TT.        .VV...VV.
+     MM.....MM        TT.....TT        VV.....VV
+     M.......M        T.......T        V.......V
+     I...S...F        G...S...G        V...S...V
+     M.......M        T.......T        V.......V
+     MM.....MM        TT.....TT        VV.....VV
+     .MM...MM.        .TT...TT.        .VV...VV.
+     ..MMEMM..        ..TTGTT..        ..VVVVV..
+```
+The controller connects to nothing: deuterium, tritium and liquid nitrogen go into the Fluid Port, lithium deuteride
+pellets into the Item Port, the ignition charge in and the power out through the Energy Port. Corner cells are cut to
+the octagon's slopes when formed. The formed model is a D-section vacuum vessel with a viewport in each side's middle
+cell, 28 toroidal field coils, the central solenoid, and a plasma ring that glows (with a lapping streak) while lit.
+(The 7×7 first draft was dropped: a 7-wide stepped octagon has one-cell straight sides and reads as a diamond.)
 
-**Singularity Reactor** (5×5×5, first draft; `Q` = containment emitter, `K` = core cradle): `y0` 5×5 `M` with `X`
-front-middle, `I` (matter feed) and `E` at the sides; `y1–y3` `F` posts at the four corners, `Q` emitters at the four
-face midpoints of `y2`, `G` elsewhere on the faces, 3×3×3 interior air with the `K` cradle at its centre holding the
-seed; `y4` 5×5 `M` roof with a `Q` emitter at the centre.
+**Singularity Reactor** (5×5×5, built in slice 8; `Q` = containment emitter, `K` = core cradle, `P` = steel plating):
+```
+y0: MMXMM / MMMMM / IMMME / MMMMM / MMMMM
+y1: PGGGP / G...G / G...G / G...G / PGGGP
+y2: PGQGP / G...G / Q.K.Q / G...G / PGQGP
+y3: PGGGP / G...G / G...G / G...G / PGGGP
+y4: MMMMM / MMMMM / MMQMM / MMMMM / MMMMM
+```
+(`.` = required air.) The Steel Frame posts of the first draft became steel plating (the Steel Frame block is gone).
+Items go in through the Item Port, the cage charge in and the power out through the Energy Port; the seed goes into the
+controller's GUI. The formed model: glass walls in a steel grid, five emitters beaming at a black core in a brass
+gimbal cradle, and an accretion disk in three sizes that grows as it is fed.
 
 **Particle Accelerator** (9×9×2 octagonal ring, rows front first; 32 cells a layer):
 ```
@@ -1285,8 +1307,8 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | 2 uranium dust + nuclear waste | CP | spent fuel rod + 1 000 mB sulfuric acid |
 | Antimatter cell | PA | containment cell, 3 600 ticks at 2 000 FE/t |
 | CRT display | CT | glass pane, glowstone dust, basic circuit, redstone, steel plate |
-| Fusion reactor parts (first draft) | CT | toroidal field coil: 4 superconducting coil + 2 dense steel plate + tungsten plate; vacuum vessel casing: machine casing + 2 tungsten plate; viewport: reactor glass + tungsten plate; controller: machine casing + military circuit + 2 CRT display + pressure vessel |
-| Singularity reactor parts (first draft) | CT / EF | containment emitter (EF): containment cell + 2 superconducting coil + military circuit; core cradle (EF): stabilised exotic matter + 4 tungsten plate + neodymium magnet; controller (CT): machine casing + quantum circuit + 2 CRT display; the core itself is a singularity seed placed in the cradle |
+| Fusion reactor parts | CT | toroidal field coil ×4: 2 superconducting coil + 4 dense steel plate + 2 tungsten plate + neodymium magnet; vacuum vessel casing ×4: 4 machine casing + 4 tungsten plate; central solenoid: superconducting coil + 5 copper wire + tungsten rod + dense steel plate; viewports are plain reactor glass; controller: machine casing + military circuit + 2 CRT display + pressure vessel |
+| Singularity reactor parts | CT / EF | containment emitter (EF): containment cell + 2 superconducting coil + military circuit; core cradle (EF): stabilised exotic matter + 4 tungsten plate + neodymium magnet; controller (CT): machine casing + quantum circuit + 2 CRT display + stabilised exotic matter; the core itself is a singularity seed put in the controller |
 | Accelerator parts (27 segments, 32 plating) | CT | magnet segment ×4: 2 superconducting coil + 4 dense steel plate + copper wire; injector: segment + military circuit; target chamber: segment + military circuit + reactor glass; controller: machine casing + quantum circuit + CRT display; steel plating ×4: 4 steel plate |
 | Structural blocks | CT | reinforced concrete ×8: 8 concrete (any colour) + steel rod; hazard concrete: reinforced concrete + yellow & black dye; steel frame ×4: 4 steel rod + steel plate; steel plating ×4: 4 steel plate; machine casing: machine frame + 4 steel plate; dish panel ×2: 2 steel plate + copper plate |
 
@@ -1533,3 +1555,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Canning Machine (user request: canisters had no use yet): a recipe machine (`canning` recipes, one fill and one empty per fluid with a canister, generated) with a supply tank that fills empty and gas canisters and a catch tank that filled canisters pour into; 20 FE/t, 2 s a canister. Filled canisters become the fluid ammunition and fillers of later weapons. |
 | 2026-10-20 | Creative Fluid Tank (creative only, not craftable, never joins other tanks): the first fluid poured in fills it, and it then gives any amount of that fluid without running down; a different fluid poured in replaces it, sneak-right-click with an empty hand clears it. |
 | 2026-10-20 | Items no longer carry a "Press H" Field Manual tooltip line; the hotkey still opens the manual at the hovered item. The Field Manual item is vanilla's book recoloured in our olive cloth with the label plate and hazard band. |
+| 2026-10-20 | Machine frame item: the yellow gussets sit on the six visible corner joints (user feedback). |
+| 2026-10-20 | Slice 8 Fusion Reactor (a game abstraction): 9×9×3 octagonal ring (the 7×7 draft read as a diamond). Fuel: deuterium + tritium (1 mB each per 4 ticks) or lithium deuteride pellets (3 600 ticks each); liquid nitrogen 2 mB/t for the magnets. While unlit its Energy Port takes power into a separate 2 000 000 FE ignition charge; with fuel and nitrogen in, a full charge lights the plasma and is spent. Lit: 6 000 FE/t pushed out of the same port, no power taken in; with the buffer full it idles without burning fuel. Out of fuel or nitrogen, unformed, or halted by redstone (a skipped tick), the plasma goes out and needs a new charge; a world reload does not count as a skipped tick. |
+| 2026-10-20 | Slice 8 Singularity Reactor (a game abstraction): a seed in the controller plus 500 000 FE engages the cage and the seed becomes the core (no taking it back). Any item fed adds 200 000 FE of matter (up to 4 000 000); the core converts up to 25 000 FE/t. The cage costs 1 000 FE every tick, redstone or not, and the reactor only pushes out power above a 500 000 FE reserve (about 25 s of grace). If the buffer cannot pay, or the structure is broken while a core is held, the singularity collapses: the core is lost with a flash, a boom and particles. The destructive collapse (a small Phase 11 singularity effect, behind a config) comes with the Phase 11 effects. |
+| 2026-10-20 | Big reactors' Energy Ports use a gated view (ReactorEnergyView): power out only above the reactor's reserve, power in only while the reactor wants it (fusion ignition charge, singularity cage). Cable networks never route power back to the block that pushed it, so a two-way port does not loop. |

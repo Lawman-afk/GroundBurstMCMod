@@ -1,0 +1,90 @@
+{
+  "title": "Fusion Reactor",
+  "icon": "groundzero:fusion_reactor",
+  "order": 5,
+  "items": [
+    "groundzero:fusion_reactor",
+    "groundzero:fusion_reactor_spawner",
+    "groundzero:toroidal_field_coil",
+    "groundzero:vacuum_vessel_casing",
+    "groundzero:central_solenoid"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundzero:textures/gui/manual/plates/fusion_reactor.png",
+      "width": 240,
+      "height": 150,
+      "text": "The formed Fusion Reactor."
+    },
+    {
+      "type": "text",
+      "text": "A three-layer octagonal ring nine blocks across, the accelerator's footprint, round a **central solenoid** column. It makes **6,000 FE a tick** once its plasma is lit.\n\nMachine casing at the bottom, with the controller at the front, an **Item Port** on the left, a **Fluid Port** on the right and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle."
+    },
+    {
+      "type": "structure",
+      "structure": "groundzero:fusion_reactor",
+      "text": "When it forms, the corner blocks take the octagon's slope."
+    },
+    {
+      "type": "text",
+      "text": "**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Instead of the gases it can burn **lithium deuteride pellets** from the Item Port, three minutes each.\n\n**Cold magnets.** Its coils need **liquid nitrogen**, 2 mB a tick, through the same Fluid Port. A [Cryogenic Condenser](processing/cryogenic_condenser) keeps up.\n\n**Ignition.** To light the plasma it needs a charge of **2,000,000 FE** through its Energy Port, more than any one cable carries in a tick: charge it from a big [capacitor bank](power/capacitor_banks). Once lit it pushes its power out of the same port. If the fuel or the nitrogen runs out, or redstone halts it, the plasma goes out and it needs a fresh charge."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Output",
+          "6,000 FE/t"
+        ],
+        [
+          "Ignition",
+          "2,000,000 FE"
+        ],
+        [
+          "Deuterium + tritium",
+          "1 mB each / 4 t"
+        ],
+        [
+          "Pellet lasts",
+          "3,600 ticks"
+        ],
+        [
+          "Liquid nitrogen",
+          "2 mB/t"
+        ]
+      ],
+      "text": "",
+      "title": "Running"
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:fusion_reactor",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:toroidal_field_coil",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:vacuum_vessel_casing",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:central_solenoid",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "processing/fusion_fuel_synthesizer",
+        "nuclear/reprocessing",
+        "power/capacitor_banks"
+      ],
+      "text": ""
+    }
+  ]
+}

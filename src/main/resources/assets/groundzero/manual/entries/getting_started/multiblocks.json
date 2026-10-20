@@ -55,7 +55,9 @@
       "entries": [
         "processing/chemical_plant",
         "nuclear/fission_reactor",
-        "nuclear/particle_accelerator"
+        "nuclear/particle_accelerator",
+        "nuclear/fusion_reactor",
+        "nuclear/singularity_reactor"
       ],
       "text": "",
       "title": "Structures"

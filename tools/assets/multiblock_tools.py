@@ -123,6 +123,37 @@ def ring_plan(t) -> None:
     t.px(8, 11, P.CHERENKOV[5])
 
 
+def tokamak_plan(t) -> None:
+    """The fusion reactor from above: an octagonal ring, pink plasma inside it, the solenoid in the middle."""
+    ring = [(6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (5, 4), (11, 4), (4, 5), (12, 5), (4, 6), (12, 6), (4, 7), (12, 7),
+            (4, 8), (12, 8), (4, 9), (12, 9), (5, 10), (11, 10), (6, 11), (7, 11), (8, 11), (9, 11), (10, 11)]
+    for x, y in ring:
+        t.px(x, y, BLUEPRINT[6])
+    plasma = [(7, 4), (8, 4), (9, 4), (6, 5), (10, 5), (5, 6), (11, 6), (5, 7), (11, 7), (5, 8), (11, 8), (6, 9), (10, 9),
+              (7, 10), (8, 10), (9, 10)]
+    for x, y in plasma:
+        t.px(x, y, (240, 110, 180, 255))
+    t.px(8, 7, P.COPPER[5])
+    t.px(8, 3, P.HAZARD_YELLOW[5])                                        # the controller at the front
+
+
+def cage_plan(t) -> None:
+    """The singularity cage from above: corner posts, walls, emitters on each side and the black core in the middle."""
+    for x in range(4, 13):
+        t.px(x, 3, BLUEPRINT[5])
+        t.px(x, 11, BLUEPRINT[5])
+    for y in range(3, 12):
+        t.px(4, y, BLUEPRINT[5])
+        t.px(12, y, BLUEPRINT[5])
+    for x, y in ((4, 3), (12, 3), (4, 11), (12, 11)):
+        t.px(x, y, BLUEPRINT[6])                                           # posts
+    for x, y in ((8, 3), (8, 11), (4, 7), (12, 7)):
+        t.px(x, y, P.SINGULARITY[5])                                       # emitters
+    for x, y in ((7, 6), (8, 6), (9, 6), (7, 8), (8, 8), (9, 8), (7, 7), (9, 7)):
+        t.px(x, y, P.SINGULARITY[3])
+    t.px(8, 7, (10, 6, 16, 255))                                           # the core
+
+
 def structure_spawner(name: str, plan=None) -> None:
     """A blueprint sheet, its bottom-left corner curling, with the structure's floor plan drawn on it."""
     rows = [
@@ -173,6 +204,8 @@ def build() -> None:
     structure_spawner("chemical_plant_spawner")
     structure_spawner("fission_reactor_spawner", reactor_plan)
     structure_spawner("particle_accelerator_spawner", ring_plan)
+    structure_spawner("fusion_reactor_spawner", tokamak_plan)
+    structure_spawner("singularity_reactor_spawner", cage_plan)
 
 
 if __name__ == "__main__":

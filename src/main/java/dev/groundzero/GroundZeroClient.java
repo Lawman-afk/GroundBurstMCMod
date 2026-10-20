@@ -47,6 +47,8 @@ public class GroundZeroClient {
         event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
         event.register(GZMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
         event.register(GZMenus.FISSION_REACTOR.get(), MachineScreen::new);
+        event.register(GZMenus.FUSION_REACTOR.get(), MachineScreen::new);
+        event.register(GZMenus.SINGULARITY_REACTOR.get(), MachineScreen::new);
         event.register(GZMenus.PARTICLE_ACCELERATOR.get(), MachineScreen::new);
         event.register(GZMenus.RTG.get(), MachineScreen::new);
         event.register(GZMenus.CAPACITOR_BANK.get(), MachineScreen::new);
@@ -69,6 +71,8 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
         // Multiblocks: the formed model reaches beyond the controller (reactor 1 block each side, accelerator ring 8).
         event.registerBlockEntityRenderer(GZBlockEntities.FISSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FISSION_REACTOR.get(), 4, 3));
+        event.registerBlockEntityRenderer(GZBlockEntities.FUSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_REACTOR.get(), 3, 8));
+        event.registerBlockEntityRenderer(GZBlockEntities.SINGULARITY_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.SINGULARITY_REACTOR.get(), 5, 4));
         event.registerBlockEntityRenderer(GZBlockEntities.PARTICLE_ACCELERATOR.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.PARTICLE_ACCELERATOR.get(), 1, 9));
         event.registerBlockEntityRenderer(GZBlockEntities.DIESEL_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.DIESEL_GENERATOR.get(), 1));

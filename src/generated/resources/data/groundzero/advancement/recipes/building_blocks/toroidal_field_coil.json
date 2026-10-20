@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_superconducting_coil": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:superconducting_coil"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:toroidal_field_coil"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_superconducting_coil"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:toroidal_field_coil"
+    ]
+  }
+}

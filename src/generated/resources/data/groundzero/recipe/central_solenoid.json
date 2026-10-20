@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "groundzero:superconducting_coil",
+    "D": "groundzero:dense_steel_plate",
+    "R": "#c:rods/tungsten",
+    "W": "#c:wires/copper"
+  },
+  "pattern": [
+    "WCW",
+    "WRW",
+    "WDW"
+  ],
+  "result": {
+    "id": "groundzero:central_solenoid"
+  }
+}

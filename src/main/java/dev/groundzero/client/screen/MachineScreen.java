@@ -130,7 +130,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             float frac = Math.max(0, Math.min(1, this.menu.extra(c.data()) / (float) Math.max(1, c.max())));
             int fh = Math.round(frac * cr.h());
             if (fh > 0) {
-                int col = c.kind().equals("heat") ? heatColor(frac) : 0xFF8A949C;
+                int col = switch (c.kind()) {
+                    case "heat" -> heatColor(frac);
+                    case "charge" -> 0xFFE070FF;            // plasma pink: the fusion ignition charge
+                    case "mass" -> 0xFF9A5CFF;              // singularity violet: accreted matter
+                    default -> 0xFF8A949C;
+                };
                 g.fill(x + cr.x(), y + cr.y() + cr.h() - fh, x + cr.x() + cr.w(), y + cr.y() + cr.h(), col);
                 g.fill(x + cr.x(), y + cr.y() + cr.h() - fh, x + cr.x() + cr.w(), y + cr.y() + cr.h() - fh + 1, 0x80FFFFFF);
             }
