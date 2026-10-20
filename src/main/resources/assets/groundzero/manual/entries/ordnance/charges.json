@@ -1,0 +1,74 @@
+{
+  "title": "Placed charges",
+  "icon": "groundzero:c4",
+  "order": 1,
+  "items": [
+    "groundzero:c4",
+    "groundzero:breaching_charge",
+    "groundzero:thermite_charge",
+    "groundzero:timed_bomb",
+    "groundzero:arming_key",
+    "groundzero:remote_detonator"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Charges are placed like blocks and are **safe** when placed. To use one:\n\n- Right-click it with an empty hand to set its fuze: **Remote** (a frequency, 0-9999) or **Timer** (1-600 seconds).\n- Sneak-use an **Arming Key** on it to arm it. An armed charge blinks a red lamp.\n- Set it off with a **Remote Detonator** on its frequency, by its timer (which starts when you arm it), or with redstone.\n\nSneak-use the key again to make it safe. A charge caught in another blast goes off a moment later, armed or not."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:c4",
+      "text": "Sticks to any face. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:breaching_charge",
+      "text": "Cuts a clean 3x3 hole 3 blocks deep into whatever it is stuck to, short of obsidian, and nothing else. Anyone in or just past the hole is knocked through it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:thermite_charge",
+      "text": "Burns a 1x1 shaft 8 blocks deep into what it is stuck to, through anything softer than obsidian; water stops it. It leaves molten slag at the bottom. Keep clear while it burns."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:timed_bomb",
+      "text": "Stands on the floor; its clock shows the time set, and once armed it counts down, beeping faster near the end. The key cannot stop it: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:remote_detonator",
+      "text": "Press to set off every armed charge on its frequency with a Remote fuze within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:c4",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:breaching_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:thermite_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:timed_bomb",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:arming_key",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:remote_detonator",
+      "text": ""
+    }
+  ]
+}

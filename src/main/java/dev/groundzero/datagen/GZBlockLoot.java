@@ -43,6 +43,11 @@ public class GZBlockLoot extends BlockLootSubProvider {
                 GZResources.RAW_LEAD_BLOCK, GZResources.RAW_RARE_EARTH_BLOCK, GZResources.VOIDSTONE)) {
             dropSelf(b.block().get());
         }
+        // Placed charges: themselves (C4: as many as were stacked).
+        add(dev.groundzero.content.ordnance.GZOrdnance.C4.block().get(), createCandleDrops(dev.groundzero.content.ordnance.GZOrdnance.C4.block().get()));
+        dropSelf(dev.groundzero.content.ordnance.GZOrdnance.BREACHING_CHARGE.block().get());
+        dropSelf(dev.groundzero.content.ordnance.GZOrdnance.THERMITE_CHARGE.block().get());
+        dropSelf(dev.groundzero.content.ordnance.GZOrdnance.TIMED_BOMB.block().get());
         // Corium sets as it is dug: either way you get Cooled Corium.
         dropSelf(dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.block().get());
         dropOther(dev.groundzero.content.nuclear.GZNuclear.CORIUM.block().get(), dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.item().get());

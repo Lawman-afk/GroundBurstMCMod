@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plastic_explosive": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:plastic_explosive"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:breaching_charge"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_plastic_explosive"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:breaching_charge"
+    ]
+  }
+}

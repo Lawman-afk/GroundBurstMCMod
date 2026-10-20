@@ -1,0 +1,108 @@
+{
+  "variants": {
+    "armed=false,facing=up,lit=false": {
+      "model": "groundzero:block/thermite_charge"
+    },
+    "armed=false,facing=up,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit"
+    },
+    "armed=true,facing=up,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed"
+    },
+    "armed=true,facing=up,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit"
+    },
+    "armed=false,facing=down,lit=false": {
+      "model": "groundzero:block/thermite_charge",
+      "x": 180
+    },
+    "armed=false,facing=down,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 180
+    },
+    "armed=true,facing=down,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed",
+      "x": 180
+    },
+    "armed=true,facing=down,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 180
+    },
+    "armed=false,facing=north,lit=false": {
+      "model": "groundzero:block/thermite_charge",
+      "x": 90
+    },
+    "armed=false,facing=north,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90
+    },
+    "armed=true,facing=north,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed",
+      "x": 90
+    },
+    "armed=true,facing=north,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90
+    },
+    "armed=false,facing=south,lit=false": {
+      "model": "groundzero:block/thermite_charge",
+      "x": 90,
+      "y": 180
+    },
+    "armed=false,facing=south,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 180
+    },
+    "armed=true,facing=south,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed",
+      "x": 90,
+      "y": 180
+    },
+    "armed=true,facing=south,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 180
+    },
+    "armed=false,facing=east,lit=false": {
+      "model": "groundzero:block/thermite_charge",
+      "x": 90,
+      "y": 90
+    },
+    "armed=false,facing=east,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 90
+    },
+    "armed=true,facing=east,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed",
+      "x": 90,
+      "y": 90
+    },
+    "armed=true,facing=east,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 90
+    },
+    "armed=false,facing=west,lit=false": {
+      "model": "groundzero:block/thermite_charge",
+      "x": 90,
+      "y": 270
+    },
+    "armed=false,facing=west,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 270
+    },
+    "armed=true,facing=west,lit=false": {
+      "model": "groundzero:block/thermite_charge_armed",
+      "x": 90,
+      "y": 270
+    },
+    "armed=true,facing=west,lit=true": {
+      "model": "groundzero:block/thermite_charge_lit",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

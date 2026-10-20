@@ -34,11 +34,16 @@ public final class Blasts {
      * says so (master switch, protected dimension) and the spawn area is spared when protected.
      */
     public static @Nullable Blast detonate(ServerLevel level, Vec3 center, ResourceKey<BlastProfile> key, @Nullable Entity source) {
+        return detonate(level, center, key, source, 1f);
+    }
+
+    /** As {@link #detonate(ServerLevel, Vec3, ResourceKey, Entity)}, with every radius scaled by {@code scale} too (stacked C4). */
+    public static @Nullable Blast detonate(ServerLevel level, Vec3 center, ResourceKey<BlastProfile> key, @Nullable Entity source, float scale) {
         Optional<BlastProfile> found = level.registryAccess().lookupOrThrow(BlastProfile.REGISTRY).getOptional(key);
         if (found.isEmpty()) {
             return null;
         }
-        BlastProfile profile = found.get().scaled(GZServerConfig.RADIUS_MULTIPLIER.get().floatValue(), GZServerConfig.MAX_RADIUS.get());
+        BlastProfile profile = found.get().scaled(GZServerConfig.RADIUS_MULTIPLIER.get().floatValue() * scale, GZServerConfig.MAX_RADIUS.get());
         boolean terrain = GZServerConfig.DESTROY_BLOCKS.get()
                 && !GZServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().identifier().toString());
         BlockPos spawn = null;
@@ -55,7 +60,7 @@ public final class Blasts {
     }
 
     /** The damage a blast deals: {@code groundzero:blast} (an explosion, so Blast Protection counts), caused by whoever set it off. */
-    static DamageSource damageSource(ServerLevel level, @Nullable Entity source, Vec3 center) {
+    public static DamageSource damageSource(ServerLevel level, @Nullable Entity source, Vec3 center) {
         return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(BLAST_DAMAGE), null, source, center);
     }
 }

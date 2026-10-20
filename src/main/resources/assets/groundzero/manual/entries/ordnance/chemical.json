@@ -1,7 +1,7 @@
 {
   "title": "Chemical grenades",
   "icon": "groundzero:gas_grenade",
-  "order": 1,
+  "order": 2,
   "items": [
     "groundzero:gas_grenade",
     "groundzero:toxin_grenade",

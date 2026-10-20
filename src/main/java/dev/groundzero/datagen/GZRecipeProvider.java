@@ -252,6 +252,38 @@ public class GZRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE, 2)
                 .requires(GZChemicals.TOXIN_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
                 .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        // Placed charges and their kit (slice 6b).
+        var ord = new Object() {
+            final net.minecraft.world.level.ItemLike c4 = dev.groundzero.content.ordnance.GZOrdnance.C4.item();
+            final net.minecraft.world.level.ItemLike breach = dev.groundzero.content.ordnance.GZOrdnance.BREACHING_CHARGE.item();
+            final net.minecraft.world.level.ItemLike thermite = dev.groundzero.content.ordnance.GZOrdnance.THERMITE_CHARGE.item();
+            final net.minecraft.world.level.ItemLike bomb = dev.groundzero.content.ordnance.GZOrdnance.TIMED_BOMB.item();
+        };
+        shapeless(RecipeCategory.COMBAT, ord.c4, 2)
+                .requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(GZParts.BASIC_CIRCUIT)
+                .requires(GZTags.commonItem("wires/copper"))
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
+        shapeless(RecipeCategory.COMBAT, ord.breach, 1)
+                .requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(GZTags.commonItem("plates/steel")).requires(Items.STRING).requires(Items.STRING)
+                .requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
+        shapeless(RecipeCategory.COMBAT, ord.thermite, 1)
+                .requires(Items.TERRACOTTA).requires(GZTags.commonItem("dusts/iron")).requires(GZTags.commonItem("dusts/iron"))
+                .requires(Items.GUNPOWDER).requires(Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy(getHasName(GZResources.IRON_DUST), has(GZResources.IRON_DUST)).save(output);
+        shapeless(RecipeCategory.COMBAT, ord.bomb, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE).requires(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(Items.CLOCK).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE), has(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE))
+                .save(output);
+        shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.ARMING_KEY, 1)
+                .requires(GZTags.commonItem("ingots/steel")).requires(Items.IRON_NUGGET).requires(Tags.Items.DYES_RED)
+                .unlockedBy(getHasName(GZParts.STEEL_INGOT), has(GZParts.STEEL_INGOT)).save(output);
+        shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
+                .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
+                .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)
+                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MOLOTOV_COCKTAIL, 2)
                 .requires(GZChemicals.SYNTHETIC_FUEL_CANISTER).requires(Items.GLASS_BOTTLE).requires(Items.GLASS_BOTTLE)
                 .requires(Items.STRING).requires(Items.STRING)

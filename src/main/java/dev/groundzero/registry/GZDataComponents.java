@@ -17,5 +17,9 @@ public final class GZDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = COMPONENTS.registerComponentType("energy",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** A Remote Detonator's frequency (0-9999). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
+            b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
     private GZDataComponents() {}
 }

@@ -55,7 +55,8 @@ public final class FxPhotographer {
                 new Scene("suits", "suits", 3, 12, List.of(15)),
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
                 new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)),
-                new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)))) {
+                new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)),
+                new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -107,6 +108,40 @@ public final class FxPhotographer {
                 new Vec3(0, -0.05, 0), -1);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
                 new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE.get()));
+    }
+
+    /** Placed charges facing the camera: stacked C4 and a timed bomb on the ground, breaching and thermite on a wall. */
+    private static void charges(ServerLevel level, int x, int ground) {
+        for (int z = -3; z <= 3; z++) {
+            for (int y = 0; y < 4; y++) {
+                level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + 3, ground + y, z), net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState());
+            }
+        }
+        var F = dev.groundzero.content.ordnance.charge.ChargeBlock.FACING;
+        var c4 = new net.minecraft.core.BlockPos(x, ground, -1);
+        level.setBlockAndUpdate(c4, dev.groundzero.content.ordnance.GZOrdnance.C4.block().get().defaultBlockState()
+                .setValue(F, net.minecraft.core.Direction.UP).setValue(dev.groundzero.content.ordnance.charge.ChargeBlock.COUNT, 3));
+        var bomb = new net.minecraft.core.BlockPos(x, ground, 1);
+        level.setBlockAndUpdate(bomb, dev.groundzero.content.ordnance.GZOrdnance.TIMED_BOMB.block().get().defaultBlockState()
+                .setValue(F, net.minecraft.core.Direction.WEST));
+        var breach = new net.minecraft.core.BlockPos(x + 2, ground + 2, -2);
+        level.setBlockAndUpdate(breach, dev.groundzero.content.ordnance.GZOrdnance.BREACHING_CHARGE.block().get().defaultBlockState()
+                .setValue(F, net.minecraft.core.Direction.WEST));
+        var thermite = new net.minecraft.core.BlockPos(x + 2, ground + 1, 2);
+        level.setBlockAndUpdate(thermite, dev.groundzero.content.ordnance.GZOrdnance.THERMITE_CHARGE.block().get().defaultBlockState()
+                .setValue(F, net.minecraft.core.Direction.WEST));
+        for (var p : java.util.List.of(c4, bomb, breach, thermite)) {
+            var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, p);
+            if (be != null) {
+                if (p == bomb) {
+                    be.configure(dev.groundzero.content.ordnance.charge.ChargeBlockEntity.Mode.TIMER, 0, 45);
+                }
+                be.arm(level, null);
+                if (p == thermite) {
+                    be.trigger(level, null);
+                }
+            }
+        }
     }
 
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
@@ -182,6 +217,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("chemical")) {
                     chemical(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("charges")) {
+                    charges(level, x, ground);
                     return;
                 }
                 if (s.profile().startsWith("suits")) {

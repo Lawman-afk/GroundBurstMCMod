@@ -159,6 +159,33 @@
     ],
     "subtitle": "subtitles.groundzero.blast.small.very_far"
   },
+  "bomb.beep": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundzero:ordnance/bomb_beep"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.bomb.beep"
+  },
+  "charge.arm": {
+    "sounds": [
+      "groundzero:ordnance/charge_arm"
+    ],
+    "subtitle": "subtitles.groundzero.charge.arm"
+  },
+  "charge.disarm": {
+    "sounds": [
+      "groundzero:ordnance/charge_disarm"
+    ],
+    "subtitle": "subtitles.groundzero.charge.disarm"
+  },
+  "detonator.click": {
+    "sounds": [
+      "groundzero:ordnance/detonator_click"
+    ],
+    "subtitle": "subtitles.groundzero.detonator.click"
+  },
   "dynamite.light": {
     "sounds": [
       "groundzero:ordnance/dynamite_light"
@@ -380,5 +407,23 @@
       "groundzero:ordnance/sticky_stick"
     ],
     "subtitle": "subtitles.groundzero.sticky.stick"
+  },
+  "thermite.burn": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundzero:ordnance/thermite_burn"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.thermite.burn"
+  },
+  "wire.snip": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:ordnance/wire_snip"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.wire.snip"
   }
 }

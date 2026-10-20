@@ -113,6 +113,18 @@ public final class GZSounds {
             register("sticky.stick", "Sticky grenade sticks", List.of("ordnance/sticky_stick"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> SMOKE_HISS =
             register("smoke.hiss", "Smoke hisses", List.of("ordnance/smoke_hiss"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHARGE_ARM =
+            register("charge.arm", "Charge armed", List.of("ordnance/charge_arm"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHARGE_DISARM =
+            register("charge.disarm", "Charge made safe", List.of("ordnance/charge_disarm"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_BEEP =
+            register("bomb.beep", "Bomb beeps", List.of("ordnance/bomb_beep"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> THERMITE_BURN =
+            register("thermite.burn", "Thermite roars", List.of("ordnance/thermite_burn"), false, 32);
+    public static final DeferredHolder<SoundEvent, SoundEvent> DETONATOR_CLICK =
+            register("detonator.click", "Detonator clicks", List.of("ordnance/detonator_click"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> WIRE_SNIP =
+            register("wire.snip", "Wire cut", List.of("ordnance/wire_snip"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

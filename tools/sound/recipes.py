@@ -537,6 +537,37 @@ def ordnance_sounds() -> dict[str, np.ndarray]:
     hiss = S.bandpass(S.pink(hiss_len, 450), 1200, 7000)
     flutter = 0.8 + 0.2 * np.sin(2 * np.pi * 13 * S.t_axis(hiss_len))
     out["ordnance/smoke_hiss"] = S.normalize(S.fade(hiss * flutter, 0.15, 0.3), -6)
+
+    # Placed charges (slice 6b).
+    def beep(seconds: float, freq: float) -> np.ndarray:
+        n = int(seconds * S.SR)
+        x = S.tone(seconds, freq, "square") * 0.35 + S.tone(seconds, freq * 2, "sine") * 0.15
+        return S.lowpass(x, 6000) * S.adsr(n, 0.004, 0.01, 0.9, 0.01)
+
+    # Arming: a switch click, then two rising beeps.
+    click = _ring(0.08, [(2400, 0.01, 0.4), (4100, 0.006, 0.2)], 460)
+    x = S.mix((S.place(click, 0.0, 0.42), 0.4), (S.place(beep(0.09, 1800), 0.08, 0.42), 0.8), (S.place(beep(0.12, 2400), 0.22, 0.42), 0.8))
+    out["ordnance/charge_arm"] = S.normalize(S.fade(x, 0, 0.03), -4)
+    # Made safe: the click, then two falling beeps.
+    x = S.mix((S.place(click, 0.0, 0.42), 0.4), (S.place(beep(0.09, 2400), 0.08, 0.42), 0.8), (S.place(beep(0.12, 1600), 0.22, 0.42), 0.8))
+    out["ordnance/charge_disarm"] = S.normalize(S.fade(x, 0, 0.03), -4)
+    # The timed bomb's beep: short and piercing.
+    out["ordnance/bomb_beep"] = S.normalize(S.fade(beep(0.09, 2900), 0, 0.01), -5)
+    # Thermite: a roaring, crackling burn (played every second while it burns).
+    burn_len = 1.2
+    roar = S.lowpass(S.brown(burn_len, 470), 900) * 1.2
+    fizz = S.bandpass(S.white(burn_len, 471), 2500, 9000) * 0.5
+    crackle = S.grains(burn_len, rate=90, grain_ms=2, seed=472) * 0.6
+    x = (roar + fizz + crackle) * (0.85 + 0.15 * np.sin(2 * np.pi * 7 * S.t_axis(burn_len)))
+    out["ordnance/thermite_burn"] = S.normalize(S.fade(x, 0.05, 0.15), -3)
+    # The detonator: a heavy switch, then a short burst of radio squelch.
+    thunk = _ring(0.1, [(900, 0.02, 0.6), (2100, 0.01, 0.3)], 480)
+    squelch = S.bandpass(S.white(0.18, 481), 1200, 4500) * S.breakpoints(int(0.18 * S.SR), [(0, 0), (0.01, 1), (0.15, 0.7), (0.18, 0)]) * 0.5
+    x = S.mix((S.place(thunk, 0.0, 0.3), 1.0), (S.place(squelch, 0.08, 0.3), 1.0))
+    out["ordnance/detonator_click"] = S.normalize(S.fade(x, 0, 0.03), -4)
+    # A wire cut: a sharp snip of the cutters.
+    snip = _ring(0.12, [(3600, 0.012, 0.5), (5800, 0.008, 0.3), (1500, 0.02, 0.2)], 490)
+    out["ordnance/wire_snip"] = S.normalize(S.fade(snip, 0, 0.03), -4)
     return out
 
 

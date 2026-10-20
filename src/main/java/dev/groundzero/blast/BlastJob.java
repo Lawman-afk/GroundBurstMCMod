@@ -554,6 +554,10 @@ final class BlastJob implements Blast {
         if (kind >= 0) {
             this.dug[kind]++;
         }
+        if (state.getBlock() instanceof dev.groundzero.content.ordnance.charge.ChargeBlock) {
+            // A charge caught in the blast goes off a moment later (sympathetic detonation).
+            dev.groundzero.content.ordnance.charge.Charges.caughtInBlast(this.level, this.pos.immutable(), state);
+        }
         if (this.profile.drops() > 0 && this.random.nextFloat() < this.profile.drops()) {
             Block.dropResources(state, this.level, this.pos, this.level.getBlockEntity(this.pos));
         }

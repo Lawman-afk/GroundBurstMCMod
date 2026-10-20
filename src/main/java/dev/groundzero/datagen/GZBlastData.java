@@ -58,6 +58,13 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("frag_grenade"), profile(0.5f, 2, 3, 2, 0, 4, 8, 4, 0.5f, 0.1f, 0.25f, 0.2f, 20, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // Placed charges (slice 6b). C4 is scaled by the cube root of how many are stacked.
+        ctx.register(Blasts.profile("c4"), profile(2, 4.5f, 7, 5, 0, 5, 11, 4, 0.75f, 0.12f, 0.3f, 0.4f, 40, 12, 1.8f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("breaching_charge"), profile(0, 0.6f, 2, 1, 0, 1.5f, 4, 4, 0.5f, 0, 0, 0, 10, 4, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("timed_bomb"), profile(2.5f, 6, 9, 7, 0, 6, 14, 4, 0.75f, 0.12f, 0.3f, 0.4f, 45, 14, 2.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("incendiary_grenade"), profile(0, 1, 2, 4, 4, 1.5f, 4, 4, 0.7f, 0f, 0f, 0f, 8, 4, 0.6f,

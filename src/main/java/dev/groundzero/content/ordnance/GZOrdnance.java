@@ -42,6 +42,37 @@ public final class GZOrdnance {
                     .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
 
+    // --- placed charges (slice 6b) ---
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> C4 =
+            dev.groundzero.registry.GZBlocks.register("c4", "C4 Charge", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.ChargeBlock.C4::new,
+                    p -> p.mapColor(net.minecraft.world.level.material.MapColor.SAND).strength(0.5f).noOcclusion()
+                            .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> BREACHING_CHARGE =
+            dev.groundzero.registry.GZBlocks.register("breaching_charge", "Breaching Charge", GZTab.ORDNANCE,
+                    p -> new dev.groundzero.content.ordnance.charge.ChargeBlock(dev.groundzero.content.ordnance.charge.ChargeKind.BREACHING, p),
+                    p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY).strength(1f).noOcclusion()
+                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> THERMITE_CHARGE =
+            dev.groundzero.registry.GZBlocks.register("thermite_charge", "Thermite Charge", GZTab.ORDNANCE,
+                    dev.groundzero.content.ordnance.charge.ChargeBlock.Thermite::new,
+                    p -> p.mapColor(net.minecraft.world.level.material.MapColor.TERRACOTTA_ORANGE).strength(1f).noOcclusion()
+                            .sound(net.minecraft.world.level.block.SoundType.DECORATED_POT).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
+                            .lightLevel(s -> s.getValue(dev.groundzero.content.ordnance.charge.ChargeBlock.LIT) ? 15 : 0));
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> TIMED_BOMB =
+            dev.groundzero.registry.GZBlocks.register("timed_bomb", "Timed Bomb", GZTab.ORDNANCE,
+                    p -> new dev.groundzero.content.ordnance.charge.ChargeBlock(dev.groundzero.content.ordnance.charge.ChargeKind.TIMED_BOMB, p),
+                    p -> p.mapColor(net.minecraft.world.level.material.MapColor.METAL).strength(2f).noOcclusion()
+                            .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE));
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
+            net.minecraft.world.level.block.entity.BlockEntityType<dev.groundzero.content.ordnance.charge.ChargeBlockEntity>> CHARGE =
+            dev.groundzero.registry.GZBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
+                    THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get()));
+    public static final DeferredItem<dev.groundzero.content.ordnance.charge.ArmingKeyItem> ARMING_KEY = GZItems.register("arming_key", "Arming Key",
+            GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.ArmingKeyItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
+            "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
+
     /** {@code groundzero:shrapnel}: what fragments deal. */
     public static final ResourceKey<DamageType> SHRAPNEL_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, GroundZero.id("shrapnel"));
     /** {@code groundzero:toxin}: poison gas, toxin and toxic chemicals (see {@link Toxins}). */
@@ -51,6 +82,12 @@ public final class GZOrdnance {
     public static final Supplier<SoundEvent> DYNAMITE_LIGHT = GZSounds.DYNAMITE_LIGHT;
     public static final Supplier<SoundEvent> STICKY_STICK = GZSounds.STICKY_STICK;
     public static final Supplier<SoundEvent> SMOKE_HISS = GZSounds.SMOKE_HISS;
+    public static final Supplier<SoundEvent> CHARGE_ARM = GZSounds.CHARGE_ARM;
+    public static final Supplier<SoundEvent> CHARGE_DISARM = GZSounds.CHARGE_DISARM;
+    public static final Supplier<SoundEvent> BOMB_BEEP = GZSounds.BOMB_BEEP;
+    public static final Supplier<SoundEvent> THERMITE_BURN = GZSounds.THERMITE_BURN;
+    public static final Supplier<SoundEvent> DETONATOR_CLICK = GZSounds.DETONATOR_CLICK;
+    public static final Supplier<SoundEvent> WIRE_SNIP = GZSounds.WIRE_SNIP;
 
     static {
         dev.groundzero.registry.GZLang.add("death.attack." + GroundZero.MODID + ".shrapnel", "%1$s was shredded by shrapnel");
@@ -70,6 +107,7 @@ public final class GZOrdnance {
      * of its usual range (a zombie's 16 blocks becomes under 2), on top of the cloud breaking targets it already has.
      */
     public static void register() {
+        dev.groundzero.content.ordnance.charge.Charges.register();
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingVisibilityEvent e) -> {
             var seen = e.getEntity();
             var looker = e.getLookingEntity();

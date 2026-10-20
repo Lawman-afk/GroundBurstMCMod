@@ -778,6 +778,40 @@ For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical).
     craft("molotov_cocktail"),
 ])
 
+entry("ordnance/charges", "Placed charges", "c4", ["c4", "breaching_charge", "thermite_charge", "timed_bomb", "arming_key",
+                                                  "remote_detonator"], [
+    text("""
+Charges are placed like blocks and are **safe** when placed. To use one:
+
+- Right-click it with an empty hand to set its fuze: **Remote** (a frequency, 0-9999) or **Timer** (1-600 seconds).
+- Sneak-use an **Arming Key** on it to arm it. An armed charge blinks a red lamp.
+- Set it off with a **Remote Detonator** on its frequency, by its timer (which starts when you arm it), or with redstone.
+
+Sneak-use the key again to make it safe. A charge caught in another blast goes off a moment later, armed or not.
+"""),
+    spot("c4", """
+Sticks to any face. Use more C4 on a placed charge to stack up to **four** on one spot; four make a blast 1.6 times as wide.
+"""),
+    spot("breaching_charge", """
+Cuts a clean 3x3 hole 3 blocks deep into whatever it is stuck to, short of obsidian, and nothing else. Anyone in or just past the hole is knocked through it.
+"""),
+    spot("thermite_charge", """
+Burns a 1x1 shaft 8 blocks deep into what it is stuck to, through anything softer than obsidian; water stops it. It leaves molten slag at the bottom. Keep clear while it burns.
+"""),
+    spot("timed_bomb", """
+Stands on the floor; its clock shows the time set, and once armed it counts down, beeping faster near the end. The key cannot stop it: right-click it and **cut a wire**. One wire stops it, one sets it off, the other two halve the time left. Breaking it while it counts sets it off.
+"""),
+    spot("remote_detonator", """
+Press to set off every armed charge on its frequency with a Remote fuze within 256 blocks. Sneak-use it on a charge to take that charge's frequency, or in the air to type one in.
+"""),
+    craft("c4"),
+    craft("breaching_charge"),
+    craft("thermite_charge"),
+    craft("timed_bomb"),
+    craft("arming_key"),
+    craft("remote_detonator"),
+])
+
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
                                                                 "toxin_canister", "salt", "chlorine_bucket", "toxin_bucket"], [
     text("""
