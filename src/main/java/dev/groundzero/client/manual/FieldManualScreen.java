@@ -250,7 +250,7 @@ public class FieldManualScreen extends Screen {
                 String num = String.valueOf(i + 1);
                 int px = this.left + (side == 0 ? LEFT_X : RIGHT_X) + ManualPages.W / 2;
                 if (i < this.pages.size()) {
-                    g.centeredText(this.font, num, px, this.top + 180, ManualPages.FADED);
+                    ManualPages.centered(g, this.font, num, px, this.top + 180, ManualPages.FADED);
                 }
             }
         }
@@ -483,14 +483,14 @@ public class FieldManualScreen extends Screen {
         @Override
         void draw(ManualPages.Ctx c, int x, int y) {
             int cx = x + ManualPages.W / 2;
-            c.g().centeredText(c.font(), Component.translatable(ManualStrings.TITLE).withStyle(s -> s.withBold(true)), cx, y + 4, ManualText.INK);
-            c.g().centeredText(c.font(), Component.translatable(ManualStrings.SERIAL), cx, y + 15, ManualPages.STAMP);
+            ManualPages.centered(c.g(), c.font(), Component.translatable(ManualStrings.TITLE).withStyle(s -> s.withBold(true)), cx, y + 4, ManualText.INK);
+            ManualPages.centered(c.g(), c.font(), Component.translatable(ManualStrings.SERIAL), cx, y + 15, ManualPages.STAMP);
             c.g().blit(RenderPipelines.GUI_TEXTURED, TEXTURE, cx - 28, y + 28, 0, 256, 56, 56, TEX_W, TEX_H);
             List<net.minecraft.util.FormattedCharSequence> intro = c.font().split(
                     Component.translatable(ManualStrings.TAGLINE), ManualPages.W);
             int yy = y + 90;
             for (var line : intro) {
-                c.g().centeredText(c.font(), line, cx, yy, ManualPages.FADED);
+                ManualPages.centered(c.g(), c.font(), line, cx, yy, ManualPages.FADED);
                 yy += 10;
             }
             // Search field frame (the EditBox draws its text inside it).

@@ -44,7 +44,7 @@ import net.minecraft.world.level.material.Fluids;
 final class ManualPages {
     /** Content area of one page, in GUI pixels. */
     static final int W = 126, H = 150;
-    static final int LINE = 10, GAP = 5, TITLE_H = 16, BLOCK_GAP = 6;
+    static final int LINE = 10, GAP = 5, TITLE_H = 16, BLOCK_GAP = 5;
     static final int FADED = 0xFF6B665A, STAMP = 0xFFA8322A, PANEL = 0xFF2A2D31, RULE = 0x40000000;
 
     private ManualPages() {}
@@ -75,7 +75,7 @@ final class ManualPages {
             if (this.title != null) {
                 List<FormattedCharSequence> lines = c.font().split(bold(this.title), W);
                 for (int i = 0; i < Math.min(2, lines.size()); i++) {
-                    c.g().centeredText(c.font(), lines.get(i), x + W / 2, y + 2 + i * LINE, ManualText.INK);
+                    centered(c.g(), c.font(), lines.get(i), x + W / 2, y + 2 + i * LINE, ManualText.INK);
                 }
                 c.g().fill(x + 10, y + this.titleH - 4, x + W - 10, y + this.titleH - 3, RULE);
             }
@@ -102,6 +102,46 @@ final class ManualPages {
     /** Height of an entry title: one line, or two when it is long. */
     static int titleHeight(Font font, String title) {
         return font.split(bold(title), W).size() > 1 ? TITLE_H + LINE : TITLE_H;
+    }
+
+    /** Centred text without the drop shadow vanilla adds (the page is paper, not a dark panel). */
+    static void centered(GuiGraphicsExtractor g, Font font, FormattedCharSequence text, int cx, int y, int color) {
+        g.text(font, text, cx - font.width(text) / 2, y, color, false);
+    }
+
+    static void centered(GuiGraphicsExtractor g, Font font, Component text, int cx, int y, int color) {
+        centered(g, font, text.getVisualOrderText(), cx, y, color);
+    }
+
+    static void centered(GuiGraphicsExtractor g, Font font, String text, int cx, int y, int color) {
+        centered(g, font, Component.literal(text), cx, y, color);
+    }
+
+    /** A bold heading wrapped to the page: one line, or two for a long name (a third would be cut). */
+    static List<FormattedCharSequence> headingLines(Font font, Component name) {
+        String text = name.getString();
+        var style = net.minecraft.network.chat.Style.EMPTY.withBold(true);
+        List<net.minecraft.network.chat.FormattedText> wrapped = font.getSplitter().splitLines(text, W, style);
+        if (wrapped.size() <= 2) {
+            return font.split(bold(text), W);
+        }
+        String first = wrapped.get(0).getString();
+        String rest = text.substring(Math.min(text.length(), first.length())).strip();
+        return List.of(bold(first.strip()).getVisualOrderText(), heading(font, Component.literal(rest), W).getVisualOrderText());
+    }
+
+    /** Height a wrapped heading takes, with the gap under it. */
+    static int headingH(Font font, Component name) {
+        return headingLines(font, name).size() * LINE + 4;
+    }
+
+    /** Draws a wrapped heading centred on the page; returns its height. */
+    static int drawHeading(Ctx c, Component name, int x, int y) {
+        List<FormattedCharSequence> lines = headingLines(c.font(), name);
+        for (int i = 0; i < lines.size(); i++) {
+            centered(c.g(), c.font(), lines.get(i), x + W / 2, y + i * LINE, ManualText.INK);
+        }
+        return lines.size() * LINE + 4;
     }
 
     /** A bold heading that fits {@code width}, cut with an ellipsis if it must be. */
@@ -287,8 +327,8 @@ final class ManualPages {
         final @Nullable Component name;
 
         /** {@code hideName}: the entry's title already says what it is (a spotlight opening its own entry). */
-        SpotlightPage(Item item, @Nullable String title, boolean hideName) {
-            super(hideName ? 40 : 52);
+        SpotlightPage(Font font, Item item, @Nullable String title, boolean hideName) {
+            super(hideName ? 40 : 40 + headingH(font, title != null ? Component.literal(title) : new ItemStack(item).getHoverName()) - 2);
             this.stack = new ItemStack(item);
             Component name = title != null ? Component.literal(title) : this.stack.getHoverName();
             this.name = hideName ? null : name;
@@ -307,7 +347,7 @@ final class ManualPages {
                 c.screen().hoverItem(this.stack);
             }
             if (this.name != null) {
-                c.g().centeredText(c.font(), heading(c.font(), this.name, W), cx, y + 39, ManualText.INK);
+                drawHeading(c, this.name, x, y + 39);
             }
         }
     }
@@ -316,11 +356,13 @@ final class ManualPages {
     static final class CraftingPage extends GraphicPage {
         final RecipeDisplay display;
         final Component name;
+        final int headH;
 
-        CraftingPage(RecipeDisplay display, Component name) {
-            super(display instanceof FurnaceRecipeDisplay ? 54 : 74);
+        CraftingPage(Font font, RecipeDisplay display, Component name) {
+            super(headingH(font, name) + (display instanceof FurnaceRecipeDisplay ? 40 : 60));
             this.display = display;
             this.name = name;
+            this.headH = headingH(font, name);
         }
 
         private static ContextMap context() {
@@ -348,14 +390,14 @@ final class ManualPages {
 
         @Override
         void drawGraphic(Ctx c, int x, int y) {
-            c.g().centeredText(c.font(), heading(c.font(), this.name, W), x + W / 2, y, ManualText.INK);
+            drawHeading(c, this.name, x, y);
             ContextMap ctx = context();
-            int gy = y + 14;
+            int gy = y + this.headH;
             if (this.display instanceof FurnaceRecipeDisplay furnace) {
                 slot(c, cycle(furnace.ingredient().resolveForStacks(ctx), c.time()), x + 24, gy, true);
                 c.g().blit(RenderPipelines.GUI_TEXTURED, FieldManualScreen.TEXTURE, x + 46, gy + 2, 178, 208, 22, 15, FieldManualScreen.TEX_W, FieldManualScreen.TEX_H);
                 result(c, furnace.result().resolveForFirstStack(ctx), x + 74, gy - 4);
-                c.g().centeredText(c.font(), Component.literal(String.format(java.util.Locale.ROOT, "%d s", furnace.duration() / 20)), x + 57, gy + 22, FADED);
+                centered(c.g(), c.font(), Component.literal(String.format(java.util.Locale.ROOT, "%d s", furnace.duration() / 20)), x + 57, gy + 22, FADED);
                 return;
             }
             List<SlotDisplay> grid = grid();
@@ -375,7 +417,7 @@ final class ManualPages {
         @Override
         boolean clickGraphic(Ctx c, int x, int y, double mx, double my) {
             ContextMap ctx = context();
-            int gy = y + 14;
+            int gy = y + this.headH;
             if (this.display instanceof FurnaceRecipeDisplay furnace) {
                 return slotClick(c, cycle(furnace.ingredient().resolveForStacks(ctx), c.time()), x + 24, gy, mx, my);
             }
@@ -475,17 +517,19 @@ final class ManualPages {
     static final class MachinePage extends GraphicPage {
         final Component heading;
         final List<MachineRow> rows;
+        final int headH;
 
-        MachinePage(Component heading, List<MachineRow> rows) {
-            super(14 + rows.stream().mapToInt(r -> r.height() + 4).sum());
+        MachinePage(Font font, Component heading, List<MachineRow> rows) {
+            super(headingH(font, heading) + rows.stream().mapToInt(r -> r.height() + 4).sum());
             this.heading = heading;
             this.rows = rows;
+            this.headH = headingH(font, heading);
         }
 
         @Override
         void drawGraphic(Ctx c, int x, int y) {
-            c.g().centeredText(c.font(), heading(c.font(), this.heading, W), x + W / 2, y, ManualText.INK);
-            int yy = y + 14;
+            drawHeading(c, this.heading, x, y);
+            int yy = y + this.headH;
             for (MachineRow row : this.rows) {
                 row.draw(c, x + 2, yy);
                 yy += row.height() + 4;
@@ -494,7 +538,7 @@ final class ManualPages {
 
         @Override
         boolean clickGraphic(Ctx c, int x, int y, double mx, double my) {
-            int yy = y + 14;
+            int yy = y + this.headH;
             for (MachineRow row : this.rows) {
                 if (row.click(c, x + 2, yy, mx, my)) {
                     return true;
@@ -544,7 +588,7 @@ final class ManualPages {
             button(c, x + W - 13, by, 308, 208);
             Component label = this.layer < 0 ? Component.translatable(ManualStrings.ALL_LAYERS)
                     : Component.translatable(ManualStrings.LAYER, this.layer + 1, this.size[1]);
-            c.g().centeredText(c.font(), label, x + W / 2, by + 2, FADED);
+            centered(c.g(), c.font(), label, x + W / 2, by + 2, FADED);
             if (c.over(x + 2, by, 11, 11)) {
                 c.g().setTooltipForNextFrame(c.font(), Component.translatable(ManualStrings.LAYER_DOWN), c.mouseX(), c.mouseY());
             } else if (c.over(x + W - 13, by, 11, 11)) {
@@ -606,7 +650,7 @@ final class ManualPages {
 
         @Override
         void drawGraphic(Ctx c, int x, int y) {
-            c.g().centeredText(c.font(), Component.translatable(ManualStrings.BLOCKS_NEEDED).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
+            centered(c.g(), c.font(), Component.translatable(ManualStrings.BLOCKS_NEEDED).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
             int yy = y + 14;
             for (Map.Entry<ItemStack, Integer> row : this.rows) {
                 slot(c, row.getKey(), x, yy, true);
@@ -746,7 +790,7 @@ final class ManualPages {
         void drawGraphic(Ctx c, int x, int y) {
             int yy = y;
             if (this.heading != null) {
-                c.g().centeredText(c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, yy, ManualText.INK);
+                centered(c.g(), c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, yy, ManualText.INK);
                 yy += 14;
             }
             for (int i = 0; i < this.rows.size(); i++) {
@@ -776,7 +820,7 @@ final class ManualPages {
 
         @Override
         void drawGraphic(Ctx c, int x, int y) {
-            c.g().centeredText(c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
+            centered(c.g(), c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
             EntryList.drawRows(c, this.links, x, y + 14);
         }
 
@@ -804,7 +848,7 @@ final class ManualPages {
         @Override
         void draw(Ctx c, int x, int y) {
             if (this.heading != null) {
-                c.g().centeredText(c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
+                centered(c.g(), c.font(), Component.literal(this.heading).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
             }
             drawRows(c, this.rows, x, y + headingH());
         }
@@ -858,7 +902,7 @@ final class ManualPages {
 
         @Override
         void draw(Ctx c, int x, int y) {
-            c.g().centeredText(c.font(), Component.translatable(ManualStrings.CONTENTS).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
+            centered(c.g(), c.font(), Component.translatable(ManualStrings.CONTENTS).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
             int yy = y + 16;
             for (Manual.Chapter ch : this.chapters) {
                 boolean hover = c.over(x, yy, W, ROW - 1);
@@ -903,7 +947,7 @@ final class ManualPages {
         pages.add(first);
         for (Manual.PageSpec spec : mergeMachines(entry.pages())) {
             boolean opening = first.parts.isEmpty();
-            for (GraphicPage graphic : graphics(spec, opening ? entry.title() : null)) {
+            for (GraphicPage graphic : graphics(font, spec, opening ? entry.title() : null)) {
                 put(pages, graphic);
             }
             flow(pages, ManualText.lines(font, spec.text(), W));
@@ -931,31 +975,46 @@ final class ManualPages {
 
     /** Flows text lines into the room left on the current page and on as many new pages as they need. */
     private static void flow(List<FlowPage> pages, List<@Nullable FormattedCharSequence> lines) {
-        int start = 0;
-        while (start < lines.size()) {
+        // Paragraphs (runs of lines between the gap markers) stay whole: one that does not fit in the room left moves
+        // to the next page, leaving a gap; only a paragraph taller than a whole page is split.
+        List<List<@Nullable FormattedCharSequence>> paragraphs = new ArrayList<>();
+        List<@Nullable FormattedCharSequence> current = new ArrayList<>();
+        for (FormattedCharSequence line : lines) {
+            if (line == null) {
+                if (!current.isEmpty()) {
+                    paragraphs.add(current);
+                    current = new ArrayList<>();
+                }
+            } else {
+                current.add(line);
+            }
+        }
+        if (!current.isEmpty()) {
+            paragraphs.add(current);
+        }
+        for (List<@Nullable FormattedCharSequence> para : paragraphs) {
             FlowPage page = pages.get(pages.size() - 1);
-            if (lines.get(start) == null && page.parts.isEmpty()) {
-                start++;                                           // no page starts with a paragraph gap
-                continue;
+            int h = para.size() * LINE;
+            if (h > page.room() && !page.parts.isEmpty() && h <= H) {
+                page = new FlowPage();
+                pages.add(page);
             }
-            int take = fit(lines, start, page.room());
-            // Never leave a paragraph's first line alone at the foot of a page.
-            if (take < lines.size() && take - start >= 2 && lines.get(take) != null && lines.get(take - 2) == null) {
-                take -= 2;
-            } else if (take < lines.size() && take - start == 1 && !page.parts.isEmpty() && lines.get(take) != null) {
-                take = start;                                      // a section's first line alone under something else
-            }
-            if (take == start) {
-                if (page.parts.isEmpty()) {
-                    take = start + 1;                              // a line taller than a page: place it anyway
-                } else {
-                    pages.add(new FlowPage());
+            int start = 0;
+            while (start < para.size()) {
+                int take = Math.max(start + (page.parts.isEmpty() ? 1 : 0), Math.min(para.size(), start + page.room() / LINE));
+                if (take == start) {
+                    page = new FlowPage();
+                    pages.add(page);
                     continue;
                 }
+                List<@Nullable FormattedCharSequence> part = new ArrayList<>(para.subList(start, take));
+                page.add(null, part, part.size() * LINE);
+                start = take;
+                if (start < para.size()) {
+                    page = new FlowPage();
+                    pages.add(page);
+                }
             }
-            List<@Nullable FormattedCharSequence> part = new ArrayList<>(lines.subList(start, take));
-            page.add(null, part, linesHeight(part));
-            start = take;
         }
     }
 
@@ -979,33 +1038,19 @@ final class ManualPages {
         return out;
     }
 
-    /** How many lines from {@code start} fit in {@code room} pixels; returns the end index. */
-    private static int fit(List<@Nullable FormattedCharSequence> lines, int start, int room) {
-        int h = 0, i = start;
-        while (i < lines.size()) {
-            int lh = lines.get(i) == null ? GAP : LINE;
-            if (h + lh > room) {
-                break;
-            }
-            h += lh;
-            i++;
-        }
-        return i;
-    }
-
     /** The picture or recipe pages a spec draws (several when there are many recipes). */
-    private static List<GraphicPage> graphics(Manual.PageSpec spec, @Nullable String openingTitle) {
+    private static List<GraphicPage> graphics(Font font, Manual.PageSpec spec, @Nullable String openingTitle) {
         if (spec instanceof Manual.SpotlightSpec s) {
             String name = s.title() != null ? s.title() : new ItemStack(s.item()).getHoverName().getString();
-            return List.of(new SpotlightPage(s.item(), s.title(), name.equals(openingTitle)));
+            return List.of(new SpotlightPage(font, s.item(), s.title(), name.equals(openingTitle)));
         }
         if (spec instanceof Manual.CraftingSpec s) {
             List<GraphicPage> out = new ArrayList<>();
             for (RecipeDisplay d : ClientRecipes.crafting(s.item(), s.smelting())) {
-                out.add(new CraftingPage(d, new ItemStack(s.item()).getHoverName()));
+                out.add(new CraftingPage(font, d, new ItemStack(s.item()).getHoverName()));
             }
             if (out.isEmpty()) {
-                out.add(new SpotlightPage(s.item(), null, false));
+                out.add(new SpotlightPage(font, s.item(), null, false));
             }
             return out;
         }
@@ -1029,18 +1074,18 @@ final class ManualPages {
             Component heading = Component.literal(machineName(group.kind()));
             List<GraphicPage> out = new ArrayList<>();
             List<MachineRow> page = new ArrayList<>();
-            int h = 14;
+            int h = headingH(font, heading);
             for (MachineRow row : rows) {
                 if (!page.isEmpty() && h + row.height() + 4 > H) {
-                    out.add(new MachinePage(heading, page));
+                    out.add(new MachinePage(font, heading, page));
                     page = new ArrayList<>();
-                    h = 14;
+                    h = headingH(font, heading);
                 }
                 page.add(row);
                 h += row.height() + 4;
             }
             if (!page.isEmpty() || out.isEmpty()) {
-                out.add(new MachinePage(heading, page));
+                out.add(new MachinePage(font, heading, page));
             }
             return out;
         }

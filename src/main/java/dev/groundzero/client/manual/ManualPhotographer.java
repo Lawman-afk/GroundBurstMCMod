@@ -56,6 +56,8 @@ public final class ManualPhotographer {
         SHOTS.add(new Shot("processing/chemical_plant", 3, null));
         SHOTS.add(new Shot("processing", 0, null));
         SHOTS.add(new Shot("nuclear/reprocessing", 0, null));
+        SHOTS.add(new Shot("safety/decontamination_shower", 0, null));
+        SHOTS.add(new Shot("processing/exotic_matter_fabricator", 0, null));
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
     }
 
@@ -91,9 +93,12 @@ public final class ManualPhotographer {
         }
         Shot next = SHOTS.poll();
         if (next == null) {
-            if (number > 0) {
+            if (number > 0 && !(mc.gui.screen() instanceof FieldManualScreen)) {
                 GroundZero.LOGGER.info("Field Manual shots done");
                 mc.stop();
+            } else if (number > 0) {
+                mc.gui.setScreen(null);                         // the last shot is saving; quit on the next round
+                wait = 20;
             }
             return;
         }
