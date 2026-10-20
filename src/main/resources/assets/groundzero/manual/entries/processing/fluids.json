@@ -7,6 +7,7 @@
     "groundzero:fluid_pipe",
     "groundzero:pressurized_fluid_pipe",
     "groundzero:fluid_tank",
+    "groundzero:creative_fluid_tank",
     "groundzero:empty_canister",
     "groundzero:empty_gas_canister"
   ],
@@ -17,7 +18,11 @@
     },
     {
       "type": "text",
-      "text": "A **Fluid Tank** holds 16,000 mB. Tanks that touch join into one when they fill a box with a square base up to 3x3 and up to 5 high.\n\n**Canisters** carry 1,000 mB of a liquid, **gas canisters** 1,000 mB of a gas; right-click a machine with one to pour it in, sneak-right-click with an empty one to fill it. Liquids also fit in buckets; spilled acids burn and napalm ignites."
+      "text": "A **Fluid Tank** holds 16,000 mB. Tanks that touch join into one when they fill a box with a square base up to 3x3 and up to 5 high.\n\n**Canisters** carry 1,000 mB of a liquid, **gas canisters** 1,000 mB of a gas; right-click a machine with one to pour it in, sneak-right-click with an empty one to fill it. The [Canning Machine](processing/canning_machine) fills and empties them automatically. Liquids also fit in buckets; spilled acids burn and napalm ignites."
+    },
+    {
+      "type": "text",
+      "text": "The **Creative Fluid Tank** (creative only) never runs dry: pour any fluid in and buckets, canisters and pipes can draw it forever. Pouring in a different fluid switches it over; sneak-right-click it with an empty hand to clear it."
     },
     {
       "type": "crafting",

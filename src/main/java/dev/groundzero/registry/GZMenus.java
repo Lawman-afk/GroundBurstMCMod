@@ -29,6 +29,7 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CIRCUIT_FABRICATOR = machine("circuit_fabricator", () -> MachineLayouts.CIRCUIT_FABRICATOR);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> GAS_CENTRIFUGE = machine("gas_centrifuge", () -> MachineLayouts.GAS_CENTRIFUGE);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> FUSION_FUEL_SYNTHESIZER = machine("fusion_fuel_synthesizer", () -> MachineLayouts.FUSION_FUEL_SYNTHESIZER);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CANNING_MACHINE = machine("canning_machine", () -> MachineLayouts.CANNING_MACHINE);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> EXOTIC_MATTER_FABRICATOR = machine("exotic_matter_fabricator", () -> MachineLayouts.EXOTIC_MATTER_FABRICATOR);
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> DIESEL_GENERATOR = machine("diesel_generator", () -> MachineLayouts.DIESEL_GENERATOR);

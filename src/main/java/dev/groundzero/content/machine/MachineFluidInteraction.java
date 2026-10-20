@@ -90,7 +90,8 @@ public final class MachineFluidInteraction {
         Level level = event.getLevel();
         BlockState state = level.getBlockState(event.getPos());
         MachineBlockEntity machine = machineAt(level, event.getPos(), state);
-        if (machine != null && !machine.tanks().isEmpty() || state.getBlock() instanceof dev.groundzero.content.fluid.FluidTankBlock) {
+        if (machine != null && !machine.tanks().isEmpty() || state.getBlock() instanceof dev.groundzero.content.fluid.FluidTankBlock
+                || state.getBlock() instanceof dev.groundzero.content.fluid.CreativeFluidTankBlock) {
             event.setUseBlock(TriState.TRUE);
             event.setUseItem(TriState.FALSE);
         }

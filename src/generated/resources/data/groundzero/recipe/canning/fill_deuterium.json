@@ -1,0 +1,24 @@
+{
+  "type": "groundzero:canning",
+  "energy_per_tick": 20,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:deuterium"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:empty_gas_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundzero:deuterium_canister"
+      }
+    }
+  ],
+  "time": 40
+}

@@ -419,7 +419,7 @@ Place it on a water source block and power it (20 FE a tick): it draws 50 mB of 
 ])
 
 entry("processing/fluids", "Pipes, tanks and canisters", "fluid_pipe", ["copper_fluid_pipe", "fluid_pipe", "pressurized_fluid_pipe", "fluid_tank",
-                                                                         "empty_canister", "empty_gas_canister"], [
+                                                                         "creative_fluid_tank", "empty_canister", "empty_gas_canister"], [
     text("""
 Machines push fluids out of faces whose fluid switch is on with auto-eject, and pipes carry them. A pipe side set to **Pull** with the [Wrench](getting_started/wrench) draws fluid out of the tank or machine it touches.
 
@@ -428,13 +428,29 @@ A run carries as much as its weakest pipe: copper 150, steel 600, pressurized 2,
     text("""
 A **Fluid Tank** holds 16,000 mB. Tanks that touch join into one when they fill a box with a square base up to 3x3 and up to 5 high.
 
-**Canisters** carry 1,000 mB of a liquid, **gas canisters** 1,000 mB of a gas; right-click a machine with one to pour it in, sneak-right-click with an empty one to fill it. Liquids also fit in buckets; spilled acids burn and napalm ignites.
+**Canisters** carry 1,000 mB of a liquid, **gas canisters** 1,000 mB of a gas; right-click a machine with one to pour it in, sneak-right-click with an empty one to fill it. The [Canning Machine](processing/canning_machine) fills and empties them automatically. Liquids also fit in buckets; spilled acids burn and napalm ignites.
+"""),
+    text("""
+The **Creative Fluid Tank** (creative only) never runs dry: pour any fluid in and buckets, canisters and pipes can draw it forever. Pouring in a different fluid switches it over; sneak-right-click it with an empty hand to clear it.
 """),
     craft("fluid_pipe"),
     craft("copper_fluid_pipe"),
     craft("pressurized_fluid_pipe"),
     craft("fluid_tank"),
     machine("pressing", "", item="empty_canister"),
+])
+
+entry("processing/canning_machine", "Canning Machine", "canning_machine", ["canning_machine"], [
+    spot("canning_machine", """
+Fills and empties canisters, 1,000 mB at a time. Put an **empty canister** (liquids) or **gas canister** (gases) in and it fills from the **supply tank** on the left; put a filled canister in and it is poured into the **catch tank** on the right. Draws 20 FE a tick.
+"""),
+    text("""
+Pipes and buckets fill the supply tank; pipes, buckets and auto-eject drain the catch tank. It works for every fluid that has a canister, so a line of them can bottle a [Chemical Plant](processing/chemical_plant)'s output for later use.
+"""),
+    craft("canning_machine"),
+    machine("canning", "", item="sulfuric_acid_canister"),
+    machine("canning", "", item="deuterium_canister"),
+    machine("canning", "", fluid="sulfuric_acid"),
 ])
 
 entry("processing/chemical_plant", "Chemical Plant", "chemical_plant", ["chemical_plant", "chemical_plant_spawner", "sulfuric_acid_canister",

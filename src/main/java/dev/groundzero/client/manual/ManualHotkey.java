@@ -7,13 +7,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.groundzero.GroundZero;
 import dev.groundzero.content.manual.GZManual;
 import dev.groundzero.content.manual.ManualStrings;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
@@ -22,11 +20,11 @@ import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEven
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 /**
  * Client wiring for the Field Manual: content loading, the 3D structure view, opening the book from its item, and
- * the tooltip key that opens the entry for the item under the mouse in any screen.
+ * the key (H by default) that opens the entry for the item under the mouse in any screen. Items carry no tooltip
+ * line for it: the manual's first entry explains the key.
  */
 public final class ManualHotkey {
     private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(GroundZero.id("groundzero"));
@@ -41,7 +39,6 @@ public final class ManualHotkey {
         });
         modBus.addListener((RegisterPictureInPictureRenderersEvent e) -> e.register(StructureView.State.class, StructureView.Renderer::new));
         modBus.addListener((AddClientReloadListenersEvent e) -> e.addListener(GroundZero.id("field_manual"), new Manual.Loader()));
-        NeoForge.EVENT_BUS.addListener(ManualHotkey::tooltip);
         NeoForge.EVENT_BUS.addListener(ManualHotkey::keyInScreen);
         GZManual.open = ManualHotkey::open;
         ManualPhotographer.register();
@@ -56,16 +53,6 @@ public final class ManualHotkey {
         Minecraft mc = Minecraft.getInstance();
         Screen current = mc.gui.screen() instanceof FieldManualScreen ? null : mc.gui.screen();
         mc.gui.setScreen(new FieldManualScreen(current, entry));
-    }
-
-    private static void tooltip(ItemTooltipEvent event) {
-        if (KEY.isUnbound() || Manual.entryFor(event.getItemStack().getItem()) == null || event.getItemStack().is(GZManual.FIELD_MANUAL.get())) {
-            return;
-        }
-        if (Minecraft.getInstance().gui.screen() instanceof FieldManualScreen) {
-            return;                                                   // the book says "Click" instead
-        }
-        event.getToolTip().add(Component.translatable(ManualStrings.TOOLTIP, KEY.getTranslatedKeyMessage()).withStyle(ChatFormatting.DARK_GRAY));
     }
 
     private static void keyInScreen(ScreenEvent.KeyPressed.Pre event) {

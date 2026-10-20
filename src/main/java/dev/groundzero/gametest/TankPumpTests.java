@@ -1,5 +1,6 @@
 package dev.groundzero.gametest;
 
+import dev.groundzero.content.fluid.CreativeFluidTankBlockEntity;
 import dev.groundzero.content.fluid.FluidPipeBlock;
 import dev.groundzero.content.fluid.FluidTankBlockEntity;
 import dev.groundzero.content.fluid.GZFluids;
@@ -37,6 +38,7 @@ final class TankPumpTests {
         GZGameTests.test("wrench_cycles_pipe_and_cable_sides", GZGameTests.FLOOR_16, 20, TankPumpTests::wrench);
         GZGameTests.test("pump_feeds_separator_through_pipe", GZGameTests.FLOOR_16, 100, TankPumpTests::pump);
         GZGameTests.test("gas_cloud_rises_and_pools", GZGameTests.FLOOR_16, 200, TankPumpTests::gasRises);
+        GZGameTests.test("creative_tank_is_endless", GZGameTests.FLOOR_16, 20, TankPumpTests::creativeTank);
     }
 
     private static void tankAt(GameTestHelper helper, BlockPos rel) {
@@ -195,5 +197,39 @@ final class TankPumpTests {
             helper.assertTrue(total >= 6 && helper.getBlockState(new BlockPos(4, 5, 5)).is(GZFluids.DEUTERIUM.cloud().get()),
                     "it pools under the ceiling and spreads sideways, total " + total);
         });
+    }
+
+    /** The creative tank takes the first fluid, is then always full, and gives any amount without running down. */
+    private static void creativeTank(GameTestHelper helper) {
+        BlockPos rel = new BlockPos(4, 2, 4);
+        helper.setBlock(rel, GZFluids.CREATIVE_FLUID_TANK.block().get());
+        CreativeFluidTankBlockEntity be = helper.getBlockEntity(rel, CreativeFluidTankBlockEntity.class);
+        var h = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(rel), Direction.NORTH);
+        helper.assertTrue(h != null, "creative tank exposes a fluid handler");
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(h.extract(FluidResource.of(Fluids.WATER), 1000, tx) == 0, "an empty creative tank gives nothing");
+        }
+        helper.assertTrue(fill(helper, rel, 1000) == 1000, "the first fluid goes in");
+        helper.assertTrue(be.tank().fluid().getFluid() == Fluids.WATER && be.tank().fluid().getAmount() == CreativeFluidTankBlockEntity.CAPACITY,
+                "after the first fill the tank is full of that fluid");
+        for (int i = 0; i < 3; i++) {
+            try (var tx = Transaction.openRoot()) {
+                helper.assertTrue(h.extract(FluidResource.of(Fluids.WATER), 50_000, tx) == 50_000, "the whole request comes out");
+                tx.commit();
+            }
+        }
+        helper.assertTrue(be.tank().fluid().getAmount() == CreativeFluidTankBlockEntity.CAPACITY, "drawing never runs it down");
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(h.insert(FluidResource.of(Fluids.LAVA), 1000, tx) == 0, "a full creative tank takes nothing more");
+            helper.assertTrue(h.extract(FluidResource.of(Fluids.LAVA), 1000, tx) == 0, "it only gives its own fluid");
+        }
+        be.tank().clear();
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(h.insert(FluidResource.of(Fluids.LAVA), 1, tx) == 1, "a cleared tank takes a new fluid");
+            tx.commit();
+        }
+        helper.assertTrue(be.tank().fluid().getFluid() == Fluids.LAVA && be.tank().fluid().getAmount() == CreativeFluidTankBlockEntity.CAPACITY,
+                "and fills with it");
+        helper.succeed();
     }
 }

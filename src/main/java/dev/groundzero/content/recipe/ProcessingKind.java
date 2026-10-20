@@ -12,7 +12,8 @@ public enum ProcessingKind {
     CRYO_CONDENSING("cryo_condensing"),
     FABRICATING("fabricating"),
     EXOTIC_FABRICATING("exotic_fabricating"),
-    ACCELERATING("accelerating");
+    ACCELERATING("accelerating"),
+    CANNING("canning");
 
     private final String id;
 

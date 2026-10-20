@@ -115,6 +115,7 @@ public class GZRecipeProvider extends RecipeProvider {
         pressing();
         parts();
         gases();
+        canning();
         chemistry();
         slice5();
         slice6();
@@ -205,6 +206,24 @@ public class GZRecipeProvider extends RecipeProvider {
             List<ProcessingRecipe.Output> outputs, List<FluidStackTemplate> fluidOutputs, int time, int energyPerTick) {
         ProcessingRecipe recipe = new ProcessingRecipe(kind, inputs, Optional.ofNullable(catalyst), fluids, outputs, fluidOutputs, time, energyPerTick);
         output.accept(ResourceKey.create(Registries.RECIPE, GroundZero.id(name)), recipe, null);
+    }
+
+    /** Canning Machine (DESIGN.md §8): every fluid with a canister can be canned and poured out again, 1000 mB a canister. */
+    private void canning() {
+        int fe = dev.groundzero.content.machine.CanningMachineBlockEntity.ENERGY_PER_TICK;
+        int time = dev.groundzero.content.machine.CanningMachineBlockEntity.TIME;
+        for (ChemFluid f : GZFluids.all()) {
+            machine(ProcessingKind.CANNING, "canning/fill_" + f.name(), List.of(in(Ingredient.of(f.emptyCanister().get()), 1)), null,
+                    List.of(fluid(f, 1_000)), List.of(out(f.canister().get(), 1)), List.of(), time, fe);
+            machine(ProcessingKind.CANNING, "canning/empty_" + f.name(), List.of(in(Ingredient.of(f.canister().get()), 1)), null,
+                    List.of(), List.of(out(f.emptyCanister().get(), 1)), List.of(fluidOut(f, 1_000)), time, fe);
+        }
+        shaped(RecipeCategory.REDSTONE, GZMachines.CANNING_MACHINE.item(), 1)
+                .define('P', GZTags.commonItem("plates/steel")).define('E', GZParts.EMPTY_CANISTER).define('G', Items.GLASS)
+                .define('F', GZParts.MACHINE_FRAME).define('B', GZTags.BASIC_CIRCUITS)
+                .pattern("PEP").pattern("GFG").pattern(" B ")
+                .unlockedBy(getHasName(GZParts.EMPTY_CANISTER), has(GZParts.EMPTY_CANISTER))
+                .save(output);
     }
 
     /** Electrolytic Separator and Cryogenic Condenser (DESIGN.md §6): deuterium, liquid oxygen, liquid nitrogen. */

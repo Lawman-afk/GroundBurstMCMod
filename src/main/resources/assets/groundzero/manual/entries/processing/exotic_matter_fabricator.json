@@ -1,7 +1,7 @@
 {
   "title": "Exotic Matter Fabricator",
   "icon": "groundzero:exotic_matter_fabricator",
-  "order": 11,
+  "order": 12,
   "items": [
     "groundzero:exotic_matter_fabricator",
     "groundzero:stabilised_exotic_matter",

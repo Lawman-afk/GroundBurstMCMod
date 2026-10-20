@@ -55,6 +55,7 @@ public class GroundZeroClient {
         event.register(GZMenus.CIRCUIT_FABRICATOR.get(), MachineScreen::new);
         event.register(GZMenus.GAS_CENTRIFUGE.get(), MachineScreen::new);
         event.register(GZMenus.FUSION_FUEL_SYNTHESIZER.get(), MachineScreen::new);
+        event.register(GZMenus.CANNING_MACHINE.get(), MachineScreen::new);
         event.register(GZMenus.EXOTIC_MATTER_FABRICATOR.get(), MachineScreen::new);
     }
 
@@ -83,8 +84,10 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.CIRCUIT_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CIRCUIT_FABRICATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.GAS_CENTRIFUGE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.GAS_CENTRIFUGE.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.CANNING_MACHINE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CANNING_MACHINE.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.EXOTIC_MATTER_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.EXOTIC_MATTER_FABRICATOR.get(), 2));
-        event.registerBlockEntityRenderer(GZBlockEntities.FLUID_TANK.get(), ctx -> new dev.groundzero.client.render.FluidTankRenderer());
+        event.registerBlockEntityRenderer(GZBlockEntities.FLUID_TANK.get(), ctx -> new dev.groundzero.client.render.FluidTankRenderer<>());
+        event.registerBlockEntityRenderer(GZBlockEntities.CREATIVE_FLUID_TANK.get(), ctx -> new dev.groundzero.client.render.FluidTankRenderer<>());
         // The formed Chemical Plant spans 2x2x2 from its controller in any rotation.
         event.registerBlockEntityRenderer(GZBlockEntities.CHEMICAL_PLANT.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CHEMICAL_PLANT.get(), 2, 1));
     }

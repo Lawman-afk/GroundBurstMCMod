@@ -174,43 +174,65 @@ def widgets(t: Tex) -> None:
     glyph(t, lens, 2, 322, FADED)
 
 
+# The item is vanilla's book recoloured (the user's request: our manual's look on vanilla's book). Region map of the
+# vanilla book, one letter per pixel:
+#   a outline   b/d cover rim   c cover face   e cover edge and the cover's embossed lines   i dark underside
+#   f/g/h/j page block (shade, mid, dark, light)
+BOOK_ROWS = [
+    "................",
+    "........aaa.....",
+    "......aabcda....",
+    "....aabccccca...",
+    "..aabcccecccca..",
+    "aabdcccccecccda.",
+    "abdcceccccecccea",
+    "aabccceccccceef.",
+    "aagbcccccceehgh.",
+    "ibjgbdcceehgghae",
+    ".ibjgbeehgghaeii",
+    "..ibjghgghaeii..",
+    "...ibjgheeii....",
+    "....ibeeii......",
+    ".....iii........",
+    "................",
+]
+# The embossed lines vanilla draws on its cover; ours is plain cloth, so these are cover face.
+EMBOSSED = {(8, 4), (9, 5), (10, 6), (5, 6), (6, 7)}
+# Art on the cover, drawn as small parallelograms with the cover's own edges (2:1 up to the right, 1:1 down to the
+# right) so they lie flat on it: a white label plate with a typed line, and a yellow-and-black hazard band along the
+# edge by the pages.
+LABEL = [(6.0, 5.6), (10.2, 3.5), (12.4, 5.7), (8.2, 7.8)]
+LABEL_LINE = [(7.6, 5.8), (10.2, 4.5), (10.9, 5.2), (8.3, 6.5)]
+BAND = [(2.0, 6.4), (4.8, 5.0), (9.2, 9.4), (6.4, 10.8)]
+
+
+def _inside(poly, x: float, y: float) -> bool:
+    inside = False
+    for (x0, y0), (x1, y1) in zip(poly, poly[1:] + poly[:1]):
+        if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+            inside = not inside
+    return inside
+
+
 def item_sprite() -> Tex:
-    """The Field Manual item: an olive hardcover, spine to the left, cream page edges, a typed label plate and a
-    yellow-and-black hazard band across the cover."""
-    rows = [
-        "................",
-        "..1222222222....",
-        ".122333333332p..",
-        ".123333333332pp.",
-        ".123LLLLLL332pp.",
-        ".123LkkkkL332pp.",
-        ".123LLLLLL332pp.",
-        ".123LkkkLL332pp.",
-        ".123LLLLLL332pp.",
-        ".123333333332pp.",
-        ".12yyyyyyyyy2pp.",
-        ".12yyyyyyyyy2pp.",
-        ".123333333332pp.",
-        ".122222222222pp.",
-        "..11111111111pP.",
-        "...........PPP..",
-    ]
+    """The Field Manual item: vanilla's book in olive cloth with cream pages; on the cover a white label plate with a
+    typed line and a yellow-and-black hazard band, both laid along the slanted cover."""
     t = Tex(16, 16)
-    for y, row in enumerate(rows):
+    for y, row in enumerate(BOOK_ROWS):
         for x, ch in enumerate(row):
-            if ch.isdigit():
-                t.px(x, y, OLIVE[int(ch)])
-            elif ch == "p":
-                t.px(x, y, PAPER[5] if y % 2 else PAPER[4])
-            elif ch == "P":
-                t.px(x, y, PAPER[2])
-            elif ch == "L":
-                t.px(x, y, PAPER[5])
-            elif ch == "k":
-                t.px(x, y, FADED)
-            elif ch == "y":
-                t.px(x, y, P.HAZARD_YELLOW.base if (x + y) % 4 < 2 else P.HAZARD_BLACK.base)
-    t.vline(3, 2, 11, OLIVE[2])                                                    # the spine's hinge
+            if ch == ".":
+                continue
+            if ch == "c" or (ch == "e" and (x, y) in EMBOSSED):
+                colour = OLIVE[4] if x + 2 * y < 15 else OLIVE[3]                  # lit toward the top corner
+                cx, cy = x + 0.5, y + 0.5
+                if _inside(LABEL, cx, cy):
+                    colour = FADED if _inside(LABEL_LINE, cx, cy) else PAPER[5]
+                elif _inside(BAND, cx, cy):
+                    colour = P.HAZARD_YELLOW.base if (x + y) // 2 % 2 == 0 else P.HAZARD_BLACK.base
+            else:
+                colour = {"a": OLIVE[1], "b": OLIVE[2], "d": OLIVE[2], "e": OLIVE[1], "i": OLIVE[0],
+                          "f": PAPER[2], "g": PAPER[5], "h": PAPER[3], "j": PAPER[6]}[ch]
+            t.px(x, y, colour)
     return t
 
 

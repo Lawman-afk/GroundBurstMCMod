@@ -132,6 +132,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(40, 22, 100, 24), 8, 6, List.of(),
             List.of());
 
+    public static final MachineLayout CANNING_MACHINE = new MachineLayout(
+            GroundZero.id("textures/gui/machine/canning_machine.png"), 176, 166, List.of(new MachineLayout.Pos(56, 35), new MachineLayout.Pos(116, 35)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(82, 58, 18, 18), 180, 56,
+            null, 8, 6, List.of(new MachineLayout.Gauge(new MachineLayout.Rect(28, 20, 12, 42), new MachineLayout.Rect(28, 64, 12, 10)), new MachineLayout.Gauge(new MachineLayout.Rect(146, 20, 12, 42), new MachineLayout.Rect(146, 64, 12, 10))),
+            List.of());
+
     public static final MachineLayout BATTERY_CHARGER = new MachineLayout(
             GroundZero.id("textures/gui/machine/battery_charger.png"), 176, 166, List.of(new MachineLayout.Pos(56, 35), new MachineLayout.Pos(116, 35)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

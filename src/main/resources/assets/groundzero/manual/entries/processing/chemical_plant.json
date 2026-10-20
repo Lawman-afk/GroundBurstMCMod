@@ -1,7 +1,7 @@
 {
   "title": "Chemical Plant",
   "icon": "groundzero:chemical_plant",
-  "order": 7,
+  "order": 8,
   "items": [
     "groundzero:chemical_plant",
     "groundzero:chemical_plant_spawner",

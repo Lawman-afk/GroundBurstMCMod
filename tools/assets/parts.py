@@ -311,8 +311,9 @@ def circuit_board() -> None:
 def machine_frame() -> None:
     """A welded cube of steel angle seen from above-left: lit near edges, darker far edges, yellow gussets."""
     t = Tex(16, 16)
-    A, B, C, D = (8, 1), (15, 4), (8, 7), (1, 4)          # top diamond (A far, C near)
-    drop = 8
+    # Top diamond (A far, C near) on true 2:1 slopes, one pixel in from every edge so the outline fits the sprite.
+    A, B, C, D = (8, 1), (14, 4), (8, 7), (2, 4)
+    drop = 7
     Ab, Bb, Cb, Db = ((x, y + drop) for x, y in (A, B, C, D))
     far = STEEL[2]
     for p0, p1 in ((A, Ab), (Db, Ab), (Ab, Bb)):           # hidden edges first, dark
@@ -322,10 +323,6 @@ def machine_frame() -> None:
                       (Db, Cb, STEEL[3]), (Cb, Bb, STEEL[2])):
         t.line(*p0, *p1, c)
     pts = {(x, y) for y in range(16) for x in range(16) if t.get(x, y)[3]}
-    # Thicken the near edges so the frame reads at 1x.
-    for (x, y) in list(pts):
-        if (x, y + 1) not in pts and y < 15 and (x + y) % 1 == 0 and x in (1, 8, 15):
-            pass
     for y in range(C[1], Cb[1] + 1):
         t.px(C[0] + 1, y, STEEL[3])
         pts.add((C[0] + 1, y))
@@ -441,43 +438,76 @@ def servo() -> None:
 DIE_STEEL = fixed("die_steel", "#101318", "#1f242b", "#2f363f", "#434c57", "#5e6874", "#86919c", "#c4ccd4")
 
 
-def die(name: str, band, cavity) -> None:
-    """A hardened tool-steel die block (isometric) with its cavity cut into the top face and a colour band
-    painted round its flank so each die is recognisable at a glance."""
+# Die block geometry (true 2:1 isometric): a square block A x A, H tall, its top face a diamond centred in the sprite
+# with a pixel to spare on every side for the outline. Screen x = OX + u - v, y = OY + (u + v) / 2 - z.
+DIE_A, DIE_H = 6.5, 3.6
+DIE_OX, DIE_OY = 8.0, 4.8
+
+
+def _die_region(px: float, py: float) -> tuple[str, float, float]:
+    """Which face of the die block a pixel centre lies on ('top', 'left', 'right' or ''), with its face coordinates."""
+    a, h = DIE_A, DIE_H
+    # Top face at z = h.
+    d, s_ = px - DIE_OX, 2 * (py - DIE_OY + h)
+    u, v = (s_ + d) / 2, (s_ - d) / 2
+    if 0 <= u <= a and 0 <= v <= a:
+        return "top", u, v
+    # Left front face: v = a.
+    u = px - DIE_OX + a
+    z = DIE_OY + (u + a) / 2 - py
+    if 0 <= u <= a and 0 <= z <= h:
+        return "left", u, z
+    # Right front face: u = a.
+    v = DIE_OX + a - px
+    z = DIE_OY + (a + v) / 2 - py
+    if 0 <= v <= a and 0 <= z <= h:
+        return "right", v, z
+    return "", 0, 0
+
+
+def die(name: str, band, inside) -> None:
+    """A hardened tool-steel die block: a square slab seen from above at 2:1 with its cavity cut into the centre of the
+    top face and a colour band round its flanks so each die is recognisable at a glance. {@code inside(u, v)} says
+    whether a point of the top face (0..DIE_A each way) is part of the cavity."""
     t = Tex(16, 16)
-    faces = iso_bar(t, 7.5, 7.0, 8, 7, 4, DIE_STEEL)
-    pts = set().union(*faces.values())
-    top = faces["top"]
-    for (x, y) in top:
-        if (x, y - 1) not in top:
-            t.px(x, y, DIE_STEEL.highlight)
-    for (x, y) in faces["front"] | faces["end"]:
-        ys = sorted(yy for xx, yy in faces["front"] | faces["end"] if xx == x)
-        if ys and ys[0] + 1 <= y <= ys[0] + 2:
-            t.px(x, y, band[4] if (x, y) in faces["front"] else band[3])
-    cx = round(sum(x for x, _ in top) / len(top))
-    cy = round(sum(y for _, y in top) / len(top))
-    for dx, dy, c in cavity:
-        t.px(cx + dx, cy + dy, {"#": DIE_STEEL.outline, "+": DIE_STEEL[2], "-": DIE_STEEL[5]}[c])
+    pts = set()
+    for y in range(16):
+        for x in range(16):
+            face, f1, f2 = _die_region(x + 0.5, y + 0.5)
+            if not face:
+                continue
+            pts.add((x, y))
+            if face == "top":
+                u, v = f1, f2
+                colour = DIE_STEEL[5] if min(u, v) < 0.8 else DIE_STEEL[4]       # lit far rim
+                if inside(u, v):
+                    # In the cavity you see its far walls (lit) and its dark floor.
+                    wall = not inside(u - 0.9, v) or not inside(u, v - 0.9)
+                    colour = DIE_STEEL[3] if wall else DIE_STEEL[1]
+                elif inside(u - 0.9, v) or inside(u, v - 0.9):
+                    colour = DIE_STEEL[6]                                     # bright lip on the cavity's near edge
+            else:
+                z = f2
+                in_band = 1.0 <= z <= 2.1
+                if face == "left":
+                    colour = band[4] if in_band else DIE_STEEL[3]
+                else:
+                    colour = band[3] if in_band else DIE_STEEL[2]
+            t.px(x, y, colour)
     outline(t, pts, DIE_STEEL.outline)
     save(name, t)
 
 
 def dies() -> None:
-    # Plate die: a long slot along the block's long axis.
-    slot = [(dx, dy, "#") for dx in range(-3, 4) for dy in (dx // 2, dx // 2 - 1)] + [(dx, dx // 2 + 1, "-") for dx in range(-3, 4)]
-    die("plate_die", P.HAZARD_YELLOW, slot)
-    # Rod die: one round bore.
-    bore = [(dx, dy, "#") for dx in range(-1, 2) for dy in range(-1, 1)] + [(-2, 0, "+"), (2, -1, "+"), (-1, 1, "-"), (0, 1, "-"), (1, 1, "-")]
-    die("rod_die", P.WARNING_RED, bore)
+    c = DIE_A / 2
+    # Plate die: a long, narrow slot across the block.
+    die("plate_die", P.HAZARD_YELLOW, lambda u, v: 0.9 <= u <= DIE_A - 0.9 and abs(v - c) <= 1.25)
+    # Rod die: one round bore in the middle.
+    die("rod_die", P.WARNING_RED, lambda u, v: (u - c) ** 2 + (v - c) ** 2 <= 1.7 ** 2)
     # Wire die: three small drawing holes in a row.
-    holes = []
-    for hx, hy in ((-3, -2), (0, 0), (3, 2)):
-        holes += [(hx, hy, "#"), (hx + 1, hy, "#"), (hx, hy + 1, "-"), (hx + 1, hy + 1, "-")]
-    die("wire_die", COPPER, holes)
-    # Canister die: a wide deep cavity.
-    cav = [(dx, dy, "#") for dx in range(-2, 3) for dy in range(-2, 1)] + [(dx, 1, "-") for dx in range(-2, 3)] + [(-3, -1, "+"), (3, -1, "+")]
-    die("canister_die", P.CHERENKOV, cav)
+    die("wire_die", COPPER, lambda u, v: abs(v - c) <= 1.0 and any(abs(u - hu) <= 0.85 for hu in (c - 2.1, c, c + 2.1)))
+    # Canister die: a wide square cavity.
+    die("canister_die", P.CHERENKOV, lambda u, v: abs(u - c) <= 1.85 and abs(v - c) <= 1.85)
 
 
 def build() -> None:

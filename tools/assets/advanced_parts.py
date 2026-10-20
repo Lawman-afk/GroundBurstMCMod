@@ -166,7 +166,7 @@ def capacitor() -> None:
         "................",
         ".....oooooo.....",
         "....o566o65o....",
-        "....o5oooo5o....",
+        "....o56ooo5o....",                # the "+" scored in the top: a 3x3 cross
         "....o665o56o....",
         "....oBBBBWBo....",
         "....oBbBBWBo....",

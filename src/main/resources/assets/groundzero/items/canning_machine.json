@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundzero:item/canning_machine",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

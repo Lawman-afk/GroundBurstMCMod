@@ -66,6 +66,15 @@
     ],
     "subtitle": "subtitles.groundzero.machine.battery_charger"
   },
+  "machine.canning_machine": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:machine/canning_machine"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.machine.canning_machine"
+  },
   "machine.chemical_plant": {
     "sounds": [
       {

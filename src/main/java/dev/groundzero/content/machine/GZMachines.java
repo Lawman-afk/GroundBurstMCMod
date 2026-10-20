@@ -75,6 +75,9 @@ public final class GZMachines {
             p -> new TallMachineBlock(p, GZBlockEntities.DECONTAMINATION_SHOWER, true,
                     Shapes.or(Block.box(0, 0, 0, 16, 1, 16), Block.box(0, 0, 15, 16, 16, 16), Block.box(0, 0, 0, 1, 16, 16), Block.box(15, 0, 0, 16, 16, 16)),
                     Shapes.or(Block.box(0, 14.5, 0, 16, 16, 16), Block.box(0, 0, 15, 16, 16, 16), Block.box(0, 0, 0, 1, 16, 16), Block.box(15, 0, 0, 16, 16, 16))));
+    /** Fills canisters from its supply tank and empties them into its catch tank (see {@link CanningMachineBlockEntity}). */
+    public static final WithItem<MachineBlock> CANNING_MACHINE = machine("canning_machine", "Canning Machine",
+            p -> new MachineBlock(p, GZBlockEntities.CANNING_MACHINE, true, Shapes.block()));
     public static final List<WithItem<dev.groundzero.content.power.CapacitorBankBlock>> CAPACITOR_BANKS = new ArrayList<>();
 
     public static final WithItem<MultiblockControllerBlock> CHEMICAL_PLANT = GZBlocks.register("chemical_plant", "Chemical Plant Controller",

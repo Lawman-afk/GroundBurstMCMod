@@ -23,11 +23,15 @@ def _seg_dist(px: float, py: float, ax: float, ay: float, bx: float, by: float) 
 
 
 def wrench() -> Tex:
+    """The spanner is symmetrical about its own axis (the diagonal x + y = 16 through handle and head): the upper-left
+    half is drawn and mirrored onto the lower-right, then shaded across the axis, lit from the upper left."""
     s = P.STEEL
     head = (10.8, 4.9)
-    shape: dict[tuple[int, int], int] = {}
+    half: dict[tuple[int, int], bool] = {}                   # pixel -> is grip
     for y in range(16):
         for x in range(16):
+            if x + y > 15:
+                continue                                       # the lower-right half comes from the mirror
             cx, cy = x + 0.5, y + 0.5
             d, t = _seg_dist(cx, cy, 3.0, 13.0, 10.0, 6.0)
             in_handle = d <= 1.1
@@ -38,17 +42,17 @@ def wrench() -> Tex:
             across = (hx + hy) / math.sqrt(2)
             in_slot = along > -0.8 and abs(across) <= 1.25
             if (in_handle or in_head) and not in_slot:
-                # Tone: lit from the upper left across the tool, darker toward the lower right.
-                k = 5 if across < -0.8 or (in_handle and (cx - cy) < -9.6) else 4 if across < 0.6 else 3
-                if in_handle and t < 0.3:
-                    k = -1                             # grip
-                shape[(x, y)] = k
+                half[(x, y)] = in_handle and t < 0.3
+    shape = dict(half)
+    for (x, y), grip in half.items():
+        shape[(15 - y, 15 - x)] = grip                       # the mirror image across the axis
     t = Tex(16, 16)
-    for (x, y), k in shape.items():
-        if k < 0:
-            t.px(x, y, P.WARNING_RED[3] if (x + y) % 3 else P.WARNING_RED[4])
+    for (x, y), grip in shape.items():
+        side = (x + y - 15) / math.sqrt(2)                   # signed distance from the axis, negative = lit side
+        if grip:
+            t.px(x, y, P.WARNING_RED[4] if side < 0 else P.WARNING_RED[3])
         else:
-            t.px(x, y, s[k])
+            t.px(x, y, s[5 if side < -1.0 else 4 if side < 0.8 else 3])
     # Outline: dark pixel on every empty neighbour of the shape.
     for (x, y) in list(shape):
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):

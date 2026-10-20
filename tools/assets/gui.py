@@ -195,6 +195,19 @@ LAYOUTS = {
         "readout": (40, 22, 100, 24),
         "inventory": (8, 84),
     },
+    # Canning Machine: the supply tank (left) feeds the filler, poured-out canisters go to the catch tank (right).
+    "canning_machine": {
+        "title": (8, 6),
+        "slots": [("canister", 56, 35), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(28, 20, 12, 42, None, True), (146, 20, 12, 42, None, True)],
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (82, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     # Battery Charger: the arrow fills with the item's charge.
     "battery_charger": {
         "title": (8, 6),
@@ -337,9 +350,10 @@ MEMBRANE_GHOST = ["................", "................", "...##########...", ".
                   "................"]
 
 
-BATTERY_GHOST = ["................", "................", "......####......", ".....#....#.....", "....########....",
-                 "....#......#....", "....#..#...#....", "....#.##...#....", "....#..##..#....", "....#...#..#....",
-                 "....#......#....", "....#......#....", "....########....", "................", "................",
+# The Battery item's outline ("#") and its lightning bolt ("+", a lighter ghost), so the slot shows what goes in it.
+BATTERY_GHOST = ["................", "......####......", "......#..#......", "....########....", "...#........#...",
+                 "...#........#...", "...#....++..#...", "...#...++...#...", "...#..++++..#...", "...#....++..#...",
+                 "...#...++...#...", "...#...+....#...", "...#........#...", "...#........#...", "....########....",
                  "................"]
 
 
@@ -360,6 +374,8 @@ def ghost_slot(rows: list[str]):
             for xx, c in enumerate(row):
                 if c == "#":
                     t.px(x + 1 + xx, y + 1 + yy, PANEL[2])
+                elif c == "+":
+                    t.px(x + 1 + xx, y + 1 + yy, PANEL[3])
     return draw
 
 

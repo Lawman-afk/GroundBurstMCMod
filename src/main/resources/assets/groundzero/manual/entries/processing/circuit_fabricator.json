@@ -1,7 +1,7 @@
 {
   "title": "Circuit Fabricator",
   "icon": "groundzero:circuit_fabricator",
-  "order": 8,
+  "order": 9,
   "items": [
     "groundzero:circuit_fabricator"
   ],

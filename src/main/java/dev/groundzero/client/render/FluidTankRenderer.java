@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import dev.groundzero.content.fluid.FluidTankBlockEntity;
+import dev.groundzero.content.fluid.TankDisplay;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -15,15 +15,17 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * Draws a fluid tank's contents: one translucent box filling the whole (possibly multi-block) tank inside its glass,
- * up to the fill level. Liquids fill from the bottom; gases, being lighter than air, collect from the top down.
+ * up to the fill level. Liquids fill from the bottom; gases, being lighter than air, collect from the top down. Draws the
+ * fluid tank and the creative fluid tank alike (both are {@link TankDisplay}s).
  */
-public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEntity, FluidTankRenderer.State> {
+public class FluidTankRenderer<T extends BlockEntity & TankDisplay> implements BlockEntityRenderer<T, FluidTankRenderer.State> {
     /** Inside the 1 px recessed glass, clear of the frame. */
     private static final float INSET = 1.2f / 16f;
 
@@ -40,21 +42,21 @@ public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEnti
     }
 
     @Override
-    public void extractRenderState(FluidTankBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
+    public void extractRenderState(T be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
         state.fluid = null;
-        if (!be.isController() || be.getLevel() == null) {
+        if (!be.drawsContents() || be.getLevel() == null) {
             return;
         }
-        var f = be.tank().fluid();
+        var f = be.shownFluid();
         if (f.isEmpty()) {
             return;
         }
         state.fluid = f.getFluid();
-        state.fill = Math.min(1f, f.getAmount() / (float) be.tank().capacity());
-        state.width = be.width();
-        state.height = be.height();
+        state.fill = Math.min(1f, f.getAmount() / (float) Math.max(1, be.shownCapacity()));
+        state.width = be.boxWidth();
+        state.height = be.boxHeight();
         state.gas = f.getFluidType().isLighterThanAir();
         int tint = FluidVisuals.tintInWorld(f.getFluid(), be.getLevel(), be.getBlockPos());
         state.color = (state.gas ? 0xA0000000 : 0xD8000000) | (tint & 0xFFFFFF);
@@ -117,8 +119,8 @@ public class FluidTankRenderer implements BlockEntityRenderer<FluidTankBlockEnti
     }
 
     @Override
-    public AABB getRenderBoundingBox(FluidTankBlockEntity be) {
-        return new AABB(be.getBlockPos()).expandTowards(be.width() - 1, be.height() - 1, be.width() - 1);
+    public AABB getRenderBoundingBox(T be) {
+        return new AABB(be.getBlockPos()).expandTowards(be.boxWidth() - 1, be.boxHeight() - 1, be.boxWidth() - 1);
     }
 
     @Override

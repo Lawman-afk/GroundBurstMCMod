@@ -7,6 +7,9 @@ boxes up to 3x3x5, and the block state says which neighbours belong to the same 
   - each of the 8 corner blocks exists when any of its three edges does.
 Bars stop short of the corners (2..14) and corner blocks fill the ends, so no two frame pieces overlap.
 Glass panels sit 1 px in from the block face (behind the frame) and have both faces, so the far side shows too.
+
+The Creative Fluid Tank (creative only, never joins) is the same single block in the creative finish used by the
+creative capacitor bank: a violet frame, gunmetal caps with a violet hatch, brass rivets, the same glass.
 """
 from __future__ import annotations
 
@@ -26,33 +29,35 @@ DIRS = ("north", "south", "east", "west", "up", "down")
 OPP = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
 
 
-def textures() -> None:
+def textures(name: str = NAME, frame_ramp=S, cap_ramp=G, rivet=None, hatch=None) -> None:
+    rivet, hatch = rivet or S, hatch or cap_ramp
     frame = Tex(16, 16)
-    frame.rect(0, 0, 16, 16, S[3])
+    frame.rect(0, 0, 16, 16, frame_ramp[3])
     for i in range(0, 16, 4):
-        frame.px(i, i, S[4])
-    frame.rect(14, 14, 2, 2, G[3])                      # corner block face with a rivet
-    frame.px(14, 14, S[5])
-    frame.save(paths.TEXTURES / "block" / f"{NAME}_frame.png")
+        frame.px(i, i, frame_ramp[4])
+    frame.rect(14, 14, 2, 2, cap_ramp[3])                # corner block face with a rivet
+    frame.px(14, 14, rivet[5])
+    frame.save(paths.TEXTURES / "block" / f"{name}_frame.png")
 
-    glass = Tex(16, 16)
-    for y in range(16):
-        for x in range(16):
-            glass.px(x, y, (196, 214, 222, 46))
-    for k in range(5):                                    # one faint diagonal glint
-        glass.px(4 + k, 9 - k, (235, 245, 250, 70))
-    glass.save(paths.TEXTURES / "block" / f"{NAME}_glass.png")
+    if name == NAME:
+        glass = Tex(16, 16)
+        for y in range(16):
+            for x in range(16):
+                glass.px(x, y, (196, 214, 222, 46))
+        for k in range(5):                                    # one faint diagonal glint
+            glass.px(4 + k, 9 - k, (235, 245, 250, 70))
+        glass.save(paths.TEXTURES / "block" / f"{NAME}_glass.png")
 
     cap = Tex(16, 16)
-    cap.rect(0, 0, 16, 16, G[3])
-    cap.outline(2, 2, 12, 12, G[2])
-    cap.hline(2, 2, 12, G[4])
-    cap.rect(5, 5, 6, 6, G[4])                            # inspection hatch
-    cap.outline(5, 5, 6, 6, G[2])
-    cap.px(7, 7, S[5])
+    cap.rect(0, 0, 16, 16, cap_ramp[3])
+    cap.outline(2, 2, 12, 12, cap_ramp[2])
+    cap.hline(2, 2, 12, cap_ramp[4])
+    cap.rect(5, 5, 6, 6, hatch[4])                        # inspection hatch
+    cap.outline(5, 5, 6, 6, hatch[2])
+    cap.px(7, 7, rivet[5])
     for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
-        cap.px(x, y, S[5])
-    cap.save(paths.TEXTURES / "block" / f"{NAME}_cap.png")
+        cap.px(x, y, rivet[5])
+    cap.save(paths.TEXTURES / "block" / f"{name}_cap.png")
 
 
 def face(tex: str, uv=(0, 0, 16, 16), cull: str | None = None) -> dict:
@@ -128,9 +133,28 @@ def models() -> None:
     write_json(paths.MODELS / "item" / f"{NAME}.json", {"parent": "minecraft:block/block", "textures": tex,
                                                         "render_type": "minecraft:translucent", "elements": item_elements})
     write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{NAME}"}})
+    creative_models(item_elements)
+
+
+def creative_models(elements: list) -> None:
+    """The creative tank never joins, so its block is the whole single-block element set: the glass in one translucent
+    model, frame and caps in one cutout model, both always applied."""
+    name = f"creative_{NAME}"
+    tex = {"frame": f"groundzero:block/{name}_frame", "glass": f"groundzero:block/{NAME}_glass",
+           "cap": f"groundzero:block/{name}_cap", "particle": f"groundzero:block/{name}_frame"}
+    glass = [e for e in elements if any(f["texture"] == "#glass" for f in e["faces"].values())]
+    solid = [e for e in elements if e not in glass]
+    write_json(paths.MODELS / "block" / f"{name}_glass.json", {"textures": tex, "render_type": "minecraft:translucent", "elements": glass})
+    write_json(paths.MODELS / "block" / f"{name}_frame.json", {"textures": tex, "render_type": "minecraft:cutout", "elements": solid})
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"multipart": [
+        {"apply": {"model": f"groundzero:block/{name}_frame"}}, {"apply": {"model": f"groundzero:block/{name}_glass"}}]})
+    write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:block/block", "textures": tex,
+                                                       "render_type": "minecraft:translucent", "elements": elements})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{name}"}})
 
 
 if __name__ == "__main__":
     textures()
+    textures(f"creative_{NAME}", P.SINGULARITY, G, P.BRASS, P.SINGULARITY)
     models()
     print("fluid tank written")

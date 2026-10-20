@@ -100,7 +100,7 @@ public class WrenchItem extends Item {
 
     private static boolean dismantlable(Block block) {
         return block instanceof MachineBlock || block instanceof FluidPipeBlock || block instanceof CableBlock
-                || block instanceof FluidTankBlock || block instanceof MultiblockPartBlock || block instanceof PortBlock;
+                || block instanceof FluidTankBlock || block instanceof dev.groundzero.content.fluid.CreativeFluidTankBlock || block instanceof MultiblockPartBlock || block instanceof PortBlock;
     }
 
     /** The side the player means: the arm under the cursor, else the face of the core they clicked. */

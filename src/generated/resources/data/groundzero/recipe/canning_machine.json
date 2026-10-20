@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "#groundzero:basic_circuits",
+    "E": "groundzero:empty_canister",
+    "F": "groundzero:machine_frame",
+    "G": "minecraft:glass",
+    "P": "#c:plates/steel"
+  },
+  "pattern": [
+    "PEP",
+    "GFG",
+    " B "
+  ],
+  "result": {
+    "id": "groundzero:canning_machine"
+  }
+}

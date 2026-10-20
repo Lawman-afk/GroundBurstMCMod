@@ -51,6 +51,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(GZMachines.WATER_PUMP.block().get());
         dropSelf(GZMachines.CIRCUIT_FABRICATOR.block().get());
         dropSelf(GZMachines.FUSION_FUEL_SYNTHESIZER.block().get());
+        dropSelf(GZMachines.CANNING_MACHINE.block().get());
         dropSelf(GZMachines.DIESEL_GENERATOR.block().get());
         dropSelf(GZMachines.RTG.block().get());
         dropSelf(GZMachines.BATTERY_CHARGER.block().get());
@@ -62,6 +63,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
                     .include(dev.groundzero.registry.GZDataComponents.ENERGY.get())));
         }
         dropSelf(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.block().get());
+        dropSelf(dev.groundzero.content.fluid.GZFluids.CREATIVE_FLUID_TANK.block().get());
         dropSelf(GZMultiblocks.MACHINE_CASING.block().get());
         dropSelf(GZMultiblocks.ITEM_PORT.block().get());
         dropSelf(GZMultiblocks.REACTOR_GLASS.block().get());

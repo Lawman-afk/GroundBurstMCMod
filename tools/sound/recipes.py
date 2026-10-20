@@ -275,6 +275,27 @@ def fusion_fuel_synthesizer_loop() -> np.ndarray:
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -5)
 
 
+def canning_machine_loop() -> np.ndarray:
+    """Canning Machine, one 2 s canister (matches the nozzle animation): the nozzle seats on the neck with a soft
+    clunk at 0.3 s, fluid gurgles into the canister under a feed-pump hum, a valve snaps shut at 1.6 s and the line
+    vents with a short hiss as the nozzle lifts."""
+    t = S.t_axis(TOTAL) - PRE
+    phase = np.mod(t, LOOP)
+    pump = (S.tone(TOTAL, 90) * 0.5 + S.tone(TOTAL, 180) * 0.2) * 0.12
+    filling = ((phase > 0.3) & (phase < 1.6)).astype(float)
+    filling = S.lowpass(filling, 30)                                         # soften the gate edges
+    gurgle = S.bandpass(S.grains(TOTAL, 28, 6, 211), 250, 1400) * 1.1 * filling
+    flow = S.bandpass(S.pink(TOTAL, 212), 400, 2500) * 0.25 * filling
+    seat = S.mix((S.lowpass(S.white(0.08, 213), 500) * S.exp_decay(int(0.08 * S.SR), 0.015) * 1.4, 1.0),
+                 (S.tone(0.12, 160) * S.exp_decay(int(0.12 * S.SR), 0.03) * 0.5, 1.0))
+    snap = S.bandpass(S.white(0.03, 214), 1500, 6000) * S.exp_decay(int(0.03 * S.SR), 0.005) * 0.5
+    vent = S.highpass(S.white(0.3, 215), 2500) * S.breakpoints(int(0.3 * S.SR), [(0, 0), (0.02, 0.1), (0.3, 0)])
+    starts = [k * LOOP for k in range(-1, 2)]
+    x = S.mix((pump, 1.0), (gurgle, 1.0), (flow, 1.0), (_pulses([s + 0.3 for s in starts], seat), 1.0),
+              (_pulses([s + 1.6 for s in starts], snap), 1.0), (_pulses([s + 1.62 for s in starts], vent), 1.0))
+    return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
+
+
 def exotic_matter_fabricator_loop() -> np.ndarray:
     """Exotic Matter Fabricator: a deep 45 Hz throb (with partials small speakers can carry) pulsing once a second, a magnetic 100 Hz buzz, a glassy shimmer of
     high partials drifting in and out of phase (every rate fits the 2 s loop), and sparse static crackles."""
@@ -378,6 +399,7 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/circuit_fabricator": circuit_fabricator_loop(),
         "machine/gas_centrifuge": gas_centrifuge_loop(),
         "machine/fusion_fuel_synthesizer": fusion_fuel_synthesizer_loop(),
+        "machine/canning_machine": canning_machine_loop(),
         "machine/exotic_matter_fabricator": exotic_matter_fabricator_loop(),
         "machine/diesel_generator": diesel_generator_loop(),
         "machine/rtg": rtg_loop(),

@@ -26,7 +26,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
  * the controller and holds the fluid for the whole box, the others point at it. Every block exposes the controller's
  * fluid on every side. A tank is passive: fluid goes in and out only through pipes (a pipe set to pull empties it).
  */
-public class FluidTankBlockEntity extends BlockEntity {
+public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
     public static final int CAPACITY_PER_BLOCK = 16_000;
     private static final int SYNC_STEPS = 64;
 
@@ -111,6 +111,32 @@ public class FluidTankBlockEntity extends BlockEntity {
     /** What pipes and machines see on any side of any block of the tank. */
     public ResourceHandler<FluidResource> handler() {
         return controllerEntity().tank;
+    }
+
+    // --- TankDisplay -------------------------------------------------------------------------------------------------------
+    @Override
+    public boolean drawsContents() {
+        return isController();
+    }
+
+    @Override
+    public FluidStack shownFluid() {
+        return this.tank.fluid();
+    }
+
+    @Override
+    public int shownCapacity() {
+        return this.tank.capacity();
+    }
+
+    @Override
+    public int boxWidth() {
+        return this.width;
+    }
+
+    @Override
+    public int boxHeight() {
+        return this.height;
     }
 
     // --- sync and persistence ----------------------------------------------------------------------------------------------------

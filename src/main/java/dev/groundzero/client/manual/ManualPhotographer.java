@@ -58,6 +58,9 @@ public final class ManualPhotographer {
         SHOTS.add(new Shot("nuclear/reprocessing", 0, null));
         SHOTS.add(new Shot("safety/decontamination_shower", 0, null));
         SHOTS.add(new Shot("processing/exotic_matter_fabricator", 0, null));
+        SHOTS.add(new Shot("processing/canning_machine", 0, null));
+        SHOTS.add(new Shot("processing/canning_machine", 1, null));
+        SHOTS.add(new Shot("processing/fluids", 1, null));
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
     }
 

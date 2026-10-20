@@ -57,6 +57,8 @@ public final class MachineText {
             "Place on a water source block and power it: it draws 50 mB of water a tick (the source is never used up) and pushes it out of its two side outlets into pipes, tanks and machines.");
     public static final String INFO_FLUID_TANK = GZLang.add(GroundZero.MODID + ".info.fluid_tank",
             "Each Fluid Tank holds 16,000 mB. Touching tanks join into one when together they fill a box with a square base up to 3x3 and up to 5 high (720,000 mB). Fluid only moves in and out by pipe: pipes fill it from any side, and a pipe set to pull (with the Wrench) empties it.");
+    public static final String INFO_CREATIVE_FLUID_TANK = GZLang.add(GroundZero.MODID + ".info.creative_fluid_tank",
+            "Creative only. Pour a bucket or canister of any fluid in and the tank holds an endless supply of it: buckets, canisters and pipes can draw from it forever. Pouring in a different fluid switches it over; sneak-right-click with an empty hand to clear it.");
     public static final String INFO_WRENCH = GZLang.add(GroundZero.MODID + ".info.wrench",
             "Right-click a side of a fluid pipe to cycle it: Normal (fluid travels both ways), Pull (draws fluid out of the tank or machine it touches; shown by a striped collar), Disconnected. Right-click a cable side to connect or disconnect it. Right-click a machine to turn it. Sneak-right-click a pipe, cable, machine, tank or structure block to pick it up.");
     public static final String INFO_FLUIDS = GZLang.add(GroundZero.MODID + ".info.fluids",
@@ -71,6 +73,8 @@ public final class MachineText {
             "Presses lithium-6 dust with deuterium gas (piped in from an Electrolytic Separator) into lithium deuteride pellets, the fuel of thermonuclear weapons.");
     public static final String INFO_EXOTIC_MATTER_FABRICATOR = GZLang.add(GroundZero.MODID + ".info.exotic_matter_fabricator",
             "Holds exotic matter in a spinning magnetic cage to make stabilised exotic matter, containment cells and singularity seeds. It draws 400 FE a tick, more than copper cable carries: feed it with insulated or high-voltage cable.");
+    public static final String INFO_CANNING_MACHINE = GZLang.add(GroundZero.MODID + ".info.canning_machine",
+            "Fills canisters and empties them again. Put an empty canister (liquids) or gas canister (gases) in and it takes 1,000 mB from the supply tank (left) to fill it; put a filled canister in and its 1,000 mB is poured into the catch tank (right). Pipes and buckets fill the supply tank; pipes, buckets and auto-eject drain the catch tank.");
     public static final String COOLANT_HINT = GZLang.add(GroundZero.MODID + ".gui.coolant_hint",
             "Coolant: water, or heavy water (the core runs cooler and it lasts five times longer)");
     public static final String DECAY_LEFT = GZLang.add(GroundZero.MODID + ".gui.decay_left", "Decaying: %s min left");

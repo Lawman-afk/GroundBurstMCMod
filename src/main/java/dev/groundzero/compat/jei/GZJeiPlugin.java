@@ -55,6 +55,7 @@ public final class GZJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.FUSION_SYNTHESIS, GZMachines.FUSION_FUEL_SYNTHESIZER.item().get());
         m.put(ProcessingKind.EXOTIC_FABRICATING, GZMachines.EXOTIC_MATTER_FABRICATOR.item().get());
         m.put(ProcessingKind.ACCELERATING, GZMachines.PARTICLE_ACCELERATOR.item().get());
+        m.put(ProcessingKind.CANNING, GZMachines.CANNING_MACHINE.item().get());
         return m;
     }
 
@@ -88,6 +89,8 @@ public final class GZJeiPlugin implements IModPlugin {
                 Component.translatable(MachineText.INFO_CHEMICAL_PLANT));
         registration.addIngredientInfo(List.of(dev.groundzero.content.fluid.GZFluids.FLUID_TANK.item().get().getDefaultInstance()),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_FLUID_TANK));
+        registration.addIngredientInfo(List.of(dev.groundzero.content.fluid.GZFluids.CREATIVE_FLUID_TANK.item().get().getDefaultInstance()),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_CREATIVE_FLUID_TANK));
         registration.addIngredientInfo(List.of(GZMachines.WRENCH.get().getDefaultInstance()),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_WRENCH));
         registration.addIngredientInfo(List.of(GZMachines.WATER_PUMP.item().get().getDefaultInstance()),
@@ -106,7 +109,7 @@ public final class GZJeiPlugin implements IModPlugin {
                         GZMachines.CIRCUIT_FABRICATOR.item().get(), GZMachines.GAS_CENTRIFUGE.item().get(),
                         GZMachines.FUSION_FUEL_SYNTHESIZER.item().get(), GZMachines.EXOTIC_MATTER_FABRICATOR.item().get(),
                         GZMachines.DIESEL_GENERATOR.item().get(), GZMachines.RTG.item().get(), GZMachines.BATTERY_CHARGER.item().get(),
-                        GZMachines.DECONTAMINATION_SHOWER.item().get())
+                        GZMachines.DECONTAMINATION_SHOWER.item().get(), GZMachines.CANNING_MACHINE.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
         info(registration, MachineText.INFO_FISSION_REACTOR, GZMachines.FISSION_REACTOR.item().get(), GZMultiblocks.LEAD_LINED_CASING.item().get(),
@@ -127,6 +130,7 @@ public final class GZJeiPlugin implements IModPlugin {
         info(registration, MachineText.INFO_FUSION_FUEL_SYNTHESIZER, GZMachines.FUSION_FUEL_SYNTHESIZER.item().get(),
                 dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET.get());
         info(registration, MachineText.INFO_EXOTIC_MATTER_FABRICATOR, GZMachines.EXOTIC_MATTER_FABRICATOR.item().get());
+        info(registration, MachineText.INFO_CANNING_MACHINE, GZMachines.CANNING_MACHINE.item().get());
     }
 
     private static void info(IRecipeRegistration registration, String key, ItemLike... items) {

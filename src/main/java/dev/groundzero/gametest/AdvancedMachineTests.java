@@ -32,6 +32,8 @@ final class AdvancedMachineTests {
         GZGameTests.test("centrifuge_cascade_runs_faster", GZGameTests.FLOOR_16, 140, AdvancedMachineTests::cascadeSpeed);
         GZGameTests.test("synthesizer_makes_lithium_deuteride", GZGameTests.FLOOR_16, 360, AdvancedMachineTests::fusionFuel);
         GZGameTests.test("exotic_fabricator_stabilises_shards", GZGameTests.FLOOR_16, 660, AdvancedMachineTests::exotic);
+        GZGameTests.test("canning_machine_fills_canisters", GZGameTests.FLOOR_16, 200, AdvancedMachineTests::cannerFills);
+        GZGameTests.test("canning_machine_empties_canisters", GZGameTests.FLOOR_16, 200, AdvancedMachineTests::cannerEmpties);
     }
 
     private static <T extends MachineBlockEntity> T place(GameTestHelper helper, BlockPos pos, net.minecraft.world.level.block.Block block, Class<T> type) {
@@ -176,6 +178,33 @@ final class AdvancedMachineTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(fab.inventory().getItem(3).is(GZNuclear.STABILISED_EXOTIC_MATTER.get()), "stabilised exotic matter is made");
             helper.assertTrue(fab.inventory().getItem(0).isEmpty(), "the shards are used");
+        });
+    }
+
+    /** Two empty gas canisters and 2000 mB of deuterium in the supply tank become two deuterium canisters. */
+    private static void cannerFills(GameTestHelper helper) {
+        dev.groundzero.content.machine.CanningMachineBlockEntity can = place(helper, new BlockPos(3, 1, 3), GZMachines.CANNING_MACHINE.block().get(),
+                dev.groundzero.content.machine.CanningMachineBlockEntity.class);
+        can.energy().generate(10_000);
+        can.inventory().setItem(0, new ItemStack(GZChemicals.EMPTY_GAS_CANISTER.get(), 2));
+        can.tank(0).fillInternal(new FluidStack(GZFluids.DEUTERIUM.source().get(), 2_000));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(can.inventory().getItem(1).is(GZChemicals.DEUTERIUM_CANISTER.get()) && can.inventory().getItem(1).getCount() == 2,
+                    "two deuterium canisters are filled, have " + can.inventory().getItem(1));
+            helper.assertTrue(can.tank(0).isEmpty() && can.inventory().getItem(0).isEmpty(), "the gas and the empty canisters are used");
+        });
+    }
+
+    /** A napalm canister is poured into the catch tank and comes back out empty. */
+    private static void cannerEmpties(GameTestHelper helper) {
+        dev.groundzero.content.machine.CanningMachineBlockEntity can = place(helper, new BlockPos(3, 1, 3), GZMachines.CANNING_MACHINE.block().get(),
+                dev.groundzero.content.machine.CanningMachineBlockEntity.class);
+        can.energy().generate(10_000);
+        can.inventory().setItem(0, new ItemStack(GZChemicals.NAPALM_CANISTER.get()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(can.inventory().getItem(1).is(dev.groundzero.content.part.GZParts.EMPTY_CANISTER.get()), "an empty canister comes out");
+            helper.assertTrue(can.tank(1).amount() == 1_000 && can.tank(1).fluid().getFluid() == GZFluids.NAPALM.source().get(),
+                    "1000 mB of napalm in the catch tank, have " + can.tank(1).amount());
         });
     }
 }

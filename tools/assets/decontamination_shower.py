@@ -109,8 +109,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         if d == "north":
             tiles(t, x, y, w, h)
         elif d == "south":
-            outside(t, x, y, w, h, 3)
-            t.vline(x + w // 2, y, h, P.CHERENKOV[3])                       # supply pipe up the back
+            outside(t, x, y, w, h, 3)                                       # plain panel: the riser is inside
         else:
             t.rect(x, y, w, h, steel[tone(d)])
     g.paint_all(tex, parts["back"][0], back)

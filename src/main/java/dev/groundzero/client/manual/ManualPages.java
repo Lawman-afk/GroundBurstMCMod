@@ -1143,6 +1143,7 @@ final class ManualPages {
             case "fabricating" -> "Circuit Fabricator";
             case "exotic_fabricating" -> "Exotic Matter Fabricator";
             case "accelerating" -> "Particle Accelerator";
+            case "canning" -> "Canning Machine";
             default -> kind;
         };
     }

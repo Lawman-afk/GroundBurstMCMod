@@ -33,6 +33,7 @@
     "processing/cryogenic_condenser",
     "processing/water_pump",
     "processing/fluids",
+    "processing/canning_machine",
     "processing/chemical_plant",
     "processing/circuit_fabricator",
     "processing/gas_centrifuge",

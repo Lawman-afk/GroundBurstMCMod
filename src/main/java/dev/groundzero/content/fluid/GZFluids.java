@@ -90,6 +90,10 @@ public final class GZFluids {
     public static final GZBlocks.WithItem<FluidTankBlock> FLUID_TANK = GZBlocks.register("fluid_tank", "Fluid Tank", GZTab.MACHINES,
             FluidTankBlock::new, p -> p.mapColor(MapColor.METAL).strength(3f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
+    /** Creative-only endless source of whatever fluid is poured in (see {@link CreativeFluidTankBlockEntity}). */
+    public static final GZBlocks.WithItem<CreativeFluidTankBlock> CREATIVE_FLUID_TANK = GZBlocks.register("creative_fluid_tank", "Creative Fluid Tank",
+            GZTab.MACHINES, CreativeFluidTankBlock::new, p -> p.mapColor(MapColor.COLOR_PURPLE).strength(3f, 8f).requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL).noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
 
     private GZFluids() {}
 

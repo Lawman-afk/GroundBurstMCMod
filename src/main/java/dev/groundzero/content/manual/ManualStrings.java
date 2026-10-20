@@ -27,10 +27,8 @@ public final class ManualStrings {
     public static final String LAYER = GZLang.add(P + "layer", "Layer %s of %s");
     public static final String LAYER_DOWN = GZLang.add(P + "layer_down", "Show one layer lower");
     public static final String LAYER_UP = GZLang.add(P + "layer_up", "Show one layer higher");
-    public static final String DRAG = GZLang.add(P + "drag", "Drag to turn it");
     public static final String BLOCKS_NEEDED = GZLang.add(P + "blocks_needed", "Blocks needed");
     public static final String SEE_ALSO = GZLang.add(P + "see_also", "See also");
-    public static final String TOOLTIP = GZLang.add(P + "tooltip", "Press [%s]: Field Manual");
     public static final String KEY = GZLang.add("key.groundzero.manual", "Open in Field Manual");
     public static final String KEY_CATEGORY = GZLang.add("key.category.groundzero.groundzero", "Ground Zero");
 
