@@ -146,39 +146,42 @@ public final class GZMultiblocks {
     /**
      * Fusion Reactor (DESIGN.md §23.3): a three-layer octagonal ring 9 blocks across, the Particle Accelerator's
      * footprint (three straight cells on each side, a five-cell staircase at each corner, 32 cells a layer), round a
-     * central solenoid column. Bottom layer machine casing with the controller at the front centre, an Item Port in
-     * the middle of the left side, a Fluid Port in the middle of the right and an Energy Port at the back; middle layer
+     * central solenoid column. Bottom layer machine casing with the controller at the front centre, a Fluid Port in the
+     * middle of the right side and an Energy Port at the back; middle layer
      * toroidal field coils with reactor glass viewports in the middle of each side; top layer vacuum vessel casing. The
      * rest of the inside is free. Corner cells are cut to the ring's slopes once formed.
      */
     public static final MultiblockDefinition FUSION_REACTOR = new MultiblockDefinition(GroundZero.id("fusion_reactor"),
             new String[][] {
-                    {"  MMXMM  ", " MM   MM ", "MM     MM", "M       M", "I   S   F", "M       M", "MM     MM", " MM   MM ", "  MMEMM  "},
+                    {"  MMXMM  ", " MM   MM ", "MM     MM", "M       M", "M   S   F", "M       M", "MM     MM", " MM   MM ", "  MMEMM  "},
                     {"  TTGTT  ", " TT   TT ", "TT     TT", "T       T", "G   S   G", "T       T", "TT     TT", " TT   TT ", "  TTGTT  "},
                     {"  VVVVV  ", " VV   VV ", "VV     VV", "V       V", "V   S   V", "V       V", "VV     VV", " VV   VV ", "  VVVVV  "},
             },
             Map.ofEntries(Map.entry('M', Entry.of(MACHINE_CASING.block())), Map.entry('T', Entry.of(() -> TOROIDAL_FIELD_COIL.block().get())),
                     Map.entry('V', Entry.of(() -> VACUUM_VESSEL.block().get())), Map.entry('S', Entry.of(() -> CENTRAL_SOLENOID.block().get())),
-                    Map.entry('G', Entry.of(REACTOR_GLASS.block())), Map.entry('I', Entry.of(ITEM_PORT.block())),
+                    Map.entry('G', Entry.of(REACTOR_GLASS.block())),
                     Map.entry('F', Entry.of(() -> FLUID_PORT.block().get())), Map.entry('E', Entry.of(() -> ENERGY_PORT.block().get())),
                     Map.entry(MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.FUSION_REACTOR.block().get()))),
             octagonCuts(9));
 
     /**
      * Singularity Reactor (DESIGN.md §23.3): a 5x5x5 cage. Machine casing floor with the controller in the middle of
-     * the front, an Item Port on the left and an Energy Port on the right; steel plating posts up the four corners;
+     * the front, an Item Port on the left and an Energy Port on the right; any other floor block may be an Item Port
+     * too, to feed it faster; steel plating posts up the four corners;
      * reactor glass walls with a containment emitter in the middle of each; a machine casing roof with an emitter in
      * its centre; and inside, an empty 3x3x3 chamber (required air) with the core cradle floating at its centre.
      */
     public static final MultiblockDefinition SINGULARITY_REACTOR = new MultiblockDefinition(GroundZero.id("singularity_reactor"),
             new String[][] {
-                    {"MMXMM", "MMMMM", "IMMME", "MMMMM", "MMMMM"},
+                    {"BBXBB", "BBBBB", "IBBBE", "BBBBB", "BBBBB"},
                     {"PGGGP", "G...G", "G...G", "G...G", "PGGGP"},
                     {"PGQGP", "G...G", "Q.K.Q", "G...G", "PGQGP"},
                     {"PGGGP", "G...G", "G...G", "G...G", "PGGGP"},
                     {"MMMMM", "MMMMM", "MMQMM", "MMMMM", "MMMMM"},
             },
             Map.of('M', Entry.of(MACHINE_CASING.block()), 'P', Entry.of(() -> STEEL_PLATING.block().get()), 'G', Entry.of(REACTOR_GLASS.block()),
+                    'B', new Entry(s -> s.is(MACHINE_CASING.block().get()) || s.is(ITEM_PORT.block().get()),
+                            () -> MACHINE_CASING.block().get().defaultBlockState()),
                     'Q', Entry.of(() -> CONTAINMENT_EMITTER.block().get()), 'K', Entry.of(() -> CORE_CRADLE.block().get()),
                     'I', Entry.of(ITEM_PORT.block()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.SINGULARITY_REACTOR.block().get())));

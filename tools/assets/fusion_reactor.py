@@ -11,8 +11,8 @@ Look: a gunmetal plinth ring with hazard edging (bottom layer). On it the vacuum
 tube of D-shaped section, with a viewport in each straight cell (the reactor glass blocks) through which the plasma
 shows. Twenty-eight toroidal field coils wrap the vessel: copper D-loops in dark coil cases, four along each straight
 side (two flanking the viewport) and three on each diagonal. In the middle stands the central solenoid, a copper-wound column with steel end caps. On the
-plinth's outer faces: the control cabinet at the front (the controller), the yellow item hatch on the west side, the
-blue fluid inlet on the east side and the red energy terminal at the back. While running, the plasma ring glows pink
+plinth's outer faces: the control cabinet at the front (the controller), the blue fluid inlet on the east side and the
+red energy terminal at the back. While running, the plasma ring glows pink
 inside the vessel (bone "plasma") and a bright streak laps the ring twice a second (bone "streak").
 """
 from __future__ import annotations
@@ -156,7 +156,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # --- the port cells: fittings on the plinth's outer faces ---------------------------------------------------------
     add("cabinet", g.box("cabinet", (-7, 1, -8.6), (7, 12.5, -8), faces=("north", "east", "west", "up", "down"), bone=F))
     lamps = add("lamps", g.box("lamps", (2.5, 9, -8.8), (6, 10.5, -8.6), faces=("north",), shade=False, bone=F))
-    add("item_hatch", g.box("item_hatch", (-72.6, 2, 58), (-72, 12, 70), faces=("west", "north", "south", "up", "down"), bone=F))
     add("fluid_inlet", g.box("fluid_inlet", (72, 2, 58), (72.6, 12, 70), faces=("east", "north", "south", "up", "down"), bone=F))
     add("terminal", g.box("terminal", (-7, 2, 136), (7, 12, 136.6), faces=("south", "east", "west", "up", "down"), bone=F))
     for i, x in enumerate((-2.4, 0.0, 2.4)):
@@ -291,7 +290,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
                 t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
         return paint
-    g.paint_all(tex, parts["item_hatch"][0], socket("west", P.HAZARD_YELLOW.base, gun))
     g.paint_all(tex, parts["fluid_inlet"][0], socket("east", FLUID_BLUE[4], gun))
     g.paint_all(tex, parts["terminal"][0], socket("south", P.WARNING_RED[3], P.WARNING_RED))
     for b in parts["insulator"]:

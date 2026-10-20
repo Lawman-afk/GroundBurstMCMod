@@ -649,11 +649,11 @@ entry("nuclear/fusion_reactor", "Fusion Reactor", "fusion_reactor", ["fusion_rea
     text("""
 A three-layer octagonal ring nine blocks across, the accelerator's footprint, round a **central solenoid** column. It makes **6,000 FE a tick** once its plasma is lit.
 
-Machine casing at the bottom, with the controller at the front, an **Item Port** on the left, a **Fluid Port** on the right and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle.
+Machine casing at the bottom, with the controller at the front, a **Fluid Port** in the middle of the right side and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle.
 """),
     structure("fusion_reactor", "When it forms, the corner blocks take the octagon's slope."),
     text("""
-**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Instead of the gases it can burn **lithium deuteride pellets** from the Item Port, three minutes each.
+**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Deuterium comes from the [Electrolytic Separator](processing/electrolytic_separator), tritium from lithium-6 target rods ([reprocessing](nuclear/reprocessing)). Lithium deuteride pellets are not a reactor fuel: they are kept for thermonuclear weapons.
 
 **Cold magnets.** Its coils need **liquid nitrogen**, 2 mB a tick, through the same Fluid Port. A [Cryogenic Condenser](processing/cryogenic_condenser) keeps up.
 
@@ -662,40 +662,50 @@ Machine casing at the bottom, with the controller at the front, an **Item Port**
     table([
         ["Output", "6,000 FE/t"],
         ["Ignition", "2,000,000 FE"],
-        ["Deuterium + tritium", "1 mB each / 4 t"],
-        ["Pellet lasts", "3,600 ticks"],
+        ["Deuterium", "1 mB / 4 ticks"],
+        ["Tritium", "1 mB / 4 ticks"],
         ["Liquid nitrogen", "2 mB/t"],
     ], "Running"),
     craft("fusion_reactor"),
     craft("toroidal_field_coil"),
     craft("vacuum_vessel_casing"),
     craft("central_solenoid"),
-    links(["processing/fusion_fuel_synthesizer", "nuclear/reprocessing", "power/capacitor_banks"]),
+    links(["processing/electrolytic_separator", "nuclear/reprocessing", "power/capacitor_banks"]),
 ])
 
 entry("nuclear/singularity_reactor", "Singularity Reactor", "singularity_reactor", ["singularity_reactor", "singularity_reactor_spawner",
                                                                                "containment_emitter", "core_cradle"], [
-    plate("singularity_reactor", "The formed Singularity Reactor, holding a core."),
+    plate("singularity_reactor", "The formed Singularity Reactor, holding a seed."),
     text("""
-A 5x5x5 cage that holds a singularity and turns whatever matter you feed it into up to **25,000 FE a tick**.
+A 5x5x5 cage that holds a **singularity seed** and makes power by **eating items**: any item at all. Feed it fast enough and it makes up to **25,000 FE a tick**.
 
 A machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber.
 """),
-    structure("singularity_reactor", "The chamber inside must be empty but for the cradle."),
+    structure("singularity_reactor", "The chamber inside must be empty but for the cradle. Any floor block may be swapped for an extra Item Port."),
     text("""
-**Engaging.** Put a **singularity seed** in the controller and charge the cage with **500,000 FE** through the Energy Port. The seed is drawn into the cage and held: it cannot be taken out again.
+**The output rule.** Every item it eats is worth **10,000 FE**, and it eats at most **50 items a second**. So the power is set by how fast you feed it:
 
-**Feeding.** Any items fed to the Item Port become matter for the core, and the core turns it into power, up to 25,000 FE a tick. The accretion disk grows as it is fed.
+- 10 items a second: 5,000 FE a tick.
+- 25 items a second: 12,500 FE a tick.
+- 50 items a second: the full 25,000 FE a tick.
 
-**Holding the cage** costs 1,000 FE a tick, always, and the reactor keeps 500,000 FE back for it, pushing out only what is above that. **If the cage ever runs dry, or any part of the structure is broken while it holds a core, the singularity collapses and the core is lost.**
+Holding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a trickle of items does not even pay for itself. Run it from automatic farms: cobblestone generators, tree farms, quarries.
+"""),
+    text("""
+**The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.
+
+**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second, so **swap more floor blocks for Item Ports** (do it before engaging) and feed each of them. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.
+
+**Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**.
 """),
     table([
-        ["Output", "up to 25,000 FE/t"],
-        ["Engage", "500,000 FE"],
+        ["Per item eaten", "10,000 FE"],
+        ["Most it eats", "50 items/s"],
+        ["Full output", "25,000 FE/t"],
         ["Cage upkeep", "1,000 FE/t"],
+        ["To engage", "500,000 FE"],
         ["Reserve kept", "500,000 FE"],
-        ["Per item fed", "200,000 FE"],
-    ], "The cage"),
+    ], "The rules"),
     craft("singularity_reactor"),
     machine("exotic_fabricating", "", item="containment_emitter"),
     machine("exotic_fabricating", "", item="core_cradle"),

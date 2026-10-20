@@ -14,47 +14,55 @@
       "image": "groundzero:textures/gui/manual/plates/singularity_reactor.png",
       "width": 240,
       "height": 240,
-      "text": "The formed Singularity Reactor, holding a core."
+      "text": "The formed Singularity Reactor, holding a seed."
     },
     {
       "type": "text",
-      "text": "A 5x5x5 cage that holds a singularity and turns whatever matter you feed it into up to **25,000 FE a tick**.\n\nA machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber."
+      "text": "A 5x5x5 cage that holds a **singularity seed** and makes power by **eating items**: any item at all. Feed it fast enough and it makes up to **25,000 FE a tick**.\n\nA machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber."
     },
     {
       "type": "structure",
       "structure": "groundzero:singularity_reactor",
-      "text": "The chamber inside must be empty but for the cradle."
+      "text": "The chamber inside must be empty but for the cradle. Any floor block may be swapped for an extra Item Port."
     },
     {
       "type": "text",
-      "text": "**Engaging.** Put a **singularity seed** in the controller and charge the cage with **500,000 FE** through the Energy Port. The seed is drawn into the cage and held: it cannot be taken out again.\n\n**Feeding.** Any items fed to the Item Port become matter for the core, and the core turns it into power, up to 25,000 FE a tick. The accretion disk grows as it is fed.\n\n**Holding the cage** costs 1,000 FE a tick, always, and the reactor keeps 500,000 FE back for it, pushing out only what is above that. **If the cage ever runs dry, or any part of the structure is broken while it holds a core, the singularity collapses and the core is lost.**"
+      "text": "**The output rule.** Every item it eats is worth **10,000 FE**, and it eats at most **50 items a second**. So the power is set by how fast you feed it:\n\n- 10 items a second: 5,000 FE a tick.\n- 25 items a second: 12,500 FE a tick.\n- 50 items a second: the full 25,000 FE a tick.\n\nHolding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a trickle of items does not even pay for itself. Run it from automatic farms: cobblestone generators, tree farms, quarries."
+    },
+    {
+      "type": "text",
+      "text": "**The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.\n\n**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second, so **swap more floor blocks for Item Ports** (do it before engaging) and feed each of them. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.\n\n**Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**."
     },
     {
       "type": "table",
       "rows": [
         [
-          "Output",
-          "up to 25,000 FE/t"
+          "Per item eaten",
+          "10,000 FE"
         ],
         [
-          "Engage",
-          "500,000 FE"
+          "Most it eats",
+          "50 items/s"
+        ],
+        [
+          "Full output",
+          "25,000 FE/t"
         ],
         [
           "Cage upkeep",
           "1,000 FE/t"
         ],
         [
-          "Reserve kept",
+          "To engage",
           "500,000 FE"
         ],
         [
-          "Per item fed",
-          "200,000 FE"
+          "Reserve kept",
+          "500,000 FE"
         ]
       ],
       "text": "",
-      "title": "The cage"
+      "title": "The rules"
     },
     {
       "type": "crafting",

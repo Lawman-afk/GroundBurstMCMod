@@ -6,10 +6,11 @@ Look: a gunmetal floor slab with an olive deck and a hazard ring round the chamb
 glass walls in a steel grid (rails top and bottom, mullions and transoms on the block lines) so the chamber shows
 through. A containment emitter sits in the middle of each wall and in the centre of the roof slab, a dark housing with a
 violet lens facing the core. In the middle of the empty chamber the core cradle: two brass gimbal rings round the
-core. While a core is held (bone "core", a black sphere with a violet photon ring) violet beams run from the five
-lenses to it (bone "beams"), and as it is fed an accretion disk spins round it in three sizes ("disk0".."disk2", one
-shown at a time). On the floor's outer faces: the control cabinet at the front (the controller), the yellow item hatch
-on the west side and the red energy terminal on the east side.
+core. The seed rests in the cradle while it is in its slot (bone "core", a black sphere with a violet photon ring);
+while the cage holds it violet beams run from the five lenses to it (bone "beams"), and while it has matter to eat an
+accretion disk spins round it in three sizes ("disk0".."disk2", one shown at a time). On the floor's outer faces: the control cabinet at the front (the controller), the yellow item hatch
+on the west side and the red energy terminal on the east side; any other outer floor cell that is an Item Port shows a
+yellow hatch too (bones "hatch_<col>_<row>").
 """
 from __future__ import annotations
 
@@ -151,6 +152,27 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     lamps = add("lamps", g.box("lamps", (2.5, 10, -8.8), (6, 11.5, -8.6), faces=("north",), shade=False, bone=F))
     add("item_hatch", g.box("item_hatch", (-40.6, 2, 26), (-40, 14, 38), faces=("west", "north", "south", "up", "down"), bone=F))
     add("terminal", g.box("terminal", (40, 2, 26), (40.6, 14, 38), faces=("east", "north", "south", "up", "down"), bone=F))
+    # Any other floor block may be an Item Port: each outer floor cell has a hatch (bone "hatch_<col>_<row>") that the
+    # renderer shows only when that cell is one.
+    for col in range(5):
+        for row in range(5):
+            if not (col in (0, 4) or row in (0, 4)) or (col, row) in ((2, 0), (0, 2), (4, 2)):
+                continue
+            x0, z0 = (col - 2) * 16.0 - 8, row * 16.0 - 8
+            bone = f"hatch_{col}_{row}"
+            g.bone(bone, pivot=(x0 + 8, 0, z0 + 8), parent=F)
+            if row == 0:
+                frm, to, face = (x0 + 3, 3, z0 - 0.6), (x0 + 13, 13, z0), "north"
+            elif row == 4:
+                frm, to, face = (x0 + 3, 3, z0 + 16), (x0 + 13, 13, z0 + 16.6), "south"
+            elif col == 0:
+                frm, to, face = (x0 - 0.6, 3, z0 + 3), (x0, 13, z0 + 13), "west"
+            else:
+                frm, to, face = (x0 + 16, 3, z0 + 3), (x0 + 16.6, 13, z0 + 13), "east"
+            sides_ = {"north": ("north", "east", "west", "up", "down"), "south": ("south", "east", "west", "up", "down"),
+                      "west": ("west", "north", "south", "up", "down"), "east": ("east", "north", "south", "up", "down")}[face]
+            box = shared(f"hatch_{face}", g.box(f"hatch_{col}_{row}", frm, to, faces=sides_, bone=bone))
+            box.__dict__["hatch_face"] = face
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -293,6 +315,10 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
         return paint
     g.paint_all(tex, parts["item_hatch"][0], socket("west", P.HAZARD_YELLOW.base, gun))
+    for face in ("north", "south", "west", "east"):
+        for b in parts.get(f"hatch_{face}", []):
+            if first.get(f"hatch_{face}:{tuple(round(bb - a, 3) for a, bb in zip(b.frm, b.to))}:{sorted(b.faces)}") is b:
+                g.paint_all(tex, b, socket(face, P.HAZARD_YELLOW.base, gun))
     g.paint_all(tex, parts["terminal"][0], socket("east", P.WARNING_RED[3], P.WARNING_RED))
     return g, tex, glow
 

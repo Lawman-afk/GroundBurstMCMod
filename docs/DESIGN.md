@@ -304,8 +304,8 @@ All machines use **NeoForge Energy (FE)** so they interoperate with other tech m
 | Diesel Generator | 180 FE/t | Burns synthetic fuel or liquid rocket fuel piped into its tank (canisters/buckets pour in). Piston animation. |
 | RTG, "Radioisotope Generator" in game | 40 FE/t forever-ish | Fuel slug in a slot: enriched uranium ingot lasts 2 in-game days now; plutonium ingot (Fission Reactor) will last 10. The slug decays whether or not the power is used. Emits low radiation if not shielded by lead blocks (Phase 12). Glowing fins. |
 | Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown is a config option, off by default. Cherenkov-blue core. |
-| Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas or LiD pellets. Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
-| Singularity Reactor ("special" multiblock) | up to ~25 000 FE/t | A singularity seed held in a containment cage (a large version of the Exotic Matter Fabricator's ring cage). Feed it any items or blocks; it turns their matter into energy, and the accretion glow brightens as it is fed. Holding the cage costs a little power from its own buffer; if the buffer runs dry the core collapses: by default it just pops and the seed is lost; as a config option it sets off a small version of the Phase 11 singularity effect. |
+| Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas (LiD pellets are kept for the thermonuclear weapons). Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
+| Singularity Reactor ("special" multiblock) | up to 25 000 FE/t | A singularity seed sits in the controller (it stays there, like a battery in the charger) and is held in a powered containment cage. It eats items, any items: each is worth 10 000 FE and it eats at most 50 a second, so its output is set by the feed rate (10 items/s = 5 000 FE/t, 50 items/s = 25 000 FE/t). Holding the cage costs 1 000 FE/t (2 items/s). Built to need automatic cobblestone or tree farms. Taking the seed out shuts it down safely; if the cage runs dry or the structure is broken while it holds the seed, the core collapses and the seed is destroyed (a destructive collapse, a small Phase 11 singularity effect, will be a config option). |
 | Capacitor Bank / Advanced / Superconducting | 100k / 1M / 10M FE, 1 024 / 8 192 / 32 768 FE/t | Every face takes power in except the front, which pushes it out; keeps its charge when picked up; comparator output; 8-bar charge gauge on the model. Superweapons draw from these during charge. |
 | Power cables: copper (256 FE/t), insulated (1 024), high-voltage (8 192) | — | Connected-texture cable models with insulators on HV; HV cable arcs when EMPed. |
 
@@ -1049,29 +1049,29 @@ y0:  ..MMXMM..   y1:  ..TTGTT..   y2:  ..VVVVV..
      .MM...MM.        .TT...TT.        .VV...VV.
      MM.....MM        TT.....TT        VV.....VV
      M.......M        T.......T        V.......V
-     I...S...F        G...S...G        V...S...V
+     M...S...F        G...S...G        V...S...V
      M.......M        T.......T        V.......V
      MM.....MM        TT.....TT        VV.....VV
      .MM...MM.        .TT...TT.        .VV...VV.
      ..MMEMM..        ..TTGTT..        ..VVVVV..
 ```
-The controller connects to nothing: deuterium, tritium and liquid nitrogen go into the Fluid Port, lithium deuteride
-pellets into the Item Port, the ignition charge in and the power out through the Energy Port. Corner cells are cut to
+The controller connects to nothing: deuterium, tritium and liquid nitrogen go into the Fluid Port, the ignition charge in
+and the power out through the Energy Port. There is no Item Port: the reactor burns no items. Corner cells are cut to
 the octagon's slopes when formed. The formed model is a D-section vacuum vessel with a viewport in each side's middle
 cell, 28 toroidal field coils, the central solenoid, and a plasma ring that glows (with a lapping streak) while lit.
 (The 7×7 first draft was dropped: a 7-wide stepped octagon has one-cell straight sides and reads as a diamond.)
 
 **Singularity Reactor** (5×5×5, built in slice 8; `Q` = containment emitter, `K` = core cradle, `P` = steel plating):
 ```
-y0: MMXMM / MMMMM / IMMME / MMMMM / MMMMM
+y0: BBXBB / BBBBB / IBBBE / BBBBB / BBBBB
 y1: PGGGP / G...G / G...G / G...G / PGGGP
 y2: PGQGP / G...G / Q.K.Q / G...G / PGQGP
 y3: PGGGP / G...G / G...G / G...G / PGGGP
 y4: MMMMM / MMMMM / MMQMM / MMMMM / MMMMM
 ```
-(`.` = required air.) The Steel Frame posts of the first draft became steel plating (the Steel Frame block is gone).
-Items go in through the Item Port, the cage charge in and the power out through the Energy Port; the seed goes into the
-controller's GUI. The formed model: glass walls in a steel grid, five emitters beaming at a black core in a brass
+(`.` = required air; `B` = machine casing or an Item Port, so players can add Item Ports to feed it faster.) The Steel
+Frame posts of the first draft became steel plating (the Steel Frame block is gone). Items go in through the Item Ports,
+the cage charge in and the power out through the Energy Port; the seed goes into the controller's GUI and stays there. The formed model: glass walls in a steel grid, five emitters beaming at a black core in a brass
 gimbal cradle, and an accretion disk in three sizes that grows as it is fed.
 
 **Particle Accelerator** (9×9×2 octagonal ring, rows front first; 32 cells a layer):
@@ -1559,3 +1559,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Slice 8 Fusion Reactor (a game abstraction): 9×9×3 octagonal ring (the 7×7 draft read as a diamond). Fuel: deuterium + tritium (1 mB each per 4 ticks) or lithium deuteride pellets (3 600 ticks each); liquid nitrogen 2 mB/t for the magnets. While unlit its Energy Port takes power into a separate 2 000 000 FE ignition charge; with fuel and nitrogen in, a full charge lights the plasma and is spent. Lit: 6 000 FE/t pushed out of the same port, no power taken in; with the buffer full it idles without burning fuel. Out of fuel or nitrogen, unformed, or halted by redstone (a skipped tick), the plasma goes out and needs a new charge; a world reload does not count as a skipped tick. |
 | 2026-10-20 | Slice 8 Singularity Reactor (a game abstraction): a seed in the controller plus 500 000 FE engages the cage and the seed becomes the core (no taking it back). Any item fed adds 200 000 FE of matter (up to 4 000 000); the core converts up to 25 000 FE/t. The cage costs 1 000 FE every tick, redstone or not, and the reactor only pushes out power above a 500 000 FE reserve (about 25 s of grace). If the buffer cannot pay, or the structure is broken while a core is held, the singularity collapses: the core is lost with a flash, a boom and particles. The destructive collapse (a small Phase 11 singularity effect, behind a config) comes with the Phase 11 effects. |
 | 2026-10-20 | Big reactors' Energy Ports use a gated view (ReactorEnergyView): power out only above the reactor's reserve, power in only while the reactor wants it (fusion ignition charge, singularity cage). Cable networks never route power back to the block that pushed it, so a two-way port does not loop. |
+| 2026-10-20 | Slice 8 feedback: the Fusion Reactor burns only deuterium + tritium gas; its pellet slot and Item Port are gone (lithium deuteride pellets are for the thermonuclear weapons). It gives no helium: nothing in the mod would use it. |
+| 2026-10-20 | Slice 8 feedback, Singularity Reactor reworked to be clear and hungry: the seed stays in its slot (taking it out shuts down safely; a collapse destroys it). One output rule: each item eaten is worth 10 000 FE (was 200 000) and it eats at most 50 items a second (2 and 3 on alternate ticks), which is what sets the 25 000 FE/t ceiling; a store of 50 items' worth smooths bursts. Upkeep 1 000 FE/t (2 items/s), engage at 500 000 FE, 500 000 FE reserve. Four feed slots; any floor block may be an Item Port (a hopper moves only 2.5 items/s), and the model shows a hatch on every outer floor cell that is one. The CRT shows items eaten per second. |

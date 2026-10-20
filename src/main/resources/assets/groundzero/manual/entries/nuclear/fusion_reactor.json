@@ -19,7 +19,7 @@
     },
     {
       "type": "text",
-      "text": "A three-layer octagonal ring nine blocks across, the accelerator's footprint, round a **central solenoid** column. It makes **6,000 FE a tick** once its plasma is lit.\n\nMachine casing at the bottom, with the controller at the front, an **Item Port** on the left, a **Fluid Port** on the right and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle."
+      "text": "A three-layer octagonal ring nine blocks across, the accelerator's footprint, round a **central solenoid** column. It makes **6,000 FE a tick** once its plasma is lit.\n\nMachine casing at the bottom, with the controller at the front, a **Fluid Port** in the middle of the right side and the **Energy Port** at the back; a ring of **toroidal field coils** above, with reactor glass viewports in the middle of each side; **vacuum vessel casing** on top; and three central solenoid blocks stacked in the middle."
     },
     {
       "type": "structure",
@@ -28,7 +28,7 @@
     },
     {
       "type": "text",
-      "text": "**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Instead of the gases it can burn **lithium deuteride pellets** from the Item Port, three minutes each.\n\n**Cold magnets.** Its coils need **liquid nitrogen**, 2 mB a tick, through the same Fluid Port. A [Cryogenic Condenser](processing/cryogenic_condenser) keeps up.\n\n**Ignition.** To light the plasma it needs a charge of **2,000,000 FE** through its Energy Port, more than any one cable carries in a tick: charge it from a big [capacitor bank](power/capacitor_banks). Once lit it pushes its power out of the same port. If the fuel or the nitrogen runs out, or redstone halts it, the plasma goes out and it needs a fresh charge."
+      "text": "**Fuel.** Pipe **deuterium** and **tritium** into the Fluid Port; it burns 1 mB of each every 4 ticks. Deuterium comes from the [Electrolytic Separator](processing/electrolytic_separator), tritium from lithium-6 target rods ([reprocessing](nuclear/reprocessing)). Lithium deuteride pellets are not a reactor fuel: they are kept for thermonuclear weapons.\n\n**Cold magnets.** Its coils need **liquid nitrogen**, 2 mB a tick, through the same Fluid Port. A [Cryogenic Condenser](processing/cryogenic_condenser) keeps up.\n\n**Ignition.** To light the plasma it needs a charge of **2,000,000 FE** through its Energy Port, more than any one cable carries in a tick: charge it from a big [capacitor bank](power/capacitor_banks). Once lit it pushes its power out of the same port. If the fuel or the nitrogen runs out, or redstone halts it, the plasma goes out and it needs a fresh charge."
     },
     {
       "type": "table",
@@ -42,12 +42,12 @@
           "2,000,000 FE"
         ],
         [
-          "Deuterium + tritium",
-          "1 mB each / 4 t"
+          "Deuterium",
+          "1 mB / 4 ticks"
         ],
         [
-          "Pellet lasts",
-          "3,600 ticks"
+          "Tritium",
+          "1 mB / 4 ticks"
         ],
         [
           "Liquid nitrogen",
@@ -80,7 +80,7 @@
     {
       "type": "links",
       "entries": [
-        "processing/fusion_fuel_synthesizer",
+        "processing/electrolytic_separator",
         "nuclear/reprocessing",
         "power/capacitor_banks"
       ],

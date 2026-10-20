@@ -28,11 +28,13 @@ final class FusionSingularityTests {
         GZGameTests.test("fusion_forms_and_unforms", GZGameTests.FLOOR_16, 20, FusionSingularityTests::fusionForms);
         GZGameTests.test("fusion_ignites_and_runs_on_gas", GZGameTests.FLOOR_16, 80, FusionSingularityTests::fusionRuns);
         GZGameTests.test("fusion_needs_nitrogen_to_light", GZGameTests.FLOOR_16, 40, FusionSingularityTests::fusionNeedsNitrogen);
-        GZGameTests.test("fusion_burns_pellets", GZGameTests.FLOOR_16, 40, FusionSingularityTests::fusionPellets);
+        GZGameTests.test("fusion_takes_no_items", GZGameTests.FLOOR_16, 20, FusionSingularityTests::fusionNoItems);
         GZGameTests.test("fusion_plasma_goes_out_without_fuel", GZGameTests.FLOOR_16, 60, FusionSingularityTests::fusionRunsDry);
         GZGameTests.test("singularity_engages_and_burns_matter", GZGameTests.FLOOR_16, 60, FusionSingularityTests::singularityRuns);
         GZGameTests.test("singularity_collapses_without_power", GZGameTests.FLOOR_16, 40, FusionSingularityTests::singularityStarves);
         GZGameTests.test("singularity_collapses_when_broken", GZGameTests.FLOOR_16, 40, FusionSingularityTests::singularityBroken);
+        GZGameTests.test("singularity_lets_go_when_seed_taken", GZGameTests.FLOOR_16, 40, FusionSingularityTests::singularitySeedOut);
+        GZGameTests.test("singularity_takes_extra_floor_ports", GZGameTests.FLOOR_16, 20, FusionSingularityTests::singularityExtraPorts);
     }
 
     private static void build(GameTestHelper helper, BlockPos rel, Block controller, MultiblockDefinition def) {
@@ -133,16 +135,12 @@ final class FusionSingularityTests {
         });
     }
 
-    private static void fusionPellets(GameTestHelper helper) {
+    /** The reactor burns gas only: no item slots, and the structure has no Item Port. */
+    private static void fusionNoItems(GameTestHelper helper) {
         FusionReactorBlockEntity r = fusion(helper);
-        r.inventory().setItem(0, new ItemStack(GZNuclear.LITHIUM_DEUTERIDE_PELLET.get(), 2));
-        nitrogen(r, 1_000);
-        charge(helper, r);
-        helper.runAfterDelay(20, () -> {
-            helper.assertTrue(r.lit(), "pellets light it too, status " + r.status());
-            helper.assertTrue(r.inventory().getItem(0).getCount() == 1, "one pellet is burning");
-            helper.succeed();
-        });
+        helper.assertTrue(r.inventory().getContainerSize() == 0, "no item slots");
+        helper.assertTrue(r.definition().cells(r.controllerPos(), r.controllerFacing()).stream().noneMatch(c -> c.key() == 'I'), "no Item Port");
+        helper.succeed();
     }
 
     /** With a few mB of gas the plasma burns them and goes out, and needs a fresh charge to light again. */
@@ -170,20 +168,26 @@ final class FusionSingularityTests {
         s.energy().generate(SingularityReactorBlockEntity.ENGAGE);
     }
 
+    /** The seed stays in its slot; with a full feed the core eats 50 items a second for 10 000 FE each: 25 000 FE a tick. */
     private static void singularityRuns(GameTestHelper helper) {
         SingularityReactorBlockEntity s = singularity(helper);
         helper.assertTrue(s.isFormed(), "the cage forms");
         s.inventory().setItem(SingularityReactorBlockEntity.SEED_SLOT, new ItemStack(GZNuclear.SINGULARITY_SEED.get()));
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(!s.holdsCore() && s.status() == MachineStatus.CHARGING, "without the charge the seed waits, " + s.status());
+            helper.assertTrue(!s.engaged() && s.status() == MachineStatus.CHARGING, "without the charge the seed waits, " + s.status());
             s.energy().generate(SingularityReactorBlockEntity.ENGAGE);
-            s.inventory().setItem(SingularityReactorBlockEntity.MATTER_SLOT, new ItemStack(Items.COBBLESTONE, 64));
-            helper.runAfterDelay(20, () -> {
-                helper.assertTrue(s.holdsCore(), "the seed is drawn into the cage");
-                helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.SEED_SLOT).isEmpty(), "the seed slot is empty");
-                helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.MATTER_SLOT).getCount() < 64, "matter is fed in");
-                helper.assertTrue(s.energy().stored() > SingularityReactorBlockEntity.ENGAGE, "matter becomes power, have " + s.energy().stored());
+            for (int slot = 0; slot < SingularityReactorBlockEntity.FEED_SLOTS; slot++) {
+                s.inventory().setItem(SingularityReactorBlockEntity.FEED_START + slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            helper.runAfterDelay(25, () -> {
+                helper.assertTrue(s.engaged(), "the cage holds the seed");
+                helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.SEED_SLOT).is(GZNuclear.SINGULARITY_SEED.get()),
+                        "the seed stays in its slot");
+                int rate = s.feedRate();
+                helper.assertTrue(rate == SingularityReactorBlockEntity.MAX_ITEMS_PER_SECOND, "it eats 50 items a second, ate " + rate);
                 helper.assertTrue(s.status() == MachineStatus.RUNNING, "running, " + s.status());
+                helper.assertTrue((long) rate * SingularityReactorBlockEntity.FE_PER_ITEM / 20 == SingularityReactorBlockEntity.MAX_OUTPUT,
+                        "50 items a second at 10 000 FE each is the 25 000 FE/t ceiling");
                 // The port only gives power above the reserve.
                 BlockPos port = cellOf(s.definition(), s.controllerPos(), 'E');
                 var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);
@@ -201,11 +205,12 @@ final class FusionSingularityTests {
         SingularityReactorBlockEntity s = singularity(helper);
         engage(helper, s);
         helper.runAfterDelay(5, () -> {
-            helper.assertTrue(s.holdsCore(), "engaged");
+            helper.assertTrue(s.engaged(), "engaged");
             s.energy().consume(s.energy().stored() - 500);
             helper.runAfterDelay(3, () -> {
-                helper.assertTrue(!s.holdsCore(), "out of power, the singularity collapses");
-                helper.assertTrue(s.status() == MachineStatus.NO_CORE, "no core left, " + s.status());
+                helper.assertTrue(!s.engaged(), "out of power, the singularity collapses");
+                helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.SEED_SLOT).isEmpty(), "the seed is destroyed");
+                helper.assertTrue(s.status() == MachineStatus.NO_CORE, "no seed left, " + s.status());
                 helper.succeed();
             });
         });
@@ -215,12 +220,58 @@ final class FusionSingularityTests {
         SingularityReactorBlockEntity s = singularity(helper);
         engage(helper, s);
         helper.runAfterDelay(5, () -> {
-            helper.assertTrue(s.holdsCore(), "engaged");
+            helper.assertTrue(s.engaged(), "engaged");
             helper.getLevel().destroyBlock(cellOf(s.definition(), s.controllerPos(), 'Q'), false);
             helper.runAfterDelay(2, () -> {
-                helper.assertTrue(!s.isFormed() && !s.holdsCore(), "breaking an emitter collapses the core");
+                helper.assertTrue(!s.isFormed() && !s.engaged(), "breaking an emitter collapses the core");
+                helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.SEED_SLOT).isEmpty(), "and destroys the seed");
                 helper.succeed();
             });
         });
+    }
+
+    /** Taking the seed out is the safe way to shut it down: the cage lets go and nothing collapses. */
+    private static void singularitySeedOut(GameTestHelper helper) {
+        SingularityReactorBlockEntity s = singularity(helper);
+        engage(helper, s);
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(s.engaged(), "engaged");
+            ItemStack seed = s.inventory().removeItem(SingularityReactorBlockEntity.SEED_SLOT, 1);
+            helper.assertTrue(seed.is(GZNuclear.SINGULARITY_SEED.get()), "the seed comes out");
+            helper.runAfterDelay(2, () -> {
+                helper.assertTrue(!s.engaged() && s.energy().stored() > 0, "the cage let go without collapsing");
+                helper.assertTrue(s.status() == MachineStatus.NO_CORE, "waiting for a seed, " + s.status());
+                helper.succeed();
+            });
+        });
+    }
+
+    /** A floor block swapped for an Item Port still forms the cage, and the extra port feeds it. */
+    private static void singularityExtraPorts(GameTestHelper helper) {
+        BlockPos rel = new BlockPos(5, 1, 1);
+        helper.setBlock(rel, GZMachines.SINGULARITY_REACTOR.block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        BlockPos extra = null;
+        for (MultiblockDefinition.Cell cell : GZMultiblocks.SINGULARITY_REACTOR.cells(helper.absolutePos(rel), Direction.NORTH)) {
+            if (cell.key() == MultiblockDefinition.CONTROLLER || cell.key() == '.') {
+                continue;
+            }
+            boolean swap = cell.key() == 'B' && cell.col() == 0 && cell.row() == 0;
+            helper.getLevel().setBlockAndUpdate(cell.pos(), swap ? GZMultiblocks.ITEM_PORT.block().get().defaultBlockState()
+                    : GZMultiblocks.SINGULARITY_REACTOR.legend().get(cell.key()).preview().get());
+            if (swap) {
+                extra = cell.pos();
+            }
+        }
+        SingularityReactorBlockEntity s = helper.getBlockEntity(rel, SingularityReactorBlockEntity.class);
+        helper.assertTrue(s.isFormed(), "an Item Port in the floor still forms the cage");
+        var items = helper.getLevel().getCapability(Capabilities.Item.BLOCK, extra, Direction.NORTH);
+        helper.assertTrue(items != null, "the extra port is connected");
+        try (Transaction tx = Transaction.openRoot()) {
+            int in = items.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(Items.OAK_LOG), 16, tx);
+            helper.assertTrue(in == 16, "it takes matter, took " + in);
+            tx.commit();
+        }
+        helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.FEED_START).is(Items.OAK_LOG), "into a feed slot");
+        helper.succeed();
     }
 }

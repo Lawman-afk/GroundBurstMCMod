@@ -41,16 +41,20 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 
 /**
  * Singularity Reactor (DESIGN.md §7, §23.3): a 5x5x5 cage run from this controller. A game abstraction: a seed held in
- * a powered cage turns whatever matter it is fed into power.
+ * a powered cage eats matter and turns it into power. One rule sets the output: <b>every item eaten is worth 10 000
+ * FE, and the core eats at most 50 items a second</b> (2 and 3 on alternate ticks), so 50 items a second gives the
+ * full 25 000 FE a tick and 10 items a second gives 5 000.
  *
  * <ul>
- * <li>Engaging: with a singularity seed in slot 0 and 500 000 FE in the buffer (charged through the Energy Port), the
- *     seed is drawn into the cage and becomes the core. There is no taking it out again.</li>
- * <li>Holding the cage costs 1 000 FE every tick, redstone or not. If the buffer cannot pay, or the structure is broken
- *     while a core is held, the singularity collapses and the core is lost.</li>
- * <li>Matter: every item fed (slot 1, through the Item Port) adds 200 000 FE of accreted matter, up to 4 000 000; the
- *     core turns up to 25 000 FE of it into power a tick. It only pushes out power above a 500 000 FE reserve, so the
- *     cage keeps about 25 seconds of grace when the feed stops.</li>
+ * <li>The seed sits in its slot like a battery in the charger and stays there. With a seed in and the buffer charged to
+ *     500 000 FE (through the Energy Port) the cage engages and holds it. Taking the seed out lets go of it safely.</li>
+ * <li>Holding the cage costs 1 000 FE every tick, redstone or not: the worth of 2 items a second just to keep it up.
+ *     If the buffer cannot pay, or the structure is broken while it holds the seed, the singularity collapses and the
+ *     seed is destroyed.</li>
+ * <li>Matter comes from the four feed slots (any item but a seed), filled through Item Ports: the one in the floor's
+ *     west side and any floor block swapped for an Item Port. Eaten matter waits in a store of up to 50 items' worth
+ *     and becomes power at up to 25 000 FE a tick. Only power above a 500 000 FE reserve is pushed out, so the cage
+ *     keeps about 25 seconds of grace when the feed stops.</li>
  * </ul>
  */
 public class SingularityReactorBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
@@ -60,23 +64,28 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     public static final int ENGAGE = 500_000;
     public static final int RESERVE = 500_000;
     public static final int UPKEEP = 1_000;
-    public static final int MASS_PER_ITEM = 200_000;
-    public static final int MASS_CAP = 4_000_000;
-    public static final int SEED_SLOT = 0, MATTER_SLOT = 1;
-    /** Sync slots: accreted matter (%), output (FE/t), core held (0/1), cage charge toward engaging (%). */
-    public static final int DATA_MASS = 0, DATA_POWER = 1, DATA_CORE = 2, DATA_CAGE = 3;
+    public static final int FE_PER_ITEM = 10_000;
+    /** Most items eaten a second: with {@link #FE_PER_ITEM} this is what sets the 25 000 FE/t ceiling. */
+    public static final int MAX_ITEMS_PER_SECOND = 50;
+    public static final int MASS_CAP = 50 * FE_PER_ITEM;
+    public static final int SEED_SLOT = 0, FEED_START = 1, FEED_SLOTS = 4;
+    /** Sync slots: stored matter (%), output (FE/t), cage engaged (0/1), cage charge toward engaging (%), items eaten in the last second. */
+    public static final int DATA_MASS = 0, DATA_POWER = 1, DATA_ENGAGED = 2, DATA_CAGE = 3, DATA_FEED = 4;
     private static final int RECHECK_INTERVAL = 40;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private final ReactorEnergyView port = new ReactorEnergyView(this.energy, () -> this.energy, () -> this.core ? RESERVE : 0);
-    private boolean core;
+    private final ReactorEnergyView port = new ReactorEnergyView(this.energy, () -> this.energy, () -> this.engaged ? RESERVE : 0);
+    private boolean engaged;
     private int mass;
     private int power;
-    /** What the model was last told (core held, accretion disk size), so clients only hear about real changes. */
+    /** Items eaten in each of the last 20 ticks, for the feed-rate readout. */
+    private final int[] eaten = new int[20];
+    /** What the model was last told (seed, cage, accretion disk size), so clients only hear about real changes. */
     private int shownStage = -1;
 
     public SingularityReactorBlockEntity(BlockPos pos, BlockState state) {
-        super(GZBlockEntities.SINGULARITY_REACTOR.get(), pos, state, CAPACITY, TRANSFER, TRANSFER, 2, new int[] {SEED_SLOT, MATTER_SLOT}, new int[0]);
+        super(GZBlockEntities.SINGULARITY_REACTOR.get(), pos, state, CAPACITY, TRANSFER, TRANSFER, 1 + FEED_SLOTS,
+                new int[] {SEED_SLOT, 1, 2, 3, 4}, new int[0]);
     }
 
     // --- multiblock ---------------------------------------------------------------------------------------------------------
@@ -115,17 +124,17 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         return false;
     }
 
-    /** Breaking the controller of a cage that holds a core collapses it. */
+    /** Breaking the controller while the cage holds the seed collapses it (the seed is destroyed, not dropped). */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (this.core && this.level instanceof ServerLevel server) {
+        if (this.engaged && this.level instanceof ServerLevel server) {
             collapse(server);
         }
         super.preRemoveSideEffects(pos, state);
         StructureMachines.unformOnRemove(this, this, state);
     }
 
-    /** The Energy Port: charge in at any time, power out only above the reserve while a core is held. */
+    /** The Energy Port: charge in at any time, power out only above the reserve while the cage is engaged. */
     @Override
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
         return side == null ? this.port : null;
@@ -138,20 +147,38 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     }
 
     // --- the cage ------------------------------------------------------------------------------------------------------------
-    public boolean holdsCore() {
-        return this.core;
+    public boolean engaged() {
+        return this.engaged;
     }
 
     public int mass() {
         return this.mass;
     }
 
+    private boolean hasSeed() {
+        return !this.inventory.getItem(SEED_SLOT).isEmpty();
+    }
+
+    /** Items eaten over the last second. */
+    public int feedRate() {
+        int sum = 0;
+        for (int n : this.eaten) {
+            sum += n;
+        }
+        return sum;
+    }
+
     /** The cage is held every tick, even while redstone halts the reactor's work. */
     @Override
     public void serverTick(ServerLevel level) {
-        if (this.core && (!isFormed() || !this.energy.consume(UPKEEP))) {
+        if (this.engaged && !hasSeed()) {
+            this.engaged = false;                       // the seed was taken out: the cage simply lets go
+            setChanged();
+        }
+        if (this.engaged && (!isFormed() || !this.energy.consume(UPKEEP))) {
             collapse(level);
         }
+        this.eaten[(int) (level.getGameTime() % this.eaten.length)] = 0;
         super.serverTick(level);
         syncStage();
     }
@@ -166,24 +193,29 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
             this.status = MachineStatus.INCOMPLETE;
             return false;
         }
-        if (!this.core) {
-            boolean seed = !this.inventory.getItem(SEED_SLOT).isEmpty();
-            if (seed && this.energy.stored() >= ENGAGE) {
-                this.inventory.removeItem(SEED_SLOT, 1);
-                this.core = true;
-                this.mass = 0;
-                setChanged();
-            } else {
-                this.status = seed ? MachineStatus.CHARGING : MachineStatus.NO_CORE;
+        if (!this.engaged) {
+            if (!hasSeed()) {
+                this.status = MachineStatus.NO_CORE;
                 return false;
             }
+            if (this.energy.stored() < ENGAGE) {
+                this.status = MachineStatus.CHARGING;
+                return false;
+            }
+            this.engaged = true;
+            setChanged();
         }
-        // Accrete: one item a tick while there is room for its matter.
-        ItemStack feed = this.inventory.getItem(MATTER_SLOT);
-        if (!feed.isEmpty() && this.mass <= MASS_CAP - MASS_PER_ITEM) {
-            this.inventory.removeItem(MATTER_SLOT, 1);
-            this.mass += MASS_PER_ITEM;
+        // Eat: 2 or 3 items a tick (50 a second), while the store has room.
+        int bite = 2 + (int) (level.getGameTime() & 1);
+        int ate = 0;
+        for (int slot = FEED_START; slot < FEED_START + FEED_SLOTS && ate < bite; slot++) {
+            while (ate < bite && this.mass + FE_PER_ITEM <= MASS_CAP && !this.inventory.getItem(slot).isEmpty()) {
+                this.inventory.removeItem(slot, 1);
+                this.mass += FE_PER_ITEM;
+                ate++;
+            }
         }
+        this.eaten[(int) (level.getGameTime() % this.eaten.length)] = ate;
         int room = this.energy.capacity() - this.energy.stored();
         int made = Math.min(MAX_OUTPUT, Math.min(this.mass, room));
         if (made > 0) {
@@ -201,10 +233,11 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         return made > 0;
     }
 
-    /** The cage lost containment: the core is gone, with a flash, a boom and a pull of particles toward the centre. */
+    /** The cage lost containment: the seed is destroyed, with a flash, a boom and a pull of particles toward the centre. */
     private void collapse(ServerLevel level) {
-        this.core = false;
+        this.engaged = false;
         this.mass = 0;
+        this.inventory.removeItem(SEED_SLOT, 1);
         setChanged();
         Vec3 centre = chamberCentre();
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, centre.x, centre.y, centre.z, 160, 1.2, 1.2, 1.2, 0.4);
@@ -241,12 +274,15 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         }
     }
 
-    /** 0 no core, 1 bare core, 2-4 small to large accretion disk. */
+    /** 0 no seed, 1 seed resting in the cradle, 2 cage holding it, 3-5 small to large accretion disk. */
     private int stage() {
-        if (!this.core) {
+        if (!hasSeed()) {
             return 0;
         }
-        return this.mass <= 0 ? 1 : 2 + Math.min(2, this.mass * 3 / (MASS_CAP + 1));
+        if (!this.engaged) {
+            return 1;
+        }
+        return this.mass <= 0 ? 2 : 3 + Math.min(2, (int) ((long) this.mass * 3 / (MASS_CAP + 1)));
     }
 
     private void syncStage() {
@@ -261,13 +297,13 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     @Override
     public List<Component> readout(MachineMenu menu) {
         return List.of(Component.translatable(MachineText.OUTPUT, menu.extra(DATA_POWER)),
-                menu.extra(DATA_CORE) != 0 ? Component.translatable(MachineText.MASS, menu.extra(DATA_MASS))
+                menu.extra(DATA_ENGAGED) != 0 ? Component.translatable(MachineText.FEED, menu.extra(DATA_FEED))
                         : Component.translatable(MachineText.CAGE_CHARGE, menu.extra(DATA_CAGE)));
     }
 
     @Override
     protected int extraDataCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -275,8 +311,9 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         return switch (index) {
             case DATA_MASS -> (int) ((long) this.mass * 100 / MASS_CAP);
             case DATA_POWER -> this.power;
-            case DATA_CORE -> this.core ? 1 : 0;
-            case DATA_CAGE -> this.core ? 100 : (int) Math.min(100, (long) this.energy.stored() * 100 / ENGAGE);
+            case DATA_ENGAGED -> this.engaged ? 1 : 0;
+            case DATA_CAGE -> this.engaged ? 100 : (int) Math.min(100, (long) this.energy.stored() * 100 / ENGAGE);
+            case DATA_FEED -> feedRate();
             default -> 0;
         };
     }
@@ -287,7 +324,10 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     }
 
     // --- rendering -----------------------------------------------------------------------------------------------------------
-    /** The core, its accretion disk (three sizes, one shown) and the emitter beams only show while a core is held. */
+    /**
+     * The seed shows in the cradle while it is in its slot; the beams while the cage holds it; the accretion disk (three
+     * sizes, one shown) while it has matter to eat. Item hatches show on the floor cells that are Item Ports.
+     */
     @Override
     public Set<String> hiddenBones() {
         if (!isFormed()) {
@@ -296,11 +336,21 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         int stage = stage();
         Set<String> hidden = new java.util.HashSet<>();
         if (stage == 0) {
-            hidden.addAll(List.of("core", "beams"));
+            hidden.add("core");
+        }
+        if (stage < 2) {
+            hidden.add("beams");
         }
         for (int i = 0; i < 3; i++) {
-            if (stage != 2 + i) {
+            if (stage != 3 + i) {
                 hidden.add("disk" + i);
+            }
+        }
+        if (this.level != null) {
+            for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
+                if (cell.key() == 'B' && !this.level.getBlockState(cell.pos()).is(GZMultiblocks.ITEM_PORT.block().get())) {
+                    hidden.add("hatch_" + cell.col() + "_" + cell.row());
+                }
             }
         }
         return hidden;
@@ -329,14 +379,14 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        output.putBoolean("core", this.core);
+        output.putBoolean("engaged", this.engaged);
         output.putInt("mass", this.mass);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        this.core = input.getBooleanOr("core", false);
+        this.engaged = input.getBooleanOr("engaged", false);
         this.mass = input.getIntOr("mass", 0);
     }
 }

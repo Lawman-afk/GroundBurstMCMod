@@ -90,7 +90,9 @@ def load_animation(model_id: str, anim: str) -> dict:
 
 # --- geometry ------------------------------------------------------------------------------------------------------------
 
-def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0, labels: list | None = None) -> list[R.Quad]:
+def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0, labels: list | None = None,
+              hidden: tuple[str, ...] = ()) -> list[R.Quad]:
+    """{hidden}: bone-name prefixes not to draw (with their children), as the game's renderer hides bones."""
     ns, p = R._split_id(model_id)
     kind, name = p.split("/", 1)
     geo = json.loads((paths.GEO / kind / f"{name}.geo.json").read_text(encoding="utf-8"))["minecraft:geometry"][0]
@@ -118,8 +120,17 @@ def geo_quads(model_id: str, animation: dict | None = None, time: float = 0.0, l
         parent = b.get("parent")
         return (bone_matrix(parent) @ m) if parent else m
 
+    def is_hidden(name: str | None) -> bool:
+        while name:
+            if name.startswith(hidden) if hidden else False:
+                return True
+            name = bones[name].get("parent")
+        return False
+
     quads: list[R.Quad] = []
     for bname, b in bones.items():
+        if is_hidden(bname):
+            continue
         bm = bone_matrix(bname)
         for ci, c in enumerate(b.get("cubes", [])):
             ox, oy, oz = c["origin"]

@@ -254,13 +254,13 @@ LAYOUTS = {
                      ("scram", 140, 54, 18, 22, -1, 0, 2, "groundzero.gui.scram")],
         "inventory": (8, 112),
     },
-    # Fusion Reactor: deuterium, tritium and liquid nitrogen tanks, a pellet slot, the ignition-charge gauge.
+    # Fusion Reactor: deuterium, tritium and liquid nitrogen tanks, the ignition-charge gauge.
     "fusion_reactor": {
         "title": (8, 6),
         "size": (176, 194),
-        "slots": [("pellet", 96, 35)],
+        "slots": [],
         "energy": (8, 20, 14, 46),
-        "tanks": [(30, 20, 12, 46, "D", False), (46, 20, 12, 46, "T", False), (62, 20, 12, 46, "LN2", False)],
+        "tanks": [(52, 20, 12, 46, "D", False), (74, 20, 12, 46, "T", False), (96, 20, 12, 46, "LN2", False)],
         "progress": None,
         "flame": None,
         "status": (160, 5, 8, 8),
@@ -269,12 +269,12 @@ LAYOUTS = {
         "controls": [("charge", 140, 20, 8, 56, 0, 100, -1, "groundzero.gui.ignition")],
         "inventory": (8, 112),
     },
-    # Singularity Reactor: the seed slot (the core), the matter feed and the accreted-matter gauge.
+    # Singularity Reactor: the seed slot (it stays there), four feed slots and the stored-matter gauge.
     "singularity_reactor": {
         "title": (8, 6),
         "size": (176, 194),
-        "slots": [("seed", 96, 35), ("matter", 50, 35)],
-        "chevrons": [(74, 41, True), (80, 41, True), (86, 41, True)],
+        "slots": [("seed", 108, 35), ("matter", 40, 26), ("matter", 58, 26), ("matter", 40, 44), ("matter", 58, 44)],
+        "chevrons": [(84, 41, True), (90, 41, True), (96, 41, True)],
         "energy": (8, 20, 14, 46),
         "progress": None,
         "flame": None,

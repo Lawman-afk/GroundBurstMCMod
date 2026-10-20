@@ -13,7 +13,6 @@ import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockController;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
-import dev.groundzero.content.nuclear.GZNuclear;
 import dev.groundzero.content.power.PowerUtil;
 import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZMenus;
@@ -42,15 +41,15 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
  * reactor design: fuel in, an ignition charge, cold magnets, power out.
  *
  * <ul>
- * <li>Fuel: deuterium and tritium gas (1 mB of each every 4 ticks), or lithium deuteride pellets (one lasts 3 600
- *     ticks) when the gases are not both there.</li>
+ * <li>Fuel: deuterium and tritium gas, 1 mB of each every 4 ticks. (Lithium deuteride pellets are kept for the
+ *     thermonuclear weapons, so the reactor does not burn them.)</li>
  * <li>Ignition: while the plasma is out, the Energy Port takes power into a separate ignition charge; at 2 000 000 FE,
  *     with fuel and liquid nitrogen in, the plasma lights and the charge is spent.</li>
  * <li>Lit: 6 000 FE a tick into the output buffer, pushed out of the Energy Port; liquid nitrogen keeps the magnets
  *     cold at 2 mB a tick. With the buffer full it idles (no fuel used). Out of fuel or nitrogen, unformed or halted by
  *     redstone, the plasma goes out and needs a fresh ignition charge.</li>
  * </ul>
- * Slot 0: lithium deuteride pellets. Tanks: 0 deuterium, 1 tritium, 2 liquid nitrogen.
+ * No item slots. Tanks: 0 deuterium, 1 tritium, 2 liquid nitrogen.
  */
 public class FusionReactorBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
     public static final int OUTPUT = 6_000;
@@ -59,7 +58,6 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     public static final int IGNITION_ENERGY = 2_000_000;
     public static final int IGNITION_INTAKE = 32_768;
     public static final int GAS_TICKS_PER_MB = 4;
-    public static final int PELLET_TICKS = 3_600;
     public static final int NITROGEN_PER_TICK = 2;
     public static final int TANK_DEUTERIUM = 0, TANK_TRITIUM = 1, TANK_NITROGEN = 2;
     /** Sync slots: ignition charge (%), output (FE/t), plasma lit (0/1). */
@@ -73,13 +71,11 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     private boolean lit;
     private int power;
     private float gasDebt;
-    /** Ticks of full power left in the pellet being burnt. */
-    private float pelletBurn;
     /** The last tick the reactor ran (-1: not yet since loading, so a reload never counts as a skipped tick). */
     private long lastTick = -1;
 
     public FusionReactorBlockEntity(BlockPos pos, BlockState state) {
-        super(GZBlockEntities.FUSION_REACTOR.get(), pos, state, CAPACITY, 0, PUSH, 1, new int[] {0}, new int[0],
+        super(GZBlockEntities.FUSION_REACTOR.get(), pos, state, CAPACITY, 0, PUSH, 0, new int[0], new int[0],
                 List.of(gasTank(GZFluids.DEUTERIUM, 8_000), gasTank(GZFluids.TRITIUM, 8_000), gasTank(GZFluids.LIQUID_NITROGEN, 16_000)));
     }
 
@@ -138,7 +134,7 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return slot == 0 && stack.is(GZNuclear.LITHIUM_DEUTERIDE_PELLET.get());
+        return false;
     }
 
     // --- the plasma ----------------------------------------------------------------------------------------------------------
@@ -154,9 +150,6 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
         return this.tanks.get(TANK_DEUTERIUM).amount() >= 1 && this.tanks.get(TANK_TRITIUM).amount() >= 1;
     }
 
-    private boolean hasFuel() {
-        return hasGas() || this.pelletBurn > 0 || !this.inventory.getItem(0).isEmpty();
-    }
 
     @Override
     protected boolean tickMachine(ServerLevel level) {
@@ -175,7 +168,7 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
             return false;
         }
         boolean nitrogen = this.tanks.get(TANK_NITROGEN).amount() >= NITROGEN_PER_TICK;
-        boolean fuel = hasFuel();
+        boolean fuel = hasGas();
         if (!this.lit) {
             if (!fuel) {
                 this.status = MachineStatus.NO_FUEL;
@@ -211,22 +204,14 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
         return true;
     }
 
-    /** Burns {@code lvl} ticks' worth of fuel: the gases while both are there, else pellets. */
+    /** Burns {@code lvl} ticks' worth of deuterium and tritium. */
     private void burnFuel(float lvl) {
-        if (hasGas()) {
-            this.gasDebt += lvl / GAS_TICKS_PER_MB;
-            if (this.gasDebt >= 1) {
-                this.gasDebt -= 1;
-                this.tanks.get(TANK_DEUTERIUM).drainInternal(1);
-                this.tanks.get(TANK_TRITIUM).drainInternal(1);
-            }
-            return;
+        this.gasDebt += lvl / GAS_TICKS_PER_MB;
+        if (this.gasDebt >= 1) {
+            this.gasDebt -= 1;
+            this.tanks.get(TANK_DEUTERIUM).drainInternal(1);
+            this.tanks.get(TANK_TRITIUM).drainInternal(1);
         }
-        if (this.pelletBurn <= 0 && !this.inventory.getItem(0).isEmpty()) {
-            this.inventory.removeItem(0, 1);
-            this.pelletBurn = PELLET_TICKS;
-        }
-        this.pelletBurn = Math.max(0, this.pelletBurn - lvl);
     }
 
     private void setLit(boolean lit) {
@@ -318,7 +303,6 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
         this.ignition.serialize(output.child("ignition"));
         output.putBoolean("lit", this.lit);
         output.putFloat("gas_debt", this.gasDebt);
-        output.putFloat("pellet_burn", this.pelletBurn);
     }
 
     @Override
@@ -327,6 +311,5 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
         this.ignition.deserialize(input.childOrEmpty("ignition"));
         this.lit = input.getBooleanOr("lit", false);
         this.gasDebt = input.getFloatOr("gas_debt", 0);
-        this.pelletBurn = input.getFloatOr("pellet_burn", 0);
     }
 }

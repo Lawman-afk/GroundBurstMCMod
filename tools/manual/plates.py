@@ -22,8 +22,13 @@ import render as R  # noqa: E402
 import content  # noqa: E402
 
 
+# Bones a plate leaves out, as the game would for the pictured state (the singularity: no extra item hatches, the
+# largest accretion disk).
+HIDDEN = {"singularity_reactor": ("hatch_", "disk0", "disk1")}
+
+
 def plate(name: str, w: int, h: int) -> Path:
-    quads = GP.geo_quads(f"groundzero:block/{name}")
+    quads = GP.geo_quads(f"groundzero:block/{name}", hidden=HIDDEN.get(name, ()))
     center, extent = R.model_bounds(quads)
     light = np.array([0.4, 0.8, 0.45])
     light /= np.linalg.norm(light)
