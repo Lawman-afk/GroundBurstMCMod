@@ -326,7 +326,8 @@ def machine_frame() -> None:
     for y in range(C[1], Cb[1] + 1):
         t.px(C[0] + 1, y, STEEL[3])
         pts.add((C[0] + 1, y))
-    for x, y in ((C[0], C[1] + 1), (D[0] + 1, D[1] + 1), (B[0] - 1, B[1] + 1), (C[0], Cb[1] - 1)):
+    # Yellow gusset plates on the six visible corner joints (the far corner is hidden behind the frame).
+    for x, y in (D, B, C, Db, Bb, Cb):
         t.px(x, y, P.HAZARD_YELLOW[4])
         pts.add((x, y))
     outline(t, pts, STEEL.outline)
