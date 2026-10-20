@@ -174,14 +174,6 @@
     ],
     "subtitle": "subtitles.groundzero.geiger.click"
   },
-  "grenade.bounce": {
-    "sounds": [
-      "groundzero:ordnance/grenade_bounce1",
-      "groundzero:ordnance/grenade_bounce2",
-      "groundzero:ordnance/grenade_bounce3"
-    ],
-    "subtitle": "subtitles.groundzero.grenade.bounce"
-  },
   "grenade.pin": {
     "sounds": [
       "groundzero:ordnance/grenade_pin"

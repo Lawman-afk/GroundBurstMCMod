@@ -10,6 +10,9 @@ fight), which reads as a rounded can at this size. Faces are painted one model p
 - Sticky Grenade: a dark gunmetal can on a glossy black tar-coated base, a grey cap with a red button.
 - Incendiary Grenade: a red can with a white flame stencil on a white band, steel fuze head, spoon and pin.
 - Smoke Grenade: a grey can with a green cap and vent holes on top, a white band, spoon and pin.
+- Poison Gas Grenade: the smoke grenade's can in khaki, a yellow band and skull stencil, a yellow vented cap.
+- Toxin Grenade: a glossy toxic-green can with a black band and a black droplet stencil.
+- Toxic Sludge (block): the film a toxin grenade leaves, a glowing green splatter that gets patchier as it dries.
 """
 from __future__ import annotations
 
@@ -37,6 +40,8 @@ CAN_RED = P.WARNING_RED
 SMOKE_GREY = fixed("smoke_can", "#1e2224", "#30363a", "#454c50", "#5c6468", "#757d82", "#939a9e", "#b8bec2")
 CAP_GREEN = fixed("smoke_cap", "#0c2410", "#14381a", "#1e5426", "#2a7034", "#3a8c46", "#5aa862", "#8acc8e")
 WHITE = P.WHITE_CERAMIC
+KHAKI = fixed("gas_can", "#1e2010", "#33361c", "#4a4e2a", "#62673a", "#7c814c", "#999e66", "#c0c492")
+TOXIC = fixed("toxin", "#0c2a06", "#16480a", "#22680e", "#349014", "#4cb420", "#7cd83a", "#c0f480")
 
 
 def prism(m: BlockModel, name: str, cx: float, cz: float, r: float, w: float, y0: float, y1: float) -> list[str]:
@@ -139,16 +144,29 @@ def frag() -> None:
 
 
 def dynamite() -> None:
-    m = BlockModel("dynamite", tex_size=(32, 32), kind="item")
-    sticks = [("stick_a", 5.5, 6), ("stick_b", 8.5, 6), ("stick_c", 7, 8.5)]
+    m = BlockModel("dynamite", tex_size=(64, 64), kind="item")
+    # Three 2.5 x 10 sticks in a triangle, gaps left open between them.
+    sticks = [("stick_a", 4.5, 5.5), ("stick_b", 9, 5.5), ("stick_c", 6.75, 8.5)]
     for name, x, z in sticks:
-        m.box(name, (x, 2, z), (x + 2, 10, z + 2))
+        m.box(name, (x, 2, z), (x + 2.5, 12, z + 2.5))
     tapes = []
     for name, x, z in sticks:                          # tape round each stick (so the gaps between them stay open)
-        for k, (y0, y1) in enumerate(((3, 4), (7.5, 8.5))):
+        for k, (y0, y1) in enumerate(((3.5, 4.5), (9, 10))):
             tapes.append(f"{name}_tape{k}")
-            m.box(tapes[-1], (x - 0.2, y0, z - 0.2), (x + 2.2, y1, z + 2.2))
-    m.box("fuse", (7.8, 10, 9.3), (8.2, 12, 9.7))
+            m.box(tapes[-1], (x - 0.2, y0, z - 0.2), (x + 2.7, y1, z + 2.7))
+    # A wire up out of each stick, bent in to a twist over the middle, and one fuse on up from there.
+    wires = {
+        "wire_a": [((6.3, 12, 7.6), (6.6, 13, 7.9)), ((6.6, 12.7, 7.6), (7.55, 13, 7.9))],
+        "wire_b": [((9.4, 12, 7.6), (9.7, 13, 7.9)), ((8.45, 12.7, 7.6), (9.4, 13, 7.9))],
+        "wire_c": [((7.85, 12, 9.0), (8.15, 13, 9.3)), ((7.85, 12.7, 8.2), (8.15, 13, 9.0))],
+    }
+    wire_boxes = []
+    for name, parts in wires.items():
+        for k, (lo, hi) in enumerate(parts):
+            wire_boxes.append(f"{name}{k}")
+            m.box(wire_boxes[-1], lo, hi)
+    m.box("twist", (7.55, 12.6, 7.3), (8.45, 13.4, 8.2))
+    m.box("fuse", (7.8, 13.4, 7.55), (8.2, 15.4, 7.95))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
 
@@ -165,7 +183,17 @@ def dynamite() -> None:
     for name, _, _ in sticks:
         m.paint_all(t, name, stick)
     fill_all(m, t, tapes, shaded(TAR))
-    m.paint_all(t, "fuse", shaded(WHITE))
+    fill_all(m, t, wire_boxes, shaded(WHITE, top_light=False))
+    m.paint_all(t, "twist", shaded(TAR))
+
+    def fuse(t: Tex, r, d):
+        shaded(WHITE, top_light=False)(t, r, d)
+        x, y, w, h = r
+        if d == "up":
+            t.rect(x, y, w, h, TAR.light)                  # the cut end, charred
+        elif d != "down":
+            t.hline(x, y, w, TAR.light)
+    m.paint_all(t, "fuse", fuse)
     finish(m, t)
 
 
@@ -197,6 +225,21 @@ def sticky() -> None:
     finish(m, t)
 
 
+def stencil(t: Tex, decal: str, x: int, y: int, w: int, colour) -> None:
+    """A stencil across the front of a prism can. Seen from the front, the can is the side box's 3 px face with one
+    column of the core's 5 px face either side of it, so the decal (centred in 5 columns) is split between them: its
+    middle three columns on the side box, its outer two on the core."""
+    from gz.tex import DECALS
+    rows = (decal if "|" in decal else DECALS[decal]).split("|")      # a decal name, or a pattern of its own
+    pad = (5 - len(rows[0])) // 2
+    rows = ["." * pad + r + "." * (5 - len(r) - pad) for r in rows]
+    cols = {5: (0, 4), 3: (1, 2, 3)}.get(w, ())
+    for dy, row in enumerate(rows):
+        for c in cols:
+            if row[c] == "#":
+                t.px(x + (c if w == 5 else c - 1), y + dy, colour)
+
+
 def can_grenade(name: str, ramp, band, decal: str | None, cap, vents: bool) -> None:
     m = BlockModel(name, tex_size=(32, 32), kind="item", render_type="minecraft:cutout")
     can = prism(m, "can", 8, 8, 2.5, 1.5, 2, 9.5)
@@ -210,8 +253,8 @@ def can_grenade(name: str, ramp, band, decal: str | None, cap, vents: bool) -> N
         shaded(ramp)(t, r, d)
         if d in ("north", "south", "east", "west"):
             t.hline(x, y + 1, w, band)                     # a thin stencil stripe round the top
-            if decal and d in ("north", "south") and w >= 5:
-                t.decal(decal, x + (w - 5) // 2, y + 2, band)   # the stencil itself, white on the can
+            if decal and d in ("north", "south"):
+                stencil(t, decal, x, y + 2, w, band)
     fill_all(m, t, can, body)
 
     def cap_paint(t: Tex, r, d):
@@ -222,6 +265,52 @@ def can_grenade(name: str, ramp, band, decal: str | None, cap, vents: bool) -> N
     m.paint_all(t, "cap", cap_paint)
     steel_parts(m, t)
     finish(m, t)
+
+
+def toxic_sludge() -> None:
+    """The toxin film: a 1 px layer on the floor, cut out of a splatter mask that thins out with each stage (0-3)."""
+    import numpy as np
+    rng = np.random.default_rng(77)
+    yy, xx = np.indices((16, 16))
+    field = np.zeros((16, 16))
+    for _ in range(14):                                      # overlapping blobs, wrapping so neighbours join up
+        cx, cy, r = rng.uniform(0, 16), rng.uniform(0, 16), rng.uniform(2.0, 4.5)
+        dx = np.minimum(abs(xx - cx), 16 - abs(xx - cx))
+        dy = np.minimum(abs(yy - cy), 16 - abs(yy - cy))
+        field += np.exp(-(dx * dx + dy * dy) / (r * r))
+    field += rng.uniform(-0.12, 0.12, (16, 16))
+    order = np.sort(field.ravel())
+    variants = {}
+    for age, cover in enumerate((0.92, 0.7, 0.48, 0.28)):
+        cut = order[int((1 - cover) * 255)]
+        t = Tex(16, 16)
+        for y in range(16):
+            for x in range(16):
+                v = field[y, x]
+                if v < cut:
+                    continue
+                depth = (v - cut) / (order[-1] - cut + 1e-6)     # 0 at the edge of a patch, 1 at its heart
+                tone = TOXIC.shadow if depth < 0.12 else TOXIC.base if depth < 0.45 else TOXIC.light if depth < 0.8 else TOXIC.highlight
+                t.px(x, y, tone)
+        for _ in range(5 - age):                                 # a few bubbles on the wetter patches
+            x, y = int(rng.integers(0, 16)), int(rng.integers(0, 16))
+            if field[y, x] > cut + 0.3:
+                t.px(x, y, TOXIC.highlight)
+                if x + 1 < 16:
+                    t.px(x + 1, y, TOXIC.light)
+        name = f"toxic_sludge_{age}"
+        t.save(paths.TEXTURES / "block" / f"{name}.png")
+        side = {"uv": [0, 0, 16, 1], "texture": "#sludge"}
+        write_json(paths.MODELS / "block" / f"{name}.json", {
+            "render_type": "minecraft:cutout",
+            "textures": {"sludge": f"groundzero:block/{name}", "particle": f"groundzero:block/{name}"},
+            "elements": [{"from": [0, 0, 0], "to": [16, 1, 16], "faces": {
+                "up": {"uv": [0, 0, 16, 16], "texture": "#sludge"},
+                "down": {"uv": [0, 0, 16, 16], "texture": "#sludge", "cullface": "down"},
+                "north": side, "south": side, "east": side, "west": side}}],
+        })
+        variants[f"age={age}"] = [{"model": f"groundzero:block/{name}", "y": r} for r in (0, 90, 180, 270)]   # turned at random
+    write_json(paths.ASSETS / "blockstates" / "toxic_sludge.json", {"variants": variants})
 
 
 def item_defs(names: list[str]) -> None:
@@ -235,7 +324,10 @@ def main() -> None:
     sticky()
     can_grenade("incendiary_grenade", CAN_RED, WHITE.light, "flame5x7", STEEL, vents=False)
     can_grenade("smoke_grenade", SMOKE_GREY, WHITE.light, None, CAP_GREEN, vents=True)
-    item_defs(["frag_grenade", "dynamite", "sticky_grenade", "incendiary_grenade", "smoke_grenade"])
+    can_grenade("gas_grenade", KHAKI, YELLOW.base, "skull5", YELLOW, vents=True)
+    can_grenade("toxin_grenade", TOXIC, TAR.base, ".....|..#..|.###.|#####|#####|.###.", TAR, vents=False)   # a droplet
+    item_defs(["frag_grenade", "dynamite", "sticky_grenade", "incendiary_grenade", "smoke_grenade", "gas_grenade", "toxin_grenade"])
+    toxic_sludge()
     print("grenades written")
 
 

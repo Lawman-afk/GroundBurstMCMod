@@ -54,6 +54,11 @@ public class ChemLiquidBlock extends LiquidBlock {
                     living.hurtServer(server, server.damageSources().freeze(), 1f);
                 }
             }
+            case TOXIC -> {
+                if (living.tickCount % 10 == 0) {
+                    dev.groundzero.content.ordnance.Toxins.expose(server, living, 1f, 100, 1);
+                }
+            }
             case NONE -> {
             }
         }

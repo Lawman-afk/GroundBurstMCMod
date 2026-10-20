@@ -873,6 +873,27 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   slime ball), incendiary x2 (napalm canister, steel plate, gunpowder), smoke x2 (steel plate, saltpeter x2,
   charcoal). Field Manual: new Ordnance chapter.
 
+### 14.2 As built: grenade feedback and chemical grenades (slice 6a, second pass)
+- Dynamite: bigger sticks (2.5 x 10), a wire out of each stick twisted together over the middle into one fuse; blast
+  crater 3.5 (was 2.5). The fuse fizz is bound to the thrown entity, so it follows the dynamite. No bounce sounds; the
+  pin is a single click.
+- Smoke (and gas) hides: `LivingVisibilityEvent` cuts visibility to a tenth for anyone in a cloud, or looking out of one.
+- Chemicals: **Salt** (Chemical Plant: 4 dried kelp + 1 000 mB water -> 2), **Chlorine** gas (2 salt + 1 000 mB water;
+  yellow-green, toxic, its own gas canister), **Toxin** (a made-up glowing green liquid: 1 000 mB chlorine + 500 mB
+  sulfuric acid + 2 spider eyes + a poisonous potato; thick, toxic, canister and bucket).
+- `Toxins.expose(level, entity, damage, poisonTicks, amplifier)`: damage `groundzero:toxin` (bypasses armour, no
+  knockback) plus Poison, both cut by `GZArmor.chemicalProtection` (each suit piece's share: hood 20%, coat 35%,
+  trousers 30%, boots 15%; a full set of either suit keeps out all of it). Used by the gas grenade, toxin sludge, toxic
+  liquids (Toxin) and toxic gas clouds (chlorine, UF6). Suit tooltips give radiation and chemical figures.
+- **Poison Gas Grenade** (2 s, bounce): the smoke grenade's cloud in chlorine for 25 s, lower and yellow-green; every
+  10 ticks everything within the cloud takes 1 toxin damage and Poison II for 5 s. It blinds and hides like smoke.
+- **Toxin Grenade** (impact): no blast; splashes **Toxic Sludge** on the floor within 3.5 blocks (solid in the middle,
+  spattered at the edge; the floor search is the incendiary's), 3 damage and 8 s of Poison II to everything in the
+  splash. Sludge: a 1 px film, glowing (light 7 down to 4), fuming, no collision, replaceable, gone with its floor;
+  every 10 ticks 1.5 toxin damage and 4 s of Poison II to whatever stands in it; dries in four stages of 30-40 s.
+- Recipes: gas grenade x2 (chlorine canister, steel plate, gunpowder), toxin grenade x2 (toxin canister, steel plate,
+  gunpowder). Field Manual: "Chemical grenades" entry; the hazmat entry covers chemical protection.
+
 ## 15. Nuclear weapons
 
 | Weapon | Class | Yield (flavour) | Core | Crater (depth) | Structural | Fire | Lethal | Damage | Radiation (half-life) | Look |
@@ -1819,3 +1840,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | After the in-game look at the meltdown: critical cores keep heating with coolant (water used to hold one at ~1 295 °C forever), the meltdown blast roughly doubled (crater 16, not instant; corium poured after it), contamination radius 48, Radiation Sickness much harsher per level (0.5 / 1.5 / 4 / 8 damage a second, slowness), and the Hazmat Suit and Lead-Lined Hazmat Suit built (75% / 92% radiation protection). "Hazmat" covers radioactive contamination too; lead lining is what stops more of the radiation itself. |
 | 2026-10-21 | Phase 6 plan (agreed with the user): slices 6a thrown (grenade framework; Dynamite, Frag with real shrapnel, Sticky, Incendiary, Smoke), 6b placed charges and fuzes (Arming Key, Remote Detonator, C4 with stacking, Breaching, Thermite, Timed Bomb with defuse GUI), 6c mines (Landmine, Bouncing Mine, Claymore), 6d bombs as armable placed blocks (HE, Heavy, Thermobaric, Cluster, Bunker Buster, Napalm, MOAB), 6e effect systems (toxin gas grid §16.7, EMP fields §21.4, freezing) with the Toxin, EMP and Cryo grenades and the Chemical Bomb. Bombs get direct crafting recipes now; the Assembly Bench (Phase 7) replaces them and adds fuze choice. The gas, EMP and frost systems are built in Phase 6 rather than waiting for Phase 12. |
 | 2026-10-21 | Slice 6a thrown explosives: one projectile entity for every kind with our own bounce / stick / impact physics, real shrapnel projectiles for the frag, a floor search (not the heightmap) for the incendiary's fire carpet so it works under roofs, smoke that breaks mob targeting; grenades get 3D item models rather than flat sprites, so they tumble properly in flight. |
+| 2026-10-21 | Grenade feedback: gas grenade is a smoke-style chlorine cloud (not block gas, per the user); toxin is a made-up liquid and its grenade leaves a decaying sludge film (C&C GLA style); one `Toxins` path for every chemical hazard so hazmat suits protect against all of them by piece share; salt comes from dried kelp so a water-only recipe cannot hijack other Chemical Plant recipes. |

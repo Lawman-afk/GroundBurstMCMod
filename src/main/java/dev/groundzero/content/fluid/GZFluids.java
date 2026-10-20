@@ -70,6 +70,11 @@ public final class GZFluids {
     public static final ChemFluid TRITIUM = gas("tritium", "Tritium", 0xFFB8F0D0, Hazard.NONE, GZChemicals.TRITIUM_CANISTER);
     public static final ChemFluid URANIUM_HEXAFLUORIDE = gas("uranium_hexafluoride", "Uranium Hexafluoride", 0xFFC6D06A, Hazard.TOXIC,
             GZChemicals.UF6_CANISTER);
+    /** Poison gas grenades' filling (and the toxin's base). */
+    public static final ChemFluid CHLORINE = gas("chlorine", "Chlorine", 0xFFA8D430, Hazard.TOXIC, GZChemicals.CHLORINE_CANISTER);
+    /** A made-up, glowing green poison for the toxin grenade (and, later, larger chemical weapons). */
+    public static final ChemFluid TOXIN = liquid("toxin", "Toxin", Look.THICK, 0xFF7CE03A, Hazard.TOXIC,
+            1300, 4, 300, GZChemicals.TOXIN_CANISTER, GZParts.EMPTY_CANISTER, MapColor.COLOR_LIGHT_GREEN);
 
     /** Fluid pipes in three tiers, like the cables (see {@link FluidPipeTier}). */
     public static final GZBlocks.WithItem<FluidPipeBlock> COPPER_FLUID_PIPE = pipe(FluidPipeTier.COPPER);

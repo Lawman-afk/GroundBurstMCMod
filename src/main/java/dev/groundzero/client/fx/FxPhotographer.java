@@ -54,7 +54,8 @@ public final class FxPhotographer {
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
-                new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)))) {
+                new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)),
+                new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -92,6 +93,16 @@ public final class FxPhotographer {
                 new Vec3(0.35, 0.25, -0.45), 70);
         throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.INCENDIARY_GRENADE.get(), new Vec3(x + 3, ground + 6, -2.5),
                 new Vec3(0, -0.05, 0), -1);
+    }
+
+    /** The chemical grenades: a poison gas cloud, a toxin splash, and a stick of dynamite close up between them. */
+    private static void chemical(ServerLevel level, int x, int ground) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.CREATIVE);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE.get(), new Vec3(x + 2, ground + 0.05, 2.5), Vec3.ZERO, 5);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE.get(), new Vec3(x - 1, ground + 4, -2.5),
+                new Vec3(0, -0.2, 0), -1);
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE.get(), new Vec3(x - 4, ground + 0.05, 0.5), Vec3.ZERO, 4000);
     }
 
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
@@ -163,6 +174,10 @@ public final class FxPhotographer {
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
                 if (s.profile().equals("grenades")) {
                     grenades(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("chemical")) {
+                    chemical(level, x, ground);
                     return;
                 }
                 if (s.profile().startsWith("suits")) {

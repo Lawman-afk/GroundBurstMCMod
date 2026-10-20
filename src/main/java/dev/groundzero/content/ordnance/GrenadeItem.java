@@ -27,12 +27,17 @@ public class GrenadeItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                this.type == GrenadeType.DYNAMITE ? GZOrdnance.DYNAMITE_LIGHT.get() : GZOrdnance.GRENADE_PIN.get(), SoundSource.PLAYERS, 0.8f,
-                0.95f + level.getRandom().nextFloat() * 0.1f);
+        float pitch = 0.95f + level.getRandom().nextFloat() * 0.1f;
+        if (this.type != GrenadeType.DYNAMITE) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), GZOrdnance.GRENADE_PIN.get(), SoundSource.PLAYERS, 0.8f, pitch);
+        }
         if (level instanceof ServerLevel server) {
-            Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack, player, 0f,
-                    this.type.speed, 1.0f);
+            ThrownExplosive thrown = Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack,
+                    player, 0f, this.type.speed, 1.0f);
+            if (this.type == GrenadeType.DYNAMITE) {
+                // The lit fuse fizzes where the dynamite is, following it through the air.
+                server.playSound(null, thrown, GZOrdnance.DYNAMITE_LIGHT.get(), SoundSource.PLAYERS, 0.8f, pitch);
+            }
         }
         player.awardStat(Stats.ITEM_USED.get(this));
         player.getCooldowns().addCooldown(stack, 10);

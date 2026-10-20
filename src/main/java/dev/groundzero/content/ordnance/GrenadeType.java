@@ -18,7 +18,11 @@ public enum GrenadeType {
     /** Bursts on impact into a carpet of fire. */
     INCENDIARY("incendiary_grenade", -1, Behaviour.IMPACT, 1.1f),
     /** Pops after 2 s and pours out a dense cloud for 30 s that blinds mobs. */
-    SMOKE("smoke_grenade", 40, Behaviour.BOUNCE, 1.1f);
+    SMOKE("smoke_grenade", 40, Behaviour.BOUNCE, 1.1f),
+    /** Like the smoke grenade, but the cloud is chlorine: 25 s of poison gas that also blinds. */
+    POISON_GAS("gas_grenade", 40, Behaviour.BOUNCE, 1.1f),
+    /** Bursts on impact and splashes toxin over the ground round it. */
+    TOXIN("toxin_grenade", -1, Behaviour.IMPACT, 1.1f);
 
     public enum Behaviour { BOUNCE, STICK, IMPACT }
 
@@ -32,5 +36,14 @@ public enum GrenadeType {
         this.fuse = fuse;
         this.behaviour = behaviour;
         this.speed = speed;
+    }
+
+    /** How long it pours out its cloud once it pops (0: it makes no cloud). */
+    public int cloudTicks() {
+        return switch (this) {
+            case SMOKE -> 600;
+            case POISON_GAS -> 500;
+            default -> 0;
+        };
     }
 }

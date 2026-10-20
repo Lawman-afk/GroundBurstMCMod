@@ -25,6 +25,9 @@ public final class GZChemicals {
     public static final DeferredItem<Item> HEAVY_WATER_CANISTER = GZItems.simple("heavy_water_canister", "Heavy Water Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> TRITIUM_CANISTER = GZItems.simple("tritium_canister", "Tritium Canister", GZTab.RESOURCES);
     public static final DeferredItem<Item> UF6_CANISTER = GZItems.simple("uf6_canister", "UF6 Canister", GZTab.RESOURCES);
+    public static final DeferredItem<Item> CHLORINE_CANISTER = GZItems.simple("chlorine_canister", "Chlorine Canister", GZTab.RESOURCES);
+    public static final DeferredItem<Item> TOXIN_CANISTER = GZItems.simple("toxin_canister", "Toxin Canister", GZTab.RESOURCES);
+    public static final DeferredItem<Item> SALT = GZItems.simple("salt", "Salt", GZTab.RESOURCES);
     public static final DeferredItem<Item> MERCURY_FLASK = GZItems.simple("mercury_flask", "Mercury Flask", GZTab.RESOURCES);
     public static final DeferredItem<Item> PLASTIC_SHEET = GZItems.simple("plastic_sheet", "Plastic Sheet", GZTab.RESOURCES);
     public static final DeferredItem<Item> RDX_CRYSTALS = GZItems.simple("rdx_crystals", "RDX Crystals", GZTab.RESOURCES);

@@ -246,6 +246,12 @@ public class GZRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.INCENDIARY_GRENADE, 2)
                 .requires(GZChemicals.NAPALM_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
                 .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE, 2)
+                .requires(GZChemicals.CHLORINE_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(GZChemicals.CHLORINE_CANISTER), has(GZChemicals.CHLORINE_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIN_GRENADE, 2)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZParts.STEEL_PLATE).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE, 2)
                 .requires(GZParts.STEEL_PLATE).requires(GZTags.commonItem("dusts/saltpeter")).requires(GZTags.commonItem("dusts/saltpeter"))
                 .requires(Items.CHARCOAL)
@@ -347,6 +353,11 @@ public class GZRecipeProvider extends RecipeProvider {
                 List.of(out(GZChemicals.SOLID_PROPELLANT, 2)), null, 300, fe);
         chem("liquid_rocket_fuel", List.of(), List.of(fluid(GZFluids.SYNTHETIC_FUEL, 1_000), fluid(GZFluids.LIQUID_OXYGEN, 1_000)),
                 List.of(), GZFluids.LIQUID_ROCKET_FUEL, 300, fe);
+        // Chemical weapons: salt leached out of dried kelp, chlorine from salt water, toxin from chlorine.
+        chem("salt", List.of(in(Ingredient.of(Items.DRIED_KELP), 4)), List.of(water(1_000)), List.of(out(GZChemicals.SALT, 2)), null, 200, fe);
+        chem("chlorine", List.of(in(Ingredient.of(GZChemicals.SALT), 2)), List.of(water(1_000)), List.of(), GZFluids.CHLORINE, 300, fe);
+        chem("toxin", List.of(in(Ingredient.of(Items.SPIDER_EYE), 2), in(Ingredient.of(Items.POISONOUS_POTATO), 1)),
+                List.of(fluid(GZFluids.CHLORINE, 1_000), fluid(GZFluids.SULFURIC_ACID, 500)), List.of(), GZFluids.TOXIN, 300, fe);
         // Heavy water (reactor coolant): deuterium and liquid oxygen.
         chem("heavy_water", List.of(), List.of(fluid(GZFluids.DEUTERIUM, 1_000), fluid(GZFluids.LIQUID_OXYGEN, 500)),
                 List.of(), GZFluids.HEAVY_WATER, 300, fe);

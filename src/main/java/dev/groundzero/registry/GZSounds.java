@@ -107,8 +107,6 @@ public final class GZSounds {
     // Thrown explosives (Phase 6).
     public static final DeferredHolder<SoundEvent, SoundEvent> GRENADE_PIN =
             register("grenade.pin", "Grenade pin pulled", List.of("ordnance/grenade_pin"), false, 16);
-    public static final DeferredHolder<SoundEvent, SoundEvent> GRENADE_BOUNCE =
-            register("grenade.bounce", "Grenade bounces", variants("ordnance/grenade_bounce", 3), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> DYNAMITE_LIGHT =
             register("dynamite.light", "Fuse fizzes", List.of("ordnance/dynamite_light"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> STICKY_STICK =

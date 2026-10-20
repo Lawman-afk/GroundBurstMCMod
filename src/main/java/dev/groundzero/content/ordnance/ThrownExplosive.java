@@ -25,6 +25,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -39,7 +40,8 @@ import net.minecraft.world.phys.Vec3;
  * surface and some along it, coming to rest on the ground), sticks (to a block, or riding a creature), or goes off,
  * as its type says. The fuse counts from the throw. Going off is the explosion engine's ({@link Blasts}), plus the
  * type's own extra: shrapnel for the frag, a carpet of fire for the incendiary. A smoke grenade instead stays where it
- * lies and pours out smoke for 30 s, during which mobs in or targeting something in the cloud lose their target.
+ * lies and pours out smoke for 30 s, during which mobs in or targeting something in the cloud lose their target; a
+ * poison gas grenade does the same with chlorine, which also poisons. A toxin grenade splashes toxin over the ground.
  */
 public class ThrownExplosive extends Projectile implements ItemSupplier {
     private static final EntityDataAccessor<ItemStack> ITEM = SynchedEntityData.defineId(ThrownExplosive.class, EntityDataSerializers.ITEM_STACK);
@@ -53,6 +55,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     public static final float SMOKE_RADIUS = 5;
     public static final int SHRAPNEL = 24;
     public static final float FIRE_RADIUS = 4;
+    public static final float TOXIN_RADIUS = 3.5f;
 
     /** Client hook: the Spectacle pours smoke out of a smoking grenade (set by the client; a no-op on servers). */
     public static Consumer<ThrownExplosive> smokeHook = e -> {};
@@ -128,11 +131,14 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             if (level() instanceof ServerLevel server) {
                 if (this.smokeTicks % 10 == 0) {
                     blindMobs(server);
+                    if (type() == GrenadeType.POISON_GAS) {
+                        gas(server);
+                    }
                 }
                 if (this.smokeTicks % 60 == 1) {
                     server.playSound(null, getX(), getY(), getZ(), GZOrdnance.SMOKE_HISS.get(), SoundSource.NEUTRAL, 0.7f, 1f);
                 }
-                if (this.smokeTicks >= SMOKE_TICKS) {
+                if (this.smokeTicks >= type().cloudTicks()) {
                     discard();
                 }
             } else {
@@ -202,9 +208,6 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 }
                 setDeltaMovement(out);
                 setPos(hit.getLocation().add(n.scale(0.03)));
-                if (Math.abs(into) > 0.12) {
-                    playSound(GZOrdnance.GRENADE_BOUNCE.get(), (float) Math.min(1, Math.abs(into) * 2), 0.9f + this.random.nextFloat() * 0.2f);
-                }
             }
         }
     }
@@ -248,12 +251,17 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     // --- going off -----------------------------------------------------------------------------------------------------
     private void goOff(ServerLevel level) {
         GrenadeType type = type();
-        if (type == GrenadeType.SMOKE) {
+        if (type.cloudTicks() > 0) {
             this.entityData.set(SMOKING, true);
             unstick();
             return;
         }
         Vec3 at = position().add(0, 0.15, 0);
+        if (type == GrenadeType.TOXIN) {
+            splash(level, at);
+            discard();
+            return;
+        }
         Blasts.detonate(level, at, Blasts.profile(type.id), getOwner());
         if (type == GrenadeType.FRAG) {
             shrapnel(level, at);
@@ -279,18 +287,13 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     /** Fire on every open surface within 4 blocks (most of them), and everything alive there set burning for 8 s. */
     private void fireCarpet(ServerLevel level, Vec3 at) {
         int r = (int) Math.ceil(FIRE_RADIUS);
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        var pos = new BlockPos.MutableBlockPos();
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
                 if (dx * dx + dz * dz > FIRE_RADIUS * FIRE_RADIUS || this.random.nextFloat() > 0.85f) {
                     continue;
                 }
-                // The floor under the burst (searched down from just above it, so a roof overhead does not count).
-                int x = (int) Math.floor(at.x) + dx, z = (int) Math.floor(at.z) + dz;
-                pos.set(x, (int) Math.floor(at.y) + 1, z);
-                for (int i = 0; i < 6 && level.getBlockState(pos.below()).getCollisionShape(level, pos.below()).isEmpty(); i++) {
-                    pos.move(Direction.DOWN);
-                }
+                floor(level, at, dx, dz, pos);
                 if (level.getBlockState(pos).isAir() && BaseFireBlock.canBePlacedAt(level, pos, Direction.UP)) {
                     level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
                 }
@@ -299,6 +302,63 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(FIRE_RADIUS))) {
             if (e.position().distanceTo(at) <= FIRE_RADIUS && !e.fireImmune()) {
                 e.igniteForSeconds(8);
+            }
+        }
+    }
+
+    /**
+     * The open space on the floor under the burst, {@code dx, dz} blocks across from it, into {@code pos}: searched
+     * down from just above the burst, so a roof overhead does not count.
+     */
+    private static void floor(ServerLevel level, Vec3 at, int dx, int dz, BlockPos.MutableBlockPos pos) {
+        pos.set((int) Math.floor(at.x) + dx, (int) Math.floor(at.y) + 1, (int) Math.floor(at.z) + dz);
+        for (int i = 0; i < 6 && level.getBlockState(pos.below()).getCollisionShape(level, pos.below()).isEmpty(); i++) {
+            pos.move(Direction.DOWN);
+        }
+    }
+
+    /**
+     * The toxin grenade bursting: toxin splashed over most of the floor within 3.5 blocks (a film of sludge that
+     * poisons whatever walks in it), and a heavy dose for anything caught in the splash.
+     */
+    private void splash(ServerLevel level, Vec3 at) {
+        int r = (int) Math.ceil(TOXIN_RADIUS);
+        var pos = new BlockPos.MutableBlockPos();
+        BlockState sludge = GZOrdnance.TOXIC_SLUDGE.get().defaultBlockState();
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                float d2 = dx * dx + dz * dz;
+                // Solid near the middle, spattered toward the edge.
+                if (d2 > TOXIN_RADIUS * TOXIN_RADIUS || this.random.nextFloat() > 1.0f - 0.45f * d2 / (TOXIN_RADIUS * TOXIN_RADIUS)) {
+                    continue;
+                }
+                floor(level, at, dx, dz, pos);
+                BlockState here = level.getBlockState(pos);
+                if ((here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty() && !here.is(GZOrdnance.TOXIC_SLUDGE.get()))
+                        && sludge.canSurvive(level, pos)) {
+                    level.setBlockAndUpdate(pos, sludge);
+                }
+            }
+        }
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(TOXIN_RADIUS))) {
+            if (e.position().distanceTo(at) <= TOXIN_RADIUS) {
+                Toxins.expose(level, e, 3f, 160, 1);
+            }
+        }
+        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0x8CE040, 1.6f), at.x, at.y + 0.3, at.z, 60,
+                1.4, 0.3, 1.4, 0.05);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME, at.x, at.y + 0.3, at.z, 30, 0.8, 0.3, 0.8, 0.2);
+        level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1f, 0.8f);
+        level.playSound(null, at.x, at.y, at.z, GZOrdnance.STICKY_STICK.get(), SoundSource.NEUTRAL, 1f, 0.7f);
+    }
+
+    /** The poison gas cloud: everything alive in it breathes a dose every half second (less in a suit, none in a full one). */
+    private void gas(ServerLevel level) {
+        float radius = smokeRadius();
+        Vec3 c = position();
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(radius + 1))) {
+            if (e.getEyePosition().distanceTo(c) <= radius || e.position().distanceTo(c) <= radius) {
+                Toxins.expose(level, e, 1f, 100, 1);
             }
         }
     }
@@ -317,6 +377,17 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         }
     }
 
+    /** Whether {@code pos} is inside a smoking grenade's cloud (smoke or gas: neither can be seen through). */
+    public static boolean inCloud(Level level, Vec3 pos) {
+        for (ThrownExplosive g : level.getEntitiesOfClass(ThrownExplosive.class, new AABB(pos, pos).inflate(SMOKE_RADIUS + 1),
+                ThrownExplosive::smoking)) {
+            if (g.position().distanceTo(pos) <= g.smokeRadius()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** How far the cloud has spread (it billows out over its first 3 s). */
     public float smokeRadius() {
         return Math.min(SMOKE_RADIUS, 1 + this.smokeTicks / 15f);
@@ -327,7 +398,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         GrenadeType type = type();
         if (type == GrenadeType.DYNAMITE && this.random.nextInt(2) == 0) {
             // The sputtering fuse: sparks and a thread of smoke from the fuse end.
-            Vec3 p = position().add(0, 0.25, 0);
+            Vec3 p = position().add(0, 0.35, 0);
             level().addParticle(ParticleTypes.SMALL_FLAME, p.x, p.y, p.z, 0, 0.01, 0);
             level().addParticle(ParticleTypes.SMOKE, p.x, p.y + 0.05, p.z, 0, 0.02, 0);
             if (this.random.nextInt(3) == 0) {

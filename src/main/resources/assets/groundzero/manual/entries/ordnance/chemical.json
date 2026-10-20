@@ -1,0 +1,62 @@
+{
+  "title": "Chemical grenades",
+  "icon": "groundzero:gas_grenade",
+  "order": 1,
+  "items": [
+    "groundzero:gas_grenade",
+    "groundzero:toxin_grenade",
+    "groundzero:chlorine_canister",
+    "groundzero:toxin_canister",
+    "groundzero:salt",
+    "groundzero:chlorine_bucket",
+    "groundzero:toxin_bucket"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Grenades that poison rather than blow up. Both are made in the [Chemical Plant](processing/chemical_plant) and both are stopped by a [hazmat suit](safety/hazmat_suits): each piece keeps out its share, and a full suit of either kind keeps out all of it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:gas_grenade",
+      "text": "A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it is poisoned and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:toxin_grenade",
+      "text": "Bursts on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "item": "groundzero:salt"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundzero:chlorine"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundzero:toxin"
+    },
+    {
+      "type": "text",
+      "text": "Salt is leached out of dried kelp with water; chlorine comes from salt water. Toxin is chlorine and a little sulfuric acid worked up with spider eyes and a poisonous potato. Can them in the [Canning Machine](processing/canning_machine), then craft the canisters into grenades."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:gas_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:toxin_grenade",
+      "text": ""
+    }
+  ]
+}

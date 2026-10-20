@@ -1,0 +1,23 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundzero:chlorine"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:water"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "groundzero:salt"
+    }
+  ],
+  "time": 300
+}

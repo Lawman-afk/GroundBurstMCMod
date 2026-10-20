@@ -745,6 +745,8 @@ Right-click to throw. Most bounce and roll before they go off, so bank them off 
         ["Sticky", "4 s"],
         ["Incendiary", "on impact"],
         ["Smoke", "2 s, 30 s"],
+        ["Poison gas", "2 s, 25 s"],
+        ["Toxin", "on impact"],
     ], "Fuses"),
     spot("dynamite", """
 The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast.
@@ -759,13 +761,37 @@ Sticks to the first thing it hits, wall or creature, and goes off where it stuck
 Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds.
 """),
     spot("smoke_grenade", """
-Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target: they cannot see through it.
+Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target, and anyone standing in it is hard to spot: mobs notice you there only from a tenth of their usual range.
+"""),
+    text("""
+For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical).
 """),
     craft("dynamite"),
     craft("frag_grenade"),
     craft("sticky_grenade"),
     craft("incendiary_grenade"),
     craft("smoke_grenade"),
+])
+
+entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
+                                                                "toxin_canister", "salt", "chlorine_bucket", "toxin_bucket"], [
+    text("""
+Grenades that poison rather than blow up. Both are made in the [Chemical Plant](processing/chemical_plant) and both are stopped by a [hazmat suit](safety/hazmat_suits): each piece keeps out its share, and a full suit of either kind keeps out all of it.
+"""),
+    spot("gas_grenade", """
+A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it is poisoned and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
+"""),
+    spot("toxin_grenade", """
+Bursts on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash is badly poisoned, and the glowing green sludge it leaves keeps poisoning anything that walks through it. The sludge dries out over about two minutes.
+"""),
+    machine("chemistry", "", item="salt"),
+    machine("chemistry", "", fluid="chlorine"),
+    machine("chemistry", "", fluid="toxin"),
+    text("""
+Salt is leached out of dried kelp with water; chlorine comes from salt water. Toxin is chlorine and a little sulfuric acid worked up with spider eyes and a poisonous potato. Can them in the [Canning Machine](processing/canning_machine), then craft the canisters into grenades.
+"""),
+    craft("gas_grenade"),
+    craft("toxin_grenade"),
 ])
 
 # =========================================================================================================================
@@ -839,6 +865,9 @@ A **Lead-Lined Hazmat Suit** adds lead plates over the chest, back, shins, crown
         ["Lead-lined", "5% slower"],
     ], "Radiation stopped", """
 A full set gives the whole figure; each piece its share. Neither is much use as armour against blows.
+"""),
+    text("""
+Both suits are also sealed against chemicals: poison gas, toxin sludge and toxic liquids. Each piece keeps out the same share as above (the hood a fifth, and so on), and a full set of either keeps out all of it. See [Chemical grenades](ordnance/chemical). The figures for each piece are on its tooltip.
 """),
     text("""
 In the contaminated land round a [meltdown](safety/reactor_safety), a full Hazmat Suit keeps Radiation Sickness to its second level even at the crater, and the lead-lined suit to the first. Wash it off afterwards in a [Decontamination Shower](safety/decontamination_shower).

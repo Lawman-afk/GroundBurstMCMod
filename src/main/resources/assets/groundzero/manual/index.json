@@ -52,6 +52,7 @@
     "nuclear/fusion_reactor",
     "nuclear/singularity_reactor",
     "ordnance/thrown",
+    "ordnance/chemical",
     "safety/decontamination_shower",
     "safety/chemical_hazards",
     "safety/reactor_safety",

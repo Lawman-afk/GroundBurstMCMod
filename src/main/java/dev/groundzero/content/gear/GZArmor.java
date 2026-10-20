@@ -90,7 +90,8 @@ public final class GZArmor {
      * speed, and its share of the set's radiation protection.
      */
     private static DeferredItem<Item> piece(String name, String english, ArmorMaterial material, ArmorType type, float protection, float slowdown) {
-        DeferredItem<Item> item = GZItems.register(name, english, GZTab.GEAR, Item::new, p -> {
+        float share = protection * SHARE.get(type);
+        DeferredItem<Item> item = GZItems.register(name, english, GZTab.GEAR, p -> new SuitPiece(p, share, protection, slowdown), p -> {
             Item.Properties props = p.humanoidArmor(material, type);
             if (slowdown > 0) {
                 var attributes = material.createAttributes(type).withModifierAdded(Attributes.MOVEMENT_SPEED,
@@ -101,8 +102,58 @@ public final class GZArmor {
             }
             return props;
         });
-        PENDING.put(item, protection * SHARE.get(type));
+        PENDING.put(item, share);
         return item;
+    }
+
+    private static final String TIP_RADIATION = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".tooltip.radiation_protection",
+            "Radiation protection: %s%% (%s%% as a full set)");
+    private static final String TIP_CHEMICAL = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".tooltip.chemical_protection",
+            "Chemical protection: %s%% (full set: proof against gas and toxins)");
+    private static final String TIP_WEIGHT = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".tooltip.suit_weight",
+            "Heavy: %s%% slower as a full set");
+
+    /** A suit piece: its tooltip gives its share of the set's protection, and the set's figure. */
+    private static final class SuitPiece extends Item {
+        private final float share, set, slowdown;
+
+        SuitPiece(Properties properties, float share, float set, float slowdown) {
+            super(properties);
+            this.share = share;
+            this.set = set;
+            this.slowdown = slowdown;
+        }
+
+        @Override
+        public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display,
+                java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+            var green = net.minecraft.ChatFormatting.GREEN;
+            tooltip.accept(net.minecraft.network.chat.Component.translatable(TIP_RADIATION, Math.round(this.share * 100), Math.round(this.set * 100))
+                    .withStyle(green));
+            tooltip.accept(net.minecraft.network.chat.Component.translatable(TIP_CHEMICAL, Math.round(this.share / this.set * 100)).withStyle(green));
+            if (this.slowdown > 0) {
+                tooltip.accept(net.minecraft.network.chat.Component.translatable(TIP_WEIGHT, Math.round(this.slowdown * 100))
+                        .withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
+        }
+    }
+
+    /**
+     * How much of a chemical (gas, toxin) reaching {@code entity} its suit keeps out: the pieces' shares of a sealed suit
+     * (hood 20%, coat 35%, trousers 30%, boots 15%); a full set of either suit is proof against it.
+     */
+    public static float chemicalProtection(LivingEntity entity) {
+        if (PROTECTION.isEmpty()) {
+            PENDING.forEach((item, value) -> PROTECTION.put(item.get(), value));
+        }
+        float total = 0;
+        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            Item item = entity.getItemBySlot(slot).getItem();
+            if (PROTECTION.containsKey(item) && item instanceof SuitPiece piece) {
+                total += piece.share / piece.set;
+            }
+        }
+        return Math.min(1, total);
     }
 
     /** How much of the radiation reaching {@code entity} its suit stops (0 to 0.92). */

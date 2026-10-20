@@ -183,8 +183,9 @@ public class GasCloudBlock extends Block implements BucketPickup {
 
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
-        if (this.hazard == ChemFluid.Hazard.TOXIC && level instanceof ServerLevel && entity instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(MobEffects.POISON, 60, 1));
+        if (this.hazard == ChemFluid.Hazard.TOXIC && level instanceof ServerLevel server && entity instanceof LivingEntity living
+                && living.tickCount % 10 == 0) {
+            dev.groundzero.content.ordnance.Toxins.expose(server, living, 0, 60, 1);
         }
     }
 

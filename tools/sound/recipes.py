@@ -513,20 +513,13 @@ def _ring(seconds: float, modes: list[tuple[float, float, float]], seed: int) ->
 
 
 def ordnance_sounds() -> dict[str, np.ndarray]:
-    """Thrown explosives (Phase 6): the pin pulled, a can bouncing, a fuse lit, a sticky grenade slapping on, smoke
-    pouring out."""
+    """Thrown explosives (Phase 6): the pin pulled, a fuse lit, a sticky grenade slapping on, smoke pouring out."""
     out = {}
-    # Pin: a scrape and click of the pin, then the spoon flying off with a small metallic ping.
+    # Pin: a scrape and one bright click as the pin comes out (a single click: a second, lower one sounded wrong).
     pull = S.bandpass(S.white(0.08, 401), 2000, 7000) * S.exp_decay(int(0.08 * S.SR), 0.02) * 0.6
-    click = _ring(0.12, [(3100, 0.012, 0.5), (5200, 0.008, 0.3)], 402)
-    ping = _ring(0.45, [(2650, 0.09, 0.6), (4180, 0.06, 0.35), (6900, 0.03, 0.2)], 403)
-    x = S.mix((S.place(pull, 0.0, 0.7), 1.0), (S.place(click, 0.07, 0.7), 1.0), (S.place(ping, 0.22, 0.7), 0.8))
+    click = _ring(0.2, [(3100, 0.02, 0.5), (5200, 0.012, 0.3)], 402)
+    x = S.mix((S.place(pull, 0.0, 0.3), 1.0), (S.place(click, 0.07, 0.3), 1.0))
     out["ordnance/grenade_pin"] = S.normalize(S.fade(x, 0, 0.05), -3)
-    # Bounce: a hollow metal can knocking on the ground, three pitches.
-    for i, base in enumerate((620, 700, 560)):
-        x = _ring(0.3, [(base, 0.05, 0.7), (base * 2.7, 0.03, 0.4), (base * 5.1, 0.015, 0.2)], 410 + i)
-        thud = S.lowpass(S.white(0.3, 420 + i), 300) * S.exp_decay(int(0.3 * S.SR), 0.02) * 1.2
-        out[f"ordnance/grenade_bounce{i + 1}"] = S.normalize(S.fade(S.mix((x, 1.0), (thud, 1.0)), 0, 0.04), -4)
     # Dynamite: a match struck, then the fuse sputtering and fizzing for its three seconds.
     strike = S.bandpass(S.white(0.25, 430), 1500, 8000) * S.breakpoints(int(0.25 * S.SR), [(0, 0), (0.02, 1), (0.25, 0)])
     fizz_len = 3.0

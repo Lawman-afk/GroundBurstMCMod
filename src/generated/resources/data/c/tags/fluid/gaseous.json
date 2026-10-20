@@ -5,6 +5,8 @@
     "groundzero:tritium",
     "groundzero:flowing_tritium",
     "groundzero:uranium_hexafluoride",
-    "groundzero:flowing_uranium_hexafluoride"
+    "groundzero:flowing_uranium_hexafluoride",
+    "groundzero:chlorine",
+    "groundzero:flowing_chlorine"
   ]
 }

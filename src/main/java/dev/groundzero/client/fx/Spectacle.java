@@ -153,10 +153,11 @@ public final class Spectacle {
 
     /**
      * A smoking smoke grenade, once a client tick: dense, pale, lit puffs filling a dome round it as the cloud billows
-     * out; none in the last three seconds, so it thins away.
+     * out; none in the last three seconds, so it thins away. A poison gas grenade's cloud is yellow-green and lower.
      */
     public static void grenadeSmoke(dev.groundzero.content.ordnance.ThrownExplosive grenade) {
-        if (grenade.smokeTicks() > dev.groundzero.content.ordnance.ThrownExplosive.SMOKE_TICKS - 60) {
+        boolean gas = grenade.type() == dev.groundzero.content.ordnance.GrenadeType.POISON_GAS;
+        if (grenade.smokeTicks() > grenade.type().cloudTicks() - 60) {
             return;
         }
         var random = grenade.level().getRandom();
@@ -169,19 +170,19 @@ public final class Spectacle {
             p.kind = Puffs.Kind.SMOKE;
             double a = random.nextDouble() * 2 * Math.PI, d = Math.sqrt(random.nextDouble()) * radius * 0.8;
             p.x = grenade.getX() + Math.cos(a) * d;
-            p.y = grenade.getY() + 0.3 + random.nextDouble() * radius * 0.5;
+            p.y = grenade.getY() + 0.3 + random.nextDouble() * radius * (gas ? 0.3 : 0.5);   // chlorine is heavy: it hugs the ground
             p.z = grenade.getZ() + Math.sin(a) * d;
             p.vx = (float) (Math.cos(a) * 0.05);
             p.vz = (float) (Math.sin(a) * 0.05);
             p.drag = 0.05f;
-            p.rise = 0.004f;
+            p.rise = gas ? 0.0005f : 0.004f;
             p.birth = ticks;
             p.life = 120 + random.nextInt(60);
             p.size0 = 2f;
             p.size1 = 4.5f + random.nextFloat() * 1.5f;
-            p.color0 = 0xE2E2E0;
-            p.color1 = 0xCACAC8;
-            p.alpha = 0.8f;
+            p.color0 = gas ? 0xC6DA5E : 0xE2E2E0;
+            p.color1 = gas ? 0x94AE3C : 0xCACAC8;
+            p.alpha = gas ? 0.7f : 0.8f;
             p.variant = random.nextInt(8);
             p.rot = random.nextFloat() * 6.283f;
             p.spin = (random.nextFloat() - 0.5f) * 0.01f;

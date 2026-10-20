@@ -54,7 +54,7 @@ public final class GZBlastData {
                 0.6f, 0.15f, 0.35f, 0.35f, 0f, TerrainTable.CONVENTIONAL, Optional.of(false), Optional.of("large"), Optional.of("meltdown")));
         // Thrown explosives (DESIGN.md §14), all instant: small.
         // core, crater, structural, scorch, fire, lethal, damage, speed, depth, lobes, streaks, ejecta, lethal dmg, edge dmg, knockback
-        ctx.register(Blasts.profile("dynamite"), profile(1, 2.5f, 4, 3, 0, 2.5f, 6, 4, 0.7f, 0.1f, 0.3f, 0.3f, 24, 8, 1.2f,
+        ctx.register(Blasts.profile("dynamite"), profile(1.5f, 3.5f, 5.5f, 4, 0, 3.5f, 8, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 10, 1.5f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("frag_grenade"), profile(0.5f, 2, 3, 2, 0, 4, 8, 4, 0.5f, 0.1f, 0.25f, 0.2f, 20, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
@@ -82,6 +82,7 @@ public final class GZBlastData {
                 new DamageType(GroundZero.MODID + ".shrapnel", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1f));
         ctx.register(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE,
                 new DamageType(GroundZero.MODID + ".radiation", DamageScaling.NEVER, 0f));
+        ctx.register(dev.groundzero.content.ordnance.GZOrdnance.TOXIN_DAMAGE, new DamageType(GroundZero.MODID + ".toxin", DamageScaling.NEVER, 0f));
     }
 
     /** {@code groundzero:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -95,8 +96,10 @@ public final class GZBlastData {
             tag(DamageTypeTags.IS_EXPLOSION).add(Blasts.BLAST_DAMAGE);
             tag(DamageTypeTags.IS_PROJECTILE).add(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL_DAMAGE);
             // Radiation sickness: armour does not help, and it does not push anyone about.
-            tag(DamageTypeTags.BYPASSES_ARMOR).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);
-            tag(DamageTypeTags.NO_KNOCKBACK).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE);
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE,
+                    dev.groundzero.content.ordnance.GZOrdnance.TOXIN_DAMAGE);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(dev.groundzero.content.nuclear.GZEffects.RADIATION_DAMAGE,
+                    dev.groundzero.content.ordnance.GZOrdnance.TOXIN_DAMAGE);
         }
     }
 }

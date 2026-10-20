@@ -42,6 +42,7 @@ public class GroundZero {
         dev.groundzero.content.nuclear.GZNuclear.init();
         dev.groundzero.content.gear.GZArmor.init();
         dev.groundzero.content.ordnance.GZOrdnance.init();
+        dev.groundzero.content.ordnance.GZOrdnance.register();
         dev.groundzero.content.fluid.GZFluids.init();
         dev.groundzero.content.pipe.GZPipes.init();
         GZMultiblocks.init();

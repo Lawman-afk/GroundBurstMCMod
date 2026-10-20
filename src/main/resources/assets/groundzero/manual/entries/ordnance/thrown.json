@@ -36,6 +36,14 @@
         [
           "Smoke",
           "2 s, 30 s"
+        ],
+        [
+          "Poison gas",
+          "2 s, 25 s"
+        ],
+        [
+          "Toxin",
+          "on impact"
         ]
       ],
       "text": "",
@@ -64,7 +72,11 @@
     {
       "type": "spotlight",
       "item": "groundzero:smoke_grenade",
-      "text": "Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target: they cannot see through it."
+      "text": "Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target, and anyone standing in it is hard to spot: mobs notice you there only from a tenth of their usual range."
+    },
+    {
+      "type": "text",
+      "text": "For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical)."
     },
     {
       "type": "crafting",

@@ -26,6 +26,9 @@ NAPALM = fixed("napalm", "#401404", "#6c2406", "#9c360a", "#c84e12", "#e47024", 
 SLURRY = fixed("slurry", "#2c3034", "#464c52", "#646c74", "#868e96", "#a8b0b8", "#c8ced4", "#eef2f4")
 TRITIUM = fixed("tritium", "#0c3a26", "#14583a", "#1e7a52", "#2c9c6c", "#48bc8a", "#7cd8ae", "#c4f4dc")
 HEAVY_WATER = fixed("heavy_water", "#0a1c3c", "#12306a", "#1c4894", "#2a62b8", "#4a84d4", "#7aa8e6", "#c0d8f6")
+CHLORINE = fixed("chlorine", "#2c4008", "#48660c", "#689012", "#88b41c", "#a8d430", "#c8e86a", "#eef8c0")
+TOXIN = fixed("toxin", "#0c2a06", "#16480a", "#22680e", "#349014", "#4cb420", "#7cd83a", "#c0f480")
+SALT = fixed("salt", "#6c6a66", "#8e8c88", "#b0aeaa", "#cecdca", "#e4e3e0", "#f2f1ee", "#ffffff")
 UF6 = fixed("uf6", "#3c4410", "#5e6a1a", "#848f2a", "#a8b440", "#c6d062", "#dce48e", "#f2f6c8")
 
 
@@ -40,6 +43,8 @@ def canisters() -> None:
     c("uf6_canister", PT.GAS_ROWS, UF6, P.HAZARD_BLACK[3])
     c("tritium_canister", PT.GAS_ROWS, TRITIUM, P.WHITE_CERAMIC[6])
     c("heavy_water_canister", PT.CANISTER_ROWS, HEAVY_WATER, P.WHITE_CERAMIC[6])
+    c("chlorine_canister", PT.GAS_ROWS, CHLORINE, P.HAZARD_YELLOW[4])
+    c("toxin_canister", PT.CANISTER_ROWS, TOXIN, P.HAZARD_BLACK[3])
 
 
 def flask() -> None:
@@ -142,6 +147,7 @@ def powders() -> None:
     PT.save("yellowcake", V.dust2(YELLOWCAKE, 21))
     PT.save("lithium6_dust", V.dust2(LITHIUM6, 22, sparkle=True))
     PT.save("rdx_crystals", V.dust2(RDX, 23, sparkle=True))
+    PT.save("salt", V.dust2(SALT, 24, sparkle=True))
 
 
 def build() -> None:
