@@ -261,6 +261,21 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return true;
     }
 
+    /** The grey hint line under a tank's tooltip in the GUI. */
+    public String tankHint(int tank) {
+        return this.tanks.get(tank).isInput() ? MachineText.TANK_INPUT : MachineText.TANK_OUTPUT;
+    }
+
+    /** Whether the screen shows the side-configuration tab (off for structures that connect only through ports). */
+    public boolean hasSideConfig() {
+        return true;
+    }
+
+    /** Tooltip over the GUI flame: by default the burn time left of a solid-fuel generator. */
+    public Component flameTooltip(MachineMenu menu) {
+        return Component.translatable(MachineText.BURN, menu.extra(0) / 20);
+    }
+
     /** Pours output tanks into the fluid handlers beside every face whose fluid switch is on. */
     protected void pushFluids(ServerLevel level) {
         if (this.tanks.stream().allMatch(t -> t.isInput() || t.isEmpty())) {

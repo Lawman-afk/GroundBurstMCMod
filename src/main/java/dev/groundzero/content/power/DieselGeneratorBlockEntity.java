@@ -146,6 +146,11 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     }
 
     @Override
+    public Component flameTooltip(MachineMenu menu) {
+        return Component.translatable(menu.extra(DATA_BURN) > 0 ? MachineText.ENGINE_ON : MachineText.ENGINE_OFF, menu.tankAmount(0));
+    }
+
+    @Override
     protected int extraDataCount() {
         return 3;
     }

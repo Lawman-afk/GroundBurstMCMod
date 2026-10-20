@@ -113,7 +113,7 @@ public final class GZTagProviders {
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),
-                    GZMultiblocks.LEAD_LINED_CASING.block().key(), GZMultiblocks.ENERGY_PORT.block().key(), GZMultiblocks.STEEL_PLATING.block().key(),
+                    GZMultiblocks.LEAD_LINED_CASING.block().key(), GZMultiblocks.ENERGY_PORT.block().key(), GZMultiblocks.FLUID_PORT.block().key(), GZMultiblocks.STEEL_PLATING.block().key(),
                     GZMultiblocks.STEEL_FRAME.block().key(), GZMultiblocks.MAGNET_SEGMENT.block().key(), GZMultiblocks.INJECTOR.block().key(),
                     GZMultiblocks.TARGET_CHAMBER.block().key());
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());

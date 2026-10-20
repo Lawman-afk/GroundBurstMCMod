@@ -1036,9 +1036,10 @@ y1: LGL / G.G / LGL      (core space: rendered fuel bundle, control rods, water,
 y2: LGL / G.G / LGL
 y3: LUL / LEL / LIL
 ```
-W, U and I are all Item Ports (a port carries items and fluids: coolant in at W, fuel/targets at U, products at I);
-E is an Energy Port (power out).
-**Chemical Plant** (2×2×2): `y0: XM / MI`, `y1: GG / GG` (tanks rendered inside).
+W is a Fluid Port (coolant in), U and I are Item Ports (fuel/targets in, products out), E is an Energy Port (power
+out). The controller itself connects to nothing and has no side-configuration tab.
+**Chemical Plant** (2×2×2): `y0: XM / FI` (F = Fluid Port behind the controller, I = Item Port), `y1: GG / GG`
+(tanks rendered inside). Its controller keeps its own open faces for pipes and conveyors too.
 
 **Fusion Reactor** (7×7×3 ring, first draft; `T` = toroidal field coil, `V` = vacuum vessel casing): a hollow square
 ring 1 wide. `y0` ring of `M` with `X` at the front midpoint, `E` at the back midpoint; `y1` ring of `T` coils with `G`
@@ -1232,7 +1233,10 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Diesel Generator | CT | machine frame, electric motor, pressure vessel, combustion generator |
 | RTG | CT | 4 lead plate, advanced circuit, 2 copper wire, 2 tungsten plate (fuel goes in its slot) |
 | Capacitor Bank T1 / T2 / T3 | CT | 4 capacitor + machine frame / T1 + 4 gold wire + advanced circuit / T2 + 4 superconducting coil + military circuit |
-| Insulated / HV cable ×6 | CT | 6 copper cable + plastic sheet / 6 insulated cable + 3 tungsten filament + plastic |
+| Insulated cable ×6 | CT | 6 copper cable + 2 plastic sheet + gold wire (`CCC/PGP/CCC`) |
+| HV cable ×6 | CT | 6 insulated cable + 2 tungsten filament + tungsten plate (`III/FTF/III`) |
+| Fluid Port | CT | machine casing + bucket (shapeless) |
+| Heavy water (1 000 mB) | CP | 1 000 mB deuterium + 500 mB liquid oxygen |
 | Battery Charger | CT | machine frame, 2 capacitor, basic circuit |
 | Decontamination Shower | CT | 3 steel plate, 2 iron bars, water bucket, basic circuit, electric motor |
 | Ordnance Assembly Bench | CT | 3 steel plate, crafting table, anvil, servo, basic circuit, chest |
@@ -1476,3 +1480,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Machine GUIs gained generic controls in their generated layout (vertical gauges filled from sync data, buttons that send machine button ids), first used by the reactor's heat and rod gauges and its withdraw / insert / SCRAM buttons. |
 | 2026-10-20 | Tritium is a gas fluid (Chemical Plant product from irradiated Li-6 target rods), with a gas canister and gas bucket like deuterium. The RTG also burns plutonium ingots (10 in-game days). The target chamber's recipe adds reactor glass so it differs from the injector's. |
 | 2026-10-20 | Tool fix: the preview renderer only treats tall textures as animation strips when an .mcmeta exists (the accelerator's 256x512 texture was being cropped), matching the game; the 3D z-fight checker skips any variant-bone set (press dies, reactor rod positions). |
+| 2026-10-20 | Slice 7 feedback, cables: insulated ×6 = 6 copper cable + 2 plastic sheet + gold wire; HV ×6 = 6 insulated cable + 2 tungsten filament + tungsten plate. Each tier is made from the tier below plus that tier's materials. |
+| 2026-10-20 | Ports split by what they carry: Item Port (items only), new Fluid Port (fluids only), Energy Port (power only). The reactor's coolant port and the Chemical Plant's casing behind its controller are now Fluid Ports (existing plants need that casing swapped). The reactor controller connects to nothing and hides the side tab; the Chemical Plant and Particle Accelerator controllers keep their open faces. |
+| 2026-10-20 | Reactor heat balance replaces the slice 7 rule: with coolant the core heads for 20 + 1 150 x power / quality °C (1%/tick). Water (quality 1) is safe to about 70% power and SCRAMs past ~78%; heavy water (quality 1.6, Chemical Plant from deuterium + liquid oxygen) settles near 740 °C at full power and is used at a fifth of water's 25 mB/t. The coolant tank takes either and has a dump button. |
+| 2026-10-20 | Reactor meltdown: planned for Phase 5 (explosion engine). A core left past SCRAM conditions (SCRAM disabled or failed) will melt down with a damaging blast and contamination; a server config toggle turns it off. |
+| 2026-10-20 | Creative Capacitor Bank (creative menu only, not craftable): refills itself every tick, pushes up to 1 000 000 FE/t from its front. Nuclear waste is fire- and lava-proof (dropped stacks still despawn). The GUI flame tooltip is per machine: the RTG shows minutes of decay left, the diesel engine its fuel in mB. Steel Frame no longer culls its neighbours' faces (it is see-through). |

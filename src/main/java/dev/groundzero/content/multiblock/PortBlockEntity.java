@@ -15,8 +15,9 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
- * A structure's item port: once its structure forms it remembers the controller and hands pipes and hoppers the
- * controller's inventory (inputs in, products out) and its tank (fill only).
+ * A structure's port: once its structure forms it remembers the controller and hands automation one channel of it.
+ * Item Port: the inventory (inputs in, products out). Fluid Port: the tanks (fill input tanks, drain product tanks).
+ * Energy Port: the energy buffer.
  */
 public class PortBlockEntity extends BlockEntity {
     private @Nullable BlockPos controller;
@@ -51,14 +52,22 @@ public class PortBlockEntity extends BlockEntity {
         return this.controller;
     }
 
+    private boolean isFluidPort() {
+        return getBlockState().getBlock() instanceof FluidPortBlock;
+    }
+
+    private boolean isItemPort() {
+        return !isEnergyPort() && !isFluidPort();
+    }
+
     public @Nullable ResourceHandler<ItemResource> items(@Nullable Direction side) {
         MachineBlockEntity m = machine();
-        return m == null || isEnergyPort() ? null : m.portItems();
+        return m == null || !isItemPort() ? null : m.portItems();
     }
 
     public @Nullable ResourceHandler<FluidResource> fluids(@Nullable Direction side) {
         MachineBlockEntity m = machine();
-        return m == null || isEnergyPort() || m.tanks().isEmpty() ? null : m.fluidHandler();
+        return m == null || !isFluidPort() || m.tanks().isEmpty() ? null : m.fluidHandler();
     }
 
     public net.neoforged.neoforge.transfer.energy.@Nullable EnergyHandler energy(@Nullable Direction side) {

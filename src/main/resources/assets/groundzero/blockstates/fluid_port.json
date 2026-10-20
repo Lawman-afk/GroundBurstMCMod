@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/fluid_port"
+    },
+    "formed=true": {
+      "model": "groundzero:block/fluid_port_formed"
+    }
+  }
+}

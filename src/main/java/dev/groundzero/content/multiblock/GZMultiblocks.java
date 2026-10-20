@@ -29,11 +29,17 @@ public final class GZMultiblocks {
 
     // Slice 7 structural blocks.
     public static final WithItem<MultiblockPartBlock> LEAD_LINED_CASING = part("lead_lined_casing", "Lead-Lined Casing", MapColor.COLOR_GRAY);
+    public static final WithItem<FluidPortBlock> FLUID_PORT = GZBlocks.register("fluid_port", "Fluid Port", GZTab.MACHINES,
+            FluidPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<EnergyPortBlock> ENERGY_PORT = GZBlocks.register("energy_port", "Energy Port", GZTab.MACHINES,
             EnergyPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<MultiblockPartBlock> STEEL_PLATING = part("steel_plating", "Steel Plating", MapColor.METAL);
-    public static final WithItem<MultiblockPartBlock> STEEL_FRAME = part("steel_frame", "Steel Frame", MapColor.METAL);
+    /** An open truss (cutout texture): it must not hide its neighbours' faces or you could see through the world. */
+    public static final WithItem<MultiblockPartBlock> STEEL_FRAME = GZBlocks.register("steel_frame", "Steel Frame", GZTab.MACHINES,
+            MultiblockPartBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<MultiblockPartBlock> MAGNET_SEGMENT = part("magnet_segment", "Accelerator Magnet Segment", MapColor.COLOR_RED);
     public static final WithItem<MultiblockPartBlock> INJECTOR = part("accelerator_injector", "Accelerator Injector", MapColor.COLOR_LIGHT_BLUE);
     public static final WithItem<MultiblockPartBlock> TARGET_CHAMBER = part("accelerator_target_chamber", "Accelerator Target Chamber",
@@ -47,8 +53,9 @@ public final class GZMultiblocks {
     /**
      * Fission Reactor (3x3x4, DESIGN.md §23.3): lead-lined casing round a core shaft two blocks tall (required air,
      * the formed model draws the fuel bundle there), reactor glass windows on all four sides of it, the controller at
-     * the front of the bottom layer with an Item Port under the core (coolant water in), and on top an Item Port
-     * (fuel and targets), an Energy Port (power out) and a second Item Port (products out).
+     * the front of the bottom layer with a Fluid Port under the core (coolant in), and on top an Item Port (fuel and
+     * targets in), an Energy Port (power out) and a second Item Port (products out). The controller itself connects to
+     * nothing: everything goes through the ports.
      */
     public static final MultiblockDefinition FISSION_REACTOR = new MultiblockDefinition(GroundZero.id("fission_reactor"),
             new String[][] {
@@ -58,7 +65,7 @@ public final class GZMultiblocks {
                     {"LUL", "LEL", "LIL"},
             },
             Map.of('L', Entry.of(() -> LEAD_LINED_CASING.block().get()), 'G', Entry.of(REACTOR_GLASS.block()),
-                    'W', Entry.of(ITEM_PORT.block()), 'U', Entry.of(ITEM_PORT.block()), 'I', Entry.of(ITEM_PORT.block()),
+                    'W', Entry.of(() -> FLUID_PORT.block().get()), 'U', Entry.of(ITEM_PORT.block()), 'I', Entry.of(ITEM_PORT.block()),
                     'E', Entry.of(() -> ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.FISSION_REACTOR.block().get())));
 
@@ -87,15 +94,16 @@ public final class GZMultiblocks {
     }
 
     /**
-     * Chemical Plant (2x2x2): controller front-left with casing beside and behind it and the item port at the back
-     * right; a roof of reactor glass. The formed model shows two windowed tanks, a manifold and a stirrer.
+     * Chemical Plant (2x2x2): controller front-left with casing beside it, a Fluid Port behind it and the Item Port at
+     * the back right; a roof of reactor glass. The formed model shows two windowed tanks, a manifold and a stirrer.
      */
     public static final MultiblockDefinition CHEMICAL_PLANT = new MultiblockDefinition(GroundZero.id("chemical_plant"),
             new String[][] {
-                    {"XM", "MI"},
+                    {"XM", "FI"},
                     {"GG", "GG"},
             },
             Map.of('M', Entry.of(MACHINE_CASING.block()), 'I', Entry.of(ITEM_PORT.block()), 'G', Entry.of(REACTOR_GLASS.block()),
+                    'F', Entry.of(() -> FLUID_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.CHEMICAL_PLANT.block().get())));
 
     public static final DeferredItem<HoloProjectorItem> HOLO_PROJECTOR = GZItems.register("holo_projector", "Holo-Projector", GZTab.MACHINES,

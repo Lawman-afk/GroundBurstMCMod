@@ -1,14 +1,15 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "redstone",
-  "ingredients": [
-    "groundzero:copper_cable",
-    "groundzero:copper_cable",
-    "groundzero:copper_cable",
-    "groundzero:copper_cable",
-    "groundzero:copper_cable",
-    "groundzero:copper_cable",
-    "groundzero:plastic_sheet"
+  "key": {
+    "C": "groundzero:copper_cable",
+    "G": "#c:wires/gold",
+    "P": "groundzero:plastic_sheet"
+  },
+  "pattern": [
+    "CCC",
+    "PGP",
+    "CCC"
   ],
   "result": {
     "count": 6,

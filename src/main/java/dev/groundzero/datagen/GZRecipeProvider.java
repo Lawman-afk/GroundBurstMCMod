@@ -270,6 +270,9 @@ public class GZRecipeProvider extends RecipeProvider {
                 List.of(out(GZChemicals.SOLID_PROPELLANT, 2)), null, 300, fe);
         chem("liquid_rocket_fuel", List.of(), List.of(fluid(GZFluids.SYNTHETIC_FUEL, 1_000), fluid(GZFluids.LIQUID_OXYGEN, 1_000)),
                 List.of(), GZFluids.LIQUID_ROCKET_FUEL, 300, fe);
+        // Heavy water (reactor coolant): deuterium and liquid oxygen.
+        chem("heavy_water", List.of(), List.of(fluid(GZFluids.DEUTERIUM, 1_000), fluid(GZFluids.LIQUID_OXYGEN, 500)),
+                List.of(), GZFluids.HEAVY_WATER, 300, fe);
         chem("yellowcake", List.of(in(tag(GZTags.commonItem("dusts/uranium")), 2)), List.of(fluid(GZFluids.SULFURIC_ACID, 1_000)),
                 List.of(out(GZChemicals.YELLOWCAKE, 2)), null, 300, fe);
         chem("uranium_hexafluoride", List.of(in(Ingredient.of(GZChemicals.YELLOWCAKE), 1)), List.of(fluid(GZFluids.SULFURIC_ACID, 1_000)),
@@ -347,6 +350,10 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(Items.HOPPER)
                 .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
                 .save(output);
+        shapeless(RecipeCategory.REDSTONE, GZMultiblocks.FLUID_PORT.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(Items.BUCKET)
+                .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
+                .save(output);
     }
 
     /**
@@ -414,11 +421,18 @@ public class GZRecipeProvider extends RecipeProvider {
                 .pattern(" C ").pattern("LRL").pattern(" P ")
                 .unlockedBy(getHasName(GZChemicals.PLASTIC_SHEET), has(GZChemicals.PLASTIC_SHEET))
                 .save(output);
-        // Insulated cable (DESIGN.md §26.4): six copper cables wrapped in plastic. The Exotic Matter Fabricator draws
-        // 400 FE/t, more than a copper run carries.
-        shapeless(RecipeCategory.REDSTONE, GZMachines.CABLES.get(1).item(), 6)
-                .requires(GZMachines.CABLES.get(0).item(), 6).requires(GZChemicals.PLASTIC_SHEET)
+        // Cable tiers (DESIGN.md §26.4): each one wraps six of the tier below. Insulated: plastic jacketing and a gold
+        // wire (Chemical Plant + press tier); high-voltage: tungsten filament conductors and a tungsten plate sheath
+        // (Arc Furnace tier).
+        shaped(RecipeCategory.REDSTONE, GZMachines.CABLES.get(1).item(), 6)
+                .define('C', GZMachines.CABLES.get(0).item()).define('P', GZChemicals.PLASTIC_SHEET).define('G', GZTags.commonItem("wires/gold"))
+                .pattern("CCC").pattern("PGP").pattern("CCC")
                 .unlockedBy(getHasName(GZChemicals.PLASTIC_SHEET), has(GZChemicals.PLASTIC_SHEET))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GZMachines.CABLES.get(2).item(), 6)
+                .define('I', GZMachines.CABLES.get(1).item()).define('F', GZParts.TUNGSTEN_FILAMENT).define('T', GZTags.commonItem("plates/tungsten"))
+                .pattern("III").pattern("FTF").pattern("III")
+                .unlockedBy(getHasName(GZMachines.CABLES.get(1).item()), has(GZMachines.CABLES.get(1).item()))
                 .save(output);
 
         // The machines (DESIGN.md §26.4).

@@ -5,7 +5,8 @@ carries an eight-segment charge gauge (bones "bar0".."bar7", bottom to top; the 
 charge) running red, amber, green, an output terminal (red cap: the front is the output face) and a status lamp
 that blinks while power moves (bone "lamp"). Tiers share the shape and differ in finish:
 basic = olive cabinet, copper cans; advanced = gunmetal cabinet with brass trim, blue-banded cans;
-superconducting = black cabinet ringed with frosted cryo-cyan coolant bands, white cans with cyan field glow.
+superconducting = black cabinet ringed with frosted cryo-cyan coolant bands, white cans with cyan field glow;
+creative (not craftable) = violet cabinet with brass trim, white cans with violet bands.
 """
 from __future__ import annotations
 
@@ -39,6 +40,7 @@ TIERS = [
     Tier("capacitor_bank", P.OLIVE, P.STEEL, P.COPPER, P.COPPER),
     Tier("advanced_capacitor_bank", P.GUNMETAL, P.BRASS, P.STEEL, P.CHERENKOV),
     Tier("superconducting_capacitor_bank", P.BLACK_PAINT, P.STEEL, P.WHITE_CERAMIC, P.CRYO, cryo=True),
+    Tier("creative_capacitor_bank", P.SINGULARITY, P.BRASS, P.WHITE_CERAMIC, P.ANTIMATTER),
 ]
 
 

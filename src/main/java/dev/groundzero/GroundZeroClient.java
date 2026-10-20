@@ -77,6 +77,8 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.ADVANCED_CAPACITOR_BANK.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ADVANCED_CAPACITOR_BANK.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.SUPERCONDUCTING_CAPACITOR_BANK.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.SUPERCONDUCTING_CAPACITOR_BANK.get(), 1));
+        event.registerBlockEntityRenderer(GZBlockEntities.CREATIVE_CAPACITOR_BANK.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CREATIVE_CAPACITOR_BANK.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CIRCUIT_FABRICATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CIRCUIT_FABRICATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.GAS_CENTRIFUGE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.GAS_CENTRIFUGE.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_FUEL_SYNTHESIZER.get(), 1));

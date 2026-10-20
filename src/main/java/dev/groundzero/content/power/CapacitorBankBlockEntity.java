@@ -7,7 +7,6 @@ import org.jspecify.annotations.Nullable;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.util.GeckoLibUtil;
 
-import dev.groundzero.GroundZero;
 import dev.groundzero.content.machine.AnimatedMachine;
 import dev.groundzero.content.machine.MachineBlockEntity;
 import dev.groundzero.content.machine.MachineLayouts;
@@ -16,7 +15,6 @@ import dev.groundzero.content.machine.MachineStatus;
 import dev.groundzero.content.machine.MachineText;
 import dev.groundzero.content.machine.SideConfig;
 import dev.groundzero.registry.GZDataComponents;
-import dev.groundzero.registry.GZLang;
 import dev.groundzero.registry.GZMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,18 +38,19 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.LimitingEnergyHandler;
 
 /**
- * Capacitor Bank (DESIGN.md §7), three tiers. Stores FE: every face takes power in except the front, which only
+ * Capacitor Bank (DESIGN.md §7), three tiers and a creative one (not craftable: always full, for testing). Stores FE: every face takes power in except the front, which only
  * gives it out (pushing into whatever cable or machine it faces). The wrench turns it, the side tab can switch faces
  * off. It keeps its charge when picked up, shows its charge on a gauge, and gives a comparator signal.
  */
 public class CapacitorBankBlockEntity extends MachineBlockEntity implements AnimatedMachine {
-    public static final String NET = GZLang.add(GroundZero.MODID + ".gui.net", "NET %s FE/t");
 
     /** Capacity and per-tick transfer (matching the cable tiers) of each bank. */
     public enum Tier {
         BASIC("capacitor_bank", "Capacitor Bank", 100_000, 1_024),
         ADVANCED("advanced_capacitor_bank", "Advanced Capacitor Bank", 1_000_000, 8_192),
-        SUPERCONDUCTING("superconducting_capacitor_bank", "Superconducting Capacitor Bank", 10_000_000, 32_768);
+        SUPERCONDUCTING("superconducting_capacitor_bank", "Superconducting Capacitor Bank", 10_000_000, 32_768),
+        /** Creative mode only: refills itself every tick, so it is an endless power source. */
+        CREATIVE("creative_capacitor_bank", "Creative Capacitor Bank", 1_000_000_000, 1_000_000);
 
         private final String id;
         private final String english;
@@ -126,6 +125,10 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
                 side -> face(side) == SideConfig.Face.FRONT && this.sides.energy(SideConfig.Face.FRONT));
         int stored = this.energy.stored();
         this.net = this.lastStored < 0 ? 0 : stored - this.lastStored;
+        if (this.tier == Tier.CREATIVE) {
+            this.energy.generate(this.energy.capacity() - stored);            // the net shows what left this tick
+            stored = this.energy.stored();
+        }
         this.lastStored = stored;
         this.status = stored >= this.energy.capacity() ? MachineStatus.BUFFER_FULL : stored == 0 ? MachineStatus.IDLE : MachineStatus.RUNNING;
         int bars = bars(stored);
@@ -191,7 +194,7 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
         int cap = Math.max(1, menu.capacity());
         int net = menu.extra(DATA_NET);
         return List.of(Component.translatable(MachineText.STORED, (int) ((long) menu.energy() * 100 / cap)),
-                Component.translatable(NET, (net > 0 ? "+" : "") + net));
+                Component.translatable(MachineText.NET, (net > 0 ? "+" : "") + net));
     }
 
     @Override

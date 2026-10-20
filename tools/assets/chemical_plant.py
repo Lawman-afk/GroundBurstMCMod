@@ -7,8 +7,9 @@ vertical window slot on the front. The renderer draws each tank's real fluid beh
 (water in the left tank, the product in the right one); bubbles rise through it while running. A stirrer motor on the
 left tank turns a paddle shaft you can see through the window; a header pipe with red hand-wheel valves runs across
 the front and turns back into both tanks; a ladder climbs the back of the left tank. Pipes and cables need something
-solid to meet: a control cabinet fills the controller's open faces (front and outer side, green CRT on the front)
-and a hatched connection housing fills the Item Port's two open faces.
+solid to meet: a control cabinet fills the controller's open faces (front and outer side, green CRT on the front),
+a yellow-hatched connection housing fills the Item Port's two open faces, and blue-hatched ones the Fluid Port's (a
+flange plate down the west side, a narrow manifold between the silos at the back).
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ from gz.tex import Tex  # noqa: E402
 NAME = "chemical_plant"
 ACID = fixed("acid", "#1c3208", "#2c4c0c", "#3e6a12", "#56901a", "#74b428", "#9cd44a", "#d0f090")
 FUEL = fixed("fuel", "#3a1c04", "#5c2c06", "#844208", "#b05e10", "#d4801c", "#eca440", "#fcd890")
+FLUID_BLUE = fixed("plant_fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3a6ec8", "#6a98e0", "#a8c8f4")
 CLEAR = (0, 0, 0, 0)
 TANK_Y0, TANK_Y1 = 3.0, 26.0
 TANKS = [(0.0, 8.0, ACID), (16.0, 8.0, FUEL)]
@@ -121,6 +123,10 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # Connection housing filling the Item Port's open faces (east and south of the far corner).
     add("housing_e", g.box("housing_e", (19.2, 3, 13.2), (23.9, 13, 23.9), bone=F))
     add("housing_s", g.box("housing_s", (13.2, 3, 19.2), (19.2, 13, 23.9), bone=F))
+    # Fluid Port (behind the controller, x -8..8, z 8..24): a flange plate on its west face, clear of the tank and the
+    # left silo, and a manifold on its south face in the gap between the two silos' back windows.
+    add("fhousing_w", g.box("fhousing_w", (-7.9, 3, 9.0), (-7.4, 13, 23.9), bone=F))
+    add("fhousing_s", g.box("fhousing_s", (-1.2, 3, 22.6), (3.3, 13, 23.9), bone=F))
 
     # Ladder up the back of the left tank, standing just off its back band.
     for i, x in enumerate((-2.0, 1.4)):
@@ -209,12 +215,14 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for b in parts["wheel"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d) + 1]), t.px(r[0] + r[2] // 2, r[1], P.WARNING_RED[6]) if d == "up" else None))
 
-    def port(t, cx, cy):
-        """A 4x4 connection socket centred on (cx, cy): gunmetal ring, dark bore, four bolts."""
+    def port(t, cx, cy, r=None):
+        """A 4x4 connection socket centred on (cx, cy): gunmetal ring, dark bore, four bolts (only those inside the
+        face rectangle r, when given, so a narrow face does not paint its neighbours)."""
         t.rect(cx - 2, cy - 2, 4, 4, gun[4])
         t.rect(cx - 1, cy - 1, 2, 2, P.BLACK_PAINT.deep)
         for px, py in ((cx - 3, cy - 3), (cx + 2, cy - 3), (cx - 3, cy + 2), (cx + 2, cy + 2)):
-            t.px(px, py, steel[5])
+            if r is None or r[0] <= px < r[0] + r[2] and r[1] <= py < r[1] + r[3]:
+                t.px(px, py, steel[5])
 
     def screen_paint(t, r):
         x, y, w, h = r
@@ -237,19 +245,23 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, parts["cabinet"][0], lambda t, r, d: cabinet(t, r, d, 3 if d == "north" else None))
     g.paint_all(tex, parts["cabinet"][1], lambda t, r, d: cabinet(t, r, d, 5 if d == "west" else None))
 
-    def housing(t, r, d, socket_face, socket_u):
+    def housing(t, r, d, socket_face, socket_u, stripe=P.HAZARD_YELLOW.base):
         x, y, w, h = r
         t.rect(x, y, w, h, gun[tone(d)])
         if d == socket_face:
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+            t.stripes(x, y, w, h, stripe, P.HAZARD_BLACK.base, width=2)
             t.rect(x + 1, y + 1, w - 2, h - 2, gun[3])
-            port(t, x + socket_u, y + h - 5)
+            port(t, x + socket_u, y + h - 5, r)
         elif d == "up":
             t.outline(x, y, w, h, gun[2])
     # The Item Port's centre is (16, 8, 16): the east face's socket sits 7.9 px from its south edge, the south
     # face's 2.8 px from its west edge.
     g.paint_all(tex, parts["housing_e"][0], lambda t, r, d: housing(t, r, d, "east", 8))
     g.paint_all(tex, parts["housing_s"][0], lambda t, r, d: housing(t, r, d, "south", 3))
+    # The Fluid Port's centre is (0, 8, 16): 7 px from the plate's north edge, 1.2 px from the manifold's west edge
+    # (its socket is drawn at 2 so the ring fits on the face).
+    g.paint_all(tex, parts["fhousing_w"][0], lambda t, r, d: housing(t, r, d, "west", 7, FLUID_BLUE[4]))
+    g.paint_all(tex, parts["fhousing_s"][0], lambda t, r, d: housing(t, r, d, "south", 2, FLUID_BLUE[4]))
 
     for b in parts["ladder"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.HAZARD_YELLOW[tone(d)]))

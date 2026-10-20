@@ -107,6 +107,12 @@ public class RtgBlockEntity extends MachineBlockEntity implements AnimatedMachin
     }
 
     @Override
+    public Component flameTooltip(MachineMenu menu) {
+        int seconds = menu.extra(DATA_DECAY);
+        return seconds > 0 ? Component.translatable(MachineText.DECAY_LEFT, (seconds + 59) / 60) : Component.translatable(MachineText.DECAY_NONE);
+    }
+
+    @Override
     protected int extraDataCount() {
         return 2;
     }

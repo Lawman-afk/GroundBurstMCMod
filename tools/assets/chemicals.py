@@ -25,6 +25,7 @@ ROCKET = fixed("rocket_fuel", "#3a0808", "#640e0e", "#901818", "#bc2626", "#dc44
 NAPALM = fixed("napalm", "#401404", "#6c2406", "#9c360a", "#c84e12", "#e47024", "#f29c52", "#fcd09a")
 SLURRY = fixed("slurry", "#2c3034", "#464c52", "#646c74", "#868e96", "#a8b0b8", "#c8ced4", "#eef2f4")
 TRITIUM = fixed("tritium", "#0c3a26", "#14583a", "#1e7a52", "#2c9c6c", "#48bc8a", "#7cd8ae", "#c4f4dc")
+HEAVY_WATER = fixed("heavy_water", "#0a1c3c", "#12306a", "#1c4894", "#2a62b8", "#4a84d4", "#7aa8e6", "#c0d8f6")
 UF6 = fixed("uf6", "#3c4410", "#5e6a1a", "#848f2a", "#a8b440", "#c6d062", "#dce48e", "#f2f6c8")
 
 
@@ -38,6 +39,7 @@ def canisters() -> None:
     c("napalm_canister", PT.CANISTER_ROWS, NAPALM, P.WARNING_RED[2])
     c("uf6_canister", PT.GAS_ROWS, UF6, P.HAZARD_BLACK[3])
     c("tritium_canister", PT.GAS_ROWS, TRITIUM, P.WHITE_CERAMIC[6])
+    c("heavy_water_canister", PT.CANISTER_ROWS, HEAVY_WATER, P.WHITE_CERAMIC[6])
 
 
 def flask() -> None:

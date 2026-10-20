@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; 70/70 GameTests); next: slice 8 (Fusion and Singularity Reactors) after the user's check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback pass done: Fluid Port, reactor heat balance and heavy water, creative capacitor bank; 75/75 GameTests); next: slice 8 (Fusion and Singularity Reactors) after the user's check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -155,6 +155,7 @@ checklist for the user.
 | Chunk tickets, SavedData persistence, resume | todo |
 | Instant mode for small blasts | todo |
 | Server config limits | todo |
+| Fission Reactor meltdown (blast + contamination when the core overheats with SCRAM off; server config toggle) | todo (agreed with the user in the slice 7 feedback) |
 | Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | todo |
 | Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | todo |
 | Distance-delayed sound scheduler + virtual-distance big sounds | todo |

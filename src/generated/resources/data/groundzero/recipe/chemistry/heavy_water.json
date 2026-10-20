@@ -1,0 +1,21 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundzero:heavy_water"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:deuterium"
+    },
+    {
+      "amount": 500,
+      "ingredient": "#c:liquid_oxygen"
+    }
+  ],
+  "time": 300
+}

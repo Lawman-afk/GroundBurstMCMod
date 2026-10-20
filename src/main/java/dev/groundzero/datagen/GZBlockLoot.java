@@ -72,6 +72,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
             dropSelf(part.block().get());
         }
         dropSelf(GZMultiblocks.ENERGY_PORT.block().get());
+        dropSelf(GZMultiblocks.FLUID_PORT.block().get());
         for (var pipe : dev.groundzero.content.fluid.GZFluids.pipes()) {
             dropSelf(pipe.block().get());
         }

@@ -78,6 +78,28 @@ def item_port() -> Tex:
     return t
 
 
+FLUID_BLUE = fixed("fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3a6ec8", "#6a98e0", "#a8c8f4")
+
+
+def fluid_port() -> Tex:
+    """Like the Item Port, in blue and black stripes, with a drop in the opening: pipes connect here."""
+    t = Tex(16, 16)
+    frame(t)
+    t.stripes(2, 2, 12, 12, FLUID_BLUE[4], P.HAZARD_BLACK.base, width=2)
+    t.rect(4, 4, 8, 8, P.BLACK_PAINT.deep)                    # port opening
+    t.outline(4, 4, 8, 8, GUN[1])
+    # A drop: narrow point at the top, round belly, highlight left, shade right.
+    rows = {5: (7, 8), 6: (7, 8), 7: (6, 9), 8: (5, 10), 9: (5, 10), 10: (6, 9)}
+    for y, (x0, x1) in rows.items():
+        for x in range(x0, x1 + 1):
+            t.px(x, y, FLUID_BLUE[5])
+    for x, y in ((10, 8), (10, 9), (9, 10), (8, 10)):
+        t.px(x, y, FLUID_BLUE[3])
+    for x, y in ((6, 8), (6, 9), (7, 7)):
+        t.px(x, y, FLUID_BLUE[6])
+    return t
+
+
 def flask_placard(t: Tex) -> None:
     """Chemical Plant: a flask."""
     t.rect(4, 9, 4, 4, P.WHITE_CERAMIC[5])
@@ -264,6 +286,7 @@ if __name__ == "__main__":
     # Slice 7.
     part_block("lead_lined_casing", lead_casing())
     part_block("energy_port", energy_port())
+    part_block("fluid_port", fluid_port())
     part_block("steel_plating", steel_plating())
     part_block("steel_frame", steel_frame(), cutout=True)
     part_block("magnet_segment", magnet_segment())

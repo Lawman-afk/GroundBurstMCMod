@@ -98,10 +98,13 @@ final class MultiblockTests {
     private static void port(GameTestHelper helper) {
         ChemicalPlantBlockEntity plant = build(helper, new BlockPos(4, 1, 4), Direction.NORTH);
         BlockPos portPos = plant.controllerPos().east().south();
+        BlockPos fluidPos = plant.controllerPos().south();
         var level = helper.getLevel();
         var items = level.getCapability(Capabilities.Item.BLOCK, portPos, Direction.EAST);
-        var fluids = level.getCapability(Capabilities.Fluid.BLOCK, portPos, Direction.EAST);
-        helper.assertTrue(items != null && fluids != null, "a formed item port exposes items and fluids");
+        var fluids = level.getCapability(Capabilities.Fluid.BLOCK, fluidPos, Direction.WEST);
+        helper.assertTrue(items != null && fluids != null, "a formed item port exposes items, a formed fluid port fluids");
+        helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, portPos, Direction.EAST) == null, "the item port carries no fluids");
+        helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, fluidPos, Direction.WEST) == null, "the fluid port carries no items");
         try (var tx = Transaction.openRoot()) {
             int in = 0;
             for (int i = 0; i < items.size(); i++) {
@@ -115,6 +118,7 @@ final class MultiblockTests {
         helper.assertTrue(plant.tank(0).amount() == 2000, "water arrives in the controller's tank");
         level.destroyBlock(plant.controllerPos().above(), true);
         helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, portPos, Direction.EAST) == null, "an unformed port exposes nothing");
+        helper.assertTrue(level.getCapability(Capabilities.Fluid.BLOCK, fluidPos, Direction.WEST) == null, "an unformed fluid port exposes nothing");
         helper.succeed();
     }
 

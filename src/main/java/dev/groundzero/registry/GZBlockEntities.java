@@ -71,6 +71,7 @@ public final class GZBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> CAPACITOR_BANK = bank(0);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> ADVANCED_CAPACITOR_BANK = bank(1);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> SUPERCONDUCTING_CAPACITOR_BANK = bank(2);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundzero.content.power.CapacitorBankBlockEntity>> CREATIVE_CAPACITOR_BANK = bank(3);
 
     /** One block entity type per bank tier, so each tier gets its own GeckoLib model. */
     @SuppressWarnings("unchecked")
@@ -89,6 +90,7 @@ public final class GZBlockEntities {
             case BASIC -> CAPACITOR_BANK;
             case ADVANCED -> ADVANCED_CAPACITOR_BANK;
             case SUPERCONDUCTING -> SUPERCONDUCTING_CAPACITOR_BANK;
+            case CREATIVE -> CREATIVE_CAPACITOR_BANK;
         };
     }
 
@@ -102,7 +104,7 @@ public final class GZBlockEntities {
                     GZMachines.PARTICLE_ACCELERATOR.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
             BLOCK_ENTITIES.register("item_port", () -> new BlockEntityType<>(PortBlockEntity::new, GZMultiblocks.ITEM_PORT.block().get(),
-                    GZMultiblocks.ENERGY_PORT.block().get()));
+                    GZMultiblocks.ENERGY_PORT.block().get(), GZMultiblocks.FLUID_PORT.block().get()));
 
     private GZBlockEntities() {}
 
@@ -120,6 +122,7 @@ public final class GZBlockEntities {
         machine(event, CAPACITOR_BANK.get());
         machine(event, ADVANCED_CAPACITOR_BANK.get());
         machine(event, SUPERCONDUCTING_CAPACITOR_BANK.get());
+        machine(event, CREATIVE_CAPACITOR_BANK.get());
         event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access,
                 GZDataComponents.ENERGY.get(), dev.groundzero.content.power.BatteryItem.CAPACITY, dev.groundzero.content.power.BatteryItem.TRANSFER),
                 dev.groundzero.content.part.GZParts.BATTERY.get());

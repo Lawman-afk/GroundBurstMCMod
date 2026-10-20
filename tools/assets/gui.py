@@ -219,15 +219,16 @@ LAYOUTS = {
         "readout": (64, 22, 96, 14),
         "inventory": (8, 84),
     },
-    # Slice 7. Fission Reactor: water tank, 4 fuel rods, 2 breeding targets, 3 outputs, heat and control-rod gauges,
-    # rod buttons (withdraw / insert / SCRAM) and a CRT with output and core temperature.
+    # Slice 7. Fission Reactor: coolant tank (water or heavy water, dumpable), 4 fuel rods, 2 breeding targets, 3
+    # outputs, heat and control-rod gauges, rod buttons (withdraw / insert / SCRAM) and a CRT with output and core
+    # temperature.
     "fission_reactor": {
         "title": (8, 6),
         "size": (176, 194),
         "slots": [("rod", 46, 21), ("rod", 64, 21), ("rod", 46, 39), ("rod", 64, 39), ("target", 46, 61), ("target", 64, 61),
                   ("out", 92, 21), ("out", 92, 39), ("out", 92, 61)],
         "energy": (8, 20, 14, 46),
-        "tanks": [(26, 20, 12, 46, "H2O", False)],
+        "tanks": [(26, 20, 12, 42, None, True)],
         "progress": None,
         "flame": None,
         "status": (160, 5, 8, 8),

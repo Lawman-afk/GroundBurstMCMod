@@ -1,5 +1,6 @@
 package dev.groundzero.gametest;
 
+import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.machine.FissionReactorBlockEntity;
 import dev.groundzero.content.machine.GZMachines;
 import dev.groundzero.content.machine.MachineBlock;
@@ -16,9 +17,15 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
-/** Phase 4 slice 7: the Fission Reactor (forming, power, coolant, SCRAM, breeding, energy port) and the Particle Accelerator. */
+/**
+ * Phase 4 slice 7: the Fission Reactor (forming, power, coolant and heat balance, SCRAM, heavy water, breeding, ports)
+ * and the Particle Accelerator.
+ */
 final class ReactorTests {
     private ReactorTests() {}
 
@@ -26,6 +33,9 @@ final class ReactorTests {
         GZGameTests.test("reactor_forms_and_unforms", GZGameTests.FLOOR_16, 20, ReactorTests::reactorForms);
         GZGameTests.test("reactor_makes_power_and_uses_coolant", GZGameTests.FLOOR_16, 60, ReactorTests::reactorRuns);
         GZGameTests.test("reactor_scrams_without_coolant", GZGameTests.FLOOR_16, 300, ReactorTests::reactorScrams);
+        GZGameTests.test("reactor_water_overheats_at_full_power", GZGameTests.FLOOR_16, 400, ReactorTests::waterOverheats);
+        GZGameTests.test("reactor_heavy_water_holds_full_power", GZGameTests.FLOOR_16, 400, ReactorTests::heavyWaterHolds);
+        GZGameTests.test("reactor_connects_only_through_ports", GZGameTests.FLOOR_16, 20, ReactorTests::portsOnly);
         GZGameTests.test("reactor_breeds_target_rods", GZGameTests.FLOOR_16, 40, ReactorTests::reactorBreeds);
         GZGameTests.test("reactor_energy_port_pushes_power", GZGameTests.FLOOR_16, 60, ReactorTests::reactorEnergyPort);
         GZGameTests.test("accelerator_forms_and_runs", GZGameTests.FLOOR_16, 60, ReactorTests::accelerator);
@@ -99,6 +109,67 @@ final class ReactorTests {
             helper.assertTrue(r.insertion() == 100 && r.powerLevel() == 0, "every rod is in");
             helper.assertTrue(r.status() == MachineStatus.SCRAM, "status SCRAM");
         });
+    }
+
+    /** Water coolant at full power: the core heads past 900 C and SCRAMs, with water still in the tank. */
+    private static void waterOverheats(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        fuel(r, 4);
+        r.tank(0).fillInternal(new FluidStack(Fluids.WATER, 16_000));
+        withdrawAll(r);
+        helper.assertTrue(r.equilibrium(1f) > FissionReactorBlockEntity.SCRAM_HEAT, "full power on water heads past SCRAM");
+        helper.assertTrue(r.equilibrium(0.7f) < FissionReactorBlockEntity.SCRAM_HEAT, "70% on water is safe");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(r.scrammed(), "the reactor SCRAMs, heat " + r.heat());
+            helper.assertTrue(r.tank(0).amount() > 0, "it was not for lack of water");
+        });
+    }
+
+    /** Heavy water at full power: the core settles below SCRAM and uses a fifth of the coolant. */
+    private static void heavyWaterHolds(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        fuel(r, 4);
+        r.tank(0).fillInternal(new FluidStack(GZFluids.HEAVY_WATER.source().get(), 16_000));
+        withdrawAll(r);
+        helper.assertTrue(r.equilibrium(1f) < FissionReactorBlockEntity.SCRAM_HEAT - 100, "full power on heavy water stays well below SCRAM");
+        helper.runAfterDelay(300, () -> {
+            helper.assertTrue(!r.scrammed() && r.status() != MachineStatus.SCRAM, "no SCRAM, heat " + r.heat());
+            helper.assertTrue(r.heat() > 600 && r.heat() < FissionReactorBlockEntity.SCRAM_HEAT, "the core runs hot but holds, " + r.heat());
+            int used = 16_000 - r.tank(0).amount();
+            int water = 300 * FissionReactorBlockEntity.WATER_AT_FULL_POWER;
+            helper.assertTrue(used > 0 && used <= water / FissionReactorBlockEntity.HEAVY_WATER_SAVING + 10, "a fifth of the water rate, used " + used);
+            helper.succeed();
+        });
+    }
+
+    /** The controller exposes nothing; coolant goes in through the Fluid Port, items through the Item Ports only. */
+    private static void portsOnly(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        var level = helper.getLevel();
+        BlockPos ctrl = r.controllerPos();
+        for (Direction d : Direction.values()) {
+            helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, ctrl, d) == null
+                    && level.getCapability(Capabilities.Fluid.BLOCK, ctrl, d) == null
+                    && level.getCapability(Capabilities.Energy.BLOCK, ctrl, d) == null, "the controller exposes nothing on " + d);
+        }
+        BlockPos coolant = cell(r, 'W');
+        helper.assertTrue(level.getBlockState(coolant).is(GZMultiblocks.FLUID_PORT.block().get()), "the coolant port is a Fluid Port");
+        var fluids = level.getCapability(Capabilities.Fluid.BLOCK, coolant, Direction.NORTH);
+        helper.assertTrue(fluids != null && level.getCapability(Capabilities.Item.BLOCK, coolant, Direction.NORTH) == null,
+                "the Fluid Port carries fluids, not items");
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(fluids.insert(0, FluidResource.of(GZFluids.HEAVY_WATER.source().get()), 1_000, tx) == 1_000, "heavy water goes in");
+            tx.commit();
+        }
+        helper.assertTrue(r.tank(0).amount() == 1_000, "the coolant reaches the controller");
+        BlockPos fuelPort = cell(r, 'U');
+        helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, fuelPort, Direction.UP) != null
+                && level.getCapability(Capabilities.Fluid.BLOCK, fuelPort, Direction.UP) == null, "the Item Port carries items, not fluids");
+        helper.succeed();
+    }
+
+    private static BlockPos cell(FissionReactorBlockEntity r, char key) {
+        return r.definition().cells(r.controllerPos(), r.controllerFacing()).stream().filter(c -> c.key() == key).findFirst().orElseThrow().pos();
     }
 
     /** A DU target rod nearly done becomes an irradiated rod in an output slot. */

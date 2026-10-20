@@ -63,6 +63,9 @@ public final class GZFluids {
             1140, 1, 90, GZChemicals.LIQUID_OXYGEN_CANISTER, GZParts.EMPTY_CANISTER, MapColor.COLOR_LIGHT_BLUE);
     public static final ChemFluid LIQUID_NITROGEN = liquid("liquid_nitrogen", "Liquid Nitrogen", Look.LIQUID, 0xFFD8E8F2, Hazard.CRYO,
             810, 1, 77, GZChemicals.LIQUID_NITROGEN_CANISTER, GZParts.EMPTY_CANISTER, MapColor.SNOW);
+    /** Reactor coolant that runs the core cooler than water and is used up five times slower (see FissionReactorBlockEntity). */
+    public static final ChemFluid HEAVY_WATER = liquid("heavy_water", "Heavy Water", Look.LIQUID, 0xFF5A8CD8, Hazard.NONE,
+            1107, 1, 300, GZChemicals.HEAVY_WATER_CANISTER, GZParts.EMPTY_CANISTER, MapColor.WATER);
     public static final ChemFluid DEUTERIUM = gas("deuterium", "Deuterium", 0xFFA4BCFF, Hazard.NONE, GZChemicals.DEUTERIUM_CANISTER);
     public static final ChemFluid TRITIUM = gas("tritium", "Tritium", 0xFFB8F0D0, Hazard.NONE, GZChemicals.TRITIUM_CANISTER);
     public static final ChemFluid URANIUM_HEXAFLUORIDE = gas("uranium_hexafluoride", "Uranium Hexafluoride", 0xFFC6D06A, Hazard.TOXIC,

@@ -29,7 +29,8 @@ public final class GZNuclear {
             GZTab.NUCLEAR, p -> p.stacksTo(16));
     public static final DeferredItem<Item> PLUTONIUM_NUGGET = GZItems.simple("plutonium_nugget", "Plutonium Nugget", GZTab.RESOURCES);
     public static final DeferredItem<Item> PLUTONIUM_INGOT = GZItems.simple("plutonium_ingot", "Plutonium Ingot", GZTab.RESOURCES);
-    public static final DeferredItem<Item> NUCLEAR_WASTE = GZItems.simple("nuclear_waste", "Nuclear Waste", GZTab.NUCLEAR);
+    /** Fire- and lava-proof, so it cannot be got rid of by burning it (a dropped stack still despawns as usual). */
+    public static final DeferredItem<Item> NUCLEAR_WASTE = GZItems.simple("nuclear_waste", "Nuclear Waste", GZTab.NUCLEAR, p -> p.fireResistant());
 
     // --- Particle Accelerator ------------------------------------------------------------------------------------------------
     public static final DeferredItem<Item> ANTIMATTER_CELL = GZItems.simple("antimatter_cell", "Antimatter Cell", GZTab.NUCLEAR,

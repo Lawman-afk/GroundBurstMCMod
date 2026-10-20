@@ -5,7 +5,7 @@ controller, which sits in the middle layer of the front row, one block west of t
 Look: a steel-plated plinth ring with hazard edging; on it the beam line, a square ring of beam pipe threaded through
 28 red dipole magnets (copper windings on top, bending magnets at the corners) with short bare lengths of pipe and
 flanges between them. The injector (blue source glow), the controller's control cabinet, the violet target chamber
-and the energy terminal sit in the ring; an open steel truss rides on top. While running, a glowing particle bunch
+and the energy terminal sit in the ring; an open steel truss (closed at the corners) rides on top. While running, a glowing particle bunch
 (bone "bunch") races round the ring once a second, flashing in the gaps between magnets.
 """
 from __future__ import annotations
@@ -114,28 +114,53 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             add("terminal_box", g.box("terminal_box", (cx - 7, 0, cz - 7), (cx + 7, 14, cz + 7), bone=F))
             for i, dz in enumerate((-3.5, 0.0, 3.5)):
                 add("insulator", g.box(f"insulator{i}", (cx - 9.5, 6, cz + dz - 1), (cx - 7, 9, cz + dz + 1), faces=("west", "north", "south", "up", "down"), bone=F))
-    # Top truss (top layer): chords along the outer and inner edges, posts at every cell boundary.
+    # Top truss (top layer): an outer and an inner loop of 2x2 chords at the bottom (y 16) and top (y 30) of the layer,
+    # closed at every corner; at each cell boundary a post at both loops and a crossbar between them at both levels,
+    # so the corner cells are closed squares like the rest. Node start positions along x and z: the outer edges, the
+    # inner edges (which are also the corner cells' inner boundaries) and the boundaries between the other cells.
+    xs = [X_MIN, X_MIN + 14] + [X_MIN + 16 * k - 1 for k in range(2, 8)] + [X_MAX - 16, X_MAX - 2]
+    zs = [Z_MIN, Z_MIN + 14] + [Z_MIN + 16 * k - 1 for k in range(2, 8)] + [Z_MAX - 16, Z_MAX - 2]
+    XO0, XI0, XI1, XO1 = xs[0], xs[1], xs[-2], xs[-1]
+    ZO0, ZI0, ZI1, ZO1 = zs[0], zs[1], zs[-2], zs[-1]
+    along_x = ("north", "south", "up", "down")
+    along_z = ("east", "west", "up", "down")
+
+    def run_x(name, x0, x1, z, y0):
+        shared("chord", g.box(name, (x0, y0, z), (x1, y0 + 2, z + 2), faces=along_x, bone=F))
+
+    def run_z(name, x, z0, z1, y0):
+        shared("chord", g.box(name, (x, y0, z0), (x + 2, y0 + 2, z1), faces=along_z, bone=F))
+
     for y0 in (16.0, 30.0):
-        for edge, (za, zb) in (("o", (Z_MIN, Z_MIN + 2)), ("i", (Z_MIN + 14, Z_MIN + 16))):
-            add("chord", g.box(f"chord_n_{edge}_{int(y0)}", (X_MIN, y0, za), (X_MAX, y0 + 2, zb), bone=F))
-        for edge, (za, zb) in (("o", (Z_MAX - 2, Z_MAX)), ("i", (Z_MAX - 16, Z_MAX - 14))):
-            add("chord", g.box(f"chord_s_{edge}_{int(y0)}", (X_MIN, y0, za), (X_MAX, y0 + 2, zb), bone=F))
-        for edge, (xa, xb) in (("o", (X_MIN, X_MIN + 2)), ("i", (X_MIN + 14, X_MIN + 16))):
-            add("chord", g.box(f"chord_w_{edge}_{int(y0)}", (xa, y0, Z_MIN + 16), (xb, y0 + 2, Z_MAX - 16), faces=("east", "west", "up", "down"), bone=F))
-        for edge, (xa, xb) in (("o", (X_MAX - 2, X_MAX)), ("i", (X_MAX - 16, X_MAX - 14))):
-            add("chord", g.box(f"chord_e_{edge}_{int(y0)}", (xa, y0, Z_MIN + 16), (xb, y0 + 2, Z_MAX - 16), faces=("east", "west", "up", "down"), bone=F))
-    posts = set()
-    for i in range(10):
-        x = X_MIN + i * 16
-        for z in (Z_MIN, Z_MIN + 14, Z_MAX - 2, Z_MAX - 16):
-            posts.add((min(max(x, X_MIN), X_MAX - 2), z))
-        z = Z_MIN + i * 16
-        for xx in (X_MIN, X_MIN + 14, X_MAX - 2, X_MAX - 16):
-            posts.add((xx, min(max(z, Z_MIN), Z_MAX - 2)))
-    for n, (x, z) in enumerate(sorted(posts)):
-        if x > X_MIN + 14 and x < X_MAX - 16 and z > Z_MIN + 14 and z < Z_MAX - 16:
-            continue                                    # inside the ring: no truss there
-        x = min(x, X_MAX - 2)
+        lv = int(y0)
+        # Outer loop: front and back full width, the sides between them.
+        run_x(f"ch_on_{lv}", X_MIN, X_MAX, ZO0, y0)
+        run_x(f"ch_os_{lv}", X_MIN, X_MAX, ZO1, y0)
+        run_z(f"ch_ow_{lv}", XO0, ZO0 + 2, ZO1, y0)
+        run_z(f"ch_oe_{lv}", XO1, ZO0 + 2, ZO1, y0)
+        # Inner loop: front and back from outer side to outer side, the sides in three pieces around them.
+        run_x(f"ch_in_{lv}", XO0 + 2, XO1, ZI0, y0)
+        run_x(f"ch_is_{lv}", XO0 + 2, XO1, ZI1, y0)
+        for side, x in (("w", XI0), ("e", XI1)):
+            run_z(f"ch_i{side}a_{lv}", x, ZO0 + 2, ZI0, y0)
+            run_z(f"ch_i{side}b_{lv}", x, ZI0 + 2, ZI1, y0)
+            run_z(f"ch_i{side}c_{lv}", x, ZI1 + 2, ZO1, y0)
+        # Crossbars at the boundaries between the non-corner cells.
+        for k, x in enumerate(xs[2:-2]):
+            run_z(f"bar_n{k}_{lv}", x, ZO0 + 2, ZI0, y0)
+            run_z(f"bar_s{k}_{lv}", x, ZI1 + 2, ZO1, y0)
+        for k, z in enumerate(zs[2:-2]):
+            run_x(f"bar_w{k}_{lv}", XO0 + 2, XI0, z, y0)
+            run_x(f"bar_e{k}_{lv}", XI1 + 2, XO1, z, y0)
+    # Posts at every node of both loops.
+    nodes = set()
+    for x in xs:
+        for z in (ZO0, ZI0, ZI1, ZO1):
+            nodes.add((x, z))
+    for z in zs:
+        for x in (XO0, XI0, XI1, XO1):
+            nodes.add((x, z))
+    for n, (x, z) in enumerate(sorted(nodes)):
         shared("post", g.box(f"post{n}", (x, 18, z), (x + 2, 30, z + 2), faces=("north", "south", "east", "west"), bone=F))
     # The bunch and its trail.
     add("bunch", g.box("bunch_head", (CENTRE_W - 2, BEAM_Y - 2, CENTRE_N - 2), (CENTRE_W + 2, BEAM_Y + 2, CENTRE_N + 2), shade=False, bone="bunch"))
@@ -227,7 +252,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]),
                                              [t.vline(xx, r[1], r[3], P.WHITE_CERAMIC[2]) for xx in range(r[0] + 1, r[0] + r[2], 2)] if d in ("up", "down", "north", "south") else None))
     for b in parts["chord"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d in ("north", "south", "east", "west") else None))
+        if b is first.get(f"chord:{tuple(round(bb - aa, 3) for aa, bb in zip(b.frm, b.to))}:{sorted(b.faces)}"):
+            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d in ("north", "south", "east", "west") else None))
     for b in parts["post"]:
         if b is first.get(f"post:{tuple(round(bb - aa, 3) for aa, bb in zip(b.frm, b.to))}:{sorted(b.faces)}"):
             g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[3]), t.vline(r[0], r[1], r[3], steel[5])))

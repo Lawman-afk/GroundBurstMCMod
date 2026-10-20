@@ -82,7 +82,7 @@ public final class GZJeiPlugin implements IModPlugin {
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));
         registration.addIngredientInfo(List.of(GZMachines.CHEMICAL_PLANT.item().get(), GZMultiblocks.MACHINE_CASING.item().get(),
-                        GZMultiblocks.REACTOR_GLASS.item().get(), GZMultiblocks.ITEM_PORT.item().get(), GZMultiblocks.HOLO_PROJECTOR.get(),
+                        GZMultiblocks.REACTOR_GLASS.item().get(), GZMultiblocks.ITEM_PORT.item().get(), GZMultiblocks.FLUID_PORT.item().get(), GZMultiblocks.HOLO_PROJECTOR.get(),
                         GZMultiblocks.CHEMICAL_PLANT_SPAWNER.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_CHEMICAL_PLANT));

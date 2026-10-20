@@ -42,6 +42,8 @@ final class PowerStorageTests {
         GZGameTests.test("rtg_decays_its_slug", GZGameTests.FLOOR_16, 40, PowerStorageTests::rtg);
         GZGameTests.test("capacitor_bank_front_outputs_sides_input", GZGameTests.FLOOR_16, 40, PowerStorageTests::bankFaces);
         GZGameTests.test("capacitor_bank_keeps_charge_when_broken", GZGameTests.FLOOR_16, 20, PowerStorageTests::bankKeepsCharge);
+        GZGameTests.test("creative_bank_stays_full", GZGameTests.FLOOR_16, 40, PowerStorageTests::creativeBank);
+        GZGameTests.test("nuclear_waste_is_fireproof", GZGameTests.FLOOR_16, 20, PowerStorageTests::wasteFireproof);
         GZGameTests.test("charger_fills_battery", GZGameTests.FLOOR_16, 160, PowerStorageTests::charger);
         GZGameTests.test("shower_washes_off_poison_and_fire", GZGameTests.FLOOR_16, 60, PowerStorageTests::shower);
     }
@@ -100,6 +102,26 @@ final class PowerStorageTests {
         helper.setBlock(pos.north(), GZMachines.ORE_CRUSHER.block().get());
         OreCrusherBlockEntity crusher = helper.getBlockEntity(pos.north(), OreCrusherBlockEntity.class);
         helper.succeedWhen(() -> helper.assertTrue(crusher.energy().stored() > 0, "the bank pushes power out of its front"));
+    }
+
+    /** The creative bank stays full while it pushes power into a crusher in front of it. */
+    private static void creativeBank(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, GZMachines.CAPACITOR_BANKS.get(3).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        CapacitorBankBlockEntity bank = helper.getBlockEntity(pos, CapacitorBankBlockEntity.class);
+        helper.assertTrue(bank.tier() == CapacitorBankBlockEntity.Tier.CREATIVE, "the fourth bank is the creative one");
+        helper.setBlock(pos.north(), GZMachines.ORE_CRUSHER.block().get());
+        OreCrusherBlockEntity crusher = helper.getBlockEntity(pos.north(), OreCrusherBlockEntity.class);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(crusher.energy().stored() >= 2_000, "the crusher is fed as fast as it takes power, " + crusher.energy().stored());
+            helper.assertTrue(bank.energy().stored() == bank.energy().capacity(), "the bank is still full");
+        });
+    }
+
+    private static void wasteFireproof(GameTestHelper helper) {
+        ItemStack waste = new ItemStack(GZNuclear.NUCLEAR_WASTE.get());
+        helper.assertTrue(!waste.canBeHurtBy(helper.getLevel().damageSources().lava()), "lava does not destroy nuclear waste");
+        helper.succeed();
     }
 
     /** Broken with power in it, the bank drops an item carrying the charge; placing it restores the charge. */

@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import dev.groundzero.content.machine.MachineLayout;
 import dev.groundzero.client.render.FluidVisuals;
 import dev.groundzero.content.machine.MachineTank;
@@ -35,16 +37,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private static final NumberFormat NUM = NumberFormat.getIntegerInstance(Locale.ROOT);
     private static final String KEY_ENERGY = MachineText.ENERGY;
     private static final String KEY_PROGRESS = MachineText.PROGRESS;
-    private static final String KEY_BURN = MachineText.BURN;
     private static final String KEY_REDSTONE = MachineText.REDSTONE;
 
     private final MachineLayout layout;
-    private final SideConfigTab sideTab;
+    /** Null for structures that connect only through their ports. */
+    private final @Nullable SideConfigTab sideTab;
 
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, menu.layout().width(), menu.layout().height());
         this.layout = menu.layout();
-        this.sideTab = new SideConfigTab(menu);
+        this.sideTab = menu.machine().hasSideConfig() ? new SideConfigTab(menu) : null;
         this.titleLabelX = this.layout.titleX();
         this.titleLabelY = this.layout.titleY();
     }
@@ -215,18 +217,20 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
     /** Screen areas outside the main window (the side-config tab), for JEI to keep clear of. */
     public List<Rect2i> extraAreas() {
-        return List.of(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
+        return this.sideTab == null ? List.of() : List.of(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
     }
 
     @Override
     protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
-        return super.hasClickedOutside(mx, my, xo, yo) && !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my);
+        return super.hasClickedOutside(mx, my, xo, yo) && (this.sideTab == null || !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my));
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
         super.extractRenderState(g, mouseX, mouseY, partial);
-        this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
+        if (this.sideTab != null) {
+            this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
+        }
         int mx = mouseX - this.leftPos;
         int my = mouseY - this.topPos;
         if (this.layout.energy().contains(mx, my)) {
@@ -239,7 +243,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             lines.add(this.menu.tankAmount(i) <= 0 ? Component.translatable(MachineText.TANK_EMPTY, NUM.format(cap))
                     : Component.translatable(MachineText.TANK, this.menu.tankFluid(i).getFluidType().getDescription(),
                     NUM.format(this.menu.tankAmount(i)), NUM.format(cap)));
-            lines.add(Component.translatable(tank.isInput() ? MachineText.TANK_INPUT : MachineText.TANK_OUTPUT).withColor(0xFF9AA0A8));
+            lines.add(Component.translatable(this.menu.machine().tankHint(i)).withColor(0xFF9AA0A8));
             g.setTooltipForNextFrame(this.font, lines, java.util.Optional.empty(), mouseX, mouseY);
         } else if (dumpAt(mx, my) >= 0) {
             g.setTooltipForNextFrame(this.font, List.of(Component.translatable(MachineText.DUMP),
@@ -257,13 +261,13 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             int pct = max > 0 ? this.menu.extra(ProcessingBlockEntity.DATA_PROGRESS) * 100 / max : 0;
             g.setTooltipForNextFrame(Component.translatable(KEY_PROGRESS, pct), mouseX, mouseY);
         } else if (this.layout.flame() != null && this.layout.flame().contains(mx, my)) {
-            g.setTooltipForNextFrame(Component.translatable(KEY_BURN, this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN) / 20), mouseX, mouseY);
+            g.setTooltipForNextFrame(this.menu.machine().flameTooltip(this.menu), mouseX, mouseY);
         }
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (this.sideTab.click(event.x(), event.y(), event.button(), this.leftPos, this.topPos, this.imageWidth)) {
+        if (this.sideTab != null && this.sideTab.click(event.x(), event.y(), event.button(), this.leftPos, this.topPos, this.imageWidth)) {
             return true;
         }
         int mx = (int) event.x() - this.leftPos;

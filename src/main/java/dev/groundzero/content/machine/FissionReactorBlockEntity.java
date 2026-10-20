@@ -6,14 +6,13 @@ import java.util.Set;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.util.GeckoLibUtil;
 
-import dev.groundzero.GroundZero;
+import dev.groundzero.content.fluid.GZFluids;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockController;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
 import dev.groundzero.content.nuclear.GZNuclear;
 import dev.groundzero.content.power.PowerUtil;
 import dev.groundzero.registry.GZBlockEntities;
-import dev.groundzero.registry.GZLang;
 import dev.groundzero.registry.GZMenus;
 import dev.groundzero.registry.GZSounds;
 import net.minecraft.core.BlockPos;
@@ -33,8 +32,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 /**
  * Fission Reactor (DESIGN.md §7, §23.3): a 3x3x4 multiblock run from this controller. A game abstraction, not a
@@ -43,13 +44,14 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <ul>
  * <li>Power = 1 200 FE/t x (fuel slots loaded / 4) x (rods withdrawn %). One rod's worth of fuel lasts 12 000 ticks of
  *     full power; a used-up rod comes out as a spent fuel rod.</li>
- * <li>Coolant: up to 25 mB of water a tick at full power. Cooled, the core settles at 20 + 480 x power °C; without
- *     enough water it heats up quickly. At 900 °C it SCRAMs (all rods in) until the rods are withdrawn again. A
- *     damaging meltdown is not part of the game (yet): it would come as a server config option with the explosion
- *     engine.</li>
+ * <li>Coolant: water or heavy water. With coolant flowing the core heads for 20 + 1 150 x power / quality °C (1% of the
+ *     way each tick): water has quality 1, so past about 70% power the core would pass 900 °C; heavy water has
+ *     quality 1.6, so even full power settles near 740 °C. Water is used at up to 25 mB a tick, heavy water at a fifth
+ *     of that. Without enough coolant the core heats up quickly. At 900 °C it SCRAMs (all rods in) until the rods are
+ *     withdrawn again. A damaging meltdown comes with the explosion engine (Phase 5), as a server config option.</li>
  * <li>Breeding: a DU or Li-6 target rod in a target slot becomes irradiated after 6 000 ticks of full power.</li>
  * </ul>
- * Slots: 0-3 fuel rods, 4-5 target rods, 6 spent fuel, 7-8 irradiated targets. Tank: water.
+ * Slots: 0-3 fuel rods, 4-5 target rods, 6 spent fuel, 7-8 irradiated targets. Tank: coolant (dumpable).
  */
 public class FissionReactorBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
     public static final int MAX_OUTPUT = 1_200;
@@ -58,6 +60,11 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     public static final int ROD_LIFE = 12_000;
     public static final int BREED_TIME = 6_000;
     public static final int WATER_AT_FULL_POWER = 25;
+    /** Heavy water is used this many times slower than water. */
+    public static final int HEAVY_WATER_SAVING = 5;
+    /** Core temperature rise at full power with water coolant; divided by the coolant's quality. */
+    public static final float HEAT_RISE = 1_150;
+    public static final float WATER_QUALITY = 1.0f, HEAVY_WATER_QUALITY = 1.6f;
     public static final int SCRAM_HEAT = 900, WARN_HEAT = 700, AMBIENT = 20;
     public static final int FUEL_SLOTS = 4, TARGET_START = 4, SPENT_SLOT = 6, IRRADIATED_START = 7;
     /** Sync slots: core heat (°C), rod insertion (%), output (FE/t), fuel burnup of the current rod (%). */
@@ -65,9 +72,6 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     public static final int BUTTON_WITHDRAW = 0, BUTTON_INSERT = 1, BUTTON_SCRAM = 2;
     private static final int RECHECK_INTERVAL = 40;
 
-    public static final String CORE = GZLang.add(GroundZero.MODID + ".gui.core", "CORE %s C");
-    public static final String RODS = GZLang.add(GroundZero.MODID + ".gui.rods", "RODS IN %s%%");
-    public static final String SCRAM_MESSAGE = GZLang.add(GroundZero.MODID + ".reactor.scram", "Reactor SCRAM: the core overheated. Check the coolant.");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int insertion = 100;
@@ -76,10 +80,12 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     private final float[] breed = new float[2];
     private boolean scrammed;
     private int power;
+    /** Coolant used but not yet drawn (heavy water goes at fractions of a mB a tick). */
+    private float coolantDebt;
 
     public FissionReactorBlockEntity(BlockPos pos, BlockState state) {
         super(GZBlockEntities.FISSION_REACTOR.get(), pos, state, CAPACITY, 0, PUSH, 9, new int[] {0, 1, 2, 3, 4, 5}, new int[] {6, 7, 8},
-                List.of(MachineTank.Spec.water(16_000)));
+                List.of(new MachineTank.Spec(16_000, MachineTank.Role.INPUT, FissionReactorBlockEntity::isCoolant, true)));
     }
 
     // --- multiblock ---------------------------------------------------------------------------------------------------------
@@ -108,15 +114,40 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
         StructureMachines.revalidate(this, this);
     }
 
+    /** The controller connects to nothing: items, fluids and power all go through the structure's ports. */
     @Override
     public boolean faceOpen(SideConfig.Face face) {
-        return StructureMachines.faceOpen(this, face);
+        return false;
+    }
+
+    /** Nothing to configure: the side tab is hidden. */
+    @Override
+    public boolean hasSideConfig() {
+        return false;
     }
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
         StructureMachines.unformOnRemove(this, this, state);
+    }
+
+    private static boolean isCoolant(FluidResource resource) {
+        return resource.getFluid().isSame(Fluids.WATER) || resource.getFluid().isSame(GZFluids.HEAVY_WATER.sourceFluid());
+    }
+
+    private boolean heavyWater() {
+        return this.tanks.get(0).amount() > 0 && this.tanks.get(0).fluid().getFluid().isSame(GZFluids.HEAVY_WATER.sourceFluid());
+    }
+
+    /** Where the cooled core's temperature heads at power level {@code lvl}. */
+    public float equilibrium(float lvl) {
+        return AMBIENT + HEAT_RISE * lvl / (heavyWater() ? HEAVY_WATER_QUALITY : WATER_QUALITY);
+    }
+
+    @Override
+    public String tankHint(int tank) {
+        return MachineText.COOLANT_HINT;
     }
 
     // --- items ---------------------------------------------------------------------------------------------------------------
@@ -187,16 +218,19 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
             this.status = MachineStatus.OUTPUT_FULL;
         }
         // Coolant and heat.
-        MachineTank water = this.tanks.get(0);
-        int need = (int) Math.ceil(WATER_AT_FULL_POWER * lvl);
-        boolean cooled = need == 0 || water.amount() >= need;
+        MachineTank coolant = this.tanks.get(0);
+        float settle = equilibrium(lvl);
+        this.coolantDebt += WATER_AT_FULL_POWER * lvl / (heavyWater() ? HEAVY_WATER_SAVING : 1);
+        int need = (int) this.coolantDebt;
+        boolean cooled = lvl <= 0 || coolant.amount() >= Math.max(1, need);
         if (cooled && need > 0) {
-            water.drainInternal(need);
+            coolant.drainInternal(need);
+            this.coolantDebt -= need;
         }
         if (lvl <= 0) {
             this.heat += (AMBIENT - this.heat) * 0.003f;
         } else if (cooled) {
-            this.heat += (AMBIENT + 480 * lvl - this.heat) * 0.01f;
+            this.heat += (settle - this.heat) * 0.01f;
         } else {
             this.heat += 1.5f + 3.5f * lvl;
         }
@@ -281,14 +315,13 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
         syncRods();
         for (Player player : level.players()) {
             if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(this.worldPosition)) < 48 * 48) {
-                player.sendOverlayMessage(Component.translatable(SCRAM_MESSAGE).withStyle(net.minecraft.ChatFormatting.RED));
+                player.sendOverlayMessage(Component.translatable(MachineText.SCRAM_MESSAGE).withStyle(net.minecraft.ChatFormatting.RED));
             }
         }
     }
 
-    /** Pushes power out of the controller's open faces and every Energy Port. */
+    /** Pushes power out of every Energy Port. */
     private void pushPower(ServerLevel level) {
-        PowerUtil.pushToNeighbours(level, this.worldPosition, this.energy, PUSH, side -> faceOpen(face(side)) && this.sides.energy(face(side)));
         for (MultiblockDefinition.Cell cell : definition().cells(this.worldPosition, controllerFacing())) {
             if (cell.key() == 'E') {
                 PowerUtil.pushToNeighbours(level, cell.pos(), this.energy, PUSH);
@@ -326,9 +359,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Ani
     // --- GUI -----------------------------------------------------------------------------------------------------------------
     @Override
     public List<Component> readout(MachineMenu menu) {
+        // Two lines fit the CRT; the rod setting has its own gauge.
         return List.of(Component.translatable(MachineText.OUTPUT, menu.extra(DATA_POWER)),
-                Component.translatable(CORE, menu.extra(DATA_HEAT)),
-                Component.translatable(RODS, menu.extra(DATA_RODS)));
+                Component.translatable(MachineText.CORE, menu.extra(DATA_HEAT)));
     }
 
     @Override

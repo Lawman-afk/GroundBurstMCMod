@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "F": "groundzero:tungsten_filament",
+    "I": "groundzero:insulated_cable",
+    "T": "#c:plates/tungsten"
+  },
+  "pattern": [
+    "III",
+    "FTF",
+    "III"
+  ],
+  "result": {
+    "count": 6,
+    "id": "groundzero:hv_cable"
+  }
+}

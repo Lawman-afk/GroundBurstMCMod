@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_insulated_cable": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:insulated_cable"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:hv_cable"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_insulated_cable"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:hv_cable"
+    ]
+  }
+}
