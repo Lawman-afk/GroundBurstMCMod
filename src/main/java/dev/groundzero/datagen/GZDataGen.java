@@ -23,11 +23,13 @@ public final class GZDataGen {
         event.createProvider(GZSoundDefinitions::new);
         event.createBlockAndItemTags(GZTagProviders.Blocks::new, GZTagProviders.Items::new);
         event.createProvider(GZTagProviders.FluidTags::new);
+        event.createProvider(GZBlastData.DamageTags::new);
     }
 
     /** Datapack registry content: worldgen, loot tables, recipes. */
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         GZWorldgenData.gather(event);
+        GZBlastData.gather(event);
         event.lootTable(new LootTableProvider.SubProviderEntry(GZBlockLoot::new, LootContextParamSets.BLOCK));
         event.recipe(GZRecipeProvider::new);
     }

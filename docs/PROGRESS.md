@@ -3,7 +3,7 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
-**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
+**Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slice 5a (server explosion engine) done, 99/99 GameTests. Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-20
 
 ---
@@ -17,7 +17,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 2 | Asset pipeline: texture lib, model DSL (block JSON + GeckoLib), preview renderer, sound synth → OGG, NBT writer, style guide, pilot assets | **done** (needs in-game listen of pilot sounds) |
 | 3 | Resources & world generation | **done** (needs in-game test) |
 | 4 | Power, cables, processing machines, multiblock framework, Fission Reactor, Particle Accelerator, Fusion and Singularity Reactors | **in progress** (slices 1–8 built; 6: diesel/RTG/capacitors/charger/decon; 7: Fission Reactor + Particle Accelerator; 8: Fusion + Singularity Reactors) — needs in-game test |
-| 5 | Explosion engine, Spectacle visual system, distance-delayed sound | todo |
+| 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **in progress** (5a server engine done; 5b sync/persistence/sound, 5c effects, 5d mushroom cloud + meltdown) |
 | 6 | Conventional explosives | todo |
 | 7 | Components & Assembly Bench | todo |
 | 8 | Nuclear weapons | todo |
@@ -151,19 +151,19 @@ checklist for the user.
 ## Phase 5 — Explosion engine & spectacle
 | Item | Status |
 |---|---|
-| BlastProfile datapack registry + terrain tables | todo |
-| Adaptive shell ray field | todo |
-| Section writer, relight batching, packets | todo |
-| Budget scheduler (ms + block budgets, fair sharing) | todo |
-| Entity damage/exposure/knockback/fire | todo |
+| BlastProfile datapack registry + terrain tables | done (5a: synced registry, 6 test profiles; terrain tables in code until Phase 12 blocks) |
+| Adaptive shell ray field | done (5a: cube-sphere rays splitting at 0.7 blocks, energy/shielding, lobes, crater depth, pressure bands) |
+| Section writer, relight batching, packets | done (5a: flagged Level.setBlock writes, rim neighbour updates) |
+| Budget scheduler (ms + block budgets, fair sharing) | done (5a) |
+| Entity damage/exposure/knockback/fire | done (5a: groundzero:blast damage type) |
 | Chunk tickets, SavedData persistence, resume | todo |
-| Instant mode for small blasts | todo |
-| Server config limits | todo |
+| Instant mode for small blasts | done (5a) |
+| Server config limits | done (5a: destroy switch, multiplier, max radius, budgets, concurrency, protected spawn/dimensions) |
 | Fission Reactor meltdown (blast + contamination when the core overheats with SCRAM off; server config toggle) | todo (agreed with the user in the slice 7 feedback) |
 | Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | todo |
 | Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | todo |
 | Distance-delayed sound scheduler + virtual-distance big sounds | todo |
-| GameTests: radius, shielding, budget, persistence | todo |
+| GameTests: radius, shielding, budget, persistence | partly (5a: instant, shielding, multi-tick front, exposure, no spew; persistence in 5b) |
 
 ## Phase 6 — Conventional explosives
 | Item | Status |

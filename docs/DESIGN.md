@@ -538,6 +538,28 @@ fire radius ignite. Items and XP orbs in the crater are deleted. Custom damage t
 `groundzero:nuclear_flash`, `groundzero:radiation`, `groundzero:toxin`, `groundzero:erasure`, ...) with death
 messages.
 
+### 11.4a As built (slice 5a)
+- Profiles are a synced datapack registry `groundzero:blast_profile` (fields as §11.1 plus `lethal_damage`,
+  `edge_damage`, `knockback`, `lobes`, `crater_depth`, optional `instant`); `test/*` profiles exist for the
+  `/groundzero blast <profile> [pos]` command (permission level 2) and the GameTests. Weapons get their own profiles.
+- Ray energy: a ray starts with `crater x cost(stone)` x direction factor (straight down x `crater_depth`) x lobe noise
+  (seeded sum of 4 sines over the sphere). Entering a block costs `0.3 + resistance^0.75` (stone 4.1, dirt 0.9, obsidian
+  ~204); air 0.05, liquids 0.6 (vaporised). Inside `core` everything breakable goes free. Bedrock-like blocks and the
+  protected spawn stop rays. Rays rising above the world surface are dropped (nothing left to hit).
+- Pressure rays: structural band blows out glass, panes, leaves, doors, trapdoors, flowers, torches, lanterns, snow
+  layers and other replaceable plants and carries on; scorch band scorches the first surface (grass/mycelium/podzol to
+  dirt, coarse dirt for the nuclear table; snow melts; farmland and paths to dirt) and stops; fire band may light it
+  (chance falls with distance). Terrain tables are code until the aftermath blocks exist (Phase 12).
+- Writing uses `Level.setBlock` with client-update, known-shape, suppress-drops, skip-block-entity-side-effects and
+  skip-on-place flags: heightmaps, lighting and batched section updates still happen, neighbour updates and item spew
+  do not. Rim neighbour updates run after the front.
+- Rays cap at 1 500 000 (past that they stop splitting). Until 5b, rays entering unloaded chunks stop there.
+- Entities: lethal zone `lethal_damage x exposure`, then `edge_damage` falling linearly to 0 at `damage`; knockback
+  radial with the same falloff; fire inside `fire`; items and XP inside the crater are deleted. Damage type
+  `groundzero:blast` (tagged `is_explosion`).
+- Until the Spectacle effects and distance-delayed sound (5b-5c), a blast plays the vanilla explosion sound and
+  particle at the burst point.
+
 ### 11.5 Chunks, persistence, absence
 - A `TicketController` (`groundzero:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
   them behind the front. Ungenerated chunks are not generated (configurable).
@@ -1588,3 +1610,5 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Slice 8 feedback, Singularity Reactor reworked to be clear and hungry: the seed stays in its slot (taking it out shuts down safely; a collapse destroys it). One output rule: each item eaten is worth 10 000 FE (was 200 000) and it eats at most 50 items a second (2 and 3 on alternate ticks), which is what sets the 25 000 FE/t ceiling; a store of 50 items' worth smooths bursts. Upkeep 1 000 FE/t (2 items/s), engage at 500 000 FE, 500 000 FE reserve. Four feed slots; any floor block may be an Item Port (a hopper moves only 2.5 items/s), and the model shows a hatch on every outer floor cell that is one. The CRT shows items eaten per second. |
 | 2026-10-20 | Item pipes (user request): three tiers, iron 8 / steel 32 / pneumatic 128 items a second, researched against hoppers, Pipez and Mekanism (§6.5). They work like the fluid pipes (shared PipeBlock base, Wrench modes, instant pass-through delivery with no stored items). |
 | 2026-10-20 | Performance pass (user request): networks cache their endpoints through capability caches (delivery no longer walks every cable or pipe, and never loads chunks); pipe and cable shapes are precomputed; machine ACTIVE lingers 10 ticks and is set without neighbour updates; multiblock cell layouts are cached (§6.6). |
+| 2026-10-20 | Phase 5 is built in slices: 5a the server engine (profiles, ray field, writer, budget scheduler, entities, instant mode, config, test command); 5b chunk tickets, persistence and resume, client sync packets, distance-delayed sound; 5c the Spectacle effects (flash, fireball, shockwave, debris, smoke, shake, sky tint); 5d the mushroom cloud and the reactor meltdown. |
+| 2026-10-20 | Slice 5a engine choices: block cost 0.3 + resistance^0.75 against a starting ray energy of crater x cost(stone); terrain written through Level.setBlock with no-neighbour/no-drop/no-side-effect flags rather than raw section writes (simpler and keeps lighting, heightmaps and client batching correct; revisit if profiling shows it is the bottleneck). |

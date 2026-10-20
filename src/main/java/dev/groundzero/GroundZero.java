@@ -58,6 +58,7 @@ public class GroundZero {
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);
 
         GZNetwork.register(modBus);
+        dev.groundzero.blast.GZBlast.register(modBus);
         GZDataGen.register(modBus);
         GZGameTests.register(modBus);
 
