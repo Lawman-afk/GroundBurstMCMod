@@ -1,9 +1,15 @@
 package dev.groundzero.blast;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import dev.groundzero.config.GZServerConfig;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -11,6 +17,8 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -47,6 +55,10 @@ import net.minecraft.world.phys.Vec3;
  * <p><b>Entities.</b> As the front passes each entity it takes damage and knockback scaled by distance and by
  * exposure (how many of 4 lines from the burst to its body are unblocked), and catches fire inside the fire radius.
  * Items and experience in the crater are destroyed.
+ *
+ * <p><b>Chunks and saving.</b> A blast that takes more than a tick keeps the chunks round its front loaded
+ * ({@link BlastChunks}) and is saved with the level ({@link State}): the rays, the front's radius and the crater rim,
+ * so it carries on where it left off after a restart.
  */
 final class BlastJob implements Blast {
     static final float AIR_COST = 0.05f;
@@ -59,6 +71,12 @@ final class BlastJob implements Blast {
     enum Phase { FRONT, RIM, DONE }
 
     final ServerLevel level;
+    final UUID id;
+    final Identifier profileId;
+    /** Game time it went off (clients use it to time the sound of a blast they learn of late). */
+    final long startTick;
+    /** Short id for the client packets of this session. */
+    int netId;
     final Vec3 center;
     final BlastProfile profile;
     final long seed;
@@ -69,7 +87,9 @@ final class BlastJob implements Blast {
     private final int protectedRadius;
     private final RandomSource random;
     /** The highest block anywhere within the terrain radius (loaded chunks): rays not heading down above it are done. */
-    private final int ceiling;
+    private int ceiling;
+    /** The chunks round the front (none for an instant blast, which happens where it is, in loaded chunks). */
+    private final @Nullable BlastChunks chunks;
 
     private RayField rays;
     private int shell;
@@ -85,9 +105,12 @@ final class BlastJob implements Blast {
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private int blocksChanged;
 
-    BlastJob(ServerLevel level, Vec3 center, BlastProfile profile, long seed, @Nullable Entity source, boolean terrain,
-            @Nullable BlockPos protectedCenter, int protectedRadius) {
+    BlastJob(ServerLevel level, UUID id, Identifier profileId, long startTick, Vec3 center, BlastProfile profile, long seed,
+            @Nullable Entity source, boolean terrain, @Nullable BlockPos protectedCenter, int protectedRadius) {
         this.level = level;
+        this.id = id;
+        this.profileId = profileId;
+        this.startTick = startTick;
         this.center = center;
         this.profile = profile;
         this.seed = seed;
@@ -98,6 +121,8 @@ final class BlastJob implements Blast {
         this.protectedRadius = protectedRadius;
         this.random = RandomSource.create(seed);
         this.ceiling = highestBlock(level, center, profile.terrainRadius());
+        this.chunks = profile.isInstant() ? null
+                : new BlastChunks(level, id, center, profile.outerRadius(), GZServerConfig.GENERATE_CHUNKS.get(), this::raiseCeiling);
         Lobes lobes = new Lobes(seed, profile.lobes());
         float stone = cost(6f);
         float base = profile.crater() * stone;
@@ -105,6 +130,70 @@ final class BlastJob implements Blast {
             float down = Math.max(0, -dy);
             return base * (1 - (1 - profile.craterDepth()) * down) * lobes.at(dx, dy, dz);
         });
+    }
+
+    /** A blast resumed from its saved state. */
+    BlastJob(ServerLevel level, State state) {
+        this(level, state.id(), state.profileId(), state.startTick(), state.center(), state.profile(), state.seed(), null,
+                state.terrain(), state.protectedCenter().orElse(null), state.protectedRadius());
+        this.rays = RayField.load(state.rays());
+        this.shell = state.shell();
+        this.age = state.age();
+        this.entityRadius = state.entityRadius();
+        this.ceiling = Math.max(this.ceiling, state.ceiling());
+        this.phase = Phase.valueOf(state.phase());
+        for (long p : state.rim().toArray()) {
+            this.rim.add(p);
+        }
+        if (this.phase == Phase.RIM) {
+            this.rimCursor = this.rim.iterator();
+        }
+    }
+
+    /** Everything needed to carry on after a restart. */
+    State save() {
+        return new State(this.id, this.profileId, this.profile, this.center, this.seed, this.terrain, Optional.ofNullable(this.protectedCenter),
+                this.protectedRadius, this.shell, this.age, this.phase.name(), this.phase == Phase.FRONT ? this.rays.save() : java.nio.ByteBuffer.allocate(0),
+                java.util.Arrays.stream(this.rim.toLongArray()), this.entityRadius, this.ceiling, this.startTick);
+    }
+
+    /** A saved blast. */
+    record State(UUID id, Identifier profileId, BlastProfile profile, Vec3 center, long seed, boolean terrain,
+            Optional<BlockPos> protectedCenter, int protectedRadius, int shell, int age, String phase, java.nio.ByteBuffer rays,
+            java.util.stream.LongStream rim, float entityRadius, int ceiling, long startTick) {
+        static final Codec<State> CODEC = RecordCodecBuilder.create(i -> i.group(
+                UUIDUtil.CODEC.fieldOf("id").forGetter(State::id),
+                Identifier.CODEC.fieldOf("profile_id").forGetter(State::profileId),
+                BlastProfile.CODEC.fieldOf("profile").forGetter(State::profile),
+                Vec3.CODEC.fieldOf("center").forGetter(State::center),
+                Codec.LONG.fieldOf("seed").forGetter(State::seed),
+                Codec.BOOL.fieldOf("terrain").forGetter(State::terrain),
+                BlockPos.CODEC.optionalFieldOf("protected_center").forGetter(State::protectedCenter),
+                Codec.INT.fieldOf("protected_radius").forGetter(State::protectedRadius),
+                Codec.INT.fieldOf("shell").forGetter(State::shell),
+                Codec.INT.fieldOf("age").forGetter(State::age),
+                Codec.STRING.fieldOf("phase").forGetter(State::phase),
+                Codec.BYTE_BUFFER.fieldOf("rays").forGetter(State::rays),
+                Codec.LONG_STREAM.fieldOf("rim").forGetter(State::rim),
+                Codec.FLOAT.fieldOf("entity_radius").forGetter(State::entityRadius),
+                Codec.INT.fieldOf("ceiling").forGetter(State::ceiling),
+                Codec.LONG.fieldOf("start_tick").forGetter(State::startTick)
+        ).apply(i, State::new));
+    }
+
+    private void raiseCeiling(int top) {
+        this.ceiling = Math.max(this.ceiling, top);
+    }
+
+    /** The highest block in one chunk (for the ceiling, as far chunks load). */
+    static int highestIn(net.minecraft.world.level.chunk.LevelChunk chunk) {
+        int top = Integer.MIN_VALUE;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                top = Math.max(top, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z));
+            }
+        }
+        return top;
     }
 
     Phase phase() {
@@ -165,6 +254,9 @@ final class BlastJob implements Blast {
         float outer = this.profile.outerRadius();
         float target = instant ? Float.MAX_VALUE : this.age * this.profile.frontSpeed();
         while (this.phase == Phase.FRONT && this.shell <= outer && this.shell <= target) {
+            if (this.chunks != null && !this.chunks.prepare(this.shell)) {
+                break;                                     // its chunks are still loading: wait
+            }
             if (this.terrain && this.shell <= this.profile.terrainRadius() && this.rays.size > 0) {
                 int budget = instant ? Integer.MAX_VALUE : blockBudget - (this.blocksChanged - changesBefore);
                 if (!runShell(this.shell, instant ? Long.MAX_VALUE : deadline, budget)) {
@@ -186,6 +278,9 @@ final class BlastJob implements Blast {
         }
         if (this.phase == Phase.RIM) {
             updateRim(instant ? Long.MAX_VALUE : deadline);
+        }
+        if (this.phase == Phase.DONE && this.chunks != null) {
+            this.chunks.release();
         }
         return this.blocksChanged - changesBefore;
     }

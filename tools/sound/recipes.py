@@ -79,6 +79,57 @@ def nuke_set() -> dict[str, np.ndarray]:
     }
 
 
+# --- Conventional blasts ---------------------------------------------------------------------------------------------
+# One recipe, three sizes. Each size is heard near, mid, far and very far (DESIGN.md §13): the client picks the band by
+# distance and delays it by the speed of sound.
+BLAST_SIZES = {
+    # length, crack (s, gain), thump (f0, f1, s, decay), roar (level, s, lowpass from, to), debris (crackle, clods), reverb (s, mix)
+    "small": dict(length=2.2, crack=(0.12, 1.1), thump=(130, 48, 0.7, 0.18), roar=(0.55, 1.4, 4200, 700), debris=(0.25, 0.15), reverb=(1.2, 0.22)),
+    "medium": dict(length=3.8, crack=(0.18, 1.0), thump=(95, 34, 1.4, 0.4), roar=(0.8, 3.0, 3400, 320), debris=(0.4, 0.4), reverb=(2.0, 0.28)),
+    "large": dict(length=6.0, crack=(0.22, 0.95), thump=(78, 26, 2.4, 0.7), roar=(0.9, 5.2, 2800, 200), debris=(0.45, 0.6), reverb=(2.6, 0.3)),
+}
+
+
+def blast_source(size: str, seed: int) -> np.ndarray:
+    """A conventional explosion heard close by: a supersonic crack, a low thump falling in pitch, a roar that rolls
+    and darkens, then the patter and thuds of falling debris; bigger sizes are longer, lower and heavier."""
+    c = BLAST_SIZES[size]
+    length = c["length"]
+    n = int(length * S.SR)
+    t = S.t_axis(length)
+    crack_len, crack_gain = c["crack"]
+    crack = S.white(crack_len, seed) * S.exp_decay(int(crack_len * S.SR), crack_len / 7)
+    crack = S.saturate(S.highpass(crack, 150) * 3 * crack_gain, 3)
+    f0, f1, thump_len, decay = c["thump"]
+    thump = S.saturate(S.sine_sweep(thump_len, f0, f1, curve=2.5) * S.exp_decay(int(thump_len * S.SR), decay) * 1.6, 1.8)
+    level, roar_len, lp0, lp1 = c["roar"]
+    roar = S.brown(length, seed + 1) * 0.8 + S.pink(length, seed + 2) * 0.4
+    roar = S.sweep_lowpass(roar, lp0, lp1)
+    flutter = 1 + 0.2 * np.sin(2 * np.pi * 2.1 * t + 0.7) * np.sin(2 * np.pi * 0.43 * t)
+    roar = roar * S.breakpoints(n, [(0, 0), (0.015, 1.0), (roar_len * 0.25, 0.7), (roar_len, 0.12), (length, 0)]) * flutter * level
+    crackle, clods = c["debris"]
+    debris = S.bandpass(S.grains(length, 50, 5, seed + 3, decay=length * 0.35), 900, 6500) * crackle
+    thuds = S.lowpass(S.grains(length, 5, 35, seed + 4, decay=length * 0.4), 450) * clods
+    debris = S.place(debris, 0.25, length) + S.place(thuds, 0.5, length)
+    x = S.mix((S.place(crack, 0, length), 0.9), (S.place(thump, 0, length), 1.0), (roar, 1.0), (debris, 0.6))
+    rv, mix = c["reverb"]
+    x = S.reverb(x, rv, 2400, mix, seed=seed + 5)
+    # Headroom: the OGG encoder overshoots a peak-normalised crack by up to a decibel.
+    return S.limit(S.normalize(x, -1.5), -2.5)
+
+
+def blast_sets() -> dict[str, np.ndarray]:
+    out = {}
+    for i, size in enumerate(BLAST_SIZES):
+        near = blast_source(size, 300 + i * 10)
+        tail = BLAST_SIZES[size]["length"] * 0.15
+        out[f"blast/{size}_near"] = S.trim_silence(S.fade(near, 0, tail))
+        out[f"blast/{size}_mid"] = S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "mid"), 0), -1.5), 0, tail * 1.4))
+        out[f"blast/{size}_far"] = S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "far"), 0), -2.0), 0, tail * 1.8))
+        out[f"blast/{size}_very_far"] = S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "very_far"), 0), -3.0), 0, tail * 2.2))
+    return out
+
+
 # --- Machines -------------------------------------------------------------------------------------------------------------
 # Looping work sounds, 2 s each. Every periodic event has a period dividing 2 s so the loop stays in time.
 LOOP = 2.0
@@ -457,7 +508,7 @@ def machine_loops() -> dict[str, np.ndarray]:
     }
 
 
-RECIPES = [geiger_clicks, nuke_set, machine_loops, singularity_collapse]
+RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse]
 
 
 def build_sounds() -> list[Path]:

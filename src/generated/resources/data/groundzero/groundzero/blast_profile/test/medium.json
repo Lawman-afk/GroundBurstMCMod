@@ -2,12 +2,14 @@
   "core": 3.0,
   "crater": 12.0,
   "crater_depth": 0.6,
-  "damage": 22.0,
+  "entities": {
+    "damage": 22.0,
+    "knockback": 2.0,
+    "lethal": 10.0,
+    "lethal_damage": 120.0
+  },
   "fire": 10.0,
   "front_speed": 3.0,
-  "knockback": 2.0,
-  "lethal": 10.0,
-  "lethal_damage": 120.0,
   "scorch": 16.0,
   "structural": 18.0
 }

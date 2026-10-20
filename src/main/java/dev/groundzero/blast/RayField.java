@@ -118,6 +118,34 @@ final class RayField {
         }
     }
 
+    /** Bytes per saved ray: face and mode, then u, v, cell size and energy (directions are worked out again on load). */
+    private static final int SAVED_BYTES = 2 + 4 * 4;
+
+    /** The live rays, packed for saving with the blast (a few MB for the biggest blasts). */
+    java.nio.ByteBuffer save() {
+        compact();
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(4 + this.size * SAVED_BYTES);
+        buf.putInt(this.size);
+        for (int k = 0; k < this.size; k++) {
+            buf.put(this.face[k]).put(this.mode[k]).putFloat(this.u[k]).putFloat(this.v[k]).putFloat(this.s[k]).putFloat(this.energy[k]);
+        }
+        return buf.flip();
+    }
+
+    /** Rays saved by {@link #save()}. */
+    static RayField load(java.nio.ByteBuffer buf) {
+        RayField f = new RayField();
+        java.nio.ByteBuffer b = buf.duplicate();
+        int n = b.remaining() >= 4 ? b.getInt() : 0;
+        f.ensure(n);
+        for (int i = 0; i < n && b.remaining() >= SAVED_BYTES; i++) {
+            byte fc = b.get(), m = b.get();
+            float cu = b.getFloat(), cv = b.getFloat(), cs = b.getFloat(), e = b.getFloat();
+            f.add(fc, cu, cv, cs, e, m);
+        }
+        return f;
+    }
+
     /** Drops dead rays, keeping the rest in order. */
     void compact() {
         int w = 0;

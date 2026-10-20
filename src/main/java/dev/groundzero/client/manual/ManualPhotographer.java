@@ -92,6 +92,13 @@ public final class ManualPhotographer {
         }
         if (wait < 0) {
             wait = 100;                                         // let the world and the recipes settle first
+            // Exercise the blast sync and the distance-delayed sound once: a small test blast 40 blocks away.
+            var server = mc.getSingleplayerServer();
+            var pos = mc.player.position().add(40, 0, 0);
+            if (server != null) {
+                server.execute(() -> dev.groundzero.blast.Blasts.detonate(server.overworld(), pos,
+                        dev.groundzero.blast.Blasts.profile("test/small"), null));
+            }
         }
         if (--wait > 0) {
             return;

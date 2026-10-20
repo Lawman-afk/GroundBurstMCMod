@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "1";
+    public static final String PROTOCOL_VERSION = "2";
 
     private GZNetwork() {}
 
@@ -22,7 +22,10 @@ public final class GZNetwork {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
-        // Each feature's payloads are added here as the feature lands (first: blast sync in Phase 5).
+        // Blast sync (DESIGN.md §12): handled on the client by BlastSounds (and the Spectacle effects).
+        registrar.playToClient(dev.groundzero.blast.BlastPayloads.Start.TYPE, dev.groundzero.blast.BlastPayloads.Start.CODEC);
+        registrar.playToClient(dev.groundzero.blast.BlastPayloads.Front.TYPE, dev.groundzero.blast.BlastPayloads.Front.CODEC);
+        registrar.playToClient(dev.groundzero.blast.BlastPayloads.End.TYPE, dev.groundzero.blast.BlastPayloads.End.CODEC);
     }
 
     public static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> type(String name) {

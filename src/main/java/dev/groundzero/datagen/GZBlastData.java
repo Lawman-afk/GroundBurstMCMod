@@ -33,8 +33,9 @@ public final class GZBlastData {
     private static BlastProfile profile(float core, float crater, float structural, float scorch, float fire, float lethal, float damage,
             float frontSpeed, float craterDepth, float lobes, float lethalDamage, float edgeDamage, float knockback, Identifier terrain,
             Optional<Boolean> instant) {
-        return new BlastProfile(core, crater, structural, scorch, fire, lethal, damage, frontSpeed, craterDepth, lobes, 0f,
-                lethalDamage, edgeDamage, knockback, terrain, instant);
+        return new BlastProfile(core, crater, structural, scorch, fire,
+                new BlastProfile.EntityZones(lethal, damage, lethalDamage, edgeDamage, knockback), frontSpeed, craterDepth, lobes, 0f,
+                terrain, instant, Optional.empty(), Optional.empty());
     }
 
     private static void profiles(BootstrapContext<BlastProfile> ctx) {

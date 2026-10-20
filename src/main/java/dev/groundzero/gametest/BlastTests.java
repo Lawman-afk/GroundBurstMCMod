@@ -26,6 +26,7 @@ final class BlastTests {
         GZGameTests.test("blast_damage_follows_exposure", GZGameTests.FLOOR_16, 20, BlastTests::exposure);
         GZGameTests.test("blast_voids_destroyed_containers", GZGameTests.FLOOR_16, 20, BlastTests::noSpew);
         GZGameTests.test("blast_reaches_blocks_above_it", GZGameTests.FLOOR_16, 20, BlastTests::upward);
+        GZGameTests.test("blast_saves_and_resumes", GZGameTests.FLOOR_16, 40, BlastTests::persistence);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -127,5 +128,18 @@ final class BlastTests {
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(burst.offset(4, 3, 0))).isAir(), "the block up and to the side is destroyed");
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(burst.offset(-3, 4, 0))).isAir(), "the log is destroyed");
         helper.succeed();
+    }
+
+    /** A running blast written out the way the world saves it and read back resumes at the same front radius. */
+    private static void persistence(GameTestHelper helper) {
+        fill(helper, 2, 1, 2, 14, 7, 14, Blocks.STONE);
+        Blast blast = Blasts.detonate(helper.getLevel(), center(helper), Blasts.profile("test/slow"), null);
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(blast != null && !blast.isDone() && blast.radius() > 0, "the blast is part way");
+            Blast copy = dev.groundzero.blast.BlastManager.of(helper.getLevel()).savedCopy().stream()
+                    .filter(b -> b.radius() == blast.radius()).findFirst().orElse(null);
+            helper.assertTrue(copy != null && !copy.isDone(), "it comes back from saving at radius " + blast.radius());
+            helper.succeed();
+        });
     }
 }

@@ -555,12 +555,28 @@ messages.
 - Writing uses `Level.setBlock` with client-update, known-shape, suppress-drops, skip-block-entity-side-effects and
   skip-on-place flags: heightmaps, lighting and batched section updates still happen, neighbour updates and item spew
   do not. Rim neighbour updates run after the front.
-- Rays cap at 1 500 000 (past that they stop splitting). Until 5b, rays entering unloaded chunks stop there.
+- Rays cap at 1 500 000 (past that they stop splitting). Rays entering a chunk that does not exist (and may not be
+  generated) stop there.
 - Entities: lethal zone `lethal_damage x exposure`, then `edge_damage` falling linearly to 0 at `damage`; knockback
   radial with the same falloff; fire inside `fire`; items and XP inside the crater are deleted. Damage type
   `groundzero:blast` (tagged `is_explosion`).
-- Until the Spectacle effects and distance-delayed sound (5b-5c), a blast plays the vanilla explosion sound and
-  particle at the burst point.
+- Profile JSON groups the entity numbers under `entities` (`lethal`, `damage`, `lethal_damage`, `edge_damage`,
+  `knockback`) and adds optional `sound` (small / medium / large / nuke) and `visual`, both chosen by crater size when
+  left out.
+- Until the Spectacle effects (5c), a vanilla explosion particle marks the burst point.
+
+### 11.4b As built (slice 5b)
+- Chunks: a non-instant blast force-loads (non-ticking) the chunk columns from 16 blocks behind to 32 ahead of its
+  front, through the `groundzero:blast` ticket controller owned by the blast's UUID, and releases them behind it. With
+  `generateChunks` off, unloaded chunks are only loaded if the disk says they are fully generated (read in the
+  background; the front waits for the answer). Leftover tickets are dropped on world load. The ray ceiling rises as
+  far chunks load.
+- Saving: the level's blasts are its saved data `data/groundzero/blasts.dat` (codec: id, profile id and the scaled
+  profile, centre, seed, terrain flags, front radius, age, phase, the live rays packed at 18 bytes each, the crater rim,
+  start tick). They resume on load, queued in order.
+- Client sync: `blast_start` (sound set, visual, centre, crater, reach, outer radius, front speed, seed, start tick),
+  `blast_front` (radius, every 4 ticks), `blast_end`, sent to every player in the dimension; a player who logs in or
+  changes dimension is sent the running ones. Network protocol version 2.
 
 ### 11.5 Chunks, persistence, absence
 - A `TicketController` (`groundzero:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
@@ -626,7 +642,11 @@ Client config: `fx.quality` (low/medium/high/ultra), `fx.flashStrength`, `fx.cam
 - Every sound is synthesised by `tools/sound` (layered noise, filtered sweeps, convolution reverb, saturation), is
   **mono**, and has a subtitle.
 - **Distance-delayed sound:** clients compute `delay = distance / 17.15` ticks (343 m/s, 1 block = 1 m) and schedule
-  the boom; the flash arrives first. Variant by distance band: **near** (< 0.5·r_damage: sharp crack + roar + debris),
+  the boom; the flash arrives first. As built (5b): bands are measured in the blast's reach (its damage radius, at
+  least 8): near under 1.5 reaches, mid under 4, far under 12, very far under 40, silent beyond; volume 1.0 / 0.95 /
+  0.85 / 0.7 falling a further third across each band. The sound plays 6 blocks from the listener in the blast's true
+  direction. A sound whose moment passed more than 2 s before the client heard of the blast is skipped. Sets: small,
+  medium, large (conventional recipe in three sizes) and nuke. Variant by distance band: **near** (< 0.5·r_damage: sharp crack + roar + debris),
   **mid** (boom + long rumble), **far** (low-passed thud + rolling tail), **very far** (sub-bass rumble only).
 - Big sounds play through a custom `SoundInstance` placed at a capped virtual distance in the true direction with our
   own loudness curve, so they stay directional and audible kilometres away (vanilla attenuation would cut them off).
@@ -1614,3 +1634,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Performance pass (user request): networks cache their endpoints through capability caches (delivery no longer walks every cable or pipe, and never loads chunks); pipe and cable shapes are precomputed; machine ACTIVE lingers 10 ticks and is set without neighbour updates; multiblock cell layouts are cached (§6.6). |
 | 2026-10-20 | Phase 5 is built in slices: 5a the server engine (profiles, ray field, writer, budget scheduler, entities, instant mode, config, test command); 5b chunk tickets, persistence and resume, client sync packets, distance-delayed sound; 5c the Spectacle effects (flash, fireball, shockwave, debris, smoke, shake, sky tint); 5d the mushroom cloud and the reactor meltdown. |
 | 2026-10-20 | Slice 5a engine choices: block cost 0.3 + resistance^0.75 against a starting ray energy of crater x cost(stone); terrain written through Level.setBlock with no-neighbour/no-drop/no-side-effect flags rather than raw section writes (simpler and keeps lighting, heightmaps and client batching correct; revisit if profiling shows it is the bottleneck). |
+| 2026-10-20 | Slice 5b: blasts force-load their active chunk band with a NeoForge ticket controller and never generate chunks unless the server allows it (existence read from disk first); running blasts are the level's saved data and resume after a restart; clients get start / front / end packets; blast sound is distance-delayed and banded by the blast's own size, played at a virtual distance in the true direction. |

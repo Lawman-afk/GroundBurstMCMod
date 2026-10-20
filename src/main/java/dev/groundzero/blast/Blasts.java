@@ -12,8 +12,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
@@ -50,11 +48,11 @@ public final class Blasts {
             spawn = level.getRespawnData().pos();
             spawnRadius = level.getServer() instanceof DedicatedServer server ? server.spawnProtectionRadius() : 16;
         }
-        BlastJob job = new BlastJob(level, center, profile, level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
-        // Until the Spectacle effects and the distance-delayed sounds arrive (Phase 5, slices 5b-5c), a vanilla boom.
+        BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.identifier(), level.getGameTime(), center, profile,
+                level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
+        // The sound is the clients' (distance-delayed, BlastSounds); until the Spectacle effects arrive (slice 5c) a
+        // vanilla explosion particle marks the burst.
         float size = Math.max(1, profile.crater());
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS,
-                Math.min(16f, 2f + size / 4f), 0.7f + 0.3f * (float) Math.exp(-size / 20));
         level.sendParticles(size > 4 ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0);
         BlastManager.of(level).add(job);
         return job;

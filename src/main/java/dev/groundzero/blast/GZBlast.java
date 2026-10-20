@@ -47,6 +47,18 @@ public final class GZBlast {
             }
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(BlastChunks.TICKETS));
+        // Players arriving while blasts run are told about them (sound timing, the shockwave in slice 5c).
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+                BlastManager.of(player.level()).syncTo(player);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+                BlastManager.of(player.level()).syncTo(player);
+            }
+        });
     }
 
     /** {@code /groundzero blast <profile> [<position>]}: sets off a blast (for testing and for map makers). */

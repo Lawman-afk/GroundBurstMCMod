@@ -1,4 +1,84 @@
 {
+  "blast.large.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/large_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.large.far"
+  },
+  "blast.large.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/large_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.large.mid"
+  },
+  "blast.large.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/large_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.large.near"
+  },
+  "blast.large.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/large_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.large.very_far"
+  },
+  "blast.medium.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/medium_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.medium.far"
+  },
+  "blast.medium.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/medium_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.medium.mid"
+  },
+  "blast.medium.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/medium_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.medium.near"
+  },
+  "blast.medium.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/medium_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.medium.very_far"
+  },
   "blast.nuke.far": {
     "sounds": [
       {
@@ -38,6 +118,46 @@
       }
     ],
     "subtitle": "subtitles.groundzero.blast.nuke.very_far"
+  },
+  "blast.small.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/small_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.small.far"
+  },
+  "blast.small.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/small_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.small.mid"
+  },
+  "blast.small.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/small_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.small.near"
+  },
+  "blast.small.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/small_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.small.very_far"
   },
   "geiger.click": {
     "sounds": [

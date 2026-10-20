@@ -1,10 +1,7 @@
 {
   "crater": 6.0,
   "crater_depth": 1.0,
-  "edge_damage": 0.0,
   "front_speed": 4.0,
   "instant": true,
-  "knockback": 0.0,
-  "lethal_damage": 0.0,
   "lobes": 0.0
 }
