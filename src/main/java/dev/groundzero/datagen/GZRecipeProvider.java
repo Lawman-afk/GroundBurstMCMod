@@ -277,6 +277,19 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(Items.CLOCK).requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE), has(dev.groundzero.content.ordnance.GZOrdnance.DYNAMITE))
                 .save(output);
+        // Mines (slice 6c).
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.LANDMINE.item(), 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(Items.STONE_PRESSURE_PLATE).requires(Items.GUNPOWDER).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(GZTags.commonItem("plates/steel"))
+                .requires(Items.STONE_PRESSURE_PLATE).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.item(), 1)
+                .requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET)
+                .requires(Items.IRON_NUGGET).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
         shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
                 .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
                 .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)

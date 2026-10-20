@@ -57,7 +57,8 @@ public final class FxPhotographer {
                 new Scene("grenades", "grenades", 7, 18, List.of(4, 12, 30, 62, 74, 90, 130)),
                 new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)),
                 new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)),
-                new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)))) {
+                new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)),
+                new Scene("mines", "mines", 5, 25, List.of(3, 6, 9, 30)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -154,6 +155,27 @@ public final class FxPhotographer {
         }
     }
 
+    /** Mines: a landmine, a claymore with its laser across the view, and a bouncing mine set off as the shots start. */
+    private static void mines(ServerLevel level, int x, int ground) {
+        var F = dev.groundzero.content.ordnance.charge.ChargeBlock.FACING;
+        var land = new net.minecraft.core.BlockPos(x - 1, ground, 1);
+        var clay = new net.minecraft.core.BlockPos(x + 1, ground, -3);
+        var bounce = new net.minecraft.core.BlockPos(x + 3, ground, 2);
+        level.setBlockAndUpdate(land, dev.groundzero.content.ordnance.GZOrdnance.LANDMINE.block().get().defaultBlockState());
+        level.setBlockAndUpdate(clay, dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.block().get().defaultBlockState()
+                .setValue(F, net.minecraft.core.Direction.SOUTH));
+        level.setBlockAndUpdate(bounce, dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.block().get().defaultBlockState());
+        for (var p : java.util.List.of(land, clay, bounce)) {
+            var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, p);
+            if (be != null) {
+                be.arm(level, null);
+                if (p == bounce) {
+                    be.trigger(level, null);
+                }
+            }
+        }
+    }
+
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
         var g = new dev.groundzero.content.ordnance.ThrownExplosive(level, player, new net.minecraft.world.item.ItemStack(item));
         g.setPos(at);
@@ -231,6 +253,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("charges")) {
                     charges(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("mines")) {
+                    mines(level, x, ground);
                     return;
                 }
                 if (s.profile().startsWith("suits")) {

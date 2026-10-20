@@ -31,8 +31,10 @@ public final class ChargeScreens {
     private static final String T_DONE = GZLang.add(GroundZero.MODID + ".charge.done", "Done");
     private static final String T_STATE_SAFE = GZLang.add(GroundZero.MODID + ".charge.state_safe", "SAFE");
     private static final String T_STATE_ARMED = GZLang.add(GroundZero.MODID + ".charge.state_armed", "ARMED");
-    private static final String T_LOCKED = GZLang.add(GroundZero.MODID + ".charge.locked", "Make it safe to change its fuze");
+    private static final String T_LOCKED = GZLang.add(GroundZero.MODID + ".charge.locked", "Make it safe to change it");
     private static final String T_HINT = GZLang.add(GroundZero.MODID + ".charge.hint", "Armed: a detonator or redstone sets it off");
+    private static final String T_HINT_MINE = GZLang.add(GroundZero.MODID + ".charge.hint_mine", "Armed: it goes off when stepped on (3 s to get clear)");
+    private static final String T_HINT_CLAYMORE = GZLang.add(GroundZero.MODID + ".charge.hint_claymore", "Armed: its laser or a detonator sets it off");
     private static final String T_HINT_TIMER = GZLang.add(GroundZero.MODID + ".charge.hint_timer", "Armed: a detonator or redstone starts its timer");
     private static final String T_ARM = GZLang.add(GroundZero.MODID + ".charge.arm", "Arm");
     private static final String T_MAKE_SAFE = GZLang.add(GroundZero.MODID + ".charge.make_safe", "Make safe");
@@ -213,7 +215,12 @@ public final class ChargeScreens {
             if (this.secondsRow >= 0) {
                 g.text(this.font, Component.translatable(T_SECONDS), x + 10, top + this.secondsRow + 5, choice && !this.timer ? DIM : TEXT);
             }
-            Component hint = Component.translatable(this.armed ? T_LOCKED : this.timer ? T_HINT_TIMER : T_HINT);
+            String key = this.armed ? T_LOCKED : switch (this.kind.sensor) {
+                case PRESSURE -> T_HINT_MINE;
+                case TRIPWIRE -> T_HINT_CLAYMORE;
+                case NONE -> this.timer ? T_HINT_TIMER : T_HINT;
+            };
+            Component hint = Component.translatable(key);
             centred(g, this.font, hint, this.width / 2, top + this.hintRow, DIM);
         }
 

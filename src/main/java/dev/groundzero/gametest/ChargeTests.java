@@ -75,7 +75,7 @@ final class ChargeTests {
         safe42.setFrequency(42);
         on42.arm(helper.getLevel(), null);
         on7.arm(helper.getLevel(), null);
-        int fired = Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 42, null);
+        int fired = Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 42, null, 10);
         helper.assertTrue(fired == 1, "one charge on 42 (" + fired + ")");
         helper.assertTrue(!is(helper, a, GZOrdnance.BREACHING_CHARGE.block().get()), "the one on 42 went off");
         helper.assertTrue(is(helper, b, GZOrdnance.BREACHING_CHARGE.block().get()), "the one on 7 is still there");
@@ -91,7 +91,7 @@ final class ChargeTests {
         be.configure(ChargeBlockEntity.Mode.TIMER, 5, 1);
         be.arm(helper.getLevel(), null);
         helper.assertTrue(!be.counting(), "arming does not start the clock");
-        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 5, null) == 1 && be.counting(),
+        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 5, null, 10) == 1 && be.counting(),
                 "the detonator starts it");
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(is(helper, at, GZOrdnance.BREACHING_CHARGE.block().get()), "still waiting at half a second");
@@ -107,7 +107,7 @@ final class ChargeTests {
         be.configure(ChargeBlockEntity.Mode.TIMER, 3, 20);
         helper.assertTrue(be.mode() == ChargeBlockEntity.Mode.REMOTE, "no timer on C4");
         be.arm(helper.getLevel(), null);
-        Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 3, null);
+        Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 3, null, 10);
         helper.assertTrue(!is(helper, at, GZOrdnance.C4.block().get()), "gone off at once");
         helper.succeed();
     }

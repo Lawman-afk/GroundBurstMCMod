@@ -68,7 +68,7 @@ public class GroundZeroClient {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.THROWN_EXPLOSIVE.get(), dev.groundzero.client.fx.GrenadeRenderer::new);
         event.registerEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL.get(), dev.groundzero.client.fx.ShrapnelRenderer::new);
-        event.registerBlockEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.CHARGE.get(), dev.groundzero.client.render.TimedBombRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.CHARGE.get(), dev.groundzero.client.render.ChargeRenderer::new);
         event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ARC_FURNACE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ARC_FURNACE.get(), 2));

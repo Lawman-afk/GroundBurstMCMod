@@ -75,6 +75,7 @@ public final class GZGameTests {
         BlastTests.register();
         OrdnanceTests.register();
         ChargeTests.register();
+        MineTests.register();
         ManualContentTests.register();
     }
 

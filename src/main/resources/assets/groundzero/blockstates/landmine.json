@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "armed=false,facing=up": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=up": {
+      "model": "groundzero:block/landmine_armed"
+    },
+    "armed=false,facing=down": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=down": {
+      "model": "groundzero:block/landmine_armed"
+    },
+    "armed=false,facing=north": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=north": {
+      "model": "groundzero:block/landmine_armed"
+    },
+    "armed=false,facing=south": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=south": {
+      "model": "groundzero:block/landmine_armed"
+    },
+    "armed=false,facing=east": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=east": {
+      "model": "groundzero:block/landmine_armed"
+    },
+    "armed=false,facing=west": {
+      "model": "groundzero:block/landmine"
+    },
+    "armed=true,facing=west": {
+      "model": "groundzero:block/landmine_armed"
+    }
+  }
+}

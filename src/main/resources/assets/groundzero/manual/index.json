@@ -53,6 +53,7 @@
     "nuclear/singularity_reactor",
     "ordnance/thrown",
     "ordnance/charges",
+    "ordnance/mines",
     "ordnance/chemical",
     "safety/decontamination_shower",
     "safety/chemical_hazards",

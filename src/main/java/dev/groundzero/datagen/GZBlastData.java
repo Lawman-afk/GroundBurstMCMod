@@ -65,6 +65,13 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("timed_bomb"), profile(3.5f, 9, 13, 10, 0, 9, 20, 4, 0.75f, 0.12f, 0.3f, 0.4f, 60, 18, 2.5f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // Mines (slice 6c): the bouncing mine bursts in the air (a small crater, fragments do the work).
+        ctx.register(Blasts.profile("landmine"), profile(1, 2.5f, 4, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 9, 1.4f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("bouncing_mine"), profile(0.3f, 1, 3, 2, 0, 4, 9, 4, 0.5f, 0, 0.1f, 0.1f, 25, 8, 1.2f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("claymore"), profile(0, 0.5f, 2, 1, 0, 1.5f, 4, 4, 0.5f, 0, 0, 0, 10, 4, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("incendiary_grenade"), profile(0, 1, 2, 4, 4, 1.5f, 4, 4, 0.7f, 0f, 0f, 0f, 8, 4, 0.6f,

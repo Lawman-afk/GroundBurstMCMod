@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -84,7 +85,7 @@ public class ChargeBlock extends Block implements EntityBlock {
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockState s = defaultBlockState().setValue(FACING, this.kind.anyFace ? context.getClickedFace()
-                : context.getHorizontalDirection().getOpposite());
+                : this.kind.facesAway() ? context.getHorizontalDirection() : context.getHorizontalDirection().getOpposite());
         return s.canSurvive(context.getLevel(), context.getClickedPos()) ? s : null;
     }
 
@@ -119,13 +120,38 @@ public class ChargeBlock extends Block implements EntityBlock {
             case BREACHING -> Block.box(1, 0, 1, 15, 2, 15);
             case THERMITE -> Block.box(4.5, 0, 4.5, 11.5, 8, 11.5);
             case TIMED_BOMB -> Block.box(1, 0, 2, 15, 11, 14);
+            case LANDMINE -> Block.box(3, 0, 3, 13, 1.5, 13);
+            case BOUNCING_MINE -> Block.box(4, 0, 4, 12, 2.5, 12);
+            case CLAYMORE -> Block.box(2, 0, 6, 14, 9, 11);
         };
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape floor = floorShape(state);
-        return this.kind.anyFace ? turn(floor, state.getValue(FACING)) : floor;
+        return this.kind.anyFace ? turn(floor, state.getValue(FACING)) : turnFlat(floor, state.getValue(FACING));
+    }
+
+    /** A shape whose front faces north turned to face {@code facing} (as the blockstate turns the model clockwise). */
+    static VoxelShape turnFlat(VoxelShape shape, Direction facing) {
+        if (facing.getAxis() == Direction.Axis.Y || facing == Direction.NORTH) {
+            return shape;
+        }
+        VoxelShape[] out = {Shapes.empty()};
+        shape.forAllBoxes((x0, y0, z0, x1, y1, z1) -> {
+            double[] a = flat(facing, x0, z0), b = flat(facing, x1, z1);
+            out[0] = Shapes.or(out[0], Shapes.box(Math.min(a[0], b[0]), y0, Math.min(a[1], b[1]), Math.max(a[0], b[0]), y1, Math.max(a[1], b[1])));
+        });
+        return out[0];
+    }
+
+    private static double[] flat(Direction facing, double x, double z) {
+        return switch (facing) {
+            case EAST -> new double[] {1 - z, x};
+            case SOUTH -> new double[] {1 - x, 1 - z};
+            case WEST -> new double[] {z, 1 - x};
+            default -> new double[] {x, z};
+        };
     }
 
     /** A floor shape turned so its top points {@code facing} (as the blockstate turns the model). */

@@ -125,6 +125,10 @@ public final class GZSounds {
             register("detonator.click", "Detonator clicks", List.of("ordnance/detonator_click"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> WIRE_SNIP =
             register("wire.snip", "Wire cut", List.of("ordnance/wire_snip"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MINE_CLICK =
+            register("mine.click", "Mine clicks", List.of("ordnance/mine_click"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MINE_POP =
+            register("mine.pop", "Mine pops up", List.of("ordnance/mine_pop"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

@@ -54,7 +54,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     private static final double RESTITUTION = 0.35, FRICTION = 0.7;
     public static final int SMOKE_TICKS = 600;
     public static final float SMOKE_RADIUS = 5;
-    public static final int SHRAPNEL = 24;
+    public static final int SHRAPNEL = 24, BOUNCING_SHRAPNEL = 30;
     public static final float FIRE_RADIUS = 4;
     public static final float MOLOTOV_RADIUS = 3;
     public static final float TOXIN_RADIUS = 3.5f;
@@ -98,7 +98,22 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     public GrenadeType type() {
-        return getItem().getItem() instanceof GrenadeItem g ? g.type() : GrenadeType.FRAG;
+        if (getItem().getItem() instanceof GrenadeItem g) {
+            return g.type();
+        }
+        return getItem().is(GZOrdnance.BOUNCING_MINE.item().get()) ? GrenadeType.BOUNCING_MINE : GrenadeType.FRAG;
+    }
+
+    /** A bouncing mine's canister popping up out of the ground at {@code at}: it bursts about 1.2 blocks up. */
+    public static ThrownExplosive popUp(ServerLevel level, Vec3 at, @Nullable Entity owner) {
+        ThrownExplosive e = new ThrownExplosive(GZOrdnance.THROWN_EXPLOSIVE.get(), level);
+        e.setOwner(owner);
+        e.setItem(new ItemStack(GZOrdnance.BOUNCING_MINE.item().get()));
+        e.setPos(at);
+        e.setDeltaMovement(0, 0.36, 0);
+        e.fuse = GrenadeType.BOUNCING_MINE.fuse;
+        level.addFreshEntity(e);
+        return e;
     }
 
     public boolean smoking() {
@@ -276,18 +291,20 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         }
         Blasts.detonate(level, at, Blasts.profile(type.id), getOwner());
         if (type == GrenadeType.FRAG) {
-            shrapnel(level, at);
+            shrapnel(level, at, SHRAPNEL);
+        } else if (type == GrenadeType.BOUNCING_MINE) {
+            shrapnel(level, at, BOUNCING_SHRAPNEL);
         } else if (type == GrenadeType.INCENDIARY) {
             fireCarpet(level, at, FIRE_RADIUS);
         }
         discard();
     }
 
-    /** 24 fragments flung out evenly in all directions (a little more sideways than up or down). */
-    private void shrapnel(ServerLevel level, Vec3 at) {
+    /** Fragments flung out evenly in all directions (a little more sideways than up or down). */
+    private void shrapnel(ServerLevel level, Vec3 at, int count) {
         RandomSource r = this.random;
-        for (int i = 0; i < SHRAPNEL; i++) {
-            double y = 1 - 2 * (i + 0.5) / SHRAPNEL;          // Fibonacci sphere, flattened a little
+        for (int i = 0; i < count; i++) {
+            double y = 1 - 2 * (i + 0.5) / count;             // Fibonacci sphere, flattened a little
             double ring = Math.sqrt(1 - y * y);
             double a = i * 2.39996 + r.nextDouble() * 0.3;
             Vec3 dir = new Vec3(Math.cos(a) * ring, y * 0.7, Math.sin(a) * ring).normalize();

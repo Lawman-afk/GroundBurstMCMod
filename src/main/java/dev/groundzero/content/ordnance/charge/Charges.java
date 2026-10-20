@@ -84,6 +84,11 @@ public final class Charges {
      * its timer. Returns how many did.
      */
     public static int remote(ServerLevel level, Vec3 from, int frequency, @Nullable Entity by) {
+        return remote(level, from, frequency, by, DETONATOR_RANGE);
+    }
+
+    /** As {@link #remote(ServerLevel, Vec3, int, Entity)} within {@code range} (GameTests keep to their own plot). */
+    public static int remote(ServerLevel level, Vec3 from, int frequency, @Nullable Entity by, double range) {
         LongOpenHashSet set = LOADED.get(level.dimension());
         if (set == null) {
             return 0;
@@ -92,7 +97,7 @@ public final class Charges {
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
             ChargeBlockEntity be = ChargeBlock.at(level, p);
-            if (be != null && be.frequency() == frequency && Vec3.atCenterOf(p).distanceTo(from) <= DETONATOR_RANGE
+            if (be != null && be.kind().remote && be.frequency() == frequency && Vec3.atCenterOf(p).distanceTo(from) <= range
                     && be.trigger(level, by)) {
                 n++;
             }
@@ -155,6 +160,72 @@ public final class Charges {
             case BREACHING -> breach(level, pos, facing, by);
             case THERMITE -> {
             }
+            case LANDMINE -> Blasts.detonate(level, c.add(0, -0.35, 0), Blasts.profile("landmine"), by, 1f);
+            case BOUNCING_MINE -> {
+                level.playSound(null, pos, GZOrdnance.MINE_POP.get(), SoundSource.BLOCKS, 1.2f, 1f);
+                level.sendParticles(ParticleTypes.POOF, c.x, c.y - 0.2, c.z, 10, 0.3, 0.1, 0.3, 0.05);
+                dev.groundzero.content.ordnance.ThrownExplosive.popUp(level, c.add(0, -0.3, 0), by);
+            }
+            case CLAYMORE -> claymore(level, pos, facing, by);
+        }
+    }
+
+    // --- mines ------------------------------------------------------------------------------------------------------------
+    /** The claymore's tripwire: how far it reaches, and where it starts. */
+    public static final double LASER_RANGE = 6;
+    /** Claymore: fragments, the cone's half-angle (degrees), and how fast they fly (they reach about 12 blocks). */
+    public static final int CLAYMORE_FRAGMENTS = 60;
+    public static final double CLAYMORE_HALF_ANGLE = 30;
+
+    public static Vec3 laserStart(BlockPos pos, BlockState state) {
+        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i());
+        return Vec3.atBottomCenterOf(pos).add(0, 6.5 / 16, 0).add(dir.scale(0.2));
+    }
+
+    /** How far the claymore's laser reaches before something solid stops it. */
+    public static double laserLength(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+        Vec3 from = laserStart(pos, state);
+        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i());
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        for (double d = 0.4; d < LASER_RANGE; d += 0.25) {
+            Vec3 p = from.add(dir.scale(d));
+            at.set(p.x, p.y, p.z);
+            if (!at.equals(pos) && !level.getBlockState(at).getCollisionShape(level, at).isEmpty()) {
+                return d;
+            }
+        }
+        return LASER_RANGE;
+    }
+
+    /** Whether an armed mine senses something: a creature on its plate, or across the claymore's laser. */
+    static boolean sensed(ServerLevel level, BlockPos pos, BlockState state) {
+        if (!(state.getBlock() instanceof ChargeBlock block)) {
+            return false;
+        }
+        AABB zone = switch (block.kind.sensor) {
+            case PRESSURE -> new AABB(pos.getX() + 0.15, pos.getY(), pos.getZ() + 0.15, pos.getX() + 0.85, pos.getY() + 0.4, pos.getZ() + 0.85);
+            case TRIPWIRE -> {
+                Vec3 from = laserStart(pos, state);
+                Vec3 to = from.add(Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i()).scale(laserLength(level, pos, state)));
+                yield new AABB(from, to).inflate(0.05);
+            }
+            case NONE -> null;
+        };
+        return zone != null && !level.getEntitiesOfClass(LivingEntity.class, zone, e -> e.isAlive() && !e.isSpectator()).isEmpty();
+    }
+
+    /** The claymore: a small blast at its face and 60 fragments in a 60 degree cone ahead, a little upward. */
+    private static void claymore(ServerLevel level, BlockPos pos, Direction facing, @Nullable Entity by) {
+        Vec3 dir = Vec3.atLowerCornerOf(facing.getUnitVec3i());
+        Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.4, 0).add(dir.scale(0.4));
+        Blasts.detonate(level, front, Blasts.profile("claymore"), by, 1f);
+        var r = level.getRandom();
+        for (int i = 0; i < CLAYMORE_FRAGMENTS; i++) {
+            double yaw = Math.toRadians((r.nextDouble() * 2 - 1) * CLAYMORE_HALF_ANGLE);
+            double pitch = Math.toRadians(-3 + r.nextDouble() * 12);
+            Vec3 d = dir.yRot((float) yaw);
+            d = new Vec3(d.x * Math.cos(pitch), Math.sin(pitch), d.z * Math.cos(pitch)).normalize();
+            level.addFreshEntity(new dev.groundzero.content.ordnance.Shrapnel(level, by, front.add(d.scale(0.2)), d.scale(0.85 + r.nextDouble() * 0.2)));
         }
     }
 

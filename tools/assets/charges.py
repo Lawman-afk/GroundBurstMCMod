@@ -8,8 +8,14 @@ regardless of the light), and the Remote Detonator sprite.
   in the middle.
 - Thermite Charge: a terracotta pot with a white band, a grey igniter cap, a silver magnesium-ribbon fuse; lit, it
   glows orange-hot through cracks.
-- Timed Bomb: a steel box with a dark display on the front (the time is drawn by TimedBombRenderer), three sticks of
+- Timed Bomb: a steel box with a dark display on the front (the time is drawn by ChargeRenderer), three sticks of
   dynamite strapped on top, four coloured wires along the front edge, its lamp beside the display.
+- Mines (slice 6c) are modelled sunk into the ground (elements below y 0): in the world only the top shows, while the
+  item, and the bouncing mine's popped-up canister, show all of it.
+  - Landmine: an olive disc with a steel pressure plate in the middle and a lamp on its rim.
+  - Bouncing Mine: an olive canister with a yellow band, a gunmetal cap and three trigger prongs above the ground.
+  - Claymore: a curved olive box on two pairs of scissor legs, a sight on top, the red laser lens in the middle of its
+    front over a yellow arrow; the lens is its lamp.
 """
 from __future__ import annotations
 
@@ -241,6 +247,78 @@ def timed_bomb() -> list[str]:
     return save(m, paint)
 
 
+# --- mines -----------------------------------------------------------------------------------------------------------------
+def landmine() -> list[str]:
+    m = BlockModel("landmine", tex_size=(64, 64), kind="block")
+    body = G.prism(m, "body", 8, 8, 5, 3.5, -2, 0.75)
+    plate = G.prism(m, "plate", 8, 8, 2, 1.2, 0.75, 1.5)
+    lamp(m, (11.2, 0.75, 7.6), (12, 1.15, 8.4))
+    m.layout()
+
+    def paint(m: BlockModel, t: Tex, lamp_colour) -> None:
+        def disc(t: Tex, r, d):
+            shaded(P.OLIVE)(t, r, d)
+            x, y, w, h = r
+            if d == "up" and w > 4:
+                t.outline(x, y, w, h, P.OLIVE.shadow)
+        fill_all(m, t, body, disc)
+        fill_all(m, t, plate, shaded(STEEL))
+        paint_lamp(m, t, lamp_colour)
+    m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.5)
+    return save(m, paint)
+
+
+def bouncing_mine() -> list[str]:
+    m = BlockModel("bouncing_mine", tex_size=(64, 64), kind="block")
+    body = G.prism(m, "can", 8, 8, 3, 2, -7, 0.5)
+    m.box("cap", (5.5, 0.5, 5.5), (10.5, 1.5, 10.5), faces=("north", "south", "east", "west", "up"))
+    for i, (x, z) in enumerate(((7.6, 6.4), (6.4, 8.8), (8.8, 8.8))):
+        m.box(f"prong{i}", (x, 1.5, z), (x + 0.6, 2.5, z + 0.6), faces=("north", "south", "east", "west", "up"))
+    lamp(m, (9.2, 1.5, 6.2), (9.9, 1.9, 6.9))
+    m.layout()
+
+    def paint(m: BlockModel, t: Tex, lamp_colour) -> None:
+        def can(t: Tex, r, d):
+            shaded(P.OLIVE)(t, r, d)
+            x, y, w, h = r
+            if d in ("north", "south", "east", "west") and h > 6:
+                t.hline(x, y + 2, w, P.HAZARD_YELLOW[4])            # a yellow band near the top
+        fill_all(m, t, body, can)
+        m.paint_all(t, "cap", shaded(GUNMETAL))
+        fill_all(m, t, ["prong0", "prong1", "prong2"], shaded(STEEL))
+        paint_lamp(m, t, lamp_colour)
+    m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.5)
+    return save(m, paint)
+
+
+def claymore() -> list[str]:
+    m = BlockModel("claymore", tex_size=(64, 64), kind="block")
+    m.box("front", (4, 1, 6), (12, 8, 10.5))                         # the face, bowed toward the enemy
+    m.box("wing_w", (2, 1, 6.6), (4, 8, 11), faces=("north", "south", "west", "up", "down"))
+    m.box("wing_e", (12, 1, 6.6), (14, 8, 11), faces=("north", "south", "east", "up", "down"))
+    legs = []
+    for i, (x, z) in enumerate(((3, 7.5), (3, 9.5), (12.5, 7.5), (12.5, 9.5))):
+        legs.append(f"leg{i}")
+        m.box(legs[-1], (x, 0, z), (x + 0.5, 1, z + 0.5), faces=("north", "south", "east", "west"))
+    m.box("sight", (7.5, 8, 7.5), (8.5, 9, 9), faces=("north", "south", "east", "west", "up"))
+    lamp(m, (7.5, 6, 5.6), (8.5, 7, 6), faces=("north", "east", "west", "up", "down"))
+    m.layout()
+
+    def paint(m: BlockModel, t: Tex, lamp_colour) -> None:
+        def body(t: Tex, r, d):
+            shaded(P.OLIVE)(t, r, d)
+            x, y, w, h = r
+            if d == "north" and w >= 8:
+                t.outline(x, y, w, h, P.OLIVE.light)                 # the moulded rim of the face
+                t.decal("arrow_up5", x + (w - 5) // 2, y + h - 6, P.HAZARD_YELLOW[4])
+        fill_all(m, t, ["front", "wing_w", "wing_e"], body)
+        fill_all(m, t, legs, shaded(GUNMETAL))
+        m.paint_all(t, "sight", shaded(GUNMETAL))
+        paint_lamp(m, t, lamp_colour)
+    m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.2)
+    return save(m, paint)
+
+
 # --- blockstates and item definitions --------------------------------------------------------------------------------------
 def blockstates() -> None:
     v = {}
@@ -266,8 +344,20 @@ def blockstates() -> None:
         for armed in (False, True):
             v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/timed_bomb{'_armed' if armed else ''}", **rot}
     write_json(paths.ASSETS / "blockstates" / "timed_bomb.json", {"variants": v})
+    for name in ("landmine", "bouncing_mine"):
+        v = {}
+        for facing in FACINGS:
+            for armed in (False, True):
+                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/{name}{'_armed' if armed else ''}"}
+        write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": v})
+    v = {}
+    for facing, rot in HORIZONTAL.items():
+        for armed in (False, True):
+            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/claymore{'_armed' if armed else ''}", **rot}
+    write_json(paths.ASSETS / "blockstates" / "claymore.json", {"variants": v})
     for item, model in (("c4", "c4_1"), ("breaching_charge", "breaching_charge"), ("thermite_charge", "thermite_charge"),
-                        ("timed_bomb", "timed_bomb")):
+                        ("timed_bomb", "timed_bomb"), ("landmine", "landmine"), ("bouncing_mine", "bouncing_mine"),
+                        ("claymore", "claymore")):
         write_json(paths.ASSETS / "items" / f"{item}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{model}"}})
 
 
@@ -310,6 +400,9 @@ def main() -> None:
     names += thermite(False)
     names += thermite(True)
     names += timed_bomb()
+    names += landmine()
+    names += bouncing_mine()
+    names += claymore()
     blockstates()
     R.save_item("remote_detonator", remote_detonator())
     print("charges written:", ", ".join(names))

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:frag_grenade",
+    "#c:plates/steel",
+    "minecraft:stone_pressure_plate",
+    "minecraft:gunpowder"
+  ],
+  "result": {
+    "id": "groundzero:bouncing_mine"
+  }
+}

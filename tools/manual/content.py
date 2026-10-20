@@ -811,6 +811,24 @@ Press to trigger every armed charge on its frequency within 256 blocks. Sneak-us
     craft("remote_detonator"),
 ])
 
+entry("ordnance/mines", "Mines", "landmine", ["landmine", "bouncing_mine", "claymore"], [
+    text("""
+Mines are placed on the ground and are safe until armed: right-click one with an empty hand and press **Arm**. It beeps for 3 seconds while you get clear, then it is live. **Make safe** from the same screen to pick one up again. Redstone, or another blast, sets one off too.
+"""),
+    spot("landmine", """
+Sits half buried with only its pressure plate showing. Anything that steps on it once it is live sets it off.
+"""),
+    spot("bouncing_mine", """
+Stepped on, it clicks and throws its canister up to about waist height, where it bursts into **30 fragments** in every direction. Lying flat does not help.
+"""),
+    spot("claymore", """
+Place it facing the way you are looking. Armed, it shows a red **laser tripwire** up to 6 blocks ahead; anything crossing the laser fires **60 fragments** in a 60 degree cone, deadly out to about 12 blocks. It also has a frequency, so a Remote Detonator can fire it.
+"""),
+    craft("landmine"),
+    craft("bouncing_mine"),
+    craft("claymore"),
+])
+
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
                                                                 "toxin_canister", "salt", "chlorine_bucket", "toxin_bucket"], [
     text("""

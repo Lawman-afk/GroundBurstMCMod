@@ -926,7 +926,7 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   one block every 6 ticks along a 1x1 shaft into what it is on, 8 deep, stopping at resistance 50+ (obsidian),
   unbreakable blocks or water (steam); the last melted block becomes magma (slag), then the pot is gone. Anything
   alive next to it burns.
-- **Timed Bomb** (`timed_bomb` profile: core 2.5, crater 6, lethal 6, damage 14; 3.5 / 9 / 9 / 20 after feedback): a `TimedBombRenderer` draws the
+- **Timed Bomb** (`timed_bomb` profile: core 2.5, crater 6, lethal 6, damage 14; 3.5 / 9 / 9 / 20 after feedback): a `ChargeRenderer` (`TimedBombRenderer` until 6c) draws the
   time on its display (red counting, dim green safe). Defusing: right-click while it counts opens four wires (red,
   blue, yellow, green; random each arming): one defuses it (safe, kept), one sets it off, the other two halve the time
   left (at least 3 s). Breaking it while it counts sets it off.
@@ -940,6 +940,25 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   then sets it off, or starts its timer if it is on one (the timed bomb is always on its timer). A safe charge ignores
   both. C4 has no timer (that is the timed bomb's job). Timed bomb blast: core 3.5, crater 9, lethal 9, damage 20.
   Blast debris no longer samples the charge block itself (still standing on clients when the blast packet arrives).
+
+### 14.4 As built: mines (Phase 6 slice 6c)
+- Mines are charges (`ChargeKind` LANDMINE, BOUNCING_MINE, CLAYMORE, with a `Sensor`): placed on the floor, safe,
+  armed from the same screen (the claymore's also sets its frequency). Arming starts a 3 s grace (a quiet beep a
+  second) before the sensor is live; redstone and other blasts still set them off; mines without a frequency ignore
+  detonators. Sensors are polled every other tick on the server.
+- **Landmine** (`landmine` profile: crater 2.5, lethal 3, damage 7): anything alive within its plate (the middle
+  0.7 x 0.4 of its block) sets it off with a click; the blast is 0.35 below its centre. Modelled sunk into the ground
+  (elements below y 0), so only the plate shows in the world.
+- **Bouncing Mine**: stepped on, it clicks, and its canister (a `ThrownExplosive` carrying the mine's item, type
+  BOUNCING_MINE) pops up at 0.36 blocks a tick and bursts 7 ticks later about 1.2 blocks up: `bouncing_mine` profile
+  (crater 1, lethal 4, damage 9) and 30 shrapnel on a sphere.
+- **Claymore**: placed facing where the player looks; armed and live, a laser from its lens (6.5 px up) runs up to 6
+  blocks ahead until something solid stops it; anything alive crossing it fires it: a small `claymore` blast (crater
+  0.5) at its face and 60 shrapnel within 30 degrees either side of ahead, -3 to +9 degrees up, at 0.85-1.05 blocks a
+  tick (about 12-15 blocks). The laser is drawn by `ChargeRenderer` as a thin translucent red tube.
+- Recipes: Landmine x2 (steel plate, stone pressure plate, 2 gunpowder), Bouncing Mine (frag grenade, steel plate,
+  stone pressure plate, gunpowder), Claymore (plastic explosive, 4 iron nuggets, steel plate, basic circuit). Sounds:
+  the plate's click, the canister's launch.
 
 ## 15. Nuclear weapons
 
@@ -1891,3 +1910,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | After the in-game look: toxin grenade becomes a glass vial (it already shattered with a glass sound); Molotov cocktail added as the no-blast fire grenade, made from synthetic fuel so it sits beside the incendiary rather than before dynamite. |
 | 2026-10-21 | Slice 6b placed charges: one block + block entity for every charge; screens open client-side from synced block-entity data (no container menus); arming a Timer fuze starts its countdown; a counting timed bomb can only be defused (four wires: defuse / boom / two halve the time); charges caught in any blast go off armed or not; thermite stays put while it eats its support. |
 | 2026-10-21 | Slice 6b feedback: arming moves into the charge's own screen (no Arming Key); arming makes a charge live and the detonator or redstone triggers it, starting the timer where there is one (never overriding a safe charge); C4 is instant only; every charge has a frequency; the timed bomb's blast grows to crater 9. |
+| 2026-10-21 | Slice 6c mines: built on the placed-charge framework (same screen, arming, redstone, sympathetic detonation) with sensors and a 3 s arming grace; mines are modelled sunk into the ground; the bouncing mine's canister reuses the thrown-explosive entity; the claymore's laser is drawn as geometry, not particles (block display ticks were too sparse to show it). |

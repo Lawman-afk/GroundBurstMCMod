@@ -24,7 +24,9 @@ public enum GrenadeType {
     /** A glass vial that shatters on impact and splashes toxin over the ground round it. */
     TOXIN("toxin_grenade", -1, Behaviour.IMPACT, 1.1f),
     /** A bottle of fuel with a burning rag: shatters on impact into fire, with no blast. */
-    MOLOTOV("molotov_cocktail", -1, Behaviour.IMPACT, 1.0f);
+    MOLOTOV("molotov_cocktail", -1, Behaviour.IMPACT, 1.0f),
+    /** The bouncing mine's canister, popped up out of the ground: bursts at about waist height into 30 fragments. */
+    BOUNCING_MINE("bouncing_mine", 7, Behaviour.BOUNCE, 0f);
 
     public enum Behaviour { BOUNCE, STICK, IMPACT }
 

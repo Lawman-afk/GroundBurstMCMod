@@ -41,6 +41,9 @@ public class ChargeBlockEntity extends BlockEntity {
     /** Thermite: ticks it has burned (-1: not lit). */
     private int burn = -1;
     private int defuseWire, boomWire, cutWires;
+    /** Mines: ticks of grace left after arming before it is live (time to get clear). */
+    private int arming;
+    public static final int ARMING_GRACE = 60;
     private @Nullable UUID owner;
 
     public ChargeBlockEntity(BlockPos pos, BlockState state) {
@@ -115,6 +118,9 @@ public class ChargeBlockEntity extends BlockEntity {
         this.owner = by == null ? null : by.getUUID();
         level.setBlock(this.worldPosition, getBlockState().setValue(ChargeBlock.ARMED, true), Block.UPDATE_ALL);
         level.playSound(null, this.worldPosition, GZOrdnance.CHARGE_ARM.get(), SoundSource.BLOCKS, 0.8f, 1f);
+        if (kind().sensor != ChargeKind.Sensor.NONE) {
+            this.arming = ARMING_GRACE;
+        }
         sync();
     }
 
@@ -127,6 +133,7 @@ public class ChargeBlockEntity extends BlockEntity {
             return false;
         }
         this.countdown = -1;
+        this.arming = 0;
         level.setBlock(this.worldPosition, getBlockState().setValue(ChargeBlock.ARMED, false), Block.UPDATE_ALL);
         level.playSound(null, this.worldPosition, GZOrdnance.CHARGE_DISARM.get(), SoundSource.BLOCKS, 0.8f, 1f);
         sync();
@@ -206,7 +213,25 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     // --- ticking ---------------------------------------------------------------------------------------------------------
+    /** Mines: still in their grace after arming. */
+    public boolean live() {
+        return armed() && this.arming == 0;
+    }
+
     public void serverTick(ServerLevel level) {
+        if (this.arming > 0 && armed()) {
+            this.arming--;
+            if (this.arming % 20 == 0 && this.arming > 0) {
+                level.playSound(null, this.worldPosition, GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 0.4f, 1.6f);
+            }
+        } else if (live() && !counting() && (level.getGameTime() + this.worldPosition.hashCode() & 1) == 0
+                && Charges.sensed(level, this.worldPosition, getBlockState())) {
+            if (kind().sensor == ChargeKind.Sensor.PRESSURE) {
+                level.playSound(null, this.worldPosition, GZOrdnance.MINE_CLICK.get(), SoundSource.BLOCKS, 1f, 1f);
+            }
+            trigger(level, null);
+            return;
+        }
         if (this.burn >= 0) {
             this.burn++;
             if (Charges.thermite(level, this.worldPosition, getBlockState(), this.burn)) {
@@ -269,6 +294,7 @@ public class ChargeBlockEntity extends BlockEntity {
         output.putInt("defuse_wire", this.defuseWire);
         output.putInt("boom_wire", this.boomWire);
         output.putInt("cut_wires", this.cutWires);
+        output.putInt("arming", this.arming);
         if (this.owner != null) {
             output.putString("owner", this.owner.toString());
         }
@@ -285,6 +311,7 @@ public class ChargeBlockEntity extends BlockEntity {
         this.defuseWire = input.getIntOr("defuse_wire", 0);
         this.boomWire = input.getIntOr("boom_wire", 1);
         this.cutWires = input.getIntOr("cut_wires", 0);
+        this.arming = input.getIntOr("arming", 0);
         this.owner = input.getString("owner").map(UUID::fromString).orElse(null);
     }
 

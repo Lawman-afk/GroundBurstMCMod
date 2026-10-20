@@ -375,6 +375,24 @@
     ],
     "subtitle": "subtitles.groundzero.machine.water_pump"
   },
+  "mine.click": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:ordnance/mine_click"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.mine.click"
+  },
+  "mine.pop": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundzero:ordnance/mine_pop"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.mine.pop"
+  },
   "reactor.alarm": {
     "sounds": [
       {

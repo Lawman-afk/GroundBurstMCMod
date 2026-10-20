@@ -568,6 +568,12 @@ def ordnance_sounds() -> dict[str, np.ndarray]:
     # A wire cut: a sharp snip of the cutters.
     snip = _ring(0.12, [(3600, 0.012, 0.5), (5800, 0.008, 0.3), (1500, 0.02, 0.2)], 490)
     out["ordnance/wire_snip"] = S.normalize(S.fade(snip, 0, 0.03), -4)
+    # Mines (slice 6c): the plate clicking down under a boot, and the bouncing mine's launch charge thumping it up.
+    clk = _ring(0.15, [(1700, 0.015, 0.6), (3900, 0.008, 0.3), (700, 0.03, 0.3)], 500)
+    out["ordnance/mine_click"] = S.normalize(S.fade(clk, 0, 0.03), -3)
+    thump = S.lowpass(S.white(0.35, 510), 500) * S.exp_decay(int(0.35 * S.SR), 0.04) * 1.4
+    hiss = S.bandpass(S.white(0.35, 511), 1500, 6000) * S.exp_decay(int(0.35 * S.SR), 0.08) * 0.4
+    out["ordnance/mine_pop"] = S.normalize(S.fade(S.mix((thump, 1.0), (hiss, 1.0)), 0, 0.05), -2)
     return out
 
 

@@ -63,11 +63,20 @@ public final class GZOrdnance {
                     p -> new dev.groundzero.content.ordnance.charge.ChargeBlock(dev.groundzero.content.ordnance.charge.ChargeKind.TIMED_BOMB, p),
                     p -> p.mapColor(net.minecraft.world.level.material.MapColor.METAL).strength(2f).noOcclusion()
                             .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE));
+    // --- mines (slice 6c) ---
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> LANDMINE = mine("landmine",
+            "Landmine", dev.groundzero.content.ordnance.charge.ChargeKind.LANDMINE);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> BOUNCING_MINE = mine("bouncing_mine",
+            "Bouncing Mine", dev.groundzero.content.ordnance.charge.ChargeKind.BOUNCING_MINE);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLAYMORE = mine("claymore",
+            "Claymore", dev.groundzero.content.ordnance.charge.ChargeKind.CLAYMORE);
+
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<dev.groundzero.content.ordnance.charge.ChargeBlockEntity>> CHARGE =
             dev.groundzero.registry.GZBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
                     dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
-                    THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get()));
+                    THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get(), LANDMINE.block().get(), BOUNCING_MINE.block().get(),
+                    CLAYMORE.block().get()));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 
@@ -86,6 +95,8 @@ public final class GZOrdnance {
     public static final Supplier<SoundEvent> THERMITE_BURN = GZSounds.THERMITE_BURN;
     public static final Supplier<SoundEvent> DETONATOR_CLICK = GZSounds.DETONATOR_CLICK;
     public static final Supplier<SoundEvent> WIRE_SNIP = GZSounds.WIRE_SNIP;
+    public static final Supplier<SoundEvent> MINE_CLICK = GZSounds.MINE_CLICK;
+    public static final Supplier<SoundEvent> MINE_POP = GZSounds.MINE_POP;
 
     static {
         dev.groundzero.registry.GZLang.add("death.attack." + GroundZero.MODID + ".shrapnel", "%1$s was shredded by shrapnel");
@@ -97,6 +108,13 @@ public final class GZOrdnance {
     }
 
     private GZOrdnance() {}
+
+    private static dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> mine(String id, String english,
+            dev.groundzero.content.ordnance.charge.ChargeKind kind) {
+        return dev.groundzero.registry.GZBlocks.register(id, english, GZTab.ORDNANCE, p -> new dev.groundzero.content.ordnance.charge.ChargeBlock(kind, p),
+                p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN).strength(1f).noOcclusion()
+                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    }
 
     public static void init() {}
 
