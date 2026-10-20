@@ -182,23 +182,6 @@ def steel_plating() -> Tex:
     return t
 
 
-def steel_frame() -> Tex:
-    """An open steel truss: edge members and one diagonal brace, see-through between them (cutout)."""
-    t = Tex(16, 16)
-    for i in range(16):
-        for w in (0, 1):
-            t.px(i, w, STEEL[4])
-            t.px(i, 15 - w, STEEL[2])
-            t.px(w, i, STEEL[4])
-            t.px(15 - w, i, STEEL[2])
-    for i in range(2, 14):
-        t.px(i, 15 - i, STEEL[3])
-        t.px(i + 1, 15 - i, STEEL[2])
-    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
-        t.px(x, y, STEEL[6])
-    return t
-
-
 def magnet_segment() -> Tex:
     """A dipole magnet: red yoke, copper windings either side of the dark beam pipe."""
     t = Tex(16, 16)
@@ -288,7 +271,6 @@ if __name__ == "__main__":
     part_block("energy_port", energy_port())
     part_block("fluid_port", fluid_port())
     part_block("steel_plating", steel_plating())
-    part_block("steel_frame", steel_frame(), cutout=True)
     part_block("magnet_segment", magnet_segment())
     part_block("accelerator_injector", injector())
     part_block("accelerator_target_chamber", target_chamber())

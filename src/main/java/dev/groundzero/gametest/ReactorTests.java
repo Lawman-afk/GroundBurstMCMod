@@ -207,6 +207,12 @@ final class ReactorTests {
         ParticleAcceleratorBlockEntity pa = helper.getBlockEntity(rel, ParticleAcceleratorBlockEntity.class);
         helper.assertTrue(pa.isFormed(), "the accelerator ring forms");
         var level = helper.getLevel();
+        // Every part of the octagon, staircase corners included, belongs to the controller (right-clicking it opens it).
+        for (BlockPos part : pa.definition().partPositions(pa.controllerPos(), pa.controllerFacing())) {
+            helper.assertTrue(dev.groundzero.content.multiblock.Multiblocks.formedControllerOf(level, part) == pa,
+                    "the part at " + part + " leads to the controller");
+        }
+        helper.assertTrue(pa.definition().partPositions(pa.controllerPos(), pa.controllerFacing()).size() == 63, "63 parts and the controller");
         for (Direction d : Direction.values()) {
             helper.assertTrue(level.getCapability(Capabilities.Item.BLOCK, pa.controllerPos(), d) == null
                     && level.getCapability(Capabilities.Energy.BLOCK, pa.controllerPos(), d) == null, "the controller exposes nothing on " + d);

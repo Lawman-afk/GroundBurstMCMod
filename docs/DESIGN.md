@@ -337,7 +337,7 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Cryogenic Condenser** | 1×2 tall | 100 FE/t | LOX, LN₂, cryo cores | Frosted coils, vapour vents, ice crust grows on the model while working. |
 | **Circuit Fabricator** | 1 block | 40 FE/t | circuits, sensor arrays, superconducting coils | Glass-topped clean box, robotic arm (animated) placing chips; green PCB visible. |
 | **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t (needs insulated or HV cable) | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
-| **Particle Accelerator** | multiblock ring 9×9×3 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
+| **Particle Accelerator** | octagonal multiblock ring, 9×9×2 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
 | **Fission Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
 | **Fusion Reactor** | multiblock ring 7×7×3 | generates (ignition from capacitor banks) | power | See §7. |
 | **Singularity Reactor** | multiblock 5×5×5 | generates (feeds on matter) | power | See §7. |
@@ -1052,10 +1052,23 @@ front-middle, `I` (matter feed) and `E` at the sides; `y1–y3` `F` posts at the
 face midpoints of `y2`, `G` elsewhere on the faces, 3×3×3 interior air with the `K` cradle at its centre holding the
 seed; `y4` 5×5 `M` roof with a `Q` emitter at the centre.
 
-**Particle Accelerator** (9×9×3 ring): a hollow square ring 1 wide on y1 made of 28 `S` magnet segments, the
-injector `J` at the front midpoint with `X` beside it (west), the target chamber `T` at the back midpoint, an Energy
-Port `E` at the west midpoint and an Item Port `I` at the east midpoint (containment cells in, antimatter out); y0 ring of `P` (steel plating) under it; y2 ring of `F` (steel frame) above it. Interior
-7×7 is free. The controller sits in the middle layer, so the ring reaches one block below it.
+**Particle Accelerator** (9×9×2 octagonal ring, rows front first; 32 cells a layer):
+```
+y0:  ..PPPPP..   y1:  ..SSXJS..
+     .PP...PP.        .SS...SS.
+     PP.....PP        SS.....SS
+     P.......P        S.......S
+     P.......P        E.......I
+     P.......P        S.......S
+     PP.....PP        SS.....SS
+     .PP...PP.        .SS...SS.
+     ..PPPPP..        ..SSTSS..
+```
+(`.` = anything.) Steel plating `P` under 27 magnet segments `S`, the controller `X` at the front centre with the
+injector `J` beside it, the target chamber `T` at the back centre, an Energy Port `E` and an Item Port `I` (containment
+cells in, antimatter out) in the middle of the sides. The controller is in the top layer, so the ring reaches one block
+below it. The formed model's beam line is a true octagon (straight runs on the sides, 45° runs through the corner
+staircases) kept inside these cells, so every part on show is a block you can click.
 
 **Radar Station** (3×3×5): `y0: PEP / PXP / PPP`, `y1–y3: .F. / FFF / .F.` (mast), `y4: DDD / DFD / DDD` (dish mount).
 
@@ -1250,7 +1263,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | CRT display | CT | glass pane, glowstone dust, basic circuit, redstone, steel plate |
 | Fusion reactor parts (first draft) | CT | toroidal field coil: 4 superconducting coil + 2 dense steel plate + tungsten plate; vacuum vessel casing: machine casing + 2 tungsten plate; viewport: reactor glass + tungsten plate; controller: machine casing + military circuit + 2 CRT display + pressure vessel |
 | Singularity reactor parts (first draft) | CT / EF | containment emitter (EF): containment cell + 2 superconducting coil + military circuit; core cradle (EF): stabilised exotic matter + 4 tungsten plate + neodymium magnet; controller (CT): machine casing + quantum circuit + 2 CRT display; the core itself is a singularity seed placed in the cradle |
-| Accelerator parts | CT | magnet segment ×4: 2 superconducting coil + 4 dense steel plate + copper wire; injector: segment + military circuit; target chamber: segment + military circuit + reactor glass; controller: machine casing + quantum circuit + CRT display; steel plating ×4: 4 steel plate; steel frame ×4: 4 steel rod + steel plate |
+| Accelerator parts (27 segments, 32 plating) | CT | magnet segment ×4: 2 superconducting coil + 4 dense steel plate + copper wire; injector: segment + military circuit; target chamber: segment + military circuit + reactor glass; controller: machine casing + quantum circuit + CRT display; steel plating ×4: 4 steel plate |
 | Structural blocks | CT | reinforced concrete ×8: 8 concrete (any colour) + steel rod; hazard concrete: reinforced concrete + yellow & black dye; steel frame ×4: 4 steel rod + steel plate; steel plating ×4: 4 steel plate; machine casing: machine frame + 4 steel plate; dish panel ×2: 2 steel plate + copper plate |
 
 ### 26.5 Ordnance (crafting table unless noted)
@@ -1489,3 +1502,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Multiblocks connect only through their ports, on every structure: no controller exposes items, fluids or power and none has a side-configuration tab. The Chemical Plant's casing beside the controller becomes an Energy Port (`XE / FI`); the Particle Accelerator gains an Item Port at the east midpoint of its ring; the reactor's Fluid Port moves to the back middle of the bottom layer (it was under the core, reachable only from below). Built structures need those blocks swapped. |
 | 2026-10-20 | Machine CRTs: when a readout's glass is too low for its lines to stack, the lines sit side by side in columns, centred (the reactor's OUT and CORE). |
 | 2026-10-20 | Field Manual (the native in-game guide, §24.2) gets its own slice after the slice 7 fixes, ahead of slice 8: researched against how the major tech mods do theirs, with info pages, recipes and pictures. |
+| 2026-10-20 | Particle Accelerator redesigned (user feedback: inconsistent right-click areas, a hovering truss, too square): a two-layer octagonal ring 9 blocks across (steel plating under magnet segments, 32 cells a layer) with the controller at the front centre. The formed model is a true octagonal beam line (corner bending magnets, long dipoles on the diagonals, quadrupoles on the sides) kept entirely inside the structure's cells, so what you see is what you can click. The top steel-frame layer is gone, and the Steel Frame block with it until the structures that use it (Radar Station, Launch Complex) are built. |

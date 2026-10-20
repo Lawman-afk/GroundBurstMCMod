@@ -517,7 +517,6 @@ public class GZRecipeProvider extends RecipeProvider {
      * Plant, plutonium, antimatter, and the parts of the Fission Reactor and Particle Accelerator. Game abstractions.
      */
     private void slice7() {
-        Ingredient steelRod = tag(GZTags.commonItem("rods/steel"));
         // Display used by controllers (DESIGN.md §26.2).
         shaped(RecipeCategory.MISC, GZParts.CRT_DISPLAY, 1)
                 .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('L', Tags.Items.DUSTS_GLOWSTONE).define('B', GZTags.BASIC_CIRCUITS)
@@ -580,11 +579,6 @@ public class GZRecipeProvider extends RecipeProvider {
                 .define('P', GZTags.commonItem("plates/steel"))
                 .pattern("PP").pattern("PP")
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE))
-                .save(output);
-        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.STEEL_FRAME.item(), 4)
-                .define('R', steelRod).define('P', GZTags.commonItem("plates/steel"))
-                .pattern("R R").pattern(" P ").pattern("R R")
-                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD))
                 .save(output);
         shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.MAGNET_SEGMENT.item(), 4)
                 .define('D', GZParts.DENSE_STEEL_PLATE).define('C', GZParts.SUPERCONDUCTING_COIL).define('W', GZTags.commonItem("wires/copper"))

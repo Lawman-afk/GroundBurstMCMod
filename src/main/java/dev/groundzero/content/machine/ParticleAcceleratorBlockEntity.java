@@ -22,7 +22,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Particle Accelerator (DESIGN.md §8, §23.3): a 9x9x3 ring run from this controller. Fills containment cells with
+ * Particle Accelerator (DESIGN.md §8, §23.3): a two-layer octagonal ring 9 blocks across run from this controller. Fills containment cells with
  * antimatter slowly, at 2 000 FE/t. The controller connects to nothing: power comes in through the ring's Energy Port,
  * containment cells go in and antimatter cells come out through its Item Port.
  * Slots: 0 containment cell, 1 antimatter cell.

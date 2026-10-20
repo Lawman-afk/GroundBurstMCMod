@@ -68,7 +68,7 @@ public class GroundZeroClient {
         // Multiblocks: the formed model reaches beyond the controller (reactor 1 block each side, accelerator ring 8).
         event.registerBlockEntityRenderer(GZBlockEntities.FISSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FISSION_REACTOR.get(), 4, 3));
         event.registerBlockEntityRenderer(GZBlockEntities.PARTICLE_ACCELERATOR.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.PARTICLE_ACCELERATOR.get(), 3, 9));
+                ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.PARTICLE_ACCELERATOR.get(), 1, 9));
         event.registerBlockEntityRenderer(GZBlockEntities.DIESEL_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.DIESEL_GENERATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.RTG.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.RTG.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.BATTERY_CHARGER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.BATTERY_CHARGER.get(), 1));

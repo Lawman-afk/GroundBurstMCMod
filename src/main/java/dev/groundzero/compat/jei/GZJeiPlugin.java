@@ -114,7 +114,7 @@ public final class GZJeiPlugin implements IModPlugin {
                 dev.groundzero.content.nuclear.GZNuclear.DU_TARGET_ROD.get(), dev.groundzero.content.nuclear.GZNuclear.LI6_TARGET_ROD.get());
         info(registration, MachineText.INFO_PARTICLE_ACCELERATOR, GZMachines.PARTICLE_ACCELERATOR.item().get(), GZMultiblocks.MAGNET_SEGMENT.item().get(),
                 GZMultiblocks.INJECTOR.item().get(), GZMultiblocks.TARGET_CHAMBER.item().get(), GZMultiblocks.STEEL_PLATING.item().get(),
-                GZMultiblocks.STEEL_FRAME.item().get(), GZMultiblocks.PARTICLE_ACCELERATOR_SPAWNER.get());
+                GZMultiblocks.PARTICLE_ACCELERATOR_SPAWNER.get());
         info(registration, MachineText.INFO_DIESEL_GENERATOR, GZMachines.DIESEL_GENERATOR.item().get());
         info(registration, MachineText.INFO_RTG, GZMachines.RTG.item().get());
         info(registration, MachineText.INFO_CAPACITOR_BANK, GZMachines.CAPACITOR_BANKS.stream().map(b -> (ItemLike) b.item().get()).toArray(ItemLike[]::new));

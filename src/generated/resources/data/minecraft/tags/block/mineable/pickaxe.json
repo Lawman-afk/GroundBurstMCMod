@@ -65,7 +65,6 @@
     "groundzero:energy_port",
     "groundzero:fluid_port",
     "groundzero:steel_plating",
-    "groundzero:steel_frame",
     "groundzero:magnet_segment",
     "groundzero:accelerator_injector",
     "groundzero:accelerator_target_chamber"

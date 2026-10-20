@@ -36,10 +36,6 @@ public final class GZMultiblocks {
             EnergyPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<MultiblockPartBlock> STEEL_PLATING = part("steel_plating", "Steel Plating", MapColor.METAL);
-    /** An open truss (cutout texture): it must not hide its neighbours' faces or you could see through the world. */
-    public static final WithItem<MultiblockPartBlock> STEEL_FRAME = GZBlocks.register("steel_frame", "Steel Frame", GZTab.MACHINES,
-            MultiblockPartBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<MultiblockPartBlock> MAGNET_SEGMENT = part("magnet_segment", "Accelerator Magnet Segment", MapColor.COLOR_RED);
     public static final WithItem<MultiblockPartBlock> INJECTOR = part("accelerator_injector", "Accelerator Injector", MapColor.COLOR_LIGHT_BLUE);
     public static final WithItem<MultiblockPartBlock> TARGET_CHAMBER = part("accelerator_target_chamber", "Accelerator Target Chamber",
@@ -70,28 +66,35 @@ public final class GZMultiblocks {
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.FISSION_REACTOR.block().get())));
 
     /**
-     * Particle Accelerator (9x9x3 ring, DESIGN.md §23.3): a hollow square ring one block wide. Bottom layer steel
-     * plating; middle layer 28 magnet segments with the injector at the front midpoint, the controller beside it, the
-     * target chamber at the back midpoint and an Energy Port at the west midpoint; top layer steel frame. The 7x7 inside
-     * is free.
+     * Particle Accelerator (DESIGN.md §23.3): a two-layer octagonal ring 9 blocks across, one block wide: three straight
+     * cells on each side and a five-cell staircase at each corner, 32 cells a layer. Bottom layer steel plating; top
+     * layer magnet segments with the controller at the front centre, the injector beside it, the target chamber at the
+     * back centre, an Energy Port in the middle of one side and an Item Port in the middle of the other. The inside and
+     * the corners outside the octagon are free. The formed model's beam line keeps inside these cells, so every part
+     * you see is a part you can click.
      */
     public static final MultiblockDefinition PARTICLE_ACCELERATOR = new MultiblockDefinition(GroundZero.id("particle_accelerator"),
             new String[][] {
-                    ring('P'),
-                    {"SSSXJSSSS", "S       S", "S       S", "S       S", "E       I", "S       S", "S       S", "S       S", "SSSSTSSSS"},
-                    ring('F'),
+                    octagon('P', "PPPPP", "PPPPP"),
+                    octagon('S', "SSXJS", "SSTSS"),
             },
-            Map.of('P', Entry.of(() -> STEEL_PLATING.block().get()), 'F', Entry.of(() -> STEEL_FRAME.block().get()),
+            Map.of('P', Entry.of(() -> STEEL_PLATING.block().get()),
                     'S', Entry.of(() -> MAGNET_SEGMENT.block().get()), 'J', Entry.of(() -> INJECTOR.block().get()),
                     'T', Entry.of(() -> TARGET_CHAMBER.block().get()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
                     'I', Entry.of(ITEM_PORT.block()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.PARTICLE_ACCELERATOR.block().get())));
 
-    /** A 9x9 hollow ring layer of one block. */
-    private static String[] ring(char c) {
-        String full = String.valueOf(c).repeat(9);
+    /**
+     * One layer of the accelerator's 9x9 stepped octagon (rows front first) made of {@code c}, with the front and back
+     * straight rows given (five cells each, the middle three being the straight side) and the Energy and Item Ports in
+     * the middle of the left and right sides when {@code c} is the magnet layer.
+     */
+    private static String[] octagon(char c, String front, String back) {
+        String two = String.valueOf(c).repeat(2);
+        String mid = c == 'S' ? "E       I" : c + " ".repeat(7) + c;
         String side = c + " ".repeat(7) + c;
-        return new String[] {full, side, side, side, side, side, side, side, full};
+        return new String[] {"  " + front + "  ", " " + two + "   " + two + " ", two + "     " + two, side, mid, side,
+                two + "     " + two, " " + two + "   " + two + " ", "  " + back + "  "};
     }
 
     /**

@@ -126,7 +126,7 @@ checklist for the user.
 | Fission Reactor multiblock (formerly Breeder Reactor; heat, control rods, coolant, SCRAM) | done (slice 7: 3x3x4 lead vessel with window bays onto the water-filled core, rod positions and Cherenkov glow on the model; fuel/target/spent rods, plutonium, tritium, waste; GUI with heat/rod gauges and SCRAM) — needs in-game test |
 | Fusion Reactor multiblock (tokamak, capacitor ignition, LN2 magnets) | todo (slice 8) |
 | Singularity Reactor multiblock (matter-fed, containment cage) | todo (slice 8) |
-| Particle Accelerator multiblock | done (slice 7: 9x9x3 ring of 28 magnets, injector, target chamber, energy port; a glowing bunch laps the ring; antimatter cells from containment cells at 2,000 FE/t) — needs in-game test |
+| Particle Accelerator multiblock | done (slice 7, redesigned after feedback: 9x9x2 octagonal ring of 27 magnets on steel plating, injector, target chamber, energy and item ports; a glowing bunch laps the ring; antimatter cells from containment cells at 2,000 FE/t) — needs in-game test |
 | Machine fluid tanks (container slot, pipes per face, bucket right-click, GUI gauge, fluid recipe ingredients, JEI fluid slots) | done (slice 3); slice 4 feedback: up to 4 input/product tanks per machine, fill/empty slot pair, dump buttons, fluid products, fluid auto-eject |
 | Chemical fluids (8 liquids with buckets and in-world blocks with hazards, 2 gases as rising clouds with upside-down buckets), canisters as fluid containers, fluid pipes, c: fluid tags | done (slice 4 feedback) — needs in-game test |
 | Water Pump (infinite water from a source block, pushes into pipes) | done (slice 4 feedback 2) — needs in-game test |
