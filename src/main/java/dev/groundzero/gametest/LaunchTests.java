@@ -27,6 +27,8 @@ final class LaunchTests {
         GZGameTests.test("silo_will_not_launch_unready", GZGameTests.FLOOR_16, 20, LaunchTests::unready);
         GZGameTests.test("computer_aims_and_arms_each_silo", GZGameTests.FLOOR_16, 20, LaunchTests::perSilo);
         GZGameTests.test("armed_silo_disarms_when_unready", GZGameTests.FLOOR_16, 20, LaunchTests::disarms);
+        GZGameTests.test("halted_silo_refuses_and_scrubs_its_countdown", GZGameTests.FLOOR_16, 20, LaunchTests::halted);
+        GZGameTests.test("emp_silo_refuses_to_arm", GZGameTests.FLOOR_16, 20, LaunchTests::empRefuses);
         GZGameTests.testOpenSky("missile_flies_on_over_unloaded_ground", GZGameTests.FLOOR_16, 400, LaunchTests::longFlight);
         GZGameTests.test("radar_array_tracks_incoming_missiles", GZGameTests.FLOOR_16, 60, LaunchTests::radar);
         GZGameTests.test("large_radar_dish_places_and_breaks_whole", GZGameTests.FLOOR_16, 40, LaunchTests::largeDish);
@@ -127,6 +129,39 @@ final class LaunchTests {
     }
 
     /** An armed silo whose missile is taken out makes itself safe. */
+    /**
+     * A ready silo whose redstone setting holds it stopped will not arm or launch (it says so); stopped mid-countdown,
+     * the launch is scrubbed.
+     */
+    private static void halted(GameTestHelper helper) {
+        floor(helper);
+        LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));
+        load(s);
+        BlockPos t = helper.absolutePos(new BlockPos(12, 1, 12));
+        s.setTarget(t.getX(), t.getZ());
+        helper.assertTrue(s.launch(helper.getLevel(), t, null), "launch ordered");
+        s.cycleRedstoneMode();                                   // "run with a signal", and there is none
+        helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.HALTED, "halted: " + s.readiness());
+        helper.assertTrue(!s.arm(true), "it will not arm");
+        helper.assertTrue(!s.launch(helper.getLevel(), t, null), "nor launch");
+        helper.succeedWhen(() -> helper.assertTrue(s.countdown() < 0 && helper.getLevel().getEntitiesOfClass(
+                dev.groundzero.content.launch.MissileEntity.class, new net.minecraft.world.phys.AABB(s.getBlockPos()).inflate(20)).isEmpty(),
+                "the countdown is scrubbed"));
+    }
+
+    /** A ready silo in an EMP field will not arm; it says it is disabled. */
+    private static void empRefuses(GameTestHelper helper) {
+        floor(helper);
+        LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));
+        load(s);
+        BlockPos t = helper.absolutePos(new BlockPos(12, 1, 12));
+        s.setTarget(t.getX(), t.getZ());
+        dev.groundzero.content.effect.EmpFields.add(helper.getLevel(), net.minecraft.world.phys.Vec3.atCenterOf(s.getBlockPos()), 8, 40, null);
+        helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.EMP, "disabled: " + s.readiness());
+        helper.assertTrue(!s.arm(true), "it will not arm");
+        helper.succeed();
+    }
+
     private static void disarms(GameTestHelper helper) {
         floor(helper);
         LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));

@@ -63,9 +63,11 @@ public class LaunchComputerScreen extends Screen {
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".computer.silo.armed", "ARMED");
     private static final String[] T_SILO_STATE = {
             GZLang.add(GroundZero.MODID + ".computer.silo.not_formed", "incomplete"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.emp", "EMP disabled"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.halted", "redstone halt"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "no missile"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_warhead", "no warhead"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "charging"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "no power"),
             GZLang.add(GroundZero.MODID + ".computer.silo.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s")};
 
@@ -443,7 +445,8 @@ public class LaunchComputerScreen extends Screen {
             boolean counting = r == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
             Component state = counting ? Component.translatable(T_SILO_STATE[r], (silo.countdown() + 19) / 20)
                     : silo.armed() ? Component.translatable(T_ARMED) : Component.translatable(T_SILO_STATE[r]);
-            int color = counting ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
+            boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal();
+            int color = counting || down ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
             // Right: how far its target is (or that it has none); left: its number and state, cut to what is left.
             String aim = silo.hasTarget() ? (int) range(silo) + "m" : Component.translatable(T_NO_TARGET).getString();
             int aimW = this.font.width(aim);

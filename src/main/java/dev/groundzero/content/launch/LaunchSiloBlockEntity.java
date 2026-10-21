@@ -49,13 +49,15 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     public static final int SLOT_MISSILE = 0, SLOT_WARHEAD = 1;
     private static final int RECHECK_INTERVAL = 40;
     /** What the silo can do right now (shown on its screen and the computer's). */
-    public enum Readiness { NOT_FORMED, NO_MISSILE, NO_WARHEAD, NO_POWER, READY, COUNTING }
+    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_WARHEAD, NO_POWER, READY, COUNTING }
 
     private static final String[] T_STATE = {
             GZLang.add(GroundZero.MODID + ".silo.state.not_formed", "Structure incomplete"),
+            GZLang.add(GroundZero.MODID + ".silo.state.emp", "Disabled by EMP"),
+            GZLang.add(GroundZero.MODID + ".silo.state.halted", "Halted by redstone"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_missile", "No missile loaded"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_warhead", "No warhead fitted"),
-            GZLang.add(GroundZero.MODID + ".silo.state.no_power", "Charging: needs 100k FE"),
+            GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs 100k FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s")};
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".silo.state.armed", "ARMED");
@@ -86,6 +88,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     public Readiness readiness() {
         if (!isFormed()) {
             return Readiness.NOT_FORMED;
+        }
+        if (isEmpDisabled()) {
+            return Readiness.EMP;
+        }
+        if (redstoneHalted()) {
+            return Readiness.HALTED;
         }
         if (this.countdown >= 0) {
             return Readiness.COUNTING;
@@ -253,6 +261,25 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             liftOff(level, pad);
         }
         return true;
+    }
+
+    /** Knocked out by an EMP, or stopped by redstone: an armed silo is made safe and a countdown is scrubbed. */
+    private void standDown() {
+        if (this.armed || this.countdown >= 0) {
+            this.armed = false;
+            this.countdown = -1;
+            setChanged();
+        }
+    }
+
+    @Override
+    protected void onEmp(ServerLevel level) {
+        standDown();
+    }
+
+    @Override
+    protected void onRedstoneHalt(ServerLevel level) {
+        standDown();
     }
 
     /** T-0: the missile is lit on the pad (it climbs away after its ignition), carrying its warhead. */

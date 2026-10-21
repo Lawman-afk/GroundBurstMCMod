@@ -2050,3 +2050,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Missile warheads are the tactical conventional tier; full-scale nuclear/special/strategic weapons come later with their own launchers, models and far bigger yields. Cluster-type warheads air-burst when delivered; gas, smoke and toxic waste warheads added; bomblets strengthened; the bunker buster bores 3×3. |
 | 2026-10-21 | Slice 6e: gas grid of one block a cell (not 2×2×2), EMP fields and freezing as level systems; the Chemical Bomb is a Chemical Warhead; EMP's redstone and powered-item effects deferred. |
 | 2026-10-21 | Cryo and EMP grenades get cluster warhead versions (14 canisters each, the gas/smoke pattern). |
+| 2026-10-21 | A Launch Silo that is EMP'd or held stopped by redstone refuses to arm or launch (and says why); either one mid-countdown scrubs the launch. |

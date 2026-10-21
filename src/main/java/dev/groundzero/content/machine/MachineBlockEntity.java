@@ -234,9 +234,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                         worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 4, 0.4, 0.4, 0.4, 0.2);
             }
             onEmp(level);
-        } else if (!redstoneMode.allows(level.hasNeighborSignal(worldPosition))) {
+        } else if (redstoneHalted()) {
             status = MachineStatus.REDSTONE;
             active = false;
+            onRedstoneHalt(level);
         } else {
             if (this.emped) {
                 this.emped = false;                            // the field has passed: it reboots
@@ -266,6 +267,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected boolean isEmpDisabled() {
         return this.level != null && dev.groundzero.content.effect.EmpFields.inField(this.level, this.worldPosition);
     }
+
+    /** Whether its redstone setting holds it stopped right now. */
+    protected boolean redstoneHalted() {
+        return this.level != null && !this.redstoneMode.allows(this.level.hasNeighborSignal(this.worldPosition));
+    }
+
+    /** Each tick redstone holds it stopped (instead of working). */
+    protected void onRedstoneHalt(ServerLevel level) {}
 
     /** Whether it is sitting dead in an EMP field. */
     public boolean emped() {

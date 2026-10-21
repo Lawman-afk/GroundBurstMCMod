@@ -260,6 +260,12 @@ public final class FxPhotographer {
                 if (i >= 3) {                                  // two aimed elsewhere
                     silo.setTarget(x - 150 + 60 * i, -200 + 40 * i);
                 }
+                if (i == 3) {                                  // one held stopped by redstone (wants a signal, has none)
+                    silo.cycleRedstoneMode();
+                }
+                if (i == 4) {                                  // one knocked out by an EMP
+                    dev.groundzero.content.effect.EmpFields.add(level, net.minecraft.world.phys.Vec3.atCenterOf(at), 3, 6000, null);
+                }
             }
         }
     }
@@ -522,6 +528,11 @@ public final class FxPhotographer {
                 screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left), false);
                 screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left));
             }
+        }
+        // Then the silo list scrolled down one, to show the last rows (the halted and the EMP'd silo).
+        if (scene.name().equals("launch_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();
+            screen.mouseScrolled(screen.width / 2.0 - 168 + 220, screen.height / 2.0 - 107 + 40, 0, -1);
         }
         // The silo's own screen, a Massive Ordnance Warhead loaded (the longest name).
         if (scene.name().equals("silo_ui") && step >= 0 && clock == 12 && launchSilo != null) {
