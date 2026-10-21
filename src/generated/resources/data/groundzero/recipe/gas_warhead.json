@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:gas_grenade",
+    "groundzero:gas_grenade",
+    "groundzero:gas_grenade",
+    "groundzero:gas_grenade",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:gas_warhead"
+  }
+}

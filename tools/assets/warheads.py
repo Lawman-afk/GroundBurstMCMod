@@ -11,6 +11,9 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - Bunker Buster Warhead: long and slim, dark, a pointed tungsten penetrator nose.
 - Napalm Warhead: silver, a red band (incendiary), a rounded nose.
 - Massive Ordnance Warhead: huge, olive with an orange nose.
+- Poison Gas Warhead: yellow-green clamshell casing (a cluster of gas canisters), a yellow band.
+- Smoke Warhead: grey clamshell casing (a cluster of smoke canisters), a white band.
+- Toxic Waste Warhead: a dark drum of a body, a glowing toxin-green nose and band, a hazard-dashed ring.
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
@@ -44,6 +47,8 @@ BLACK = P.HAZARD_BLACK
 ORANGE = fixed("bomb_orange", "#3e1a06", "#6a2c0a", "#9a4210", "#c45c1a", "#de7a30", "#ee9c5a", "#f8c898")
 CASING = fixed("cluster_casing", "#5a5e62", "#7a7e82", "#9a9ea2", "#b8bcc0", "#d0d4d6", "#e2e4e6", "#f2f4f4")
 TUNGSTEN = fixed("tungsten_nose", "#2a2c30", "#44474c", "#61656b", "#80858b", "#a0a5aa", "#c0c4c8", "#e0e2e4")
+GAS = fixed("gas_casing", "#3a3f12", "#5a6118", "#7c8520", "#9ca82c", "#b8c44a", "#cfd872", "#e4eaa2")
+WASTE = fixed("waste_drum", "#14160e", "#1e2214", "#2a301c", "#363e24", "#46502e", "#58643a", "#6e7a4a")
 DARK = fixed("penetrator_dark", "#16181a", "#202326", "#2c3034", "#3a3e44", "#4a4f56", "#5e646c", "#767c84")
 
 
@@ -87,6 +92,12 @@ WARHEADS = [
          bands=[(5, RED[4])]),
     Spec("massive_warhead", 7, (2, 7.8), 18, ogive(18, 11.5, 6.8, 8, 1.6), (30.4, 0.7), OLIVE, ORANGE,
          bands=[(16, ORANGE[4])]),
+    Spec("gas_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), GAS, GAS,
+         bands=[(8.5, YELLOW[5])], seam=BLACK[3], dashes=(4, YELLOW[3])),
+    Spec("smoke_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), STEEL, STEEL,
+         bands=[(8.5, P.WHITE_CERAMIC[5])], seam=BLACK[3], dashes=(4, P.WHITE_CERAMIC[4])),
+    Spec("toxic_waste_warhead", 5, (1.5, 5.6), 10, ogive(10, 4.5, 4.8, 4, 2.4), (15, 1.2), WASTE, P.TOXIN, WASTE,
+         bands=[(7.5, P.TOXIN[4])], dashes=(4, YELLOW[4])),
 ]
 
 #: A missile's nose for each warhead it can carry: (nose ramp, band colour or None, tip ramp). "none": bare steel.

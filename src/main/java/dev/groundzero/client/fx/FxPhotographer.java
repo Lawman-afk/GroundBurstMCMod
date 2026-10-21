@@ -70,6 +70,7 @@ public final class FxPhotographer {
                 new Scene("silo_ui", "launch", 5, 0, List.of(30)),
                 new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)),
                 new Scene("radar", "radar", 22, -16, List.of(20, 60)),
+                new Scene("airburst", "airburst", 40, -18, List.of(4, 12, 30, 50)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
@@ -202,12 +203,9 @@ public final class FxPhotographer {
             }
             return;
         }
-        var bombs = java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD);
+        var bombs = dev.groundzero.content.ordnance.GZOrdnance.WARHEADS;
         for (int i = 0; i < bombs.size(); i++) {
-            var at = new net.minecraft.core.BlockPos(x + (i % 2) * 3, ground, -6 + i * 2);
+            var at = new net.minecraft.core.BlockPos(x + (i % 2) * 3, ground, -9 + i * 2);
             level.setBlockAndUpdate(at, bombs.get(i).block().get().defaultBlockState().setValue(F, net.minecraft.core.Direction.SOUTH)
                     .setValue(dev.groundzero.content.ordnance.charge.ChargeBlock.ARMED, i % 2 == 0));
         }
@@ -382,6 +380,14 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("mines")) {
                     mines(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("airburst")) {
+                    // A missile with a cluster warhead already high over a target 30 blocks in front of the camera.
+                    Vec3 target = new Vec3(x + 0.5, ground, 0.5);
+                    var f = dev.groundzero.content.launch.Flights.launch(level, target.add(-120, 0, 0), target,
+                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD.item().get()), null);
+                    f.skipForTest(f.ticksToImpact() - 22);
                     return;
                 }
                 if (s.profile().equals("radar")) {

@@ -52,6 +52,27 @@
           "type": "minecraft:model",
           "model": "groundzero:item/basic_missile_massive_warhead"
         }
+      },
+      {
+        "when": "gas_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_gas_warhead"
+        }
+      },
+      {
+        "when": "smoke_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_smoke_warhead"
+        }
+      },
+      {
+        "when": "toxic_waste_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_toxic_waste_warhead"
+        }
       }
     ],
     "fallback": {

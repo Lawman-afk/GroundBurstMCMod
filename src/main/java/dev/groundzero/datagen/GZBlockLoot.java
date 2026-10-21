@@ -51,10 +51,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.LANDMINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.block().get());
-        for (var bomb : java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD,
-                dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD)) {
+        for (var bomb : dev.groundzero.content.ordnance.GZOrdnance.WARHEADS) {
             dropSelf(bomb.block().get());
         }
         // Launching (DESIGN.md §17).

@@ -327,6 +327,23 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.MILITARY_CIRCUIT)
                 .unlockedBy(getHasName(o.heavy), has(o.heavy)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.GAS_WARHEAD.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_WARHEAD.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIC_WASTE_WARHEAD.item(), 1)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
         // Launching (DESIGN.md §17, §26.7): the structures' blocks, the controllers, the Basic Missile.
         var l = new Object() {
             final net.minecraft.world.level.ItemLike pad = dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD.item();

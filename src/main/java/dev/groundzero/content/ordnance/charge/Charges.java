@@ -11,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundzero.blast.Blasts;
 import dev.groundzero.content.ordnance.GZOrdnance;
+import net.minecraft.world.item.ItemStack;
+import dev.groundzero.content.ordnance.ThrownExplosive;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -203,7 +205,12 @@ public final class Charges {
                 Blasts.detonate(level, c, Blasts.profile("napalm_warhead"), by, bombScale);
                 napalm(level, pos);
             }
-            case CLUSTER_WARHEAD -> cluster(level, c, by);
+            case CLUSTER_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD -> cluster(level, kind, c, by);
+            case TOXIC_WASTE_WARHEAD -> {
+                Blasts.detonate(level, c, Blasts.profile("toxic_waste_warhead"), by, bombScale);
+                ThrownExplosive.toxinSplash(level, c, Math.max(1.5f, TOXIC_WASTE_RADIUS * bombScale), level.getRandom());
+                level.playSound(null, pos, net.minecraft.sounds.SoundEvents.SPLASH_POTION_BREAK, SoundSource.BLOCKS, 3f, 0.5f);
+            }
             case THERMOBARIC_WARHEAD -> {
                 // The fuel cloud spreads first; it is lit 0.6 s later.
                 level.sendParticles(ParticleTypes.CLOUD, c.x, c.y, c.z, 160, 3.5, 1.5, 3.5, 0.25);
@@ -236,6 +243,10 @@ public final class Charges {
     public static final int BUNKER_DEPTH = 40, BUNKER_HARD_COST = 10, BUNKER_SPEED = 2;
     /** Cluster: bomblets, and the chance each is a dud (left lying as a live landmine). */
     public static final int CLUSTER_BOMBLETS = 24;
+    /** Gas and smoke warheads: canisters each; the toxic waste warhead's splash radius; how high a missile bursts a cluster. */
+    public static final int CLUSTER_CANISTERS = 14;
+    public static final float TOXIC_WASTE_RADIUS = 10;
+    public static final double AIRBURST_HEIGHT = 30;
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
     /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
     public static final float NAPALM_RADIUS = 10;
@@ -275,8 +286,10 @@ public final class Charges {
     }
 
     /**
-     * A step of the bunker buster boring down: up to two blocks a tick, each costing 1 of its 40 blocks of depth (10 if
-     * obsidian-hard); it stops at anything unbreakable or the bottom of the world, and goes off where it stops.
+     * A step of the bunker buster boring down a 3x3 shaft: up to two layers a tick, each costing 1 of its 40 blocks of
+     * depth (10 if the block under its middle is obsidian-hard); it stops at anything unbreakable under its middle, at
+     * the bottom of the world or when its depth is spent, and goes off where it stops. Unbreakable blocks round the
+     * middle are left standing.
      */
     private static void bore(ServerLevel level, Pending p, @Nullable Entity by) {
         BlockPos at = p.pos();
@@ -289,12 +302,21 @@ public final class Charges {
                 Blasts.detonate(level, Vec3.atCenterOf(at), Blasts.profile("bunker_buster_warhead"), by, bombScale);
                 return;
             }
-            if (!s.isAir()) {
-                if (s.getBlock() instanceof ChargeBlock) {
-                    caughtInBlast(level, next, s);
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    BlockPos cell = next.offset(dx, 0, dz);
+                    BlockState c = level.getBlockState(cell);
+                    if (c.isAir() || c.getDestroySpeed(level, cell) < 0) {
+                        continue;
+                    }
+                    if (c.getBlock() instanceof ChargeBlock) {
+                        caughtInBlast(level, cell, c);
+                    }
+                    if (dx == 0 && dz == 0 || (dx + dz + i) % 2 == 0) {
+                        level.levelEvent(2001, cell, Block.getId(c));   // not every block's dust: it is a lot of blocks
+                    }
+                    level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                 }
-                level.levelEvent(2001, next, Block.getId(s));
-                level.setBlock(next, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
             left -= cost;
             at = next;
@@ -336,15 +358,44 @@ public final class Charges {
         level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 2f, 0.6f);
     }
 
-    /** The cluster bomb's casing bursts and throws its bomblets out, most of them 6-18 blocks away. */
-    private static void cluster(ServerLevel level, Vec3 c, @Nullable Entity by) {
-        Blasts.detonate(level, c, Blasts.profile("cluster_warhead"), by, bombScale);
+    /**
+     * A cluster warhead set off on the ground: its casing bursts and throws its submunitions up and out, most of them
+     * 6-18 blocks away (bomblets, or gas or smoke canisters).
+     */
+    private static void cluster(ServerLevel level, ChargeKind kind, Vec3 c, @Nullable Entity by) {
+        Blasts.detonate(level, c, Blasts.profile(kind.id), by, bombScale);
         var r = level.getRandom();
-        for (int i = 0; i < CLUSTER_BOMBLETS; i++) {
+        int n = kind == ChargeKind.CLUSTER_WARHEAD ? CLUSTER_BOMBLETS : CLUSTER_CANISTERS;
+        for (int i = 0; i < n; i++) {
             double a = i * 2.39996 + r.nextDouble() * 0.4;
             double speed = (0.2 + Math.sqrt(r.nextDouble()) * 0.45) * bombScale;
-            Vec3 v = new Vec3(Math.cos(a) * speed, 0.55 + r.nextDouble() * 0.25, Math.sin(a) * speed);
-            dev.groundzero.content.ordnance.ThrownExplosive.bomblet(level, c.add(0, 0.6, 0), v, by, r.nextFloat() < CLUSTER_DUD_CHANCE);
+            submunition(level, kind, c.add(0, 0.6, 0), new Vec3(Math.cos(a) * speed, 0.55 + r.nextDouble() * 0.25, Math.sin(a) * speed), by, 40);
+        }
+    }
+
+    /**
+     * A cluster warhead bursting in the air over its target (a missile brings it down to {@link #AIRBURST_HEIGHT} over
+     * the ground and sets it off there): its submunitions rain down over a circle about 24 blocks round.
+     */
+    public static void airburst(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
+        Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
+        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, at.x, at.y, at.z, 1, 0, 0, 0, 0);
+        var r = level.getRandom();
+        int n = kind == ChargeKind.CLUSTER_WARHEAD ? CLUSTER_BOMBLETS + 8 : CLUSTER_CANISTERS;
+        for (int i = 0; i < n; i++) {
+            double a = i * 2.39996 + r.nextDouble() * 0.4;
+            double speed = (0.1 + Math.sqrt(r.nextDouble()) * 0.6) * bombScale;   // a fall from 30 up takes about 35 ticks
+            submunition(level, kind, at, new Vec3(Math.cos(a) * speed, -0.15 - r.nextDouble() * 0.2, Math.sin(a) * speed), by, 70 + r.nextInt(20));
+        }
+    }
+
+    /** One bomblet (a dud now and then), or one gas or smoke canister set to go off {@code fuse} ticks on. */
+    private static void submunition(ServerLevel level, ChargeKind kind, Vec3 at, Vec3 v, @Nullable Entity by, int fuse) {
+        var r = level.getRandom();
+        switch (kind) {
+            case GAS_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.GAS_GRENADE.get()), fuse);
+            case SMOKE_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.SMOKE_GRENADE.get()), fuse);
+            default -> ThrownExplosive.bomblet(level, at, v, by, r.nextFloat() < CLUSTER_DUD_CHANCE);
         }
     }
 

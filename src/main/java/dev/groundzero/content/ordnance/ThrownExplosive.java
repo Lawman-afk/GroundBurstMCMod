@@ -107,6 +107,21 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     /** A dud bomblet: lands as a live landmine instead of going off. */
     private boolean dud;
 
+    /**
+     * A grenade thrown out by a warhead (gas or smoke canisters from a cluster warhead) from {@code at}: it flies, lands
+     * and goes off as that grenade does, its fuse {@code fuse} ticks from now.
+     */
+    public static ThrownExplosive canister(ServerLevel level, Vec3 at, Vec3 velocity, @Nullable Entity owner, ItemStack item, int fuse) {
+        ThrownExplosive e = new ThrownExplosive(GZOrdnance.THROWN_EXPLOSIVE.get(), level);
+        e.setOwner(owner);
+        e.setItem(item.copyWithCount(1));
+        e.setPos(at);
+        e.setDeltaMovement(velocity);
+        e.fuse = fuse;
+        level.addFreshEntity(e);
+        return e;
+    }
+
     /** A cluster bomb's bomblet thrown out from {@code at}. */
     public static ThrownExplosive bomblet(ServerLevel level, Vec3 at, Vec3 velocity, @Nullable Entity owner, boolean dud) {
         ThrownExplosive e = new ThrownExplosive(GZOrdnance.THROWN_EXPLOSIVE.get(), level);
@@ -378,14 +393,25 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
      * poisons whatever walks in it), and a heavy dose for anything caught in the splash.
      */
     private void splash(ServerLevel level, Vec3 at) {
-        int r = (int) Math.ceil(TOXIN_RADIUS);
+        toxinSplash(level, at, TOXIN_RADIUS, this.random);
+        level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1f, 0.8f);
+        level.playSound(null, at.x, at.y, at.z, GZOrdnance.STICKY_STICK.get(), SoundSource.NEUTRAL, 1f, 0.7f);
+    }
+
+    /**
+     * Toxin splashed over the floor round {@code at} out to {@code radius}: solid near the middle, spattered toward the
+     * edge (sludge that poisons whatever walks in it), and a heavy dose for anything caught in it. The toxin grenade's
+     * burst, and the Toxic Waste Warhead's (much wider).
+     */
+    public static void toxinSplash(ServerLevel level, Vec3 at, float radius, net.minecraft.util.RandomSource random) {
+        int r = (int) Math.ceil(radius);
         var pos = new BlockPos.MutableBlockPos();
         BlockState sludge = GZOrdnance.TOXIC_SLUDGE.get().defaultBlockState();
         for (int dx = -r; dx <= r; dx++) {
             for (int dz = -r; dz <= r; dz++) {
                 float d2 = dx * dx + dz * dz;
                 // Solid near the middle, spattered toward the edge.
-                if (d2 > TOXIN_RADIUS * TOXIN_RADIUS || this.random.nextFloat() > 1.0f - 0.45f * d2 / (TOXIN_RADIUS * TOXIN_RADIUS)) {
+                if (d2 > radius * radius || random.nextFloat() > 1.0f - 0.45f * d2 / (radius * radius)) {
                     continue;
                 }
                 floor(level, at, dx, dz, pos);
@@ -396,16 +422,16 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 }
             }
         }
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(TOXIN_RADIUS))) {
-            if (e.position().distanceTo(at) <= TOXIN_RADIUS) {
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius))) {
+            if (e.position().distanceTo(at) <= radius) {
                 Toxins.expose(level, e, 3f, 160, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
             }
         }
-        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0x8CE040, 1.6f), at.x, at.y + 0.3, at.z, 60,
-                1.4, 0.3, 1.4, 0.05);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME, at.x, at.y + 0.3, at.z, 30, 0.8, 0.3, 0.8, 0.2);
-        level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1f, 0.8f);
-        level.playSound(null, at.x, at.y, at.z, GZOrdnance.STICKY_STICK.get(), SoundSource.NEUTRAL, 1f, 0.7f);
+        float spread = radius * 0.4f;
+        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0x8CE040, 1.6f), at.x, at.y + 0.3, at.z, (int) (60 * spread / 1.4f),
+                spread, 0.3, spread, 0.05);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME, at.x, at.y + 0.3, at.z, (int) (30 * spread / 1.4f),
+                spread * 0.6, 0.3, spread * 0.6, 0.2);
     }
 
     /** The poison gas cloud: everything alive in it breathes a dose every half second (less in a suit, none in a full one). */

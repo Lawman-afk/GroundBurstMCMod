@@ -42,7 +42,13 @@ public enum ChargeKind {
     /** A small burst and a pool of napalm 10 blocks round that burns for 30 s, rain or not. */
     NAPALM_WARHEAD("napalm_warhead", 10, true),
     /** The biggest conventional warhead: crater 28, deadly out to 40. */
-    MASSIVE_WARHEAD("massive_warhead", 10, true);
+    MASSIVE_WARHEAD("massive_warhead", 10, true),
+    /** A cluster of poison gas canisters: 14 gas clouds over a wide area. */
+    GAS_WARHEAD("gas_warhead", 10, true),
+    /** A cluster of smoke canisters: 14 smoke clouds over a wide area, screening it. */
+    SMOKE_WARHEAD("smoke_warhead", 10, true),
+    /** A burst of toxic waste: sludge splashed 10 blocks round, a heavy dose of toxin for anything in it. */
+    TOXIC_WASTE_WARHEAD("toxic_waste_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -77,6 +83,14 @@ public enum ChargeKind {
         this.seconds = seconds;
         this.sensor = sensor;
         this.bomb = bomb;
+    }
+
+    /**
+     * A cluster warhead: carried by a missile, it bursts high over its target and rains its submunitions down over a
+     * wide area (set off on the ground, it throws them out round itself).
+     */
+    public boolean airburst() {
+        return this == CLUSTER_WARHEAD || this == GAS_WARHEAD || this == SMOKE_WARHEAD;
     }
 
     /** Placed facing the way the player looks (its front away from them): the claymore, and bombs (nose away). */

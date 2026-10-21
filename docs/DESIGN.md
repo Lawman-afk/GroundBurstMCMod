@@ -1169,6 +1169,15 @@ are delivered.
   mounting ring (ogive noses, each its own colours and bands); still armable charges with an impact fuze. The napalm
   warhead throws a pool 10 blocks round (no length to spread along). A missile's nose is painted as its warhead (item
   model variants chosen by custom model data in flight; nose bones on the silo model).
+- **Scale.** These warheads and the Basic Missile are the **tactical, conventional tier** (size classes S/M of §9):
+  deliberately far weaker than the full-scale weapons still to come (the nuclear and special bombs of §15-16, the L/XL
+  casings and strategic missiles of §9, the superweapons of §19), which arrive with their own launch structures,
+  their own custom models and far bigger yields.
+- **More warheads** (after the in-game look): Poison Gas and Smoke Warheads (clusters of 14 gas or smoke grenades) and
+  a Toxic Waste Warhead (a toxin splash 10 blocks round). Missile-delivered cluster warheads (cluster, gas, smoke)
+  **air-burst** 30 blocks over the target and rain their submunitions over a circle about 24 blocks round (32
+  bomblets for the cluster); set off on the ground they throw them out as before. Bomblets were strengthened
+  (crater 4, deadly to 4.5 blocks). The bunker buster bores a **3×3** shaft.
 - **Launch Silo** (`launch_silo`): a 3×3 Launch Pad layer with the controller in the middle of its front edge and an
   Energy Port in the middle of its back edge, a 9-high Gantry Frame tower beside the pad's middle row with a Gantry
   Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands (8 blocks tall, the
@@ -2011,3 +2020,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Missile flights are tracked as saved data, not by the entity: the entity froze when it flew into a chunk it had not yet ticket-loaded (it could not tick to add the ticket). |
 | 2026-10-21 | The Launch Computer's screen is a terrain map (what is being aimed at matters more than a sweep); the sweeping radar moves to a new Radar Array multiblock, the future source of tracks for anti-missile defence. Map data is a saved survey of chunks loaded near computers, never generating chunks. |
 | 2026-10-21 | The Radar Array's crown is one Large Radar Dish (a 3×3 placed by one item), not nine small dishes; the sweep turns 25% faster (4.8 s). |
+| 2026-10-21 | Missile warheads are the tactical conventional tier; full-scale nuclear/special/strategic weapons come later with their own launchers, models and far bigger yields. Cluster-type warheads air-burst when delivered; gas, smoke and toxic waste warheads added; bomblets strengthened; the bunker buster bores 3×3. |

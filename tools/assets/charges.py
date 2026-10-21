@@ -104,6 +104,7 @@ def c4(n: int) -> list[str]:
         m.box(f"brick{i}", (3, 2.5 * i, 5), (13, 2.5 * (i + 1), 11), faces=faces)
     for k, x in enumerate((4.5, 10.5)):
         m.box(f"tape{k}", (x, 0, 4.8), (x + 1, top + 0.2, 11.2), faces=("north", "south", "east", "west", "up"))
+    m.open_ok = {("tape0", "down"), ("tape1", "down")}             # the brick's own bottom is under them
     m.box("detonator", (6, top, 6.5), (8.6, top + 1.2, 9.5), faces=("north", "south", "east", "west", "up"))
     m.box("lead_red", (8.6, top, 7.0), (10.3, top + 0.35, 7.4), faces=("north", "south", "east", "up"))
     m.box("lead_black", (8.6, top, 8.6), (10.3, top + 0.35, 9.0), faces=("north", "south", "east", "up"))
@@ -379,8 +380,8 @@ def remote_detonator() -> Tex:
     whip antenna with a ball on its tip."""
     t = Tex(16, 16)
     g, s = GUNMETAL, STEEL
-    t.rect(5, 1, 1, 6, s.base)                                     # antenna
-    t.px(5, 0, s.light)
+    t.rect(5, 2, 1, 5, s.base)                                     # antenna (one short of the top: room for its outline)
+    t.px(5, 1, s.light)
     t.rect(4, 6, 8, 9, g.base)                                     # body
     t.vline(4, 6, 9, g.light)
     t.hline(4, 6, 8, g.light)

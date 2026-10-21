@@ -145,6 +145,12 @@ public final class Flights extends SavedData {
             return (int) (this.id.getMostSignificantBits() ^ this.id.getLeastSignificantBits());
         }
 
+        /** For pictures and tests: jump ahead along its flight. */
+        public void skipForTest(int ticks) {
+            this.age += Math.max(0, ticks);
+            this.pos = at(this.age);
+        }
+
         /** Ticks until it comes down (if nothing is in its way). */
         public int ticksToImpact() {
             return Math.max(0, MissileEntity.IGNITION + this.flightTicks - this.age);
@@ -201,6 +207,14 @@ public final class Flights extends SavedData {
                     this.tilt = (float) Math.toDegrees(Math.atan2(Math.sqrt(v.x * v.x + v.z * v.z), v.y));
                 }
                 this.pos = to;
+                // A cluster warhead bursts in the air on the way down, over the target.
+                if (s > 0.5 && v.y < 0 && to.y - this.target.y <= dev.groundzero.content.ordnance.charge.Charges.AIRBURST_HEIGHT
+                        && this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb && bomb.kind.airburst()) {
+                    Entity by = this.owner == null ? null : level.getEntity(this.owner);
+                    dev.groundzero.content.ordnance.charge.Charges.airburst(level, bomb.kind, to, by);
+                    finish(level);
+                    return true;
+                }
                 if (s >= 1) {
                     impact(level, this.target);
                     return true;
@@ -275,6 +289,11 @@ public final class Flights extends SavedData {
             if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
                 Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by);
             }
+            finish(level);
+        }
+
+        /** Done: the missile players see goes, and so do its chunk tickets. */
+        private void finish(ServerLevel level) {
             if (level.getEntity(this.id) instanceof MissileEntity m) {
                 m.discard();
             }

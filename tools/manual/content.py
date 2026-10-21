@@ -830,7 +830,8 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
 ])
 
 entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
-                                                      "bunker_buster_warhead", "napalm_warhead", "massive_warhead"], [
+                                                      "bunker_buster_warhead", "napalm_warhead", "massive_warhead", "gas_warhead",
+                                                      "smoke_warhead", "toxic_waste_warhead"], [
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
@@ -846,10 +847,10 @@ The same, a size up: a crater about 12 blocks across.
 Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but the burning overpressure reaches 24 blocks, and anything with no open sky above it (indoors, in a cave) is hurt far worse.
 """),
     spot("cluster_warhead", """
-Its casing splits and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
+Delivered by a missile, it bursts **30 blocks over its target** and rains **32 bomblets** over a circle about 24 blocks round; set off on the ground, it throws 24 of them up and out to about 18 blocks. Each bomblet goes off where it lands with a blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
 """),
     spot("bunker_buster_warhead", """
-A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores up to 40 blocks down first (obsidian-hard blocks cost more) and goes off at the bottom.
+A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores a **3 by 3 shaft** up to 40 blocks down first (obsidian-hard blocks under its middle cost more; unbreakable ones stop it) and goes off at the bottom.
 """),
     spot("napalm_warhead", """
 A small burst and a pool of **napalm** about 10 blocks round. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
@@ -863,7 +864,19 @@ The biggest conventional warhead: a 28-block crater and deadly out to 40. Stand 
     craft("cluster_warhead"),
     craft("bunker_buster_warhead"),
     craft("napalm_warhead"),
+    spot("gas_warhead", """
+A cluster of **poison gas** canisters. Delivered by a missile, it bursts high over its target and drops 14 canisters across a wide area; each lands and pours out a cloud of chlorine like a [gas grenade](ordnance/chemical). Set off on the ground, it throws them out round itself.
+"""),
+    spot("smoke_warhead", """
+The same with **smoke**: 14 smoke canisters over a wide area, a screen that hides whoever is in it.
+"""),
+    spot("toxic_waste_warhead", """
+A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught in it gets a heavy dose of toxin, and the sludge poisons anything that walks through it until it dries out.
+"""),
     craft("massive_warhead"),
+    craft("gas_warhead"),
+    craft("smoke_warhead"),
+    craft("toxic_waste_warhead"),
 ])
 
 entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",

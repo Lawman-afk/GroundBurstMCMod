@@ -88,6 +88,16 @@ public final class GZOrdnance {
             "Napalm Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.NAPALM_WARHEAD);
     public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> MASSIVE_WARHEAD = bomb("massive_warhead",
             "Massive Ordnance Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.MASSIVE_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> GAS_WARHEAD = bomb("gas_warhead",
+            "Poison Gas Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.GAS_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> SMOKE_WARHEAD = bomb("smoke_warhead",
+            "Smoke Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.SMOKE_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> TOXIC_WASTE_WARHEAD = bomb(
+            "toxic_waste_warhead", "Toxic Waste Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.TOXIC_WASTE_WARHEAD);
+    /** Every warhead, in the order the creative tab and the Field Manual show them. */
+    public static final java.util.List<dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock>> WARHEADS =
+            java.util.List.of(HE_WARHEAD, HEAVY_WARHEAD, THERMOBARIC_WARHEAD, CLUSTER_WARHEAD, BUNKER_BUSTER, NAPALM_WARHEAD, MASSIVE_WARHEAD,
+                    GAS_WARHEAD, SMOKE_WARHEAD, TOXIC_WASTE_WARHEAD);
     /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundzero.registry.GZBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
@@ -101,7 +111,8 @@ public final class GZOrdnance {
                     dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
                     THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get(), LANDMINE.block().get(), BOUNCING_MINE.block().get(),
                     CLAYMORE.block().get(), HE_WARHEAD.block().get(), HEAVY_WARHEAD.block().get(), THERMOBARIC_WARHEAD.block().get(),
-                    CLUSTER_WARHEAD.block().get(), BUNKER_BUSTER.block().get(), NAPALM_WARHEAD.block().get(), MASSIVE_WARHEAD.block().get()));
+                    CLUSTER_WARHEAD.block().get(), BUNKER_BUSTER.block().get(), NAPALM_WARHEAD.block().get(), MASSIVE_WARHEAD.block().get(),
+                    GAS_WARHEAD.block().get(), SMOKE_WARHEAD.block().get(), TOXIC_WASTE_WARHEAD.block().get()));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

@@ -367,8 +367,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** The silo model's nose bones (tools/assets/launch.py), one per warhead. */
-    private static final List<String> NOSES = List.of("nose_none", "nose_he_warhead", "nose_heavy_warhead", "nose_thermobaric_warhead",
-            "nose_cluster_warhead", "nose_bunker_buster_warhead", "nose_napalm_warhead", "nose_massive_warhead");
+    private static final List<String> NOSES = java.util.stream.Stream.concat(java.util.stream.Stream.of("nose_none"),
+            dev.groundzero.content.ordnance.GZOrdnance.WARHEADS.stream().map(w -> "nose_" + w.block().getId().getPath())).toList();
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

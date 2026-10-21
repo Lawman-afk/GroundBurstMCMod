@@ -9,7 +9,10 @@
     "groundzero:cluster_warhead",
     "groundzero:bunker_buster_warhead",
     "groundzero:napalm_warhead",
-    "groundzero:massive_warhead"
+    "groundzero:massive_warhead",
+    "groundzero:gas_warhead",
+    "groundzero:smoke_warhead",
+    "groundzero:toxic_waste_warhead"
   ],
   "pages": [
     {
@@ -34,12 +37,12 @@
     {
       "type": "spotlight",
       "item": "groundzero:cluster_warhead",
-      "text": "Its casing splits and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine."
+      "text": "Delivered by a missile, it bursts **30 blocks over its target** and rains **32 bomblets** over a circle about 24 blocks round; set off on the ground, it throws 24 of them up and out to about 18 blocks. Each bomblet goes off where it lands with a blast of its own. One in twenty is a dud that lies where it fell as a live landmine."
     },
     {
       "type": "spotlight",
       "item": "groundzero:bunker_buster_warhead",
-      "text": "A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores up to 40 blocks down first (obsidian-hard blocks cost more) and goes off at the bottom."
+      "text": "A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores a **3 by 3 shaft** up to 40 blocks down first (obsidian-hard blocks under its middle cost more; unbreakable ones stop it) and goes off at the bottom."
     },
     {
       "type": "spotlight",
@@ -82,8 +85,38 @@
       "text": ""
     },
     {
+      "type": "spotlight",
+      "item": "groundzero:gas_warhead",
+      "text": "A cluster of **poison gas** canisters. Delivered by a missile, it bursts high over its target and drops 14 canisters across a wide area; each lands and pours out a cloud of chlorine like a [gas grenade](ordnance/chemical). Set off on the ground, it throws them out round itself."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:smoke_warhead",
+      "text": "The same with **smoke**: 14 smoke canisters over a wide area, a screen that hides whoever is in it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:toxic_waste_warhead",
+      "text": "A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught in it gets a heavy dose of toxin, and the sludge poisons anything that walks through it until it dries out."
+    },
+    {
       "type": "crafting",
       "item": "groundzero:massive_warhead",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:gas_warhead",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:smoke_warhead",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:toxic_waste_warhead",
       "text": ""
     }
   ]
