@@ -28,7 +28,8 @@ final class BombTests {
         GZGameTests.test("he_bomb_goes_off_on_its_frequency", GZGameTests.FLOOR_16, 40, BombTests::signal);
         GZGameTests.test("armed_bomb_goes_off_when_it_lands", GZGameTests.FLOOR_16, 80, BombTests::impact);
         GZGameTests.test("safe_bomb_falls_and_lands_whole", GZGameTests.FLOOR_16, 80, BombTests::safeFall);
-        GZGameTests.test("bunker_buster_bores_through_obsidian", GZGameTests.FLOOR_16, 60, BombTests::bunker);
+        GZGameTests.test("bunker_buster_goes_off_where_it_stands", GZGameTests.FLOOR_16, 40, BombTests::bunker);
+        GZGameTests.test("bunker_buster_penetrates_when_delivered", GZGameTests.FLOOR_16, 60, BombTests::penetrate);
         GZGameTests.test("thermobaric_lights_its_cloud_a_moment_later", GZGameTests.FLOOR_16, 60, BombTests::thermobaric);
         GZGameTests.test("cluster_bomb_scatters_bomblets", GZGameTests.FLOOR_16, 20, BombTests::cluster);
         GZGameTests.test("napalm_bomb_lays_burning_napalm", GZGameTests.FLOOR_16, 20, BombTests::napalm);
@@ -90,15 +91,24 @@ final class BombTests {
         });
     }
 
-    /** A bunker buster on a stone column with an obsidian layer bores straight down through both. */
+    /** Set off where it stands, a bunker buster is just a bomb: it blows a crater and bores nothing. */
     private static void bunker(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 2, 8);
+        ChargeBlockEntity be = place(helper, GZOrdnance.BUNKER_BUSTER.block().get(), at, Direction.NORTH, false);
+        be.arm(helper.getLevel(), null);
+        be.trigger(helper.getLevel(), null);
+        helper.assertTrue(!Charges.pendingAt(helper.getLevel(), helper.absolutePos(at)), "no boring");
+        helper.succeedWhen(() -> helper.assertTrue(is(helper, new BlockPos(8, 1, 8), Blocks.AIR), "a crater where it stood"));
+    }
+
+    /** Delivered at speed (the penetrate call missiles will use), it bores down through stone and obsidian. */
+    private static void penetrate(GameTestHelper helper) {
         floor(helper);
         for (int y = 2; y <= 9; y++) {
             helper.setBlock(new BlockPos(8, y, 8), y == 4 ? Blocks.OBSIDIAN : Blocks.STONE);
         }
-        ChargeBlockEntity be = place(helper, GZOrdnance.BUNKER_BUSTER.block().get(), new BlockPos(8, 10, 8), Direction.NORTH, false);
-        be.arm(helper.getLevel(), null);
-        be.trigger(helper.getLevel(), null);
+        Charges.penetrate(helper.getLevel(), helper.absolutePos(new BlockPos(8, 10, 8)), null);
         helper.succeedWhen(() -> {
             for (int y = 2; y <= 9; y++) {
                 helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, y, 8))).isAir(), "bored through at y " + y);
@@ -134,10 +144,10 @@ final class BombTests {
         helper.succeed();
     }
 
-    /** The napalm bomb lays burning napalm ahead of its nose. */
+    /** The napalm bomb lays burning napalm both ways along its length. */
     private static void napalm(GameTestHelper helper) {
         floor(helper);
-        BlockPos at = new BlockPos(3, 2, 8);
+        BlockPos at = new BlockPos(8, 2, 8);
         ChargeBlockEntity be = place(helper, GZOrdnance.NAPALM_BOMB.block().get(), at, Direction.EAST, false);
         be.arm(helper.getLevel(), null);
         be.trigger(helper.getLevel(), null);
@@ -151,7 +161,7 @@ final class BombTests {
                 }
             }
         }
-        helper.assertTrue(ahead >= 5 && ahead > behind * 3, "napalm ahead of it (" + ahead + " ahead, " + behind + " behind)");
+        helper.assertTrue(ahead >= 3 && behind >= 3, "napalm both ways along it (" + ahead + " east, " + behind + " west)");
         helper.succeed();
     }
 

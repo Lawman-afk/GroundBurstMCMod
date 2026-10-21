@@ -36,9 +36,9 @@ public enum ChargeKind {
     THERMOBARIC_BOMB("thermobaric_bomb", 10, true),
     /** Bursts and scatters 24 bomblets over about 18 blocks; one in twenty is a dud that lies there as a live mine. */
     CLUSTER_BOMB("cluster_bomb", 10, true),
-    /** Bores up to 40 blocks straight down (obsidian costs 10) before it goes off: crater 9. */
+    /** Crater 9 where it stands; delivered at speed (Phase 9) it first bores up to 40 blocks down (obsidian costs 10). */
     BUNKER_BUSTER("bunker_buster", 10, true),
-    /** A small burst and a 30 x 12 ellipse of napalm ahead of its nose that burns for 30 s, rain or not. */
+    /** A small burst and a 30 x 12 ellipse of napalm along its length that burns for 30 s, rain or not. */
     NAPALM_BOMB("napalm_bomb", 10, true),
     /** The biggest conventional bomb: crater 28, deadly out to 40. */
     MOAB("moab", 10, true);

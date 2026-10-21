@@ -200,10 +200,8 @@ public final class Charges {
                 level.playSound(null, pos, GZOrdnance.FUEL_DISPERSE.get(), SoundSource.BLOCKS, 2f, 1f);
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
-            case BUNKER_BUSTER -> {
-                level.playSound(null, pos, GZOrdnance.BOMB_DRILL.get(), SoundSource.BLOCKS, 2f, 1f);
-                schedule(level, new Pending(kind, pos, facing, BUNKER_DEPTH, by == null ? null : by.getUUID(), level.getGameTime() + 1, BORE));
-            }
+            // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
+            case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster"), by, bombScale);
         }
     }
 
@@ -216,7 +214,7 @@ public final class Charges {
     /** Cluster: bomblets, and the chance each is a dud (left lying as a live landmine). */
     public static final int CLUSTER_BOMBLETS = 24;
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
-    /** Napalm: the ellipse's half-length (along the nose) and half-width. */
+    /** Napalm: the ellipse's half-length (along the bomb) and half-width. */
     public static final float NAPALM_HALF_LENGTH = 15, NAPALM_HALF_WIDTH = 6;
 
     private static void schedule(ServerLevel level, Pending p) {
@@ -241,6 +239,16 @@ public final class Charges {
                 e.hurtServer(level, Blasts.damageSource(level, by, c), THERMOBARIC_INDOOR_DAMAGE * (float) (1 - d / reach));
             }
         }
+    }
+
+    /**
+     * A bunker buster arriving at speed (a missile, a drop: delivery systems come in Phase 9) at {@code pos}: it bores
+     * straight down, then goes off where it stops.
+     */
+    public static void penetrate(ServerLevel level, BlockPos pos, @Nullable Entity by) {
+        level.playSound(null, pos, GZOrdnance.BOMB_DRILL.get(), SoundSource.BLOCKS, 2f, 1f);
+        schedule(level, new Pending(ChargeKind.BUNKER_BUSTER, pos.immutable(), Direction.NORTH, BUNKER_DEPTH, by == null ? null : by.getUUID(),
+                level.getGameTime() + 1, BORE));
     }
 
     /**
@@ -273,12 +281,12 @@ public final class Charges {
         schedule(level, new Pending(p.kind(), at, p.facing(), left, p.owner(), level.getGameTime() + 1, BORE));
     }
 
-    /** Napalm over the ground in an ellipse ahead of the bomb's nose, most of it alight. */
+    /** Napalm over the ground in an ellipse centred on the bomb, long along its body, most of it alight. */
     private static void napalm(ServerLevel level, BlockPos pos, Direction facing) {
         Vec3 ahead = Vec3.atLowerCornerOf(facing.getUnitVec3i());
         Vec3 side = Vec3.atLowerCornerOf(facing.getClockWise().getUnitVec3i());
         float halfLength = NAPALM_HALF_LENGTH * bombScale, halfWidth = Math.max(1, NAPALM_HALF_WIDTH * bombScale);
-        Vec3 centre = Vec3.atCenterOf(pos).add(ahead.scale(halfLength * 0.8));
+        Vec3 centre = Vec3.atCenterOf(pos);
         BlockState fire = GZOrdnance.NAPALM_FIRE.get().defaultBlockState();
         var r = level.getRandom();
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();

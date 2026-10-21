@@ -988,10 +988,11 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 - **Cluster Bomb**: a small burst (`cluster_bomb`) and 24 bomblets (`ThrownExplosive`, `GrenadeType.BOMBLET`, impact,
   `cluster_bomblet` profile: crater 2.5) thrown out at 0.2-0.65 blocks a tick and 0.55-0.8 up (most land 6-18 blocks
   away); 5% are duds, which land as armed landmines. The Cluster Bomblet item can be thrown too.
-- **Bunker Buster**: bores straight down 2 blocks a tick, 40 blocks of depth (obsidian-hard blocks cost 10; bedrock
-  or the world's floor stops it), then `bunker_buster` (core 3.5, crater 9) where it stopped.
-- **Napalm Bomb**: `napalm_bomb` (crater 2, fire 6) and **Napalm Fire** over the floor in an ellipse 30 x 12 ahead of
-  its nose (90% near the middle, thinner at the edge): 30 s in four stages, not put out by rain, ignites (10 s) and
+- **Bunker Buster**: set off where it stands, just `bunker_buster` (core 3.5, crater 9). `Charges.penetrate` (for
+  delivery at speed, Phase 9) bores straight down 2 blocks a tick, 40 blocks of depth (obsidian-hard blocks cost 10;
+  bedrock or the world's floor stops it), then goes off where it stopped.
+- **Napalm Bomb**: `napalm_bomb` (crater 2, fire 6) and **Napalm Fire** over the floor in an ellipse 30 x 12 centred
+  on it, long along its body (it is symmetrical; 90% near the middle, thinner at the edge): 30 s in four stages, not put out by rain, ignites (10 s) and
   burns (2 every half second) anything in it, now and then lights flammable blocks beside it; drawn with vanilla's fire.
 - `Charges.bombScale` (1 in play) scales every bomb's reach for GameTests, keeping them in their plot.
 
@@ -1949,3 +1950,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6c feedback: mines are live as soon as armed (no grace); the claymore hurts only through its forward fragments; gas Poison III, toxin Poison IV with nausea. |
 | 2026-10-21 | Claymore: its bang is only particles and a sound, and its fragments are an even, heavier cone whose every hit counts, so it kills at half its range. |
 | 2026-10-21 | Slice 6d bombs: placed charges with an impact fuze, made gravity blocks so they can be armed and dropped; special bombs staged through the charge scheduler (thermobaric ignition, bunker buster bore); napalm as its own long-lived fire block rain cannot put out; cluster duds become armed landmines. |
+| 2026-10-21 | Bombs feedback: model bodies keep every outer face (no slits or end rings); a placed bunker buster just explodes (boring waits for delivery at speed); napalm spreads both ways along the symmetrical canister. |

@@ -849,10 +849,10 @@ Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but
 Bursts and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
 """),
     spot("bunker_buster", """
-Bores straight down up to 40 blocks before it goes off (anything as hard as obsidian costs 10 of them), then blows a 9-block crater down there. Bedrock stops it.
+A 9-block crater where it stands. Built to punch through bunkers: once there are launchers to deliver it at speed, it will bore up to 40 blocks down first.
 """),
     spot("napalm_bomb", """
-A small burst and an ellipse of **napalm** 30 blocks long and 12 wide ahead of its nose. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
+A small burst and an ellipse of **napalm** 30 blocks long and 12 wide, along its length. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
 """),
     spot("moab", """
 The biggest conventional bomb: a 28-block crater and deadly out to 40. Stand well clear.

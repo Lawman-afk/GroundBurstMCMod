@@ -8,7 +8,8 @@ core box and a box above and below it (never overlapping), stepped down toward t
 - Thermobaric Bomb: stubby and grey, two orange bands, a blunt nose with a nozzle ring.
 - Cluster Bomb: pale grey clamshell casing with a dark split seam along its top and sides, a yellow band.
 - Bunker Buster: long and slender, dark grey, a pointed tungsten nose, small fins.
-- Napalm Bomb: a silver finless canister with a red band, rounded at both ends.
+- Napalm Bomb: a silver finless canister with a red band, rounded at both ends (symmetrical: its napalm spreads both
+  ways along it).
 - MOAB: huge, olive with an orange nose section, lattice fins (cut out).
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
@@ -42,8 +43,10 @@ TUNGSTEN = fixed("tungsten_nose", "#2a2c30", "#44474c", "#61656b", "#80858b", "#
 
 def hprism(m: BlockModel, name: str, cy: float, r: float, w: float, z0: float, z1: float, cx: float = 8,
            ends: tuple[str, ...] = ("north", "south")) -> list[str]:
-    """A rounded column lying along z: a core box (full width) and boxes above and below it (full height)."""
-    m.box(f"{name}_c", (cx - r, cy - w, z0), (cx + r, cy + w, z1), faces=("east", "west") + ends)
+    """A rounded column lying along z: a core box (full width) and boxes above and below it (full height). The core
+    keeps its top and bottom (its shoulders show either side of the boxes on it), and every box its ends, so no gaps
+    show along the body or round the steps."""
+    m.box(f"{name}_c", (cx - r, cy - w, z0), (cx + r, cy + w, z1), faces=("east", "west", "up", "down") + ends)
     m.box(f"{name}_u", (cx - w, cy + w, z0), (cx + w, cy + r, z1), faces=("up", "east", "west") + ends)
     m.box(f"{name}_d", (cx - w, cy - r, z0), (cx + w, cy - w, z1), faces=("down", "east", "west") + ends)
     return [f"{name}_c", f"{name}_u", f"{name}_d"]
@@ -60,7 +63,7 @@ def bomb(name: str, z0: float, z1: float, r: float, *, body, nose_paint=None, no
     w = round(r * 0.66, 2)
     body_z0 = z0 + sum(s[0] for s in nose)
     body_z1 = z1 - sum(s[0] for s in tail)
-    parts = {"body": hprism(m, "body", cy, r, w, body_z0, body_z1, ends=())}
+    parts = {"body": hprism(m, "body", cy, r, w, body_z0, body_z1)}
     z = body_z0
     nose_boxes = []
     for i, (length, rad) in enumerate(nose):                     # stepping down toward the tip
