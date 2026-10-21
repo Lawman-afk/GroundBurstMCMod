@@ -38,6 +38,12 @@ public final class GZBlastData {
                 ejecta, 0f, terrain, instant, Optional.empty(), Optional.empty());
     }
 
+    /** A profile drawn with a particular visual set (its sound set stays chosen by size). */
+    private static BlastProfile visual(BlastProfile p, String set) {
+        return new BlastProfile(p.core(), p.crater(), p.structural(), p.scorch(), p.fire(), p.entities(), p.frontSpeed(), p.craterDepth(),
+                p.lobes(), p.streaks(), p.ejecta(), p.drops(), p.terrain(), p.instant(), p.sound(), Optional.of(set));
+    }
+
     private static void profiles(BootstrapContext<BlastProfile> ctx) {
         // core, crater, structural, scorch, fire, lethal, damage, speed, depth, lobes, streaks, ejecta, lethal dmg, edge dmg, knockback
         ctx.register(Blasts.profile("test/small"), profile(1, 3, 5, 4, 0, 3, 6, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.0f,
@@ -71,12 +77,12 @@ public final class GZBlastData {
         ctx.register(Blasts.profile("bouncing_mine"), profile(0.3f, 1, 3, 2, 0, 4, 9, 4, 0.5f, 0, 0.1f, 0.1f, 25, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         // Bombs (slice 6d). The thermobaric's crater is weak (shallow) but its overpressure reaches far and burns.
-        ctx.register(Blasts.profile("he_bomb"), profile(2.5f, 6, 10, 8, 0, 7, 14, 4, 0.75f, 0.12f, 0.3f, 0.4f, 50, 15, 2.2f,
-                TerrainTable.CONVENTIONAL, Optional.empty()));
-        ctx.register(Blasts.profile("heavy_bomb"), profile(5, 12, 20, 16, 0, 14, 28, 3, 0.75f, 0.15f, 0.3f, 0.5f, 80, 25, 3.0f,
-                TerrainTable.CONVENTIONAL, Optional.empty()));
-        ctx.register(Blasts.profile("thermobaric_bomb"), profile(3, 12, 24, 20, 16, 24, 40, 3, 0.45f, 0.1f, 0.2f, 0.3f, 70, 30, 3.5f,
-                TerrainTable.CONVENTIONAL, Optional.empty()));
+        ctx.register(Blasts.profile("he_bomb"), visual(profile(2.5f, 6, 10, 8, 0, 7, 14, 4, 0.75f, 0.12f, 0.3f, 0.4f, 50, 15, 2.2f,
+                TerrainTable.CONVENTIONAL, Optional.empty()), "he"));
+        ctx.register(Blasts.profile("heavy_bomb"), visual(profile(5, 12, 20, 16, 0, 14, 28, 3, 0.75f, 0.15f, 0.3f, 0.5f, 80, 25, 3.0f,
+                TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
+        ctx.register(Blasts.profile("thermobaric_bomb"), visual(profile(3, 12, 24, 20, 16, 24, 40, 3, 0.45f, 0.1f, 0.2f, 0.3f, 70, 30, 3.5f,
+                TerrainTable.CONVENTIONAL, Optional.empty()), "thermobaric"));
         ctx.register(Blasts.profile("cluster_bomb"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("cluster_bomblet"), profile(0.8f, 2.5f, 4, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 9, 1.4f,
@@ -85,9 +91,9 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.empty()));
         ctx.register(Blasts.profile("napalm_bomb"), profile(0.5f, 2, 4, 6, 6, 3, 8, 4, 0.6f, 0.1f, 0.2f, 0.2f, 25, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
-        // The MOAB: a grey dust cloud rather than a fireball, so the large set, not the nuclear one.
+        // The MOAB: a grey dust mushroom rather than a nuclear fireball (its own visual set; the large sounds).
         ctx.register(Blasts.profile("moab"), new BlastProfile(10, 28, 40, 34, 10, new BlastProfile.EntityZones(40, 70, 200, 60, 5.0f), 2.5f,
-                0.7f, 0.15f, 0.3f, 0.6f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("large"), Optional.of("large")));
+                0.7f, 0.15f, 0.3f, 0.6f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("large"), Optional.of("moab")));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("incendiary_grenade"), profile(0, 1, 2, 4, 4, 1.5f, 4, 4, 0.7f, 0f, 0f, 0f, 8, 4, 0.6f,

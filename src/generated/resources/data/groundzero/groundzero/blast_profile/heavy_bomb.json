@@ -12,5 +12,6 @@
   },
   "front_speed": 3.0,
   "scorch": 16.0,
-  "structural": 20.0
+  "structural": 20.0,
+  "visual": "heavy"
 }

@@ -995,6 +995,12 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   on it, long along its body (it is symmetrical; 90% near the middle, thinner at the edge): 30 s in four stages, not put out by rain, ignites (10 s) and
   burns (2 every half second) anything in it, now and then lights flammable blocks beside it; drawn with vanilla's fire.
 - `Charges.bombScale` (1 in play) scales every bomb's reach for GameTests, keeping them in their plot.
+- **Feel pass (after the in-game look):** bombs get their own visual sets (`FxPreset`): `he` (a medium blast with a
+  hard shock ring, more shake and debris), `heavy` (a bigger fireball, a debris column, a smoke pall), `thermobaric`
+  (a fireball 1.5 craters wide rolling low, embers, a scorched sky) and `moab` (a weak flash, a great dust ring and a
+  grey dust mushroom that hangs for 100 s: `MushroomCloud` gained a dusty mode, barely glowing). A bomb that falls 8
+  blocks or more whistles all the way down (`bomb.whistle`, bound to the falling block) and lands harder: its reach
+  grows with the fall, up to 30% for 24 blocks.
 
 ## 15. Nuclear weapons
 
@@ -1951,3 +1957,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Claymore: its bang is only particles and a sound, and its fragments are an even, heavier cone whose every hit counts, so it kills at half its range. |
 | 2026-10-21 | Slice 6d bombs: placed charges with an impact fuze, made gravity blocks so they can be armed and dropped; special bombs staged through the charge scheduler (thermobaric ignition, bunker buster bore); napalm as its own long-lived fire block rain cannot put out; cluster duds become armed landmines. |
 | 2026-10-21 | Bombs feedback: model bodies keep every outer face (no slits or end rings); a placed bunker buster just explodes (boring waits for delivery at speed); napalm spreads both ways along the symmetrical canister. |
+| 2026-10-21 | Bomb feel: per-bomb visual sets (HE, heavy, thermobaric fireball, MOAB dust mushroom), a whistle on long drops and a harder landing the further they fall. Bigger weapons' feel comes chiefly from delivery (missiles), so a basic launch site is built next, ahead of Phase 9. |

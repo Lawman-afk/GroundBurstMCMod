@@ -186,6 +186,15 @@
     ],
     "subtitle": "subtitles.groundzero.bomb.fuel_disperse"
   },
+  "bomb.whistle": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundzero:ordnance/bomb_whistle"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.bomb.whistle"
+  },
   "charge.arm": {
     "sounds": [
       "groundzero:ordnance/charge_arm"

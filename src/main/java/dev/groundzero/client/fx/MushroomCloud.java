@@ -58,6 +58,8 @@ final class MushroomCloud {
     private final int earth;
     private final List<Cloudlet> cloudlets = new ArrayList<>();
     private int stemSent, capSent, collarSent;
+    /** Grey dust, barely glowing (a huge conventional blast), rather than a nuclear fire cloud. */
+    private final boolean dusty;
     private boolean shellSent;
     private final int capCount, stemCount, collarCount, shellCount;
 
@@ -66,8 +68,10 @@ final class MushroomCloud {
      * @param crater   the crater radius (sets the cloud's height)
      * @param ground   the ground's height under the burst
      * @param earth    the colour of the ground (the stem is that dust)
+     * @param dusty    a grey dust cloud that hardly glows (the MOAB), not a nuclear fire cloud
      */
-    MushroomCloud(Vec3 center, double ground, float fireball, float crater, long seed, float quality, int earth, int life) {
+    MushroomCloud(Vec3 center, double ground, float fireball, float crater, long seed, float quality, int earth, int life, boolean dusty) {
+        this.dusty = dusty;
         this.center = center;
         this.ground = Math.min(ground, center.y);
         this.fireball = fireball;
@@ -323,7 +327,7 @@ final class MushroomCloud {
     }
 
     // --- drawing ---------------------------------------------------------------------------------------------------------------
-    private static final int CAP_ALBEDO = 0xCCC5BE, CAP_BROWN = 0xC4A68C, COLLAR_ALBEDO = 0xF0F0F2;
+    private static final int CAP_ALBEDO = 0xCCC5BE, CAP_BROWN = 0xC4A68C, COLLAR_ALBEDO = 0xF0F0F2, DUST_ALBEDO = 0x9A948C;
 
     void submit(SubmitNodeCollector collector, PoseStack poseStack, Vec3 camera, Quaternionf orientation, double t, float partial) {
         if (this.cloudlets.isEmpty()) {
@@ -333,7 +337,8 @@ final class MushroomCloud {
         Vector3f up = orientation.transform(new Vector3f(0, 1, 0));
         FxLight light = FxLight.current;
         Vector3f shade = new Vector3f();
-        double ax = axisX(t), az = axisZ(t), capY = capY(t), big = ringRadius(t), small = minor(t), heat = heat(t), fade = fade(t);
+        double ax = axisX(t), az = axisZ(t), capY = capY(t), big = ringRadius(t), small = minor(t), fade = fade(t);
+        double heat = this.dusty ? heat(t) * 0.15 : heat(t);
         double underside = capY - small * 0.6;
         int stemAlbedo = Puffs.lerpRgb(this.earth, 0x8E8680, 0.55f);
         List<float[]> quads = new ArrayList<>(this.cloudlets.size());
@@ -355,7 +360,8 @@ final class MushroomCloud {
                     size = (float) (c.scale * small * 0.95);
                     alpha = 0.72f;
                     // Reddish-brown while the cap still holds its hot gases, greying as it ages.
-                    albedo = Puffs.lerpRgb(CAP_BROWN, CAP_ALBEDO, (float) Math.max(0, Math.min(1, (t - 200) / 800)));
+                    albedo = this.dusty ? Puffs.lerpRgb(this.earth, DUST_ALBEDO, 0.6f)
+                            : Puffs.lerpRgb(CAP_BROWN, CAP_ALBEDO, (float) Math.max(0, Math.min(1, (t - 200) / 800)));
                     // The core glows, hottest at first; for the first seconds the whole cap is the fireball.
                     glow = heat * (Math.exp(-Math.pow(dist / (0.8 * small), 2)) + Math.max(0, 1 - t / 90) * 0.8);
                 }

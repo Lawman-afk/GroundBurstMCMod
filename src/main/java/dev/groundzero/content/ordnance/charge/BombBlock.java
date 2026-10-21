@@ -17,8 +17,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A bomb (DESIGN.md §14, Phase 6 slice 6d): a placed charge lying on its side that falls like sand when nothing holds
- * it up, keeping its fuze settings. Its impact fuze: armed, it goes off when it lands after a fall or when a projectile
- * hits it. Safe, it just lands.
+ * it up, keeping its fuze settings, and whistles on a long drop. Its impact fuze: armed, it goes off when it lands
+ * after a fall (harder the further it fell) or when a projectile hits it. Safe, it just lands.
  */
 public class BombBlock extends ChargeBlock implements Fallable {
     private static final int FALL_DELAY = 2;
@@ -53,16 +53,30 @@ public class BombBlock extends ChargeBlock implements Fallable {
         }
         ChargeBlockEntity be = at(level, pos);
         CompoundTag data = be == null ? null : be.saveWithoutMetadata(level.registryAccess());
+        int drop = 0;
+        while (drop < 64 && FallingBlock.isFree(level.getBlockState(pos.below(drop + 1)))) {
+            drop++;
+        }
         FallingBlockEntity falling = FallingBlockEntity.fall(level, pos, state);
         falling.blockData = data;
+        if (drop >= WHISTLE_DROP) {
+            // A real drop: it whistles all the way down.
+            level.playSound(null, falling, dev.groundzero.content.ordnance.GZOrdnance.BOMB_WHISTLE.get(), net.minecraft.sounds.SoundSource.BLOCKS, 3f,
+                    0.9f + random.nextFloat() * 0.2f);
+        }
     }
+
+    /** Falls at least this far (blocks) and it whistles; the impact grows with the fall, up to 30% for 24 blocks or more. */
+    public static final int WHISTLE_DROP = 8;
+    public static final float MAX_DROP_BONUS = 0.3f, DROP_FOR_MAX = 24;
 
     /** The impact fuze: an armed bomb that lands goes off. */
     @Override
     public void onLand(Level level, BlockPos pos, BlockState state, BlockState replacedBlock, FallingBlockEntity entity) {
         if (level instanceof ServerLevel server && state.getValue(ARMED)) {
             ChargeBlockEntity be = at(level, pos);
-            Charges.detonate(server, pos, state, be == null || be.owner() == null ? null : server.getEntity(be.owner()));
+            float scale = 1 + MAX_DROP_BONUS * (float) Math.min(1, entity.fallDistance / DROP_FOR_MAX);
+            Charges.detonate(server, pos, state, be == null || be.owner() == null ? null : server.getEntity(be.owner()), scale);
         }
     }
 

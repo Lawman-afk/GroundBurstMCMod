@@ -124,6 +124,7 @@ public final class GZOrdnance {
     public static final Supplier<SoundEvent> MINE_POP = GZSounds.MINE_POP;
     public static final Supplier<SoundEvent> FUEL_DISPERSE = GZSounds.FUEL_DISPERSE;
     public static final Supplier<SoundEvent> BOMB_DRILL = GZSounds.BOMB_DRILL;
+    public static final Supplier<SoundEvent> BOMB_WHISTLE = GZSounds.BOMB_WHISTLE;
 
     static {
         dev.groundzero.registry.GZLang.add("death.attack." + GroundZero.MODID + ".shrapnel", "%1$s was shredded by shrapnel");

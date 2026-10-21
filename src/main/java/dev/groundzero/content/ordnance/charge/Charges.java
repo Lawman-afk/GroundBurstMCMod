@@ -157,14 +157,25 @@ public final class Charges {
 
     /** Sets the charge at {@code pos} off now: removes it and does what it does. */
     static void detonate(ServerLevel level, BlockPos pos, BlockState state, @Nullable Entity by) {
+        detonate(level, pos, state, by, 1f);
+    }
+
+    /** As above, a bomb's reach times {@code scale} (a bomb dropped from a height lands harder). */
+    static void detonate(ServerLevel level, BlockPos pos, BlockState state, @Nullable Entity by, float scale) {
         if (!(state.getBlock() instanceof ChargeBlock block)) {
             return;
         }
         level.removeBlock(pos, false);
-        fire(level, block.kind, pos, state.getValue(ChargeBlock.FACING), state.hasProperty(ChargeBlock.COUNT) ? state.getValue(ChargeBlock.COUNT) : 1, by);
+        fire(level, block.kind, pos, state.getValue(ChargeBlock.FACING), state.hasProperty(ChargeBlock.COUNT) ? state.getValue(ChargeBlock.COUNT) : 1, by,
+                scale);
     }
 
     private static void fire(ServerLevel level, ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable Entity by) {
+        fire(level, kind, pos, facing, count, by, 1f);
+    }
+
+    private static void fire(ServerLevel level, ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable Entity by, float scale) {
+        float bombScale = Charges.bombScale * scale;
         if (level.getBlockState(pos).getBlock() instanceof ChargeBlock) {
             level.removeBlock(pos, false);
         }

@@ -585,6 +585,14 @@ def ordnance_sounds() -> dict[str, np.ndarray]:
     crunch = S.grains(n, rate=40, grain_ms=6, seed=531) * 0.8
     rumble = S.lowpass(S.brown(n, 532), 120) * 1.4
     out["ordnance/bomb_drill"] = S.normalize(S.fade(S.mix((grind, 1.0), (crunch, 0.8), (rumble, 1.0)), 0.05, 0.4), -3)
+    # A falling bomb's whistle: a falling tone with a slight warble over rushing air, louder as it comes down.
+    n = 3.5
+    tt = S.t_axis(n)
+    freq = 1700 * np.exp(-tt / 3.2) + 450 + 12 * np.sin(2 * np.pi * 6 * tt)
+    tone = np.sin(2 * np.pi * np.cumsum(freq) / S.SR) * 0.5
+    air = S.bandpass(S.white(n, 540), 800, 5000) * 0.25
+    swell = np.clip(tt / n, 0, 1) ** 1.5 * 0.8 + 0.2
+    out["ordnance/bomb_whistle"] = S.normalize(S.fade((tone + air) * swell, 0.3, 0.15), -2)
     return out
 
 

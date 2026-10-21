@@ -15,5 +15,6 @@
   "lobes": 0.1,
   "scorch": 20.0,
   "streaks": 0.2,
-  "structural": 24.0
+  "structural": 24.0,
+  "visual": "thermobaric"
 }

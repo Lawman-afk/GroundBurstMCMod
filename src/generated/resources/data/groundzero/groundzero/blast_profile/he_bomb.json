@@ -12,5 +12,6 @@
   "front_speed": 4.0,
   "lobes": 0.12,
   "scorch": 8.0,
-  "structural": 10.0
+  "structural": 10.0,
+  "visual": "he"
 }

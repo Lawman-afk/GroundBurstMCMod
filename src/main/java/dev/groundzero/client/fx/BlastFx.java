@@ -65,7 +65,8 @@ final class BlastFx {
         at.setY((int) Math.floor(this.ground) - 1);
         this.earth = earthColor(level, at);
         this.mushroom = this.preset.mushroom() > 0
-                ? new MushroomCloud(c, this.ground, fireballRadius(), crater(), start.seed(), Spectacle.quality(), this.earth, this.preset.mushroom())
+                ? new MushroomCloud(c, this.ground, fireballRadius(), crater(), start.seed(), Spectacle.quality(), this.earth, this.preset.mushroom(),
+                        this.preset.dusty())
                 : null;
         double t = now - this.born;
         if (t > 20) {
