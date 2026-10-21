@@ -49,7 +49,7 @@ public class LaunchComputerScreen extends Screen {
     private static final String T_SET = GZLang.add(GroundZero.MODID + ".computer.set", "Set");
     private static final String T_SILOS = GZLang.add(GroundZero.MODID + ".computer.silo_count", "Silos (%s)");
     private static final String T_NO_SILOS = GZLang.add(GroundZero.MODID + ".computer.no_silos", "No silo within 256 blocks");
-    private static final String T_NO_TARGET = GZLang.add(GroundZero.MODID + ".computer.no_target", "No target");
+    private static final String T_NO_TARGET = GZLang.add(GroundZero.MODID + ".computer.no_target", "No Target");
     private static final String T_ARM = GZLang.add(GroundZero.MODID + ".computer.arm", "ARM");
     private static final String T_DISARM = GZLang.add(GroundZero.MODID + ".computer.disarm", "DISARM");
     private static final String T_LAUNCH = GZLang.add(GroundZero.MODID + ".computer.launch_armed", "LAUNCH (%s)");
@@ -64,10 +64,10 @@ public class LaunchComputerScreen extends Screen {
     private static final String[] T_SILO_STATE = {
             GZLang.add(GroundZero.MODID + ".computer.silo.not_formed", "Incomplete"),
             GZLang.add(GroundZero.MODID + ".computer.silo.emp", "Disabled by EMP"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.halted", "Halted by redstone"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "No missile"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.no_warhead", "No warhead"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "No power"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.halted", "Halted by Redstone"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "No Missile"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.no_warhead", "No Warhead"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "No Power"),
             GZLang.add(GroundZero.MODID + ".computer.silo.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s")};
 
