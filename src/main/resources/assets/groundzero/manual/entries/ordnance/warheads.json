@@ -12,7 +12,8 @@
     "groundzero:massive_warhead",
     "groundzero:gas_warhead",
     "groundzero:smoke_warhead",
-    "groundzero:toxic_waste_warhead"
+    "groundzero:toxic_waste_warhead",
+    "groundzero:chemical_warhead"
   ],
   "pages": [
     {
@@ -115,8 +116,18 @@
       "text": ""
     },
     {
+      "type": "spotlight",
+      "item": "groundzero:chemical_warhead",
+      "text": "A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks round that behaves like [chlorine](ordnance/chemical): it spreads, sinks into low ground and drifts with the wind, but it is far harsher (**Poison IV**, a heart every half second where it is thick) and it hangs about for a minute and a half. A [hazmat suit](safety/hazmat_suits) keeps it out."
+    },
+    {
       "type": "crafting",
       "item": "groundzero:toxic_waste_warhead",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:chemical_warhead",
       "text": ""
     }
   ]

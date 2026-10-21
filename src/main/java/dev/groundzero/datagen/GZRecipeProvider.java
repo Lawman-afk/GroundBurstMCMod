@@ -344,6 +344,19 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CHEMICAL_WARHEAD.item(), 1)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.CHLORINE_CANISTER)
+                .requires(GZChemicals.CHLORINE_CANISTER).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE.get(), 2)
+                .requires(GZChemicals.LIQUID_NITROGEN_CANISTER).requires(GZTags.commonItem("plates/steel")).requires(Items.IRON_NUGGET)
+                .requires(Items.IRON_NUGGET).requires(Items.SNOWBALL)
+                .unlockedBy(getHasName(GZChemicals.LIQUID_NITROGEN_CANISTER), has(GZChemicals.LIQUID_NITROGEN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE.get(), 2)
+                .requires(GZTags.commonItem("wires/copper")).requires(GZTags.commonItem("wires/copper")).requires(GZTags.commonItem("wires/copper"))
+                .requires(GZParts.BASIC_CIRCUIT).requires(Items.REDSTONE).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
         // Launching (DESIGN.md §17, §26.7): the structures' blocks, the controllers, the Basic Missile.
         var l = new Object() {
             final net.minecraft.world.level.ItemLike pad = dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD.item();

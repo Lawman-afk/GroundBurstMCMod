@@ -153,7 +153,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     /** Starts the countdown to launch at {@code target}; false if the silo is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
-        if (readiness() != Readiness.READY) {
+        if (readiness() != Readiness.READY || isEmpDisabled()) {
             return false;
         }
         this.target = target.immutable();

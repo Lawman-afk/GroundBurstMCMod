@@ -66,7 +66,7 @@ public final class Spectacle {
     private static final Puffs PUFFS = new Puffs();
     private static final Debris DEBRIS = new Debris();
     /** Client ticks the world has run (not counting pauses): the clock every effect is timed by. */
-    private static long ticks;
+    static long ticks;
     private static float trauma;
     private static ClientLevel lastLevel;
 
@@ -76,6 +76,7 @@ public final class Spectacle {
         FxRenderTypes.register(modBus);
         dev.groundzero.content.ordnance.ThrownExplosive.smokeHook = Spectacle::grenadeSmoke;
         dev.groundzero.content.launch.MissileEntity.exhaustHook = Spectacle::missileExhaust;
+        EffectFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundZero.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -91,6 +92,7 @@ public final class Spectacle {
     }
 
     private static void clear() {
+        EffectFx.clear();
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
@@ -164,7 +166,8 @@ public final class Spectacle {
         var random = grenade.level().getRandom();
         float radius = grenade.smokeRadius();
         float q = quality();
-        float rate = q * 2.5f;
+        // A gas canister only vents a thin jet of its own: the gas grid draws the cloud it pours out (EffectFx).
+        float rate = q * (gas ? 0.6f : 2.5f);
         int count = (int) rate + (random.nextFloat() < rate - (int) rate ? 1 : 0);
         for (int i = 0; i < count; i++) {
             Puffs.Puff p = new Puffs.Puff();
@@ -300,6 +303,7 @@ public final class Spectacle {
         trauma = Math.max(0, trauma - 0.035f);
         float q = quality();
         Vec3 eye = mc.gameRenderer.mainCamera().position();
+        EffectFx.tick(PUFFS, q, eye);
         for (var it = BLASTS.values().iterator(); it.hasNext(); ) {
             BlastFx fx = it.next();
             fx.tick(mc.level, PUFFS, DEBRIS, ticks, q, eye);

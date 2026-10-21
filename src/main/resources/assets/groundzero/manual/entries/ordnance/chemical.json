@@ -19,7 +19,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:gas_grenade",
-      "text": "A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it gets **Poison III** and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it."
+      "text": "A smoke grenade filled with **chlorine**. After 2 seconds it pours gas out for 25 seconds. The gas behaves like a real gas: it spreads out through the open air, **sinks** into hollows, cellars and trenches, drifts **downwind**, and is stopped by walls, glass, closed doors and panes (but runs over slabs and carpets). It thins out and clears within half a minute of the canister running dry. Everything breathing it gets **Poison III** and takes up to half a heart every half second, less where the gas is thin; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it."
     },
     {
       "type": "spotlight",

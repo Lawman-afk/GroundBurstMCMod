@@ -735,7 +735,8 @@ Explosives you throw, place and drop. Everything here goes off with the mod's ow
 """)
 
 entry("ordnance/thrown", "Thrown explosives", "frag_grenade", ["dynamite", "frag_grenade", "sticky_grenade",
-                                                                 "incendiary_grenade", "smoke_grenade", "molotov_cocktail"], [
+                                                                 "incendiary_grenade", "smoke_grenade", "molotov_cocktail",
+                                                                 "cryo_grenade", "emp_grenade"], [
     text("""
 Right-click to throw. Most bounce and roll before they go off, so bank them off walls and down slopes; their fuse starts the moment they leave your hand.
 """),
@@ -748,6 +749,8 @@ Right-click to throw. Most bounce and roll before they go off, so bank them off 
         ["Poison gas", "2 s, 25 s"],
         ["Toxin", "on impact"],
         ["Molotov", "on impact"],
+        ["Cryo", "3 s"],
+        ["EMP", "3 s"],
     ], "Fuses"),
     spot("dynamite", """
 The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast.
@@ -775,7 +778,15 @@ For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical).
     craft("sticky_grenade"),
     craft("incendiary_grenade"),
     craft("smoke_grenade"),
+    spot("cryo_grenade", """
+A canister of liquid nitrogen. It bursts in a blast of cold **5 blocks** round: water freezes to ice, lava to obsidian, fires go out and frost settles on the ground. Everything alive in it is **frozen solid** for 10 seconds: it cannot move or jump. A frozen mob of 40 health or less hit hard (6 damage or more) **shatters**. Bosses are not frozen.
+"""),
+    spot("emp_grenade", """
+An electromagnetic pulse **12 blocks** round that lasts **20 seconds**. Every machine in it loses half its stored power as the pulse hits, then sits dead until the field passes, when it reboots: Launch Silos cannot launch, Launch Computers and Radar Arrays go dark. Armed charges with an electronic fuze (remote, timer, laser) are made safe; landmines and bouncing mines are pressure plates and stay live. A missile flying through the field has an even chance of a dead fuze.
+"""),
     craft("molotov_cocktail"),
+    craft("cryo_grenade"),
+    craft("emp_grenade"),
 ])
 
 entry("ordnance/charges", "Placed charges", "c4", ["c4", "breaching_charge", "thermite_charge", "timed_bomb",
@@ -831,7 +842,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
 
 entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
                                                       "bunker_buster_warhead", "napalm_warhead", "massive_warhead", "gas_warhead",
-                                                      "smoke_warhead", "toxic_waste_warhead"], [
+                                                      "smoke_warhead", "toxic_waste_warhead", "chemical_warhead"], [
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
@@ -876,7 +887,11 @@ A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught
     craft("massive_warhead"),
     craft("gas_warhead"),
     craft("smoke_warhead"),
+    spot("chemical_warhead", """
+A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks round that behaves like [chlorine](ordnance/chemical): it spreads, sinks into low ground and drifts with the wind, but it is far harsher (**Poison IV**, a heart every half second where it is thick) and it hangs about for a minute and a half. A [hazmat suit](safety/hazmat_suits) keeps it out.
+"""),
     craft("toxic_waste_warhead"),
+    craft("chemical_warhead"),
 ])
 
 entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",
@@ -931,7 +946,7 @@ entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "
 Grenades that poison rather than blow up. Both are made in the [Chemical Plant](processing/chemical_plant) and both are stopped by a [hazmat suit](safety/hazmat_suits): each piece keeps out its share, and a full suit of either kind keeps out all of it.
 """),
     spot("gas_grenade", """
-A smoke grenade filled with **chlorine**. After 2 seconds it pours out a low yellow-green cloud for 25 seconds. Everything breathing it gets **Poison III** and takes half a heart every half second; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
+A smoke grenade filled with **chlorine**. After 2 seconds it pours gas out for 25 seconds. The gas behaves like a real gas: it spreads out through the open air, **sinks** into hollows, cellars and trenches, drifts **downwind**, and is stopped by walls, glass, closed doors and panes (but runs over slabs and carpets). It thins out and clears within half a minute of the canister running dry. Everything breathing it gets **Poison III** and takes up to half a heart every half second, less where the gas is thin; the undead are not poisoned, but the gas still burns them. Like smoke, it hides whoever is in it.
 """),
     spot("toxin_grenade", """
 A glass vial that shatters on impact and splashes **toxin** over the ground 3.5 blocks round. Whatever is caught in the splash gets **Poison IV** and nausea, and the glowing green sludge it leaves does the same to anything that walks through it. The sludge dries out over about two minutes.

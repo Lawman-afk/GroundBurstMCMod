@@ -48,7 +48,9 @@ public enum ChargeKind {
     /** A cluster of smoke canisters: 14 smoke clouds over a wide area, screening it. */
     SMOKE_WARHEAD("smoke_warhead", 10, true),
     /** A burst of toxic waste: sludge splashed 10 blocks round, a heavy dose of toxin for anything in it. */
-    TOXIC_WASTE_WARHEAD("toxic_waste_warhead", 10, true);
+    TOXIC_WASTE_WARHEAD("toxic_waste_warhead", 10, true),
+    /** A chemical agent (anthrax) let out over 9 blocks round: a heavy cloud that spreads, sinks and drifts for a minute and more. */
+    CHEMICAL_WARHEAD("chemical_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }

@@ -44,6 +44,7 @@ public class GroundZero {
         dev.groundzero.content.ordnance.GZOrdnance.init();
         dev.groundzero.content.ordnance.GZOrdnance.register();
         dev.groundzero.content.launch.GZLaunch.init();
+        dev.groundzero.content.effect.EffectSystems.init();
         dev.groundzero.content.fluid.GZFluids.init();
         dev.groundzero.content.pipe.GZPipes.init();
         GZMultiblocks.init();
@@ -62,6 +63,7 @@ public class GroundZero {
         dev.groundzero.content.nuclear.GZEffects.EFFECTS.register(modBus);
         dev.groundzero.content.ordnance.GZOrdnance.ENTITIES.register(modBus);
         dev.groundzero.content.launch.GZLaunch.register(modBus);
+        dev.groundzero.content.effect.EffectSystems.register();
         dev.groundzero.content.nuclear.Contamination.register();
         dev.groundzero.content.nuclear.Meltdown.register();
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);

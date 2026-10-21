@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "6";
+    public static final String PROTOCOL_VERSION = "7";
 
     private GZNetwork() {}
 
@@ -46,6 +46,10 @@ public final class GZNetwork {
                 (payload, context) -> dev.groundzero.content.launch.LaunchPayloads.tileHook.accept(payload));
         registrar.playToClient(dev.groundzero.content.launch.LaunchPayloads.Radar.TYPE, dev.groundzero.content.launch.LaunchPayloads.Radar.CODEC,
                 (payload, context) -> dev.groundzero.content.launch.LaunchPayloads.radarHook.accept(payload));
+        registrar.playToClient(dev.groundzero.content.effect.GasPayloads.Cells.TYPE, dev.groundzero.content.effect.GasPayloads.Cells.CODEC,
+                (payload, context) -> dev.groundzero.content.effect.GasPayloads.cellsHook.accept(payload));
+        registrar.playToClient(dev.groundzero.content.effect.GasPayloads.Emp.TYPE, dev.groundzero.content.effect.GasPayloads.Emp.CODEC,
+                (payload, context) -> dev.groundzero.content.effect.GasPayloads.empHook.accept(payload));
         registrar.playToClient(dev.groundzero.content.launch.LaunchPayloads.Scope.TYPE, dev.groundzero.content.launch.LaunchPayloads.Scope.CODEC,
                 (payload, context) -> dev.groundzero.content.launch.LaunchPayloads.scopeHook.accept(payload));
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.TYPE,

@@ -58,6 +58,11 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     public static final float FIRE_RADIUS = 4;
     public static final float MOLOTOV_RADIUS = 3;
     public static final float TOXIN_RADIUS = 3.5f;
+    /** Chlorine a gas grenade pours into the gas grid each step (see GasGrid) while its cloud lasts. */
+    public static final float GAS_PER_STEP = 1.2f;
+    /** The cryo grenade's cold: its reach and how long it holds things frozen; the EMP grenade's field: reach, ticks. */
+    public static final float CRYO_RADIUS = 5, EMP_RADIUS = 12;
+    public static final int CRYO_TICKS = 200, EMP_TICKS = 400;
 
     /** Client hook: the Spectacle pours smoke out of a smoking grenade (set by the client; a no-op on servers). */
     public static Consumer<ThrownExplosive> smokeHook = e -> {};
@@ -179,9 +184,11 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             if (level() instanceof ServerLevel server) {
                 if (this.smokeTicks % 10 == 0) {
                     blindMobs(server);
-                    if (type() == GrenadeType.POISON_GAS) {
-                        gas(server);
-                    }
+                }
+                if (type() == GrenadeType.POISON_GAS && this.smokeTicks % dev.groundzero.content.effect.GasGrid.STEP == 0) {
+                    // The canister pours chlorine into the gas grid: it spreads, sinks and drifts from there.
+                    dev.groundzero.content.effect.GasGrid.of(server).emit(server, blockPosition(),
+                            dev.groundzero.content.effect.GasAgent.CHLORINE, GAS_PER_STEP);
                 }
                 if (this.smokeTicks % 60 == 1) {
                     server.playSound(null, getX(), getY(), getZ(), GZOrdnance.SMOKE_HISS.get(), SoundSource.NEUTRAL, 0.7f, 1f);
@@ -321,6 +328,16 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             discard();
             return;
         }
+        if (type == GrenadeType.CRYO) {
+            dev.groundzero.content.effect.Frost.freeze(level, at, CRYO_RADIUS, CRYO_TICKS, getOwner());
+            discard();
+            return;
+        }
+        if (type == GrenadeType.EMP) {
+            dev.groundzero.content.effect.EmpFields.add(level, at, EMP_RADIUS, EMP_TICKS, getOwner());
+            discard();
+            return;
+        }
         if (type == GrenadeType.MOLOTOV) {
             // No blast: the bottle breaks and the fuel goes up.
             fireCarpet(level, at, MOLOTOV_RADIUS);
@@ -434,18 +451,6 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
                 spread * 0.6, 0.3, spread * 0.6, 0.2);
     }
 
-    /** The poison gas cloud: everything alive in it breathes a dose every half second (less in a suit, none in a full one). */
-    private void gas(ServerLevel level) {
-        float radius = smokeRadius();
-        Vec3 c = position();
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(radius + 1))) {
-            if (e.getEyePosition().distanceTo(c) <= radius || e.position().distanceTo(c) <= radius) {
-                Toxins.expose(level, e, 1f, 100, Toxins.GAS);
-            }
-        }
-    }
-
-    /** Mobs in the cloud, or hunting something in it, lose their target: they cannot see through it. */
     private void blindMobs(ServerLevel level) {
         float radius = smokeRadius();
         Vec3 c = position();

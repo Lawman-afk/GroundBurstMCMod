@@ -93,6 +93,8 @@ public final class GZBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("smoke_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("chemical_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("toxic_waste_warhead"), profile(0.5f, 2.5f, 4, 4, 0, 3, 8, 4, 0.6f, 0.1f, 0.2f, 0.2f, 25, 8, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("bunker_buster_warhead"), profile(3.5f, 9, 14, 10, 0, 10, 20, 4, 0.9f, 0.12f, 0.3f, 0.4f, 60, 20, 2.5f,

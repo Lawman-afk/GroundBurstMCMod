@@ -152,6 +152,19 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
         return this.powered;
     }
 
+    /** In an EMP field it goes dark: no power, nothing tracked, nothing on its screen. */
+    @Override
+    protected void onEmp(ServerLevel level) {
+        this.powered = false;
+        if (level.getGameTime() % SCAN_INTERVAL == 0) {
+            for (UUID id : List.copyOf(this.viewers)) {
+                if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {
+                    send(level, p, List.of());
+                }
+            }
+        }
+    }
+
     /** Every missile in the air within range (none while it is unformed or unpowered). */
     private List<LaunchPayloads.Track> tracks(ServerLevel level) {
         List<LaunchPayloads.Track> out = new ArrayList<>();

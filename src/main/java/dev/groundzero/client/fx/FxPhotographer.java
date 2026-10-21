@@ -71,6 +71,7 @@ public final class FxPhotographer {
                 new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)),
                 new Scene("radar", "radar", 22, -16, List.of(20, 60)),
                 new Scene("airburst", "airburst", 40, -18, List.of(4, 12, 30, 50)),
+                new Scene("effects", "effects", 16, 22, List.of(8, 30, 70, 140)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
@@ -298,6 +299,40 @@ public final class FxPhotographer {
         }
     }
 
+    /**
+     * Slice 6e: a pond with a pig by it and a cryo grenade landing in it (left), an EMP grenade by a powered launch
+     * computer (right), and a chemical warhead going off behind them.
+     */
+    private static void effects(ServerLevel level, int x, int ground) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        for (int dx = -2; dx <= 1; dx++) {
+            for (int dz = -6; dz <= -3; dz++) {
+                level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground - 1, dz), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+            }
+        }
+        var pig = net.minecraft.world.entity.EntityTypes.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        if (pig != null) {
+            pig.setPos(x + 2.5, ground, -2.5);
+            pig.setNoAi(true);
+            level.addFreshEntity(pig);
+        }
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE.get(), new Vec3(x, ground + 0.2, -3.5), Vec3.ZERO, 4);
+        var computer = new net.minecraft.core.BlockPos(x + 1, ground, 5);
+        formed(level, computer, dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.COMPUTER);
+        if (level.getBlockEntity(computer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity c) {
+            c.revalidate();
+            c.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
+        }
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE.get(), new Vec3(x - 1, ground + 0.2, 3.5), Vec3.ZERO, 26);
+        var chem = new net.minecraft.core.BlockPos(x + 10, ground, 0);
+        level.setBlockAndUpdate(chem, dev.groundzero.content.ordnance.GZOrdnance.CHEMICAL_WARHEAD.block().get().defaultBlockState());
+        var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, chem);
+        if (be != null) {
+            be.arm(level, null);
+            be.trigger(level, null);
+        }
+    }
+
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
         var g = new dev.groundzero.content.ordnance.ThrownExplosive(level, player, new net.minecraft.world.item.ItemStack(item));
         g.setPos(at);
@@ -380,6 +415,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("mines")) {
                     mines(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("effects")) {
+                    effects(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("airburst")) {

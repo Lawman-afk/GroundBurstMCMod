@@ -28,7 +28,11 @@ public enum GrenadeType {
     /** The bouncing mine's canister, popped up out of the ground: bursts at about waist height into 30 fragments. */
     BOUNCING_MINE("bouncing_mine", 7, Behaviour.BOUNCE, 0f),
     /** A cluster bomb's bomblet: goes off where it lands (a dud lies there as a live landmine). */
-    BOMBLET("cluster_bomblet", -1, Behaviour.IMPACT, 1.0f);
+    BOMBLET("cluster_bomblet", -1, Behaviour.IMPACT, 1.0f),
+    /** 3 s, bounces, then a burst of cold 5 blocks round: water to ice, fire out, everything in it frozen solid for 10 s. */
+    CRYO("cryo_grenade", 60, Behaviour.BOUNCE, 1.1f),
+    /** 3 s, bounces, then an EMP field 12 blocks round for 20 s: machines shut down, electronic fuzes go safe. */
+    EMP("emp_grenade", 60, Behaviour.BOUNCE, 1.1f);
 
     public enum Behaviour { BOUNCE, STICK, IMPACT }
 

@@ -41,6 +41,8 @@ CAN_RED = P.WARNING_RED
 SMOKE_GREY = fixed("smoke_can", "#1e2224", "#30363a", "#454c50", "#5c6468", "#757d82", "#939a9e", "#b8bec2")
 CAP_GREEN = fixed("smoke_cap", "#0c2410", "#14381a", "#1e5426", "#2a7034", "#3a8c46", "#5aa862", "#8acc8e")
 WHITE = P.WHITE_CERAMIC
+CRYO_CAN = fixed("cryo_can", "#123a4a", "#1e5a70", "#2e7c96", "#47a0b8", "#6ec2d6", "#9edcea", "#d4f4fa")
+EMP_CAN = fixed("emp_can", "#121418", "#1c2026", "#282e36", "#363e48", "#48525e", "#5e6a78", "#7a8896")
 KHAKI = fixed("gas_can", "#1e2010", "#33361c", "#4a4e2a", "#62673a", "#7c814c", "#999e66", "#c0c492")
 FUEL = fixed("molotov_fuel", "#3a1c04", "#5e300a", "#8a4a10", "#b46a1a", "#d48c30", "#e8ae5a", "#f8d8a0")
 RAG = fixed("rag", "#3e3226", "#5e4e3c", "#8a7a64", "#b0a28a", "#cbbfa8", "#e0d6c4", "#f4eee2")
@@ -402,6 +404,30 @@ def toxic_sludge() -> None:
     write_json(paths.ASSETS / "blockstates" / "toxic_sludge.json", {"variants": variants})
 
 
+def emp_grenade() -> None:
+    """The EMP grenade: a dark can wound with three raised copper coils, a lightning bolt stencilled between them."""
+    m = BlockModel("emp_grenade", tex_size=(64, 64), kind="item", render_type="minecraft:cutout")
+    can = prism(m, "can", 8, 8, 2.5, 1.5, 2, 9.5)
+    coils = []
+    for i, y in enumerate((3, 5.5, 8)):
+        coils += prism(m, f"coil{i}", 8, 8, 2.9, 1.8, y, y + 0.9)
+    m.box("cap", (6.5, 9.5, 6.5), (9.5, 10.3, 9.5))
+    spoon_and_pin(m, 10.3, 10.5)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    fill_all(m, t, can, shaded(EMP_CAN))
+    fill_all(m, t, coils, shaded(P.COPPER))
+
+    def cap_paint(t: Tex, r, d):
+        shaded(EMP_CAN)(t, r, d)
+        if d == "up":
+            x, y, w, h = r
+            t.px(x + w // 2, y + h // 2, (90, 200, 255, 255))   # the charge lamp
+    m.paint_all(t, "cap", cap_paint)
+    steel_parts(m, t)
+    finish(m, t)
+
+
 def item_defs(names: list[str]) -> None:
     for n in names:
         write_json(paths.ASSETS / "items" / f"{n}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{n}"}})
@@ -414,10 +440,12 @@ def main() -> None:
     can_grenade("incendiary_grenade", CAN_RED, WHITE.light, "flame5x7", STEEL, vents=False)
     can_grenade("smoke_grenade", SMOKE_GREY, WHITE.light, None, CAP_GREEN, vents=True)
     can_grenade("gas_grenade", KHAKI, YELLOW.base, "skull5", YELLOW, vents=True)
+    can_grenade("cryo_grenade", CRYO_CAN, WHITE.light, "snow5", WHITE, vents=True)
+    emp_grenade()
     toxin_vial()
     molotov()
     item_defs(["frag_grenade", "dynamite", "sticky_grenade", "incendiary_grenade", "smoke_grenade", "gas_grenade", "toxin_grenade",
-               "molotov_cocktail"])
+               "molotov_cocktail", "cryo_grenade", "emp_grenade"])
     toxic_sludge()
     print("grenades written")
 

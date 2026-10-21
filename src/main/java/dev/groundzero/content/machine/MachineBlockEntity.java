@@ -62,6 +62,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected RedstoneMode redstoneMode = RedstoneMode.IGNORE;
     /** Why the machine is (not) running; shown in the GUI. */
     protected MachineStatus status = MachineStatus.IDLE;
+    /** Knocked out by an EMP field (it lost half its energy as the field hit; it reboots when the field ends). */
+    private boolean emped;
 
     protected final ContainerData data = new ContainerData() {
         @Override
@@ -220,10 +222,27 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         if (isEmpDisabled()) {
             status = MachineStatus.EMP;
             active = false;
+            if (!this.emped) {
+                // The pulse: half its stored energy gone in a shower of sparks.
+                this.emped = true;
+                this.energy.consume(this.energy.stored() / 2);
+                setChanged();
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 30, 0.4, 0.4, 0.4, 0.3);
+            } else if (level.getRandom().nextInt(30) == 0) {
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 4, 0.4, 0.4, 0.4, 0.2);
+            }
+            onEmp(level);
         } else if (!redstoneMode.allows(level.hasNeighborSignal(worldPosition))) {
             status = MachineStatus.REDSTONE;
             active = false;
         } else {
+            if (this.emped) {
+                this.emped = false;                            // the field has passed: it reboots
+                level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
+                        net.minecraft.sounds.SoundSource.BLOCKS, 0.4f, 1.6f);
+            }
             active = tickMachine(level);
         }
         if (this.sides.autoEject() && (level.getGameTime() + worldPosition.hashCode()) % EJECT_INTERVAL == 0) {
@@ -243,10 +262,18 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
-    /** EMP hook: Phase 12 makes EMP fields disable machines here. Until then nothing can disable a machine. */
+    /** Whether an EMP field is over it (DESIGN.md §21.4): then it does nothing at all. */
     protected boolean isEmpDisabled() {
-        return false;
+        return this.level != null && dev.groundzero.content.effect.EmpFields.inField(this.level, this.worldPosition);
     }
+
+    /** Whether it is sitting dead in an EMP field. */
+    public boolean emped() {
+        return this.emped;
+    }
+
+    /** Each tick it sits in an EMP field (instead of working). */
+    protected void onEmp(ServerLevel level) {}
 
     /** The work loop the client plays while this machine is ACTIVE, or null for a silent machine. */
     public @Nullable SoundEvent loopSound() {

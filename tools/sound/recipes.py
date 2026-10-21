@@ -670,7 +670,39 @@ def launch_sounds() -> dict[str, np.ndarray]:
     return out
 
 
-RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds]
+def effect_sounds() -> dict[str, np.ndarray]:
+    """Slice 6e: the EMP's discharge and the cryo burst."""
+    out = {}
+    # EMP: a hard electric crack, crackling arcs, and a whine falling away as everything powers down.
+    n = 2.2
+    t = S.t_axis(n)
+    crack = S.highpass(S.white(n, 700), 1800) * S.exp_decay(int(n * S.SR), 0.025) * 1.6
+    arcs = S.highpass(S.grains(n, rate=90, grain_ms=2, seed=701), 1200) * S.exp_decay(int(n * S.SR), 0.5) * 0.9
+    f = 1400 * np.exp(-t / 0.45) + 60
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    whine = (np.sin(phase) * 0.5 + np.sin(2 * phase) * 0.2 + np.sin(3 * phase) * 0.1) * np.clip(1 - t / n, 0, 1) ** 1.5
+    hum = np.sin(2 * np.pi * 120 * t) * 0.15 * S.exp_decay(int(n * S.SR), 0.3)
+    out["effect/emp_zap"] = S.normalize(S.fade(S.reverb(crack + arcs + whine * 1.4 + hum, seconds=1.0, mix=0.2)[: len(t)], 0.0, 0.3), -1)
+    # Cryo: a soft pop, a hiss of escaping coolant, and the tinkle and crackle of ice forming.
+    n = 1.6
+    t = S.t_axis(n)
+    pop = S.lowpass(S.white(n, 710), 400) * S.exp_decay(int(n * S.SR), 0.04) * 1.4
+    hiss = S.bandpass(S.white(n, 711), 2500, 9000) * np.clip(t / 0.03, 0, 1) * S.exp_decay(int(n * S.SR), 0.5) * 0.7
+    tinkle = np.zeros_like(t)
+    rng = S.rng(712)
+    for _ in range(40):
+        at = rng.uniform(0.05, 1.2)
+        freq = rng.uniform(2800, 6500)
+        k = int(at * S.SR)
+        seg = t[: len(t) - k]
+        tinkle[k:] += np.sin(2 * np.pi * freq * seg) * np.exp(-seg / rng.uniform(0.02, 0.08)) * rng.uniform(0.05, 0.15)
+    crackle = S.highpass(S.grains(n, rate=60, grain_ms=1.5, seed=713), 2000) * S.exp_decay(int(n * S.SR), 0.6) * 0.5
+    out["effect/cryo_burst"] = S.normalize(S.fade(pop + hiss + tinkle + crackle, 0.0, 0.2), -2)
+    return out
+
+
+RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
+           effect_sounds]
 
 
 def build_sounds() -> list[Path]:

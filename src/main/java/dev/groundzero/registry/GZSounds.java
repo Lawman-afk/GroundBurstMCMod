@@ -133,6 +133,10 @@ public final class GZSounds {
             register("bomb.fuel_disperse", "Fuel cloud bursts out", List.of("ordnance/fuel_disperse"), false, 48);
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_DRILL =
             register("bomb.drill", "Bunker buster bores", List.of("ordnance/bomb_drill"), false, 48);
+    public static final DeferredHolder<SoundEvent, SoundEvent> EMP_ZAP =
+            register("emp.zap", "EMP discharges", List.of("effect/emp_zap"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_BURST =
+            register("cryo.burst", "Cryo burst freezes", List.of("effect/cryo_burst"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_WHISTLE =
             register("bomb.whistle", "Bomb whistles down", List.of("ordnance/bomb_whistle"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_SIREN =

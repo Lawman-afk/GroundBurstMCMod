@@ -190,6 +190,19 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         return this.powered;
     }
 
+    /** In an EMP field it goes dark: no power, so it cannot aim, arm or launch, and its map goes blank. */
+    @Override
+    protected void onEmp(ServerLevel level) {
+        this.powered = false;
+        if (level.getGameTime() % SCOPE_INTERVAL == 0) {
+            for (UUID id : List.copyOf(this.viewers)) {
+                if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {
+                    sendScope(level, p);
+                }
+            }
+        }
+    }
+
     /** What the scope shows: the linked silos (with their targets), and the missiles in the air within range. */
     private void sendScope(ServerLevel level, ServerPlayer player) {
         List<LaunchPayloads.Silo> silos = new ArrayList<>();

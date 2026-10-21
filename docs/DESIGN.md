@@ -1098,6 +1098,28 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   soil" that re-emits weakly for a day, partially penetrates gas-mask filters).
 - Weapons: toxin grenade, chemical bomb, SCUD Storm payloads, toxin 40 mm round, chemical warhead for missiles.
 
+### 16.9 As built: slice 6e effect systems (2026-10-21)
+- **Gas grid** (`GasGrid`): one cell per block, not the 2×2×2 cells planned (a one-block wall must keep gas out).
+  Every 5 ticks half of each block's gas flows into the open blocks round it, more down than up (agents are heavy),
+  biased downwind (the wind turns every minute or so); solids, fluids and tall thin blocks (doors, panes, walls,
+  fences) stop it, low ones (slabs, carpets, snow) let it over; each agent decays at its own rate. Every 10 ticks
+  living things breathing it (feet or eyes) take a dose scaled by concentration (full strength at 0.3), cut by the
+  hazmat suits (`Toxins`). Agents: **chlorine** (gas grenade, gas warhead: Poison III, clears in ~half a minute) and
+  **anthrax** (Chemical Warhead: Poison IV, twice the damage, ~1.5 minutes). Not saved. Clients are sent the gassed
+  blocks within 80 blocks every 10 ticks and draw them as a tinted haze (`EffectFx`).
+- **EMP fields** (`EmpFields`): sphere + expiry per level, not saved. Machines in a field (`MachineBlockEntity`) lose
+  half their stored energy as it hits, stop (status EMP), and reboot when it ends; Launch Silos refuse to launch, the
+  Launch Computer and Radar Array go dark. As it goes up, armed charges with electronic fuzes are made safe (landmines
+  and bouncing mines are pressure plates and stay live). A missile flying through rolls once: half are duds (no
+  warhead on impact). Clients draw a shell of sparks racing out, then sparks crawling over surfaces in the field.
+  Still to come: vanilla redstone reading zero in a field, powered items shutting down.
+- **Freezing** (`Frost`): water → ice (packed ice near the middle), lava → obsidian (flowing → cobblestone), fire and
+  napalm out, snow on open ground; living things (not bosses, not creative players) get **Frozen** (`FrozenEffect`:
+  no movement or jumping, AI stopped, the vanilla frozen shake and frost overlay, snowflakes); a frozen non-player mob
+  of ≤40 health taking ≥6 damage **shatters**. The ice-shell render is still to come (particles for now).
+- **Weapons:** Cryo Grenade (3 s, radius 5, frozen 10 s), EMP Grenade (3 s, field 12 blocks for 20 s), Chemical
+  Warhead (anthrax cloud 9 blocks round; the Chemical Bomb of the plan, as a warhead). Gas grenades now feed the grid.
+
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
 - **Kept as part of the conventional roster:** Thermite charge, Breaching charge, Smoke grenade (§14).
@@ -2021,3 +2043,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | The Launch Computer's screen is a terrain map (what is being aimed at matters more than a sweep); the sweeping radar moves to a new Radar Array multiblock, the future source of tracks for anti-missile defence. Map data is a saved survey of chunks loaded near computers, never generating chunks. |
 | 2026-10-21 | The Radar Array's crown is one Large Radar Dish (a 3×3 placed by one item), not nine small dishes; the sweep turns 25% faster (4.8 s). |
 | 2026-10-21 | Missile warheads are the tactical conventional tier; full-scale nuclear/special/strategic weapons come later with their own launchers, models and far bigger yields. Cluster-type warheads air-burst when delivered; gas, smoke and toxic waste warheads added; bomblets strengthened; the bunker buster bores 3×3. |
+| 2026-10-21 | Slice 6e: gas grid of one block a cell (not 2×2×2), EMP fields and freezing as level systems; the Chemical Bomb is a Chemical Warhead; EMP's redstone and powered-item effects and the frozen ice-shell render deferred. |

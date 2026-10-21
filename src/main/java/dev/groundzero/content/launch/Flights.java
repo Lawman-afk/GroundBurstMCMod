@@ -51,11 +51,13 @@ public final class Flights extends SavedData {
             Codec.DOUBLE.fieldOf("apex").forGetter(f -> f.apex),
             Codec.INT.fieldOf("flight").forGetter(f -> f.flightTicks),
             Codec.INT.fieldOf("age").forGetter(f -> f.age),
+            Codec.BOOL.optionalFieldOf("dud", false).forGetter(f -> f.dud),
             ItemStack.OPTIONAL_CODEC.fieldOf("warhead").forGetter(f -> f.warhead),
             UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner))
-    ).apply(i, (id, start, target, apex, ticks, age, warhead, owner) -> {
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
+        f.dud = dud;
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundZero.id("missile_flights"), Flights::new,
@@ -120,6 +122,8 @@ public final class Flights extends SavedData {
         private Vec3 pos;
         private float yaw, tilt;
         private boolean whistled;
+        /** Flown through an EMP field: half the time its fuze is dead (checked once, the first time). */
+        private boolean dud, empChecked;
 
         Flight(UUID id, Vec3 start, Vec3 target, double apex, int flightTicks, ItemStack warhead, @Nullable UUID owner) {
             this.id = id;
@@ -192,6 +196,10 @@ public final class Flights extends SavedData {
                 }
                 double s = Math.min(1, (this.age - MissileEntity.IGNITION) / (double) this.flightTicks);
                 Vec3 from = this.pos, to = at(this.age);
+                if (!this.empChecked && dev.groundzero.content.effect.EmpFields.inField(level, to)) {
+                    this.empChecked = true;
+                    this.dud = level.getRandom().nextBoolean();
+                }
                 Vec3 v = to.subtract(from);
                 // It can only hit what is loaded; past the first stretch of its climb (clear of its own gantry).
                 if (s > 0.1 && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
@@ -209,7 +217,7 @@ public final class Flights extends SavedData {
                 this.pos = to;
                 // A cluster warhead bursts in the air on the way down, over the target.
                 if (s > 0.5 && v.y < 0 && to.y - this.target.y <= dev.groundzero.content.ordnance.charge.Charges.AIRBURST_HEIGHT
-                        && this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb && bomb.kind.airburst()) {
+                        && !this.dud && this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb && bomb.kind.airburst()) {
                     Entity by = this.owner == null ? null : level.getEntity(this.owner);
                     dev.groundzero.content.ordnance.charge.Charges.airburst(level, bomb.kind, to, by);
                     finish(level);
@@ -286,7 +294,11 @@ public final class Flights extends SavedData {
         /** It hits: its warhead goes off where it hit (a bunker buster bores in first; an empty one does nothing). */
         private void impact(ServerLevel level, Vec3 at) {
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
-            if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
+            if (this.dud) {
+                // A dead fuze: it just slams into the ground.
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
+                level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
+            } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
                 Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by);
             }
             finish(level);

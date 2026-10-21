@@ -68,6 +68,13 @@
         }
       },
       {
+        "when": "chemical_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_chemical_warhead"
+        }
+      },
+      {
         "when": "toxic_waste_warhead",
         "model": {
           "type": "minecraft:model",

@@ -207,6 +207,15 @@
     ],
     "subtitle": "subtitles.groundzero.charge.disarm"
   },
+  "cryo.burst": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundzero:effect/cryo_burst"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.cryo.burst"
+  },
   "detonator.click": {
     "sounds": [
       "groundzero:ordnance/detonator_click"
@@ -218,6 +227,15 @@
       "groundzero:ordnance/dynamite_light"
     ],
     "subtitle": "subtitles.groundzero.dynamite.light"
+  },
+  "emp.zap": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundzero:effect/emp_zap"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.emp.zap"
   },
   "geiger.click": {
     "sounds": [

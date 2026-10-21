@@ -8,7 +8,9 @@
     "groundzero:sticky_grenade",
     "groundzero:incendiary_grenade",
     "groundzero:smoke_grenade",
-    "groundzero:molotov_cocktail"
+    "groundzero:molotov_cocktail",
+    "groundzero:cryo_grenade",
+    "groundzero:emp_grenade"
   ],
   "pages": [
     {
@@ -49,6 +51,14 @@
         [
           "Molotov",
           "on impact"
+        ],
+        [
+          "Cryo",
+          "3 s"
+        ],
+        [
+          "EMP",
+          "3 s"
         ]
       ],
       "text": "",
@@ -114,8 +124,28 @@
       "text": ""
     },
     {
+      "type": "spotlight",
+      "item": "groundzero:cryo_grenade",
+      "text": "A canister of liquid nitrogen. It bursts in a blast of cold **5 blocks** round: water freezes to ice, lava to obsidian, fires go out and frost settles on the ground. Everything alive in it is **frozen solid** for 10 seconds: it cannot move or jump. A frozen mob of 40 health or less hit hard (6 damage or more) **shatters**. Bosses are not frozen."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:emp_grenade",
+      "text": "An electromagnetic pulse **12 blocks** round that lasts **20 seconds**. Every machine in it loses half its stored power as the pulse hits, then sits dead until the field passes, when it reboots: Launch Silos cannot launch, Launch Computers and Radar Arrays go dark. Armed charges with an electronic fuze (remote, timer, laser) are made safe; landmines and bouncing mines are pressure plates and stay live. A missile flying through the field has an even chance of a dead fuze."
+    },
+    {
       "type": "crafting",
       "item": "groundzero:molotov_cocktail",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:cryo_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:emp_grenade",
       "text": ""
     }
   ]

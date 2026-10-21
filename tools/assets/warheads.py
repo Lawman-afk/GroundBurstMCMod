@@ -13,6 +13,7 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - Massive Ordnance Warhead: huge, olive with an orange nose.
 - Poison Gas Warhead: yellow-green clamshell casing (a cluster of gas canisters), a yellow band.
 - Smoke Warhead: grey clamshell casing (a cluster of smoke canisters), a white band.
+- Chemical Warhead: pale grey with the two green bands of a chemical weapon, a steel nose.
 - Toxic Waste Warhead: a dark drum of a body, a glowing toxin-green nose and band, a hazard-dashed ring.
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
@@ -96,6 +97,8 @@ WARHEADS = [
          bands=[(8.5, YELLOW[5])], seam=BLACK[3], dashes=(4, YELLOW[3])),
     Spec("smoke_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), STEEL, STEEL,
          bands=[(8.5, P.WHITE_CERAMIC[5])], seam=BLACK[3], dashes=(4, P.WHITE_CERAMIC[4])),
+    Spec("chemical_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), P.WHITE_CERAMIC, P.STEEL, P.STEEL,
+         bands=[(5, P.INDICATOR_GREEN[3]), (7.5, P.INDICATOR_GREEN[3])]),
     Spec("toxic_waste_warhead", 5, (1.5, 5.6), 10, ogive(10, 4.5, 4.8, 4, 2.4), (15, 1.2), WASTE, P.TOXIN, WASTE,
          bands=[(7.5, P.TOXIN[4])], dashes=(4, YELLOW[4])),
 ]

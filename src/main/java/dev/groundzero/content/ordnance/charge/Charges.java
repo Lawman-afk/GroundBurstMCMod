@@ -97,6 +97,26 @@ public final class Charges {
     }
 
     /**
+     * An EMP over {@code centre}: every armed charge within {@code radius} with an electronic fuze (remote, timer, laser)
+     * is made safe; landmines and bouncing mines (pressure plates) stay live. Returns how many were.
+     */
+    public static int empDisarm(ServerLevel level, Vec3 centre, double radius) {
+        LongOpenHashSet set = LOADED.get(level.dimension());
+        if (set == null) {
+            return 0;
+        }
+        int n = 0;
+        for (long l : set.toLongArray()) {
+            BlockPos p = BlockPos.of(l);
+            if (Vec3.atCenterOf(p).distanceTo(centre) <= radius && level.getBlockEntity(p) instanceof ChargeBlockEntity be && be.armed()
+                    && be.kind() != ChargeKind.LANDMINE && be.kind() != ChargeKind.BOUNCING_MINE && be.disarm(level)) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /**
      * A Remote Detonator pressed at {@code from}: every armed charge on {@code frequency} within range goes off, or starts
      * its timer. Returns how many did.
      */
@@ -206,6 +226,12 @@ public final class Charges {
                 napalm(level, pos);
             }
             case CLUSTER_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD -> cluster(level, kind, c, by);
+            case CHEMICAL_WARHEAD -> {
+                Blasts.detonate(level, c, Blasts.profile("chemical_warhead"), by, bombScale);
+                dev.groundzero.content.effect.GasGrid.of(level).fill(level, c, Math.max(2, CHEMICAL_RADIUS * bombScale),
+                        dev.groundzero.content.effect.GasAgent.ANTHRAX, CHEMICAL_STRENGTH);
+                level.playSound(null, pos, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_HISS.get(), SoundSource.BLOCKS, 3f, 0.6f);
+            }
             case TOXIC_WASTE_WARHEAD -> {
                 Blasts.detonate(level, c, Blasts.profile("toxic_waste_warhead"), by, bombScale);
                 ThrownExplosive.toxinSplash(level, c, Math.max(1.5f, TOXIC_WASTE_RADIUS * bombScale), level.getRandom());
@@ -246,6 +272,8 @@ public final class Charges {
     /** Gas and smoke warheads: canisters each; the toxic waste warhead's splash radius; how high a missile bursts a cluster. */
     public static final int CLUSTER_CANISTERS = 14;
     public static final float TOXIC_WASTE_RADIUS = 10;
+    /** The chemical warhead's cloud as it bursts: how far it reaches at once, and how thick it is (5x full strength). */
+    public static final float CHEMICAL_RADIUS = 9, CHEMICAL_STRENGTH = 1.5f;
     public static final double AIRBURST_HEIGHT = 30;
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
     /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
