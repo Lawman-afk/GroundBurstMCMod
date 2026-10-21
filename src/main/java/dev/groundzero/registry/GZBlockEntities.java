@@ -163,14 +163,22 @@ public final class GZBlockEntities {
         dev.groundzero.content.pipe.GZPipes.registerCapabilities(event);
     }
 
-    /** Both halves of a tall machine expose the lower half's block entity (cables and pipes may attach to either). */
+    /**
+     * Both halves of a tall or wide machine expose the main half's block entity (cables and pipes may attach to either);
+     * a wide machine's side half answers through its own faces.
+     */
     private static void tallMachine(RegisterCapabilitiesEvent event, dev.groundzero.content.machine.MachineBlock block) {
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.energyFor(side) : null, block);
+                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.energyFor(side, sideHalf(state)) : null, block);
         event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.itemsFor(side) : null, block);
+                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.itemsFor(side, sideHalf(state)) : null, block);
         event.registerBlock(Capabilities.Fluid.BLOCK, (level, pos, state, be, side) ->
-                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.fluidsFor(side) : null, block);
+                level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.fluidsFor(side, sideHalf(state)) : null, block);
+    }
+
+    private static boolean sideHalf(net.minecraft.world.level.block.state.BlockState state) {
+        return state.getBlock() instanceof dev.groundzero.content.machine.WideMachineBlock
+                && state.getValue(dev.groundzero.content.machine.WideMachineBlock.PART) == dev.groundzero.content.machine.WideMachineBlock.Part.SIDE;
     }
 
     private static <T extends MachineBlockEntity> void machine(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {

@@ -5,7 +5,6 @@ import dev.groundzero.content.assembly.Fuze;
 import dev.groundzero.content.assembly.FuzeSettings;
 import dev.groundzero.content.assembly.GZAssembly;
 import dev.groundzero.content.assembly.WarheadAssembly;
-import dev.groundzero.content.effect.EmpFields;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.machine.WideMachineBlock;
 import dev.groundzero.content.ordnance.GZOrdnance;
@@ -16,7 +15,6 @@ import dev.groundzero.registry.GZDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -33,10 +31,9 @@ final class AssemblyTests {
         GZGameTests.test("bench_takes_a_warhead_apart", GZGameTests.FLOOR_16, 20, AssemblyTests::takesApart);
         GZGameTests.test("bench_is_two_blocks_wide", GZGameTests.FLOOR_16, 20, AssemblyTests::wide);
         GZGameTests.test("warhead_keeps_its_fuze_when_picked_up", GZGameTests.FLOOR_16, 20, AssemblyTests::keepsFuze);
-        GZGameTests.test("proximity_fuze_goes_off_when_a_mob_comes_near", GZGameTests.FLOOR_16, 60, AssemblyTests::proximity);
-        GZGameTests.test("only_a_remote_fuze_hears_the_detonator", GZGameTests.FLOOR_16, 20, AssemblyTests::remoteOnly);
-        GZGameTests.test("timed_fuze_counts_down_from_redstone", GZGameTests.FLOOR_16, 20, AssemblyTests::timed);
-        GZGameTests.test("emp_spares_only_impact_fuzes", GZGameTests.FLOOR_16, 20, AssemblyTests::emp);
+        GZGameTests.test("placed_warhead_ignores_detonators", GZGameTests.FLOOR_16, 20, AssemblyTests::placedIgnoresDetonator);
+        GZGameTests.test("bench_sets_the_fuze_setting", GZGameTests.FLOOR_16, 200, AssemblyTests::fuzeSetting);
+        GZGameTests.test("bench_halves_have_their_own_sides", GZGameTests.FLOOR_16, 20, AssemblyTests::halfSides);
         GZGameTests.testOpenSky("barometric_fuze_bursts_high_over_the_target", GZGameTests.FLOOR_16, 400, AssemblyTests::barometric);
         GZGameTests.testOpenSky("timed_fuze_bursts_in_flight", GZGameTests.FLOOR_16, 200, AssemblyTests::timedFlight);
         GZGameTests.testOpenSky("remote_fuze_bursts_on_the_detonator_in_flight", GZGameTests.FLOOR_16, 200, AssemblyTests::remoteFlight);
@@ -183,72 +180,56 @@ final class AssemblyTests {
         be.setFuze(FuzeSettings.of(Fuze.TIMED, 42));
         FuzeSettings kept = be.collectComponents().get(GZDataComponents.FUZE.get());
         helper.assertTrue(kept != null && kept.fuze() == Fuze.TIMED && kept.value() == 42, "the item keeps a 42 s timed fuze: " + kept);
-        helper.assertTrue(be.timer() == 42, "and the warhead counts 42 s");
         helper.succeed();
     }
 
-    /** An armed warhead on a proximity fuze goes off when a pig wanders within its range. */
-    private static void proximity(GameTestHelper helper) {
+    /** A placed warhead does not answer a detonator, whatever its fuze: fuzes act only in a missile. */
+    private static void placedIgnoresDetonator(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
         helper.setBlock(at, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
         ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
-        be.setFuze(FuzeSettings.of(Fuze.PROXIMITY, 4));
-        be.arm(helper.getLevel(), null);
-        helper.runAfterDelay(10, () -> {
-            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(at)).getBlock() instanceof ChargeBlock, "nothing near: still there");
-            helper.spawn(EntityTypes.PIG, new BlockPos(11, 2, 8)).setNoAi(true);
-            helper.succeedWhen(() -> helper.assertTrue(!(helper.getLevel().getBlockState(helper.absolutePos(at)).getBlock() instanceof ChargeBlock),
-                    "it went off"));
-        });
-    }
-
-    /** A detonator sets off the warhead on a remote fuze, not the one on an impact fuze (same frequency). */
-    private static void remoteOnly(GameTestHelper helper) {
-        floor(helper);
-        BlockPos a = new BlockPos(4, 2, 8), b = new BlockPos(12, 2, 8);
-        helper.setBlock(a, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
-        helper.setBlock(b, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
-        ChargeBlockEntity remote = ChargeBlock.at(helper.getLevel(), helper.absolutePos(a)), impact = ChargeBlock.at(helper.getLevel(), helper.absolutePos(b));
-        remote.setFuze(FuzeSettings.of(Fuze.REMOTE, 7));
-        impact.setFuze(FuzeSettings.IMPACT);
-        impact.setFrequency(7);
-        remote.arm(helper.getLevel(), null);
-        impact.arm(helper.getLevel(), null);
-        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 7, null, 12) == 1, "one heard it");
+        be.setFuze(FuzeSettings.of(Fuze.REMOTE, 7));
+        helper.assertTrue(!be.hearsDetonator(), "it does not listen");
+        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 7, null, 12) == 0, "nothing heard it");
         helper.succeed();
     }
 
-    /** A timed fuze: redstone starts its countdown rather than setting it off. */
-    private static void timed(GameTestHelper helper) {
+    /** The setting typed on the bench goes with the fuze into the warhead (and comes back out when it is taken apart). */
+    private static void fuzeSetting(GameTestHelper helper) {
         floor(helper);
-        BlockPos at = new BlockPos(8, 2, 8);
-        helper.setBlock(at, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
-        ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
-        be.setFuze(FuzeSettings.of(Fuze.TIMED, 30));
-        be.arm(helper.getLevel(), null);
-        helper.assertTrue(be.trigger(helper.getLevel(), null), "triggered");
-        helper.assertTrue(be.counting() && be.countdown() == 600, "counting down 30 s: " + be.countdown());
-        be.disarm(helper.getLevel());
-        helper.succeed();
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        b.energy().generate(AssemblyBenchBlockEntity.CAPACITY);
+        load(b, new ItemStack(GZAssembly.HE_CHARGE.get()), new ItemStack(GZAssembly.LIGHT_CASING.get()), new ItemStack(GZAssembly.BAROMETRIC_FUZE.get()));
+        b.setFuzeValue(500);
+        helper.assertTrue(b.fuzeValue() == 200, "kept within the fuze's range: " + b.fuzeValue());
+        b.setFuzeValue(75);
+        helper.assertTrue(b.startAssembly(), "assembly starts");
+        helper.succeedWhen(() -> {
+            ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
+            FuzeSettings f = out.get(GZDataComponents.FUZE.get());
+            helper.assertTrue(f != null && f.fuze() == Fuze.BAROMETRIC && f.value() == 75, "a barometric fuze at 75: " + f);
+        });
     }
 
-    /** An EMP makes a timed-fuze warhead safe; one on an impact fuze (mechanical) stays armed. */
-    private static void emp(GameTestHelper helper) {
+    /** Each half of the bench answers pipes through its own faces; the faces where the halves meet expose nothing. */
+    private static void halfSides(GameTestHelper helper) {
         floor(helper);
-        BlockPos a = new BlockPos(6, 2, 8), b = new BlockPos(10, 2, 8);
-        helper.setBlock(a, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
-        helper.setBlock(b, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
-        ChargeBlockEntity timed = ChargeBlock.at(helper.getLevel(), helper.absolutePos(a)), impact = ChargeBlock.at(helper.getLevel(), helper.absolutePos(b));
-        timed.setFuze(FuzeSettings.of(Fuze.TIMED, 30));
-        timed.arm(helper.getLevel(), null);
-        impact.arm(helper.getLevel(), null);
-        helper.runAfterDelay(2, () -> {
-            EmpFields.add(helper.getLevel(), helper.absoluteVec(new Vec3(8, 2, 8)), 6, 20, null);
-            helper.assertTrue(!timed.armed(), "the timed fuze is safe");
-            helper.assertTrue(impact.armed(), "the impact fuze is still armed");
-            impact.disarm(helper.getLevel());
-            helper.succeed();
-        });
+        BlockPos main = new BlockPos(8, 2, 8);
+        AssemblyBenchBlockEntity b = bench(helper, main);
+        var level = helper.getLevel();
+        BlockPos m = helper.absolutePos(main), s = helper.absolutePos(main.west());
+        var cap = net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK;
+        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null && level.getCapability(cap, s, Direction.DOWN) != null,
+                "both bottoms take items to begin with");
+        // The side half's bottom set to None: only that bottom closes.
+        b.changeSides(true, c -> c.cycleItems(dev.groundzero.content.machine.SideConfig.Face.BOTTOM, true, b.allowedItemModes()));
+        helper.assertTrue(b.sides(true).items(dev.groundzero.content.machine.SideConfig.Face.BOTTOM)
+                == dev.groundzero.content.machine.SideConfig.ItemMode.NONE, "the side half's bottom is None");
+        helper.assertTrue(level.getCapability(cap, s, Direction.DOWN) == null, "the side half's bottom is closed");
+        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null, "the main half's bottom is still open");
+        helper.assertTrue(level.getCapability(cap, m, Direction.WEST) == null && level.getCapability(cap, s, Direction.EAST) == null,
+                "the faces between the halves expose nothing");
+        helper.succeed();
     }
 }

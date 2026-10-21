@@ -26,7 +26,8 @@ import net.minecraft.sounds.SoundEvents;
  * friends). Collapsed it is a small wrench tab; expanded it shows channel buttons stacked on the left (items or fuel,
  * energy, and fluids for machines with a tank) and the machine's six faces in an unfolded-cube layout on the right.
  * Items cycle None, Input, Output, Input & Output (right-click goes back; only modes the machine supports); energy
- * and fluids toggle. Auto-eject pushes products out of every Output face.
+ * and fluids toggle. Auto-eject pushes products out of every Output face. A two-block-wide machine (the Assembly Bench)
+ * shows both halves unfolded side by side: its top, front, bottom and back once per half, and its two end faces.
  */
 final class SideConfigTab {
     private static final Identifier TEXTURE = GroundZero.id("textures/gui/machine/side_config.png");
@@ -38,17 +39,25 @@ final class SideConfigTab {
     private static final int CHANNEL_X = 6, CHANNEL_Y = 22, CHANNEL_W = 40, CHANNEL_H = 12, CHANNEL_STEP = 14;
     private static final int TEXT = 0xFFE6E2D2, TEXT_DIM = 0xFF9AA0A8;
     private static final int GRID_X = 50, GRID_Y = 22, CELL = 20;
-    /** Unfolded-cube layout: column, row of each face. */
-    private static final int[][] CELLS = new int[Face.values().length][];
+    /** A face square in the unfolded layout: which face, of which half (true: a wide machine's side half), where. */
+    private record Cell(Face face, boolean half, int col, int row) {}
 
-    static {
-        CELLS[Face.TOP.ordinal()] = new int[] {1, 0};
-        CELLS[Face.LEFT.ordinal()] = new int[] {0, 1};
-        CELLS[Face.FRONT.ordinal()] = new int[] {1, 1};
-        CELLS[Face.RIGHT.ordinal()] = new int[] {2, 1};
-        CELLS[Face.BOTTOM.ordinal()] = new int[] {1, 2};
-        CELLS[Face.BACK.ordinal()] = new int[] {2, 2};
-    }
+    /** Unfolded-cube layout of a one-block machine. */
+    private static final List<Cell> CELLS = List.of(new Cell(Face.TOP, false, 1, 0), new Cell(Face.LEFT, false, 0, 1),
+            new Cell(Face.FRONT, false, 1, 1), new Cell(Face.RIGHT, false, 2, 1), new Cell(Face.BOTTOM, false, 1, 2),
+            new Cell(Face.BACK, false, 2, 2));
+    /**
+     * A two-block-wide machine unfolded: the main half on the left as you face its front, the side half on the right;
+     * the backs unfold past the right end (the right half's back first).
+     */
+    private static final List<Cell> WIDE_CELLS = List.of(new Cell(Face.TOP, false, 1, 0), new Cell(Face.TOP, true, 2, 0),
+            new Cell(Face.LEFT, false, 0, 1), new Cell(Face.FRONT, false, 1, 1), new Cell(Face.FRONT, true, 2, 1),
+            new Cell(Face.RIGHT, true, 3, 1), new Cell(Face.BOTTOM, false, 1, 2), new Cell(Face.BOTTOM, true, 2, 2),
+            new Cell(Face.BACK, true, 3, 2), new Cell(Face.BACK, false, 4, 2));
+    /** The wide layout keeps the panel's size: channel buttons go in a row along the top, the faces in five columns under them. */
+    private static final int WIDE_GRID_X = 6, WIDE_GRID_Y = 38, WIDE_CHANNEL_STEP = 44;
+    private static final String T_LEFT_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.left_half", "%s, left half");
+    private static final String T_RIGHT_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.right_half", "%s, right half");
 
     private enum Channel { ITEMS, ENERGY, FLUID }
 
@@ -74,9 +83,51 @@ final class SideConfigTab {
         return channels().contains(selected) ? selected : Channel.ITEMS;
     }
 
+    private boolean wide() {
+        return this.menu.machine().wide();
+    }
+
+    private List<Cell> cells() {
+        return wide() ? WIDE_CELLS : CELLS;
+    }
+
+    private int panelWidth() {
+        return PANEL_W;
+    }
+
+    private int gridX() {
+        return wide() ? WIDE_GRID_X : GRID_X;
+    }
+
+    private int gridY() {
+        return wide() ? WIDE_GRID_Y : GRID_Y;
+    }
+
+    /** Where channel button {@code i} sits on the panel: stacked on the left, or in a row along the top (wide machines). */
+    private int channelX(int i) {
+        return CHANNEL_X + (wide() ? i * WIDE_CHANNEL_STEP : 0);
+    }
+
+    private int channelY(int i) {
+        return CHANNEL_Y + (wide() ? 0 : i * CHANNEL_STEP);
+    }
+
+    private SideConfig sides(boolean half) {
+        return half ? this.menu.sideHalf() : this.menu.sides();
+    }
+
+    /** A face's name: on a wide machine, which half (its ends are just Left and Right). */
+    private Component faceName(Cell cell) {
+        Component name = Component.translatable(cell.face().translationKey());
+        if (!wide() || cell.face() == Face.LEFT || cell.face() == Face.RIGHT) {
+            return name;
+        }
+        return Component.translatable(cell.half() ? T_RIGHT_HALF : T_LEFT_HALF, name);
+    }
+
     /** Screen-space area the tab occupies (also reported to JEI so it moves out of the way). */
     Rect2i area(int left, int top, int imageWidth) {
-        return open ? new Rect2i(left + imageWidth - 2, top + 4, PANEL_W, PANEL_H) : new Rect2i(left + imageWidth - 2, top + 4, TAB_W, TAB_H);
+        return open ? new Rect2i(left + imageWidth - 2, top + 4, panelWidth(), PANEL_H) : new Rect2i(left + imageWidth - 2, top + 4, TAB_W, TAB_H);
     }
 
     void render(GuiGraphicsExtractor g, Font font, int left, int top, int imageWidth, int mouseX, int mouseY) {
@@ -96,19 +147,20 @@ final class SideConfigTab {
         List<Channel> channels = channels();
         for (int i = 0; i < channels.size(); i++) {
             Channel c = channels.get(i);
-            channelButton(g, font, x + CHANNEL_X, y + CHANNEL_Y + i * CHANNEL_STEP, c == channel, c);
+            channelButton(g, font, x + channelX(i), y + channelY(i), c == channel, c);
         }
 
-        SideConfig sides = this.menu.sides();
-        @Nullable Face hovered = null;
-        for (Face face : Face.values()) {
-            int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
+        @Nullable Cell hovered = null;
+        for (Cell cell : cells()) {
+            Face face = cell.face();
+            SideConfig sides = sides(cell.half());
+            int fx = x + gridX() + cell.col() * CELL, fy = y + gridY() + cell.row() * CELL;
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx, fy, FRAME_U, 0, 18, 18, 256, 256);
             g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, fx + 1, fy + 1, face == Face.FRONT ? FRONT_U : ICON_U, 0, 16, 16, 256, 256);
-            if (!this.menu.machine().faceOpen(face) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
+            if (!this.menu.machine().faceOpen(face, cell.half()) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
                 blocked(g, fx, fy);
                 if (mouseX >= fx && mouseX < fx + 18 && mouseY >= fy && mouseY < fy + 18) {
-                    g.setTooltipForNextFrame(Component.translatable(MachineText.FACE_COVERED, Component.translatable(face.translationKey())), mouseX, mouseY);
+                    g.setTooltipForNextFrame(Component.translatable(MachineText.FACE_COVERED, faceName(cell)), mouseX, mouseY);
                 }
                 continue;
             }
@@ -122,9 +174,10 @@ final class SideConfigTab {
             }
             if (mouseX >= fx && mouseX < fx + 18 && mouseY >= fy && mouseY < fy + 18) {
                 g.fill(fx + 1, fy + 1, fx + 17, fy + 17, 0x40FFFFFF);
-                hovered = face;
+                hovered = cell;
             }
         }
+        SideConfig sides = this.menu.sides();
 
         boolean eject = this.menu.machine().hasOutputs();
         if (eject) {
@@ -133,13 +186,15 @@ final class SideConfigTab {
         }
 
         if (hovered != null) {
+            SideConfig hs = sides(hovered.half());
+            Face hf = hovered.face();
             Component value = switch (channel) {
-                case ENERGY -> Component.translatable(sides.energy(hovered) ? MachineText.ENERGY_ON : MachineText.ENERGY_OFF);
-                case FLUID -> Component.translatable(sides.fluid(hovered) ? MachineText.FLUID_ON : MachineText.FLUID_OFF);
-                case ITEMS -> Component.translatable(sides.items(hovered).translationKey());
+                case ENERGY -> Component.translatable(hs.energy(hf) ? MachineText.ENERGY_ON : MachineText.ENERGY_OFF);
+                case FLUID -> Component.translatable(hs.fluid(hf) ? MachineText.FLUID_ON : MachineText.FLUID_OFF);
+                case ITEMS -> Component.translatable(hs.items(hf).translationKey());
             };
             g.setTooltipForNextFrame(font, List.of(
-                    Component.translatable(MachineText.FACE_MODE, Component.translatable(hovered.translationKey()), value),
+                    Component.translatable(MachineText.FACE_MODE, faceName(hovered), value),
                     Component.translatable(channel == Channel.ITEMS ? MachineText.HINT_CYCLE : MachineText.HINT_TOGGLE).withColor(TEXT_DIM)),
                     Optional.empty(), mouseX, mouseY);
         } else if (eject && inside(mouseX, mouseY, x + 6, y + 95, 90, 14)) {
@@ -210,17 +265,18 @@ final class SideConfigTab {
         }
         List<Channel> channels = channels();
         for (int i = 0; i < channels.size(); i++) {
-            if (inside(mx, my, x + CHANNEL_X, y + CHANNEL_Y + i * CHANNEL_STEP, CHANNEL_W, CHANNEL_H)) {
+            if (inside(mx, my, x + channelX(i), y + channelY(i), CHANNEL_W, CHANNEL_H)) {
                 selected = channels.get(i);
                 sound();
                 return true;
             }
         }
         Channel channel = current();
-        for (Face face : Face.values()) {
-            int fx = x + GRID_X + CELLS[face.ordinal()][0] * CELL, fy = y + GRID_Y + CELLS[face.ordinal()][1] * CELL;
+        for (Cell cell : cells()) {
+            Face face = cell.face();
+            int fx = x + gridX() + cell.col() * CELL, fy = y + gridY() + cell.row() * CELL;
             if (inside(mx, my, fx, fy, 18, 18)) {
-                if (!this.menu.machine().faceOpen(face) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
+                if (!this.menu.machine().faceOpen(face, cell.half()) || channel == Channel.FLUID && !this.menu.machine().fluidFaceAllowed(face)) {
                     return true;
                 }
                 int id = switch (channel) {
@@ -228,7 +284,7 @@ final class SideConfigTab {
                     case FLUID -> MachineMenu.BUTTON_FLUID;
                     case ITEMS -> button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT ? MachineMenu.BUTTON_ITEMS_PREV : MachineMenu.BUTTON_ITEMS_NEXT;
                 };
-                send(id + face.ordinal());
+                send(id + face.ordinal() + (cell.half() ? MachineMenu.BUTTON_SIDE_HALF : 0));
                 return true;
             }
         }

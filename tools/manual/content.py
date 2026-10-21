@@ -844,9 +844,11 @@ entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench"
     text("""
 The **Ordnance Assembly Bench** puts warheads together. It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
 
-A warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides what sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.
+A warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides where the missile carrying it sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.
 
-**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped.
+**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped or set again.
+
+The bench is two blocks wide, and its side configuration (the wrench tab) covers both halves: each half's top, front, bottom and back, and its two ends, can be set separately.
 """),
     spot("assembly_bench", """
 The readout says what the parts on the bench make, and in red what is missing or wrong (a core and a casing of different classes will not go together).
@@ -865,13 +867,13 @@ The readout says what the parts on the bench make, and in red what is missing or
 A core's tooltip names the warhead it makes.
 """),
     text("""
-**Fuzes**, and what sets each off (as well as redstone, a fall or a hit):
+**Fuzes** work in the missile; each decides where its warhead goes off. Set a fuze's setting on the bench before you press Assemble.
 
-**Impact:** nothing more.
-**Timed:** redstone starts a countdown, 1 to 600 seconds; on a missile it counts from launch.
-**Proximity:** anything living within 2 to 16 blocks; on a missile, that close to the ground.
-**Remote:** a detonator on its frequency, even in flight.
-**Barometric:** on a missile, a set height (10 to 200 blocks) over the target.
+**Impact:** where the missile hits.
+**Timed:** 1 to 600 seconds after launch, wherever it is.
+**Proximity:** 2 to 16 blocks above the ground on the way down.
+**Remote:** when a detonator on its frequency is pressed, even in flight (or where it hits).
+**Barometric:** 10 to 200 blocks over its target, on the way down.
 """),
     spot("medium_warhead_casing", """
 Casings come in three classes, marked by yellow bands: one for **Light**, two for **Medium**, three for **Heavy**. A core only fits a casing of its own class.
@@ -906,9 +908,9 @@ entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhe
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
-Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**, and the fuze decides what sets it off.
+Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, in the air over its target, a set time after launch, or on a detonator's signal.
 
-Placed on their own, warheads stand nose up on their mounting rings. Open one to see its fuze, change the fuze's setting, and **Arm** it. Every armed warhead goes off on redstone, and nothing holds a warhead up: with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off. On top of that its fuze adds its own trigger: a **Timed** fuze counts down from a redstone signal, a **Proximity** fuze goes off when anything living comes near, a **Remote** fuze answers a detonator on its frequency. An **Impact** fuze adds nothing; a **Barometric** fuze works as an impact fuze until a missile carries it.
+Placed on their own, warheads stand nose up on their mounting rings, waiting to be fitted to a missile; with nothing under them they fall. A placed warhead cannot be armed and nothing sets it off, except another explosion.
 """),
     spot("he_warhead", """
 The general-purpose warhead, olive with a yellow band: a crater about 6 blocks across.

@@ -34,6 +34,10 @@ public final class WarheadAssembly {
         }
     }
 
+    /** Text for the JEI category (kept here, in common code, so the language data always has it). */
+    public static final String JEI_INFO = GZLang.add(GroundZero.MODID + ".jei.assembly", "Class %s, %s s at %s FE/t");
+    public static final String JEI_ANY_FUZE = GZLang.add(GroundZero.MODID + ".jei.any_fuze", "Any fuze: it decides where the missile's warhead goes off");
+
     private static @Nullable Map<ChargeBlock, ComponentItems.PayloadCore> coreByWarhead;
 
     private WarheadAssembly() {}
@@ -90,10 +94,10 @@ public final class WarheadAssembly {
         return output.isEmpty() ? Problem.NONE : Problem.OUTPUT_FULL;
     }
 
-    /** The warhead a core and a fuze make (the fuze at its default setting). */
-    public static ItemStack assemble(ComponentItems.PayloadCore core, ComponentItems.FuzeItem fuze) {
+    /** The warhead a core and a fuze make, the fuze given {@code setting}. */
+    public static ItemStack assemble(ComponentItems.PayloadCore core, ComponentItems.FuzeItem fuze, int setting) {
         ItemStack out = new ItemStack(core.warhead());
-        out.set(GZDataComponents.FUZE.get(), FuzeSettings.fresh(fuze.fuze));
+        out.set(GZDataComponents.FUZE.get(), FuzeSettings.of(fuze.fuze, setting));
         return out;
     }
 

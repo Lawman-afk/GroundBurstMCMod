@@ -12,7 +12,7 @@ Payload cores:
 - Gas / Smoke / Cryo / EMP Canister Dispensers: four canisters (the grenades' cans) strapped on a plate.
 - Toxic Waste Tank: a dark drum with a glowing green band, a hazard-striped rim and a spout.
 - Chemical Agent Canister: a pale grey pressure bottle with two green bands and a brass valve.
-Casings: finned steel shells, open at the top, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
+Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
 Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Timed (a clock dial), Proximity (a dark
 sensor dome with a green lamp), Remote (a whip antenna), Barometric (vent ports and a brass pressure ring).
 """
@@ -229,9 +229,7 @@ def chemical_agent_canister() -> None:
 def casing(name: str, bands: int, r: float, w: float, top: float, fin: float) -> None:
     m = model(name)
     body = prism(m, "shell", 8, 8, r, w, 3, top)
-    # Four tail fins at the bottom, crossing under the shell.
-    m.box("fin_x", (8 - fin, 1, 7.6), (8 + fin, 5, 8.4))
-    m.box("fin_z", (7.6, 1.25, 8 - fin), (8.4, 5, 8 + fin))
+    m.box("ring", (8 - r - 0.2, 2, 8 - w - 0.2), (8 + r + 0.2, 3, 8 + w + 0.2))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
 
@@ -249,7 +247,7 @@ def casing(name: str, bands: int, r: float, w: float, top: float, fin: float) ->
                     t.hline(x, y + 1 + 2 * k, wd, YELLOW.base)
         return paint
     fill_all(m, t, body, shell(True))
-    fill_all(m, t, ["fin_x", "fin_z"], shaded(SHELL))
+    m.paint_all(t, "ring", shaded(STEEL))                     # the mounting ring that seats it on the missile
     G.finish(m, t)
 
 

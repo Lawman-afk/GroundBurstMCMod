@@ -185,18 +185,19 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout
-    # under them; Assemble / Take Apart buttons (drawn by the screen) below it, with the redstone button beside them.
+    # under them; the fuze's setting (label and field, drawn by the screen) under that, then the Assemble / Take Apart
+    # buttons (drawn by the screen) with the redstone button beside them.
     "assembly_bench": {
         "title": (8, 6),
-        "size": (176, 192),
+        "size": (176, 210),
         "slots": [("core", 32, 24), ("casing", 52, 24), ("fuze", 72, 24), ("out_big", 132, 24)],
         "energy": (8, 20, 14, 46),
         "progress": (98, 24, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
-        "redstone": (151, 81, 18, 18),
+        "redstone": (151, 98, 18, 18),
         "readout": (34, 50, 134, 24),
-        "inventory": (8, 110),
+        "inventory": (8, 128),
     },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {

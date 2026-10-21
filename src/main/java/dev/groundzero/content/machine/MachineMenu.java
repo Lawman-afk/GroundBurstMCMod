@@ -25,6 +25,8 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_DUMP = 50;
     /** + n: a machine's own control button n (e.g. reactor control rods), see MachineBlockEntity#handleButton. */
     public static final int BUTTON_MACHINE = 70;
+    /** Added to a face button (items, energy, fluid) to mean a two-block-wide machine's side half. */
+    public static final int BUTTON_SIDE_HALF = 100;
 
     private final MachineBlockEntity machine;
     private final MachineLayout layout;
@@ -107,6 +109,13 @@ public class MachineMenu extends AbstractContainerMenu {
         return config;
     }
 
+    /** A two-block-wide machine's side half's faces, as last synced (client) or live (server). */
+    public SideConfig sideHalf() {
+        SideConfig config = new SideConfig();
+        config.unpack(data.get(MachineBlockEntity.DATA_SIDE2_ITEMS), data.get(MachineBlockEntity.DATA_SIDE2_FLAGS));
+        return config;
+    }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id == BUTTON_REDSTONE) {
@@ -125,13 +134,17 @@ public class MachineMenu extends AbstractContainerMenu {
             return true;
         }
         int faces = SideConfig.Face.values().length;
+        boolean half = id >= BUTTON_SIDE_HALF && this.machine.wide();
+        if (half) {
+            id -= BUTTON_SIDE_HALF;
+        }
         for (int base : new int[] {BUTTON_ITEMS_NEXT, BUTTON_ITEMS_PREV, BUTTON_ENERGY, BUTTON_FLUID}) {
             if (id >= base && id < base + faces) {
                 SideConfig.Face face = SideConfig.Face.values()[id - base];
-                if (!this.machine.faceOpen(face)) {
+                if (!this.machine.faceOpen(face, half)) {
                     return false;                      // covered by the machine's own structure
                 }
-                this.machine.changeSides(c -> {
+                this.machine.changeSides(half, c -> {
                     if (base == BUTTON_ENERGY) {
                         c.toggleEnergy(face);
                     } else if (base == BUTTON_FLUID) {

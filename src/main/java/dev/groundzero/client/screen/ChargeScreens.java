@@ -47,13 +47,6 @@ public final class ChargeScreens {
             GZLang.add(GroundZero.MODID + ".charge.wire.yellow", "Yellow"), GZLang.add(GroundZero.MODID + ".charge.wire.green", "Green")};
     private static final int[] WIRE_COLORS = {0xFFD23A2E, 0xFF3A6AD8, 0xFFE8C83A, 0xFF3AAA4A};
     private static final String T_DETONATOR = GZLang.add(GroundZero.MODID + ".detonator.title", "Detonator frequency");
-    private static final String T_FUZE = GZLang.add(GroundZero.MODID + ".charge.fuze", "Fuze: %s");
-    private static final String[] T_FUZE_HINT = {
-            GZLang.add(GroundZero.MODID + ".charge.hint_fuze.impact", "Armed: redstone, a fall or a hit sets it off"),
-            GZLang.add(GroundZero.MODID + ".charge.hint_fuze.timed", "Armed: redstone starts its timer"),
-            GZLang.add(GroundZero.MODID + ".charge.hint_fuze.proximity", "Armed: anything living that comes near sets it off"),
-            GZLang.add(GroundZero.MODID + ".charge.hint_fuze.remote", "Armed: a detonator on its frequency sets it off"),
-            GZLang.add(GroundZero.MODID + ".charge.hint_fuze.barometric", "Placed, it works as an impact fuze")};
 
     private static final int PANEL = 0xE0181A1C, EDGE = 0xFF5A5E62, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9EA2, RED = 0xFFFF5040, GREEN = 0xFF60D060;
 
@@ -106,11 +99,9 @@ public final class ChargeScreens {
         private final boolean armed;
         private boolean timer;
         private final int frequency, seconds;
-        /** A warhead's fuze: its name is shown, and its one setting (if it has one) can be changed. */
-        private final dev.groundzero.content.assembly.FuzeSettings fuze;
-        private @Nullable EditBox frequencyBox, secondsBox, valueBox;
+        private @Nullable EditBox frequencyBox, secondsBox;
         private @Nullable Button remoteButton, timerButton;
-        private int frequencyRow = -1, secondsRow = -1, fuzeRow = -1, valueRow = -1, hintRow, height;
+        private int frequencyRow = -1, secondsRow = -1, hintRow, height;
         private boolean sent;
 
         Settings(BlockPos pos, ChargeBlockEntity be) {
@@ -121,7 +112,6 @@ public final class ChargeScreens {
             this.timer = be.mode() == ChargeBlockEntity.Mode.TIMER;
             this.frequency = be.frequency();
             this.seconds = be.timer();
-            this.fuze = be.fuze();
         }
 
         private int top() {
@@ -137,22 +127,13 @@ public final class ChargeScreens {
                 choiceRow = y;
                 y += ROW + 2;
             }
-            if (this.kind.bomb) {
-                this.fuzeRow = y;
-                y += 16;
-                if (this.fuze.fuze().setting != dev.groundzero.content.assembly.Fuze.Setting.NONE) {
-                    this.valueRow = y;
-                    y += ROW;
-                }
-            } else {
-                if (this.kind.remote) {
-                    this.frequencyRow = y;
-                    y += ROW;
-                }
-                if (this.kind.timer) {
-                    this.secondsRow = y;
-                    y += ROW;
-                }
+            if (this.kind.remote) {
+                this.frequencyRow = y;
+                y += ROW;
+            }
+            if (this.kind.timer) {
+                this.secondsRow = y;
+                y += ROW;
             }
             this.hintRow = y + 2;
             y += 16;
@@ -174,13 +155,6 @@ public final class ChargeScreens {
                 this.secondsBox = addRenderableWidget(new EditBox(this.font, x + 150, top + this.secondsRow, 84, 18, Component.translatable(T_SECONDS)));
                 this.secondsBox.setValue(Integer.toString(this.seconds));
                 this.secondsBox.setMaxLength(3);
-            }
-            if (this.valueRow >= 0) {
-                var setting = this.fuze.fuze().setting;
-                this.valueBox = addRenderableWidget(new EditBox(this.font, x + 170, top + this.valueRow, 64, 18, Component.translatable(setting.label)));
-                this.valueBox.setValue(Integer.toString(this.fuze.value()));
-                this.valueBox.setMaxLength(Integer.toString(setting.max).length());
-                this.valueBox.active = !this.armed;
             }
             Component act = Component.translatable(this.armed ? T_MAKE_SAFE : T_ARM);
             addRenderableWidget(Button.builder(act, b -> send(this.armed ? ChargePayloads.SAFE : ChargePayloads.ARM))
@@ -212,9 +186,7 @@ public final class ChargeScreens {
                 this.sent = true;
                 ClientPacketDistributor.sendToServer(new ChargePayloads.Settings(this.pos, this.timer,
                         this.frequencyBox == null ? this.frequency : parse(this.frequencyBox.getValue(), this.frequency, 0, ChargeKind.MAX_FREQUENCY),
-                        this.secondsBox == null ? this.seconds : parse(this.secondsBox.getValue(), this.seconds, 1, ChargeKind.MAX_TIMER),
-                        this.valueBox == null ? this.fuze.value() : parse(this.valueBox.getValue(), this.fuze.value(),
-                                this.fuze.fuze().setting.min, this.fuze.fuze().setting.max), action));
+                        this.secondsBox == null ? this.seconds : parse(this.secondsBox.getValue(), this.seconds, 1, ChargeKind.MAX_TIMER), action));
             }
             super.onClose();
         }
@@ -244,13 +216,7 @@ public final class ChargeScreens {
             if (this.secondsRow >= 0) {
                 g.text(this.font, Component.translatable(T_SECONDS), x + 10, top + this.secondsRow + 5, choice && !this.timer ? DIM : TEXT);
             }
-            if (this.fuzeRow >= 0) {
-                g.text(this.font, Component.translatable(T_FUZE, Component.translatable(this.fuze.fuze().name)), x + 10, top + this.fuzeRow + 2, TEXT);
-            }
-            if (this.valueRow >= 0) {
-                g.text(this.font, Component.translatable(this.fuze.fuze().setting.label), x + 10, top + this.valueRow + 5, TEXT);
-            }
-            String key = this.armed ? T_LOCKED : this.kind.bomb ? T_FUZE_HINT[this.fuze.fuze().ordinal()] : switch (this.kind.sensor) {
+            String key = this.armed ? T_LOCKED : switch (this.kind.sensor) {
                 case PRESSURE -> T_HINT_MINE;
                 case TRIPWIRE -> T_HINT_CLAYMORE;
                 case NONE -> this.kind.bomb && !this.timer ? T_HINT_BOMB : this.timer ? T_HINT_TIMER : T_HINT;

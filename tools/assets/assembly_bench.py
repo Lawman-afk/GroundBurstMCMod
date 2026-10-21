@@ -26,6 +26,7 @@ NAME = "assembly_bench"
 X0, X1 = -24, 8          # the side half (west) then the main half: 32 px across
 MID = -8                 # the seam between the halves: the cradle sits over it
 TOP = 13                 # bench top surface
+DZ = 2                   # drawn centred, then moved back this far: its back edge meets the block behind
 
 
 def tone(d: str) -> int:
@@ -75,7 +76,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("trolley", g.box("trolley", (MID - 2, 26.5, -2), (MID + 2, 28, 2), faces=("north", "south", "east", "west", "down"), bone=T))
     add("hoist_motor", g.box("hoist_motor", (MID - 1.5, 28, -2.5), (MID + 1.5, 31, -1.5), faces=("north", "east", "west", "up"), bone=T))
     H = "hook"
-    add("chain", g.box("chain", (MID - 0.5, 21.5, -0.5), (MID + 0.5, 26.5, 0.5), faces=("north", "south", "east", "west"), bone=H))
+    # The chain runs up through the trolley into the beam, so with the hook lowered it still reaches the trolley.
+    add("chain", g.box("chain", (MID - 0.5, 21.5, -0.5), (MID + 0.5, 30.5, 0.5), faces=("north", "south", "east", "west"), bone=H))
     add("block", g.box("hook_block", (MID - 1.5, 19.5, -1), (MID + 1.5, 21.5, 1), faces=("north", "south", "east", "west", "up", "down"), bone=H))
     add("hook", g.box("hook_tip", (MID - 0.5, 18.5, -0.5), (MID + 0.5, 19.5, 0.5), faces=("north", "south", "east", "west", "down"), bone=H))
     # Tools on a pegboard at the back of the main half, a ratchet wrench lying by the work.
@@ -90,6 +92,13 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("lamp_lens", g.box("lamp_lens", (X1 - 7.5, TOP + 6.9, -7), (X1 - 5.5, TOP + 7, -5), faces=("down",), shade=False, bone=F))
     # The blueprint sheet at the west end (thin, just above the top).
     add("blueprint", g.box("blueprint", (X0 + 4, TOP, -6.5), (X0 + 13, TOP + 0.2, -3), faces=("up", "north", "east", "west", "south"), bone=F))
+
+    # Everything sits 2 px back from where it was drawn, so the bench stands against the block behind it.
+    for bone in g.bones:
+        bone.pivot = (bone.pivot[0], bone.pivot[1], bone.pivot[2] + DZ)
+        for b in bone.boxes:
+            b.frm = (b.frm[0], b.frm[1], b.frm[2] + DZ)
+            b.to = (b.to[0], b.to[1], b.to[2] + DZ)
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)

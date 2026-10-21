@@ -21,11 +21,11 @@ public final class ComponentItems {
     static final String T_FUZE = GZLang.add(GroundZero.MODID + ".component.fuze", "Fuze");
     static final String T_BENCH = GZLang.add(GroundZero.MODID + ".component.bench", "Fitted at an Ordnance Assembly Bench");
     static final String[] T_FUZE_WHAT = {
-            GZLang.add(GroundZero.MODID + ".component.fuze.impact", "Goes off on redstone, or when dropped or shot"),
-            GZLang.add(GroundZero.MODID + ".component.fuze.timed", "Redstone starts a countdown (1-600 s)"),
-            GZLang.add(GroundZero.MODID + ".component.fuze.proximity", "Goes off when anything living comes near (2-16 blocks)"),
-            GZLang.add(GroundZero.MODID + ".component.fuze.remote", "Goes off on a Remote Detonator signal"),
-            GZLang.add(GroundZero.MODID + ".component.fuze.barometric", "Bursts at a set height when a missile delivers it")};
+            GZLang.add(GroundZero.MODID + ".component.fuze.impact", "The missile's warhead goes off where it hits"),
+            GZLang.add(GroundZero.MODID + ".component.fuze.timed", "Goes off a set time after launch (1-600 s)"),
+            GZLang.add(GroundZero.MODID + ".component.fuze.proximity", "Goes off close to the ground (2-16 blocks)"),
+            GZLang.add(GroundZero.MODID + ".component.fuze.remote", "Goes off on a Remote Detonator signal, in flight"),
+            GZLang.add(GroundZero.MODID + ".component.fuze.barometric", "Bursts at a set height over the target (10-200 blocks)")};
 
     private ComponentItems() {}
 

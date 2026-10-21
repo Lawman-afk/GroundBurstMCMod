@@ -25,7 +25,7 @@ final class BombTests {
     private BombTests() {}
 
     static void register() {
-        GZGameTests.test("he_bomb_goes_off_on_its_frequency", GZGameTests.FLOOR_16, 40, BombTests::signal);
+        GZGameTests.test("armed_warhead_goes_off_on_redstone", GZGameTests.FLOOR_16, 40, BombTests::signal);
         GZGameTests.test("armed_bomb_goes_off_when_it_lands", GZGameTests.FLOOR_16, 80, BombTests::impact);
         GZGameTests.test("safe_bomb_falls_and_lands_whole", GZGameTests.FLOOR_16, 80, BombTests::safeFall);
         GZGameTests.test("bunker_buster_goes_off_where_it_stands", GZGameTests.FLOOR_16, 40, BombTests::bunker);
@@ -62,15 +62,13 @@ final class BombTests {
         return helper.getLevel().getBlockState(helper.absolutePos(rel)).is(block);
     }
 
-    /** An armed HE warhead with a remote fuze on frequency 12 goes off when a detonator on 12 is pressed. */
+    /** An armed HE warhead goes off on a redstone signal (how its effects are set off here; players cannot arm one). */
     private static void signal(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.HE_WARHEAD.block().get(), at, Direction.NORTH, false);
-        be.setFuze(dev.groundzero.content.assembly.FuzeSettings.of(dev.groundzero.content.assembly.Fuze.REMOTE, 12));
-        be.arm(helper.getLevel(), null);
+        place(helper, GZOrdnance.HE_WARHEAD.block().get(), at, Direction.NORTH, true);
         helper.runAfterDelay(4, () -> {
-            helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 12, null, 10) == 1, "it took the signal");
+            helper.setBlock(new BlockPos(9, 2, 8), Blocks.REDSTONE_BLOCK);
             helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.HE_WARHEAD.block().get())
                     && is(helper, new BlockPos(8, 1, 8), Blocks.AIR), "gone off, and blown a hole"));
         });

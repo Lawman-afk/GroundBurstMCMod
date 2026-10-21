@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import dev.groundzero.content.assembly.Fuze;
 import dev.groundzero.content.assembly.FuzeSettings;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.registry.GZDataComponents;
@@ -47,7 +46,10 @@ public class ChargeBlockEntity extends BlockEntity {
     private int burn = -1;
     private int defuseWire, boomWire, cutWires;
     private @Nullable UUID owner;
-    /** A warhead's fuze (fitted at the Assembly Bench); other charges have none of their own (impact here). */
+    /**
+     * A warhead's fuze (fitted at the Assembly Bench). It only acts in a missile: placed, a warhead just keeps it so the
+     * item it drops still carries it.
+     */
     private FuzeSettings fuze = FuzeSettings.IMPACT;
 
     public ChargeBlockEntity(BlockPos pos, BlockState state) {
@@ -69,23 +71,15 @@ public class ChargeBlockEntity extends BlockEntity {
         return this.fuze;
     }
 
-    /** Fits a warhead's fuze (from its item, or a GameTest): its timer or frequency come from the fuze's setting. */
+    /** Keeps a warhead's fuze (from its item, or a GameTest). */
     public void setFuze(FuzeSettings fuze) {
         this.fuze = fuze;
-        if (kind().bomb) {
-            this.mode = fuze.fuze() == Fuze.TIMED ? Mode.TIMER : Mode.REMOTE;
-            if (fuze.fuze() == Fuze.TIMED) {
-                this.timer = fuze.value();
-            } else if (fuze.fuze() == Fuze.REMOTE) {
-                this.frequency = fuze.value();
-            }
-        }
         sync();
     }
 
-    /** Whether a Remote Detonator on its frequency reaches it (a warhead only with a remote fuze). */
+    /** Whether a Remote Detonator on its frequency reaches it (not a warhead: its fuze works only in a missile). */
     public boolean hearsDetonator() {
-        return kind().remote && (!kind().bomb || this.fuze.fuze() == Fuze.REMOTE);
+        return kind().remote && !kind().bomb;
     }
 
     public int frequency() {
@@ -120,18 +114,9 @@ public class ChargeBlockEntity extends BlockEntity {
         return this.owner;
     }
 
-    /** Fuze settings of a charge that is not a warhead (a warhead keeps its fuze's setting). */
+    /** Fuze settings, from the settings screen. Only while safe. */
     public void configure(Mode mode, int frequency, int timer) {
-        configure(mode, frequency, timer, this.fuze.value());
-    }
-
-    /** Fuze settings, from the settings screen. Only while safe. A warhead takes its fuze's one setting from {@code value}. */
-    public void configure(Mode mode, int frequency, int timer, int value) {
         if (armed()) {
-            return;
-        }
-        if (kind().bomb) {
-            setFuze(this.fuze.with(value));
             return;
         }
         this.mode = kind().fuzeChoice() ? mode : kind().defaultMode();
@@ -252,12 +237,6 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     public void serverTick(ServerLevel level) {
-        if (live() && kind().bomb && this.fuze.fuze() == Fuze.PROXIMITY && !counting() && (level.getGameTime() + this.worldPosition.hashCode()) % 4 == 0
-                && Charges.near(level, this.worldPosition, this.fuze.value())) {
-            level.playSound(null, this.worldPosition, GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 1f, 1.6f);
-            trigger(level, null);
-            return;
-        }
         if (live() && !counting() && (level.getGameTime() + this.worldPosition.hashCode() & 1) == 0
                 && Charges.sensed(level, this.worldPosition, getBlockState())) {
             if (kind().sensor == ChargeKind.Sensor.PRESSURE) {

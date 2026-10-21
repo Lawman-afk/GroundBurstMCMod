@@ -41,7 +41,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     // Sync slots shared by every machine menu. Ints are sent as shorts by vanilla, so 32-bit values use two.
     public static final int DATA_ENERGY_LO = 0, DATA_ENERGY_HI = 1, DATA_CAPACITY_LO = 2, DATA_CAPACITY_HI = 3,
             DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7,
-            DATA_TANKS = 8, DATA_BASE_COUNT = 16;
+            DATA_TANKS = 8, DATA_SIDE2_ITEMS = 16, DATA_SIDE2_FLAGS = 17, DATA_BASE_COUNT = 18;
     /** Tanks a menu can show (two sync slots each: amount, fluid id). Amounts stay below 32768 mB to fit a short. */
     public static final int MAX_TANKS = 4;
     private static final int EJECT_INTERVAL = 8, EJECT_BATCH = 16, FLUID_EJECT_BATCH = 2000;
@@ -59,6 +59,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     private final int[] inputSlots;
     private final int[] outputSlots;
     protected final SideConfig sides = new SideConfig();
+    /** A two-block-wide machine's side half has its own faces (DESIGN.md §10): this is their configuration. */
+    protected final SideConfig sideHalf = new SideConfig();
     protected RedstoneMode redstoneMode = RedstoneMode.IGNORE;
     /** Why the machine is (not) running; shown in the GUI. */
     protected MachineStatus status = MachineStatus.IDLE;
@@ -77,8 +79,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 case DATA_STATUS -> status.ordinal();
                 case DATA_SIDE_ITEMS -> sides.packItems();
                 case DATA_SIDE_FLAGS -> sides.packFlags();
+                case DATA_SIDE2_ITEMS -> sideHalf.packItems();
+                case DATA_SIDE2_FLAGS -> sideHalf.packFlags();
                 default -> {
-                    if (index >= DATA_TANKS && index < DATA_BASE_COUNT) {
+                    if (index >= DATA_TANKS && index < DATA_TANKS + MAX_TANKS * 2) {
                         int t = (index - DATA_TANKS) / 2;
                         if (t >= tanks.size()) {
                             yield 0;
@@ -125,6 +129,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inputSlots = inputSlots;
         this.outputSlots = outputSlots;
         this.sides.restrict(allowedItemModes());
+        this.sideHalf.restrict(allowedItemModes());
         for (SideConfig.ItemMode mode : SideConfig.ItemMode.values()) {
             if (mode != SideConfig.ItemMode.NONE) {
                 this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract());
@@ -353,17 +358,51 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     public @Nullable EnergyHandler energyFor(@Nullable Direction side) {
-        if (side != null && !faceOpen(face(side))) {
+        return energyFor(side, false);
+    }
+
+    /** {@code half}: asked through a wide machine's side half (its own faces). */
+    public @Nullable EnergyHandler energyFor(@Nullable Direction side, boolean half) {
+        if (side != null && !faceOpen(face(side), half)) {
             return null;
         }
-        return side == null || this.sides.energy(face(side)) ? this.energy : null;
+        return side == null || sides(half).energy(face(side)) ? this.energy : null;
+    }
+
+    // --- two-block-wide machines ----------------------------------------------------------------------------------------
+    /** Whether this is a two-block-wide machine (its side half has faces of its own). */
+    public boolean wide() {
+        return getBlockState().getBlock() instanceof WideMachineBlock;
+    }
+
+    /** The face configuration of the main half, or of a wide machine's side half. */
+    public SideConfig sides(boolean half) {
+        return half ? this.sideHalf : this.sides;
+    }
+
+    /** Where a wide machine's side half is. */
+    public BlockPos sideHalfPos() {
+        Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
+        return this.worldPosition.relative(WideMachineBlock.sideward(facing));
+    }
+
+    /** A face of either half: the faces where a wide machine's two halves meet are inside it. */
+    public boolean faceOpen(SideConfig.Face face, boolean half) {
+        if (wide() && face == (half ? SideConfig.Face.LEFT : SideConfig.Face.RIGHT)) {
+            return false;
+        }
+        return faceOpen(face);
     }
 
     public @Nullable ResourceHandler<FluidResource> fluidsFor(@Nullable Direction side) {
-        if (this.tanks.isEmpty() || side != null && (!faceOpen(face(side)) || !fluidFaceAllowed(face(side)))) {
+        return fluidsFor(side, false);
+    }
+
+    public @Nullable ResourceHandler<FluidResource> fluidsFor(@Nullable Direction side, boolean half) {
+        if (this.tanks.isEmpty() || side != null && (!faceOpen(face(side), half) || !fluidFaceAllowed(face(side)))) {
             return null;
         }
-        return side == null || this.sides.fluid(face(side)) ? this.fluidHandler : null;
+        return side == null || sides(half).fluid(face(side)) ? this.fluidHandler : null;
     }
 
     /** Every tank, in GUI order. */
@@ -388,10 +427,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     public @Nullable ResourceHandler<ItemResource> itemsFor(@Nullable Direction side) {
+        return itemsFor(side, false);
+    }
+
+    public @Nullable ResourceHandler<ItemResource> itemsFor(@Nullable Direction side, boolean half) {
         if (side == null) {
             return this.inventory;
         }
-        return faceOpen(face(side)) ? this.automation[this.sides.items(face(side)).ordinal()] : null;
+        return faceOpen(face(side), half) ? this.automation[sides(half).items(face(side)).ordinal()] : null;
     }
 
     public SideConfig sides() {
@@ -431,8 +474,17 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Applies a side-config change from the GUI and tells cables, pipes and capability caches about it. */
     public void changeSides(java.util.function.Consumer<SideConfig> change) {
-        change.accept(this.sides);
+        changeSides(false, change);
+    }
+
+    /** As {@link #changeSides(java.util.function.Consumer)}, for the main half's faces or a wide machine's side half's. */
+    public void changeSides(boolean half, java.util.function.Consumer<SideConfig> change) {
+        change.accept(sides(half));
         setChanged();
+        if (this.level != null && wide()) {
+            this.level.invalidateCapabilities(sideHalfPos());
+            this.level.updateNeighborsAt(sideHalfPos(), getBlockState().getBlock());
+        }
         if (this.level != null) {
             this.level.invalidateCapabilities(this.worldPosition);
             this.level.updateNeighborsAt(this.worldPosition, getBlockState().getBlock());
@@ -443,16 +495,24 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
-    /** Pushes output slots into the item handlers beside every output face. */
+    /** Pushes output slots into the item handlers beside every output face (both halves of a wide machine). */
     private void autoEject(ServerLevel level) {
+        autoEject(level, false);
+        if (wide()) {
+            autoEject(level, true);
+        }
+    }
+
+    private void autoEject(ServerLevel level, boolean half) {
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
         AutomationView out = new AutomationView(this.inventory, new int[0], this.outputSlots, false, true);
+        BlockPos from = half ? sideHalfPos() : this.worldPosition;
         for (SideConfig.Face face : SideConfig.Face.values()) {
-            if (!this.sides.items(face).canExtract() || !faceOpen(face)) {
+            if (!sides(half).items(face).canExtract() || !faceOpen(face, half)) {
                 continue;
             }
             Direction dir = face.toDirection(facing);
-            BlockPos target = this.worldPosition.relative(dir);
+            BlockPos target = from.relative(dir);
             if (getBlockState().getBlock() instanceof TallMachineBlock && dir == Direction.UP) {
                 target = target.above();
             }
@@ -499,6 +559,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.inventory.serialize(output.child("items"));
         output.putInt("redstone", this.redstoneMode.ordinal());
         this.sides.save(output.child("sides"));
+        this.sideHalf.save(output.child("sides_side_half"));
         for (int i = 0; i < this.tanks.size(); i++) {
             this.tanks.get(i).serialize(output.child("tank" + i));
         }
@@ -512,6 +573,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
         this.sides.load(input.childOrEmpty("sides"));
         this.sides.restrict(allowedItemModes());
+        this.sideHalf.load(input.childOrEmpty("sides_side_half"));
+        this.sideHalf.restrict(allowedItemModes());
         for (int i = 0; i < this.tanks.size(); i++) {
             this.tanks.get(i).deserialize(input.childOrEmpty("tank" + i));
         }

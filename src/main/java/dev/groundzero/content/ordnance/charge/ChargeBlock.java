@@ -58,8 +58,6 @@ public class ChargeBlock extends Block implements EntityBlock {
     public static final String MSG_ARMED = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed", "Armed: frequency %s");
     public static final String MSG_ARMED_TIMER = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed_timer",
             "Armed: frequency %s, %s s timer");
-    public static final String MSG_ARMED_WARHEAD = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed_warhead",
-            "Armed: %s fuze");
     public static final String MSG_ARMED_MINE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.armed_mine", "Armed: live");
     public static final String MSG_SAFE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.safe", "Safe");
     public static final String MSG_MUST_DEFUSE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".charge.must_defuse",
@@ -240,6 +238,9 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (this.kind.bomb) {
+            return InteractionResult.PASS;          // a warhead has no settings of its own: its fuze works in the missile
+        }
         if (level.isClientSide()) {
             screenHook.accept(pos);
         }

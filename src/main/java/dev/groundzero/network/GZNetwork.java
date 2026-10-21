@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "7";
+    public static final String PROTOCOL_VERSION = "8";
 
     private GZNetwork() {}
 
@@ -29,6 +29,8 @@ public final class GZNetwork {
         // Placed charges (DESIGN.md §9.4): the fuze settings and defuse screens, and the Remote Detonator's frequency.
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.Settings.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.Settings.CODEC, dev.groundzero.content.ordnance.charge.ChargePayloads.Settings::handle);
+        registrar.playToServer(dev.groundzero.content.assembly.AssemblyPayloads.FuzeSetting.TYPE,
+                dev.groundzero.content.assembly.AssemblyPayloads.FuzeSetting.CODEC, dev.groundzero.content.assembly.AssemblyPayloads.FuzeSetting::handle);
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire.CODEC, dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire::handle);
         // The Launch Computer (DESIGN.md §17.3): its scope is handled on the client in GroundZeroClient.

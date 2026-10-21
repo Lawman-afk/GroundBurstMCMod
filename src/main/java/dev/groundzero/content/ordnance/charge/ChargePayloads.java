@@ -27,13 +27,11 @@ public final class ChargePayloads {
     public static final int SAVE = 0, ARM = 1, SAFE = 2;
 
 
-    /** {@code value}: a warhead's fuze setting (its frequency, seconds, range or burst height). */
-    public record Settings(BlockPos pos, boolean timer, int frequency, int seconds, int value, int action) implements CustomPacketPayload {
+    public record Settings(BlockPos pos, boolean timer, int frequency, int seconds, int action) implements CustomPacketPayload {
         public static final Type<Settings> TYPE = GZNetwork.type("charge_settings");
         public static final StreamCodec<RegistryFriendlyByteBuf, Settings> CODEC = StreamCodec.composite(
                 BlockPos.STREAM_CODEC, Settings::pos, ByteBufCodecs.BOOL, Settings::timer, ByteBufCodecs.VAR_INT, Settings::frequency,
-                ByteBufCodecs.VAR_INT, Settings::seconds, ByteBufCodecs.VAR_INT, Settings::value, ByteBufCodecs.VAR_INT, Settings::action,
-                Settings::new);
+                ByteBufCodecs.VAR_INT, Settings::seconds, ByteBufCodecs.VAR_INT, Settings::action, Settings::new);
 
         @Override
         public Type<Settings> type() {
@@ -47,14 +45,12 @@ public final class ChargePayloads {
                     return;
                 }
                 ServerLevel level = (ServerLevel) player.level();
-                be.configure(p.timer() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE, p.frequency(), p.seconds(), p.value());
+                be.configure(p.timer() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE, p.frequency(), p.seconds());
                 if (p.action() == ARM && !be.armed()) {
                     be.arm(level, player);
                     String key = be.kind().sensor != ChargeKind.Sensor.NONE && !be.kind().remote ? ChargeBlock.MSG_ARMED_MINE
                             : be.mode() == ChargeBlockEntity.Mode.TIMER ? ChargeBlock.MSG_ARMED_TIMER : ChargeBlock.MSG_ARMED;
-                    Component msg = be.kind().bomb ? Component.translatable(ChargeBlock.MSG_ARMED_WARHEAD, Component.translatable(be.fuze().fuze().name))
-                            : Component.translatable(key, be.frequency(), be.timer());
-                    player.sendOverlayMessage(msg.copy().withStyle(ChatFormatting.RED));
+                    player.sendOverlayMessage(Component.translatable(key, be.frequency(), be.timer()).withStyle(ChatFormatting.RED));
                 } else if (p.action() == SAFE && be.armed()) {
                     player.sendOverlayMessage(be.disarm(level) ? Component.translatable(ChargeBlock.MSG_SAFE).withStyle(ChatFormatting.GREEN)
                             : Component.translatable(ChargeBlock.MSG_MUST_DEFUSE).withStyle(ChatFormatting.GOLD));

@@ -57,6 +57,13 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** Ticks of work done on the current job, and how many it needs (0: no job). */
     private int progress, total;
+    /** Each fuze's setting, as last set on the screen (or taken from a warhead taken apart), in Fuze order. */
+    private final int[] fuzeValues = new int[Fuze.values().length];
+    {
+        for (Fuze f : Fuze.values()) {
+            this.fuzeValues[f.ordinal()] = f.setting.fallback;
+        }
+    }
 
     public AssemblyBenchBlockEntity(BlockPos pos, BlockState state) {
         super(GZAssembly.BENCH_ENTITY.get(), pos, state, CAPACITY, 200, 0, 4,
@@ -81,6 +88,26 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
 
     public boolean assembling() {
         return this.total > 0;
+    }
+
+    /** The fuze in the fuze slot (null: none). */
+    public @org.jspecify.annotations.Nullable Fuze fittedFuze() {
+        return this.inventory.getItem(SLOT_FUZE).getItem() instanceof ComponentItems.FuzeItem f ? f.fuze : null;
+    }
+
+    /** The setting the fitted fuze will be given. */
+    public int fuzeValue() {
+        Fuze f = fittedFuze();
+        return f == null ? 0 : this.fuzeValues[f.ordinal()];
+    }
+
+    /** The screen sets the fitted fuze's setting (kept in its range). */
+    public void setFuzeValue(int value) {
+        Fuze f = fittedFuze();
+        if (f != null) {
+            this.fuzeValues[f.ordinal()] = f.setting.clamp(value);
+            setChanged();
+        }
     }
 
     public int progress() {
@@ -123,6 +150,8 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         this.inventory.setItem(SLOT_CORE, parts.get(0));
         this.inventory.setItem(SLOT_CASING, parts.get(1));
         this.inventory.setItem(SLOT_FUZE, parts.get(2));
+        FuzeSettings old = warhead.getOrDefault(dev.groundzero.registry.GZDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        this.fuzeValues[old.fuze().ordinal()] = old.value();             // reassembled, it keeps its setting
         warhead.shrink(1);
         this.inventory.setItem(SLOT_WARHEAD, warhead.isEmpty() ? ItemStack.EMPTY : warhead);
         if (this.level != null) {
@@ -161,7 +190,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     private void finish(ServerLevel level) {
         var core = (ComponentItems.PayloadCore) this.inventory.getItem(SLOT_CORE).getItem();
         var fuze = (ComponentItems.FuzeItem) this.inventory.getItem(SLOT_FUZE).getItem();
-        ItemStack out = WarheadAssembly.assemble(core, fuze);
+        ItemStack out = WarheadAssembly.assemble(core, fuze, this.fuzeValues[fuze.fuze.ordinal()]);
         this.inventory.getItem(SLOT_CORE).shrink(1);
         this.inventory.getItem(SLOT_CASING).shrink(1);
         this.inventory.getItem(SLOT_FUZE).shrink(1);
@@ -176,11 +205,11 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2;
+    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_FUZE_VALUE = 3;
 
     @Override
     protected int extraDataCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -188,6 +217,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         return switch (index) {
             case DATA_PROGRESS -> this.progress;
             case DATA_TOTAL -> this.total;
+            case DATA_FUZE_VALUE -> fuzeValue();
             default -> problem().ordinal();
         };
     }
@@ -264,6 +294,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         super.saveAdditional(output);
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
+        output.putIntArray("fuze_values", this.fuzeValues);
     }
 
     @Override
@@ -271,5 +302,6 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         super.loadAdditional(input);
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
+        input.getIntArray("fuze_values").ifPresent(v -> System.arraycopy(v, 0, this.fuzeValues, 0, Math.min(v.length, this.fuzeValues.length)));
     }
 }

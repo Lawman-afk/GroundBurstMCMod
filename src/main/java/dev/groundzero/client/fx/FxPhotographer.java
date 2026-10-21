@@ -76,7 +76,8 @@ public final class FxPhotographer {
                 new Scene("gas_wall", "gas_wall", 9, 20, List.of(60, 140)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
-                new Scene("assembly_ui", "assembly", 4, 0, List.of(30)))) {
+                new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
+                new Scene("assembly_jei", "assembly", 4, 0, List.of(25)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -299,6 +300,8 @@ public final class FxPhotographer {
     }
 
     private static net.minecraft.core.BlockPos benchAt;
+    /** Set by the JEI plugin when JEI is running: opens its Assembly Bench recipes (the "assembly_jei" scene). */
+    public static Runnable showAssemblyRecipes = () -> {};
 
     /**
      * Phase 7: two Ordnance Assembly Benches facing the camera. The near one is assembling a Poison Gas Warhead (parts
@@ -572,6 +575,17 @@ public final class FxPhotographer {
                     player.openMenu(be, bench);
                 }
             });
+        }
+        if (scene.name().equals("assembly_jei") && step >= 0 && clock == 12) {
+            showAssemblyRecipes.run();
+        }
+        // Then its side-configuration tab opened (the two-block layout), for the second shot.
+        if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();
+            double tx = screen.width / 2.0 + 88 + 8, ty = screen.height / 2.0 - 105 + 14;
+            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
+            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
+            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
         // The silo's own screen, a Massive Ordnance Warhead loaded (the longest name).
         if (scene.name().equals("silo_ui") && step >= 0 && clock == 12 && launchSilo != null) {
