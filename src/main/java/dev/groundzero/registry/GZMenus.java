@@ -45,6 +45,9 @@ public final class GZMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
 
+    /** The Launch Silo's controller screen (DESIGN.md §17.2). */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> LAUNCH_SILO = machine("launch_silo", () -> MachineLayouts.LAUNCH_SILO);
+
     private GZMenus() {}
 
     @SuppressWarnings("unchecked")

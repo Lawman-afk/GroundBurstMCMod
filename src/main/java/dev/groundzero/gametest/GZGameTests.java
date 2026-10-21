@@ -39,7 +39,7 @@ public final class GZGameTests {
 
     private static final List<TestSpec> SPECS = new ArrayList<>();
 
-    private record TestSpec(DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> function, Identifier structure, int maxTicks) {}
+    private record TestSpec(DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> function, Identifier structure, int maxTicks, boolean sky) {}
 
     static {
         test("harness_floor", FLOOR_16, 20, helper -> {
@@ -77,13 +77,19 @@ public final class GZGameTests {
         ChargeTests.register();
         MineTests.register();
         BombTests.register();
+        LaunchTests.register();
         ManualContentTests.register();
     }
 
     private GZGameTests() {}
 
     static void test(String name, Identifier structure, int maxTicks, Consumer<GameTestHelper> body) {
-        SPECS.add(new TestSpec(FUNCTIONS.register(name, () -> body), structure, maxTicks));
+        SPECS.add(new TestSpec(FUNCTIONS.register(name, () -> body), structure, maxTicks, false));
+    }
+
+    /** A test with open sky over its plot (no barrier lid), for things that fly above it. */
+    static void testOpenSky(String name, Identifier structure, int maxTicks, Consumer<GameTestHelper> body) {
+        SPECS.add(new TestSpec(FUNCTIONS.register(name, () -> body), structure, maxTicks, true));
     }
 
     public static void register(IEventBus modBus) {
@@ -94,7 +100,8 @@ public final class GZGameTests {
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(GroundZero.id("default"));
         for (TestSpec spec : SPECS) {
-            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, spec.structure(), spec.maxTicks(), 0, true);
+            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD,
+                    spec.structure(), spec.maxTicks(), 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, spec.sky(), 0);
             event.registerTest(spec.function().getId(), new FunctionGameTestInstance(spec.function().key(), data));
         }
     }

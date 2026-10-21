@@ -327,6 +327,52 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.MILITARY_CIRCUIT)
                 .unlockedBy(getHasName(o.heavy), has(o.heavy)).save(output);
+        // Launching (DESIGN.md §17, §26.7): the structures' blocks, the controllers, the Basic Missile.
+        var l = new Object() {
+            final net.minecraft.world.level.ItemLike pad = dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD.item();
+            final net.minecraft.world.level.ItemLike frame = dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME.item();
+            final net.minecraft.world.level.ItemLike arm = dev.groundzero.content.launch.GZLaunch.GANTRY_ARM.item();
+            final net.minecraft.world.level.ItemLike mast = dev.groundzero.content.launch.GZLaunch.RADAR_MAST.item();
+            final net.minecraft.world.level.ItemLike dish = dev.groundzero.content.launch.GZLaunch.RADAR_DISH.item();
+            final net.minecraft.world.level.ItemLike antenna = dev.groundzero.content.launch.GZLaunch.ANTENNA.item();
+            final net.minecraft.world.level.ItemLike silo = dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike computer = dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.item();
+        };
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.pad, 4)
+                .requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(Tags.Items.DYES_YELLOW)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.frame, 4)
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("plates/steel")).requires(Tags.Items.DYES_RED)
+                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.arm, 1)
+                .requires(l.frame).requires(l.frame).requires(GZParts.SERVO).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(l.frame), has(l.frame)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.mast, 2)
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.dish, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZParts.SENSOR_ARRAY).requires(GZParts.SERVO).requires(GZTags.commonItem("wires/copper"))
+                .unlockedBy(getHasName(GZParts.SENSOR_ARRAY), has(GZParts.SENSOR_ARRAY)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.antenna, 1)
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("wires/copper"))
+                .requires(GZTags.commonItem("wires/copper")).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, l.silo, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT).requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, l.computer, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.CRT_DISPLAY)
+                .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZChemicals.SOLID_PROPELLANT), has(GZChemicals.SOLID_PROPELLANT)).save(output);
         shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
                 .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
                 .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)

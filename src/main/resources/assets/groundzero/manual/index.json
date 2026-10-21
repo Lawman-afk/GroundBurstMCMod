@@ -55,6 +55,7 @@
     "ordnance/charges",
     "ordnance/mines",
     "ordnance/bombs",
+    "ordnance/launch_site",
     "ordnance/chemical",
     "safety/decontamination_shower",
     "safety/chemical_hazards",

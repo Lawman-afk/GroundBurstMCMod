@@ -216,6 +216,18 @@ public final class Charges {
         }
     }
 
+    /**
+     * A missile's warhead going off where it hit (DESIGN.md §17.5): the bomb goes off as it would have placed there, but
+     * a bunker buster arrives at speed, so it bores in first.
+     */
+    public static void impact(ServerLevel level, ChargeKind kind, BlockPos pos, @Nullable Entity by) {
+        if (kind == ChargeKind.BUNKER_BUSTER) {
+            penetrate(level, pos, by);
+        } else {
+            fire(level, kind, pos, Direction.NORTH, 1, by);
+        }
+    }
+
     // --- bombs ------------------------------------------------------------------------------------------------------------
     /** Thermobaric: ticks from dispersal to ignition; extra damage to anything with no open sky above it, and how far. */
     public static final int THERMOBARIC_DELAY = 12;

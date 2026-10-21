@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_solid_propellant": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:solid_propellant"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:basic_missile"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_solid_propellant"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:basic_missile"
+    ]
+  }
+}

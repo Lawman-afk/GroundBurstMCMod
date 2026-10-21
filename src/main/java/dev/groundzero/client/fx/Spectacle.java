@@ -75,6 +75,7 @@ public final class Spectacle {
     public static void register(IEventBus modBus) {
         FxRenderTypes.register(modBus);
         dev.groundzero.content.ordnance.ThrownExplosive.smokeHook = Spectacle::grenadeSmoke;
+        dev.groundzero.content.launch.MissileEntity.exhaustHook = Spectacle::missileExhaust;
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundZero.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -188,6 +189,97 @@ public final class Spectacle {
             p.spin = (random.nextFloat() - 0.5f) * 0.01f;
             p.axisX = grenade.getX();
             p.axisZ = grenade.getZ();
+            PUFFS.add(p, q);
+        }
+    }
+
+    /**
+     * A missile, once a client tick: on the pad, a fire under it and smoke billowing out round the pad; in flight, a
+     * white-hot flame at its nozzle and a thick trail of smoke that lingers and spreads for half a minute.
+     */
+    public static void missileExhaust(dev.groundzero.content.launch.MissileEntity missile) {
+        var random = missile.level().getRandom();
+        float q = quality();
+        double t = ticks;
+        net.minecraft.world.phys.Vec3 v = missile.getDeltaMovement();
+        net.minecraft.world.phys.Vec3 back = v.lengthSqr() > 1e-4 ? v.normalize().scale(-1) : new net.minecraft.world.phys.Vec3(0, -1, 0);
+        double x = missile.getX(), y = missile.getY(), z = missile.getZ();
+        if (missile.igniting()) {
+            int n = (int) (q * 6);
+            for (int i = 0; i < n; i++) {
+                Puffs.Puff p = new Puffs.Puff();
+                p.kind = Puffs.Kind.SMOKE;
+                double a = random.nextDouble() * 2 * Math.PI;
+                p.x = x;
+                p.y = y + 0.3;
+                p.z = z;
+                float speed = 0.25f + random.nextFloat() * 0.35f;
+                p.vx = (float) Math.cos(a) * speed;
+                p.vz = (float) Math.sin(a) * speed;
+                p.vy = 0.02f;
+                p.drag = 0.04f;
+                p.rise = 0.012f;
+                p.birth = t;
+                p.life = 160 + random.nextInt(80);
+                p.size0 = 1.5f;
+                p.size1 = 6 + random.nextFloat() * 3;
+                p.color0 = 0xEDEBE6;
+                p.color1 = 0xB8B4AE;
+                p.alpha = 0.85f;
+                p.variant = random.nextInt(8);
+                p.rot = random.nextFloat() * 6.283f;
+                PUFFS.add(p, q);
+            }
+        }
+        // The flame at the nozzle.
+        for (int i = 0; i < 3; i++) {
+            Puffs.Puff f = new Puffs.Puff();
+            f.kind = Puffs.Kind.FIRE;
+            f.x = x + back.x * (0.5 + i * 0.8);
+            f.y = y + back.y * (0.5 + i * 0.8);
+            f.z = z + back.z * (0.5 + i * 0.8);
+            f.vx = (float) back.x * 0.3f;
+            f.vy = (float) back.y * 0.3f;
+            f.vz = (float) back.z * 0.3f;
+            f.drag = 0.2f;
+            f.birth = t;
+            f.life = 4 + random.nextInt(3);
+            f.size0 = 1.8f - i * 0.4f;
+            f.size1 = 0.6f;
+            f.color0 = 0xFFF4D0;
+            f.color1 = 0xFF7A20;
+            f.alpha = 0.95f;
+            f.variant = random.nextInt(4);
+            f.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(f, 1);
+        }
+        if (missile.igniting()) {
+            return;
+        }
+        // The trail: puffs laid all along the last tick's path, so it is one unbroken plume however fast it flies.
+        double speed = v.length();
+        int n = Math.max(1, (int) (speed * 1.2 * q));
+        for (int i = 0; i < n; i++) {
+            double k = i / (double) n;
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            p.x = x + back.x * (1 + speed * k) + (random.nextDouble() - 0.5) * 0.4;
+            p.y = y + back.y * (1 + speed * k) + (random.nextDouble() - 0.5) * 0.4;
+            p.z = z + back.z * (1 + speed * k) + (random.nextDouble() - 0.5) * 0.4;
+            p.vx = (float) (random.nextGaussian() * 0.02);
+            p.vz = (float) (random.nextGaussian() * 0.02);
+            p.drag = 0.02f;
+            p.rise = 0.004f;
+            p.birth = t - k;
+            p.life = 500 + random.nextInt(200);
+            p.size0 = 1.2f;
+            p.size1 = 5 + random.nextFloat() * 2.5f;
+            p.color0 = 0xF2F0EC;
+            p.color1 = 0xC4C0BA;
+            p.alpha = 0.7f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            p.spin = (random.nextFloat() - 0.5f) * 0.01f;
             PUFFS.add(p, q);
         }
     }

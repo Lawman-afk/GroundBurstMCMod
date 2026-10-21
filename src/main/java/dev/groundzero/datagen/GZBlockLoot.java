@@ -57,6 +57,14 @@ public class GZBlockLoot extends BlockLootSubProvider {
                 dev.groundzero.content.ordnance.GZOrdnance.MOAB)) {
             dropSelf(bomb.block().get());
         }
+        // Launching (DESIGN.md §17).
+        for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD, dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME,
+                dev.groundzero.content.launch.GZLaunch.GANTRY_ARM, dev.groundzero.content.launch.GZLaunch.RADAR_MAST,
+                dev.groundzero.content.launch.GZLaunch.RADAR_DISH, dev.groundzero.content.launch.GZLaunch.ANTENNA)) {
+            dropSelf(b.block().get());
+        }
+        dropSelf(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get());
         // Corium sets as it is dug: either way you get Cooled Corium.
         dropSelf(dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.block().get());
         dropOther(dev.groundzero.content.nuclear.GZNuclear.CORIUM.block().get(), dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.item().get());

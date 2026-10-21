@@ -120,6 +120,13 @@ public final class GZTagProviders {
                     dev.groundzero.content.pipe.GZPipes.IRON_ITEM_PIPE.block().key(), dev.groundzero.content.pipe.GZPipes.ITEM_PIPE.block().key(),
                     dev.groundzero.content.pipe.GZPipes.PNEUMATIC_ITEM_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
+            for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD, dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME,
+                    dev.groundzero.content.launch.GZLaunch.GANTRY_ARM, dev.groundzero.content.launch.GZLaunch.RADAR_MAST,
+                    dev.groundzero.content.launch.GZLaunch.RADAR_DISH, dev.groundzero.content.launch.GZLaunch.ANTENNA)) {
+                tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
+            }
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().key());
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),
                     GZMachines.FUSION_REACTOR.block().key(), GZMachines.SINGULARITY_REACTOR.block().key(), GZMultiblocks.TOROIDAL_FIELD_COIL.block().key(),

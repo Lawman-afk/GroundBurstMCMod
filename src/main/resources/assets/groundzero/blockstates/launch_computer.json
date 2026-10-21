@@ -1,0 +1,58 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false": {
+      "model": "groundzero:block/launch_computer"
+    },
+    "active=false,facing=north,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=true,facing=north,formed=false": {
+      "model": "groundzero:block/launch_computer"
+    },
+    "active=true,facing=north,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=false,facing=east,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=true,facing=east,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=false,facing=south,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=true,facing=south,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=false,facing=west,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    },
+    "active=true,facing=west,formed=false": {
+      "model": "groundzero:block/launch_computer",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true": {
+      "model": "groundzero:block/launch_computer_formed"
+    }
+  }
+}

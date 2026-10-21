@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/radar_mast"
+    },
+    "formed=true": {
+      "model": "groundzero:block/radar_mast_formed"
+    }
+  }
+}

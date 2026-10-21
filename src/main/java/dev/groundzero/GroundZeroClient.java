@@ -38,10 +38,12 @@ public class GroundZeroClient {
         dev.groundzero.client.fx.Spectacle.register(modBus);
         dev.groundzero.client.fx.FxPhotographer.register();
         dev.groundzero.client.screen.ChargeScreens.register();
+        dev.groundzero.client.screen.LaunchComputerScreen.register();
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(GZMenus.ORE_CRUSHER.get(), MachineScreen::new);
+        event.register(GZMenus.LAUNCH_SILO.get(), MachineScreen::new);
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GZMenus.ARC_FURNACE.get(), MachineScreen::new);
         event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
@@ -69,6 +71,11 @@ public class GroundZeroClient {
         event.registerEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.THROWN_EXPLOSIVE.get(), dev.groundzero.client.fx.GrenadeRenderer::new);
         event.registerEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL.get(), dev.groundzero.client.fx.ShrapnelRenderer::new);
         event.registerBlockEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.CHARGE.get(), dev.groundzero.client.render.ChargeRenderer::new);
+        event.registerEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE.get(), dev.groundzero.client.fx.MissileRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
+        event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(), 4, 1));
         event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ARC_FURNACE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ARC_FURNACE.get(), 2));

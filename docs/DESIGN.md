@@ -1156,6 +1156,27 @@ switch, **LAUNCH** (guarded red button), status lamps (POWER / ARMED / FUEL / EM
   flyby, re-entry whistle.
 - Interceptions, EMP and laser guidance all act on the live entity or the tracker.
 
+### 17.6 As built: the basic launch site (2026-10-21, ahead of Phase 9)
+A first, deliberately simple launch site, so the bombs have a delivery system before the full Phase 9 platforms.
+- **Launch Silo** (`launch_silo`): a 3×3 Launch Pad layer with the controller in the middle of its front edge and an
+  Energy Port in the middle of its back edge, a 9-high Gantry Frame tower beside the pad's middle row with a Gantry
+  Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands. GeckoLib model:
+  frame, swinging arm, missile shown when loaded. Slots: a **Basic Missile** and a warhead (any bomb block item).
+  Each launch takes the missile, the warhead and 100 000 FE (buffer 200 000). Countdown 10 s with siren and beeps,
+  the arm swinging clear.
+- **Launch Computer** (`launch_computer`): controller + Energy Port, a mast of three Radar Masts topped by the Radar
+  Dish behind it, and an Antenna on the controller. 20 FE/t while it runs its radar. Its screen: a live **radar
+  scope** (512-block radius, sweep with afterglow, the silos within 256 blocks, every missile in flight with its
+  heading and a dashed line to its target), click-to-target or typed X/Z, a silo picker, ARM toggle and LAUNCH,
+  range and flight-time readout. Scope data is sent to viewers within 16 blocks every 10 ticks.
+- **Basic Missile flight** (`MissileEntity`, a simplified §17.5): 2 s ignition on the pad, then a fixed cubic curve
+  straight up, over an arc (apex = clamp(range × 0.35, 40, 220)) and down onto the target, accelerating; up to 1 024
+  blocks; ticket-loads the chunk it is in and the target's. Anything it hits after leaving the pad sets the warhead
+  off there; the warhead goes off as its bomb does (`Charges.impact`; a bunker buster bores in first). Exhaust flame,
+  ignition billow and a lingering smoke trail on the client; launch and engine sounds.
+- Building blocks: Launch Pad, Gantry Frame, Gantry Arm, Radar Mast, Radar Dish, Antenna (multiblock parts, hidden
+  when formed). The full platforms, MissileTracker, guidance and multi-stage bodies remain Phase 9.
+
 ## 18. Radar and interception
 
 ### 18.1 Radar Station
@@ -1958,3 +1979,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6d bombs: placed charges with an impact fuze, made gravity blocks so they can be armed and dropped; special bombs staged through the charge scheduler (thermobaric ignition, bunker buster bore); napalm as its own long-lived fire block rain cannot put out; cluster duds become armed landmines. |
 | 2026-10-21 | Bombs feedback: model bodies keep every outer face (no slits or end rings); a placed bunker buster just explodes (boring waits for delivery at speed); napalm spreads both ways along the symmetrical canister. |
 | 2026-10-21 | Bomb feel: per-bomb visual sets (HE, heavy, thermobaric fireball, MOAB dust mushroom), a whistle on long drops and a harder landing the further they fall. Bigger weapons' feel comes chiefly from delivery (missiles), so a basic launch site is built next, ahead of Phase 9. |
+| 2026-10-21 | Basic launch site ahead of Phase 9: a Launch Silo (pad + gantry tower, missile stands beside it) and a Launch Computer with a live radar scope, on the multiblock framework; one Basic Missile flying a fixed curve that keeps its chunks loaded, any bomb as the warhead (going off as that bomb does); the scope shows every missile in flight within 512 blocks. |

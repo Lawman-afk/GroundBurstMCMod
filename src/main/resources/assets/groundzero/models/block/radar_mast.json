@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "groundzero:block/radar_mast"
+  },
+  "render_type": "minecraft:cutout"
+}

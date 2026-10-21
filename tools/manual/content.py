@@ -849,7 +849,7 @@ Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but
 Bursts and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
 """),
     spot("bunker_buster", """
-A 9-block crater where it stands. Built to punch through bunkers: once there are launchers to deliver it at speed, it will bore up to 40 blocks down first.
+A 9-block crater where it stands. Built to punch through bunkers: delivered by a [missile](ordnance/launch_site), it bores up to 40 blocks down first and goes off at the bottom.
 """),
     spot("napalm_bomb", """
 A small burst and an ellipse of **napalm** 30 blocks long and 12 wide, along its length. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
@@ -864,6 +864,36 @@ The biggest conventional bomb: a 28-block crater and deadly out to 40. Stand wel
     craft("bunker_buster"),
     craft("napalm_bomb"),
     craft("moab"),
+])
+
+entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",
+                                                              "gantry_frame", "gantry_arm", "radar_mast", "radar_dish", "antenna"], [
+    text("""
+A **Launch Silo** puts a bomb on top of a missile and sends it to any point up to 1024 blocks away. A **Launch Computer** aims it: its radar scope shows the silos it controls, and every missile in flight within 512 blocks.
+
+The silo needs a **Basic Missile** and a warhead, which is any [bomb](ordnance/bombs). The warhead goes off as that bomb does, and a bunker buster bores in first. Each launch takes the missile, the warhead and 100,000 FE.
+"""),
+    structure("launch_silo", "A 3 by 3 launch pad, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. The gantry tower stands beside the pad's middle row, on your left as you face the controller: 9 high, with the Gantry Arm reaching in at the seventh block up. The column above the middle of the pad must be clear: that is where the missile stands."),
+    structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller."),
+    text("""
+**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own to run its radar, and finds every silo within 256 blocks. Click on the scope to set the target, or type its X and Z in. Pick a silo, flip **ARM**, then press **LAUNCH**.
+
+The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and comes down on the target from high above. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It keeps the chunks it flies through loaded, so the target need not be.
+
+Whatever it hits on the way sets off the warhead there, so keep the sky above the silo clear.
+"""),
+    spot("basic_missile", """
+A solid-fuel missile with no guidance beyond its launch: it flies the arc it was given. Its fuel goes in the [Chemical Plant](processing/chemical_plant) as solid propellant.
+"""),
+    craft("launch_silo"),
+    craft("launch_computer"),
+    craft("basic_missile"),
+    craft("launch_pad"),
+    craft("gantry_frame"),
+    craft("gantry_arm"),
+    craft("radar_mast"),
+    craft("radar_dish"),
+    craft("antenna"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",

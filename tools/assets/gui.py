@@ -172,6 +172,18 @@ LAYOUTS = {
         "readout": (88, 20, 78, 34),
         "inventory": (8, 84),
     },
+    # Launch Silo (DESIGN.md §17.2): the missile and its warhead, the energy for a launch, and its state on the CRT.
+    "launch_silo": {
+        "title": (8, 6),
+        "slots": [("input", 34, 25), ("input", 34, 49)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (58, 22, 108, 30),
+        "inventory": (8, 84),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),

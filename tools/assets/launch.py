@@ -1,0 +1,433 @@
+"""Launching (DESIGN.md §17, a basic launch site ahead of Phase 9): the component blocks, the two controllers' cabinets,
+the Basic Missile, and the two formed structures (GeckoLib).
+
+- Component blocks (cubes, see-through where they are frames): Launch Pad (grey concrete with a hazard-striped
+  border), Gantry Frame (a red lattice), Gantry Arm (a red truss), Radar Mast (a grey lattice); the Radar Dish and the
+  Antenna are modelled (a dish on a stub, a whip with crossbars).
+- Basic Missile (item, 2 blocks tall as drawn; the missile in flight and on the pad is it three times over): a white
+  body with two black roll bands, a red nose, four grey fins with black tips, a dark nozzle.
+- Launch Silo, formed: a concrete pad with a hazard border and a flame trench under the missile (a grate in it),
+  four hold-down posts, a control box at the front with a green CRT, the Energy Port's red-hatched housing at the
+  back; beside it a red lattice gantry tower 9 blocks tall with a platform on top and an arm reaching in to the
+  missile at its sixth level (the arm swings away during the countdown); the missile on the pad while one is loaded.
+- Launch Computer, formed: an olive desk with a sloped console, two CRT monitors (glowing green), the Energy Port's
+  red-hatched socket on its side, a Yagi antenna on top; behind it a grey lattice mast with a radar dish on a yoke,
+  tilted up, that turns while the computer is powered.
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from gz import palette as P  # noqa: E402
+from gz import paths  # noqa: E402
+from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gz.model import BlockModel, write_json  # noqa: E402
+from gz.palette import fixed  # noqa: E402
+from gz.tex import Tex  # noqa: E402
+import grenades as G  # noqa: E402
+import structures as ST  # noqa: E402
+
+STEEL, GUN, OLIVE, CONCRETE = P.STEEL, P.GUNMETAL, P.OLIVE, P.CONCRETE
+GANTRY = fixed("gantry_red", "#3a0e06", "#64180a", "#8e2410", "#b83418", "#d4502a", "#e67a52", "#f4ac8c")
+WHITE = P.WHITE_CERAMIC
+BLACK = P.HAZARD_BLACK
+YELLOW = P.HAZARD_YELLOW
+RED = P.WARNING_RED
+GREEN = P.INDICATOR_GREEN
+CLEAR = (0, 0, 0, 0)
+shaded = G.shaded
+
+
+def tone(d: str) -> int:
+    return {"up": 4, "down": 2, "north": 3, "west": 3}.get(d, 2)
+
+
+# --- the missile (shared by the item and the formed silo) -----------------------------------------------------------------
+def missile_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """(name, from, to, faces, paint) in item pixels: 16 x 32 x 16, centred on x = z = 8, tail at y 0."""
+    all6 = ("north", "south", "east", "west", "up", "down")
+    parts = [("nozzle", (6.8, 0, 6.8), (9.2, 1.5, 9.2), ("north", "south", "east", "west", "down"), "nozzle")]
+
+    def prism(name, r, w, y0, y1, paint, ends=("up", "down")):
+        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("east", "west") + ends, paint))
+        parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west") + ends, paint))
+        parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west") + ends, paint))
+    prism("body", 2.5, 1.6, 1.5, 25, "body")
+    prism("nose0", 2.0, 1.3, 25, 28, "nose")
+    prism("nose1", 1.3, 0.9, 28, 30.5, "nose")
+    parts.append(("tip", (7.4, 30.5, 7.4), (8.6, 32, 8.6), all6, "nose"))
+    parts.append(("fin_n", (7.7, 1.5, 3.5), (8.3, 8, 5.5), ("north", "east", "west", "up", "down"), "fin"))
+    parts.append(("fin_s", (7.7, 1.5, 10.5), (8.3, 8, 12.5), ("south", "east", "west", "up", "down"), "fin"))
+    parts.append(("fin_w", (3.5, 1.5, 7.7), (5.5, 8, 8.3), ("west", "north", "south", "up", "down"), "fin"))
+    parts.append(("fin_e", (10.5, 1.5, 7.7), (12.5, 8, 8.3), ("east", "north", "south", "up", "down"), "fin"))
+    return parts
+
+
+def missile_paint(kind: str):
+    def fn(t: Tex, r, d):
+        x, y, w, h = r
+        if kind == "body":
+            t.rect(x, y, w, h, WHITE[tone(d) + 1])
+            if d in ("north", "south", "east", "west") and h > 8:
+                # Two black roll bands (rows count down from the top of the body).
+                for frac in (0.12, 0.62):
+                    row = y + int(frac * h)
+                    t.rect(x, row, w, max(1, h // 12), BLACK[3])
+                if d in ("east", "west"):
+                    t.rect(x, y + int(0.62 * h), w, h - int(0.62 * h), BLACK[3 if d == "east" else 4])   # half black, like a test round
+            return
+        if kind == "nose":
+            t.rect(x, y, w, h, RED[tone(d) + 1])
+            return
+        if kind == "fin":
+            t.rect(x, y, w, h, STEEL[tone(d) + 1])
+            if d in ("east", "west", "north", "south") and h > 2:
+                t.hline(x, y + h - 1, w, BLACK[3])
+            return
+        t.rect(x, y, w, h, GUN[tone(d)])
+        if d == "down":
+            t.rect(x + 1, y + 1, max(1, w - 2), max(1, h - 2), BLACK[1])
+    return fn
+
+
+def missile_item() -> None:
+    m = BlockModel("basic_missile", tex_size=(64, 64), kind="item")
+    for name, frm, to, faces, _ in missile_parts():
+        m.box(name, frm, to, faces=faces)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    for name, _, _, _, kind in missile_parts():
+        m.paint_all(t, name, missile_paint(kind))
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
+    lo, hi = m.bounds()
+    c = [(lo[i] + hi[i]) / 2 for i in range(3)]
+
+    def ctx(scale, base, rotation=(0, 0, 0)):
+        return {"rotation": list(rotation), "translation": [round(base[i] - (c[i] - 8) * scale, 3) for i in range(3)], "scale": [scale] * 3}
+    m.display["ground"] = ctx(0.5, (0, 0, 0))
+    m.display["fixed"] = ctx(0.5, (0, 0, 0))
+    m.display["thirdperson_righthand"] = ctx(0.4, (0, 3, 1), (0, 90, 0))
+    m.display["thirdperson_lefthand"] = ctx(0.4, (0, 3, 1), (0, 90, 0))
+    m.display["firstperson_righthand"] = ctx(0.35, (1, 3, 0), (0, -25, 0))
+    m.display["firstperson_lefthand"] = ctx(0.35, (1, 3, 0), (0, 155, 0))
+    m.save(t)
+    G.item_defs(["basic_missile"])
+
+
+# --- component blocks -----------------------------------------------------------------------------------------------------
+def launch_pad() -> Tex:
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, CONCRETE[3])
+    t.speckle(0, 0, 16, 16, [CONCRETE[2], CONCRETE[4]], seed=31, density=0.12)
+    for i in range(16):                                  # a hazard-striped border
+        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
+            t.px(x, y, YELLOW[4] if (i // 2) % 2 == 0 else BLACK[3])
+    t.outline(1, 1, 14, 14, CONCRETE[2])
+    return t
+
+
+def lattice(ramp, step: int = 4) -> Tex:
+    """A see-through lattice face: a frame with an X brace, the rest clear."""
+    t = Tex(16, 16, CLEAR)
+    t.outline(0, 0, 16, 16, ramp[3])
+    t.outline(1, 1, 14, 14, ramp[2])
+    for i in range(2, 14):
+        t.px(i, i, ramp[4])
+        t.px(15 - i, i, ramp[3])
+    for y in range(step, 16, step * 2):
+        t.hline(1, y, 14, ramp[2])
+    return t
+
+
+def truss(ramp) -> Tex:
+    t = Tex(16, 16, CLEAR)
+    t.rect(0, 0, 16, 2, ramp[4])
+    t.rect(0, 14, 16, 2, ramp[2])
+    for i in range(0, 16, 4):
+        t.vline(i, 2, 12, ramp[3])
+    for i in range(2, 14):
+        t.px((i * 2) % 16, i, ramp[4])
+    return t
+
+
+def shaped_part(name: str, build) -> None:
+    """A component block with a real shape (not a cube) and the usual formed / unformed blockstate."""
+    m = build()
+    write_json(paths.MODELS / "block" / f"{name}_formed.json", ST.particle_model(f"groundzero:block/{name}"))
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {
+        "formed=false": {"model": f"groundzero:block/{name}"},
+        "formed=true": {"model": f"groundzero:block/{name}_formed"},
+    }})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+
+
+def radar_dish_block() -> BlockModel:
+    m = BlockModel("radar_dish", tex_size=(64, 64), kind="block")
+    m.box("stub", (6, 0, 6), (10, 4, 10), faces=("north", "south", "east", "west", "down"))
+    m.box("yoke", (3, 4, 7), (13, 6, 9))
+    # The dish, tilted back, as stepped rings facing north.
+    for i, (r, z) in enumerate(((7, 3), (5.5, 4), (3.5, 5))):
+        m.box(f"ring{i}", (8 - r, 8 - r * 0.7 + 3, z), (8 + r, 8 + r * 0.7 + 3, z + 1),
+              faces=("north", "south", "east", "west", "up", "down"))
+    m.box("feed", (7.5, 10.5, 0.5), (8.5, 11.5, 3))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    m.paint_all(t, "stub", shaded(GUN))
+    m.paint_all(t, "yoke", shaded(GUN))
+    for i in range(3):
+        m.paint_all(t, f"ring{i}", lambda t, r, d: (t.rect(*r, WHITE[tone(d) + 1]), t.outline(*r, WHITE[2]) if d == "north" and min(r[2], r[3]) > 3 else None))
+    m.paint_all(t, "feed", shaded(GUN))
+    m.fit_display(gui_rotation=(30, 225, 0))
+    m.save(t)
+    return m
+
+
+def antenna_block() -> BlockModel:
+    m = BlockModel("antenna", tex_size=(32, 32), kind="block")
+    m.box("base", (5, 0, 5), (11, 2, 11), faces=("north", "south", "east", "west", "up", "down"))
+    m.box("whip", (7.5, 2, 7.5), (8.5, 16, 8.5), faces=("north", "south", "east", "west", "up"))
+    for i, y in enumerate((8, 11, 14)):
+        w = 4 - i
+        m.box(f"bar{i}", (8 - w, y, 7.7), (7.5, y + 0.6, 8.3), faces=("north", "south", "west", "up", "down"))
+        m.box(f"bar{i}e", (8.5, y, 7.7), (8 + w, y + 0.6, 8.3), faces=("north", "south", "east", "up", "down"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    m.paint_all(t, "base", shaded(GUN))
+    m.paint_all(t, "whip", shaded(STEEL))
+    for i in range(3):
+        m.paint_all(t, f"bar{i}", shaded(STEEL))
+        m.paint_all(t, f"bar{i}e", shaded(STEEL))
+    m.fit_display(gui_rotation=(30, 225, 0))
+    m.save(t)
+    return m
+
+
+def missile_placard(t: Tex) -> None:
+    t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
+    t.vline(6, 9, 4, WHITE[5])
+    t.px(6, 9, RED[4])
+    t.px(5, 12, STEEL[4])
+    t.px(7, 12, STEEL[4])
+
+
+def radar_placard(t: Tex) -> None:
+    t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
+    t.px(5, 11, GREEN[4])
+    t.px(6, 10, GREEN[4])
+    t.px(7, 9, GREEN[5])
+    t.px(5, 12, GREEN[2])
+
+
+# --- the formed Launch Silo ---------------------------------------------------------------------------------------------
+def silo() -> None:
+    g = GeoModel("launch_silo", tex_size=(256, 256))
+    g.bone("frame")
+    g.bone("arm", pivot=(26, 101.5, 16), parent="frame")
+    g.bone("missile", parent="frame")
+    F = "frame"
+    pad = [("pad_front", (-24, 0, -8), (24, 14, 10)), ("pad_back", (-24, 0, 22), (24, 14, 40)),
+           ("pad_left", (-24, 0, 10), (-6, 14, 22)), ("pad_right", (6, 0, 10), (24, 14, 22))]
+    for n, a, b in pad:
+        g.box(n, a, b, bone=F)
+    g.box("grate", (-6, 6, 10), (6, 7, 22), faces=("up", "down"), bone=F)
+    posts = []
+    for i, (x, z) in enumerate(((-10.5, 5.5), (8.5, 5.5), (-10.5, 24.5), (8.5, 24.5))):
+        posts.append(f"hold{i}")
+        g.box(posts[-1], (x, 14, z), (x + 2, 19, z + 2), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("console", (-5, 14, -7), (5, 22, -2), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("housing", (-5, 14, 35), (5, 19, 40), faces=("north", "south", "east", "west", "up"), bone=F)
+    tower = []
+    for i, (x, z) in enumerate(((25, 9), (37, 9), (25, 21), (37, 21))):
+        tower.append(f"post{i}")
+        g.box(tower[-1], (x, 0, z), (x + 2, 140, z + 2), faces=("north", "south", "east", "west"), bone=F)
+    girders = []
+    for k in range(1, 9):
+        y = 16 * k - 1
+        for n, a, b in ((f"gn{k}", (27, y, 9.3), (37, y + 1.5, 10.7)), (f"gs{k}", (27, y, 21.3), (37, y + 1.5, 22.7)),
+                        (f"gw{k}", (25.3, y, 11), (26.7, y + 1.5, 21)), (f"ge{k}", (37.3, y, 11), (38.7, y + 1.5, 21))):
+            g.box(n, a, b, faces=("north", "south", "east", "west", "up", "down"), bone=F)
+            girders.append(n)
+    g.box("platform", (24, 140, 8), (40, 142, 24), bone=F)
+    g.box("arm_beam", (9, 100, 14), (27, 103, 18), bone="arm")
+    g.box("arm_clamp", (7.7, 98, 12), (9, 106, 20), faces=("west", "north", "south", "up", "down"), bone="arm")
+    # The missile, standing on the pad: the item model three times over, its tail on the pad's top.
+    for name, frm, to, faces, _ in missile_parts():
+        a = ((frm[0] - 8) * 3, frm[1] * 3 + 14, (frm[2] - 8) * 3 + 16)
+        b = ((to[0] - 8) * 3, to[1] * 3 + 14, (to[2] - 8) * 3 + 16)
+        g.box("m_" + name, a, b, faces=faces, bone="missile")
+    g.layout()
+    tex = Tex(g.tex_w, g.tex_h)
+
+    def concrete(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
+        if d == "up":
+            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.06)
+            for i in range(w):                           # the hazard border along the pad's outer edges
+                t.px(x + i, y, YELLOW[4] if (i // 3) % 2 == 0 else BLACK[3])
+        elif d in ("north", "south", "east", "west"):
+            t.hline(x, y, w, CONCRETE[5])
+    for n, _, _ in pad:
+        g.paint_all(tex, n, concrete)
+    g.paint_all(tex, "grate", lambda t, r, d: (t.rect(*r, BLACK[1]), [t.vline(xx, r[1], r[3], GUN[3]) for xx in range(r[0], r[0] + r[2], 2)]))
+    for p in posts:
+        g.paint_all(tex, p, lambda t, r, d: (t.rect(*r, YELLOW[tone(d) + 1]), t.hline(r[0], r[1], r[2], BLACK[3])))
+
+    def console(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
+        if d == "north" and w > 6:
+            t.rect(x + 2, y + 1, w - 4, 4, P.BLACK_PAINT.deep)
+            for xx in range(x + 2, x + w - 2):
+                t.px(xx, y + 3 + (xx % 2), GREEN[4])
+            t.px(x + 2, y + h - 2, RED[4])
+            t.px(x + 4, y + h - 2, GREEN[4])
+    g.paint_all(tex, "console", console)
+
+    def housing(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, GUN[tone(d) + 1])
+        if d in ("north", "south", "east", "west"):
+            t.stripes(x, y, w, min(2, h), RED[3], BLACK[2], width=1)
+        if d == "south" and w > 4:
+            t.rect(x + w // 2 - 2, y + 2, 4, 3, GUN[4])
+            t.rect(x + w // 2 - 1, y + 3, 2, 1, BLACK[1])
+    g.paint_all(tex, "housing", housing)
+    for p in tower + girders + ["platform"]:
+        g.paint_all(tex, p, lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1], r[2], GANTRY[5]) if d != "down" and r[3] > 2 else None))
+    g.paint_all(tex, "arm_beam", lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], GANTRY[2])))
+    g.paint_all(tex, "arm_clamp", shaded(GUN))
+    for name, _, _, _, kind in missile_parts():
+        g.paint_all(tex, "m_" + name, missile_paint(kind))
+    g.save(tex)
+    # The arm swings away from the missile during the countdown and stays away.
+    count = Animation("working", 10.0, loop="hold_on_last_frame")
+    count.rotate("arm", {0: (0, 0, 0), 2.5: (0, -100, 0), 10: (0, -100, 0)}, easing="easeInOutSine")
+    print(save_animations("launch_silo", [count]))
+
+
+# --- the formed Launch Computer -----------------------------------------------------------------------------------------
+def computer() -> None:
+    g = GeoModel("launch_computer", tex_size=(256, 256))
+    g.bone("frame")
+    g.bone("dish", pivot=(0, 52, 16), parent="frame")
+    g.bone("dish_tilt", pivot=(0, 54, 16), parent="dish", rotation=(-25, 0, 0))
+    F = "frame"
+    g.box("desk", (-7, 0, -7), (23, 10, 7), bone=F)
+    g.box("console", (-7, 10, -7), (23, 12, 0), faces=("north", "east", "west", "up"), bone=F)
+    g.box("crt_l", (-5, 10, 0), (5, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("crt_r", (7, 10, 0), (17, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("socket", (23, 2, -5), (24.5, 9, 5), faces=("north", "south", "east", "up", "down"), bone=F)
+    g.box("ant_base", (-3, 12, -6), (1, 14, -2), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("ant_whip", (-1.4, 14, -4.6), (-0.6, 40, -3.4), faces=("north", "south", "east", "west", "up"), bone=F)
+    bars = []
+    for i, y in enumerate((28, 32, 36)):
+        w = 5 - i
+        bars.append(f"ant_bar{i}")
+        g.box(bars[-1], (-1 - w, y, -4.3), (-1.4, y + 0.6, -3.7), faces=("north", "south", "west", "up", "down"), bone=F)
+        bars.append(f"ant_bar{i}e")
+        g.box(bars[-1], (-0.6, y, -4.3), (-1 + w, y + 0.6, -3.7), faces=("north", "south", "east", "up", "down"), bone=F)
+    mast = []
+    for i, (x, z) in enumerate(((-6, 10), (4, 10), (-6, 20), (4, 20))):
+        mast.append(f"mpost{i}")
+        g.box(mast[-1], (x, 0, z), (x + 2, 48, z + 2), faces=("north", "south", "east", "west"), bone=F)
+    for k in range(1, 6):
+        y = 8 * k
+        for n, a, b in ((f"mn{k}", (-4, y, 10.4), (4, y + 1, 11.6)), (f"ms{k}", (-4, y, 20.4), (4, y + 1, 21.6)),
+                        (f"mw{k}", (-5.6, y, 12), (-4.4, y + 1, 20)), (f"me{k}", (4.4, y, 12), (5.6, y + 1, 20))):
+            g.box(n, a, b, faces=("north", "south", "east", "west", "up", "down"), bone=F)
+            mast.append(n)
+    g.box("mast_cap", (-6, 48, 10), (6, 50, 22), bone=F)
+    g.box("yoke", (-2, 50, 14), (2, 53, 18), faces=("north", "south", "east", "west", "up"), bone="dish")
+    rings = []
+    for i, (r, z) in enumerate(((12, 9), (9, 10), (6, 11), (3, 12))):
+        w = round(r * 0.66, 2)
+        for part, a, b, faces in ((f"d{i}c", (-r, 54 - w, z), (r, 54 + w, z + 1), ("north", "south", "east", "west")),
+                                  (f"d{i}u", (-w, 54 + w, z), (w, 54 + r, z + 1), ("north", "south", "east", "west", "up")),
+                                  (f"d{i}d", (-w, 54 - r, z), (w, 54 - w, z + 1), ("north", "south", "east", "west", "down"))):
+            g.box(part, a, b, faces=faces, bone="dish_tilt")
+            rings.append(part)
+    g.box("back", (-2.5, 51.5, 13), (2.5, 56.5, 14.5), faces=("south", "east", "west", "up", "down"), bone="dish_tilt")
+    g.box("feed_arm", (-0.4, 53.6, 3), (0.4, 54.4, 9), faces=("east", "west", "up", "down"), bone="dish_tilt")
+    g.box("feed", (-1.2, 52.8, 1.5), (1.2, 55.2, 3), bone="dish_tilt")
+    g.layout()
+    tex = Tex(g.tex_w, g.tex_h)
+    glow = Tex(g.tex_w, g.tex_h)
+
+    def desk(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
+        if d in ("north", "south", "east", "west") and h > 4:
+            t.outline(x, y, w, h, OLIVE[1])
+        if d == "north" and w > 20:
+            for i in range(4):                           # drawers
+                t.rect(x + 2 + i * (w // 4), y + 3, w // 4 - 3, h - 5, OLIVE[2])
+                t.px(x + 2 + i * (w // 4) + (w // 8) - 1, y + 4, STEEL[5])
+    g.paint_all(tex, "desk", desk)
+
+    def console(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, GUN[tone(d) + 1])
+        if d == "up":
+            for i in range(x + 2, x + w - 2, 3):          # keys and lamps
+                t.px(i, y + 2, STEEL[5])
+                t.px(i, y + h - 3, [RED[4], YELLOW[4], GREEN[4]][(i // 3) % 3])
+    g.paint_all(tex, "console", console)
+
+    def crt(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, GUN[tone(d) + 1])
+        if d == "north" and w > 6:
+            t.rect(x + 1, y + 1, w - 2, h - 3, P.BLACK_PAINT.deep)
+            glow.rect(x + 1, y + 1, w - 2, h - 3, (0, 0, 0, 255))
+            for xx in range(x + 1, x + w - 1):            # a sweep and a few blips, glowing
+                yy = y + 1 + (h - 4) // 2 + ((xx * 7) % 5) - 2
+                for target in (t, glow):
+                    target.px(xx, yy, GREEN[4])
+            for target in (t, glow):
+                target.px(x + 3, y + 3, GREEN[6])
+                target.px(x + w - 4, y + h - 4, GREEN[6])
+    for n in ("crt_l", "crt_r"):
+        g.paint_all(tex, n, crt)
+
+    def socket(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, GUN[tone(d) + 1])
+        if d == "east":
+            t.stripes(x, y, w, 2, RED[3], BLACK[2], width=1)
+            t.rect(x + w // 2 - 2, y + 3, 4, 3, GUN[4])
+            t.rect(x + w // 2 - 1, y + 4, 2, 1, BLACK[1])
+    g.paint_all(tex, "socket", socket)
+    for n in ["ant_base", "ant_whip", *bars, "feed_arm", "feed", "back", "yoke", "mast_cap"]:
+        g.paint_all(tex, n, shaded(STEEL if n.startswith("ant") or n.startswith("feed") else GUN))
+    for n in mast:
+        g.paint_all(tex, n, shaded(STEEL))
+    for n in rings:
+        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, WHITE[tone(d) + 1]), t.outline(*r, WHITE[2]) if d == "north" and min(r[2], r[3]) > 3 else None))
+    g.save(tex, glow)
+    spin = Animation("working", 4.0, loop=True)
+    spin.rotate("dish", {0: (0, 0, 0), 4: (0, 360, 0)})
+    print(save_animations("launch_computer", [spin]))
+
+
+def main() -> None:
+    missile_item()
+    ST.part_block("launch_pad", launch_pad())
+    ST.part_block("gantry_frame", lattice(GANTRY), cutout=True)
+    ST.part_block("gantry_arm", truss(GANTRY), cutout=True)
+    ST.part_block("radar_mast", lattice(STEEL, step=3), cutout=True)
+    shaped_part("radar_dish", radar_dish_block)
+    shaped_part("antenna", antenna_block)
+    ST.controller("launch_silo", ST.controller_front(missile_placard), ST.controller_top(), ST.casing())
+    ST.controller("launch_computer", ST.controller_front(radar_placard), ST.controller_top(), ST.casing())
+    silo()
+    computer()
+    print("launch written")
+
+
+if __name__ == "__main__":
+    main()

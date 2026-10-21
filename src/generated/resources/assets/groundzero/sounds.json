@@ -234,6 +234,15 @@
     ],
     "subtitle": "subtitles.groundzero.grenade.pin"
   },
+  "launch.siren": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundzero:launch/siren"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.launch.siren"
+  },
   "machine.arc_furnace": {
     "sounds": [
       {
@@ -419,6 +428,24 @@
       }
     ],
     "subtitle": "subtitles.groundzero.mine.pop"
+  },
+  "missile.engine": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundzero:launch/missile_engine"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.missile.engine"
+  },
+  "missile.launch": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundzero:launch/missile_launch"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.missile.launch"
   },
   "reactor.alarm": {
     "sounds": [

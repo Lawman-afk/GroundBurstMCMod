@@ -39,7 +39,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:bunker_buster",
-      "text": "A 9-block crater where it stands. Built to punch through bunkers: once there are launchers to deliver it at speed, it will bore up to 40 blocks down first."
+      "text": "A 9-block crater where it stands. Built to punch through bunkers: delivered by a [missile](ordnance/launch_site), it bores up to 40 blocks down first and goes off at the bottom."
     },
     {
       "type": "spotlight",

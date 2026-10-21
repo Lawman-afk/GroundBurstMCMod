@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/antenna"
+    },
+    "formed=true": {
+      "model": "groundzero:block/antenna_formed"
+    }
+  }
+}

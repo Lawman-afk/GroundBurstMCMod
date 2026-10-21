@@ -622,7 +622,34 @@ def machine_loops() -> dict[str, np.ndarray]:
     }
 
 
-RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds]
+def launch_sounds() -> dict[str, np.ndarray]:
+    """Launching (DESIGN.md §17): the launch siren, the missile lighting on the pad, its engine in flight."""
+    out = {}
+    # Siren: a wailing tone rising and falling twice (a motor siren's growl under it).
+    n = 4.0
+    t = S.t_axis(n)
+    pitch = 420 + 380 * (0.5 - 0.5 * np.cos(2 * np.pi * t / 2.0))
+    phase = 2 * np.pi * np.cumsum(pitch) / S.SR
+    tone = np.sin(phase) * 0.6 + np.sin(2 * phase) * 0.25 + np.sin(3 * phase) * 0.1
+    growl = S.bandpass(S.white(n, 600), 80, 300) * 0.15
+    out["launch/siren"] = S.normalize(S.fade(S.lowpass(tone, 3500) + growl, 0.2, 0.4), -2)
+    # Ignition: a deep crack, then a huge tearing roar with crackle that builds and holds.
+    n = 5.0
+    t = S.t_axis(n)
+    crack = S.lowpass(S.white(n, 610), 600) * S.exp_decay(int(n * S.SR), 0.15) * 1.5
+    roar = S.bandpass(S.brown(n, 611), 30, 900) * 1.4
+    hiss = S.bandpass(S.white(n, 612), 1500, 7000) * 0.35
+    crackle = S.grains(n, rate=120, grain_ms=3, seed=613) * 0.5
+    build = np.clip(t / 1.2, 0, 1) ** 0.7
+    out["launch/missile_launch"] = S.normalize(S.fade(S.saturate(crack + (roar + hiss + crackle) * build, 1.6), 0.0, 0.8), -1)
+    # Engine: the roar from a distance, a steady loopable 2 s.
+    n = 2.0
+    roar = S.bandpass(S.brown(n, 620), 30, 700) * 1.3 + S.bandpass(S.pink(n, 621), 400, 3000) * 0.3
+    out["launch/missile_engine"] = S.normalize(S.fade(roar, 0.1, 0.3), -3)
+    return out
+
+
+RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds]
 
 
 def build_sounds() -> list[Path]:

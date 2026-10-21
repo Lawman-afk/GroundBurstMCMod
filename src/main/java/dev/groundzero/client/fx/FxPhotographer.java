@@ -64,7 +64,9 @@ public final class FxPhotographer {
                 new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)),
                 new Scene("mines", "mines", 5, 25, List.of(3, 6, 9, 30)),
                 new Scene("bombs", "bombs", 9, 25, List.of(10, 40)),
-                new Scene("napalm", "napalm", 10, 30, List.of(8, 40)))) {
+                new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
+                new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
+                new Scene("launch_ui", "launch", 9, 0, List.of(300, 340)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -207,6 +209,42 @@ public final class FxPhotographer {
         }
     }
 
+    /** The launch scenes' silo and computer, for the tick to launch from and open the screen of. */
+    private static net.minecraft.core.BlockPos launchSilo, launchComputer;
+
+    /** A formed, loaded, powered Launch Silo and Launch Computer side by side, fronts to the camera, aimed 400 blocks off. */
+    private static void launchSite(ServerLevel level, int x, int ground) {
+        launchSilo = new net.minecraft.core.BlockPos(x, ground, -3);
+        launchComputer = new net.minecraft.core.BlockPos(x - 4, ground, 5);
+        formed(level, launchSilo, dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.SILO);
+        formed(level, launchComputer, dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get(),
+                dev.groundzero.content.launch.GZLaunch.COMPUTER);
+        if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity silo) {
+            silo.revalidate();
+            silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
+            silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB.item().get()));
+            silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
+        }
+        if (level.getBlockEntity(launchComputer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity computer) {
+            computer.revalidate();
+            computer.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
+            computer.setTarget(x + 400, 140);
+        }
+    }
+
+    private static void formed(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.world.level.block.Block controller,
+            dev.groundzero.content.multiblock.MultiblockDefinition def) {
+        level.setBlockAndUpdate(at, controller.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING,
+                net.minecraft.core.Direction.WEST));
+        for (var cell : def.cells(at, net.minecraft.core.Direction.WEST)) {
+            if (cell.key() != dev.groundzero.content.multiblock.MultiblockDefinition.CONTROLLER && cell.key() != '.') {
+                level.setBlockAndUpdate(cell.pos(), def.legend().get(cell.key()).preview().get());
+            }
+        }
+    }
+
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
         var g = new dev.groundzero.content.ordnance.ThrownExplosive(level, player, new net.minecraft.world.item.ItemStack(item));
         g.setPos(at);
@@ -294,6 +332,10 @@ public final class FxPhotographer {
                     bombs(level, x, ground, false);
                     return;
                 }
+                if (s.profile().equals("launch")) {
+                    launchSite(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("napalm")) {
                     bombs(level, x, ground, true);
                     return;
@@ -313,6 +355,18 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
             dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
+        }
+        if (scene.profile().equals("launch") && step >= 0 && clock == 25 && launchSilo != null) {
+            var silo = launchSilo;
+            int x = site * 1200;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity be) {
+                    be.launch(server.overworld(), new net.minecraft.core.BlockPos(x + 400, 64, 140), null);
+                }
+            });
+        }
+        if (scene.name().equals("launch_ui") && step >= 0 && clock == 270 && launchComputer != null) {
+            dev.groundzero.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
             String name = "fx_" + scene.name() + "_" + clock + ".png";

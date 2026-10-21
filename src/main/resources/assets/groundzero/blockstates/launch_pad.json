@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/launch_pad"
+    },
+    "formed=true": {
+      "model": "groundzero:block/launch_pad_formed"
+    }
+  }
+}

@@ -135,6 +135,12 @@ public final class GZSounds {
             register("bomb.drill", "Bunker buster bores", List.of("ordnance/bomb_drill"), false, 48);
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_WHISTLE =
             register("bomb.whistle", "Bomb whistles down", List.of("ordnance/bomb_whistle"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_SIREN =
+            register("launch.siren", "Launch siren wails", List.of("launch/siren"), false, 96);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =
+            register("missile.launch", "Missile lights", List.of("launch/missile_launch"), false, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_ENGINE =
+            register("missile.engine", "Missile roars overhead", List.of("launch/missile_engine"), false, 128);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

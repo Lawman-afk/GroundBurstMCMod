@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "3";
+    public static final String PROTOCOL_VERSION = "4";
 
     private GZNetwork() {}
 
@@ -31,6 +31,15 @@ public final class GZNetwork {
                 dev.groundzero.content.ordnance.charge.ChargePayloads.Settings.CODEC, dev.groundzero.content.ordnance.charge.ChargePayloads.Settings::handle);
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire.CODEC, dev.groundzero.content.ordnance.charge.ChargePayloads.CutWire::handle);
+        // The Launch Computer (DESIGN.md §17.3): its scope is handled on the client in GroundZeroClient.
+        registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Watch.TYPE, dev.groundzero.content.launch.LaunchPayloads.Watch.CODEC,
+                dev.groundzero.content.launch.LaunchPayloads.Watch::handle);
+        registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Target.TYPE, dev.groundzero.content.launch.LaunchPayloads.Target.CODEC,
+                dev.groundzero.content.launch.LaunchPayloads.Target::handle);
+        registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Launch.TYPE, dev.groundzero.content.launch.LaunchPayloads.Launch.CODEC,
+                dev.groundzero.content.launch.LaunchPayloads.Launch::handle);
+        registrar.playToClient(dev.groundzero.content.launch.LaunchPayloads.Scope.TYPE, dev.groundzero.content.launch.LaunchPayloads.Scope.CODEC,
+                (payload, context) -> dev.groundzero.content.launch.LaunchPayloads.scopeHook.accept(payload));
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.CODEC,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency::handle);

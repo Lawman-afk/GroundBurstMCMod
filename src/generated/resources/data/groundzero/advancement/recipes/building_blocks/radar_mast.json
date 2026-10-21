@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_steel_rod": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:steel_rod"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:radar_mast"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_steel_rod"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:radar_mast"
+    ]
+  }
+}
