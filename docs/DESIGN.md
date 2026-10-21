@@ -47,6 +47,10 @@
 These replace what older (1.20/1.21) knowledge would assume. Re-verify against the decompiled sources in
 `build/moddev/artifacts` before using any of them.
 
+- **Mouse buttons are SDL numbers.** `MouseButtonEvent.button()` is 1 for left, 2 middle, 3 right
+  (`InputConstants.MOUSE_BUTTON_LEFT/MIDDLE/RIGHT`), not GLFW's 0/1/2: always compare with the constants (found when the
+  Launch Computer map's right-drag panned on the left button).
+
 - **Rendering backend abstraction.** 26.2 added a **Vulkan** backend beside OpenGL; 26.3 moved the render API out of
   Blaze3d into **Renderpearl** (`com.mojang.renderpearl.api.*` — `RenderPipeline`, `RenderPass`, `GpuTexture`, …).
   Raw GL calls are off the table; all custom rendering goes through `RenderPipeline`s + `RenderPass`es so it works on

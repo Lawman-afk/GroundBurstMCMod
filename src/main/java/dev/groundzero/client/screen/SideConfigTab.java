@@ -226,7 +226,7 @@ final class SideConfigTab {
                 int id = switch (channel) {
                     case ENERGY -> MachineMenu.BUTTON_ENERGY;
                     case FLUID -> MachineMenu.BUTTON_FLUID;
-                    case ITEMS -> button == 1 ? MachineMenu.BUTTON_ITEMS_PREV : MachineMenu.BUTTON_ITEMS_NEXT;
+                    case ITEMS -> button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT ? MachineMenu.BUTTON_ITEMS_PREV : MachineMenu.BUTTON_ITEMS_NEXT;
                 };
                 send(id + face.ordinal());
                 return true;

@@ -181,10 +181,22 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             float top = cols == 1 ? ro.y() + 3 : ro.y() + (ro.h() - (Math.min(rows, lines.size()) - 1) * step - glyph) / 2f + 0.5f;
             float colWidth = (ro.w() - 6) / (float) cols;
             for (int i = 0; i < lines.size(); i++) {
+                // A line too wide for its column is drawn smaller to fit (down to half size), and cut short past that.
+                Component text = lines.get(i);
+                float scale = CRT_SCALE;
+                int textWidth = this.font.width(text);
+                if (textWidth * scale > colWidth) {
+                    scale = Math.max(CRT_SCALE * 0.66f, colWidth / textWidth);
+                }
                 g.pose().pushMatrix();
-                g.pose().translate(ro.x() + 3 + (i / rows) * colWidth, top + (i % rows) * step);
-                g.pose().scale(CRT_SCALE, CRT_SCALE);
-                g.text(this.font, lines.get(i), 0, 0, CRT_TEXT, false);
+                g.pose().translate(ro.x() + 3 + (i / rows) * colWidth, top + (i % rows) * step + (CRT_SCALE - scale) * this.font.lineHeight / 2f);
+                g.pose().scale(scale, scale);
+                if (textWidth * scale > colWidth) {
+                    String cut = this.font.plainSubstrByWidth(text.getString(), (int) (colWidth / scale) - this.font.width("..."));
+                    g.text(this.font, cut + "...", 0, 0, CRT_TEXT, false);
+                } else {
+                    g.text(this.font, text, 0, 0, CRT_TEXT, false);
+                }
                 g.pose().popMatrix();
             }
         }

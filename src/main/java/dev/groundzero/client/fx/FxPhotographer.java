@@ -67,6 +67,7 @@ public final class FxPhotographer {
                 new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
                 new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
                 new Scene("launch_ui", "launch", 9, 0, List.of(22, 300, 340)),
+                new Scene("silo_ui", "launch", 5, 0, List.of(30)),
                 new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)),
                 new Scene("radar", "radar", 22, -16, List.of(20, 60)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
@@ -429,6 +430,34 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("launch_ui") && step >= 0 && clock == 10 && launchComputer != null) {
             dev.groundzero.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);
+        }
+        // The map's mouse, as the game sends it: a right-button drag 40 px left and up, then a left click right of centre.
+        if (scene.name().equals("launch_ui") && step >= 0 && (clock == 14 || clock == 18) && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();
+            double cx = screen.width / 2.0 - 168 + 8 + 92, cy = screen.height / 2.0 - 107 + 14 + 92;
+            var right = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT, 0);
+            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
+            if (clock == 14) {
+                screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(cx, cy, right), false);
+                screen.mouseDragged(new net.minecraft.client.input.MouseButtonEvent(cx - 40, cy - 20, right), -40, -20);
+                screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(cx - 40, cy - 20, right));
+            } else {
+                screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left), false);
+                screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left));
+            }
+        }
+        // The silo's own screen, a Massive Ordnance Warhead loaded (the longest name).
+        if (scene.name().equals("silo_ui") && step >= 0 && clock == 12 && launchSilo != null) {
+            var silo = launchSilo;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity be) {
+                    be.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
+                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item().get()));
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, silo);
+                }
+            });
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
             String name = "fx_" + scene.name() + "_" + clock + ".png";

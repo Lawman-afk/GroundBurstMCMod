@@ -23,6 +23,7 @@ import dev.groundzero.content.launch.LaunchSiloBlockEntity;
 import dev.groundzero.content.launch.MissileEntity;
 import dev.groundzero.content.launch.TerrainSurvey;
 import dev.groundzero.registry.GZLang;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -291,11 +292,11 @@ public class LaunchComputerScreen extends Screen {
             return true;
         }
         if (inMap(event.x(), event.y()) && on()) {
-            if (event.button() == 0) {                       // left click: aim the picked silo here
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {    // left click: aim the picked silo here
                 aimAt((int) Math.floor(worldX(event.x())), (int) Math.floor(worldZ(event.y())));
                 return true;
             }
-            if (event.button() == 1) {                       // right button held: drag the map round
+            if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {   // right button held: drag the map round
                 this.panning = true;
                 return true;
             }
@@ -316,7 +317,7 @@ public class LaunchComputerScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (this.panning && event.button() == 1) {
+        if (this.panning && event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             this.panning = false;
             return true;
         }
