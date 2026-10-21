@@ -1,7 +1,7 @@
 package dev.groundzero.content.ordnance.charge;
 
 /**
- * The placed charges and mines (DESIGN.md §14, Phase 6 slices 6b, 6c): what each sticks to, whether it has a frequency
+ * The placed charges, mines and bombs (DESIGN.md §14, Phase 6 slices 6b-6d): what each sticks to, whether it has a frequency
  * and a timer, and what sets it off by itself. Once armed, a Remote Detonator on its frequency (or redstone) sets it
  * off, or, if it is on its timer, starts the countdown; mines go off when stepped on or tripped.
  *
@@ -26,7 +26,22 @@ public enum ChargeKind {
     /** Stepped on, it pops its canister up to waist height, which bursts into 30 fragments. */
     BOUNCING_MINE("bouncing_mine", false, false, false, 0, Sensor.PRESSURE),
     /** A curved box of fragments facing the enemy: a laser tripwire (or a detonator on its frequency) fires them in a 60 degree cone. */
-    CLAYMORE("claymore", false, true, false, 0, Sensor.TRIPWIRE);
+    CLAYMORE("claymore", false, true, false, 0, Sensor.TRIPWIRE),
+    // Bombs (slice 6d): lying on their side, they fall when unsupported and, armed, go off when they land or are hit.
+    /** General-purpose high explosive, small: crater 6. */
+    HE_BOMB("he_bomb", 10, true),
+    /** The heavy general-purpose bomb: crater 12. */
+    HEAVY_BOMB("heavy_bomb", 10, true),
+    /** Disperses a fuel cloud, then ignites it 0.6 s later: a weak crater but a huge, burning overpressure, worse indoors. */
+    THERMOBARIC_BOMB("thermobaric_bomb", 10, true),
+    /** Bursts and scatters 24 bomblets over about 18 blocks; one in twenty is a dud that lies there as a live mine. */
+    CLUSTER_BOMB("cluster_bomb", 10, true),
+    /** Bores up to 40 blocks straight down (obsidian costs 10) before it goes off: crater 9. */
+    BUNKER_BUSTER("bunker_buster", 10, true),
+    /** A small burst and a 30 x 12 ellipse of napalm ahead of its nose that burns for 30 s, rain or not. */
+    NAPALM_BOMB("napalm_bomb", 10, true),
+    /** The biggest conventional bomb: crater 28, deadly out to 40. */
+    MOAB("moab", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -37,23 +52,35 @@ public enum ChargeKind {
     public final boolean timer;
     public final int seconds;
     public final Sensor sensor;
+    /** A bomb: falls when unsupported, and its impact fuze sets it off when it lands or is hit (once armed). */
+    public final boolean bomb;
 
     ChargeKind(String id, boolean anyFace, boolean remote, boolean timer, int seconds) {
-        this(id, anyFace, remote, timer, seconds, Sensor.NONE);
+        this(id, anyFace, remote, timer, seconds, Sensor.NONE, false);
     }
 
     ChargeKind(String id, boolean anyFace, boolean remote, boolean timer, int seconds, Sensor sensor) {
+        this(id, anyFace, remote, timer, seconds, sensor, false);
+    }
+
+    /** A bomb: a frequency and a timer, on the floor, nose away from the player. */
+    ChargeKind(String id, int seconds, boolean bomb) {
+        this(id, false, true, true, seconds, Sensor.NONE, bomb);
+    }
+
+    ChargeKind(String id, boolean anyFace, boolean remote, boolean timer, int seconds, Sensor sensor, boolean bomb) {
         this.id = id;
         this.anyFace = anyFace;
         this.remote = remote;
         this.timer = timer;
         this.seconds = seconds;
         this.sensor = sensor;
+        this.bomb = bomb;
     }
 
-    /** Placed facing the way the player looks (its front away from them): the claymore. Others face the player. */
+    /** Placed facing the way the player looks (its front away from them): the claymore, and bombs (nose away). */
     public boolean facesAway() {
-        return this == CLAYMORE;
+        return this == CLAYMORE || this.bomb;
     }
 
     /** Whether it can be set to go off at once or on its timer (the timed bomb is always on its timer). */

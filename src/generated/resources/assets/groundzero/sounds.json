@@ -168,6 +168,24 @@
     ],
     "subtitle": "subtitles.groundzero.bomb.beep"
   },
+  "bomb.drill": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundzero:ordnance/bomb_drill"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.bomb.drill"
+  },
+  "bomb.fuel_disperse": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundzero:ordnance/fuel_disperse"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.bomb.fuel_disperse"
+  },
   "charge.arm": {
     "sounds": [
       "groundzero:ordnance/charge_arm"

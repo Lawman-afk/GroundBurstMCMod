@@ -58,7 +58,9 @@ public final class FxPhotographer {
                 new Scene("chemical", "chemical", 7, 18, List.of(20, 60, 120)),
                 new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)),
                 new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)),
-                new Scene("mines", "mines", 5, 25, List.of(3, 6, 9, 30)))) {
+                new Scene("mines", "mines", 5, 25, List.of(3, 6, 9, 30)),
+                new Scene("bombs", "bombs", 9, 25, List.of(10, 40)),
+                new Scene("napalm", "napalm", 10, 30, List.of(8, 40)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -176,6 +178,31 @@ public final class FxPhotographer {
         }
     }
 
+    /** The bombs side by side, noses to the right of the camera, some armed; or a napalm bomb set off across the view. */
+    private static void bombs(ServerLevel level, int x, int ground, boolean napalm) {
+        var F = dev.groundzero.content.ordnance.charge.ChargeBlock.FACING;
+        if (napalm) {
+            var at = new net.minecraft.core.BlockPos(x, ground, -6);
+            level.setBlockAndUpdate(at, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB.block().get().defaultBlockState()
+                    .setValue(F, net.minecraft.core.Direction.SOUTH));
+            var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, at);
+            if (be != null) {
+                be.arm(level, null);
+                be.trigger(level, null);
+            }
+            return;
+        }
+        var bombs = java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.MOAB);
+        for (int i = 0; i < bombs.size(); i++) {
+            var at = new net.minecraft.core.BlockPos(x + (i % 2) * 3, ground, -6 + i * 2);
+            level.setBlockAndUpdate(at, bombs.get(i).block().get().defaultBlockState().setValue(F, net.minecraft.core.Direction.SOUTH)
+                    .setValue(dev.groundzero.content.ordnance.charge.ChargeBlock.ARMED, i % 2 == 0));
+        }
+    }
+
     private static void throwOne(ServerLevel level, ServerPlayer player, net.minecraft.world.item.Item item, Vec3 at, Vec3 velocity, int fuse) {
         var g = new dev.groundzero.content.ordnance.ThrownExplosive(level, player, new net.minecraft.world.item.ItemStack(item));
         g.setPos(at);
@@ -257,6 +284,14 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("mines")) {
                     mines(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("bombs")) {
+                    bombs(level, x, ground, false);
+                    return;
+                }
+                if (s.profile().equals("napalm")) {
+                    bombs(level, x, ground, true);
                     return;
                 }
                 if (s.profile().startsWith("suits")) {

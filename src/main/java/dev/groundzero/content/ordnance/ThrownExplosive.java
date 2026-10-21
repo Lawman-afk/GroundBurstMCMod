@@ -104,6 +104,22 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         return getItem().is(GZOrdnance.BOUNCING_MINE.item().get()) ? GrenadeType.BOUNCING_MINE : GrenadeType.FRAG;
     }
 
+    /** A dud bomblet: lands as a live landmine instead of going off. */
+    private boolean dud;
+
+    /** A cluster bomb's bomblet thrown out from {@code at}. */
+    public static ThrownExplosive bomblet(ServerLevel level, Vec3 at, Vec3 velocity, @Nullable Entity owner, boolean dud) {
+        ThrownExplosive e = new ThrownExplosive(GZOrdnance.THROWN_EXPLOSIVE.get(), level);
+        e.setOwner(owner);
+        e.setItem(new ItemStack(GZOrdnance.CLUSTER_BOMBLET.get()));
+        e.setPos(at);
+        e.setDeltaMovement(velocity);
+        e.fuse = -1;
+        e.dud = dud;
+        level.addFreshEntity(e);
+        return e;
+    }
+
     /** A bouncing mine's canister popping up out of the ground at {@code at}: it bursts about 1.2 blocks up. */
     public static ThrownExplosive popUp(ServerLevel level, Vec3 at, @Nullable Entity owner) {
         ThrownExplosive e = new ThrownExplosive(GZOrdnance.THROWN_EXPLOSIVE.get(), level);
@@ -276,6 +292,17 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
         Vec3 at = position().add(0, 0.15, 0);
         if (type == GrenadeType.TOXIN) {
             splash(level, at);
+            discard();
+            return;
+        }
+        if (type == GrenadeType.BOMBLET && this.dud) {
+            // A dud: it lies where it fell, live.
+            var pos = new BlockPos.MutableBlockPos();
+            floor(level, at, 0, 0, pos);
+            BlockState mine = GZOrdnance.LANDMINE.block().get().defaultBlockState().setValue(dev.groundzero.content.ordnance.charge.ChargeBlock.ARMED, true);
+            if (level.getBlockState(pos).canBeReplaced() && mine.canSurvive(level, pos)) {
+                level.setBlockAndUpdate(pos, mine);
+            }
             discard();
             return;
         }

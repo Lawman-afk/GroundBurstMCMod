@@ -35,6 +35,7 @@ public final class ChargeScreens {
     private static final String T_HINT = GZLang.add(GroundZero.MODID + ".charge.hint", "Armed: a detonator or redstone sets it off");
     private static final String T_HINT_MINE = GZLang.add(GroundZero.MODID + ".charge.hint_mine", "Armed: it goes off when stepped on");
     private static final String T_HINT_CLAYMORE = GZLang.add(GroundZero.MODID + ".charge.hint_claymore", "Armed: its laser or a detonator sets it off");
+    private static final String T_HINT_BOMB = GZLang.add(GroundZero.MODID + ".charge.hint_bomb", "Armed: a detonator, redstone, a fall or a hit sets it off");
     private static final String T_HINT_TIMER = GZLang.add(GroundZero.MODID + ".charge.hint_timer", "Armed: a detonator or redstone starts its timer");
     private static final String T_ARM = GZLang.add(GroundZero.MODID + ".charge.arm", "Arm");
     private static final String T_MAKE_SAFE = GZLang.add(GroundZero.MODID + ".charge.make_safe", "Make safe");
@@ -218,7 +219,7 @@ public final class ChargeScreens {
             String key = this.armed ? T_LOCKED : switch (this.kind.sensor) {
                 case PRESSURE -> T_HINT_MINE;
                 case TRIPWIRE -> T_HINT_CLAYMORE;
-                case NONE -> this.timer ? T_HINT_TIMER : T_HINT;
+                case NONE -> this.kind.bomb && !this.timer ? T_HINT_BOMB : this.timer ? T_HINT_TIMER : T_HINT;
             };
             Component hint = Component.translatable(key);
             centred(g, this.font, hint, this.width / 2, top + this.hintRow, DIM);

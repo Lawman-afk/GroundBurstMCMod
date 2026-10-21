@@ -33,6 +33,8 @@ public final class GZOrdnance {
     public static final DeferredItem<GrenadeItem> GAS_GRENADE = grenade(GrenadeType.POISON_GAS, "Poison Gas Grenade");
     public static final DeferredItem<GrenadeItem> TOXIN_GRENADE = grenade(GrenadeType.TOXIN, "Toxin Grenade");
     public static final DeferredItem<GrenadeItem> MOLOTOV_COCKTAIL = grenade(GrenadeType.MOLOTOV, "Molotov Cocktail");
+    /** A cluster bomb's bomblet (thrown, it goes off on impact like any grenade). */
+    public static final DeferredItem<GrenadeItem> CLUSTER_BOMBLET = grenade(GrenadeType.BOMBLET, "Cluster Bomblet");
 
     /** The film of toxin a toxin grenade leaves on the ground. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundzero.registry.GZBlocks.blockOnly(
@@ -71,12 +73,35 @@ public final class GZOrdnance {
     public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLAYMORE = mine("claymore",
             "Claymore", dev.groundzero.content.ordnance.charge.ChargeKind.CLAYMORE);
 
+    // --- bombs (slice 6d) ---
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HE_BOMB = bomb("he_bomb",
+            "HE Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.HE_BOMB);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HEAVY_BOMB = bomb("heavy_bomb",
+            "Heavy Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.HEAVY_BOMB);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> THERMOBARIC_BOMB = bomb(
+            "thermobaric_bomb", "Thermobaric Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.THERMOBARIC_BOMB);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLUSTER_BOMB = bomb("cluster_bomb",
+            "Cluster Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.CLUSTER_BOMB);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> BUNKER_BUSTER = bomb("bunker_buster",
+            "Bunker Buster", dev.groundzero.content.ordnance.charge.ChargeKind.BUNKER_BUSTER);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> NAPALM_BOMB = bomb("napalm_bomb",
+            "Napalm Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.NAPALM_BOMB);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> MOAB = bomb("moab",
+            "MOAB", dev.groundzero.content.ordnance.charge.ChargeKind.MOAB);
+    /** Burning napalm from a napalm bomb. */
+    public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundzero.registry.GZBlocks.blockOnly(
+            "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
+            p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollision().instabreak().noLootTable()
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED).sound(net.minecraft.world.level.block.SoundType.WOOL)
+                    .lightLevel(s -> 15).emissiveRendering(s -> true));
+
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<dev.groundzero.content.ordnance.charge.ChargeBlockEntity>> CHARGE =
             dev.groundzero.registry.GZBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
                     dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
                     THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get(), LANDMINE.block().get(), BOUNCING_MINE.block().get(),
-                    CLAYMORE.block().get()));
+                    CLAYMORE.block().get(), HE_BOMB.block().get(), HEAVY_BOMB.block().get(), THERMOBARIC_BOMB.block().get(),
+                    CLUSTER_BOMB.block().get(), BUNKER_BUSTER.block().get(), NAPALM_BOMB.block().get(), MOAB.block().get()));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 
@@ -97,6 +122,8 @@ public final class GZOrdnance {
     public static final Supplier<SoundEvent> WIRE_SNIP = GZSounds.WIRE_SNIP;
     public static final Supplier<SoundEvent> MINE_CLICK = GZSounds.MINE_CLICK;
     public static final Supplier<SoundEvent> MINE_POP = GZSounds.MINE_POP;
+    public static final Supplier<SoundEvent> FUEL_DISPERSE = GZSounds.FUEL_DISPERSE;
+    public static final Supplier<SoundEvent> BOMB_DRILL = GZSounds.BOMB_DRILL;
 
     static {
         dev.groundzero.registry.GZLang.add("death.attack." + GroundZero.MODID + ".shrapnel", "%1$s was shredded by shrapnel");
@@ -108,6 +135,13 @@ public final class GZOrdnance {
     }
 
     private GZOrdnance() {}
+
+    private static dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> bomb(String id, String english,
+            dev.groundzero.content.ordnance.charge.ChargeKind kind) {
+        return dev.groundzero.registry.GZBlocks.register(id, english, GZTab.ORDNANCE, p -> new dev.groundzero.content.ordnance.charge.BombBlock(kind, p),
+                p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN).strength(2f).noOcclusion()
+                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    }
 
     private static dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> mine(String id, String english,
             dev.groundzero.content.ordnance.charge.ChargeKind kind) {

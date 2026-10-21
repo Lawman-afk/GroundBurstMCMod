@@ -574,6 +574,17 @@ def ordnance_sounds() -> dict[str, np.ndarray]:
     thump = S.lowpass(S.white(0.35, 510), 500) * S.exp_decay(int(0.35 * S.SR), 0.04) * 1.4
     hiss = S.bandpass(S.white(0.35, 511), 1500, 6000) * S.exp_decay(int(0.35 * S.SR), 0.08) * 0.4
     out["ordnance/mine_pop"] = S.normalize(S.fade(S.mix((thump, 1.0), (hiss, 1.0)), 0, 0.05), -2)
+    # Bombs (slice 6d): the thermobaric's fuel cloud bursting out (a dull thud and a rushing roar that swells), and the
+    # bunker buster grinding down through rock.
+    n = 0.9
+    whump = S.lowpass(S.white(n, 520), 200) * S.exp_decay(int(n * S.SR), 0.08) * 1.6
+    rush = S.sweep_lowpass(S.pink(n, 521), 600, 4500) * S.breakpoints(int(n * S.SR), [(0, 0), (0.05, 0.6), (0.5, 1), (0.9, 0)])
+    out["ordnance/fuel_disperse"] = S.normalize(S.fade(S.mix((whump, 1.0), (rush, 0.8)), 0, 0.1), -2)
+    n = 2.0
+    grind = S.bandpass(S.white(n, 530), 150, 1400) * (0.7 + 0.3 * np.sin(2 * np.pi * 23 * S.t_axis(n)))
+    crunch = S.grains(n, rate=40, grain_ms=6, seed=531) * 0.8
+    rumble = S.lowpass(S.brown(n, 532), 120) * 1.4
+    out["ordnance/bomb_drill"] = S.normalize(S.fade(S.mix((grind, 1.0), (crunch, 0.8), (rumble, 1.0)), 0.05, 0.4), -3)
     return out
 
 

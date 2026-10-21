@@ -26,7 +26,9 @@ public enum GrenadeType {
     /** A bottle of fuel with a burning rag: shatters on impact into fire, with no blast. */
     MOLOTOV("molotov_cocktail", -1, Behaviour.IMPACT, 1.0f),
     /** The bouncing mine's canister, popped up out of the ground: bursts at about waist height into 30 fragments. */
-    BOUNCING_MINE("bouncing_mine", 7, Behaviour.BOUNCE, 0f);
+    BOUNCING_MINE("bouncing_mine", 7, Behaviour.BOUNCE, 0f),
+    /** A cluster bomb's bomblet: goes off where it lands (a dud lies there as a live landmine). */
+    BOMBLET("cluster_bomblet", -1, Behaviour.IMPACT, 1.0f);
 
     public enum Behaviour { BOUNCE, STICK, IMPACT }
 

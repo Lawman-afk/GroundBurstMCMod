@@ -290,6 +290,43 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET)
                 .requires(Items.IRON_NUGGET).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
+        // Bombs (slice 6d): direct recipes until the Assembly Bench (Phase 7).
+        var o = new Object() {
+            final net.minecraft.world.level.ItemLike he = dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB.item();
+            final net.minecraft.world.level.ItemLike heavy = dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB.item();
+        };
+        shapeless(RecipeCategory.COMBAT, o.he, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.RDX_CRYSTALS), has(GZChemicals.RDX_CRYSTALS)).save(output);
+        shapeless(RecipeCategory.COMBAT, o.heavy, 1)
+                .requires(o.he).requires(o.he).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS)
+                .unlockedBy(getHasName(o.he), has(o.he)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB.item(), 1)
+                .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.THERMOBARIC_SLURRY_CANISTER), has(GZChemicals.THERMOBARIC_SLURRY_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER.item(), 1)
+                .requires(o.he).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_CARBIDE_INGOT)
+                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(o.he), has(o.he)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB.item(), 1)
+                .requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MOAB.item(), 1)
+                .requires(o.heavy).requires(o.heavy).requires(o.heavy).requires(o.heavy)
+                .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(o.heavy), has(o.heavy)).save(output);
         shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
                 .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
                 .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)

@@ -1,0 +1,17 @@
+{
+  "core": 0.8,
+  "crater": 2.5,
+  "ejecta": 0.3,
+  "entities": {
+    "damage": 7.0,
+    "edge_damage": 9.0,
+    "knockback": 1.4,
+    "lethal": 3.0,
+    "lethal_damage": 30.0
+  },
+  "front_speed": 4.0,
+  "instant": true,
+  "lobes": 0.1,
+  "scorch": 3.0,
+  "structural": 4.0
+}

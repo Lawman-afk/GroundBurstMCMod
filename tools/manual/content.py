@@ -829,6 +829,43 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
+entry("ordnance/bombs", "Bombs", "he_bomb", ["he_bomb", "heavy_bomb", "thermobaric_bomb", "cluster_bomb", "bunker_buster",
+                                            "napalm_bomb", "moab"], [
+    text("""
+Bombs lie on their side, nose the way you were looking. They are set up and armed like [placed charges](ordnance/charges): a frequency, at once or on a timer, then **Arm**. Armed, a detonator, redstone or its timer sets one off.
+
+Bombs also have an **impact fuze**. Nothing holds a bomb up: placed in the air, or with its support gone, it falls. An armed bomb that lands, or is hit by an arrow, goes off. A safe one just lands. So arm one on a ledge, then knock the ledge away.
+"""),
+    spot("he_bomb", """
+The general-purpose bomb: a crater about 6 blocks across.
+"""),
+    spot("heavy_bomb", """
+The same, twice the size: a crater about 12 blocks across.
+"""),
+    spot("thermobaric_bomb", """
+Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but the burning overpressure reaches 24 blocks, and anything with no open sky above it (indoors, in a cave) is hurt far worse.
+"""),
+    spot("cluster_bomb", """
+Bursts and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
+"""),
+    spot("bunker_buster", """
+Bores straight down up to 40 blocks before it goes off (anything as hard as obsidian costs 10 of them), then blows a 9-block crater down there. Bedrock stops it.
+"""),
+    spot("napalm_bomb", """
+A small burst and an ellipse of **napalm** 30 blocks long and 12 wide ahead of its nose. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
+"""),
+    spot("moab", """
+The biggest conventional bomb: a 28-block crater and deadly out to 40. Stand well clear.
+"""),
+    craft("he_bomb"),
+    craft("heavy_bomb"),
+    craft("thermobaric_bomb"),
+    craft("cluster_bomb"),
+    craft("bunker_buster"),
+    craft("napalm_bomb"),
+    craft("moab"),
+])
+
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",
                                                                 "toxin_canister", "salt", "chlorine_bucket", "toxin_bucket"], [
     text("""

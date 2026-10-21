@@ -972,6 +972,29 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   and reset the target's damage cooldown so every hit counts: a bare 20-health target 5 blocks ahead takes about six
   and dies (their reach is about 10 blocks). Frag grenade and bouncing mine fragments are unchanged.
 
+### 14.5 As built: bombs (Phase 6 slice 6d)
+- Bombs are charges (`ChargeKind.bomb`) placed as `BombBlock`s lying on their side, nose the way the player looks
+  (FACING). Fuzes as the placed charges: a frequency, At once or Timer, armed from the screen; redstone too. **Impact
+  fuze**: a bomb is a gravity block (`Fallable`): unsupported, it falls, its fuze settings carried in the falling
+  block's data (vanilla does not copy them); armed, it goes off when it lands (`onLand`) or when a projectile hits it.
+  Safe, it lands whole. Sympathetic detonation as before. Direct recipes until the Phase 7 Assembly Bench.
+- Models (`tools/assets/bombs.py`): horizontal "plus" prisms stepped down to nose and tail, four fins, lugs, bands; big
+  ones run past their block (MOAB 44 px long), the collision box stays inside it; display transforms scale them down.
+- **HE Bomb** (`he_bomb`: core 2.5, crater 6, lethal 7, damage 14), **Heavy Bomb** (`heavy_bomb`: 5 / 12 / 14 / 28,
+  staged front), **MOAB** (`moab`: core 10, crater 28, structural 40, lethal 40, damage 70, large sound and visual set).
+- **Thermobaric Bomb**: a fuel cloud (particles, a rushing roar), lit 12 ticks later (`thermobaric_bomb`: crater 12 but
+  shallow, structural 24, fire 16, lethal 24, damage 40), plus up to 20 more damage to anything within 24 with no open
+  sky above its eyes.
+- **Cluster Bomb**: a small burst (`cluster_bomb`) and 24 bomblets (`ThrownExplosive`, `GrenadeType.BOMBLET`, impact,
+  `cluster_bomblet` profile: crater 2.5) thrown out at 0.2-0.65 blocks a tick and 0.55-0.8 up (most land 6-18 blocks
+  away); 5% are duds, which land as armed landmines. The Cluster Bomblet item can be thrown too.
+- **Bunker Buster**: bores straight down 2 blocks a tick, 40 blocks of depth (obsidian-hard blocks cost 10; bedrock
+  or the world's floor stops it), then `bunker_buster` (core 3.5, crater 9) where it stopped.
+- **Napalm Bomb**: `napalm_bomb` (crater 2, fire 6) and **Napalm Fire** over the floor in an ellipse 30 x 12 ahead of
+  its nose (90% near the middle, thinner at the edge): 30 s in four stages, not put out by rain, ignites (10 s) and
+  burns (2 every half second) anything in it, now and then lights flammable blocks beside it; drawn with vanilla's fire.
+- `Charges.bombScale` (1 in play) scales every bomb's reach for GameTests, keeping them in their plot.
+
 ## 15. Nuclear weapons
 
 | Weapon | Class | Yield (flavour) | Core | Crater (depth) | Structural | Fire | Lethal | Damage | Radiation (half-life) | Look |
@@ -1925,3 +1948,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6c mines: built on the placed-charge framework (same screen, arming, redstone, sympathetic detonation) with sensors and a 3 s arming grace; mines are modelled sunk into the ground; the bouncing mine's canister reuses the thrown-explosive entity; the claymore's laser is drawn as geometry, not particles (block display ticks were too sparse to show it). |
 | 2026-10-21 | Slice 6c feedback: mines are live as soon as armed (no grace); the claymore hurts only through its forward fragments; gas Poison III, toxin Poison IV with nausea. |
 | 2026-10-21 | Claymore: its bang is only particles and a sound, and its fragments are an even, heavier cone whose every hit counts, so it kills at half its range. |
+| 2026-10-21 | Slice 6d bombs: placed charges with an impact fuze, made gravity blocks so they can be armed and dropped; special bombs staged through the charge scheduler (thermobaric ignition, bunker buster bore); napalm as its own long-lived fire block rain cannot put out; cluster duds become armed landmines. |

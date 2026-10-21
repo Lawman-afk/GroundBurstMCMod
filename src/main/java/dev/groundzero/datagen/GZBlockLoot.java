@@ -51,6 +51,12 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.LANDMINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.block().get());
+        for (var bomb : java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB,
+                dev.groundzero.content.ordnance.GZOrdnance.MOAB)) {
+            dropSelf(bomb.block().get());
+        }
         // Corium sets as it is dug: either way you get Cooled Corium.
         dropSelf(dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.block().get());
         dropOther(dev.groundzero.content.nuclear.GZNuclear.CORIUM.block().get(), dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.item().get());

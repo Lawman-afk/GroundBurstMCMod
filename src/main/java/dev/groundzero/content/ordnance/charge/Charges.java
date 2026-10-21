@@ -47,11 +47,26 @@ public final class Charges {
     private static final Map<ResourceKey<Level>, LongOpenHashSet> LOADED = new HashMap<>();
     private static final Map<ServerLevel, List<Pending>> PENDING = new WeakHashMap<>();
 
-    /** A charge that will go off at {@code at} (game time), from what was there when it was set off. */
-    private record Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at) {}
+    /**
+     * A charge that will go off at {@code at} (game time), from what was there when it was set off; or, for a later
+     * {@code stage} of a bomb already going off, the next step (the thermobaric bomb igniting its cloud, the bunker
+     * buster boring on with {@code count} blocks of depth left).
+     */
+    private record Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at, int stage) {
+        Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at) {
+            this(kind, pos, facing, count, owner, at, FIRE);
+        }
+    }
+
+    private static final int FIRE = 0, IGNITE = 1, BORE = 2;
 
     /** For GameTests: how many charges have gone off since the server started. */
     public static int fired;
+    /**
+     * For GameTests: every bomb's reach (blast, napalm, bomblets, indoor overpressure) times this, so a test's bomb stays
+     * in its own plot. Always 1 in play.
+     */
+    public static float bombScale = 1f;
 
     private Charges() {}
 
@@ -131,7 +146,12 @@ public final class Charges {
             return false;
         });
         for (Pending p : due) {
-            fire(level, p.kind(), p.pos(), p.facing(), p.count(), p.owner() == null ? null : level.getEntity(p.owner()));
+            Entity by = p.owner() == null ? null : level.getEntity(p.owner());
+            switch (p.stage()) {
+                case IGNITE -> thermobaricIgnite(level, p.pos(), by);
+                case BORE -> bore(level, p, by);
+                default -> fire(level, p.kind(), p.pos(), p.facing(), p.count(), by);
+            }
         }
     }
 
@@ -167,6 +187,135 @@ public final class Charges {
                 dev.groundzero.content.ordnance.ThrownExplosive.popUp(level, c.add(0, -0.3, 0), by);
             }
             case CLAYMORE -> claymore(level, pos, facing, by);
+            case HE_BOMB, HEAVY_BOMB, MOAB -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile(kind.id), by, bombScale);
+            case NAPALM_BOMB -> {
+                Blasts.detonate(level, c, Blasts.profile("napalm_bomb"), by, bombScale);
+                napalm(level, pos, facing);
+            }
+            case CLUSTER_BOMB -> cluster(level, c, by);
+            case THERMOBARIC_BOMB -> {
+                // The fuel cloud spreads first; it is lit 0.6 s later.
+                level.sendParticles(ParticleTypes.CLOUD, c.x, c.y, c.z, 160, 3.5, 1.5, 3.5, 0.25);
+                level.sendParticles(ParticleTypes.POOF, c.x, c.y, c.z, 40, 1.5, 0.6, 1.5, 0.4);
+                level.playSound(null, pos, GZOrdnance.FUEL_DISPERSE.get(), SoundSource.BLOCKS, 2f, 1f);
+                schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
+            }
+            case BUNKER_BUSTER -> {
+                level.playSound(null, pos, GZOrdnance.BOMB_DRILL.get(), SoundSource.BLOCKS, 2f, 1f);
+                schedule(level, new Pending(kind, pos, facing, BUNKER_DEPTH, by == null ? null : by.getUUID(), level.getGameTime() + 1, BORE));
+            }
+        }
+    }
+
+    // --- bombs ------------------------------------------------------------------------------------------------------------
+    /** Thermobaric: ticks from dispersal to ignition; extra damage to anything with no open sky above it, and how far. */
+    public static final int THERMOBARIC_DELAY = 12;
+    public static final float THERMOBARIC_INDOOR_DAMAGE = 20, THERMOBARIC_REACH = 24;
+    /** Bunker buster: blocks of depth it bores (obsidian-hard blocks cost 10), and blocks a tick. */
+    public static final int BUNKER_DEPTH = 40, BUNKER_HARD_COST = 10, BUNKER_SPEED = 2;
+    /** Cluster: bomblets, and the chance each is a dud (left lying as a live landmine). */
+    public static final int CLUSTER_BOMBLETS = 24;
+    public static final float CLUSTER_DUD_CHANCE = 0.05f;
+    /** Napalm: the ellipse's half-length (along the nose) and half-width. */
+    public static final float NAPALM_HALF_LENGTH = 15, NAPALM_HALF_WIDTH = 6;
+
+    private static void schedule(ServerLevel level, Pending p) {
+        PENDING.computeIfAbsent(level, k -> new ArrayList<>()).add(p);
+    }
+
+    /** For GameTests: whether something is waiting to happen at {@code pos} (a thermobaric cloud about to be lit). */
+    public static boolean pendingAt(ServerLevel level, BlockPos pos) {
+        List<Pending> list = PENDING.get(level);
+        return list != null && list.stream().anyMatch(p -> p.pos().equals(pos));
+    }
+
+    /** The thermobaric cloud lit: the blast, then extra harm to anything sheltering (the overpressure fills rooms and caves). */
+    private static void thermobaricIgnite(ServerLevel level, BlockPos pos, @Nullable Entity by) {
+        Vec3 c = Vec3.atCenterOf(pos);
+        Blasts.detonate(level, c, Blasts.profile("thermobaric_bomb"), by, bombScale);
+        double reach = THERMOBARIC_REACH * bombScale;
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(reach))) {
+            double d = e.position().distanceTo(c);
+            if (d <= reach && !level.canSeeSky(BlockPos.containing(e.getEyePosition()))) {
+                e.damageCooldownTime = 0;
+                e.hurtServer(level, Blasts.damageSource(level, by, c), THERMOBARIC_INDOOR_DAMAGE * (float) (1 - d / reach));
+            }
+        }
+    }
+
+    /**
+     * A step of the bunker buster boring down: up to two blocks a tick, each costing 1 of its 40 blocks of depth (10 if
+     * obsidian-hard); it stops at anything unbreakable or the bottom of the world, and goes off where it stops.
+     */
+    private static void bore(ServerLevel level, Pending p, @Nullable Entity by) {
+        BlockPos at = p.pos();
+        int left = p.count();
+        for (int i = 0; i < BUNKER_SPEED; i++) {
+            BlockPos next = at.below();
+            BlockState s = level.getBlockState(next);
+            int cost = s.getBlock().getExplosionResistance() >= BREACH_MAX_RESISTANCE ? BUNKER_HARD_COST : 1;
+            if (next.getY() < level.getMinY() || s.getDestroySpeed(level, next) < 0 || cost > left) {
+                Blasts.detonate(level, Vec3.atCenterOf(at), Blasts.profile("bunker_buster"), by, bombScale);
+                return;
+            }
+            if (!s.isAir()) {
+                if (s.getBlock() instanceof ChargeBlock) {
+                    caughtInBlast(level, next, s);
+                }
+                level.levelEvent(2001, next, Block.getId(s));
+                level.setBlock(next, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+            left -= cost;
+            at = next;
+        }
+        Vec3 m = Vec3.atCenterOf(at);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, m.x, m.y + 1, m.z, 4, 0.2, 0.3, 0.2, 0.02);
+        schedule(level, new Pending(p.kind(), at, p.facing(), left, p.owner(), level.getGameTime() + 1, BORE));
+    }
+
+    /** Napalm over the ground in an ellipse ahead of the bomb's nose, most of it alight. */
+    private static void napalm(ServerLevel level, BlockPos pos, Direction facing) {
+        Vec3 ahead = Vec3.atLowerCornerOf(facing.getUnitVec3i());
+        Vec3 side = Vec3.atLowerCornerOf(facing.getClockWise().getUnitVec3i());
+        float halfLength = NAPALM_HALF_LENGTH * bombScale, halfWidth = Math.max(1, NAPALM_HALF_WIDTH * bombScale);
+        Vec3 centre = Vec3.atCenterOf(pos).add(ahead.scale(halfLength * 0.8));
+        BlockState fire = GZOrdnance.NAPALM_FIRE.get().defaultBlockState();
+        var r = level.getRandom();
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        for (int a = (int) -halfLength; a <= halfLength; a++) {
+            for (int b = (int) -halfWidth; b <= halfWidth; b++) {
+                double e = (a * a) / (halfLength * halfLength) + (b * b) / (halfWidth * halfWidth);
+                if (e > 1 || r.nextFloat() > 0.9f - 0.3f * e) {
+                    continue;
+                }
+                Vec3 p = centre.add(ahead.scale(a)).add(side.scale(b));
+                at.set(p.x, pos.getY() + 3, p.z);
+                for (int i = 0; i < 8 && level.getBlockState(at.below()).getCollisionShape(level, at.below()).isEmpty(); i++) {
+                    at.move(Direction.DOWN);
+                }
+                BlockState here = level.getBlockState(at);
+                if ((here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty()) && fire.canSurvive(level, at)) {
+                    level.setBlockAndUpdate(at, fire);
+                }
+            }
+        }
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(halfLength, 4, halfLength))) {
+            if (!e.fireImmune()) {
+                e.igniteForSeconds(10);
+            }
+        }
+        level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 2f, 0.6f);
+    }
+
+    /** The cluster bomb's casing bursts and throws its bomblets out, most of them 6-18 blocks away. */
+    private static void cluster(ServerLevel level, Vec3 c, @Nullable Entity by) {
+        Blasts.detonate(level, c, Blasts.profile("cluster_bomb"), by, bombScale);
+        var r = level.getRandom();
+        for (int i = 0; i < CLUSTER_BOMBLETS; i++) {
+            double a = i * 2.39996 + r.nextDouble() * 0.4;
+            double speed = (0.2 + Math.sqrt(r.nextDouble()) * 0.45) * bombScale;
+            Vec3 v = new Vec3(Math.cos(a) * speed, 0.55 + r.nextDouble() * 0.25, Math.sin(a) * speed);
+            dev.groundzero.content.ordnance.ThrownExplosive.bomblet(level, c.add(0, 0.6, 0), v, by, r.nextFloat() < CLUSTER_DUD_CHANCE);
         }
     }
 
