@@ -20,11 +20,15 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A shrapnel fragment (DESIGN.md §14, frag grenade, bouncing mine, claymore): a real projectile, fast and short-lived.
  * It deals 6 damage ({@code groundzero:shrapnel}) to the first creature it hits and stops at the first block (with a
- * spark). It lasts at most 14 ticks and is never saved.
+ * spark). It lasts at most 14 ticks and is never saved. A claymore's fragments are heavier (7 damage) and every one
+ * that hits counts, even several in the same instant (they ignore the target's moment of invulnerability).
  */
 public class Shrapnel extends Projectile {
-    public static final float DAMAGE = 6;
+    public static final float DAMAGE = 6, CLAYMORE_DAMAGE = 7;
     private static final int LIFE = 14;
+
+    private float damage = DAMAGE;
+    private boolean everyHitCounts;
 
     public Shrapnel(EntityType<? extends Shrapnel> type, Level level) {
         super(type, level);
@@ -35,6 +39,13 @@ public class Shrapnel extends Projectile {
         setOwner(owner);
         setPos(at);
         setDeltaMovement(velocity);
+    }
+
+    /** A claymore's fragment: heavier, and every one that hits counts. */
+    public Shrapnel claymore() {
+        this.damage = CLAYMORE_DAMAGE;
+        this.everyHitCounts = true;
+        return this;
     }
 
     @Override
@@ -57,7 +68,10 @@ public class Shrapnel extends Projectile {
         setPos(hit.getLocation());
         if (level() instanceof ServerLevel server) {
             if (hit instanceof EntityHitResult e) {
-                e.getEntity().hurtServer(server, damageSources().source(GZOrdnance.SHRAPNEL_DAMAGE, this, getOwner()), DAMAGE);
+                if (this.everyHitCounts && e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
+                    living.damageCooldownTime = 0;
+                }
+                e.getEntity().hurtServer(server, damageSources().source(GZOrdnance.SHRAPNEL_DAMAGE, this, getOwner()), this.damage);
             } else {
                 server.sendParticles(ParticleTypes.CRIT, hit.getLocation().x, hit.getLocation().y, hit.getLocation().z, 3, 0.05, 0.05, 0.05, 0.1);
             }

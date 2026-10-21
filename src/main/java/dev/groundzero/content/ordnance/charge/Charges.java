@@ -214,18 +214,27 @@ public final class Charges {
         return zone != null && !level.getEntitiesOfClass(LivingEntity.class, zone, e -> e.isAlive() && !e.isSpectator()).isEmpty();
     }
 
-    /** The claymore: a bang at its face (harmless in itself) and 60 fragments in a 60 degree cone ahead, a little upward. */
+    /**
+     * The claymore: a small flash and bang at its face (no blast of its own) and 60 fragments spread evenly across a 60
+     * degree cone ahead, at five heights from level to a little upward, so anything standing in the cone is struck
+     * several times: lethal out to about half their 10-block reach.
+     */
     private static void claymore(ServerLevel level, BlockPos pos, Direction facing, @Nullable Entity by) {
         Vec3 dir = Vec3.atLowerCornerOf(facing.getUnitVec3i());
         Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.25, 0).add(dir.scale(0.25));
-        Blasts.detonate(level, front, Blasts.profile("claymore"), by, 1f);
+        level.sendParticles(ParticleTypes.EXPLOSION, front.x, front.y, front.z, 1, 0, 0, 0, 0);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, front.x, front.y, front.z, 8, 0.2, 0.1, 0.2, 0.03);
+        level.sendParticles(ParticleTypes.FLAME, front.x, front.y, front.z, 10, 0.1, 0.1, 0.1, 0.08);
+        level.playSound(null, front.x, front.y, front.z, dev.groundzero.registry.GZSounds.blast("small", 0), SoundSource.BLOCKS, 1.2f, 1.3f);
         var r = level.getRandom();
+        double[] heights = {0, 2, 4, 1, 3};                     // degrees up, cycled across the cone
         for (int i = 0; i < CLAYMORE_FRAGMENTS; i++) {
-            double yaw = Math.toRadians((r.nextDouble() * 2 - 1) * CLAYMORE_HALF_ANGLE);
-            double pitch = Math.toRadians(-3 + r.nextDouble() * 12);
+            double yaw = Math.toRadians(-CLAYMORE_HALF_ANGLE + (i + 0.5) * 2 * CLAYMORE_HALF_ANGLE / CLAYMORE_FRAGMENTS + (r.nextDouble() - 0.5) * 0.8);
+            double pitch = Math.toRadians(heights[i % heights.length] + (r.nextDouble() - 0.5) * 0.6);
             Vec3 d = dir.yRot((float) yaw);
             d = new Vec3(d.x * Math.cos(pitch), Math.sin(pitch), d.z * Math.cos(pitch)).normalize();
-            level.addFreshEntity(new dev.groundzero.content.ordnance.Shrapnel(level, by, front.add(d.scale(0.2)), d.scale(0.85 + r.nextDouble() * 0.2)));
+            level.addFreshEntity(new dev.groundzero.content.ordnance.Shrapnel(level, by, front.add(d.scale(0.2)),
+                    d.scale(0.85 + r.nextDouble() * 0.2)).claymore());
         }
     }
 

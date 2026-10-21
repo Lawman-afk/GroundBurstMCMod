@@ -966,6 +966,11 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
   shows behind; the lens (and the laser) is 4.5 px up. Toxins: gas (the gas grenade, toxic gas clouds) gives Poison III; toxin (the splash, the sludge, the liquid)
   gives Poison IV and 10 s of nausea. The arming messages' language keys moved to `ChargeBlock` (the packet class
   was never loaded by data generation, so they had no English text).
+- **Claymore, second pass:** no blast engine at all: a vanilla explosion flash, smoke, flames and the small blast
+  sound at its face (the `claymore` profile is gone). Its 60 fragments are spread evenly across the 60 degree cone
+  (yaw stepped one degree apart with a little jitter, cycled through 0-4 degrees up), deal 7 each (`Shrapnel.claymore()`)
+  and reset the target's damage cooldown so every hit counts: a bare 20-health target 5 blocks ahead takes about six
+  and dies (their reach is about 10 blocks). Frag grenade and bouncing mine fragments are unchanged.
 
 ## 15. Nuclear weapons
 
@@ -1919,3 +1924,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6b feedback: arming moves into the charge's own screen (no Arming Key); arming makes a charge live and the detonator or redstone triggers it, starting the timer where there is one (never overriding a safe charge); C4 is instant only; every charge has a frequency; the timed bomb's blast grows to crater 9. |
 | 2026-10-21 | Slice 6c mines: built on the placed-charge framework (same screen, arming, redstone, sympathetic detonation) with sensors and a 3 s arming grace; mines are modelled sunk into the ground; the bouncing mine's canister reuses the thrown-explosive entity; the claymore's laser is drawn as geometry, not particles (block display ticks were too sparse to show it). |
 | 2026-10-21 | Slice 6c feedback: mines are live as soon as armed (no grace); the claymore hurts only through its forward fragments; gas Poison III, toxin Poison IV with nausea. |
+| 2026-10-21 | Claymore: its bang is only particles and a sound, and its fragments are an even, heavier cone whose every hit counts, so it kills at half its range. |

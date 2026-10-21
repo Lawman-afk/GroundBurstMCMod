@@ -26,6 +26,7 @@ final class MineTests {
         GZGameTests.test("claymore_laser_fires_a_cone_ahead", GZGameTests.FLOOR_16, 120, MineTests::claymore);
         GZGameTests.test("mines_take_no_detonator_signal", GZGameTests.FLOOR_16, 20, MineTests::noRemote);
         GZGameTests.test("claymore_spares_what_is_behind_it", GZGameTests.FLOOR_16, 60, MineTests::behind);
+        GZGameTests.test("claymore_kills_at_half_range", GZGameTests.FLOOR_16, 60, MineTests::lethal);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -144,5 +145,17 @@ final class MineTests {
             helper.assertTrue(back.isAlive() && back.getHealth() == back.getMaxHealth(), "the pig behind it is unhurt (" + back.getHealth() + ")");
             helper.succeed();
         });
+    }
+
+    /** A villager (20 health and no armour, like a bare player) 5 blocks ahead of a claymore is killed by it. */
+    private static void lethal(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(3, 2, 8);
+        ChargeBlockEntity mine = place(helper, GZOrdnance.CLAYMORE.block().get(), at, Direction.EAST);
+        var target = helper.spawn(EntityTypes.VILLAGER, new BlockPos(8, 2, 8));
+        target.setNoAi(true);
+        mine.arm(helper.getLevel(), null);
+        mine.trigger(helper.getLevel(), null);
+        helper.succeedWhen(() -> helper.assertTrue(!target.isAlive(), "killed (" + target.getHealth() + " left)"));
     }
 }
