@@ -77,7 +77,7 @@ def bomb(name: str, z0: float, z1: float, r: float, *, body, nose_paint=None, no
     fin_boxes = []
     if fins:
         tail_r = tail[0][1] if tail else r
-        fz0, fz1 = z1 - fin_len, z1
+        fz0, fz1 = z1 - fin_len, z1 - 0.05                  # not flush with the tail's end: no flicker there
         t = 0.25
         m.box("fin_u", (8 - t, cy + tail_r * 0.66, fz0), (8 + t, cy + fins, fz1))
         m.box("fin_d", (8 - t, cy - fins, fz0), (8 + t, cy - tail_r * 0.66, fz1))
@@ -85,7 +85,7 @@ def bomb(name: str, z0: float, z1: float, r: float, *, body, nose_paint=None, no
         m.box("fin_w", (8 - fins, cy - t, fz0), (8 - tail_r, cy + t, fz1))
         fin_boxes = ["fin_u", "fin_d", "fin_e", "fin_w"]
     if ring:
-        rz = z0 + nose[0][0] * 0.4 if nose else z0
+        rz = z0 + nose[0][0] * 0.55 if nose else z0 + 0.8      # a collar just behind the tip (not on its plane)
         hprism(m, "ring", cy, ring, round(ring * 0.66, 2), rz - 0.6, rz + 0.6)
     lug_boxes = []
     if lugs:

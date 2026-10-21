@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRenderer.State> {
     /** The item model is 2 blocks tall; the missile is 6. */
-    private static final float SCALE = 3;
+    private static final float SCALE = 4;
     private static final int FULL_BRIGHT = 15728880;
 
     public static class State extends EntityRenderState {
@@ -53,7 +53,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
         }
         this.items.updateForNonLiving(state.item, this.look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getYRot(partialTicks);
-        state.tilt = entity.getXRot(partialTicks);
+        state.tilt = entity.tilt(partialTicks);
     }
 
     @Override

@@ -622,17 +622,38 @@ def machine_loops() -> dict[str, np.ndarray]:
     }
 
 
+def _air_raid_siren() -> np.ndarray:
+    """A mechanical air-raid siren for the whole 10 s countdown: a motor spinning two slotted rotors up from a growl to a
+    howl (the rotors a minor third apart, so it sounds as an ominous chord), holding, dipping into one wail, then winding
+    down as the motor coasts. Each rotor chops air: a buzzy, harmonic-rich tone with breath in it. Heard outdoors, with
+    a slap of echo off the surroundings."""
+    length = 10.0
+    t = S.t_axis(length)
+    top = 440.0
+    # The motor's speed (as the lower rotor's pitch): spin up, hold, one wail down and back, then coast down.
+    spin = np.where(t < 3.0, 70 + (top - 70) * (1 - np.exp(-t / 0.9)) / (1 - np.exp(-3.0 / 0.9)), top)
+    wail = np.where((t > 5.2) & (t < 7.2), 0.25 * np.sin(np.pi * (t - 5.2) / 2.0) ** 2, 0.0)
+    coast = np.where(t > 7.6, np.exp(-(t - 7.6) / 1.1), 1.0)
+    f = spin * (1 - wail) * coast * (1 + 0.004 * np.sin(2 * np.pi * 0.7 * t))
+    out = np.zeros_like(t)
+    for ratio, gain, seed in ((1.0, 1.0, 630), (1.2, 0.8, 631)):
+        phase = 2 * np.pi * np.cumsum(f * ratio) / S.SR
+        tone = np.zeros_like(t)
+        for k in range(1, 11):                             # the chopped-air tone: rounded, a little buzz on top
+            tone += np.sin(k * phase + 0.3 * k) / k ** 1.45
+        breath = S.bandpass(S.white(length, seed), 700, 4000) * (0.5 + 0.5 * np.sin(phase)) ** 8 * 0.3
+        out += (S.saturate(tone * 0.45, 1.15) + breath) * gain
+    loud = np.clip(f / top, 0, 1) ** 1.6                     # louder as it spins faster
+    out = S.bandpass(out * loud, 120, 6500)
+    out = S.echo(out, delay=0.21, feedback=0.3, repeats=3, lp_hz=2500)[: len(t)]
+    out = S.reverb(out, seconds=1.8, damping_hz=3500, mix=0.25)[: len(t)]
+    return S.normalize(S.fade(out, 0.05, 0.6), -2)
+
+
 def launch_sounds() -> dict[str, np.ndarray]:
     """Launching (DESIGN.md §17): the launch siren, the missile lighting on the pad, its engine in flight."""
     out = {}
-    # Siren: a wailing tone rising and falling twice (a motor siren's growl under it).
-    n = 4.0
-    t = S.t_axis(n)
-    pitch = 420 + 380 * (0.5 - 0.5 * np.cos(2 * np.pi * t / 2.0))
-    phase = 2 * np.pi * np.cumsum(pitch) / S.SR
-    tone = np.sin(phase) * 0.6 + np.sin(2 * phase) * 0.25 + np.sin(3 * phase) * 0.1
-    growl = S.bandpass(S.white(n, 600), 80, 300) * 0.15
-    out["launch/siren"] = S.normalize(S.fade(S.lowpass(tone, 3500) + growl, 0.2, 0.4), -2)
+    out["launch/siren"] = _air_raid_siren()
     # Ignition: a deep crack, then a huge tearing roar with crackle that builds and holds.
     n = 5.0
     t = S.t_axis(n)

@@ -66,7 +66,8 @@ public final class FxPhotographer {
                 new Scene("bombs", "bombs", 9, 25, List.of(10, 40)),
                 new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
                 new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
-                new Scene("launch_ui", "launch", 9, 0, List.of(300, 340)))) {
+                new Scene("launch_ui", "launch", 9, 0, List.of(300, 340)),
+                new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -210,10 +211,12 @@ public final class FxPhotographer {
     }
 
     /** The launch scenes' silo and computer, for the tick to launch from and open the screen of. */
-    private static net.minecraft.core.BlockPos launchSilo, launchComputer;
+    private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
 
     /** A formed, loaded, powered Launch Silo and Launch Computer side by side, fronts to the camera, aimed 400 blocks off. */
-    private static void launchSite(ServerLevel level, int x, int ground) {
+    private static void launchSite(ServerLevel level, int x, int ground, boolean dive) {
+        // The long shot aims 400 blocks off (the scope shows it in flight); the dive lands 35 blocks off, in view.
+        launchTarget = dive ? new net.minecraft.core.BlockPos(x + 25, ground, 25) : new net.minecraft.core.BlockPos(x + 400, 64, 140);
         launchSilo = new net.minecraft.core.BlockPos(x, ground, -3);
         launchComputer = new net.minecraft.core.BlockPos(x - 4, ground, 5);
         formed(level, launchSilo, dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.SILO);
@@ -230,7 +233,7 @@ public final class FxPhotographer {
         if (level.getBlockEntity(launchComputer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity computer) {
             computer.revalidate();
             computer.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
-            computer.setTarget(x + 400, 140);
+            computer.setTarget(launchTarget.getX(), launchTarget.getZ());
         }
     }
 
@@ -287,6 +290,7 @@ public final class FxPhotographer {
             step = -1;
             clock = 0;
             site++;
+            mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
             mc.options.renderDistance().set(24);
             Scene s = scene;
             int x = site * 1200;
@@ -332,8 +336,8 @@ public final class FxPhotographer {
                     bombs(level, x, ground, false);
                     return;
                 }
-                if (s.profile().equals("launch")) {
-                    launchSite(level, x, ground);
+                if (s.profile().startsWith("launch")) {
+                    launchSite(level, x, ground, s.profile().equals("launch_dive"));
                     return;
                 }
                 if (s.profile().equals("napalm")) {
@@ -356,12 +360,12 @@ public final class FxPhotographer {
         if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
             dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
         }
-        if (scene.profile().equals("launch") && step >= 0 && clock == 25 && launchSilo != null) {
+        if (scene.profile().startsWith("launch") && step >= 0 && clock == 25 && launchSilo != null) {
             var silo = launchSilo;
-            int x = site * 1200;
+            var target = launchTarget;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity be) {
-                    be.launch(server.overworld(), new net.minecraft.core.BlockPos(x + 400, 64, 140), null);
+                    be.launch(server.overworld(), target, null);
                 }
             });
         }

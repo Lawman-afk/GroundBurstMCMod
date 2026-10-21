@@ -1160,10 +1160,10 @@ switch, **LAUNCH** (guarded red button), status lamps (POWER / ARMED / FUEL / EM
 A first, deliberately simple launch site, so the bombs have a delivery system before the full Phase 9 platforms.
 - **Launch Silo** (`launch_silo`): a 3×3 Launch Pad layer with the controller in the middle of its front edge and an
   Energy Port in the middle of its back edge, a 9-high Gantry Frame tower beside the pad's middle row with a Gantry
-  Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands. GeckoLib model:
+  Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands (8 blocks tall, the arm holding its body below the nose). GeckoLib model:
   frame, swinging arm, missile shown when loaded. Slots: a **Basic Missile** and a warhead (any bomb block item).
-  Each launch takes the missile, the warhead and 100 000 FE (buffer 200 000). Countdown 10 s with siren and beeps,
-  the arm swinging clear.
+  Each launch takes the missile, the warhead and 100 000 FE (buffer 200 000). Countdown 10 s under one mechanical
+  air-raid siren (two rotors a minor third apart: spin-up, wail, wind-down) and beeps, the arm swinging clear.
 - **Launch Computer** (`launch_computer`): controller + Energy Port, a mast of three Radar Masts topped by the Radar
   Dish behind it, and an Antenna on the controller. 20 FE/t while it runs its radar. Its screen: a live **radar
   scope** (512-block radius, sweep with afterglow, the silos within 256 blocks, every missile in flight with its
@@ -1980,3 +1980,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Bombs feedback: model bodies keep every outer face (no slits or end rings); a placed bunker buster just explodes (boring waits for delivery at speed); napalm spreads both ways along the symmetrical canister. |
 | 2026-10-21 | Bomb feel: per-bomb visual sets (HE, heavy, thermobaric fireball, MOAB dust mushroom), a whistle on long drops and a harder landing the further they fall. Bigger weapons' feel comes chiefly from delivery (missiles), so a basic launch site is built next, ahead of Phase 9. |
 | 2026-10-21 | Basic launch site ahead of Phase 9: a Launch Silo (pad + gantry tower, missile stands beside it) and a Launch Computer with a live radar scope, on the multiblock framework; one Basic Missile flying a fixed curve that keeps its chunks loaded, any bomb as the warhead (going off as that bomb does); the scope shows every missile in flight within 512 blocks. |
+| 2026-10-21 | Launch site feedback: an 8-block missile pointing along its path all the way down; the computer's screens clear of the antenna, its dish facing the sky; a mechanical air-raid siren; the MOAB without a mushroom cloud (conventional). Every block and item model now closes faces you could see into and warns of visible coplanar faces when generated, and the language data loads every class that declares text keys, so gaps, flicker and raw keys cannot slip through again. |

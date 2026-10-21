@@ -5,7 +5,7 @@
   ],
   "textures": {
     "0": "groundzero:block/antenna",
-    "particle": "groundzero:block/antenna"
+    "particle": "groundzero:block/antenna_icon"
   },
   "elements": [
     {

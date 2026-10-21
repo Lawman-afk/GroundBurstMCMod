@@ -71,6 +71,7 @@ public class MissileEntity extends Entity {
         m.apex = Mth.clamp(range * APEX_SHARE, MIN_APEX, MAX_APEX);
         m.flightTicks = (int) Mth.clamp((range + 2 * m.apex) / SPEED, 60, 1200);
         m.setPos(pad);
+        m.setXRot(-90);                                      // standing upright (tilt 0)
         level.addFreshEntity(m);
         level.playSound(null, pad.x, pad.y, pad.z, GZLaunch.MISSILE_LAUNCH.get(), SoundSource.BLOCKS, 8f, 1f);
         return m;
@@ -98,6 +99,11 @@ public class MissileEntity extends Entity {
 
     public Vec3 target() {
         return this.target;
+    }
+
+    /** Degrees from straight up: 0 on the pad, 90 level, up to 180 diving straight down. */
+    public float tilt(float partialTicks) {
+        return getXRot(partialTicks) + 90;
     }
 
     // --- flight ---------------------------------------------------------------------------------------------------------
@@ -148,7 +154,9 @@ public class MissileEntity extends Entity {
         setPos(to);
         if (v.lengthSqr() > 1e-6) {
             setYRot((float) Math.toDegrees(Math.atan2(v.x, v.z)));
-            setXRot((float) Math.toDegrees(Math.atan2(Math.sqrt(v.x * v.x + v.z * v.z), v.y)));
+            // Tilt from straight up (0) through level (90) to straight down (180). Entity pitch is clamped to
+            // -90..90, so it is stored 90 lower; the renderer adds it back (see tilt()).
+            setXRot((float) Math.toDegrees(Math.atan2(Math.sqrt(v.x * v.x + v.z * v.z), v.y)) - 90);
         }
         if (s >= 1) {
             impact(level, this.target);

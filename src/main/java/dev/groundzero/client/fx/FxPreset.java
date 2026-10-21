@@ -53,9 +53,12 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
     /** Thermobaric: a huge fireball rolling low over the ground, embers everywhere, a scorched sky. */
     public static final FxPreset THERMOBARIC = new FxPreset(1.5f, 45, 0.2f, 140, 0.6f, 8, 1.0f,
             40, 120, 130, 160, 360, 0.4f, 0.4f, 0.35f, 1200, 20, 1.8f, 0, false);
-    /** MOAB: a weak flash, a great ring of dust and a grey dust mushroom that hangs for a long time. */
-    public static final FxPreset MOAB = new FxPreset(0.5f, 40, 0.5f, 60, 0.35f, 8, 1.0f,
-            200, 60, 60, 200, 500, 0.3f, 0.3f, 0.3f, 2400, 70, 2.2f, 2000, true);
+    /**
+     * MOAB: still a conventional bomb, so no mushroom cloud: a broad fireball that rolls up slowly, a towering column
+     * of smoke and dust over the crater that hangs a long time, a great ring of dust and a lot of debris.
+     */
+    public static final FxPreset MOAB = new FxPreset(0.6f, 40, 0.35f, 90, 0.4f, 8, 1.0f,
+            220, 80, 170, 260, 560, 0.35f, 0.32f, 0.3f, 2000, 70, 2.0f, 0, false);
 
     public static FxPreset byName(String name) {
         return switch (name) {

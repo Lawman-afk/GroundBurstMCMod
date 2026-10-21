@@ -201,8 +201,10 @@ public final class Spectacle {
         var random = missile.level().getRandom();
         float q = quality();
         double t = ticks;
-        net.minecraft.world.phys.Vec3 v = missile.getDeltaMovement();
-        net.minecraft.world.phys.Vec3 back = v.lengthSqr() > 1e-4 ? v.normalize().scale(-1) : new net.minecraft.world.phys.Vec3(0, -1, 0);
+        // Out of the nozzle, opposite the way the model points (its yaw and tilt from straight up).
+        double tilt = Math.toRadians(missile.tilt(1)), yaw = Math.toRadians(missile.getYRot());
+        net.minecraft.world.phys.Vec3 back = new net.minecraft.world.phys.Vec3(-Math.sin(tilt) * Math.sin(yaw), -Math.cos(tilt),
+                -Math.sin(tilt) * Math.cos(yaw));
         double x = missile.getX(), y = missile.getY(), z = missile.getZ();
         if (missile.igniting()) {
             int n = (int) (q * 6);
@@ -257,7 +259,7 @@ public final class Spectacle {
             return;
         }
         // The trail: puffs laid all along the last tick's path, so it is one unbroken plume however fast it flies.
-        double speed = v.length();
+        double speed = Math.sqrt(missile.distanceToSqr(missile.xo, missile.yo, missile.zo));
         int n = Math.max(1, (int) (speed * 1.2 * q));
         for (int i = 0; i < n; i++) {
             double k = i / (double) n;

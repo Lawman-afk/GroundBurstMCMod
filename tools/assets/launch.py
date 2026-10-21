@@ -48,22 +48,23 @@ def tone(d: str) -> int:
 
 # --- the missile (shared by the item and the formed silo) -----------------------------------------------------------------
 def missile_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
-    """(name, from, to, faces, paint) in item pixels: 16 x 32 x 16, centred on x = z = 8, tail at y 0."""
+    """(name, from, to, faces, paint) in item pixels: 9 x 32 x 9, centred on x = z = 8, tail at y 0. Drawn 4x over
+    (8 blocks tall) on the silo and in flight."""
     all6 = ("north", "south", "east", "west", "up", "down")
-    parts = [("nozzle", (6.8, 0, 6.8), (9.2, 1.5, 9.2), ("north", "south", "east", "west", "down"), "nozzle")]
+    parts = [("nozzle", (7.0, 0, 7.0), (9.0, 1.5, 9.0), ("north", "south", "east", "west", "down"), "nozzle")]
 
     def prism(name, r, w, y0, y1, paint, ends=("up", "down")):
-        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("east", "west") + ends, paint))
+        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("north", "south", "east", "west") + ends, paint))
         parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west") + ends, paint))
         parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west") + ends, paint))
-    prism("body", 2.5, 1.6, 1.5, 25, "body")
-    prism("nose0", 2.0, 1.3, 25, 28, "nose")
-    prism("nose1", 1.3, 0.9, 28, 30.5, "nose")
-    parts.append(("tip", (7.4, 30.5, 7.4), (8.6, 32, 8.6), all6, "nose"))
-    parts.append(("fin_n", (7.7, 1.5, 3.5), (8.3, 8, 5.5), ("north", "east", "west", "up", "down"), "fin"))
-    parts.append(("fin_s", (7.7, 1.5, 10.5), (8.3, 8, 12.5), ("south", "east", "west", "up", "down"), "fin"))
-    parts.append(("fin_w", (3.5, 1.5, 7.7), (5.5, 8, 8.3), ("west", "north", "south", "up", "down"), "fin"))
-    parts.append(("fin_e", (10.5, 1.5, 7.7), (12.5, 8, 8.3), ("east", "north", "south", "up", "down"), "fin"))
+    prism("body", 2.0, 1.3, 1.5, 26, "body")
+    prism("nose0", 1.6, 1.05, 26, 28.5, "nose")
+    prism("nose1", 1.0, 0.66, 28.5, 30.8, "nose")
+    parts.append(("tip", (7.6, 30.8, 7.6), (8.4, 32, 8.4), all6, "nose"))
+    parts.append(("fin_n", (7.75, 1.5, 3.5), (8.25, 7, 6), ("north", "east", "west", "up", "down"), "fin"))
+    parts.append(("fin_s", (7.75, 1.5, 10), (8.25, 7, 12.5), ("south", "east", "west", "up", "down"), "fin"))
+    parts.append(("fin_w", (3.5, 1.5, 7.75), (6, 7, 8.25), ("west", "north", "south", "up", "down"), "fin"))
+    parts.append(("fin_e", (10, 1.5, 7.75), (12.5, 7, 8.25), ("east", "north", "south", "up", "down"), "fin"))
     return parts
 
 
@@ -154,10 +155,13 @@ def truss(ramp) -> Tex:
     return t
 
 
-def shaped_part(name: str, build) -> None:
-    """A component block with a real shape (not a cube) and the usual formed / unformed blockstate."""
-    m = build()
-    write_json(paths.MODELS / "block" / f"{name}_formed.json", ST.particle_model(f"groundzero:block/{name}"))
+def shaped_part(name: str, build, icon: Tex) -> None:
+    """A component block with a real shape (not a cube) and the usual formed / unformed blockstate. `icon` is a 16x16
+    face used as its particle: break particles, and the Holo-Projector draws ghost blocks as cubes of it (the packed
+    model texture would look like noise there)."""
+    icon.save(paths.TEXTURES / "block" / f"{name}_icon.png")
+    m = build(f"groundzero:block/{name}_icon")
+    write_json(paths.MODELS / "block" / f"{name}_formed.json", ST.particle_model(f"groundzero:block/{name}_icon"))
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {
         "formed=false": {"model": f"groundzero:block/{name}"},
         "formed=true": {"model": f"groundzero:block/{name}_formed"},
@@ -165,8 +169,35 @@ def shaped_part(name: str, build) -> None:
     write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
 
 
-def radar_dish_block() -> BlockModel:
+def radar_dish_icon() -> Tex:
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, GUN[2])
+    t.outline(0, 0, 16, 16, GUN[1])
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 6.5:
+                t.px(x, y, WHITE[5] if d < 2.5 else WHITE[4] if d < 4.5 else WHITE[3])
+            elif d < 7.2:
+                t.px(x, y, WHITE[2])
+    t.rect(7, 7, 2, 2, GUN[3])                                   # the feed horn
+    return t
+
+
+def antenna_icon() -> Tex:
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, GUN[2])
+    t.outline(0, 0, 16, 16, GUN[1])
+    t.rect(7, 1, 2, 13, STEEL[4])                                # the whip and its cross bars
+    for i, y in enumerate((4, 7, 10)):
+        t.rect(4 + i, y, 8 - 2 * i, 1, STEEL[3])
+    t.rect(5, 13, 6, 2, GUN[4])                                  # the base
+    return t
+
+
+def radar_dish_block(particle: str) -> BlockModel:
     m = BlockModel("radar_dish", tex_size=(64, 64), kind="block")
+    m.particle = particle
     m.box("stub", (6, 0, 6), (10, 4, 10), faces=("north", "south", "east", "west", "down"))
     m.box("yoke", (3, 4, 7), (13, 6, 9))
     # The dish, tilted back, as stepped rings facing north.
@@ -186,8 +217,9 @@ def radar_dish_block() -> BlockModel:
     return m
 
 
-def antenna_block() -> BlockModel:
+def antenna_block(particle: str) -> BlockModel:
     m = BlockModel("antenna", tex_size=(32, 32), kind="block")
+    m.particle = particle
     m.box("base", (5, 0, 5), (11, 2, 11), faces=("north", "south", "east", "west", "up", "down"))
     m.box("whip", (7.5, 2, 7.5), (8.5, 16, 8.5), faces=("north", "south", "east", "west", "up"))
     for i, y in enumerate((8, 11, 14)):
@@ -252,12 +284,13 @@ def silo() -> None:
             g.box(n, a, b, faces=("north", "south", "east", "west", "up", "down"), bone=F)
             girders.append(n)
     g.box("platform", (24, 140, 8), (40, 142, 24), bone=F)
-    g.box("arm_beam", (9, 100, 14), (27, 103, 18), bone="arm")
-    g.box("arm_clamp", (7.7, 98, 12), (9, 106, 20), faces=("west", "north", "south", "up", "down"), bone="arm")
-    # The missile, standing on the pad: the item model three times over, its tail on the pad's top.
+    g.box("arm_beam", (9.7, 100, 14), (27, 103, 18), bone="arm")
+    g.box("arm_clamp", (8.4, 98, 12), (9.7, 106, 20), faces=("west", "north", "south", "up", "down"), bone="arm")
+    # The missile, standing on the pad: the item model four times over (8 blocks), its tail on the pad's top; the
+    # gantry arm holds its body below the nose.
     for name, frm, to, faces, _ in missile_parts():
-        a = ((frm[0] - 8) * 3, frm[1] * 3 + 14, (frm[2] - 8) * 3 + 16)
-        b = ((to[0] - 8) * 3, to[1] * 3 + 14, (to[2] - 8) * 3 + 16)
+        a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 16)
+        b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 16)
         g.box("m_" + name, a, b, faces=faces, bone="missile")
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
@@ -315,12 +348,13 @@ def computer() -> None:
     g = GeoModel("launch_computer", tex_size=(256, 256))
     g.bone("frame")
     g.bone("dish", pivot=(0, 52, 16), parent="frame")
-    g.bone("dish_tilt", pivot=(0, 54, 16), parent="dish", rotation=(-25, 0, 0))
+    g.bone("dish_tilt", pivot=(0, 54, 16), parent="dish", rotation=(25, 0, 0))     # looking up at the sky
     F = "frame"
     g.box("desk", (-7, 0, -7), (23, 10, 7), bone=F)
     g.box("console", (-7, 10, -7), (23, 12, 0), faces=("north", "east", "west", "up"), bone=F)
-    g.box("crt_l", (-5, 10, 0), (5, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
-    g.box("crt_r", (7, 10, 0), (17, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
+    # The screens stand on the energy-port half of the desk, clear of the antenna on the controller half.
+    g.box("crt_l", (5.5, 10, 0), (14, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("crt_r", (14.5, 10, 0), (23, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("socket", (23, 2, -5), (24.5, 9, 5), faces=("north", "south", "east", "up", "down"), bone=F)
     g.box("ant_base", (-3, 12, -6), (1, 14, -2), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("ant_whip", (-1.4, 14, -4.6), (-0.6, 40, -3.4), faces=("north", "south", "east", "west", "up"), bone=F)
@@ -420,8 +454,8 @@ def main() -> None:
     ST.part_block("gantry_frame", lattice(GANTRY), cutout=True)
     ST.part_block("gantry_arm", truss(GANTRY), cutout=True)
     ST.part_block("radar_mast", lattice(STEEL, step=3), cutout=True)
-    shaped_part("radar_dish", radar_dish_block)
-    shaped_part("antenna", antenna_block)
+    shaped_part("radar_dish", radar_dish_block, radar_dish_icon())
+    shaped_part("antenna", antenna_block, antenna_icon())
     ST.controller("launch_silo", ST.controller_front(missile_placard), ST.controller_top(), ST.casing())
     ST.controller("launch_computer", ST.controller_front(radar_placard), ST.controller_top(), ST.casing())
     silo()

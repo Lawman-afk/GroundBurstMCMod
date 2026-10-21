@@ -111,9 +111,103 @@ class BlockModel:
         box.faces[d].shared_with = (source.name, source_dir)
         box.faces[d].mirror_x = mirror_x
 
+    # -- checks: holes and flicker ------------------------------------------------------------------------------------------
+    #: (box name, face) openings that are meant to be seen into (a hopper mouth, a vent); (name, "*") for a whole box.
+    open_ok: set[tuple[str, str]] = set()
+    _AXIS = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
+
+    def _solid(self) -> list[Box]:
+        return [b for b in self.boxes if not b.rotation]
+
+    @staticmethod
+    def _inside(p, boxes, skip, eps: float) -> bool:
+        return any(c not in skip and all(c.frm[k] - 2 * eps <= p[k] <= c.to[k] + 2 * eps for k in range(3)) for c in boxes)
+
+    def holes(self, plane: float = 0.3, eps: float = 0.02, step: float = 0.25) -> list[str]:
+        """Missing faces you can see into: on a solid box (thicker than a plane), the part of a left-out face that no
+        other box covers. A face may be left out only where another box hides it. Ignores rotated boxes."""
+        solid = self._solid()
+        issues = []
+        for b in solid:
+            lo, hi = b.frm, b.to
+            if any(hi[k] - lo[k] < plane for k in range(3)) or (b.name, "*") in self.open_ok:
+                continue
+            for d, (ax, side) in self._AXIS.items():
+                if d in b.faces or (b.name, d) in self.open_ok:
+                    continue
+                o = [k for k in range(3) if k != ax]
+                open_n = 0
+                u = lo[o[0]] + step / 2
+                while u < hi[o[0]]:
+                    v = lo[o[1]] + step / 2
+                    while v < hi[o[1]]:
+                        p = [0.0, 0.0, 0.0]
+                        p[o[0]], p[o[1]] = u, v
+                        p[ax] = hi[ax] + eps if side else lo[ax] - eps
+                        if not self._inside(p, solid, (b,), eps):
+                            open_n += 1
+                        v += step
+                    u += step
+                if open_n * step * step > 0.2:
+                    issues.append(f"{b.name} has no {d} face: {open_n * step * step:.2f} px2 open")
+        return issues
+
+    def close_holes(self) -> list[str]:
+        """Adds every left-out face you could see into (see holes()), except openings listed in open_ok. Called by
+        layout(), so the new faces get texture space and are painted like the box's other faces."""
+        added = []
+        for issue in self.holes():
+            name, rest = issue.split(" has no ")
+            d = rest.split(" face")[0]
+            self.get(name).faces[d] = Face()
+            added.append(f"{name}/{d}")
+        return added
+
+    def zfight(self, tol: float = 0.05, eps: float = 0.02, step: float = 0.25) -> list[str]:
+        """Faces that flicker: two faces pointing the same way on (or within `tol` of) the same plane, overlapping
+        where no third box covers them. Block and item models are back-face culled, so opposite faces never fight.
+        Identical boxes (overlay layers) are skipped. Ignores rotated boxes."""
+        solid = self._solid()
+        faces = [(b, d) for b in solid for d in b.faces if d in self._AXIS]
+        issues = []
+        for i in range(len(faces)):
+            b1, d1 = faces[i]
+            ax, side = self._AXIS[d1]
+            p1 = b1.to[ax] if side else b1.frm[ax]
+            for j in range(i + 1, len(faces)):
+                b2, d2 = faces[j]
+                if d2 != d1 or b2 is b1 or (b1.frm == b2.frm and b1.to == b2.to):
+                    continue
+                p2 = b2.to[ax] if side else b2.frm[ax]
+                if abs(p1 - p2) > tol:
+                    continue
+                o = [k for k in range(3) if k != ax]
+                lo = [max(b1.frm[k], b2.frm[k]) for k in o]
+                hi = [min(b1.to[k], b2.to[k]) for k in o]
+                if hi[0] - lo[0] <= 1e-6 or hi[1] - lo[1] <= 1e-6:
+                    continue
+                seen = 0.0
+                u = lo[0] + min(step, hi[0] - lo[0]) / 2
+                while u < hi[0]:
+                    v = lo[1] + min(step, hi[1] - lo[1]) / 2
+                    while v < hi[1]:
+                        p = [0.0, 0.0, 0.0]
+                        p[o[0]], p[o[1]] = u, v
+                        p[ax] = max(p1, p2) + eps if side else min(p1, p2) - eps
+                        if not self._inside(p, solid, (b1, b2), eps):
+                            seen += min(step, hi[0] - lo[0]) * min(step, hi[1] - lo[1])
+                        v += step
+                    u += step
+                if seen > 0.05:
+                    issues.append(f"{b1.name}/{d1} vs {b2.name}/{d2} at {p1:g}/{p2:g}: {seen:.2f} px2 visible")
+        return issues
+
     # -- texture layout --------------------------------------------------------------------------------------------
     def layout(self) -> None:
-        """Shelf-packs every non-shared face into the texture. Raises if it does not fit."""
+        """Shelf-packs every non-shared face into the texture. Raises if it does not fit. First adds any face left out
+        where you could see into the box (close_holes)."""
+        if type(self).close_holes is BlockModel.close_holes:
+            self.close_holes()
         items = []
         for b in self.boxes:
             for d, f in b.faces.items():
@@ -270,6 +364,10 @@ class BlockModel:
                         tex.px(tx, ty, src)
 
     def save(self, tex: Tex, emissive: Tex | None = None) -> tuple[Path, Path]:
+        for issue in self.zfight():
+            print(f"  z-fight warning [{self.name}]: {issue}")
+        for issue in self.holes():
+            print(f"  open-face warning [{self.name}]: {issue}")
         self.bleed(tex)
         if emissive is not None:
             self.bleed(emissive)

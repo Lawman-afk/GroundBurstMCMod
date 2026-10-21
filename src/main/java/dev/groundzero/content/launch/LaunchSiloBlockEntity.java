@@ -197,9 +197,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         BlockPos pad = padCentre();
         if (this.countdown > 0 && this.countdown % 20 == 0) {
             level.playSound(null, pad, dev.groundzero.content.ordnance.GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f, this.countdown <= 60 ? 1.4f : 1f);
-            if (this.countdown % 100 == 0) {
-                level.playSound(null, pad, GZLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
-            }
         }
         if (this.countdown == 0) {
             liftOff(level, pad);
