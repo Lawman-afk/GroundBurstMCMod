@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundzero:radar_dish",
+    "groundzero:radar_dish",
+    "groundzero:radar_dish",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:large_radar_dish"
+  }
+}

@@ -275,6 +275,11 @@ public final class FxPhotographer {
             radar.revalidate();
             radar.energy().generate(dev.groundzero.content.launch.RadarArrayBlockEntity.ENERGY_CAPACITY);
         }
+        // A Large Radar Dish on its own beside it, as placed.
+        var dish = new net.minecraft.core.BlockPos(x - 3, ground, -7);
+        var dishBlock = dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().get();
+        level.setBlockAndUpdate(dish, dishBlock.defaultBlockState());
+        dishBlock.setPlacedBy(level, dish, level.getBlockState(dish), null, net.minecraft.world.item.ItemStack.EMPTY);
         Vec3 c = Vec3.atBottomCenterOf(radarAt);
         var empty = net.minecraft.world.item.ItemStack.EMPTY;
         dev.groundzero.content.launch.Flights.launch(level, c.add(-1500, 0, 600), c.add(120, 0, -60), empty, null);

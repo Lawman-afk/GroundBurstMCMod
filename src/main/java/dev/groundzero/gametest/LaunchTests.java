@@ -29,6 +29,7 @@ final class LaunchTests {
         GZGameTests.test("armed_silo_disarms_when_unready", GZGameTests.FLOOR_16, 20, LaunchTests::disarms);
         GZGameTests.testOpenSky("missile_flies_on_over_unloaded_ground", GZGameTests.FLOOR_16, 400, LaunchTests::longFlight);
         GZGameTests.test("radar_array_tracks_incoming_missiles", GZGameTests.FLOOR_16, 60, LaunchTests::radar);
+        GZGameTests.test("large_radar_dish_places_and_breaks_whole", GZGameTests.FLOOR_16, 40, LaunchTests::largeDish);
         GZGameTests.test("computer_surveys_the_ground_round_it", GZGameTests.FLOOR_16, 40, LaunchTests::survey);
         GZGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GZGameTests.FLOOR_16, 400, LaunchTests::flight);
     }
@@ -173,6 +174,32 @@ final class LaunchTests {
             int signal = helper.getLevel().getBlockState(helper.absolutePos(rel))
                     .getAnalogOutputSignal(helper.getLevel(), helper.absolutePos(rel), net.minecraft.core.Direction.NORTH);
             helper.assertTrue(signal >= 1, "a comparator reads it (" + signal + ")");
+        });
+    }
+
+    /**
+     * The Large Radar Dish placed fills the 3x3 round it (its middle and eight parts); blow one part away and the whole
+     * dish goes, dropping one dish.
+     */
+    private static void largeDish(GameTestHelper helper) {
+        floor(helper);
+        var level = helper.getLevel();
+        var block = GZLaunch.LARGE_RADAR_DISH.block().get();
+        BlockPos c = helper.absolutePos(new BlockPos(8, 1, 8));
+        level.setBlockAndUpdate(c, block.defaultBlockState());
+        block.setPlacedBy(level, c, level.getBlockState(c), null, new ItemStack(GZLaunch.LARGE_RADAR_DISH.item().get()));
+        for (BlockPos p : BlockPos.betweenClosed(c.offset(-1, 0, -1), c.offset(1, 0, 1))) {
+            helper.assertTrue(level.getBlockState(p).is(block), "the 3x3 is dish at " + p);
+        }
+        helper.assertTrue(level.getBlockState(c.offset(1, 0, 1)).getValue(dev.groundzero.content.launch.LargeRadarDishBlock.PART)
+                == dev.groundzero.content.launch.LargeRadarDishBlock.Part.EDGE, "a corner is a part");
+        level.removeBlock(c.offset(1, 0, 0), false);                         // a part lost (to a blast, say)
+        helper.succeedWhen(() -> {
+            for (BlockPos p : BlockPos.betweenClosed(c.offset(-1, 0, -1), c.offset(1, 0, 1))) {
+                helper.assertTrue(!level.getBlockState(p).is(block), "all of it gone");
+            }
+            var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(c).inflate(3));
+            helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().is(GZLaunch.LARGE_RADAR_DISH.item().get()), "one dish dropped");
         });
     }
 

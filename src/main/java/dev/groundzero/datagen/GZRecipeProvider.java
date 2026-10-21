@@ -368,6 +368,11 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.CRT_DISPLAY)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(Items.LEVER)
                 .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.item(), 1)
+                .requires(l.dish).requires(l.dish).requires(l.dish).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(l.dish), has(l.dish)).save(output);
         shapeless(RecipeCategory.REDSTONE, dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.item(), 1)
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(GZParts.SENSOR_ARRAY)

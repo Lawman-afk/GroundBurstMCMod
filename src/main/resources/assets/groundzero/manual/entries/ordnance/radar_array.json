@@ -3,7 +3,8 @@
   "icon": "groundzero:radar_array",
   "order": 5,
   "items": [
-    "groundzero:radar_array"
+    "groundzero:radar_array",
+    "groundzero:large_radar_dish"
   ],
   "pages": [
     {
@@ -13,11 +14,21 @@
     {
       "type": "structure",
       "structure": "groundzero:radar_array",
-      "text": "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a 3 by 3 crown of Radar Dishes on top: formed, they become one big turning dish."
+      "text": "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a Large Radar Dish on top, its middle over the mast: formed, it turns."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:large_radar_dish",
+      "text": "One item that places a whole 3 by 3 dish, face up, centred where you place it (the 3 by 3 must be clear). Break any part of it and the whole dish comes away as one item."
     },
     {
       "type": "crafting",
       "item": "groundzero:radar_array",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:large_radar_dish",
       "text": ""
     }
   ]

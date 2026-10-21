@@ -876,9 +876,9 @@ The silo needs a **Basic Missile** and any warhead. Each launch takes the missil
     structure("launch_silo", "A 3 by 3 launch pad, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. The gantry tower stands beside the pad's middle row, on your left as you face the controller: 9 high, with the Gantry Arm reaching in at the seventh block up. The column above the middle of the pad must be clear: that is where the missile stands."),
     structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller."),
     text("""
-**The map.** The computer maps the ground within 1024 blocks of it as it gets loaded (by you, by missiles flying over) and keeps what it has seen; ground no one has been near is blank. Drag the map to look round, scroll to zoom in and out, and press **Centre** to come back. Under the map are the coordinates of the point under the cursor.
+**The map.** The computer maps the ground within 1024 blocks of it as it gets loaded (by you, by missiles flying over) and keeps what it has seen; ground no one has been near is blank. Hold the right mouse button and drag to look round, scroll to zoom in and out, and press **Centre** to come back. Under the map are the coordinates of the point under the cursor.
 
-**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target in range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
+**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target in range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
 
 The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and dives on the target from high above, screaming down for its last few seconds. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It flies on whether or not anyone is near the ground below, loading the chunks ahead of it, so the target need not be loaded.
 
@@ -898,14 +898,18 @@ A solid-fuel missile with no guidance beyond its launch: it flies the arc it was
     craft("antenna"),
 ])
 
-entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array"], [
+entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "large_radar_dish"], [
     text("""
 A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.
 
 A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. Anti-missile defences to shoot them down are still to come, and will take their tracks from it.
 """),
-    structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a 3 by 3 crown of Radar Dishes on top: formed, they become one big turning dish."),
+    structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a Large Radar Dish on top, its middle over the mast: formed, it turns."),
+    spot("large_radar_dish", """
+One item that places a whole 3 by 3 dish, face up, centred where you place it (the 3 by 3 must be clear). Break any part of it and the whole dish comes away as one item.
+"""),
     craft("radar_array"),
+    craft("large_radar_dish"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",

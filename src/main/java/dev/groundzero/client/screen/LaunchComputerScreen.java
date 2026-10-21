@@ -38,7 +38,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 /**
  * The Launch Computer's screen (DESIGN.md §17.3, basic version): on the left a green phosphor map of the ground round the
  * computer (its terrain survey, {@link TerrainMap}) with the linked silos, their targets and every missile in the air;
- * drag it to look round, scroll to zoom, click to aim the picked silo there. On the right a scrolling list of the
+ * drag it with the right mouse button to look round, scroll to zoom, left-click to aim the picked silo there. On the right a scrolling list of the
  * linked silos. Pick a silo, aim it (click the map, or type X and Z and press Set) and ARM it; each silo has its own
  * target and is armed on its own. LAUNCH fires every armed silo.
  */
@@ -92,12 +92,11 @@ public class LaunchComputerScreen extends Screen {
     private int scroll;
     /** The silo whose target the X/Z boxes show (they are refilled when the pick changes). */
     private @Nullable BlockPos boxesFor;
-    /** The map: its picture, the point at its centre, its zoom step; a press on it (a drag pans, a click aims). */
+    /** The map: its picture, the point at its centre, its zoom step; whether the right button is dragging it. */
     private @Nullable TerrainMap map;
     private double viewX, viewZ;
     private int zoomStep = 1;
-    private boolean pressed, dragged;
-    private double dragged2;
+    private boolean panning;
 
     public LaunchComputerScreen(BlockPos pos) {
         super(Component.translatable(T_TITLE));
@@ -291,27 +290,25 @@ public class LaunchComputerScreen extends Screen {
             }
             return true;
         }
-        if (inMap(event.x(), event.y()) && event.button() == 0 && on()) {
-            this.pressed = true;                             // a drag pans; a click (on release) aims
-            this.dragged = false;
-            this.dragged2 = 0;
-            return true;
+        if (inMap(event.x(), event.y()) && on()) {
+            if (event.button() == 0) {                       // left click: aim the picked silo here
+                aimAt((int) Math.floor(worldX(event.x())), (int) Math.floor(worldZ(event.y())));
+                return true;
+            }
+            if (event.button() == 1) {                       // right button held: drag the map round
+                this.panning = true;
+                return true;
+            }
         }
         return super.mouseClicked(event, doubleClick);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
-        if (this.pressed) {
-            this.dragged2 += dx * dx + dy * dy;
-            if (this.dragged2 > 9) {
-                this.dragged = true;
-            }
-            if (this.dragged) {
-                this.viewX -= dx * zoom();
-                this.viewZ -= dy * zoom();
-                clampView();
-            }
+        if (this.panning) {
+            this.viewX -= dx * zoom();
+            this.viewZ -= dy * zoom();
+            clampView();
             return true;
         }
         return super.mouseDragged(event, dx, dy);
@@ -319,11 +316,8 @@ public class LaunchComputerScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (this.pressed) {
-            this.pressed = false;
-            if (!this.dragged && inMap(event.x(), event.y())) {
-                aimAt((int) Math.floor(worldX(event.x())), (int) Math.floor(worldZ(event.y())));
-            }
+        if (this.panning && event.button() == 1) {
+            this.panning = false;
             return true;
         }
         return super.mouseReleased(event);
@@ -415,7 +409,7 @@ public class LaunchComputerScreen extends Screen {
             Phosphor.line(g, mx, mz, mx + (int) (Math.sin(c.heading()) * 5), mz + (int) (Math.cos(c.heading()) * 5), AMBER, 0);
         }
         // The cursor's crosshair.
-        if (inMap(mouseX, mouseY) && !this.dragged) {
+        if (inMap(mouseX, mouseY) && !this.panning) {
             g.fill(x0, mouseY, x1, mouseY + 1, 0x3340FF70);
             g.fill(mouseX, y0, mouseX + 1, y1, 0x3340FF70);
         }

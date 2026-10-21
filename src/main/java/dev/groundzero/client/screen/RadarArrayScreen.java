@@ -35,7 +35,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * The Radar Array's screen (DESIGN.md §18.1, early): a sweeping green radar scope of the 2048 blocks round the array
- * (north up), one turn every 6 s as its dish turns. A missile shows as a blip only where the sweep last passed it,
+ * (north up), one turn every 4.8 s as its dish turns. A missile shows as a blip only where the sweep last passed it,
  * fading until it comes round again; ones coming down within 512 blocks (the dashed red ring) are incoming, in red. On
  * the right, the tracks: how far off, how long until they come down, and for the picked one where and how high.
  */
@@ -53,8 +53,8 @@ public class RadarArrayScreen extends Screen {
 
     private static final int W = 336, H = 214, SCOPE = 96, ROW = 12, ROWS = 9;
     private static final int COL = 2 * SCOPE + 20, CW = W - COL - 8, LIST_Y = 29;
-    /** One turn of the sweep, ticks (the dish turns once every 6 s). */
-    private static final double PERIOD = 120;
+    /** One turn of the sweep, ticks (the dish turns once every 4.8 s). */
+    private static final double PERIOD = 96;
 
     private static LaunchPayloads.@Nullable Radar latest;
 

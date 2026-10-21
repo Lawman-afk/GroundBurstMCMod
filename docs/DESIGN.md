@@ -1189,12 +1189,14 @@ are delivered.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
-  from its middle, a 3×3 crown of Radar Dishes; formed, a GeckoLib deck, mast and big dish turning once every 6 s.
+  from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
+  eight parts; any part lost takes the whole dish, one item back); formed, a GeckoLib deck, mast and big dish turning
+  once every 4.8 s.
   100 FE/t. Tracks every flight within 2 048 blocks (from `Flights`, so loaded or not); a flight coming down within
   512 blocks is **incoming**. Comparator output: the incoming count (≤15).
 - Screen: the radar scope (moved here from the Launch Computer): a sweep matching the dish, blips painted only as the
   sweep passes and fading, a dashed red danger ring, a track list (distance or INBOUND, time to impact), and for the
-  picked track where it lands and its height. It is the track source the anti-missile defence (§18.2) will use.
+  picked track where it lands and its height. The Launch Computer's map pans with a right-button drag; a left click aims. It is the track source the anti-missile defence (§18.2) will use.
 
 ## 18. Radar and interception
 
@@ -2004,3 +2006,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | No aircraft are planned, so bombs become missile warheads (renamed, upright models, a nose per warhead on the missile); the MOAB becomes the Massive Ordnance Warhead. |
 | 2026-10-21 | Missile flights are tracked as saved data, not by the entity: the entity froze when it flew into a chunk it had not yet ticket-loaded (it could not tick to add the ticket). |
 | 2026-10-21 | The Launch Computer's screen is a terrain map (what is being aimed at matters more than a sweep); the sweeping radar moves to a new Radar Array multiblock, the future source of tracks for anti-missile defence. Map data is a saved survey of chunks loaded near computers, never generating chunks. |
+| 2026-10-21 | The Radar Array's crown is one Large Radar Dish (a 3×3 placed by one item), not nine small dishes; the sweep turns 25% faster (4.8 s). |

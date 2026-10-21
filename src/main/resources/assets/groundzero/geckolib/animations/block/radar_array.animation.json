@@ -2,7 +2,7 @@
   "format_version": "1.8.0",
   "animations": {
     "working": {
-      "animation_length": 6.0,
+      "animation_length": 4.8,
       "bones": {
         "dish": {
           "rotation": {
@@ -11,7 +11,7 @@
               -0.0,
               0.0
             ],
-            "6": [
+            "4.8": [
               -0.0,
               -360.0,
               0.0

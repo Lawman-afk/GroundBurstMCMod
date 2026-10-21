@@ -262,6 +262,86 @@ def antenna_block(particle: str) -> BlockModel:
     return m
 
 
+def plus_ring(r_out: float, r_in: float) -> list[tuple[float, float, float, float]]:
+    """The flat ring between two "plus" discs (a plus disc of radius r: |x| <= r, |z| <= 0.66 r, or the other way round),
+    centred on 0, as rectangles (x0, z0, x1, z1): cut on the grid of their edges, cells merged along x."""
+    def plus(r, x, z):
+        w = r * 0.66
+        return (abs(x) <= r and abs(z) <= w) or (abs(x) <= w and abs(z) <= r)
+    cuts = sorted({round(v, 3) for rr in (r_out, r_in) if rr > 0 for v in (rr, -rr, rr * 0.66, -rr * 0.66)})
+    rects = []
+    for j in range(len(cuts) - 1):
+        z0, z1 = cuts[j], cuts[j + 1]
+        run = None
+        for i in range(len(cuts) - 1):
+            x0, x1 = cuts[i], cuts[i + 1]
+            mx, mz = (x0 + x1) / 2, (z0 + z1) / 2
+            inside = plus(r_out, mx, mz) and not (r_in > 0 and plus(r_in, mx, mz))
+            if inside:
+                run = (run[0], x1) if run else (x0, x1)
+            elif run:
+                rects.append((run[0], z0, run[1], z1))
+                run = None
+        if run:
+            rects.append((run[0], z0, run[1], z1))
+    return rects
+
+
+def large_dish_icon() -> Tex:
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, WHITE[3])
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            t.px(x, y, WHITE[5] if d > 6.5 else WHITE[4] if d > 4.5 else WHITE[3] if d > 2 else GUN[3])
+    t.outline(0, 0, 16, 16, WHITE[2])
+    return t
+
+
+def large_dish_block(particle: str) -> BlockModel:
+    """The Large Radar Dish, drawn by its middle block across all 3x3 (x and z -16..32): a bowl lying face up, stepped
+    rings rising to its rim, on a hub, a feed horn on a post over its middle."""
+    m = BlockModel("large_radar_dish", tex_size=(256, 256), kind="block")
+    m.particle = particle
+    m.box("hub", (5, 0, 5), (11, 3, 11), faces=("north", "south", "east", "west", "down"))
+    rings = [(5, 0, 3, 4.5), (10.5, 5, 3.5, 6), (16, 10.5, 4, 7.5), (21, 16, 4.5, 9), (24, 21, 5, 10)]
+    names = []
+    for k, (ro, ri, y0, y1) in enumerate(rings):
+        for i, (x0, z0, x1, z1) in enumerate(plus_ring(ro, ri)):
+            n = f"r{k}_{i}"
+            m.box(n, (8 + x0, y0, 8 + z0), (8 + x1, y1, 8 + z1))
+            names.append((n, k))
+    m.box("post", (7.4, 4.5, 7.4), (8.6, 13, 8.6), faces=("north", "south", "east", "west"))
+    m.box("horn", (6.5, 13, 6.5), (9.5, 16, 9.5))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    m.paint_all(t, "hub", shaded(GUN))
+    for n, k in names:
+        # The bowl's face lighter toward the rim (it catches the light), its underside and sides plain.
+        def fn(t, rr, d, k=k):
+            x, y, w, h = rr
+            t.rect(x, y, w, h, WHITE[(tone(d) + 1) if d != "up" else 2 + k])
+        m.paint_all(t, n, fn)
+    m.paint_all(t, "post", shaded(STEEL))
+    m.paint_all(t, "horn", shaded(GUN))
+    m.fit_display(gui_rotation=(30, 225, 0))
+    m.save(t)
+    return m
+
+
+def large_dish() -> None:
+    icon = large_dish_icon()
+    icon.save(paths.TEXTURES / "block" / "large_radar_dish_icon.png")
+    large_dish_block("groundzero:block/large_radar_dish_icon")
+    write_json(paths.MODELS / "block" / "large_radar_dish_formed.json", ST.particle_model("groundzero:block/large_radar_dish_icon"))
+    write_json(paths.ASSETS / "blockstates" / "large_radar_dish.json", {"variants": {
+        "formed=false,part=center": {"model": "groundzero:block/large_radar_dish"},
+        "formed=false,part=edge": {"model": "groundzero:block/large_radar_dish_formed"},
+        "formed=true": {"model": "groundzero:block/large_radar_dish_formed"},
+    }})
+    write_json(paths.ASSETS / "items" / "large_radar_dish.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/large_radar_dish"}})
+
+
 def missile_placard(t: Tex) -> None:
     t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
     t.vline(6, 9, 4, WHITE[5])
@@ -591,8 +671,8 @@ def radar_array() -> None:
         g.paint_all(tex, n, lambda t, rr, d: (t.rect(*rr, WHITE[tone(d) + 1]),
                                               t.outline(*rr, WHITE[2]) if d == "north" and min(rr[2], rr[3]) > 3 else None))
     g.save(tex, glow)
-    spin = Animation("working", 6.0, loop=True)
-    spin.rotate("dish", {0: (0, 0, 0), 6: (0, 360, 0)})
+    spin = Animation("working", 4.8, loop=True)                 # one turn every 4.8 s, as its screen's sweep
+    spin.rotate("dish", {0: (0, 0, 0), 4.8: (0, 360, 0)})
     print(save_animations("radar_array", [spin]))
 
 
@@ -604,6 +684,7 @@ def main() -> None:
     ST.part_block("radar_mast", lattice(STEEL, step=3), cutout=True)
     shaped_part("radar_dish", radar_dish_block, radar_dish_icon())
     shaped_part("antenna", antenna_block, antenna_icon())
+    large_dish()
     ST.controller("launch_silo", ST.controller_front(missile_placard), ST.controller_top(), ST.casing())
     ST.controller("launch_computer", ST.controller_front(radar_placard), ST.controller_top(), ST.casing())
     ST.controller("radar_array", ST.controller_front(radar_placard_big), ST.controller_top(), ST.casing())

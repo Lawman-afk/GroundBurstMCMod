@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "groundzero:large_radar_dish",
+            "state": {
+              "part": "center"
+            }
+          },
+          "name": "groundzero:large_radar_dish"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundzero:blocks/large_radar_dish"
+}

@@ -43,6 +43,10 @@ public final class GZLaunch {
     public static final WithItem<MultiblockPartBlock> GANTRY_ARM = part("gantry_arm", "Gantry Arm", MapColor.COLOR_RED, SoundType.METAL, true);
     public static final WithItem<MultiblockPartBlock> RADAR_MAST = part("radar_mast", "Radar Mast", MapColor.METAL, SoundType.METAL, true);
     public static final WithItem<MultiblockPartBlock> RADAR_DISH = part("radar_dish", "Radar Dish", MapColor.METAL, SoundType.METAL, true);
+    /** The Radar Array's crown: one item that places a 3x3 dish. */
+    public static final WithItem<LargeRadarDishBlock> LARGE_RADAR_DISH = GZBlocks.register("large_radar_dish", "Large Radar Dish", GZTab.MISSILES,
+            LargeRadarDishBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .pushReaction(PushReaction.IMMOVEABLE).noOcclusion());
     public static final WithItem<MultiblockPartBlock> ANTENNA = part("antenna", "Antenna", MapColor.METAL, SoundType.METAL, true);
 
     // --- controllers ---
@@ -118,8 +122,8 @@ public final class GZLaunch {
 
     /**
      * The Radar Array: a 3x3 deck of Machine Casing with the controller at the front middle and an Energy Port at the
-     * back middle; a Radar Mast three high from the deck's middle; on top a 3x3 crown of Radar Dishes (formed, one big
-     * turning dish).
+     * back middle; a Radar Mast three high from the deck's middle; on top a Large Radar Dish (its middle over the mast;
+     * formed, it turns).
      */
     public static final MultiblockDefinition RADAR = new MultiblockDefinition(GroundZero.id("radar_array"),
             new String[][] {
@@ -127,11 +131,18 @@ public final class GZLaunch {
                     {"   ", " M ", "   "},
                     {"   ", " M ", "   "},
                     {"   ", " M ", "   "},
-                    {"DDD", "DDD", "DDD"},
+                    {"ddd", "dDd", "ddd"},
             },
             Map.of('C', Entry.of(() -> GZMultiblocks.MACHINE_CASING.block().get()), 'M', Entry.of(() -> RADAR_MAST.block().get()),
-                    'D', Entry.of(() -> RADAR_DISH.block().get()), 'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
+                    'D', largeDish(LargeRadarDishBlock.Part.CENTER), 'd', largeDish(LargeRadarDishBlock.Part.EDGE),
+                    'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> RADAR_CONTROLLER.block().get())));
+
+    /** A cell of the Large Radar Dish: its middle, or one of the parts round it. */
+    private static Entry largeDish(LargeRadarDishBlock.Part part) {
+        return new Entry(s -> s.is(LARGE_RADAR_DISH.block().get()) && s.getValue(LargeRadarDishBlock.PART) == part,
+                () -> LARGE_RADAR_DISH.block().get().defaultBlockState().setValue(LargeRadarDishBlock.PART, part));
+    }
 
     private GZLaunch() {}
 
