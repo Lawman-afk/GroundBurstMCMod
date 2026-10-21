@@ -77,7 +77,8 @@ public final class FxPhotographer {
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
-                new Scene("assembly_jei", "assembly", 4, 0, List.of(25)))) {
+                new Scene("assembly_jei", "assembly", 4, 0, List.of(25)),
+                new Scene("tall_ui", "tall", 4, 0, List.of(30)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -299,7 +300,7 @@ public final class FxPhotographer {
         dev.groundzero.content.launch.Flights.launch(level, c.add(1600, 0, 300), c.add(1300, 0, 1500), empty, null);
     }
 
-    private static net.minecraft.core.BlockPos benchAt;
+    private static net.minecraft.core.BlockPos benchAt, pressAt;
     /** Set by the JEI plugin when JEI is running: opens its Assembly Bench recipes (the "assembly_jei" scene). */
     public static Runnable showAssemblyRecipes = () -> {};
 
@@ -320,7 +321,7 @@ public final class FxPhotographer {
             b.energy().generate(dev.groundzero.content.assembly.AssemblyBenchBlockEntity.CAPACITY);
             b.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GAS_DISPENSER.get(), 3));
             b.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_CASING.get(), 3));
-            b.inventory().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.PROXIMITY_FUZE.get(), 3));
+            b.inventory().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BAROMETRIC_FUZE.get(), 3));
             b.startAssembly();
         }
         if (level.getBlockEntity(far) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity b) {
@@ -507,6 +508,14 @@ public final class FxPhotographer {
                     assemblySite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("tall")) {
+                    var press = dev.groundzero.content.machine.GZMachines.INDUSTRIAL_PRESS.block().get();
+                    pressAt = new net.minecraft.core.BlockPos(x, ground, 0);
+                    var state = press.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST);
+                    level.setBlockAndUpdate(pressAt, state);
+                    press.setPlacedBy(level, pressAt, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+                    return;
+                }
                 if (s.profile().equals("warheads")) {
                     bombs(level, x, ground, false);
                     return;
@@ -575,6 +584,24 @@ public final class FxPhotographer {
                     player.openMenu(be, bench);
                 }
             });
+        }
+        // A tall machine's screen with its side tab open (each half's faces).
+        if (scene.name().equals("tall_ui") && step >= 0 && clock == 12 && pressAt != null) {
+            var press = pressAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(press) instanceof dev.groundzero.content.machine.MachineBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);
+                    player.openMenu(be, press);
+                }
+            });
+        }
+        if (scene.name().equals("tall_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();
+            double tx = screen.width / 2.0 + 88 + 8, ty = screen.height / 2.0 - 83 + 14;
+            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
+            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
+            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
         if (scene.name().equals("assembly_jei") && step >= 0 && clock == 12) {
             showAssemblyRecipes.run();

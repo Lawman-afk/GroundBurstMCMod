@@ -165,7 +165,7 @@ public final class GZBlockEntities {
 
     /**
      * Both halves of a tall or wide machine expose the main half's block entity (cables and pipes may attach to either);
-     * a wide machine's side half answers through its own faces.
+     * the second half (a wide machine's side, a tall machine's top) answers through its own faces.
      */
     private static void tallMachine(RegisterCapabilitiesEvent event, dev.groundzero.content.machine.MachineBlock block) {
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
@@ -176,7 +176,11 @@ public final class GZBlockEntities {
                 level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.fluidsFor(side, sideHalf(state)) : null, block);
     }
 
+    /** Whether this is a two-block machine's second half (a wide one's side half, a tall one's upper half). */
     private static boolean sideHalf(net.minecraft.world.level.block.state.BlockState state) {
+        if (state.getBlock() instanceof TallMachineBlock) {
+            return state.getValue(TallMachineBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER;
+        }
         return state.getBlock() instanceof dev.groundzero.content.machine.WideMachineBlock
                 && state.getValue(dev.groundzero.content.machine.WideMachineBlock.PART) == dev.groundzero.content.machine.WideMachineBlock.Part.SIDE;
     }

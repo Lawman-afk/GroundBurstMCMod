@@ -36,7 +36,7 @@ public final class WarheadAssembly {
 
     /** Text for the JEI category (kept here, in common code, so the language data always has it). */
     public static final String JEI_INFO = GZLang.add(GroundZero.MODID + ".jei.assembly", "Class %s, %s s at %s FE/t");
-    public static final String JEI_ANY_FUZE = GZLang.add(GroundZero.MODID + ".jei.any_fuze", "Any fuze: it decides where the missile's warhead goes off");
+    public static final String JEI_ANY_FUZE = GZLang.add(GroundZero.MODID + ".jei.any_fuze", "Impact or Barometric: where it hits, or in the air over the target");
 
     private static @Nullable Map<ChargeBlock, ComponentItems.PayloadCore> coreByWarhead;
 

@@ -13,8 +13,8 @@ Payload cores:
 - Toxic Waste Tank: a dark drum with a glowing green band, a hazard-striped rim and a spout.
 - Chemical Agent Canister: a pale grey pressure bottle with two green bands and a brass valve.
 Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
-Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Timed (a clock dial), Proximity (a dark
-sensor dome with a green lamp), Remote (a whip antenna), Barometric (vent ports and a brass pressure ring).
+Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Barometric (vent ports and a brass
+pressure ring).
 """
 from __future__ import annotations
 
@@ -278,70 +278,6 @@ def impact_fuze() -> None:
     G.finish(m, t)
 
 
-def timed_fuze() -> None:
-    m = model("timed_fuze")
-    thread, body = fuze_base(m, 6, 2.5, 1.5)
-    m.box("ring", (5.4, 4.5, 5.4), (10.6, 5.2, 10.6), faces=SIDES)
-    m.box("dial", (5.5, 6, 5.5), (10.5, 6.4, 10.5))
-    m.layout()
-    t = Tex(m.tex_w, m.tex_h)
-    fill_all(m, t, thread, threads)
-
-    fill_all(m, t, body, shaded(STEEL))
-
-    def dial(t, r, d):
-        x, y, w, h = r
-        if d == "up":
-            t.rect(x, y, w, h, P.WHITE_CERAMIC[6])                # the dial face
-            cx, cy = x + w // 2, y + h // 2
-            t.vline(cx, y + 1, cy - y, BLACK.base)                # the hand, from the centre to twelve
-            t.hline(cx, cy, 2, BLACK.base)                        # and to three
-            t.px(cx, y, P.WARNING_RED.base)                       # the zero mark
-        else:
-            t.rect(x, y, w, h, STEEL.shadow)
-    m.paint_all(t, "dial", dial)
-
-    def knurl(t, r, d):
-        t.rect(*r, BLACK[4])
-        for xx in range(r[0], r[0] + r[2], 2):
-            t.px(xx, r[1], BLACK[6])
-    m.paint_all(t, "ring", knurl)
-    G.finish(m, t)
-
-
-def proximity_fuze() -> None:
-    m = model("proximity_fuze")
-    thread, body = fuze_base(m, 6)
-    dome = prism(m, "dome", 8, 8, 1.6, 1.0, 6, 7.5)
-    m.layout()
-    t = Tex(m.tex_w, m.tex_h)
-    fill_all(m, t, thread, threads)
-    fill_all(m, t, body, banded(OLIVE, [(5, YELLOW.base)], 6, 2))
-
-    def dome_paint(t, r, d):
-        shaded(GLASS)(t, r, d)
-        if d == "up":
-            t.px(r[0] + r[2] // 2, r[1] + r[3] // 2, P.INDICATOR_GREEN[4])
-        elif d in ("north", "west"):
-            t.px(r[0], r[1], GLASS.highlight)
-    fill_all(m, t, dome, dome_paint)
-    G.finish(m, t)
-
-
-def remote_fuze() -> None:
-    m = model("remote_fuze")
-    thread, body = fuze_base(m, 6)
-    m.box("antenna", (7.75, 6, 7.75), (8.25, 12, 8.25), faces=("north", "south", "east", "west", "up"))
-    m.box("tip", (7.55, 12, 7.55), (8.45, 12.8, 8.45))
-    m.layout()
-    t = Tex(m.tex_w, m.tex_h)
-    fill_all(m, t, thread, threads)
-    fill_all(m, t, body, banded(STEEL, [(4.5, YELLOW.base), (5, YELLOW.base)], 6, 2))
-    m.paint_all(t, "antenna", shaded(BLACK))
-    m.paint_all(t, "tip", shaded(P.WARNING_RED))
-    G.finish(m, t)
-
-
 def barometric_fuze() -> None:
     m = model("barometric_fuze")
     thread, body = fuze_base(m, 6.5, 2.4, 1.4)
@@ -367,7 +303,7 @@ CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispense
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
          "chemical_agent_canister"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing"]
-FUZES = ["impact_fuze", "timed_fuze", "proximity_fuze", "remote_fuze", "barometric_fuze"]
+FUZES = ["impact_fuze", "barometric_fuze"]
 
 
 def main() -> None:
@@ -388,9 +324,6 @@ def main() -> None:
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)
     impact_fuze()
-    timed_fuze()
-    proximity_fuze()
-    remote_fuze()
     barometric_fuze()
     G.item_defs(CORES + CASINGS + FUZES)
     print("components written")

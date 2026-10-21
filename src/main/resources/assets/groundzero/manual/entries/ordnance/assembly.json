@@ -21,9 +21,6 @@
     "groundzero:medium_warhead_casing",
     "groundzero:heavy_warhead_casing",
     "groundzero:impact_fuze",
-    "groundzero:timed_fuze",
-    "groundzero:proximity_fuze",
-    "groundzero:remote_fuze",
     "groundzero:barometric_fuze"
   ],
   "pages": [
@@ -51,7 +48,7 @@
     },
     {
       "type": "text",
-      "text": "**Fuzes** work in the missile; each decides where its warhead goes off. Set a fuze's setting on the bench before you press Assemble.\n\n**Impact:** where the missile hits.\n**Timed:** 1 to 600 seconds after launch, wherever it is.\n**Proximity:** 2 to 16 blocks above the ground on the way down.\n**Remote:** when a detonator on its frequency is pressed, even in flight (or where it hits).\n**Barometric:** 10 to 200 blocks over its target, on the way down."
+      "text": "**Fuzes:** a missile sets its warhead off where it comes down (an **Impact** fuze). A **Barometric** fuze bursts it in the air instead, a set height over the target (10 to 200 blocks): type the height on the bench before you press Assemble.\n\nA burst in the air spreads a warhead's effect over the ground below rather than digging a crater. Cluster-type warheads open in the air whichever fuze they have (30 blocks up on an impact fuze)."
     },
     {
       "type": "spotlight",
@@ -76,21 +73,6 @@
     {
       "type": "crafting",
       "item": "groundzero:impact_fuze",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:timed_fuze",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:proximity_fuze",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:remote_fuze",
       "text": ""
     },
     {

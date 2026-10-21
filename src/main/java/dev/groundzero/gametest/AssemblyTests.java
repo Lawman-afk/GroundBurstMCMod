@@ -35,8 +35,6 @@ final class AssemblyTests {
         GZGameTests.test("bench_sets_the_fuze_setting", GZGameTests.FLOOR_16, 200, AssemblyTests::fuzeSetting);
         GZGameTests.test("bench_halves_have_their_own_sides", GZGameTests.FLOOR_16, 20, AssemblyTests::halfSides);
         GZGameTests.testOpenSky("barometric_fuze_bursts_high_over_the_target", GZGameTests.FLOOR_16, 400, AssemblyTests::barometric);
-        GZGameTests.testOpenSky("timed_fuze_bursts_in_flight", GZGameTests.FLOOR_16, 200, AssemblyTests::timedFlight);
-        GZGameTests.testOpenSky("remote_fuze_bursts_on_the_detonator_in_flight", GZGameTests.FLOOR_16, 200, AssemblyTests::remoteFlight);
     }
 
     private static ItemStack fuzed(Fuze fuze, int value) {
@@ -54,30 +52,6 @@ final class AssemblyTests {
             helper.assertTrue(!dev.groundzero.content.launch.Flights.of(helper.getLevel()).all().contains(f), "it burst");
             double over = f.position().y - target.y;
             helper.assertTrue(over > 12 && over <= 21, "about 20 blocks up: " + over);
-        });
-    }
-
-    /** A timed fuze at 2 s goes off in the air two seconds after the missile lights, long before it would come down. */
-    private static void timedFlight(GameTestHelper helper) {
-        floor(helper);
-        Vec3 pad = helper.absoluteVec(new Vec3(8, 2, 8));
-        var f = dev.groundzero.content.launch.Flights.launch(helper.getLevel(), pad, pad.add(300, 0, 0), fuzed(Fuze.TIMED, 2), null);
-        helper.succeedWhen(() -> {
-            helper.assertTrue(!dev.groundzero.content.launch.Flights.of(helper.getLevel()).all().contains(f), "it burst");
-            helper.assertTrue(f.ticksToImpact() > 100, "well short of its target");
-        });
-    }
-
-    /** A remote fuze: pressing a detonator on its frequency sets the missile's warhead off where it flies. */
-    private static void remoteFlight(GameTestHelper helper) {
-        floor(helper);
-        Vec3 pad = helper.absoluteVec(new Vec3(8, 2, 8));
-        var f = dev.groundzero.content.launch.Flights.launch(helper.getLevel(), pad, pad.add(300, 0, 0), fuzed(Fuze.REMOTE, 77), null);
-        helper.runAfterDelay(60, () -> {
-            helper.assertTrue(Charges.remote(helper.getLevel(), f.position(), 76, null, 64) == 0, "another frequency does nothing");
-            helper.assertTrue(Charges.remote(helper.getLevel(), f.position(), 77, null, 64) == 1, "its frequency sets it off");
-            helper.assertTrue(!dev.groundzero.content.launch.Flights.of(helper.getLevel()).all().contains(f), "the flight is over");
-            helper.succeed();
         });
     }
 
@@ -108,13 +82,13 @@ final class AssemblyTests {
         floor(helper);
         AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
         b.energy().generate(AssemblyBenchBlockEntity.CAPACITY);
-        load(b, new ItemStack(GZAssembly.HE_CHARGE.get()), new ItemStack(GZAssembly.LIGHT_CASING.get()), new ItemStack(GZAssembly.REMOTE_FUZE.get()));
+        load(b, new ItemStack(GZAssembly.HE_CHARGE.get()), new ItemStack(GZAssembly.LIGHT_CASING.get()), new ItemStack(GZAssembly.IMPACT_FUZE.get()));
         helper.assertTrue(b.problem() == WarheadAssembly.Problem.NONE, "the parts fit: " + b.problem());
         helper.assertTrue(b.startAssembly(), "assembly starts");
         helper.succeedWhen(() -> {
             ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
             helper.assertTrue(out.is(GZOrdnance.HE_WARHEAD.item().get()), "an HE warhead");
-            helper.assertTrue(out.getOrDefault(GZDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze() == Fuze.REMOTE, "with a remote fuze");
+            helper.assertTrue(out.getOrDefault(GZDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze() == Fuze.IMPACT, "with an impact fuze");
             helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CORE).isEmpty()
                     && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CASING).isEmpty()
                     && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_FUZE).isEmpty(), "the parts are used");
@@ -177,9 +151,9 @@ final class AssemblyTests {
         BlockPos at = new BlockPos(8, 2, 8);
         helper.setBlock(at, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
         ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
-        be.setFuze(FuzeSettings.of(Fuze.TIMED, 42));
+        be.setFuze(FuzeSettings.of(Fuze.BAROMETRIC, 42));
         FuzeSettings kept = be.collectComponents().get(GZDataComponents.FUZE.get());
-        helper.assertTrue(kept != null && kept.fuze() == Fuze.TIMED && kept.value() == 42, "the item keeps a 42 s timed fuze: " + kept);
+        helper.assertTrue(kept != null && kept.fuze() == Fuze.BAROMETRIC && kept.value() == 42, "the item keeps a barometric fuze at 42: " + kept);
         helper.succeed();
     }
 
@@ -189,9 +163,9 @@ final class AssemblyTests {
         BlockPos at = new BlockPos(8, 2, 8);
         helper.setBlock(at, GZOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
         ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
-        be.setFuze(FuzeSettings.of(Fuze.REMOTE, 7));
+        be.setFuze(FuzeSettings.of(Fuze.BAROMETRIC, 40));
         helper.assertTrue(!be.hearsDetonator(), "it does not listen");
-        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 7, null, 12) == 0, "nothing heard it");
+        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 0, null, 12) == 0, "nothing heard it");
         helper.succeed();
     }
 

@@ -17,9 +17,6 @@ import net.minecraft.world.item.component.TooltipDisplay;
 public class WarheadItem extends BlockItem {
     private static final String[] T_FUZE_LINE = {
             GZLang.add(GroundZero.MODID + ".warhead.fuze.impact", "Fuze: Impact"),
-            GZLang.add(GroundZero.MODID + ".warhead.fuze.timed", "Fuze: Timed, %s s"),
-            GZLang.add(GroundZero.MODID + ".warhead.fuze.proximity", "Fuze: Proximity, %s blocks"),
-            GZLang.add(GroundZero.MODID + ".warhead.fuze.remote", "Fuze: Remote, frequency %s"),
             GZLang.add(GroundZero.MODID + ".warhead.fuze.barometric", "Fuze: Barometric, bursts %s blocks up")};
 
     public WarheadItem(ChargeBlock block, Properties properties) {

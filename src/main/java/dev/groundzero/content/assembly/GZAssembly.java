@@ -65,9 +65,6 @@ public final class GZAssembly {
     // --- fuzes (in Fuze order) ---
     public static final List<DeferredItem<ComponentItems.FuzeItem>> FUZES = new ArrayList<>();
     public static final DeferredItem<ComponentItems.FuzeItem> IMPACT_FUZE = fuze("impact_fuze", "Impact Fuze", Fuze.IMPACT);
-    public static final DeferredItem<ComponentItems.FuzeItem> TIMED_FUZE = fuze("timed_fuze", "Timed Fuze", Fuze.TIMED);
-    public static final DeferredItem<ComponentItems.FuzeItem> PROXIMITY_FUZE = fuze("proximity_fuze", "Proximity Fuze", Fuze.PROXIMITY);
-    public static final DeferredItem<ComponentItems.FuzeItem> REMOTE_FUZE = fuze("remote_fuze", "Remote Fuze", Fuze.REMOTE);
     public static final DeferredItem<ComponentItems.FuzeItem> BAROMETRIC_FUZE = fuze("barometric_fuze", "Barometric Fuze", Fuze.BAROMETRIC);
 
     // --- the bench ---

@@ -840,7 +840,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
-entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "timed_fuze", "proximity_fuze", "remote_fuze", "barometric_fuze"], [
+entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
 The **Ordnance Assembly Bench** puts warheads together. It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
 
@@ -867,13 +867,9 @@ The readout says what the parts on the bench make, and in red what is missing or
 A core's tooltip names the warhead it makes.
 """),
     text("""
-**Fuzes** work in the missile; each decides where its warhead goes off. Set a fuze's setting on the bench before you press Assemble.
+**Fuzes:** a missile sets its warhead off where it comes down (an **Impact** fuze). A **Barometric** fuze bursts it in the air instead, a set height over the target (10 to 200 blocks): type the height on the bench before you press Assemble.
 
-**Impact:** where the missile hits.
-**Timed:** 1 to 600 seconds after launch, wherever it is.
-**Proximity:** 2 to 16 blocks above the ground on the way down.
-**Remote:** when a detonator on its frequency is pressed, even in flight (or where it hits).
-**Barometric:** 10 to 200 blocks over its target, on the way down.
+A burst in the air spreads a warhead's effect over the ground below rather than digging a crater. Cluster-type warheads open in the air whichever fuze they have (30 blocks up on an impact fuze).
 """),
     spot("medium_warhead_casing", """
 Casings come in three classes, marked by yellow bands: one for **Light**, two for **Medium**, three for **Heavy**. A core only fits a casing of its own class.
@@ -882,9 +878,6 @@ Casings come in three classes, marked by yellow bands: one for **Light**, two fo
     craft("medium_warhead_casing"),
     craft("heavy_warhead_casing"),
     craft("impact_fuze"),
-    craft("timed_fuze"),
-    craft("proximity_fuze"),
-    craft("remote_fuze"),
     craft("barometric_fuze"),
     craft("he_charge"),
     craft("heavy_he_charge"),
@@ -908,7 +901,7 @@ entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhe
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
-Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, in the air over its target, a set time after launch, or on a detonator's signal.
+Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, or in the air over its target.
 
 Placed on their own, warheads stand nose up on their mounting rings, waiting to be fitted to a missile; with nothing under them they fall. A placed warhead cannot be armed and nothing sets it off, except another explosion.
 """),

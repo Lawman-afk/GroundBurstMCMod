@@ -30,6 +30,23 @@ final class TallMachineTests {
         GZGameTests.test("press_needs_die", GZGameTests.FLOOR_16, 60, TallMachineTests::pressNeedsDie);
         GZGameTests.test("tall_machine_halves", GZGameTests.FLOOR_16, 20, TallMachineTests::halves);
         GZGameTests.test("tall_machine_upper_half_capabilities", GZGameTests.FLOOR_16, 20, TallMachineTests::upperCapabilities);
+        GZGameTests.test("tall_machine_halves_have_their_own_sides", GZGameTests.FLOOR_16, 20, TallMachineTests::halfSides);
+    }
+
+    /** Each half of a tall machine answers pipes through its own faces; the faces between the halves expose nothing. */
+    private static void halfSides(GameTestHelper helper) {
+        IndustrialPressBlockEntity press = place(helper, GZMachines.INDUSTRIAL_PRESS.block().get(), new BlockPos(3, 1, 3), IndustrialPressBlockEntity.class);
+        var level = helper.getLevel();
+        BlockPos lower = helper.absolutePos(new BlockPos(3, 1, 3)), upper = lower.above();
+        var cap = net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK;
+        net.minecraft.core.Direction front = level.getBlockState(lower).getValue(dev.groundzero.content.machine.MachineBlock.FACING);
+        helper.assertTrue(level.getCapability(cap, lower, front) != null && level.getCapability(cap, upper, front) != null, "both fronts open");
+        press.changeSides(true, c -> c.cycleItems(dev.groundzero.content.machine.SideConfig.Face.FRONT, true, press.allowedItemModes()));
+        helper.assertTrue(level.getCapability(cap, upper, front) == null, "the upper front closed on its own");
+        helper.assertTrue(level.getCapability(cap, lower, front) != null, "the lower front still open");
+        helper.assertTrue(level.getCapability(cap, lower, net.minecraft.core.Direction.UP) == null
+                && level.getCapability(cap, upper, net.minecraft.core.Direction.DOWN) == null, "nothing between the halves");
+        helper.succeed();
     }
 
     /** Places a tall machine the way a player would: lower half, then setPlacedBy adds the upper half. */

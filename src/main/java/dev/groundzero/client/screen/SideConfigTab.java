@@ -54,8 +54,21 @@ final class SideConfigTab {
             new Cell(Face.LEFT, false, 0, 1), new Cell(Face.FRONT, false, 1, 1), new Cell(Face.FRONT, true, 2, 1),
             new Cell(Face.RIGHT, true, 3, 1), new Cell(Face.BOTTOM, false, 1, 2), new Cell(Face.BOTTOM, true, 2, 2),
             new Cell(Face.BACK, true, 3, 2), new Cell(Face.BACK, false, 4, 2));
-    /** The wide layout keeps the panel's size: channel buttons go in a row along the top, the faces in five columns under them. */
-    private static final int WIDE_GRID_X = 6, WIDE_GRID_Y = 38, WIDE_CHANNEL_STEP = 44;
+    /**
+     * A two-block-tall machine unfolded: the upper half's four sides in a row with its top above, the lower half's
+     * under them with its bottom below.
+     */
+    private static final List<Cell> TALL_CELLS = List.of(new Cell(Face.TOP, true, 1, 0),
+            new Cell(Face.LEFT, true, 0, 1), new Cell(Face.FRONT, true, 1, 1), new Cell(Face.RIGHT, true, 2, 1), new Cell(Face.BACK, true, 3, 1),
+            new Cell(Face.LEFT, false, 0, 2), new Cell(Face.FRONT, false, 1, 2), new Cell(Face.RIGHT, false, 2, 2), new Cell(Face.BACK, false, 3, 2),
+            new Cell(Face.BOTTOM, false, 1, 3));
+    /**
+     * Two-block layouts keep the panel's width: channel buttons go in a row along the top, the faces under them. A tall
+     * machine's four rows need the panel a little taller (drawn as the texture's top and its bottom).
+     */
+    private static final int WIDE_GRID_X = 6, WIDE_GRID_Y = 38, WIDE_CHANNEL_STEP = 44, TALL_GRID_X = 16, TALL_PANEL_H = 136, TOP_PART = 80;
+    private static final String T_UPPER_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.upper_half", "%s, upper half");
+    private static final String T_LOWER_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.lower_half", "%s, lower half");
     private static final String T_LEFT_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.left_half", "%s, left half");
     private static final String T_RIGHT_HALF = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".side.right_half", "%s, right half");
 
@@ -87,8 +100,25 @@ final class SideConfigTab {
         return this.menu.machine().wide();
     }
 
+    private boolean tall() {
+        return this.menu.machine().tall();
+    }
+
+    private boolean twoBlock() {
+        return wide() || tall();
+    }
+
     private List<Cell> cells() {
-        return wide() ? WIDE_CELLS : CELLS;
+        return wide() ? WIDE_CELLS : tall() ? TALL_CELLS : CELLS;
+    }
+
+    private int panelHeight() {
+        return tall() ? TALL_PANEL_H : PANEL_H;
+    }
+
+    /** The Auto-eject row, under the faces. */
+    private int ejectY() {
+        return tall() ? 120 : 97;
     }
 
     private int panelWidth() {
@@ -96,38 +126,41 @@ final class SideConfigTab {
     }
 
     private int gridX() {
-        return wide() ? WIDE_GRID_X : GRID_X;
+        return wide() ? WIDE_GRID_X : tall() ? TALL_GRID_X : GRID_X;
     }
 
     private int gridY() {
-        return wide() ? WIDE_GRID_Y : GRID_Y;
+        return twoBlock() ? WIDE_GRID_Y : GRID_Y;
     }
 
     /** Where channel button {@code i} sits on the panel: stacked on the left, or in a row along the top (wide machines). */
     private int channelX(int i) {
-        return CHANNEL_X + (wide() ? i * WIDE_CHANNEL_STEP : 0);
+        return CHANNEL_X + (twoBlock() ? i * WIDE_CHANNEL_STEP : 0);
     }
 
     private int channelY(int i) {
-        return CHANNEL_Y + (wide() ? 0 : i * CHANNEL_STEP);
+        return CHANNEL_Y + (twoBlock() ? 0 : i * CHANNEL_STEP);
     }
 
     private SideConfig sides(boolean half) {
         return half ? this.menu.sideHalf() : this.menu.sides();
     }
 
-    /** A face's name: on a wide machine, which half (its ends are just Left and Right). */
+    /** A face's name: on a two-block machine, which half (a wide one's ends, a tall one's top and bottom need none). */
     private Component faceName(Cell cell) {
         Component name = Component.translatable(cell.face().translationKey());
-        if (!wide() || cell.face() == Face.LEFT || cell.face() == Face.RIGHT) {
-            return name;
+        if (wide() && cell.face() != Face.LEFT && cell.face() != Face.RIGHT) {
+            return Component.translatable(cell.half() ? T_RIGHT_HALF : T_LEFT_HALF, name);
         }
-        return Component.translatable(cell.half() ? T_RIGHT_HALF : T_LEFT_HALF, name);
+        if (tall() && cell.face() != Face.TOP && cell.face() != Face.BOTTOM) {
+            return Component.translatable(cell.half() ? T_UPPER_HALF : T_LOWER_HALF, name);
+        }
+        return name;
     }
 
     /** Screen-space area the tab occupies (also reported to JEI so it moves out of the way). */
     Rect2i area(int left, int top, int imageWidth) {
-        return open ? new Rect2i(left + imageWidth - 2, top + 4, panelWidth(), PANEL_H) : new Rect2i(left + imageWidth - 2, top + 4, TAB_W, TAB_H);
+        return open ? new Rect2i(left + imageWidth - 2, top + 4, panelWidth(), panelHeight()) : new Rect2i(left + imageWidth - 2, top + 4, TAB_W, TAB_H);
     }
 
     void render(GuiGraphicsExtractor g, Font font, int left, int top, int imageWidth, int mouseX, int mouseY) {
@@ -140,7 +173,13 @@ final class SideConfigTab {
             }
             return;
         }
-        g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, PANEL_V, PANEL_W, PANEL_H, 256, 256);
+        if (tall()) {
+            int rest = TALL_PANEL_H - TOP_PART;
+            g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, PANEL_V, PANEL_W, TOP_PART, 256, 256);
+            g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y + TOP_PART, 0, PANEL_V + PANEL_H - rest, PANEL_W, rest, 256, 256);
+        } else {
+            g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, PANEL_V, PANEL_W, PANEL_H, 256, 256);
+        }
         small(g, font, Component.translatable(MachineText.SIDES_TITLE), x + 20, y + 7, TEXT);
 
         Channel channel = current();
@@ -181,8 +220,8 @@ final class SideConfigTab {
 
         boolean eject = this.menu.machine().hasOutputs();
         if (eject) {
-            g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x + 8, y + 97, sides.autoEject() ? CHECK_ON_U : CHECK_OFF_U, CHECK_V, 10, 10, 256, 256);
-            small(g, font, Component.translatable(MachineText.AUTO_EJECT), x + 21, y + 99, TEXT);
+            g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x + 8, y + ejectY(), sides.autoEject() ? CHECK_ON_U : CHECK_OFF_U, CHECK_V, 10, 10, 256, 256);
+            small(g, font, Component.translatable(MachineText.AUTO_EJECT), x + 21, y + ejectY() + 2, TEXT);
         }
 
         if (hovered != null) {
@@ -197,7 +236,7 @@ final class SideConfigTab {
                     Component.translatable(MachineText.FACE_MODE, faceName(hovered), value),
                     Component.translatable(channel == Channel.ITEMS ? MachineText.HINT_CYCLE : MachineText.HINT_TOGGLE).withColor(TEXT_DIM)),
                     Optional.empty(), mouseX, mouseY);
-        } else if (eject && inside(mouseX, mouseY, x + 6, y + 95, 90, 14)) {
+        } else if (eject && inside(mouseX, mouseY, x + 6, y + ejectY() - 2, 90, 14)) {
             g.setTooltipForNextFrame(Component.translatable(MachineText.AUTO_EJECT_TIP), mouseX, mouseY);
         }
     }
@@ -288,7 +327,7 @@ final class SideConfigTab {
                 return true;
             }
         }
-        if (this.menu.machine().hasOutputs() && inside(mx, my, x + 6, y + 95, 90, 14)) {
+        if (this.menu.machine().hasOutputs() && inside(mx, my, x + 6, y + ejectY() - 2, 90, 14)) {
             send(MachineMenu.BUTTON_AUTO_EJECT);
             return true;
         }

@@ -59,7 +59,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     private final int[] inputSlots;
     private final int[] outputSlots;
     protected final SideConfig sides = new SideConfig();
-    /** A two-block-wide machine's side half has its own faces (DESIGN.md §10): this is their configuration. */
+    /**
+     * The second half of a two-block machine has its own faces (DESIGN.md §10): a wide machine's side half, a tall
+     * machine's upper half. This is their configuration.
+     */
     protected final SideConfig sideHalf = new SideConfig();
     protected RedstoneMode redstoneMode = RedstoneMode.IGNORE;
     /** Why the machine is (not) running; shown in the GUI. */
@@ -330,16 +333,21 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         if (this.tanks.stream().allMatch(t -> t.isInput() || t.isEmpty())) {
             return;
         }
+        pushFluids(level, false);
+        if (twoBlock()) {
+            pushFluids(level, true);
+        }
+    }
+
+    private void pushFluids(ServerLevel level, boolean half) {
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
+        BlockPos from = half ? sideHalfPos() : this.worldPosition;
         for (SideConfig.Face face : SideConfig.Face.values()) {
-            if (!this.sides.fluid(face) || !faceOpen(face) || !fluidFaceAllowed(face)) {
+            if (!sides(half).fluid(face) || !faceOpen(face, half) || !fluidFaceAllowed(face)) {
                 continue;
             }
             Direction dir = face.toDirection(facing);
-            BlockPos target = this.worldPosition.relative(dir);
-            if (getBlockState().getBlock() instanceof TallMachineBlock && dir == Direction.UP) {
-                target = target.above();
-            }
+            BlockPos target = from.relative(dir);
             ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, target, dir.getOpposite());
             if (handler == null) {
                 continue;
@@ -375,20 +383,34 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return getBlockState().getBlock() instanceof WideMachineBlock;
     }
 
-    /** The face configuration of the main half, or of a wide machine's side half. */
+    /** Whether this is a two-block-tall machine (its upper half has faces of its own). */
+    public boolean tall() {
+        return getBlockState().getBlock() instanceof TallMachineBlock;
+    }
+
+    /** Whether this machine is two blocks (wide or tall): each half has its own faces. */
+    public boolean twoBlock() {
+        return wide() || tall();
+    }
+
+    /** The face configuration of the main half, or of the second half (a wide machine's side half, a tall one's top half). */
     public SideConfig sides(boolean half) {
         return half ? this.sideHalf : this.sides;
     }
 
-    /** Where a wide machine's side half is. */
+    /** Where the second half is: a wide machine's side half, a tall machine's upper half. */
     public BlockPos sideHalfPos() {
+        if (tall()) {
+            return this.worldPosition.above();
+        }
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
         return this.worldPosition.relative(WideMachineBlock.sideward(facing));
     }
 
-    /** A face of either half: the faces where a wide machine's two halves meet are inside it. */
+    /** A face of either half: the faces where a two-block machine's halves meet are inside it. */
     public boolean faceOpen(SideConfig.Face face, boolean half) {
-        if (wide() && face == (half ? SideConfig.Face.LEFT : SideConfig.Face.RIGHT)) {
+        if (wide() && face == (half ? SideConfig.Face.LEFT : SideConfig.Face.RIGHT)
+                || tall() && face == (half ? SideConfig.Face.BOTTOM : SideConfig.Face.TOP)) {
             return false;
         }
         return faceOpen(face);
@@ -481,7 +503,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     public void changeSides(boolean half, java.util.function.Consumer<SideConfig> change) {
         change.accept(sides(half));
         setChanged();
-        if (this.level != null && wide()) {
+        if (this.level != null && twoBlock()) {
             this.level.invalidateCapabilities(sideHalfPos());
             this.level.updateNeighborsAt(sideHalfPos(), getBlockState().getBlock());
         }
@@ -498,7 +520,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     /** Pushes output slots into the item handlers beside every output face (both halves of a wide machine). */
     private void autoEject(ServerLevel level) {
         autoEject(level, false);
-        if (wide()) {
+        if (twoBlock()) {
             autoEject(level, true);
         }
     }
@@ -513,9 +535,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             }
             Direction dir = face.toDirection(facing);
             BlockPos target = from.relative(dir);
-            if (getBlockState().getBlock() instanceof TallMachineBlock && dir == Direction.UP) {
-                target = target.above();
-            }
             ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, target, dir.getOpposite());
             if (handler != null) {
                 ResourceHandlerUtil.moveStacking(out, handler, r -> true, EJECT_BATCH, null);

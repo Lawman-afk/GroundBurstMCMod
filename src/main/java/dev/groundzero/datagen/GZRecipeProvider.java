@@ -384,17 +384,6 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(Items.GUNPOWDER)
                 .requires(Items.STONE_PRESSURE_PLATE)
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.TIMED_FUZE, 2)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT).requires(Items.CLOCK)
-                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.PROXIMITY_FUZE, 2)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
-                .requires(Items.OBSERVER)
-                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.REMOTE_FUZE, 2)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
-                .requires(GZParts.COPPER_WIRE).requires(GZParts.COPPER_WIRE)
-                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.BAROMETRIC_FUZE, 2)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
                 .requires(GZParts.COPPER_PLATE)

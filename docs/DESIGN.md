@@ -530,14 +530,15 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   slots empty). The readout names the result or, in red, what is wrong. GeckoLib model: bench, hoist beam with trolley,
   chain and hook, cradle with clamp jaws, tool pegboard, work lamp, blueprint sheet; a warhead lies in the cradle while
   one is made or waits; "working" animation timed with its sound (chain, clank, ratchet, impact wrench).
-- **Fuzes** (`Fuze`, the `groundzero:fuze` item component) work **only in the missile** (after the in-game look): the
-  setting is typed on the bench (each fuze type keeps its own; taking a warhead apart brings its setting back) and the
-  warhead carries it. In flight: **Impact** where it hits; **Timed** 1-600 s after launch; **Proximity** 2-16 blocks
-  over the ground on the way down; **Remote** a detonator on its frequency, mid-flight; **Barometric** 10-200 blocks
-  over the target. Cluster-type dispensers on other fuzes still open 30 blocks up. A **placed warhead** has no screen,
-  cannot be armed and hears no detonator: it waits to be fitted (it still falls, and another blast sets it off).
-- **Sides:** the bench's side configuration covers both halves: each half's top, front, bottom and back, plus its two
-  ends (10 faces; the faces where the halves meet are inside it). The wrench tab lays them out two blocks wide.
+- **Fuzes** (`Fuze`, the `groundzero:fuze` item component): only **Impact** and **Barometric** (after the in-game
+  look: timed, proximity and remote fuzes did nothing a missile needs). A missile always sets its warhead off where it
+  comes down; a barometric fuze changes the flight to burst the warhead its set height (10-200 blocks, typed on the
+  bench) over the target. Cluster-type dispensers on an impact fuze still open 30 blocks up. A **placed warhead** has
+  no screen, cannot be armed and hears no detonator: it waits to be fitted (it still falls, and another blast sets it off).
+- **Sides:** two-block machines configure each half's faces: the bench each half's top, front, bottom and back plus its
+  two ends; the tall machines (Arc Furnace, Industrial Press, Cryogenic Condenser, Gas Centrifuge, Exotic Matter
+  Fabricator, Decontamination Shower) each half's four sides plus the top and bottom (10 faces each; the faces where
+  the halves meet are inside). The wrench tab lays them out unfolded.
 - **JEI:** an Assembly Bench category (core + casing + any fuze -> warhead, with class, time and power).
 - Still to come (7b, 7c): missile bodies, guidance and propulsion, the assembled missile, the stats panel and 3D
   preview.
@@ -2076,3 +2077,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | A Launch Silo that is EMP'd or held stopped by redstone refuses to arm or launch (and says why); either one mid-countdown scrubs the launch. |
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
+| 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |

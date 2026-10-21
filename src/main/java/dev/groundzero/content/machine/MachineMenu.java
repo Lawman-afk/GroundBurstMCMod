@@ -25,7 +25,7 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_DUMP = 50;
     /** + n: a machine's own control button n (e.g. reactor control rods), see MachineBlockEntity#handleButton. */
     public static final int BUTTON_MACHINE = 70;
-    /** Added to a face button (items, energy, fluid) to mean a two-block-wide machine's side half. */
+    /** Added to a face button (items, energy, fluid) to mean a two-block machine's second half (side or upper). */
     public static final int BUTTON_SIDE_HALF = 100;
 
     private final MachineBlockEntity machine;
@@ -109,7 +109,7 @@ public class MachineMenu extends AbstractContainerMenu {
         return config;
     }
 
-    /** A two-block-wide machine's side half's faces, as last synced (client) or live (server). */
+    /** A two-block machine's second half's faces (a wide one's side half, a tall one's top), as last synced or live. */
     public SideConfig sideHalf() {
         SideConfig config = new SideConfig();
         config.unpack(data.get(MachineBlockEntity.DATA_SIDE2_ITEMS), data.get(MachineBlockEntity.DATA_SIDE2_FLAGS));
@@ -134,7 +134,7 @@ public class MachineMenu extends AbstractContainerMenu {
             return true;
         }
         int faces = SideConfig.Face.values().length;
-        boolean half = id >= BUTTON_SIDE_HALF && this.machine.wide();
+        boolean half = id >= BUTTON_SIDE_HALF && this.machine.twoBlock();
         if (half) {
             id -= BUTTON_SIDE_HALF;
         }

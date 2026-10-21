@@ -128,7 +128,7 @@ public final class Charges {
     public static int remote(ServerLevel level, Vec3 from, int frequency, @Nullable Entity by, double range) {
         LongOpenHashSet set = LOADED.get(level.dimension());
         if (set == null) {
-            return dev.groundzero.content.launch.Flights.remote(level, from, frequency, range, by);
+            return 0;
         }
         int n = 0;
         for (long l : set.toLongArray()) {
@@ -139,7 +139,7 @@ public final class Charges {
                 n++;
             }
         }
-        return n + dev.groundzero.content.launch.Flights.remote(level, from, frequency, range, by);
+        return n;
     }
 
     /** A charge caught in a blast (or broken while its timer runs): it goes off 2-5 ticks later, armed or not. */
@@ -250,8 +250,8 @@ public final class Charges {
     }
 
     /**
-     * A missile's warhead set off in the air by its fuze (timed, barometric, proximity or remote): a cluster-type warhead
-     * opens and scatters its load from there; any other goes off where it is (a bunker buster does not bore in).
+     * A missile's warhead burst in the air (a barometric fuze, or a cluster-type warhead opening): a cluster-type warhead
+     * scatters its load from there; any other goes off where it is (a bunker buster does not bore in).
      */
     public static void burst(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
         if (kind.airburst()) {
