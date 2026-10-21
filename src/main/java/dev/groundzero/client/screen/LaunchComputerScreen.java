@@ -74,8 +74,6 @@ public class LaunchComputerScreen extends Screen {
     private static final int W = 336, H = 214, MAP = 184;
     /** The right-hand column: its left edge (from the panel's) and width; the silo list's rows. */
     private static final int COL = MAP + 22, CW = W - COL - 8, ROW = 10, ROWS = 6;
-    /** The silo list's type size (two thirds), small enough that whole state messages fit beside the range. */
-    private static final float LIST_TEXT = 2f / 3f;
     private static final int LIST_Y = 29, TARGET_Y = 94, BOX_Y = 105, SET_Y = 123, RANGE_Y = 143, ARM_Y = 166, LAUNCH_Y = 186;
     /** Blocks a map pixel at each zoom step. */
     private static final int[] ZOOMS = {1, 2, 4, 8};
@@ -422,6 +420,14 @@ public class LaunchComputerScreen extends Screen {
         g.disableScissor();
     }
 
+    /**
+     * The silo list's type size at a GUI scale: about two thirds, rounded down so each font pixel is a whole number of
+     * screen pixels (2 at GUI scale 3, 1 at 2, 2 at 4); at GUI scale 1 it cannot shrink.
+     */
+    private static float listTextScale(int gs) {
+        return Math.max(1, gs * 2 / 3) / (float) gs;
+    }
+
     /** The silo list: one row a silo, the picked one lit, scrolled with the mouse wheel. */
     private void drawList(GuiGraphicsExtractor g) {
         int x = col(), y = top() + LIST_Y, h = ROWS * ROW;
@@ -437,6 +443,11 @@ public class LaunchComputerScreen extends Screen {
         }
         boolean bar = silos.size() > ROWS;
         int textW = CW - 6 - (bar ? 4 : 0);
+        // The rows are drawn in small type so whole messages fit; widths below are in that type's units. Each font
+        // pixel is drawn a whole number of screen pixels on the screen-pixel grid, or rows of it would be dropped.
+        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        float scale = listTextScale(gs);
+        int room = (int) (textW / scale);
         for (int i = 0; i < ROWS && this.scroll + i < silos.size(); i++) {
             LaunchPayloads.Silo silo = silos.get(this.scroll + i);
             int ry = y + i * ROW;
@@ -450,14 +461,12 @@ public class LaunchComputerScreen extends Screen {
             boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal();
             int color = counting || down ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
             // Right: how far its target is (or that it has none); left: its number and state, cut to what is left.
-            // The rows are drawn in small type (LIST_TEXT) so whole messages fit; widths below are in that type's units.
-            int room = (int) (textW / LIST_TEXT);
             String aim = silo.hasTarget() ? (int) range(silo) + "m" : Component.translatable(T_NO_TARGET).getString();
             int aimW = this.font.width(aim);
             String label = (this.scroll + i + 1) + ". " + state.getString();
             g.pose().pushMatrix();
-            g.pose().translate(x + 3, ry + (ROW - this.font.lineHeight * LIST_TEXT) / 2f + 0.5f);
-            g.pose().scale(LIST_TEXT, LIST_TEXT);
+            g.pose().translate(x + 3, Math.round((ry + (ROW - 8 * scale) / 2f) * gs) / (float) gs);
+            g.pose().scale(scale, scale);
             g.text(this.font, aim, room - aimW, 0, silo.hasTarget() && range(silo) > MissileEntity.MAX_RANGE ? RED : DIM, false);
             g.text(this.font, this.font.plainSubstrByWidth(label, room - aimW - 6), 0, 0, color, false);
             g.pose().popMatrix();
