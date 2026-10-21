@@ -206,7 +206,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Strategic missile (XL body, nuclear only, its own long model) | done (8a feedback) — needs in-game look |
 | Strategic Assembly Hall (multiblock building whole weapons for the Launch Complex) | planned for 8c (§15.2) |
 | Launch Complex (nuclear launcher, pulled forward from Phase 9) | done (8a): structure, model, 15 s countdown with umbilicals, deluge and trench smoke — needs in-game look |
-| Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | done in Phase 5 (Spectacle v2); used by the nuclear warheads; the stem's foot stays on the crater, only the cap drifts (8b feedback) |
+| Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | done in Phase 5 (Spectacle v2); used by the nuclear warheads; no wind drift: it stands over its crater (8b feedback) |
 | Wilson condensation ring, base surge | todo |
 | Fallout you can see (stand-in until Phase 12's plumes) | done: fallout clouds over each contaminated zone, green sky, fog and clouds inside one — needs in-game look |
 | Flash with line of sight + afterimage | todo |

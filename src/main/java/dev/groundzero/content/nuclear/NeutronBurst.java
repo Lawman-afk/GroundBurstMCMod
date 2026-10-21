@@ -112,7 +112,7 @@ public final class NeutronBurst {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.Blocks.CONCRETES)
+        if (s.is(Blocks.OBSIDIAN) || s.is(Blocks.CRYING_OBSIDIAN) || s.is(Blocks.REINFORCED_DEEPSLATE) || s.is(Tags.BlockItems.CONCRETES.block())
                 || s.is(dev.groundzero.content.resource.GZResources.LEAD_BLOCK.block().get())) {
             return DENSE;
         }

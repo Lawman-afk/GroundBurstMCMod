@@ -28,11 +28,10 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p><b>Look.</b> Cloudlets are lit like clouds ({@link FxLight}): a normal out from the core circle (cap) or the axis
  * (stem), sunlight from the sun's direction, the sky's colour in the shade, undersides darker. Near the core the cap
- * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The cap drifts with the wind,
- * but the stem's foot and the dust ring stay over ground zero (it is the crater's dust being drawn up), so the stem
- * leans out to the cap as it goes: the cloud stays on its crater (after the in-game look: the whole column used to drift
- * off it). It thins out over its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it
- * shows above the horizon from well beyond the render distance.
+ * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The cloud stands still over
+ * ground zero all its life: no wind drift (after the in-game looks: drifting, it slid off its crater). It thins out over
+ * its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it shows above the horizon from
+ * well beyond the render distance.
  */
 final class MushroomCloud {
     private enum Role { CAP, STEM, COLLAR, SHELL, BASE }
@@ -57,14 +56,11 @@ final class MushroomCloud {
     private final double ground, floor;
     private final float crater;
     private final float fireball, height, r0, r1;
-    private final float windX, windZ;
     private final int life;
     private final float quality;
     private final RandomSource random;
     private final int earth;
     private final List<Cloudlet> cloudlets = new ArrayList<>();
-    /** {@link #axisFor}'s answer (x, z), reused. */
-    private final double[] axis = new double[2];
     private int stemSent, capSent, collarSent, baseSent;
     /** Grey dust, barely glowing (a huge conventional blast), rather than a nuclear fire cloud. */
     private final boolean dusty;
@@ -91,9 +87,6 @@ final class MushroomCloud {
         this.r0 = fireball * 0.55f;
         this.r1 = this.height * 0.42f;
         this.random = RandomSource.create(seed ^ 0x6C8E9CF570932BD5L);
-        float windAngle = this.random.nextFloat() * 6.283f;
-        this.windX = (float) Math.cos(windAngle) * 0.015f;
-        this.windZ = (float) Math.sin(windAngle) * 0.015f;
         this.life = life;
         this.quality = quality;
         this.earth = earth;
@@ -131,33 +124,9 @@ final class MushroomCloud {
         return 2 * Math.PI / 110 * Math.exp(-t / SPIN_FADE);
     }
 
-    private double axisX(double t) {
-        return this.center.x + this.windX * Math.max(0, t - 200);
-    }
-
-    private double axisZ(double t) {
-        return this.center.z + this.windZ * Math.max(0, t - 200);
-    }
-
-    /** The cap's centre at {@code t}: drifting with the wind (the fireball rides it). */
+    /** The cap's centre at {@code t}, straight over ground zero (the fireball rides it). */
     Vec3 capCentre(double t) {
-        return new Vec3(axisX(t), capY(t), axisZ(t));
-    }
-
-    /**
-     * The axis a cloudlet of {@code role} at height {@code y} turns round, given the cap's ({@code ax}, {@code az}): the
-     * cap and collar drift with the wind; the stem leans from its foot over ground zero up to the cap; the dust ring and
-     * the condensation shell stay over ground zero.
-     */
-    private double[] axisFor(Role role, double y, double ax, double az, double underside) {
-        double k = switch (role) {
-            case CAP, COLLAR -> 1;
-            case STEM -> Math.pow(Math.max(0, Math.min(1, (y - this.floor) / Math.max(1, underside - this.floor))), 1.5);
-            case BASE, SHELL -> 0;
-        };
-        this.axis[0] = this.center.x + (ax - this.center.x) * k;
-        this.axis[1] = this.center.z + (az - this.center.z) * k;
-        return this.axis;
+        return new Vec3(this.center.x, capY(t), this.center.z);
     }
 
     /** How hot the cloud still is (1 at the burst, cooling over about a minute). */
@@ -198,7 +167,7 @@ final class MushroomCloud {
     /** One tick at {@code t} ticks after the burst: spawn what is due, move everything. */
     void tick(double t) {
         spawn(t);
-        double ax = axisX(t), az = axisZ(t), capY = capY(t), big = ringRadius(t), small = minor(t);
+        double ax = this.center.x, az = this.center.z, capY = capY(t), big = ringRadius(t), small = minor(t);
         double spin = spin(t), climb = climb(t), widen = widen(t);
         double underside = capY - small * 0.6;
         for (int i = 0; i < this.cloudlets.size(); i++) {
@@ -206,8 +175,7 @@ final class MushroomCloud {
             c.px = c.x;
             c.py = c.y;
             c.pz = c.z;
-            double[] a = axisFor(c.role, c.y, ax, az, underside);
-            double rx = c.x - a[0], rz = c.z - a[1], rho = Math.sqrt(rx * rx + rz * rz);
+            double rx = c.x - ax, rz = c.z - az, rho = Math.sqrt(rx * rx + rz * rz);
             double dx = rho > 1e-3 ? rx / rho : Math.cos(c.phi), dz = rho > 1e-3 ? rz / rho : Math.sin(c.phi);
             switch (c.role) {
                 case CAP -> {
@@ -255,9 +223,8 @@ final class MushroomCloud {
                     dz = Math.sin(c.phi);
                 }
             }
-            a = axisFor(c.role, c.y, ax, az, underside);       // where it is now (a stem cloudlet may have joined the cap)
-            c.x = a[0] + dx * rho;
-            c.z = a[1] + dz * rho;
+            c.x = ax + dx * rho;
+            c.z = az + dz * rho;
         }
         this.cloudlets.removeIf(c -> t - c.birth >= c.life);
     }
@@ -370,7 +337,7 @@ final class MushroomCloud {
      * their shells, the stem along its column) instead of replaying it.
      */
     void prefill(double t) {
-        double ax = axisX(t), az = axisZ(t), capY = capY(t), big = ringRadius(t), small = minor(t);
+        double ax = this.center.x, az = this.center.z, capY = capY(t), big = ringRadius(t), small = minor(t);
         this.capSent = this.capCount;
         this.shellSent = true;
         this.collarSent = t < 450 ? this.collarCount : this.collarSent;
@@ -395,9 +362,8 @@ final class MushroomCloud {
                 double h = this.random.nextDouble();
                 double rho = c.shell * stemRadius(t, h);
                 c.y = this.floor + h * (underside - this.floor);
-                double[] a = axisFor(Role.STEM, c.y, ax, az, underside);
-                c.x = a[0] + Math.cos(c.phi) * rho;
-                c.z = a[1] + Math.sin(c.phi) * rho;
+                c.x = ax + Math.cos(c.phi) * rho;
+                c.z = az + Math.sin(c.phi) * rho;
                 c.scale = 0.75f + 0.5f * this.random.nextFloat();
                 add(c);
             }
@@ -419,7 +385,7 @@ final class MushroomCloud {
         Vector3f up = orientation.transform(new Vector3f(0, 1, 0));
         FxLight light = FxLight.current;
         Vector3f shade = new Vector3f();
-        double ax = axisX(t), az = axisZ(t), capY = capY(t), big = ringRadius(t), small = minor(t), fade = fade(t);
+        double ax = this.center.x, az = this.center.z, capY = capY(t), big = ringRadius(t), small = minor(t), fade = fade(t);
         double heat = this.dusty ? heat(t) * 0.15 : heat(t);
         double underside = capY - small * 0.6;
         int stemAlbedo = Puffs.lerpRgb(this.earth, 0x8E8680, 0.55f);
@@ -427,8 +393,7 @@ final class MushroomCloud {
         for (Cloudlet c : this.cloudlets) {
             double age = t - c.birth;
             double x = c.px + (c.x - c.px) * partial, y = c.py + (c.y - c.py) * partial, z = c.pz + (c.z - c.pz) * partial;
-            double[] a = axisFor(c.role, y, ax, az, underside);
-            double rx = x - a[0], rz = z - a[1], rho = Math.sqrt(rx * rx + rz * rz) + 1e-4;
+            double rx = x - ax, rz = z - az, rho = Math.sqrt(rx * rx + rz * rz) + 1e-4;
             double dx = rx / rho, dz = rz / rho;
             float nx, ny, nz, shadow, size, alpha;
             int albedo;
@@ -509,7 +474,7 @@ final class MushroomCloud {
         if (quads.isEmpty()) {
             return;
         }
-        collector.submitCustomGeometry(poseStack, FxRenderTypes.cloud(Puffs.SHEET), (pose, buffer) -> Puffs.quads(buffer, pose, quads));
+        FxRenderTypes.submit(collector, poseStack, FxRenderTypes.cloud(Puffs.SHEET), (pose, buffer) -> Puffs.quads(buffer, pose, quads));
     }
 
     /** The colour of fire at {@code u} = 0 (white-hot) to 1 (dull red). */

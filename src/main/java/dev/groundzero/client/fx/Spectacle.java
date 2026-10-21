@@ -448,12 +448,12 @@ public final class Spectacle {
             shell(fx, t, camera.pos, shells);
         }
         if (!shells.isEmpty()) {
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(SHOCK), (pose, buffer) -> spheres(buffer, pose, shells));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(SHOCK), (pose, buffer) -> spheres(buffer, pose, shells));
         }
         if (!fire.isEmpty()) {
             // The fire's body is blended over what is behind it (so it stays orange against a bright sky); its core adds light.
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.fire(FIREBALL), (pose, buffer) -> spheres(buffer, pose, fire));
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.fire(FIREBALL), (pose, buffer) -> spheres(buffer, pose, fire));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
         }
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first

@@ -62,6 +62,8 @@ public final class FxPhotographer {
                 new Scene("nuke_tactical_aerial", "tactical_nuclear_warhead", 170, 24, List.of(300, 1200, 2400)),
                 // A contaminated zone 180 blocks round: its fallout clouds from outside, then the green sky from inside.
                 new Scene("fallout", "fallout", 260, -14, List.of(60, 400)),
+                // Smoke in front of water, seen from above: the water must still show through the smoke.
+                new Scene("water_smoke_aerial", "water_smoke", 16, 28, List.of(60, 160)),
                 new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
                 new Scene("nuke_neutron", "neutron_warhead", 70, -8, List.of(3, 20, 60, 200, 400)),
                 new Scene("warhead_dirty", "dirty_warhead", 30, 2, List.of(2, 8, 20, 60)),
@@ -138,6 +140,21 @@ public final class FxPhotographer {
     }
 
     /** The chemical grenades: a poison gas cloud, a toxin splash, dynamite, and a Molotov falling; a toxin vial in hand. */
+    /** A pool two deep with a red stripe on its floor, and a smoke grenade going off on the near bank. */
+    private static void waterSmoke(ServerLevel level, int x, int ground) {
+        for (int dx = -4; dx <= 12; dx++) {
+            for (int z = -8; z <= 8; z++) {
+                level.setBlock(new net.minecraft.core.BlockPos(x + dx, ground - 3, z),
+                        (z == 0 ? net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK : net.minecraft.world.level.block.Blocks.SAND).defaultBlockState(), 2);
+                for (int y = ground - 2; y < ground; y++) {
+                    level.setBlock(new net.minecraft.core.BlockPos(x + dx, y, z), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 2);
+                }
+            }
+        }
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE.get(), new Vec3(x - 6, ground + 0.05, 0.5), Vec3.ZERO, 5);
+    }
+
     private static void chemical(ServerLevel level, int x, int ground) {
         ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
         player.setGameMode(GameType.CREATIVE);
@@ -581,6 +598,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().startsWith("suits")) {
                     suits(level, x, ground, s.profile().endsWith("back"));    // armour stands wearing the suits, no blast
+                    return;
+                }
+                if (s.profile().equals("water_smoke")) {
+                    waterSmoke(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("fallout")) {

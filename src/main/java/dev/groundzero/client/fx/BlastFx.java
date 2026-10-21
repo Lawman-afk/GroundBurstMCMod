@@ -414,7 +414,9 @@ final class BlastFx {
         FxPreset pr = this.preset;
         Vec3 c = this.start.center();
         float big = fireballRadius();
-        float windX = 0.012f + 0.01f * (this.noiseSeed & 7) / 7f, windZ = 0.006f * (((this.noiseSeed >> 3) & 7) - 3.5f) / 3.5f;
+        // A nuke's smoke rises straight, like its mushroom cloud (after the in-game look: no wind drift for nukes at all).
+        float windX = this.mushroom != null ? 0 : 0.012f + 0.01f * (this.noiseSeed & 7) / 7f;
+        float windZ = this.mushroom != null ? 0 : 0.006f * (((this.noiseSeed >> 3) & 7) - 3.5f) / 3.5f;
         if (!this.fireballSmoked && t >= pr.fireballLife() * 0.55) {
             this.fireballSmoked = true;
             if (this.mushroom != null) {

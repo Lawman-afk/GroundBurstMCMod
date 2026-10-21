@@ -179,13 +179,13 @@ final class Puffs {
         }
         if (!smoke.isEmpty()) {
             // Smoke and dust write depth (with their faint fringe cut out), so vanilla's clouds stay behind them.
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.cloud(SHEET), (pose, buffer) -> quads(buffer, pose, smoke));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.cloud(SHEET), (pose, buffer) -> quads(buffer, pose, smoke));
         }
         if (!blended.isEmpty()) {
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.fire(SHEET), (pose, buffer) -> quads(buffer, pose, blended));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.fire(SHEET), (pose, buffer) -> quads(buffer, pose, blended));
         }
         if (!bright.isEmpty()) {
-            collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(SHEET), (pose, buffer) -> quads(buffer, pose, bright));
+            FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(SHEET), (pose, buffer) -> quads(buffer, pose, bright));
         }
     }
 

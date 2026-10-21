@@ -9,7 +9,13 @@ import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 import dev.groundzero.GroundZero;
+import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -33,6 +39,10 @@ import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
  * mushroom cloud stands over the horizon far beyond the loaded terrain. It cuts out its faint fringe and writes depth
  * (drawn back to front), so vanilla's clouds, drawn after it, do not show through it.</li>
  * </ul>
+ * All of them are submitted with {@link #submit}, to be drawn after the translucent terrain as vanilla's own translucent
+ * particles are: blended custom geometry is otherwise drawn before it, and water behind any smoke then failed the depth
+ * test against the cloud pipeline's depth and was not drawn at all (after the in-game look: "smoke makes all water
+ * transparent").
  */
 final class FxRenderTypes {
     static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
@@ -84,6 +94,20 @@ final class FxRenderTypes {
             event.registerPipeline(CLOUD_PIPELINE);
             event.registerOitPipelineSet(OIT_CLOUD);
         });
+    }
+
+    /**
+     * Submits effect geometry to be drawn after the translucent terrain (water), where vanilla draws its translucent
+     * particles; with improved transparency that is the same OIT pass as any other translucent geometry.
+     */
+    static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        SubmitNodeCollection collection = collector instanceof SubmitNodeStorage storage ? storage.order(0)
+                : collector instanceof SubmitNodeCollection c ? c : null;
+        if (collection == null) {
+            collector.submitCustomGeometry(poseStack, type, renderer);
+            return;
+        }
+        collection.afterTerrain.submit(new CustomFeatureRenderer.Submit(poseStack.last().copy(), type, renderer));
     }
 
     /** Blended, unlit, two-sided, with this texture. */

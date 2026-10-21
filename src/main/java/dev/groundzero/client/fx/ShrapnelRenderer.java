@@ -52,7 +52,7 @@ public class ShrapnelRenderer extends EntityRenderer<Shrapnel, ShrapnelRenderer.
         Vector3f back = new Vector3f(dir).mul(-Math.min(1.2f, speed * 0.6f));
         float u0 = 0, v0 = 3f / Puffs.ROWS, u1 = 0.25f, v1 = v0 + 1f / Puffs.ROWS;   // the spark cell
         int head = 0xFFFFD890, tail = 0x00FF8030;
-        collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(Puffs.SHEET), (pose, b) -> {
+        FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(Puffs.SHEET), (pose, b) -> {
             Puffs.vertex(b, pose, -side.x, -side.y, -side.z, u0, v1, head);
             Puffs.vertex(b, pose, side.x, side.y, side.z, u1, v1, head);
             Puffs.vertex(b, pose, back.x + side.x, back.y + side.y, back.z + side.z, u1, v0, tail);
