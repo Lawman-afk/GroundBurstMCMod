@@ -348,7 +348,7 @@ def computer() -> None:
     g = GeoModel("launch_computer", tex_size=(256, 256))
     g.bone("frame")
     g.bone("dish", pivot=(0, 52, 16), parent="frame")
-    g.bone("dish_tilt", pivot=(0, 54, 16), parent="dish", rotation=(25, 0, 0))     # looking up at the sky
+    g.bone("dish_tilt", pivot=(0, 54, 16), parent="dish", rotation=(40, 0, 0))     # looking well up at the sky
     F = "frame"
     g.box("desk", (-7, 0, -7), (23, 10, 7), bone=F)
     g.box("console", (-7, 10, -7), (23, 12, 0), faces=("north", "east", "west", "up"), bone=F)
@@ -356,15 +356,16 @@ def computer() -> None:
     g.box("crt_l", (5.5, 10, 0), (14, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("crt_r", (14.5, 10, 0), (23, 20, 6), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("socket", (23, 2, -5), (24.5, 9, 5), faces=("north", "south", "east", "up", "down"), bone=F)
-    g.box("ant_base", (-3, 12, -6), (1, 14, -2), faces=("north", "south", "east", "west", "up"), bone=F)
-    g.box("ant_whip", (-1.4, 14, -4.6), (-0.6, 40, -3.4), faces=("north", "south", "east", "west", "up"), bone=F)
+    # The antenna stands on the back of the desk between the screens and the mast, clear of the keyboard.
+    g.box("ant_base", (-3, 10, 1), (1, 12, 5), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("ant_whip", (-1.4, 12, 2.4), (-0.6, 40, 3.6), faces=("north", "south", "east", "west", "up"), bone=F)
     bars = []
     for i, y in enumerate((28, 32, 36)):
         w = 5 - i
         bars.append(f"ant_bar{i}")
-        g.box(bars[-1], (-1 - w, y, -4.3), (-1.4, y + 0.6, -3.7), faces=("north", "south", "west", "up", "down"), bone=F)
+        g.box(bars[-1], (-1 - w, y, 2.7), (-1.4, y + 0.6, 3.3), faces=("north", "south", "west", "up", "down"), bone=F)
         bars.append(f"ant_bar{i}e")
-        g.box(bars[-1], (-0.6, y, -4.3), (-1 + w, y + 0.6, -3.7), faces=("north", "south", "east", "up", "down"), bone=F)
+        g.box(bars[-1], (-0.6, y, 2.7), (-1 + w, y + 0.6, 3.3), faces=("north", "south", "east", "up", "down"), bone=F)
     mast = []
     for i, (x, z) in enumerate(((-6, 10), (4, 10), (-6, 20), (4, 20))):
         mast.append(f"mpost{i}")

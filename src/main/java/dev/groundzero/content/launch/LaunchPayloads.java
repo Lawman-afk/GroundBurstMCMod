@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** The Launch Computer's screen: opening and closing it, setting the target, launching; and the scope it is sent. */
+/** The Launch Computer's screen: opening and closing it, aiming and arming each silo, launching; and the scope it is sent. */
 public final class LaunchPayloads {
     private static final double REACH = 8;
 
@@ -55,10 +55,12 @@ public final class LaunchPayloads {
         }
     }
 
-    public record Target(BlockPos pos, int x, int z) implements CustomPacketPayload {
+    /** Aim one silo of this computer's. */
+    public record Target(BlockPos pos, BlockPos silo, int x, int z) implements CustomPacketPayload {
         public static final Type<Target> TYPE = GZNetwork.type("launch_target");
         public static final StreamCodec<RegistryFriendlyByteBuf, Target> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Target::pos, ByteBufCodecs.VAR_INT, Target::x, ByteBufCodecs.VAR_INT, Target::z, Target::new);
+                BlockPos.STREAM_CODEC, Target::pos, BlockPos.STREAM_CODEC, Target::silo, ByteBufCodecs.VAR_INT, Target::x,
+                ByteBufCodecs.VAR_INT, Target::z, Target::new);
 
         @Override
         public Type<Target> type() {
@@ -67,16 +69,36 @@ public final class LaunchPayloads {
 
         public static void handle(Target p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
-            if (c != null) {
-                c.setTarget(p.x(), p.z());
+            if (c != null && context.player() instanceof ServerPlayer player) {
+                c.setTarget((ServerLevel) player.level(), p.silo(), p.x(), p.z());
             }
         }
     }
 
-    public record Launch(BlockPos pos, BlockPos silo) implements CustomPacketPayload {
+    /** Arm one silo of this computer's (true), or make it safe (false). */
+    public record Arm(BlockPos pos, BlockPos silo, boolean on) implements CustomPacketPayload {
+        public static final Type<Arm> TYPE = GZNetwork.type("launch_arm");
+        public static final StreamCodec<RegistryFriendlyByteBuf, Arm> CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, Arm::pos, BlockPos.STREAM_CODEC, Arm::silo, ByteBufCodecs.BOOL, Arm::on, Arm::new);
+
+        @Override
+        public Type<Arm> type() {
+            return TYPE;
+        }
+
+        public static void handle(Arm p, IPayloadContext context) {
+            LaunchComputerBlockEntity c = computer(context, p.pos());
+            if (c != null && context.player() instanceof ServerPlayer player) {
+                c.arm((ServerLevel) player.level(), p.silo(), p.on());
+            }
+        }
+    }
+
+    /** LAUNCH: fire every armed silo this computer links. */
+    public record Launch(BlockPos pos) implements CustomPacketPayload {
         public static final Type<Launch> TYPE = GZNetwork.type("launch_fire");
         public static final StreamCodec<RegistryFriendlyByteBuf, Launch> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Launch::pos, BlockPos.STREAM_CODEC, Launch::silo, Launch::new);
+                BlockPos.STREAM_CODEC, Launch::pos, Launch::new);
 
         @Override
         public Type<Launch> type() {
@@ -86,15 +108,26 @@ public final class LaunchPayloads {
         public static void handle(Launch p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
             if (c != null && context.player() instanceof ServerPlayer player) {
-                c.launch((ServerLevel) player.level(), p.silo(), player);
+                c.launchArmed((ServerLevel) player.level(), player);
             }
         }
     }
 
-    /** A linked silo: where, its readiness ({@link LaunchSiloBlockEntity.Readiness} ordinal), its countdown. */
-    public record Silo(BlockPos pos, int readiness, int countdown) {
-        public static final StreamCodec<FriendlyByteBuf, Silo> CODEC = StreamCodec.composite(
-                BlockPos.STREAM_CODEC, Silo::pos, ByteBufCodecs.VAR_INT, Silo::readiness, ByteBufCodecs.VAR_INT, Silo::countdown, Silo::new);
+    /**
+     * A linked silo: where, its readiness ({@link LaunchSiloBlockEntity.Readiness} ordinal), its countdown (-1: none),
+     * whether it is armed, and its target if it has one.
+     */
+    public record Silo(BlockPos pos, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ) {
+        public static final StreamCodec<FriendlyByteBuf, Silo> CODEC = StreamCodec.of((buf, s) -> {
+            buf.writeBlockPos(s.pos());
+            buf.writeVarInt(s.readiness());
+            buf.writeVarInt(s.countdown() + 1);
+            buf.writeBoolean(s.armed());
+            buf.writeBoolean(s.hasTarget());
+            buf.writeVarInt(s.targetX());
+            buf.writeVarInt(s.targetZ());
+        }, buf -> new Silo(buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
+                buf.readVarInt(), buf.readVarInt()));
     }
 
     /** A missile on the radar: where, which way it is heading (radians, 0 = south), where it is going. */
@@ -110,21 +143,18 @@ public final class LaunchPayloads {
     }
 
     /** The computer's state for its screen, sent while it is open. */
-    public record Scope(BlockPos pos, boolean formed, boolean powered, int energy, boolean hasTarget, int targetX, int targetZ,
-                        List<Silo> silos, List<Contact> contacts) implements CustomPacketPayload {
+    public record Scope(BlockPos pos, boolean formed, boolean powered, int energy, List<Silo> silos, List<Contact> contacts)
+            implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GZNetwork.type("launch_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
             buf.writeBoolean(s.formed());
             buf.writeBoolean(s.powered());
             buf.writeVarInt(s.energy());
-            buf.writeBoolean(s.hasTarget());
-            buf.writeVarInt(s.targetX());
-            buf.writeVarInt(s.targetZ());
             Silo.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.silos());
             Contact.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.contacts());
-        }, buf -> new Scope(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
-                buf.readVarInt(), Silo.CODEC.apply(ByteBufCodecs.list()).decode(buf), Contact.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
+        }, buf -> new Scope(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(),
+                Silo.CODEC.apply(ByteBufCodecs.list()).decode(buf), Contact.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override
         public Type<Scope> type() {

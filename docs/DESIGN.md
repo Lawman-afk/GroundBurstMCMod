@@ -1167,8 +1167,9 @@ A first, deliberately simple launch site, so the bombs have a delivery system be
 - **Launch Computer** (`launch_computer`): controller + Energy Port, a mast of three Radar Masts topped by the Radar
   Dish behind it, and an Antenna on the controller. 20 FE/t while it runs its radar. Its screen: a live **radar
   scope** (512-block radius, sweep with afterglow, the silos within 256 blocks, every missile in flight with its
-  heading and a dashed line to its target), click-to-target or typed X/Z, a silo picker, ARM toggle and LAUNCH,
-  range and flight-time readout. Scope data is sent to viewers within 16 blocks every 10 ticks.
+  heading and a dashed line to its target), a scrolling silo list, and per-silo control: each silo keeps its own
+  target (click the scope or type X/Z) and is armed on its own (ARM/DISARM; only a ready silo with a target in
+  range; it disarms itself if it stops being ready); LAUNCH fires every armed silo. Range and flight-time readout. Scope data is sent to viewers within 16 blocks every 10 ticks.
 - **Basic Missile flight** (`MissileEntity`, a simplified §17.5): 2 s ignition on the pad, then a fixed cubic curve
   straight up, over an arc (apex = clamp(range × 0.35, 40, 220)) and down onto the target, accelerating; up to 1 024
   blocks; ticket-loads the chunk it is in and the target's. Anything it hits after leaving the pad sets the warhead
@@ -1981,3 +1982,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Bomb feel: per-bomb visual sets (HE, heavy, thermobaric fireball, MOAB dust mushroom), a whistle on long drops and a harder landing the further they fall. Bigger weapons' feel comes chiefly from delivery (missiles), so a basic launch site is built next, ahead of Phase 9. |
 | 2026-10-21 | Basic launch site ahead of Phase 9: a Launch Silo (pad + gantry tower, missile stands beside it) and a Launch Computer with a live radar scope, on the multiblock framework; one Basic Missile flying a fixed curve that keeps its chunks loaded, any bomb as the warhead (going off as that bomb does); the scope shows every missile in flight within 512 blocks. |
 | 2026-10-21 | Launch site feedback: an 8-block missile pointing along its path all the way down; the computer's screens clear of the antenna, its dish facing the sky; a mechanical air-raid siren; the MOAB without a mushroom cloud (conventional). Every block and item model now closes faces you could see into and warns of visible coplanar faces when generated, and the language data loads every class that declares text keys, so gaps, flicker and raw keys cannot slip through again. |
+| 2026-10-21 | Launch control per silo: targets and arming live on each silo, not the computer; the computer aims and arms the picked silo and LAUNCH fires all armed ones (a salvo, each to its own target). |

@@ -25,6 +25,8 @@ final class LaunchTests {
         GZGameTests.test("launch_silo_forms_and_gets_ready", GZGameTests.FLOOR_16, 20, LaunchTests::siloReady);
         GZGameTests.test("launch_computer_forms_and_links_silos", GZGameTests.FLOOR_16, 20, LaunchTests::computerLinks);
         GZGameTests.test("silo_will_not_launch_unready", GZGameTests.FLOOR_16, 20, LaunchTests::unready);
+        GZGameTests.test("computer_aims_and_arms_each_silo", GZGameTests.FLOOR_16, 20, LaunchTests::perSilo);
+        GZGameTests.test("armed_silo_disarms_when_unready", GZGameTests.FLOOR_16, 20, LaunchTests::disarms);
         GZGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GZGameTests.FLOOR_16, 400, LaunchTests::flight);
     }
 
@@ -81,6 +83,55 @@ final class LaunchTests {
         c.revalidate();
         helper.assertTrue(c.isFormed(), "formed");
         helper.succeedWhen(() -> helper.assertTrue(Launches.silosNear(helper.getLevel(), helper.absolutePos(rel)).contains(s), "it links the silo"));
+    }
+
+    private static void load(LaunchSiloBlockEntity s) {
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_BOMB.item().get()));
+        s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
+    }
+
+    /**
+     * Two ready silos and a computer: each silo has its own target and is armed on its own (no arming without a
+     * target), and LAUNCH fires only the armed one, at its own target.
+     */
+    private static void perSilo(GameTestHelper helper) {
+        floor(helper);
+        LaunchSiloBlockEntity a = silo(helper, new BlockPos(3, 1, 2)), b = silo(helper, new BlockPos(10, 1, 2));
+        load(a);
+        load(b);
+        BlockPos rel = new BlockPos(6, 1, 10);
+        build(helper, rel, GZLaunch.COMPUTER_CONTROLLER.block().get(), GZLaunch.COMPUTER);
+        LaunchComputerBlockEntity c = (LaunchComputerBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
+        helper.assertTrue(c != null, "a computer controller");
+        c.revalidate();
+        c.energy().generate(LaunchComputerBlockEntity.ENERGY_CAPACITY);
+        helper.runAfterDelay(2, () -> {                                       // powered from its first tick
+            var level = helper.getLevel();
+            BlockPos ta = helper.absolutePos(new BlockPos(14, 1, 14)), tb = helper.absolutePos(new BlockPos(1, 1, 14));
+            helper.assertTrue(!c.arm(level, b.getBlockPos(), true), "no arming without a target");
+            helper.assertTrue(c.setTarget(level, a.getBlockPos(), ta.getX(), ta.getZ()), "aim A");
+            helper.assertTrue(c.setTarget(level, b.getBlockPos(), tb.getX(), tb.getZ()), "aim B");
+            helper.assertTrue(a.target().getX() == ta.getX() && b.target().getX() == tb.getX(), "each silo keeps its own target");
+            helper.assertTrue(c.arm(level, a.getBlockPos(), true) && a.armed() && !b.armed(), "only A armed");
+            helper.assertTrue(c.launchArmed(level, null) == 1, "LAUNCH fires the one armed silo");
+            helper.assertTrue(a.countdown() > 0 && b.countdown() < 0, "A counts down, B waits");
+            helper.assertTrue(!a.armed(), "launching clears the arming");
+            helper.assertTrue(!a.setTarget(1, 1), "no re-aiming during the countdown");
+            helper.succeed();
+        });
+    }
+
+    /** An armed silo whose missile is taken out makes itself safe. */
+    private static void disarms(GameTestHelper helper) {
+        floor(helper);
+        LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));
+        load(s);
+        BlockPos t = helper.absolutePos(new BlockPos(12, 1, 12));
+        s.setTarget(t.getX(), t.getZ());
+        helper.assertTrue(s.arm(true), "armed");
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, ItemStack.EMPTY);
+        helper.succeedWhen(() -> helper.assertTrue(!s.armed(), "disarmed once it is not ready"));
     }
 
     /** No warhead, no launch. */

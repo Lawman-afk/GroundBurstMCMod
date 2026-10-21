@@ -66,7 +66,7 @@ public final class FxPhotographer {
                 new Scene("bombs", "bombs", 9, 25, List.of(10, 40)),
                 new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
                 new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
-                new Scene("launch_ui", "launch", 9, 0, List.of(300, 340)),
+                new Scene("launch_ui", "launch", 9, 0, List.of(22, 300, 340)),
                 new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
@@ -213,8 +213,11 @@ public final class FxPhotographer {
     /** The launch scenes' silo and computer, for the tick to launch from and open the screen of. */
     private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
 
-    /** A formed, loaded, powered Launch Silo and Launch Computer side by side, fronts to the camera, aimed 400 blocks off. */
-    private static void launchSite(ServerLevel level, int x, int ground, boolean dive) {
+    /**
+     * A formed, loaded, powered Launch Silo and Launch Computer side by side, fronts to the camera; the silo aimed and
+     * armed. With {@code extras}, five more silos behind them in different states, so the computer's list scrolls.
+     */
+    private static void launchSite(ServerLevel level, int x, int ground, boolean dive, boolean extras) {
         // The long shot aims 400 blocks off (the scope shows it in flight); the dive lands 35 blocks off, in view.
         launchTarget = dive ? new net.minecraft.core.BlockPos(x + 25, ground, 25) : new net.minecraft.core.BlockPos(x + 400, 64, 140);
         launchSilo = new net.minecraft.core.BlockPos(x, ground, -3);
@@ -229,11 +232,31 @@ public final class FxPhotographer {
             silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB.item().get()));
             silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
+            silo.setTarget(launchTarget.getX(), launchTarget.getZ());
+            silo.arm(true);
         }
         if (level.getBlockEntity(launchComputer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity computer) {
             computer.revalidate();
             computer.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
-            computer.setTarget(launchTarget.getX(), launchTarget.getZ());
+        }
+        for (int i = 0; extras && i < 5; i++) {
+            var at = new net.minecraft.core.BlockPos(x + 12 + 7 * i, ground, -30);
+            formed(level, at, dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.SILO);
+            if (level.getBlockEntity(at) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity silo) {
+                silo.revalidate();
+                if (i != 1) {                                  // one with no missile
+                    silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
+                    silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
+                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB.item().get()));
+                }
+                if (i != 2) {                                  // one still charging
+                    silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
+                }
+                if (i >= 3) {                                  // two aimed elsewhere
+                    silo.setTarget(x - 150 + 60 * i, -200 + 40 * i);
+                }
+            }
         }
     }
 
@@ -337,7 +360,7 @@ public final class FxPhotographer {
                     return;
                 }
                 if (s.profile().startsWith("launch")) {
-                    launchSite(level, x, ground, s.profile().equals("launch_dive"));
+                    launchSite(level, x, ground, s.profile().equals("launch_dive"), s.name().equals("launch_ui"));
                     return;
                 }
                 if (s.profile().equals("napalm")) {
@@ -362,14 +385,14 @@ public final class FxPhotographer {
         }
         if (scene.profile().startsWith("launch") && step >= 0 && clock == 25 && launchSilo != null) {
             var silo = launchSilo;
-            var target = launchTarget;
+            var computerAt = launchComputer;
             server.execute(() -> {
-                if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity be) {
-                    be.launch(server.overworld(), target, null);
+                if (server.overworld().getBlockEntity(computerAt) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity be) {
+                    be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
                 }
             });
         }
-        if (scene.name().equals("launch_ui") && step >= 0 && clock == 270 && launchComputer != null) {
+        if (scene.name().equals("launch_ui") && step >= 0 && clock == 10 && launchComputer != null) {
             dev.groundzero.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {

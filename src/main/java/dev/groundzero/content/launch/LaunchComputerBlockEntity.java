@@ -26,8 +26,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -37,16 +35,14 @@ import com.geckolib.util.GeckoLibUtil;
 /**
  * The Launch Computer (DESIGN.md §17.3, §18.1, basic version): a terminal desk with a radar mast and dish behind it and
  * an antenna on top. Its radar (20 FE/t; the dish turns while it is powered) watches 512 blocks round: the silos it
- * links (formed silos within 256 blocks), and every missile in the air. From its screen you set a target and launch
- * from any ready silo.
+ * links (formed silos within 256 blocks), and every missile in the air. From its screen you aim each silo at its own
+ * target and arm it; LAUNCH then fires every armed silo it links.
  */
 public class LaunchComputerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
     public static final int ENERGY_CAPACITY = 20_000, RADAR_USE = 20, RADAR_RANGE = 512;
     private static final int RECHECK_INTERVAL = 40, SCOPE_INTERVAL = 10;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private boolean hasTarget;
-    private int targetX, targetZ;
     /** Players with this computer's screen open (they are sent its scope). */
     private final Set<UUID> viewers = new HashSet<>();
     private boolean powered;
@@ -60,34 +56,42 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         return false;
     }
 
-    public void setTarget(int x, int z) {
-        this.hasTarget = true;
-        this.targetX = x;
-        this.targetZ = z;
-        setChanged();
-    }
-
-    public @Nullable BlockPos target() {
-        return this.hasTarget ? new BlockPos(this.targetX, 0, this.targetZ) : null;
-    }
-
     public boolean powered() {
         return this.powered;
     }
 
-    /** Orders a launch from {@code silo} at the target. */
-    public boolean launch(ServerLevel level, BlockPos silo, @Nullable ServerPlayer by) {
-        if (!isFormed() || !this.powered || !this.hasTarget || silo.distSqr(this.worldPosition) > (double) Launches.LINK_RANGE * Launches.LINK_RANGE) {
-            return false;
+    /** A silo this computer runs (it formed and powered, the silo within its reach), or null. */
+    private @Nullable LaunchSiloBlockEntity linked(ServerLevel level, BlockPos silo) {
+        if (!isFormed() || !this.powered || silo.distSqr(this.worldPosition) > (double) Launches.LINK_RANGE * Launches.LINK_RANGE) {
+            return null;
         }
-        if (!(level.getBlockEntity(silo) instanceof LaunchSiloBlockEntity s)) {
-            return false;
+        return level.getBlockEntity(silo) instanceof LaunchSiloBlockEntity s ? s : null;
+    }
+
+    /** Aims one silo. */
+    public boolean setTarget(ServerLevel level, BlockPos silo, int x, int z) {
+        LaunchSiloBlockEntity s = linked(level, silo);
+        return s != null && s.setTarget(x, z);
+    }
+
+    /** Arms one silo (it must be ready, with a target in range) or makes it safe. */
+    public boolean arm(ServerLevel level, BlockPos silo, boolean on) {
+        LaunchSiloBlockEntity s = linked(level, silo);
+        return s != null && s.arm(on);
+    }
+
+    /** LAUNCH: every armed silo this computer links starts its countdown. Returns how many did. */
+    public int launchArmed(ServerLevel level, @Nullable ServerPlayer by) {
+        if (!isFormed() || !this.powered) {
+            return 0;
         }
-        double range = Math.sqrt(Math.pow(this.targetX + 0.5 - (silo.getX() + 0.5), 2) + Math.pow(this.targetZ + 0.5 - (silo.getZ() + 0.5), 2));
-        if (range > MissileEntity.MAX_RANGE) {
-            return false;
+        int n = 0;
+        for (LaunchSiloBlockEntity s : Launches.silosNear(level, this.worldPosition)) {
+            if (s.launchArmed(level, by)) {
+                n++;
+            }
         }
-        return s.launch(level, new BlockPos(this.targetX, silo.getY(), this.targetZ), by);
+        return n;
     }
 
     void addViewer(ServerPlayer player) {
@@ -176,12 +180,14 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         return this.powered;
     }
 
-    /** What the scope shows: the linked silos, the target, and the missiles in the air within range. */
+    /** What the scope shows: the linked silos (with their targets), and the missiles in the air within range. */
     private void sendScope(ServerLevel level, ServerPlayer player) {
         List<LaunchPayloads.Silo> silos = new ArrayList<>();
         if (isFormed()) {
             for (LaunchSiloBlockEntity s : Launches.silosNear(level, this.worldPosition)) {
-                silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.readiness().ordinal(), s.countdown()));
+                BlockPos t = s.target();
+                silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.readiness().ordinal(), s.countdown(), s.armed(), t != null,
+                        t == null ? 0 : t.getX(), t == null ? 0 : t.getZ()));
             }
         }
         List<LaunchPayloads.Contact> contacts = new ArrayList<>();
@@ -194,8 +200,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
             }
         }
         PacketDistributor.sendToPlayer(player, new LaunchPayloads.Scope(this.worldPosition, isFormed(), this.powered,
-                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), this.hasTarget, this.targetX, this.targetZ,
-                silos, contacts));
+                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), silos, contacts));
     }
 
     @Override
@@ -212,22 +217,5 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
-    }
-
-    // --- saving -----------------------------------------------------------------------------------------------------------
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putBoolean("has_target", this.hasTarget);
-        output.putInt("target_x", this.targetX);
-        output.putInt("target_z", this.targetZ);
-    }
-
-    @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        this.hasTarget = input.getBooleanOr("has_target", false);
-        this.targetX = input.getIntOr("target_x", 0);
-        this.targetZ = input.getIntOr("target_z", 0);
     }
 }

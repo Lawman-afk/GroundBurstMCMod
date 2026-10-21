@@ -39,9 +39,10 @@ import com.geckolib.util.GeckoLibUtil;
 
 /**
  * The Launch Silo (DESIGN.md §17.2, basic gantry type): a 3x3 launch pad with a gantry tower beside it, run from this
- * controller at the front of the pad. Slots: 0 the missile, 1 its warhead (any bomb). Launching, ordered from a Launch
- * Computer, costs 100 000 FE (through the Energy Port at the back of the pad) and runs a 10 s countdown with a siren,
- * then the missile lights and lifts off the pad.
+ * controller at the front of the pad. Slots: 0 the missile, 1 its warhead (any bomb). A Launch Computer gives each silo
+ * its own target and arms it; its LAUNCH fires every armed silo. Launching costs 100 000 FE (through the Energy Port at
+ * the back of the pad) and runs a 10 s countdown with a siren, then the missile lights and lifts off the pad. An armed
+ * silo that stops being ready (power, missile or warhead gone) disarms itself.
  */
 public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
@@ -57,12 +58,15 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             GZLang.add(GroundZero.MODID + ".silo.state.no_power", "Charging: needs 100k FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s")};
+    private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".silo.state.armed", "ARMED");
     private static final String T_HINT = GZLang.add(GroundZero.MODID + ".silo.hint", "Launch from a Launch Computer");
     private static final String T_WARHEAD = GZLang.add(GroundZero.MODID + ".silo.warhead", "Warhead: %s");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int countdown = -1;
+    /** Where it is aimed (set from a Launch Computer), and whether it is armed to fire at the next LAUNCH. */
     private @Nullable BlockPos target;
+    private boolean armed;
     private @Nullable UUID launchedBy;
 
     public LaunchSiloBlockEntity(BlockPos pos, BlockState state) {
@@ -106,12 +110,54 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
     }
 
+    public @Nullable BlockPos target() {
+        return this.target;
+    }
+
+    public boolean armed() {
+        return this.armed;
+    }
+
+    /** Aims the silo (not while it counts down). */
+    public boolean setTarget(int x, int z) {
+        if (this.countdown >= 0) {
+            return false;
+        }
+        this.target = new BlockPos(x, this.worldPosition.getY(), z);
+        if (this.armed && !inRange(this.target)) {
+            this.armed = false;
+        }
+        setChanged();
+        return true;
+    }
+
+    private boolean inRange(BlockPos at) {
+        return Math.sqrt(Math.pow(at.getX() - this.worldPosition.getX(), 2) + Math.pow(at.getZ() - this.worldPosition.getZ(), 2))
+                <= MissileEntity.MAX_RANGE;
+    }
+
+    /** Arms (only a ready silo with a target in range) or makes safe. */
+    public boolean arm(boolean on) {
+        if (on && (readiness() != Readiness.READY || this.target == null || !inRange(this.target))) {
+            return false;
+        }
+        this.armed = on;
+        setChanged();
+        return true;
+    }
+
+    /** Fires if armed: the countdown to launch at its target. */
+    public boolean launchArmed(ServerLevel level, @Nullable Entity by) {
+        return this.armed && this.target != null && launch(level, this.target, by);
+    }
+
     /** Starts the countdown to launch at {@code target}; false if the silo is not ready. */
     public boolean launch(ServerLevel level, BlockPos target, @Nullable Entity by) {
         if (readiness() != Readiness.READY) {
             return false;
         }
         this.target = target.immutable();
+        this.armed = false;
         this.launchedBy = by == null ? null : by.getUUID();
         this.countdown = COUNTDOWN;
         level.playSound(null, padCentre(), GZLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
@@ -189,7 +235,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             return false;
         }
         if (this.countdown < 0) {
-            this.status = readiness() == Readiness.READY ? MachineStatus.IDLE : MachineStatus.NO_RECIPE;
+            boolean ready = readiness() == Readiness.READY;
+            if (this.armed && !ready) {
+                this.armed = false;                          // power, missile or warhead gone: safe again
+                setChanged();
+            }
+            this.status = ready ? MachineStatus.IDLE : MachineStatus.NO_RECIPE;
             return false;
         }
         this.status = MachineStatus.RUNNING;
@@ -244,22 +295,27 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    private static final int DATA_READINESS = 0, DATA_COUNTDOWN = 1;
+    private static final int DATA_READINESS = 0, DATA_COUNTDOWN = 1, DATA_ARMED = 2;
 
     @Override
     protected int extraDataCount() {
-        return 2;
+        return 3;
     }
 
     @Override
     protected int getExtraData(int index) {
-        return index == DATA_READINESS ? readiness().ordinal() : Math.max(0, this.countdown);
+        return switch (index) {
+            case DATA_READINESS -> readiness().ordinal();
+            case DATA_COUNTDOWN -> Math.max(0, this.countdown);
+            default -> this.armed ? 1 : 0;
+        };
     }
 
     @Override
     public List<Component> readout(MachineMenu menu) {
         Readiness r = Readiness.values()[Math.clamp(menu.extra(DATA_READINESS), 0, Readiness.values().length - 1)];
         Component state = r == Readiness.COUNTING ? Component.translatable(T_STATE[r.ordinal()], (menu.extra(DATA_COUNTDOWN) + 19) / 20)
+                : r == Readiness.READY && menu.extra(DATA_ARMED) != 0 ? Component.translatable(T_ARMED)
                 : Component.translatable(T_STATE[r.ordinal()]);
         ItemStack warhead = this.inventory.getItem(SLOT_WARHEAD);
         return List.of(state, warhead.isEmpty() ? Component.translatable(T_HINT) : Component.translatable(T_WARHEAD, warhead.getHoverName()));
@@ -271,7 +327,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     // --- model ------------------------------------------------------------------------------------------------------------
-    /** Unformed, the controller is a plain block; formed, the missile shows on the pad while one is loaded. */
     /** The model shows the missile while one is loaded, so the client hears about that slot. */
     @Override
     protected void onSlotChanged(int slot) {
@@ -309,6 +364,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("countdown", this.countdown);
+        output.putBoolean("armed", this.armed);
         if (this.target != null) {
             output.putLong("target", this.target.asLong());
         }
@@ -321,6 +377,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         this.countdown = input.getIntOr("countdown", -1);
+        this.armed = input.getBooleanOr("armed", false);
         this.target = input.getLong("target").map(BlockPos::of).orElse(null);
         this.launchedBy = input.getString("launched_by").map(UUID::fromString).orElse(null);
     }

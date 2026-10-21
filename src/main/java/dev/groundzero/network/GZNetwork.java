@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "4";
+    public static final String PROTOCOL_VERSION = "5";
 
     private GZNetwork() {}
 
@@ -36,6 +36,8 @@ public final class GZNetwork {
                 dev.groundzero.content.launch.LaunchPayloads.Watch::handle);
         registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Target.TYPE, dev.groundzero.content.launch.LaunchPayloads.Target.CODEC,
                 dev.groundzero.content.launch.LaunchPayloads.Target::handle);
+        registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Arm.TYPE, dev.groundzero.content.launch.LaunchPayloads.Arm.CODEC,
+                dev.groundzero.content.launch.LaunchPayloads.Arm::handle);
         registrar.playToServer(dev.groundzero.content.launch.LaunchPayloads.Launch.TYPE, dev.groundzero.content.launch.LaunchPayloads.Launch.CODEC,
                 dev.groundzero.content.launch.LaunchPayloads.Launch::handle);
         registrar.playToClient(dev.groundzero.content.launch.LaunchPayloads.Scope.TYPE, dev.groundzero.content.launch.LaunchPayloads.Scope.CODEC,
