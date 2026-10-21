@@ -87,6 +87,14 @@ public final class Flights extends SavedData {
         return List.copyOf(this.flights);
     }
 
+    /** For GameTests: ends a flight where it is, without its warhead going off. */
+    public void cancelForTest(ServerLevel level, Flight f) {
+        if (this.flights.remove(f)) {
+            f.finish(level);
+            setDirty();
+        }
+    }
+
     /** An assembled missile lit at {@code pad} (its tail), bound for {@code target}: its warhead, body and hardening go with it. */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec, @Nullable Entity owner) {
         return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner);

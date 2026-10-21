@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import dev.groundzero.content.ordnance.charge.ChargeBlock;
+import dev.groundzero.content.ordnance.charge.ChargeKind;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -35,6 +36,12 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
             ByteBufCodecs.BOOL, MissileSpec::hardened, MissileSpec::new);
 
     /** How far it flies, blocks. */
+    /** Whether it carries a nuclear warhead (only a Launch Complex can fire it). */
+    public boolean nuclear() {
+        ChargeKind kind = AssemblyStats.kindOf(this.warhead);
+        return kind != null && kind.nuclear();
+    }
+
     public int range() {
         return this.motor.range;
     }

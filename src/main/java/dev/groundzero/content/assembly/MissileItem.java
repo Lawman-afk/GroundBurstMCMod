@@ -24,6 +24,7 @@ public class MissileItem extends Item {
     private static final String T_RANGE = GZLang.add(GroundZero.MODID + ".missile.tip.range", "Range: %s blocks");
     private static final String T_GUIDANCE = GZLang.add(GroundZero.MODID + ".missile.tip.guidance", "Guidance: %s");
     private static final String T_HARDENED = GZLang.add(GroundZero.MODID + ".missile.tip.hardened", "Hardened against EMP");
+    private static final String T_NUCLEAR = GZLang.add(GroundZero.MODID + ".missile.tip.nuclear", "Nuclear: fires only from a Launch Complex");
     static final String T_NAMED = GZLang.add(GroundZero.MODID + ".missile.named", "%s Missile");
 
     public MissileItem(Properties properties) {
@@ -56,6 +57,9 @@ public class MissileItem extends Item {
         tooltip.accept(Component.translatable(T_GUIDANCE, Component.translatable(MissileParts.guidanceName(s.guidance()))).withStyle(ChatFormatting.GRAY));
         if (s.hardened()) {
             tooltip.accept(Component.translatable(T_HARDENED).withStyle(ChatFormatting.AQUA));
+        }
+        if (s.nuclear()) {
+            tooltip.accept(Component.translatable(T_NUCLEAR).withStyle(ChatFormatting.YELLOW));
         }
     }
 }

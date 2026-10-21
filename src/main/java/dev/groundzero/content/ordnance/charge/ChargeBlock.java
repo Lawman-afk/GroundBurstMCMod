@@ -133,7 +133,8 @@ public class ChargeBlock extends Block implements EntityBlock {
             case BOUNCING_MINE -> Block.box(4, 0, 4, 12, 2.5, 12);
             case CLAYMORE -> Block.box(2, 0, 6.6, 14, 7, 9.7);
             // Warheads stand nose up on their mounting rings (the tall ones run on above their block).
-            case HE_WARHEAD, NAPALM_WARHEAD -> Block.box(3.5, 0, 3.5, 12.5, 15, 12.5);
+            case HE_WARHEAD, NAPALM_WARHEAD, TACTICAL_NUCLEAR_WARHEAD -> Block.box(3.5, 0, 3.5, 12.5, 15, 12.5);
+            case FISSION_WARHEAD -> Block.box(1.5, 0, 1.5, 14.5, 16, 14.5);
             case CLUSTER_WARHEAD, THERMOBARIC_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD,
                  CHEMICAL_WARHEAD ->
                     Block.box(2.5, 0, 2.5, 13.5, 15, 13.5);

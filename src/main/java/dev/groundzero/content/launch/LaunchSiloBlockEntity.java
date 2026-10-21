@@ -56,7 +56,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             GZLang.add(GroundZero.MODID + ".silo.state.emp", "Disabled by EMP"),
             GZLang.add(GroundZero.MODID + ".silo.state.halted", "Halted by redstone"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_missile", "No missile loaded"),
-            GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs 100k FE"),
+            GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs %sk FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s")};
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".silo.state.armed", "ARMED");
@@ -71,8 +71,29 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     private @Nullable UUID launchedBy;
 
     public LaunchSiloBlockEntity(BlockPos pos, BlockState state) {
-        super(GZLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY, 4_000, 0, 1, new int[] {SLOT_MISSILE}, new int[0]);
+        this(GZLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY);
     }
+
+    /** For heavier launchers (the Launch Complex): their own type and energy buffer. */
+    protected LaunchSiloBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
+        super(type, pos, state, capacity, 8_000, 0, 1, new int[] {SLOT_MISSILE}, new int[0]);
+    }
+
+    /** The energy one launch takes. */
+    public int launchCost() {
+        return LAUNCH_COST;
+    }
+
+    /** How long the countdown runs, ticks. */
+    protected int countdownTicks() {
+        return COUNTDOWN;
+    }
+
+    /** Each tick of the countdown, {@code left} ticks before ignition (the complex's deluge). */
+    protected void onCountdown(ServerLevel level, BlockPos pad, int left) {}
+
+    /** Just after the missile is lit (the complex's trench smoke). */
+    protected void onLiftOff(ServerLevel level, BlockPos pad) {}
 
     /** Whether a stack can be a warhead: any bomb. */
     public static boolean isWarhead(ItemStack stack) {
@@ -81,7 +102,13 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return slot == SLOT_MISSILE && dev.groundzero.content.assembly.MissileItem.spec(stack) != null;
+        var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
+        return slot == SLOT_MISSILE && spec != null && (!spec.nuclear() || firesNuclear());
+    }
+
+    /** Whether it can fire a nuclear missile: only a Launch Complex can. */
+    public boolean firesNuclear() {
+        return false;
     }
 
     /** The loaded missile (null: none). */
@@ -111,7 +138,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
             return Readiness.NO_MISSILE;
         }
-        return this.energy.stored() < LAUNCH_COST ? Readiness.NO_POWER : Readiness.READY;
+        return this.energy.stored() < launchCost() ? Readiness.NO_POWER : Readiness.READY;
     }
 
     public int countdown() {
@@ -174,7 +201,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.target = target.immutable();
         this.armed = false;
         this.launchedBy = by == null ? null : by.getUUID();
-        this.countdown = COUNTDOWN;
+        this.countdown = countdownTicks();
         level.playSound(null, padCentre(), GZLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
         setChanged();
         return true;
@@ -264,6 +291,9 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.countdown > 0 && this.countdown % 20 == 0) {
             level.playSound(null, pad, dev.groundzero.content.ordnance.GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f, this.countdown <= 60 ? 1.4f : 1f);
         }
+        if (this.countdown > 0) {
+            onCountdown(level, pad, this.countdown);
+        }
         if (this.countdown == 0) {
             liftOff(level, pad);
         }
@@ -297,12 +327,13 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             return;
         }
         this.inventory.removeItem(SLOT_MISSILE, 1);
-        this.energy.consume(LAUNCH_COST);
+        this.energy.consume(launchCost());
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
         // Its guidance decides how close to the target it comes down.
         Vec3 from = Vec3.atBottomCenterOf(pad);
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
         MissileEntity.launch(level, from, aim, spec, by);
+        onLiftOff(level, pad);
         setChanged();
     }
 
@@ -351,6 +382,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     public List<Component> readout(MachineMenu menu) {
         Readiness r = Readiness.values()[Math.clamp(menu.extra(DATA_READINESS), 0, Readiness.values().length - 1)];
         Component state = r == Readiness.COUNTING ? Component.translatable(T_STATE[r.ordinal()], (menu.extra(DATA_COUNTDOWN) + 19) / 20)
+                : r == Readiness.NO_POWER ? Component.translatable(T_STATE[r.ordinal()], launchCost() / 1000)
                 : r == Readiness.READY && menu.extra(DATA_ARMED) != 0 ? Component.translatable(T_ARMED)
                 : Component.translatable(T_STATE[r.ordinal()]);
         var spec = missile();

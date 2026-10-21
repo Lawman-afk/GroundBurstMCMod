@@ -1,0 +1,141 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "working": {
+      "animation_length": 20.0,
+      "bones": {
+        "arm_low": {
+          "rotation": {
+            "0": {
+              "vector": [
+                -0.0,
+                -0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2": {
+              "vector": [
+                -0.0,
+                -0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "4.5": {
+              "vector": [
+                -0.0,
+                100.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "20": {
+              "vector": [
+                -0.0,
+                100.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        },
+        "arm_high": {
+          "rotation": {
+            "0": {
+              "vector": [
+                -0.0,
+                -0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6": {
+              "vector": [
+                -0.0,
+                -0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "8.5": {
+              "vector": [
+                -0.0,
+                100.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "20": {
+              "vector": [
+                -0.0,
+                100.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    },
+    "clear": {
+      "animation_length": 1.0,
+      "bones": {
+        "arm_low": {
+          "rotation": {
+            "0": [
+              -0.0,
+              100.0,
+              0.0
+            ],
+            "1": [
+              -0.0,
+              100.0,
+              0.0
+            ]
+          }
+        },
+        "arm_high": {
+          "rotation": {
+            "0": [
+              -0.0,
+              100.0,
+              0.0
+            ],
+            "1": [
+              -0.0,
+              100.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    },
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "arm_low": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "arm_high": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

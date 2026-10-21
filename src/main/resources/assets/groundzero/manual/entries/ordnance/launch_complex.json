@@ -1,0 +1,30 @@
+{
+  "title": "Launch Complex",
+  "icon": "groundzero:launch_complex",
+  "order": 7,
+  "items": [
+    "groundzero:launch_complex",
+    "groundzero:flame_deflector"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.\n\nIt takes any [missile](ordnance/missiles). Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end."
+    },
+    {
+      "type": "structure",
+      "structure": "groundzero:launch_complex",
+      "text": "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:launch_complex",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:flame_deflector",
+      "text": ""
+    }
+  ]
+}

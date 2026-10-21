@@ -77,6 +77,8 @@ public class GroundZeroClient {
         event.registerEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.SHRAPNEL.get(), dev.groundzero.client.fx.ShrapnelRenderer::new);
         event.registerBlockEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.CHARGE.get(), dev.groundzero.client.render.ChargeRenderer::new);
         event.registerEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE.get(), dev.groundzero.client.fx.MissileRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPLEX_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPLEX_ENTITY.get(), 14, 4));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(),

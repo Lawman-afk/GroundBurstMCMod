@@ -81,6 +81,7 @@ public final class GZGameTests {
         AssemblyTests.register();
         MissileTests.register();
         StatsTests.register();
+        NuclearTests.register();
         LaunchTests.register();
         ManualContentTests.register();
     }

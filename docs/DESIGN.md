@@ -1098,6 +1098,27 @@ grid, radius 10–150) chosen at the launch console.
 Each tier escalates the spectacle: flash range and strength, fireball size, cloud height, number of puffs, shake
 range, sound class (`nuke` vs `tsar`), and sky tint duration.
 
+### 15.1 As built: Phase 8 plan and slice 8a (2026-10-22)
+- **Plan** (the user chose "own launcher first" and "contamination zones now"): nuclear warheads are bench-assembled
+  like the others but only a **Launch Complex** fires them (built first, in 8a); until Phase 12's radiation field,
+  their fallout is the meltdown's **contamination zones** (Radiation Sickness, hazmat suits protect). Slices: **8a**
+  Launch Complex, Tactical Nuclear and Fission Warheads, fizzles; **8b** Boosted Fission, H-bomb, Neutron, Cobalt and
+  Dirty warheads; **8c** the XL tier (Tsar, Strategic body, ICBM booster). MIRVs stay with Phase 9's launch console.
+- **Warheads** (`ChargeKind.nuclear()`): **Tactical Nuclear Warhead** (S, "300 t": crater 16, wrecks 24, fire 28,
+  lethal 28, injures 48) from a **Tactical Fission Core** (3 plutonium nuggets, an HE Charge, a steel plate, a military
+  circuit); **Fission Warhead** (M, "15 kt": crater 40, wrecks 60, fire 72, lethal 70, injures 120) from a **Fission
+  Core** (a plutonium ingot, 3 HE Charges, a depleted uranium ingot, a lead plate, a military circuit). Blast profiles
+  with the nuclear terrain table and the `nuke` look and sound (mushroom cloud sized by the crater). Models: a squat
+  olive body with a dark cap and a yellow-over-black band; a fat ochre body with a dark nose and a red band; both with a
+  radiation trefoil on the front. Missile noses follow them.
+- **Delivery only.** A missile's impact or burst gives the full yield (`Charges.nuclear`) and a contamination zone
+  (tactical 48 blocks for a day, fission 120 blocks for two days; an airburst from a barometric fuze leaves half the
+  strength). Set off any other way (dropped, shot, caught in a blast) a nuclear warhead **fizzles**
+  (`nuclear_fizzle`: crater 3) and leaves a weaker zone 16 blocks round for half a day (strength 0.6).
+- **Stats:** design yields ("300 t", "15 kt") instead of the TNT formula, Fallout Radius and Fallout Lasts rows and a
+  note that only a Launch Complex fires it (the "Blast Radius" header went, so a fission warhead's list still fits the
+  screen at GUI scale 3). Missile tooltip: "Nuclear: fires only from a Launch Complex".
+
 ## 16. Special weapons
 
 ### 16.1 Storm Bomb ("Tesla Storm")
@@ -1268,7 +1289,7 @@ are delivered.
   their own custom models and far bigger yields.
 - **More warheads** (after the in-game look): Poison Gas and Smoke Warheads (clusters of 14 gas or smoke grenades) and
   a Toxic Waste Warhead (a toxin splash 10 blocks round). Missile-delivered cluster warheads (cluster, gas, smoke)
-  **air-burst** 30 blocks over the target and rain their submunitions over a circle about 24 blocks round (32
+  **air-burst** 30 blocks over the target and rain their submunitions within about 20 blocks of it (32
   bomblets for the cluster); set off on the ground they throw them out as before. Bomblets were strengthened
   (crater 4, deadly to 4.5 blocks). The bunker buster bores a **3×3** shaft.
 - **Launch Silo** (`launch_silo`): a 3×3 Launch Pad layer with the controller in the middle of its front edge and an
@@ -1292,6 +1313,22 @@ are delivered.
   as entity pitch is clamped to ±90°) and whistles in its last 2.5 s. Anything loaded in its way sets off the warhead.
 - Building blocks: Launch Pad, Gantry Frame, Gantry Arm, Radar Mast, Radar Dish, Antenna (multiblock parts, hidden
   when formed). The full platforms, guidance and multi-stage bodies remain Phase 9.
+
+### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
+- `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
+  Deflector** block in the middle under the missile), a Gantry Frame service tower 2 cells deep and 13 high beside the
+  deck's middle and back rows (the clockwise side of the controller's facing, like the silo's gantry), Gantry Arms at
+  layers 4 and 8 as the umbilicals, and the missile's column clear 11 up.
+- `LaunchComplexBlockEntity` extends the silo (same menu, computer link and targeting): takes **any** missile, and is
+  the only launcher that takes a nuclear one (`firesNuclear()`; the silo refuses them). 250 000 FE a launch, 500 000
+  buffer, **15 s** countdown: siren, beeps, the deluge (splash and falling-water particles round the pad) for the last
+  5 s, and at ignition 3.5 s of steam and smoke out of the trench's open end (the side away from the tower) and round
+  the deck.
+- GeckoLib model: concrete deck with hazard edges, a sooted trench and stepped deflector wedge, deluge pipes on both
+  lips, diagonal hold-down posts, console and housing; a grey braced service tower with orange-railed platforms every
+  four storeys, a roof mast and red beacon; two orange umbilical arms with clamps and hoses that swing clear at T-13
+  and T-9 (a 20 s clip, so it does not loop back during the ignition smoke) and rest clear while no missile is loaded
+  (the new `AnimatedMachine.idleAnimation()`); the missile scaled by its body as on the silo.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -2120,6 +2157,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Phase 8 plan (the user chose "own launcher first" and "contamination zones now"): nuclear warheads are bench-assembled but fly only from a new Launch Complex (built first); fallout uses the meltdown's contamination zones until Phase 12. A nuclear warhead gives its yield only when its missile brings it down; any other way it fizzles (small blast, weak contamination), so nukes never chain-detonate. Slices 8a (complex, tactical and fission), 8b (boosted, H-bomb, neutron, cobalt, dirty), 8c (XL: Tsar, Strategic body, ICBM booster). |
 | 2026-10-22 | The Launch Computer maps 3000 blocks round it (was 1024), zoom out to 1:32: a Liquid-fuel Stage reaches 2500 blocks from its silo, and the computer may stand some way off. The bench preview zooms to fit each model. |
 | 2026-10-22 | Slice 7c (the user chose a wider bench window): a 3D preview you can drag round and a stats screen in a right-hand column; stats are worked out in common code from the blast profiles and the flight formulas, at the missile's full range. Phase 7 closes with it (the Ammunition page waits for Phase 13 guns, blueprints for Phase 15 loot, interception odds for Phase 10). |
 | 2026-10-22 | Unguided missiles scatter over 25% of the distance (inertial 4%, GPS 2 blocks), evenly over an ellipse longer along the flight, so guidance is worth fitting. Bench page tabs are part of the window's frame. |

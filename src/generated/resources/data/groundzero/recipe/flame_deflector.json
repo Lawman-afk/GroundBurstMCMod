@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "groundzero:tungsten_carbide_ingot",
+    "minecraft:gray_concrete",
+    "minecraft:gray_concrete"
+  ],
+  "result": {
+    "id": "groundzero:flame_deflector"
+  }
+}

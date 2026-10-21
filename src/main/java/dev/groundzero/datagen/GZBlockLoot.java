@@ -63,10 +63,12 @@ public class GZBlockLoot extends BlockLootSubProvider {
         // Launching (DESIGN.md §17).
         for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD, dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME,
                 dev.groundzero.content.launch.GZLaunch.GANTRY_ARM, dev.groundzero.content.launch.GZLaunch.RADAR_MAST,
-                dev.groundzero.content.launch.GZLaunch.RADAR_DISH, dev.groundzero.content.launch.GZLaunch.ANTENNA)) {
+                dev.groundzero.content.launch.GZLaunch.RADAR_DISH, dev.groundzero.content.launch.GZLaunch.ANTENNA,
+                dev.groundzero.content.launch.GZLaunch.FLAME_DEFLECTOR)) {
             dropSelf(b.block().get());
         }
         dropSelf(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.COMPLEX_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().get());
         // The Large Radar Dish drops itself from its middle only (its parts go with it).

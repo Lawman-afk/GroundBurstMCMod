@@ -456,6 +456,201 @@ def silo() -> None:
     print(save_animations("launch_silo", [count]))
 
 
+# --- the formed Launch Complex (Phase 8) ---------------------------------------------------------------------------------
+TOWER = fixed("service_grey", "#1e2226", "#30353a", "#464c52", "#5e656c", "#7a8188", "#9aa1a8", "#c0c6cc")
+SAFETY = fixed("safety_orange", "#3e1606", "#682208", "#96340c", "#c04a14", "#dc6a2c", "#ec9258", "#f6c098")
+SOOT = fixed("trench_soot", "#0a0a0b", "#121214", "#1a1b1d", "#24262a", "#303338", "#40444a", "#565b62")
+
+
+def flame_deflector() -> Tex:
+    """The deflector block: heavy sooted steel with heat-blued welds and a hazard edge."""
+    t = Tex(16, 16)
+    t.rect(0, 0, 16, 16, SOOT[4])
+    t.speckle(0, 0, 16, 16, [SOOT[3], SOOT[5]], seed=17, density=0.18)
+    for y in range(3, 16, 4):
+        t.hline(1, y, 14, SOOT[2])                        # weld seams between the wedge's plates
+        t.hline(1, y + 1, 14, (70, 82, 120, 255))
+    for i in range(16):
+        t.px(i, 0, YELLOW[4] if (i // 2) % 2 == 0 else BLACK[3])
+    t.outline(0, 1, 16, 15, SOOT[1])
+    return t
+
+
+def complex_placard(t: Tex) -> None:
+    """The controller's placard: a missile on a yellow radiation tag."""
+    t.rect(4, 9, 4, 4, YELLOW[4])
+    t.vline(6, 9, 4, P.BLACK_PAINT[1])
+    t.px(5, 12, P.BLACK_PAINT[1])
+    t.px(7, 12, P.BLACK_PAINT[1])
+
+
+def launch_complex() -> None:
+    g = GeoModel("launch_complex", tex_size=(512, 512))
+    g.bone("frame")
+    g.bone("arm_low", pivot=(40, 72, 32), parent="frame")
+    g.bone("arm_high", pivot=(40, 136, 32), parent="frame")
+    g.bone("missile", pivot=(0, 14, 32), parent="frame")       # its tail over the trench: the body's size scales it from there
+    for nose in W.NOSES:
+        g.bone(f"nose_{nose}", parent="missile")
+    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}]
+    F = "frame"
+    # The deck: 5x5 with a flame trench (z 26-38) running from under the missile out of its west edge.
+    deck = [("deck_front", (-40, 0, -8), (40, 14, 26), ("north", "south", "east", "west", "up")),
+            ("deck_back", (-40, 0, 38), (40, 14, 72), ("north", "south", "east", "west", "up")),
+            ("deck_east", (8, 0, 26), (40, 14, 38), ("east", "west", "up"))]
+    for n, a, b, faces in deck:
+        g.box(n, a, b, faces=faces, bone=F)
+    g.box("trench_floor", (-40, 0, 26), (8, 2, 38), faces=("up", "west"), bone=F)
+    wedge = []
+    for i, (x0, y0, y1) in enumerate(((-8, 2, 5), (-4, 5, 8), (0, 8, 11))):
+        wedge.append(f"wedge{i}")
+        g.box(wedge[-1], (x0, y0, 26), (8, y1, 38), faces=("up", "west"), bone=F)
+    # Deluge pipes along both lips of the trench, nozzles pointing in.
+    pipes = []
+    for n, z0 in (("deluge_n", 23.5), ("deluge_s", 38)):
+        pipes.append(n)
+        g.box(n, (-39, 14, z0), (7, 16.5, z0 + 2.5), faces=("north", "south", "west", "up"), bone=F)
+    # Hold-down posts on the diagonals round the missile (clear of its fins).
+    posts = []
+    for i, (x, z) in enumerate(((-14, 18), (12, 18), (-14, 44), (12, 44))):
+        posts.append(f"hold{i}")
+        g.box(posts[-1], (x, 14, z), (x + 2, 20, z + 2), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("console", (-5, 14, -7), (5, 22, -2), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("housing", (-5, 14, 67), (5, 19, 72), faces=("north", "south", "east", "west", "up"), bone=F)
+    # The service tower: column 5, rows 2-3 (x 40-56, z 24-56), 13 high.
+    tower = []
+    for i, (x, z) in enumerate(((40, 24), (54, 24), (40, 54), (54, 54))):
+        tower.append(f"post{i}")
+        g.box(tower[-1], (x, 0, z), (x + 2, 208, z + 2), faces=("north", "south", "east", "west"), bone=F)
+    girders = []
+    for k in range(1, 13):
+        if k in (4, 8, 12):
+            continue                                     # the platform decks are the frame at these storeys
+        y = 16 * k - 1
+        for n, a, b in ((f"gn{k}", (42, y, 24.3), (54, y + 1.5, 25.7)), (f"gs{k}", (42, y, 54.3), (54, y + 1.5, 55.7)),
+                        (f"gw{k}", (40.3, y, 26), (41.7, y + 1.5, 54)), (f"ge{k}", (54.3, y, 26), (55.7, y + 1.5, 54))):
+            g.box(n, a, b, faces=("north", "south", "east", "west", "up", "down"), bone=F)
+            girders.append(n)
+    # Diagonal braces down the outer (east) face: short steps from corner to corner of each storey.
+    braces = []
+    for k in range(13):
+        for s in range(4):
+            z = 26 + s * 7 if k % 2 == 0 else 47 - s * 7
+            braces.append(f"br{k}_{s}")
+            g.box(braces[-1], (54.6, 16 * k + 2 + s * 3.5, z), (55.4, 16 * k + 5.5 + s * 3.5, z + 7), faces=("east", "west", "up", "down"), bone=F)
+    decks = []
+    for y in (63, 127, 191):
+        decks.append(f"level{y}")
+        g.box(decks[-1], (39, y, 23), (57, y + 2, 57), bone=F)
+    rails = []
+    for y in (65, 129, 193):
+        rails.append(f"rail{y}")
+        g.box(rails[-1], (56.5, y, 23), (57, y + 1, 57), faces=("east", "west", "up"), bone=F)
+    g.box("roof", (39, 208, 23), (57, 210, 57), bone=F)
+    g.box("mast", (47, 210, 39), (49, 226, 41), faces=("north", "south", "east", "west"), bone=F)
+    g.box("beacon", (46.5, 226, 38.5), (49.5, 229, 41.5), bone=F)
+    # The umbilical arms: a beam from the tower to a clamp on the missile's body, a hose slung under it.
+    arms = []
+    for bone, y in (("arm_low", 70), ("arm_high", 134)):
+        for n, a, b, faces in ((f"{bone}_beam", (11.5, y, 30), (40, y + 4, 34), ("north", "south", "up", "down", "west")),
+                               (f"{bone}_clamp", (9.5, y - 2, 27), (11.5, y + 6, 37), ("west", "north", "south", "up", "down")),
+                               (f"{bone}_hose", (12, y - 3, 31), (40, y - 1, 33), ("north", "south", "down", "west"))):
+            g.box(n, a, b, faces=faces, bone=bone)
+            arms.append(n)
+    # The missile: the item model four times over (8 blocks), standing over the trench.
+    for name, frm, to, faces, kind in missile_parts():
+        a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 32)
+        b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 32)
+        if kind in NOSE_PARTS:
+            for nose in W.NOSES:
+                g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
+        else:
+            g.box("m_" + name, a, b, faces=faces, bone="missile")
+    g.layout()
+    tex = Tex(g.tex_w, g.tex_h)
+
+    def concrete(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
+        if d == "up":
+            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.06)
+            for i in range(w):                           # the hazard border along the deck's outer edges
+                t.px(x + i, y, YELLOW[4] if (i // 3) % 2 == 0 else BLACK[3])
+        elif d in ("north", "south", "east", "west"):
+            t.hline(x, y, w, CONCRETE[5])
+    for n, _, _, _ in deck:
+        g.paint_all(tex, n, concrete)
+    g.paint_all(tex, "trench_floor", lambda t, r, d: (t.rect(*r, SOOT[1]), t.speckle(*r, [SOOT[0], SOOT[2]], seed=r[0] + r[1], density=0.2)))
+    for n in wedge:
+        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, SOOT[3 if d == "up" else 2]), t.hline(r[0], r[1], r[2], (70, 82, 120, 255))))
+
+    def deluge(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, TOWER[tone(d) + 2])
+        if d in ("north", "south") and w > 4:
+            for xx in range(x + 2, x + w, 5):            # nozzles
+                t.px(xx, y + h // 2, P.CHERENKOV[4])
+    for n in pipes:
+        g.paint_all(tex, n, deluge)
+    for n in posts:
+        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, YELLOW[tone(d) + 1]), t.hline(r[0], r[1], r[2], BLACK[3])))
+
+    def console(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
+        if d == "north" and w > 6:
+            t.rect(x + 2, y + 1, w - 4, 4, P.BLACK_PAINT.deep)
+            for xx in range(x + 2, x + w - 2):
+                t.px(xx, y + 3 + (xx % 2), GREEN[4])
+            t.px(x + 2, y + h - 2, RED[4])
+            t.px(x + 4, y + h - 2, YELLOW[4])
+    g.paint_all(tex, "console", console)
+
+    def housing(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, GUN[tone(d) + 1])
+        if d in ("north", "south", "east", "west"):
+            t.stripes(x, y, w, min(2, h), RED[3], BLACK[2], width=1)
+    g.paint_all(tex, "housing", housing)
+    for n in tower + girders + braces + ["mast"]:
+        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, TOWER[tone(d) + 1]), t.hline(r[0], r[1], r[2], TOWER[5]) if d != "down" and r[3] > 2 else None))
+
+    def grating(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, TOWER[tone(d) + 2])
+        if d in ("up", "down"):
+            for xx in range(x, x + w, 2):
+                t.vline(xx, y, h, TOWER[2])
+        elif d in ("north", "south", "east", "west"):
+            t.hline(x, y, w, SAFETY[4])
+    for n in decks + ["roof"]:
+        g.paint_all(tex, n, grating)
+    for n in rails:
+        g.paint_all(tex, n, shaded(SAFETY))
+    g.paint_all(tex, "beacon", lambda t, r, d: t.rect(*r, RED[5] if d != "down" else RED[3]))
+    for bone in ("arm_low", "arm_high"):
+        g.paint_all(tex, f"{bone}_beam", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
+        g.paint_all(tex, f"{bone}_clamp", shaded(GUN))
+        g.paint_all(tex, f"{bone}_hose", lambda t, r, d: t.rect(*r, P.RUBBER[2 if d == "down" else 3]))
+    for name, _, _, _, kind in missile_parts():
+        if kind in NOSE_PARTS:
+            for nose in W.NOSES:
+                g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
+        else:
+            g.paint_all(tex, "m_" + name, missile_paint(kind))
+    g.save(tex)
+    # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
+    # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and
+    # an empty complex rests in "clear" with both arms still away.
+    count = Animation("working", 20.0, loop="hold_on_last_frame")
+    count.rotate("arm_low", {0: (0, 0, 0), 2: (0, 0, 0), 4.5: (0, -100, 0), 20: (0, -100, 0)}, easing="easeInOutSine")
+    count.rotate("arm_high", {0: (0, 0, 0), 6: (0, 0, 0), 8.5: (0, -100, 0), 20: (0, -100, 0)}, easing="easeInOutSine")
+    clear = Animation("clear", 1.0, loop="hold_on_last_frame")
+    clear.rotate("arm_low", {0: (0, -100, 0), 1: (0, -100, 0)})
+    clear.rotate("arm_high", {0: (0, -100, 0), 1: (0, -100, 0)})
+    print(save_animations("launch_complex", [count, clear]))
+
+
 # --- the formed Launch Computer -----------------------------------------------------------------------------------------
 def computer() -> None:
     g = GeoModel("launch_computer", tex_size=(256, 256))
@@ -684,9 +879,12 @@ def main() -> None:
     shaped_part("antenna", antenna_block, antenna_icon())
     large_dish()
     ST.controller("launch_silo", ST.controller_front(missile_placard), ST.controller_top(), ST.casing())
+    ST.controller("launch_complex", ST.controller_front(complex_placard), ST.controller_top(), ST.casing())
+    ST.part_block("flame_deflector", flame_deflector())
     ST.controller("launch_computer", ST.controller_front(radar_placard), ST.controller_top(), ST.casing())
     ST.controller("radar_array", ST.controller_front(radar_placard_big), ST.controller_top(), ST.casing())
     silo()
+    launch_complex()
     computer()
     radar_array()
     print("launch written")

@@ -20,7 +20,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **done, awaiting the user's in-game check** (5a server engine, 5b sync/persistence/sound, crater character, 5c Spectacle and its v2 with the mushroom cloud, 5d reactor meltdown; heat haze deferred) |
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
 | 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
-| 8 | Nuclear weapons | todo |
+| 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Tactical Nuclear and Fission Warheads, fizzles; next 8b) |
 | 9 | Launch platforms, missile flight, launch control, designators | started (basic launch site built early, 2026-10-21) |
 | 10 | Radar & interceptors | todo |
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | todo |
@@ -202,11 +202,12 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 8 — Nuclear weapons
 | Item | Status |
 |---|---|
-| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | todo |
-| Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | todo |
+| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | 8a: tactical and fission warheads with cores, models, profiles, contamination — needs in-game look; boosted, H-bomb, neutron, cobalt, dirty in 8b; Tsar in 8c |
+| Launch Complex (nuclear launcher, pulled forward from Phase 9) | done (8a): structure, model, 15 s countdown with umbilicals, deluge and trench smoke — needs in-game look |
+| Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | done in Phase 5 (Spectacle v2); used by the nuclear warheads |
 | Wilson condensation ring, base surge | todo |
 | Flash with line of sight + afterimage | todo |
-| Fizzle behaviour | todo |
+| Fizzle behaviour | done (8a): set off any way but by its missile, a nuclear warhead fizzles |
 | Nuke sound sets (near/mid/far/very far, tsar) | todo |
 
 ## Phase 9 — Launching

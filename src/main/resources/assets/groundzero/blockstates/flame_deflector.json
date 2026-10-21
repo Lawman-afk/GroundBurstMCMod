@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/flame_deflector"
+    },
+    "formed=true": {
+      "model": "groundzero:block/flame_deflector_formed"
+    }
+  }
+}

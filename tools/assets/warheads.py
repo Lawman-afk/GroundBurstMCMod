@@ -17,6 +17,9 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - EMP Cluster Warhead: dark clamshell casing (a cluster of EMP canisters), copper band and dashes.
 - Chemical Warhead: pale grey with the two green bands of a chemical weapon, a steel nose.
 - Toxic Waste Warhead: a dark drum of a body, a glowing toxin-green nose and band, a hazard-dashed ring.
+- Tactical Nuclear Warhead (Phase 8): a squat olive cylinder with a blunt gunmetal cap, a yellow band over a black one
+  and a radiation trefoil on its front.
+- Fission Warhead (Phase 8): a fat yellow-ochre body under a rounded dark nose, a red band and a trefoil.
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
@@ -53,6 +56,8 @@ TUNGSTEN = fixed("tungsten_nose", "#2a2c30", "#44474c", "#61656b", "#80858b", "#
 GAS = fixed("gas_casing", "#3a3f12", "#5a6118", "#7c8520", "#9ca82c", "#b8c44a", "#cfd872", "#e4eaa2")
 WASTE = fixed("waste_drum", "#14160e", "#1e2214", "#2a301c", "#363e24", "#46502e", "#58643a", "#6e7a4a")
 EMP_CASING = fixed("emp_casing", "#1c2026", "#282e36", "#363e48", "#48525e", "#5e6a78", "#7a8896", "#9eacba")
+OCHRE = fixed("bomb_ochre", "#3a2a08", "#5e440e", "#846216", "#a8801e", "#c49c34", "#d8b85a", "#ecd690")
+NUKE_NOSE = fixed("nuke_nose", "#121416", "#1c1f22", "#282c30", "#363b40", "#474d53", "#5c636a", "#788088")
 DARK = fixed("penetrator_dark", "#16181a", "#202326", "#2c3034", "#3a3e44", "#4a4f56", "#5e646c", "#767c84")
 
 
@@ -72,6 +77,7 @@ class Spec:
     seam: tuple | None = None                  # a clamshell split down the sides
     dashes: tuple | None = None                # a row of dashes round the body (y, colour)
     ports: bool = False                        # fuel ports round the shoulder
+    trefoil: float | None = None               # a radiation trefoil on the front at this height
 
 
 def ogive(base: float, height: float, r: float, steps: int, sharp: float) -> list[tuple[float, float]]:
@@ -108,7 +114,14 @@ WARHEADS = [
          bands=[(5, P.INDICATOR_GREEN[3]), (7.5, P.INDICATOR_GREEN[3])]),
     Spec("toxic_waste_warhead", 5, (1.5, 5.6), 10, ogive(10, 4.5, 4.8, 4, 2.4), (15, 1.2), WASTE, P.TOXIN, WASTE,
          bands=[(7.5, P.TOXIN[4])], dashes=(4, YELLOW[4])),
+    Spec("tactical_nuclear_warhead", 4, (1.5, 4.6), 9.5, ogive(9.5, 3.8, 3.8, 4, 2.8), (13.6, 1.2), OLIVE, NUKE_NOSE, STEEL,
+         bands=[(8.4, YELLOW[4]), (7.8, BLACK[2])], trefoil=5.0),
+    Spec("fission_warhead", 6, (2, 6.8), 12, ogive(12, 7.5, 5.8, 6, 2.4), (20, 1.2), OCHRE, NUKE_NOSE, STEEL,
+         bands=[(10.5, RED[4])], trefoil=6.5),
 ]
+
+#: The trefoil, five pixels square: black blades (K) on a yellow ground.
+TREFOIL = ["YYYYY", "YKYKY", "YYKYY", "YYKYY", "YYYYY"]
 
 #: A missile's nose for each warhead it can carry: (nose ramp, band colour or None, tip ramp). "none": bare steel.
 NOSES = {"none": (STEEL, None, STEEL)}
@@ -166,6 +179,11 @@ def warhead(s: Spec) -> list[str]:
                     t.px(bx, row, s.dashes[1])
             if s.seam is not None and d in ("east", "west") and w > 2:
                 t.vline(x + w // 2, yy, h, s.seam)       # the clamshell's split, down each side
+            if s.trefoil is not None and d == "south" and w >= 5:
+                row = side_row(rect, rh, s.body_top, s.trefoil) - 2
+                for j, line in enumerate(TREFOIL):
+                    for i, ch in enumerate(line):
+                        t.px(x + (w - 5) // 2 + i, row + j, BLACK[1] if ch == "K" else YELLOW[4])
         fill_all(m, t, body, body_fn)
         fill_all(m, t, nose, shaded(s.nose_ramp))
         m.paint_all(t, "tip", shaded(s.tip_ramp))

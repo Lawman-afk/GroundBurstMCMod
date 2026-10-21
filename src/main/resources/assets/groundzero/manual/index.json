@@ -58,6 +58,8 @@
     "ordnance/missiles",
     "ordnance/warheads",
     "ordnance/launch_site",
+    "ordnance/launch_complex",
+    "ordnance/nuclear",
     "ordnance/radar_array",
     "ordnance/chemical",
     "safety/decontamination_shower",

@@ -328,6 +328,20 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
                 .requires(GZParts.MILITARY_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE), has(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)).save(output);
+        // Nuclear cores (Phase 8, DESIGN.md §9.2): a plutonium pit in high-explosive lenses, a tamper round it.
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.TACTICAL_FISSION_CORE, 1)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET).requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET).requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET), has(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.FISSION_CORE, 1)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT).requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE).requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT).requires(GZParts.LEAD_PLATE)
+                .requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT), has(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.GAS_DISPENSER, 1)
                 .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
                 .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
@@ -411,6 +425,8 @@ public class GZRecipeProvider extends RecipeProvider {
             final net.minecraft.world.level.ItemLike antenna = dev.groundzero.content.launch.GZLaunch.ANTENNA.item();
             final net.minecraft.world.level.ItemLike silo = dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.item();
             final net.minecraft.world.level.ItemLike computer = dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike complex = dev.groundzero.content.launch.GZLaunch.COMPLEX_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike deflector = dev.groundzero.content.launch.GZLaunch.FLAME_DEFLECTOR.item();
         };
         shapeless(RecipeCategory.BUILDING_BLOCKS, l.pad, 4)
                 .requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())
@@ -438,6 +454,14 @@ public class GZRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.REDSTONE, l.silo, 1)
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT).requires(Items.LEVER)
                 .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, l.complex, 1)
+                .requires(l.silo).requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.LEAD_PLATE)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, l.deflector, 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())
+                .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
         shapeless(RecipeCategory.REDSTONE, l.computer, 1)
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.CRT_DISPLAY)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(Items.LEVER)

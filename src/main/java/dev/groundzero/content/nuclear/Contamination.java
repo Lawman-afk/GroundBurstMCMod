@@ -85,6 +85,13 @@ public final class Contamination extends SavedData {
         setDirty();
     }
 
+    /** For GameTests: removes the zones centred within {@code within} of {@code centre}. */
+    public void removeNear(Vec3 centre, double within) {
+        if (this.zones.removeIf(z -> z.center().distanceTo(centre) <= within)) {
+            setDirty();
+        }
+    }
+
     public List<Zone> zones() {
         return List.copyOf(this.zones);
     }

@@ -840,7 +840,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
-entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "barometric_fuze"], [
+entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
 The **Ordnance Assembly Bench** puts warheads and [missiles](ordnance/missiles) together, one page for each (the tabs on the left of its screen). It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
 
@@ -1003,6 +1003,36 @@ Whatever it hits on the way sets off the warhead there, so keep the sky above th
     craft("radar_mast"),
     craft("radar_dish"),
     craft("antenna"),
+])
+
+entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_complex", "flame_deflector"], [
+    text("""
+The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
+
+It takes any [missile](ordnance/missiles). Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
+"""),
+    structure("launch_complex", "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."),
+    craft("launch_complex"),
+    craft("flame_deflector"),
+])
+
+entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "tactical_fission_core", "fission_core"], [
+    text("""
+A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a casing of its class and a fuze, and flies on a [missile](ordnance/missiles), but only a [Launch Complex](ordnance/launch_complex) will fire it: a Launch Silo will not take a nuclear missile.
+
+**Tactical Nuclear Warhead** (class S, about 300 tonnes of TNT): a crater 16 blocks round, deadly to 28 blocks. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.
+
+**Fission Warhead** (class M, about 15 kilotons): a crater 40 blocks round, wrecking everything to 60 blocks and deadly to 70. Its core is a **Fission Core**: a plutonium ingot in a sphere of explosive lenses, with a depleted uranium tamper and a lead case.
+
+Both go off with a blinding flash, a fireball and a mushroom cloud, and burn the ground round the crater to scorched earth.
+"""),
+    text("""
+**Fallout.** A nuclear blast leaves the ground round it **contaminated**: 48 blocks round for a day after a tactical warhead, 120 blocks round for two days after a fission warhead, weakest at the edge and fading as it ages. Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
+
+**Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion.
+"""),
+    craft("tactical_fission_core"),
+    craft("fission_core"),
 ])
 
 entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "large_radar_dish"], [

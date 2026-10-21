@@ -55,6 +55,9 @@ public final class FxPhotographer {
                 new Scene("warhead_heavy", "heavy_warhead", 45, 2, List.of(3, 10, 25, 80)),
                 new Scene("warhead_thermobaric", "thermobaric_warhead", 55, 2, List.of(3, 10, 25, 80)),
                 new Scene("warhead_massive", "massive_warhead", 110, -6, List.of(4, 20, 80, 300, 700)),
+                new Scene("nuke_tactical", "tactical_nuclear_warhead", 120, -8, List.of(3, 20, 80, 300, 700)),
+                new Scene("nuke_fission", "fission_warhead", 240, -14, List.of(3, 30, 120, 400, 900)),
+                new Scene("complex", "complex", 34, -12, List.of(20, 150, 270, 335, 380)),
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
@@ -81,6 +84,7 @@ public final class FxPhotographer {
                 new Scene("tall_ui", "tall", 4, 0, List.of(30)),
                 new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)),
                 new Scene("assembly_mow_ui", "assembly", 4, 0, List.of(30, 44)),
+                new Scene("assembly_nuke_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("launch_map_ui", "launch", 9, 0, List.of(40, 80)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
@@ -223,6 +227,30 @@ public final class FxPhotographer {
 
     /** The launch scenes' silo and computer, for the tick to launch from and open the screen of. */
     private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
+
+    /**
+     * A formed, powered Launch Complex with a Heavy tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
+     * Computer beside it (the "complex" scene launches at clock 25: 15 s of countdown, then ignition).
+     */
+    private static void complexSite(ServerLevel level, int x, int ground) {
+        launchTarget = new net.minecraft.core.BlockPos(x + 400, 64, 140);
+        launchSilo = new net.minecraft.core.BlockPos(x, ground, -4);
+        launchComputer = new net.minecraft.core.BlockPos(x - 6, ground, 4);
+        formed(level, launchSilo, dev.groundzero.content.launch.GZLaunch.COMPLEX_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.COMPLEX);
+        formed(level, launchComputer, dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.COMPUTER);
+        if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.LaunchComplexBlockEntity complex) {
+            complex.revalidate();
+            complex.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                    dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.L, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
+            complex.energy().generate(dev.groundzero.content.launch.LaunchComplexBlockEntity.COMPLEX_ENERGY);
+            complex.setTarget(launchTarget.getX(), launchTarget.getZ());
+            complex.arm(true);
+        }
+        if (level.getBlockEntity(launchComputer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity computer) {
+            computer.revalidate();
+            computer.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
+        }
+    }
 
     /**
      * A formed, loaded, powered Launch Silo and Launch Computer side by side, fronts to the camera; the silo aimed and
@@ -525,6 +553,10 @@ public final class FxPhotographer {
                     bombs(level, x, ground, false);
                     return;
                 }
+                if (s.profile().equals("complex")) {
+                    complexSite(level, x, ground);
+                    return;
+                }
                 if (s.profile().startsWith("launch")) {
                     launchSite(level, x, ground, s.profile().equals("launch_dive"), s.name().equals("launch_ui") || s.name().equals("launch_map_ui"));
                     return;
@@ -549,7 +581,7 @@ public final class FxPhotographer {
         if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
             dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
         }
-        if (scene.profile().startsWith("launch") && step >= 0 && clock == 25 && launchSilo != null) {
+        if ((scene.profile().startsWith("launch") || scene.profile().equals("complex")) && step >= 0 && clock == 25 && launchSilo != null) {
             var silo = launchSilo;
             var computerAt = launchComputer;
             server.execute(() -> {
@@ -588,6 +620,15 @@ public final class FxPhotographer {
             }
         }
         // The biggest warhead on the bench (the preview must zoom out to fit it), then as a Heavy missile.
+        if (scene.name().equals("assembly_nuke_ui") && step >= 0 && clock == 8 && benchAt != null) {
+            var bench = benchAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
+                    be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
+                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
+                }
+            });
+        }
         if (scene.name().equals("assembly_mow_ui") && step >= 0 && clock == 8 && benchAt != null) {
             var bench = benchAt;
             server.execute(() -> {
@@ -599,7 +640,7 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.name().equals("assembly_mow_ui") && step >= 0 && clock == 36 && mc.gui.screen() != null) {
+        if ((scene.name().equals("assembly_mow_ui") || scene.name().equals("assembly_nuke_ui")) && step >= 0 && clock == 36 && mc.gui.screen() != null) {
             var screen = mc.gui.screen();                                  // the Missiles tab
             double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
@@ -614,7 +655,8 @@ public final class FxPhotographer {
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
-        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui") || scene.name().equals("assembly_mow_ui"))
+        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui") || scene.name().equals("assembly_mow_ui")
+                || scene.name().equals("assembly_nuke_ui"))
                 && step >= 0 && clock == 12 && benchAt != null) {
             var bench = benchAt;
             server.execute(() -> {

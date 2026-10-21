@@ -51,7 +51,6 @@ public final class AssemblyStats {
     }
 
     private static final String P = GroundZero.MODID + ".stats.";
-    static final String H_BLAST = GZLang.add(P + "blast", "Blast Radius");
     static final String H_FULL_RANGE = GZLang.add(P + "full_range", "At Full Range");
     static final String CLASS = GZLang.add(P + "class", "Class");
     static final String CRATER = GZLang.add(P + "crater", "Crater");
@@ -72,6 +71,12 @@ public final class AssemblyStats {
     static final String V_SECONDS = GZLang.add(P + "seconds", "%s s");
     static final String V_KG = GZLang.add(P + "kg", "%s kg TNT");
     static final String V_TONNES = GZLang.add(P + "tonnes", "%s t TNT");
+    static final String FALLOUT = GZLang.add(P + "fallout", "Fallout Radius");
+    static final String FALLOUT_LASTS = GZLang.add(P + "fallout_lasts", "Fallout Lasts");
+    static final String V_DAYS = GZLang.add(P + "days", "%s days");
+    static final String V_DAY = GZLang.add(P + "day", "1 day");
+    static final String V_YIELD = GZLang.add(P + "yield_value", "%s");
+    static final String NOTE_NUCLEAR = GZLang.add(P + "nuclear", "Fires only from a Launch Complex");
     static final String V_HARDENED = GZLang.add(P + "hardened", "Hardened");
     static final String V_UNHARDENED = GZLang.add(P + "unhardened", "May Fail");
     public static final String EMPTY_WARHEAD = GZLang.add(P + "empty_warhead", "Fit a payload core to see what it will do");
@@ -114,7 +119,16 @@ public final class AssemblyStats {
     /** Warheads whose blast is their point, so a TNT figure means something. */
     private static boolean explosive(ChargeKind kind) {
         return kind == ChargeKind.HE_WARHEAD || kind == ChargeKind.HEAVY_WARHEAD || kind == ChargeKind.MASSIVE_WARHEAD
-                || kind == ChargeKind.THERMOBARIC_WARHEAD || kind == ChargeKind.BUNKER_BUSTER;
+                || kind == ChargeKind.THERMOBARIC_WARHEAD || kind == ChargeKind.BUNKER_BUSTER || kind.nuclear();
+    }
+
+    /** The nuclear warheads' design yields (DESIGN.md §15), in place of the TNT figure from the crater. */
+    private static @Nullable String nuclearYield(ChargeKind kind) {
+        return switch (kind) {
+            case TACTICAL_NUCLEAR_WARHEAD -> "300 t";
+            case FISSION_WARHEAD -> "15 kt";
+            default -> null;
+        };
     }
 
     private static Optional<BlastProfile> profile(RegistryAccess registries, ChargeKind kind) {
@@ -146,9 +160,6 @@ public final class AssemblyStats {
         Optional<BlastProfile> found = profile(registries, kind);
         if (!clusterType(kind) && found.isPresent()) {
             BlastProfile p = found.get();
-            if (full) {
-                out.add(Stat.header(H_BLAST));
-            }
             out.add(Stat.row(CRATER, blocks(p.crater())));
             if (full) {
                 out.add(Stat.row(WRECKS, blocks(p.structural())));
@@ -160,8 +171,17 @@ public final class AssemblyStats {
                     out.add(Stat.row(FIRES, blocks(p.fire())));
                 }
                 if (explosive(kind)) {
-                    out.add(Stat.row(YIELD, tnt(p.crater())));
+                    String nuclear = nuclearYield(kind);
+                    out.add(Stat.row(YIELD, nuclear != null ? Component.translatable(V_YIELD, nuclear) : tnt(p.crater())));
                 }
+            }
+        }
+        if (kind.nuclear()) {
+            int days = Charges.contaminationTicks(kind) / 24_000;
+            out.add(Stat.row(FALLOUT, Component.translatable(V_BLOCKS, (int) Charges.contaminationRadius(kind))));
+            out.add(Stat.row(FALLOUT_LASTS, days == 1 ? Component.translatable(V_DAY) : Component.translatable(V_DAYS, days)));
+            if (full) {
+                out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }
         Component effect = EFFECTS.get(kind);

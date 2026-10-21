@@ -54,7 +54,14 @@ public enum ChargeKind {
     /** A burst of toxic waste: sludge splashed 10 blocks round, a heavy dose of toxin for anything in it. */
     TOXIC_WASTE_WARHEAD("toxic_waste_warhead", 10, true),
     /** A chemical agent (anthrax) let out over 9 blocks round: a heavy cloud that spreads, sinks and drifts for a minute and more. */
-    CHEMICAL_WARHEAD("chemical_warhead", 10, true);
+    CHEMICAL_WARHEAD("chemical_warhead", 10, true),
+    // Nuclear warheads (Phase 8): full yield only delivered by a missile from a Launch Complex. Placed, dropped, shot or
+    // caught in another blast, a nuclear warhead fizzles: its explosive lenses go off unevenly, the core breaks up and
+    // scatters (a small blast and a patch of contamination), and there is no nuclear explosion.
+    /** A 300 t tactical nuke: crater 16, deadly to 28, contamination 48 blocks round for a day. */
+    TACTICAL_NUCLEAR_WARHEAD("tactical_nuclear_warhead", 10, true),
+    /** A 15 kt fission warhead: crater 40, deadly to 70, contamination 120 blocks round for two days. */
+    FISSION_WARHEAD("fission_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -95,6 +102,10 @@ public enum ChargeKind {
      * A cluster warhead: carried by a missile, it bursts high over its target and rains its submunitions down over a
      * wide area (set off on the ground, it throws them out round itself).
      */
+    public boolean nuclear() {
+        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD;
+    }
+
     public boolean airburst() {
         return this == CLUSTER_WARHEAD || this == GAS_WARHEAD || this == SMOKE_WARHEAD || this == CRYO_WARHEAD || this == EMP_WARHEAD;
     }

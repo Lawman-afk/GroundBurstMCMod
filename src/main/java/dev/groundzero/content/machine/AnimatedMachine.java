@@ -17,6 +17,11 @@ public interface AnimatedMachine extends GeoBlockEntity {
     RawAnimation WORKING = RawAnimation.begin().thenLoop("working");
     RawAnimation IDLE = RawAnimation.begin().thenPlayAndHold("idle");
 
+    /** The pose it rests in while not working (the held "idle" animation; the Launch Complex's arms stay clear when empty). */
+    default RawAnimation idleAnimation() {
+        return IDLE;
+    }
+
     /** Bones drawn scaled {x, y, z} about their pivots right now (e.g. the silo's missile, by its body). Read on the client. */
     default java.util.Map<String, float[]> boneScales() {
         return java.util.Map.of();
@@ -32,7 +37,7 @@ public interface AnimatedMachine extends GeoBlockEntity {
         controllers.add(new AnimationController<AnimatedMachine>("main", 4, test -> {
             BlockEntity be = (BlockEntity) test.animatable();
             boolean active = be.getBlockState().hasProperty(MachineBlock.ACTIVE) && be.getBlockState().getValue(MachineBlock.ACTIVE);
-            return test.setAndContinue(active ? WORKING : IDLE);
+            return test.setAndContinue(active ? WORKING : ((AnimatedMachine) test.animatable()).idleAnimation());
         }));
     }
 }

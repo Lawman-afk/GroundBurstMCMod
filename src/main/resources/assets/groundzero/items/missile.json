@@ -94,6 +94,20 @@
           "type": "minecraft:model",
           "model": "groundzero:item/missile_toxic_waste_warhead"
         }
+      },
+      {
+        "when": "tactical_nuclear_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile_tactical_nuclear_warhead"
+        }
+      },
+      {
+        "when": "fission_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile_fission_warhead"
+        }
       }
     ],
     "fallback": {

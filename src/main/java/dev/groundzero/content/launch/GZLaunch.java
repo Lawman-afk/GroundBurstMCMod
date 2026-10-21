@@ -48,11 +48,16 @@ public final class GZLaunch {
             LargeRadarDishBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.IMMOVEABLE).noOcclusion());
     public static final WithItem<MultiblockPartBlock> ANTENNA = part("antenna", "Antenna", MapColor.METAL, SoundType.METAL, true);
+    /** The Launch Complex's flame trench: the steel wedge under the missile that turns its exhaust out of the trench. */
+    public static final WithItem<MultiblockPartBlock> FLAME_DEFLECTOR = part("flame_deflector", "Flame Deflector", MapColor.COLOR_GRAY, SoundType.METAL, false);
 
     // --- controllers ---
     public static final WithItem<MultiblockControllerBlock> SILO_CONTROLLER = GZBlocks.register("launch_silo", "Launch Silo Controller",
             GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.SILO_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final WithItem<MultiblockControllerBlock> COMPLEX_CONTROLLER = GZBlocks.register("launch_complex", "Launch Complex Controller",
+            GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.COMPLEX_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GZBlocks.register("launch_computer", "Launch Computer",
             GZTab.MISSILES, p -> new LaunchComputerBlock(p, GZLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -64,6 +69,9 @@ public final class GZLaunch {
                     RADAR_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchSiloBlockEntity>> SILO_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_silo", () -> new BlockEntityType<>(LaunchSiloBlockEntity::new, SILO_CONTROLLER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComplexBlockEntity>> COMPLEX_ENTITY =
+            GZBlockEntities.BLOCK_ENTITIES.register("launch_complex", () -> new BlockEntityType<>(LaunchComplexBlockEntity::new,
+                    COMPLEX_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> new BlockEntityType<>(LaunchComputerBlockEntity::new,
                     COMPUTER_CONTROLLER.block().get()));
@@ -103,6 +111,33 @@ public final class GZLaunch {
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'G', Entry.of(() -> GANTRY_FRAME.block().get()),
                     'A', Entry.of(() -> GANTRY_ARM.block().get()), 'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> SILO_CONTROLLER.block().get())));
+
+    /**
+     * The Launch Complex (Phase 8): a 5x5 deck of Launch Pad with the controller at the front middle, an Energy Port at
+     * the back middle and the Flame Deflector at its middle, under the missile; a Gantry Frame service tower two cells
+     * deep and 13 high beside the deck's middle and back rows, with Gantry Arms (the umbilicals) reaching in at the
+     * fifth and ninth layers; the missile's column over the deflector kept clear 11 blocks up.
+     */
+    public static final MultiblockDefinition COMPLEX = new MultiblockDefinition(GroundZero.id("launch_complex"),
+            new String[][] {
+                    {"PPXPP ", "PPPPP ", "PPFPPG", "PPPPPG", "PPEPP "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  . AG", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  . AG", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "  .  G", "     G", "      "},
+                    {"      ", "      ", "     G", "     G", "      "},
+            },
+            Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'G', Entry.of(() -> GANTRY_FRAME.block().get()),
+                    'A', Entry.of(() -> GANTRY_ARM.block().get()), 'F', Entry.of(() -> FLAME_DEFLECTOR.block().get()),
+                    'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPLEX_CONTROLLER.block().get())));
 
     /**
      * The Launch Computer: the terminal (controller) with an Energy Port beside it and an Antenna on top; behind it a

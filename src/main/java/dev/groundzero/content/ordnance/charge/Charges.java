@@ -244,6 +244,8 @@ public final class Charges {
                 level.playSound(null, pos, GZOrdnance.FUEL_DISPERSE.get(), SoundSource.BLOCKS, 2f, 1f);
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
+            // A nuclear warhead set off anywhere but on a missile's arrival only fizzles.
+            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD -> fizzle(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
             case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
         }
@@ -254,7 +256,9 @@ public final class Charges {
      * scatters its load from there; any other goes off where it is (a bunker buster does not bore in).
      */
     public static void burst(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
-        if (kind.airburst()) {
+        if (kind.nuclear()) {
+            nuclear(level, kind, at, by, true);
+        } else if (kind.airburst()) {
             airburst(level, kind, at, by);
         } else {
             fire(level, kind, BlockPos.containing(at), Direction.NORTH, 1, by);
@@ -266,7 +270,9 @@ public final class Charges {
      * a bunker buster arrives at speed, so it bores in first.
      */
     public static void impact(ServerLevel level, ChargeKind kind, BlockPos pos, @Nullable Entity by) {
-        if (kind == ChargeKind.BUNKER_BUSTER) {
+        if (kind.nuclear()) {
+            nuclear(level, kind, Vec3.atCenterOf(pos), by, false);
+        } else if (kind == ChargeKind.BUNKER_BUSTER) {
             penetrate(level, pos, by);
         } else {
             fire(level, kind, pos, Direction.NORTH, 1, by);
@@ -290,6 +296,36 @@ public final class Charges {
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
     /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
     public static final float NAPALM_RADIUS = 10;
+
+    /** A nuclear warhead's contamination: radius (blocks) and how long it lasts (ticks), by kind (DESIGN.md §15). */
+    public static float contaminationRadius(ChargeKind kind) {
+        return kind == ChargeKind.FISSION_WARHEAD ? 120 : 48;
+    }
+
+    public static int contaminationTicks(ChargeKind kind) {
+        return kind == ChargeKind.FISSION_WARHEAD ? 48_000 : 24_000;
+    }
+
+    /** A fizzle's patch of contamination: radius, starting strength and life. */
+    public static final float FIZZLE_RADIUS = 16, FIZZLE_STRENGTH = 0.6f;
+    public static final int FIZZLE_TICKS = 12_000;
+
+    /**
+     * A nuclear warhead delivered by a missile: its full yield, and contamination round where it went off (an airburst,
+     * from a barometric fuze, leaves half as much: the fireball does not touch the ground).
+     */
+    public static void nuclear(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by, boolean airburst) {
+        Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
+        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
+                Math.max(4, contaminationRadius(kind) * bombScale), airburst ? 0.5f : 1f, level.getGameTime(), contaminationTicks(kind)));
+    }
+
+    /** A nuclear warhead set off any other way: its lenses go off unevenly, the core breaks up and scatters. */
+    private static void fizzle(ServerLevel level, Vec3 at, @Nullable Entity by, float scale) {
+        Blasts.detonate(level, at, Blasts.profile("nuclear_fizzle"), by, scale);
+        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
+                Math.max(2, FIZZLE_RADIUS * scale), FIZZLE_STRENGTH, level.getGameTime(), FIZZLE_TICKS));
+    }
 
     private static void schedule(ServerLevel level, Pending p) {
         PENDING.computeIfAbsent(level, k -> new ArrayList<>()).add(p);
