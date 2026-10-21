@@ -563,6 +563,25 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   the Basic Missile and the silo's warhead slot: the **Launch Silo takes one missile**, and its range is the missile's.
   The Launch Computer shows each silo's range and will not arm a silo whose target is beyond it.
 - JEI: a Missile Assembly category (one recipe per body, with the warheads and motors that fit it).
+
+### 10.3 As built: slice 7c, preview and stats (2026-10-22)
+- The user chose a **wider bench window** (288 x 210) over a pull-out tab or a third page: the parts, readout and
+  inventory keep the left 176 px; a right-hand column, divided off by a seam, holds the preview over a stats screen.
+- **Preview** (`ItemPreview`, a picture-in-picture renderer like the manual's structure view): the subject's real model
+  on blueprint paper, turning by itself, dragged round with the mouse (it resumes turning 3 s after). A missile is drawn
+  at its body's size, so a Tactical missile stands smaller than a Heavy one.
+- **Subject:** what the parts make (warhead page: the core's warhead with the fitted fuze and setting; missile page:
+  once there is a warhead, a body and a motor), otherwise what waits in the page's output slot.
+- **Stats** (`AssemblyStats`, common code, so GameTests check it): a warhead's class, blast radii from its blast
+  profile (crater, wrecks, lethal, injures, sets fires), a flavour TNT yield for the explosive kinds (0.5 kg x crater
+  cubed: the Massive Ordnance Warhead comes to about 11 t, like the GBU-43), its other effect (cluster types show what
+  they scatter instead of their small casing burst; submunitions land within about 20 blocks of an airburst) and its
+  fuze; a missile's warhead (crater, lethal, effect, fuze), then at full range its range, apex, flight time and how
+  close it lands, and whether it is hardened. Small pixel-snapped type on the CRT, label left, value right.
+- Not done: interception difficulty (needs Phase 10's interceptors), flight time to a typed distance (the full-range
+  figures cover it), the Ammunition page (Phase 13 guns) and the blueprint slot (Phase 15 loot).
+- Machine layouts carry their texture's width (`MachineLayout.textureWidth`): a window wider than 178 px uses a 512-wide
+  sheet with its fill sprites moved to the right half.
 ---
 
 ## 11. Explosion engine (`dev.groundzero.blast`)
@@ -2099,5 +2118,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Slice 7c (the user chose a wider bench window): a 3D preview you can drag round and a stats screen in a right-hand column; stats are worked out in common code from the blast profiles and the flight formulas, at the missile's full range. Phase 7 closes with it (the Ammunition page waits for Phase 13 guns, blueprints for Phase 15 loot, interception odds for Phase 10). |
 | 2026-10-22 | Unguided missiles scatter over 25% of the distance (inertial 4%, GPS 2 blocks), evenly over an ellipse longer along the flight, so guidance is worth fitting. Bench page tabs are part of the window's frame. |
 | 2026-10-22 | Slice 7b (the user chose the full parts list): the bench gets Warheads/Missiles pages; bodies set the warhead class and the missile's size, motors the range (400 / 1024 / 2500), guidance the scatter (8% / 2% / 2 blocks, applied once at lift-off), Hardened Electronics stop EMP duds. The assembled Missile replaces the Basic Missile, and the silo takes only a missile. |

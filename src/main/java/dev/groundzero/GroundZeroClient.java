@@ -31,6 +31,8 @@ public class GroundZeroClient {
         MultiblockPreview.register();
         modBus.addListener(GroundZeroClient::registerScreens);
         dev.groundzero.client.manual.ManualHotkey.register(modBus);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent e) ->
+                e.register(dev.groundzero.client.screen.ItemPreview.State.class, dev.groundzero.client.screen.ItemPreview.Renderer::new));
         modBus.addListener(GroundZeroClient::registerRenderers);
         dev.groundzero.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);

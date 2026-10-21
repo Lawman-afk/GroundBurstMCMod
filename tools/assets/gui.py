@@ -186,17 +186,21 @@ LAYOUTS = {
     },
     # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout
     # under them; the fuze's setting (label and field, drawn by the screen) under that, then the Assemble / Take Apart
-    # buttons (drawn by the screen) with the redstone button beside them.
+    # buttons (drawn by the screen) with the redstone button beside them. A right-hand column (slice 7c): the 3D preview
+    # of what the parts make over a stats screen (both drawn into by the screen).
     "assembly_bench": {
         "title": (8, 6),
-        "size": (176, 210),
+        "size": (288, 210),
+        "inventory_width": 178,
+        "preview": (183, 22, 94, 80),
+        "stats": (183, 110, 94, 92),
         "slots": [("core", 32, 24), ("casing", 52, 24), ("fuze", 72, 24), ("out_big", 132, 24)],
         # The missile page's slots (slots 4-9): in the menu, but drawn by the "assembly_bench_missile" texture.
         "hidden_slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
         "progress": (98, 24, 24, 17),
         "flame": None,
-        "status": (160, 5, 8, 8),
+        "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
         "readout": (34, 50, 134, 24),
         "inventory": (8, 128),
@@ -205,12 +209,15 @@ LAYOUTS = {
     # Only its texture and progress arrow are used: the slots belong to "assembly_bench" (its hidden slots).
     "assembly_bench_missile": {
         "title": (8, 6),
-        "size": (176, 210),
+        "size": (288, 210),
+        "inventory_width": 178,
+        "preview": (183, 22, 94, 80),
+        "stats": (183, 110, 94, 92),
         "slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
         "progress": (122, 24, 24, 17),
         "flame": None,
-        "status": (160, 5, 8, 8),
+        "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
         "readout": (34, 50, 134, 24),
         "inventory": (8, 128),
@@ -354,9 +361,12 @@ LAYOUTS = {
 
 # --- widgets ---------------------------------------------------------------------------------------------------------
 
-def window(t: Tex, W: int = W, H: int = H, inv_y: int = 84) -> None:
-    """Riveted gunmetal panel with a header strip and an inventory section separated by a seam."""
+def window(t: Tex, W: int = W, H: int = H, inv_y: int = 84, inv_w: int | None = None) -> None:
+    """Riveted gunmetal panel with a header strip and an inventory section separated by a seam. A window wider than its
+    inventory section (inv_w) gets a column on the right, divided off by a vertical seam."""
     seam = inv_y - 8
+    iw = W if inv_w is None else inv_w
+    sw = iw - 6 if iw == W else iw - 5
     t.rect(0, 0, W, H, PANEL.base)
     t.outline(0, 0, W, H, PANEL.outline)
     t.hline(1, 1, W - 2, PANEL.highlight)
@@ -367,9 +377,11 @@ def window(t: Tex, W: int = W, H: int = H, inv_y: int = 84) -> None:
     t.rect(3, 3, W - 6, 13, PANEL.shadow)
     t.hline(3, 16, W - 6, PANEL.light)
     # Inventory section
-    t.seam_h(3, seam, W - 6, PANEL)
-    t.rect(3, seam + 2, W - 6, H - seam - 5, PANEL[3])
-    t.hline(3, seam + 2, W - 6, PANEL.shadow)
+    t.seam_h(3, seam, sw, PANEL)
+    t.rect(3, seam + 2, sw, H - seam - 5, PANEL[3])
+    t.hline(3, seam + 2, sw, PANEL.shadow)
+    if iw < W:
+        t.seam_v(iw - 2, 18, H - 21, PANEL)
     # Corner rivets and a few along the edges
     for x, y in ((4, 18), (W - 6, 18), (4, H - 6), (W - 6, H - 6), (4, seam - 4), (W - 6, seam - 4)):
         t.rivet(x, y, PANEL, size=2)
@@ -556,9 +568,9 @@ def gauge_frame(t: Tex, x: int, y: int, w: int, h: int) -> None:
     t.hline(x - 1, y + h + 1, w + 2, PANEL.light)
 
 
-def energy_fill(t: Tex) -> None:
+def energy_fill(t: Tex, dx: int = 0) -> None:
     """Segmented amber phosphor bars (2 px bars, 1 px gaps), hotter toward the top."""
-    x0, y0 = ENERGY_FILL
+    x0, y0 = ENERGY_FILL[0] + dx, ENERGY_FILL[1]
     for yy in range(52):
         if yy % 3 == 2:
             continue
@@ -592,8 +604,8 @@ def progress_track(t: Tex, x: int, y: int, w: int, h: int) -> None:
             t.px(x + ax, y + ay, PANEL.outline)
 
 
-def progress_fill(t: Tex) -> None:
-    x0, y0 = PROGRESS_FILL
+def progress_fill(t: Tex, dx: int = 0) -> None:
+    x0, y0 = PROGRESS_FILL[0] + dx, PROGRESS_FILL[1]
     for (ax, ay) in arrow_mask(24, 17):
         stripe = ((ax + ay) // 3) % 2 == 0
         t.px(x0 + ax, y0 + ay, P.HAZARD_YELLOW.light if stripe else P.HAZARD_YELLOW.base)
@@ -614,8 +626,8 @@ def flame_track(t: Tex, x: int, y: int) -> None:
                 t.px(x + xx, y + yy, PANEL.deep)
 
 
-def flame_fill(t: Tex) -> None:
-    x0, y0 = FLAME_FILL
+def flame_fill(t: Tex, dx: int = 0) -> None:
+    x0, y0 = FLAME_FILL[0] + dx, FLAME_FILL[1]
     for yy, row in enumerate(FLAME):
         for xx, c in enumerate(row):
             if c == "#":
@@ -664,9 +676,9 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
                 t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
 
 
-def redstone_icons(t: Tex) -> None:
+def redstone_icons(t: Tex, dx: int = 0) -> None:
     """Ignore (grey dust), active-high (lit torch), active-low (dark torch)."""
-    x0, y0 = REDSTONE_ICONS
+    x0, y0 = REDSTONE_ICONS[0] + dx, REDSTONE_ICONS[1]
     dust = [(5, 9), (6, 8), (7, 9), (8, 8), (9, 9), (10, 8), (6, 10), (8, 10), (10, 10), (7, 7), (9, 7)]
     for x, y in dust:
         t.px(x0 + x, y0 + y, P.CONCRETE.light)
@@ -682,6 +694,27 @@ def redstone_icons(t: Tex) -> None:
             t.px(bx + 10, y0 + 3, (*P.WARNING_RED.highlight[:3], 160), blend=True)
 
 
+BLUEPRINT = fixed("blueprint", "#0c1526", "#111d33", "#172742", "#1d3150", "#274066", "#36557f", "#5476a3")
+
+
+def blueprint_view(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """A 3D preview's window: a bezel round blueprint paper, its grid centred so the model turns on a grid line."""
+    t.panel(x - 3, y - 3, w + 6, h + 6, PANEL, base=2, style="inset")
+    t.rect(x - 1, y - 1, w + 2, h + 2, PANEL.outline)
+    t.rect(x, y, w, h, BLUEPRINT[2])
+    cx, cy = x + w // 2, y + h // 2
+    for k in range(-(w // 2) // 6 - 1, (w // 2) // 6 + 2):
+        gx = cx + k * 6
+        if x <= gx < x + w:
+            t.vline(gx, y, h, BLUEPRINT[4] if k % 4 == 0 else BLUEPRINT[3])
+    for k in range(-(h // 2) // 6 - 1, (h // 2) // 6 + 2):
+        gy = cy + k * 6
+        if y <= gy < y + h:
+            t.hline(x, gy, w, BLUEPRINT[4] if k % 4 == 0 else BLUEPRINT[3])
+    t.hline(x, y, w, BLUEPRINT[1])
+    t.vline(x, y, h, BLUEPRINT[1])
+
+
 def readout_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
     """CRT screen: bezel, dark glass, faint scanlines; text is drawn live by the screen."""
     t.panel(x - 3, y - 3, w + 6, h + 6, PANEL, base=2, style="inset")
@@ -692,10 +725,23 @@ def readout_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
     t.hline(x, y, w, GLASS.highlight)
 
 
+def texture_width(spec: dict) -> int:
+    """256, or 512 for a window too wide to leave the fill sprites (x 180 on) clear."""
+    return 256 if spec.get("size", (W, H))[0] <= 178 else 512
+
+
+def fill_dx(spec: dict) -> int:
+    return texture_width(spec) - 256
+
+
 def build(name: str, spec: dict) -> Path:
-    t = Tex(256, 256)
+    t = Tex(texture_width(spec), 256)
     w, h = spec.get("size", (W, H))
-    window(t, w, h, spec["inventory"][1])
+    window(t, w, h, spec["inventory"][1], spec.get("inventory_width"))
+    if spec.get("preview"):
+        blueprint_view(t, *spec["preview"])
+    if spec.get("stats"):
+        readout_panel(t, *spec["stats"])
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
          "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
@@ -739,10 +785,10 @@ def build(name: str, spec: dict) -> Path:
             slot(t, ix - 1 + col * 18, iy - 1 + row * 18)
     for col in range(9):
         slot(t, ix - 1 + col * 18, iy - 1 + 58)
-    energy_fill(t)
-    progress_fill(t)
-    flame_fill(t)
-    redstone_icons(t)
+    energy_fill(t, fill_dx(spec))
+    progress_fill(t, fill_dx(spec))
+    flame_fill(t, fill_dx(spec))
+    redstone_icons(t, fill_dx(spec))
     return t.save(paths.TEXTURES / "gui" / "machine" / f"{name}.png")
 
 
@@ -772,16 +818,17 @@ def write_java() -> Path:
         lines.append(f"    public static final MachineLayout {name.upper()} = new MachineLayout(")
         w, h = s.get("size", (W, H))
         lines.append(f"            GroundZero.id(\"textures/gui/machine/{name}.png\"), {w}, {h}, List.of({slots}), {s['inventory'][0]}, {s['inventory'][1]},")
-        lines.append(f"            {java_rect(s['energy'])}, {ENERGY_FILL[0]}, {ENERGY_FILL[1]},")
-        lines.append(f"            {java_rect(p)}, {PROGRESS_FILL[0]}, {PROGRESS_FILL[1]},")
-        lines.append(f"            {java_rect(f)}, {FLAME_FILL[0]}, {FLAME_FILL[1]},")
-        lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0]}, {REDSTONE_ICONS[1]},")
+        dx = fill_dx(s)
+        lines.append(f"            {java_rect(s['energy'])}, {ENERGY_FILL[0] + dx}, {ENERGY_FILL[1]},")
+        lines.append(f"            {java_rect(p)}, {PROGRESS_FILL[0] + dx}, {PROGRESS_FILL[1]},")
+        lines.append(f"            {java_rect(f)}, {FLAME_FILL[0] + dx}, {FLAME_FILL[1]},")
+        lines.append(f"            {java_rect(s['status'])}, {java_rect(s['redstone'])}, {REDSTONE_ICONS[0] + dx}, {REDSTONE_ICONS[1]},")
         gauges = ", ".join(f"new MachineLayout.Gauge({java_rect(tk[:4])}, {java_rect(dump_rect(*tk[:4]) if tk[5] else None)})"
                            for tk in s.get("tanks", []))
         controls = ", ".join(f"new MachineLayout.Control(\"{c[0]}\", {java_rect(c[1:5])}, {c[5]}, {c[6]}, {c[7]}, \"{c[8]}\")"
                              for c in s.get("controls", []))
         lines.append(f"            {java_rect(s['readout'])}, {s['title'][0]}, {s['title'][1]}, List.of({gauges}),")
-        lines.append(f"            List.of({controls}));")
+        lines.append(f"            List.of({controls}), {texture_width(s)});")
         lines.append("")
     lines.append("    private MachineLayouts() {}")
     lines.append("}")

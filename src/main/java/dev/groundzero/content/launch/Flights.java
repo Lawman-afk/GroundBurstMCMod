@@ -92,6 +92,16 @@ public final class Flights extends SavedData {
         return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner);
     }
 
+    /** How high a flight of {@code range} blocks climbs above its pad. */
+    public static double apex(double range) {
+        return Mth.clamp(range * MissileEntity.APEX_SHARE, MissileEntity.MIN_APEX, MissileEntity.MAX_APEX);
+    }
+
+    /** How long a flight of {@code range} blocks takes, lighting to impact, in ticks. */
+    public static int flightTicks(double range) {
+        return (int) Mth.clamp((range + 2 * apex(range)) / MissileEntity.SPEED, 60, 1200);
+    }
+
     /** A medium missile lit at {@code pad} (its tail), bound for {@code target}, carrying {@code warhead}. */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, @Nullable Entity owner) {
         return launch(level, pad, target, warhead, SizeClass.M, false, owner);
@@ -99,8 +109,8 @@ public final class Flights extends SavedData {
 
     private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner) {
         double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
-        double apex = Mth.clamp(range * MissileEntity.APEX_SHARE, MissileEntity.MIN_APEX, MissileEntity.MAX_APEX);
-        int ticks = (int) Mth.clamp((range + 2 * apex) / MissileEntity.SPEED, 60, 1200);
+        double apex = apex(range);
+        int ticks = flightTicks(range);
         Flight f = new Flight(UUID.randomUUID(), pad, target, apex, ticks, warhead.copyWithCount(1), owner == null ? null : owner.getUUID());
         f.body = body;
         f.hardened = hardened;

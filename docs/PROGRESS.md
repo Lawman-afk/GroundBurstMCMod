@@ -19,7 +19,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 4 | Power, cables, processing machines, multiblock framework, Fission Reactor, Particle Accelerator, Fusion and Singularity Reactors | **in progress** (slices 1–8 built; 6: diesel/RTG/capacitors/charger/decon; 7: Fission Reactor + Particle Accelerator; 8: Fusion + Singularity Reactors) — needs in-game test |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **done, awaiting the user's in-game check** (5a server engine, 5b sync/persistence/sound, crater character, 5c Spectacle and its v2 with the mushroom cloud, 5d reactor meltdown; heat haze deferred) |
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
-| 7 | Components & Assembly Bench | **in progress** (7a warheads and 7b missiles from parts done; next 7c stats panel and 3D preview) |
+| 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
 | 8 | Nuclear weapons | todo |
 | 9 | Launch platforms, missile flight, launch control, designators | started (basic launch site built early, 2026-10-21) |
 | 10 | Radar & interceptors | todo |
@@ -194,7 +194,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Casings & bodies | done: Light/Medium/Heavy warhead casings (7a); Tactical/Medium/Heavy missile bodies (7b) |
 | Fuzes, guidance, propulsion, modules | done for the conventional tier: Impact and Barometric fuzes (7a); SRM I / SRM II / Liquid-fuel Stage, Inertial and GPS guidance, Hardened Electronics (7b); more modules later |
 | Assembly Bench block, model, animation | done (7a) — needs in-game look |
-| Assembly GUI (schematic slots, 3D preview, stats, validation, fuze settings, Fabricate tab) | 7a/7b: Warheads and Missiles pages, readout with validation, fuze setting, guidance line, Assemble/Take Apart, per-half sides, JEI categories; 3D preview and stats todo (7c) |
+| Assembly GUI (schematic slots, 3D preview, stats, validation, fuze settings, Fabricate tab) | done: Warheads and Missiles pages, readout with validation, fuze setting, guidance line, Assemble/Take Apart, per-half sides, JEI categories (7a/7b); wider window with a draggable 3D preview and a stats screen (7c); Ammunition page with Phase 13 |
 | Weapon data components + tooltips | done: fuze (7a) and missile (7b) components with tooltips |
 | Assembled missiles in the silo | done (7b): one Missile slot, range from its motor, scatter from its guidance, body scales the model — needs in-game look |
 | Disassembly, blueprints slot | 7a: Take Apart done; blueprints with Phase 15 loot |

@@ -853,6 +853,9 @@ The bench is two blocks wide, and its side configuration (the wrench tab) covers
     spot("assembly_bench", """
 The readout says what the parts on the bench make, and in red what is missing or wrong (a core and a casing of different classes will not go together).
 """),
+    text("""
+**Preview and figures.** The column on the right of the screen shows what the parts make (or what waits in the output slot) as a model you can drag round, and under it its figures: a warhead's blast radii, its yield and its fuze; a missile's warhead, then its range, how high it climbs, how long it flies and how close it lands at full range, and whether it is hardened against EMP.
+"""),
     craft("assembly_bench"),
     text("""
 **Payload cores** decide what a warhead does; each makes one warhead (its class in brackets).

@@ -20,13 +20,14 @@ import net.minecraft.resources.Identifier;
  * @param readout    CRT text panel for live values (generators), or null
  * @param tank       fluid gauge for the machine's input tank, or null
  * @param controls   machine-specific gauges and buttons (reactor heat and control rods)
+ * @param textureWidth the texture's width (256, or 512 for a window too wide to leave its fill sprites clear); 256 tall
  */
 public record MachineLayout(Identifier texture, int width, int height, List<Pos> slots, int inventoryX, int inventoryY,
                             Rect energy, int energyFillU, int energyFillV,
                             @Nullable Rect progress, int progressFillU, int progressFillV,
                             @Nullable Rect flame, int flameFillU, int flameFillV,
                             Rect status, Rect redstone, int redstoneU, int redstoneV, @Nullable Rect readout, int titleX, int titleY,
-                            List<Gauge> tanks, List<Control> controls) {
+                            List<Gauge> tanks, List<Control> controls, int textureWidth) {
 
     public record Pos(int x, int y) {}
 

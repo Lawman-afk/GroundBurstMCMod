@@ -580,7 +580,7 @@ public final class FxPhotographer {
         // The bench's screen while it assembles.
         if (scene.name().equals("assembly_missile_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
             var screen = mc.gui.screen();                                  // the Missiles tab, on the window's left edge
-            double tx = screen.width / 2.0 - 88 - 12, ty = screen.height / 2.0 - 105 + 48;
+            double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
