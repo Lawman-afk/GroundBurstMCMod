@@ -40,7 +40,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:cluster_warhead",
-      "text": "Delivered by a missile, it bursts **30 blocks over its target** and rains **32 bomblets** over a circle about 24 blocks round; set off on the ground, it throws 24 of them up and out to about 18 blocks. Each bomblet goes off where it lands with a blast of its own. One in twenty is a dud that lies where it fell as a live landmine."
+      "text": "Delivered by a missile, it bursts **30 blocks over its target** and rains **32 bomblets** that land within about 20 blocks of that point; set off on the ground, it throws 24 of them up and out to about 18 blocks. Each bomblet goes off where it lands with a blast of its own. One in twenty is a dud that lies where it fell as a live landmine."
     },
     {
       "type": "spotlight",

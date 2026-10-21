@@ -72,8 +72,9 @@ public class AssemblyBenchScreen extends MachineScreen {
     /** The preview window and the stats screen (gui.py draws them: the layouts' "preview" and "stats"). */
     private static final int VIEW_X = 183, VIEW_Y = 22, VIEW_W = 94, VIEW_H = 80;
     private static final int STATS_X = 183, STATS_Y = 110, STATS_W = 94, STATS_H = 92;
-    /** Pixels per block in the preview: a warhead (a block at most) or a missile (a Heavy one is 2.4 blocks tall). */
-    private static final float WARHEAD_SCALE = 46, MISSILE_SCALE = 29;
+    /** The preview's tilt limits (degrees) and its margin round the model (pixels). */
+    private static final float MIN_PITCH = -10, MAX_PITCH = 70;
+    private static final int MARGIN = 4;
     private static final int STAT_HEADER = 0xFFFFE2A8, STAT_LABEL = 0xFFC88A34, STAT_VALUE = 0xFFFFB84A, STAT_NOTE = 0xFFE8A54A,
             STAT_EMPTY = 0xFF9A7440;
     private static final String T_DRAG = GZLang.add(GroundZero.MODID + ".assembly.drag", "Drag to Turn It");
@@ -88,6 +89,10 @@ public class AssemblyBenchScreen extends MachineScreen {
     private float yaw = 30, pitch = 20;
     private boolean dragging;
     private long lastDrag, lastFrame = Util.getMillis();
+    /** The last subject measured, and its model's bounds (blocks, as drawn with no GUI pose). */
+    private final net.minecraft.client.renderer.item.ItemStackRenderState measure = new net.minecraft.client.renderer.item.ItemStackRenderState();
+    private ItemStack measured = ItemStack.EMPTY;
+    private net.minecraft.world.phys.AABB bounds = new net.minecraft.world.phys.AABB(0, 0, 0, 0, 0, 0);
 
     public AssemblyBenchScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -248,10 +253,13 @@ public class AssemblyBenchScreen extends MachineScreen {
         if (!subject.isEmpty()) {
             MissileSpec spec = subject.get(GZDataComponents.MISSILE.get());
             float[] size = spec == null ? new float[] {1, 1} : MissileParts.scale(spec.body());
-            // A missile's item model is 2 blocks tall, drawn from its middle block; a warhead's is one block.
-            float lift = spec == null ? 0 : -0.5f;
-            g.submitPictureInPictureRenderState(new ItemPreview.State(subject, size, lift, this.yaw, this.pitch, x, y, x + VIEW_W, y + VIEW_H,
-                    spec == null ? WARHEAD_SCALE : MISSILE_SCALE, g.peekScissorStack()));
+            net.minecraft.world.phys.AABB box = bounds(subject);
+            // Zoomed to fit the model; a missile as if it had a Heavy body, so a smaller body stands smaller.
+            float[] fitSize = spec == null ? size : MissileParts.scale(dev.groundzero.content.assembly.SizeClass.L);
+            float scale = ItemPreview.fit(box, fitSize, VIEW_W - 2 * MARGIN, VIEW_H - 2 * MARGIN, MIN_PITCH, MAX_PITCH);
+            float[] centre = {(float) (box.minX + box.maxX) / 2, (float) (box.minY + box.maxY) / 2, (float) (box.minZ + box.maxZ) / 2};
+            g.submitPictureInPictureRenderState(new ItemPreview.State(subject, size, centre, this.yaw, this.pitch, x, y, x + VIEW_W, y + VIEW_H,
+                    scale, g.peekScissorStack()));
         }
         if (overPreview(mouseX, mouseY) && !subject.isEmpty()) {
             g.requestCursor(CursorTypes.RESIZE_ALL);
@@ -259,6 +267,17 @@ public class AssemblyBenchScreen extends MachineScreen {
                 g.setTooltipForNextFrame(Component.translatable(T_DRAG), mouseX, mouseY);
             }
         }
+    }
+
+    /** The subject's model bounds (measured again only when the subject changes). */
+    private net.minecraft.world.phys.AABB bounds(ItemStack subject) {
+        if (!ItemStack.isSameItemSameComponents(subject, this.measured)) {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            mc.getItemModelResolver().updateForTopItem(this.measure, subject, net.minecraft.world.item.ItemDisplayContext.NONE, mc.level, null, 0);
+            this.bounds = this.measure.getModelBoundingBox();
+            this.measured = subject.copy();
+        }
+        return this.bounds;
     }
 
     private boolean overPreview(double mx, double my) {
@@ -367,7 +386,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
         if (this.dragging) {
             this.yaw += (float) dx * 1.5f;
-            this.pitch = (float) Math.max(-10, Math.min(70, this.pitch + dy));
+            this.pitch = (float) Math.max(MIN_PITCH, Math.min(MAX_PITCH, this.pitch + dy));
             this.lastDrag = Util.getMillis();
             return true;
         }

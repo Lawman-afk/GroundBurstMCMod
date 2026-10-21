@@ -32,8 +32,22 @@ import net.minecraft.world.level.saveddata.SavedDataType;
  * (a few a tick), when they unload, and again when a computer asks for them and they are loaded but stale (craters show).
  */
 public final class TerrainSurvey extends SavedData {
-    /** How far round a computer the ground is mapped (blocks, square). */
-    public static final int RANGE = 1024;
+    /**
+     * How far round a computer the ground is mapped (blocks, square): a Liquid-fuel Stage's 2500 blocks from a silo, with
+     * room for the computer standing some way off from it.
+     */
+    public static final int RANGE = 3000;
+    /** Blocks a map pixel at each zoom step (32: the whole survey on the computer's screen). */
+    public static final int[] SCALES = {1, 2, 4, 8, 16, 32};
+
+    public static boolean validScale(int scale) {
+        for (int s : SCALES) {
+            if (s == scale) {
+                return true;
+            }
+        }
+        return false;
+    }
     /** Map tiles are this many samples a side; a tile at scale s covers TILE * s blocks. */
     public static final int TILE = 64;
     private static final int QUEUE_PER_TICK = 32, FRESH_PER_TILE = 64, STALE_TICKS = 200;

@@ -79,7 +79,9 @@ public final class FxPhotographer {
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
                 new Scene("assembly_jei", "assembly", 4, 0, List.of(25)),
                 new Scene("tall_ui", "tall", 4, 0, List.of(30)),
-                new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)))) {
+                new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)),
+                new Scene("assembly_mow_ui", "assembly", 4, 0, List.of(30, 44)),
+                new Scene("launch_map_ui", "launch", 9, 0, List.of(40, 80)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -524,7 +526,7 @@ public final class FxPhotographer {
                     return;
                 }
                 if (s.profile().startsWith("launch")) {
-                    launchSite(level, x, ground, s.profile().equals("launch_dive"), s.name().equals("launch_ui"));
+                    launchSite(level, x, ground, s.profile().equals("launch_dive"), s.name().equals("launch_ui") || s.name().equals("launch_map_ui"));
                     return;
                 }
                 if (s.profile().equals("napalm")) {
@@ -559,7 +561,7 @@ public final class FxPhotographer {
         if (scene.name().equals("radar_ui") && step >= 0 && clock == 10 && radarAt != null) {
             dev.groundzero.content.launch.RadarArrayBlock.screenHook.accept(radarAt);
         }
-        if (scene.name().equals("launch_ui") && step >= 0 && clock == 10 && launchComputer != null) {
+        if ((scene.name().equals("launch_ui") || scene.name().equals("launch_map_ui")) && step >= 0 && clock == 10 && launchComputer != null) {
             dev.groundzero.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);
         }
         // The map's mouse, as the game sends it: a right-button drag 40 px left and up, then a left click right of centre.
@@ -577,6 +579,33 @@ public final class FxPhotographer {
                 screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left));
             }
         }
+        // The computer's map zoomed all the way out (32 blocks a pixel: the whole 3000-block survey).
+        if (scene.name().equals("launch_map_ui") && step >= 0 && clock == 14 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();
+            double cx = screen.width / 2.0 - 168 + 8 + 92, cy = screen.height / 2.0 - 107 + 14 + 92;
+            for (int i = 0; i < 6; i++) {
+                screen.mouseScrolled(cx, cy, 0, -1);
+            }
+        }
+        // The biggest warhead on the bench (the preview must zoom out to fit it), then as a Heavy missile.
+        if (scene.name().equals("assembly_mow_ui") && step >= 0 && clock == 8 && benchAt != null) {
+            var bench = benchAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
+                    be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MASSIVE_ORDNANCE_CHARGE.get()));
+                    be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING.get()));
+                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item().get()));
+                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY.get()));
+                }
+            });
+        }
+        if (scene.name().equals("assembly_mow_ui") && step >= 0 && clock == 36 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();                                  // the Missiles tab
+            double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
+            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
+            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
+            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
+        }
         // The bench's screen while it assembles.
         if (scene.name().equals("assembly_missile_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
             var screen = mc.gui.screen();                                  // the Missiles tab, on the window's left edge
@@ -585,7 +614,8 @@ public final class FxPhotographer {
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
-        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui")) && step >= 0 && clock == 12 && benchAt != null) {
+        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui") || scene.name().equals("assembly_mow_ui"))
+                && step >= 0 && clock == 12 && benchAt != null) {
             var bench = benchAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
@@ -619,7 +649,7 @@ public final class FxPhotographer {
         // Then its side-configuration tab opened (the two-block layout), for the second shot.
         if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.gui.screen() != null) {
             var screen = mc.gui.screen();
-            double tx = screen.width / 2.0 + 88 + 8, ty = screen.height / 2.0 - 105 + 14;
+            double tx = screen.width / 2.0 + 144 + 8, ty = screen.height / 2.0 - 105 + 14;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));

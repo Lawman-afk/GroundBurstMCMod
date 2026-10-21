@@ -116,8 +116,8 @@ public final class LaunchPayloads {
     }
 
     /**
-     * The screen asks for map tiles round the computer (see {@link TerrainSurvey#tile}): at {@code scale} (1, 2, 4 or 8
-     * blocks a sample), each tile packed as ChunkPos.pack(tx, tz). Only a formed, powered computer maps, and only within
+     * The screen asks for map tiles round the computer (see {@link TerrainSurvey#tile}): at {@code scale} (one of
+     * {@link TerrainSurvey#SCALES} blocks a sample), each tile packed as ChunkPos.pack(tx, tz). Only a formed, powered computer maps, and only within
      * its survey range; a few dozen tiles at a time.
      */
     public record MapRequest(BlockPos pos, int scale, List<Long> tiles) implements CustomPacketPayload {
@@ -135,7 +135,7 @@ public final class LaunchPayloads {
         public static void handle(MapRequest p, IPayloadContext context) {
             LaunchComputerBlockEntity c = computer(context, p.pos());
             int scale = p.scale();
-            if (c == null || !c.isFormed() || !c.powered() || !(scale == 1 || scale == 2 || scale == 4 || scale == 8)
+            if (c == null || !c.isFormed() || !c.powered() || !TerrainSurvey.validScale(scale)
                     || !(context.player() instanceof ServerPlayer player)) {
                 return;
             }
