@@ -623,6 +623,11 @@ visual, sound  ids of the client visual preset and sound set
 - A ray whose energy is spent continues as a **pressure ray** through the structural/scorch/fire bands, applying the
   conversion table instead of destroying.
 - A per-section bitset prevents double-processing where split rays overlap.
+- **After the front** (2026-10-22, after the in-game look at the nukes): a clean-up phase looks at every block a ray
+  reached but did not destroy; a cluster of up to 4 blocks that touches no other solid block is removed (no lone
+  blocks hanging over the crater floor). Then the fires and rubble the ground pass chose are put down, each only where
+  its ground is still there (the crater reaches the ground under a ring after the ring itself, so fires placed as the
+  ring passed were left in the air). Then the rim's neighbour updates.
 
 ### 11.3 Budgeting and writing
 - Each `BlastJob` advances inside a **per-tick time budget** (default 12 ms across all jobs) and a **block-change
@@ -828,7 +833,9 @@ condensation cloud, a spreading base surge). Our own design from that:
   the outside) while the whole torus rises (height H = 2 craters, approached exponentially) and widens; the roll slows
   over minutes. *Stem*: fed from the ground under the burst, drawn inward and up into the cap's underside, where it
   joins the roll. *Collar and condensation*: a white ring under the cap, and a short-lived white shell round the
-  fireball at 1-7 s. Hot cloudlets glow by their distance to the core, cooling over a minute; the cloud lasts minutes,
+  fireball at 1-7 s. *Base ring* (2026-10-22, after the in-game look): the stem stands on the crater's floor (the start
+  packet carries the crater's depth), and a ring of dust (380 cloudlets at full quality) rolls slowly outward round
+  its foot, its lower half down in the crater bowl, so the cloud does not float over the hole it dug. Hot cloudlets glow by their distance to the core, cooling over a minute; the cloud lasts minutes,
   drifts with the wind and thins out.
 - **Cloud lighting** for every smoke-like puff: shaded by a normal from the cloud's own shape (from the torus core
   circle, the stem axis, or a plume's centre) against the sun's direction, ambient from the sky colour, all scaled by
@@ -1136,6 +1143,9 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   a wide first stage in black-and-white roll quadrants with four big swept black fins and four nozzles, a riveted
   interstage, a slimmer white second stage with a data plate, the warhead's nose; about 11 blocks on the complex (its
   own bones, `strategic` / `snose_*`) and in flight (lifted by `STRATEGIC_TAIL`, as item models stop at y -16).
+- **Class XL** (after the in-game look: the warheads' tooltips said S and M): both nuclear cores are class XL
+  (Strategic) and take the new lead-lined **Strategic Warhead Casing** (a Heavy casing, lead and dense plates), so the
+  warhead's class matches the Strategic missile that carries it.
 - **Stats:** design yields ("300 t", "15 kt") instead of the TNT formula, Fallout Radius and Fallout Lasts rows and a
   note that only a Launch Complex fires it (the "Blast Radius" header went, so a fission warhead's list still fits the
   screen at GUI scale 3). Missile tooltip: "Nuclear: fires only from a Launch Complex".
@@ -1356,7 +1366,11 @@ straight into the Launch Complex's missile slot. Its own model on the complex; i
   lips, diagonal hold-down posts, console and housing; a grey braced service tower with orange-railed platforms every
   four storeys, a roof mast and red beacon; two orange umbilical arms with clamps and hoses that swing clear at T-13
   and T-9 (a 20 s clip, so it does not loop back during the ignition smoke) and rest clear while no missile is loaded
-  (the new `AnimatedMachine.idleAnimation()`); the missile scaled by its body as on the silo.
+  (the new `AnimatedMachine.idleAnimation()`); the missile scaled by its body as on the silo. After the in-game look:
+  each arm turns on a hinge (a pin between two knuckles off a spine up the tower's face) and swings 75° rather than
+  100° so it clears the tower's posts (the silo's arm the same); the upper arm has a second clamp, shown for a Strategic
+  missile, that reaches in to its slimmer second stage; the Strategic missile's first stage is cut in quadrants so its
+  roll pattern has solid corners.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -2185,6 +2199,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Nuclear warheads are class XL with a Strategic Warhead Casing; blasts clean up floating clusters and place fire only on standing ground after the front; mushroom clouds stand on the crater floor with a rolling base ring; launcher arms hinge on their towers and swing 75°. |
 | 2026-10-22 | After the 8a in-game look: the bench's page is saved and steers shift-clicks and automation; nuclear warheads ride their own Strategic (XL) missile, longer and differently styled, the peak of what fits a missile, with bigger weapons built whole by a planned Strategic Assembly Hall; every nuclear weapon rescaled so the smallest is 1.5x the MOW and the Tsar is truly massive. |
 | 2026-10-22 | Phase 8 plan (the user chose "own launcher first" and "contamination zones now"): nuclear warheads are bench-assembled but fly only from a new Launch Complex (built first); fallout uses the meltdown's contamination zones until Phase 12. A nuclear warhead gives its yield only when its missile brings it down; any other way it fizzles (small blast, weak contamination), so nukes never chain-detonate. Slices 8a (complex, tactical and fission), 8b (boosted, H-bomb, neutron, cobalt, dirty), 8c (XL: Tsar, Strategic body, ICBM booster). |
 | 2026-10-22 | The Launch Computer maps 3000 blocks round it (was 1024), zoom out to 1:32: a Liquid-fuel Stage reaches 2500 blocks from its silo, and the computer may stand some way off. The bench preview zooms to fit each model. |

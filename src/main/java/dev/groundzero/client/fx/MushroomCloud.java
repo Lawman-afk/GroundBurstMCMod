@@ -20,9 +20,11 @@ import net.minecraft.world.phys.Vec3;
  * cap cloudlet has its own shell, a fraction of the minor radius {@code r = 0.55 R}, and is pulled onto it while it is
  * carried round the core circle: up the inside, out over the top, down the outside, as rising fireballs roll. The roll
  * slows over a minute or so. The stem is fed from the ground under the burst: cloudlets drawn inward and up (a wide
- * skirt at the foot, narrowing above) until they reach the cap's underside and join its roll from the inside. A white
- * collar rings the stem under the cap, and for the first seconds a white condensation shell (the Wilson cloud) spreads
- * round the fireball and evaporates.
+ * skirt at the foot, narrowing above) until they reach the cap's underside and join its roll from the inside. The stem
+ * stands on the crater's floor, and a ring of dust rolls slowly outward round its foot, its lower half down in the
+ * crater bowl, so the cloud does not float over the hole it dug (after the in-game look). A white collar rings the stem
+ * under the cap, and for the first seconds a white condensation shell (the Wilson cloud) spreads round the fireball and
+ * evaporates.
  *
  * <p><b>Look.</b> Cloudlets are lit like clouds ({@link FxLight}): a normal out from the core circle (cap) or the axis
  * (stem), sunlight from the sun's direction, the sky's colour in the shade, undersides darker. Near the core the cap
@@ -31,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  * shows above the horizon from well beyond the render distance.
  */
 final class MushroomCloud {
-    private enum Role { CAP, STEM, COLLAR, SHELL }
+    private enum Role { CAP, STEM, COLLAR, SHELL, BASE }
 
     private static final class Cloudlet {
         Role role;
@@ -43,13 +45,15 @@ final class MushroomCloud {
         int variant;
         double birth;
         int life;
-        /** Azimuth (collar, shell) and elevation (shell). */
-        float phi, elev, jitter;
+        /** Azimuth (collar, shell, base ring) and elevation (shell); the base ring's roll round its minor circle. */
+        float phi, elev, jitter, roll;
         float rot;
     }
 
     private final Vec3 center;
-    private final double ground;
+    /** The ground's height under the burst, and the crater floor's (the stem stands on the floor). */
+    private final double ground, floor;
+    private final float crater;
     private final float fireball, height, r0, r1;
     private final float windX, windZ;
     private final int life;
@@ -57,23 +61,27 @@ final class MushroomCloud {
     private final RandomSource random;
     private final int earth;
     private final List<Cloudlet> cloudlets = new ArrayList<>();
-    private int stemSent, capSent, collarSent;
+    private int stemSent, capSent, collarSent, baseSent;
     /** Grey dust, barely glowing (a huge conventional blast), rather than a nuclear fire cloud. */
     private final boolean dusty;
     private boolean shellSent;
-    private final int capCount, stemCount, collarCount, shellCount;
+    private final int capCount, stemCount, collarCount, shellCount, baseCount;
 
     /**
      * @param fireball the fireball's radius
      * @param crater   the crater radius (sets the cloud's height)
      * @param ground   the ground's height under the burst
+     * @param floor    the crater floor's height (the ground's, for a burst that digs none)
      * @param earth    the colour of the ground (the stem is that dust)
      * @param dusty    a grey dust cloud that hardly glows (unused since the Massive Ordnance Warhead lost its mushroom), not a nuclear fire cloud
      */
-    MushroomCloud(Vec3 center, double ground, float fireball, float crater, long seed, float quality, int earth, int life, boolean dusty) {
+    MushroomCloud(Vec3 center, double ground, double floor, float fireball, float crater, long seed, float quality, int earth, int life,
+            boolean dusty) {
         this.dusty = dusty;
         this.center = center;
         this.ground = Math.min(ground, center.y);
+        this.floor = Math.min(this.ground, floor);
+        this.crater = crater;
         this.fireball = fireball;
         this.height = Math.max(40, Math.min(400, crater * 2));
         this.r0 = fireball * 0.55f;
@@ -89,6 +97,7 @@ final class MushroomCloud {
         this.stemCount = (int) (900 * quality);
         this.collarCount = (int) (260 * quality);
         this.shellCount = (int) (220 * quality);
+        this.baseCount = (int) (380 * quality);
     }
 
     // --- the shape over time ---------------------------------------------------------------------------------------------------
@@ -145,7 +154,16 @@ final class MushroomCloud {
         return t >= this.life;
     }
 
-    /** Stem radius at height fraction {@code h} (0 at the ground, 1 at the cap's underside): a wide skirt, then a column. */
+    /** The base ring's major radius (round the axis) and minor radius, at {@code t}: it spreads out a little as it rolls. */
+    private double baseRing(double t) {
+        return this.crater * (0.55 + 0.35 * (1 - Math.exp(-t / 400)));
+    }
+
+    private double baseMinor() {
+        return Math.max(4, this.crater * 0.3);
+    }
+
+    /** Stem radius at height fraction {@code h} (0 at the crater floor, 1 at the cap's underside): a wide skirt, then a column. */
     private double stemRadius(double t, double h) {
         double big = ringRadius(t);
         return big * (0.3 - 0.12 * h) + big * 0.35 * Math.pow(1 - h, 5);
@@ -175,7 +193,7 @@ final class MushroomCloud {
                     c.y += vy + (this.random.nextFloat() - 0.5f) * 0.08;
                 }
                 case STEM -> {
-                    double h = Math.max(0, Math.min(1, (c.y - this.ground) / Math.max(1, underside - this.ground)));
+                    double h = Math.max(0, Math.min(1, (c.y - this.floor) / Math.max(1, underside - this.floor)));
                     double up = 0.22 + 1.2 * climb;
                     rho += 0.05 * (c.shell * stemRadius(t, h) - rho);
                     c.y += up;
@@ -197,6 +215,16 @@ final class MushroomCloud {
                     double radius = this.fireball * (1.15 + 0.012 * t);
                     rho = radius * Math.cos(c.elev);
                     c.y = this.center.y + radius * Math.sin(c.elev);
+                    dx = Math.cos(c.phi);
+                    dz = Math.sin(c.phi);
+                }
+                case BASE -> {
+                    // Rolling round its minor circle, out over the top and down into the crater, creeping round the axis.
+                    c.roll += 0.004f;
+                    c.phi += 0.0007f;
+                    double ring = baseRing(t), minor = baseMinor() * c.shell;
+                    rho = Math.max(1, ring + Math.cos(c.roll) * minor);
+                    c.y = this.ground + 0.15 * baseMinor() + Math.sin(c.roll) * minor * 0.75;
                     dx = Math.cos(c.phi);
                     dz = Math.sin(c.phi);
                 }
@@ -233,10 +261,18 @@ final class MushroomCloud {
                 c.phi = this.random.nextFloat() * 6.283f;
                 double rho = c.shell * stemRadius(t, 0);
                 c.x = ax + Math.cos(c.phi) * rho;
-                c.y = this.ground + 0.5 + this.random.nextFloat() * 3;
+                c.y = this.floor + 0.5 + this.random.nextFloat() * 3;
                 c.z = az + Math.sin(c.phi) * rho;
                 c.scale = 0.75f + 0.5f * this.random.nextFloat();
                 add(c);
+            }
+        }
+        // The ring of dust round the stem's foot, from a couple of seconds in.
+        if (t > 30 && t < stemFeed()) {
+            int baseDue = (int) (this.baseCount * Math.min(1, (t - 30) / 260));
+            while (this.baseSent < baseDue) {
+                this.baseSent++;
+                add(baseCloudlet(t));
             }
         }
         // The collar under the cap, from the second few seconds.
@@ -263,6 +299,19 @@ final class MushroomCloud {
                 add(c);
             }
         }
+    }
+
+    private Cloudlet baseCloudlet(double t) {
+        Cloudlet c = cloudlet(Role.BASE, t, 1700 + this.random.nextInt(900));
+        c.phi = this.random.nextFloat() * 6.283f;
+        c.roll = this.random.nextFloat() * 6.283f;
+        c.shell = (float) Math.sqrt(0.15 + 0.85 * this.random.nextDouble());
+        c.scale = 0.8f + 0.5f * this.random.nextFloat();
+        double rho = baseRing(t) + Math.cos(c.roll) * baseMinor() * c.shell;
+        c.x = axisX(t) + Math.cos(c.phi) * rho;
+        c.y = this.ground + Math.sin(c.roll) * baseMinor() * c.shell * 0.75;
+        c.z = axisZ(t) + Math.sin(c.phi) * rho;
+        return c;
     }
 
     private Cloudlet cloudlet(Role role, double t, int life) {
@@ -318,10 +367,14 @@ final class MushroomCloud {
                 double h = this.random.nextDouble();
                 double rho = c.shell * stemRadius(t, h);
                 c.x = ax + Math.cos(c.phi) * rho;
-                c.y = this.ground + h * (underside - this.ground);
+                c.y = this.floor + h * (underside - this.floor);
                 c.z = az + Math.sin(c.phi) * rho;
                 c.scale = 0.75f + 0.5f * this.random.nextFloat();
                 add(c);
+            }
+            this.baseSent = this.baseCount;
+            for (int i = 0; i < this.baseCount; i++) {
+                add(baseCloudlet(t - this.random.nextInt(200)));
             }
         }
     }
@@ -366,7 +419,7 @@ final class MushroomCloud {
                     glow = heat * (Math.exp(-Math.pow(dist / (0.8 * small), 2)) + Math.max(0, 1 - t / 90) * 0.8);
                 }
                 case STEM -> {
-                    double h = Math.max(0, Math.min(1, (y - this.ground) / Math.max(1, underside - this.ground)));
+                    double h = Math.max(0, Math.min(1, (y - this.floor) / Math.max(1, underside - this.floor)));
                     nx = (float) dx;
                     ny = 0.3f;
                     nz = (float) dz;
@@ -375,6 +428,17 @@ final class MushroomCloud {
                     alpha = 0.6f;
                     albedo = stemAlbedo;
                     glow = heat * 0.35 * h * h;
+                }
+                case BASE -> {
+                    // Dust lit from above, darker down in the crater; it fades in as it builds and out as it ages.
+                    double low = Math.max(0, Math.min(1, (this.ground - y) / Math.max(1, this.ground - this.floor)));
+                    nx = (float) dx;
+                    ny = 0.5f;
+                    nz = (float) dz;
+                    shadow = (float) (0.8 - 0.25 * low);
+                    size = (float) (c.scale * baseMinor() * 0.95);
+                    alpha = 0.55f * (float) Math.min(1, (c.life - age) / 300);
+                    albedo = Puffs.lerpRgb(stemAlbedo, DUST_ALBEDO, 0.35f);
                 }
                 case COLLAR -> {
                     nx = (float) dx;

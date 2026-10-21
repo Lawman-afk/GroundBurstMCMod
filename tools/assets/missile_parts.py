@@ -23,6 +23,7 @@ from gz.model import BlockModel  # noqa: E402
 from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
+import launch as L  # noqa: E402
 
 prism, shaded, fill_all = G.prism, G.shaded, G.fill_all
 STEEL, BRASS, YELLOW, BLACK, WHITE = P.STEEL, P.BRASS, P.HAZARD_YELLOW, P.HAZARD_BLACK, P.WHITE_CERAMIC
@@ -73,7 +74,11 @@ def strategic_body() -> None:
     """The Strategic Missile Body (Phase 8): two stages, open at the top (the warhead seats there), the first wider and
     painted in black-and-white roll quadrants, a riveted interstage, big black fins: the long missile's livery."""
     m = model("strategic_missile_body")
-    stage1 = prism(m, "stage1", 8, 8, 3.4, 2.3, 2, 8)
+    # The first stage in quadrants, so its roll pattern has solid corners (the same cut as the missile's, launch.py).
+    stage1 = []
+    for suffix, frm, to, faces, quadrant in L.quad_boxes(3.4, 2.3, 2, 8):
+        m.box(f"stage1_{suffix}", frm, to, faces=faces)
+        stage1.append((f"stage1_{suffix}", quadrant))
     ring = prism(m, "ring", 8, 8, 3.5, 2.35, 8, 8.8)
     stage2 = prism(m, "stage2", 8, 8, 2.9, 1.95, 8.8, 15)
     m.box("fin_x", (2.4, 1.5, 7.6), (13.6, 6, 8.4))
@@ -81,16 +86,19 @@ def strategic_body() -> None:
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
 
-    def quadrants(t, r, d):
-        shaded(WHITE)(t, r, d)
-        x, y, w, h = r
-        if d in SIDES:
-            face = 0 if d in ("north", "south") else 1
-            for yy in range(y, y + h):
-                for xx in range(x, x + w):
-                    if (((yy - y) * 2 // max(1, h)) + (0 if (xx - x) * 2 < w else 1) + face) % 2 == 0:
-                        t.px(xx, yy, BLACK[2])
-    fill_all(m, t, stage1, quadrants)
+    def quadrants(quadrant):
+        def fn(t, r, d):
+            x, y, w, h = r
+            tone = {"up": 5, "down": 2}.get(d, 4 if d in ("north", "west") else 3)
+            if d in SIDES:
+                for yy in range(y, y + h):               # two bands, each quadrant one colour
+                    band = (yy - y) * 2 // max(1, h)
+                    t.hline(x, yy, w, L.roll_colour(quadrant, band, BLACK[tone - 1], WHITE[tone]))
+            else:
+                t.rect(x, y, w, h, L.roll_colour(quadrant, 1, BLACK[tone - 1], WHITE[tone]))
+        return fn
+    for name, quadrant in stage1:
+        m.paint_all(t, name, quadrants(quadrant))
     fill_all(m, t, ring, shaded(GUN))
 
     def upper(t, r, d):

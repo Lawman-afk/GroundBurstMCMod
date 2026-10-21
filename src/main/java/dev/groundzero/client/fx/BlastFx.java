@@ -64,8 +64,11 @@ final class BlastFx {
         this.ground = top > c.y + crater() || top <= level.getMinY() ? c.y - 0.5 : top;
         at.setY((int) Math.floor(this.ground) - 1);
         this.earth = earthColor(level, at);
+        // Where the crater's floor will be: under a burst at or near the ground the cloud's stem stands on it (the burst
+        // high above the ground digs no crater, and the stem stands on the ground).
+        double floor = c.y - start.depth() < this.ground ? Math.min(this.ground, c.y - start.depth()) : this.ground;
         this.mushroom = this.preset.mushroom() > 0
-                ? new MushroomCloud(c, this.ground, fireballRadius(), crater(), start.seed(), Spectacle.quality(), this.earth, this.preset.mushroom(),
+                ? new MushroomCloud(c, this.ground, floor, fireballRadius(), crater(), start.seed(), Spectacle.quality(), this.earth, this.preset.mushroom(),
                         this.preset.dusty())
                 : null;
         double t = now - this.born;

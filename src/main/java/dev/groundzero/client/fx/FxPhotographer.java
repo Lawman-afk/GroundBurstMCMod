@@ -58,6 +58,8 @@ public final class FxPhotographer {
                 new Scene("nuke_tactical", "tactical_nuclear_warhead", 200, -10, List.of(3, 20, 80, 300, 700)),
                 new Scene("nuke_fission", "fission_warhead", 330, -14, List.of(3, 30, 120, 400, 900)),
                 new Scene("complex", "complex", 34, -12, List.of(20, 150, 270, 335, 380)),
+                new Scene("complex_close", "complex", 13, -38, List.of(20, 150, 360)),
+                new Scene("launch_close", "launch", 11, -32, List.of(20, 150, 240)),
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
@@ -625,6 +627,7 @@ public final class FxPhotographer {
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
                     be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
+                    be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_CASING.get()));
                     be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
                     be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get()));
                     be.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get()));

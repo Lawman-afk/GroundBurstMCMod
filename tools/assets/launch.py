@@ -144,6 +144,33 @@ def missile_model(model_name: str, nose: str) -> None:
     m.display["firstperson_lefthand"] = ctx(0.35, (1, 3, 0), (0, 155, 0))
     m.save(t)
 
+#: The four quadrants round a missile's axis (between its fins), and which of them is black in the first band of a
+#: roll pattern (the others are white; the colours swap every band).
+QUADRANTS = ("ne", "se", "sw", "nw")
+BLACK_FIRST = ("ne", "sw")
+
+
+def quad_boxes(r: float, w: float, y0: float, y1: float, cx: float = 8, cz: float = 8):
+    """A "plus" prism cut into its four quadrants, eight boxes: (suffix, from, to, faces, quadrant). Every outer face
+    of a box lies in one quadrant, so a roll pattern painted per box has solid corners (each corner's two faces in the
+    same colour) and changes colour only across the middle of each side. North is -z, east +x."""
+    ends = ("up", "down")
+    return [
+        ("c_ne", (cx, y0, cz - w), (cx + r, y1, cz), ("east", "north") + ends, "ne"),
+        ("c_se", (cx, y0, cz), (cx + r, y1, cz + w), ("east", "south") + ends, "se"),
+        ("c_sw", (cx - r, y0, cz), (cx, y1, cz + w), ("west", "south") + ends, "sw"),
+        ("c_nw", (cx - r, y0, cz - w), (cx, y1, cz), ("west", "north") + ends, "nw"),
+        ("n_e", (cx, y0, cz - r), (cx + w, y1, cz - w), ("north", "east") + ends, "ne"),
+        ("n_w", (cx - w, y0, cz - r), (cx, y1, cz - w), ("north", "west") + ends, "nw"),
+        ("s_e", (cx, y0, cz + w), (cx + w, y1, cz + r), ("south", "east") + ends, "se"),
+        ("s_w", (cx - w, y0, cz + w), (cx, y1, cz + r), ("south", "west") + ends, "sw"),
+    ]
+
+
+def roll_colour(quadrant: str, band: int, black, white):
+    """The roll pattern: a quadrant's colour in a band."""
+    return black if ((quadrant in BLACK_FIRST) == (band % 2 == 0)) else white
+
 
 # --- the Strategic missile (Phase 8): the long two-stage missile that carries nuclear warheads -----------------------------
 #: Item pixels its model reaches below the usual missile's tail line (MissileParts.STRATEGIC_TAIL in Java).
@@ -163,7 +190,9 @@ def strategic_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
         parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("north", "south", "east", "west") + ends, paint))
         parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west") + ends, paint))
         parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west") + ends, paint))
-    prism("stage1", 2.4, 1.6, -10, 8, "stage1")
+    # The first stage in quadrants, so its roll pattern has solid corners (see quad_boxes).
+    for suffix, frm, to, faces, quadrant in quad_boxes(2.4, 1.6, -10, 8):
+        parts.append((f"stage1_{suffix}", frm, to, faces, f"stage1_{quadrant}"))
     prism("inter", 2.5, 1.65, 8, 9.2, "interstage")
     prism("stage2", 2.0, 1.3, 9.2, 23, "stage2")
     prism("nose0", 1.75, 1.15, 23, 26.5, "nose_base")
@@ -191,16 +220,14 @@ def strategic_paint(kind: str, nose: str = "none"):
     def fn(t: Tex, r, d):
         x, y, w, h = r
         sides = ("north", "south", "east", "west")
-        if kind == "stage1":
-            t.rect(x, y, w, h, WHITE[tone(d) + 1])
+        if kind.startswith("stage1_"):
+            quadrant = kind[len("stage1_"):]
             if d in sides:
-                face = 0 if d in ("north", "south") else 1
-                for yy in range(y, y + h):
+                for yy in range(y, y + h):               # three bands down the stage, each quadrant one colour
                     band = (yy - y) * 3 // max(1, h)
-                    for xx in range(x, x + w):
-                        half = 0 if (xx - x) * 2 < w else 1
-                        if (band + half + face) % 2 == 0:
-                            t.px(xx, yy, BLACK[tone(d) + 1])
+                    t.hline(x, yy, w, roll_colour(quadrant, band, BLACK[tone(d) + 1], WHITE[tone(d) + 1]))
+            else:
+                t.rect(x, y, w, h, roll_colour(quadrant, 2, BLACK[tone(d) + 1], WHITE[tone(d) + 1]))
             return
         if kind == "interstage":
             t.rect(x, y, w, h, GUN[tone(d)])
@@ -469,7 +496,7 @@ def radar_placard(t: Tex) -> None:
 def silo() -> None:
     g = GeoModel("launch_silo", tex_size=(256, 512))
     g.bone("frame")
-    g.bone("arm", pivot=(26, 101.5, 16), parent="frame")
+    g.bone("arm", pivot=(24, 101.5, 16), parent="frame")        # on its hinge pin, just off the tower's face
     g.bone("missile", pivot=(0, 14, 16), parent="frame")         # its tail on the pad: the body's size scales it from there
     for nose in W.NOSES:
         g.bone(f"nose_{nose}", parent="missile")
@@ -498,8 +525,15 @@ def silo() -> None:
             g.box(n, a, b, faces=("north", "south", "east", "west", "up", "down"), bone=F)
             girders.append(n)
     g.box("platform", (24, 140, 8), (40, 142, 24), bone=F)
-    g.box("arm_beam", (9.7, 100, 14), (27, 103, 18), bone="arm")
-    g.box("arm_clamp", (8.4, 98, 12), (9.7, 106, 20), faces=("west", "north", "south", "up", "down"), bone="arm")
+    g.box("arm_beam", (10.9, 100, 14), (23.5, 103, 18), bone="arm")
+    g.box("arm_clamp", (9.4, 98, 12), (10.9, 106, 20), faces=("west", "north", "south", "up", "down"), bone="arm")
+    # The arm's hinge: a spine up the tower's face, two knuckles off it and the pin the arm turns on.
+    hinge = ["hinge_spine", "hinge_top", "hinge_bottom", "hinge_pin"]
+    # (In these GeckoLib models "west" is the +x face, toward the tower, and "east" the face toward the missile.)
+    g.box("hinge_spine", (24.6, 0, 15), (25.3, 140, 17), faces=("east", "north", "south", "up"), bone=F)
+    g.box("hinge_top", (22.5, 103.5, 14.5), (24.6, 105.5, 17.5), faces=("east", "north", "south", "up", "down"), bone=F)
+    g.box("hinge_bottom", (22.5, 97.5, 14.5), (24.6, 99.5, 17.5), faces=("east", "north", "south", "up", "down"), bone=F)
+    g.box("hinge_pin", (23.5, 96.5, 15.5), (24.5, 106.5, 16.5), faces=("west", "north", "south", "east", "up", "down"), bone=F)
     # The missile, standing on the pad: the item model four times over (8 blocks), its tail on the pad's top; the
     # gantry arm holds its body below the nose.
     for name, frm, to, faces, kind in missile_parts():
@@ -552,6 +586,8 @@ def silo() -> None:
         g.paint_all(tex, p, lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1], r[2], GANTRY[5]) if d != "down" and r[3] > 2 else None))
     g.paint_all(tex, "arm_beam", lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], GANTRY[2])))
     g.paint_all(tex, "arm_clamp", shaded(GUN))
+    for n in hinge:
+        g.paint_all(tex, n, shaded(GUN) if n != "hinge_spine" else lambda t, r, d: t.rect(*r, GANTRY[tone(d) + 1]))
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
             for nose in W.NOSES:
@@ -561,7 +597,8 @@ def silo() -> None:
     g.save(tex)
     # The arm swings away from the missile during the countdown and stays away.
     count = Animation("working", 10.0, loop="hold_on_last_frame")
-    count.rotate("arm", {0: (0, 0, 0), 2.5: (0, -100, 0), 10: (0, -100, 0)}, easing="easeInOutSine")
+    # (75 degrees: swung any further it would pass through the tower's corner post.)
+    count.rotate("arm", {0: (0, 0, 0), 2.5: (0, -75, 0), 10: (0, -75, 0)}, easing="easeInOutSine")
     print(save_animations("launch_silo", [count]))
 
 
@@ -596,15 +633,19 @@ def complex_placard(t: Tex) -> None:
 def launch_complex() -> None:
     g = GeoModel("launch_complex", tex_size=(512, 1024))
     g.bone("frame")
-    g.bone("arm_low", pivot=(40, 72, 32), parent="frame")
-    g.bone("arm_high", pivot=(40, 136, 32), parent="frame")
+    g.bone("arm_low", pivot=(38, 72, 32), parent="frame")         # each on its hinge pin, just off the tower's face
+    g.bone("arm_high", pivot=(38, 136, 32), parent="frame")
+    # The upper arm's clamp: at a usual missile's body, or reaching in to a Strategic missile's slimmer second stage.
+    g.bone("clamp_high", parent="arm_high")
+    g.bone("clamp_high_strategic", parent="arm_high")
     g.bone("missile", pivot=(0, 14, 32), parent="frame")       # its tail over the trench: the body's size scales it from there
     for nose in W.NOSES:
         g.bone(f"nose_{nose}", parent="missile")
     g.bone("strategic", pivot=(0, 14, 32), parent="frame")     # a Strategic missile: its own model, not scaled
     for nose in W.NOSES:
         g.bone(f"snose_{nose}", parent="strategic")
-    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}, {f"snose_{nose}" for nose in W.NOSES}, {"missile", "strategic"}]
+    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}, {f"snose_{nose}" for nose in W.NOSES}, {"missile", "strategic"},
+                   {"clamp_high", "clamp_high_strategic"}]
     F = "frame"
     # The deck: 5x5 with a flame trench (z 26-38) running from under the missile out of its west edge.
     deck = [("deck_front", (-40, 0, -8), (40, 14, 26), ("north", "south", "east", "west", "up")),
@@ -661,14 +702,30 @@ def launch_complex() -> None:
     g.box("roof", (39, 208, 23), (57, 210, 57), bone=F)
     g.box("mast", (47, 210, 39), (49, 226, 41), faces=("north", "south", "east", "west"), bone=F)
     g.box("beacon", (46.5, 226, 38.5), (49.5, 229, 41.5), bone=F)
-    # The umbilical arms: a beam from the tower to a clamp on the missile's body, a hose slung under it.
+    # The umbilical arms: a beam from the hinge to a clamp on the missile's body, a hose slung under it; each turns on
+    # a pin between two knuckles off a spine up the tower's face. The lower clamp meets a Strategic first stage (radius
+    # 9.6) and every other missile's body; the upper one has two clamps (see the bones above).
     arms = []
-    for bone, y in (("arm_low", 70), ("arm_high", 134)):
-        for n, a, b, faces in ((f"{bone}_beam", (12, y, 30), (40, y + 4, 34), ("north", "south", "up", "down", "west")),
-                               (f"{bone}_clamp", (10, y - 2, 27), (12, y + 6, 37), ("west", "north", "south", "up", "down")),
-                               (f"{bone}_hose", (12.5, y - 3, 31), (40, y - 1, 33), ("north", "south", "down", "west"))):
+    hinges = ["spine"]
+    g.box("spine", (39.4, 14, 30.5), (40.3, 208, 33.5), faces=("east", "north", "south", "up"), bone=F)
+    for bone, y, reach in (("arm_low", 70, 9.6), ("arm_high", 134, 10.0)):
+        for n, a, b, faces in ((f"{bone}_beam", (reach + 2, y, 30), (37.5, y + 4, 34), ("north", "south", "up", "down", "west")),
+                               (f"{bone}_hose", (reach + 2.5, y - 3, 31), (36.5, y - 1, 33), ("north", "south", "down", "west", "east"))):
             g.box(n, a, b, faces=faces, bone=bone)
             arms.append(n)
+        clamp_bone = "clamp_high" if bone == "arm_high" else bone
+        g.box(f"{bone}_clamp", (reach, y - 2, 27), (reach + 2, y + 6, 37), faces=("west", "north", "south", "up", "down"), bone=clamp_bone)
+        arms.append(f"{bone}_clamp")
+        for n, a, b, faces in ((f"{bone}_knuckle_top", (36.5, y + 4.5, 30), (39.4, y + 6.5, 34), ("east", "north", "south", "up", "down")),
+                               (f"{bone}_knuckle_bottom", (36.5, y - 2.5, 30), (39.4, y - 0.5, 34), ("east", "north", "south", "up", "down")),
+                               (f"{bone}_pin", (37.5, y - 3.5, 31.5), (38.5, y + 7.5, 32.5), ("west", "north", "south", "east", "up", "down"))):
+            g.box(n, a, b, faces=faces, bone=F)
+            hinges.append(n)
+    # The Strategic clamp: in to the second stage (radius 8), the beam carried on to it.
+    g.box("arm_high_reach", (10, 134, 30), (12, 138, 34), faces=("north", "south", "up", "down"), bone="clamp_high_strategic")
+    g.box("arm_high_clamp_strategic", (8, 132, 27), (10, 140, 37), faces=("west", "north", "south", "up", "down"),
+          bone="clamp_high_strategic")
+    arms += ["arm_high_reach", "arm_high_clamp_strategic"]
     # The missile: the item model four times over (8 blocks), standing over the trench.
     for name, frm, to, faces, kind in missile_parts():
         a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 32)
@@ -753,6 +810,10 @@ def launch_complex() -> None:
         g.paint_all(tex, f"{bone}_beam", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
         g.paint_all(tex, f"{bone}_clamp", shaded(GUN))
         g.paint_all(tex, f"{bone}_hose", lambda t, r, d: t.rect(*r, P.RUBBER[2 if d == "down" else 3]))
+    g.paint_all(tex, "arm_high_reach", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
+    g.paint_all(tex, "arm_high_clamp_strategic", shaded(GUN))
+    for n in hinges:
+        g.paint_all(tex, n, shaded(GUN) if n != "spine" else lambda t, r, d: t.rect(*r, TOWER[tone(d) + 1]))
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
             for nose in W.NOSES:
@@ -770,11 +831,12 @@ def launch_complex() -> None:
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and
     # an empty complex rests in "clear" with both arms still away.
     count = Animation("working", 20.0, loop="hold_on_last_frame")
-    count.rotate("arm_low", {0: (0, 0, 0), 2: (0, 0, 0), 4.5: (0, -100, 0), 20: (0, -100, 0)}, easing="easeInOutSine")
-    count.rotate("arm_high", {0: (0, 0, 0), 6: (0, 0, 0), 8.5: (0, -100, 0), 20: (0, -100, 0)}, easing="easeInOutSine")
+    # (75 degrees: swung any further they would pass through the tower's corner posts.)
+    count.rotate("arm_low", {0: (0, 0, 0), 2: (0, 0, 0), 4.5: (0, -75, 0), 20: (0, -75, 0)}, easing="easeInOutSine")
+    count.rotate("arm_high", {0: (0, 0, 0), 6: (0, 0, 0), 8.5: (0, -75, 0), 20: (0, -75, 0)}, easing="easeInOutSine")
     clear = Animation("clear", 1.0, loop="hold_on_last_frame")
-    clear.rotate("arm_low", {0: (0, -100, 0), 1: (0, -100, 0)})
-    clear.rotate("arm_high", {0: (0, -100, 0), 1: (0, -100, 0)})
+    clear.rotate("arm_low", {0: (0, -75, 0), 1: (0, -75, 0)})
+    clear.rotate("arm_high", {0: (0, -75, 0), 1: (0, -75, 0)})
     print(save_animations("launch_complex", [count, clear]))
 
 

@@ -43,10 +43,11 @@ public final class GZAssembly {
             () -> GZOrdnance.NAPALM_WARHEAD.block().get(), SizeClass.S);
     public static final DeferredItem<ComponentItems.PayloadCore> MASSIVE_ORDNANCE_CHARGE = core("massive_ordnance_charge", "Massive Ordnance Charge",
             () -> GZOrdnance.MASSIVE_WARHEAD.block().get(), SizeClass.L);
+    // Nuclear cores are class XL (Strategic): they go in the Strategic Warhead Casing and ride the Strategic missile.
     public static final DeferredItem<ComponentItems.PayloadCore> TACTICAL_FISSION_CORE = core("tactical_fission_core", "Tactical Fission Core",
-            () -> GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.block().get(), SizeClass.S);
+            () -> GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.block().get(), SizeClass.XL);
     public static final DeferredItem<ComponentItems.PayloadCore> FISSION_CORE = core("fission_core", "Fission Core",
-            () -> GZOrdnance.FISSION_WARHEAD.block().get(), SizeClass.M);
+            () -> GZOrdnance.FISSION_WARHEAD.block().get(), SizeClass.XL);
     public static final DeferredItem<ComponentItems.PayloadCore> GAS_DISPENSER = core("gas_dispenser", "Gas Canister Dispenser",
             () -> GZOrdnance.GAS_WARHEAD.block().get(), SizeClass.M);
     public static final DeferredItem<ComponentItems.PayloadCore> SMOKE_DISPENSER = core("smoke_dispenser", "Smoke Canister Dispenser",
@@ -65,6 +66,8 @@ public final class GZAssembly {
     public static final DeferredItem<ComponentItems.Casing> LIGHT_CASING = casing("light_warhead_casing", "Light Warhead Casing", SizeClass.S);
     public static final DeferredItem<ComponentItems.Casing> MEDIUM_CASING = casing("medium_warhead_casing", "Medium Warhead Casing", SizeClass.M);
     public static final DeferredItem<ComponentItems.Casing> HEAVY_CASING = casing("heavy_warhead_casing", "Heavy Warhead Casing", SizeClass.L);
+    /** Phase 8: the lead-lined casing every nuclear core goes in (class XL). */
+    public static final DeferredItem<ComponentItems.Casing> STRATEGIC_CASING = casing("strategic_warhead_casing", "Strategic Warhead Casing", SizeClass.XL);
 
     // --- fuzes (in Fuze order) ---
     public static final List<DeferredItem<ComponentItems.FuzeItem>> FUZES = new ArrayList<>();

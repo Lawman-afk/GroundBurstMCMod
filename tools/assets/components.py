@@ -310,6 +310,35 @@ def casing(name: str, bands: int, r: float, w: float, top: float, fin: float) ->
     G.finish(m, t)
 
 
+def strategic_casing() -> None:
+    """The Strategic Warhead Casing (Phase 8, class XL): a broad lead-lined shell, dark grey, a yellow-and-black hazard
+    band round its shoulder and a radiation tag on its front, on the mounting ring that seats it on a Strategic missile."""
+    m = model("strategic_warhead_casing")
+    body = prism(m, "shell", 8, 8, 5, 3.3, 3, 14)
+    m.box("ring", (2.8, 2, 4.5), (13.2, 3, 11.5))
+    m.box("tag", (7, 6, 13), (9, 8.4, 13.4), faces=("south", "east", "west", "up", "down"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    LEAD = P.LEAD
+
+    def shell(t, r_, d):
+        x, y, wd, h = r_
+        if d == "up":
+            t.rect(x, y, wd, h, LEAD.deep)                         # open at the top: lead-lined inside
+            t.outline(x, y, wd, h, LEAD.light)
+            return
+        shaded(LEAD)(t, r_, d)
+        if d in SIDES:
+            t.hline(x, y + h - 2, wd, LEAD.shadow)                 # weld seam above the tail
+            for xx in range(x, x + wd):                            # the hazard band round the shoulder
+                t.px(xx, y + 1, YELLOW.base if (xx // 2) % 2 == 0 else BLACK.base)
+                t.px(xx, y + 2, YELLOW.base if (xx // 2) % 2 == 0 else BLACK.base)
+    fill_all(m, t, body, shell)
+    m.paint_all(t, "ring", shaded(STEEL))
+    m.paint_all(t, "tag", lambda t, r, d: (t.rect(*r, YELLOW.base), t.px(r[0] + r[2] // 2, r[1] + r[3] // 2, BLACK.base)))
+    G.finish(m, t)
+
+
 # --- fuzes --------------------------------------------------------------------------------------------------------------------
 def fuze_base(m: BlockModel, body_top: float, r: float = 2.2, w: float = 1.3) -> tuple[list[str], list[str]]:
     thread = prism(m, "thread", 8, 8, r + 0.2, w + 0.1, 1, 2)
@@ -361,7 +390,7 @@ def barometric_fuze() -> None:
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
          "chemical_agent_canister", "tactical_fission_core", "fission_core"]
-CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing"]
+CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 
 
@@ -384,6 +413,7 @@ def main() -> None:
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)
+    strategic_casing()
     impact_fuze()
     barometric_fuze()
     G.item_defs(CORES + CASINGS + FUZES)

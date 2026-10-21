@@ -107,7 +107,7 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
 
     /**
      * The model shows the loaded missile: a Strategic one is its own long model ("strategic", noses "snose_*"), any other
-     * the usual missile scaled by its body.
+     * the usual missile scaled by its body; the upper umbilical's clamp meets whichever is there.
      */
     @Override
     public java.util.Set<String> hiddenBones() {
@@ -119,10 +119,12 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
         if (spec == null) {
             hidden.add("missile");
             hidden.add("strategic");
+            hidden.add("clamp_high_strategic");
             return hidden;
         }
         boolean strategic = spec.body() == dev.groundzero.content.assembly.SizeClass.XL;
         hidden.add(strategic ? "missile" : "strategic");
+        hidden.add(strategic ? "clamp_high" : "clamp_high_strategic");   // the upper clamp reaches in to a Strategic second stage
         String id = spec.warheadId().isEmpty() ? "none" : spec.warheadId();
         String shown = (strategic ? "snose_" : "nose_") + id;
         for (String nose : NOSES) {

@@ -126,7 +126,7 @@ public final class MachineLayouts {
     public static final MachineLayout ASSEMBLY_BENCH = new MachineLayout(
             GroundZero.id("textures/gui/machine/assembly_bench.png"), 288, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24), new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 436, 0,
-            new MachineLayout.Rect(98, 24, 24, 17), 452, 0,
+            new MachineLayout.Rect(97, 24, 24, 17), 452, 0,
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
@@ -135,7 +135,7 @@ public final class MachineLayouts {
     public static final MachineLayout ASSEMBLY_BENCH_MISSILE = new MachineLayout(
             GroundZero.id("textures/gui/machine/assembly_bench_missile.png"), 288, 210, List.of(new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 436, 0,
-            new MachineLayout.Rect(122, 24, 24, 17), 452, 0,
+            new MachineLayout.Rect(119, 24, 24, 17), 452, 0,
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),

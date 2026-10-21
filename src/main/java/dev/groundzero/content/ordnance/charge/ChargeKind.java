@@ -58,9 +58,9 @@ public enum ChargeKind {
     // Nuclear warheads (Phase 8): full yield only delivered by a missile from a Launch Complex. Placed, dropped, shot or
     // caught in another blast, a nuclear warhead fizzles: its explosive lenses go off unevenly, the core breaks up and
     // scatters (a small blast and a patch of contamination), and there is no nuclear explosion.
-    /** A 300 t tactical nuke: crater 42 (half as big again as the MOW's), deadly to 60, contamination 90 blocks round for a day. */
+    /** A 300 t tactical nuke (class XL): crater 42 (half as big again as the MOW's), deadly to 60, contamination 90 blocks round for a day. */
     TACTICAL_NUCLEAR_WARHEAD("tactical_nuclear_warhead", 10, true),
-    /** A 15 kt fission warhead: crater 75, deadly to 120, contamination 180 blocks round for two days. */
+    /** A 15 kt fission warhead (class XL): crater 75, deadly to 120, contamination 180 blocks round for two days. */
     FISSION_WARHEAD("fission_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */

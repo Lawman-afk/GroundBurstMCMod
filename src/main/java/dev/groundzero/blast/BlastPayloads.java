@@ -22,13 +22,14 @@ public final class BlastPayloads {
      * @param visual     the visual preset (slice 5c)
      * @param center     the burst point
      * @param crater     crater radius
+     * @param depth      how far below the burst the crater's floor lies (its radius times its depth factor)
      * @param reach      the outer radius of its damage zone (sets how far its sound carries)
      * @param outer      the radius the front runs to
      * @param frontSpeed blocks a tick
      * @param seed       shared with the server's ray field, so client visuals can match the crater's lobes
      * @param startTick  game time it went off
      */
-    public record Start(int id, String soundSet, String visual, Vec3 center, float crater, float reach, float outer, float frontSpeed,
+    public record Start(int id, String soundSet, String visual, Vec3 center, float crater, float depth, float reach, float outer, float frontSpeed,
             long seed, long startTick) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GZNetwork.type("blast_start");
         public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
@@ -39,13 +40,14 @@ public final class BlastPayloads {
             buf.writeDouble(p.center.y);
             buf.writeDouble(p.center.z);
             buf.writeFloat(p.crater);
+            buf.writeFloat(p.depth);
             buf.writeFloat(p.reach);
             buf.writeFloat(p.outer);
             buf.writeFloat(p.frontSpeed);
             buf.writeLong(p.seed);
             buf.writeLong(p.startTick);
         }, buf -> new Start(buf.readVarInt(), buf.readUtf(), buf.readUtf(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
-                buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readLong(), buf.readLong()));
+                buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readLong(), buf.readLong()));
 
         @Override
         public Type<Start> type() {
@@ -81,7 +83,7 @@ public final class BlastPayloads {
 
     static Start start(BlastJob job) {
         BlastProfile p = job.profile;
-        return new Start(job.netId, p.soundSet(), p.visual().orElse(p.soundSet()), job.center, p.crater(),
+        return new Start(job.netId, p.soundSet(), p.visual().orElse(p.soundSet()), job.center, p.crater(), p.crater() * p.craterDepth(),
                 Math.max(p.damage(), Math.max(p.lethal(), p.crater())), p.outerRadius(), p.isInstant() ? 0 : p.frontSpeed(), job.seed, job.startTick);
     }
 }

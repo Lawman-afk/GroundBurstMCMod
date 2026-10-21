@@ -58,8 +58,13 @@ import net.neoforged.neoforge.common.Tags;
  * radius.
  *
  * <p><b>Writing.</b> Blocks are set with flags that skip neighbour updates, drops, block-entity side effects (no
- * item spew) and on-place hooks; heightmaps, lighting and the batched client updates still happen. When the front has
- * passed, the crater's rim gets ordinary neighbour updates, so sand and gravel fall and water flows in.
+ * item spew) and on-place hooks; heightmaps, lighting and the batched client updates still happen.
+ *
+ * <p><b>After the front.</b> First a clean-up: any little cluster of blocks (up to {@link #FLOATER} blocks) the rays
+ * left hanging in the air, attached to nothing, goes, so no lone block floats over the crater floor. Then the fires and
+ * rubble the ground pass chose are put down, each only where its ground is still there: the crater reaches the ground
+ * under a ring after the ring itself (it lies further off in 3D), so placing them as the ring passed left fire in mid
+ * air. Last the crater's rim gets ordinary neighbour updates, so sand and gravel fall and water flows in.
  *
  * <p><b>Entities.</b> As the front passes each entity it takes damage and knockback scaled by distance and by
  * exposure (how many of 4 lines from the burst to its body are unblocked), and catches fire inside the fire radius.
@@ -78,8 +83,10 @@ final class BlastJob implements Blast {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** How far down from the fireball's height the ground pass looks for a column's ground. */
     private static final int GROUND_SCAN = 64;
+    /** The biggest cluster of blocks the clean-up removes when nothing holds it up. */
+    static final int FLOATER = 4;
 
-    enum Phase { FRONT, RIM, DONE }
+    enum Phase { FRONT, CLEAN, RIM, DONE }
 
     final ServerLevel level;
     final UUID id;
@@ -120,6 +127,15 @@ final class BlastJob implements Blast {
     private final Long2ObjectOpenHashMap<long[]> visited = new Long2ObjectOpenHashMap<>();
     private final LongOpenHashSet rim = new LongOpenHashSet();
     private @Nullable LongIterator rimCursor;
+    /** The clean-up's place among the visited sections. */
+    private it.unimi.dsi.fastutil.objects.@Nullable ObjectIterator<it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<long[]>> cleanCursor;
+    /** Fires and rubble the ground pass chose, put down after the front (see the class comment); and how far along. */
+    private final it.unimi.dsi.fastutil.longs.LongArrayList fires = new it.unimi.dsi.fastutil.longs.LongArrayList();
+    private final it.unimi.dsi.fastutil.longs.LongArrayList rubbleAt = new it.unimi.dsi.fastutil.longs.LongArrayList();
+    private final List<BlockState> rubbleState = new java.util.ArrayList<>();
+    private int placed;
+    /** How many floating blocks the clean-up took away (for GameTests). */
+    int floatersRemoved;
     private final IntOpenHashSet hit = new IntOpenHashSet();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private int blocksChanged;
@@ -171,6 +187,10 @@ final class BlastJob implements Blast {
             this.rim.add(p);
         }
         if (this.phase == Phase.RIM) {
+            this.rimCursor = this.rim.iterator();
+        }
+        if (this.phase == Phase.CLEAN) {
+            this.phase = Phase.RIM;                        // resumed: the visited sets were not saved, so nothing to clean
             this.rimCursor = this.rim.iterator();
         }
     }
@@ -300,8 +320,12 @@ final class BlastJob implements Blast {
         }
         affectEntities(Math.min(this.shell, outer));
         if (this.phase == Phase.FRONT && this.shell > outer) {
-            this.phase = Phase.RIM;
+            this.phase = Phase.CLEAN;
             this.rays = new RayField();                    // free the ray arrays
+            this.cleanCursor = this.visited.long2ObjectEntrySet().fastIterator();
+        }
+        if (this.phase == Phase.CLEAN && clean(instant ? Long.MAX_VALUE : deadline) && placeDeferred(instant ? Long.MAX_VALUE : deadline)) {
+            this.phase = Phase.RIM;
             this.rimCursor = this.rim.iterator();
         }
         if (this.phase == Phase.RIM) {
@@ -486,20 +510,16 @@ final class BlastJob implements Blast {
             }
         }
         if (!wet && dist <= p.fire() && this.random.nextFloat() < 0.6f * (1 - dist / Math.max(1, p.fire()))) {
-            if (this.level.getBlockState(above).isAir() && BaseFireBlock.canBePlacedAt(this.level, above, Direction.UP)) {
-                write(above, BaseFireBlock.getState(this.level, above));
-            }
+            this.fires.add(above.asLong());                // put down after the front, if its ground is still there
         }
         if (!wet && p.ejecta() > 0 && dist >= p.crater() * 0.8f && dist <= p.crater() * 1.9f) {
             float t = Math.max(0, (dist - p.crater()) / (0.9f * p.crater()));
             float chance = p.ejecta() * Math.max(0, spoke + 0.05f) * 3 * (float) Math.pow(1 - t, 1.5);
             if (this.random.nextFloat() < chance) {
-                BlockState here = this.level.getBlockState(above);
-                if (here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty()) {
-                    BlockState rubble = rubble(this.level.getBlockState(this.pos));
-                    if (rubble != null) {
-                        write(above, rubble);
-                    }
+                BlockState rubble = rubble(this.level.getBlockState(this.pos));
+                if (rubble != null) {
+                    this.rubbleAt.add(above.asLong());     // put down after the front, if its ground is still there
+                    this.rubbleState.add(rubble);
                 }
             }
         }
@@ -581,6 +601,126 @@ final class BlastJob implements Blast {
     private boolean isProtected() {
         return this.protectedCenter != null && Math.abs(this.pos.getX() - this.protectedCenter.getX()) <= this.protectedRadius
                 && Math.abs(this.pos.getZ() - this.protectedCenter.getZ()) <= this.protectedRadius;
+    }
+
+    /**
+     * After the front: every block a ray reached but did not destroy is looked at, and if it belongs to a little cluster
+     * (up to {@link #FLOATER} blocks) that touches no other solid block, the cluster goes. True when done.
+     */
+    private boolean clean(long deadline) {
+        var it = this.cleanCursor;
+        int n = 0;
+        while (it != null && it.hasNext()) {
+            if ((++n & 15) == 0 && System.nanoTime() > deadline) {
+                return false;
+            }
+            var entry = it.next();
+            long key = entry.getLongKey();
+            long[] words = entry.getValue();
+            int sx = SectionPos.x(key) << 4, sy = SectionPos.y(key) << 4, sz = SectionPos.z(key) << 4;
+            for (int w = 0; w < 64; w++) {
+                long survivors = words[w] & ~words[64 + w];
+                while (survivors != 0) {
+                    int b = (w << 6) | Long.numberOfTrailingZeros(survivors);
+                    survivors &= survivors - 1;
+                    dropIfFloating(sx + (b & 15), sy + (b >> 8), sz + ((b >> 4) & 15));
+                }
+            }
+        }
+        this.cleanCursor = null;
+        return true;
+    }
+
+    /** Solid for the clean-up: anything but air and liquids (a plant counts: it goes with its block). */
+    private boolean solid(BlockPos at) {
+        if (!this.level.isLoaded(at)) {
+            return true;                                   // unknown: treat it as holding things up
+        }
+        BlockState s = this.level.getBlockState(at);
+        return !s.isAir() && !(s.getBlock() instanceof LiquidBlock);
+    }
+
+    /** Removes the cluster of solid blocks round (x, y, z) if it has at most FLOATER blocks (it hangs in the air). */
+    private void dropIfFloating(int x, int y, int z) {
+        BlockPos start = new BlockPos(x, y, z);
+        if (!solid(start) || !this.level.isLoaded(start)) {
+            return;
+        }
+        long[] cluster = new long[FLOATER];
+        int size = 0;
+        cluster[size++] = start.asLong();
+        for (int i = 0; i < size; i++) {
+            BlockPos at = BlockPos.of(cluster[i]);
+            for (Direction d : Direction.values()) {
+                BlockPos next = at.relative(d);
+                if (!this.level.isLoaded(next)) {
+                    return;                                // runs into ground we cannot see: assume it is held up
+                }
+                if (!solid(next)) {
+                    continue;
+                }
+                long l = next.asLong();
+                boolean seen = false;
+                for (int j = 0; j < size; j++) {
+                    seen |= cluster[j] == l;
+                }
+                if (seen) {
+                    continue;
+                }
+                if (size == FLOATER) {
+                    return;                                // bigger than a floater: attached to something, leave it
+                }
+                cluster[size++] = l;
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            BlockPos at = BlockPos.of(cluster[i]);
+            this.pos.set(at);
+            BlockState s = this.level.getBlockState(at);
+            if (isProtected() || s.getDestroySpeed(this.level, at) < 0 || s.hasBlockEntity()) {
+                return;                                    // something worth keeping (or unbreakable): leave the lot
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            BlockPos at = BlockPos.of(cluster[i]);
+            write(at, AIR);
+            long[] words = this.visited.get(key(at.getX(), at.getY(), at.getZ()));
+            if (words != null) {
+                int b = bit(at.getX(), at.getY(), at.getZ());
+                words[64 + (b >> 6)] |= 1L << (b & 63);   // destroyed (no new section is added mid-iteration)
+            }
+            this.floatersRemoved++;
+        }
+    }
+
+    /** Puts down the fires and rubble the ground pass chose, each only if its ground is still there. True when done. */
+    private boolean placeDeferred(long deadline) {
+        int total = this.fires.size() + this.rubbleAt.size();
+        while (this.placed < total) {
+            if ((this.placed & 63) == 0 && System.nanoTime() > deadline) {
+                return false;
+            }
+            int i = this.placed++;
+            if (i < this.fires.size()) {
+                BlockPos at = BlockPos.of(this.fires.getLong(i));
+                if (this.level.isLoaded(at) && this.level.getBlockState(at).isAir() && BaseFireBlock.canBePlacedAt(this.level, at, Direction.UP)
+                        && this.level.getBlockState(at.below()).isFaceSturdy(this.level, at.below(), Direction.UP)) {
+                    write(at, BaseFireBlock.getState(this.level, at));
+                }
+            } else {
+                int j = i - this.fires.size();
+                BlockPos at = BlockPos.of(this.rubbleAt.getLong(j));
+                BlockState here = this.level.isLoaded(at) ? this.level.getBlockState(at) : null;
+                if (here != null && (here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty())
+                        && this.level.getBlockState(at.below()).isFaceSturdy(this.level, at.below(), Direction.UP)) {
+                    write(at, this.rubbleState.get(j));
+                }
+            }
+        }
+        this.fires.clear();
+        this.rubbleAt.clear();
+        this.rubbleState.clear();
+        return true;
     }
 
     /** After the front: ordinary neighbour updates round the crater's edge (sand falls, water flows in). */

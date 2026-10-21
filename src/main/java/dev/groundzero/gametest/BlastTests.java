@@ -34,6 +34,8 @@ final class BlastTests {
         GZGameTests.test("blast_scorches_only_what_it_sees", GZGameTests.FLOOR_16, 20, BlastTests::scorchShadow);
         GZGameTests.test("blast_throws_out_rubble", GZGameTests.FLOOR_16, 20, BlastTests::ejecta);
         GZGameTests.test("blast_rubble_sinks_in_water", GZGameTests.FLOOR_16, 20, BlastTests::ejectaOverWater);
+        GZGameTests.test("blast_leaves_no_floating_blocks", GZGameTests.FLOOR_16, 20, BlastTests::noFloaters);
+        GZGameTests.test("blast_fire_only_on_ground", GZGameTests.FLOOR_16, 100, BlastTests::fireOnGround);
     }
 
     private static final BlockPos C = new BlockPos(8, 4, 8);
@@ -221,6 +223,41 @@ final class BlastTests {
         }
         helper.assertTrue(rubble >= 3, "rubble lands round the crater (" + rubble + " blocks)");
         helper.succeed();
+    }
+
+    /**
+     * A lone block left hanging in the crater (obsidian, too hard for the rays, with nothing round it) is cleaned away
+     * after the front; a pillar of six standing in the blast is too big to be a floater and stays.
+     */
+    private static void noFloaters(GameTestHelper helper) {
+        helper.setBlock(C.offset(-3, 1, 0), Blocks.OBSIDIAN);
+        fill(helper, 11, 1, 8, 11, 6, 8, Blocks.OBSIDIAN);
+        Blast blast = Blasts.detonate(helper.getLevel(), center(helper), Blasts.profile("test/crater_only"), null);
+        helper.assertTrue(blast != null && blast.isDone(), "an instant blast, done at once");
+        helper.assertTrue(air(helper, -3, 1, 0), "the lone block is cleaned away");
+        helper.assertTrue(!air(helper, 3, 0, 0), "the pillar stays");
+        helper.succeed();
+    }
+
+    /** Fires the blast sets go down only where there is ground under them once the crater is dug. */
+    private static void fireOnGround(GameTestHelper helper) {
+        fill(helper, 0, 1, 0, 15, 2, 15, Blocks.STONE);
+        Blast blast = Blasts.detonate(helper.getLevel(), helper.absoluteVec(Vec3.atCenterOf(new BlockPos(8, 3, 8))),
+                Blasts.profile("napalm_warhead"), null);
+        helper.assertTrue(blast != null, "the profile exists");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(blast.isDone(), "the blast finishes");
+            int fires = 0;
+            for (BlockPos p : BlockPos.betweenClosed(0, 1, 0, 15, 8, 15)) {
+                BlockPos at = helper.absolutePos(p);
+                if (helper.getLevel().getBlockState(at).getBlock() instanceof net.minecraft.world.level.block.BaseFireBlock) {
+                    fires++;
+                    helper.assertTrue(helper.getLevel().getBlockState(at.below()).isFaceSturdy(helper.getLevel(), at.below(), net.minecraft.core.Direction.UP),
+                            "a fire with no ground under it at " + p);
+                }
+            }
+            helper.assertTrue(fires > 0, "the blast sets some fires");
+        });
     }
 
     /** The same charge on the bed of a pool: no rubble is left sitting on the water's surface. */

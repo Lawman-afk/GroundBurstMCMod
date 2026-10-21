@@ -198,7 +198,7 @@ LAYOUTS = {
         # The missile page's slots (slots 4-9): in the menu, but drawn by the "assembly_bench_missile" texture.
         "hidden_slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
-        "progress": (98, 24, 24, 17),
+        "progress": (97, 24, 24, 17),                # centred between the fuze slot and the output frame
         "flame": None,
         "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
@@ -215,7 +215,7 @@ LAYOUTS = {
         "stats": (183, 110, 94, 92),
         "slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
-        "progress": (122, 24, 24, 17),
+        "progress": (119, 24, 24, 17),               # centred between the module slot and the output frame
         "flame": None,
         "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),

@@ -394,6 +394,13 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZParts.STEEL_ROD).requires(GZParts.STEEL_ROD)
                 .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        // Phase 8: a heavy casing lined with lead, for the nuclear cores (class XL).
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.STRATEGIC_CASING, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING).requires(GZParts.LEAD_PLATE)
+                .requires(GZParts.LEAD_PLATE).requires(GZParts.LEAD_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING), has(dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.IMPACT_FUZE, 2)
                 .requires(GZTags.commonItem("plates/steel")).requires(Items.GUNPOWDER)
                 .requires(Items.STONE_PRESSURE_PLATE)
