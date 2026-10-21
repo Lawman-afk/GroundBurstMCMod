@@ -63,8 +63,8 @@ public class LaunchComputerScreen extends Screen {
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".computer.silo.armed", "ARMED");
     private static final String[] T_SILO_STATE = {
             GZLang.add(GroundZero.MODID + ".computer.silo.not_formed", "incomplete"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.emp", "EMP disabled"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.halted", "redstone halt"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.emp", "disabled by EMP"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.halted", "halted by redstone"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "no missile"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_warhead", "no warhead"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "no power"),
@@ -73,7 +73,9 @@ public class LaunchComputerScreen extends Screen {
 
     private static final int W = 336, H = 214, MAP = 184;
     /** The right-hand column: its left edge (from the panel's) and width; the silo list's rows. */
-    private static final int COL = MAP + 22, CW = W - COL - 8, ROW = 12, ROWS = 5;
+    private static final int COL = MAP + 22, CW = W - COL - 8, ROW = 10, ROWS = 6;
+    /** The silo list's type size (two thirds), small enough that whole state messages fit beside the range. */
+    private static final float LIST_TEXT = 2f / 3f;
     private static final int LIST_Y = 29, TARGET_Y = 94, BOX_Y = 105, SET_Y = 123, RANGE_Y = 143, ARM_Y = 166, LAUNCH_Y = 186;
     /** Blocks a map pixel at each zoom step. */
     private static final int[] ZOOMS = {1, 2, 4, 8};
@@ -448,11 +450,17 @@ public class LaunchComputerScreen extends Screen {
             boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal();
             int color = counting || down ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
             // Right: how far its target is (or that it has none); left: its number and state, cut to what is left.
+            // The rows are drawn in small type (LIST_TEXT) so whole messages fit; widths below are in that type's units.
+            int room = (int) (textW / LIST_TEXT);
             String aim = silo.hasTarget() ? (int) range(silo) + "m" : Component.translatable(T_NO_TARGET).getString();
             int aimW = this.font.width(aim);
-            g.text(this.font, aim, x + 3 + textW - aimW, ry + 2, silo.hasTarget() && range(silo) > MissileEntity.MAX_RANGE ? RED : DIM, false);
             String label = (this.scroll + i + 1) + ". " + state.getString();
-            g.text(this.font, this.font.plainSubstrByWidth(label, textW - aimW - 4), x + 3, ry + 2, color, false);
+            g.pose().pushMatrix();
+            g.pose().translate(x + 3, ry + (ROW - this.font.lineHeight * LIST_TEXT) / 2f + 0.5f);
+            g.pose().scale(LIST_TEXT, LIST_TEXT);
+            g.text(this.font, aim, room - aimW, 0, silo.hasTarget() && range(silo) > MissileEntity.MAX_RANGE ? RED : DIM, false);
+            g.text(this.font, this.font.plainSubstrByWidth(label, room - aimW - 6), 0, 0, color, false);
+            g.pose().popMatrix();
         }
         if (bar) {                                                     // the scroll bar
             int track = h - 2, thumb = Math.max(6, track * ROWS / silos.size());
