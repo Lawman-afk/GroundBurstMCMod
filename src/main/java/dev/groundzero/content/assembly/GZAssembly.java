@@ -48,6 +48,13 @@ public final class GZAssembly {
             () -> GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.block().get(), SizeClass.XL);
     public static final DeferredItem<ComponentItems.PayloadCore> FISSION_CORE = core("fission_core", "Fission Core",
             () -> GZOrdnance.FISSION_WARHEAD.block().get(), SizeClass.XL);
+    public static final DeferredItem<ComponentItems.PayloadCore> BOOSTED_FISSION_CORE = core("boosted_fission_core", "Boosted Fission Core",
+            () -> GZOrdnance.BOOSTED_FISSION_WARHEAD.block().get(), SizeClass.XL);
+    public static final DeferredItem<ComponentItems.PayloadCore> NEUTRON_CORE = core("neutron_core", "Neutron Core",
+            () -> GZOrdnance.NEUTRON_WARHEAD.block().get(), SizeClass.XL);
+    /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */
+    public static final DeferredItem<ComponentItems.PayloadCore> DIRTY_PAYLOAD = core("dirty_payload", "Dirty Payload",
+            () -> GZOrdnance.DIRTY_WARHEAD.block().get(), SizeClass.S);
     public static final DeferredItem<ComponentItems.PayloadCore> GAS_DISPENSER = core("gas_dispenser", "Gas Canister Dispenser",
             () -> GZOrdnance.GAS_WARHEAD.block().get(), SizeClass.M);
     public static final DeferredItem<ComponentItems.PayloadCore> SMOKE_DISPENSER = core("smoke_dispenser", "Smoke Canister Dispenser",

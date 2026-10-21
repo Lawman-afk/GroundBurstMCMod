@@ -110,6 +110,27 @@
         }
       },
       {
+        "when": "boosted_fission_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile_boosted_fission_warhead"
+        }
+      },
+      {
+        "when": "neutron_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile_neutron_warhead"
+        }
+      },
+      {
+        "when": "dirty_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile_dirty_warhead"
+        }
+      },
+      {
         "when": "strategic_none",
         "model": {
           "type": "minecraft:model",
@@ -219,6 +240,27 @@
         "model": {
           "type": "minecraft:model",
           "model": "groundzero:item/strategic_missile_fission_warhead"
+        }
+      },
+      {
+        "when": "strategic_boosted_fission_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_boosted_fission_warhead"
+        }
+      },
+      {
+        "when": "strategic_neutron_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_neutron_warhead"
+        }
+      },
+      {
+        "when": "strategic_dirty_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_dirty_warhead"
         }
       }
     ],

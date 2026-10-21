@@ -245,7 +245,9 @@ public final class Charges {
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
             // A nuclear warhead set off anywhere but on a missile's arrival only fizzles.
-            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD -> fizzle(level, c, by, bombScale);
+            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD -> fizzle(level, c, by, bombScale);
+            // A dirty warhead is only HE and waste: it goes off however it is set off.
+            case DIRTY_WARHEAD -> dirty(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
             case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
         }
@@ -297,13 +299,37 @@ public final class Charges {
     /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
     public static final float NAPALM_RADIUS = 10;
 
-    /** A nuclear warhead's contamination: radius (blocks) and how long it lasts (ticks), by kind (DESIGN.md §15). */
+    /** A radiological warhead's contamination: radius (blocks), how long it lasts (ticks) and its strength (DESIGN.md §15). */
     public static float contaminationRadius(ChargeKind kind) {
-        return kind == ChargeKind.FISSION_WARHEAD ? 180 : 90;
+        return switch (kind) {
+            case FISSION_WARHEAD -> 180;
+            case BOOSTED_FISSION_WARHEAD -> 220;
+            case NEUTRON_WARHEAD -> 140;
+            default -> 90;                                 // tactical, dirty
+        };
     }
 
     public static int contaminationTicks(ChargeKind kind) {
-        return kind == ChargeKind.FISSION_WARHEAD ? 48_000 : 24_000;
+        return switch (kind) {
+            case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD -> 48_000;
+            case NEUTRON_WARHEAD -> 6_000;                  // neutrons leave little behind: a quarter of a day
+            case DIRTY_WARHEAD -> 120_000;                  // waste lingers: five days
+            default -> 24_000;
+        };
+    }
+
+    public static float contaminationStrength(ChargeKind kind) {
+        return kind == ChargeKind.DIRTY_WARHEAD ? 0.8f : 1f;
+    }
+
+    /** A dirty warhead: a small HE blast and a cloud of nuclear waste dust settling round it. */
+    private static void dirty(ServerLevel level, Vec3 c, @Nullable Entity by, float scale) {
+        ChargeKind kind = ChargeKind.DIRTY_WARHEAD;
+        Blasts.detonate(level, c, Blasts.profile(kind.id), by, scale);
+        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(c,
+                Math.max(4, contaminationRadius(kind) * scale), contaminationStrength(kind), level.getGameTime(), contaminationTicks(kind)));
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, c.x, c.y + 1, c.z, 120, 3, 1.5, 3, 0.08);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ASH, c.x, c.y + 2, c.z, 400, 8, 3, 8, 0.02);
     }
 
     /** A fizzle's patch of contamination: radius, starting strength and life. */
@@ -318,6 +344,9 @@ public final class Charges {
         Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
         dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
                 Math.max(4, contaminationRadius(kind) * bombScale), airburst ? 0.5f : 1f, level.getGameTime(), contaminationTicks(kind)));
+        if (kind == ChargeKind.NEUTRON_WARHEAD) {
+            dev.groundzero.content.nuclear.NeutronBurst.burst(level, at, by, bombScale);
+        }
     }
 
     /** A nuclear warhead set off any other way: its lenses go off unevenly, the core breaks up and scatters. */

@@ -335,6 +335,24 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZParts.MILITARY_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET), has(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET))
                 .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE).requires(dev.groundzero.content.chem.GZChemicals.TRITIUM_CANISTER)
+                .requires(dev.groundzero.content.chem.GZChemicals.DEUTERIUM_CANISTER).requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE), has(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.NEUTRON_CORE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.TACTICAL_FISSION_CORE).requires(dev.groundzero.content.chem.GZChemicals.TRITIUM_CANISTER)
+                .requires(dev.groundzero.content.chem.GZChemicals.TRITIUM_CANISTER).requires(GZParts.TUNGSTEN_CARBIDE_INGOT)
+                .requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.TACTICAL_FISSION_CORE),
+                        has(dev.groundzero.content.assembly.GZAssembly.TACTICAL_FISSION_CORE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.DIRTY_PAYLOAD, 1)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE).requires(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE).requires(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE).requires(GZParts.LEAD_PLATE)
+                .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE), has(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.FISSION_CORE, 1)
                 .requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT).requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)
                 .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE).requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)

@@ -69,7 +69,8 @@ neoForge {
         }
 
         // Makes a flat world, sets off each test blast profile in turn and screenshots the effects at set moments into
-        // run/screenshots/fx_<profile>_<tick>.png, then quits (see FxPhotographer). -PfxOnly=large shoots just one.
+        // run/screenshots/fx_<profile>_<tick>.png, then quits (see FxPhotographer). -PfxOnly=large shoots just one
+        // (scenes whose names start with it); -PfxOnly=a,b several.
         fxShots {
             client()
             systemProperty 'groundzero.fxShots', 'true'

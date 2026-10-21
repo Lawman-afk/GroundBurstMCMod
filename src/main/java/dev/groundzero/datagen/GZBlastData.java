@@ -116,6 +116,14 @@ public final class GZBlastData {
                 3, 0.45f, 0.15f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         ctx.register(Blasts.profile("fission_warhead"), new BlastProfile(22, 75, 110, 140, 130, new BlastProfile.EntityZones(120, 200, 1000, 80, 5.0f),
                 3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        ctx.register(Blasts.profile("boosted_fission_warhead"), new BlastProfile(28, 95, 140, 175, 165, new BlastProfile.EntityZones(150, 250, 1000, 100, 5.5f),
+                3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        // The neutron warhead's blast is small: its neutrons do the killing (NeutronBurst).
+        ctx.register(Blasts.profile("neutron_warhead"), new BlastProfile(4, 10, 16, 14, 12, new BlastProfile.EntityZones(10, 26, 200, 20, 2.5f),
+                3, 0.5f, 0.15f, 0.3f, 0.4f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        // The dirty warhead is HE and waste: a small conventional blast.
+        ctx.register(Blasts.profile("dirty_warhead"), new BlastProfile(1, 6, 9, 8, 5, new BlastProfile.EntityZones(10, 16, 60, 12, 2.0f),
+                4, 0.7f, 0.1f, 0.3f, 0.3f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("medium"), Optional.of("he")));
         ctx.register(Blasts.profile("nuclear_fizzle"), new BlastProfile(1, 3, 5, 4, 0, new BlastProfile.EntityZones(3, 7, 40, 10, 1.5f),
                 4, 0.7f, 0.1f, 0.3f, 0.3f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("medium"), Optional.of("he")));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,

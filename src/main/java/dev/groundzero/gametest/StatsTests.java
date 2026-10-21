@@ -73,6 +73,17 @@ final class StatsTests {
         has(helper, fission, "groundzero.stats.yield() = groundzero.stats.yield_value(15 kt)");
         has(helper, fission, "groundzero.stats.fallout() = groundzero.stats.blocks(180)");
         has(helper, fission, "groundzero.stats.fallout_lasts() = groundzero.stats.days(2)");
+        // Slice 8b: a boosted warhead's yield; a neutron warhead's fallout lasts hours; a dirty warhead is class S, five days.
+        String boosted = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.BOOSTED_FISSION_WARHEAD.item().get()), registries));
+        has(helper, boosted, "groundzero.stats.yield() = groundzero.stats.yield_value(45 kt)");
+        has(helper, boosted, "groundzero.stats.fallout() = groundzero.stats.blocks(220)");
+        String neutron = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.NEUTRON_WARHEAD.item().get()), registries));
+        has(helper, neutron, "groundzero.stats.fallout_lasts() = groundzero.stats.hours(6)");
+        has(helper, neutron, "groundzero.stats.neutrons() = groundzero.stats.blocks(180)");
+        has(helper, neutron, "groundzero.stats.withers() = groundzero.stats.blocks(120)");
+        String dirty = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.DIRTY_WARHEAD.item().get()), registries));
+        has(helper, dirty, "groundzero.stats.class() = S");
+        has(helper, dirty, "groundzero.stats.fallout_lasts() = groundzero.stats.days(5)");
         helper.assertTrue(AssemblyStats.warhead(new ItemStack(GZOrdnance.C4.item().get()), registries).isEmpty(), "C4 is no warhead");
         helper.succeed();
     }

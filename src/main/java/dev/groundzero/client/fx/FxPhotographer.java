@@ -57,6 +57,9 @@ public final class FxPhotographer {
                 new Scene("warhead_massive", "massive_warhead", 110, -6, List.of(4, 20, 80, 300, 700)),
                 new Scene("nuke_tactical", "tactical_nuclear_warhead", 200, -10, List.of(3, 20, 80, 300, 700)),
                 new Scene("nuke_fission", "fission_warhead", 330, -14, List.of(3, 30, 120, 400, 900)),
+                new Scene("nuke_boosted", "boosted_fission_warhead", 380, -16, List.of(3, 30, 120, 400, 900)),
+                new Scene("nuke_neutron", "neutron_warhead", 70, -8, List.of(3, 20, 60, 200, 400)),
+                new Scene("warhead_dirty", "dirty_warhead", 30, 2, List.of(2, 8, 20, 60)),
                 new Scene("complex", "complex", 34, -12, List.of(20, 150, 270, 335, 380)),
                 new Scene("complex_close", "complex", 13, -38, List.of(20, 150, 360)),
                 new Scene("launch_close", "launch", 11, -32, List.of(20, 150, 240)),
@@ -87,8 +90,10 @@ public final class FxPhotographer {
                 new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)),
                 new Scene("assembly_mow_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_nuke_ui", "assembly", 4, 0, List.of(30, 44)),
+                new Scene("assembly_neutron_ui", "assembly", 4, 0, List.of(30, 44)),
+                new Scene("assembly_dirty_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("launch_map_ui", "launch", 9, 0, List.of(40, 80)))) {
-            if (only.isEmpty() || s.name().startsWith(only)) {
+            if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
         }
@@ -571,6 +576,16 @@ public final class FxPhotographer {
                     suits(level, x, ground, s.profile().endsWith("back"));    // armour stands wearing the suits, no blast
                     return;
                 }
+                // These two through the warhead's own path: the neutrons wither the plants, the waste goes up as dust.
+                if (s.profile().equals("neutron_warhead")) {
+                    dev.groundzero.content.ordnance.charge.Charges.impact(level, dev.groundzero.content.ordnance.charge.ChargeKind.NEUTRON_WARHEAD,
+                            net.minecraft.core.BlockPos.containing(at), null);
+                    return;
+                }
+                if (s.profile().equals("dirty_warhead")) {
+                    dev.groundzero.content.ordnance.charge.Charges.burst(level, dev.groundzero.content.ordnance.charge.ChargeKind.DIRTY_WARHEAD, at, null);
+                    return;
+                }
                 var blast = Blasts.detonate(level, at, Blasts.profile(s.profile()), null);
                 if (s.profile().equals("reactor_meltdown")) {
                     dev.groundzero.content.nuclear.Meltdown.afterBlast(level, at, blast);   // the corium a real meltdown leaves
@@ -622,15 +637,24 @@ public final class FxPhotographer {
             }
         }
         // The biggest warhead on the bench (the preview must zoom out to fit it), then as a Heavy missile.
-        if (scene.name().equals("assembly_nuke_ui") && step >= 0 && clock == 8 && benchAt != null) {
+        // The neutron and dirty warheads have the longest stats lists (fallout rows, the neutron rows, a note).
+        if ((scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui") || scene.name().equals("assembly_dirty_ui"))
+                && step >= 0 && clock == 8 && benchAt != null) {
             var bench = benchAt;
+            boolean neutron = scene.name().equals("assembly_neutron_ui"), dirty = scene.name().equals("assembly_dirty_ui");
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
-                    be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
-                    be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_CASING.get()));
-                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
-                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get()));
-                    be.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get()));
+                    be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.DIRTY_PAYLOAD.get()
+                            : neutron ? dev.groundzero.content.assembly.GZAssembly.NEUTRON_CORE.get() : dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
+                    be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.LIGHT_CASING.get()
+                            : dev.groundzero.content.assembly.GZAssembly.STRATEGIC_CASING.get()));
+                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.ordnance.GZOrdnance.DIRTY_WARHEAD.item().get()
+                            : neutron ? dev.groundzero.content.ordnance.GZOrdnance.NEUTRON_WARHEAD.item().get()
+                            : dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
+                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.TACTICAL_BODY.get()
+                            : dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get()));
+                    be.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.SRM_I.get()
+                            : dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get()));
                 }
             });
         }
@@ -645,7 +669,8 @@ public final class FxPhotographer {
                 }
             });
         }
-        if ((scene.name().equals("assembly_mow_ui") || scene.name().equals("assembly_nuke_ui")) && step >= 0 && clock == 36 && mc.gui.screen() != null) {
+        if ((scene.name().equals("assembly_mow_ui") || scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui")
+                || scene.name().equals("assembly_dirty_ui")) && step >= 0 && clock == 36 && mc.gui.screen() != null) {
             var screen = mc.gui.screen();                                  // the Missiles tab
             double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
@@ -661,7 +686,7 @@ public final class FxPhotographer {
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
         if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui") || scene.name().equals("assembly_mow_ui")
-                || scene.name().equals("assembly_nuke_ui"))
+                || scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui") || scene.name().equals("assembly_dirty_ui"))
                 && step >= 0 && clock == 12 && benchAt != null) {
             var bench = benchAt;
             server.execute(() -> {

@@ -61,7 +61,16 @@ public enum ChargeKind {
     /** A 300 t tactical nuke (class XL): crater 42 (half as big again as the MOW's), deadly to 60, contamination 90 blocks round for a day. */
     TACTICAL_NUCLEAR_WARHEAD("tactical_nuclear_warhead", 10, true),
     /** A 15 kt fission warhead (class XL): crater 75, deadly to 120, contamination 180 blocks round for two days. */
-    FISSION_WARHEAD("fission_warhead", 10, true);
+    FISSION_WARHEAD("fission_warhead", 10, true),
+    /** A 45 kt boosted fission warhead (class XL): crater 95, deadly to 150, contamination 220 blocks round for two days. */
+    BOOSTED_FISSION_WARHEAD("boosted_fission_warhead", 10, true),
+    /** A 1 kt neutron warhead (class XL): a small blast, but radiation deadly to 180 blocks through all but thick walls. */
+    NEUTRON_WARHEAD("neutron_warhead", 10, true),
+    /**
+     * A dirty warhead (class S; radiological, not nuclear): a small HE blast that scatters nuclear waste, contamination
+     * 90 blocks round for five days. It goes off however it is set off, and any silo fires it.
+     */
+    DIRTY_WARHEAD("dirty_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -103,7 +112,12 @@ public enum ChargeKind {
      * wide area (set off on the ground, it throws them out round itself).
      */
     public boolean nuclear() {
-        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD;
+        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD || this == BOOSTED_FISSION_WARHEAD || this == NEUTRON_WARHEAD;
+    }
+
+    /** It leaves fallout (contamination): the nuclear warheads, and the dirty one. */
+    public boolean radiological() {
+        return nuclear() || this == DIRTY_WARHEAD;
     }
 
     public boolean airburst() {

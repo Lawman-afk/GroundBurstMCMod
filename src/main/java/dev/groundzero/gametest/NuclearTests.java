@@ -1,9 +1,12 @@
 package dev.groundzero.gametest;
 
+import dev.groundzero.content.assembly.Fuze;
+import dev.groundzero.content.assembly.GZAssembly;
 import dev.groundzero.content.assembly.MissileAssembly;
 import dev.groundzero.content.assembly.MissileParts;
 import dev.groundzero.content.assembly.MissileSpec;
 import dev.groundzero.content.assembly.SizeClass;
+import dev.groundzero.content.assembly.WarheadAssembly;
 import dev.groundzero.content.launch.Flights;
 import dev.groundzero.content.launch.GZLaunch;
 import dev.groundzero.content.launch.LaunchComplexBlockEntity;
@@ -11,17 +14,22 @@ import dev.groundzero.content.launch.LaunchSiloBlockEntity;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
 import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.nuclear.GZEffects;
+import dev.groundzero.content.nuclear.NeutronBurst;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.charge.ChargeKind;
 import dev.groundzero.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.phys.Vec3;
 
-/** Phase 8 (DESIGN.md §15, §17.2): the Launch Complex, and nuclear warheads going off or fizzling. */
+/** Phase 8 (DESIGN.md §15, §17.2): the Launch Complex, and nuclear (and dirty) warheads going off or fizzling. */
 final class NuclearTests {
     private NuclearTests() {}
 
@@ -31,6 +39,11 @@ final class NuclearTests {
         GZGameTests.test("nuclear_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, NuclearTests::fullYield);
         GZGameTests.test("placed_nuclear_warhead_fizzles", GZGameTests.FLOOR_16, 100, NuclearTests::fizzles);
         GZGameTests.test("strategic_body_carries_nuclear_warheads_only", GZGameTests.FLOOR_16, 20, NuclearTests::strategic);
+        GZGameTests.test("boosted_fission_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, NuclearTests::boosted);
+        // Open sky: the withering works down from the highest block, so a lid over the plot would shelter it like a roof.
+        GZGameTests.testOpenSky("neutron_warhead_kills_through_all_but_thick_walls", GZGameTests.FLOOR_16, 100, NuclearTests::neutron);
+        GZGameTests.test("dirty_warhead_goes_off_however_set_off", GZGameTests.FLOOR_16, 100, NuclearTests::dirty);
+        GZGameTests.test("dirty_warhead_flies_from_any_silo", GZGameTests.FLOOR_16, 20, NuclearTests::dirtyMissile);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -133,13 +146,119 @@ final class NuclearTests {
         helper.assertTrue(MissileAssembly.check(nuke, body, srm, ItemStack.EMPTY) == MissileAssembly.Problem.MOTOR_DOES_NOT_FIT,
                 "a Solid Rocket Motor II does not move a Strategic body");
         helper.assertTrue(MissileAssembly.check(fission, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NONE,
-                "a class M fission warhead fits a Strategic body");
+                "a fission warhead fits a Strategic body");
         ItemStack missile = MissileAssembly.assemble(nuke, (MissileParts.Body) body.getItem(), (MissileParts.MotorItem) liquid.getItem(),
                 ItemStack.EMPTY, ItemStack.EMPTY);
         MissileSpec spec = dev.groundzero.content.assembly.MissileItem.spec(missile);
         helper.assertTrue(spec != null && spec.body() == SizeClass.XL && spec.range() == 2500 && spec.needsComplex(), "a Strategic missile: " + spec);
         var look = missile.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
         helper.assertTrue(look != null && look.strings().getFirst().equals("strategic_tactical_nuclear_warhead"), "its own model: " + look);
+        helper.succeed();
+    }
+
+    /** Our contamination zone (centred where the warhead went off). */
+    private static Contamination.Zone zoneAt(GameTestHelper helper, Vec3 centre) {
+        var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
+        helper.assertTrue(zone.isPresent(), "contamination where it went off");
+        return zone.get();
+    }
+
+    /** A boosted fission warhead delivered by a missile: a crater, and full contamination reaching past a fission warhead's. */
+    private static void boosted(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 1, 8);
+        Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
+        // A twenty-fifth of its size, so its crater (95 blocks) stays in this test's plot.
+        float scale = Charges.bombScale;
+        Charges.bombScale = 0.04f;
+        Charges.impact(helper.getLevel(), ChargeKind.BOOSTED_FISSION_WARHEAD, helper.absolutePos(at), null);
+        Charges.bombScale = scale;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, 0, 8))).isAir(), "a crater where it hit");
+            float level = Contamination.of(helper.getLevel()).levelAt(helper.getLevel(), centre);
+            helper.assertTrue(level > 0.9f, "full contamination at ground zero: " + level);
+            Contamination.Zone zone = zoneAt(helper, centre);
+            helper.assertTrue(Math.abs(zone.radius() - 220 * 0.04f) < 0.01f && zone.duration() == 48_000, "220 blocks for two days: " + zone);
+            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+        });
+    }
+
+    /**
+     * A neutron warhead (at a twenty-fifth of its size): its neutrons kill a pig in the open, but a pig as far away behind
+     * two blocks of obsidian lives; grass withers to bare earth and leaves fall, but a log stands.
+     */
+    private static void neutron(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 1, 8);
+        Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
+        for (BlockPos p : BlockPos.betweenClosed(7, 1, 10, 9, 2, 11)) {
+            helper.setBlock(p, Blocks.OBSIDIAN);
+        }
+        helper.setBlock(new BlockPos(6, 0, 8), Blocks.GRASS_BLOCK);
+        helper.setBlock(new BlockPos(6, 1, 8), Blocks.SHORT_GRASS);
+        helper.setBlock(new BlockPos(10, 1, 9), Blocks.OAK_LOG);
+        helper.setBlock(new BlockPos(10, 2, 9), Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+        Pig open = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 4));
+        Pig sheltered = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 12));
+        double through = NeutronBurst.shielding(helper.getLevel(), centre, sheltered.getBoundingBox().getCenter());
+        helper.assertTrue(through < 0.15, "two blocks of obsidian stop most of it: " + through);
+        float scale = Charges.bombScale;
+        Charges.bombScale = 0.04f;
+        Charges.impact(helper.getLevel(), ChargeKind.NEUTRON_WARHEAD, helper.absolutePos(at), null);
+        Charges.bombScale = scale;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!open.isAlive(), "the pig in the open is dead");
+            helper.assertTrue(sheltered.isAlive(), "the pig behind obsidian lives: " + sheltered.getHealth());
+            helper.assertTrue(sheltered.hasEffect(GZEffects.RADIATION_SICKNESS), "but it is radiation-sick");
+            helper.assertBlockPresent(Blocks.COARSE_DIRT, new BlockPos(6, 0, 8));
+            helper.assertBlockPresent(Blocks.AIR, new BlockPos(6, 1, 8));
+            helper.assertBlockPresent(Blocks.AIR, new BlockPos(10, 2, 9));
+            helper.assertBlockPresent(Blocks.OAK_LOG, new BlockPos(10, 1, 9));
+            Contamination.Zone zone = zoneAt(helper, centre);
+            helper.assertTrue(zone.duration() == 6_000, "its fallout lasts a quarter of a day: " + zone);
+            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            sheltered.discard();
+        });
+    }
+
+    /** A dirty warhead is only HE and nuclear waste: set off on the ground it goes off in full, no fizzle. */
+    private static void dirty(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GZOrdnance.DIRTY_WARHEAD.block().get().defaultBlockState());
+        Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
+        // A twentieth of its size, so its waste (90 blocks round) stays in this test's plot.
+        float scale = Charges.bombScale;
+        Charges.bombScale = 0.05f;
+        Charges.burst(helper.getLevel(), ChargeKind.DIRTY_WARHEAD, centre, null);
+        Charges.bombScale = scale;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(at)).isAir(), "the warhead is gone");
+            Contamination.Zone zone = zoneAt(helper, centre);
+            helper.assertTrue(Math.abs(zone.strength() - 0.8f) < 0.01f && zone.duration() == 120_000 && Math.abs(zone.radius() - 4.5f) < 0.01f,
+                    "a dirty warhead's waste (90 blocks, 0.8, five days), not a fizzle's: " + zone);
+            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+        });
+    }
+
+    /** A dirty warhead is class S: a Light casing, any missile body but a Strategic one, and a basic silo fires it. */
+    private static void dirtyMissile(GameTestHelper helper) {
+        ItemStack payload = new ItemStack(GZAssembly.DIRTY_PAYLOAD.get());
+        ItemStack fuze = new ItemStack(WarheadAssembly.fuzeItem(Fuze.IMPACT));
+        helper.assertTrue(WarheadAssembly.check(payload, new ItemStack(WarheadAssembly.casing(SizeClass.S)), fuze, ItemStack.EMPTY)
+                == WarheadAssembly.Problem.NONE, "a Light Warhead Casing");
+        helper.assertTrue(WarheadAssembly.check(payload, new ItemStack(GZAssembly.STRATEGIC_CASING.get()), fuze, ItemStack.EMPTY)
+                == WarheadAssembly.Problem.WRONG_CASING, "not a Strategic one");
+        ItemStack dirty = new ItemStack(GZOrdnance.DIRTY_WARHEAD.item().get());
+        helper.assertTrue(MissileAssembly.check(dirty, new ItemStack(GZAssembly.TACTICAL_BODY.get()), new ItemStack(GZAssembly.SRM_I.get()),
+                ItemStack.EMPTY) == MissileAssembly.Problem.NONE, "fits a Tactical body");
+        helper.assertTrue(MissileAssembly.check(dirty, new ItemStack(GZAssembly.STRATEGIC_BODY.get()), new ItemStack(GZAssembly.LIQUID_FUEL_STAGE.get()),
+                ItemStack.EMPTY) == MissileAssembly.Problem.STRATEGIC_NUCLEAR_ONLY, "but not a Strategic one");
+        ItemStack missile = MissileAssembly.missile(new MissileSpec(dirty, SizeClass.S, MissileParts.Motor.SRM_I, MissileParts.Guidance.GPS, false));
+        MissileSpec spec = dev.groundzero.content.assembly.MissileItem.spec(missile);
+        helper.assertTrue(spec != null && !spec.needsComplex(), "no Launch Complex needed: " + spec);
+        LaunchSiloBlockEntity silo = LaunchTests.formedSilo(helper);
+        helper.assertTrue(silo.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, missile), "a basic silo takes it");
         helper.succeed();
     }
 

@@ -39,6 +39,7 @@ WASTE = fixed("waste_drum", "#14160e", "#1e2214", "#2a301c", "#363e24", "#46502e
 SHELL = fixed("casing_steel", "#2c3034", "#454a50", "#62686e", "#80868c", "#9ca2a8", "#b8bec2", "#d6dadc")
 GLASS = fixed("sensor_glass", "#05080a", "#0c1216", "#141e24", "#1e2c34", "#2a3c46", "#3a525e", "#5a7684")
 SIDES = ("north", "south", "east", "west")
+WHITE_STRIPE = P.WHITE_CERAMIC[5]
 
 
 def model(name: str, size: int = 64) -> BlockModel:
@@ -227,6 +228,72 @@ def fission_core() -> None:
     G.finish(m, t)
 
 
+def boosted_fission_core() -> None:
+    """A lens sphere on its cradle with the boost gas beside it: a tritium bottle and a deuterium bottle, piped in."""
+    m = model("boosted_fission_core")
+    m.box("cradle", (3, 2, 6), (13, 3.5, 10))
+    m.box("foot_w", (3, 1, 4), (5, 2, 12))
+    m.box("foot_e", (11, 1, 4), (13, 2, 12))
+    shell = ball(m, "lens", 4.2, 2.6)
+    bottles = prism(m, "bottle_t", 3.2, 12.2, 1.2, 0.8, 3.5, 8) + prism(m, "bottle_d", 12.8, 12.2, 1.2, 0.8, 3.5, 8)
+    m.box("pipe", (3.6, 8, 11.8), (12.4, 8.6, 12.6))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    for n in ("cradle", "foot_w", "foot_e"):
+        m.paint_all(t, n, shaded(GUN))
+    TAN = fixed("lens_tan_b", "#3a2a14", "#5a4220", "#7a5c2e", "#9a7840", "#b89656", "#d0b274", "#e6d0a0")
+
+    def lenses(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, TAN[{"up": 5, "down": 2, "north": 4, "west": 4}.get(d, 3)])
+        for xx in range(x + 2, x + w, 3):
+            t.vline(xx, y, h, TAN[1])
+        if d in SIDES:
+            for yy in range(y + 1, y + h, 3):
+                t.hline(x, yy, w, TAN[1])
+    fill_all(m, t, shell, lenses)
+    fill_all(m, t, [b for b in bottles if b.startswith("bottle_t")], banded(P.CHERENKOV, [(6, WHITE_STRIPE)], 8, 3.5))
+    fill_all(m, t, [b for b in bottles if b.startswith("bottle_d")], banded(STEEL, [(6, P.CHERENKOV[4])], 8, 3.5))
+    m.paint_all(t, "pipe", shaded(P.COPPER))
+    G.finish(m, t)
+
+
+def neutron_core() -> None:
+    """A small pit in a cage of tungsten reflector bars, glowing cyan through the gaps, on a base plate."""
+    m = model("neutron_core")
+    m.box("plate", (4.5, 1, 4.5), (11.5, 2, 11.5))
+    pit = ball(m, "pit", 2.2, 3.4)
+    bars = []
+    for i, (x, z) in enumerate(((5, 5), (10, 5), (5, 10), (10, 10))):
+        m.box(f"bar{i}", (x, 2, z), (x + 1, 9, z + 1))
+        bars.append(f"bar{i}")
+    m.box("ring_lo", (4.6, 3, 4.6), (11.4, 3.8, 11.4), faces=("north", "south", "east", "west", "up", "down"))
+    m.box("ring_hi", (4.6, 7.4, 4.6), (11.4, 8.2, 11.4), faces=("north", "south", "east", "west", "up", "down"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    m.paint_all(t, "plate", shaded(GUN))
+    fill_all(m, t, pit, shaded(P.CHERENKOV))
+    fill_all(m, t, bars + ["ring_lo", "ring_hi"], shaded(P.TUNGSTEN))
+    G.finish(m, t)
+
+
+def dirty_payload() -> None:
+    """A rusty drum of nuclear waste with a trefoil band, an olive HE brick taped to its side."""
+    m = model("dirty_payload")
+    drum = prism(m, "drum", 8, 8, 3.4, 2.3, 1, 10)
+    m.box("lid", (5.2, 10, 5.2), (10.8, 10.6, 10.8))
+    m.box("brick", (11.4, 2, 6.5), (13, 7, 9.5), faces=("north", "south", "east", "up", "down"))
+    m.box("tape", (11.2, 4, 6.3), (13.2, 5, 9.7), faces=("north", "south", "east", "up", "down"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    RUST = fixed("waste_rust_c", "#2a1206", "#46200c", "#663014", "#86441c", "#a35a28", "#bd7638", "#d69a5c")
+    fill_all(m, t, drum, banded(RUST, [(8, YELLOW.base), (7.4, BLACK.base), (3, YELLOW.base)], 10, 1))
+    m.paint_all(t, "lid", shaded(RUST))
+    m.paint_all(t, "brick", shaded(OLIVE))
+    m.paint_all(t, "tape", shaded(YELLOW))
+    G.finish(m, t)
+
+
 def canister_dispenser(name: str, can, cap, strap, lamp=None) -> None:
     m = model(name)
     m.box("plate", (3.5, 2, 3.5), (12.5, 3, 12.5))
@@ -389,7 +456,7 @@ def barometric_fuze() -> None:
 
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
-         "chemical_agent_canister", "tactical_fission_core", "fission_core"]
+         "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 
@@ -410,6 +477,9 @@ def main() -> None:
     chemical_agent_canister()
     tactical_fission_core()
     fission_core()
+    boosted_fission_core()
+    neutron_core()
+    dirty_payload()
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)

@@ -5,17 +5,27 @@
   "items": [
     "groundzero:tactical_nuclear_warhead",
     "groundzero:fission_warhead",
+    "groundzero:boosted_fission_warhead",
+    "groundzero:neutron_warhead",
+    "groundzero:dirty_warhead",
     "groundzero:tactical_fission_core",
-    "groundzero:fission_core"
+    "groundzero:fission_core",
+    "groundzero:boosted_fission_core",
+    "groundzero:neutron_core",
+    "groundzero:dirty_payload"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile will be built whole in a separate assembly hall and set straight on the Launch Complex.\n\n**Tactical Nuclear Warhead** (about 300 tonnes of TNT), the smallest nuclear weapon and still half as big again as the Massive Ordnance Warhead: a crater 42 blocks round, wrecking everything to 60 blocks and deadly to 60. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.\n\n**Fission Warhead** (about 15 kilotons): a crater 75 blocks round, wrecking everything to 110 blocks and deadly to 120. Its core is a **Fission Core**: a plutonium ingot in a sphere of explosive lenses, with a depleted uranium tamper and a lead case.\n\nBoth go off with a blinding flash, a fireball and a mushroom cloud, and burn the ground round the crater to scorched earth."
+      "text": "A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile will be built whole in a separate assembly hall and set straight on the Launch Complex.\n\n**Tactical Nuclear Warhead** (about 300 tonnes of TNT), the smallest nuclear weapon and still half as big again as the Massive Ordnance Warhead: a crater 42 blocks round, wrecking everything to 60 blocks and deadly to 60. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.\n\n**Fission Warhead** (about 15 kilotons): a crater 75 blocks round, wrecking everything to 110 blocks and deadly to 120. Its core is a **Fission Core**: a plutonium ingot in a sphere of explosive lenses, with a depleted uranium tamper and a lead case.\n\n**Boosted Fission Warhead** (about 45 kilotons): a crater 95 blocks round, wrecking everything to 140 blocks and deadly to 150. Its core is a **Boosted Fission Core**: a Fission Core with a tritium canister and a deuterium canister piped into its pit. The gas burns as the pit goes off and splits far more of the plutonium.\n\nAll three go off with a blinding flash, a fireball and a mushroom cloud, and burn the ground round the crater to scorched earth."
     },
     {
       "type": "text",
-      "text": "**Fallout.** A nuclear blast leaves the ground round it **contaminated**: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, weakest at the edge and fading as it ages. Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.\n\n**Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion."
+      "text": "**Neutron Warhead** (about 1 kiloton): slim and silver, built to kill rather than to wreck. Its blast digs a crater only 10 blocks round, but it lets out a flood of **neutrons** that kills every living thing out to **180 blocks**, unless enough lies in between: every block between the burst and a body takes its share. Two blocks of concrete, lead or obsidian (or five of stone or earth, or four of water) keep the neutrons from killing even beside the burst, and four of concrete or lead keep out the sickness too; farther out, less does. A [hazmat suit](safety/hazmat_suits) helps only a little, as neutrons go through cloth. Whoever they do not kill falls ill with **Radiation Sickness**. Undead are not harmed.\n\nPlants in the open die out to **120 blocks** (under a roof they are spared): leaves fall; crops, grass and flowers wither; saplings die; grass turns to bare earth. Buildings are hardly touched. Its core is a **Neutron Core**: a Tactical Fission Core with two tritium canisters, in a tungsten carbide cage that lets the neutrons out instead of holding them in.\n\n**Dirty Warhead**: not a nuclear weapon at all, but high explosive wrapped round a drum of **nuclear waste**. Its blast is small (a crater 6 blocks round), but the waste goes up as dust and settles **90 blocks round**: weaker than a nuclear blast's fallout, and it lingers for **five days**. It is class S: it takes a **Light Warhead Casing**, fits any missile body but a Strategic one and flies from any [Launch Silo](ordnance/launch_site). Being only explosive, it goes off however it is set off. Its core is a **Dirty Payload**: four Nuclear Waste, an HE Charge and a Lead Plate."
+    },
+    {
+      "type": "text",
+      "text": "**Fallout.** A nuclear blast leaves the ground round it **contaminated**, weakest at the edge and fading as it ages: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, 220 for two days after a boosted fission warhead, and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.\n\n**Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion. A dirty warhead is not nuclear, and does not fizzle."
     },
     {
       "type": "crafting",
@@ -25,6 +35,21 @@
     {
       "type": "crafting",
       "item": "groundzero:fission_core",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:boosted_fission_core",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:neutron_core",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:dirty_payload",
       "text": ""
     }
   ]

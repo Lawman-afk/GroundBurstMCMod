@@ -66,6 +66,7 @@ public class GroundZero {
         dev.groundzero.content.launch.GZLaunch.register(modBus);
         dev.groundzero.content.effect.EffectSystems.register();
         dev.groundzero.content.nuclear.Contamination.register();
+        dev.groundzero.content.nuclear.NeutronBurst.register();
         dev.groundzero.content.nuclear.Meltdown.register();
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);
 

@@ -73,8 +73,12 @@ public final class AssemblyStats {
     static final String V_TONNES = GZLang.add(P + "tonnes", "%s t TNT");
     static final String FALLOUT = GZLang.add(P + "fallout", "Fallout Radius");
     static final String FALLOUT_LASTS = GZLang.add(P + "fallout_lasts", "Fallout Lasts");
+    /** The neutron warhead's burst, as rows (a note would run past the bottom of the panel at GUI scale 3). */
+    static final String NEUTRONS = GZLang.add(P + "neutrons", "Neutrons Kill");
+    static final String WITHERS = GZLang.add(P + "withers", "Plants Wither");
     static final String V_DAYS = GZLang.add(P + "days", "%s days");
     static final String V_DAY = GZLang.add(P + "day", "1 day");
+    static final String V_HOURS = GZLang.add(P + "hours", "%s hours");
     static final String V_YIELD = GZLang.add(P + "yield_value", "%s");
     static final String NOTE_NUCLEAR = GZLang.add(P + "nuclear", "Fires only from a Launch Complex");
     static final String V_HARDENED = GZLang.add(P + "hardened", "Hardened");
@@ -97,6 +101,7 @@ public final class AssemblyStats {
         effect(ChargeKind.NAPALM_WARHEAD, "napalm", "A pool of napalm %s blocks round", (int) Charges.NAPALM_RADIUS);
         effect(ChargeKind.TOXIC_WASTE_WARHEAD, "toxic_waste", "Toxic sludge splashed %s blocks round", (int) Charges.TOXIC_WASTE_RADIUS);
         effect(ChargeKind.CHEMICAL_WARHEAD, "chemical", "An anthrax cloud %s blocks round that spreads and drifts", (int) Charges.CHEMICAL_RADIUS);
+        effect(ChargeKind.DIRTY_WARHEAD, "dirty", "Scatters nuclear waste");          // one line: its missile's list is long
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -127,6 +132,8 @@ public final class AssemblyStats {
         return switch (kind) {
             case TACTICAL_NUCLEAR_WARHEAD -> "300 t";
             case FISSION_WARHEAD -> "15 kt";
+            case BOOSTED_FISSION_WARHEAD -> "45 kt";
+            case NEUTRON_WARHEAD -> "1 kt";
             default -> null;
         };
     }
@@ -176,11 +183,16 @@ public final class AssemblyStats {
                 }
             }
         }
-        if (kind.nuclear()) {
-            int days = Charges.contaminationTicks(kind) / 24_000;
+        if (kind == ChargeKind.NEUTRON_WARHEAD) {          // its neutron burst (how walls stop it is in the Field Manual)
+            out.add(Stat.row(NEUTRONS, Component.translatable(V_BLOCKS, (int) dev.groundzero.content.nuclear.NeutronBurst.LETHAL_RADIUS)));
+            out.add(Stat.row(WITHERS, Component.translatable(V_BLOCKS, (int) dev.groundzero.content.nuclear.NeutronBurst.WITHER_RADIUS)));
+        }
+        if (kind.radiological()) {
+            int ticks = Charges.contaminationTicks(kind);
             out.add(Stat.row(FALLOUT, Component.translatable(V_BLOCKS, (int) Charges.contaminationRadius(kind))));
-            out.add(Stat.row(FALLOUT_LASTS, days == 1 ? Component.translatable(V_DAY) : Component.translatable(V_DAYS, days)));
-            if (full) {
+            out.add(Stat.row(FALLOUT_LASTS, ticks < 24_000 ? Component.translatable(V_HOURS, ticks / 1000)
+                    : ticks == 24_000 ? Component.translatable(V_DAY) : Component.translatable(V_DAYS, ticks / 24_000)));
+            if (full && kind.nuclear()) {
                 out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }

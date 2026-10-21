@@ -1,0 +1,17 @@
+{
+  "core": 4.0,
+  "crater": 10.0,
+  "crater_depth": 0.5,
+  "entities": {
+    "damage": 26.0,
+    "knockback": 2.5,
+    "lethal": 10.0
+  },
+  "fire": 12.0,
+  "front_speed": 3.0,
+  "scorch": 14.0,
+  "sound": "nuke",
+  "structural": 16.0,
+  "terrain": "groundzero:nuclear",
+  "visual": "nuke"
+}

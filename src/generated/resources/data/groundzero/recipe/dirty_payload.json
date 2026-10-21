@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:nuclear_waste",
+    "groundzero:nuclear_waste",
+    "groundzero:nuclear_waste",
+    "groundzero:nuclear_waste",
+    "groundzero:he_charge",
+    "groundzero:lead_plate"
+  ],
+  "result": {
+    "id": "groundzero:dirty_payload"
+  }
+}
