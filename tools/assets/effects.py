@@ -19,21 +19,26 @@ ICE = [(16, 60, 92), (34, 98, 140), (70, 146, 196), (118, 190, 232), (170, 222, 
 
 
 def frozen_icon() -> Tex:
+    """A snowflake centred on the icon: everything symmetric about its middle (between pixels 8 and 9), so the cross
+    arms are two pixels wide."""
     t = Tex(18, 18)
     t.disc(9, 9, 8.2, (16, 30, 44, 255))
     t.disc(9, 9, 7.2, (26, 50, 72, 255))
-    c = ICE[5] + (255,)
-    for i in range(-5, 6):                     # a six-armed snowflake: a cross and two diagonals
-        t.px(9 + i, 9, c)
-        t.px(9, 9 + i, c)
-        if abs(i) <= 4:
-            t.px(9 + i, 9 + i, ICE[4] + (255,))
-            t.px(9 + i, 9 - i, ICE[4] + (255,))
-    for s in (-1, 1):                          # little barbs at the arm ends
-        for a, b in ((4, 1), (4, -1)):
-            t.px(9 + s * a, 9 + b, c)
-            t.px(9 + b, 9 + s * a, c)
-    t.px(9, 9, ICE[6] + (255,))
+    arm, diag, tip = ICE[5] + (255,), ICE[4] + (255,), ICE[6] + (255,)
+    for i in range(5, 13):                     # the diagonals
+        t.px(i, i, diag)
+        t.px(i, 17 - i, diag)
+    for i in range(3, 15):                     # the cross, two pixels wide
+        for k in (8, 9):
+            t.px(i, k, arm)
+            t.px(k, i, arm)
+    for a in (4, 13):                          # barbs near the ends of the cross
+        for b in (7, 10):
+            t.px(a, b, arm)
+            t.px(b, a, arm)
+    for x in (8, 9):
+        for y in (8, 9):
+            t.px(x, y, tip)
     return t
 
 

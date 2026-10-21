@@ -842,7 +842,8 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
 
 entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
                                                       "bunker_buster_warhead", "napalm_warhead", "massive_warhead", "gas_warhead",
-                                                      "smoke_warhead", "toxic_waste_warhead", "chemical_warhead"], [
+                                                      "smoke_warhead", "cryo_warhead", "emp_warhead", "toxic_waste_warhead",
+                                                      "chemical_warhead"], [
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
@@ -892,6 +893,14 @@ A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks
 """),
     craft("toxic_waste_warhead"),
     craft("chemical_warhead"),
+    spot("cryo_warhead", """
+The same with **cryo** canisters: 14 of them over a wide area, each a burst of cold like a [cryo grenade](ordnance/thrown): water freezes, fires go out, and everything caught in one is frozen solid for 10 seconds (hit hard, a frozen mob shatters).
+"""),
+    spot("emp_warhead", """
+The same with **EMP** canisters: 14 EMP fields over a wide area, each like an [EMP grenade](ordnance/thrown)'s. Machines in them lose half their power and shut down for 20 seconds, armed charges with electronic fuzes go safe, and missiles flying through may be left duds.
+"""),
+    craft("cryo_warhead"),
+    craft("emp_warhead"),
 ])
 
 entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",

@@ -68,6 +68,20 @@
         }
       },
       {
+        "when": "cryo_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_cryo_warhead"
+        }
+      },
+      {
+        "when": "emp_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_emp_warhead"
+        }
+      },
+      {
         "when": "chemical_warhead",
         "model": {
           "type": "minecraft:model",

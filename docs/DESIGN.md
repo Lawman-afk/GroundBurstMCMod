@@ -1122,6 +1122,8 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   1 000 above fully frozen (powder snow never goes past it) and clients draw the ice from that; it is cleared on thaw.
 - **Weapons:** Cryo Grenade (3 s, radius 5, frozen 10 s), EMP Grenade (3 s, field 12 blocks for 20 s), Chemical
   Warhead (anthrax cloud 9 blocks round; the Chemical Bomb of the plan, as a warhead). Gas grenades now feed the grid.
+- **Cluster versions** (after feedback): Cryo Cluster Warhead and EMP Cluster Warhead, 14 cryo or EMP grenades as
+  canisters, air-burst over the target like the other cluster warheads.
 
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
@@ -2047,3 +2049,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | The Radar Array's crown is one Large Radar Dish (a 3×3 placed by one item), not nine small dishes; the sweep turns 25% faster (4.8 s). |
 | 2026-10-21 | Missile warheads are the tactical conventional tier; full-scale nuclear/special/strategic weapons come later with their own launchers, models and far bigger yields. Cluster-type warheads air-burst when delivered; gas, smoke and toxic waste warheads added; bomblets strengthened; the bunker buster bores 3×3. |
 | 2026-10-21 | Slice 6e: gas grid of one block a cell (not 2×2×2), EMP fields and freezing as level systems; the Chemical Bomb is a Chemical Warhead; EMP's redstone and powered-item effects deferred. |
+| 2026-10-21 | Cryo and EMP grenades get cluster warhead versions (14 canisters each, the gas/smoke pattern). |

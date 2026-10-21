@@ -34,7 +34,12 @@ final class BombTests {
         GZGameTests.test("cluster_bomb_scatters_bomblets", GZGameTests.FLOOR_16, 20, BombTests::cluster);
         GZGameTests.test("napalm_warhead_lays_napalm_all_round", GZGameTests.FLOOR_16, 20, BombTests::napalm);
         GZGameTests.test("napalm_fire_burns_and_burns_out", GZGameTests.FLOOR_16, 40, BombTests::napalmFire);
-        GZGameTests.test("gas_warhead_scatters_gas_canisters", GZGameTests.FLOOR_16, 20, BombTests::gasCluster);
+        GZGameTests.test("gas_warhead_scatters_gas_canisters", GZGameTests.FLOOR_16, 20,
+                h -> canisters(h, GZOrdnance.GAS_WARHEAD.block().get(), GZOrdnance.GAS_GRENADE.get()));
+        GZGameTests.test("cryo_warhead_scatters_cryo_canisters", GZGameTests.FLOOR_16, 20,
+                h -> canisters(h, GZOrdnance.CRYO_WARHEAD.block().get(), GZOrdnance.CRYO_GRENADE.get()));
+        GZGameTests.test("emp_warhead_scatters_emp_canisters", GZGameTests.FLOOR_16, 20,
+                h -> canisters(h, GZOrdnance.EMP_WARHEAD.block().get(), GZOrdnance.EMP_GRENADE.get()));
         GZGameTests.test("toxic_waste_warhead_splashes_sludge", GZGameTests.FLOOR_16, 20, BombTests::toxicWaste);
         GZGameTests.testOpenSky("smoke_warhead_bursts_over_its_target", GZGameTests.FLOOR_16, 120, BombTests::airburst);
     }
@@ -144,16 +149,16 @@ final class BombTests {
     }
 
     /** The gas warhead set off on the ground throws out its gas canisters. */
-    private static void gasCluster(GameTestHelper helper) {
+    private static void canisters(GameTestHelper helper, Block warhead, net.minecraft.world.item.Item grenade) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.GAS_WARHEAD.block().get(), at, Direction.NORTH, false);
+        ChargeBlockEntity be = place(helper, warhead, at, Direction.NORTH, false);
         be.arm(helper.getLevel(), null);
         be.trigger(helper.getLevel(), null);
         AABB area = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).expandTowards(16, 16, 16);
         var canisters = helper.getLevel().getEntitiesOfClass(ThrownExplosive.class, area,
-                e -> e.getItem().is(GZOrdnance.GAS_GRENADE.get()));
-        helper.assertTrue(canisters.size() == Charges.CLUSTER_CANISTERS, "gas canisters out (" + canisters.size() + ")");
+                e -> e.getItem().is(grenade));
+        helper.assertTrue(canisters.size() == Charges.CLUSTER_CANISTERS, "canisters out (" + canisters.size() + ")");
         helper.succeed();
     }
 

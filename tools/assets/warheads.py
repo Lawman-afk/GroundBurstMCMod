@@ -13,6 +13,8 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - Massive Ordnance Warhead: huge, olive with an orange nose.
 - Poison Gas Warhead: yellow-green clamshell casing (a cluster of gas canisters), a yellow band.
 - Smoke Warhead: grey clamshell casing (a cluster of smoke canisters), a white band.
+- Cryo Cluster Warhead: ice-blue clamshell casing (a cluster of cryo canisters), white band and dashes.
+- EMP Cluster Warhead: dark clamshell casing (a cluster of EMP canisters), copper band and dashes.
 - Chemical Warhead: pale grey with the two green bands of a chemical weapon, a steel nose.
 - Toxic Waste Warhead: a dark drum of a body, a glowing toxin-green nose and band, a hazard-dashed ring.
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
@@ -50,6 +52,7 @@ CASING = fixed("cluster_casing", "#5a5e62", "#7a7e82", "#9a9ea2", "#b8bcc0", "#d
 TUNGSTEN = fixed("tungsten_nose", "#2a2c30", "#44474c", "#61656b", "#80858b", "#a0a5aa", "#c0c4c8", "#e0e2e4")
 GAS = fixed("gas_casing", "#3a3f12", "#5a6118", "#7c8520", "#9ca82c", "#b8c44a", "#cfd872", "#e4eaa2")
 WASTE = fixed("waste_drum", "#14160e", "#1e2214", "#2a301c", "#363e24", "#46502e", "#58643a", "#6e7a4a")
+EMP_CASING = fixed("emp_casing", "#1c2026", "#282e36", "#363e48", "#48525e", "#5e6a78", "#7a8896", "#9eacba")
 DARK = fixed("penetrator_dark", "#16181a", "#202326", "#2c3034", "#3a3e44", "#4a4f56", "#5e646c", "#767c84")
 
 
@@ -97,6 +100,10 @@ WARHEADS = [
          bands=[(8.5, YELLOW[5])], seam=BLACK[3], dashes=(4, YELLOW[3])),
     Spec("smoke_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), STEEL, STEEL,
          bands=[(8.5, P.WHITE_CERAMIC[5])], seam=BLACK[3], dashes=(4, P.WHITE_CERAMIC[4])),
+    Spec("cryo_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), G.CRYO_CAN, G.CRYO_CAN,
+         bands=[(8.5, P.WHITE_CERAMIC[6])], seam=G.CRYO_CAN[0], dashes=(4, P.WHITE_CERAMIC[5])),
+    Spec("emp_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), EMP_CASING, EMP_CASING,
+         bands=[(8.5, P.COPPER[5])], seam=BLACK[1], dashes=(4, P.COPPER[4])),
     Spec("chemical_warhead", 4.5, (1.5, 5.1), 10, ogive(10, 5.5, 4.3, 5, 1.8), (16, 0.5), P.WHITE_CERAMIC, P.STEEL, P.STEEL,
          bands=[(5, P.INDICATOR_GREEN[3]), (7.5, P.INDICATOR_GREEN[3])]),
     Spec("toxic_waste_warhead", 5, (1.5, 5.6), 10, ogive(10, 4.5, 4.8, 4, 2.4), (15, 1.2), WASTE, P.TOXIN, WASTE,

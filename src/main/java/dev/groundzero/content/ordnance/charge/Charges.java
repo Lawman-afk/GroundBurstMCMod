@@ -225,7 +225,7 @@ public final class Charges {
                 Blasts.detonate(level, c, Blasts.profile("napalm_warhead"), by, bombScale);
                 napalm(level, pos);
             }
-            case CLUSTER_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD -> cluster(level, kind, c, by);
+            case CLUSTER_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD -> cluster(level, kind, c, by);
             case CHEMICAL_WARHEAD -> {
                 Blasts.detonate(level, c, Blasts.profile("chemical_warhead"), by, bombScale);
                 dev.groundzero.content.effect.GasGrid.of(level).fill(level, c, Math.max(2, CHEMICAL_RADIUS * bombScale),
@@ -388,7 +388,7 @@ public final class Charges {
 
     /**
      * A cluster warhead set off on the ground: its casing bursts and throws its submunitions up and out, most of them
-     * 6-18 blocks away (bomblets, or gas or smoke canisters).
+     * 6-18 blocks away (bomblets, or gas, smoke, cryo or EMP canisters).
      */
     private static void cluster(ServerLevel level, ChargeKind kind, Vec3 c, @Nullable Entity by) {
         Blasts.detonate(level, c, Blasts.profile(kind.id), by, bombScale);
@@ -417,12 +417,14 @@ public final class Charges {
         }
     }
 
-    /** One bomblet (a dud now and then), or one gas or smoke canister set to go off {@code fuse} ticks on. */
+    /** One bomblet (a dud now and then), or one gas, smoke, cryo or EMP canister set to go off {@code fuse} ticks on. */
     private static void submunition(ServerLevel level, ChargeKind kind, Vec3 at, Vec3 v, @Nullable Entity by, int fuse) {
         var r = level.getRandom();
         switch (kind) {
             case GAS_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.GAS_GRENADE.get()), fuse);
             case SMOKE_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.SMOKE_GRENADE.get()), fuse);
+            case CRYO_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.CRYO_GRENADE.get()), fuse);
+            case EMP_WARHEAD -> ThrownExplosive.canister(level, at, v, by, new ItemStack(GZOrdnance.EMP_GRENADE.get()), fuse);
             default -> ThrownExplosive.bomblet(level, at, v, by, r.nextFloat() < CLUSTER_DUD_CHANCE);
         }
     }

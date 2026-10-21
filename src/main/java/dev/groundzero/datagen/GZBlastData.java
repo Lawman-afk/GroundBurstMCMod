@@ -88,10 +88,14 @@ public final class GZBlastData {
         // Bomblets: each a grenade-and-a-half (after the in-game look: they were too weak to matter).
         ctx.register(Blasts.profile("cluster_bomblet"), profile(1.5f, 4, 6, 5, 0, 4.5f, 10, 4, 0.75f, 0.12f, 0.3f, 0.35f, 40, 12, 1.8f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
-        // Gas and smoke warheads: only their casing bursting; the toxic waste warhead: a small burst under its splash.
+        // Gas, smoke, cryo and EMP warheads: only their casing bursting; the toxic waste warhead: a small burst under its splash.
         ctx.register(Blasts.profile("gas_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("smoke_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("cryo_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("emp_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("chemical_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

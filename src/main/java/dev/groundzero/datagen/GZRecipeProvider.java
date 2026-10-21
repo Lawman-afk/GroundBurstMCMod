@@ -339,6 +339,18 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE))
                 .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CRYO_WARHEAD.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.EMP_WARHEAD.item(), 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIC_WASTE_WARHEAD.item(), 1)
                 .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))

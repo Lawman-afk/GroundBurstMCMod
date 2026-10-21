@@ -47,6 +47,10 @@ public enum ChargeKind {
     GAS_WARHEAD("gas_warhead", 10, true),
     /** A cluster of smoke canisters: 14 smoke clouds over a wide area, screening it. */
     SMOKE_WARHEAD("smoke_warhead", 10, true),
+    /** A cluster of cryo canisters: 14 bursts of cold over a wide area, freezing water, fire and everything in them. */
+    CRYO_WARHEAD("cryo_warhead", 10, true),
+    /** A cluster of EMP canisters: 14 EMP fields over a wide area, shutting down machines and making fuzes safe. */
+    EMP_WARHEAD("emp_warhead", 10, true),
     /** A burst of toxic waste: sludge splashed 10 blocks round, a heavy dose of toxin for anything in it. */
     TOXIC_WASTE_WARHEAD("toxic_waste_warhead", 10, true),
     /** A chemical agent (anthrax) let out over 9 blocks round: a heavy cloud that spreads, sinks and drifts for a minute and more. */
@@ -92,7 +96,7 @@ public enum ChargeKind {
      * wide area (set off on the ground, it throws them out round itself).
      */
     public boolean airburst() {
-        return this == CLUSTER_WARHEAD || this == GAS_WARHEAD || this == SMOKE_WARHEAD;
+        return this == CLUSTER_WARHEAD || this == GAS_WARHEAD || this == SMOKE_WARHEAD || this == CRYO_WARHEAD || this == EMP_WARHEAD;
     }
 
     /** Placed facing the way the player looks (its front away from them): the claymore, and bombs (nose away). */
