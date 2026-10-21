@@ -540,8 +540,26 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   Fabricator, Decontamination Shower) each half's four sides plus the top and bottom (10 faces each; the faces where
   the halves meet are inside). The wrench tab lays them out unfolded.
 - **JEI:** an Assembly Bench category (core + casing + any fuze -> warhead, with class, time and power).
-- Still to come (7b, 7c): missile bodies, guidance and propulsion, the assembled missile, the stats panel and 3D
-  preview.
+- Still to come (7c): the stats panel and 3D preview.
+
+### 10.2 As built: slice 7b, missiles from parts (2026-10-22)
+- The bench has two pages, **Warheads** and **Missiles**, picked by tabs on the left of its screen (the slots of the
+  other page are hidden; one job runs at a time, and the readout says so if the other page's job is busy). The missile
+  page: warhead + **body** + **motor** + optional **guidance unit** + optional **module** -> **Missile** (8 s, 10 FE/t);
+  **Take Apart** gives every part back, the fuze setting kept on the warhead.
+- **Bodies** (warhead class): Tactical S, Medium S-M, Heavy S-L. A bigger body is a bigger missile, on the pad (the
+  silo's `missile` bone is scaled) and in flight (Tactical 0.85 x 0.75, Medium 1, Heavy 1.15 across x 1.2 long).
+- **Motors** (range): Solid Rocket Motor I 400 blocks (Tactical and Medium bodies), Solid Rocket Motor II 1024 (any),
+  Liquid-fuel Stage 2500 (Heavy only).
+- **Guidance** scatters the aim once, at lift-off, to a random point in a disc round the target: none 8% of the
+  flight's distance, Inertial Guidance Unit 2%, GPS Guidance Unit 2 blocks.
+- **Hardened Electronics** (the one module so far): an EMP field never makes the missile a dud (without it, an even
+  chance).
+- The **Missile** item (`groundzero:missile` component, `MissileSpec`) stacks to 1, is named by its body ("Heavy
+  Missile") and lists warhead, fuze, range, guidance and hardening; its nose model follows the warhead. It replaces
+  the Basic Missile and the silo's warhead slot: the **Launch Silo takes one missile**, and its range is the missile's.
+  The Launch Computer shows each silo's range and will not arm a silo whose target is beyond it.
+- JEI: a Missile Assembly category (one recipe per body, with the warheads and motors that fit it).
 ---
 
 ## 11. Explosion engine (`dev.groundzero.blast`)
@@ -2078,3 +2096,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Slice 7b (the user chose the full parts list): the bench gets Warheads/Missiles pages; bodies set the warhead class and the missile's size, motors the range (400 / 1024 / 2500), guidance the scatter (8% / 2% / 2 blocks, applied once at lift-off), Hardened Electronics stop EMP duds. The assembled Missile replaces the Basic Missile, and the silo takes only a missile. |

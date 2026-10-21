@@ -78,7 +78,8 @@ public final class FxPhotographer {
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
                 new Scene("assembly_jei", "assembly", 4, 0, List.of(25)),
-                new Scene("tall_ui", "tall", 4, 0, List.of(30)))) {
+                new Scene("tall_ui", "tall", 4, 0, List.of(30)),
+                new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -236,9 +237,7 @@ public final class FxPhotographer {
         if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity silo) {
             silo.revalidate();
             silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
-                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
-            silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
-                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()));
+                    dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.L, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
             silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
             silo.setTarget(launchTarget.getX(), launchTarget.getZ());
             silo.arm(true);
@@ -254,9 +253,7 @@ public final class FxPhotographer {
                 silo.revalidate();
                 if (i != 1) {                                  // one with no missile
                     silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
-                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
-                    silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
-                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item().get()));
+                            dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.M, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
                 }
                 if (i != 2) {                                  // one still charging
                     silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
@@ -323,6 +320,12 @@ public final class FxPhotographer {
             b.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_CASING.get(), 3));
             b.inventory().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BAROMETRIC_FUZE.get(), 3));
             b.startAssembly();
+            // The missile page's parts too (its screenshot shows them).
+            b.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item().get()));
+            b.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_BODY.get()));
+            b.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.SRM_II.get()));
+            b.inventory().setItem(7, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()));
+            b.inventory().setItem(8, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HARDENED_ELECTRONICS.get()));
         }
         if (level.getBlockEntity(far) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity b) {
             b.inventory().setItem(3, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()));
@@ -575,7 +578,14 @@ public final class FxPhotographer {
             }
         }
         // The bench's screen while it assembles.
-        if (scene.name().equals("assembly_ui") && step >= 0 && clock == 12 && benchAt != null) {
+        if (scene.name().equals("assembly_missile_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
+            var screen = mc.gui.screen();                                  // the Missiles tab, on the window's left edge
+            double tx = screen.width / 2.0 - 88 - 12, ty = screen.height / 2.0 - 105 + 48;
+            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
+            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
+            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
+        }
+        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui")) && step >= 0 && clock == 12 && benchAt != null) {
             var bench = benchAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
@@ -619,8 +629,8 @@ public final class FxPhotographer {
             var silo = launchSilo;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.LaunchSiloBlockEntity be) {
-                    be.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
-                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item().get()));
+                    be.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                            dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.L, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
                     var player = server.getPlayerList().getPlayers().getFirst();
                     player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
                     player.openMenu(be, silo);

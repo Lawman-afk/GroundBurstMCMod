@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:military_circuit",
+    "groundzero:sensor_array",
+    "groundzero:copper_wire",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundzero:gps_guidance_unit"
+  }
+}

@@ -26,5 +26,10 @@ public final class GZDataComponents {
             COMPONENTS.registerComponentType("fuze", b -> b.persistent(dev.groundzero.content.assembly.FuzeSettings.CODEC)
                     .networkSynchronized(dev.groundzero.content.assembly.FuzeSettings.STREAM_CODEC));
 
+    /** An assembled missile: its warhead, body, motor, guidance and hardening (DESIGN.md §10). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundzero.content.assembly.MissileSpec>> MISSILE =
+            COMPONENTS.registerComponentType("missile", b -> b.persistent(dev.groundzero.content.assembly.MissileSpec.CODEC)
+                    .networkSynchronized(dev.groundzero.content.assembly.MissileSpec.STREAM_CODEC));
+
     private GZDataComponents() {}
 }

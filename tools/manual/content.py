@@ -842,7 +842,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
 
 entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
-The **Ordnance Assembly Bench** puts warheads together. It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
+The **Ordnance Assembly Bench** puts warheads and [missiles](ordnance/missiles) together, one page for each (the tabs on the left of its screen). It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
 
 A warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides where the missile carrying it sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.
 
@@ -892,6 +892,34 @@ Casings come in three classes, marked by yellow bands: one for **Light**, two fo
     craft("emp_dispenser"),
     craft("toxic_waste_tank"),
     craft("chemical_agent_canister"),
+])
+
+entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
+    text("""
+A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back.
+"""),
+    text("""
+**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any. A bigger body makes a bigger missile on the pad.
+
+**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (any body); **Liquid-fuel Stage**, 2500 blocks (Heavy bodies only).
+"""),
+    text("""
+**Guidance** decides how close to the target it comes down. With none it lands within 8% of its range of the target (80 blocks off on a 1000-block shot); an **Inertial Guidance Unit** brings that to 2%, a **GPS Guidance Unit** to 2 blocks.
+
+**Hardened Electronics** keep a missile live through an EMP: without them, a missile that flies through an EMP field has an even chance of coming down a dud.
+"""),
+    spot("missile", """
+Its tooltip lists its warhead and fuze, its range and its guidance. A missile's name says its body: a Tactical, Medium or Heavy Missile.
+"""),
+    craft("tactical_missile_body"),
+    craft("medium_missile_body"),
+    craft("heavy_missile_body"),
+    craft("solid_rocket_motor_i"),
+    craft("solid_rocket_motor_ii"),
+    craft("liquid_fuel_stage"),
+    craft("inertial_guidance_unit"),
+    craft("gps_guidance_unit"),
+    craft("hardened_electronics"),
 ])
 
 entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
@@ -946,30 +974,26 @@ The same with **EMP** canisters: 14 EMP fields over a wide area, each like an [E
 """),
 ])
 
-entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",
+entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "launch_pad",
                                                               "gantry_frame", "gantry_arm", "radar_mast", "radar_dish", "antenna"], [
     text("""
-A **Launch Silo** puts a [warhead](ordnance/warheads) on top of a missile and sends it to any point up to 1024 blocks away. A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.
+A **Launch Silo** sends an assembled [missile](ordnance/missiles) to its target, as far as the missile's motor reaches (400 to 2500 blocks). A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.
 
-The silo needs a **Basic Missile** and any warhead. Each launch takes the missile, the warhead and 100,000 FE.
+The silo takes one missile, its warhead already fitted at the [Assembly Bench](ordnance/assembly). Each launch takes the missile and 100,000 FE.
 """),
     structure("launch_silo", "A 3 by 3 launch pad, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. The gantry tower stands beside the pad's middle row, on your left as you face the controller: 9 high, with the Gantry Arm reaching in at the seventh block up. The column above the middle of the pad must be clear: that is where the missile stands."),
     structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller."),
     text("""
 **The map.** The computer maps the ground within 1024 blocks of it as it gets loaded (by you, by missiles flying over) and keeps what it has seen; ground no one has been near is blank. Hold the right mouse button and drag to look round, scroll to zoom in and out, and press **Centre** to come back. Under the map are the coordinates of the point under the cursor.
 
-**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target in range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
+**Launching.** Load the silo with a missile (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target within its missile's range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
 
 The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and dives on the target from high above, screaming down for its last few seconds. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It flies on whether or not anyone is near the ground below, loading the chunks ahead of it, so the target need not be loaded.
 
 Whatever it hits on the way sets off the warhead there, so keep the sky above the silo clear.
 """),
-    spot("basic_missile", """
-A solid-fuel missile with no guidance beyond its launch: it flies the arc it was given. Its fuel goes in the [Chemical Plant](processing/chemical_plant) as solid propellant.
-"""),
     craft("launch_silo"),
     craft("launch_computer"),
-    craft("basic_missile"),
     craft("launch_pad"),
     craft("gantry_frame"),
     craft("gantry_arm"),

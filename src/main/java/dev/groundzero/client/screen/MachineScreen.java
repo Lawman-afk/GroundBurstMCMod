@@ -56,14 +56,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         super.extractBackground(g, mouseX, mouseY, partial);
         int x = this.leftPos;
         int y = this.topPos;
-        g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x, y, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
+        g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x, y, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 
         // Energy gauge: fill bottom-up.
         MachineLayout.Rect e = this.layout.energy();
         int cap = Math.max(1, this.menu.capacity());
         int fill = (int) ((long) this.menu.energy() * (e.h() - 2) / cap);
         if (fill > 0) {
-            g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x + e.x() + 1, y + e.y() + 1 + (e.h() - 2 - fill),
+            g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + e.x() + 1, y + e.y() + 1 + (e.h() - 2 - fill),
                     this.layout.energyFillU(), this.layout.energyFillV() + (e.h() - 2 - fill), e.w() - 2, fill, 256, 256);
         }
 
@@ -97,12 +97,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         }
 
         // Progress arrow: fill left-to-right.
-        MachineLayout.Rect p = this.layout.progress();
+        MachineLayout.Rect p = pageLayout().progress();
         if (p != null) {
             int max = this.menu.extra(ProcessingBlockEntity.DATA_MAX_PROGRESS);
             int w = max > 0 ? this.menu.extra(ProcessingBlockEntity.DATA_PROGRESS) * p.w() / max : 0;
             if (w > 0) {
-                g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x + p.x(), y + p.y(),
+                g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + p.x(), y + p.y(),
                         this.layout.progressFillU(), this.layout.progressFillV(), w, p.h(), 256, 256);
             }
         }
@@ -113,7 +113,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             int total = this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN_TOTAL);
             int h = total > 0 ? Math.max(1, this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN) * f.h() / total) : 0;
             if (this.menu.extra(CombustionGeneratorBlockEntity.DATA_BURN) > 0 && h > 0) {
-                g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x + f.x(), y + f.y() + (f.h() - h),
+                g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + f.x(), y + f.y() + (f.h() - h),
                         this.layout.flameFillU(), this.layout.flameFillV() + (f.h() - h), f.w(), h, 256, 256);
             }
         }
@@ -149,7 +149,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
         // Redstone mode icon on its button.
         MachineLayout.Rect r = this.layout.redstone();
-        g.blit(RenderPipelines.GUI_TEXTURED, this.layout.texture(), x + r.x() + 1, y + r.y() + 1,
+        g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x + r.x() + 1, y + r.y() + 1,
                 this.layout.redstoneU() + this.menu.redstoneMode().ordinal() * 16, this.layout.redstoneV(), 16, 16, 256, 256);
     }
 
@@ -240,6 +240,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     /** Screen areas outside the main window (the side-config tab), for JEI to keep clear of. */
+    /**
+     * The layout the window is drawn from: its texture and progress arrow. A machine with pages (the Assembly Bench)
+     * swaps it per page; slot positions always come from the menu's own layout.
+     */
+    public MachineLayout pageLayout() {
+        return this.layout;
+    }
+
     public List<Rect2i> extraAreas() {
         return this.sideTab == null ? List.of() : List.of(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
     }
@@ -284,7 +292,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             g.setTooltipForNextFrame(Component.translatable(this.menu.status().translationKey()), mouseX, mouseY);
         } else if (this.layout.redstone().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(KEY_REDSTONE, Component.translatable(this.menu.redstoneMode().translationKey())), mouseX, mouseY);
-        } else if (this.layout.progress() != null && this.layout.progress().contains(mx, my)) {
+        } else if (pageLayout().progress() != null && pageLayout().progress().contains(mx, my)) {
             int max = this.menu.extra(ProcessingBlockEntity.DATA_MAX_PROGRESS);
             int pct = max > 0 ? this.menu.extra(ProcessingBlockEntity.DATA_PROGRESS) * 100 / max : 0;
             g.setTooltipForNextFrame(Component.translatable(KEY_PROGRESS, pct), mouseX, mouseY);

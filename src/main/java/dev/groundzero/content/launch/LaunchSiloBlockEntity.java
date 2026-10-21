@@ -46,17 +46,16 @@ import com.geckolib.util.GeckoLibUtil;
  */
 public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
-    public static final int SLOT_MISSILE = 0, SLOT_WARHEAD = 1;
+    public static final int SLOT_MISSILE = 0;
     private static final int RECHECK_INTERVAL = 40;
     /** What the silo can do right now (shown on its screen and the computer's). */
-    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_WARHEAD, NO_POWER, READY, COUNTING }
+    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_POWER, READY, COUNTING }
 
     private static final String[] T_STATE = {
             GZLang.add(GroundZero.MODID + ".silo.state.not_formed", "Structure incomplete"),
             GZLang.add(GroundZero.MODID + ".silo.state.emp", "Disabled by EMP"),
             GZLang.add(GroundZero.MODID + ".silo.state.halted", "Halted by redstone"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_missile", "No missile loaded"),
-            GZLang.add(GroundZero.MODID + ".silo.state.no_warhead", "No warhead fitted"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs 100k FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s")};
@@ -72,7 +71,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     private @Nullable UUID launchedBy;
 
     public LaunchSiloBlockEntity(BlockPos pos, BlockState state) {
-        super(GZLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY, 4_000, 0, 2, new int[] {SLOT_MISSILE, SLOT_WARHEAD}, new int[0]);
+        super(GZLaunch.SILO_ENTITY.get(), pos, state, ENERGY_CAPACITY, 4_000, 0, 1, new int[] {SLOT_MISSILE}, new int[0]);
     }
 
     /** Whether a stack can be a warhead: any bomb. */
@@ -82,7 +81,18 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return slot == SLOT_MISSILE ? stack.is(GZLaunch.BASIC_MISSILE.get()) : slot == SLOT_WARHEAD && isWarhead(stack);
+        return slot == SLOT_MISSILE && dev.groundzero.content.assembly.MissileItem.spec(stack) != null;
+    }
+
+    /** The loaded missile (null: none). */
+    public dev.groundzero.content.assembly.@org.jspecify.annotations.Nullable MissileSpec missile() {
+        return dev.groundzero.content.assembly.MissileItem.spec(this.inventory.getItem(SLOT_MISSILE));
+    }
+
+    /** How far the loaded missile flies (0: none loaded). */
+    public int range() {
+        var spec = missile();
+        return spec == null ? 0 : spec.range();
     }
 
     public Readiness readiness() {
@@ -100,9 +110,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
         if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
             return Readiness.NO_MISSILE;
-        }
-        if (this.inventory.getItem(SLOT_WARHEAD).isEmpty()) {
-            return Readiness.NO_WARHEAD;
         }
         return this.energy.stored() < LAUNCH_COST ? Readiness.NO_POWER : Readiness.READY;
     }
@@ -141,7 +148,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     private boolean inRange(BlockPos at) {
         return Math.sqrt(Math.pow(at.getX() - this.worldPosition.getX(), 2) + Math.pow(at.getZ() - this.worldPosition.getZ(), 2))
-                <= MissileEntity.MAX_RANGE;
+                <= range();
     }
 
     /** Arms (only a ready silo with a target in range) or makes safe. */
@@ -285,15 +292,17 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     /** T-0: the missile is lit on the pad (it climbs away after its ignition), carrying its warhead. */
     private void liftOff(ServerLevel level, BlockPos pad) {
         this.countdown = -1;
-        ItemStack warhead = this.inventory.getItem(SLOT_WARHEAD).copyWithCount(1);
-        if (this.target == null || readinessIgnoringCountdown() != Readiness.READY) {
+        var spec = missile();
+        if (this.target == null || spec == null || readinessIgnoringCountdown() != Readiness.READY) {
             return;
         }
         this.inventory.removeItem(SLOT_MISSILE, 1);
-        this.inventory.removeItem(SLOT_WARHEAD, 1);
         this.energy.consume(LAUNCH_COST);
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
-        MissileEntity.launch(level, Vec3.atBottomCenterOf(pad), Vec3.atBottomCenterOf(this.target), warhead, by);
+        // Its guidance decides how close to the target it comes down.
+        Vec3 from = Vec3.atBottomCenterOf(pad);
+        Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
+        MissileEntity.launch(level, from, aim, spec, by);
         setChanged();
     }
 
@@ -344,8 +353,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         Component state = r == Readiness.COUNTING ? Component.translatable(T_STATE[r.ordinal()], (menu.extra(DATA_COUNTDOWN) + 19) / 20)
                 : r == Readiness.READY && menu.extra(DATA_ARMED) != 0 ? Component.translatable(T_ARMED)
                 : Component.translatable(T_STATE[r.ordinal()]);
-        ItemStack warhead = this.inventory.getItem(SLOT_WARHEAD);
-        return List.of(state, warhead.isEmpty() ? Component.translatable(T_HINT) : Component.translatable(T_WARHEAD, warhead.getHoverName()));
+        var spec = missile();
+        return List.of(state, spec == null ? Component.translatable(T_HINT) : Component.translatable(T_WARHEAD, spec.warhead().getHoverName()));
     }
 
     @Override
@@ -382,7 +391,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             return Set.of("missile");
         }
         // Every nose but the fitted warhead's (a bare steel nose with none).
-        String id = MissileEntity.warheadId(this.inventory.getItem(SLOT_WARHEAD));
+        var spec = missile();
+        String id = spec == null ? "" : spec.warheadId();
         String shown = "nose_" + (id.isEmpty() ? "none" : id);
         Set<String> hidden = new java.util.HashSet<>();
         for (String nose : NOSES) {
@@ -391,6 +401,17 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             }
         }
         return hidden;
+    }
+
+    /** The missile drawn the size of its body. */
+    @Override
+    public java.util.Map<String, float[]> boneScales() {
+        var spec = missile();
+        if (spec == null) {
+            return java.util.Map.of();
+        }
+        float[] s = dev.groundzero.content.assembly.MissileParts.scale(spec.body());
+        return java.util.Map.of("missile", new float[] {s[0], s[1], s[0]});
     }
 
     /** The silo model's nose bones (tools/assets/launch.py), one per warhead. */

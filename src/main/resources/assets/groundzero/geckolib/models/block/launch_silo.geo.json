@@ -2910,8 +2910,8 @@
           "name": "missile",
           "pivot": [
             -0.0,
-            0.0,
-            0.0
+            14.0,
+            16.0
           ],
           "parent": "frame",
           "cubes": [

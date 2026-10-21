@@ -1,0 +1,81 @@
+{
+  "title": "Missiles",
+  "icon": "groundzero:missile",
+  "order": 4,
+  "items": [
+    "groundzero:missile",
+    "groundzero:tactical_missile_body",
+    "groundzero:medium_missile_body",
+    "groundzero:heavy_missile_body",
+    "groundzero:solid_rocket_motor_i",
+    "groundzero:solid_rocket_motor_ii",
+    "groundzero:liquid_fuel_stage",
+    "groundzero:inertial_guidance_unit",
+    "groundzero:gps_guidance_unit",
+    "groundzero:hardened_electronics"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back."
+    },
+    {
+      "type": "text",
+      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any. A bigger body makes a bigger missile on the pad.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (any body); **Liquid-fuel Stage**, 2500 blocks (Heavy bodies only)."
+    },
+    {
+      "type": "text",
+      "text": "**Guidance** decides how close to the target it comes down. With none it lands within 8% of its range of the target (80 blocks off on a 1000-block shot); an **Inertial Guidance Unit** brings that to 2%, a **GPS Guidance Unit** to 2 blocks.\n\n**Hardened Electronics** keep a missile live through an EMP: without them, a missile that flies through an EMP field has an even chance of coming down a dud."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:missile",
+      "text": "Its tooltip lists its warhead and fuze, its range and its guidance. A missile's name says its body: a Tactical, Medium or Heavy Missile."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:tactical_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:medium_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:heavy_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:solid_rocket_motor_i",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:solid_rocket_motor_ii",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:liquid_fuel_stage",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:inertial_guidance_unit",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:gps_guidance_unit",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:hardened_electronics",
+      "text": ""
+    }
+  ]
+}

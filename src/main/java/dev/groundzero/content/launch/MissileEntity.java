@@ -29,12 +29,13 @@ public class MissileEntity extends Entity {
     private static final EntityDataAccessor<Integer> AGE = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
     /** The warhead's id ("" for none): the client paints the nose cone to match. */
     private static final EntityDataAccessor<String> WARHEAD = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.STRING);
+    /** Its body's size class (ordinal): the client draws it that size. */
+    private static final EntityDataAccessor<Integer> BODY = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
 
     /** Ticks it burns on the pad before lifting off. */
     public static final int IGNITION = 40;
     /** Cruising speed along its path (blocks a tick), and the arc's height for a range: 35% of it, 40-220 blocks. */
     public static final double SPEED = 3.5, APEX_SHARE = 0.35, MIN_APEX = 40, MAX_APEX = 220;
-    public static final int MAX_RANGE = 1024;
 
     /** Client hook: the Spectacle's exhaust flame and smoke trail (set by the client). */
     public static Consumer<MissileEntity> exhaustHook = e -> {};
@@ -44,15 +45,17 @@ public class MissileEntity extends Entity {
         this.noPhysics = true;
     }
 
-    /** A missile lit at {@code pad} (its tail), bound for {@code target}, carrying {@code warhead} (see {@link Flights}). */
-    public static Flights.Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, @Nullable Entity owner) {
-        return Flights.launch(level, pad, target, warhead, owner);
+    /** An assembled missile lit at {@code pad} (its tail), bound for {@code target} (see {@link Flights}). */
+    public static Flights.Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec,
+            @Nullable Entity owner) {
+        return Flights.launch(level, pad, target, spec, owner);
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(AGE, 0);
         builder.define(WARHEAD, "");
+        builder.define(BODY, dev.groundzero.content.assembly.SizeClass.M.ordinal());
     }
 
     /** Ticks since it was lit (synced: the client draws its ignition and exhaust from it). */
@@ -70,8 +73,15 @@ public class MissileEntity extends Entity {
         return LaunchSiloBlockEntity.isWarhead(stack) ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() : "";
     }
 
-    void setWarheadShown(ItemStack warhead) {
+    void setLook(ItemStack warhead, dev.groundzero.content.assembly.SizeClass body) {
         this.entityData.set(WARHEAD, warheadId(warhead));
+        this.entityData.set(BODY, body.ordinal());
+    }
+
+    /** Its body's size class, as the client knows it. */
+    public dev.groundzero.content.assembly.SizeClass body() {
+        var all = dev.groundzero.content.assembly.SizeClass.values();
+        return all[Math.clamp(this.entityData.get(BODY), 0, all.length - 1)];
     }
 
     /** The id of the warhead it carries, as the client knows it ("" for none). */

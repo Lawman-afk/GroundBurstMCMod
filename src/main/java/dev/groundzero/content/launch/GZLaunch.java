@@ -69,7 +69,6 @@ public final class GZLaunch {
                     COMPUTER_CONTROLLER.block().get()));
 
     // --- the missile ---
-    public static final DeferredItem<Item> BASIC_MISSILE = GZItems.simple("basic_missile", "Basic Missile", GZTab.MISSILES, p -> p.stacksTo(1));
     public static final DeferredHolder<EntityType<?>, EntityType<MissileEntity>> MISSILE = ENTITIES.registerEntityType("missile", MissileEntity::new,
             MobCategory.MISC, b -> b.sized(0.9f, 0.9f).clientTrackingRange(32).updateInterval(1));
 

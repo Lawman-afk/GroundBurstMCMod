@@ -12,6 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import dev.groundzero.GroundZero;
 import dev.groundzero.content.assembly.Fuze;
+import dev.groundzero.content.assembly.SizeClass;
 import dev.groundzero.content.assembly.FuzeSettings;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.charge.BombBlock;
@@ -55,11 +56,15 @@ public final class Flights extends SavedData {
             Codec.INT.fieldOf("age").forGetter(f -> f.age),
             Codec.BOOL.optionalFieldOf("dud", false).forGetter(f -> f.dud),
             ItemStack.OPTIONAL_CODEC.fieldOf("warhead").forGetter(f -> f.warhead),
-            UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner))
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner) -> {
+            UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner)),
+            Codec.BOOL.optionalFieldOf("hardened", false).forGetter(f -> f.hardened),
+            Codec.STRING.optionalFieldOf("body", "M").forGetter(f -> f.body.name())
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
+        f.hardened = hardened;
+        f.body = SizeClass.valueOf(body);
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundZero.id("missile_flights"), Flights::new,
@@ -82,12 +87,23 @@ public final class Flights extends SavedData {
         return List.copyOf(this.flights);
     }
 
-    /** A missile lit at {@code pad} (its tail), bound for {@code target}, carrying {@code warhead}. */
+    /** An assembled missile lit at {@code pad} (its tail), bound for {@code target}: its warhead, body and hardening go with it. */
+    public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec, @Nullable Entity owner) {
+        return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner);
+    }
+
+    /** A medium missile lit at {@code pad} (its tail), bound for {@code target}, carrying {@code warhead}. */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, @Nullable Entity owner) {
+        return launch(level, pad, target, warhead, SizeClass.M, false, owner);
+    }
+
+    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner) {
         double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
         double apex = Mth.clamp(range * MissileEntity.APEX_SHARE, MissileEntity.MIN_APEX, MissileEntity.MAX_APEX);
         int ticks = (int) Mth.clamp((range + 2 * apex) / MissileEntity.SPEED, 60, 1200);
         Flight f = new Flight(UUID.randomUUID(), pad, target, apex, ticks, warhead.copyWithCount(1), owner == null ? null : owner.getUUID());
+        f.body = body;
+        f.hardened = hardened;
         Flights fs = of(level);
         fs.flights.add(f);
         fs.setDirty();
@@ -124,8 +140,10 @@ public final class Flights extends SavedData {
         private Vec3 pos;
         private float yaw, tilt;
         private boolean whistled;
-        /** Flown through an EMP field: half the time its fuze is dead (checked once, the first time). */
+        /** Flown through an EMP field: half the time its fuze is dead (checked once, the first time); never if hardened. */
         private boolean dud, empChecked;
+        private boolean hardened;
+        private SizeClass body = SizeClass.M;
 
         Flight(UUID id, Vec3 start, Vec3 target, double apex, int flightTicks, ItemStack warhead, @Nullable UUID owner) {
             this.id = id;
@@ -219,7 +237,7 @@ public final class Flights extends SavedData {
                 Vec3 from = this.pos, to = at(this.age);
                 if (!this.empChecked && dev.groundzero.content.effect.EmpFields.inField(level, to)) {
                     this.empChecked = true;
-                    this.dud = level.getRandom().nextBoolean();
+                    this.dud = !this.hardened && level.getRandom().nextBoolean();
                 }
                 Vec3 v = to.subtract(from);
                 // It can only hit what is loaded; past the first stretch of its climb (clear of its own gantry).
@@ -284,7 +302,7 @@ public final class Flights extends SavedData {
             }
             MissileEntity m = new MissileEntity(GZLaunch.MISSILE.get(), level);
             m.setUUID(this.id);
-            m.setWarheadShown(this.warhead);
+            m.setLook(this.warhead, this.body);
             m.setPos(this.pos);
             m.follow(this.pos, this.yaw, this.tilt, this.age);
             level.addFreshEntity(m);

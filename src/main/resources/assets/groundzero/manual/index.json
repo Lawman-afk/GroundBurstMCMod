@@ -55,6 +55,7 @@
     "ordnance/charges",
     "ordnance/mines",
     "ordnance/assembly",
+    "ordnance/missiles",
     "ordnance/warheads",
     "ordnance/launch_site",
     "ordnance/radar_array",

@@ -107,15 +107,15 @@ def missile_paint(kind: str, nose: str = "none"):
 
 
 def missile_item() -> None:
-    """The Basic Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
+    """The Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
     flight picks one by the warhead's id (custom model data), so the nose shows what it carries."""
     for nose in W.NOSES:
-        missile_model("basic_missile" if nose == "none" else f"basic_missile_{nose}", nose)
-    cases = [{"when": nose, "model": {"type": "minecraft:model", "model": f"groundzero:item/basic_missile_{nose}"}}
+        missile_model("missile" if nose == "none" else f"missile_{nose}", nose)
+    cases = [{"when": nose, "model": {"type": "minecraft:model", "model": f"groundzero:item/missile_{nose}"}}
              for nose in W.NOSES if nose != "none"]
-    write_json(paths.ASSETS / "items" / "basic_missile.json", {"model": {
+    write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
-        "fallback": {"type": "minecraft:model", "model": "groundzero:item/basic_missile"}}})
+        "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
 
 
 def missile_model(model_name: str, nose: str) -> None:
@@ -361,7 +361,7 @@ def silo() -> None:
     g = GeoModel("launch_silo", tex_size=(256, 512))
     g.bone("frame")
     g.bone("arm", pivot=(26, 101.5, 16), parent="frame")
-    g.bone("missile", parent="frame")
+    g.bone("missile", pivot=(0, 14, 16), parent="frame")         # its tail on the pad: the body's size scales it from there
     for nose in W.NOSES:
         g.bone(f"nose_{nose}", parent="missile")
     g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}]

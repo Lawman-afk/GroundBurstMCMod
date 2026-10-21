@@ -125,8 +125,7 @@ final class EffectTests {
     private static void empMachine(GameTestHelper helper) {
         floor(helper);
         LaunchSiloBlockEntity s = silo(helper);
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
         s.energy().generate(LaunchSiloBlockEntity.ENERGY_CAPACITY);
         int full = s.energy().stored();
         EmpFields.add(helper.getLevel(), Vec3.atCenterOf(s.getBlockPos()), 8, 20, null);

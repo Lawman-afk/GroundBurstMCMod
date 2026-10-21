@@ -66,7 +66,6 @@ public class LaunchComputerScreen extends Screen {
             GZLang.add(GroundZero.MODID + ".computer.silo.emp", "Disabled by EMP"),
             GZLang.add(GroundZero.MODID + ".computer.silo.halted", "Halted by Redstone"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "No Missile"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.no_warhead", "No Warhead"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "No Power"),
             GZLang.add(GroundZero.MODID + ".computer.silo.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s")};
@@ -244,6 +243,11 @@ public class LaunchComputerScreen extends Screen {
         return silo.readiness() == LaunchSiloBlockEntity.Readiness.READY.ordinal();
     }
 
+    /** Its target is beyond what its loaded missile can reach (an empty silo: nothing to say yet). */
+    private static boolean tooFar(LaunchPayloads.Silo silo) {
+        return silo.range() > 0 && range(silo) > silo.range();
+    }
+
     private static double range(LaunchPayloads.Silo silo) {
         return Math.sqrt(Mth.square(silo.targetX() - silo.pos().getX()) + Mth.square(silo.targetZ() - silo.pos().getZ()));
     }
@@ -270,7 +274,7 @@ public class LaunchComputerScreen extends Screen {
         if (this.setButton != null && this.armButton != null && this.launchButton != null) {
             boolean counting = silo != null && silo.countdown() >= 0;
             this.setButton.active = on && silo != null && !counting;
-            boolean canArm = silo != null && ready(silo) && silo.hasTarget() && range(silo) <= MissileEntity.MAX_RANGE;
+            boolean canArm = silo != null && ready(silo) && silo.hasTarget() && range(silo) <= silo.range();
             this.armButton.active = on && silo != null && (silo.armed() || canArm);
             this.armButton.setMessage(Component.translatable(silo != null && silo.armed() ? T_DISARM : T_ARM));
             this.launchButton.active = on && armed > 0;
@@ -467,7 +471,7 @@ public class LaunchComputerScreen extends Screen {
             g.pose().pushMatrix();
             g.pose().translate(x + 3, Math.round((ry + (ROW - 8 * scale) / 2f) * gs) / (float) gs);
             g.pose().scale(scale, scale);
-            g.text(this.font, aim, room - aimW, 0, silo.hasTarget() && range(silo) > MissileEntity.MAX_RANGE ? RED : DIM, false);
+            g.text(this.font, aim, room - aimW, 0, silo.hasTarget() && tooFar(silo) ? RED : DIM, false);
             g.text(this.font, this.font.plainSubstrByWidth(label, room - aimW - 6), 0, 0, color, false);
             g.pose().popMatrix();
         }
@@ -509,11 +513,11 @@ public class LaunchComputerScreen extends Screen {
             g.text(this.font, this.font.plainSubstrByWidth(label, CW), x, top() + TARGET_Y, TEXT);
             if (silo.hasTarget()) {
                 double range = range(silo);
-                Component line = range > MissileEntity.MAX_RANGE ? Component.translatable(T_TOO_FAR, MissileEntity.MAX_RANGE)
+                Component line = tooFar(silo) ? Component.translatable(T_TOO_FAR, silo.range())
                         : Component.translatable(T_RANGE, (int) range, flightSeconds(range));
                 List<FormattedCharSequence> lines = this.font.split(line, CW);
                 for (int i = 0; i < lines.size() && i < 2; i++) {
-                    g.text(this.font, lines.get(i), x, top() + RANGE_Y + i * 10, range > MissileEntity.MAX_RANGE ? RED : TEXT, false);
+                    g.text(this.font, lines.get(i), x, top() + RANGE_Y + i * 10, tooFar(silo) ? RED : TEXT, false);
                 }
             }
         }

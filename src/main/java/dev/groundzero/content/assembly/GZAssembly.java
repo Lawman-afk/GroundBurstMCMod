@@ -67,6 +67,24 @@ public final class GZAssembly {
     public static final DeferredItem<ComponentItems.FuzeItem> IMPACT_FUZE = fuze("impact_fuze", "Impact Fuze", Fuze.IMPACT);
     public static final DeferredItem<ComponentItems.FuzeItem> BAROMETRIC_FUZE = fuze("barometric_fuze", "Barometric Fuze", Fuze.BAROMETRIC);
 
+    // --- missile parts (slice 7b), in size-class / enum order ---
+    public static final List<DeferredItem<MissileParts.Body>> BODIES = new ArrayList<>();
+    public static final DeferredItem<MissileParts.Body> TACTICAL_BODY = body("tactical_missile_body", "Tactical Missile Body", SizeClass.S);
+    public static final DeferredItem<MissileParts.Body> MEDIUM_BODY = body("medium_missile_body", "Medium Missile Body", SizeClass.M);
+    public static final DeferredItem<MissileParts.Body> HEAVY_BODY = body("heavy_missile_body", "Heavy Missile Body", SizeClass.L);
+    public static final List<DeferredItem<MissileParts.MotorItem>> MOTORS = new ArrayList<>();
+    public static final DeferredItem<MissileParts.MotorItem> SRM_I = motor("Solid Rocket Motor I", MissileParts.Motor.SRM_I);
+    public static final DeferredItem<MissileParts.MotorItem> SRM_II = motor("Solid Rocket Motor II", MissileParts.Motor.SRM_II);
+    public static final DeferredItem<MissileParts.MotorItem> LIQUID_FUEL_STAGE = motor("Liquid-fuel Stage", MissileParts.Motor.LIQUID);
+    public static final DeferredItem<MissileParts.GuidanceItem> INERTIAL_GUIDANCE = GZItems.register("inertial_guidance_unit",
+            "Inertial Guidance Unit", GZTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.INERTIAL));
+    public static final DeferredItem<MissileParts.GuidanceItem> GPS_GUIDANCE = GZItems.register("gps_guidance_unit",
+            "GPS Guidance Unit", GZTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.GPS));
+    public static final DeferredItem<MissileParts.HardenedModule> HARDENED_ELECTRONICS = GZItems.register("hardened_electronics",
+            "Hardened Electronics", GZTab.MISSILES, MissileParts.HardenedModule::new);
+    /** An assembled missile (its parts in its component): what a Launch Silo launches. */
+    public static final DeferredItem<MissileItem> MISSILE = GZItems.register("missile", "Missile", GZTab.MISSILES, MissileItem::new);
+
     // --- the bench ---
     /** Two blocks wide: the bench top and hoist over both, the side half to the right of its front. */
     public static final WithItem<WideMachineBlock> ASSEMBLY_BENCH = GZBlocks.registerWithItem("assembly_bench", "Ordnance Assembly Bench",
@@ -86,11 +104,26 @@ public final class GZAssembly {
         Fuze.values();
         SizeClass.values();
         WarheadAssembly.Problem.values();
+        MissileAssembly.Problem.values();
+        MissileParts.Motor.values();
+        MissileParts.Guidance.values();
     }
 
     private static DeferredItem<ComponentItems.PayloadCore> core(String id, String english, Supplier<? extends ChargeBlock> warhead, SizeClass size) {
         DeferredItem<ComponentItems.PayloadCore> item = GZItems.register(id, english, GZTab.ORDNANCE, p -> new ComponentItems.PayloadCore(p, warhead, size));
         CORES.add(item);
+        return item;
+    }
+
+    private static DeferredItem<MissileParts.Body> body(String id, String english, SizeClass size) {
+        DeferredItem<MissileParts.Body> item = GZItems.register(id, english, GZTab.MISSILES, p -> new MissileParts.Body(p, size));
+        BODIES.add(item);
+        return item;
+    }
+
+    private static DeferredItem<MissileParts.MotorItem> motor(String english, MissileParts.Motor motor) {
+        DeferredItem<MissileParts.MotorItem> item = GZItems.register(motor.id, english, GZTab.MISSILES, p -> new MissileParts.MotorItem(p, motor));
+        MOTORS.add(item);
         return item;
     }
 

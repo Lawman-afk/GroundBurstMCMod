@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundzero:heavy_missile_body"
+  }
+}

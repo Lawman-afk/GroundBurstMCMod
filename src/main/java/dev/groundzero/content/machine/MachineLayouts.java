@@ -115,7 +115,7 @@ public final class MachineLayouts {
             List.of());
 
     public static final MachineLayout LAUNCH_SILO = new MachineLayout(
-            GroundZero.id("textures/gui/machine/launch_silo.png"), 176, 166, List.of(new MachineLayout.Pos(34, 25), new MachineLayout.Pos(34, 49)), 8, 84,
+            GroundZero.id("textures/gui/machine/launch_silo.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
             null, 196, 0,
             null, 196, 20,
@@ -124,9 +124,18 @@ public final class MachineLayouts {
             List.of());
 
     public static final MachineLayout ASSEMBLY_BENCH = new MachineLayout(
-            GroundZero.id("textures/gui/machine/assembly_bench.png"), 176, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24)), 8, 128,
+            GroundZero.id("textures/gui/machine/assembly_bench.png"), 176, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24), new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
             new MachineLayout.Rect(98, 24, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 180, 56,
+            new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
+            List.of());
+
+    public static final MachineLayout ASSEMBLY_BENCH_MISSILE = new MachineLayout(
+            GroundZero.id("textures/gui/machine/assembly_bench_missile.png"), 176, 210, List.of(new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            new MachineLayout.Rect(122, 24, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 180, 56,
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),

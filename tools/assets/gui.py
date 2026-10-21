@@ -175,7 +175,7 @@ LAYOUTS = {
     # Launch Silo (DESIGN.md §17.2): the missile and its warhead, the energy for a launch, and its state on the CRT.
     "launch_silo": {
         "title": (8, 6),
-        "slots": [("input", 34, 25), ("input", 34, 49)],
+        "slots": [("missile", 34, 37)],
         "energy": (8, 20, 14, 46),
         "progress": None,
         "flame": None,
@@ -191,8 +191,24 @@ LAYOUTS = {
         "title": (8, 6),
         "size": (176, 210),
         "slots": [("core", 32, 24), ("casing", 52, 24), ("fuze", 72, 24), ("out_big", 132, 24)],
+        # The missile page's slots (slots 4-9): in the menu, but drawn by the "assembly_bench_missile" texture.
+        "hidden_slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
         "progress": (98, 24, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 98, 18, 18),
+        "readout": (34, 50, 134, 24),
+        "inventory": (8, 128),
+    },
+    # The bench's missile page (slice 7b): warhead, body, motor, guidance and module in a row, the arrow, the missile.
+    # Only its texture and progress arrow are used: the slots belong to "assembly_bench" (its hidden slots).
+    "assembly_bench_missile": {
+        "title": (8, 6),
+        "size": (176, 210),
+        "slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
+        "energy": (8, 20, 14, 46),
+        "progress": (122, 24, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
@@ -457,6 +473,37 @@ FUZE_GHOST = ["................", ".......##.......", "......#..#......", ".....
               "................"]
 
 
+# The bench's missile page: a warhead (a nose cone on its ring), a missile body (a tube with fins), a rocket motor (a
+# casing on its nozzle), a guidance unit (a box with a crosshair), the hardened module (a shield).
+WARHEAD_GHOST = ["................", ".......##.......", "......#..#......", "......#..#......", ".....#....#.....",
+                 ".....#....#.....", "....#......#....", "....#......#....", "....#......#....", "....#......#....",
+                 "....#......#....", "....########....", "...##########...", "...#........#...", "...##########...",
+                 "................"]
+BODY_GHOST = ["................", "......####......", "......#..#......", "......#..#......", "......#..#......",
+              "......#..#......", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
+              "....#.#..#.#....", "...##.#..#.##...", "..#.#.#..#.#.#..", "..###.####.###..", "................",
+              "................"]
+MOTOR_GHOST = ["................", "....########....", "....#......#....", "....#.++++.#....", "....#......#....",
+               "....#.++++.#....", "....#......#....", "....#.++++.#....", "....#......#....", "....########....",
+               ".....#....#.....", "....#......#....", "...#........#...", "...##########...", "................",
+               "................"]
+GUIDANCE_GHOST = ["................", "................", "...##########...", "...#...+....#...", "...#...+....#...",
+                  "...#..###...#...", "...#++#.#++.#...", "...#..###...#...", "...#...+....#...", "...#...+....#...",
+                  "...##########...", ".....#....#.....", ".....#....#.....", "................", "................",
+                  "................"]
+MODULE_GHOST = ["................", "................", "....########....", "...#........#...", "...#..++++..#...",
+                "...#.+....+.#...", "...#.+....+.#...", "...#..++++..#...", "....#......#....", "....#......#....",
+                ".....#....#.....", "......#..#......", ".......##.......", "................", "................",
+                "................"]
+
+
+# The Launch Silo's slot: a whole missile (nose, body, fins).
+MISSILE_GHOST = [".......##.......", "......#..#......", "......#..#......", "......####......", "......#..#......",
+                 "......#..#......", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
+                 "......#..#......", ".....##..##.....", "....#.#..#.#....", "...#..#..#..#...", "...####..####...",
+                 ".......##......."]
+
+
 def ghost_slot(rows: list[str]):
     def draw(t: Tex, x: int, y: int) -> None:
         slot(t, x, y)
@@ -654,7 +701,9 @@ def build(name: str, spec: dict) -> Path:
          "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
          "rod": ghost_slot(ROD_GHOST), "target": ghost_slot(TARGET_GHOST), "pellet": ghost_slot(PELLET_GHOST),
          "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST),
-         "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST),
+         "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
+         "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills
@@ -717,7 +766,7 @@ def write_java() -> Path:
         "public final class MachineLayouts {",
     ]
     for name, s in LAYOUTS.items():
-        slots = ", ".join(f"new MachineLayout.Pos({x}, {y})" for _, x, y in s["slots"])
+        slots = ", ".join(f"new MachineLayout.Pos({x}, {y})" for _, x, y in s["slots"] + s.get("hidden_slots", []))
         p = s["progress"]
         f = s["flame"]
         lines.append(f"    public static final MachineLayout {name.upper()} = new MachineLayout(")

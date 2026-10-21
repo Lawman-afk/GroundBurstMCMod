@@ -451,11 +451,54 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(GZParts.SENSOR_ARRAY)
                 .unlockedBy(getHasName(GZParts.SENSOR_ARRAY), has(GZParts.SENSOR_ARRAY)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE, 1)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
-                .requires(GZTags.commonItem("plates/steel")).requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
-                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("rods/steel"))
+        // Missile parts (Phase 7 slice 7b): bodies, motors, guidance, the hardened module.
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.TACTICAL_BODY, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.MEDIUM_BODY, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY, 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.SRM_I, 1)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel"))
                 .unlockedBy(getHasName(GZChemicals.SOLID_PROPELLANT), has(GZChemicals.SOLID_PROPELLANT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.SRM_II, 1)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
+                .requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZParts.TUNGSTEN_PLATE)
+                .unlockedBy(getHasName(GZChemicals.SOLID_PROPELLANT), has(GZChemicals.SOLID_PROPELLANT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE, 1)
+                .requires(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER).requires(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER)
+                .requires(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER).requires(GZChemicals.LIQUID_OXYGEN_CANISTER)
+                .requires(GZChemicals.LIQUID_OXYGEN_CANISTER).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER), has(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.INERTIAL_GUIDANCE, 1)
+                .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SERVO)
+                .requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE, 1)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(GZParts.COPPER_WIRE)
+                .requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.HARDENED_ELECTRONICS, 1)
+                .requires(GZParts.LEAD_PLATE).requires(GZParts.LEAD_PLATE).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.COPPER_WIRE)
+                .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE)).save(output);
         shapeless(RecipeCategory.TOOLS, dev.groundzero.content.ordnance.GZOrdnance.REMOTE_DETONATOR, 1)
                 .requires(GZParts.BASIC_CIRCUIT).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("rods/steel"))
                 .requires(Tags.Items.DUSTS_REDSTONE).requires(Items.STONE_BUTTON)

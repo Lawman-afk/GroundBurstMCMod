@@ -50,11 +50,14 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     }
 
     private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundzero_hidden_bones", new TypeToken<Set<String>>() {});
+    private static final DataTicket<java.util.Map<String, float[]>> BONE_SCALES = DataTicket.create("groundzero_bone_scales",
+            new TypeToken<java.util.Map<String, float[]>>() {});
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
         if (animatable instanceof AnimatedMachine machine) {
             ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
+            ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
         }
         captureTank(animatable, (GeoRenderState) renderState);
     }
@@ -63,6 +66,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void adjustModelBonesForRender(RenderPassInfo renderPassInfo, BoneSnapshots snapshots) {
+        java.util.Map<String, float[]> scales = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_SCALES);
+        if (scales != null) {
+            scales.forEach((bone, s) -> snapshots.ifPresent(bone, snapshot -> snapshot.setScale(s[0], s[1], s[2])));
+        }
         Set<String> hidden = (Set<String>) renderPassInfo.getGeckolibData(HIDDEN_BONES);
         if (hidden != null) {
             for (String bone : hidden) {

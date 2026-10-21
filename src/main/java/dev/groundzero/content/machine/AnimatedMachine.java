@@ -17,6 +17,11 @@ public interface AnimatedMachine extends GeoBlockEntity {
     RawAnimation WORKING = RawAnimation.begin().thenLoop("working");
     RawAnimation IDLE = RawAnimation.begin().thenPlayAndHold("idle");
 
+    /** Bones drawn scaled {x, y, z} about their pivots right now (e.g. the silo's missile, by its body). Read on the client. */
+    default java.util.Map<String, float[]> boneScales() {
+        return java.util.Map.of();
+    }
+
     /** Model bones not to draw right now (e.g. the dies a press is not holding). Read on the client. */
     default java.util.Set<String> hiddenBones() {
         return java.util.Set.of();

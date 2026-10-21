@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:advanced_circuit",
+    "groundzero:servo",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundzero:inertial_guidance_unit"
+  }
+}

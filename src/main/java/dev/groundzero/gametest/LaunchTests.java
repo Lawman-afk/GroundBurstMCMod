@@ -59,17 +59,28 @@ final class LaunchTests {
         return s;
     }
 
-    /** Formed, the silo asks for a missile, then a warhead, then power; then it is ready. */
+    /** A formed silo on a stone floor (for other test classes). */
+    static LaunchSiloBlockEntity formedSilo(GameTestHelper helper) {
+        floor(helper);
+        return silo(helper, new BlockPos(5, 1, 3));
+    }
+
+    /** An assembled medium HE missile: Solid Rocket Motor II (1024 blocks), GPS guidance. */
+    static ItemStack missile() {
+        return dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new ItemStack(GZOrdnance.HE_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.M, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false));
+    }
+
+    /** Formed, the silo asks for a missile, then power; then it is ready. */
     private static void siloReady(GameTestHelper helper) {
         floor(helper);
         LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));
         helper.assertTrue(s.isFormed(), "formed");
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.NO_MISSILE, "wants a missile: " + s.readiness());
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.NO_WARHEAD, "wants a warhead: " + s.readiness());
-        helper.assertTrue(!LaunchSiloBlockEntity.isWarhead(new ItemStack(GZOrdnance.C4.item().get())), "C4 is no warhead");
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
+        helper.assertTrue(!s.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZOrdnance.HE_WARHEAD.item().get())),
+                "a bare warhead does not go in");
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, missile());
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.NO_POWER, "wants power: " + s.readiness());
+        helper.assertTrue(s.range() == 1024, "a Solid Rocket Motor II's range: " + s.range());
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.READY, "ready: " + s.readiness());
         helper.setBlock(new BlockPos(5, 2, 4), Blocks.STONE);              // something in the missile's column
@@ -92,8 +103,7 @@ final class LaunchTests {
     }
 
     private static void load(LaunchSiloBlockEntity s) {
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, missile());
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
     }
 
@@ -256,11 +266,10 @@ final class LaunchTests {
         });
     }
 
-    /** No warhead, no launch. */
+    /** No missile, no launch. */
     private static void unready(GameTestHelper helper) {
         floor(helper);
         LaunchSiloBlockEntity s = silo(helper, new BlockPos(5, 1, 3));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         helper.assertTrue(!s.launch(helper.getLevel(), helper.absolutePos(new BlockPos(12, 1, 12)), null), "refused");
         helper.assertTrue(s.countdown() < 0, "no countdown");
@@ -275,8 +284,7 @@ final class LaunchTests {
         floor(helper);
         Charges.bombScale = 0.3f;
         LaunchSiloBlockEntity s = silo(helper, new BlockPos(3, 1, 2));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, missile());
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         BlockPos target = new BlockPos(13, 1, 13);
         helper.assertTrue(s.launch(helper.getLevel(), helper.absolutePos(target), null), "launch ordered");
@@ -284,11 +292,15 @@ final class LaunchTests {
         AABB sky = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).inflate(64, 300, 64);
         helper.runAfterDelay(5, () -> {
             helper.assertTrue(!helper.getLevel().getEntitiesOfClass(MissileEntity.class, sky).isEmpty(), "lit on the pad");
-            helper.assertTrue(s.inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty()
-                    && s.inventory().getItem(LaunchSiloBlockEntity.SLOT_WARHEAD).isEmpty(), "missile and warhead used");
+            helper.assertTrue(s.inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(), "the missile is used");
             helper.succeedWhen(() -> {
                 helper.assertTrue(helper.getLevel().getEntitiesOfClass(MissileEntity.class, sky).isEmpty(), "it has come down");
-                helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(13, 0, 13))).isAir(), "a hole at the target");
+                // GPS guidance: it comes down within 2 blocks of the target.
+                boolean hole = false;
+                for (BlockPos p : BlockPos.betweenClosed(11, 0, 11, 15, 0, 15)) {
+                    hole |= helper.getLevel().getBlockState(helper.absolutePos(p)).isAir();
+                }
+                helper.assertTrue(hole, "a hole at the target");
             });
         });
     }

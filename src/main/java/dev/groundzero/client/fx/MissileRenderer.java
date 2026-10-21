@@ -29,6 +29,8 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     public static class State extends EntityRenderState {
         public final ItemStackRenderState item = new ItemStackRenderState();
         public float yaw, tilt;
+        /** {across, along}: the body's size. */
+        public float[] size = {1f, 1f};
     }
 
     private final ItemModelResolver items;
@@ -52,13 +54,14 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
         ItemStack look = this.looks.computeIfAbsent(entity.warheadName(), id -> {
-            ItemStack s = new ItemStack(GZLaunch.BASIC_MISSILE.get());
+            ItemStack s = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
             s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
                     new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(id), java.util.List.of()));
             return s;
         });
         this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getYRot(partialTicks);
+        state.size = dev.groundzero.content.assembly.MissileParts.scale(entity.body());
         state.tilt = entity.tilt(partialTicks);
     }
 
@@ -67,7 +70,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
         poseStack.pushPose();
         poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
         poseStack.rotate(Axis.XP.rotationDegrees(state.tilt));
-        poseStack.scale(SCALE, SCALE, SCALE);
+        poseStack.scale(SCALE * state.size[0], SCALE * state.size[1], SCALE * state.size[0]);
         poseStack.translate(0, 0.5, 0);                 // the item model is drawn about its middle; stand it on its tail
         state.item.submit(poseStack, collector, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();

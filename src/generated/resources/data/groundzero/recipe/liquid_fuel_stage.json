@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:liquid_rocket_fuel_canister",
+    "groundzero:liquid_rocket_fuel_canister",
+    "groundzero:liquid_rocket_fuel_canister",
+    "groundzero:liquid_oxygen_canister",
+    "groundzero:liquid_oxygen_canister",
+    "groundzero:dense_steel_plate",
+    "groundzero:pressure_vessel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:liquid_fuel_stage"
+  }
+}

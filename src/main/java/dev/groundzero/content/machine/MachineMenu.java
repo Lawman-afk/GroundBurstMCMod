@@ -42,7 +42,7 @@ public class MachineMenu extends AbstractContainerMenu {
         this.machineSlots = layout.slots().size();
         for (int i = 0; i < this.machineSlots; i++) {
             MachineLayout.Pos p = layout.slots().get(i);
-            addSlot(new MachineSlot(container, i, p.x(), p.y()));
+            addSlot(new MachineSlot(container, i, p.x(), p.y(), this));
         }
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -189,10 +189,24 @@ public class MachineMenu extends AbstractContainerMenu {
         return Container.stillValidBlockEntity(this.machine, player);
     }
 
+    /**
+     * Which machine slots the screen shows (client side): a machine with pages (the Assembly Bench) hides the other
+     * page's slots. Hidden slots are neither drawn nor clickable.
+     */
+    public java.util.function.IntPredicate slotShown = i -> true;
+
     /** A slot that respects the machine's per-slot rules (vanilla slots accept anything). */
     private static class MachineSlot extends Slot {
-        MachineSlot(Container container, int index, int x, int y) {
+        private final MachineMenu menu;
+
+        MachineSlot(Container container, int index, int x, int y, MachineMenu menu) {
             super(container, index, x, y);
+            this.menu = menu;
+        }
+
+        @Override
+        public boolean isActive() {
+            return this.menu.slotShown.test(getContainerSlot());
         }
 
         @Override

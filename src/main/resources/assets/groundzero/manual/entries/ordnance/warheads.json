@@ -1,7 +1,7 @@
 {
   "title": "Warheads",
   "icon": "groundzero:he_warhead",
-  "order": 4,
+  "order": 5,
   "items": [
     "groundzero:he_warhead",
     "groundzero:heavy_warhead",
