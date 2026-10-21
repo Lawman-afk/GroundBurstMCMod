@@ -24,8 +24,10 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -47,14 +49,18 @@ public class AssemblyBenchScreen extends MachineScreen {
     private static final String T_NO_SETTING = GZLang.add(GroundZero.MODID + ".assembly.no_setting", "Impact fuze: nothing to set");
     private static final String T_PAGE_WARHEADS = GZLang.add(GroundZero.MODID + ".assembly.page.warheads", "Warheads");
     private static final String T_PAGE_MISSILES = GZLang.add(GroundZero.MODID + ".assembly.page.missiles", "Missiles");
-    private static final String T_UNGUIDED = GZLang.add(GroundZero.MODID + ".assembly.unguided", "No guidance unit: lands within 8% of its range");
+    private static final String T_UNGUIDED = GZLang.add(GroundZero.MODID + ".assembly.unguided", "Unguided: within 25% of the distance");
     /** Where the setting row and the buttons sit on the panel (gui.py draws the bench layout around them). */
     public static final int SETTING_Y = 79, FIELD_X = 118, FIELD_W = 50, FIELD_H = 14;
     public static final int BUTTONS_X = 31, BUTTONS_Y = 98, ASSEMBLE_W = 54, APART_W = 60, BUTTON_H = 18;
-    /** The page tabs on the window's left edge. */
-    private static final int TAB_W = 26, TAB_H = 24, TAB_Y = 10, TAB_STEP = 28;
+    /**
+     * The page tabs on the window's left edge (drawn by gui.py's page_tabs_texture): the shown page's tab is 28 wide and
+     * covers the window's 2-pixel border, so it grows out of the window; another page's is 24 wide, darker, and ends at
+     * the border, so it sits behind.
+     */
+    private static final Identifier TABS = GroundZero.id("textures/gui/machine/page_tabs.png");
+    private static final int TAB_W = 26, TAB_H = 24, TAB_Y = 20, TAB_STEP = 26, TAB_OFF_W = 24, TAB_OFF_V = 32;
     private static final int LABEL = 0xFFD8D4C4, LABEL_DIM = 0xFF8A8E94;
-    private static final int TAB_ON = 0xFF5A6068, TAB_OFF = 0xFF3A3E44, TAB_EDGE = 0xFF1E2024, TAB_LIGHT = 0xFF8A9098;
 
     /** The page shown, kept while the game runs (like the side tab). */
     private static int page = AssemblyBenchBlockEntity.JOB_WARHEAD;
@@ -188,15 +194,17 @@ public class AssemblyBenchScreen extends MachineScreen {
     /** The two page tabs on the left edge: the shown page's tab joins the window. */
     private void drawTabs(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         for (int p = 0; p < 2; p++) {
-            int x = this.leftPos - TAB_W + 3, y = this.topPos + TAB_Y + p * TAB_STEP;
+            int x = this.leftPos - TAB_W, y = this.topPos + TAB_Y + p * TAB_STEP;
             boolean on = p == page;
-            g.fill(x, y, x + TAB_W - (on ? 0 : 3), y + TAB_H, TAB_EDGE);
-            g.fill(x + 1, y + 1, x + TAB_W - (on ? 0 : 4), y + TAB_H - 1, on ? TAB_ON : TAB_OFF);
-            g.fill(x + 1, y + 1, x + TAB_W - (on ? 0 : 4), y + 2, TAB_LIGHT);
+            if (on) {
+                g.blit(RenderPipelines.GUI_TEXTURED, TABS, x, y, 0, 0, TAB_W + 2, TAB_H, 64, 64);
+            } else {
+                g.blit(RenderPipelines.GUI_TEXTURED, TABS, this.leftPos - TAB_OFF_W, y, 0, TAB_OFF_V, TAB_OFF_W, TAB_H, 64, 64);
+            }
             ItemStack icon = p == AssemblyBenchBlockEntity.JOB_MISSILE ? new ItemStack(GZAssembly.MISSILE.get())
                     : new ItemStack(GZOrdnance.HE_WARHEAD.item().get());
-            g.item(icon, x + 5, y + 4);
-            if (mouseX >= x && mouseX < x + TAB_W - 3 && mouseY >= y && mouseY < y + TAB_H) {
+            g.item(icon, on ? x + 6 : this.leftPos - TAB_OFF_W + 5, y + 4);
+            if (mouseX >= x && mouseX < this.leftPos && mouseY >= y && mouseY < y + TAB_H) {
                 g.setTooltipForNextFrame(Component.translatable(p == AssemblyBenchBlockEntity.JOB_MISSILE ? T_PAGE_MISSILES : T_PAGE_WARHEADS), mouseX, mouseY);
             }
         }
@@ -205,8 +213,8 @@ public class AssemblyBenchScreen extends MachineScreen {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         for (int p = 0; p < 2; p++) {
-            int x = this.leftPos - TAB_W + 3, y = this.topPos + TAB_Y + p * TAB_STEP;
-            if (event.x() >= x && event.x() < x + TAB_W - 3 && event.y() >= y && event.y() < y + TAB_H) {
+            int x = this.leftPos - TAB_W, y = this.topPos + TAB_Y + p * TAB_STEP;
+            if (event.x() >= x && event.x() < this.leftPos && event.y() >= y && event.y() < y + TAB_H) {
                 if (p != page) {
                     showPage(p);
                     net.minecraft.client.Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
@@ -221,7 +229,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     @Override
     public List<Rect2i> extraAreas() {
         List<Rect2i> areas = new ArrayList<>(super.extraAreas());
-        areas.add(new Rect2i(this.leftPos - TAB_W + 3, this.topPos + TAB_Y, TAB_W, TAB_STEP + TAB_H));
+        areas.add(new Rect2i(this.leftPos - TAB_W, this.topPos + TAB_Y, TAB_W, TAB_STEP + TAB_H));
         return areas;
     }
 

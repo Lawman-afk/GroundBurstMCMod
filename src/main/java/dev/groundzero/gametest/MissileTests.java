@@ -129,17 +129,26 @@ final class MissileTests {
         helper.succeed();
     }
 
-    /** Over many shots of 1000 blocks: unguided within 80 blocks, inertial within 20, GPS within 2. */
+    /**
+     * Over many shots of 1000 blocks: unguided within 250 blocks (and on average far off), inertial within 40, GPS within
+     * 2; misses spread more long or short than to the side.
+     */
     private static void guidance(GameTestHelper helper) {
         RandomSource r = RandomSource.create(7);
         Vec3 from = Vec3.ZERO, target = new Vec3(1000, 0, 0);
         for (var g : MissileParts.Guidance.values()) {
-            double worst = 0;
+            double worst = 0, total = 0, longShort = 0, side = 0;
             for (int i = 0; i < 500; i++) {
-                worst = Math.max(worst, g.aim(from, target, r).distanceTo(target));
+                Vec3 off = g.aim(from, target, r).subtract(target);
+                worst = Math.max(worst, off.length());
+                total += off.length();
+                longShort = Math.max(longShort, Math.abs(off.x));
+                side = Math.max(side, Math.abs(off.z));
             }
-            double limit = g == MissileParts.Guidance.UNGUIDED ? 80 : g == MissileParts.Guidance.INERTIAL ? 20 : 2;
-            helper.assertTrue(worst <= limit + 1e-6 && worst > limit * 0.5, g + " lands within " + limit + " (worst " + worst + ")");
+            double limit = g == MissileParts.Guidance.UNGUIDED ? 250 : g == MissileParts.Guidance.INERTIAL ? 40 : 2;
+            helper.assertTrue(worst <= limit + 1e-6 && worst > limit * 0.8, g + " lands within " + limit + " (worst " + worst + ")");
+            helper.assertTrue(total / 500 > limit * 0.35, g + " misses are mostly wide (average " + total / 500 + ")");
+            helper.assertTrue(side <= limit * 0.5 + 1e-6 && side < longShort, g + " spreads long and short more than sideways");
         }
         helper.succeed();
     }

@@ -889,8 +889,43 @@ def side_config_texture() -> Path:
     return t.save(paths.TEXTURES / "gui" / "machine" / "side_config.png")
 
 
+PAGE_TAB_ON = (0, 0, 28, 24)    # the shown page: its last two columns cover the window's left border, so it joins it
+PAGE_TAB_OFF = (0, 32, 24, 24)  # another page: darker, ending at the window's edge, so it sits behind
+
+
+def page_tab(t: Tex, x: int, y: int, w: int, h: int, on: bool) -> None:
+    """A page tab on the GUI's left edge (the side tab mirrored): bevelled left side and corners, flat right side."""
+    face = PANEL.base if on else PANEL.shadow
+    t.rect(x, y, w, h, face)
+    t.hline(x + 2, y, w - 2, PANEL.outline)
+    t.hline(x + 2, y + h - 1, w - 2, PANEL.outline)
+    t.vline(x, y + 2, h - 4, PANEL.outline)
+    t.px(x + 1, y + 1, PANEL.outline)
+    t.px(x + 1, y + h - 2, PANEL.outline)
+    for px_, py_ in ((0, 0), (0, 1), (1, 0), (0, h - 1), (0, h - 2), (1, h - 1)):
+        t.px(x + px_, y + py_, (0, 0, 0, 0))
+    lit = PANEL.highlight if on else PANEL.base
+    t.hline(x + 2, y + 1, w - 2, lit)
+    t.vline(x + 1, y + 2, h - 4, PANEL.light if on else PANEL.base)
+    t.hline(x + 2, y + h - 2, w - 2, PANEL.deep)
+    if on:
+        # Where it meets the window: its edges stop at the window's outline, and the window's face runs into the tab.
+        t.vline(x + w - 2, y + 1, h - 2, face)
+        t.vline(x + w - 1, y + 1, h - 2, face)
+        t.px(x + w - 1, y, PANEL.light)
+        t.px(x + w - 1, y + h - 1, PANEL.light)
+
+
+def page_tabs_texture() -> Path:
+    t = Tex(64, 64)
+    page_tab(t, *PAGE_TAB_ON, on=True)
+    page_tab(t, *PAGE_TAB_OFF, on=False)
+    return t.save(paths.TEXTURES / "gui" / "machine" / "page_tabs.png")
+
+
 if __name__ == "__main__":
     print(side_config_texture())
+    print(page_tabs_texture())
     for n, spec in LAYOUTS.items():
         print(build(n, spec))
     print(write_java())

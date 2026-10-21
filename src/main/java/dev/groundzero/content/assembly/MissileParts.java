@@ -66,8 +66,8 @@ public final class MissileParts {
 
     /** Guidance: how far from its target a missile may come down. No guidance unit fitted: unguided. */
     public enum Guidance {
-        UNGUIDED("unguided", 0.08, 0),
-        INERTIAL("inertial", 0.02, 0),
+        UNGUIDED("unguided", 0.25, 0),
+        INERTIAL("inertial", 0.04, 0),
         GPS("gps", 0, 2);
 
         public final String id;
@@ -85,12 +85,18 @@ public final class MissileParts {
             return this.share * distance + this.blocks;
         }
 
-        /** Where it actually comes down: a random point within its scatter of the target (closer is likelier). */
+        /**
+         * Where it actually comes down: any point of an ellipse round the target, as likely as any other (so most misses
+         * are wide ones), its scatter long or short along the flight and half that to either side.
+         */
         public Vec3 aim(Vec3 from, Vec3 target, RandomSource random) {
-            double distance = Math.sqrt(Math.pow(target.x - from.x, 2) + Math.pow(target.z - from.z, 2));
-            double r = scatter(distance) * random.nextDouble();
+            double dx = target.x - from.x, dz = target.z - from.z;
+            double distance = Math.sqrt(dx * dx + dz * dz);
+            double ax = distance > 1e-6 ? dx / distance : 1, az = distance > 1e-6 ? dz / distance : 0;
+            double r = scatter(distance) * Math.sqrt(random.nextDouble());
             double a = random.nextDouble() * Math.PI * 2;
-            return target.add(Math.cos(a) * r, 0, Math.sin(a) * r);
+            double along = Math.cos(a) * r, across = Math.sin(a) * r * 0.5;
+            return target.add(ax * along - az * across, 0, az * along + ax * across);
         }
 
         /** "Lands within 2% of the range", "within 2 blocks". */
@@ -116,7 +122,7 @@ public final class MissileParts {
     static final String T_BODY_ONE = GZLang.add(GroundZero.MODID + ".missile.fits_one", "%s bodies");
     static final String T_BODY_TWO = GZLang.add(GroundZero.MODID + ".missile.fits_two", "%s and %s bodies");
     static final String T_BODY_ANY = GZLang.add(GroundZero.MODID + ".missile.fits_any", "any body");
-    static final String T_ACCURACY_SHARE = GZLang.add(GroundZero.MODID + ".missile.accuracy_share", "Lands within %s%% of its range of the target");
+    static final String T_ACCURACY_SHARE = GZLang.add(GroundZero.MODID + ".missile.accuracy_share", "Lands within %s%% of the distance");
     static final String T_ACCURACY_BLOCKS = GZLang.add(GroundZero.MODID + ".missile.accuracy_blocks", "Lands within %s blocks of the target");
     static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes warheads up to class %s");
     static final String T_MOTOR_TIP = GZLang.add(GroundZero.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");

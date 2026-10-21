@@ -904,7 +904,7 @@ A **missile** is put together on the **Missile** page of the [Assembly Bench](or
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (any body); **Liquid-fuel Stage**, 2500 blocks (Heavy bodies only).
 """),
     text("""
-**Guidance** decides how close to the target it comes down. With none it lands within 8% of its range of the target (80 blocks off on a 1000-block shot); an **Inertial Guidance Unit** brings that to 2%, a **GPS Guidance Unit** to 2 blocks.
+**Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks.
 
 **Hardened Electronics** keep a missile live through an EMP: without them, a missile that flies through an EMP field has an even chance of coming down a dud.
 """),
