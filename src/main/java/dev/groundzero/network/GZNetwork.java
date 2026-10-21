@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "9";
+    public static final String PROTOCOL_VERSION = "10";
 
     private GZNetwork() {}
 
@@ -54,6 +54,10 @@ public final class GZNetwork {
                 (payload, context) -> dev.groundzero.content.effect.GasPayloads.empHook.accept(payload));
         registrar.playToClient(dev.groundzero.content.launch.LaunchPayloads.Scope.TYPE, dev.groundzero.content.launch.LaunchPayloads.Scope.CODEC,
                 (payload, context) -> dev.groundzero.content.launch.LaunchPayloads.scopeHook.accept(payload));
+        // Contaminated zones (DESIGN.md §15.1): the fallout drawn over them, handled on the client by FalloutFx.
+        registrar.playToClient(dev.groundzero.content.nuclear.ContaminationPayloads.Zones.TYPE,
+                dev.groundzero.content.nuclear.ContaminationPayloads.Zones.CODEC,
+                (payload, context) -> dev.groundzero.content.nuclear.ContaminationPayloads.zonesHook.accept(payload));
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.CODEC,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency::handle);

@@ -61,6 +61,8 @@ public final class Spectacle {
     private static final int LAT = 14, LON = 28;
     /** Smoky orange-brown the sky and fog shift toward (scaled to the sky's own brightness). */
     private static final Vector3fc SMOKE_SKY = new Vector3f(1.0f, 0.62f, 0.38f);
+    /** Sickly yellow-green the sky and fog shift toward inside a contaminated zone (scaled to the sky's brightness). */
+    private static final Vector3fc FALLOUT_SKY = new Vector3f(0.66f, 0.86f, 0.36f);
 
     private static final Int2ObjectOpenHashMap<BlastFx> BLASTS = new Int2ObjectOpenHashMap<>();
     private static final Puffs PUFFS = new Puffs();
@@ -77,6 +79,7 @@ public final class Spectacle {
         dev.groundzero.content.ordnance.ThrownExplosive.smokeHook = Spectacle::grenadeSmoke;
         dev.groundzero.content.launch.MissileEntity.exhaustHook = Spectacle::missileExhaust;
         EffectFx.register();
+        FalloutFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundZero.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -88,7 +91,10 @@ public final class Spectacle {
         NeoForge.EVENT_BUS.addListener(Spectacle::extract);
         NeoForge.EVENT_BUS.addListener(Spectacle::shake);
         NeoForge.EVENT_BUS.addListener(Spectacle::fogColor);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> clear());
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+            clear();
+            FalloutFx.clear();                             // not on a level change: the new level's zones may come first
+        });
     }
 
     private static void clear() {
@@ -362,6 +368,24 @@ public final class Spectacle {
                 clamp(b + (SMOKE_SKY.z() * k - b) * amount));
     }
 
+    /** {@code color} moved toward fallout green, keeping its brightness: greyed first, as {@link #smoky} does. */
+    private static Vector3f fallout(float r, float g, float b, float amount) {
+        float lum = 0.3f * r + 0.59f * g + 0.11f * b;
+        float grey = Math.min(1, amount * 1.4f);
+        r += (lum - r) * grey;
+        g += (lum - g) * grey;
+        b += (lum - b) * grey;
+        float k = Math.min(1, lum * 1.15f);
+        return new Vector3f(clamp(r + (FALLOUT_SKY.x() * k - r) * amount), clamp(g + (FALLOUT_SKY.y() * k - g) * amount),
+                clamp(b + (FALLOUT_SKY.z() * k - b) * amount));
+    }
+
+    /** How far the sky turns fallout green where the camera is. */
+    private static float falloutTint() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? 0 : FalloutFx.tint(mc.level, mc.gameRenderer.mainCamera().position());
+    }
+
     private static float clamp(float v) {
         return Math.max(0, Math.min(1, v));
     }
@@ -370,6 +394,13 @@ public final class Spectacle {
         float a = skyTint();
         if (a > 0) {
             Vector3f c = smoky(event.getRed(), event.getGreen(), event.getBlue(), a);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
+        float f = falloutTint();
+        if (f > 0) {
+            Vector3f c = fallout(event.getRed(), event.getGreen(), event.getBlue(), f);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
@@ -387,6 +418,15 @@ public final class Spectacle {
             Vector3f c = smoky(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, a * 0.8f);
             event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
+        float f = falloutTint();
+        if (f > 0) {
+            if (sky.skyColor != null) {
+                sky.skyColor = fallout(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), f);
+            }
+            int cloud = event.getRenderState().cloudColor;
+            Vector3f c = fallout(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, f * 0.8f);
+            event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
+        }
         FxLight.update(sky);                               // smoke is lit by this frame's (tinted) sky
     }
 
@@ -394,7 +434,7 @@ public final class Spectacle {
     private static void submit(SubmitCustomGeometryEvent event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0)) {
+        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && !FalloutFx.active(level))) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -416,6 +456,7 @@ public final class Spectacle {
             collector.submitCustomGeometry(poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
         }
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {
             if (fx.mushroom != null) {
                 fx.mushroom.submit(collector, poseStack, camera.pos, camera.orientation, fx.age(now), partial);

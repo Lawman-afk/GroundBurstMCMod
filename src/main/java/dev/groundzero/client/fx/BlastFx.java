@@ -102,7 +102,7 @@ final class BlastFx {
     Vec3 fireballCentre(double t) {
         Vec3 c = this.start.center();
         if (this.mushroom != null) {
-            return new Vec3(c.x, this.mushroom.capY(t), c.z);
+            return this.mushroom.capCentre(t);
         }
         return c.add(0, this.preset.fireballRise() * crater() / 20 * t, 0);
     }

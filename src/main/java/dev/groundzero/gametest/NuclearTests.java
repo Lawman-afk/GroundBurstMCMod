@@ -44,6 +44,7 @@ final class NuclearTests {
         GZGameTests.testOpenSky("neutron_warhead_kills_through_all_but_thick_walls", GZGameTests.FLOOR_16, 100, NuclearTests::neutron);
         GZGameTests.test("dirty_warhead_goes_off_however_set_off", GZGameTests.FLOOR_16, 100, NuclearTests::dirty);
         GZGameTests.test("dirty_warhead_flies_from_any_silo", GZGameTests.FLOOR_16, 20, NuclearTests::dirtyMissile);
+        GZGameTests.test("contamination_zones_reach_clients_intact", GZGameTests.FLOOR_16, 20, NuclearTests::zonesPayload);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -259,6 +260,17 @@ final class NuclearTests {
         helper.assertTrue(spec != null && !spec.needsComplex(), "no Launch Complex needed: " + spec);
         LaunchSiloBlockEntity silo = LaunchTests.formedSilo(helper);
         helper.assertTrue(silo.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, missile), "a basic silo takes it");
+        helper.succeed();
+    }
+
+    /** The contaminated zones clients are sent (to draw their fallout) come through the wire as they were sent. */
+    private static void zonesPayload(GameTestHelper helper) {
+        var zones = java.util.List.of(new Contamination.Zone(new Vec3(1.5, 64, -2.25), 180, 1f, 1234L, 48_000),
+                new Contamination.Zone(new Vec3(-300, 70.5, 9), 90, 0.8f, 99L, 120_000));
+        var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), helper.getLevel().registryAccess());
+        dev.groundzero.content.nuclear.ContaminationPayloads.Zones.CODEC.encode(buf, new dev.groundzero.content.nuclear.ContaminationPayloads.Zones(zones));
+        var back = dev.groundzero.content.nuclear.ContaminationPayloads.Zones.CODEC.decode(buf);
+        helper.assertTrue(back.zones().equals(zones) && buf.readableBytes() == 0, "the zones survive the trip: " + back.zones());
         helper.succeed();
     }
 

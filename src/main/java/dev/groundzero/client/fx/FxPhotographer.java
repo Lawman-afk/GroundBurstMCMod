@@ -58,6 +58,11 @@ public final class FxPhotographer {
                 new Scene("nuke_tactical", "tactical_nuclear_warhead", 200, -10, List.of(3, 20, 80, 300, 700)),
                 new Scene("nuke_fission", "fission_warhead", 330, -14, List.of(3, 30, 120, 400, 900)),
                 new Scene("nuke_boosted", "boosted_fission_warhead", 380, -16, List.of(3, 30, 120, 400, 900)),
+                // From above late on: the stem's foot and the dust ring stay on the crater while the cap drifts.
+                new Scene("nuke_tactical_aerial", "tactical_nuclear_warhead", 170, 24, List.of(300, 1200, 2400)),
+                // A contaminated zone 180 blocks round: its fallout clouds from outside, then the green sky from inside.
+                new Scene("fallout", "fallout", 260, -14, List.of(60, 400)),
+                new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
                 new Scene("nuke_neutron", "neutron_warhead", 70, -8, List.of(3, 20, 60, 200, 400)),
                 new Scene("warhead_dirty", "dirty_warhead", 30, 2, List.of(2, 8, 20, 60)),
                 new Scene("complex", "complex", 34, -12, List.of(20, 150, 270, 335, 380)),
@@ -468,7 +473,8 @@ public final class FxPhotographer {
                 player.setGameMode(GameType.SPECTATOR);
                 level.getChunk(x >> 4, 0);
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
-                player.teleportTo(level, x - s.distance() + 0.5, ground + 1.6, 0.5, java.util.Set.of(), -90, s.pitch(), true);
+                double lift = s.name().endsWith("_aerial") ? s.distance() * 0.5 : 1.6;    // an aerial scene looks down from above
+                player.teleportTo(level, x - s.distance() + 0.5, ground + lift, 0.5, java.util.Set.of(), -90, s.pitch(), true);
             });
             return;
         }
@@ -480,6 +486,7 @@ public final class FxPhotographer {
             int x = site * 1200;
             server.execute(() -> {
                 ServerLevel level = server.overworld();
+                level.getChunk(x >> 4, 0);                 // a far scene's middle may have unloaded: its height would read the world's floor
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
                 if (s.profile().equals("grenades")) {
@@ -574,6 +581,11 @@ public final class FxPhotographer {
                 }
                 if (s.profile().startsWith("suits")) {
                     suits(level, x, ground, s.profile().endsWith("back"));    // armour stands wearing the suits, no blast
+                    return;
+                }
+                if (s.profile().equals("fallout")) {
+                    dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(
+                            new Vec3(x + 0.5, ground, 0.5), 180, 1f, level.getGameTime(), 48_000));
                     return;
                 }
                 // These two through the warhead's own path: the neutrons wither the plants, the waste goes up as dust.

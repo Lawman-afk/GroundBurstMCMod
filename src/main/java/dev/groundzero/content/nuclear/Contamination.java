@@ -26,7 +26,8 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  * round the reactor. Once a second every living thing inside (undead excepted, and players in creative or spectator)
  * is given Radiation Sickness, stronger toward the centre: level = strength x (1 - distance / radius) x (1 - suit
  * protection), sickness level {@code min(IV, 1 + floor(4 x level))} above 0.05; the strength fades to nothing over the
- * zone's life. Zones are the level's saved data ({@code contamination.dat}).
+ * zone's life. Zones are the level's saved data ({@code contamination.dat}). Players are told of them
+ * ({@link ContaminationPayloads}) to draw the fallout over them.
  */
 public final class Contamination extends SavedData {
     /** One zone: centre, radius, starting strength (0 to 1), when it began and how long it lasts (ticks). */
@@ -56,6 +57,8 @@ public final class Contamination extends SavedData {
     private static final int EFFECT_TICKS = 100;
 
     private final List<Zone> zones = new ArrayList<>();
+    /** The zones changed since players were last told (they are told on the next tick, at most a second later). */
+    private boolean unsent;
 
     private Contamination() {}
 
@@ -78,16 +81,28 @@ public final class Contamination extends SavedData {
                 BY_LEVEL.remove(level);
             }
         });
+        // Players arriving in a level are told of its zones.
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> tell(event.getEntity()));
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> tell(event.getEntity()));
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) -> tell(event.getEntity()));
+    }
+
+    private static void tell(Player player) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer p) {
+            ContaminationPayloads.sendTo(p, of((ServerLevel) p.level()).zones());
+        }
     }
 
     public void add(Zone zone) {
         this.zones.add(zone);
+        this.unsent = true;
         setDirty();
     }
 
     /** For GameTests: removes the zones centred within {@code within} of {@code centre}. */
     public void removeNear(Vec3 centre, double within) {
         if (this.zones.removeIf(z -> z.center().distanceTo(centre) <= within)) {
+            this.unsent = true;
             setDirty();
         }
     }
@@ -108,7 +123,12 @@ public final class Contamination extends SavedData {
     private void tick(ServerLevel level) {
         long now = level.getGameTime();
         if (this.zones.removeIf(z -> now >= z.start() + z.duration())) {
+            this.unsent = true;
             setDirty();
+        }
+        if (this.unsent) {
+            this.unsent = false;
+            ContaminationPayloads.sendAll(level, List.copyOf(this.zones));
         }
         for (Zone z : this.zones) {
             AABB box = new AABB(z.center(), z.center()).inflate(z.radius());

@@ -856,7 +856,11 @@ As built (2026-10-21):
   stands until the cloud thins out) at the stem radius (0.3 R narrowing to 0.18 R, plus a skirt
   at the foot), rise at 0.22 + 1.2 x the cap's climb, and join the cap's roll at its underside. The collar rides under
   the cap from 2.5 s to 22 s; the Wilson shell spreads round the fireball for about 7 s. The nuclear fireball rides the
-  cap. Late joiners get the cloud laid out as it would be (`prefill`), not replayed. Wind drift 0.015 blocks a tick.
+  cap. Late joiners get the cloud laid out as it would be (`prefill`), not replayed. Wind drift 0.015 blocks a tick
+  from 10 s on, of the cap and collar only (2026-10-22, after the in-game look: the whole column used to drift, so the
+  stem and its dust ring slid off the crater, by up to 40 blocks over the cloud's life): the stem's foot, the base ring
+  and the condensation shell stay over ground zero, and the stem leans out to the cap (its axis moves by its height
+  fraction^1.5 of the cap's drift).
 - Colour: cap reddish-brown greying over 40 s; glow `heat x (e^(-(d / 0.8 r)^2) + early boost)` with heat
   `e^(-t/550)`, added on top through the fire heat ramp; collar and shell white. Lighting: `FxLight` (sun direction
   from the sky state's sun angle, sun colour warmed by the sunrise/sunset glow, ambient = the sky colour greyed and
@@ -1171,6 +1175,17 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
     one, flies from any silo, and goes off however it is set off (no fizzle): a small HE blast (crater 6), smoke and ash,
     and a contamination zone 90 blocks round at strength 0.8 for five days (the plan's drifting cloud waits for
     Phase 12's fallout plumes).
+  - **Fallout you can see** (2026-10-22, the user's request; a stand-in until Phase 12's fallout plumes): the server
+    sends every zone in a level to its players (`ContaminationPayloads`, whole, within a second of a zone beginning or
+    ending, and on arrival in the level; protocol 10). `FalloutFx` draws a broken layer of cloud 50 to 80 blocks over
+    each zone (dark grey, grey, olive and green smoke puffs, about r²/170 of them up to 300, 15 to 47 blocks across and
+    drawn wider than tall), drifting at 0.03 blocks a tick on the zone's own wind and wrapping round inside it, fading
+    out toward the edge so the wrap is never seen, and thinning as the zone fades (opacity 0.6 x √(strength left):
+    fairly opaque, as the cloud shader cuts a faint puff's fringe away and leaves hard outlines). Laid out from a
+    seed and moved by the level's clock, so every player sees the same clouds; drawn with the far-cloud pipeline, so
+    they show beyond the render distance. Inside a zone the sky, fog and vanilla clouds turn toward a sickly
+    yellow-green, by 0.4 x √(the contamination level where the camera is): strongest at a fresh zone's middle,
+    nothing at its edge.
   - Stats: design yields "45 kt" and "1 kt"; fallout rows for every radiological warhead, "6 hours" under a day; the
     neutron burst as two rows, Neutrons Kill and Plants Wither (as a note it ran past the bottom of the panel at GUI
     scale 3); the dirty warhead's note is one line ("Scatters nuclear waste"), as its missile's list is long. The
@@ -2225,6 +2240,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Contamination zones are drawn (the user's request, ahead of Phase 12): a layer of dark grey and green fallout cloud over each zone and a green cast to the sky inside one; zones are sent to clients whole. Mushroom clouds keep the stem's foot and dust ring over ground zero; only the cap drifts with the wind, and the stem leans to it (the whole cloud drifting had left it off its crater). |
 | 2026-10-22 | Slice 8b: Boosted Fission and Neutron Warheads are class XL (Strategic missile, Launch Complex); the Dirty Warhead is class S and radiological, not nuclear (any silo, never fizzles; 90 blocks at 0.8 for five days). The neutron dose is (1-(d/180)²)·e^(-Σ) over the blocks in the way (solid 0.25, liquid 0.4, obsidian/concrete/lead 1.0), suits count half; 0.3 kills. Withering works down each column from the top, so roofs shelter plants. |
 | 2026-10-22 | Nuclear warheads are class XL with a Strategic Warhead Casing; blasts clean up floating clusters and place fire only on standing ground after the front; mushroom clouds stand on the crater floor with a rolling base ring; launcher arms hinge on their towers and swing 75°. |
 | 2026-10-22 | After the 8a in-game look: the bench's page is saved and steers shift-clicks and automation; nuclear warheads ride their own Strategic (XL) missile, longer and differently styled, the peak of what fits a missile, with bigger weapons built whole by a planned Strategic Assembly Hall; every nuclear weapon rescaled so the smallest is 1.5x the MOW and the Tsar is truly massive. |

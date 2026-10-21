@@ -28,8 +28,10 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p><b>Look.</b> Cloudlets are lit like clouds ({@link FxLight}): a normal out from the core circle (cap) or the axis
  * (stem), sunlight from the sun's direction, the sky's colour in the shade, undersides darker. Near the core the cap
- * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The whole cloud drifts with the
- * wind and thins out over its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it
+ * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The cap drifts with the wind,
+ * but the stem's foot and the dust ring stay over ground zero (it is the crater's dust being drawn up), so the stem
+ * leans out to the cap as it goes: the cloud stays on its crater (after the in-game look: the whole column used to drift
+ * off it). It thins out over its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it
  * shows above the horizon from well beyond the render distance.
  */
 final class MushroomCloud {
@@ -61,6 +63,8 @@ final class MushroomCloud {
     private final RandomSource random;
     private final int earth;
     private final List<Cloudlet> cloudlets = new ArrayList<>();
+    /** {@link #axisFor}'s answer (x, z), reused. */
+    private final double[] axis = new double[2];
     private int stemSent, capSent, collarSent, baseSent;
     /** Grey dust, barely glowing (a huge conventional blast), rather than a nuclear fire cloud. */
     private final boolean dusty;
@@ -135,6 +139,27 @@ final class MushroomCloud {
         return this.center.z + this.windZ * Math.max(0, t - 200);
     }
 
+    /** The cap's centre at {@code t}: drifting with the wind (the fireball rides it). */
+    Vec3 capCentre(double t) {
+        return new Vec3(axisX(t), capY(t), axisZ(t));
+    }
+
+    /**
+     * The axis a cloudlet of {@code role} at height {@code y} turns round, given the cap's ({@code ax}, {@code az}): the
+     * cap and collar drift with the wind; the stem leans from its foot over ground zero up to the cap; the dust ring and
+     * the condensation shell stay over ground zero.
+     */
+    private double[] axisFor(Role role, double y, double ax, double az, double underside) {
+        double k = switch (role) {
+            case CAP, COLLAR -> 1;
+            case STEM -> Math.pow(Math.max(0, Math.min(1, (y - this.floor) / Math.max(1, underside - this.floor))), 1.5);
+            case BASE, SHELL -> 0;
+        };
+        this.axis[0] = this.center.x + (ax - this.center.x) * k;
+        this.axis[1] = this.center.z + (az - this.center.z) * k;
+        return this.axis;
+    }
+
     /** How hot the cloud still is (1 at the burst, cooling over about a minute). */
     private double heat(double t) {
         return Math.exp(-t / COOL);
@@ -181,7 +206,8 @@ final class MushroomCloud {
             c.px = c.x;
             c.py = c.y;
             c.pz = c.z;
-            double rx = c.x - ax, rz = c.z - az, rho = Math.sqrt(rx * rx + rz * rz);
+            double[] a = axisFor(c.role, c.y, ax, az, underside);
+            double rx = c.x - a[0], rz = c.z - a[1], rho = Math.sqrt(rx * rx + rz * rz);
             double dx = rho > 1e-3 ? rx / rho : Math.cos(c.phi), dz = rho > 1e-3 ? rz / rho : Math.sin(c.phi);
             switch (c.role) {
                 case CAP -> {
@@ -229,8 +255,9 @@ final class MushroomCloud {
                     dz = Math.sin(c.phi);
                 }
             }
-            c.x = ax + dx * rho;
-            c.z = az + dz * rho;
+            a = axisFor(c.role, c.y, ax, az, underside);       // where it is now (a stem cloudlet may have joined the cap)
+            c.x = a[0] + dx * rho;
+            c.z = a[1] + dz * rho;
         }
         this.cloudlets.removeIf(c -> t - c.birth >= c.life);
     }
@@ -250,10 +277,11 @@ final class MushroomCloud {
             c.scale = 0.7f + 0.45f * this.random.nextFloat();
             add(c);
         }
-        // The stem: fed from the ground, most at first, then a trickle that keeps it standing until the cloud thins out.
+        // The stem: fed from the ground over ground zero, most at first, then a trickle that keeps it standing until the
+        // cloud thins out.
         if (t > 12 && t < stemFeed()) {
             int stemDue = (int) (this.stemCount * (1 - Math.exp(-(t - 12) / 300)) + (t - 12) * 0.35 * this.quality);
-            double ax = axisX(t), az = axisZ(t);
+            double ax = this.center.x, az = this.center.z;
             while (this.stemSent < stemDue) {
                 this.stemSent++;
                 Cloudlet c = cloudlet(Role.STEM, t, 1300 + this.random.nextInt(600));
@@ -308,9 +336,9 @@ final class MushroomCloud {
         c.shell = (float) Math.sqrt(0.15 + 0.85 * this.random.nextDouble());
         c.scale = 0.8f + 0.5f * this.random.nextFloat();
         double rho = baseRing(t) + Math.cos(c.roll) * baseMinor() * c.shell;
-        c.x = axisX(t) + Math.cos(c.phi) * rho;
+        c.x = this.center.x + Math.cos(c.phi) * rho;
         c.y = this.ground + Math.sin(c.roll) * baseMinor() * c.shell * 0.75;
-        c.z = axisZ(t) + Math.sin(c.phi) * rho;
+        c.z = this.center.z + Math.sin(c.phi) * rho;
         return c;
     }
 
@@ -366,9 +394,10 @@ final class MushroomCloud {
                 c.phi = this.random.nextFloat() * 6.283f;
                 double h = this.random.nextDouble();
                 double rho = c.shell * stemRadius(t, h);
-                c.x = ax + Math.cos(c.phi) * rho;
                 c.y = this.floor + h * (underside - this.floor);
-                c.z = az + Math.sin(c.phi) * rho;
+                double[] a = axisFor(Role.STEM, c.y, ax, az, underside);
+                c.x = a[0] + Math.cos(c.phi) * rho;
+                c.z = a[1] + Math.sin(c.phi) * rho;
                 c.scale = 0.75f + 0.5f * this.random.nextFloat();
                 add(c);
             }
@@ -398,7 +427,8 @@ final class MushroomCloud {
         for (Cloudlet c : this.cloudlets) {
             double age = t - c.birth;
             double x = c.px + (c.x - c.px) * partial, y = c.py + (c.y - c.py) * partial, z = c.pz + (c.z - c.pz) * partial;
-            double rx = x - ax, rz = z - az, rho = Math.sqrt(rx * rx + rz * rz) + 1e-4;
+            double[] a = axisFor(c.role, y, ax, az, underside);
+            double rx = x - a[0], rz = z - a[1], rho = Math.sqrt(rx * rx + rz * rz) + 1e-4;
             double dx = rx / rho, dz = rz / rho;
             float nx, ny, nz, shadow, size, alpha;
             int albedo;
