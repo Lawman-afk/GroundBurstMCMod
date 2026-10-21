@@ -290,77 +290,120 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.PLASTIC_EXPLOSIVE).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET)
                 .requires(Items.IRON_NUGGET).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
-        // Bombs (slice 6d): direct recipes until the Assembly Bench (Phase 7).
-        var o = new Object() {
-            final net.minecraft.world.level.ItemLike he = dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item();
-            final net.minecraft.world.level.ItemLike heavy = dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item();
-        };
-        shapeless(RecipeCategory.COMBAT, o.he, 1)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
-                .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS).requires(GZParts.BASIC_CIRCUIT)
-                .unlockedBy(getHasName(GZChemicals.RDX_CRYSTALS), has(GZChemicals.RDX_CRYSTALS)).save(output);
-        shapeless(RecipeCategory.COMBAT, o.heavy, 1)
-                .requires(o.he).requires(o.he).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+        // Warheads are assembled at the Ordnance Assembly Bench (Phase 7): payload cores, casings and fuzes.
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.HE_CHARGE, 1)
                 .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS)
-                .unlockedBy(getHasName(o.he), has(o.he)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD.item(), 1)
+                .requires(GZChemicals.RDX_CRYSTALS).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZChemicals.RDX_CRYSTALS), has(GZChemicals.RDX_CRYSTALS)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE).requires(GZChemicals.RDX_CRYSTALS)
+                .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.PLASTIC_EXPLOSIVE)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE), has(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.THERMOBARIC_CHARGE, 1)
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
-                .requires(GZParts.BASIC_CIRCUIT)
+                .requires(GZChemicals.RDX_CRYSTALS).requires(GZTags.commonItem("plates/steel"))
                 .unlockedBy(getHasName(GZChemicals.THERMOBARIC_SLURRY_CANISTER), has(GZChemicals.THERMOBARIC_SLURRY_CANISTER)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD.item(), 1)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
-                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE))
-                .save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER.item(), 1)
-                .requires(o.he).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_CARBIDE_INGOT)
-                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.ADVANCED_CIRCUIT)
-                .unlockedBy(getHasName(o.he), has(o.he)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD.item(), 1)
-                .requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
-                .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item(), 1)
-                .requires(o.heavy).requires(o.heavy).requires(o.heavy).requires(o.heavy)
-                .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
-                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.MILITARY_CIRCUIT)
-                .unlockedBy(getHasName(o.heavy), has(o.heavy)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.GAS_WARHEAD.item(), 1)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
-                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE))
-                .save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.SMOKE_WARHEAD.item(), 1)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
-                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE))
-                .save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CRYO_WARHEAD.item(), 1)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
-                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE))
-                .save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.EMP_WARHEAD.item(), 1)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
-                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
-                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE))
-                .save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.TOXIC_WASTE_WARHEAD.item(), 1)
-                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER)
-                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
-                .requires(GZParts.BASIC_CIRCUIT)
-                .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CHEMICAL_WARHEAD.item(), 1)
-                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.CHLORINE_CANISTER)
-                .requires(GZChemicals.CHLORINE_CANISTER).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.CLUSTER_DISPENSER, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.PENETRATOR_CHARGE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE).requires(GZParts.TUNGSTEN_ROD)
+                .requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_CARBIDE_INGOT)
+                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE), has(dev.groundzero.content.assembly.GZAssembly.HE_CHARGE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.INCENDIARY_CHARGE, 1)
+                .requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER)
+                .requires(GZChemicals.NAPALM_CANISTER).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.MASSIVE_ORDNANCE_CHARGE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)
+                .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
+                .requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE), has(dev.groundzero.content.assembly.GZAssembly.HEAVY_HE_CHARGE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.GAS_DISPENSER, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.SMOKE_DISPENSER, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.SMOKE_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.CRYO_DISPENSER, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.EMP_DISPENSER, 1)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE), has(dev.groundzero.content.ordnance.GZOrdnance.EMP_GRENADE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.TOXIC_WASTE_TANK, 1)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZTags.commonItem("plates/steel"))
                 .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.CHEMICAL_AGENT_CANISTER, 1)
+                .requires(GZChemicals.TOXIN_CANISTER).requires(GZChemicals.TOXIN_CANISTER)
+                .requires(GZChemicals.CHLORINE_CANISTER).requires(GZChemicals.CHLORINE_CANISTER)
+                .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ADVANCED_CIRCUIT)
+                .unlockedBy(getHasName(GZChemicals.TOXIN_CANISTER), has(GZChemicals.TOXIN_CANISTER)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.LIGHT_CASING, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.STEEL_ROD)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.MEDIUM_CASING, 1)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.STEEL_ROD).requires(GZParts.STEEL_ROD)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING, 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZParts.STEEL_ROD).requires(GZParts.STEEL_ROD)
+                .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.IMPACT_FUZE, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(Items.GUNPOWDER)
+                .requires(Items.STONE_PRESSURE_PLATE)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.TIMED_FUZE, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT).requires(Items.CLOCK)
+                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.PROXIMITY_FUZE, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(Items.OBSERVER)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.REMOTE_FUZE, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.BASIC_CIRCUIT)
+                .requires(GZParts.COPPER_WIRE).requires(GZParts.COPPER_WIRE)
+                .unlockedBy(getHasName(GZParts.BASIC_CIRCUIT), has(GZParts.BASIC_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.BAROMETRIC_FUZE, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.COPPER_PLATE)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.item(), 1)
+                .define('P', GZTags.commonItem("plates/steel")).define('S', GZParts.SERVO).define('W', Items.CRAFTING_TABLE).define('A', Items.ANVIL)
+                .define('C', GZParts.BASIC_CIRCUIT).define('T', Items.CHEST)
+                .pattern("PPP").pattern("SWA").pattern("CTC")
+                .unlockedBy(getHasName(GZParts.SERVO), has(GZParts.SERVO)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CRYO_GRENADE.get(), 2)
                 .requires(GZChemicals.LIQUID_NITROGEN_CANISTER).requires(GZTags.commonItem("plates/steel")).requires(Items.IRON_NUGGET)
                 .requires(Items.IRON_NUGGET).requires(Items.SNOWBALL)

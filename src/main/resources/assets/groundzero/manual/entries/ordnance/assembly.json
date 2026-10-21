@@ -1,0 +1,167 @@
+{
+  "title": "Assembly Bench",
+  "icon": "groundzero:assembly_bench",
+  "order": 3,
+  "items": [
+    "groundzero:assembly_bench",
+    "groundzero:he_charge",
+    "groundzero:heavy_he_charge",
+    "groundzero:thermobaric_charge",
+    "groundzero:cluster_dispenser",
+    "groundzero:penetrator_charge",
+    "groundzero:incendiary_charge",
+    "groundzero:massive_ordnance_charge",
+    "groundzero:gas_dispenser",
+    "groundzero:smoke_dispenser",
+    "groundzero:cryo_dispenser",
+    "groundzero:emp_dispenser",
+    "groundzero:toxic_waste_tank",
+    "groundzero:chemical_agent_canister",
+    "groundzero:light_warhead_casing",
+    "groundzero:medium_warhead_casing",
+    "groundzero:heavy_warhead_casing",
+    "groundzero:impact_fuze",
+    "groundzero:timed_fuze",
+    "groundzero:proximity_fuze",
+    "groundzero:remote_fuze",
+    "groundzero:barometric_fuze"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Ordnance Assembly Bench** puts warheads together. It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.\n\nA warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides what sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.\n\n**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:assembly_bench",
+      "text": "The readout says what the parts on the bench make, and in red what is missing or wrong (a core and a casing of different classes will not go together)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:assembly_bench",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "text": "**Payload cores** decide what a warhead does; each makes one warhead (its class in brackets).\n\n**Explosives:** the HE Charge (S), Heavy HE Charge (M), Thermobaric Charge (M), Penetrator Charge (M, a Bunker Buster), Incendiary Charge (S, Napalm) and Massive Ordnance Charge (L)."
+    },
+    {
+      "type": "text",
+      "text": "**Dispensers** (all M) open in the air when a missile brings them down: the Cluster Dispenser and the Gas, Smoke, Cryo and EMP Canister Dispensers.\n\n**Chemical cores** (S): the Toxic Waste Tank and the Chemical Agent Canister.\n\nA core's tooltip names the warhead it makes."
+    },
+    {
+      "type": "text",
+      "text": "**Fuzes**, and what sets each off (as well as redstone, a fall or a hit):\n\n**Impact:** nothing more.\n**Timed:** redstone starts a countdown, 1 to 600 seconds; on a missile it counts from launch.\n**Proximity:** anything living within 2 to 16 blocks; on a missile, that close to the ground.\n**Remote:** a detonator on its frequency, even in flight.\n**Barometric:** on a missile, a set height (10 to 200 blocks) over the target."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:medium_warhead_casing",
+      "text": "Casings come in three classes, marked by yellow bands: one for **Light**, two for **Medium**, three for **Heavy**. A core only fits a casing of its own class."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:light_warhead_casing",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:medium_warhead_casing",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:heavy_warhead_casing",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:impact_fuze",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:timed_fuze",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:proximity_fuze",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:remote_fuze",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:barometric_fuze",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:he_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:heavy_he_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:thermobaric_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:cluster_dispenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:penetrator_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:incendiary_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:massive_ordnance_charge",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:gas_dispenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:smoke_dispenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:cryo_dispenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:emp_dispenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:toxic_waste_tank",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:chemical_agent_canister",
+      "text": ""
+    }
+  ]
+}

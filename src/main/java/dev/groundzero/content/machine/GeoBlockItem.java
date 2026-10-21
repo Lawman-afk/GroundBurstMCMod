@@ -24,19 +24,27 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
     /** Bones that only show in a running or loaded machine: items draw the machine idle and empty. */
     private static final java.util.List<String> OPTIONAL_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister",
             "chip", "frost", "core", "sparks", "puff0", "puff1", "puff2", "spray", "led0", "led1", "led2", "led3", "led4", "battery",
-            "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7");
+            "workpiece", "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Identifier modelId;
+    /** Blocks to shift the model east so it is centred (a two-block-wide machine drawn from its main half: 0.5). */
+    private final float centreX;
 
     public GeoBlockItem(Block block, Properties properties, Identifier modelId) {
+        this(block, properties, modelId, 0);
+    }
+
+    public GeoBlockItem(Block block, Properties properties, Identifier modelId, float centreX) {
         super(block, properties);
         this.modelId = modelId;
+        this.centreX = centreX;
     }
 
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
         Identifier id = this.modelId;
+        float shift = this.centreX;
         consumer.accept(new GeoRenderProvider() {
             private @Nullable GeoItemRenderer<GeoBlockItem> renderer;
 
@@ -48,7 +56,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
                         // models sit on their origin like a placed block, so only centre them horizontally.
                         @Override
                         public void adjustRenderPose(RenderPassInfo<GeoRenderState> renderPassInfo) {
-                            renderPassInfo.poseStack().translate(0.5f, 0f, 0.5f);
+                            renderPassInfo.poseStack().translate(0.5f + shift, 0f, 0.5f);
                         }
 
                         // Optional contents (e.g. the press dies, bones named "die_*") are not part of the item.

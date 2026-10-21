@@ -144,8 +144,8 @@ final class LaunchTests {
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.HALTED, "halted: " + s.readiness());
         helper.assertTrue(!s.arm(true), "it will not arm");
         helper.assertTrue(!s.launch(helper.getLevel(), t, null), "nor launch");
-        helper.succeedWhen(() -> helper.assertTrue(s.countdown() < 0 && helper.getLevel().getEntitiesOfClass(
-                dev.groundzero.content.launch.MissileEntity.class, new net.minecraft.world.phys.AABB(s.getBlockPos()).inflate(20)).isEmpty(),
+        // Its own missile stays on the pad (other tests' missiles may fly past, so no looking for missiles nearby).
+        helper.succeedWhen(() -> helper.assertTrue(s.countdown() < 0 && !s.inventory().getItem(LaunchSiloBlockEntity.SLOT_MISSILE).isEmpty(),
                 "the countdown is scrubbed"));
     }
 

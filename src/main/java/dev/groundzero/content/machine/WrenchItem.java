@@ -49,6 +49,7 @@ public class WrenchItem extends Item {
     public static final String CABLE_MODE = GZLang.add(GroundZero.MODID + ".wrench.cable", "Cable %s side: %s");
     public static final String NOTHING = GZLang.add(GroundZero.MODID + ".wrench.nothing", "Nothing to connect on the %s side");
     public static final String FIXED = GZLang.add(GroundZero.MODID + ".wrench.fixed", "A structure's controller cannot be turned");
+    public static final String FIXED_WIDE = GZLang.add(GroundZero.MODID + ".wrench.fixed_wide", "A two-block machine cannot be turned: break it and place it again");
     private static final String MODE_NORMAL = GZLang.add(GroundZero.MODID + ".wrench.mode.normal", "Normal (in and out)");
     private static final String MODE_PULL = GZLang.add(GroundZero.MODID + ".wrench.mode.pull", "Pull (draws out of it)");
     private static final String MODE_OFF = GZLang.add(GroundZero.MODID + ".wrench.mode.off", "Disconnected");
@@ -83,9 +84,9 @@ public class WrenchItem extends Item {
             }
             return InteractionResult.SUCCESS;
         }
-        if (block instanceof MultiblockControllerBlock) {
+        if (block instanceof MultiblockControllerBlock || block instanceof WideMachineBlock) {
             if (!level.isClientSide() && player != null) {
-                player.sendOverlayMessage(Component.translatable(FIXED).withStyle(ChatFormatting.YELLOW));
+                player.sendOverlayMessage(Component.translatable(block instanceof WideMachineBlock ? FIXED_WIDE : FIXED).withStyle(ChatFormatting.YELLOW));
             }
             return InteractionResult.SUCCESS;
         }

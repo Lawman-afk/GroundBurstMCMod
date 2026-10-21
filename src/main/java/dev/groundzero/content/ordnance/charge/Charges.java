@@ -98,7 +98,8 @@ public final class Charges {
 
     /**
      * An EMP over {@code centre}: every armed charge within {@code radius} with an electronic fuze (remote, timer, laser)
-     * is made safe; landmines and bouncing mines (pressure plates) stay live. Returns how many were.
+     * is made safe; landmines and bouncing mines (pressure plates) and warheads on impact fuzes stay live. Returns how
+     * many were.
      */
     public static int empDisarm(ServerLevel level, Vec3 centre, double radius) {
         LongOpenHashSet set = LOADED.get(level.dimension());
@@ -109,7 +110,8 @@ public final class Charges {
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
             if (Vec3.atCenterOf(p).distanceTo(centre) <= radius && level.getBlockEntity(p) instanceof ChargeBlockEntity be && be.armed()
-                    && be.kind() != ChargeKind.LANDMINE && be.kind() != ChargeKind.BOUNCING_MINE && be.disarm(level)) {
+                    && be.kind() != ChargeKind.LANDMINE && be.kind() != ChargeKind.BOUNCING_MINE
+                    && !(be.kind().bomb && !be.fuze().fuze().electronic()) && be.disarm(level)) {
                 n++;
             }
         }
@@ -128,18 +130,18 @@ public final class Charges {
     public static int remote(ServerLevel level, Vec3 from, int frequency, @Nullable Entity by, double range) {
         LongOpenHashSet set = LOADED.get(level.dimension());
         if (set == null) {
-            return 0;
+            return dev.groundzero.content.launch.Flights.remote(level, from, frequency, range, by);
         }
         int n = 0;
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
             ChargeBlockEntity be = ChargeBlock.at(level, p);
-            if (be != null && be.kind().remote && be.frequency() == frequency && Vec3.atCenterOf(p).distanceTo(from) <= range
+            if (be != null && be.hearsDetonator() && be.frequency() == frequency && Vec3.atCenterOf(p).distanceTo(from) <= range
                     && be.trigger(level, by)) {
                 n++;
             }
         }
-        return n;
+        return n + dev.groundzero.content.launch.Flights.remote(level, from, frequency, range, by);
     }
 
     /** A charge caught in a blast (or broken while its timer runs): it goes off 2-5 ticks later, armed or not. */
@@ -246,6 +248,18 @@ public final class Charges {
             }
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
             case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
+        }
+    }
+
+    /**
+     * A missile's warhead set off in the air by its fuze (timed, barometric, proximity or remote): a cluster-type warhead
+     * opens and scatters its load from there; any other goes off where it is (a bunker buster does not bore in).
+     */
+    public static void burst(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
+        if (kind.airburst()) {
+            airburst(level, kind, at, by);
+        } else {
+            fire(level, kind, BlockPos.containing(at), Direction.NORTH, 1, by);
         }
     }
 
@@ -457,6 +471,13 @@ public final class Charges {
     }
 
     /** Whether an armed mine senses something: a creature on its plate, or across the claymore's laser. */
+    /** A proximity fuze: anything living (not a spectator or creative player) within {@code range} of the warhead. */
+    static boolean near(ServerLevel level, BlockPos pos, int range) {
+        Vec3 c = Vec3.atCenterOf(pos);
+        return !level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(range), e -> e.isAlive() && !e.isSpectator()
+                && !(e instanceof net.minecraft.world.entity.player.Player p && p.isCreative()) && e.position().distanceTo(c) <= range).isEmpty();
+    }
+
     static boolean sensed(ServerLevel level, BlockPos pos, BlockState state) {
         if (!(state.getBlock() instanceof ChargeBlock block)) {
             return false;

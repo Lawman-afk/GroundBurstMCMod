@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:steel_rod",
+    "groundzero:steel_rod"
+  ],
+  "result": {
+    "id": "groundzero:medium_warhead_casing"
+  }
+}

@@ -106,12 +106,12 @@ public enum ChargeKind {
 
     /** Whether it can be set to go off at once or on its timer (the timed bomb is always on its timer). */
     public boolean fuzeChoice() {
-        return this.timer && this != TIMED_BOMB;
+        return this.timer && this != TIMED_BOMB && !this.bomb;            // a warhead's fuze is fitted at the bench
     }
 
     /** The fuze it starts with, and the only one it has if there is no choice. */
     public ChargeBlockEntity.Mode defaultMode() {
-        return this.timer && !fuzeChoice() ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE;
+        return this == TIMED_BOMB ? ChargeBlockEntity.Mode.TIMER : ChargeBlockEntity.Mode.REMOTE;
     }
 
     public static final int MAX_TIMER = 600, MAX_FREQUENCY = 9999;

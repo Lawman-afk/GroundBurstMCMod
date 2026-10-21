@@ -1,7 +1,7 @@
 {
   "title": "Launch site",
   "icon": "groundzero:launch_silo",
-  "order": 4,
+  "order": 5,
   "items": [
     "groundzero:launch_silo",
     "groundzero:launch_computer",

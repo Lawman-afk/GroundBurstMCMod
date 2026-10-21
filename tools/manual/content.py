@@ -840,6 +840,65 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
+entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "impact_fuze", "timed_fuze", "proximity_fuze", "remote_fuze", "barometric_fuze"], [
+    text("""
+The **Ordnance Assembly Bench** puts warheads together. It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
+
+A warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides what sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.
+
+**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped.
+"""),
+    spot("assembly_bench", """
+The readout says what the parts on the bench make, and in red what is missing or wrong (a core and a casing of different classes will not go together).
+"""),
+    craft("assembly_bench"),
+    text("""
+**Payload cores** decide what a warhead does; each makes one warhead (its class in brackets).
+
+**Explosives:** the HE Charge (S), Heavy HE Charge (M), Thermobaric Charge (M), Penetrator Charge (M, a Bunker Buster), Incendiary Charge (S, Napalm) and Massive Ordnance Charge (L).
+"""),
+    text("""
+**Dispensers** (all M) open in the air when a missile brings them down: the Cluster Dispenser and the Gas, Smoke, Cryo and EMP Canister Dispensers.
+
+**Chemical cores** (S): the Toxic Waste Tank and the Chemical Agent Canister.
+
+A core's tooltip names the warhead it makes.
+"""),
+    text("""
+**Fuzes**, and what sets each off (as well as redstone, a fall or a hit):
+
+**Impact:** nothing more.
+**Timed:** redstone starts a countdown, 1 to 600 seconds; on a missile it counts from launch.
+**Proximity:** anything living within 2 to 16 blocks; on a missile, that close to the ground.
+**Remote:** a detonator on its frequency, even in flight.
+**Barometric:** on a missile, a set height (10 to 200 blocks) over the target.
+"""),
+    spot("medium_warhead_casing", """
+Casings come in three classes, marked by yellow bands: one for **Light**, two for **Medium**, three for **Heavy**. A core only fits a casing of its own class.
+"""),
+    craft("light_warhead_casing"),
+    craft("medium_warhead_casing"),
+    craft("heavy_warhead_casing"),
+    craft("impact_fuze"),
+    craft("timed_fuze"),
+    craft("proximity_fuze"),
+    craft("remote_fuze"),
+    craft("barometric_fuze"),
+    craft("he_charge"),
+    craft("heavy_he_charge"),
+    craft("thermobaric_charge"),
+    craft("cluster_dispenser"),
+    craft("penetrator_charge"),
+    craft("incendiary_charge"),
+    craft("massive_ordnance_charge"),
+    craft("gas_dispenser"),
+    craft("smoke_dispenser"),
+    craft("cryo_dispenser"),
+    craft("emp_dispenser"),
+    craft("toxic_waste_tank"),
+    craft("chemical_agent_canister"),
+])
+
 entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
                                                       "bunker_buster_warhead", "napalm_warhead", "massive_warhead", "gas_warhead",
                                                       "smoke_warhead", "cryo_warhead", "emp_warhead", "toxic_waste_warhead",
@@ -847,7 +906,9 @@ entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhe
     text("""
 Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
-Placed on their own, warheads stand nose up on their mounting rings. They are set up and armed like [placed charges](ordnance/charges): a frequency, at once or on a timer, then **Arm**. Armed, a detonator, redstone or its timer sets one off. They also have an **impact fuze**: nothing holds a warhead up, so with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off.
+Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**, and the fuze decides what sets it off.
+
+Placed on their own, warheads stand nose up on their mounting rings. Open one to see its fuze, change the fuze's setting, and **Arm** it. Every armed warhead goes off on redstone, and nothing holds a warhead up: with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off. On top of that its fuze adds its own trigger: a **Timed** fuze counts down from a redstone signal, a **Proximity** fuze goes off when anything living comes near, a **Remote** fuze answers a detonator on its frequency. An **Impact** fuze adds nothing; a **Barometric** fuze works as an impact fuze until a missile carries it.
 """),
     spot("he_warhead", """
 The general-purpose warhead, olive with a yellow band: a crater about 6 blocks across.
@@ -870,12 +931,6 @@ A small burst and a pool of **napalm** about 10 blocks round. Napalm burns for a
     spot("massive_warhead", """
 The biggest conventional warhead: a 28-block crater and deadly out to 40. Stand well clear.
 """),
-    craft("he_warhead"),
-    craft("heavy_warhead"),
-    craft("thermobaric_warhead"),
-    craft("cluster_warhead"),
-    craft("bunker_buster_warhead"),
-    craft("napalm_warhead"),
     spot("gas_warhead", """
 A cluster of **poison gas** canisters. Delivered by a missile, it bursts high over its target and drops 14 canisters across a wide area; each lands and pours out a cloud of chlorine like a [gas grenade](ordnance/chemical). Set off on the ground, it throws them out round itself.
 """),
@@ -885,22 +940,15 @@ The same with **smoke**: 14 smoke canisters over a wide area, a screen that hide
     spot("toxic_waste_warhead", """
 A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught in it gets a heavy dose of toxin, and the sludge poisons anything that walks through it until it dries out.
 """),
-    craft("massive_warhead"),
-    craft("gas_warhead"),
-    craft("smoke_warhead"),
     spot("chemical_warhead", """
 A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks round that behaves like [chlorine](ordnance/chemical): it spreads, sinks into low ground and drifts with the wind, but it is far harsher (**Poison IV**, a heart every half second where it is thick) and it hangs about for a minute and a half. A [hazmat suit](safety/hazmat_suits) keeps it out.
 """),
-    craft("toxic_waste_warhead"),
-    craft("chemical_warhead"),
     spot("cryo_warhead", """
 The same with **cryo** canisters: 14 of them over a wide area, each a burst of cold like a [cryo grenade](ordnance/thrown): water freezes, fires go out, and everything caught in one is frozen solid for 10 seconds (hit hard, a frozen mob shatters).
 """),
     spot("emp_warhead", """
 The same with **EMP** canisters: 14 EMP fields over a wide area, each like an [EMP grenade](ordnance/thrown)'s. Machines in them lose half their power and shut down for 20 seconds, armed charges with electronic fuzes go safe, and missiles flying through may be left duds.
 """),
-    craft("cryo_warhead"),
-    craft("emp_warhead"),
 ])
 
 entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",

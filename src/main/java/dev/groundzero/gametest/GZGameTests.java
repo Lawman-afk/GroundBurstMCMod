@@ -78,6 +78,7 @@ public final class GZGameTests {
         MineTests.register();
         BombTests.register();
         EffectTests.register();
+        AssemblyTests.register();
         LaunchTests.register();
         ManualContentTests.register();
     }

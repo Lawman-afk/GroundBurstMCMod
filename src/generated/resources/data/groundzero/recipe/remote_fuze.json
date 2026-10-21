@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:plates/steel",
+    "groundzero:basic_circuit",
+    "groundzero:copper_wire",
+    "groundzero:copper_wire"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundzero:remote_fuze"
+  }
+}

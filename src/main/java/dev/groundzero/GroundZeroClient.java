@@ -46,6 +46,7 @@ public class GroundZeroClient {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(GZMenus.ORE_CRUSHER.get(), MachineScreen::new);
         event.register(GZMenus.LAUNCH_SILO.get(), MachineScreen::new);
+        event.register(GZMenus.ASSEMBLY_BENCH.get(), dev.groundzero.client.screen.AssemblyBenchScreen::new);
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GZMenus.ARC_FURNACE.get(), MachineScreen::new);
         event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
@@ -81,6 +82,9 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(), 4, 1));
         event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get(), 1));
+        // The bench reaches one block to its side, and its hoist stands nearly two blocks high.
+        event.registerBlockEntityRenderer(dev.groundzero.content.assembly.GZAssembly.BENCH_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.assembly.GZAssembly.BENCH_ENTITY.get(), 2, 1));
         event.registerBlockEntityRenderer(GZBlockEntities.COMBUSTION_GENERATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.COMBUSTION_GENERATOR.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.ARC_FURNACE.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ARC_FURNACE.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.INDUSTRIAL_PRESS.get(), 2));

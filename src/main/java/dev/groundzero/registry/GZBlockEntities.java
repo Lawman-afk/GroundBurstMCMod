@@ -157,13 +157,14 @@ public final class GZBlockEntities {
         tallMachine(event, GZMachines.GAS_CENTRIFUGE.block().get());
         tallMachine(event, GZMachines.EXOTIC_MATTER_FABRICATOR.block().get());
         tallMachine(event, GZMachines.DECONTAMINATION_SHOWER.block().get());
+        tallMachine(event, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.block().get());
         GZMachines.registerCableCapabilities(event);
         dev.groundzero.content.fluid.GZFluids.registerCapabilities(event);
         dev.groundzero.content.pipe.GZPipes.registerCapabilities(event);
     }
 
     /** Both halves of a tall machine expose the lower half's block entity (cables and pipes may attach to either). */
-    private static void tallMachine(RegisterCapabilitiesEvent event, TallMachineBlock block) {
+    private static void tallMachine(RegisterCapabilitiesEvent event, dev.groundzero.content.machine.MachineBlock block) {
         event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, be, side) ->
                 level.getBlockEntity(TallMachineBlock.base(pos, state)) instanceof MachineBlockEntity m ? m.energyFor(side) : null, block);
         event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, be, side) ->

@@ -160,9 +160,11 @@ public final class GZOrdnance {
 
     private static dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> bomb(String id, String english,
             dev.groundzero.content.ordnance.charge.ChargeKind kind) {
-        return dev.groundzero.registry.GZBlocks.register(id, english, GZTab.ORDNANCE, p -> new dev.groundzero.content.ordnance.charge.BombBlock(kind, p),
+        return dev.groundzero.registry.GZBlocks.registerWithItem(id, english, GZTab.ORDNANCE,
+                p -> (dev.groundzero.content.ordnance.charge.ChargeBlock) new dev.groundzero.content.ordnance.charge.BombBlock(kind, p),
                 p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN).strength(2f).noOcclusion()
-                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+                        .sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED),
+                dev.groundzero.content.assembly.WarheadItem::new);
     }
 
     private static dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> mine(String id, String english,

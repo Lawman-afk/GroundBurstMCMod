@@ -32,6 +32,14 @@ public final class ManualPhotographer {
         if (!Boolean.getBoolean("groundzero.manualShots")) {
             return;
         }
+        String only = System.getProperty("groundzero.manualShots.entry", "");
+        if (!only.isEmpty()) {
+            for (int spread = 0; spread < 8; spread++) {
+                SHOTS.add(new Shot(only, spread, null));
+            }
+            NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
+            return;
+        }
         SHOTS.add(new Shot(null, 0, null));
         SHOTS.add(new Shot(null, 0, "uranium"));
         SHOTS.add(new Shot("getting_started", 0, null));

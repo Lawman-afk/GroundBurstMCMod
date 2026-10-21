@@ -1,7 +1,7 @@
 {
   "title": "Warheads",
   "icon": "groundzero:he_warhead",
-  "order": 3,
+  "order": 4,
   "items": [
     "groundzero:he_warhead",
     "groundzero:heavy_warhead",
@@ -20,7 +20,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.\n\nPlaced on their own, warheads stand nose up on their mounting rings. They are set up and armed like [placed charges](ordnance/charges): a frequency, at once or on a timer, then **Arm**. Armed, a detonator, redstone or its timer sets one off. They also have an **impact fuze**: nothing holds a warhead up, so with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off."
+      "text": "Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.\n\nWarheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**, and the fuze decides what sets it off.\n\nPlaced on their own, warheads stand nose up on their mounting rings. Open one to see its fuze, change the fuze's setting, and **Arm** it. Every armed warhead goes off on redstone, and nothing holds a warhead up: with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off. On top of that its fuze adds its own trigger: a **Timed** fuze counts down from a redstone signal, a **Proximity** fuze goes off when anything living comes near, a **Remote** fuze answers a detonator on its frequency. An **Impact** fuze adds nothing; a **Barometric** fuze works as an impact fuze until a missile carries it."
     },
     {
       "type": "spotlight",
@@ -58,36 +58,6 @@
       "text": "The biggest conventional warhead: a 28-block crater and deadly out to 40. Stand well clear."
     },
     {
-      "type": "crafting",
-      "item": "groundzero:he_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:heavy_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:thermobaric_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:cluster_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:bunker_buster_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:napalm_warhead",
-      "text": ""
-    },
-    {
       "type": "spotlight",
       "item": "groundzero:gas_warhead",
       "text": "A cluster of **poison gas** canisters. Delivered by a missile, it bursts high over its target and drops 14 canisters across a wide area; each lands and pours out a cloud of chlorine like a [gas grenade](ordnance/chemical). Set off on the ground, it throws them out round itself."
@@ -103,34 +73,9 @@
       "text": "A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught in it gets a heavy dose of toxin, and the sludge poisons anything that walks through it until it dries out."
     },
     {
-      "type": "crafting",
-      "item": "groundzero:massive_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:gas_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:smoke_warhead",
-      "text": ""
-    },
-    {
       "type": "spotlight",
       "item": "groundzero:chemical_warhead",
       "text": "A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks round that behaves like [chlorine](ordnance/chemical): it spreads, sinks into low ground and drifts with the wind, but it is far harsher (**Poison IV**, a heart every half second where it is thick) and it hangs about for a minute and a half. A [hazmat suit](safety/hazmat_suits) keeps it out."
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:toxic_waste_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:chemical_warhead",
-      "text": ""
     },
     {
       "type": "spotlight",
@@ -141,16 +86,6 @@
       "type": "spotlight",
       "item": "groundzero:emp_warhead",
       "text": "The same with **EMP** canisters: 14 EMP fields over a wide area, each like an [EMP grenade](ordnance/thrown)'s. Machines in them lose half their power and shut down for 20 seconds, armed charges with electronic fuzes go safe, and missiles flying through may be left duds."
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:cryo_warhead",
-      "text": ""
-    },
-    {
-      "type": "crafting",
-      "item": "groundzero:emp_warhead",
-      "text": ""
     }
   ]
 }

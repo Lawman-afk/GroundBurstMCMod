@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:emp_grenade",
+    "groundzero:emp_grenade",
+    "groundzero:emp_grenade",
+    "groundzero:emp_grenade",
+    "#c:plates/steel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:emp_dispenser"
+  }
+}

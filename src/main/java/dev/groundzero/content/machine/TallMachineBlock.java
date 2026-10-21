@@ -51,8 +51,11 @@ public class TallMachineBlock extends MachineBlock {
         builder.add(HALF);
     }
 
-    /** The lower (block entity) position for either half. */
+    /** The block entity position for any part of a machine: a tall machine's lower half, a wide machine's main half. */
     public static BlockPos base(BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof WideMachineBlock) {
+            return WideMachineBlock.base(pos, state);
+        }
         return state.hasProperty(HALF) && state.getValue(HALF) == DoubleBlockHalf.UPPER ? pos.below() : pos;
     }
 

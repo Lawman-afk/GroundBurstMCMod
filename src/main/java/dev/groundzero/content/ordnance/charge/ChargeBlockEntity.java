@@ -4,7 +4,12 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import dev.groundzero.content.assembly.Fuze;
+import dev.groundzero.content.assembly.FuzeSettings;
 import dev.groundzero.content.ordnance.GZOrdnance;
+import dev.groundzero.registry.GZDataComponents;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -42,6 +47,8 @@ public class ChargeBlockEntity extends BlockEntity {
     private int burn = -1;
     private int defuseWire, boomWire, cutWires;
     private @Nullable UUID owner;
+    /** A warhead's fuze (fitted at the Assembly Bench); other charges have none of their own (impact here). */
+    private FuzeSettings fuze = FuzeSettings.IMPACT;
 
     public ChargeBlockEntity(BlockPos pos, BlockState state) {
         super(GZOrdnance.CHARGE.get(), pos, state);
@@ -55,6 +62,30 @@ public class ChargeBlockEntity extends BlockEntity {
 
     public Mode mode() {
         return this.mode;
+    }
+
+    /** A warhead's fuze and setting. */
+    public FuzeSettings fuze() {
+        return this.fuze;
+    }
+
+    /** Fits a warhead's fuze (from its item, or a GameTest): its timer or frequency come from the fuze's setting. */
+    public void setFuze(FuzeSettings fuze) {
+        this.fuze = fuze;
+        if (kind().bomb) {
+            this.mode = fuze.fuze() == Fuze.TIMED ? Mode.TIMER : Mode.REMOTE;
+            if (fuze.fuze() == Fuze.TIMED) {
+                this.timer = fuze.value();
+            } else if (fuze.fuze() == Fuze.REMOTE) {
+                this.frequency = fuze.value();
+            }
+        }
+        sync();
+    }
+
+    /** Whether a Remote Detonator on its frequency reaches it (a warhead only with a remote fuze). */
+    public boolean hearsDetonator() {
+        return kind().remote && (!kind().bomb || this.fuze.fuze() == Fuze.REMOTE);
     }
 
     public int frequency() {
@@ -89,9 +120,18 @@ public class ChargeBlockEntity extends BlockEntity {
         return this.owner;
     }
 
-    /** Fuze settings, from the settings screen. Only while safe. */
+    /** Fuze settings of a charge that is not a warhead (a warhead keeps its fuze's setting). */
     public void configure(Mode mode, int frequency, int timer) {
+        configure(mode, frequency, timer, this.fuze.value());
+    }
+
+    /** Fuze settings, from the settings screen. Only while safe. A warhead takes its fuze's one setting from {@code value}. */
+    public void configure(Mode mode, int frequency, int timer, int value) {
         if (armed()) {
+            return;
+        }
+        if (kind().bomb) {
+            setFuze(this.fuze.with(value));
             return;
         }
         this.mode = kind().fuzeChoice() ? mode : kind().defaultMode();
@@ -212,6 +252,12 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     public void serverTick(ServerLevel level) {
+        if (live() && kind().bomb && this.fuze.fuze() == Fuze.PROXIMITY && !counting() && (level.getGameTime() + this.worldPosition.hashCode()) % 4 == 0
+                && Charges.near(level, this.worldPosition, this.fuze.value())) {
+            level.playSound(null, this.worldPosition, GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 1f, 1.6f);
+            trigger(level, null);
+            return;
+        }
         if (live() && !counting() && (level.getGameTime() + this.worldPosition.hashCode() & 1) == 0
                 && Charges.sensed(level, this.worldPosition, getBlockState())) {
             if (kind().sensor == ChargeKind.Sensor.PRESSURE) {
@@ -285,6 +331,9 @@ public class ChargeBlockEntity extends BlockEntity {
         if (this.owner != null) {
             output.putString("owner", this.owner.toString());
         }
+        if (kind().bomb) {
+            output.store("fuze", FuzeSettings.CODEC, this.fuze);
+        }
     }
 
     @Override
@@ -299,6 +348,24 @@ public class ChargeBlockEntity extends BlockEntity {
         this.boomWire = input.getIntOr("boom_wire", 1);
         this.cutWires = input.getIntOr("cut_wires", 0);
         this.owner = input.getString("owner").map(UUID::fromString).orElse(null);
+        this.fuze = input.read("fuze", FuzeSettings.CODEC).orElse(FuzeSettings.IMPACT);
+    }
+
+    // --- keeping the fuze in the item ------------------------------------------------------------------------------------
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        if (kind().bomb) {
+            components.set(GZDataComponents.FUZE.get(), this.fuze);
+        }
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentGetter components) {
+        super.applyImplicitComponents(components);
+        if (kind().bomb) {
+            setFuze(components.getOrDefault(GZDataComponents.FUZE.get(), FuzeSettings.IMPACT));
+        }
     }
 
     @Override

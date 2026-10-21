@@ -1,4 +1,10 @@
 {
+  "assembly.clank": {
+    "sounds": [
+      "groundzero:machine/assembly_clank"
+    ],
+    "subtitle": "subtitles.groundzero.assembly.clank"
+  },
   "blast.large.far": {
     "sounds": [
       {
@@ -269,6 +275,12 @@
       }
     ],
     "subtitle": "subtitles.groundzero.machine.arc_furnace"
+  },
+  "machine.assembly_bench": {
+    "sounds": [
+      "groundzero:machine/assembly_bench"
+    ],
+    "subtitle": "subtitles.groundzero.machine.assembly_bench"
   },
   "machine.battery_charger": {
     "sounds": [

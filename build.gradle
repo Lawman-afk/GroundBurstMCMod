@@ -64,6 +64,8 @@ neoForge {
         manualShots {
             client()
             systemProperty 'groundzero.manualShots', 'true'
+            // -PmanualEntry=ordnance/assembly shoots just that entry's spreads (the first eight).
+            systemProperty 'groundzero.manualShots.entry', (project.findProperty('manualEntry') ?: '').toString()
         }
 
         // Makes a flat world, sets off each test blast profile in turn and screenshots the effects at set moments into

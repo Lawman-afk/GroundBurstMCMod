@@ -596,6 +596,35 @@ def ordnance_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def assembly_bench_loop() -> np.ndarray:
+    """Ordnance Assembly Bench, one 2 s cycle (matches the model's hoist animation): the chain hoist rattling down
+    (0-0.6 s), the casing clanking onto the cradle and the clamps biting at 1.0 s, a ratchet tightening the bolts
+    (1.15-1.5 s), a short impact-wrench burst (1.55-1.75 s), the hoist motor humming under it all."""
+    n = int(TOTAL * S.SR)
+    chain = S.bandpass(S.grains(0.6, rate=70, grain_ms=4, seed=901), 1800, 7000) * 0.5
+    chain = chain * S.breakpoints(len(chain), [(0, 0.2), (0.05, 1), (0.55, 0.8), (0.6, 0)])
+    clank = S.mix((_ring(0.6, [(420, 0.18, 0.5), (1130, 0.09, 0.35), (2610, 0.05, 0.2)], 902), 1.0),
+                  (S.lowpass(S.white(0.12, 903), 300) * S.exp_decay(int(0.12 * S.SR), 0.02) * 1.5, 1.0))
+    tick = S.bandpass(S.white(0.012, 904), 2500, 8000) * S.exp_decay(int(0.012 * S.SR), 0.002) * 0.7
+    ratchet = [1.15 + k * 0.07 for k in range(5)]
+    wrench = S.saturate(S.bandpass(S.tone(0.2, 55, "square") + S.white(0.2, 905) * 0.4, 200, 2500) * 1.5, 2) * 0.35
+    wrench = wrench * S.breakpoints(len(wrench), [(0, 0), (0.01, 1), (0.18, 1), (0.2, 0)])
+    hum = (S.tone(TOTAL, 100) * 0.3 + S.tone(TOTAL, 200) * 0.12) * 0.15 + S.lowpass(S.brown(TOTAL, 906), 200) * 0.1
+    starts = [k * LOOP for k in range(-1, 2)]
+    x = S.mix((hum, 1.5), (_pulses(starts, chain), 2.2), (_pulses([s + 1.0 for s in starts], clank), 0.6),
+              (_pulses([s + t for s in starts for t in ratchet], tick), 1.6), (_pulses([s + 1.55 for s in starts], wrench), 1.8))
+    return S.normalize(S.seamless_loop(x[:n], LOOP, XF, PRE), -6)
+
+
+def assembly_sounds() -> dict[str, np.ndarray]:
+    """The bench finishing a warhead (or taking one apart): a heavy clunk with a ringing steel tail."""
+    clunk = S.lowpass(S.white(0.2, 911), 260) * S.exp_decay(int(0.2 * S.SR), 0.03) * 2
+    ring = _ring(1.0, [(310, 0.35, 0.45), (870, 0.2, 0.3), (1960, 0.1, 0.2), (3400, 0.05, 0.1)], 912)
+    latch = _ring(0.15, [(2900, 0.02, 0.4)], 913)
+    x = S.mix((S.place(clunk, 0, 1.2), 1.0), (S.place(ring, 0, 1.2), 1.0), (S.place(latch, 0.18, 1.2), 0.8))
+    return {"machine/assembly_clank": S.normalize(S.fade(x, 0, 0.2), -3)}
+
+
 def machine_loops() -> dict[str, np.ndarray]:
     return {
         "machine/combustion_generator": generator_loop(),
@@ -619,6 +648,7 @@ def machine_loops() -> dict[str, np.ndarray]:
         "machine/fusion_reactor": fusion_reactor_loop(),
         "machine/singularity_reactor": singularity_reactor_loop(),
         "machine/particle_accelerator": particle_accelerator_loop(),
+        "machine/assembly_bench": assembly_bench_loop(),
     }
 
 
@@ -702,7 +732,7 @@ def effect_sounds() -> dict[str, np.ndarray]:
 
 
 RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds]
+           effect_sounds, assembly_sounds]
 
 
 def build_sounds() -> list[Path]:

@@ -52,8 +52,14 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.block().get());
         for (var bomb : dev.groundzero.content.ordnance.GZOrdnance.WARHEADS) {
-            dropSelf(bomb.block().get());
+            Block block = bomb.block().get();
+            add(block, createSingleItemTable(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
+                    .copyComponentsFromBlockEntity(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY)
+                    .include(dev.groundzero.registry.GZDataComponents.FUZE.get())));
         }
+        var bench = dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.block().get();
+        add(bench, createSinglePropConditionTable(bench, dev.groundzero.content.machine.WideMachineBlock.PART,
+                dev.groundzero.content.machine.WideMachineBlock.Part.MAIN));
         // Launching (DESIGN.md §17).
         for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD, dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME,
                 dev.groundzero.content.launch.GZLaunch.GANTRY_ARM, dev.groundzero.content.launch.GZLaunch.RADAR_MAST,

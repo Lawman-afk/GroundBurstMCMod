@@ -74,7 +74,9 @@ public final class FxPhotographer {
                 new Scene("effects", "effects", 16, 22, List.of(8, 30, 70, 140)),
                 new Scene("frozen", "frozen", 6, 18, List.of(10, 60)),
                 new Scene("gas_wall", "gas_wall", 9, 20, List.of(60, 140)),
-                new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
+                new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
+                new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
+                new Scene("assembly_ui", "assembly", 4, 0, List.of(30)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -296,6 +298,33 @@ public final class FxPhotographer {
         dev.groundzero.content.launch.Flights.launch(level, c.add(1600, 0, 300), c.add(1300, 0, 1500), empty, null);
     }
 
+    private static net.minecraft.core.BlockPos benchAt;
+
+    /**
+     * Phase 7: two Ordnance Assembly Benches facing the camera. The near one is assembling a Poison Gas Warhead (parts
+     * loaded, powered, hoist working); the far one has a finished warhead waiting in its output slot.
+     */
+    private static void assemblySite(ServerLevel level, int x, int ground) {
+        var block = dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.block().get();
+        benchAt = new net.minecraft.core.BlockPos(x, ground, -1);
+        var far = new net.minecraft.core.BlockPos(x + 2, ground, -4);
+        for (var at : java.util.List.of(benchAt, far)) {
+            var state = block.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST);
+            level.setBlockAndUpdate(at, state);
+            block.setPlacedBy(level, at, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+        }
+        if (level.getBlockEntity(benchAt) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity b) {
+            b.energy().generate(dev.groundzero.content.assembly.AssemblyBenchBlockEntity.CAPACITY);
+            b.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GAS_DISPENSER.get(), 3));
+            b.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_CASING.get(), 3));
+            b.inventory().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.PROXIMITY_FUZE.get(), 3));
+            b.startAssembly();
+        }
+        if (level.getBlockEntity(far) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity b) {
+            b.inventory().setItem(3, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()));
+        }
+    }
+
     private static void formed(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.world.level.block.Block controller,
             dev.groundzero.content.multiblock.MultiblockDefinition def) {
         level.setBlockAndUpdate(at, controller.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING,
@@ -471,6 +500,10 @@ public final class FxPhotographer {
                     radarSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("assembly")) {
+                    assemblySite(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("warheads")) {
                     bombs(level, x, ground, false);
                     return;
@@ -528,6 +561,17 @@ public final class FxPhotographer {
                 screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left), false);
                 screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(cx + 30, cy, left));
             }
+        }
+        // The bench's screen while it assembles.
+        if (scene.name().equals("assembly_ui") && step >= 0 && clock == 12 && benchAt != null) {
+            var bench = benchAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, bench);
+                }
+            });
         }
         // The silo's own screen, a Massive Ordnance Warhead loaded (the longest name).
         if (scene.name().equals("silo_ui") && step >= 0 && clock == 12 && launchSilo != null) {

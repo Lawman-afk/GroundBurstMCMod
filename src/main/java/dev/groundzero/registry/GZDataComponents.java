@@ -21,5 +21,10 @@ public final class GZDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** A warhead's fuze and its setting (fitted at the Assembly Bench, DESIGN.md §9.4). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundzero.content.assembly.FuzeSettings>> FUZE =
+            COMPONENTS.registerComponentType("fuze", b -> b.persistent(dev.groundzero.content.assembly.FuzeSettings.CODEC)
+                    .networkSynchronized(dev.groundzero.content.assembly.FuzeSettings.STREAM_CODEC));
+
     private GZDataComponents() {}
 }

@@ -62,12 +62,12 @@ final class BombTests {
         return helper.getLevel().getBlockState(helper.absolutePos(rel)).is(block);
     }
 
-    /** An armed HE bomb on frequency 12 goes off when a detonator on 12 is pressed. */
+    /** An armed HE warhead with a remote fuze on frequency 12 goes off when a detonator on 12 is pressed. */
     private static void signal(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
         ChargeBlockEntity be = place(helper, GZOrdnance.HE_WARHEAD.block().get(), at, Direction.NORTH, false);
-        be.setFrequency(12);
+        be.setFuze(dev.groundzero.content.assembly.FuzeSettings.of(dev.groundzero.content.assembly.Fuze.REMOTE, 12));
         be.arm(helper.getLevel(), null);
         helper.runAfterDelay(4, () -> {
             helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 12, null, 10) == 1, "it took the signal");

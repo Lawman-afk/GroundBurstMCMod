@@ -11,6 +11,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import dev.groundzero.GroundZero;
+import dev.groundzero.content.assembly.Fuze;
+import dev.groundzero.content.assembly.FuzeSettings;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.charge.BombBlock;
 import dev.groundzero.content.ordnance.charge.Charges;
@@ -95,6 +97,25 @@ public final class Flights extends SavedData {
         return f;
     }
 
+    /**
+     * A Remote Detonator pressed at {@code from}: every missile in flight within {@code range} whose warhead has a remote
+     * fuze on {@code frequency} bursts where it is. Returns how many did.
+     */
+    public static int remote(ServerLevel level, Vec3 from, int frequency, double range, @Nullable Entity by) {
+        Flights fs = of(level);
+        int n = 0;
+        for (Flight f : List.copyOf(fs.flights)) {
+            FuzeSettings fuze = f.fuze();
+            if (fuze.fuze() == Fuze.REMOTE && fuze.value() == frequency && f.age >= MissileEntity.IGNITION && f.pos.distanceTo(from) <= range
+                    && f.burst(level, f.pos)) {
+                fs.flights.remove(f);
+                fs.setDirty();
+                n++;
+            }
+        }
+        return n;
+    }
+
     /** A server tick: every flight moves on (or hits). */
     void tick(ServerLevel level) {
         if (this.flights.isEmpty()) {
@@ -142,6 +163,32 @@ public final class Flights extends SavedData {
 
         public Vec3 target() {
             return this.target;
+        }
+
+        /** Its warhead's fuze (an impact fuze if it carries none). */
+        FuzeSettings fuze() {
+            return this.warhead.getOrDefault(dev.groundzero.registry.GZDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        }
+
+        /**
+         * Its fuze sets the warhead off in the air at {@code at} (not when it flew through an EMP and its fuze died).
+         * True if it burst (the flight is then over).
+         */
+        boolean burst(ServerLevel level, Vec3 at) {
+            if (this.dud || !(this.warhead.getItem() instanceof BlockItem b) || !(b.getBlock() instanceof BombBlock bomb)) {
+                return false;
+            }
+            Entity by = this.owner == null ? null : level.getEntity(this.owner);
+            Charges.burst(level, bomb.kind, at, by);
+            finish(level);
+            return true;
+        }
+
+        /** How high it is over the ground below it (its target's height where that ground is not loaded). */
+        private double aboveGround(ServerLevel level, Vec3 at) {
+            BlockPos below = BlockPos.containing(at);
+            double ground = level.hasChunkAt(below) ? level.getHeight(Heightmap.Types.MOTION_BLOCKING, below.getX(), below.getZ()) : this.target.y;
+            return at.y - ground;
         }
 
         /** A short id for radar screens to follow it by. */
@@ -215,13 +262,25 @@ public final class Flights extends SavedData {
                     this.tilt = (float) Math.toDegrees(Math.atan2(Math.sqrt(v.x * v.x + v.z * v.z), v.y));
                 }
                 this.pos = to;
-                // A cluster warhead bursts in the air on the way down, over the target.
-                if (s > 0.5 && v.y < 0 && to.y - this.target.y <= dev.groundzero.content.ordnance.charge.Charges.AIRBURST_HEIGHT
-                        && !this.dud && this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb && bomb.kind.airburst()) {
-                    Entity by = this.owner == null ? null : level.getEntity(this.owner);
-                    dev.groundzero.content.ordnance.charge.Charges.airburst(level, bomb.kind, to, by);
-                    finish(level);
-                    return true;
+                // The fuze, in the air: a timed fuze counts from launch, a barometric one bursts at its height over the
+                // target on the way down, a proximity one that close to the ground under it. A cluster-type warhead on
+                // any other fuze still opens 30 blocks over its target.
+                if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
+                    FuzeSettings fuze = fuze();
+                    boolean falling = s > 0.5 && v.y < 0;
+                    double over = to.y - this.target.y;
+                    boolean burst = switch (fuze.fuze()) {
+                        case TIMED -> this.age - MissileEntity.IGNITION >= fuze.value() * 20;
+                        case BAROMETRIC -> falling && over <= fuze.value();
+                        case PROXIMITY -> falling && aboveGround(level, to) <= fuze.value();
+                        default -> false;
+                    };
+                    if (!burst && bomb.kind.airburst() && fuze.fuze() != Fuze.BAROMETRIC && falling && over <= Charges.AIRBURST_HEIGHT) {
+                        burst = true;
+                    }
+                    if (burst && burst(level, to)) {
+                        return true;
+                    }
                 }
                 if (s >= 1) {
                     impact(level, this.target);

@@ -113,6 +113,10 @@ public final class GZSounds {
             register("sticky.stick", "Sticky grenade sticks", List.of("ordnance/sticky_stick"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> SMOKE_HISS =
             register("smoke.hiss", "Smoke hisses", List.of("ordnance/smoke_hiss"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_ASSEMBLY_BENCH =
+            register("machine.assembly_bench", "Assembly Bench clanks and ratchets", List.of("machine/assembly_bench"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASSEMBLY_CLANK =
+            register("assembly.clank", "Warhead assembled", List.of("machine/assembly_clank"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> CHARGE_ARM =
             register("charge.arm", "Charge armed", List.of("ordnance/charge_arm"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> CHARGE_DISARM =

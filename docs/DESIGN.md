@@ -518,6 +518,27 @@ GUI tabs: **Bomb / Warhead** · **Missile** · **Ammunition**.
 Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bomb = Payload + Casing + Fuze.
 **A finished bomb can be dropped into the warhead slot of the Missile tab**, so every bomb can also be launched.
 
+
+### 10.1 As built: slice 7a, warheads from parts (2026-10-21)
+- **Everything via the bench** (the user's choice): warheads have no crafting recipes. A **payload core** (one per
+  warhead, with its size class: S HE Charge, Incendiary Charge, Toxic Waste Tank, Chemical Agent Canister; M Heavy HE,
+  Thermobaric and Penetrator Charges, the Cluster Dispenser and the Gas/Smoke/Cryo/EMP Canister Dispensers; L Massive
+  Ordnance Charge), a **casing** of the same class (Light, Medium, Heavy Warhead Casing) and a **fuze** make the warhead.
+- **Ordnance Assembly Bench** (`content/assembly`): two blocks wide (`WideMachineBlock`, its side half to the right of
+  its front, like a bed; not turned by the Wrench), 10 FE a tick. Slots: core, casing, fuze, warhead. **Assemble**
+  runs a job (S 5 s, M 8 s, L 12 s); **Take Apart** splits a warhead in the output slot into its three parts (part
+  slots empty). The readout names the result or, in red, what is wrong. GeckoLib model: bench, hoist beam with trolley,
+  chain and hook, cradle with clamp jaws, tool pegboard, work lamp, blueprint sheet; a warhead lies in the cradle while
+  one is made or waits; "working" animation timed with its sound (chain, clank, ratchet, impact wrench).
+- **Fuzes** (`Fuze`, the `groundzero:fuze` item component, kept by the placed warhead and its dropped item). Every armed
+  warhead goes off on redstone and when dropped or shot; the fuze adds: **Impact** nothing (mechanical: an EMP leaves
+  it armed); **Timed** redstone starts a 1-600 s countdown, on a missile it counts from launch; **Proximity** anything
+  living within 2-16 blocks, on a missile that close to the ground; **Remote** a detonator on its frequency (only these
+  warheads hear detonators), also in flight; **Barometric** placed as Impact, on a missile it bursts 10-200 blocks over
+  the target. Cluster-type dispensers on other fuzes still open 30 blocks up. The placed warhead's screen shows its fuze
+  and its one setting.
+- Still to come (7b, 7c): missile bodies, guidance and propulsion, the assembled missile, the stats panel and 3D
+  preview, the JEI category.
 ---
 
 ## 11. Explosion engine (`dev.groundzero.blast`)
@@ -2051,3 +2072,4 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Slice 6e: gas grid of one block a cell (not 2×2×2), EMP fields and freezing as level systems; the Chemical Bomb is a Chemical Warhead; EMP's redstone and powered-item effects deferred. |
 | 2026-10-21 | Cryo and EMP grenades get cluster warhead versions (14 canisters each, the gas/smoke pattern). |
 | 2026-10-21 | A Launch Silo that is EMP'd or held stopped by redstone refuses to arm or launch (and says why); either one mid-countdown scrubs the launch. |
+| 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |

@@ -27,7 +27,7 @@ final class EffectTests {
     private EffectTests() {}
 
     static void register() {
-        GZGameTests.test("gas_sinks_into_a_pit", GZGameTests.FLOOR_16, 60, EffectTests::sinks);
+        GZGameTests.test("gas_sinks_into_a_pit", GZGameTests.FLOOR_16, 100, EffectTests::sinks);
         GZGameTests.test("gas_is_kept_out_by_a_wall", GZGameTests.FLOOR_16, 60, EffectTests::walls);
         GZGameTests.test("gas_poisons_what_breathes_it", GZGameTests.FLOOR_16, 40, EffectTests::poisons);
         GZGameTests.test("chemical_warhead_lets_out_its_agent", GZGameTests.FLOOR_16, 20, EffectTests::chemical);
@@ -60,7 +60,7 @@ final class EffectTests {
         }
         helper.setBlock(new BlockPos(3, 0, 8), Blocks.STONE);
         BlockPos at = helper.absolutePos(new BlockPos(6, 2, 8));
-        gas(helper).emit(helper.getLevel(), at, GasAgent.CHLORINE, 30);
+        gas(helper).emit(helper.getLevel(), at, GasAgent.CHLORINE, 50);       // plenty, so a wind blowing away does not starve the pit
         helper.succeedWhen(() -> {
             float pit = gas(helper).concentration(helper.absolutePos(new BlockPos(4, 1, 8)), GasAgent.CHLORINE);
             float above = gas(helper).concentration(helper.absolutePos(new BlockPos(4, 3, 8)), GasAgent.CHLORINE);

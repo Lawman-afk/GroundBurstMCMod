@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:napalm_canister",
+    "groundzero:napalm_canister",
+    "groundzero:napalm_canister",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundzero:incendiary_charge"
+  }
+}

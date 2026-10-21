@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:toxin_canister",
+    "groundzero:toxin_canister",
+    "groundzero:toxin_canister",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundzero:toxic_waste_tank"
+  }
+}

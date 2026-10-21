@@ -120,6 +120,7 @@ public final class GZTagProviders {
                     dev.groundzero.content.pipe.GZPipes.IRON_ITEM_PIPE.block().key(), dev.groundzero.content.pipe.GZPipes.ITEM_PIPE.block().key(),
                     dev.groundzero.content.pipe.GZPipes.PNEUMATIC_ITEM_PIPE.block().key());
             GZMachines.CABLES.forEach(c -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c.block().key()));
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.block().key());
             for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.LAUNCH_PAD, dev.groundzero.content.launch.GZLaunch.GANTRY_FRAME,
                     dev.groundzero.content.launch.GZLaunch.GANTRY_ARM, dev.groundzero.content.launch.GZLaunch.RADAR_MAST,
                     dev.groundzero.content.launch.GZLaunch.RADAR_DISH, dev.groundzero.content.launch.GZLaunch.ANTENNA)) {

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:cryo_grenade",
+    "groundzero:cryo_grenade",
+    "groundzero:cryo_grenade",
+    "groundzero:cryo_grenade",
+    "#c:plates/steel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:cryo_dispenser"
+  }
+}

@@ -184,6 +184,20 @@ LAYOUTS = {
         "readout": (58, 22, 108, 30),
         "inventory": (8, 84),
     },
+    # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout
+    # under them; Assemble / Take Apart buttons (drawn by the screen) below it, with the redstone button beside them.
+    "assembly_bench": {
+        "title": (8, 6),
+        "size": (176, 192),
+        "slots": [("core", 32, 24), ("casing", 52, 24), ("fuze", 72, 24), ("out_big", 132, 24)],
+        "energy": (8, 20, 14, 46),
+        "progress": (98, 24, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 81, 18, 18),
+        "readout": (34, 50, 134, 24),
+        "inventory": (8, 110),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),
@@ -426,6 +440,22 @@ MATTER_GHOST = ["................", "................", "......###.......", "...
                 ".......+........"]
 
 
+# Assembly Bench: a payload core (a squat drum with a band), a warhead casing (a finned shell, open at the top), a fuze
+# (a nose fuze with its arming vane).
+CORE_GHOST = ["................", "................", "................", ".....######.....", "....#......#....",
+              "....########....", "....#......#....", "....#++++++#....", "....#++++++#....", "....#......#....",
+              "....#......#....", "....########....", ".....######.....", "................", "................",
+              "................"]
+CASING_GHOST = ["................", "....#......#....", "....#......#....", "....#......#....", "....#......#....",
+                "....#......#....", "....#......#....", "....#......#....", "....#......#....", "....#......#....",
+                "...##......##...", "..#.#......#.#..", ".#..#......#..#.", ".#..########..#.", ".####......####.",
+                "................"]
+FUZE_GHOST = ["................", ".......##.......", "......#..#......", ".....#....#.....", ".....#....#.....",
+              "....#......#....", "....########....", "....#+.+.+.#....", "....#.+.+.+#....", "....########....",
+              ".....#....#.....", ".....######.....", "..+...#..#...+..", "...++.####.++...", ".....++..++.....",
+              "................"]
+
+
 def ghost_slot(rows: list[str]):
     def draw(t: Tex, x: int, y: int) -> None:
         slot(t, x, y)
@@ -622,7 +652,8 @@ def build(name: str, spec: dict) -> Path:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
          "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
          "rod": ghost_slot(ROD_GHOST), "target": ghost_slot(TARGET_GHOST), "pellet": ghost_slot(PELLET_GHOST),
-         "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST),
+         "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills
