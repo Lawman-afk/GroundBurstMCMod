@@ -178,7 +178,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Frag / incendiary / sticky / smoke grenades | done (6a) |
 | Poison gas + toxin grenades (chlorine, toxin, salt, toxic sludge, chemical protection) | done (6a feedback); toxin grenade remodelled as a glass vial |
 | Molotov cocktail | done (6a feedback) — needs in-game look |
-| Cryo / EMP grenades (with gas grid, freezing, EMP fields) | done (6e) — needs in-game look; EMP redstone/powered items and the ice-shell render later |
+| Cryo / EMP grenades (with gas grid, freezing, EMP fields) | done (6e, ice blocks round frozen creatures after feedback) — needs in-game look; EMP redstone/powered items later |
 | C4 + Remote Detonator + stacking | done (6b) — needs in-game look |
 | Breaching charge, Thermite charge | done (6b) |
 | Timed bomb (+ defuse mini-GUI) | done (6b) |

@@ -32,6 +32,7 @@ public class GroundZeroClient {
         modBus.addListener(GroundZeroClient::registerScreens);
         dev.groundzero.client.manual.ManualHotkey.register(modBus);
         modBus.addListener(GroundZeroClient::registerRenderers);
+        dev.groundzero.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);
         dev.groundzero.client.blast.ClientBlasts.register(modBus);

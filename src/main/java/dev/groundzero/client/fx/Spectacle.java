@@ -172,9 +172,11 @@ public final class Spectacle {
         for (int i = 0; i < count; i++) {
             Puffs.Puff p = new Puffs.Puff();
             p.kind = Puffs.Kind.SMOKE;
-            double a = random.nextDouble() * 2 * Math.PI, d = Math.sqrt(random.nextDouble()) * radius * 0.8;
+            // Smoke billows out round the can; gas only puffs out of the can itself (the grid's haze is the cloud, and it
+            // knows where the walls are).
+            double a = random.nextDouble() * 2 * Math.PI, d = gas ? random.nextDouble() * 0.25 : Math.sqrt(random.nextDouble()) * radius * 0.8;
             p.x = grenade.getX() + Math.cos(a) * d;
-            p.y = grenade.getY() + 0.3 + random.nextDouble() * radius * (gas ? 0.3 : 0.5);   // chlorine is heavy: it hugs the ground
+            p.y = grenade.getY() + 0.3 + random.nextDouble() * (gas ? 0.3 : radius * 0.5);
             p.z = grenade.getZ() + Math.sin(a) * d;
             p.vx = (float) (Math.cos(a) * 0.05);
             p.vz = (float) (Math.sin(a) * 0.05);

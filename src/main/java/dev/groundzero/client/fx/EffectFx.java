@@ -52,11 +52,13 @@ final class EffectFx {
             return;
         }
         RandomSource random = level.getRandom();
-        // Haze: about one puff a block alive at a time (each lives ~40 ticks), fewer and bigger when there is a lot of gas.
+        // Haze: over one puff a block alive at a time (each lives ~40 ticks). Puffs stay small and near the middle of their
+        // block, so none reaches past the block next to it: through a wall it only reaches into the wall, out of sight.
+        // A big cloud gets fewer puffs a block, never bigger ones.
         List<GasPayloads.Cell> cells = gas;
         if (!cells.isEmpty()) {
-            float budget = Math.min(cells.size() * 0.03f, 90 * quality);
-            float scale = (float) Math.sqrt(Math.max(1, cells.size() * 0.03f / Math.max(1, budget)));
+            float budget = Math.min(cells.size() * 0.04f, 140 * quality);
+            float scale = 1;
             int n = (int) budget + (random.nextFloat() < budget - (int) budget ? 1 : 0);
             for (int i = 0; i < n; i++) {
                 GasPayloads.Cell cell = cells.get(random.nextInt(cells.size()));
@@ -64,16 +66,16 @@ final class EffectFx {
                 float strength = Math.min(1f, (cell.strength() & 0xFF) / 128f);
                 Puffs.Puff p = new Puffs.Puff();
                 p.kind = Puffs.Kind.SMOKE;
-                p.x = BlockPos.getX(cell.pos()) + random.nextDouble();
-                p.y = BlockPos.getY(cell.pos()) + random.nextDouble() * 0.8;
-                p.z = BlockPos.getZ(cell.pos()) + random.nextDouble();
-                p.vx = (random.nextFloat() - 0.5f) * 0.03f;
-                p.vz = (random.nextFloat() - 0.5f) * 0.03f;
+                p.x = BlockPos.getX(cell.pos()) + 0.3 + random.nextDouble() * 0.4;
+                p.y = BlockPos.getY(cell.pos()) + 0.25 + random.nextDouble() * 0.45;
+                p.z = BlockPos.getZ(cell.pos()) + 0.3 + random.nextDouble() * 0.4;
+                p.vx = (random.nextFloat() - 0.5f) * 0.006f;
+                p.vz = (random.nextFloat() - 0.5f) * 0.006f;
                 p.drag = 0.05f;
                 p.birth = Spectacle.ticks;
                 p.life = 34 + random.nextInt(14);
-                p.size0 = 1.1f * scale;
-                p.size1 = 2.1f * scale;
+                p.size0 = 0.9f * scale;
+                p.size1 = 1.25f * scale;
                 p.color0 = agent.colour;
                 p.color1 = darken(agent.colour, 0.85f);
                 p.alpha = 0.18f + 0.42f * strength;

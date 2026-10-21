@@ -72,6 +72,8 @@ public final class FxPhotographer {
                 new Scene("radar", "radar", 22, -16, List.of(20, 60)),
                 new Scene("airburst", "airburst", 40, -18, List.of(4, 12, 30, 50)),
                 new Scene("effects", "effects", 16, 22, List.of(8, 30, 70, 140)),
+                new Scene("frozen", "frozen", 6, 18, List.of(10, 60)),
+                new Scene("gas_wall", "gas_wall", 9, 20, List.of(60, 140)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
@@ -415,6 +417,36 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("mines")) {
                     mines(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("frozen")) {
+                    // Animals by the camera, frozen solid in a burst of cold.
+                    for (var type : List.of(net.minecraft.world.entity.EntityTypes.PIG, net.minecraft.world.entity.EntityTypes.COW,
+                            net.minecraft.world.entity.EntityTypes.SHEEP)) {
+                        var mob = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                        if (mob != null) {
+                            int i = level.getRandom().nextInt(3);
+                            mob.setPos(x + 0.5 + (type == net.minecraft.world.entity.EntityTypes.COW ? 0 : 1.5), ground,
+                                    type == net.minecraft.world.entity.EntityTypes.PIG ? -2 : type == net.minecraft.world.entity.EntityTypes.SHEEP ? 2 : 0.5 + i * 0);
+                            mob.setYRot(90);
+                            level.addFreshEntity(mob);
+                        }
+                    }
+                    dev.groundzero.content.effect.Frost.freeze(level, new Vec3(x + 1, ground, 0.5), 5, 400, null);
+                    return;
+                }
+                if (s.profile().equals("gas_wall")) {
+                    // A stone wall across the view, a doorway in it; gas let out behind it.
+                    for (int dz = -8; dz <= 8; dz++) {
+                        for (int dy = 0; dy < 4; dy++) {
+                            boolean door = dz == 3 && dy < 2;
+                            level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + 2, ground + dy, dz),
+                                    door ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()
+                                            : net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState());
+                        }
+                    }
+                    ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+                    throwOne(level, player, dev.groundzero.content.ordnance.GZOrdnance.GAS_GRENADE.get(), new Vec3(x + 5, ground + 0.2, -1.5), Vec3.ZERO, 2);
                     return;
                 }
                 if (s.profile().equals("effects")) {

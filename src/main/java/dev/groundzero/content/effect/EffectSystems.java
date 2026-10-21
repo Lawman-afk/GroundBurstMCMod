@@ -41,6 +41,17 @@ public final class EffectSystems {
             GasGrid.clearAll();
             EmpFields.clearAll();
         });
+        // When the Frozen effect ends (or is taken off, as by milk) the creature thaws: its ice goes.
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Expired e) -> {
+            if (e.getEffectInstance() != null && e.getEffectInstance().is(FROZEN)) {
+                e.getEntity().setTicksFrozen(0);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobEffectEvent.Remove e) -> {
+            if (e.getEffect().is(FROZEN)) {
+                e.getEntity().setTicksFrozen(0);
+            }
+        });
         // A frozen mob (not a player, not a boss) of 40 health or less hit hard enough shatters.
         NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent e) -> {
             LivingEntity mob = e.getEntity();

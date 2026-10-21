@@ -72,7 +72,7 @@ public final class Frost {
                 continue;
             }
             e.addEffect(new MobEffectInstance(EffectSystems.FROZEN, ticks, 0, false, true, true));
-            e.setTicksFrozen(e.getTicksRequiredToFreeze() + ticks);
+            e.setTicksFrozen(e.getTicksRequiredToFreeze() + FrozenEffect.MARK);
         }
         level.sendParticles(ParticleTypes.SNOWFLAKE, centre.x, centre.y + 1, centre.z, (int) (40 * radius), radius * 0.4, 1, radius * 0.4, 0.15);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.ICE.defaultBlockState()), centre.x, centre.y + 0.5, centre.z,
