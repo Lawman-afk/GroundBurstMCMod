@@ -86,8 +86,6 @@ def missile_paint(kind: str, nose: str = "none"):
                 for frac in (0.12, 0.62):
                     row = y + int(frac * h)
                     t.rect(x, row, w, max(1, h // 12), BLACK[3])
-                if d in ("east", "west"):
-                    t.rect(x, y + int(0.62 * h), w, h - int(0.62 * h), BLACK[3 if d == "east" else 4])   # half black, like a test round
             return
         if kind in ("nose_base", "nose"):
             t.rect(x, y, w, h, ramp[tone(d) + 1])
