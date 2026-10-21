@@ -544,7 +544,10 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
 
 ### 10.2 As built: slice 7b, missiles from parts (2026-10-22)
 - The bench has two pages, **Warheads** and **Missiles**, picked by tabs on the left of its screen (drawn like the
-  wrench tab: the shown page's tab grows out of the window's edge, the other sits darker behind it) (the slots of the
+  wrench tab: the shown page's tab grows out of the window's edge, the other sits darker behind it). The page is the
+  bench's own (saved, synced as extra data 6, turned by buttons 4 and 5): shift-clicks land only on its slots and pipes,
+  hoppers and auto-eject use only its inputs and output (`MachineBlockEntity.slotShown` / `slotAutomated`; after the
+  in-game look: a shift-clicked warhead went to the warhead page's slot while the missile page was shown) (the slots of the
   other page are hidden; one job runs at a time, and the readout says so if the other page's job is busy). The missile
   page: warhead + **body** + **motor** + optional **guidance unit** + optional **module** -> **Missile** (8 s, 10 FE/t);
   **Take Apart** gives every part back, the fuze setting kept on the warhead.
@@ -1074,22 +1077,31 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 
 ## 15. Nuclear weapons
 
-| Weapon | Class | Yield (flavour) | Core | Crater (depth) | Structural | Fire | Lethal | Damage | Radiation (half-life) | Look |
-|---|---|---|---|---|---|---|---|---|---|---|
-| **Mini-nuke** (launcher round) | — | 10 t | 3 | 8 (0.5) | 12 | 14 | 14 | 24 | 20 (0.5 day) | small finned spherical shell with yellow trefoil |
-| **Tactical Nuke** | S | 300 t | 6 | 16 (0.45) | 24 | 28 | 28 | 48 | 48 (1 d) | backpack-sized olive cylinder, carry handle, arming panel with keyed switch |
-| **Fission Bomb** | M | 15 kt | 14 | 40 (0.4) | 60 | 72 | 70 | 120 | 120 (2 d) | fat yellow-ochre ovoid with box tail and bolted equator seam |
-| **Boosted Fission Bomb** | M | 45 kt | 18 | 52 (0.4) | 78 | 92 | 90 | 150 | 140 (2 d) | sleeker grey ovoid, gas-reservoir bulge, cyan boost-gas window |
-| **Thermonuclear H-Bomb** | L | 1.2 Mt | 30 | 90 (0.35) | 135 | 160 | 160 | 260 | 260 (3 d) | long olive-drab cylinder, ribbed tail, two yellow bands, "two-stage" bulge |
-| **Tsar-class Mega-bomb** | XL | 50 Mt | 50 | 160 (0.3) | 240 | 280 | 280 | 420 | 400 (3 d) | enormous dark-green bomb, 2×2×5 footprint, parachute pack, original Cold-War stencil markings, glowing cooling vents |
-| **Neutron Bomb** | M | 1 kt | 3 | 6 | 10 | 8 | **90 (living only)** | 140 | 70 (0.25 d) | slim silver bomb with cyan rings, neutron-reflector studs |
-| **Cobalt (Salted) Bomb** | L | 400 kt | 10 | 30 | 45 | 50 | 50 | 90 | **320, spreads downwind (30 d)** | blue-black cylinder with cobalt-blue jacket plates |
-| **Dirty Bomb** | S | — | 0 | 5 | 7 | 4 | 8 | 12 | 50 drifting cloud (5 d) | rusty drum with taped HE, radiation-waste labels |
-| **MIRV** | missile L/XL | — | per RV | | | | | | | bus with 4/8 conical re-entry vehicles |
+Rescaled after the in-game look at slice 8a (2026-10-22): the smallest nuclear weapon is half as big again as the
+Massive Ordnance Warhead (crater 28), and the ladder climbs from there to a truly massive Tsar. (The mini-nuke is a
+Phase 13 launcher round, the one exception.) **Delivery:** the warheads marked *missile* ride a Strategic missile (the
+biggest missile there is: XL body, Liquid-fuel Stage); anything bigger is a *whole weapon*, built complete in the
+Strategic Assembly Hall (§15.2) and set straight on the Launch Complex.
 
-Neutron bomb specifics: lethal radiation dose to every living entity in r 90 with line attenuation through blocks
+| Weapon | Class | Delivery | Yield (flavour) | Core | Crater (depth) | Structural | Fire | Lethal | Damage | Radiation (half-life) | Look |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Mini-nuke** (launcher round) | — | gun (Phase 13) | 10 t | 4 | 12 (0.5) | 18 | 20 | 20 | 34 | 30 (0.5 day) | small finned spherical shell with yellow trefoil |
+| **Tactical Nuclear Warhead** | S | missile | 300 t | 12 | 42 (0.45) | 60 | 70 | 60 | 105 | 90 (1 d) | squat olive warhead, dark cap, yellow-over-black band, trefoil (built, 8a) |
+| **Fission Warhead** | M | missile | 15 kt | 22 | 75 (0.4) | 110 | 130 | 120 | 200 | 180 (2 d) | fat ochre warhead, dark nose, red band, trefoil (built, 8a) |
+| **Boosted Fission Warhead** | M | missile | 45 kt | 28 | 95 (0.4) | 140 | 165 | 150 | 250 | 220 (2 d) | sleeker grey ovoid, gas-reservoir bulge, cyan boost-gas window |
+| **Neutron Warhead** | M | missile | 1 kt | 4 | 10 | 16 | 12 | **180 (living only)** | 260 | 140 (0.25 d) | slim silver warhead with cyan rings, neutron-reflector studs |
+| **Dirty Warhead** | S | missile | — | 0 | 6 | 9 | 5 | 10 | 16 | 90 drifting cloud (5 d) | rusty drum with taped HE, radiation-waste labels |
+| **Thermonuclear H-Bomb** | L | whole weapon | 1.2 Mt | 45 | 150 (0.35) | 220 | 260 | 260 | 420 | 360 (3 d) | long olive-drab cylinder, ribbed tail, two yellow bands, "two-stage" bulge |
+| **Cobalt (Salted) Bomb** | L | whole weapon | 400 kt | 18 | 70 | 105 | 110 | 110 | 180 | **450, spreads downwind (30 d)** | blue-black cylinder with cobalt-blue jacket plates |
+| **Tsar-class Mega-bomb** | XL | whole weapon | 50 Mt | 80 | 250 (0.3) | 380 | 450 | 450 | 700 | 600 (3 d) | enormous dark-green bomb, parachute pack, original Cold-War stencil markings, glowing cooling vents |
+| **MIRV** | — | whole weapon (Phase 9 console) | — | per RV | | | | | | | bus with 4/8 conical re-entry vehicles |
+
+The Tsar's wreck radius (380) is beyond the explosion engine's default limit (`blast.maxRadius` 320, max 512): its slice
+raises the limit and benchmarks the blast first.
+
+Neutron bomb specifics: lethal radiation dose to every living entity in r 180 with line attenuation through blocks
 (water/lead/concrete/obsidian attenuate strongly — a deep enough bunker survives); crops, saplings, grass and leaves
-in r 60 die (grass → dead grass, crops → withered); blocks otherwise untouched.
+in r 120 die (grass → dead grass, crops → withered); blocks otherwise untouched.
 
 MIRV capacity: the bus holds **8 warhead units** (L) or **16** (XL). Tactical = 1, Fission = 2, Boosted = 3,
 H-bomb = 4, decoy RV = 0.5. Mixed loads allowed. Re-entry vehicles spread over a footprint (point / ring / line /
@@ -1101,20 +1113,29 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
 ### 15.1 As built: Phase 8 plan and slice 8a (2026-10-22)
 - **Plan** (the user chose "own launcher first" and "contamination zones now"): nuclear warheads are bench-assembled
   like the others but only a **Launch Complex** fires them (built first, in 8a); until Phase 12's radiation field,
-  their fallout is the meltdown's **contamination zones** (Radiation Sickness, hazmat suits protect). Slices: **8a**
-  Launch Complex, Tactical Nuclear and Fission Warheads, fizzles; **8b** Boosted Fission, H-bomb, Neutron, Cobalt and
-  Dirty warheads; **8c** the XL tier (Tsar, Strategic body, ICBM booster). MIRVs stay with Phase 9's launch console.
-- **Warheads** (`ChargeKind.nuclear()`): **Tactical Nuclear Warhead** (S, "300 t": crater 16, wrecks 24, fire 28,
-  lethal 28, injures 48) from a **Tactical Fission Core** (3 plutonium nuggets, an HE Charge, a steel plate, a military
-  circuit); **Fission Warhead** (M, "15 kt": crater 40, wrecks 60, fire 72, lethal 70, injures 120) from a **Fission
+  their fallout is the meltdown's **contamination zones** (Radiation Sickness, hazmat suits protect). After the 8a
+  in-game look: nuclear warheads ride their own missile class, the **Strategic** missile, the biggest a missile gets;
+  anything bigger is a whole weapon from a new multiblock. Slices: **8a** Launch Complex, Strategic missile, Tactical
+  Nuclear and Fission Warheads, fizzles; **8b** Boosted Fission, Neutron and Dirty Warheads (missile-borne); **8c** the
+  Strategic Assembly Hall (§15.2) with the H-bomb and the Cobalt Bomb as whole weapons; **8d** the Tsar (and the engine
+  limits it needs). MIRVs stay with Phase 9's launch console.
+- **Warheads** (`ChargeKind.nuclear()`): **Tactical Nuclear Warhead** (S, "300 t": crater 42, wrecks 60, fire 70,
+  lethal 60, injures 105; first built at crater 16, then scaled to 1.5x the MOW after the in-game look) from a **Tactical Fission Core** (3 plutonium nuggets, an HE Charge, a steel plate, a military
+  circuit); **Fission Warhead** (M, "15 kt": crater 75, wrecks 110, fire 130, lethal 120, injures 200; first 40) from a **Fission
   Core** (a plutonium ingot, 3 HE Charges, a depleted uranium ingot, a lead plate, a military circuit). Blast profiles
   with the nuclear terrain table and the `nuke` look and sound (mushroom cloud sized by the crater). Models: a squat
   olive body with a dark cap and a yellow-over-black band; a fat ochre body with a dark nose and a red band; both with a
   radiation trefoil on the front. Missile noses follow them.
 - **Delivery only.** A missile's impact or burst gives the full yield (`Charges.nuclear`) and a contamination zone
-  (tactical 48 blocks for a day, fission 120 blocks for two days; an airburst from a barometric fuze leaves half the
+  (tactical 90 blocks for a day, fission 180 blocks for two days; an airburst from a barometric fuze leaves half the
   strength). Set off any other way (dropped, shot, caught in a blast) a nuclear warhead **fizzles**
   (`nuclear_fizzle`: crater 3) and leaves a weaker zone 16 blocks round for half a day (strength 0.6).
+- **Strategic missile** (`SizeClass.XL`, the Strategic Missile Body): the only body for a nuclear warhead, and it takes
+  nothing else (`MissileAssembly.fit`); only the Liquid-fuel Stage fits it (2500 blocks); only a Launch Complex fires it
+  (`MissileSpec.needsComplex`). Its own model (`launch.py` `strategic_parts()`, custom model data `strategic_<warhead>`):
+  a wide first stage in black-and-white roll quadrants with four big swept black fins and four nozzles, a riveted
+  interstage, a slimmer white second stage with a data plate, the warhead's nose; about 11 blocks on the complex (its
+  own bones, `strategic` / `snose_*`) and in flight (lifted by `STRATEGIC_TAIL`, as item models stop at y -16).
 - **Stats:** design yields ("300 t", "15 kt") instead of the TNT formula, Fallout Radius and Fallout Lasts rows and a
   note that only a Launch Complex fires it (the "Blast Radius" header went, so a fission warhead's list still fits the
   screen at GUI scale 3). Missile tooltip: "Nuclear: fires only from a Launch Complex".
@@ -1313,6 +1334,13 @@ are delivered.
   as entity pitch is clamped to ±90°) and whistles in its last 2.5 s. Anything loaded in its way sets off the warhead.
 - Building blocks: Launch Pad, Gantry Frame, Gantry Arm, Radar Mast, Radar Dish, Antenna (multiblock parts, hidden
   when formed). The full platforms, guidance and multi-stage bodies remain Phase 9.
+
+### 15.2 Planned: the Strategic Assembly Hall (slice 8c)
+The user's rule after 8a: the Strategic missile is the peak of what fits in a missile; anything bigger gets its own
+fabricator, a multiblock that assembles the full weapon all at once, to be placed on the Launch Complex. Built with the
+first such weapon (the H-bomb, 8c): a large hall (gantry crane over an assembly cradle) that takes the weapon's parts
+(primary, secondary, casing or bus, booster stages, guidance) and puts out one complete weapon item, which goes
+straight into the Launch Complex's missile slot. Its own model on the complex; its own stats on its screen.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
 - `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
@@ -2157,6 +2185,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | After the 8a in-game look: the bench's page is saved and steers shift-clicks and automation; nuclear warheads ride their own Strategic (XL) missile, longer and differently styled, the peak of what fits a missile, with bigger weapons built whole by a planned Strategic Assembly Hall; every nuclear weapon rescaled so the smallest is 1.5x the MOW and the Tsar is truly massive. |
 | 2026-10-22 | Phase 8 plan (the user chose "own launcher first" and "contamination zones now"): nuclear warheads are bench-assembled but fly only from a new Launch Complex (built first); fallout uses the meltdown's contamination zones until Phase 12. A nuclear warhead gives its yield only when its missile brings it down; any other way it fizzles (small blast, weak contamination), so nukes never chain-detonate. Slices 8a (complex, tactical and fission), 8b (boosted, H-bomb, neutron, cobalt, dirty), 8c (XL: Tsar, Strategic body, ICBM booster). |
 | 2026-10-22 | The Launch Computer maps 3000 blocks round it (was 1024), zoom out to 1:32: a Liquid-fuel Stage reaches 2500 blocks from its silo, and the computer may stand some way off. The bench preview zooms to fit each model. |
 | 2026-10-22 | Slice 7c (the user chose a wider bench window): a 3D preview you can drag round and a stats screen in a right-hand column; stats are worked out in common code from the blast profiles and the flight formulas, at the missile's full range. Phase 7 closes with it (the Ammunition page waits for Phase 13 guns, blueprints for Phase 15 loot, interception odds for Phase 10). |

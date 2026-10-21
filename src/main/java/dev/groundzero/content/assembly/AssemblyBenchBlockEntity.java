@@ -49,6 +49,8 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     public static final int SLOT_CORE = 0, SLOT_CASING = 1, SLOT_FUZE = 2, SLOT_WARHEAD = 3;
     public static final int SLOT_MISSILE_WARHEAD = 4, SLOT_BODY = 5, SLOT_MOTOR = 6, SLOT_GUIDANCE = 7, SLOT_MODULE = 8, SLOT_MISSILE = 9;
     public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1, BUTTON_ASSEMBLE_MISSILE = 2, BUTTON_TAKE_APART_MISSILE = 3;
+    /** The page tabs: button BUTTON_PAGE + page. */
+    public static final int BUTTON_PAGE = 4;
     public static final int ENERGY_PER_TICK = 10, CAPACITY = 20_000;
     /** The two jobs (and the two pages of the screen). */
     public static final int JOB_WARHEAD = 0, JOB_MISSILE = 1;
@@ -75,8 +77,11 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             this.fuzeValues[f.ordinal()] = f.setting.fallback;
         }
     }
-    /** Client side only: the page the screen shows (its readout follows it). */
-    public int clientPage = JOB_WARHEAD;
+    /**
+     * The page it is on (JOB_WARHEAD or JOB_MISSILE): the screen shows it, shift-clicks land on it, and pipes and hoppers
+     * feed and empty only its slots. Saved, and switched by the screen's tabs.
+     */
+    private int page = JOB_WARHEAD;
 
     public AssemblyBenchBlockEntity(BlockPos pos, BlockState state) {
         super(GZAssembly.BENCH_ENTITY.get(), pos, state, CAPACITY, 200, 0, 10,
@@ -102,6 +107,25 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
 
     private ItemStack slot(int i) {
         return this.inventory.getItem(i);
+    }
+
+    public int page() {
+        return this.page;
+    }
+
+    /** Whether a slot belongs to a page: slots 0-3 to the warheads, 4-9 to the missiles. */
+    public static boolean onPage(int slot, int page) {
+        return page == JOB_MISSILE ? slot >= SLOT_MISSILE_WARHEAD : slot < SLOT_MISSILE_WARHEAD;
+    }
+
+    @Override
+    protected boolean slotAutomated(int slot) {
+        return onPage(slot, this.page);
+    }
+
+    @Override
+    public boolean slotShown(int slot, MachineMenu menu) {
+        return onPage(slot, menu.extra(DATA_PAGE));
     }
 
     public WarheadAssembly.Problem problem() {
@@ -152,8 +176,25 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             case BUTTON_TAKE_APART -> takeApart();
             case BUTTON_ASSEMBLE_MISSILE -> startMissile();
             case BUTTON_TAKE_APART_MISSILE -> takeApartMissile();
+            case BUTTON_PAGE + JOB_WARHEAD, BUTTON_PAGE + JOB_MISSILE -> setPage(button - BUTTON_PAGE);
             default -> false;
         };
+    }
+
+    /** Turns to a page (the screen's tabs); pipes and hoppers follow. */
+    public boolean setPage(int page) {
+        if (page != JOB_WARHEAD && page != JOB_MISSILE) {
+            return false;
+        }
+        if (page != this.page) {
+            this.page = page;
+            setChanged();
+            if (this.level != null) {
+                this.level.invalidateCapabilities(this.worldPosition);
+                this.level.invalidateCapabilities(sideHalfPos());
+            }
+        }
+        return true;
     }
 
     /** ASSEMBLE on the warhead page: starts a job if the parts fit (and no job is running). */
@@ -291,11 +332,12 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_FUZE_VALUE = 3, DATA_MISSILE_PROBLEM = 4, DATA_JOB = 5;
+    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_FUZE_VALUE = 3, DATA_MISSILE_PROBLEM = 4, DATA_JOB = 5,
+            DATA_PAGE = 6;
 
     @Override
     protected int extraDataCount() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -306,6 +348,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             case DATA_FUZE_VALUE -> fuzeValue();
             case DATA_MISSILE_PROBLEM -> missileProblem().ordinal();
             case DATA_JOB -> this.job;
+            case DATA_PAGE -> this.page;
             default -> problem().ordinal();
         };
     }
@@ -313,10 +356,11 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     @Override
     public List<Component> readout(MachineMenu menu) {
         int total = menu.extra(DATA_TOTAL);
-        boolean otherJob = total > 0 && menu.extra(DATA_JOB) != this.clientPage;
+        int shown = menu.extra(DATA_PAGE);
+        boolean otherJob = total > 0 && menu.extra(DATA_JOB) != shown;
         Component working = otherJob ? Component.translatable(T_BUSY) : menu.status() == MachineStatus.NO_POWER
                 ? Component.translatable(T_NO_POWER).withStyle(ChatFormatting.RED) : Component.translatable(T_WORKING, total > 0 ? menu.extra(DATA_PROGRESS) * 100 / total : 0);
-        return this.clientPage == JOB_MISSILE ? missileReadout(menu, total > 0, working) : warheadReadout(menu, total > 0, working);
+        return shown == JOB_MISSILE ? missileReadout(menu, total > 0, working) : warheadReadout(menu, total > 0, working);
     }
 
     private List<Component> warheadReadout(MachineMenu menu, boolean busy, Component working) {
@@ -417,6 +461,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("job", this.job);
+        output.putInt("page", this.page);
         output.putIntArray("fuze_values", this.fuzeValues);
     }
 
@@ -426,6 +471,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.job = input.getIntOr("job", JOB_WARHEAD);
+        this.page = input.getIntOr("page", JOB_WARHEAD) == JOB_MISSILE ? JOB_MISSILE : JOB_WARHEAD;
         input.getIntArray("fuze_values").ifPresent(v -> System.arraycopy(v, 0, this.fuzeValues, 0, Math.min(v.length, this.fuzeValues.length)));
     }
 }

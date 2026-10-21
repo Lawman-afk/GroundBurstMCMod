@@ -71,7 +71,7 @@ final class StatsTests {
         // A fission warhead: its design yield, and its fallout.
         String fission = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.FISSION_WARHEAD.item().get()), registries));
         has(helper, fission, "groundzero.stats.yield() = groundzero.stats.yield_value(15 kt)");
-        has(helper, fission, "groundzero.stats.fallout() = groundzero.stats.blocks(120)");
+        has(helper, fission, "groundzero.stats.fallout() = groundzero.stats.blocks(180)");
         has(helper, fission, "groundzero.stats.fallout_lasts() = groundzero.stats.days(2)");
         helper.assertTrue(AssemblyStats.warhead(new ItemStack(GZOrdnance.C4.item().get()), registries).isEmpty(), "C4 is no warhead");
         helper.succeed();

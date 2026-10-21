@@ -30,6 +30,7 @@ final class NuclearTests {
         GZGameTests.test("launch_complex_counts_down_and_fires", GZGameTests.FLOOR_16, 40, NuclearTests::complexFires);
         GZGameTests.test("nuclear_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, NuclearTests::fullYield);
         GZGameTests.test("placed_nuclear_warhead_fizzles", GZGameTests.FLOOR_16, 100, NuclearTests::fizzles);
+        GZGameTests.test("strategic_body_carries_nuclear_warheads_only", GZGameTests.FLOOR_16, 20, NuclearTests::strategic);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -40,8 +41,8 @@ final class NuclearTests {
     }
 
     static ItemStack nuke() {
-        return MissileAssembly.missile(new MissileSpec(new ItemStack(GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), SizeClass.M,
-                MissileParts.Motor.SRM_II, MissileParts.Guidance.GPS, false));
+        return MissileAssembly.missile(new MissileSpec(new ItemStack(GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), SizeClass.XL,
+                MissileParts.Motor.LIQUID, MissileParts.Guidance.GPS, false));
     }
 
     private static LaunchComplexBlockEntity complex(GameTestHelper helper, BlockPos rel) {
@@ -100,13 +101,46 @@ final class NuclearTests {
         floor(helper);
         BlockPos at = new BlockPos(8, 1, 8);
         Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
+        // A tenth of its size, so its crater (42 blocks) stays in this test's plot: the scale is read as it goes off.
+        float scale = Charges.bombScale;
+        Charges.bombScale = 0.1f;
         Charges.impact(helper.getLevel(), ChargeKind.TACTICAL_NUCLEAR_WARHEAD, helper.absolutePos(at), null);
+        Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, 0, 8))).isAir(), "a crater where it hit");
             float level = Contamination.of(helper.getLevel()).levelAt(helper.getLevel(), centre);
             helper.assertTrue(level > 0.9f, "full contamination at ground zero: " + level);
             Contamination.of(helper.getLevel()).removeNear(centre, 2);
         });
+    }
+
+    /**
+     * A nuclear warhead needs a Strategic body, a Strategic body takes nothing else and only the Liquid-fuel Stage moves
+     * it; the missile is a Strategic missile (its own model) that only a Launch Complex fires.
+     */
+    private static void strategic(GameTestHelper helper) {
+        ItemStack nuke = new ItemStack(GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get());
+        ItemStack fission = new ItemStack(GZOrdnance.FISSION_WARHEAD.item().get());
+        ItemStack he = new ItemStack(GZOrdnance.HE_WARHEAD.item().get());
+        ItemStack heavy = new ItemStack(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY.get());
+        ItemStack body = new ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get());
+        ItemStack liquid = new ItemStack(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get());
+        ItemStack srm = new ItemStack(dev.groundzero.content.assembly.GZAssembly.SRM_II.get());
+        helper.assertTrue(MissileAssembly.check(nuke, heavy, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NUCLEAR_NEEDS_STRATEGIC,
+                "a nuclear warhead needs a Strategic body");
+        helper.assertTrue(MissileAssembly.check(he, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.STRATEGIC_NUCLEAR_ONLY,
+                "a Strategic body takes nuclear warheads only");
+        helper.assertTrue(MissileAssembly.check(nuke, body, srm, ItemStack.EMPTY) == MissileAssembly.Problem.MOTOR_DOES_NOT_FIT,
+                "a Solid Rocket Motor II does not move a Strategic body");
+        helper.assertTrue(MissileAssembly.check(fission, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NONE,
+                "a class M fission warhead fits a Strategic body");
+        ItemStack missile = MissileAssembly.assemble(nuke, (MissileParts.Body) body.getItem(), (MissileParts.MotorItem) liquid.getItem(),
+                ItemStack.EMPTY, ItemStack.EMPTY);
+        MissileSpec spec = dev.groundzero.content.assembly.MissileItem.spec(missile);
+        helper.assertTrue(spec != null && spec.body() == SizeClass.XL && spec.range() == 2500 && spec.needsComplex(), "a Strategic missile: " + spec);
+        var look = missile.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
+        helper.assertTrue(look != null && look.strings().getFirst().equals("strategic_tactical_nuclear_warhead"), "its own model: " + look);
+        helper.succeed();
     }
 
     /** Set off where it stands, a nuclear warhead only fizzles: a small blast and weaker contamination. */

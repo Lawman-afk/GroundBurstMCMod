@@ -24,7 +24,7 @@ public final class MissileParts {
     public enum Motor {
         SRM_I("solid_rocket_motor_i", 400, SizeClass.S, SizeClass.M),
         SRM_II("solid_rocket_motor_ii", 1024, SizeClass.S, SizeClass.L),
-        LIQUID("liquid_fuel_stage", 2500, SizeClass.L, SizeClass.L);
+        LIQUID("liquid_fuel_stage", 2500, SizeClass.L, SizeClass.XL);
 
         public final String id;
         /** How far it carries a missile, blocks. */
@@ -42,16 +42,15 @@ public final class MissileParts {
             return body.ordinal() >= this.smallest.ordinal() && body.ordinal() <= this.largest.ordinal();
         }
 
-        /** "Tactical and Medium bodies", for tooltips and the bench. */
+        /** "Tactical and Medium bodies", "Tactical, Medium and Heavy bodies", for tooltips and the bench. */
         public Component bodies() {
-            if (this.smallest == this.largest) {
-                return Component.translatable(T_BODY_ONE, Component.translatable(BODY_NAMES[this.smallest.ordinal()]));
-            }
-            if (this.smallest == SizeClass.S && this.largest == SizeClass.L) {
-                return Component.translatable(T_BODY_ANY);
-            }
-            return Component.translatable(T_BODY_TWO, Component.translatable(BODY_NAMES[this.smallest.ordinal()]),
-                    Component.translatable(BODY_NAMES[this.largest.ordinal()]));
+            int a = this.smallest.ordinal(), b = this.largest.ordinal();
+            Component first = Component.translatable(BODY_NAMES[a]), last = Component.translatable(BODY_NAMES[b]);
+            return switch (b - a) {
+                case 0 -> Component.translatable(T_BODY_ONE, first);
+                case 1 -> Component.translatable(T_BODY_TWO, first, last);
+                default -> Component.translatable(T_BODY_THREE, first, Component.translatable(BODY_NAMES[a + 1]), last);
+            };
         }
 
         public static Motor byId(String id) {
@@ -118,13 +117,15 @@ public final class MissileParts {
     static final String[] BODY_NAMES = {
             GZLang.add(GroundZero.MODID + ".missile.body.s", "Tactical"),
             GZLang.add(GroundZero.MODID + ".missile.body.m", "Medium"),
-            GZLang.add(GroundZero.MODID + ".missile.body.l", "Heavy")};
+            GZLang.add(GroundZero.MODID + ".missile.body.l", "Heavy"),
+            GZLang.add(GroundZero.MODID + ".missile.body.xl", "Strategic")};
     static final String T_BODY_ONE = GZLang.add(GroundZero.MODID + ".missile.fits_one", "%s bodies");
     static final String T_BODY_TWO = GZLang.add(GroundZero.MODID + ".missile.fits_two", "%s and %s bodies");
-    static final String T_BODY_ANY = GZLang.add(GroundZero.MODID + ".missile.fits_any", "any body");
+    static final String T_BODY_THREE = GZLang.add(GroundZero.MODID + ".missile.fits_three", "%s, %s and %s bodies");
     static final String T_ACCURACY_SHARE = GZLang.add(GroundZero.MODID + ".missile.accuracy_share", "Lands within %s%% of the distance");
     static final String T_ACCURACY_BLOCKS = GZLang.add(GroundZero.MODID + ".missile.accuracy_blocks", "Lands within %s blocks of the target");
-    static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes warheads up to class %s");
+    static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes conventional warheads up to class %s");
+    static final String T_STRATEGIC_TIP = GZLang.add(GroundZero.MODID + ".missile.strategic_tip", "Takes nuclear warheads only; fires from a Launch Complex");
     static final String T_MOTOR_TIP = GZLang.add(GroundZero.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");
     static final String T_HARDENED_TIP = GZLang.add(GroundZero.MODID + ".missile.hardened_tip", "Optional: an EMP never leaves the missile a dud");
     static final String T_BENCH = GZLang.add(GroundZero.MODID + ".missile.bench", "Fitted at an Ordnance Assembly Bench (Missile page)");
@@ -149,7 +150,8 @@ public final class MissileParts {
         @Override
         @SuppressWarnings("deprecation")
         public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
-            tooltip.accept(grey(Component.translatable(T_BODY_TIP, this.sizeClass.name())));
+            tooltip.accept(grey(this.sizeClass == SizeClass.XL ? Component.translatable(T_STRATEGIC_TIP)
+                    : Component.translatable(T_BODY_TIP, this.sizeClass.name())));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
@@ -205,7 +207,19 @@ public final class MissileParts {
             case S -> new float[] {0.85f, 0.75f};
             case M -> new float[] {1f, 1f};
             case L -> new float[] {1.15f, 1.2f};
+            case XL -> new float[] {1f, 1f};                     // its own, longer model (see STRATEGIC_TAIL)
         };
+    }
+
+    /**
+     * The Strategic missile's model runs this many item pixels below the usual missile's tail line (item models may
+     * reach down to -16): drawn from the item model, it is lifted by this much more to stand on its tail.
+     */
+    public static final float STRATEGIC_TAIL = 11.5f;
+
+    /** The custom model data that picks a missile's item model: its warhead's nose, on a Strategic missile its own model. */
+    public static String look(String warheadId, SizeClass body) {
+        return body == SizeClass.XL ? "strategic_" + (warheadId.isEmpty() ? "none" : warheadId) : warheadId;
     }
 
     public static String guidanceName(Guidance g) {

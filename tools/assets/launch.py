@@ -108,11 +108,15 @@ def missile_paint(kind: str, nose: str = "none"):
 
 def missile_item() -> None:
     """The Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
-    flight picks one by the warhead's id (custom model data), so the nose shows what it carries."""
+    flight picks one by the warhead's id (custom model data), so the nose shows what it carries. A Strategic missile
+    ("strategic_<warhead>") is its own longer model."""
     for nose in W.NOSES:
         missile_model("missile" if nose == "none" else f"missile_{nose}", nose)
+        strategic_model(f"strategic_missile_{nose}", nose)
     cases = [{"when": nose, "model": {"type": "minecraft:model", "model": f"groundzero:item/missile_{nose}"}}
              for nose in W.NOSES if nose != "none"]
+    cases += [{"when": f"strategic_{nose}", "model": {"type": "minecraft:model", "model": f"groundzero:item/strategic_missile_{nose}"}}
+              for nose in W.NOSES]
     write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
         "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
@@ -138,6 +142,111 @@ def missile_model(model_name: str, nose: str) -> None:
     m.display["thirdperson_lefthand"] = ctx(0.4, (0, 3, 1), (0, 90, 0))
     m.display["firstperson_righthand"] = ctx(0.35, (1, 3, 0), (0, -25, 0))
     m.display["firstperson_lefthand"] = ctx(0.35, (1, 3, 0), (0, 155, 0))
+    m.save(t)
+
+
+# --- the Strategic missile (Phase 8): the long two-stage missile that carries nuclear warheads -----------------------------
+#: Item pixels its model reaches below the usual missile's tail line (MissileParts.STRATEGIC_TAIL in Java).
+STRATEGIC_TAIL = 11.5
+
+
+def strategic_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """(name, from, to, faces, paint) in item pixels, centred on x = z = 8, tail at y -11.5, nose tip at 32: a wide
+    first stage with four big swept fins and four nozzles, an interstage ring, a slimmer second stage, the warhead's
+    nose. Drawn 4x over on the Launch Complex (about 11 blocks) and in flight."""
+    all6 = ("north", "south", "east", "west", "up", "down")
+    parts = []
+    for i, (x, z) in enumerate(((6.5, 6.5), (8.3, 6.5), (6.5, 8.3), (8.3, 8.3))):
+        parts.append((f"nozzle{i}", (x, -11.5, z), (x + 1.2, -10, z + 1.2), ("north", "south", "east", "west", "down"), "nozzle"))
+
+    def prism(name, r, w, y0, y1, paint, ends=("up", "down")):
+        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("north", "south", "east", "west") + ends, paint))
+        parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west") + ends, paint))
+        parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west") + ends, paint))
+    prism("stage1", 2.4, 1.6, -10, 8, "stage1")
+    prism("inter", 2.5, 1.65, 8, 9.2, "interstage")
+    prism("stage2", 2.0, 1.3, 9.2, 23, "stage2")
+    prism("nose0", 1.75, 1.15, 23, 26.5, "nose_base")
+    prism("nose1", 1.1, 0.73, 26.5, 30, "nose")
+    parts.append(("tip", (7.55, 30, 7.55), (8.45, 32, 8.45), all6, "tip"))
+    # Four swept fins: a long root low on the first stage and a shorter step above it.
+    fins = {"n": ((7.7, 2.4), (8.3, 5.6), (3.8, 5.6)), "s": ((7.7, 10.4), (8.3, 13.6), (10.4, 12.2)),
+            "w": ((2.4, 7.7), (5.6, 8.3), (3.8, 5.6)), "e": ((10.4, 7.7), (13.6, 8.3), (10.4, 12.2))}
+    for d, (lo, hi, upper) in fins.items():
+        if d in "ns":
+            parts.append((f"sfin_{d}", (lo[0], -10, lo[1]), (hi[0], -4, hi[1]), all6, "sfin"))
+            parts.append((f"sfin_{d}2", (lo[0], -4, upper[0]), (hi[0], -1, upper[1]), all6, "sfin"))
+        else:
+            parts.append((f"sfin_{d}", (lo[0], -10, lo[1]), (hi[0], -4, hi[1]), all6, "sfin"))
+            parts.append((f"sfin_{d}2", (upper[0], -4, lo[1]), (upper[1], -1, hi[1]), all6, "sfin"))
+    return parts
+
+
+def strategic_paint(kind: str, nose: str = "none"):
+    """The Strategic missile's livery: black-and-white roll quadrants on the first stage, a dark interstage, a white
+    second stage with a black band and a grey data plate, black fins; the nose as the warhead's."""
+    if kind in NOSE_PARTS:
+        return missile_paint(kind, nose)
+
+    def fn(t: Tex, r, d):
+        x, y, w, h = r
+        sides = ("north", "south", "east", "west")
+        if kind == "stage1":
+            t.rect(x, y, w, h, WHITE[tone(d) + 1])
+            if d in sides:
+                face = 0 if d in ("north", "south") else 1
+                for yy in range(y, y + h):
+                    band = (yy - y) * 3 // max(1, h)
+                    for xx in range(x, x + w):
+                        half = 0 if (xx - x) * 2 < w else 1
+                        if (band + half + face) % 2 == 0:
+                            t.px(xx, yy, BLACK[tone(d) + 1])
+            return
+        if kind == "interstage":
+            t.rect(x, y, w, h, GUN[tone(d)])
+            if d in sides:
+                for xx in range(x, x + w, 2):
+                    t.px(xx, y + h // 2, STEEL[4])               # rivets round the ring
+            return
+        if kind == "stage2":
+            t.rect(x, y, w, h, WHITE[tone(d) + 1])
+            if d in sides and h > 8:
+                t.rect(x, y + h - max(2, h // 10), w, max(2, h // 10), BLACK[3])      # a black band at its foot
+                if d == "north" and w >= 4:
+                    t.rect(x + 1, y + h // 3, w - 2, 3, P.BLACK_PAINT[2])          # the data plate
+                    t.hline(x + 1, y + h // 3 + 1, w - 2, STEEL[3])
+            return
+        if kind == "sfin":
+            t.rect(x, y, w, h, BLACK[tone(d) + 1])
+            if d in sides and h > 1:
+                t.hline(x, y, w, WHITE[3])
+            return
+        t.rect(x, y, w, h, GUN[tone(d)])                         # the nozzles
+        if d == "down":
+            t.rect(x, y, w, h, BLACK[1])
+    return fn
+
+
+def strategic_model(model_name: str, nose: str) -> None:
+    m = BlockModel(model_name, tex_size=(64, 64), kind="item")
+    for name, frm, to, faces, _ in strategic_parts():
+        m.box(name, frm, to, faces=faces)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    for name, _, _, _, kind in strategic_parts():
+        m.paint_all(t, name, strategic_paint(kind, nose))
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
+    lo, hi = m.bounds()
+    c = [(lo[i] + hi[i]) / 2 for i in range(3)]
+
+    def ctx(scale, base, rotation=(0, 0, 0)):
+        return {"rotation": list(rotation), "translation": [round(base[i] - (c[i] - 8) * scale, 3) for i in range(3)], "scale": [scale] * 3}
+    m.display["ground"] = ctx(0.4, (0, 0, 0))
+    m.display["fixed"] = ctx(0.4, (0, 0, 0))
+    m.display["thirdperson_righthand"] = ctx(0.32, (0, 3, 1), (0, 90, 0))
+    m.display["thirdperson_lefthand"] = ctx(0.32, (0, 3, 1), (0, 90, 0))
+    m.display["firstperson_righthand"] = ctx(0.28, (1, 3, 0), (0, -25, 0))
+    m.display["firstperson_lefthand"] = ctx(0.28, (1, 3, 0), (0, 155, 0))
     m.save(t)
 
 
@@ -485,14 +594,17 @@ def complex_placard(t: Tex) -> None:
 
 
 def launch_complex() -> None:
-    g = GeoModel("launch_complex", tex_size=(512, 512))
+    g = GeoModel("launch_complex", tex_size=(512, 1024))
     g.bone("frame")
     g.bone("arm_low", pivot=(40, 72, 32), parent="frame")
     g.bone("arm_high", pivot=(40, 136, 32), parent="frame")
     g.bone("missile", pivot=(0, 14, 32), parent="frame")       # its tail over the trench: the body's size scales it from there
     for nose in W.NOSES:
         g.bone(f"nose_{nose}", parent="missile")
-    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}]
+    g.bone("strategic", pivot=(0, 14, 32), parent="frame")     # a Strategic missile: its own model, not scaled
+    for nose in W.NOSES:
+        g.bone(f"snose_{nose}", parent="strategic")
+    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}, {f"snose_{nose}" for nose in W.NOSES}, {"missile", "strategic"}]
     F = "frame"
     # The deck: 5x5 with a flame trench (z 26-38) running from under the missile out of its west edge.
     deck = [("deck_front", (-40, 0, -8), (40, 14, 26), ("north", "south", "east", "west", "up")),
@@ -552,9 +664,9 @@ def launch_complex() -> None:
     # The umbilical arms: a beam from the tower to a clamp on the missile's body, a hose slung under it.
     arms = []
     for bone, y in (("arm_low", 70), ("arm_high", 134)):
-        for n, a, b, faces in ((f"{bone}_beam", (11.5, y, 30), (40, y + 4, 34), ("north", "south", "up", "down", "west")),
-                               (f"{bone}_clamp", (9.5, y - 2, 27), (11.5, y + 6, 37), ("west", "north", "south", "up", "down")),
-                               (f"{bone}_hose", (12, y - 3, 31), (40, y - 1, 33), ("north", "south", "down", "west"))):
+        for n, a, b, faces in ((f"{bone}_beam", (12, y, 30), (40, y + 4, 34), ("north", "south", "up", "down", "west")),
+                               (f"{bone}_clamp", (10, y - 2, 27), (12, y + 6, 37), ("west", "north", "south", "up", "down")),
+                               (f"{bone}_hose", (12.5, y - 3, 31), (40, y - 1, 33), ("north", "south", "down", "west"))):
             g.box(n, a, b, faces=faces, bone=bone)
             arms.append(n)
     # The missile: the item model four times over (8 blocks), standing over the trench.
@@ -566,6 +678,15 @@ def launch_complex() -> None:
                 g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
         else:
             g.box("m_" + name, a, b, faces=faces, bone="missile")
+    # Or a Strategic missile: its own model four times over (about 11 blocks), its tail on the same line.
+    for name, frm, to, faces, kind in strategic_parts():
+        a = ((frm[0] - 8) * 4, (frm[1] + STRATEGIC_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32)
+        b = ((to[0] - 8) * 4, (to[1] + STRATEGIC_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32)
+        if kind in NOSE_PARTS:
+            for nose in W.NOSES:
+                g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
+        else:
+            g.box("s_" + name, a, b, faces=faces, bone="strategic")
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
@@ -638,6 +759,12 @@ def launch_complex() -> None:
                 g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
         else:
             g.paint_all(tex, "m_" + name, missile_paint(kind))
+    for name, _, _, _, kind in strategic_parts():
+        if kind in NOSE_PARTS:
+            for nose in W.NOSES:
+                g.paint_all(tex, f"sn_{nose}_{name}", strategic_paint(kind, nose))
+        else:
+            g.paint_all(tex, "s_" + name, strategic_paint(kind))
     g.save(tex)
     # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and

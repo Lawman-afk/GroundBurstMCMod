@@ -39,6 +39,7 @@ public final class WarheadAssembly {
     public static final String JEI_MISSILES = GZLang.add(GroundZero.MODID + ".jei.missiles", "Missile Assembly");
     public static final String JEI_OPTIONAL = GZLang.add(GroundZero.MODID + ".jei.optional", "Optional");
     public static final String JEI_MISSILE_INFO = GZLang.add(GroundZero.MODID + ".jei.missile_info", "Warheads to class %s, range %s-%s, %s FE/t");
+    public static final String JEI_STRATEGIC_INFO = GZLang.add(GroundZero.MODID + ".jei.strategic_info", "Nuclear warheads, range %s, %s FE/t");
     public static final String JEI_ANY_FUZE = GZLang.add(GroundZero.MODID + ".jei.any_fuze", "Impact or Barometric: where it hits, or in the air over the target");
 
     private static @Nullable Map<ChargeBlock, ComponentItems.PayloadCore> coreByWarhead;
@@ -123,6 +124,7 @@ public final class WarheadAssembly {
             case S -> 100;
             case M -> 160;
             case L -> 240;
+            case XL -> 320;
         };
     }
 }

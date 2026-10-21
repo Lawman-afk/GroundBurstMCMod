@@ -109,11 +109,13 @@ public final class GZBlastData {
         ctx.register(Blasts.profile("massive_warhead"), new BlastProfile(10, 28, 40, 34, 10, new BlastProfile.EntityZones(40, 70, 200, 60, 5.0f), 2.5f,
                 0.7f, 0.15f, 0.3f, 0.6f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("large"), Optional.of("massive_warhead")));
         // Nuclear warheads (Phase 8, DESIGN.md §15): the nuclear terrain table, the nuke look and sound (the mushroom cloud
-        // scales with the crater). A fizzle is only its lenses going off unevenly.
-        ctx.register(Blasts.profile("tactical_nuclear_warhead"), new BlastProfile(6, 16, 24, 32, 28, new BlastProfile.EntityZones(28, 48, 1000, 40, 3.5f),
+        // scales with the crater). The smallest nuke is half as big again as the Massive Ordnance Warhead (crater 28), and
+        // each one above it a good step bigger (after the in-game look: the first tactical nuke was smaller than the MOW).
+        // A fizzle is only its lenses going off unevenly.
+        ctx.register(Blasts.profile("tactical_nuclear_warhead"), new BlastProfile(12, 42, 60, 75, 70, new BlastProfile.EntityZones(60, 105, 1000, 60, 4.5f),
                 3, 0.45f, 0.15f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
-        ctx.register(Blasts.profile("fission_warhead"), new BlastProfile(14, 40, 60, 80, 72, new BlastProfile.EntityZones(70, 120, 1000, 60, 4.0f),
-                3, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        ctx.register(Blasts.profile("fission_warhead"), new BlastProfile(22, 75, 110, 140, 130, new BlastProfile.EntityZones(120, 200, 1000, 80, 5.0f),
+                3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         ctx.register(Blasts.profile("nuclear_fizzle"), new BlastProfile(1, 3, 5, 4, 0, new BlastProfile.EntityZones(3, 7, 40, 10, 1.5f),
                 4, 0.7f, 0.1f, 0.3f, 0.3f, 0f, TerrainTable.CONVENTIONAL, Optional.empty(), Optional.of("medium"), Optional.of("he")));
         ctx.register(Blasts.profile("sticky_grenade"), profile(1, 3, 5, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 8, 1.2f,

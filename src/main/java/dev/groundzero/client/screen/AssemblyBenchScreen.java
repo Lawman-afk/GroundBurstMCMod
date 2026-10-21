@@ -79,8 +79,6 @@ public class AssemblyBenchScreen extends MachineScreen {
             STAT_EMPTY = 0xFF9A7440;
     private static final String T_DRAG = GZLang.add(GroundZero.MODID + ".assembly.drag", "Drag to Turn It");
 
-    /** The page shown, kept while the game runs (like the side tab). */
-    private static int page = AssemblyBenchBlockEntity.JOB_WARHEAD;
 
     private @Nullable Button assemble, takeApart;
     private @Nullable EditBox field;
@@ -106,29 +104,34 @@ public class AssemblyBenchScreen extends MachineScreen {
         this.field.setResponder(this::changed);
         this.field.visible = false;
         this.assemble = addRenderableWidget(Button.builder(Component.translatable(T_ASSEMBLE),
-                b -> press(page == AssemblyBenchBlockEntity.JOB_MISSILE ? AssemblyBenchBlockEntity.BUTTON_ASSEMBLE_MISSILE : AssemblyBenchBlockEntity.BUTTON_ASSEMBLE))
+                b -> press(page() == AssemblyBenchBlockEntity.JOB_MISSILE ? AssemblyBenchBlockEntity.BUTTON_ASSEMBLE_MISSILE : AssemblyBenchBlockEntity.BUTTON_ASSEMBLE))
                 .bounds(this.leftPos + BUTTONS_X, this.topPos + BUTTONS_Y, ASSEMBLE_W, BUTTON_H).build());
         this.takeApart = addRenderableWidget(Button.builder(Component.translatable(T_TAKE_APART),
-                b -> press(page == AssemblyBenchBlockEntity.JOB_MISSILE ? AssemblyBenchBlockEntity.BUTTON_TAKE_APART_MISSILE : AssemblyBenchBlockEntity.BUTTON_TAKE_APART))
+                b -> press(page() == AssemblyBenchBlockEntity.JOB_MISSILE ? AssemblyBenchBlockEntity.BUTTON_TAKE_APART_MISSILE : AssemblyBenchBlockEntity.BUTTON_TAKE_APART))
                 .bounds(this.leftPos + BUTTONS_X + ASSEMBLE_W + 3, this.topPos + BUTTONS_Y, APART_W, BUTTON_H).build());
-        showPage(page);
     }
 
     private AssemblyBenchBlockEntity bench() {
         return (AssemblyBenchBlockEntity) this.menu.machine();
     }
 
-    /** Shows a page: its slots, its texture, its readout. */
+    /** The page shown: the bench's own (saved with it), as the menu has it. */
+    private int page() {
+        return this.menu.extra(AssemblyBenchBlockEntity.DATA_PAGE);
+    }
+
+    /**
+     * Turns the bench to a page: the server is told (it keeps the page, and its pipes follow it) and the menu's copy of
+     * the page is set at once, so the slots and texture change without waiting a tick for the server's answer.
+     */
     private void showPage(int p) {
-        page = p;
-        bench().clientPage = p;
-        this.menu.slotShown = p == AssemblyBenchBlockEntity.JOB_MISSILE ? i -> i >= AssemblyBenchBlockEntity.SLOT_MISSILE_WARHEAD
-                : i -> i < AssemblyBenchBlockEntity.SLOT_MISSILE_WARHEAD;
+        this.menu.setData(dev.groundzero.content.machine.MachineBlockEntity.DATA_BASE_COUNT + AssemblyBenchBlockEntity.DATA_PAGE, p);
+        press(AssemblyBenchBlockEntity.BUTTON_PAGE + p);
     }
 
     @Override
     public MachineLayout pageLayout() {
-        return page == AssemblyBenchBlockEntity.JOB_MISSILE ? MachineLayouts.ASSEMBLY_BENCH_MISSILE : super.pageLayout();
+        return page() == AssemblyBenchBlockEntity.JOB_MISSILE ? MachineLayouts.ASSEMBLY_BENCH_MISSILE : super.pageLayout();
     }
 
     private void press(int button) {
@@ -161,7 +164,7 @@ public class AssemblyBenchScreen extends MachineScreen {
         }
         var inv = this.menu.machine().inventory();
         boolean working = this.menu.extra(AssemblyBenchBlockEntity.DATA_TOTAL) > 0;
-        boolean missiles = page == AssemblyBenchBlockEntity.JOB_MISSILE;
+        boolean missiles = page() == AssemblyBenchBlockEntity.JOB_MISSILE;
         if (missiles) {
             this.assemble.active = !working && this.menu.extra(AssemblyBenchBlockEntity.DATA_MISSILE_PROBLEM) == MissileAssembly.Problem.NONE.ordinal();
             this.takeApart.active = !working && !inv.getItem(AssemblyBenchBlockEntity.SLOT_MISSILE).isEmpty()
@@ -191,7 +194,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
         super.extractRenderState(g, mouseX, mouseY, partial);
-        boolean missiles = page == AssemblyBenchBlockEntity.JOB_MISSILE;
+        boolean missiles = page() == AssemblyBenchBlockEntity.JOB_MISSILE;
         Component label;
         boolean bright;
         if (missiles) {
@@ -226,7 +229,7 @@ public class AssemblyBenchScreen extends MachineScreen {
      */
     private ItemStack subject() {
         var inv = this.menu.machine().inventory();
-        if (page == AssemblyBenchBlockEntity.JOB_MISSILE) {
+        if (page() == AssemblyBenchBlockEntity.JOB_MISSILE) {
             ItemStack warhead = inv.getItem(AssemblyBenchBlockEntity.SLOT_MISSILE_WARHEAD);
             if (WarheadAssembly.isWarhead(warhead) && inv.getItem(AssemblyBenchBlockEntity.SLOT_BODY).getItem() instanceof MissileParts.Body body
                     && inv.getItem(AssemblyBenchBlockEntity.SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem motor) {
@@ -255,7 +258,8 @@ public class AssemblyBenchScreen extends MachineScreen {
             float[] size = spec == null ? new float[] {1, 1} : MissileParts.scale(spec.body());
             net.minecraft.world.phys.AABB box = bounds(subject);
             // Zoomed to fit the model; a missile as if it had a Heavy body, so a smaller body stands smaller.
-            float[] fitSize = spec == null ? size : MissileParts.scale(dev.groundzero.content.assembly.SizeClass.L);
+            float[] fitSize = spec == null || spec.body() == dev.groundzero.content.assembly.SizeClass.XL ? size
+                    : MissileParts.scale(dev.groundzero.content.assembly.SizeClass.L);
             float scale = ItemPreview.fit(box, fitSize, VIEW_W - 2 * MARGIN, VIEW_H - 2 * MARGIN, MIN_PITCH, MAX_PITCH);
             float[] centre = {(float) (box.minX + box.maxX) / 2, (float) (box.minY + box.maxY) / 2, (float) (box.minZ + box.maxZ) / 2};
             g.submitPictureInPictureRenderState(new ItemPreview.State(subject, size, centre, this.yaw, this.pitch, x, y, x + VIEW_W, y + VIEW_H,
@@ -290,7 +294,7 @@ public class AssemblyBenchScreen extends MachineScreen {
      * each font pixel a whole number of screen pixels on the screen-pixel grid, like the setting row.
      */
     private void drawStats(GuiGraphicsExtractor g, ItemStack subject) {
-        boolean missiles = page == AssemblyBenchBlockEntity.JOB_MISSILE;
+        boolean missiles = page() == AssemblyBenchBlockEntity.JOB_MISSILE;
         var registries = net.minecraft.client.Minecraft.getInstance().level == null ? null : net.minecraft.client.Minecraft.getInstance().level.registryAccess();
         List<AssemblyStats.Stat> stats = subject.isEmpty() || registries == null ? List.of()
                 : missiles ? AssemblyStats.missile(subject, registries) : AssemblyStats.warhead(subject, registries);
@@ -348,7 +352,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     private void drawTabs(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         for (int p = 0; p < 2; p++) {
             int x = this.leftPos - TAB_W, y = this.topPos + TAB_Y + p * TAB_STEP;
-            boolean on = p == page;
+            boolean on = p == page();
             if (on) {
                 g.blit(RenderPipelines.GUI_TEXTURED, TABS, x, y, 0, 0, TAB_W + 2, TAB_H, 64, 64);
             } else {
@@ -372,7 +376,7 @@ public class AssemblyBenchScreen extends MachineScreen {
         for (int p = 0; p < 2; p++) {
             int x = this.leftPos - TAB_W, y = this.topPos + TAB_Y + p * TAB_STEP;
             if (event.x() >= x && event.x() < this.leftPos && event.y() >= y && event.y() < y + TAB_H) {
-                if (p != page) {
+                if (p != page()) {
                     showPage(p);
                     net.minecraft.client.Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
                 }

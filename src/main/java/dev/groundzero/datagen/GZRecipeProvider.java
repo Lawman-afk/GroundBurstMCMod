@@ -493,6 +493,13 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
                 .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        // Phase 8: the two-stage Strategic body (a Heavy body stretched, with an interstage and its own avionics bay).
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.LEAD_PLATE)
+                .requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY), has(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.SRM_I, 1)
                 .requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
                 .requires(GZChemicals.SOLID_PROPELLANT).requires(GZTags.commonItem("plates/steel"))

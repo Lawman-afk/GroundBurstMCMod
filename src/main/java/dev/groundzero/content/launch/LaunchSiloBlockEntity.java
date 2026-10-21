@@ -103,7 +103,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
         var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
-        return slot == SLOT_MISSILE && spec != null && (!spec.nuclear() || firesNuclear());
+        return slot == SLOT_MISSILE && spec != null && (!spec.needsComplex() || firesNuclear());
     }
 
     /** Whether it can fire a nuclear missile: only a Launch Complex can. */
@@ -447,7 +447,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** The silo model's nose bones (tools/assets/launch.py), one per warhead. */
-    private static final List<String> NOSES = java.util.stream.Stream.concat(java.util.stream.Stream.of("nose_none"),
+    protected static final List<String> NOSES = java.util.stream.Stream.concat(java.util.stream.Stream.of("nose_none"),
             dev.groundzero.content.ordnance.GZOrdnance.WARHEADS.stream().map(w -> "nose_" + w.block().getId().getPath())).toList();
 
     @Override

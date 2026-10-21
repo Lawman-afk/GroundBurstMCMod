@@ -1,5 +1,6 @@
 """Missile parts (DESIGN.md §9.3-9.7, Phase 7 slice 7b): item models for what the Assembly Bench's missile page takes.
 
+- Strategic Missile Body (Phase 8): two stages, black-and-white roll quadrants on the wider first, big black fins.
 - Missile bodies: white airframe tubes, open at the top (the warhead seats there), with four tail fins; bigger by class,
   with yellow class bands like the warhead casings (one Tactical, two Medium, three Heavy) and black roll marks.
 - Solid Rocket Motor I: a short grey propellant case on a dark nozzle, one red band.
@@ -65,6 +66,44 @@ def body(name: str, r: float, w: float, top: float, fin: float, bands: int) -> N
         banded(WHITE, marks, top, 2)(t, rr, d)
     fill_all(m, t, tube, tube_paint)
     fill_all(m, t, ["fin_x", "fin_z"], shaded(STEEL))
+    G.finish(m, t)
+
+
+def strategic_body() -> None:
+    """The Strategic Missile Body (Phase 8): two stages, open at the top (the warhead seats there), the first wider and
+    painted in black-and-white roll quadrants, a riveted interstage, big black fins: the long missile's livery."""
+    m = model("strategic_missile_body")
+    stage1 = prism(m, "stage1", 8, 8, 3.4, 2.3, 2, 8)
+    ring = prism(m, "ring", 8, 8, 3.5, 2.35, 8, 8.8)
+    stage2 = prism(m, "stage2", 8, 8, 2.9, 1.95, 8.8, 15)
+    m.box("fin_x", (2.4, 1.5, 7.6), (13.6, 6, 8.4))
+    m.box("fin_z", (7.6, 1.75, 2.4), (8.4, 6, 13.6))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+
+    def quadrants(t, r, d):
+        shaded(WHITE)(t, r, d)
+        x, y, w, h = r
+        if d in SIDES:
+            face = 0 if d in ("north", "south") else 1
+            for yy in range(y, y + h):
+                for xx in range(x, x + w):
+                    if (((yy - y) * 2 // max(1, h)) + (0 if (xx - x) * 2 < w else 1) + face) % 2 == 0:
+                        t.px(xx, yy, BLACK[2])
+    fill_all(m, t, stage1, quadrants)
+    fill_all(m, t, ring, shaded(GUN))
+
+    def upper(t, r, d):
+        x, y, w, h = r
+        if d == "up":
+            t.rect(x, y, w, h, STEEL.deep)                     # open at the top: the warhead seats in it
+            t.outline(x, y, w, h, WHITE.light)
+            return
+        shaded(WHITE)(t, r, d)
+        if d in SIDES:
+            t.hline(x, y + h - 1, w, BLACK[2])
+    fill_all(m, t, stage2, upper)
+    fill_all(m, t, ["fin_x", "fin_z"], shaded(BLACK))
     G.finish(m, t)
 
 
@@ -177,7 +216,7 @@ def hardened() -> None:
     G.finish(m, t)
 
 
-NAMES = ["tactical_missile_body", "medium_missile_body", "heavy_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii",
+NAMES = ["tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii",
          "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"]
 
 
@@ -185,6 +224,7 @@ def main() -> None:
     body("tactical_missile_body", 2.5, 1.5, 11, 4, 1)
     body("medium_missile_body", 3, 2, 12.5, 4.6, 2)
     body("heavy_missile_body", 3.5, 2.5, 14, 5.4, 3)
+    strategic_body()
     motor("solid_rocket_motor_i", 9, 2.6, 1.6, 1, NOZZLE)
     motor("solid_rocket_motor_ii", 12, 3, 2, 2, P.TUNGSTEN)
     liquid_stage()

@@ -135,12 +135,26 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         this.sideHalf.restrict(allowedItemModes());
         for (SideConfig.ItemMode mode : SideConfig.ItemMode.values()) {
             if (mode != SideConfig.ItemMode.NONE) {
-                this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract());
+                this.automation[mode.ordinal()] = new AutomationView(this.inventory, inputSlots, outputSlots, mode.canInsert(), mode.canExtract(),
+                        this::slotAutomated);
             }
         }
     }
 
     // --- subclass contract ----------------------------------------------------------------------------------------
+    /** Whether pipes, hoppers and auto-eject may use this slot now (the Assembly Bench: only its current page's). */
+    protected boolean slotAutomated(int slot) {
+        return true;
+    }
+
+    /**
+     * Whether the screen shows this slot and shift-clicks may land in it ({@code menu}'s synced data, on either side): a
+     * machine with pages (the Assembly Bench) shows only the page it is on.
+     */
+    public boolean slotShown(int slot, MachineMenu menu) {
+        return true;
+    }
+
     /** One server tick of work. Returns whether the machine is actively working (drives ACTIVE, sound, animation). */
     protected abstract boolean tickMachine(ServerLevel level);
 
@@ -527,7 +541,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     private void autoEject(ServerLevel level, boolean half) {
         Direction facing = getBlockState().hasProperty(MachineBlock.FACING) ? getBlockState().getValue(MachineBlock.FACING) : Direction.NORTH;
-        AutomationView out = new AutomationView(this.inventory, new int[0], this.outputSlots, false, true);
+        AutomationView out = new AutomationView(this.inventory, new int[0], this.outputSlots, false, true, this::slotAutomated);
         BlockPos from = half ? sideHalfPos() : this.worldPosition;
         for (SideConfig.Face face : SideConfig.Face.values()) {
             if (!sides(half).items(face).canExtract() || !faceOpen(face, half)) {

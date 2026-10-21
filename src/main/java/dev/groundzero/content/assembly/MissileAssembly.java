@@ -25,6 +25,8 @@ public final class MissileAssembly {
         NO_BODY("Fit a missile body"),
         NO_MOTOR("Fit a rocket motor"),
         WARHEAD_TOO_BIG("A class %s warhead needs a bigger body"),
+        NUCLEAR_NEEDS_STRATEGIC("A nuclear warhead needs a Strategic body"),
+        STRATEGIC_NUCLEAR_ONLY("A Strategic body carries nuclear warheads only"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
         OUTPUT_FULL("Take the finished missile out first");
 
@@ -47,14 +49,29 @@ public final class MissileAssembly {
         if (!(motor.getItem() instanceof MissileParts.MotorItem m)) {
             return Problem.NO_MOTOR;
         }
-        SizeClass size = WarheadAssembly.sizeOf((dev.groundzero.content.ordnance.charge.ChargeBlock) ((net.minecraft.world.item.BlockItem) warhead.getItem()).getBlock());
-        if (size != null && size.ordinal() > b.sizeClass.ordinal()) {
-            return Problem.WARHEAD_TOO_BIG;
+        Problem fit = fit(warhead, b.sizeClass);
+        if (fit != Problem.NONE) {
+            return fit;
         }
         if (!m.motor.fits(b.sizeClass)) {
             return Problem.MOTOR_DOES_NOT_FIT;
         }
         return output.isEmpty() ? Problem.NONE : Problem.OUTPUT_FULL;
+    }
+
+    /**
+     * Whether a body takes a warhead: a nuclear warhead only a Strategic body (and that body nothing else); any other a
+     * body of its class or bigger.
+     */
+    public static Problem fit(ItemStack warhead, SizeClass body) {
+        var kind = AssemblyStats.kindOf(warhead);
+        boolean nuclear = kind != null && kind.nuclear();
+        if (nuclear != (body == SizeClass.XL)) {
+            return nuclear ? Problem.NUCLEAR_NEEDS_STRATEGIC : Problem.STRATEGIC_NUCLEAR_ONLY;
+        }
+        SizeClass size = warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi
+                && bi.getBlock() instanceof dev.groundzero.content.ordnance.charge.ChargeBlock c ? WarheadAssembly.sizeOf(c) : null;
+        return !nuclear && size != null && size.ordinal() > body.ordinal() ? Problem.WARHEAD_TOO_BIG : Problem.NONE;
     }
 
     /** The missile these parts make (guidance and module may be empty). */
@@ -68,7 +85,8 @@ public final class MissileAssembly {
         ItemStack out = new ItemStack(GZAssembly.MISSILE.get());
         out.set(GZDataComponents.MISSILE.get(), spec);
         // The item picks its nose (painted as its warhead) by this, like the missile in flight.
-        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(spec.warheadId()), List.of()));
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.warheadId(), spec.body())),
+                List.of()));
         return out;
     }
 

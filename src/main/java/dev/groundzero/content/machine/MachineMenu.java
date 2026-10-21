@@ -190,10 +190,12 @@ public class MachineMenu extends AbstractContainerMenu {
     }
 
     /**
-     * Which machine slots the screen shows (client side): a machine with pages (the Assembly Bench) hides the other
-     * page's slots. Hidden slots are neither drawn nor clickable.
+     * Which machine slots the menu offers, on both sides: a machine with pages (the Assembly Bench) hides the other page's
+     * slots. Hidden slots are neither drawn nor clickable, and shift-clicks pass them by.
      */
-    public java.util.function.IntPredicate slotShown = i -> true;
+    public boolean slotShown(int slot) {
+        return this.machine.slotShown(slot, this);
+    }
 
     /** A slot that respects the machine's per-slot rules (vanilla slots accept anything). */
     private static class MachineSlot extends Slot {
@@ -206,12 +208,12 @@ public class MachineMenu extends AbstractContainerMenu {
 
         @Override
         public boolean isActive() {
-            return this.menu.slotShown.test(getContainerSlot());
+            return this.menu.slotShown(getContainerSlot());
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return this.container.canPlaceItem(getContainerSlot(), stack);
+            return isActive() && this.container.canPlaceItem(getContainerSlot(), stack);
         }
     }
 }

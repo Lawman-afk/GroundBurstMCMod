@@ -31,6 +31,8 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
         public float yaw, tilt;
         /** {across, along}: the body's size. */
         public float[] size = {1f, 1f};
+        /** How far (blocks, before scaling) to lift the item model to stand it on its tail. */
+        public float lift = 0.5f;
     }
 
     private final ItemModelResolver items;
@@ -53,12 +55,15 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     @Override
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
-        ItemStack look = this.looks.computeIfAbsent(entity.warheadName(), id -> {
+        var body = entity.body();
+        String id = dev.groundzero.content.assembly.MissileParts.look(entity.warheadName(), body);
+        ItemStack look = this.looks.computeIfAbsent(id, key -> {
             ItemStack s = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
             s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
-                    new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(id), java.util.List.of()));
+                    new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(key), java.util.List.of()));
             return s;
         });
+        state.lift = body == dev.groundzero.content.assembly.SizeClass.XL ? 0.5f + dev.groundzero.content.assembly.MissileParts.STRATEGIC_TAIL / 16f : 0.5f;
         this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getYRot(partialTicks);
         state.size = dev.groundzero.content.assembly.MissileParts.scale(entity.body());
@@ -71,7 +76,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
         poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
         poseStack.rotate(Axis.XP.rotationDegrees(state.tilt));
         poseStack.scale(SCALE * state.size[0], SCALE * state.size[1], SCALE * state.size[0]);
-        poseStack.translate(0, 0.5, 0);                 // the item model is drawn about its middle; stand it on its tail
+        poseStack.translate(0, state.lift, 0);          // the item model is drawn about its middle; stand it on its tail
         state.item.submit(poseStack, collector, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);

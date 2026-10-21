@@ -76,6 +76,8 @@ public final class GZAssembly {
     public static final DeferredItem<MissileParts.Body> TACTICAL_BODY = body("tactical_missile_body", "Tactical Missile Body", SizeClass.S);
     public static final DeferredItem<MissileParts.Body> MEDIUM_BODY = body("medium_missile_body", "Medium Missile Body", SizeClass.M);
     public static final DeferredItem<MissileParts.Body> HEAVY_BODY = body("heavy_missile_body", "Heavy Missile Body", SizeClass.L);
+    /** Phase 8: the long two-stage body that carries nuclear warheads (and nothing else). */
+    public static final DeferredItem<MissileParts.Body> STRATEGIC_BODY = body("strategic_missile_body", "Strategic Missile Body", SizeClass.XL);
     public static final List<DeferredItem<MissileParts.MotorItem>> MOTORS = new ArrayList<>();
     public static final DeferredItem<MissileParts.MotorItem> SRM_I = motor("Solid Rocket Motor I", MissileParts.Motor.SRM_I);
     public static final DeferredItem<MissileParts.MotorItem> SRM_II = motor("Solid Rocket Motor II", MissileParts.Motor.SRM_II);

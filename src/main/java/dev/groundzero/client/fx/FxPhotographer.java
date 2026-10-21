@@ -55,8 +55,8 @@ public final class FxPhotographer {
                 new Scene("warhead_heavy", "heavy_warhead", 45, 2, List.of(3, 10, 25, 80)),
                 new Scene("warhead_thermobaric", "thermobaric_warhead", 55, 2, List.of(3, 10, 25, 80)),
                 new Scene("warhead_massive", "massive_warhead", 110, -6, List.of(4, 20, 80, 300, 700)),
-                new Scene("nuke_tactical", "tactical_nuclear_warhead", 120, -8, List.of(3, 20, 80, 300, 700)),
-                new Scene("nuke_fission", "fission_warhead", 240, -14, List.of(3, 30, 120, 400, 900)),
+                new Scene("nuke_tactical", "tactical_nuclear_warhead", 200, -10, List.of(3, 20, 80, 300, 700)),
+                new Scene("nuke_fission", "fission_warhead", 330, -14, List.of(3, 30, 120, 400, 900)),
                 new Scene("complex", "complex", 34, -12, List.of(20, 150, 270, 335, 380)),
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
@@ -229,7 +229,7 @@ public final class FxPhotographer {
     private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
 
     /**
-     * A formed, powered Launch Complex with a Heavy tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
+     * A formed, powered Launch Complex with a Strategic tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
      * Computer beside it (the "complex" scene launches at clock 25: 15 s of countdown, then ignition).
      */
     private static void complexSite(ServerLevel level, int x, int ground) {
@@ -241,7 +241,7 @@ public final class FxPhotographer {
         if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.LaunchComplexBlockEntity complex) {
             complex.revalidate();
             complex.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
-                    dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.L, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
+                    dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.XL, dev.groundzero.content.assembly.MissileParts.Motor.LIQUID, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
             complex.energy().generate(dev.groundzero.content.launch.LaunchComplexBlockEntity.COMPLEX_ENERGY);
             complex.setTarget(launchTarget.getX(), launchTarget.getZ());
             complex.arm(true);
@@ -626,6 +626,8 @@ public final class FxPhotographer {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
                     be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
                     be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
+                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get()));
+                    be.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get()));
                 }
             });
         }

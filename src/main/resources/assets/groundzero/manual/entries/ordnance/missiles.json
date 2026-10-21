@@ -7,6 +7,7 @@
     "groundzero:tactical_missile_body",
     "groundzero:medium_missile_body",
     "groundzero:heavy_missile_body",
+    "groundzero:strategic_missile_body",
     "groundzero:solid_rocket_motor_i",
     "groundzero:solid_rocket_motor_ii",
     "groundzero:liquid_fuel_stage",
@@ -21,7 +22,7 @@
     },
     {
       "type": "text",
-      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any. A bigger body makes a bigger missile on the pad.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (any body); **Liquid-fuel Stage**, 2500 blocks (Heavy bodies only)."
+      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile there is, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
     },
     {
       "type": "text",
@@ -45,6 +46,11 @@
     {
       "type": "crafting",
       "item": "groundzero:heavy_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:strategic_missile_body",
       "text": ""
     },
     {

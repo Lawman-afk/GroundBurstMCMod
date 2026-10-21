@@ -105,6 +105,42 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
         return running;
     }
 
+    /**
+     * The model shows the loaded missile: a Strategic one is its own long model ("strategic", noses "snose_*"), any other
+     * the usual missile scaled by its body.
+     */
+    @Override
+    public java.util.Set<String> hiddenBones() {
+        if (!isFormed()) {
+            return java.util.Set.of("frame");
+        }
+        var spec = missile();
+        java.util.Set<String> hidden = new java.util.HashSet<>();
+        if (spec == null) {
+            hidden.add("missile");
+            hidden.add("strategic");
+            return hidden;
+        }
+        boolean strategic = spec.body() == dev.groundzero.content.assembly.SizeClass.XL;
+        hidden.add(strategic ? "missile" : "strategic");
+        String id = spec.warheadId().isEmpty() ? "none" : spec.warheadId();
+        String shown = (strategic ? "snose_" : "nose_") + id;
+        for (String nose : NOSES) {
+            for (String bone : new String[] {nose, "s" + nose}) {
+                if (!bone.equals(shown)) {
+                    hidden.add(bone);
+                }
+            }
+        }
+        return hidden;
+    }
+
+    @Override
+    public java.util.Map<String, float[]> boneScales() {
+        var spec = missile();
+        return spec != null && spec.body() == dev.groundzero.content.assembly.SizeClass.XL ? java.util.Map.of() : super.boneScales();
+    }
+
     @Override
     public com.geckolib.animation.RawAnimation idleAnimation() {
         return this.inventory.getItem(SLOT_MISSILE).isEmpty() ? CLEAR : IDLE;

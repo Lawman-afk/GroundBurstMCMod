@@ -844,6 +844,8 @@ entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench"
     text("""
 The **Ordnance Assembly Bench** puts warheads and [missiles](ordnance/missiles) together, one page for each (the tabs on the left of its screen). It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.
 
+The bench stays on the page you last turned it to, even with the screen closed: shift-clicks put parts into that page's slots, and pipes and hoppers feed that page's slots and take from its output. Turn it to the page you want to automate.
+
 A warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy); and a **fuze**, which decides where the missile carrying it sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 12 seconds later (longer for heavier warheads) the warhead is in the output slot.
 
 **Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped or set again.
@@ -897,14 +899,14 @@ Casings come in three classes, marked by yellow bands: one for **Light**, two fo
     craft("chemical_agent_canister"),
 ])
 
-entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
+entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
     text("""
 A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back.
 """),
     text("""
-**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any. A bigger body makes a bigger missile on the pad.
+**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile there is, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it.
 
-**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (any body); **Liquid-fuel Stage**, 2500 blocks (Heavy bodies only).
+**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
 """),
     text("""
 **Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks.
@@ -917,6 +919,7 @@ Its tooltip lists its warhead and fuze, its range and its guidance. A missile's 
     craft("tactical_missile_body"),
     craft("medium_missile_body"),
     craft("heavy_missile_body"),
+    craft("strategic_missile_body"),
     craft("solid_rocket_motor_i"),
     craft("solid_rocket_motor_ii"),
     craft("liquid_fuel_stage"),
@@ -1009,7 +1012,7 @@ entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_co
     text("""
 The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
 
-It takes any [missile](ordnance/missiles). Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
+It takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
 """),
     structure("launch_complex", "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."),
     craft("launch_complex"),
@@ -1018,16 +1021,16 @@ It takes any [missile](ordnance/missiles). Each launch takes the missile and 250
 
 entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "tactical_fission_core", "fission_core"], [
     text("""
-A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a casing of its class and a fuze, and flies on a [missile](ordnance/missiles), but only a [Launch Complex](ordnance/launch_complex) will fire it: a Launch Silo will not take a nuclear missile.
+A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a casing of its class and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile will be built whole in a separate assembly hall and set straight on the Launch Complex.
 
-**Tactical Nuclear Warhead** (class S, about 300 tonnes of TNT): a crater 16 blocks round, deadly to 28 blocks. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.
+**Tactical Nuclear Warhead** (class S, about 300 tonnes of TNT), the smallest nuclear weapon and still half as big again as the Massive Ordnance Warhead: a crater 42 blocks round, wrecking everything to 60 blocks and deadly to 60. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.
 
-**Fission Warhead** (class M, about 15 kilotons): a crater 40 blocks round, wrecking everything to 60 blocks and deadly to 70. Its core is a **Fission Core**: a plutonium ingot in a sphere of explosive lenses, with a depleted uranium tamper and a lead case.
+**Fission Warhead** (class M, about 15 kilotons): a crater 75 blocks round, wrecking everything to 110 blocks and deadly to 120. Its core is a **Fission Core**: a plutonium ingot in a sphere of explosive lenses, with a depleted uranium tamper and a lead case.
 
 Both go off with a blinding flash, a fireball and a mushroom cloud, and burn the ground round the crater to scorched earth.
 """),
     text("""
-**Fallout.** A nuclear blast leaves the ground round it **contaminated**: 48 blocks round for a day after a tactical warhead, 120 blocks round for two days after a fission warhead, weakest at the edge and fading as it ages. Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
+**Fallout.** A nuclear blast leaves the ground round it **contaminated**: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, weakest at the edge and fading as it ages. Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
 
 **Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion.
 """),

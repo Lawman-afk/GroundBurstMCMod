@@ -299,7 +299,7 @@ public final class Charges {
 
     /** A nuclear warhead's contamination: radius (blocks) and how long it lasts (ticks), by kind (DESIGN.md §15). */
     public static float contaminationRadius(ChargeKind kind) {
-        return kind == ChargeKind.FISSION_WARHEAD ? 120 : 48;
+        return kind == ChargeKind.FISSION_WARHEAD ? 180 : 90;
     }
 
     public static int contaminationTicks(ChargeKind kind) {

@@ -17,12 +17,20 @@ public class AutomationView implements ResourceHandler<ItemResource> {
 
     private final boolean allowInsert;
     private final boolean allowExtract;
+    /** Which machine slots automation may use right now (the Assembly Bench: the page it is on). */
+    private final java.util.function.IntPredicate active;
 
     public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots) {
         this(inventory, inputSlots, outputSlots, true, true);
     }
 
     public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots, boolean allowInsert, boolean allowExtract) {
+        this(inventory, inputSlots, outputSlots, allowInsert, allowExtract, s -> true);
+    }
+
+    public AutomationView(MachineInventory inventory, int[] inputSlots, int[] outputSlots, boolean allowInsert, boolean allowExtract,
+            java.util.function.IntPredicate active) {
+        this.active = active;
         this.allowInsert = allowInsert;
         this.allowExtract = allowExtract;
         this.inventory = inventory;
@@ -62,16 +70,18 @@ public class AutomationView implements ResourceHandler<ItemResource> {
 
     @Override
     public boolean isValid(int index, ItemResource resource) {
-        return this.allowInsert && this.insertable[index] && this.inventory.isValid(this.slots[index], resource);
+        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index]) && this.inventory.isValid(this.slots[index], resource);
     }
 
     @Override
     public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
-        return this.allowInsert && this.insertable[index] ? this.inventory.insert(this.slots[index], resource, amount, transaction) : 0;
+        return this.allowInsert && this.insertable[index] && this.active.test(this.slots[index])
+                ? this.inventory.insert(this.slots[index], resource, amount, transaction) : 0;
     }
 
     @Override
     public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
-        return this.allowExtract && this.extractable[index] ? this.inventory.extract(this.slots[index], resource, amount, transaction) : 0;
+        return this.allowExtract && this.extractable[index] && this.active.test(this.slots[index])
+                ? this.inventory.extract(this.slots[index], resource, amount, transaction) : 0;
     }
 }

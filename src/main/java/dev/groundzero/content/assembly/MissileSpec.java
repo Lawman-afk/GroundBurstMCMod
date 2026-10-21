@@ -35,13 +35,18 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
             MissileSpec::guidance,
             ByteBufCodecs.BOOL, MissileSpec::hardened, MissileSpec::new);
 
-    /** How far it flies, blocks. */
+    /** Whether only a Launch Complex can fire it: a nuclear warhead, or a Strategic body. */
+    public boolean needsComplex() {
+        return nuclear() || this.body == SizeClass.XL;
+    }
+
     /** Whether it carries a nuclear warhead (only a Launch Complex can fire it). */
     public boolean nuclear() {
         ChargeKind kind = AssemblyStats.kindOf(this.warhead);
         return kind != null && kind.nuclear();
     }
 
+    /** How far it flies, blocks. */
     public int range() {
         return this.motor.range;
     }

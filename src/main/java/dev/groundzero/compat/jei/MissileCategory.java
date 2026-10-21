@@ -37,15 +37,12 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
     }
 
     static List<Recipe> recipes() {
-        return List.of(new Recipe(SizeClass.S), new Recipe(SizeClass.M), new Recipe(SizeClass.L));
+        return java.util.Arrays.stream(SizeClass.values()).map(Recipe::new).toList();
     }
 
     private static List<ItemStack> warheads(SizeClass body) {
         return GZOrdnance.WARHEADS.stream().map(w -> new ItemStack(w.item().get()))
-                .filter(s -> {
-                    SizeClass size = WarheadAssembly.sizeOf((dev.groundzero.content.ordnance.charge.ChargeBlock) ((net.minecraft.world.item.BlockItem) s.getItem()).getBlock());
-                    return size != null && size.ordinal() <= body.ordinal();
-                }).toList();
+                .filter(s -> WarheadAssembly.isWarhead(s) && MissileAssembly.fit(s, body) == MissileAssembly.Problem.NONE).toList();
     }
 
     private static List<MissileParts.Motor> motors(SizeClass body) {
@@ -73,7 +70,10 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Recipe recipe, IFocusGroup focuses) {
         builder.addAnimatedRecipeArrowWidget(MissileAssembly.TICKS).setPosition(96, 5);
         List<MissileParts.Motor> motors = motors(recipe.body());
-        builder.addText(Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, recipe.body().name(), motors.getFirst().range, motors.getLast().range,
-                AssemblyBenchBlockEntity.ENERGY_PER_TICK), WIDTH, 10).setPosition(0, HEIGHT - 10).setColor(0xFF606060);
+        Component info = recipe.body() == SizeClass.XL
+                ? Component.translatable(WarheadAssembly.JEI_STRATEGIC_INFO, motors.getLast().range, AssemblyBenchBlockEntity.ENERGY_PER_TICK)
+                : Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, recipe.body().name(), motors.getFirst().range, motors.getLast().range,
+                        AssemblyBenchBlockEntity.ENERGY_PER_TICK);
+        builder.addText(info, WIDTH, 10).setPosition(0, HEIGHT - 10).setColor(0xFF606060);
     }
 }

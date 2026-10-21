@@ -174,7 +174,7 @@ public final class GZJeiPlugin implements IModPlugin {
             public Collection<IGuiClickableArea> getGuiClickableAreas(MachineScreen screen, double mouseX, double mouseY) {
                 MachineLayout.Rect p = screen.pageLayout().progress();
                 if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity) {
-                    boolean missiles = ((dev.groundzero.content.assembly.AssemblyBenchBlockEntity) screen.getMenu().machine()).clientPage
+                    boolean missiles = screen.getMenu().extra(dev.groundzero.content.assembly.AssemblyBenchBlockEntity.DATA_PAGE)
                             == dev.groundzero.content.assembly.AssemblyBenchBlockEntity.JOB_MISSILE;
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), missiles ? MissileCategory.TYPE : AssemblyCategory.TYPE));
                 }
