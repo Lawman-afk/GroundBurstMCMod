@@ -16,8 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * A bomb (DESIGN.md §14, Phase 6 slice 6d): a placed charge lying on its side that falls like sand when nothing holds
- * it up, keeping its fuze settings, and whistles on a long drop. Its impact fuze: armed, it goes off when it lands
+ * A warhead (DESIGN.md §14, §17.6; Phase 6 slice 6d, a bomb until it became a missile warhead): a placed charge
+ * standing nose up that falls like sand when nothing holds it up, keeping its fuze settings, and whistles on a long drop. Its impact fuze: armed, it goes off when it lands
  * after a fall (harder the further it fell) or when a projectile hits it. Safe, it just lands.
  */
 public class BombBlock extends ChargeBlock implements Fallable {

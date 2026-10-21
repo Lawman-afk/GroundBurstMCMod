@@ -73,22 +73,22 @@ public final class GZOrdnance {
     public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLAYMORE = mine("claymore",
             "Claymore", dev.groundzero.content.ordnance.charge.ChargeKind.CLAYMORE);
 
-    // --- bombs (slice 6d) ---
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HE_BOMB = bomb("he_bomb",
-            "HE Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.HE_BOMB);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HEAVY_BOMB = bomb("heavy_bomb",
-            "Heavy Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.HEAVY_BOMB);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> THERMOBARIC_BOMB = bomb(
-            "thermobaric_bomb", "Thermobaric Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.THERMOBARIC_BOMB);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLUSTER_BOMB = bomb("cluster_bomb",
-            "Cluster Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.CLUSTER_BOMB);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> BUNKER_BUSTER = bomb("bunker_buster",
-            "Bunker Buster", dev.groundzero.content.ordnance.charge.ChargeKind.BUNKER_BUSTER);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> NAPALM_BOMB = bomb("napalm_bomb",
-            "Napalm Bomb", dev.groundzero.content.ordnance.charge.ChargeKind.NAPALM_BOMB);
-    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> MOAB = bomb("moab",
-            "MOAB", dev.groundzero.content.ordnance.charge.ChargeKind.MOAB);
-    /** Burning napalm from a napalm bomb. */
+    // --- warheads (slice 6d; bombs until they became missile warheads) ---
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HE_WARHEAD = bomb("he_warhead",
+            "HE Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.HE_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> HEAVY_WARHEAD = bomb("heavy_warhead",
+            "Heavy HE Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.HEAVY_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> THERMOBARIC_WARHEAD = bomb(
+            "thermobaric_warhead", "Thermobaric Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.THERMOBARIC_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> CLUSTER_WARHEAD = bomb("cluster_warhead",
+            "Cluster Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.CLUSTER_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> BUNKER_BUSTER = bomb("bunker_buster_warhead",
+            "Bunker Buster Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.BUNKER_BUSTER);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> NAPALM_WARHEAD = bomb("napalm_warhead",
+            "Napalm Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.NAPALM_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> MASSIVE_WARHEAD = bomb("massive_warhead",
+            "Massive Ordnance Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.MASSIVE_WARHEAD);
+    /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundzero.registry.GZBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollision().instabreak().noLootTable()
@@ -100,8 +100,8 @@ public final class GZOrdnance {
             dev.groundzero.registry.GZBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
                     dev.groundzero.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
                     THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get(), LANDMINE.block().get(), BOUNCING_MINE.block().get(),
-                    CLAYMORE.block().get(), HE_BOMB.block().get(), HEAVY_BOMB.block().get(), THERMOBARIC_BOMB.block().get(),
-                    CLUSTER_BOMB.block().get(), BUNKER_BUSTER.block().get(), NAPALM_BOMB.block().get(), MOAB.block().get()));
+                    CLAYMORE.block().get(), HE_WARHEAD.block().get(), HEAVY_WARHEAD.block().get(), THERMOBARIC_WARHEAD.block().get(),
+                    CLUSTER_WARHEAD.block().get(), BUNKER_BUSTER.block().get(), NAPALM_WARHEAD.block().get(), MASSIVE_WARHEAD.block().get()));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

@@ -11,11 +11,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
-/** The launch silos loaded in each dimension, for the Launch Computers to find (DESIGN.md §17.3). */
+/**
+ * The launch silos loaded in each dimension, for the Launch Computers to find (DESIGN.md §17.3); and the Launch
+ * Computers and Radar Arrays, so the terrain survey knows where to map ({@link TerrainSurvey}).
+ */
 public final class Launches {
     /** How far a Launch Computer reaches its silos, blocks. */
     public static final int LINK_RANGE = 256;
     private static final Map<ResourceKey<Level>, LongOpenHashSet> SILOS = new HashMap<>();
+    private static final Map<ResourceKey<Level>, LongOpenHashSet> MAPPERS = new HashMap<>();
 
     private Launches() {}
 
@@ -32,6 +36,34 @@ public final class Launches {
 
     static void clear() {
         SILOS.clear();
+        MAPPERS.clear();
+    }
+
+    /** A Launch Computer (or anything else that maps the ground round itself) at {@code pos}. */
+    static void trackMapper(ServerLevel level, BlockPos pos) {
+        MAPPERS.computeIfAbsent(level.dimension(), k -> new LongOpenHashSet()).add(pos.asLong());
+    }
+
+    static void untrackMapper(ServerLevel level, BlockPos pos) {
+        LongOpenHashSet set = MAPPERS.get(level.dimension());
+        if (set != null) {
+            set.remove(pos.asLong());
+        }
+    }
+
+    /** Whether a mapper is within {@code range} blocks (square) of x/z. */
+    static boolean mapperNear(ServerLevel level, int x, int z, int range) {
+        LongOpenHashSet set = MAPPERS.get(level.dimension());
+        if (set == null) {
+            return false;
+        }
+        for (long l : set) {
+            BlockPos p = BlockPos.of(l);
+            if (Math.abs(p.getX() - x) <= range && Math.abs(p.getZ() - z) <= range) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The silos within reach of a computer at {@code from}, nearest first. */

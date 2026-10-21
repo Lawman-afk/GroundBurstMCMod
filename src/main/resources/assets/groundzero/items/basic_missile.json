@@ -1,6 +1,62 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "groundzero:item/basic_missile"
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "cases": [
+      {
+        "when": "he_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_he_warhead"
+        }
+      },
+      {
+        "when": "heavy_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_heavy_warhead"
+        }
+      },
+      {
+        "when": "thermobaric_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_thermobaric_warhead"
+        }
+      },
+      {
+        "when": "cluster_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_cluster_warhead"
+        }
+      },
+      {
+        "when": "bunker_buster_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_bunker_buster_warhead"
+        }
+      },
+      {
+        "when": "napalm_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_napalm_warhead"
+        }
+      },
+      {
+        "when": "massive_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/basic_missile_massive_warhead"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "groundzero:item/basic_missile"
+    }
   }
 }

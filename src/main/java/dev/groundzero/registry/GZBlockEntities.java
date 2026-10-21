@@ -150,6 +150,7 @@ public final class GZBlockEntities {
         machine(event, PARTICLE_ACCELERATOR.get());
         machine(event, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get());
         machine(event, dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get());
+        machine(event, dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get());
         tallMachine(event, GZMachines.ARC_FURNACE.block().get());
         tallMachine(event, GZMachines.CRYOGENIC_CONDENSER.block().get());
         tallMachine(event, GZMachines.INDUSTRIAL_PRESS.block().get());

@@ -27,21 +27,22 @@ public enum ChargeKind {
     BOUNCING_MINE("bouncing_mine", false, false, false, 0, Sensor.PRESSURE),
     /** A curved box of fragments facing the enemy: a laser tripwire (or a detonator on its frequency) fires them in a 60 degree cone. */
     CLAYMORE("claymore", false, true, false, 0, Sensor.TRIPWIRE),
-    // Bombs (slice 6d): lying on their side, they fall when unsupported and, armed, go off when they land or are hit.
+    // Warheads (slice 6d; once bombs): fitted to missiles; placed, they stand nose up, fall when unsupported and, armed,
+    // go off when they land or are hit.
     /** General-purpose high explosive, small: crater 6. */
-    HE_BOMB("he_bomb", 10, true),
-    /** The heavy general-purpose bomb: crater 12. */
-    HEAVY_BOMB("heavy_bomb", 10, true),
+    HE_WARHEAD("he_warhead", 10, true),
+    /** The heavy general-purpose warhead: crater 12. */
+    HEAVY_WARHEAD("heavy_warhead", 10, true),
     /** Disperses a fuel cloud, then ignites it 0.6 s later: a weak crater but a huge, burning overpressure, worse indoors. */
-    THERMOBARIC_BOMB("thermobaric_bomb", 10, true),
+    THERMOBARIC_WARHEAD("thermobaric_warhead", 10, true),
     /** Bursts and scatters 24 bomblets over about 18 blocks; one in twenty is a dud that lies there as a live mine. */
-    CLUSTER_BOMB("cluster_bomb", 10, true),
-    /** Crater 9 where it stands; delivered at speed (Phase 9) it first bores up to 40 blocks down (obsidian costs 10). */
-    BUNKER_BUSTER("bunker_buster", 10, true),
-    /** A small burst and a 30 x 12 ellipse of napalm along its length that burns for 30 s, rain or not. */
-    NAPALM_BOMB("napalm_bomb", 10, true),
-    /** The biggest conventional bomb: crater 28, deadly out to 40. */
-    MOAB("moab", 10, true);
+    CLUSTER_WARHEAD("cluster_warhead", 10, true),
+    /** Crater 9 where it stands; delivered by a missile it first bores up to 40 blocks down (obsidian costs 10). */
+    BUNKER_BUSTER("bunker_buster_warhead", 10, true),
+    /** A small burst and a pool of napalm 10 blocks round that burns for 30 s, rain or not. */
+    NAPALM_WARHEAD("napalm_warhead", 10, true),
+    /** The biggest conventional warhead: crater 28, deadly out to 40. */
+    MASSIVE_WARHEAD("massive_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }

@@ -1157,26 +1157,44 @@ switch, **LAUNCH** (guarded red button), status lamps (POWER / ARMED / FUEL / EM
 - Interceptions, EMP and laser guidance all act on the live entity or the tracker.
 
 ### 17.6 As built: the basic launch site (2026-10-21, ahead of Phase 9)
-A first, deliberately simple launch site, so the bombs have a delivery system before the full Phase 9 platforms.
+A first, deliberately simple launch site, so the warheads have a delivery system before the full Phase 9 platforms.
+There are no aircraft to drop bombs: the slice 6d bombs became **warheads** (same effects), and missiles are how they
+are delivered.
+- **Warheads** (`he_warhead`, `heavy_warhead`, `thermobaric_warhead`, `cluster_warhead`, `bunker_buster_warhead`,
+  `napalm_warhead`, `massive_warhead` "Massive Ordnance Warhead", once the MOAB): placed, they stand nose up on a
+  mounting ring (ogive noses, each its own colours and bands); still armable charges with an impact fuze. The napalm
+  warhead throws a pool 10 blocks round (no length to spread along). A missile's nose is painted as its warhead (item
+  model variants chosen by custom model data in flight; nose bones on the silo model).
 - **Launch Silo** (`launch_silo`): a 3×3 Launch Pad layer with the controller in the middle of its front edge and an
   Energy Port in the middle of its back edge, a 9-high Gantry Frame tower beside the pad's middle row with a Gantry
-  Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands (8 blocks tall, the arm holding its body below the nose). GeckoLib model:
-  frame, swinging arm, missile shown when loaded. Slots: a **Basic Missile** and a warhead (any bomb block item).
-  Each launch takes the missile, the warhead and 100 000 FE (buffer 200 000). Countdown 10 s under one mechanical
-  air-raid siren (two rotors a minor third apart: spin-up, wail, wind-down) and beeps, the arm swinging clear.
+  Arm at the seventh block, and a clear 1×8 column above the pad centre where the missile stands (8 blocks tall, the
+  arm holding its body below the nose). Slots: a **Basic Missile** and a warhead. Each launch takes the missile, the
+  warhead and 100 000 FE (buffer 200 000). Countdown 10 s under one mechanical air-raid siren and beeps.
 - **Launch Computer** (`launch_computer`): controller + Energy Port, a mast of three Radar Masts topped by the Radar
-  Dish behind it, and an Antenna on the controller. 20 FE/t while it runs its radar. Its screen: a live **radar
-  scope** (512-block radius, sweep with afterglow, the silos within 256 blocks, every missile in flight with its
-  heading and a dashed line to its target), a scrolling silo list, and per-silo control: each silo keeps its own
-  target (click the scope or type X/Z) and is armed on its own (ARM/DISARM; only a ready silo with a target in
-  range; it disarms itself if it stops being ready); LAUNCH fires every armed silo. Range and flight-time readout. Scope data is sent to viewers within 16 blocks every 10 ticks.
-- **Basic Missile flight** (`MissileEntity`, a simplified §17.5): 2 s ignition on the pad, then a fixed cubic curve
-  straight up, over an arc (apex = clamp(range × 0.35, 40, 220)) and down onto the target, accelerating; up to 1 024
-  blocks; ticket-loads the chunk it is in and the target's. Anything it hits after leaving the pad sets the warhead
-  off there; the warhead goes off as its bomb does (`Charges.impact`; a bunker buster bores in first). Exhaust flame,
-  ignition billow and a lingering smoke trail on the client; launch and engine sounds.
+  Dish behind it, and an Antenna. 20 FE/t. Its screen: a green phosphor **terrain map** (drag to pan, scroll to zoom
+  1:1-1:8, Centre, cursor coordinates) of its **terrain survey**: every chunk loaded within 1 024 blocks of a
+  computer is recorded as vanilla-map colours (per column, slope-shaded) and saved (`terrain_survey.dat`); chunks are
+  surveyed as they load, as they unload, and again when asked for while loaded and stale. The map shows the silos,
+  their targets and missiles in the air; clicking it aims the picked silo. Per-silo control: each silo keeps its own
+  target and is armed on its own (ARM/DISARM); LAUNCH fires every armed silo. Tiles of 64×64 samples at the view's
+  scale go to the client on request.
+- **Missile flight** (a simplified §17.5 with the MissileTracker idea): a flight lives in per-level saved data
+  (`Flights`, `missile_flights.dat`) and is advanced every server tick whatever is loaded, so it can never stall; it
+  ticket-loads its target's chunk, the chunk it is in and those its next 30 ticks will cross. The `MissileEntity` is
+  only what players see, moved along by its flight and put back wherever its chunk is loaded. 2 s ignition, a fixed
+  cubic arc (apex = clamp(range × 0.35, 40, 220)), up to 1 024 blocks; it tilts along its path (pitch stored 90° low,
+  as entity pitch is clamped to ±90°) and whistles in its last 2.5 s. Anything loaded in its way sets off the warhead.
 - Building blocks: Launch Pad, Gantry Frame, Gantry Arm, Radar Mast, Radar Dish, Antenna (multiblock parts, hidden
-  when formed). The full platforms, MissileTracker, guidance and multi-stage bodies remain Phase 9.
+  when formed). The full platforms, guidance and multi-stage bodies remain Phase 9.
+
+### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
+- `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
+  from its middle, a 3×3 crown of Radar Dishes; formed, a GeckoLib deck, mast and big dish turning once every 6 s.
+  100 FE/t. Tracks every flight within 2 048 blocks (from `Flights`, so loaded or not); a flight coming down within
+  512 blocks is **incoming**. Comparator output: the incoming count (≤15).
+- Screen: the radar scope (moved here from the Launch Computer): a sweep matching the dish, blips painted only as the
+  sweep passes and fading, a dashed red danger ring, a track list (distance or INBOUND, time to impact), and for the
+  picked track where it lands and its height. It is the track source the anti-missile defence (§18.2) will use.
 
 ## 18. Radar and interception
 
@@ -1983,3 +2001,6 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Basic launch site ahead of Phase 9: a Launch Silo (pad + gantry tower, missile stands beside it) and a Launch Computer with a live radar scope, on the multiblock framework; one Basic Missile flying a fixed curve that keeps its chunks loaded, any bomb as the warhead (going off as that bomb does); the scope shows every missile in flight within 512 blocks. |
 | 2026-10-21 | Launch site feedback: an 8-block missile pointing along its path all the way down; the computer's screens clear of the antenna, its dish facing the sky; a mechanical air-raid siren; the MOAB without a mushroom cloud (conventional). Every block and item model now closes faces you could see into and warns of visible coplanar faces when generated, and the language data loads every class that declares text keys, so gaps, flicker and raw keys cannot slip through again. |
 | 2026-10-21 | Launch control per silo: targets and arming live on each silo, not the computer; the computer aims and arms the picked silo and LAUNCH fires all armed ones (a salvo, each to its own target). |
+| 2026-10-21 | No aircraft are planned, so bombs become missile warheads (renamed, upright models, a nose per warhead on the missile); the MOAB becomes the Massive Ordnance Warhead. |
+| 2026-10-21 | Missile flights are tracked as saved data, not by the entity: the entity froze when it flew into a chunk it had not yet ticket-loaded (it could not tick to add the ticket). |
+| 2026-10-21 | The Launch Computer's screen is a terrain map (what is being aimed at matters more than a sweep); the sweeping radar moves to a new Radar Array multiblock, the future source of tracks for anti-missile defence. Map data is a saved survey of chunks loaded near computers, never generating chunks. |

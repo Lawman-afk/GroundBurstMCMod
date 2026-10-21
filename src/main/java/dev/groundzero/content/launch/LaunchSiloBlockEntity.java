@@ -327,11 +327,11 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     // --- model ------------------------------------------------------------------------------------------------------------
-    /** The model shows the missile while one is loaded, so the client hears about that slot. */
+    /** The model shows the missile while one is loaded, its nose painted as its warhead, so the client hears about both slots. */
     @Override
     protected void onSlotChanged(int slot) {
         super.onSlotChanged(slot);
-        if ((slot == SLOT_MISSILE || slot < 0) && this.level != null && !this.level.isClientSide()) {
+        if (this.level != null && !this.level.isClientSide()) {
             this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
     }
@@ -351,8 +351,24 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (!isFormed()) {
             return Set.of("frame");
         }
-        return this.inventory.getItem(SLOT_MISSILE).isEmpty() ? Set.of("missile") : Set.of();
+        if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
+            return Set.of("missile");
+        }
+        // Every nose but the fitted warhead's (a bare steel nose with none).
+        String id = MissileEntity.warheadId(this.inventory.getItem(SLOT_WARHEAD));
+        String shown = "nose_" + (id.isEmpty() ? "none" : id);
+        Set<String> hidden = new java.util.HashSet<>();
+        for (String nose : NOSES) {
+            if (!nose.equals(shown)) {
+                hidden.add(nose);
+            }
+        }
+        return hidden;
     }
+
+    /** The silo model's nose bones (tools/assets/launch.py), one per warhead. */
+    private static final List<String> NOSES = List.of("nose_none", "nose_he_warhead", "nose_heavy_warhead", "nose_thermobaric_warhead",
+            "nose_cluster_warhead", "nose_bunker_buster_warhead", "nose_napalm_warhead", "nose_massive_warhead");
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

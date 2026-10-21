@@ -38,7 +38,7 @@ import com.geckolib.util.GeckoLibUtil;
  * links (formed silos within 256 blocks), and every missile in the air. From its screen you aim each silo at its own
  * target and arm it; LAUNCH then fires every armed silo it links.
  */
-public class LaunchComputerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
+public class LaunchComputerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, ScreenWatched {
     public static final int ENERGY_CAPACITY = 20_000, RADAR_USE = 20, RADAR_RANGE = 512;
     private static final int RECHECK_INTERVAL = 40, SCOPE_INTERVAL = 10;
 
@@ -46,6 +46,8 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     /** Players with this computer's screen open (they are sent its scope). */
     private final Set<UUID> viewers = new HashSet<>();
     private boolean powered;
+    /** Whether it has surveyed the ground already loaded round it since it formed (or loaded). */
+    private boolean surveyed;
 
     public LaunchComputerBlockEntity(BlockPos pos, BlockState state) {
         super(GZLaunch.COMPUTER_ENTITY.get(), pos, state, ENERGY_CAPACITY, 1_000, 0, 0, new int[0], new int[0]);
@@ -94,12 +96,14 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         return n;
     }
 
-    void addViewer(ServerPlayer player) {
+    @Override
+    public void addViewer(ServerPlayer player) {
         this.viewers.add(player.getUUID());
         sendScope((ServerLevel) player.level(), player);
     }
 
-    void removeViewer(ServerPlayer player) {
+    @Override
+    public void removeViewer(ServerPlayer player) {
         this.viewers.remove(player.getUUID());
     }
 
@@ -161,10 +165,16 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
+        Launches.trackMapper(level, this.worldPosition);       // the terrain survey maps the ground round it
         if (!isFormed()) {
             this.status = MachineStatus.INCOMPLETE;
             this.powered = false;
+            this.surveyed = false;
         } else {
+            if (!this.surveyed) {
+                this.surveyed = true;
+                TerrainSurvey.of(level).surveyAround(level, this.worldPosition, 16);
+            }
             this.powered = this.energy.consume(RADAR_USE);
             this.status = this.powered ? MachineStatus.RUNNING : MachineStatus.NO_POWER;
         }
@@ -193,14 +203,23 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         List<LaunchPayloads.Contact> contacts = new ArrayList<>();
         if (this.powered) {
             Vec3 c = Vec3.atCenterOf(this.worldPosition);
-            for (MissileEntity m : level.getEntitiesOfClass(MissileEntity.class, new AABB(c, c).inflate(RADAR_RANGE, 1024, RADAR_RANGE))) {
-                Vec3 v = m.getDeltaMovement();
-                contacts.add(new LaunchPayloads.Contact((int) m.getX(), (int) m.getY(), (int) m.getZ(), (float) Math.atan2(v.x, v.z),
-                        (int) m.target().x, (int) m.target().z));
+            for (Flights.Flight f : Flights.of(level).all()) {
+                Vec3 p = f.position();
+                if (Math.abs(p.x - c.x) <= RADAR_RANGE && Math.abs(p.z - c.z) <= RADAR_RANGE) {
+                    contacts.add(new LaunchPayloads.Contact((int) p.x, (int) p.y, (int) p.z, f.heading(), (int) f.target().x, (int) f.target().z));
+                }
             }
         }
         PacketDistributor.sendToPlayer(player, new LaunchPayloads.Scope(this.worldPosition, isFormed(), this.powered,
                 (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), silos, contacts));
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (this.level instanceof ServerLevel server) {
+            Launches.untrackMapper(server, this.worldPosition);
+        }
     }
 
     @Override

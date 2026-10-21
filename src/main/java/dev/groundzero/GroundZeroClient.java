@@ -39,6 +39,7 @@ public class GroundZeroClient {
         dev.groundzero.client.fx.FxPhotographer.register();
         dev.groundzero.client.screen.ChargeScreens.register();
         dev.groundzero.client.screen.LaunchComputerScreen.register();
+        dev.groundzero.client.screen.RadarArrayScreen.register();
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
@@ -74,6 +75,8 @@ public class GroundZeroClient {
         event.registerEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE.get(), dev.groundzero.client.fx.MissileRenderer::new);
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
+        event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(), 7, 2));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(), 4, 1));
         event.registerBlockEntityRenderer(GZBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ORE_CRUSHER.get(), 1));

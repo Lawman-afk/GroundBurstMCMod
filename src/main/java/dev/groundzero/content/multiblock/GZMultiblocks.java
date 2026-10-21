@@ -189,7 +189,8 @@ public final class GZMultiblocks {
     /** Every structure, for lookups by id (the Field Manual's structure pages). */
     public static java.util.List<MultiblockDefinition> all() {
         return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR,
-                dev.groundzero.content.launch.GZLaunch.SILO, dev.groundzero.content.launch.GZLaunch.COMPUTER);
+                dev.groundzero.content.launch.GZLaunch.SILO, dev.groundzero.content.launch.GZLaunch.COMPUTER,
+                dev.groundzero.content.launch.GZLaunch.RADAR);
     }
 
     public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {

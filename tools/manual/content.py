@@ -829,56 +829,58 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
-entry("ordnance/bombs", "Bombs", "he_bomb", ["he_bomb", "heavy_bomb", "thermobaric_bomb", "cluster_bomb", "bunker_buster",
-                                            "napalm_bomb", "moab"], [
+entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead",
+                                                      "bunker_buster_warhead", "napalm_warhead", "massive_warhead"], [
     text("""
-Bombs lie on their side, nose the way you were looking. They are set up and armed like [placed charges](ordnance/charges): a frequency, at once or on a timer, then **Arm**. Armed, a detonator, redstone or its timer sets one off.
+Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
 
-Bombs also have an **impact fuze**. Nothing holds a bomb up: placed in the air, or with its support gone, it falls. An armed bomb that lands, or is hit by an arrow, goes off. A safe one just lands. So arm one on a ledge, then knock the ledge away.
+Placed on their own, warheads stand nose up on their mounting rings. They are set up and armed like [placed charges](ordnance/charges): a frequency, at once or on a timer, then **Arm**. Armed, a detonator, redstone or its timer sets one off. They also have an **impact fuze**: nothing holds a warhead up, so with its support gone it falls, and an armed one that lands, or is hit by an arrow, goes off.
 """),
-    spot("he_bomb", """
-The general-purpose bomb: a crater about 6 blocks across.
+    spot("he_warhead", """
+The general-purpose warhead, olive with a yellow band: a crater about 6 blocks across.
 """),
-    spot("heavy_bomb", """
-The same, twice the size: a crater about 12 blocks across.
+    spot("heavy_warhead", """
+The same, a size up: a crater about 12 blocks across.
 """),
-    spot("thermobaric_bomb", """
+    spot("thermobaric_warhead", """
 Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but the burning overpressure reaches 24 blocks, and anything with no open sky above it (indoors, in a cave) is hurt far worse.
 """),
-    spot("cluster_bomb", """
-Bursts and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
+    spot("cluster_warhead", """
+Its casing splits and scatters **24 bomblets** up to about 18 blocks around, each with a small blast of its own. One in twenty is a dud that lies where it fell as a live landmine.
 """),
-    spot("bunker_buster", """
-A 9-block crater where it stands. Built to punch through bunkers: delivered by a [missile](ordnance/launch_site), it bores up to 40 blocks down first and goes off at the bottom.
+    spot("bunker_buster_warhead", """
+A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores up to 40 blocks down first (obsidian-hard blocks cost more) and goes off at the bottom.
 """),
-    spot("napalm_bomb", """
-A small burst and an ellipse of **napalm** 30 blocks long and 12 wide, along its length. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
+    spot("napalm_warhead", """
+A small burst and a pool of **napalm** about 10 blocks round. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it.
 """),
-    spot("moab", """
-The biggest conventional bomb: a 28-block crater and deadly out to 40. Stand well clear.
+    spot("massive_warhead", """
+The biggest conventional warhead: a 28-block crater and deadly out to 40. Stand well clear.
 """),
-    craft("he_bomb"),
-    craft("heavy_bomb"),
-    craft("thermobaric_bomb"),
-    craft("cluster_bomb"),
-    craft("bunker_buster"),
-    craft("napalm_bomb"),
-    craft("moab"),
+    craft("he_warhead"),
+    craft("heavy_warhead"),
+    craft("thermobaric_warhead"),
+    craft("cluster_warhead"),
+    craft("bunker_buster_warhead"),
+    craft("napalm_warhead"),
+    craft("massive_warhead"),
 ])
 
 entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "launch_computer", "basic_missile", "launch_pad",
                                                               "gantry_frame", "gantry_arm", "radar_mast", "radar_dish", "antenna"], [
     text("""
-A **Launch Silo** puts a bomb on top of a missile and sends it to any point up to 1024 blocks away. A **Launch Computer** aims it: its radar scope shows the silos it controls, and every missile in flight within 512 blocks.
+A **Launch Silo** puts a [warhead](ordnance/warheads) on top of a missile and sends it to any point up to 1024 blocks away. A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.
 
-The silo needs a **Basic Missile** and a warhead, which is any [bomb](ordnance/bombs). The warhead goes off as that bomb does, and a bunker buster bores in first. Each launch takes the missile, the warhead and 100,000 FE.
+The silo needs a **Basic Missile** and any warhead. Each launch takes the missile, the warhead and 100,000 FE.
 """),
     structure("launch_silo", "A 3 by 3 launch pad, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. The gantry tower stands beside the pad's middle row, on your left as you face the controller: 9 high, with the Gantry Arm reaching in at the seventh block up. The column above the middle of the pad must be clear: that is where the missile stands."),
-    structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller. The model puts the antenna on the desk beside the screens."),
+    structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller."),
     text("""
-**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own to run its radar, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then click on the scope to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target in range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
+**The map.** The computer maps the ground within 1024 blocks of it as it gets loaded (by you, by missiles flying over) and keeps what it has seen; ground no one has been near is blank. Drag the map to look round, scroll to zoom in and out, and press **Centre** to come back. Under the map are the coordinates of the point under the cursor.
 
-The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and comes down on the target from high above. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It keeps the chunks it flies through loaded, so the target need not be.
+**Launching.** Load the silo with a missile and a warhead (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target in range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
+
+The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and dives on the target from high above, screaming down for its last few seconds. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It flies on whether or not anyone is near the ground below, loading the chunks ahead of it, so the target need not be loaded.
 
 Whatever it hits on the way sets off the warhead there, so keep the sky above the silo clear.
 """),
@@ -894,6 +896,16 @@ A solid-fuel missile with no guidance beyond its launch: it flies the arc it was
     craft("radar_mast"),
     craft("radar_dish"),
     craft("antenna"),
+])
+
+entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array"], [
+    text("""
+A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.
+
+A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. Anti-missile defences to shoot them down are still to come, and will take their tracks from it.
+"""),
+    structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a 3 by 3 crown of Radar Dishes on top: formed, they become one big turning dish."),
+    craft("radar_array"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",

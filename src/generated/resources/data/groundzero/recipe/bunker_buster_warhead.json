@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:he_warhead",
+    "groundzero:tungsten_rod",
+    "groundzero:tungsten_rod",
+    "groundzero:tungsten_carbide_ingot",
+    "groundzero:tungsten_carbide_ingot",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:bunker_buster_warhead"
+  }
+}

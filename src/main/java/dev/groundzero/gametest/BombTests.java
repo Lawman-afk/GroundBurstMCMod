@@ -32,7 +32,7 @@ final class BombTests {
         GZGameTests.test("bunker_buster_penetrates_when_delivered", GZGameTests.FLOOR_16, 60, BombTests::penetrate);
         GZGameTests.test("thermobaric_lights_its_cloud_a_moment_later", GZGameTests.FLOOR_16, 60, BombTests::thermobaric);
         GZGameTests.test("cluster_bomb_scatters_bomblets", GZGameTests.FLOOR_16, 20, BombTests::cluster);
-        GZGameTests.test("napalm_bomb_lays_burning_napalm", GZGameTests.FLOOR_16, 20, BombTests::napalm);
+        GZGameTests.test("napalm_warhead_lays_napalm_all_round", GZGameTests.FLOOR_16, 20, BombTests::napalm);
         GZGameTests.test("napalm_fire_burns_and_burns_out", GZGameTests.FLOOR_16, 40, BombTests::napalmFire);
     }
 
@@ -58,12 +58,12 @@ final class BombTests {
     private static void signal(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.HE_BOMB.block().get(), at, Direction.NORTH, false);
+        ChargeBlockEntity be = place(helper, GZOrdnance.HE_WARHEAD.block().get(), at, Direction.NORTH, false);
         be.setFrequency(12);
         be.arm(helper.getLevel(), null);
         helper.runAfterDelay(4, () -> {
             helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 12, null, 10) == 1, "it took the signal");
-            helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.HE_BOMB.block().get())
+            helper.succeedWhen(() -> helper.assertTrue(!is(helper, at, GZOrdnance.HE_WARHEAD.block().get())
                     && is(helper, new BlockPos(8, 1, 8), Blocks.AIR), "gone off, and blown a hole"));
         });
     }
@@ -72,7 +72,7 @@ final class BombTests {
     private static void impact(GameTestHelper helper) {
         floor(helper);
         int before = Charges.fired;
-        place(helper, GZOrdnance.HE_BOMB.block().get(), new BlockPos(8, 8, 8), Direction.NORTH, true);
+        place(helper, GZOrdnance.HE_WARHEAD.block().get(), new BlockPos(8, 8, 8), Direction.NORTH, true);
         helper.succeedWhen(() -> {
             helper.assertTrue(Charges.fired > before, "it went off");
             helper.assertTrue(is(helper, new BlockPos(8, 1, 8), Blocks.AIR), "on the ground, where it landed");
@@ -82,10 +82,10 @@ final class BombTests {
     /** A safe bomb placed in the air falls and lands whole, its fuze settings kept. */
     private static void safeFall(GameTestHelper helper) {
         floor(helper);
-        ChargeBlockEntity be = place(helper, GZOrdnance.HE_BOMB.block().get(), new BlockPos(8, 8, 8), Direction.NORTH, false);
+        ChargeBlockEntity be = place(helper, GZOrdnance.HE_WARHEAD.block().get(), new BlockPos(8, 8, 8), Direction.NORTH, false);
         be.setFrequency(77);
         helper.succeedWhen(() -> {
-            helper.assertTrue(is(helper, new BlockPos(8, 2, 8), GZOrdnance.HE_BOMB.block().get()), "landed on the floor");
+            helper.assertTrue(is(helper, new BlockPos(8, 2, 8), GZOrdnance.HE_WARHEAD.block().get()), "landed on the floor");
             ChargeBlockEntity landed = ChargeBlock.at(helper.getLevel(), helper.absolutePos(new BlockPos(8, 2, 8)));
             helper.assertTrue(landed != null && landed.frequency() == 77 && !landed.armed(), "safe, frequency kept");
         });
@@ -120,11 +120,11 @@ final class BombTests {
     private static void thermobaric(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.THERMOBARIC_BOMB.block().get(), at, Direction.NORTH, false);
+        ChargeBlockEntity be = place(helper, GZOrdnance.THERMOBARIC_WARHEAD.block().get(), at, Direction.NORTH, false);
         be.arm(helper.getLevel(), null);
         be.trigger(helper.getLevel(), null);
         helper.runAfterDelay(4, () -> {
-            helper.assertTrue(!is(helper, at, GZOrdnance.THERMOBARIC_BOMB.block().get()), "the bomb has burst");
+            helper.assertTrue(!is(helper, at, GZOrdnance.THERMOBARIC_WARHEAD.block().get()), "the bomb has burst");
             helper.assertTrue(is(helper, new BlockPos(8, 1, 8), Blocks.STONE) && Charges.pendingAt(helper.getLevel(), helper.absolutePos(at)),
                     "but the cloud is not lit yet");
             helper.succeedWhen(() -> helper.assertTrue(is(helper, new BlockPos(8, 1, 8), Blocks.AIR), "then it is"));
@@ -135,7 +135,7 @@ final class BombTests {
     private static void cluster(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.CLUSTER_BOMB.block().get(), at, Direction.NORTH, false);
+        ChargeBlockEntity be = place(helper, GZOrdnance.CLUSTER_WARHEAD.block().get(), at, Direction.NORTH, false);
         be.arm(helper.getLevel(), null);
         be.trigger(helper.getLevel(), null);
         AABB area = new AABB(helper.absolutePos(new BlockPos(0, 0, 0))).expandTowards(16, 16, 16);
@@ -144,24 +144,24 @@ final class BombTests {
         helper.succeed();
     }
 
-    /** The napalm bomb lays burning napalm both ways along its length. */
+    /** The napalm warhead lays burning napalm all round itself. */
     private static void napalm(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 2, 8);
-        ChargeBlockEntity be = place(helper, GZOrdnance.NAPALM_BOMB.block().get(), at, Direction.EAST, false);
+        ChargeBlockEntity be = place(helper, GZOrdnance.NAPALM_WARHEAD.block().get(), at, Direction.EAST, false);
         be.arm(helper.getLevel(), null);
         be.trigger(helper.getLevel(), null);
-        int ahead = 0, behind = 0;
+        int[] sides = new int[4];                                    // east, west, south, north of the warhead
+        BlockPos c = helper.absolutePos(at);
         for (BlockPos p : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(1, 1, 1)), helper.absolutePos(new BlockPos(15, 4, 15)))) {
             if (helper.getLevel().getBlockState(p).is(GZOrdnance.NAPALM_FIRE.get())) {
-                if (p.getX() > helper.absolutePos(at).getX()) {
-                    ahead++;
-                } else {
-                    behind++;
-                }
+                if (p.getX() > c.getX()) sides[0]++;
+                if (p.getX() < c.getX()) sides[1]++;
+                if (p.getZ() > c.getZ()) sides[2]++;
+                if (p.getZ() < c.getZ()) sides[3]++;
             }
         }
-        helper.assertTrue(ahead >= 3 && behind >= 3, "napalm both ways along it (" + ahead + " east, " + behind + " west)");
+        helper.assertTrue(java.util.Arrays.stream(sides).allMatch(n -> n >= 2), "napalm all round it " + java.util.Arrays.toString(sides));
         helper.succeed();
     }
 

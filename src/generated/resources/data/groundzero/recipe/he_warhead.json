@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:rdx_crystals",
+    "groundzero:rdx_crystals",
+    "groundzero:rdx_crystals",
+    "groundzero:basic_circuit"
+  ],
+  "result": {
+    "id": "groundzero:he_warhead"
+  }
+}

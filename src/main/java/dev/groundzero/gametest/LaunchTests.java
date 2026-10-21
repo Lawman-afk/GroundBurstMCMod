@@ -27,6 +27,9 @@ final class LaunchTests {
         GZGameTests.test("silo_will_not_launch_unready", GZGameTests.FLOOR_16, 20, LaunchTests::unready);
         GZGameTests.test("computer_aims_and_arms_each_silo", GZGameTests.FLOOR_16, 20, LaunchTests::perSilo);
         GZGameTests.test("armed_silo_disarms_when_unready", GZGameTests.FLOOR_16, 20, LaunchTests::disarms);
+        GZGameTests.testOpenSky("missile_flies_on_over_unloaded_ground", GZGameTests.FLOOR_16, 400, LaunchTests::longFlight);
+        GZGameTests.test("radar_array_tracks_incoming_missiles", GZGameTests.FLOOR_16, 60, LaunchTests::radar);
+        GZGameTests.test("computer_surveys_the_ground_round_it", GZGameTests.FLOOR_16, 40, LaunchTests::survey);
         GZGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GZGameTests.FLOOR_16, 400, LaunchTests::flight);
     }
 
@@ -62,7 +65,7 @@ final class LaunchTests {
         s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.NO_WARHEAD, "wants a warhead: " + s.readiness());
         helper.assertTrue(!LaunchSiloBlockEntity.isWarhead(new ItemStack(GZOrdnance.C4.item().get())), "C4 is no warhead");
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_BOMB.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.NO_POWER, "wants power: " + s.readiness());
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         helper.assertTrue(s.readiness() == LaunchSiloBlockEntity.Readiness.READY, "ready: " + s.readiness());
@@ -87,7 +90,7 @@ final class LaunchTests {
 
     private static void load(LaunchSiloBlockEntity s) {
         s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_BOMB.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
     }
 
@@ -134,6 +137,63 @@ final class LaunchTests {
         helper.succeedWhen(() -> helper.assertTrue(!s.armed(), "disarmed once it is not ready"));
     }
 
+    /**
+     * A missile sent 400 blocks off (no warhead) over ground no one has loaded: its flight goes on every tick whatever
+     * is loaded (it used to freeze where it flew into an unloaded chunk), and it arrives on time.
+     */
+    private static void longFlight(GameTestHelper helper) {
+        floor(helper);
+        var level = helper.getLevel();
+        net.minecraft.world.phys.Vec3 pad = helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 1, 8));
+        dev.groundzero.content.launch.Flights.Flight f = dev.groundzero.content.launch.Flights.launch(level, pad, pad.add(400, 0, 0),
+                ItemStack.EMPTY, null);
+        int due = f.ticksToImpact();
+        helper.runAfterDelay(120, () -> helper.assertTrue(f.position().distanceTo(pad) > 60, "well on its way after 6 s: " + f.position()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!dev.groundzero.content.launch.Flights.of(level).all().contains(f), "arrived (due in " + due + " ticks)");
+        });
+    }
+
+    /** The Radar Array forms, and a missile coming down beside it is incoming (and a comparator reads it). */
+    private static void radar(GameTestHelper helper) {
+        floor(helper);
+        BlockPos rel = new BlockPos(7, 1, 2);
+        build(helper, rel, GZLaunch.RADAR_CONTROLLER.block().get(), GZLaunch.RADAR);
+        dev.groundzero.content.launch.RadarArrayBlockEntity r =
+                (dev.groundzero.content.launch.RadarArrayBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
+        helper.assertTrue(r != null, "a radar controller");
+        r.revalidate();
+        helper.assertTrue(r.isFormed(), "formed");
+        r.energy().generate(dev.groundzero.content.launch.RadarArrayBlockEntity.ENERGY_CAPACITY);
+        net.minecraft.world.phys.Vec3 at = helper.absoluteVec(new net.minecraft.world.phys.Vec3(7, 1, 2));
+        // From 300 blocks off, coming down 40 blocks from it (no warhead): far from landing within the test.
+        dev.groundzero.content.launch.Flights.launch(helper.getLevel(), at.add(-300, 0, 0), at.add(40, 0, 0), ItemStack.EMPTY, null);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(r.incoming() >= 1, "it sees the missile coming");
+            int signal = helper.getLevel().getBlockState(helper.absolutePos(rel))
+                    .getAnalogOutputSignal(helper.getLevel(), helper.absolutePos(rel), net.minecraft.core.Direction.NORTH);
+            helper.assertTrue(signal >= 1, "a comparator reads it (" + signal + ")");
+        });
+    }
+
+    /** A formed computer maps the ground round it: the tile it stands in has colours. */
+    private static void survey(GameTestHelper helper) {
+        floor(helper);
+        BlockPos rel = new BlockPos(8, 1, 8);
+        build(helper, rel, GZLaunch.COMPUTER_CONTROLLER.block().get(), GZLaunch.COMPUTER);
+        LaunchComputerBlockEntity c = (LaunchComputerBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
+        helper.assertTrue(c != null, "a computer controller");
+        c.revalidate();
+        c.energy().generate(LaunchComputerBlockEntity.ENERGY_CAPACITY);
+        BlockPos at = helper.absolutePos(rel);
+        int span = dev.groundzero.content.launch.TerrainSurvey.TILE;
+        helper.succeedWhen(() -> {
+            byte[] tile = dev.groundzero.content.launch.TerrainSurvey.of(helper.getLevel()).tile(helper.getLevel(), 1,
+                    Math.floorDiv(at.getX(), span), Math.floorDiv(at.getZ(), span)).colours();
+            helper.assertTrue(tile.length == span * span, "the ground round it is mapped");
+        });
+    }
+
     /** No warhead, no launch. */
     private static void unready(GameTestHelper helper) {
         floor(helper);
@@ -154,7 +214,7 @@ final class LaunchTests {
         Charges.bombScale = 0.3f;
         LaunchSiloBlockEntity s = silo(helper, new BlockPos(3, 1, 2));
         s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, new ItemStack(GZLaunch.BASIC_MISSILE.get()));
-        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_BOMB.item().get()));
+        s.inventory().setItem(LaunchSiloBlockEntity.SLOT_WARHEAD, new ItemStack(GZOrdnance.HE_WARHEAD.item().get()));
         s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         BlockPos target = new BlockPos(13, 1, 13);
         helper.assertTrue(s.launch(helper.getLevel(), helper.absolutePos(target), null), "launch ordered");

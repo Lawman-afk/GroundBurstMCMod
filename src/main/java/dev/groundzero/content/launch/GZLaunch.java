@@ -52,6 +52,12 @@ public final class GZLaunch {
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GZBlocks.register("launch_computer", "Launch Computer",
             GZTab.MISSILES, p -> new LaunchComputerBlock(p, GZLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final WithItem<RadarArrayBlock> RADAR_CONTROLLER = GZBlocks.register("radar_array", "Radar Array",
+            GZTab.MISSILES, p -> new RadarArrayBlock(p, GZLaunch.RADAR_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadarArrayBlockEntity>> RADAR_ENTITY =
+            GZBlockEntities.BLOCK_ENTITIES.register("radar_array", () -> new BlockEntityType<>(RadarArrayBlockEntity::new,
+                    RADAR_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchSiloBlockEntity>> SILO_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_silo", () -> new BlockEntityType<>(LaunchSiloBlockEntity::new, SILO_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
@@ -110,6 +116,23 @@ public final class GZLaunch {
                     'N', Entry.of(() -> ANTENNA.block().get()), 'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPUTER_CONTROLLER.block().get())));
 
+    /**
+     * The Radar Array: a 3x3 deck of Machine Casing with the controller at the front middle and an Energy Port at the
+     * back middle; a Radar Mast three high from the deck's middle; on top a 3x3 crown of Radar Dishes (formed, one big
+     * turning dish).
+     */
+    public static final MultiblockDefinition RADAR = new MultiblockDefinition(GroundZero.id("radar_array"),
+            new String[][] {
+                    {"CXC", "CCC", "CEC"},
+                    {"   ", " M ", "   "},
+                    {"   ", " M ", "   "},
+                    {"   ", " M ", "   "},
+                    {"DDD", "DDD", "DDD"},
+            },
+            Map.of('C', Entry.of(() -> GZMultiblocks.MACHINE_CASING.block().get()), 'M', Entry.of(() -> RADAR_MAST.block().get()),
+                    'D', Entry.of(() -> RADAR_DISH.block().get()), 'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> RADAR_CONTROLLER.block().get())));
+
     private GZLaunch() {}
 
     public static void init() {}
@@ -118,6 +141,25 @@ public final class GZLaunch {
         ENTITIES.register(modBus);
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(TICKETS));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> Launches.clear());
+        // Missiles in the air move on every tick, loaded or not (Flights).
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+                Flights.of(level).tick(level);
+                TerrainSurvey.of(level).tick(level);
+            }
+        });
+        // The terrain survey hears about chunks coming and going (it maps those near a Launch Computer).
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+                TerrainSurvey.of(level).chunkLoaded(e.getChunk().getPos().pack());
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level
+                    && e.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk chunk) {
+                TerrainSurvey.of(level).chunkUnloading(level, chunk);
+            }
+        });
     }
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color, SoundType sound, boolean see) {

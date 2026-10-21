@@ -68,7 +68,7 @@ final class MushroomCloud {
      * @param crater   the crater radius (sets the cloud's height)
      * @param ground   the ground's height under the burst
      * @param earth    the colour of the ground (the stem is that dust)
-     * @param dusty    a grey dust cloud that hardly glows (the MOAB), not a nuclear fire cloud
+     * @param dusty    a grey dust cloud that hardly glows (unused since the Massive Ordnance Warhead lost its mushroom), not a nuclear fire cloud
      */
     MushroomCloud(Vec3 center, double ground, float fireball, float crater, long seed, float quality, int earth, int life, boolean dusty) {
         this.dusty = dusty;

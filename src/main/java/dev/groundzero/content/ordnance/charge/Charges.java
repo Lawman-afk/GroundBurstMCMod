@@ -198,13 +198,13 @@ public final class Charges {
                 dev.groundzero.content.ordnance.ThrownExplosive.popUp(level, c.add(0, -0.3, 0), by);
             }
             case CLAYMORE -> claymore(level, pos, facing, by);
-            case HE_BOMB, HEAVY_BOMB, MOAB -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile(kind.id), by, bombScale);
-            case NAPALM_BOMB -> {
-                Blasts.detonate(level, c, Blasts.profile("napalm_bomb"), by, bombScale);
-                napalm(level, pos, facing);
+            case HE_WARHEAD, HEAVY_WARHEAD, MASSIVE_WARHEAD -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile(kind.id), by, bombScale);
+            case NAPALM_WARHEAD -> {
+                Blasts.detonate(level, c, Blasts.profile("napalm_warhead"), by, bombScale);
+                napalm(level, pos);
             }
-            case CLUSTER_BOMB -> cluster(level, c, by);
-            case THERMOBARIC_BOMB -> {
+            case CLUSTER_WARHEAD -> cluster(level, c, by);
+            case THERMOBARIC_WARHEAD -> {
                 // The fuel cloud spreads first; it is lit 0.6 s later.
                 level.sendParticles(ParticleTypes.CLOUD, c.x, c.y, c.z, 160, 3.5, 1.5, 3.5, 0.25);
                 level.sendParticles(ParticleTypes.POOF, c.x, c.y, c.z, 40, 1.5, 0.6, 1.5, 0.4);
@@ -212,7 +212,7 @@ public final class Charges {
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
-            case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster"), by, bombScale);
+            case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
         }
     }
 
@@ -237,8 +237,8 @@ public final class Charges {
     /** Cluster: bomblets, and the chance each is a dud (left lying as a live landmine). */
     public static final int CLUSTER_BOMBLETS = 24;
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
-    /** Napalm: the ellipse's half-length (along the bomb) and half-width. */
-    public static final float NAPALM_HALF_LENGTH = 15, NAPALM_HALF_WIDTH = 6;
+    /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
+    public static final float NAPALM_RADIUS = 10;
 
     private static void schedule(ServerLevel level, Pending p) {
         PENDING.computeIfAbsent(level, k -> new ArrayList<>()).add(p);
@@ -253,7 +253,7 @@ public final class Charges {
     /** The thermobaric cloud lit: the blast, then extra harm to anything sheltering (the overpressure fills rooms and caves). */
     private static void thermobaricIgnite(ServerLevel level, BlockPos pos, @Nullable Entity by) {
         Vec3 c = Vec3.atCenterOf(pos);
-        Blasts.detonate(level, c, Blasts.profile("thermobaric_bomb"), by, bombScale);
+        Blasts.detonate(level, c, Blasts.profile("thermobaric_warhead"), by, bombScale);
         double reach = THERMOBARIC_REACH * bombScale;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(reach))) {
             double d = e.position().distanceTo(c);
@@ -286,7 +286,7 @@ public final class Charges {
             BlockState s = level.getBlockState(next);
             int cost = s.getBlock().getExplosionResistance() >= BREACH_MAX_RESISTANCE ? BUNKER_HARD_COST : 1;
             if (next.getY() < level.getMinY() || s.getDestroySpeed(level, next) < 0 || cost > left) {
-                Blasts.detonate(level, Vec3.atCenterOf(at), Blasts.profile("bunker_buster"), by, bombScale);
+                Blasts.detonate(level, Vec3.atCenterOf(at), Blasts.profile("bunker_buster_warhead"), by, bombScale);
                 return;
             }
             if (!s.isAir()) {
@@ -304,22 +304,20 @@ public final class Charges {
         schedule(level, new Pending(p.kind(), at, p.facing(), left, p.owner(), level.getGameTime() + 1, BORE));
     }
 
-    /** Napalm over the ground in an ellipse centred on the bomb, long along its body, most of it alight. */
-    private static void napalm(ServerLevel level, BlockPos pos, Direction facing) {
-        Vec3 ahead = Vec3.atLowerCornerOf(facing.getUnitVec3i());
-        Vec3 side = Vec3.atLowerCornerOf(facing.getClockWise().getUnitVec3i());
-        float halfLength = NAPALM_HALF_LENGTH * bombScale, halfWidth = Math.max(1, NAPALM_HALF_WIDTH * bombScale);
+    /** Napalm over the ground in a ragged circle round the warhead, most of it alight. */
+    private static void napalm(ServerLevel level, BlockPos pos) {
+        float radius = Math.max(1, NAPALM_RADIUS * bombScale);
         Vec3 centre = Vec3.atCenterOf(pos);
         BlockState fire = GZOrdnance.NAPALM_FIRE.get().defaultBlockState();
         var r = level.getRandom();
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
-        for (int a = (int) -halfLength; a <= halfLength; a++) {
-            for (int b = (int) -halfWidth; b <= halfWidth; b++) {
-                double e = (a * a) / (halfLength * halfLength) + (b * b) / (halfWidth * halfWidth);
+        for (int a = (int) -radius; a <= radius; a++) {
+            for (int b = (int) -radius; b <= radius; b++) {
+                double e = (a * a + b * b) / (double) (radius * radius);
                 if (e > 1 || r.nextFloat() > 0.9f - 0.3f * e) {
                     continue;
                 }
-                Vec3 p = centre.add(ahead.scale(a)).add(side.scale(b));
+                Vec3 p = centre.add(a, 0, b);
                 at.set(p.x, pos.getY() + 3, p.z);
                 for (int i = 0; i < 8 && level.getBlockState(at.below()).getCollisionShape(level, at.below()).isEmpty(); i++) {
                     at.move(Direction.DOWN);
@@ -330,7 +328,7 @@ public final class Charges {
                 }
             }
         }
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(halfLength, 4, halfLength))) {
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius, 4, radius))) {
             if (!e.fireImmune()) {
                 e.igniteForSeconds(10);
             }
@@ -340,7 +338,7 @@ public final class Charges {
 
     /** The cluster bomb's casing bursts and throws its bomblets out, most of them 6-18 blocks away. */
     private static void cluster(ServerLevel level, Vec3 c, @Nullable Entity by) {
-        Blasts.detonate(level, c, Blasts.profile("cluster_bomb"), by, bombScale);
+        Blasts.detonate(level, c, Blasts.profile("cluster_warhead"), by, bombScale);
         var r = level.getRandom();
         for (int i = 0; i < CLUSTER_BOMBLETS; i++) {
             double a = i * 2.39996 + r.nextDouble() * 0.4;

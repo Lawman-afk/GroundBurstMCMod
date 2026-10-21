@@ -51,10 +51,10 @@ public final class FxPhotographer {
                 new Scene("nuclear_close", "test/nuclear", 130, -32, List.of(30, 120, 300, 700)),
                 new Scene("nuclear_night", "test/nuclear", 130, -32, List.of(10, 60, 300, 700), "midnight"),
                 new Scene("meltdown", "reactor_meltdown", 55, 2, List.of(2, 8, 20, 60, 160, 400)),
-                new Scene("bomb_he", "he_bomb", 26, 6, List.of(2, 6, 14, 40)),
-                new Scene("bomb_heavy", "heavy_bomb", 45, 2, List.of(3, 10, 25, 80)),
-                new Scene("bomb_thermobaric", "thermobaric_bomb", 55, 2, List.of(3, 10, 25, 80)),
-                new Scene("bomb_moab", "moab", 110, -6, List.of(4, 20, 80, 300, 700)),
+                new Scene("warhead_he", "he_warhead", 26, 6, List.of(2, 6, 14, 40)),
+                new Scene("warhead_heavy", "heavy_warhead", 45, 2, List.of(3, 10, 25, 80)),
+                new Scene("warhead_thermobaric", "thermobaric_warhead", 55, 2, List.of(3, 10, 25, 80)),
+                new Scene("warhead_massive", "massive_warhead", 110, -6, List.of(4, 20, 80, 300, 700)),
                 new Scene("meltdown_dusk", "reactor_meltdown", 40, 14, List.of(30, 200), "13000"),
                 new Scene("suits", "suits", 3, 12, List.of(15)),
                 new Scene("suits_back", "suits_back", 3, 12, List.of(15)),
@@ -63,11 +63,13 @@ public final class FxPhotographer {
                 new Scene("charges", "charges", 4, 22, List.of(10, 15, 60)),
                 new Scene("charge_ui", "charges", 4, 22, List.of(30, 45, 60)),
                 new Scene("mines", "mines", 5, 25, List.of(3, 6, 9, 30)),
-                new Scene("bombs", "bombs", 9, 25, List.of(10, 40)),
+                new Scene("warheads", "warheads", 9, 25, List.of(10, 40)),
                 new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
                 new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
                 new Scene("launch_ui", "launch", 9, 0, List.of(22, 300, 340)),
-                new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)))) {
+                new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)),
+                new Scene("radar", "radar", 22, -16, List.of(20, 60)),
+                new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)))) {
             if (only.isEmpty() || s.name().startsWith(only)) {
                 SCENES.add(s);
             }
@@ -185,12 +187,12 @@ public final class FxPhotographer {
         }
     }
 
-    /** The bombs side by side, noses to the right of the camera, some armed; or a napalm bomb set off across the view. */
+    /** The warheads in a row across the view, some armed; or a napalm warhead set off. */
     private static void bombs(ServerLevel level, int x, int ground, boolean napalm) {
         var F = dev.groundzero.content.ordnance.charge.ChargeBlock.FACING;
         if (napalm) {
             var at = new net.minecraft.core.BlockPos(x, ground, -6);
-            level.setBlockAndUpdate(at, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB.block().get().defaultBlockState()
+            level.setBlockAndUpdate(at, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD.block().get().defaultBlockState()
                     .setValue(F, net.minecraft.core.Direction.SOUTH));
             var be = dev.groundzero.content.ordnance.charge.ChargeBlock.at(level, at);
             if (be != null) {
@@ -199,10 +201,10 @@ public final class FxPhotographer {
             }
             return;
         }
-        var bombs = java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.MOAB);
+        var bombs = java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD);
         for (int i = 0; i < bombs.size(); i++) {
             var at = new net.minecraft.core.BlockPos(x + (i % 2) * 3, ground, -6 + i * 2);
             level.setBlockAndUpdate(at, bombs.get(i).block().get().defaultBlockState().setValue(F, net.minecraft.core.Direction.SOUTH)
@@ -230,7 +232,7 @@ public final class FxPhotographer {
             silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
             silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
-                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB.item().get()));
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()));
             silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
             silo.setTarget(launchTarget.getX(), launchTarget.getZ());
             silo.arm(true);
@@ -248,7 +250,7 @@ public final class FxPhotographer {
                     silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
                             new net.minecraft.world.item.ItemStack(dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE.get()));
                     silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_WARHEAD,
-                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB.item().get()));
+                            new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item().get()));
                 }
                 if (i != 2) {                                  // one still charging
                     silo.energy().generate(dev.groundzero.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
@@ -258,6 +260,27 @@ public final class FxPhotographer {
                 }
             }
         }
+    }
+
+    private static net.minecraft.core.BlockPos radarAt;
+
+    /**
+     * A formed, powered Radar Array facing the camera, and missiles in the air round it (no warheads): two coming down
+     * near it (incoming), two passing elsewhere.
+     */
+    private static void radarSite(ServerLevel level, int x, int ground) {
+        radarAt = new net.minecraft.core.BlockPos(x, ground, 0);
+        formed(level, radarAt, dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.RADAR);
+        if (level.getBlockEntity(radarAt) instanceof dev.groundzero.content.launch.RadarArrayBlockEntity radar) {
+            radar.revalidate();
+            radar.energy().generate(dev.groundzero.content.launch.RadarArrayBlockEntity.ENERGY_CAPACITY);
+        }
+        Vec3 c = Vec3.atBottomCenterOf(radarAt);
+        var empty = net.minecraft.world.item.ItemStack.EMPTY;
+        dev.groundzero.content.launch.Flights.launch(level, c.add(-1500, 0, 600), c.add(120, 0, -60), empty, null);
+        dev.groundzero.content.launch.Flights.launch(level, c.add(900, 0, 1400), c.add(-200, 0, 150), empty, null);
+        dev.groundzero.content.launch.Flights.launch(level, c.add(-1200, 0, -1500), c.add(1500, 0, -900), empty, null);
+        dev.groundzero.content.launch.Flights.launch(level, c.add(1600, 0, 300), c.add(1300, 0, 1500), empty, null);
     }
 
     private static void formed(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.world.level.block.Block controller,
@@ -355,7 +378,11 @@ public final class FxPhotographer {
                     mines(level, x, ground);
                     return;
                 }
-                if (s.profile().equals("bombs")) {
+                if (s.profile().equals("radar")) {
+                    radarSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("warheads")) {
                     bombs(level, x, ground, false);
                     return;
                 }
@@ -391,6 +418,9 @@ public final class FxPhotographer {
                     be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
                 }
             });
+        }
+        if (scene.name().equals("radar_ui") && step >= 0 && clock == 10 && radarAt != null) {
+            dev.groundzero.content.launch.RadarArrayBlock.screenHook.accept(radarAt);
         }
         if (scene.name().equals("launch_ui") && step >= 0 && clock == 10 && launchComputer != null) {
             dev.groundzero.content.launch.LaunchComputerBlock.screenHook.accept(launchComputer);

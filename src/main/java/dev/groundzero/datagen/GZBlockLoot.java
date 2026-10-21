@@ -51,10 +51,10 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.LANDMINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.BOUNCING_MINE.block().get());
         dropSelf(dev.groundzero.content.ordnance.GZOrdnance.CLAYMORE.block().get());
-        for (var bomb : java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB,
-                dev.groundzero.content.ordnance.GZOrdnance.MOAB)) {
+        for (var bomb : java.util.List.of(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.BUNKER_BUSTER, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD,
+                dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD)) {
             dropSelf(bomb.block().get());
         }
         // Launching (DESIGN.md §17).
@@ -65,6 +65,7 @@ public class GZBlockLoot extends BlockLootSubProvider {
         }
         dropSelf(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().get());
         // Corium sets as it is dug: either way you get Cooled Corium.
         dropSelf(dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.block().get());
         dropOther(dev.groundzero.content.nuclear.GZNuclear.CORIUM.block().get(), dev.groundzero.content.nuclear.GZNuclear.COOLED_CORIUM.item().get());

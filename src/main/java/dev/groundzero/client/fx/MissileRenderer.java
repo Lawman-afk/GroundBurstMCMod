@@ -32,8 +32,11 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     }
 
     private final ItemModelResolver items;
-    /** Made on first use: item components are not bound yet when entity renderers are built. */
-    private ItemStack look = ItemStack.EMPTY;
+    /**
+     * The missile as an item, one per warhead (its id as custom model data picks the nose's model). Made on first use:
+     * item components are not bound yet when entity renderers are built.
+     */
+    private final java.util.Map<String, ItemStack> looks = new java.util.HashMap<>();
 
     public MissileRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -48,10 +51,13 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     @Override
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
-        if (this.look.isEmpty()) {
-            this.look = new ItemStack(GZLaunch.BASIC_MISSILE.get());
-        }
-        this.items.updateForNonLiving(state.item, this.look, ItemDisplayContext.NONE, entity);
+        ItemStack look = this.looks.computeIfAbsent(entity.warheadName(), id -> {
+            ItemStack s = new ItemStack(GZLaunch.BASIC_MISSILE.get());
+            s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
+                    new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(id), java.util.List.of()));
+            return s;
+        });
+        this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getYRot(partialTicks);
         state.tilt = entity.tilt(partialTicks);
     }

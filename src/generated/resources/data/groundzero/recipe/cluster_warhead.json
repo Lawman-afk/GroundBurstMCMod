@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:frag_grenade",
+    "groundzero:frag_grenade",
+    "groundzero:frag_grenade",
+    "groundzero:frag_grenade",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundzero:cluster_warhead"
+  }
+}

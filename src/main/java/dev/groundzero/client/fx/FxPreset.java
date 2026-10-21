@@ -24,7 +24,7 @@ package dev.groundzero.client.fx;
  * @param jets         dirt jets thrown up in a cone out of the crater (and fire jets out of the fireball)
  * @param surge        how big and lasting the dust along the shock front is (the nuke's base surge)
  * @param mushroom     how long a mushroom cloud lasts (0: none; the fireball then rides its cap)
- * @param dusty        the mushroom cloud is grey dust rather than fire and smoke (the MOAB's)
+ * @param dusty        the mushroom cloud is grey dust rather than fire and smoke (the Massive Ordnance Warhead's, before it lost its mushroom)
  */
 public record FxPreset(float fireball, int fireballLife, float fireballRise, int glow, float flash, int flashTicks, float shake,
         int debris, int embers, int smoke, int smokeTicks, int smokeLife, float dust, float shell, float skyTint, int skyTicks,
@@ -54,10 +54,10 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
     public static final FxPreset THERMOBARIC = new FxPreset(1.5f, 45, 0.2f, 140, 0.6f, 8, 1.0f,
             40, 120, 130, 160, 360, 0.4f, 0.4f, 0.35f, 1200, 20, 1.8f, 0, false);
     /**
-     * MOAB: still a conventional bomb, so no mushroom cloud: a broad fireball that rolls up slowly, a towering column
+     * Massive Ordnance Warhead: still conventional, so no mushroom cloud: a broad fireball that rolls up slowly, a towering column
      * of smoke and dust over the crater that hangs a long time, a great ring of dust and a lot of debris.
      */
-    public static final FxPreset MOAB = new FxPreset(0.6f, 40, 0.35f, 90, 0.4f, 8, 1.0f,
+    public static final FxPreset MASSIVE_WARHEAD = new FxPreset(0.6f, 40, 0.35f, 90, 0.4f, 8, 1.0f,
             220, 80, 170, 260, 560, 0.35f, 0.32f, 0.3f, 2000, 70, 2.0f, 0, false);
 
     public static FxPreset byName(String name) {
@@ -69,7 +69,7 @@ public record FxPreset(float fireball, int fireballLife, float fireballRise, int
             case "he" -> HE;
             case "heavy" -> HEAVY;
             case "thermobaric" -> THERMOBARIC;
-            case "moab" -> MOAB;
+            case "massive_warhead" -> MASSIVE_WARHEAD;
             default -> name.startsWith("nuke") || name.startsWith("tsar") ? NUKE : MEDIUM;
         };
     }

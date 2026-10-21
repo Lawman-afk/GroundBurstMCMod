@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:heavy_warhead",
+    "groundzero:heavy_warhead",
+    "groundzero:heavy_warhead",
+    "groundzero:heavy_warhead",
+    "groundzero:thermobaric_slurry_canister",
+    "groundzero:thermobaric_slurry_canister",
+    "groundzero:dense_steel_plate",
+    "groundzero:dense_steel_plate",
+    "groundzero:military_circuit"
+  ],
+  "result": {
+    "id": "groundzero:massive_warhead"
+  }
+}

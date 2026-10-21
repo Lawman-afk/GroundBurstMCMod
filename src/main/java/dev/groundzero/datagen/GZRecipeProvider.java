@@ -292,8 +292,8 @@ public class GZRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(GZChemicals.PLASTIC_EXPLOSIVE), has(GZChemicals.PLASTIC_EXPLOSIVE)).save(output);
         // Bombs (slice 6d): direct recipes until the Assembly Bench (Phase 7).
         var o = new Object() {
-            final net.minecraft.world.level.ItemLike he = dev.groundzero.content.ordnance.GZOrdnance.HE_BOMB.item();
-            final net.minecraft.world.level.ItemLike heavy = dev.groundzero.content.ordnance.GZOrdnance.HEAVY_BOMB.item();
+            final net.minecraft.world.level.ItemLike he = dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item();
+            final net.minecraft.world.level.ItemLike heavy = dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item();
         };
         shapeless(RecipeCategory.COMBAT, o.he, 1)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
@@ -303,12 +303,12 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(o.he).requires(o.he).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
                 .requires(GZChemicals.RDX_CRYSTALS).requires(GZChemicals.RDX_CRYSTALS)
                 .unlockedBy(getHasName(o.he), has(o.he)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_BOMB.item(), 1)
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD.item(), 1)
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZParts.BASIC_CIRCUIT)
                 .unlockedBy(getHasName(GZChemicals.THERMOBARIC_SLURRY_CANISTER), has(GZChemicals.THERMOBARIC_SLURRY_CANISTER)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_BOMB.item(), 1)
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.CLUSTER_WARHEAD.item(), 1)
                 .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
                 .requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE).requires(dev.groundzero.content.ordnance.GZOrdnance.FRAG_GRENADE)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.ADVANCED_CIRCUIT)
@@ -318,11 +318,11 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(o.he).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_ROD).requires(GZParts.TUNGSTEN_CARBIDE_INGOT)
                 .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.ADVANCED_CIRCUIT)
                 .unlockedBy(getHasName(o.he), has(o.he)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_BOMB.item(), 1)
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.NAPALM_WARHEAD.item(), 1)
                 .requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER).requires(GZChemicals.NAPALM_CANISTER)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .unlockedBy(getHasName(GZChemicals.NAPALM_CANISTER), has(GZChemicals.NAPALM_CANISTER)).save(output);
-        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MOAB.item(), 1)
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item(), 1)
                 .requires(o.heavy).requires(o.heavy).requires(o.heavy).requires(o.heavy)
                 .requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER).requires(GZChemicals.THERMOBARIC_SLURRY_CANISTER)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.MILITARY_CIRCUIT)
@@ -368,6 +368,10 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.CRT_DISPLAY)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(Items.LEVER)
                 .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SENSOR_ARRAY).requires(GZParts.SENSOR_ARRAY)
+                .unlockedBy(getHasName(GZParts.SENSOR_ARRAY), has(GZParts.SENSOR_ARRAY)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.launch.GZLaunch.BASIC_MISSILE, 1)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZTags.commonItem("plates/steel")).requires(GZChemicals.SOLID_PROPELLANT).requires(GZChemicals.SOLID_PROPELLANT)
