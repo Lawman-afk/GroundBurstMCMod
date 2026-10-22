@@ -49,6 +49,9 @@ class Box:
     rotation: dict | None = None                      # {"origin": (x,y,z), "x":.., "y":.., "z":..} or axis/angle
     shade: bool = True
     light_emission: int = 0
+    #: Texels per model pixel (2: twice as fine). A missile in flight is its item model drawn four times over, so its
+    #: own flight model is four texels a pixel, as fine as the missiles standing on the launchers (after slice 9b).
+    density: int = 1
 
     def size(self) -> Vec3:
         return (self.to[0] - self.frm[0], self.to[1] - self.frm[1], self.to[2] - self.frm[2])
@@ -59,7 +62,8 @@ class Box:
         w, h = {
             "north": (sx, sy), "south": (sx, sy), "east": (sz, sy), "west": (sz, sy), "up": (sx, sz), "down": (sx, sz),
         }[d]
-        return max(1, math.ceil(w - 1e-6)), max(1, math.ceil(h - 1e-6))
+        k = self.density
+        return max(1, math.ceil(w * k - 1e-6)), max(1, math.ceil(h * k - 1e-6))
 
 
 # Display transform presets (vanilla values; "block" mirrors minecraft:block/block).
@@ -75,8 +79,9 @@ DISPLAY_BLOCK = {
 
 class BlockModel:
     def __init__(self, name: str, tex_size: tuple[int, int] = (64, 64), kind: str = "block",
-                 render_type: str | None = None, ambient_occlusion: bool = True, padding: int = 1):
+                 render_type: str | None = None, ambient_occlusion: bool = True, padding: int = 1, density: int = 1):
         self.name = name
+        self.density = density                # texels per model pixel for every box (see Box.density)
         self.kind = kind                      # "block" or "item": decides model/texture folders
         self.tex_w, self.tex_h = tex_size
         self.boxes: list[Box] = []
@@ -94,7 +99,8 @@ class BlockModel:
             shade: bool = True, light: int = 0, cull: dict[str, str] | None = None) -> Box:
         if any(b.name == name for b in self.boxes):
             raise ValueError(f"duplicate box {name}")
-        b = Box(name, tuple(map(float, frm)), tuple(map(float, to)), rotation=rotation, shade=shade, light_emission=light)
+        b = Box(name, tuple(map(float, frm)), tuple(map(float, to)), rotation=rotation, shade=shade, light_emission=light,
+                density=self.density)
         for d in (DIRS if faces == "all" else faces):
             b.faces[d] = Face(cullface=(cull or {}).get(d))
         self.boxes.append(b)

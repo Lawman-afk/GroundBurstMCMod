@@ -263,8 +263,10 @@ def formed() -> None:
     for i, (x0, z0, walls) in enumerate(((-23.9, 8.1, ("west", "north")), (21.9, 8.1, ("east", "north")),
                                           (-23.9, 53.9, ("west", "south")), (21.9, 53.9, ("east", "south")))):
         n = f"conduit{i}"
-        g.box(n, (x0, FLOOR, z0), (x0 + 2, 0, z0 + 2), faces=tuple(d for d in sides if d not in walls), bone=F)
-        for d in ("up", "down") + walls:                      # its ends meet floor and collar; its back the walls
+        # All the way up to the ground (after the user's look: they stopped a block short, at the collar), its top
+        # capped (it shows when the doors are open).
+        g.box(n, (x0, FLOOR, z0), (x0 + 2, TOP, z0 + 2), faces=tuple(d for d in sides if d not in walls) + ("up",), bone=F)
+        for d in ("down",) + walls:                           # its foot meets the floor; its back the walls
             g.open_ok.add((n, d))
         conduits.append(n)
     # The launch ring the missile stands on, its hold-down posts on the diagonals (clear of the fins), and the flame
@@ -394,25 +396,7 @@ def formed() -> None:
     S.paint(tex, posts, M.stripes(width=2, wear=0.4, under=M.STEEL_RAMP[2:7]))
     S.paint(tex, grate, M.steel(tone=0.22, rust=0.2))
     S.paint(tex, "duct", M.Material(ramp=M.SOOT_RAMP, tone=0.08, dither=1.0))
-    for name, _, _, _, kind in L.missile_parts():
-        if kind in L.NOSE_PARTS:
-            for nose in L.BENCH_NOSES:
-                g.paint_all(tex, f"n_{nose}_{name}", L.missile_paint(kind, nose))
-        else:
-            g.paint_all(tex, "m_" + name, L.missile_paint(kind))
-    for name, _, _, _, kind in L.strategic_parts():
-        if kind in L.NOSE_PARTS:
-            for nose in L.BENCH_NOSES:
-                g.paint_all(tex, f"sn_{nose}_{name}", L.strategic_paint(kind, nose))
-        else:
-            g.paint_all(tex, "s_" + name, L.strategic_paint(kind))
-    for name, _, _, _, kind in L.icbm_parts():
-        g.paint_all(tex, "i_" + name, L.icbm_paint(kind))
-    for nose in L.ICBM_NOSES:
-        for name, _, _, _, kind in L.icbm_nose_parts(nose):
-            g.paint_all(tex, f"in_{nose}_{name}", L.icbm_paint(kind, nose))
-            if kind == "tsar_vent":
-                g.paint_all(glow, f"in_{nose}_{name}", L.tsar_vent_glow())       # the Tsar's vents, lit as on the complex
+    L.paint_missiles(g, tex, glow, TAIL, CZ)                     # as on the complex (the Tsar's vents lit too)
     g.save(tex, glow)
     # While it counts down (the machine's "working"), the beacons flash in turn, twice a second.
     count = Animation("working", 1.0, loop=True)

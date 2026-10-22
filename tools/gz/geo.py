@@ -227,13 +227,37 @@ class GeoModel(BlockModel):
     #: (box name, face) openings that are meant to be seen into (a hopper mouth, a vent).
     open_ok: set[tuple[str, str]] = set()
 
+    def frames(self) -> dict[str, str | None]:
+        """Each bone's frame: its nearest rotated ancestor (or itself), None for the model's own space. Boxes in one
+        frame keep their places relative to each other however the frame is turned."""
+        rot = {b.name: any(b.rotation) for b in self.bones}
+        parent = {b.name: b.parent for b in self.bones}
+        out: dict[str, str | None] = {}
+        for bone in self.bones:
+            n = bone.name
+            while n is not None and not rot.get(n):
+                n = parent.get(n)
+            out[bone.name] = n
+        return out
+
     def holes(self, plane: float = 0.3, eps: float = 0.02, step: float = 0.25) -> list[str]:
         """Missing faces you can see into: on a solid box (thicker than a plane), the part of a left-out face that no
-        other box covers. A face may be left out only where another box hides it. Ignores rotated boxes/bones."""
-        import numpy as np  # noqa: PLC0415
-        rotated = {b.name for b in self.bones if any(b.rotation)}
+        other box covers. A face may be left out only where another box hides it. A rotated bone's boxes are checked
+        against the boxes turned with them (they had been skipped, and the radar dishes kept holes: after slice 9b);
+        boxes rotated on their own are skipped."""
         bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
-        solid = [b for b in self.boxes if not b.rotation and bone_of.get(b.name) not in rotated]
+        frame_of = self.frames()
+        groups: dict[str | None, list] = {}
+        for b in self.boxes:
+            if not b.rotation:
+                groups.setdefault(frame_of.get(bone_of.get(b.name)), []).append(b)
+        issues = []
+        for solid in groups.values():
+            issues += self._holes_in(solid, plane, eps, step)
+        return issues
+
+    def _holes_in(self, solid: list, plane: float, eps: float, step: float) -> list[str]:
+        import numpy as np  # noqa: PLC0415
         axis = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
         arr = np.array([[*c.frm, *c.to] for c in solid], dtype=np.float64).reshape(-1, 6)
         issues = []

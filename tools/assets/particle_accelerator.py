@@ -26,6 +26,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -194,59 +197,51 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    steel, gun, red = P.STEEL, P.GUNMETAL, P.PRIMER_RED
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    def plinth(t, r, d):
-        x, y, w, h = r
-        if d == "up":
-            t.rect(x, y, w, h, steel[3])
-            for yy in range(y + 1, y + h, 4):
-                for xx in range(x + 1 + (yy // 4) % 2 * 2, x + w, 4):
-                    t.px(xx, yy, steel[4])                                 # tread plate
-            t.outline(x, y, w, h, steel[2])
-        elif d == "down":
-            t.rect(x, y, w, h, gun[2])
-        else:
-            t.rect(x, y, w, h, gun[3])
-            for xx in range(x + 15, x + w - 1, 16):
-                t.vline(xx, y + 3, h - 3, gun[2])                          # plate seams
-            t.stripes(x, y, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    for b in parts["plinth"]:
-        g.paint_all(tex, b, plinth)
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.hline(r[0], r[1], r[2], steel[6]) if d == "up" else None))
 
-    def yoke(ramp):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, ramp[tone(d)])
-            if min(w, h) >= 4:
-                t.outline(x, y, w, h, ramp[1])
-                t.hline(x + 1, y + 1, w - 2, ramp[5])
-        return paint
-    for group, ramp in (("bend", red), ("dipole", red), ("quad", P.HAZARD_YELLOW)):
-        for b in parts[group]:
-            if is_first(group, b):
-                g.paint_all(tex, b, yoke(ramp))
-    for b in parts["bend_coil"]:
-        if is_first("bend_coil", b):
-            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.COPPER[tone(d)]),
-                                                 [t.vline(xx, r[1], r[3], P.COPPER[2]) for xx in range(r[0], r[0] + r[2], 2)] if d == "up" else None))
-    for b in parts["coil"]:
-        if is_first("coil", b):
-            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.COPPER[tone(d) + 1]),
-                                                 [t.hline(r[0], yy, r[2], P.COPPER[2]) for yy in range(r[1] + 1, r[1] + r[3], 2)]
-                                                 if d not in ("up", "down") else None))
-    for b in parts["flange"]:
-        if is_first("flange", b):
-            g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The accelerator's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): a dark steel
+    plinth plated in block-long sections, a tread-plate top and a hazard band; a polished beam pipe; red dipoles and
+    bending magnets, yellow quadrupoles, copper coils wound in turns; the special cells' cabinets and sockets; the
+    glowing source, window and bunch as they were."""
+    S = M.Surfacer(g, seed=131)
+    gun = P.GUNMETAL
+    names = lambda key: [b.name for b in parts.get(key, [])]                      # noqa: E731
+    dark = M.painted(M.ARMOUR_RAMP, tone=0.48, wear=0.2, rust=0.05)
+
+    S.paint(tex, names("plinth"), dark)
+
+    def plinth(f, img):
+        if f.d == "up":                                                        # tread plate
+            a, b = f.plane_uv()
+            bar = ((np.floor(a) % 4) == 1) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 1)
+            M.paste(img, S.material_on(f, M.steel(tone=0.55, brushed=0.03)), np.ones(f.shape, bool))
+            M.lighten(img, bar, 1.28, 8)
+            M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.7)
+            r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.darken(img, r < 1, 0.7)
+        elif f.vertical:
+            M.seams(f, img, every=16, axis="u", offset=15)                        # plate seams
+            M.paste(img, S.material_on(f, M.stripes(width=2, wear=0.3)), f.border["top"] < 2)
+    S.overlay(tex, names("plinth"), plinth)
+    S.paint(tex, names("pipe"), M.steel(tone=0.7, brushed=0.08))
+    red = M.painted(M.RED_PAINT_RAMP, tone=0.45, wear=0.15)
+    S.paint(tex, names("bend") + names("dipole"), red)
+    S.paint(tex, names("quad"), M.painted(M.YELLOW_PAINT_RAMP, tone=0.6, wear=0.2))
+    copper = M.Material(ramp=M.COPPER_RAMP, tone=0.55, mottle=0.02, grain=0.02, dither=0.4, edge_light=0.16, edge_dark=0.1, ao=0.3,
+                        grime=0.0, dust=0.0, brushed=0.05)
+    S.paint(tex, names("bend_coil") + names("coil"), copper)
+    S.overlay(tex, names("bend_coil"), lambda f, img: M.darken(img, (np.floor(f.plane_uv()[0]) % 2) == 1, 0.72), only=("up",))
+    S.overlay(tex, names("coil"), lambda f, img: M.darken(img, (np.floor(f.Y) % 2) == 1, 0.72) if f.vertical else None)
+    S.paint(tex, names("flange") + names("pickup") + names("target") + names("item_box") + names("injector"),
+            M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.2))
+
+    S.paint(tex, names("cabinet"), M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
 
     def cabinet(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d)])
-        if d in ("up", "down"):
-            return
-        t.outline(x, y, w, h, P.OLIVE[1])
         if d == "north":
             t.rect(x + 2, y + 2, 6, 4, P.BLACK_PAINT.deep)                 # CRT
             for xx in range(x + 3, x + 7):
@@ -254,72 +249,57 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.rect(x + 2, y + 8, 4, 3, P.WHITE_CERAMIC[5])                # dial
             t.px(x + 3, y + 9, P.BLACK_PAINT[1])
             t.stripes(x + 1, y + h - 2, w - 2, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    g.paint_all(tex, parts["cabinet"][0], cabinet)
-    g.paint_all(tex, parts["pickup"][0], lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.outline(*r, gun[1]) if min(r[2], r[3]) >= 4 else None))
+    g.paint_all(tex, names("cabinet")[0], cabinet)
 
     def lamps(t, r, d):
         for i, c in enumerate((P.INDICATOR_GREEN.light, P.NUCLEAR_AMBER.light, P.INDICATOR_RED.light)):
             t.px(r[0] + i, r[1], c)
-    g.paint_all(tex, parts["lamps"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[2]), lamps(t, r, d)))
-    g.paint_all(glow, parts["lamps"][0], lamps)
+    g.paint_all(tex, names("lamps")[0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[2]), lamps(t, r, d)))
+    g.paint_all(glow, names("lamps")[0], lamps)
 
-    def injector(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d != "up" and min(w, h) >= 4:
-            t.outline(x, y, w, h, gun[1])
-            t.stripes(x, y + h - 2, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    g.paint_all(tex, parts["injector"][0], injector)
-    g.paint_all(tex, parts["inlet"][0], lambda t, r, d: (t.rect(*r, steel[tone(d)]),
-                                                         (t.rect(r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, P.BLACK_PAINT.deep),
-                                                          t.rect(r[0] + 2, r[1] + 2, r[2] - 4, r[3] - 4, P.CHERENKOV[3])) if d == "north" else None))
+    S.overlay(tex, names("injector"), lambda f, img: M.paste(img, S.material_on(f, M.stripes(width=2, wear=0.3)), f.border["bottom"] < 2),
+              only=("north", "south", "east", "west"))
+    S.paint(tex, names("inlet"), M.steel(tone=0.55))
+    g.paint_all(tex, names("inlet")[0], lambda t, r, d: (t.rect(r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, P.BLACK_PAINT.deep),
+                                                          t.rect(r[0] + 2, r[1] + 2, r[2] - 4, r[3] - 4, P.CHERENKOV[3])) if d == "north" else None)
 
     def source(t, r, d):
         t.rect(*r, P.CHERENKOV[4])
         t.rect(r[0] + 1, r[1] + 1, max(1, r[2] - 2), max(1, r[3] - 2), P.CHERENKOV.shine)
-    g.paint_all(tex, parts["source"][0], source)
-    g.paint_all(glow, parts["source"][0], source)
-    g.paint_all(tex, parts["target"][0], lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.outline(*r, gun[1]) if min(r[2], r[3]) >= 4 else None))
+    g.paint_all(tex, names("source")[0], source)
+    g.paint_all(glow, names("source")[0], source)
 
     def window(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, P.ANTIMATTER[4])
         t.rect(x + 2, y + 2, w - 4, h - 4, P.ANTIMATTER[6])
-    g.paint_all(tex, parts["window"][0], window)
-    g.paint_all(glow, parts["window"][0], window)
+    g.paint_all(tex, names("window")[0], window)
+    g.paint_all(glow, names("window")[0], window)
 
-    def socket_face(t, r, stripe):
-        x, y, w, h = r
-        t.stripes(x, y, w, h, stripe, P.HAZARD_BLACK.base, width=2)
-        t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
-        t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
+    def socket(face, ramp):
+        band = M.Striped(ramp=ramp, tone=0.6, dither=0.4, wear=0.3, under=M.STEEL_RAMP[2:7], width=2,
+                         other=M.painted(M.BLACK_RAMP, tone=0.5, wear=0.3))
 
-    def terminal(t, r, d):
-        t.rect(*r, P.WARNING_RED[tone(d)])
-        if d == "west":
-            socket_face(t, r, P.WARNING_RED[3])
-        elif min(r[2], r[3]) >= 4:
-            t.outline(*r, P.WARNING_RED[1])
-    g.paint_all(tex, parts["terminal"][0], terminal)
-    for b in parts["insulator"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.WARNING_RED[4]) if d == "up" else
-                    (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]), t.hline(r[0], r[1] + 1, r[2], P.WHITE_CERAMIC[2])))
-
-    def item_box(t, r, d):
-        t.rect(*r, gun[tone(d)])
-        if d == "east":
-            socket_face(t, r, P.HAZARD_YELLOW.base)
-        elif min(r[2], r[3]) >= 4:
-            t.outline(*r, gun[1])
-    g.paint_all(tex, parts["item_box"][0], item_box)
+        def fn(f, img):
+            r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.paste(img, S.material_on(f, band), r < 3)
+            img[r >= 3, :3] = P.BLACK_PAINT.deep[:3]
+            M.darken(img, r == 3, 0.5)
+            M.lighten(img, (r >= 3) & ((f.border["bottom"] == 3) | (f.border["right"] == 3)), 1.0, 24)
+        return fn
+    S.paint(tex, names("terminal"), M.painted(M.RED_PAINT_RAMP, tone=0.45, wear=0.2))
+    S.overlay(tex, names("terminal"), socket("west", M.RED_PAINT_RAMP), only=("west",))
+    S.overlay(tex, names("item_box"), socket("east", M.YELLOW_PAINT_RAMP), only=("east",))
+    S.paint(tex, names("insulator"), M.white_paint(tone=0.8))
+    S.paint(tex, names("insulator"), M.painted(M.RED_PAINT_RAMP, tone=0.6, wear=0.0), only=("up",))
+    S.overlay(tex, names("insulator"), lambda f, img: M.darken(img, (np.floor(f.Y * 2) % 2) == 0, 0.82) if f.vertical else None)
 
     def bunch(t, r, d):
         t.rect(*r, P.ANTIMATTER[5])
         t.rect(r[0] + 1, r[1] + 1, max(1, r[2] - 2), max(1, r[3] - 2), P.ANTIMATTER.shine)
-    for b in parts["bunch"]:
+    for b in names("bunch"):
         g.paint_all(tex, b, bunch)
         g.paint_all(glow, b, bunch)
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

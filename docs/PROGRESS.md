@@ -223,8 +223,8 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | MissileTracker (analytic high-altitude flight, re-materialisation, destination chunk loading) | todo |
 | Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
 | Launch Pad multiblock + erector/clamp animations + GUI | todo |
-| Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8) |
-| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, and its shaft has no lamps (the user's request) — needs in-game look |
+| Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8); 2026-10-23: walkable once formed (its deck, the flame trench under the missile and the deflector's steps; DESIGN §23.3) |
+| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, its shaft has no lamps and its corner conduits run up to the ground — needs in-game look |
 | Cruise Missile Launcher | todo |
 | Launch Control Station: map, pads, salvo, time-on-target | todo |
 | Laser Designator, Targeting Binoculars, Data Link Tool, Comms Relay | todo |
@@ -234,7 +234,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 10 — Air defence
 | Item | Status |
 |---|---|
-| Radar Station multiblock + spinning dish + CRT GUI + comparator output | basic Radar Array built early (DESIGN §17.7) — needs in-game look |
+| Radar Station multiblock + spinning dish + CRT GUI + comparator output | basic Radar Array built early (DESIGN §17.7); 2026-10-23: its deck walkable once formed (railings, cabinet, power box, mast foot as collision) — needs in-game look |
 | Interceptor Battery + interceptor missile + kill probability | todo |
 | Phased-Array module | todo |
 | Point-Defence Laser | todo |
@@ -305,7 +305,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 17 — Polish
 | Item | Status |
 |---|---|
-| Re-review every model/texture/sound/effect | 2026-10-23, the user's request: the recent structures (Strategic Assembly Hall, Launch Complex, Launch Silo, Missile Silo, Launch Computer, Radar Array) and their blocks repainted with a material library after researching texture practice (DESIGN §4.3) — needs in-game look; the rest todo |
+| Re-review every model/texture/sound/effect | 2026-10-23, the user's requests: every multiblock (the six recent ones, then the Chemical Plant, Fission, Fusion and Singularity Reactors and Particle Accelerator), their blocks, the shared controller faces, casing and ports, and every missile (with finer flight models) repainted with the material library after researching texture practice (DESIGN §4.3); the library is now the rule for every model — needs in-game look; single-block machines, warheads and items still todo |
 | Performance pass (Tsar MSPT target < 50) | 8d: the blast bench (`runBlastBench`) and the engine reworked at the Tsar's size: p99 tick 27.7 ms, one tick over 50 ms (since spread) on the user's PC; a wider pass (fx, fallout, saving) still todo |
 | Balance pass | todo |
 

@@ -21,17 +21,40 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * @param layers  layers[y][row] is a string of legend characters, one per column; '.' = must be air, ' ' = anything
  * @param legend  what each character accepts, plus the block shown for it in previews and placed by the spawner
- * @param cuts    pattern cells (column, row; every layer) whose formed blocks have a corner cut on a slope, with the
- *                corner as written for a controller facing north
+ * @param cuts    pattern cells whose formed blocks are cut to the formed model's shape (a corner on a slope, a deck
+ *                you can walk on), as written for a controller facing north: by column and row on every layer
+ *                ({@link #cutKey(int, int)}), or on one layer ({@link #cutKey(int, int, int)}, see {@link #layerCuts})
  */
 public record MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend, Map<Long, PartCut> cuts) {
     public MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend) {
         this(id, layers, legend, Map.of());
     }
 
-    /** Key for {@link #cuts}. */
+    /** Key for {@link #cuts}: a cell's column and row on every layer. */
     public static long cutKey(int col, int row) {
         return ((long) col << 32) | (row & 0xFFFFFFFFL);
+    }
+
+    /** Key for {@link #cuts} on one layer only (a deck's cells, where the layers above hold something else). */
+    public static long cutKey(int col, int row, int layer) {
+        return cutKey(col, row) | ((long) (layer + 1) << 56);
+    }
+
+    /**
+     * One layer's cuts drawn like the pattern: each character a cell's cut from {@code legend} (written for a controller
+     * facing north), any other character none.
+     */
+    public static Map<Long, PartCut> layerCuts(int layer, String[] rows, Map<Character, PartCut> legend) {
+        Map<Long, PartCut> out = new java.util.HashMap<>();
+        for (int row = 0; row < rows.length; row++) {
+            for (int col = 0; col < rows[row].length(); col++) {
+                PartCut cut = legend.get(rows[row].charAt(col));
+                if (cut != null) {
+                    out.put(cutKey(col, row, layer), cut);
+                }
+            }
+        }
+        return out;
     }
 
     /** The controller's character in every pattern. */
@@ -132,9 +155,13 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
         return cells(controller, facing).stream().filter(c -> c.key() != CONTROLLER && c.key() != '.').map(Cell::pos).toList();
     }
 
-    /** The corner cut of a cell's formed block for a controller facing {@code facing}. */
+    /** The cut of a cell's formed block (its own layer's, else its column's) for a controller facing {@code facing}. */
     public PartCut cutFor(Cell cell, Direction facing) {
-        return this.cuts.getOrDefault(cutKey(cell.col(), cell.row()), PartCut.NONE).rotated(facing);
+        PartCut cut = this.cuts.get(cutKey(cell.col(), cell.row(), cell.layer()));
+        if (cut == null) {
+            cut = this.cuts.getOrDefault(cutKey(cell.col(), cell.row()), PartCut.NONE);
+        }
+        return cut.rotated(facing);
     }
 
     /** Wrong or missing blocks; empty means the structure is complete. */

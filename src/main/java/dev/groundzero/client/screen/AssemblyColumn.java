@@ -61,7 +61,8 @@ final class AssemblyColumn {
     }
 
     /** The subject in 3D on the blueprint: a missile at its body's size, so a Tactical one stands smaller than a Heavy. */
-    private void drawPreview(GuiGraphicsExtractor g, int left, int top, ItemStack subject, int mouseX, int mouseY) {
+    private void drawPreview(GuiGraphicsExtractor g, int left, int top, ItemStack picked, int mouseX, int mouseY) {
+        ItemStack subject = MissileParts.flightLook(picked);       // a missile by its finer flight model
         long now = Util.getMillis();
         if (!this.dragging && now - this.lastDrag > 3000) {
             this.yaw += (now - this.lastFrame) * 0.03f;           // a slow turn while it is left alone

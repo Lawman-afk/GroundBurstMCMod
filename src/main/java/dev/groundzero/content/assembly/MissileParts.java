@@ -237,6 +237,28 @@ public final class MissileParts {
         };
     }
 
+    /**
+     * The flight model of a look ("flight_" before it; "flight_none" for a missile with no warhead): four texels an item
+     * pixel, as fine as the missiles standing on the launchers, for a missile in flight, its spent stages and the
+     * assembly screens' big preview (after slice 9b). The inventory keeps the item model.
+     */
+    public static String flight(String look) {
+        return "flight_" + (look.isEmpty() ? "none" : look);
+    }
+
+    /** A missile as its flight model draws it (any other stack as it is), for a big preview. */
+    public static net.minecraft.world.item.ItemStack flightLook(net.minecraft.world.item.ItemStack stack) {
+        if (!stack.is(GZAssembly.MISSILE.get())) {
+            return stack;
+        }
+        var data = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
+        String look = data == null || data.strings().isEmpty() ? "" : data.strings().getFirst();
+        net.minecraft.world.item.ItemStack out = stack.copy();
+        out.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
+                java.util.List.of(), java.util.List.of(), java.util.List.of(flight(look)), java.util.List.of()));
+        return out;
+    }
+
     // --- in flight (slice 9a) ------------------------------------------------------------------------------------------------
     /** The model of a missile in flight that has dropped {@code dropped} spent stages ("_s1", "_s2" after the first). */
     public static String look(String warheadId, SizeClass body, int dropped) {

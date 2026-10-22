@@ -33,6 +33,7 @@ from gz.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import structures as ST  # noqa: E402
 import warheads as W  # noqa: E402
+import missile_paint as MP  # noqa: E402
 
 STEEL, GUN, OLIVE = P.STEEL, P.GUNMETAL, P.OLIVE
 WHITE = P.WHITE_CERAMIC
@@ -73,77 +74,51 @@ def missile_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
 NOSE_PARTS = ("nose_base", "nose", "tip")
 
 
-def missile_paint(kind: str, nose: str = "none"):
-    """Paints a missile part; the nose cone (nose_base, nose, tip) in the colours of the warhead it carries (warheads.NOSES:
-    bare steel with none)."""
-    ramp, band, tip = W.NOSES[nose]
-
-    def fn(t: Tex, r, d):
-        x, y, w, h = r
-        if kind == "body":
-            t.rect(x, y, w, h, WHITE[tone(d) + 1])
-            if d in ("north", "south", "east", "west") and h > 8:
-                # Two black roll bands (rows count down from the top of the body).
-                for frac in (0.12, 0.62):
-                    row = y + int(frac * h)
-                    t.rect(x, row, w, max(1, h // 12), BLACK[3])
-            return
-        if kind in ("nose_base", "nose"):
-            t.rect(x, y, w, h, ramp[tone(d) + 1])
-            if kind == "nose_base" and band is not None and d in ("north", "south", "east", "west"):
-                t.hline(x, y + h - 1, w, band)               # the warhead's marking band at the foot of the cone
-            return
-        if kind == "tip":
-            t.rect(x, y, w, h, tip[tone(d) + 1])
-            return
-        if kind == "fin":
-            t.rect(x, y, w, h, STEEL[tone(d) + 1])
-            if d in ("east", "west", "north", "south") and h > 2:
-                t.hline(x, y + h - 1, w, BLACK[3])
-            return
-        t.rect(x, y, w, h, GUN[tone(d)])
-        if d == "down":
-            t.rect(x + 1, y + 1, max(1, w - 2), max(1, h - 2), BLACK[1])
-    return fn
+FLIGHT_DENSITY = 4
 
 
 def missile_item() -> None:
     """The Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
     flight picks one by the warhead's id (custom model data), so the nose shows what it carries. A Strategic missile
-    ("strategic_<warhead>") is its own longer model."""
-    for nose in BENCH_NOSES:
-        missile_model("missile" if nose == "none" else f"missile_{nose}", nose)
-        strategic_model(f"strategic_missile_{nose}", nose)
-        strategic_model(f"strategic_missile_{nose}_s1", nose, stages=(2,))          # in flight, the first stage gone
-    for nose in ICBM_NOSES:
-        icbm_model(f"icbm_missile_{nose}", nose)
-        icbm_model(f"icbm_missile_{nose}_s1", nose, stages=(2, 3))
-        icbm_model(f"icbm_missile_{nose}_s2", nose, stages=(3,))
-    # The spent stages falling away (slice 9a).
-    strategic_model("strategic_stage1", "none", stages=(1,))
-    icbm_model("icbm_stage1", "none", stages=(1,))
-    icbm_model("icbm_stage2", "none", stages=(2,))
+    ("strategic_<warhead>") is its own longer model. Each has a flight model too ("flight_<look>"), four texels an
+    item pixel, for the missile in flight, its spent stages and the assembly screens' preview; the inventory keeps the
+    item model (fine details would only be noise at icon size)."""
+    for pre, d in (("", 1), ("flight_", FLIGHT_DENSITY)):
+        for nose in BENCH_NOSES:
+            missile_model(pre + ("missile" if nose == "none" else f"missile_{nose}"), nose, d)
+            strategic_model(f"{pre}strategic_missile_{nose}", nose, density=d)
+            strategic_model(f"{pre}strategic_missile_{nose}_s1", nose, stages=(2,), density=d)    # in flight, the first stage gone
+        for nose in ICBM_NOSES:
+            icbm_model(f"{pre}icbm_missile_{nose}", nose, density=d)
+            icbm_model(f"{pre}icbm_missile_{nose}_s1", nose, stages=(2, 3), density=d)
+            icbm_model(f"{pre}icbm_missile_{nose}_s2", nose, stages=(3,), density=d)
+        # The spent stages falling away (slice 9a).
+        strategic_model(f"{pre}strategic_stage1", "none", stages=(1,), density=d)
+        icbm_model(f"{pre}icbm_stage1", "none", stages=(1,), density=d)
+        icbm_model(f"{pre}icbm_stage2", "none", stages=(2,), density=d)
     def case(when, model):
         return {"when": when, "model": {"type": "minecraft:model", "model": f"groundzero:item/{model}"}}
-    cases = [case(nose, f"missile_{nose}") for nose in BENCH_NOSES if nose != "none"]
-    cases += [case(f"strategic_{nose}", f"strategic_missile_{nose}") for nose in BENCH_NOSES]
-    cases += [case(f"strategic_{nose}_s1", f"strategic_missile_{nose}_s1") for nose in BENCH_NOSES]
-    cases += [case(f"icbm_{nose}", f"icbm_missile_{nose}") for nose in ICBM_NOSES]
-    cases += [case(f"icbm_{nose}_s{k}", f"icbm_missile_{nose}_s{k}") for nose in ICBM_NOSES for k in (1, 2)]
-    cases += [case(stage, stage) for stage in ("strategic_stage1", "icbm_stage1", "icbm_stage2")]
+    cases = []
+    for pre in ("", "flight_"):
+        cases += [case(pre + nose, f"{pre}missile_{nose}") for nose in BENCH_NOSES if nose != "none"]
+        cases += [case(f"{pre}strategic_{nose}", f"{pre}strategic_missile_{nose}") for nose in BENCH_NOSES]
+        cases += [case(f"{pre}strategic_{nose}_s1", f"{pre}strategic_missile_{nose}_s1") for nose in BENCH_NOSES]
+        cases += [case(f"{pre}icbm_{nose}", f"{pre}icbm_missile_{nose}") for nose in ICBM_NOSES]
+        cases += [case(f"{pre}icbm_{nose}_s{k}", f"{pre}icbm_missile_{nose}_s{k}") for nose in ICBM_NOSES for k in (1, 2)]
+        cases += [case(pre + stage, pre + stage) for stage in ("strategic_stage1", "icbm_stage1", "icbm_stage2")]
+    cases.append(case("flight_none", "flight_missile"))                    # a missile with no warhead, in flight
     write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
         "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
 
 
-def missile_model(model_name: str, nose: str) -> None:
-    m = BlockModel(model_name, tex_size=(64, 64), kind="item")
+def missile_model(model_name: str, nose: str, density: int = 1) -> None:
+    m = BlockModel(model_name, tex_size=(64 * density, 64 * density), kind="item", density=density)
     for name, frm, to, faces, _ in missile_parts():
         m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for name, _, _, _, kind in missile_parts():
-        m.paint_all(t, name, missile_paint(kind, nose))
+    MP.paint(M.Surfacer(m, seed=101), t, [(name, kind, nose) for name, _, _, _, kind in missile_parts()], MP.Frame(), "basic")
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
@@ -227,65 +202,21 @@ def strategic_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
     return parts
 
 
-def strategic_paint(kind: str, nose: str = "none"):
-    """The Strategic missile's livery: black-and-white roll quadrants on the first stage, a dark interstage, a white
-    second stage with a black band and a grey data plate, black fins; the nose as the warhead's."""
-    if kind in NOSE_PARTS:
-        return missile_paint(kind, nose)
-
-    def fn(t: Tex, r, d):
-        x, y, w, h = r
-        sides = ("north", "south", "east", "west")
-        if kind.startswith("stage1_"):
-            quadrant = kind[len("stage1_"):]
-            if d in sides:
-                for yy in range(y, y + h):               # three bands down the stage, each quadrant one colour
-                    band = (yy - y) * 3 // max(1, h)
-                    t.hline(x, yy, w, roll_colour(quadrant, band, BLACK[tone(d) + 1], WHITE[tone(d) + 1]))
-            else:
-                t.rect(x, y, w, h, roll_colour(quadrant, 2, BLACK[tone(d) + 1], WHITE[tone(d) + 1]))
-            return
-        if kind == "interstage":
-            t.rect(x, y, w, h, GUN[tone(d)])
-            if d in sides:
-                for xx in range(x, x + w, 2):
-                    t.px(xx, y + h // 2, STEEL[4])               # rivets round the ring
-            return
-        if kind == "stage2":
-            t.rect(x, y, w, h, WHITE[tone(d) + 1])
-            if d in sides and h > 8:
-                t.rect(x, y + h - max(2, h // 10), w, max(2, h // 10), BLACK[3])      # a black band at its foot
-                if d == "north" and w >= 4:
-                    t.rect(x + 1, y + h // 3, w - 2, 3, P.BLACK_PAINT[2])          # the data plate
-                    t.hline(x + 1, y + h // 3 + 1, w - 2, STEEL[3])
-            return
-        if kind == "sfin":
-            t.rect(x, y, w, h, BLACK[tone(d) + 1])
-            if d in sides and h > 1:
-                t.hline(x, y, w, WHITE[3])
-            return
-        t.rect(x, y, w, h, GUN[tone(d)])                         # the nozzles
-        if d == "down":
-            t.rect(x, y, w, h, BLACK[1])
-    return fn
-
-
 def strategic_flight_stage(name: str) -> int:
     """Which of the Strategic missile's stages a part flies off with: 1, the first (dropped in flight), or 2."""
     return 1 if name.startswith(("nozzle", "stage1_", "sfin", "inter_")) else 2
 
 
-def strategic_model(model_name: str, nose: str, stages=(1, 2)) -> None:
+def strategic_model(model_name: str, nose: str, stages=(1, 2), density: int = 1) -> None:
     """The Strategic missile as an item (and in flight), or only some of its stages: (2,) once the first has dropped,
     (1,) the spent first stage falling away."""
-    m = BlockModel(model_name, tex_size=(64, 64), kind="item")
+    m = BlockModel(model_name, tex_size=(64 * density, 64 * density), kind="item", density=density)
     parts = [p for p in strategic_parts() if strategic_flight_stage(p[0]) in stages]
     for name, frm, to, faces, _ in parts:
         m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for name, _, _, _, kind in parts:
-        m.paint_all(t, name, strategic_paint(kind, nose))
+    MP.paint(M.Surfacer(m, seed=103), t, [(name, kind, nose) for name, _, _, _, kind in parts], MP.Frame(), "strategic")
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
@@ -424,97 +355,11 @@ def icbm_nose_parts(nose: str) -> list[tuple[str, tuple, tuple, tuple, str]]:
     return parts
 
 
-def _slits(t: Tex, r, d, colour, lying: bool) -> None:
-    """A vent's slits across the bomb's length: rows on an upright vent; on a lying one, columns on its east and west
-    faces (their u runs along the bomb) and rows on its top and bottom."""
-    x, y, w, h = r
-    if lying and d in ("east", "west"):
-        for i in range(0, w, 2):
-            t.vline(x + i, y, h, colour)
-    else:
-        for i in range(0, h, 2):
-            t.hline(x, y + i, w, colour)
-
-
-def tsar_vent_glow(lying: bool = False):
-    """The Tsar's vents on a glow layer: their slits lit, the slats left dark."""
-    ends = ("north", "south") if lying else ("up", "down")
-
-    def fn(t: Tex, r, d):
-        if d not in ends:
-            _slits(t, r, d, W.VENT[1], lying)
-    return fn
-
-
-def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
-    """The intercontinental missile's livery: olive-drab stages, a white band round the first stage's middle, a yellow
-    one round the second's and a white one round the third's, dark riveted interstages, a gunmetal skirt; the shroud in
-    its warhead's colours, its marking band at its middle. Every band sits at the middle of its section, so the lying
-    missile in the hall (whose sections run across its faces' u or v the other way round) is painted alike."""
-    if kind.startswith("tsar_"):
-        return tsar_paint(kind, lying)
-    ramp, mark, tip = W.NOSES[nose]
-    band = {"istage1": WHITE[5], "istage2": YELLOW[4], "istage3": WHITE[5], "nose_base": mark}.get(kind)
-    base = {"iskirt": GUN, "iinter": GUN, "ifin": GUN, "nose_base": ramp, "nose": ramp, "tip": tip, "nozzle": GUN}.get(kind, OLIVE)
-    ends = ("north", "south") if lying else ("up", "down")
-
-    def fn(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, base[tone(d) + (0 if base is GUN else 1)])
-        if kind == "nozzle" and d == ("south" if lying else "down"):    # the exhaust end, dark inside
-            t.rect(x, y, w, h, BLACK[1])
-            return
-        if d in ends:
-            return
-        along_u = lying and d in ("east", "west")             # the section's length runs across the face
-        if band is not None and (w if along_u else h) > 3:
-            if along_u:
-                t.vline(x + w // 2, y, h, band)
-            else:
-                t.hline(x, y + h // 2, w, band)
-        if kind == "iinter":
-            for i in range(0, w if not along_u else h, 2):  # rivets round the ring
-                t.px(x + i, y + h // 2, STEEL[4]) if not along_u else t.px(x + w // 2, y + i, STEEL[4])
-    return fn
-
-
-def tsar_paint(kind: str, lying: bool = False):
-    """The Tsar's livery on the missile: dark green, its canvas pack strapped, a white stencil band round the middle of
-    its body, a gunmetal adapter, steel fuze cap, the vents' glowing slits between dark slats."""
-    ends = ("north", "south") if lying else ("up", "down")
-
-    def fn(t: Tex, r, d):
-        x, y, w, h = r
-        along_u = lying and d in ("east", "west")             # the section's length runs across the face
-        if kind == "tsar_vent":
-            t.rect(x, y, w, h, W.VENT[0])
-            if d not in ends:
-                _slits(t, r, d, W.VENT[1], lying)
-            return
-        ramp = {"tsar_adapter": GUN, "tsar_pack": W.CANVAS, "tsar_tip": STEEL}.get(kind, W.TSAR)
-        t.rect(x, y, w, h, ramp[tone(d) + (0 if ramp is GUN else 1)])
-        if d in ends:
-            return
-        if kind == "tsar_pack" and (h if not along_u else w) > 2:   # a strap round the pack
-            if along_u:
-                t.vline(x + w // 2, y, h, W.CANVAS[1])
-            else:
-                t.hline(x, y + h // 2, w, W.CANVAS[1])
-        if kind == "tsar_body" and (w if along_u else h) > 6:      # a white stencil band near the shoulder
-            if along_u:
-                t.vline(x + w - 3, y, h, WHITE[5])
-            else:
-                t.hline(x, y + 2, w, WHITE[5])
-        if kind == "tsar_adapter":
-            for i in range(0, w if not along_u else h, 2):      # rivets round the ring
-                t.px(x + i, y + h // 2, STEEL[4]) if not along_u else t.px(x + w // 2, y + i, STEEL[4])
-    return fn
-
-
-def icbm_model(model_name: str, nose: str, stages=(1, 2, 3)) -> None:
+def icbm_model(model_name: str, nose: str, stages=(1, 2, 3), density: int = 1) -> None:
     """The intercontinental missile as an item (and in flight), or only some of its stages: (2, 3) or (3,) once the
     first stages have dropped in flight (the nose stays with the third), (1,) or (2,) a spent stage falling away."""
-    m = BlockModel(model_name, tex_size=(128, 64) if nose == "tsar_warhead" else (64, 64), kind="item")   # the bomb's faces need room
+    size = (128, 64) if nose == "tsar_warhead" else (64, 64)                # the bomb's faces need room
+    m = BlockModel(model_name, tex_size=(size[0] * density, size[1] * density), kind="item", density=density)
     parts = [p for p in icbm_parts() if icbm_flight_stage(p[0]) in stages]
     if 3 in stages:
         parts += icbm_nose_parts(nose)
@@ -522,8 +367,7 @@ def icbm_model(model_name: str, nose: str, stages=(1, 2, 3)) -> None:
         m.box(name, frm, to, faces=faces, light=15 if kind == "tsar_vent" else 0)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for name, _, _, _, kind in parts:
-        m.paint_all(t, name, icbm_paint(kind, nose))
+    MP.paint(M.Surfacer(m, seed=107), t, [(name, kind, nose) for name, _, _, _, kind in parts], MP.Frame(), "icbm")
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
@@ -735,6 +579,29 @@ def large_dish() -> None:
     write_json(paths.ASSETS / "items" / "large_radar_dish.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/large_radar_dish"}})
 
 
+def missile_boxes(body: str, nose: str, parts=None, noses=None) -> list[tuple[str, str, str]]:
+    """A structure's missile boxes for missile_paint: (box name, kind, nose), the nose parts once for each warhead
+    (named <nose prefix><warhead>_<part>, as the structures name them)."""
+    out = []
+    for name, _, _, _, kind in (parts if parts is not None else missile_parts()):
+        if kind in NOSE_PARTS:
+            out += [(f"{nose}{n}_{name}", kind, n) for n in (noses if noses is not None else BENCH_NOSES)]
+        else:
+            out.append((body + name, kind, "none"))
+    return out
+
+
+def paint_missiles(g: GeoModel, tex: Tex, glow: Tex, tail_y: float, cz: float) -> None:
+    """The three missiles a heavy launcher can hold (the complex, the Missile Silo), standing with their tails at
+    tail_y over z = cz: the usual missile, a Strategic one and an intercontinental one with each of its warheads."""
+    S = M.Surfacer(g, seed=97)
+    MP.paint(S, tex, missile_boxes("m_", "n_"), MP.Frame(4, (0, tail_y, cz)), "basic")
+    MP.paint(S, tex, missile_boxes("s_", "sn_", strategic_parts()), MP.Frame(4, (0, tail_y + 4 * STRATEGIC_TAIL, cz)), "strategic")
+    icbm = [("i_" + name, kind, "none") for name, _, _, _, kind in icbm_parts()]
+    icbm += [(f"in_{nose}_{name}", kind, nose) for nose in ICBM_NOSES for name, _, _, _, kind in icbm_nose_parts(nose)]
+    MP.paint(S, tex, icbm, MP.Frame(4, (0, tail_y + 4 * ICBM_TAIL, cz)), "icbm", glow=glow)
+
+
 def missile_placard(t: Tex) -> None:
     t.rect(4, 9, 4, 4, P.BLACK_PAINT[1])
     t.vline(6, 9, 4, WHITE[5])
@@ -807,12 +674,7 @@ def silo() -> None:
     tex = Tex(g.tex_w, g.tex_h)
 
     paint_silo(g, tex, [n for n, _, _ in pad], posts, tower, girders, hinge)
-    for name, _, _, _, kind in missile_parts():
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
-        else:
-            g.paint_all(tex, "m_" + name, missile_paint(kind))
+    MP.paint(M.Surfacer(g, seed=97), tex, missile_boxes("m_", "n_"), MP.Frame(4, (0, 14, 16)), "basic")
     g.save(tex)
     # The arm swings away from the missile during the countdown and stays away.
     count = Animation("working", 10.0, loop="hold_on_last_frame")
@@ -995,26 +857,8 @@ def launch_complex() -> None:
     tex = Tex(g.tex_w, g.tex_h)
 
     paint_complex(g, tex, [n for n, _, _, _ in deck], wedge, pipes, posts, tower, girders, braces, decks, rails, hinges)
-    for name, _, _, _, kind in missile_parts():
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
-        else:
-            g.paint_all(tex, "m_" + name, missile_paint(kind))
-    for name, _, _, _, kind in strategic_parts():
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.paint_all(tex, f"sn_{nose}_{name}", strategic_paint(kind, nose))
-        else:
-            g.paint_all(tex, "s_" + name, strategic_paint(kind))
-    for name, _, _, _, kind in icbm_parts():
-        g.paint_all(tex, "i_" + name, icbm_paint(kind))
     glow = Tex(g.tex_w, g.tex_h, CLEAR)                       # the Tsar's vents (the renderer draws it lit)
-    for nose in ICBM_NOSES:
-        for name, _, _, _, kind in icbm_nose_parts(nose):
-            g.paint_all(tex, f"in_{nose}_{name}", icbm_paint(kind, nose))
-            if kind == "tsar_vent":
-                g.paint_all(glow, f"in_{nose}_{name}", tsar_vent_glow())
+    paint_missiles(g, tex, glow, 14, 32)
     g.save(tex, glow)
     # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and

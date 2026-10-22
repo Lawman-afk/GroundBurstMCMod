@@ -68,6 +68,10 @@ PRESETS = {
             ("dish", 20, 200, (0, 52, 12), 34, None),
             ("mast", 20, 225, (0, 30, 16), 40, None),
             ("desk side", 20, 120, (20, 8, 0), 30, None),
+            ("dish from above", 60, 160, (0, 54, 10), 34, None),
+            ("dish from below", -25, 200, (0, 54, 10), 34, None),
+            ("dish side", 10, 270, (0, 54, 10), 34, None),
+            ("dish back", 25, 20, (0, 54, 12), 34, None),
         ]),
     "radar_array": dict(
         anim="working",
@@ -76,6 +80,10 @@ PRESETS = {
             ("dish", 20, 200, (0, 76, 8), 60, None),
             ("mast", 20, 225, (0, 40, 16), 50, None),
             ("power box", 30, 30, (0, 10, 34), 30, None),
+            ("dish from above", 60, 160, (0, 76, 8), 60, None),
+            ("dish from below", -25, 200, (0, 76, 8), 60, None),
+            ("dish side", 10, 270, (0, 76, 8), 60, None),
+            ("dish back", 25, 20, (0, 76, 12), 60, None),
         ]),
     "missile_silo": dict(
         keep_one=("nose_",), hide=("strategic", "icbm"), anim="preview_doors",

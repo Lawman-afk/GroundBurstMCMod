@@ -64,7 +64,7 @@ final class SpentStages {
         var body = missile.body();
         ItemStack look = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
         look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                List.of(), List.of(), List.of(MissileParts.spentStage(body, k)), List.of()));
+                List.of(), List.of(), List.of(MissileParts.flight(MissileParts.spentStage(body, k))), List.of()));
         // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position.
         float middle = MissileParts.spentStageMiddle(body, k), tail = body == dev.groundzero.content.assembly.SizeClass.XXL
                 ? MissileParts.ICBM_TAIL : MissileParts.STRATEGIC_TAIL;

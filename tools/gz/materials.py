@@ -166,6 +166,10 @@ class Face:
     edge: dict = field(default=None)
     #: Texels to the face's own borders, whether or not they are edges.
     border: dict = field(default=None)
+    #: Distance (texels) to each border where the surface stops: an exposed edge, or a corner where it meets another
+    #: surface (a wall's foot on the floor); inf where it runs on flat into another box. Grime, streaks and the skylight
+    #: falloff go by these, so a surface made of several boxes shades as one (no dirty band at each box's foot).
+    stop: dict = field(default=None)
     #: A block texture's face: its noise wraps every so many pixels, so the block tiles with its neighbours.
     period: int | None = None
 
@@ -246,6 +250,7 @@ class Surfacer:
         if b.rotation:
             f.ao = np.zeros((h, w), dtype=np.float32)
             f.edge = {k: v.copy() for k, v in f.border.items()}
+            f.stop = {k: v.copy() for k, v in f.border.items()}
         else:
             f.ao = self._ao(f)
             f.edge = self._edges(f)
@@ -306,14 +311,18 @@ class Surfacer:
         u /= max(1e-6, ul)
         v /= max(1e-6, vl)
         P = np.stack([f.X, f.Y, f.Z], axis=-1)
-        out = {}
+        out, stop = {}, {}
         for k, t, steps in (("top", -v, f.border["top"] * vl), ("bottom", v, f.border["bottom"] * vl),
                             ("left", -u, f.border["left"] * ul), ("right", u, f.border["right"] * ul)):
             # The texel's point carried to just past this border, just under the surface: inside another box, the
             # solid carries on there (a coplanar continuation, or the foot of a wall); otherwise this border is an edge.
-            beyond = P + t * (steps[..., None] + 0.5 + 0.25) - n * 0.2
-            carries_on = self._inside(beyond, boxes)
+            past = P + t * (steps[..., None] + 0.5 + 0.25)
+            carries_on = self._inside(past - n * 0.2, boxes)
+            # Just over the surface there too: a corner where it meets another surface; open air: it runs on flat.
+            meets = self._inside(past + n * 0.2, boxes)
             out[k] = np.where(carries_on, np.inf, f.border[k]).astype(np.float32)
+            stop[k] = np.where(carries_on & ~meets, np.inf, f.border[k]).astype(np.float32)
+        f.stop = stop
         return out
 
     # -- painting -----------------------------------------------------------------------------------------------------------
@@ -443,17 +452,14 @@ class Material:
         if self.brushed:
             # Rolled/brushed metal: fine streaks along the face's long side.
             v += self.brushed * (noise(f, _streak_scale(f), seed + 23) - 0.5) * 2
-        # The lit and shaded lips of exposed edges (light from the top left of each face, as vanilla draws it).
-        e = f.edge
-        v += self.edge_light * (e["top"] < 1) + self.edge_light * 0.6 * (e["left"] < 1)
-        v -= self.edge_dark * (e["bottom"] < 1) + self.edge_dark * 0.6 * (e["right"] < 1)
+        # (The lit and shaded lips of exposed edges go on after the ramp: see render.)
         # Skylight down upright faces, occlusion, grime low on them, dust on tops.
         if f.vertical and self.falloff:
-            h_ = max(1.0, float(f.shape[0]))
-            v += self.falloff * (1 - 2 * (f.border["top"] + 0.5) / h_)
+            half = max(2.0, f.shape[0] / 2)
+            v += self.falloff * (np.clip(1 - f.stop["top"] / half, 0, 1) - np.clip(1 - f.stop["bottom"] / half, 0, 1))
         v -= self.ao * f.ao
         if f.vertical and self.grime:
-            low = np.clip(1 - f.border["bottom"] / 5.0, 0, 1)
+            low = np.clip(1 - f.stop["bottom"] / 5.0, 0, 1)
             v -= self.grime * low * (0.6 + 0.4 * value_noise(X, Y, Z, (3, 9, 3), seed + 31))
         if f.d == "up" and self.dust:
             v += self.dust * (noise(f, 6 * s, seed + 41, 2) - 0.3)
@@ -461,7 +467,7 @@ class Material:
             # Rain streaks: thin vertical runs from the top edge, fading down the face.
             a, _ = f.plane_uv()
             col = value_noise(a, np.zeros_like(a), np.zeros_like(a), (1.2, 1, 1), seed + 53)
-            run = np.clip(1 - f.border["top"] / (6 + 10 * value_noise(a, a * 0, a * 0, (3, 1, 1), seed + 59)), 0, 1)
+            run = np.clip(1 - f.stop["top"] / (6 + 10 * value_noise(a, a * 0, a * 0, (3, 1, 1), seed + 59)), 0, 1)
             v -= self.streaks * np.clip(col - 0.55, 0, 1) * 2.2 * run
         if self.extra is not None:
             v += self.extra(f)
@@ -470,6 +476,7 @@ class Material:
     def render(self, f: Face, seed: int, **kw) -> np.ndarray:
         v = self.value(f, seed)
         idx = quantize(v, self.ramp, f, self.dither, despeckle=self.despeckle, scatter=f.d == "tile" and not self.despeckle)
+        idx = self._lips(f, idx)
         rgba = colours(self.ramp, idx)
         if self.pits:
             self._pits(f, seed, rgba)
@@ -478,6 +485,22 @@ class Material:
         if self.rust:
             self._rust(f, seed, rgba)
         return rgba
+
+    def _lips(self, f: Face, idx: np.ndarray) -> np.ndarray:
+        """The lit and shaded lips of exposed edges (light from the top left of each face, as vanilla draws it): a
+        whole shade up or down the ramp, solid along the edge. (They had been added to the value before dithering,
+        which broke a one-texel lip into dashes: after the missiles' first look.)"""
+        e = f.edge
+        n = len(self.ramp)
+        steps = np.zeros(idx.shape, dtype=np.int64)
+        one = 1.0 / (n - 1)                                   # one shade, as a value
+        if self.edge_light >= one * 0.5:
+            steps += (e["top"] < 1).astype(np.int64)
+            steps += ((e["left"] < 1) & (e["top"] >= 1) & (self.edge_light * 0.6 >= one * 0.5)).astype(np.int64)
+        if self.edge_dark >= one * 0.5:
+            dark = (e["bottom"] < 1) | ((e["right"] < 1) & (self.edge_dark * 0.6 >= one * 0.5))
+            steps -= (dark & (steps == 0)).astype(np.int64)
+        return np.clip(idx + steps, 0, n - 1)
 
     def _pits(self, f: Face, seed: int, rgba: np.ndarray) -> None:
         """Concrete bug holes: a dark pit with a lit lower lip, here and there."""
@@ -502,7 +525,9 @@ class Material:
         # A thin member is all edge: chip it as little as its size (a 2-pixel post keeps most of its paint).
         chance = chance * float(np.clip((min(f.shape) - 1) / 6, 0.15, 1))
         n = noise(f, 1.6, seed + 83)
-        chip = (n * chance) > (0.42 - 0.18 * self.wear)
+        # (The threshold rises steeply as the wear falls: at first it barely moved, and "hardly worn" paint lost half
+        # of every edge.)
+        chip = (n * chance) > (1 - 0.85 * self.wear)
         if not chip.any():
             return
         u = self.under
@@ -645,6 +670,7 @@ def tile_face(size: int = 16, edges: bool = False, period: int | None = None) ->
     f = Face(None, "tile", (0, 0, size, size), ii, size - jj, np.zeros_like(ii), (0, 0, 1), (1, 0, 0), (0, -1, 0))
     f.border = {"top": jj - 0.5, "bottom": size - jj - 0.5, "left": ii - 0.5, "right": size - ii - 0.5}
     f.edge = {k: (v.copy() if edges else np.full_like(v, np.inf)) for k, v in f.border.items()}
+    f.stop = {k: v.copy() for k, v in f.edge.items()}
     f.ao = np.zeros((size, size), dtype=np.float32)
     f.period = period or size
     return f

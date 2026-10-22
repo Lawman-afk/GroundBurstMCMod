@@ -3,7 +3,7 @@
 - Crane Rail (part block): a yellow box girder with a steel rail along its top and hazard-striped ends.
 - Controller (block): the machine cabinet, its placard a missile under a crane hook.
 - The formed hall (GeckoLib), 7 blocks wide, 13 deep and 6 high: a concrete floor with yellow bay lines and hazard
-  stripes at its open ends; six grey steel columns four high carrying a yellow crane girder down each long side; a
+  stripes all the way round its edge; six grey steel columns four high carrying a yellow crane girder down each long side; a
   twin-girder bridge crane on them with its trolley, hoist drum and a hook block on two cables; two cradles on the floor;
   a control desk at the controller; the Energy Port and the Item Port as plates in the floor where their blocks are
   (after the in-game look: a cabinet stood up where the port is a floor block), a pallet of crates beside them. The intercontinental missile
@@ -25,6 +25,7 @@ from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
+import missile_paint as MP  # noqa: E402
 import structures as ST  # noqa: E402
 
 STEEL = P.STEEL
@@ -152,10 +153,8 @@ def hall() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     paint_hall(g, tex, columns, girders, rails, cradles)
     glow = Tex(g.tex_w, g.tex_h, L.CLEAR)                    # the Tsar's vents (the renderer draws it lit)
-    for name, kind, nose in missile:
-        g.paint_all(tex, name, L.icbm_paint(kind, nose, lying=True))
-        if kind == "tsar_vent":
-            g.paint_all(glow, name, L.tsar_vent_glow(lying=True))
+    # The missile lying on the cradles, painted as it stands on a launcher (its markings in its own item pixels).
+    MP.paint(M.Surfacer(g, seed=47), tex, missile, MP.Frame(4, (0, AXIS_Y, Z_TAIL - 4 * L.ICBM_TAIL), lying=True), "icbm", glow=glow)
     g.save(tex, glow)
     # Working (12 s, looped while the hall runs): the crane runs from over the tail to the first stage and lowers its
     # hook, on to the third stage and lowers it again, and back; the cables pay out as the hook drops.
@@ -175,7 +174,7 @@ def hall() -> None:
 
 def paint_hall(g: GeoModel, tex: Tex, columns, girders, rails, cradles) -> None:
     """The hall's surfaces, in model space (tools/gz/materials.py): a sealed concrete floor cut into slabs at the column
-    lines, worn yellow bay lines and hazard bands; grey steel columns, yellow crane girders bolted along their sides,
+    lines, worn yellow bay lines and hazard bands all round it; grey steel columns, yellow crane girders bolted along their sides,
     rails polished where the wheels run; dark cradles with yellow cheeks and rubber saddles."""
     S = M.Surfacer(g, seed=43)
     S.paint(tex, "floor", M.concrete(tone=0.66, mottle=0.028, grain=0.035))
@@ -188,7 +187,8 @@ def paint_hall(g: GeoModel, tex: Tex, columns, girders, rails, cradles) -> None:
         M.darken(img, joint, 0.62)
         bay = (np.abs(np.abs(f.X) - 20) < 0.75) & (f.Z > -2) & (f.Z < 194)
         M.paste(img, S.material_on(f, line), bay & ~M.scuffed(f, 0.35, seed=5))
-        M.paste(img, S.material_on(f, band), (f.Z < -5) | (f.Z > 197))
+        # Hazard bands all the way round (after the user's look: at first only across the open ends).
+        M.paste(img, S.material_on(f, band), (f.Z < -5) | (f.Z > 197) | (np.abs(f.X) > 53))
     S.overlay(tex, "floor", floor, only=("up",))
 
     grey = M.painted(M.GREY_PAINT_RAMP, tone=0.56, wear=0.3, rust=0.1)

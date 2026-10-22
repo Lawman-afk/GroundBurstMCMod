@@ -253,8 +253,43 @@ weathering references):
   their long sides and striped where they meet.
 - *Blocks:* Launch Pad, Reinforced and Hazard Concrete (formwork seams and tie holes; worn paint), Gantry Frame and Arm
   (a Warren truss), Radar Mast, Flame Deflector, Crane Rail, Silo Hatch, the dishes and the antenna.
-- Unchanged: the missiles' paint (their own style), and the controller cabinets, Machine Casing and ports shared with
-  every older multiblock.
+- (At first the missiles and the shared cabinets, casing and ports were left alone; the second pass below did them.)
+
+**Second pass (2026-10-23, the user's request: the missiles, every other multiblock, and every model from now on):**
+- *The rule:* every model and block texture, new or reworked, is painted with the library (DESIGN.md §4.3):
+  `materials.py` for models, `panels.py` for 16x16 machine faces, `missile_paint.py` for missiles. Screens, glyphs,
+  glow layers and see-through windows are drawn over the material, as before.
+- *Library fixes found on the missiles:* edge lips are now a whole ramp shade up or down, solid along the edge (added
+  to the value before dithering, a one-texel lip broke into dashes); paint chips scale with the wear (their threshold
+  had barely moved, so "hardly worn" paint lost half of every edge, and the structures were chipped more than meant);
+  grime, rain streaks and the skylight falloff go by where a surface stops (an exposed edge, or a corner where it
+  meets another surface) instead of each box's own border, so a surface built from several boxes shades as one (the
+  dishes had a dirty band at each box's foot); the model tools' hole check now looks inside rotated bones too (the
+  dishes' tilted rings had open faces nobody saw: closed by `close_holes` like any other).
+- *Missiles* (`missile_paint.py`): a factory finish, smooth and clean (no wear, no corner shading: a round body has
+  no corners, its plus-shaped boxes only stand in for one), lit edges, each side face lit down its middle so a body
+  reads round; markings laid out in the missile's own item pixels, so a missile looks the same as an item, in flight,
+  standing on any launcher and lying in the hall. Roll bands and quadrants, warhead noses and their bands, black
+  fins with white leading edges, ring seams with lit lips, rivet rings round interstages, data plates, a cable raceway
+  and a stencilled marking on the intercontinental first stage, the Tsar's canvas pack, stencil band and glowing
+  vents. Fine details only where a texel is at most half an item pixel (not on the inventory icon).
+- *Flight models:* each missile has a second model, `flight_<look>`, four texels an item pixel (the model tool gained
+  a texel density): a missile in flight and its spent stages are the item model drawn four times its size, so they
+  had been four times coarser than the same missile standing on its launcher. `MissileParts.flight` picks it in
+  flight (`MissileRenderer`, `SpentStages`) and in the assembly screens' big preview (`flightLook`); the inventory
+  keeps the item model. 69 flight textures, about 12 MB.
+- *The older multiblocks:* the Chemical Plant (stainless vessels welded in courses, their window slots still open onto
+  the real fluid, a hazard-fronted skid with a tread-plate deck, galvanised pipework, red hand-wheels, striped port
+  housings), the Fission Reactor (lead plates a block square bolted at their corners, the hazard band and trefoils,
+  blue coolant pipes), the Particle Accelerator and Fusion Reactor (a dark plated plinth with a tread-plate top and a
+  hazard band; red magnets, yellow quadrupoles, copper coils wound in turns; the fusion vessel polished in panels, its
+  coil cases showing their windings, cryo lines along their tops) and the Singularity Reactor (olive deck plates,
+  steel posts and glazing bars, brass-rimmed emitters and gimbals). Their glass, plasma, beams and cores as they were.
+  The Singularity Reactor's transoms stand 0.25 px proud of its mullions and its roof beam is thinner (both had faces
+  0.1 px or less apart: the only z-fight warnings left in the mod's multiblocks).
+- *Shared blocks* (`structures.py` on `panels.py`): every controller's face and top, the Machine Casing, the Energy,
+  Item and Fluid Ports, Lead-lined Casing, Steel Plating, the accelerator's and reactors' parts: their designs as
+  they were, in a brushed steel frame with solid bevels and bolts round painted or metal panels.
 
 ---
 
@@ -1498,7 +1533,7 @@ the long horizontal hall (over an upright assembly tower).
   Item Port two columns west of it), six Gantry Frame columns four high (corners and halfway along each long side), a
   new **Crane Rail** block the length of each long side on top; the hall between them (5 wide, rows 0-12, layers 1-5)
   must be clear. Formed, the controller's GeckoLib model (`tools/assets/strategic.py`) draws it: a concrete floor with
-  yellow bay lines and hazard-striped open ends, grey I-beam columns, yellow crane girders with steel rails, a
+  yellow bay lines and a hazard-striped edge all round (at first only the open ends), grey I-beam columns, yellow crane girders with steel rails, a
   twin-girder bridge crane with a trolley, drum and a hook block on two cables, two cradles, a control desk and a
   pallet of crates; the Energy and Item Ports are flush floor plates (a bolt and a grate) on their blocks, since the
   port blocks are in the floor (after the user's look: the first model's power cabinet stood up over the port).
@@ -1624,7 +1659,7 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
   coaming round the opening, two thick blue-grey armour leaves on rails that run out past the collar (moved by the
   block entity each frame through the new `AnimatedMachine.boneOffsets`, so they are right however a client joins), an
   exhaust grate at each corner, a squat olive console with a green CRT and two red beacons that flash in turn while it
-  works, the Energy Port's flush plate; down the shaft, conduits in the corners (no lamps: the first ones looked
+  works, the Energy Port's flush plate; down the shaft, conduits in the corners, up to the ground (no lamps: the first ones looked
   scattered, the user then asked for them to go altogether) and the
   launch ring with hold-down posts over the duct grate; the missile as on the complex (a Strategic one its own model).
   `MachineGeoRenderer` takes a depth: the silo's culling box reaches 14 blocks down. Painted with the material
@@ -1956,6 +1991,17 @@ below it. The formed model's beam line is a true octagon (straight runs on the s
 staircases) and its plinth a true octagonal ring 16 px wide, with sloped faces across the staircases. When the ring
 forms, each staircase block (both layers) gets a corner cut to that slope (`MultiblockPartBlock.CUT`: the three outer
 stairs lose their outer corner, the two inner stairs their inner corner), so outlines and collision follow the model.
+
+**Walkable formed shapes** (2026-10-23, after 9b, the user's request): `PartCut` also holds shapes you can walk on, so a
+formed structure's collision follows its model where the model is a deck: the Launch Complex's deck is 14 px high,
+its flame trench a floor 2 px up between strips of deck, and the deflector under the missile steps up out of it (5,
+8, 11 px) to the deck, so you can walk from the ground along the trench under the missile and up its steps; its
+controller and Energy Port cells are the deck with the console and the port's housing on them. The Radar Array's deck
+is 6 px high (a step up from the ground), with its railings (west, east and back), the cabinet, the power box and the
+mast's foot as collision. A pattern gives a layer's cuts drawn like its rows (`MultiblockDefinition.layerCuts`, cut
+keys per layer); each walkable shape is written for a controller facing north and comes in four turns (`_NORTH`,
+`_EAST`, ...), `rotated(facing)` turning it with the structure. The controller takes its cell's cut too (its block
+gained the property). The property is still `cut`, so saved worlds keep their values.
 
 **Radar Station** (3×3×5): `y0: PEP / PXP / PPP`, `y1–y3: .F. / FFF / .F.` (mast), `y4: DDD / DFD / DDD` (dish mount).
 
@@ -2468,6 +2514,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
+| 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |
 | 2026-10-23 | The Missile Silo's shaft lamps are removed (the user's request, after the even rows): the shaft is lit by daylight through the open doors. |
 | 2026-10-23 | Texture remaster (the user chose researching it over handing it to something else): the recent structures and their blocks are painted by a material library (`tools/gz/materials.py`, §4.3): world-space noise, wear only on real edges, baked contact shadows, short hue-shifted ramps, weathering, tileable block textures. The missiles' paint and the shared controller cabinets, casing and ports are unchanged. |
 | 2026-10-23 | After 9b, the user's requests: the Missile Silo's lamps are four rows of pairs, the same on every wall; it fires every missile, intercontinental ones too, so the Launch Complex is no longer the only intercontinental launcher. JEI lists one intercontinental missile per warhead (named by it, its recipe on R) and drops the whole weapons' warheads, which have no recipe of their own. The Tsar's primary is its own Twin Boosted Core (two Boosted Fission Cores fired together). A mushroom cloud stands until its crater is finished (the server's end of the blast, at most a quarter of an hour) and only then starts its 2.5-minute countdown. |

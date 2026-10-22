@@ -19,6 +19,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -142,139 +145,110 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, parts)
+    return g, tex, glow
 
-    def skid(t, r, d):
+
+def paint(g: GeoModel, tex: Tex, parts: dict) -> None:
+    """The plant's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): stainless tanks and
+    silos welded in courses, their window slots left open over the real fluid; a dark steel skid with a tread-plate
+    deck and a hazard-striped front; galvanised pipework with red hand-wheels; an olive cabinet; the ports' housings."""
+    S = M.Surfacer(g, seed=113)
+    gun, steel = P.GUNMETAL, P.STEEL
+    names = lambda key: [b.name for b in parts.get(key, [])]                      # noqa: E731
+    stainless = M.steel(tone=0.72, brushed=0.06, grime=0.035, streaks=0.03)          # bright, kept clean
+    dark = M.painted(M.ARMOUR_RAMP, tone=0.5, wear=0.2, rust=0.06)
+
+    S.paint(tex, names("skid"), dark)
+    S.paint(tex, names("skid"), M.stripes(width=2, wear=0.35, under=M.STEEL_RAMP[2:7]), only=("north",))
+
+    def tread(f, img):
+        a, b = f.plane_uv()
+        bar = ((np.floor(a) % 4) == 0) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 0)
+        M.lighten(img, bar, 1.25, 8)
+        M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.7)
+    S.overlay(tex, names("skid"), tread, only=("up",))
+
+    vessels = sum((names(k) for k in parts if k.startswith("tank") or k in ("silo", "silo_window")), [])
+    S.paint(tex, vessels, stainless)
+
+    def courses(f, img):                                                       # welded courses round the vessels
+        if f.vertical:
+            M.seams(f, img, every=6, axis="v", offset=int(TANK_Y0) + 2)
+    S.overlay(tex, vessels, courses)
+    S.paint(tex, names("dome0") + names("dome1") + names("silo_dome"), stainless)
+
+    def window(t, r, d):                                                       # the slot over the real fluid
         x, y, w, h = r
         if d == "north":
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-        elif d == "up":
-            t.rect(x, y, w, h, gun[3])
-            for xx in range(x, x + w, 4):
-                for yy in range(y + (xx // 4) % 2 * 2, y + h, 4):
-                    t.px(xx, yy, gun[4])                                       # tread plate
-        else:
-            t.rect(x, y, w, h, gun[tone(d)])
-    g.paint_all(tex, parts["skid"][0], skid)
+            cx = x + w // 2
+            t.rect(cx - 2, y + 1, 4, h - 2, CLEAR)
+            t.vline(cx - 3, y, h, P.BRASS[3])
+            t.vline(cx + 2, y, h, P.BRASS[3])
+            for yy in range(y + 4, y + h - 2, 4):
+                t.px(cx - 3, yy, P.BRASS[5])                                    # level marks
+    for b in names("tank0_front") + names("tank1_front"):
+        g.paint_all(tex, b, window)
 
-    def tank_paint(liquid, front: bool):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, steel[4] if d in ("north", "west") else steel[3])
-            for yy in range(y + 2, y + h, 6):
-                t.hline(x, yy, w, steel[2])                                    # welded courses
-            t.vline(x, y, h, steel[5])
-            if front and d == "north":
-                # Window slot (transparent) framed in brass, liquid and bubbles show through.
-                # Window slot (transparent) framed in brass; the real fluid shows through it.
-                cx = x + w // 2
-                t.rect(cx - 2, y + 1, 4, h - 2, CLEAR)
-                t.vline(cx - 3, y, h, P.BRASS[3])
-                t.vline(cx + 2, y, h, P.BRASS[3])
-                for yy in range(y + 4, y + h - 2, 4):
-                    t.px(cx - 3, yy, P.BRASS[5])                               # level marks
-        return paint
-    def silo_paint(window: bool):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, steel[4] if d in ("north", "west") else steel[3])
-            for yy in range(y + 3, y + h, 5):
-                t.hline(x, yy, w, steel[2])
-            t.vline(x, y, h, steel[5])
-            if window and d == "south":
-                t.rect(x + 1, y + 1, w - 2, h - 2, CLEAR)                       # window slot over the real fluid
-                t.vline(x, y, h, P.BRASS[3])
-                t.vline(x + w - 1, y, h, P.BRASS[3])
-        return paint
-    for b in parts["silo"]:
-        g.paint_all(tex, b, silo_paint(False))
-    for b in parts["silo_window"]:
-        g.paint_all(tex, b, silo_paint(True))
-    for b in parts["silo_dome"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
-    for si in range(len(SILOS)):
-        g.paint_all(tex, parts[f"liquid_back_silo{si}"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))
-    for ti, (_, _, liquid) in enumerate(TANKS):
-        for b in parts[f"tank{ti}"]:
-            g.paint_all(tex, b, tank_paint(liquid, False))
-        for b in parts[f"tank{ti}_front"]:
-            g.paint_all(tex, b, tank_paint(liquid, True))
-        for b in parts[f"dome{ti}"]:
-            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.outline(*r, steel[2]) if d == "up" and min(r[2], r[3]) > 4 else None))
-
-        g.paint_all(tex, parts[f"liquid_back{ti}"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))   # tank interior
-    for b in parts["bubble"]:
+    def silo_window(t, r, d):
+        x, y, w, h = r
+        if d == "south":
+            t.rect(x + 1, y + 1, w - 2, h - 2, CLEAR)
+            t.vline(x, y, h, P.BRASS[3])
+            t.vline(x + w - 1, y, h, P.BRASS[3])
+    for b in names("silo_window"):
+        g.paint_all(tex, b, silo_window)
+    for key in [k for k in parts if k.startswith("liquid_back")]:
+        g.paint_all(tex, names(key)[0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[2]))   # the vessel's dark inside
+    for b in names("bubble"):
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, (235, 250, 225, 255)))
-    for b in parts["hoop"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[3]), t.hline(r[0], r[1], r[2], gun[5])))
+    S.paint(tex, names("hoop"), M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
 
-    g.paint_all(tex, parts["motor"][0], lambda t, r, d: (t.rect(*r, P.NATO_GREEN[tone(d)]), t.outline(*r, P.NATO_GREEN[1]) if min(r[2], r[3]) > 3 else None))
-    g.paint_all(tex, parts["motor_fins"][0], lambda t, r, d: [t.vline(xx, r[1], r[3], P.NATO_GREEN[4]) for xx in range(r[0], r[0] + r[2], 2)])
-    g.paint_all(tex, parts["shaft"][0], lambda t, r, d: t.rect(*r, steel[5]))
-    g.paint_all(tex, parts["paddle"][0], lambda t, r, d: (t.rect(*r, steel[4]), t.px(r[0], r[1], P.WARNING_RED.base)))
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if r[3] > 1 else None))
-    for b in parts["flange"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.outline(*r, gun[2]) if min(r[2], r[3]) > 2 else None))
-    for b in parts["valve"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
-    for b in parts["wheel"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d) + 1]), t.px(r[0] + r[2] // 2, r[1], P.WARNING_RED[6]) if d == "up" else None))
+    S.paint(tex, names("motor") + names("motor_fins"), M.painted(M.OLIVE_RAMP, tone=0.45, wear=0.25))
+    S.overlay(tex, names("motor_fins"), lambda f, img: M.darken(img, (np.floor(f.plane_uv()[0] * 2) % 2) == 1, 0.6))
+    S.paint(tex, names("shaft") + names("paddle"), M.steel(tone=0.66))
+    g.paint_all(tex, names("paddle")[0], lambda t, r, d: t.px(r[0], r[1], P.WARNING_RED.base))
+    S.paint(tex, names("pipe"), M.galvanized(tone=0.6, rust=0.08))
+    S.paint(tex, names("flange") + names("valve"), M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+    S.paint(tex, names("wheel"), M.painted(M.RED_PAINT_RAMP, tone=0.55, wear=0.3))
 
     def port(t, cx, cy, r=None):
         """A 4x4 connection socket centred on (cx, cy): gunmetal ring, dark bore, four bolts (only those inside the
         face rectangle r, when given, so a narrow face does not paint its neighbours)."""
         t.rect(cx - 2, cy - 2, 4, 4, gun[4])
         t.rect(cx - 1, cy - 1, 2, 2, P.BLACK_PAINT.deep)
+        t.hline(cx - 2, cy + 1, 4, gun[5])
         for px, py in ((cx - 3, cy - 3), (cx + 2, cy - 3), (cx - 3, cy + 2), (cx + 2, cy + 2)):
             if r is None or r[0] <= px < r[0] + r[2] and r[1] <= py < r[1] + r[3]:
                 t.px(px, py, steel[5])
 
-    def screen_paint(t, r):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT.deep)
-        for xx in range(x, x + w):
-            t.px(xx, y + h // 2 + (xx % 3 == 0) - (xx % 3 == 1), P.INDICATOR_GREEN[4])
-        t.px(x, y, P.INDICATOR_GREEN[5])
+    S.paint(tex, names("cabinet"), M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
 
-    def cabinet(t, r, d, socket_u=None):
+    def screen(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d)])
-        if d in ("north", "south", "east", "west"):
-            t.outline(x, y, w, h, P.OLIVE[1])
-            t.hline(x + 1, y + 1, w - 2, P.OLIVE[4])
-            if socket_u is not None:
-                port(t, x + socket_u, y + h - 5)                               # at block-centre height (y 8)
-            if d == "north" and w > 8:
-                screen_paint(t, (x + 3, y + 2, 4, 4))                          # green CRT
-    for b in parts["cabinet"]:
-        g.paint_all(tex, b, cabinet)
+        if d == "north" and w > 8:
+            sx, sy, sw, sh = x + 3, y + 2, 4, 4
+            t.rect(sx, sy, sw, sh, P.BLACK_PAINT.deep)
+            for xx in range(sx, sx + sw):
+                t.px(xx, sy + sh // 2 + (xx % 3 == 0) - (xx % 3 == 1), P.INDICATOR_GREEN[4])
+            t.px(sx, sy, P.INDICATOR_GREEN[5])
+    for b in names("cabinet"):
+        g.paint_all(tex, b, screen)
 
-    def housing(t, r, d, socket_face, socket_u, stripe=P.HAZARD_YELLOW.base):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d == socket_face:
-            t.stripes(x, y, w, h, stripe, P.HAZARD_BLACK.base, width=2)
-            t.rect(x + 1, y + 1, w - 2, h - 2, gun[3])
-            port(t, x + socket_u, y + h - 5, r)
-        elif d == "up":
-            t.outline(x, y, w, h, gun[2])
-    # The Item Port's centre is (16, 8, 16): the east face's socket sits 7.9 px from its south edge, the south
-    # face's 2 px from its west edge.
-    g.paint_all(tex, parts["housing_e"][0], lambda t, r, d: housing(t, r, d, "east", 8))
-    g.paint_all(tex, parts["housing_s"][0], lambda t, r, d: housing(t, r, d, "south", 2))
-    # The Fluid Port's centre is (0, 8, 16): 4 px from the west arm's north edge, 5.2 px from the south arm's west
-    # edge.
-    g.paint_all(tex, parts["fhousing_w"][0], lambda t, r, d: housing(t, r, d, "west", 4, FLUID_BLUE[4]))
-    g.paint_all(tex, parts["fhousing_s"][0], lambda t, r, d: housing(t, r, d, "south", 5, FLUID_BLUE[4]))
-    # The Energy Port's centre is (16, 8, 0): 7.9 px from the front arm's east edge, 2.9 px from the side arm's south
-    # edge (an east face's u runs from its south edge).
-    g.paint_all(tex, parts["ehousing_n"][0], lambda t, r, d: housing(t, r, d, "north", 8, P.WARNING_RED[3]))
-    g.paint_all(tex, parts["ehousing_e"][0], lambda t, r, d: housing(t, r, d, "east", 3, P.WARNING_RED[3]))
-
-    for b in parts["ladder"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.HAZARD_YELLOW[tone(d)]))
-    return g, tex, glow
+    # The ports' housings: dark steel, the open face striped round its socket (yellow items, blue fluid, red power).
+    housings = {"housing_e": ("east", 8, M.YELLOW_PAINT_RAMP), "housing_s": ("south", 2, M.YELLOW_PAINT_RAMP),
+                "fhousing_w": ("west", 4, M.ramp(*[f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}" for c in FLUID_BLUE.shades])),
+                "fhousing_s": ("south", 5, M.ramp(*[f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}" for c in FLUID_BLUE.shades])),
+                "ehousing_n": ("north", 8, M.RED_PAINT_RAMP), "ehousing_e": ("east", 3, M.RED_PAINT_RAMP)}
+    for key, (face, u, ramp) in housings.items():
+        S.paint(tex, names(key), dark)
+        band = M.Striped(ramp=ramp, tone=0.6, dither=0.4, wear=0.3, under=M.STEEL_RAMP[2:7], width=2,
+                         other=M.painted(M.BLACK_RAMP, tone=0.5, wear=0.3))
+        S.overlay(tex, names(key), lambda f, img, band=band: M.paste(img, S.material_on(f, band),
+                  np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"])) < 1),
+                  only=(face,))
+        g.paint_all(tex, names(key)[0], lambda t, r, d, face=face, u=u: port(t, r[0] + u, r[1] + r[3] - 5, r) if d == face else None)
+    S.paint(tex, names("ladder"), M.painted(M.YELLOW_PAINT_RAMP, tone=0.55, wear=0.4))
 
 
 def animations() -> list[Animation]:

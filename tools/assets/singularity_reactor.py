@@ -20,6 +20,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -119,14 +122,16 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         for k, u in enumerate((-8.0, 8.0)):
             wall_box("mullion", f"mullion_{w}{k}", w, u - 0.75, u + 0.75, FLOOR + 2, ROOF - 2, -0.75, 0.75, faces=sides)
         for k, y in enumerate((32.0, 48.0)):
-            wall_box("transom", f"transom_{w}{k}", w, -28, 28, y - 0.75, y + 0.75, -0.85, 0.85, faces=(*sides, "up", "down"))
+            # (0.25 px proud of the mullions where they cross: at 0.1 their faces fought.)
+            wall_box("transom", f"transom_{w}{k}", w, -28, 28, y - 0.75, y + 0.75, -1.0, 1.0, faces=(*sides, "up", "down"))
         # A slim housing sitting on the lower transom of the emitter's cell, so the straight-on view of the core is
         # clear glass; its lens and beam angle up to the core.
         wall_box("emitter", f"emitter_{w}", w, -3, 3, EMIT_Y - 2.5, EMIT_Y + 2.5, -4, 5)
         wall_box("lens", f"lens_{w}", w, -2, 2, EMIT_Y - 1.5, EMIT_Y + 1.5, 5, 8 + LENS_OUT, faces=(*sides, "up", "down"))
         beam(w)
     add("lens", g.box("lens_roof", (CX - 2.5, ROOF - LENS_OUT - 1, CZ - 2.5), (CX + 2.5, ROOF, CZ + 2.5), faces=(*sides, "down"), bone=F))
-    add("beam", g.box("beam_roof", (CX - 0.35, CY + 2.5, CZ - 0.35), (CX + 0.35, ROOF - LENS_OUT - 1, CZ + 0.35), faces=sides,
+    # (0.25 either side, not 0.35: it passes through a gimbal ring's top bar, 0.4 either side, and their faces fought.)
+    add("beam", g.box("beam_roof", (CX - 0.25, CY + 2.5, CZ - 0.25), (CX + 0.25, ROOF - LENS_OUT - 1, CZ + 0.25), faces=sides,
                       shade=False, bone="beams"))
 
     # --- the cradle: two gimbal rings round the core -----------------------------------------------------------------
@@ -176,42 +181,56 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    steel, gun, olive = P.STEEL, P.GUNMETAL, P.OLIVE
+    paint(g, tex, glow, parts, lamps)
+    return g, tex, glow
 
-    def slab(top_ring: bool):
-        def paint(t, r, d):
-            x, y, w, h = r
-            if d in ("up", "down"):
-                t.rect(x, y, w, h, olive[tone(d)])
-                t.outline(x, y, w, h, gun[2])
-                if top_ring and d == "up" or not top_ring and d == "down":
-                    # The chamber's footprint: a hazard ring round the middle three cells.
-                    cx0, cy0 = x + w // 2 - 24, y + h // 2 - 24
-                    t.stripes(cx0, cy0, 48, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-                    t.stripes(cx0, cy0 + 46, 48, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-                    t.stripes(cx0, cy0, 2, 48, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-                    t.stripes(cx0 + 46, cy0, 2, 48, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-                for xx in range(x + 15, x + w - 1, 16):
-                    t.vline(xx, y + 1, h - 2, olive[2])                    # deck plate seams
-                if not top_ring and d == "up":
-                    # The roof emitter's back plate in the centre cell.
-                    px, py = x + w // 2 - 7, y + h // 2 - 7
-                    t.rect(px, py, 14, 14, P.BLACK_PAINT[2])
-                    t.outline(px, py, 14, 14, P.BRASS[3])
-                    t.rect(px + 5, py + 5, 4, 4, P.SINGULARITY[3])
-                    for bx, by in ((1, 1), (12, 1), (1, 12), (12, 12)):
-                        t.px(px + bx, py + by, P.BRASS[5])
-                return
-            t.rect(x, y, w, h, gun[3])
-            for xx in range(x + 15, x + w - 1, 16):
-                t.vline(xx, y + 2, h - 4, gun[2])
-            t.stripes(x, y if top_ring else y + h - 2, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-        return paint
-    g.paint_all(tex, parts["floor"][0], slab(True))
-    g.paint_all(tex, parts["roof"][0], slab(False))
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5]),
-                                             [t.px(r[0] + r[2] // 2, yy, steel[6]) for yy in range(r[1] + 3, r[1] + r[3], 8)]))
+
+def _ramp(r) -> np.ndarray:
+    return np.array([s[:3] for s in r.shades], dtype=np.float32)
+
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, lamps) -> None:
+    """The reactor's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): olive deck plates on
+    the floor and roof slabs, their sides dark steel banded in hazard paint, a hazard ring round the chamber's footprint;
+    steel posts and glazing bars; black emitter housings rimmed in brass, brass gimbal rings; the glass, lenses, beams,
+    core and disks as they were."""
+    S = M.Surfacer(g, seed=139)
+    names = lambda key: [b.name for b in parts.get(key, [])]                      # noqa: E731
+    deck = M.painted(M.OLIVE_RAMP, tone=0.5, wear=0.25)
+    dark = M.painted(M.ARMOUR_RAMP, tone=0.48, wear=0.2, rust=0.05)
+    band = M.stripes(width=2, wear=0.3)
+    slabs = names("floor") + names("roof")
+    S.paint(tex, slabs, dark)
+    S.paint(tex, slabs, deck, only=("up", "down"))
+
+    def slab(f, img):
+        if f.d in ("up", "down"):
+            M.seams(f, img, every=16, axis="u", offset=8, light=False)            # deck plate seams
+            r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.darken(img, r < 1, 0.6)
+            chamber = (f.d == "up") == (f.box.name == "floor")                   # the floor's top, the roof's underside
+            if chamber:
+                ring = np.maximum(np.abs(f.X - CX), np.abs(f.Z - CZ))
+                M.paste(img, S.material_on(f, band), (ring > 22) & (ring < 24))
+        else:
+            M.seams(f, img, every=16, axis="u", offset=8)
+            edge = f.border["top"] < 2 if f.box.name == "floor" else f.border["bottom"] < 2
+            M.paste(img, S.material_on(f, band), edge)
+    S.overlay(tex, slabs, slab)
+
+    def roof_plate(t, r, d):                                                   # the roof emitter's back plate
+        x, y, w, h = r
+        if d == "up":
+            px, py = x + w // 2 - 7, y + h // 2 - 7
+            t.rect(px, py, 14, 14, P.BLACK_PAINT[2])
+            t.outline(px, py, 14, 14, P.BRASS[3])
+            t.rect(px + 5, py + 5, 4, 4, P.SINGULARITY[3])
+            for bx, by in ((1, 1), (12, 1), (1, 12), (12, 12)):
+                t.px(px + bx, py + by, P.BRASS[5])
+    g.paint_all(tex, parts["roof"][0], roof_plate)
+    steel = M.steel(tone=0.6, brushed=0.06)
+    S.paint(tex, names("post") + names("rail") + names("mullion") + names("transom"), steel)
+    S.overlay(tex, names("post"), lambda f, img: M.rivets(f, img, every=8, inset=2, axis="v") if f.vertical else None)
 
     def pane(t, r, d):
         x, y, w, h = r
@@ -219,22 +238,21 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         for k in range(min(w, h) // 4):
             t.px(x + 3 + k, y + h - 6 - k, (*GLASS[6][:3], 255))           # glints
             t.px(x + w - 12 + k, y + 8 - k // 2, (*GLASS[5][:3], 255))
-    for b in parts["pane"]:
-        g.paint_all(tex, b, pane)
-    for group in ("rail", "mullion", "transom"):
-        for b in parts[group]:
-            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + (1 if group == "rail" else 0)]),
-                                                 t.hline(r[0], r[1], r[2], steel[5]) if d not in ("up", "down") and r[3] > 2 else None))
+    for bx in names("pane"):
+        g.paint_all(tex, bx, pane)
+    brass = M.Material(ramp=_ramp(P.BRASS), tone=0.55, mottle=0.03, grain=0.03, dither=0.4, edge_light=0.18, edge_dark=0.12,
+                       ao=0.3, grime=0.02, dust=0.0, brushed=0.05)
+    S.paint(tex, names("emitter"), M.painted(M.BLACK_RAMP, tone=0.45, wear=0.1))
 
-    def emitter(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[tone(d)])
-        if min(w, h) >= 5:
-            t.outline(x, y, w, h, P.BRASS[3])
-            for xx, yy in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.px(xx, yy, P.BRASS[5])
-    for b in parts["emitter"]:
-        g.paint_all(tex, b, emitter)
+    def rim(f, img):                                                           # a brass rim and bolts round the housing
+        if min(f.shape) < 5:
+            return
+        r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+        M.paste(img, S.material_on(f, brass), r < 1)
+        corner = (np.minimum(f.border["top"], f.border["bottom"]) == 1) & (np.minimum(f.border["left"], f.border["right"]) == 1)
+        M.paste(img, S.material_on(f, brass), corner)
+        M.lighten(img, corner, 1.25, 10)
+    S.overlay(tex, names("emitter"), rim)
 
     def lens(t, r, d):
         x, y, w, h = r
@@ -242,19 +260,18 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         if min(w, h) >= 3:
             t.rect(x + 1, y + 1, w - 2, h - 2, P.SINGULARITY[4])
             t.rect(x + w // 2 - 1, y + h // 2 - 1, 2, 2, P.ANTIMATTER[6])
-    for b in parts["lens"]:
-        g.paint_all(tex, b, lens)
-        g.paint_all(glow, b, lens)
+    for bx in names("lens"):
+        g.paint_all(tex, bx, lens)
+        g.paint_all(glow, bx, lens)
 
     def beam(t, r, d):
         t.rect(*r, P.ANTIMATTER[5])
         if r[3] > 2:
             t.vline(r[0], r[1], r[3], P.ANTIMATTER[6])
-    for b in parts["beam"]:
-        g.paint_all(tex, b, beam)
-        g.paint_all(glow, b, beam)
-    for b in parts["gimbal"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.BRASS[tone(d) + 1]), t.hline(r[0], r[1], r[2], P.BRASS[6]) if d == "up" else None))
+    for bx in names("beam"):
+        g.paint_all(tex, bx, beam)
+        g.paint_all(glow, bx, beam)
+    S.paint(tex, names("gimbal"), brass)
 
     def core(t, r, d):
         x, y, w, h = r
@@ -285,12 +302,12 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         g.paint_all(tex, parts[f"disk{i}"][0], disk)
         g.paint_all(glow, parts[f"disk{i}"][0], disk)
 
+    S.paint(tex, names("cabinet"), M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
+
     def cabinet(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, olive[tone(d) + 1])
         if d != "north":
             return
-        t.outline(x, y, w, h, olive[1])
         t.rect(x + 2, y + 2, 6, 4, P.BLACK_PAINT.deep)                     # CRT
         for xx in range(x + 3, x + 7):
             t.px(xx, y + 3 + (xx % 2), P.SINGULARITY[4])
@@ -305,22 +322,24 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, lamps, lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[2]), lamps_paint(t, r, d)))
     g.paint_all(glow, lamps, lamps_paint)
 
-    def socket(face, stripe, ramp):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, ramp[tone(d)])
-            if d == face:
-                t.stripes(x, y, w, h, stripe, P.HAZARD_BLACK.base, width=2)
-                t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
-                t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
-        return paint
-    g.paint_all(tex, parts["item_hatch"][0], socket("west", P.HAZARD_YELLOW.base, gun))
+    def socket(ramp):
+        stripes = M.Striped(ramp=ramp, tone=0.6, dither=0.4, wear=0.3, under=M.STEEL_RAMP[2:7], width=2,
+                            other=M.painted(M.BLACK_RAMP, tone=0.5, wear=0.3))
+
+        def fn(f, img):
+            r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.paste(img, S.material_on(f, stripes), r < 3)
+            img[r >= 3, :3] = P.BLACK_PAINT.deep[:3]
+            M.darken(img, r == 3, 0.5)
+            M.lighten(img, (r >= 3) & ((f.border["bottom"] == 3) | (f.border["right"] == 3)), 1.0, 24)
+        return fn
+    hatches = names("item_hatch") + sum((names(f"hatch_{face}") for face in ("north", "south", "west", "east")), [])
+    S.paint(tex, hatches, dark)
+    S.overlay(tex, names("item_hatch"), socket(M.YELLOW_PAINT_RAMP), only=("west",))
     for face in ("north", "south", "west", "east"):
-        for b in parts.get(f"hatch_{face}", []):
-            if first.get(f"hatch_{face}:{tuple(round(bb - a, 3) for a, bb in zip(b.frm, b.to))}:{sorted(b.faces)}") is b:
-                g.paint_all(tex, b, socket(face, P.HAZARD_YELLOW.base, gun))
-    g.paint_all(tex, parts["terminal"][0], socket("east", P.WARNING_RED[3], P.WARNING_RED))
-    return g, tex, glow
+        S.overlay(tex, names(f"hatch_{face}"), socket(M.YELLOW_PAINT_RAMP), only=(face,))
+    S.paint(tex, names("terminal"), M.painted(M.RED_PAINT_RAMP, tone=0.45, wear=0.2))
+    S.overlay(tex, names("terminal"), socket(M.RED_PAINT_RAMP), only=("east",))
 
 
 def animations() -> list[Animation]:

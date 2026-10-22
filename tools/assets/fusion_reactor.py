@@ -23,6 +23,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -164,60 +167,84 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    steel, gun = P.STEEL, P.GUNMETAL
+    paint(g, tex, glow, parts, lamps)
+    return g, tex, glow
 
-    def plinth(t, r, d):
+
+def _ramp(r) -> np.ndarray:
+    return np.array([s[:3] for s in r.shades], dtype=np.float32)
+
+
+def socket(S: M.Surfacer, ramp: np.ndarray):
+    """A port's open face: striped paint round a dark bore (its far lip catching the light)."""
+    band = M.Striped(ramp=ramp, tone=0.6, dither=0.4, wear=0.3, under=M.STEEL_RAMP[2:7], width=2,
+                     other=M.painted(M.BLACK_RAMP, tone=0.5, wear=0.3))
+
+    def fn(f, img):
+        r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+        M.paste(img, S.material_on(f, band), r < 3)
+        img[r >= 3, :3] = P.BLACK_PAINT.deep[:3]
+        M.darken(img, r == 3, 0.5)
+        M.lighten(img, (r >= 3) & ((f.border["bottom"] == 3) | (f.border["right"] == 3)), 1.0, 24)
+    return fn
+
+
+def plinth_paint(S: M.Surfacer, tex: Tex, names) -> None:
+    """The octagonal plinth (as the accelerator's): dark steel plated in block-long sections, a tread-plate top, a
+    hazard band round its top edge."""
+    S.paint(tex, names, M.painted(M.ARMOUR_RAMP, tone=0.48, wear=0.2, rust=0.05))
+
+    def fn(f, img):
+        if f.d == "up":
+            a, b = f.plane_uv()
+            bar = ((np.floor(a) % 4) == 1) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 1)
+            M.paste(img, S.material_on(f, M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.0)), np.ones(f.shape, bool))
+            M.lighten(img, bar, 1.28, 8)
+            M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.7)
+            r = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.darken(img, r < 1, 0.7)
+        elif f.vertical:
+            M.seams(f, img, every=16, axis="u", offset=15)
+            M.paste(img, S.material_on(f, M.stripes(width=2, wear=0.3)), f.border["top"] < 2)
+    S.overlay(tex, names, fn)
+
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, lamps) -> None:
+    """The reactor's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): the plinth as the
+    accelerator's; a polished vacuum vessel in panels with its viewports open onto the plasma; coil cases of dark steel
+    with their copper windings showing; the copper solenoid clamped in steel; the cabinet and the ports' sockets; the
+    plasma and its streak as they were."""
+    S = M.Surfacer(g, seed=137)
+    gun = P.GUNMETAL
+    names = lambda key: [b.name for b in parts.get(key, [])]                      # noqa: E731
+    polished = M.steel(tone=0.7, brushed=0.08, grime=0.04)
+    plinth_paint(S, tex, names("plinth"))
+    S.paint(tex, names("vessel") + names("skirt") + names("shoulder") + names("cap"), polished)
+    S.overlay(tex, names("vessel"), lambda f, img: M.seams(f, img, every=8, axis="u", offset=7) if f.vertical else None)
+
+    def viewport(t, r, d):
         x, y, w, h = r
         if d == "up":
-            t.rect(x, y, w, h, gun[3])
-            for yy in range(y + 1, y + h, 4):
-                for xx in range(x + 1 + (yy // 4) % 2 * 2, x + w, 4):
-                    t.px(xx, yy, gun[4])                                   # tread plate
-            t.outline(x, y, w, h, gun[2])
-        elif d == "down":
-            t.rect(x, y, w, h, gun[2])
-        else:
-            t.rect(x, y, w, h, gun[3])
-            for xx in range(x + 15, x + w - 1, 16):
-                t.vline(xx, y + 3, h - 3, gun[2])                          # plate seams
-            t.stripes(x, y, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    for b in parts["plinth"]:
-        g.paint_all(tex, b, plinth)
-
-    def vessel(window: bool):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, steel[tone(d) + 1])
-            if d == "up":
-                return
-            t.hline(x, y, w, steel[6])                                     # polished top edge
-            for xx in range(x + 7, x + w - 1, 8):
-                t.vline(xx, y + 1, h - 1, steel[3])                        # panel seams
-            if window:
-                # The viewport: a framed opening in the middle of the piece, between the two flanking coils.
-                wx, ww = x + w // 2 - 4, 8
-                wy, wh = y + 5, 10
-                t.rect(wx - 1, wy - 1, ww + 2, wh + 2, gun[2])
-                t.rect(wx, wy, ww, wh, CLEAR)
-                for k in range(3):
-                    t.px(wx + 1 + k, wy + wh - 2 - k, (250, 220, 236, 255))  # glint on the glass edge
-        return paint
-    for b in parts["vessel"]:
-        straight = not b.rotation or abs(abs(b.rotation["angle"]) - 90) < 1
-        g.paint_all(tex, b, vessel(straight))
-    for group in ("skirt", "shoulder", "cap"):
-        for b in parts[group]:
-            g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + (1 if d == "up" else 0)]),
-                                                 t.hline(r[0], r[1], r[2], steel[5]) if d != "down" else None))
+            return
+        wx, ww = x + w // 2 - 4, 8
+        wy, wh = y + 5, 10
+        t.rect(wx - 1, wy - 1, ww + 2, wh + 2, gun[2])
+        t.hline(wx - 1, wy + wh, ww + 2, gun[4])                             # the frame's lit sill
+        t.rect(wx, wy, ww, wh, CLEAR)
+        for k in range(3):
+            t.px(wx + 1 + k, wy + wh - 2 - k, (250, 220, 236, 255))          # glint on the glass edge
+    for bx in parts["vessel"]:
+        if not bx.rotation or abs(abs(bx.rotation["angle"]) - 90) < 1:
+            g.paint_all(tex, bx, viewport)
 
     def plasma(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, PLASMA[4])
         for xx in range(x, x + w, 3):
             t.px(xx, y + (xx // 3) % max(1, h), PLASMA[6])                 # filaments
-    for b in parts["plasma"]:
-        g.paint_all(tex, b, plasma)
-        g.paint_all(glow, b, plasma)
+    for bx in parts["plasma"]:
+        g.paint_all(tex, bx, plasma)
+        g.paint_all(glow, bx, plasma)
 
     def streak(t, r, d):
         t.rect(*r, PLASMA[6])
@@ -225,48 +252,36 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     g.paint_all(tex, parts["streak"][0], streak)
     g.paint_all(glow, parts["streak"][0], streak)
 
-    def coil_leg(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d in ("east", "west") or w >= 3:
-            for yy in range(y + 1, y + h - 1, 2):
-                t.hline(x, yy, w, P.COPPER[4] if (yy // 2) % 2 else P.COPPER[3])   # windings showing through the case
-            t.vline(x, y, h, gun[1])
-            t.vline(x + w - 1, y, h, gun[1])
-    for b in parts["coil_leg"]:
-        if is_first("coil_leg", b):
-            g.paint_all(tex, b, coil_leg)
+    case = M.painted(M.ARMOUR_RAMP, tone=0.42, wear=0.15)
+    copper = M.Material(ramp=M.COPPER_RAMP, tone=0.55, mottle=0.02, grain=0.02, dither=0.4, edge_light=0.14, edge_dark=0.1, ao=0.3,
+                        grime=0.0, dust=0.0, brushed=0.05)
+    S.paint(tex, names("coil_leg") + names("coil_top"), case)
 
-    def coil_top(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
-        if d == "up":
-            t.hline(x, y + h // 2, w, P.CRYO[3])                           # nitrogen line along the top
-        elif min(w, h) >= 3:
-            t.outline(x, y, w, h, gun[1])
-            t.hline(x + 1, y + 1, w - 2, P.COPPER[4])
-    for b in parts["coil_top"]:
-        if is_first("coil_top", b):
-            g.paint_all(tex, b, coil_top)
+    def windings(f, img):                                                   # the copper showing through the case
+        if not f.vertical or min(f.shape) < 3:
+            return
+        r = np.minimum(f.border["left"], f.border["right"])
+        show = (r >= 1) & (f.border["top"] >= 1) & (f.border["bottom"] >= 1)
+        M.paste(img, S.material_on(f, copper), show)
+        M.darken(img, show & ((np.floor(f.Y * 2) % 2) == 0), 0.78)
+    S.overlay(tex, names("coil_leg"), windings)
+    S.overlay(tex, names("coil_top"), lambda f, img: M.paste(img, S.material_on(f, M.painted(_ramp(P.CRYO), tone=0.5, wear=0.0)),
+              np.abs(f.border["top"] - f.border["bottom"]) <= 1), only=("up",))       # the nitrogen line along the top
+    S.paint(tex, names("solenoid"), copper)
 
-    def solenoid(t, r, d):
-        x, y, w, h = r
-        for yy in range(y, y + h):
-            t.hline(x, yy, w, P.COPPER[4] if yy % 2 else P.COPPER[3])
-        for yy in range(y + 5, y + h, 12):
-            t.hline(x, yy, w, steel[4])                                    # clamp bands
-        t.vline(x, y, h, P.COPPER[5])
-    for b in parts["solenoid"]:
-        g.paint_all(tex, b, solenoid)
-    for b in parts["sol_cap"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.outline(*r, steel[2]) if min(r[2], r[3]) >= 4 else None))
+    def clamps(f, img):
+        M.darken(img, (np.floor(f.Y) % 2) == 0, 0.8)                         # the turns
+        band = (np.mod(f.Y - 8, 12) < 1.5)
+        M.paste(img, S.material_on(f, M.steel(tone=0.6)), band)
+    S.overlay(tex, names("solenoid"), clamps)
+    S.paint(tex, names("sol_cap"), M.steel(tone=0.62, brushed=0.05))
+
+    S.paint(tex, names("cabinet"), M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
 
     def cabinet(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d) + 1])
         if d != "north":
             return
-        t.outline(x, y, w, h, P.OLIVE[1])
         t.rect(x + 2, y + 2, 6, 4, P.BLACK_PAINT.deep)                     # CRT
         for xx in range(x + 3, x + 7):
             t.px(xx, y + 3 + (xx % 2), PLASMA[5])
@@ -280,22 +295,13 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.px(r[0] + i, r[1], c)
     g.paint_all(tex, lamps, lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[2]), lamps_paint(t, r, d)))
     g.paint_all(glow, lamps, lamps_paint)
-
-    def socket(face, stripe, ramp):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, ramp[tone(d)])
-            if d == face:
-                t.stripes(x, y, w, h, stripe, P.HAZARD_BLACK.base, width=2)
-                t.rect(x + 3, y + 3, w - 6, h - 6, P.BLACK_PAINT.deep)
-                t.outline(x + 3, y + 3, w - 6, h - 6, gun[2])
-        return paint
-    g.paint_all(tex, parts["fluid_inlet"][0], socket("east", FLUID_BLUE[4], gun))
-    g.paint_all(tex, parts["terminal"][0], socket("south", P.WARNING_RED[3], P.WARNING_RED))
-    for b in parts["insulator"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.WARNING_RED[4]) if d == "up" else
-                    (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]), t.hline(r[0], r[1] + 1, r[2], P.WHITE_CERAMIC[2])))
-    return g, tex, glow
+    S.paint(tex, names("fluid_inlet"), case)
+    S.overlay(tex, names("fluid_inlet"), socket(S, _ramp(FLUID_BLUE)), only=("east",))
+    S.paint(tex, names("terminal"), M.painted(M.RED_PAINT_RAMP, tone=0.45, wear=0.2))
+    S.overlay(tex, names("terminal"), socket(S, M.RED_PAINT_RAMP), only=("south",))
+    S.paint(tex, names("insulator"), M.white_paint(tone=0.8))
+    S.paint(tex, names("insulator"), M.painted(M.RED_PAINT_RAMP, tone=0.6, wear=0.0), only=("up",))
+    S.overlay(tex, names("insulator"), lambda f, img: M.darken(img, (np.floor(f.Y * 2) % 2) == 0, 0.82) if f.vertical else None)
 
 
 def animations() -> list[Animation]:

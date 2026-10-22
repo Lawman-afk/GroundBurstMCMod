@@ -28,7 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A multiblock controller: a machine block that looks like a control cabinet on its own and, once its structure
- * forms, hides itself while its block entity renders the whole structure as one animated model.
+ * forms, hides itself while its block entity renders the whole structure as one animated model. Formed, it takes its
+ * cell's cut ({@link MultiblockPartBlock#CUT}) like the parts, so it can be walked on where the model is a deck.
  */
 public class MultiblockControllerBlock extends MachineBlock {
     public static final String STATUS = GZLang.add(GroundZero.MODID + ".multiblock.status",
@@ -36,13 +37,19 @@ public class MultiblockControllerBlock extends MachineBlock {
 
     public MultiblockControllerBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type) {
         super(properties, type, false, Shapes.block());
-        registerDefaultState(defaultBlockState().setValue(MultiblockPartBlock.FORMED, false));
+        registerDefaultState(defaultBlockState().setValue(MultiblockPartBlock.FORMED, false).setValue(MultiblockPartBlock.CUT, PartCut.NONE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(MultiblockPartBlock.FORMED);
+        builder.add(MultiblockPartBlock.FORMED, MultiblockPartBlock.CUT);
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+            net.minecraft.world.phys.shapes.CollisionContext context) {
+        return state.getValue(MultiblockPartBlock.FORMED) ? state.getValue(MultiblockPartBlock.CUT).shape() : super.getShape(state, level, pos, context);
     }
 
     @Override

@@ -1,6 +1,9 @@
 """Multiblock structural blocks (DESIGN.md §23.2) and controller faces: textures, block models, blockstates, item
 definitions. Every part block has a `formed` property; formed variants use a particle-only model because the
 controller draws the whole structure.
+
+Faces are painted with the material library (tools/gz/panels.py, DESIGN.md §4.3; the remaster after slice 9b): a
+brushed steel frame, bevelled and bolted, round painted or metal panels; the designs as they were.
 """
 from __future__ import annotations
 
@@ -9,7 +12,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
+from gz import panels as PN  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -18,11 +25,25 @@ from gz.tex import Tex  # noqa: E402
 STEEL = P.STEEL
 OLIVE = P.OLIVE
 GUN = P.GUNMETAL
+def _ramp(r) -> np.ndarray:
+    return np.array([s[:3] for s in r.shades], dtype=np.float32)
+
+
+OLIVE_PAINT = M.painted(M.OLIVE_RAMP, tone=0.5, wear=0.0)
+LEAD_METAL = M.Material(ramp=_ramp(P.LEAD), tone=0.5, mottle=0.03, grain=0.02, dither=0.4, edge_light=0.0, edge_dark=0.0,
+                        ao=0.0, grime=0.0, dust=0.0)
+RED_PAINT = M.painted(M.RED_PAINT_RAMP, tone=0.4, wear=0.0, mottle=0.015, grain=0.015)
+COPPER = M.Material(ramp=M.COPPER_RAMP, tone=0.55, mottle=0.02, grain=0.02, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0,
+                    grime=0.0, dust=0.0, brushed=0.05)
+POLISHED = M.steel(tone=0.7, brushed=0.08)
+DARK_PAINT = M.painted(M.BLACK_RAMP, tone=0.45, wear=0.0)
+BRASS = M.Material(ramp=_ramp(P.BRASS), tone=0.55, mottle=0.03, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0,
+                   grime=0.0, dust=0.0)
 LEAD_GLASS = fixed("lead_glass", "#141a1e", "#1e262c", "#2a343c", "#36424c", "#4a5864", "#6a7a88", "#a4b4c0")
 
 
 def frame(t: Tex, ramp=STEEL) -> None:
-    """2-px bevelled steel frame round a 16x16 face with corner bolts."""
+    """(Kept for older scripts.) 2-px bevelled steel frame round a 16x16 face with corner bolts."""
     t.rect(0, 0, 16, 16, ramp[3])
     t.hline(0, 0, 16, ramp[5])
     t.vline(0, 0, 16, ramp[4])
@@ -38,10 +59,11 @@ def frame(t: Tex, ramp=STEEL) -> None:
 
 
 def casing() -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, OLIVE, base=3, style="inset")
-    t.outline(4, 4, 8, 8, OLIVE.shadow)                      # access hatch seam
+    """Machine Casing: an olive panel set into the steel frame, an access hatch in it (its seam, a lit top lip, two
+    handles), a couple of paint chips showing the primer."""
+    img = PN.face(OLIVE_PAINT, style="inset", seed=3)
+    PN.groove(img, 4, 4, 8, 8)
+    t = M.to_tex(img)
     t.hline(5, 5, 6, OLIVE.light)
     for x, y in ((5, 7), (10, 7)):
         t.px(x, y, OLIVE.deep)                                 # hatch handles
@@ -65,15 +87,14 @@ def reactor_glass() -> Tex:
 
 
 def item_port() -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.stripes(2, 2, 12, 12, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    t.rect(4, 4, 8, 8, P.BLACK_PAINT.deep)                    # port opening
-    t.outline(4, 4, 8, 8, GUN[1])
-    # Chevrons: one pointing in, one pointing out.
-    for i, (x, y) in enumerate(((6, 6), (7, 7), (6, 8))):
+    """Item Port: yellow and black stripes in the frame round a dark opening, chevrons in and out."""
+    img = PN.face(OLIVE_PAINT, style="inset", seed=5)
+    PN.stripes(img, PN.area(2, 2, 12, 12), seed=5)
+    PN.opening(img, 4, 4, 8, 8)
+    t = M.to_tex(img)
+    for x, y in ((6, 6), (7, 7), (6, 8)):
         t.px(x, y, P.NUCLEAR_AMBER[5])
-    for i, (x, y) in enumerate(((10, 6), (9, 7), (10, 8))):
+    for x, y in ((10, 6), (9, 7), (10, 8)):
         t.px(x, y, P.NUCLEAR_AMBER[4])
     return t
 
@@ -83,12 +104,10 @@ FLUID_BLUE = fixed("fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3
 
 def fluid_port() -> Tex:
     """Like the Item Port, in blue and black stripes, with a drop in the opening: pipes connect here."""
-    t = Tex(16, 16)
-    frame(t)
-    t.stripes(2, 2, 12, 12, FLUID_BLUE[4], P.HAZARD_BLACK.base, width=2)
-    t.rect(4, 4, 8, 8, P.BLACK_PAINT.deep)                    # port opening
-    t.outline(4, 4, 8, 8, GUN[1])
-    # A drop: narrow point at the top, round belly, highlight left, shade right.
+    img = PN.face(OLIVE_PAINT, style="inset", seed=6)
+    PN.stripes(img, PN.area(2, 2, 12, 12), M.painted(_ramp(FLUID_BLUE), tone=0.62, wear=0.0, dither=0.4), seed=6)
+    PN.opening(img, 4, 4, 8, 8)
+    t = M.to_tex(img)
     rows = {5: (7, 8), 6: (7, 8), 7: (6, 9), 8: (5, 10), 9: (5, 10), 10: (6, 9)}
     for y, (x0, x1) in rows.items():
         for x in range(x0, x1 + 1):
@@ -126,165 +145,171 @@ def orbit_placard(t: Tex) -> None:
 
 
 def controller_front(placard=None) -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, OLIVE, base=3, style="raised")
+    """A controller's face: a raised olive panel with its green CRT, status buttons, a dial, the placard of what it
+    runs and a hazard strip along the bottom."""
+    img = PN.face(OLIVE_PAINT, style="raised", seed=8)
+    PN.stripes(img, PN.area(2, 13, 12, 1), seed=8)
+    t = M.to_tex(img)
     t.rect(3, 3, 7, 5, P.BLACK_PAINT.deep)                    # green CRT
     t.outline(3, 3, 7, 5, GUN[2])
+    t.hline(3, 7, 7, GUN[3])                                  # its bezel's lit lower lip
     for x in range(4, 9):
         t.px(x, 5 + (x % 2), P.INDICATOR_GREEN[3])
     t.px(4, 4, P.INDICATOR_GREEN[5])
     for i, c in enumerate((P.INDICATOR_GREEN.base, P.HAZARD_YELLOW.base, P.WARNING_RED.base)):
         t.px(11 + (i % 2) * 2, 4 + (i // 2) * 2, c)           # status buttons
-    # Placard: what this controller runs.
     (placard or flask_placard)(t)
-    t.stripes(2, 13, 12, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
     t.rect(10, 9, 3, 3, GUN[2])                               # dial
     t.px(11, 10, P.WHITE_CERAMIC[6])
+    t.px(12, 11, GUN[1])
     return t
 
 
 def lead_casing() -> Tex:
     """Lead-lined casing: dull lead plates bolted into the steel frame, a seam across the middle."""
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, P.LEAD, base=3, style="inset")
-    t.hline(2, 8, 12, P.LEAD.shadow)
-    t.hline(2, 9, 12, P.LEAD.light)
+    img = PN.face(LEAD_METAL, style="inset", seed=11)
+    col, row = PN.grid()
+    M.darken(img, PN.area(2, 8, 12, 1), 0.62)
+    M.lighten(img, PN.area(2, 9, 12, 1), 1.1, 4)
     for x, y in ((3, 3), (12, 3), (3, 12), (12, 12), (3, 6), (12, 6)):
-        t.px(x, y, P.LEAD[5])
-    return t
+        PN.bolt(img, x, y)
+    return M.to_tex(img)
 
 
 def energy_port() -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.stripes(2, 2, 12, 12, P.WARNING_RED[3], P.HAZARD_BLACK.base, width=2)
-    t.rect(4, 4, 8, 8, P.BLACK_PAINT.deep)
-    t.outline(4, 4, 8, 8, GUN[1])
+    """Energy Port: red and black stripes round a dark opening with a lightning bolt in it."""
+    img = PN.face(OLIVE_PAINT, style="inset", seed=12)
+    PN.stripes(img, PN.area(2, 2, 12, 12), M.painted(M.RED_PAINT_RAMP, tone=0.55, wear=0.0, dither=0.4), seed=12)
+    PN.opening(img, 4, 4, 8, 8)
+    t = M.to_tex(img)
     for x, y in ((8, 5), (7, 6), (6, 7), (7, 7), (8, 7), (9, 7), (8, 8), (7, 9), (6, 10)):
         t.px(x, y, P.HAZARD_YELLOW[5])                         # lightning bolt
     return t
 
 
 def steel_plating() -> Tex:
-    """Riveted steel deck plates with a raised diamond tread."""
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, STEEL[3])
-    t.outline(0, 0, 16, 16, STEEL[2])
-    t.hline(0, 0, 16, STEEL[4])
+    """Riveted steel deck plates with a raised diamond tread, a seam round each plate."""
+    img = PN.tile(M.steel(tone=0.55, brushed=0.03, grain=0.008, mottle=0.02), 13)
+    PN.bevel_box(img, 0, 0, 16, 16, True, 0.7)
     for y in range(2, 14, 4):
         for x in range(2 + (y // 4) % 2 * 2, 14, 4):
-            t.px(x, y, STEEL[5])
-            t.px(x + 1, y + 1, STEEL[1])
+            M.lighten(img, PN.area(x, y, 1, 1), 1.35, 16)      # a tread bar: lit edge, shadow under it
+            M.darken(img, PN.area(x + 1, y + 1, 1, 1), 0.55)
     for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
-        t.px(x, y, STEEL[6])
-    return t
+        PN.bolt(img, x, y)
+    return M.to_tex(img)
 
 
 def magnet_segment() -> Tex:
     """A dipole magnet: red yoke, copper windings either side of the dark beam pipe."""
-    t = Tex(16, 16)
-    frame(t, P.PRIMER_RED)
-    for x in (3, 4, 11, 12):
-        for y in range(3, 13):
-            t.px(x, y, P.COPPER[4] if y % 2 else P.COPPER[3])
-    t.rect(6, 6, 4, 4, P.BLACK_PAINT.deep)                    # beam pipe
-    t.outline(6, 6, 4, 4, STEEL[4])
-    return t
+    img = PN.face(RED_PAINT, frame=RED_PAINT, style="flat", seed=14)
+    col, row = PN.grid()
+    coil = ((col == 3) | (col == 4) | (col == 11) | (col == 12)) & (row >= 3) & (row <= 12)
+    PN.paste(img, coil, COPPER, 14)
+    M.darken(img, coil & (row % 2 == 0), 0.78)                  # the turns of the winding
+    M.lighten(img, coil & ((col == 3) | (col == 11)), 1.12, 5)
+    PN.opening(img, 6, 6, 4, 4, rim=M.steel(tone=0.62))         # the beam pipe
+    return M.to_tex(img)
 
 
 def injector() -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, P.GUNMETAL, base=3, style="inset")
-    t.rect(5, 5, 6, 6, P.BLACK_PAINT.deep)
+    """The accelerator's injector: a gunmetal panel, the source glowing blue in its port, a hazard strip."""
+    img = PN.face(PN.GUNMETAL, style="inset", seed=15)
+    PN.opening(img, 5, 5, 6, 6)
+    PN.stripes(img, PN.area(2, 13, 12, 1), seed=15)
+    t = M.to_tex(img)
     t.outline(5, 5, 6, 6, P.CHERENKOV[3])
     t.rect(7, 7, 2, 2, P.CHERENKOV.shine)                     # source glow
-    t.stripes(2, 13, 12, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
+    t.px(6, 6, P.CHERENKOV[2])
     return t
 
 
 def target_chamber() -> Tex:
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, P.GUNMETAL, base=3, style="inset")
-    t.rect(4, 4, 8, 8, P.ANTIMATTER[2])
-    t.outline(4, 4, 8, 8, STEEL[5])
+    """The target chamber: a steel-rimmed window onto trapped antimatter's glow."""
+    img = PN.face(PN.GUNMETAL, style="inset", seed=16)
+    PN.paste(img, PN.outline(4, 4, 8, 8), POLISHED, 16)
+    PN.bevel_box(img, 4, 4, 8, 8, True, 0.8)
+    t = M.to_tex(img)
+    t.rect(5, 5, 6, 6, P.ANTIMATTER[2])
     t.rect(6, 6, 4, 4, P.ANTIMATTER[5])                       # trapped antimatter glow
     t.px(7, 7, P.ANTIMATTER.shine)
+    t.hline(5, 5, 6, P.ANTIMATTER[1])                         # the rim's shadow on the glass
     return t
 
 
 def toroidal_field_coil() -> Tex:
     """A toroidal field coil: a D-shaped loop of copper windings set in a gunmetal casing, cooling-line studs."""
-    t = Tex(16, 16)
-    frame(t, P.GUNMETAL)
-    t.panel(2, 2, 12, 12, P.GUNMETAL, base=2, style="inset")
-    # The D: straight leg on the left, curved back on the right, two strands of winding.
+    img = PN.face(M.painted(M.ARMOUR_RAMP, tone=0.38, wear=0.0), frame=PN.GUNMETAL, style="inset", seed=17)
     d_shape = ["..######....", ".#......##..", ".#........#.", ".#.........#", ".#.........#", ".#.........#",
                ".#.........#", ".#.........#", ".#........#.", ".#......##..", "..######....", "............"]
-    for yy, row in enumerate(d_shape):
-        for xx, c in enumerate(row):
+    mask = np.zeros((16, 16), dtype=bool)
+    for yy, row_ in enumerate(d_shape):
+        for xx, c in enumerate(row_):
             if c == "#":
-                t.px(2 + xx, 2 + yy, P.COPPER[4] if (xx + yy) % 2 else P.COPPER[3])
-    for yy in range(4, 11, 2):
-        t.px(4, yy, P.COPPER[5])                                    # bright turns on the straight leg
-    t.px(8, 7, P.CRYO[4])                                           # liquid nitrogen stud in the bore
+                mask[2 + yy, 2 + xx] = True
+    PN.paste(img, mask, COPPER, 17)
+    col, row = PN.grid()
+    M.darken(img, mask & ((col + row) % 2 == 0), 0.8)            # two strands of winding
+    M.lighten(img, mask & (col == 3) & (row % 2 == 0) & (row >= 4) & (row <= 10), 1.25, 10)   # bright turns
+    t = M.to_tex(img)
+    t.px(8, 7, P.CRYO[4])                                     # liquid nitrogen stud in the bore
     t.px(8, 8, P.CRYO[3])
     return t
 
 
 def vacuum_vessel() -> Tex:
     """Vacuum vessel casing: polished steel plates round a bolted flange ring."""
-    t = Tex(16, 16)
-    frame(t)
-    t.panel(2, 2, 12, 12, STEEL, base=4, style="inset")
-    t.outline(4, 4, 8, 8, STEEL[2])
-    t.outline(5, 5, 6, 6, STEEL[5])
-    t.rect(6, 6, 4, 4, STEEL[3])
+    img = PN.face(POLISHED, style="inset", seed=18)
+    PN.bevel_box(img, 4, 4, 8, 8, True, 0.9)                    # the flange, raised
+    PN.bevel_box(img, 5, 5, 6, 6, False, 0.7)                   # and its bore
+    M.darken(img, PN.area(6, 6, 4, 4), 0.82)
     for x, y in ((4, 4), (11, 4), (4, 11), (11, 11), (7, 4), (4, 7), (11, 8), (8, 11)):
-        t.px(x, y, STEEL[6])                                        # flange bolts
-    t.hline(2, 2, 12, STEEL[5])
-    return t
+        PN.bolt(img, x, y)                                     # flange bolts
+    return M.to_tex(img)
 
 
 def central_solenoid() -> Tex:
     """Central solenoid: tight copper windings between steel end bands."""
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, P.COPPER[3])
+    img = PN.tile(COPPER, 19)
+    col, row = PN.grid()
+    M.darken(img, (row % 2 == 0) & (col >= 2) & (col <= 13), 0.82)          # the turns
+    glint = np.zeros((16, 16), dtype=bool)
     for y in range(16):
-        t.hline(2, y, 12, P.COPPER[4] if y % 2 else P.COPPER[3])
-        t.px(2 + (y * 5) % 12, y, P.COPPER[5])                     # glints along the turns
-    for x in (0, 1, 14, 15):
-        t.vline(x, 0, 16, STEEL[3] if x in (1, 14) else STEEL[2])
-    t.vline(1, 0, 16, STEEL[4])
-    return t
+        glint[y, 2 + (y * 5) % 12] = True
+    M.lighten(img, glint, 1.25, 10)                                         # glints along the turns
+    band = (col <= 1) | (col >= 14)
+    PN.paste(img, band, M.steel(tone=0.55, brushed=0.05), 19)
+    M.lighten(img, col == 1, 1.12, 4)
+    M.darken(img, col == 14, 0.78)
+    return M.to_tex(img)
 
 
 def containment_emitter() -> Tex:
-    """Containment emitter: a dark field projector with a violet lens and brass mount bolts."""
-    t = Tex(16, 16)
-    frame(t, P.GUNMETAL)
-    t.panel(2, 2, 12, 12, P.BLACK_PAINT, base=2, style="inset")
+    """Containment emitter: a dark field projector with a violet lens in a brass ring, brass mount bolts."""
+    img = PN.face(DARK_PAINT, frame=PN.GUNMETAL, style="inset", seed=20)
+    PN.paste(img, PN.outline(4, 4, 8, 8), BRASS, 20)
+    PN.bevel_box(img, 4, 4, 8, 8, True, 0.8)
+    t = M.to_tex(img)
     t.rect(5, 5, 6, 6, P.SINGULARITY[2])
-    t.outline(4, 4, 8, 8, P.BRASS[3])
     t.rect(6, 6, 4, 4, P.SINGULARITY[4])
     t.rect(7, 7, 2, 2, P.ANTIMATTER[6])                             # lens glow
     for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
         t.px(x, y, P.BRASS[5])
+        t.px(x + 1, y + 1, P.BLACK_PAINT.deep)
     return t
 
 
 def core_cradle() -> Tex:
-    """Core cradle: a violet gimbal ring round an empty black socket."""
-    t = Tex(16, 16)
-    frame(t, P.GUNMETAL)
-    t.rect(2, 2, 12, 12, P.BLACK_PAINT.deep)
-    ring = [(5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (4, 4), (11, 4), (3, 5), (12, 5), (3, 6), (12, 6), (3, 7), (12, 7),
-            (3, 8), (12, 8), (3, 9), (12, 9), (3, 10), (12, 10), (4, 11), (11, 11), (5, 12), (6, 12), (7, 12), (8, 12), (9, 12), (10, 12)]
-    for x, y in ring:
+    """Core cradle: a violet gimbal ring round an empty black socket, its brass axle across."""
+    img = PN.face(DARK_PAINT, frame=PN.GUNMETAL, style="inset", seed=21)
+    M.darken(img, PN.area(2, 2, 12, 12), 0.45)                     # the socket, deep
+    t = M.to_tex(img)
+    ring_px = [(5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3), (4, 4), (11, 4), (3, 5), (12, 5), (3, 6), (12, 6), (3, 7), (12, 7),
+               (3, 8), (12, 8), (3, 9), (12, 9), (3, 10), (12, 10), (4, 11), (11, 11), (5, 12), (6, 12), (7, 12), (8, 12), (9, 12), (10, 12)]
+    for x, y in ring_px:
         t.px(x, y, P.SINGULARITY[4] if y < 8 else P.SINGULARITY[3])
+    for x, y in ((6, 3), (7, 3), (3, 6)):
+        t.px(x, y, P.SINGULARITY[5])                                # the ring's lit top
     t.hline(6, 7, 4, P.BRASS[4])                                    # gimbal axle
     t.hline(6, 8, 4, P.BRASS[2])
     return t
@@ -307,9 +332,12 @@ def singularity_placard(t: Tex) -> None:
 
 
 def controller_top() -> Tex:
-    t = casing()
-    t.vent(4, 4, 8, 8, GUN, slat=2)
-    return t
+    """A controller's top: the casing with a louvred vent."""
+    img = PN.face(OLIVE_PAINT, style="inset", seed=22)
+    PN.paste(img, PN.area(4, 4, 8, 8), PN.GUNMETAL, 22)
+    PN.louvres(img, 4, 4, 8, 8)
+    PN.bevel_box(img, 4, 4, 8, 8, False, 0.8)
+    return M.to_tex(img)
 
 
 def particle_model(tex: str) -> dict:

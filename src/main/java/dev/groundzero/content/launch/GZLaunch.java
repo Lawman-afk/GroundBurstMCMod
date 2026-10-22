@@ -9,6 +9,7 @@ import dev.groundzero.content.multiblock.MultiblockControllerBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
 import dev.groundzero.content.multiblock.MultiblockDefinition.Entry;
 import dev.groundzero.content.multiblock.MultiblockPartBlock;
+import dev.groundzero.content.multiblock.PartCut;
 import dev.groundzero.registry.GZBlockEntities;
 import dev.groundzero.registry.GZBlocks;
 import dev.groundzero.registry.GZBlocks.WithItem;
@@ -138,7 +139,9 @@ public final class GZLaunch {
      * The Launch Complex (Phase 8): a 5x5 deck of Launch Pad with the controller at the front middle, an Energy Port at
      * the back middle and the Flame Deflector at its middle, under the missile; a Gantry Frame service tower two cells
      * deep and 13 high beside the deck's middle and back rows, with Gantry Arms (the umbilicals) reaching in at the
-     * fifth and ninth layers; the missile's column over the deflector kept clear 11 blocks up.
+     * fifth and ninth layers; the missile's column over the deflector kept clear 11 blocks up. Formed, the deck's
+     * blocks take the model's shape (after slice 9b, the user's request): a deck 14 px high you can walk on, the flame
+     * trench down its west side and the deflector's steps rising out of it under the missile.
      */
     public static final MultiblockDefinition COMPLEX = new MultiblockDefinition(GroundZero.id("launch_complex"),
             new String[][] {
@@ -159,7 +162,10 @@ public final class GZLaunch {
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'G', Entry.of(() -> GANTRY_FRAME.block().get()),
                     'A', Entry.of(() -> GANTRY_ARM.block().get()), 'F', Entry.of(() -> FLAME_DEFLECTOR.block().get()),
                     'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
-                    MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPLEX_CONTROLLER.block().get())));
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPLEX_CONTROLLER.block().get())),
+            MultiblockDefinition.layerCuts(0, new String[] {"DDCDD", "DDDDD", "TTSDD", "DDDDD", "DDHDD"},
+                    Map.of('D', PartCut.DECK, 'T', PartCut.TRENCH_NORTH, 'S', PartCut.STEPS_NORTH, 'C', PartCut.CONSOLE_NORTH,
+                            'H', PartCut.HOUSING_NORTH)));
 
     /**
      * The Missile Silo (Phase 9 slice 9b), dug into the ground: a floor of Reinforced Concrete with the Flame Deflector
@@ -207,7 +213,8 @@ public final class GZLaunch {
     /**
      * The Radar Array: a 3x3 deck of Machine Casing with the controller at the front middle and an Energy Port at the
      * back middle; a Radar Mast three high from the deck's middle; on top a Large Radar Dish (its middle over the mast;
-     * formed, it turns).
+     * formed, it turns). Formed, the deck's blocks are the model's deck, 6 px high, with its railings, the cabinet,
+     * the power box and the mast's foot (after slice 9b, the user's request).
      */
     public static final MultiblockDefinition RADAR = new MultiblockDefinition(GroundZero.id("radar_array"),
             new String[][] {
@@ -220,7 +227,12 @@ public final class GZLaunch {
             Map.of('C', Entry.of(() -> GZMultiblocks.MACHINE_CASING.block().get()), 'M', Entry.of(() -> RADAR_MAST.block().get()),
                     'D', largeDish(LargeRadarDishBlock.Part.CENTER), 'd', largeDish(LargeRadarDishBlock.Part.EDGE),
                     'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
-                    MultiblockDefinition.CONTROLLER, Entry.of(() -> RADAR_CONTROLLER.block().get())));
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> RADAR_CONTROLLER.block().get())),
+            // The railing runs down the west and east sides and across the back (RAIL_SOUTH is the west one turned
+            // round: the east side; CORNER_RAIL_WEST the back-left corner turned: the back-right).
+            MultiblockDefinition.layerCuts(0, new String[] {"wcs", "wms", "LPR"},
+                    Map.of('w', PartCut.RAIL_NORTH, 's', PartCut.RAIL_SOUTH, 'c', PartCut.CABINET_NORTH, 'm', PartCut.MAST,
+                            'L', PartCut.CORNER_RAIL_NORTH, 'R', PartCut.CORNER_RAIL_WEST, 'P', PartCut.POWER_BOX_NORTH)));
 
     /** A cell of the Large Radar Dish: its middle, or one of the parts round it. */
     private static Entry largeDish(LargeRadarDishBlock.Part part) {

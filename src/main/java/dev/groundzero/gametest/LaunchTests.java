@@ -7,6 +7,8 @@ import dev.groundzero.content.launch.Launches;
 import dev.groundzero.content.launch.MissileEntity;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
+import dev.groundzero.content.multiblock.MultiblockPartBlock;
+import dev.groundzero.content.multiblock.PartCut;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.charge.Charges;
 import net.minecraft.core.BlockPos;
@@ -35,6 +37,81 @@ final class LaunchTests {
         GZGameTests.test("large_radar_dish_places_and_breaks_whole", GZGameTests.FLOOR_16, 40, LaunchTests::largeDish);
         GZGameTests.test("computer_surveys_the_ground_round_it", GZGameTests.FLOOR_16, 40, LaunchTests::survey);
         GZGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GZGameTests.FLOOR_16, 400, LaunchTests::flight);
+        GZGameTests.test("formed_decks_take_the_models_shape", GZGameTests.FLOOR_16, 20, LaunchTests::walkableDecks);
+    }
+
+    /** Whether a point of a block (in pixels) is inside its shape. */
+    private static boolean solidAt(net.minecraft.world.phys.shapes.VoxelShape shape, double x, double y, double z) {
+        return shape.toAabbs().stream().anyMatch(b -> b.contains(x / 16, y / 16, z / 16));
+    }
+
+    /**
+     * Formed, the Launch Complex's deck is 14 px high, its flame trench a floor 2 px up with a player's room over it
+     * all the way under the missile, the deflector's steps rising out of it; the Radar Array's deck is 6 px high with
+     * its railings, cabinet, power box and mast foot; and the shapes turn with the structure (after slice 9b).
+     */
+    private static void walkableDecks(GameTestHelper helper) {
+        floor(helper);
+        var level = helper.getLevel();
+        var c = NuclearTests.complex(helper, new BlockPos(5, 1, 2));
+        helper.assertTrue(c.isFormed(), "the complex formed");
+        java.util.Map<String, BlockPos> at = new java.util.HashMap<>();
+        for (MultiblockDefinition.Cell cell : GZLaunch.COMPLEX.cells(c.getBlockPos(), Direction.NORTH)) {
+            if (cell.layer() == 0) {
+                at.put(cell.col() + "," + cell.row(), cell.pos());
+            }
+        }
+        java.util.function.BiFunction<String, PartCut, net.minecraft.world.phys.shapes.VoxelShape> shape = (key, cut) -> {
+            var state = level.getBlockState(at.get(key));
+            helper.assertTrue(state.getValue(MultiblockPartBlock.CUT) == cut, key + " is " + cut + ": " + state);
+            return state.getCollisionShape(level, at.get(key));
+        };
+        var deck = shape.apply("0,1", PartCut.DECK);
+        helper.assertTrue(solidAt(deck, 8, 13, 8) && !solidAt(deck, 8, 15, 8), "the deck is 14 px high");
+        var trench = shape.apply("0,2", PartCut.TRENCH_NORTH);
+        helper.assertTrue(solidAt(trench, 8, 1, 8) && !solidAt(trench, 8, 3, 8) && solidAt(trench, 8, 13, 1), "the trench: floor 2 px up, deck along its side");
+        var steps = shape.apply("2,2", PartCut.STEPS_NORTH);
+        helper.assertTrue(solidAt(steps, 2, 4, 8) && !solidAt(steps, 2, 6, 8) && solidAt(steps, 12, 10, 8) && !solidAt(steps, 12, 12, 8),
+                "the deflector's steps rise east, 5 px to 11 px");
+        shape.apply("2,0", PartCut.CONSOLE_NORTH);                      // the controller, under its console
+        shape.apply("2,4", PartCut.HOUSING_NORTH);
+        // A player's room (0.6 wide, 1.8 tall) on the trench's floor, all the way along it and under the missile.
+        for (String key : java.util.List.of("0,2", "1,2")) {
+            BlockPos p = at.get(key);
+            var box = new net.minecraft.world.phys.AABB(p.getX() + 0.2, p.getY() + 2.05 / 16, p.getZ() + 0.2, p.getX() + 0.8, p.getY() + 2.05 / 16 + 1.8, p.getZ() + 0.8);
+            helper.assertTrue(level.noCollision(box), "room to walk along the trench at " + key);
+        }
+        BlockPos under = at.get("2,2");
+        var onStep = new net.minecraft.world.phys.AABB(under.getX() + 0.55, under.getY() + 11.05 / 16, under.getZ() + 0.2, under.getX() + 0.95,
+                under.getY() + 11.05 / 16 + 1.8, under.getZ() + 0.8);
+        helper.assertTrue(level.noCollision(onStep), "room to stand on the top step under the missile");
+        // The radar's deck.
+        BlockPos rel = new BlockPos(5, 1, 10);
+        build(helper, rel, GZLaunch.RADAR_CONTROLLER.block().get(), GZLaunch.RADAR);
+        var r = (dev.groundzero.content.launch.RadarArrayBlockEntity) level.getBlockEntity(helper.absolutePos(rel));
+        r.revalidate();
+        helper.assertTrue(r.isFormed(), "the radar formed");
+        at.clear();
+        for (MultiblockDefinition.Cell cell : GZLaunch.RADAR.cells(r.getBlockPos(), Direction.NORTH)) {
+            if (cell.layer() == 0) {
+                at.put(cell.col() + "," + cell.row(), cell.pos());
+            }
+        }
+        var left = shape.apply("0,1", PartCut.RAIL_NORTH);
+        helper.assertTrue(solidAt(left, 8, 5, 8) && !solidAt(left, 8, 7, 8) && solidAt(left, 2.5, 10, 8), "the radar deck is 6 px high, railed on the west");
+        var right = shape.apply("2,1", PartCut.RAIL_SOUTH);
+        helper.assertTrue(solidAt(right, 13.5, 10, 8) && !solidAt(right, 2.5, 10, 8), "and on the east");
+        var corner = shape.apply("2,2", PartCut.CORNER_RAIL_WEST);
+        helper.assertTrue(solidAt(corner, 13.5, 10, 4) && solidAt(corner, 6, 10, 13.5) && !solidAt(corner, 2.5, 10, 4), "the back-right corner: east and back");
+        shape.apply("1,1", PartCut.MAST);
+        shape.apply("1,0", PartCut.CABINET_NORTH);
+        shape.apply("1,2", PartCut.POWER_BOX_NORTH);
+        // Turned with the structure: for a controller facing east the steps rise south and the trench runs north-south.
+        helper.assertTrue(PartCut.STEPS_NORTH.rotated(Direction.EAST) == PartCut.STEPS_EAST && PartCut.RAIL_SOUTH.rotated(Direction.WEST) == PartCut.RAIL_EAST,
+                "the cuts turn with the structure");
+        var turned = PartCut.STEPS_EAST.shape();
+        helper.assertTrue(solidAt(turned, 8, 10, 14) && !solidAt(turned, 8, 6, 2) && solidAt(turned, 15, 13, 8), "turned steps rise south");
+        helper.succeed();
     }
 
     private static void floor(GameTestHelper helper) {
