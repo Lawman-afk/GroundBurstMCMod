@@ -56,7 +56,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
         var body = entity.body();
-        String id = dev.groundzero.content.assembly.MissileParts.look(entity.warheadName(), body);
+        String id = dev.groundzero.content.assembly.MissileParts.look(entity.warheadName(), body, entity.dropped());   // what is left of it
         ItemStack look = this.looks.computeIfAbsent(id, key -> {
             ItemStack s = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
             s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,

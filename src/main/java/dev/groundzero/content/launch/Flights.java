@@ -201,6 +201,40 @@ public final class Flights extends SavedData {
             return true;
         }
 
+        /** How far through its flight it is: 0 on the pad, 1 at the target. */
+        public float progress() {
+            return this.age < MissileEntity.IGNITION ? 0 : Math.min(1, (this.age - MissileEntity.IGNITION) / (float) this.flightTicks);
+        }
+
+        /** Spent stages it has dropped so far. */
+        public int dropped() {
+            float s = progress();
+            int n = 0;
+            for (float drop : dev.groundzero.content.assembly.MissileParts.stageDrops(this.body)) {
+                n += s >= drop ? 1 : 0;
+            }
+            return n;
+        }
+
+        /** Whether an engine is burning: on the pad, and climbing until its last stage burns out. */
+        public boolean burning() {
+            return this.age < MissileEntity.IGNITION || progress() < dev.groundzero.content.assembly.MissileParts.burnout(this.body);
+        }
+
+        /**
+         * How hot its nose glows coming back down: from past the top of its arc, brighter the higher it came from (a
+         * short flight barely warms).
+         */
+        public float reentry() {
+            float s = progress();
+            if (s < 0.55f || s >= 1) {
+                return 0;
+            }
+            float height = (float) Math.clamp((this.apex - 60) / 160, 0.25, 1);
+            float t = Math.min(1, (s - 0.55f) / 0.25f);
+            return height * t * t * (3 - 2 * t);
+        }
+
         /** A short id for radar screens to follow it by. */
         public int trackId() {
             return (int) (this.id.getMostSignificantBits() ^ this.id.getLeastSignificantBits());
@@ -291,9 +325,7 @@ public final class Flights extends SavedData {
             }
             MissileEntity proxy = proxy(level);
             if (proxy != null) {
-                if (this.age % 40 == 1) {
-                    level.playSound(null, proxy, GZLaunch.MISSILE_ENGINE.get(), SoundSource.BLOCKS, 6f, 1f);
-                }
+                // (Its engine's roar is the client's own, following it: MissileSounds.)
                 int left = MissileEntity.IGNITION + this.flightTicks - this.age;
                 if (!this.whistled && left <= WHISTLE_AT && left > 0) {
                     this.whistled = true;                     // the dive: it screams down on its target
@@ -312,7 +344,7 @@ public final class Flights extends SavedData {
                     m.discard();                               // on into unloaded ground: put back when it is loaded
                     return null;
                 }
-                m.follow(this.pos, this.yaw, this.tilt, this.age);
+                m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
                 return m;
             }
             if (!loaded) {
@@ -322,7 +354,7 @@ public final class Flights extends SavedData {
             m.setUUID(this.id);
             m.setLook(this.warhead, this.body);
             m.setPos(this.pos);
-            m.follow(this.pos, this.yaw, this.tilt, this.age);
+            m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
             level.addFreshEntity(m);
             return m;
         }

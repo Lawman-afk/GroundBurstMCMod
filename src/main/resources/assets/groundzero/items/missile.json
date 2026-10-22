@@ -264,6 +264,139 @@
         }
       },
       {
+        "when": "strategic_none_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_none_s1"
+        }
+      },
+      {
+        "when": "strategic_he_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_he_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_heavy_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_heavy_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_thermobaric_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_thermobaric_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_cluster_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_cluster_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_bunker_buster_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_bunker_buster_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_napalm_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_napalm_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_massive_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_massive_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_gas_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_gas_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_smoke_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_smoke_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_cryo_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_cryo_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_emp_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_emp_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_chemical_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_chemical_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_toxic_waste_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_toxic_waste_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_tactical_nuclear_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_tactical_nuclear_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_fission_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_fission_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_boosted_fission_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_boosted_fission_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_neutron_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_neutron_warhead_s1"
+        }
+      },
+      {
+        "when": "strategic_dirty_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_missile_dirty_warhead_s1"
+        }
+      },
+      {
         "when": "icbm_thermonuclear_warhead",
         "model": {
           "type": "minecraft:model",
@@ -282,6 +415,69 @@
         "model": {
           "type": "minecraft:model",
           "model": "groundzero:item/icbm_missile_tsar_warhead"
+        }
+      },
+      {
+        "when": "icbm_thermonuclear_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_thermonuclear_warhead_s1"
+        }
+      },
+      {
+        "when": "icbm_thermonuclear_warhead_s2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_thermonuclear_warhead_s2"
+        }
+      },
+      {
+        "when": "icbm_cobalt_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_cobalt_warhead_s1"
+        }
+      },
+      {
+        "when": "icbm_cobalt_warhead_s2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_cobalt_warhead_s2"
+        }
+      },
+      {
+        "when": "icbm_tsar_warhead_s1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_tsar_warhead_s1"
+        }
+      },
+      {
+        "when": "icbm_tsar_warhead_s2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_tsar_warhead_s2"
+        }
+      },
+      {
+        "when": "strategic_stage1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/strategic_stage1"
+        }
+      },
+      {
+        "when": "icbm_stage1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_stage1"
+        }
+      },
+      {
+        "when": "icbm_stage2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_stage2"
         }
       }
     ],

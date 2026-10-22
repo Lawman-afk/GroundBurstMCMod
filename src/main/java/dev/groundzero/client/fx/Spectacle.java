@@ -102,6 +102,10 @@ public final class Spectacle {
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
+        SpentStages.clear();
+        MissileSounds.clear();
+        SEEN_DROPPED.clear();
+        LAST_STREAK.clear();
         trauma = 0;
     }
 
@@ -204,9 +208,17 @@ public final class Spectacle {
         }
     }
 
+    /** Spent stages each missile has been seen to drop (so each separation plays once). */
+    private static final it.unimi.dsi.fastutil.ints.Int2IntMap SEEN_DROPPED = new it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap();
+    /** Where each re-entering missile's streak was last laid to. */
+    private static final it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.world.phys.Vec3> LAST_STREAK =
+            new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
+
     /**
      * A missile, once a client tick: on the pad, a fire under it and smoke billowing out round the pad; in flight, a
-     * white-hot flame at its nozzle and a thick trail of smoke that lingers and spreads for half a minute.
+     * white-hot flame at its burning stage's nozzle and a thick trail of smoke that lingers and spreads for half a
+     * minute; a flash and a ring of smoke where a spent stage parts (and the stage falling away: SpentStages); nothing
+     * once its last engine burns out; coming back down, its nose glowing and a glowing trail behind it (slice 9a).
      */
     public static void missileExhaust(dev.groundzero.content.launch.MissileEntity missile) {
         var random = missile.level().getRandom();
@@ -216,7 +228,25 @@ public final class Spectacle {
         double tilt = Math.toRadians(missile.tilt(1)), yaw = Math.toRadians(missile.getYRot());
         net.minecraft.world.phys.Vec3 back = new net.minecraft.world.phys.Vec3(-Math.sin(tilt) * Math.sin(yaw), -Math.cos(tilt),
                 -Math.sin(tilt) * Math.cos(yaw));
-        double x = missile.getX(), y = missile.getY(), z = missile.getZ();
+        MissileSounds.tick(missile);
+        var body = missile.body();
+        int dropped = missile.dropped();
+        int seen = SEEN_DROPPED.getOrDefault(missile.getId(), -1);
+        if (seen < 0) {
+            SEEN_DROPPED.put(missile.getId(), dropped);           // first seen part way: what has gone has gone
+        } else if (dropped > seen) {
+            for (int k = seen + 1; k <= dropped; k++) {
+                separate(missile, k, back, q, t);
+            }
+            SEEN_DROPPED.put(missile.getId(), dropped);
+        }
+        reentry(missile, back, q, t);
+        if (!missile.burning()) {
+            return;                                           // burnt out: it coasts, no flame, no trail
+        }
+        // The burning engine: the tail, or the bell of the stage now lowest once the spent ones have gone.
+        double up = dev.groundzero.content.assembly.MissileParts.engineHeight(body, dropped);
+        double x = missile.getX() - back.x * up, y = missile.getY() - back.y * up, z = missile.getZ() - back.z * up;
         if (missile.igniting()) {
             int n = (int) (q * 6);
             for (int i = 0; i < n; i++) {
@@ -297,6 +327,125 @@ public final class Spectacle {
         }
     }
 
+    /** A spent stage parts: a flash and a ring of white smoke at the joint, a bang, and the stage falling away. */
+    private static void separate(dev.groundzero.content.launch.MissileEntity missile, int k, net.minecraft.world.phys.Vec3 back, float q, double t) {
+        var random = missile.level().getRandom();
+        double up = dev.groundzero.content.assembly.MissileParts.engineHeight(missile.body(), k);
+        net.minecraft.world.phys.Vec3 at = missile.position().subtract(back.scale(up));
+        for (int i = 0; i < 16; i++) {
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            double a = i / 16.0 * Math.PI * 2;
+            p.x = at.x;
+            p.y = at.y;
+            p.z = at.z;
+            float speed = 0.35f + random.nextFloat() * 0.2f;
+            p.vx = (float) Math.cos(a) * speed;
+            p.vz = (float) Math.sin(a) * speed;
+            p.vy = (float) (missile.getDeltaMovement().y * 0.3);
+            p.drag = 0.08f;
+            p.birth = t;
+            p.life = 200 + random.nextInt(80);
+            p.size0 = 1.5f;
+            p.size1 = 5 + random.nextFloat() * 2;
+            p.color0 = 0xF4F2EE;
+            p.color1 = 0xC8C4BE;
+            p.alpha = 0.8f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(p, q);
+        }
+        Puffs.Puff flash = new Puffs.Puff();
+        flash.kind = Puffs.Kind.GLOW;
+        flash.x = at.x;
+        flash.y = at.y;
+        flash.z = at.z;
+        flash.birth = t;
+        flash.life = 6;
+        flash.size0 = 6;
+        flash.size1 = 2;
+        flash.color0 = 0xFFF6DC;
+        flash.color1 = 0xFF9A40;
+        flash.alpha = 1;
+        flash.variant = random.nextInt(4);
+        PUFFS.add(flash, 1);
+        SpentStages.drop(missile, k);
+        MissileSounds.staging(missile, at);
+    }
+
+    /**
+     * Coming back down: its nose wrapped in a white-hot sheath, and a dense streak of fire streaming off it that cools
+     * from orange to dull red. Fire, not glow, for the streak: additive glow washes out to white against a day sky.
+     */
+    private static void reentry(dev.groundzero.content.launch.MissileEntity missile, net.minecraft.world.phys.Vec3 back, float q, double t) {
+        float heat = missile.reentry();
+        if (heat <= 0.02f) {
+            return;
+        }
+        var random = missile.level().getRandom();
+        double up = dev.groundzero.content.assembly.MissileParts.noseHeight(missile.body());
+        net.minecraft.world.phys.Vec3 nose = missile.position().subtract(back.scale(up));
+        // A puff every 0.4 blocks from where the last of them was, so the streak is unbroken however the missile moves.
+        net.minecraft.world.phys.Vec3 tail = nose.add(back.scale(0.8));
+        net.minecraft.world.phys.Vec3 from = LAST_STREAK.getOrDefault(missile.getId(), tail);
+        double gap = from.distanceTo(tail);
+        LAST_STREAK.put(missile.getId(), tail);
+        int n = gap > 40 ? 1 : Math.max(1, (int) Math.ceil(gap / 0.4));
+        for (int i = 0; i < n; i++) {
+            double k = i / (double) n;
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.FIRE;
+            p.x = tail.x + (from.x - tail.x) * k + (random.nextDouble() - 0.5) * 0.3;
+            p.y = tail.y + (from.y - tail.y) * k + (random.nextDouble() - 0.5) * 0.3;
+            p.z = tail.z + (from.z - tail.z) * k + (random.nextDouble() - 0.5) * 0.3;
+            p.drag = 0.15f;
+            p.birth = t - k;
+            p.life = 22 + random.nextInt(14);
+            p.size0 = 1.4f + 1.4f * heat;
+            p.size1 = 2.6f + 1.8f * heat;
+            p.color0 = 0xFFB050;
+            p.color1 = 0x7A2410;
+            p.alpha = 0.85f * heat;
+            p.variant = random.nextInt(4);
+            p.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(p, 1);
+        }
+        // The white-hot core of the streak, close behind the nose.
+        for (int i = 0; i < 3; i++) {
+            Puffs.Puff c = new Puffs.Puff();
+            c.kind = Puffs.Kind.GLOW;
+            c.x = nose.x + back.x * (0.6 + i * 0.9);
+            c.y = nose.y + back.y * (0.6 + i * 0.9);
+            c.z = nose.z + back.z * (0.6 + i * 0.9);
+            c.birth = t;
+            c.life = 3;
+            c.size0 = (2.2f - i * 0.5f) * (0.5f + heat);
+            c.size1 = c.size0 * 0.6f;
+            c.color0 = 0xFFF6E2;
+            c.color1 = 0xFFC070;
+            c.alpha = heat;
+            c.variant = random.nextInt(4);
+            PUFFS.add(c, 1);
+        }
+        // The sheath round the nose itself: fire for its colour by day, glow for its light by night.
+        for (Puffs.Kind kind : new Puffs.Kind[] {Puffs.Kind.FIRE, Puffs.Kind.GLOW}) {
+            Puffs.Puff s = new Puffs.Puff();
+            s.kind = kind;
+            s.x = nose.x - back.x * 0.4;
+            s.y = nose.y - back.y * 0.4;
+            s.z = nose.z - back.z * 0.4;
+            s.birth = t;
+            s.life = 2;
+            s.size0 = (kind == Puffs.Kind.FIRE ? 3.4f : 2.4f) * (0.4f + 0.6f * heat);
+            s.size1 = s.size0;
+            s.color0 = kind == Puffs.Kind.FIRE ? 0xFFD080 : 0xFFF4DC;
+            s.color1 = kind == Puffs.Kind.FIRE ? 0xFF8030 : 0xFFB060;
+            s.alpha = heat;
+            s.variant = random.nextInt(4);
+            PUFFS.add(s, 1);
+        }
+    }
+
     // --- ticking ---------------------------------------------------------------------------------------------------------------
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
@@ -321,6 +470,12 @@ public final class Spectacle {
         }
         PUFFS.tick(ticks);
         DEBRIS.tick(mc.level);
+        SpentStages.tick(mc.level, PUFFS, ticks, q);
+        MissileSounds.clean();
+        if (ticks % 200 == 0) {                                 // missiles long gone
+            SEEN_DROPPED.keySet().removeIf(id -> !(mc.level.getEntity(id) instanceof dev.groundzero.content.launch.MissileEntity));
+            LAST_STREAK.keySet().removeIf(id -> !(mc.level.getEntity(id) instanceof dev.groundzero.content.launch.MissileEntity));
+        }
     }
 
     private static float flash() {
@@ -434,7 +589,7 @@ public final class Spectacle {
     private static void submit(SubmitCustomGeometryEvent event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && !FalloutFx.active(level))) {
+        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level))) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -464,6 +619,7 @@ public final class Spectacle {
         }
         PUFFS.submit(collector, poseStack, level, camera.pos, camera.orientation, now);
         DEBRIS.submit(collector, poseStack, level, camera.pos, partial);
+        SpentStages.submit(collector, poseStack, level, camera.pos, partial);
     }
 
     /** Colour of fire cooling from {@code u} = 0 (white-hot) to 1 (dull red). */

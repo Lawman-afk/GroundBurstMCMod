@@ -113,14 +113,23 @@ def missile_item() -> None:
     for nose in BENCH_NOSES:
         missile_model("missile" if nose == "none" else f"missile_{nose}", nose)
         strategic_model(f"strategic_missile_{nose}", nose)
+        strategic_model(f"strategic_missile_{nose}_s1", nose, stages=(2,))          # in flight, the first stage gone
     for nose in ICBM_NOSES:
         icbm_model(f"icbm_missile_{nose}", nose)
-    cases = [{"when": nose, "model": {"type": "minecraft:model", "model": f"groundzero:item/missile_{nose}"}}
-             for nose in BENCH_NOSES if nose != "none"]
-    cases += [{"when": f"strategic_{nose}", "model": {"type": "minecraft:model", "model": f"groundzero:item/strategic_missile_{nose}"}}
-              for nose in BENCH_NOSES]
-    cases += [{"when": f"icbm_{nose}", "model": {"type": "minecraft:model", "model": f"groundzero:item/icbm_missile_{nose}"}}
-              for nose in ICBM_NOSES]
+        icbm_model(f"icbm_missile_{nose}_s1", nose, stages=(2, 3))
+        icbm_model(f"icbm_missile_{nose}_s2", nose, stages=(3,))
+    # The spent stages falling away (slice 9a).
+    strategic_model("strategic_stage1", "none", stages=(1,))
+    icbm_model("icbm_stage1", "none", stages=(1,))
+    icbm_model("icbm_stage2", "none", stages=(2,))
+    def case(when, model):
+        return {"when": when, "model": {"type": "minecraft:model", "model": f"groundzero:item/{model}"}}
+    cases = [case(nose, f"missile_{nose}") for nose in BENCH_NOSES if nose != "none"]
+    cases += [case(f"strategic_{nose}", f"strategic_missile_{nose}") for nose in BENCH_NOSES]
+    cases += [case(f"strategic_{nose}_s1", f"strategic_missile_{nose}_s1") for nose in BENCH_NOSES]
+    cases += [case(f"icbm_{nose}", f"icbm_missile_{nose}") for nose in ICBM_NOSES]
+    cases += [case(f"icbm_{nose}_s{k}", f"icbm_missile_{nose}_s{k}") for nose in ICBM_NOSES for k in (1, 2)]
+    cases += [case(stage, stage) for stage in ("strategic_stage1", "icbm_stage1", "icbm_stage2")]
     write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
         "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
@@ -198,6 +207,8 @@ def strategic_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
     for suffix, frm, to, faces, quadrant in quad_boxes(2.4, 1.6, -10, 8):
         parts.append((f"stage1_{suffix}", frm, to, faces, f"stage1_{quadrant}"))
     prism("inter", 2.5, 1.65, 8, 9.2, "interstage")
+    # The second stage's engine bell, hidden inside the interstage until the first stage drops away in flight.
+    parts.append(("bell2", (7.0, 8.1, 7.0), (9.0, 9.2, 9.0), ("north", "south", "east", "west", "down"), "nozzle"))
     prism("stage2", 2.0, 1.3, 9.2, 23, "stage2")
     prism("nose0", 1.75, 1.15, 23, 26.5, "nose_base")
     prism("nose1", 1.1, 0.73, 26.5, 30, "nose")
@@ -258,13 +269,21 @@ def strategic_paint(kind: str, nose: str = "none"):
     return fn
 
 
-def strategic_model(model_name: str, nose: str) -> None:
+def strategic_flight_stage(name: str) -> int:
+    """Which of the Strategic missile's stages a part flies off with: 1, the first (dropped in flight), or 2."""
+    return 1 if name.startswith(("nozzle", "stage1_", "sfin", "inter_")) else 2
+
+
+def strategic_model(model_name: str, nose: str, stages=(1, 2)) -> None:
+    """The Strategic missile as an item (and in flight), or only some of its stages: (2,) once the first has dropped,
+    (1,) the spent first stage falling away."""
     m = BlockModel(model_name, tex_size=(64, 64), kind="item")
-    for name, frm, to, faces, _ in strategic_parts():
+    parts = [p for p in strategic_parts() if strategic_flight_stage(p[0]) in stages]
+    for name, frm, to, faces, _ in parts:
         m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for name, _, _, _, kind in strategic_parts():
+    for name, _, _, _, kind in parts:
         m.paint_all(t, name, strategic_paint(kind, nose))
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
@@ -311,7 +330,7 @@ ICBM_TIP = ((7.5, 29.6, 7.5), (8.5, 32, 8.5))
 #: four glowing vents), a rounded nose and its fuze cap; four fins round the pack.
 TSAR_SECTIONS = [
     ("tpack", 2.7, 1.8, 20.4, 21.8, "tsar_pack"),
-    ("ttail", 3.3, 2.2, 21.8, 23.0, "tsar_tail"),
+    ("ttail", 3.3, 2.25, 21.8, 23.0, "tsar_tail"),        # (not 2.2: that is the third stage's width, z-fighting)
     ("tbody", 3.8, 2.55, 23.0, 29.4, "tsar_body"),
     ("tnose0", 3.2, 2.15, 29.4, 30.6, "tsar_nose"),
     ("tnose1", 2.2, 1.45, 30.6, 31.4, "tsar_nose"),
@@ -327,8 +346,19 @@ ICBM_NOZZLES = ((6.3, 6.3), (8.5, 6.3), (6.3, 8.5), (8.5, 8.5))
 ICBM_FINS = {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}
 ICBM_FIN_ROWS = (("fin", -8.6, -3.0, 5.4), ("fin2", -3.0, -0.2, 4.3))
 #: Which of the hall crane's four loads each section comes in: the first stage, the second, the third (the warhead's
-#: nose is the fourth).
-ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3}
+#: nose is the fourth). The bells are the upper stages' engines.
+ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3, "bell2": 2, "bell3": 3}
+#: Which stage each section flies off with (slice 9a): the first drops with its interstage, then the second with its
+#: own; the third stays on to the end with the warhead. The upper stages' engine bells hang inside the interstage
+#: below them until it goes.
+ICBM_FLIGHT = {"skirt": 1, "stage1": 1, "inter1": 1, "stage2": 2, "inter2": 2, "stage3": 3, "bell2": 2, "bell3": 3}
+
+
+def icbm_flight_stage(name: str) -> int:
+    """Which stage a part of the intercontinental missile flies off with (3: on to the end, as the nose does)."""
+    if name.startswith(("nozzle", "fin")):
+        return 1
+    return ICBM_FLIGHT.get(name.rsplit("_", 1)[0], 3)
 ALL6 = ("north", "south", "east", "west", "up", "down")
 #: The face of a fin (or vent) that lies against the body, by the side it stands out from.
 INNER = {"n": "south", "s": "north", "w": "east", "e": "west"}
@@ -367,6 +397,10 @@ def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
         parts.append((f"nozzle{i}", (x, -11.5, z), (x + 1.2, -10, z + 1.2), ("north", "south", "east", "west", "down"), "nozzle"))
     parts += _sections(ICBM_SECTIONS)
     parts += _fins([(part, y0, y1, 3.0, reach) for part, y0, y1, reach in ICBM_FIN_ROWS], 0.3, "ifin")
+    # The upper stages' engine bells, inside the interstages below them (seen only once the stage below has dropped).
+    sides = ("north", "south", "east", "west", "down")
+    parts.append(("bell2", (6.9, 6.1, 6.9), (9.1, 7.2, 9.1), sides, "nozzle"))
+    parts.append(("bell3", (7.0, 16.5, 7.0), (9.0, 17.4, 9.0), sides, "nozzle"))
     return parts
 
 
@@ -476,9 +510,13 @@ def tsar_paint(kind: str, lying: bool = False):
     return fn
 
 
-def icbm_model(model_name: str, nose: str) -> None:
+def icbm_model(model_name: str, nose: str, stages=(1, 2, 3)) -> None:
+    """The intercontinental missile as an item (and in flight), or only some of its stages: (2, 3) or (3,) once the
+    first stages have dropped in flight (the nose stays with the third), (1,) or (2,) a spent stage falling away."""
     m = BlockModel(model_name, tex_size=(128, 64) if nose == "tsar_warhead" else (64, 64), kind="item")   # the bomb's faces need room
-    parts = icbm_parts() + icbm_nose_parts(nose)
+    parts = [p for p in icbm_parts() if icbm_flight_stage(p[0]) in stages]
+    if 3 in stages:
+        parts += icbm_nose_parts(nose)
     for name, frm, to, faces, kind in parts:
         m.box(name, frm, to, faces=faces, light=15 if kind == "tsar_vent" else 0)
     m.layout()

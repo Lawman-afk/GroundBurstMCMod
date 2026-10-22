@@ -157,7 +157,12 @@ public final class GZSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =
             register("missile.launch", "Missile lights", List.of("launch/missile_launch"), false, 160);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_ENGINE =
-            register("missile.engine", "Missile roars overhead", List.of("launch/missile_engine"), false, 128);
+            register("missile.engine", "Missile roars overhead", List.of("launch/missile_engine_loop"), false, 256);
+    // Slice 9a: a stage parting in flight, and a warhead's nose coming back down.
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_STAGING =
+            register("missile.staging", "Missile stage separates", List.of("launch/stage_separation"), false, 256);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_REENTRY =
+            register("missile.reentry", "Missile screams down", List.of("launch/reentry_loop"), false, 192);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

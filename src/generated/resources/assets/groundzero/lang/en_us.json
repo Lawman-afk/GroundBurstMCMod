@@ -867,6 +867,8 @@
   "subtitles.groundzero.mine.pop": "Mine pops up",
   "subtitles.groundzero.missile.engine": "Missile roars overhead",
   "subtitles.groundzero.missile.launch": "Missile lights",
+  "subtitles.groundzero.missile.reentry": "Missile screams down",
+  "subtitles.groundzero.missile.staging": "Missile stage separates",
   "subtitles.groundzero.reactor.alarm": "Reactor alarm wails",
   "subtitles.groundzero.reactor.singularity_collapse": "Singularity collapses",
   "subtitles.groundzero.smoke.hiss": "Smoke hisses",

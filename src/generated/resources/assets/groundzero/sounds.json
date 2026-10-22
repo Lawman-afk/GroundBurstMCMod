@@ -502,8 +502,8 @@
   "missile.engine": {
     "sounds": [
       {
-        "attenuation_distance": 128,
-        "name": "groundzero:launch/missile_engine"
+        "attenuation_distance": 256,
+        "name": "groundzero:launch/missile_engine_loop"
       }
     ],
     "subtitle": "subtitles.groundzero.missile.engine"
@@ -516,6 +516,24 @@
       }
     ],
     "subtitle": "subtitles.groundzero.missile.launch"
+  },
+  "missile.reentry": {
+    "sounds": [
+      {
+        "attenuation_distance": 192,
+        "name": "groundzero:launch/reentry_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.missile.reentry"
+  },
+  "missile.staging": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:launch/stage_separation"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.missile.staging"
   },
   "reactor.alarm": {
     "sounds": [

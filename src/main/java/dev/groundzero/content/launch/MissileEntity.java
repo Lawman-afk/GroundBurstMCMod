@@ -19,11 +19,12 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A missile as players see it (DESIGN.md §17.5, basic version). The flight itself lives in {@link Flights}, which moves
- * this along every tick and puts it back wherever its chunk is loaded; the entity is never saved. Lit on its pad it
- * burns there for 2 s, then flies a fixed curve to its target: straight up off the pad, over the top of an arc whose
- * height grows with the range, and down onto the target from high above, speeding up as it goes. Its nose is painted as
- * the warhead it carries.
+ * A missile as players see it (DESIGN.md §17.5). The flight itself lives in {@link Flights}, which moves this along
+ * every tick and puts it back wherever its chunk is loaded; the entity is never saved. Lit on its pad it burns there
+ * for 2 s, then flies a fixed curve to its target: straight up off the pad, over the top of an arc whose height grows
+ * with the range, and down onto the target from high above, speeding up as it goes. Its nose is painted as the warhead
+ * it carries. In flight (slice 9a) a Strategic missile drops its spent first stage and an intercontinental one its
+ * first two, its last engine burns out and it coasts, and its nose glows coming back down: synced for the client.
  */
 public class MissileEntity extends Entity {
     private static final EntityDataAccessor<Integer> AGE = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
@@ -31,6 +32,12 @@ public class MissileEntity extends Entity {
     private static final EntityDataAccessor<String> WARHEAD = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.STRING);
     /** Its body's size class (ordinal): the client draws it that size. */
     private static final EntityDataAccessor<Integer> BODY = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
+    /** Spent stages dropped so far (slice 9a): the client draws what is left and lets the stage fall. */
+    private static final EntityDataAccessor<Integer> DROPPED = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
+    /** Whether an engine is burning (on the pad and climbing; it coasts once the last burns out). */
+    private static final EntityDataAccessor<Boolean> BURNING = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.BOOLEAN);
+    /** How hot its nose glows coming back down (0-1). */
+    private static final EntityDataAccessor<Float> REENTRY = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.FLOAT);
 
     /** Ticks it burns on the pad before lifting off. */
     public static final int IGNITION = 40;
@@ -56,6 +63,24 @@ public class MissileEntity extends Entity {
         builder.define(AGE, 0);
         builder.define(WARHEAD, "");
         builder.define(BODY, dev.groundzero.content.assembly.SizeClass.M.ordinal());
+        builder.define(DROPPED, 0);
+        builder.define(BURNING, true);
+        builder.define(REENTRY, 0f);
+    }
+
+    /** Spent stages it has dropped (as the client knows it). */
+    public int dropped() {
+        return this.entityData.get(DROPPED);
+    }
+
+    /** Whether an engine is burning. */
+    public boolean burning() {
+        return this.entityData.get(BURNING);
+    }
+
+    /** How hot its nose glows coming back down (0-1). */
+    public float reentry() {
+        return this.entityData.get(REENTRY);
     }
 
     /** Ticks since it was lit (synced: the client draws its ignition and exhaust from it). */
@@ -87,6 +112,14 @@ public class MissileEntity extends Entity {
     /** The id of the warhead it carries, as the client knows it ("" for none). */
     public String warheadName() {
         return this.entityData.get(WARHEAD);
+    }
+
+    /** Moved along by its flight, with its stages, engine and re-entry as the flight has them. */
+    void follow(Vec3 pos, float yaw, float tilt, int age, int dropped, boolean burning, float reentry) {
+        this.entityData.set(DROPPED, dropped);
+        this.entityData.set(BURNING, burning);
+        this.entityData.set(REENTRY, reentry);
+        follow(pos, yaw, tilt, age);
     }
 
     /** Moved along by its flight. */

@@ -237,6 +237,64 @@ public final class MissileParts {
         };
     }
 
+    // --- in flight (slice 9a) ------------------------------------------------------------------------------------------------
+    /** The model of a missile in flight that has dropped {@code dropped} spent stages ("_s1", "_s2" after the first). */
+    public static String look(String warheadId, SizeClass body, int dropped) {
+        String id = look(warheadId, body);
+        return dropped > 0 && (body == SizeClass.XL || body == SizeClass.XXL) ? id + "_s" + dropped : id;
+    }
+
+    /**
+     * When (fractions of the flight, from lift-off to the target) a missile drops its spent stages: a Strategic missile
+     * its first stage, an intercontinental one its first and second; the rest have one stage.
+     */
+    public static float[] stageDrops(SizeClass body) {
+        return switch (body) {
+            case XL -> new float[] {0.16f};
+            case XXL -> new float[] {0.12f, 0.24f};
+            default -> new float[0];
+        };
+    }
+
+    /** The fraction of its flight at which its last engine burns out, after which it coasts in silence. */
+    public static float burnout(SizeClass body) {
+        return switch (body) {
+            case XL -> 0.40f;
+            case XXL -> 0.36f;
+            default -> 0.45f;
+        };
+    }
+
+    /** The model of its {@code k}th spent stage falling away (1: the first). */
+    public static String spentStage(SizeClass body, int k) {
+        return body == SizeClass.XXL ? "icbm_stage" + k : "strategic_stage" + k;
+    }
+
+    /** The middle of its {@code k}th spent stage, in its model's own item pixels (it tumbles about this). */
+    public static float spentStageMiddle(SizeClass body, int k) {
+        return body == SizeClass.XXL ? (k == 1 ? -2.15f : 11.75f) : -1.15f;
+    }
+
+    /** How far up its axis from its tail (blocks, as drawn in flight) the engine that is burning sits. */
+    public static float engineHeight(SizeClass body, int dropped) {
+        float px = switch (body) {
+            case XL -> dropped >= 1 ? 8.1f + STRATEGIC_TAIL : 0;          // the second stage's bell
+            case XXL -> dropped >= 2 ? 16.5f + ICBM_TAIL : dropped >= 1 ? 6.1f + ICBM_TAIL : 0;
+            default -> 0;
+        };
+        return px / 16 * 4 * scale(body)[1];
+    }
+
+    /** How far up its axis from its tail (blocks, as drawn in flight) its nose tip is. */
+    public static float noseHeight(SizeClass body) {
+        float px = switch (body) {
+            case XL -> 32 + STRATEGIC_TAIL;
+            case XXL -> 32 + ICBM_TAIL;
+            default -> 32;
+        };
+        return px / 16 * 4 * scale(body)[1];
+    }
+
     public static String guidanceName(Guidance g) {
         return GUIDANCE_NAMES[g.ordinal()];
     }

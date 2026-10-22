@@ -92,6 +92,10 @@ public final class FxPhotographer {
                 new Scene("glow_radar_night", "radar", 10, -4, List.of(60), "midnight"),
                 new Scene("glow_complex_night", "complex_tsar", 16, -24, List.of(30), "midnight"),
                 new Scene("glow_hall_night", "hall_tsar", 14, 34, List.of(1850), "midnight"),
+                // Slice 9a: an intercontinental missile climbing, side on (lift-off, both stages parting, burn-out), and a
+                // missile coming back down over the camera, glowing.
+                new Scene("flight_icbm", "flight_icbm", 230, -18, List.of(30, 70, 145, 175, 245, 300, 350, 420)),
+                new Scene("flight_reentry", "flight_reentry", 120, -16, List.of(60, 110, 140, 160, 175, 185)),
                 // Smoke in front of water, seen from above: the water must still show through the smoke.
                 new Scene("water_smoke_aerial", "water_smoke", 16, 28, List.of(60, 160)),
                 new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
@@ -329,6 +333,9 @@ public final class FxPhotographer {
      * running (fire, melt, plasma, cores) without each being fuelled and fed; the server leaves them be.
      */
     private static final List<net.minecraft.core.BlockPos> glowAt = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** The flight scenes' missile, called off when the scene ends (an intercontinental one carries a live warhead). */
+    private static volatile dev.groundzero.content.launch.Flights.@org.jspecify.annotations.Nullable Flight flightShown;
 
     /** The single-block machines with glowmasks, in three rows of seven (the glow scenes). */
     private static List<java.util.function.Supplier<net.minecraft.world.level.block.Block>> glowRow(int row) {
@@ -785,6 +792,24 @@ public final class FxPhotographer {
                     hallSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("flight_icbm")) {
+                    // To 2,500 blocks off to the camera's right; called off before it gets there (see flightShown).
+                    var spec = dev.groundzero.content.assembly.MissileItem.spec(dev.groundzero.content.strategic.StrategicAssembly.assemble(
+                            net.minecraft.world.item.ItemStack.EMPTY, net.minecraft.world.item.ItemStack.EMPTY, net.minecraft.world.item.ItemStack.EMPTY));
+                    Vec3 pad = new Vec3(x + 0.5, ground, 0.5);
+                    flightShown = dev.groundzero.content.launch.Flights.launch(level, pad, pad.add(0, 0, 2500), spec, null);
+                    return;
+                }
+                if (s.profile().equals("flight_reentry")) {
+                    // A missile with no warhead from 2,400 blocks off to the camera's left (north), most of the way down
+                    // already, so its last dive crosses the view.
+                    Vec3 target = new Vec3(x + 0.5, ground, 0.5);
+                    var f = dev.groundzero.content.launch.Flights.launch(level, target.add(0, 0, -2400), target,
+                            net.minecraft.world.item.ItemStack.EMPTY, null);
+                    f.skipForTest((int) (f.ticksToImpact() * 0.74));
+                    flightShown = f;
+                    return;
+                }
                 if (s.profile().startsWith("glow_machines")) {
                     glowMachines(level, x, ground, s.profile().charAt(s.profile().length() - 1) - '0');
                     return;
@@ -1018,6 +1043,11 @@ public final class FxPhotographer {
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
             scene = null;
+            var f = flightShown;
+            if (f != null) {
+                flightShown = null;
+                server.execute(() -> dev.groundzero.content.launch.Flights.of(server.overworld()).cancelForTest(server.overworld(), f));
+            }
         }
     }
 }

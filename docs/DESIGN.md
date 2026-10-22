@@ -1495,6 +1495,31 @@ the long horizontal hall (over an upright assembly tower).
   missile, that reaches in to its slimmer second stage; the Strategic missile's first stage is cut in quadrants so its
   roll pattern has solid corners.
 
+### 17.9 As built: missile flight (Phase 9 slice 9a, 2026-10-22)
+Phase 9's plan, in slices: **9a** missile flight (this); then the underground Missile Silo with its hatch doors, the
+erector Launch Pad and the Cruise Missile Launcher with terrain-following cruise missiles, the launch control upgrade
+(salvo, time on target, patterns; Data Link Tool, Comms Relay), the designators (Targeting Binoculars, Laser Designator
+and laser guidance), MIRVs, and placed missile detonation (§17.1).
+- **Phases of a flight** (`Flights.Flight`, by the fraction of the flight flown; the fixed arc of §17.6 is unchanged:
+  straight up off the pad, over the top, steeply down): the engine **burns out** at 45% (a Strategic missile 40%, an
+  intercontinental one 36%) and the missile **coasts** in silence; a Strategic missile **drops its first stage** at 16%,
+  an intercontinental one its first at 12% and second at 24% (`MissileParts.stageDrops`, `burnout`); coming back down
+  from past 55% its nose glows (**re-entry**, brighter the higher its arc: `reentry()`). `MissileEntity` syncs the stages
+  dropped, whether an engine burns and the re-entry heat.
+- **Models:** the upper stages' engine bells hang inside the interstages below them (seen once the stage below has
+  gone); item models of the missile with one or two stages gone (`strategic_missile_<warhead>_s1`,
+  `icbm_missile_<warhead>_s1`/`_s2`, chosen in flight by `MissileParts.look(warhead, body, dropped)`) and of each spent
+  stage (`strategic_stage1`, `icbm_stage1`, `icbm_stage2`).
+- **Client** (`Spectacle.missileExhaust`): the flame and the smoke trail come from the burning stage's bell and stop at
+  burn-out; where a stage parts, a flash, a ring of white smoke and a bang, and the stage falls away (`SpentStages`: the
+  stage's own model, the missile's way on less its thrust, tumbling about its middle; dust and a thud where it lands, or
+  gone after a minute); re-entry is a white-hot sheath on the nose and a dense streak of fire cooling to dull red, laid
+  every 0.4 blocks from where its last puff was (fire, not glow: additive glow washes out to white against a day sky).
+- **Sound** (`MissileSounds`, the client's own, following each missile): a seamless engine loop while an engine
+  burns and a re-entry roar coming down, each pitched by the missile's speed toward or away from the listener (Doppler,
+  sound at 17.15 blocks a tick) and faded in and out; staging is a crack, a ringing clank and a thump from where it
+  parts (delayed by distance). The server no longer plays the engine every 2 s.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -2322,6 +2347,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Phase 9 begins with missile flight (slice 9a, the roadmap's order: the user said "continue"): burn-out and coasting, spent stages dropping and tumbling down, re-entry heat, and a following engine sound with Doppler; the arc itself is unchanged. |
 | 2026-10-22 | After 8d, the user's request: every machine draws its glowmask (GeckoLib's auto-glow layer in `MachineGeoRenderer`, only where the texture has one), so lamps, screens, charge bars, fires, plasma and cores glow in the dark as designed. |
 | 2026-10-22 | Slice 8d (the user's "continue"): the Tsar is the hall's third whole weapon (a Tertiary Stage in the jacket slot) on the intercontinental missile, bursting where it lands (no aircraft for a parachute drop yet). Benchmarked first on a generated world: the shock front now runs at full speed with the crater forming behind it under the budget; the chunk band stops at the terrain work; rays split as reached; the rim is found after the front; the radius limit is 720 (`maxBlastRadius`, renamed so old configs take the new default). |
 | 2026-10-22 | After the user's look at 8c: the intercontinental missile gets fins, the hall's port housings sit flush in the floor (the port blocks are floor blocks), and the hall's recipes show in JEI. |

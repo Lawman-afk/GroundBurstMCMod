@@ -31,6 +31,7 @@ final class LaunchTests {
         GZGameTests.test("emp_silo_refuses_to_arm", GZGameTests.FLOOR_16, 20, LaunchTests::empRefuses);
         GZGameTests.testOpenSky("missile_flies_on_over_unloaded_ground", GZGameTests.FLOOR_16, 400, LaunchTests::longFlight);
         GZGameTests.test("radar_array_tracks_incoming_missiles", GZGameTests.FLOOR_16, 60, LaunchTests::radar);
+        GZGameTests.test("missiles_drop_stages_burn_out_and_reenter", GZGameTests.FLOOR_16, 20, LaunchTests::stages);
         GZGameTests.test("large_radar_dish_places_and_breaks_whole", GZGameTests.FLOOR_16, 40, LaunchTests::largeDish);
         GZGameTests.test("computer_surveys_the_ground_round_it", GZGameTests.FLOOR_16, 40, LaunchTests::survey);
         GZGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GZGameTests.FLOOR_16, 400, LaunchTests::flight);
@@ -198,6 +199,48 @@ final class LaunchTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(!dev.groundzero.content.launch.Flights.of(level).all().contains(f), "arrived (due in " + due + " ticks)");
         });
+    }
+
+    /**
+     * Slice 9a: an intercontinental missile drops its first stage at 12% of its flight and its second at 24%, burns out
+     * at 36% and coasts, and its nose glows coming down from past 55%; a Strategic missile drops one stage and burns out
+     * at 40%; a basic missile drops none and burns out at 45%. (Each flight is called off before it arrives.)
+     */
+    private static void stages(GameTestHelper helper) {
+        var level = helper.getLevel();
+        net.minecraft.world.phys.Vec3 pad = helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 1, 8));
+        var icbm = dev.groundzero.content.assembly.MissileItem.spec(
+                dev.groundzero.content.strategic.StrategicAssembly.assemble(ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY));
+        var f = dev.groundzero.content.launch.Flights.launch(level, pad, pad.add(2500, 0, 0), icbm, null);
+        int ticks = f.ticksToImpact() - dev.groundzero.content.launch.MissileEntity.IGNITION;
+        helper.assertTrue(f.dropped() == 0 && f.burning() && f.reentry() == 0, "on the pad: whole and burning");
+        f.skipForTest(dev.groundzero.content.launch.MissileEntity.IGNITION + (int) (ticks * 0.13));
+        helper.assertTrue(f.dropped() == 1 && f.burning(), "the first stage gone by 13%: " + f.dropped());
+        f.skipForTest((int) (ticks * 0.12));
+        helper.assertTrue(f.dropped() == 2 && f.burning(), "the second gone by 25%: " + f.dropped());
+        f.skipForTest((int) (ticks * 0.15));
+        helper.assertTrue(!f.burning() && f.reentry() == 0, "burnt out by 40%, not yet glowing");
+        f.skipForTest((int) (ticks * 0.4));
+        helper.assertTrue(f.reentry() > 0.5f, "glowing coming down at 80%: " + f.reentry());
+        dev.groundzero.content.launch.Flights.of(level).cancelForTest(level, f);
+        var strategic = new dev.groundzero.content.assembly.MissileSpec(new ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()),
+                dev.groundzero.content.assembly.SizeClass.XL, dev.groundzero.content.assembly.MissileParts.Motor.LIQUID,
+                dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false);
+        var s = dev.groundzero.content.launch.Flights.launch(level, pad, pad.add(1500, 0, 0), strategic, null);
+        int sTicks = s.ticksToImpact() - dev.groundzero.content.launch.MissileEntity.IGNITION;
+        s.skipForTest(dev.groundzero.content.launch.MissileEntity.IGNITION + (int) (sTicks * 0.3));
+        helper.assertTrue(s.dropped() == 1 && s.burning(), "a Strategic missile: one stage gone at 30%, still burning");
+        s.skipForTest((int) (sTicks * 0.12));
+        helper.assertTrue(!s.burning(), "burnt out by 42%");
+        dev.groundzero.content.launch.Flights.of(level).cancelForTest(level, s);
+        var basic = dev.groundzero.content.launch.Flights.launch(level, pad, pad.add(400, 0, 0), ItemStack.EMPTY, null);
+        int bTicks = basic.ticksToImpact() - dev.groundzero.content.launch.MissileEntity.IGNITION;
+        basic.skipForTest(dev.groundzero.content.launch.MissileEntity.IGNITION + (int) (bTicks * 0.4));
+        helper.assertTrue(basic.dropped() == 0 && basic.burning(), "a basic missile: one stage, burning at 40%");
+        basic.skipForTest((int) (bTicks * 0.1));
+        helper.assertTrue(!basic.burning(), "burnt out by 50%");
+        dev.groundzero.content.launch.Flights.of(level).cancelForTest(level, basic);
+        helper.succeed();
     }
 
     /** The Radar Array forms, and a missile coming down beside it is incoming (and a comparator reads it). */

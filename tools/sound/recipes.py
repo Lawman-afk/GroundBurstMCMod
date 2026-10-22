@@ -722,8 +722,18 @@ def _air_raid_siren() -> np.ndarray:
     return S.normalize(S.fade(out, 0.05, 0.6), -2)
 
 
+def _seamless(x: np.ndarray, overlap: float = 0.4) -> np.ndarray:
+    """A loop with no seam: its last `overlap` seconds crossfaded into its start (and cut from its end)."""
+    k = int(overlap * S.SR)
+    ramp = np.linspace(0, 1, k)
+    y = x[:-k].copy()
+    y[:k] = x[:k] * ramp + x[-k:] * (1 - ramp)
+    return y
+
+
 def launch_sounds() -> dict[str, np.ndarray]:
-    """Launching (DESIGN.md §17): the launch siren, the missile lighting on the pad, its engine in flight."""
+    """Launching (DESIGN.md §17): the launch siren, the missile lighting on the pad, its engine in flight (a loop that
+    follows it, slice 9a), a stage parting, and a warhead's nose roaring back down (a loop)."""
     out = {}
     out["launch/siren"] = _air_raid_siren()
     # Ignition: a deep crack, then a huge tearing roar with crackle that builds and holds.
@@ -735,10 +745,32 @@ def launch_sounds() -> dict[str, np.ndarray]:
     crackle = S.grains(n, rate=120, grain_ms=3, seed=613) * 0.5
     build = np.clip(t / 1.2, 0, 1) ** 0.7
     out["launch/missile_launch"] = S.normalize(S.fade(S.saturate(crack + (roar + hiss + crackle) * build, 1.6), 0.0, 0.8), -1)
-    # Engine: the roar from a distance, a steady loopable 2 s.
-    n = 2.0
+    # Engine (slice 9a): a seamless 4 s loop of the roar, with a slow flutter and crackle; the client follows the missile
+    # with it and pitches it by its speed toward the listener.
+    n = 4.4
+    t = S.t_axis(n)
     roar = S.bandpass(S.brown(n, 620), 30, 700) * 1.3 + S.bandpass(S.pink(n, 621), 400, 3000) * 0.3
-    out["launch/missile_engine"] = S.normalize(S.fade(roar, 0.1, 0.3), -3)
+    crackle = S.bandpass(S.grains(n, rate=70, grain_ms=4, seed=622), 600, 4000) * 0.25
+    flutter = 1 + 0.12 * np.sin(2 * np.pi * 2.3 * t) * np.sin(2 * np.pi * 0.47 * t + 1.1)
+    out["launch/missile_engine_loop"] = S.normalize(_seamless(S.saturate((roar + crackle) * flutter, 1.3)), -3)
+    # Staging: the pyrotechnic bolts' sharp crack, a ringing metal clank as the stages part, a whoosh of the stage's
+    # gas venting and a dull thump.
+    n = 1.8
+    t = S.t_axis(n)
+    crack = S.highpass(S.white(n, 630), 1500) * S.exp_decay(int(n * S.SR), 0.012) * 0.6
+    ring = S.exp_decay(int(n * S.SR), 0.004)
+    clank = (S.resonator(S.white(n, 631) * ring, 420, q=30) * 6.0 + S.resonator(S.white(n, 632) * ring, 960, q=40) * 3.0
+             + S.resonator(S.white(n, 636) * ring, 2150, q=50) * 1.2) * S.exp_decay(int(n * S.SR), 0.35)
+    whoosh = S.bandpass(S.white(n, 633), 300, 3000) * np.clip(t / 0.08, 0, 1) * S.exp_decay(int(n * S.SR), 0.45) * 0.8
+    thump = S.lowpass(S.white(n, 634), 160) * S.exp_decay(int(n * S.SR), 0.1) * 6.0
+    out["launch/stage_separation"] = S.normalize(S.fade(S.reverb(crack + clank + whoosh + thump, 1.4, 2500, 0.3, seed=635)[: len(t)], 0, 0.3), -1)
+    # Re-entry: a hissing, tearing roar with a whistle riding on it, as a seamless 4 s loop.
+    n = 4.4
+    t = S.t_axis(n)
+    hiss = S.bandpass(S.pink(n, 640), 300, 5000) * 0.9
+    tear = S.bandpass(S.brown(n, 641), 60, 600) * 1.2
+    whistle = S.resonator(S.white(n, 642), 1450, q=60) * 0.35 * (1 + 0.3 * np.sin(2 * np.pi * 0.9 * t))
+    out["launch/reentry_loop"] = S.normalize(_seamless(S.saturate(hiss + tear + whistle, 1.2)), -3)
     return out
 
 

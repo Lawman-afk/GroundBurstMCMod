@@ -21,7 +21,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
 | 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
 | 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; 8d: the Tsar Mega-bomb, and the explosion engine benchmarked and reworked at its size; Phase 8 complete but for the in-game look) |
-| 9 | Launch platforms, missile flight, launch control, designators | started (basic launch site built early, 2026-10-21) |
+| 9 | Launch platforms, missile flight, launch control, designators | **in progress** (basic launch site built early, 2026-10-21; 9a: missile flight: burn-out, staging, re-entry, engine sound) |
 | 10 | Radar & interceptors | todo |
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | todo |
 | 12 | Aftermath: radiation, fallout, EMP fields, terrain, wasteland, gear, medical | todo |
@@ -208,20 +208,20 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Intercontinental missile (class XXL, 3,000 blocks, its own model on the complex and in flight) | done (8c) — needs in-game look |
 | Launch Complex (nuclear launcher, pulled forward from Phase 9) | done (8a): structure, model, 15 s countdown with umbilicals, deluge and trench smoke — needs in-game look |
 | Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | done in Phase 5 (Spectacle v2); used by the nuclear warheads; no wind drift: it stands over its crater (8b feedback) |
-| Wilson condensation ring, base surge | todo |
+| Wilson condensation ring, base surge | done in Phase 5 (5d: the condensation shell round the fireball for ~7 s; the base surge and, after 8b, the base ring) |
 | Fallout you can see (stand-in until Phase 12's plumes) | done: fallout clouds over each contaminated zone, green sky, fog and clouds inside one — needs in-game look |
-| Flash with line of sight + afterimage | todo |
+| Flash with line of sight + afterimage | line of sight done in 5c (a client ray to the burst, 25% if blocked); the afterimage todo |
 | Fizzle behaviour | done (8a): set off any way but by its missile, a nuclear warhead fizzles (the dirty warhead, not nuclear, always goes off) |
-| Nuke sound sets (near/mid/far/very far, tsar) | todo |
+| Nuke sound sets (near/mid/far/very far, tsar) | done: nuke (Phase 5), tsar (8d) |
 
 ## Phase 9 — Launching
 | Item | Status |
 |---|---|
 | Basic launch site: Launch Silo, Launch Computer (terrain map), Basic Missile, flight tracker, 6 building blocks (DESIGN §17.6) | done — needs in-game look |
-| Missile entity + composed renderer (body/warhead/propulsion parts) | todo (basic missile only so far) |
-| Flight model (boost, pitch-over, ballistic, re-entry, terminal; cruise) | todo |
+| Missile entity + composed renderer (body/warhead/propulsion parts) | missiles drawn by body and warhead (7b, 8a, 8c); 9a: drawn without their spent stages |
+| Flight model (boost, pitch-over, ballistic, re-entry, terminal; cruise) | 9a: burn-out and coasting, staging and re-entry on the fixed arc — needs in-game look; cruise todo |
 | MissileTracker (analytic high-altitude flight, re-materialisation, destination chunk loading) | todo |
-| Exhaust flame, smoke trail, stage separation, re-entry plasma | todo |
+| Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
 | Launch Pad multiblock + erector/clamp animations + GUI | todo |
 | Launch Complex + gantry | todo |
 | Missile Silo + hatch doors | todo |
