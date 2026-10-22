@@ -48,6 +48,9 @@ public final class GZMenus {
     /** The Launch Silo's controller screen (DESIGN.md §17.2). */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> LAUNCH_SILO = machine("launch_silo", () -> MachineLayouts.LAUNCH_SILO);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ASSEMBLY_BENCH = machine("assembly_bench", () -> MachineLayouts.ASSEMBLY_BENCH);
+    /** The Strategic Assembly Hall's controller screen (DESIGN.md §15.2). */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> STRATEGIC_ASSEMBLY = machine("strategic_assembly_hall",
+            () -> MachineLayouts.STRATEGIC_ASSEMBLY);
 
     private GZMenus() {}
 

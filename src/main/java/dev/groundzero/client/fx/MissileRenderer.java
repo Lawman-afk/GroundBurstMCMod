@@ -63,7 +63,11 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
                     new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(key), java.util.List.of()));
             return s;
         });
-        state.lift = body == dev.groundzero.content.assembly.SizeClass.XL ? 0.5f + dev.groundzero.content.assembly.MissileParts.STRATEGIC_TAIL / 16f : 0.5f;
+        state.lift = switch (body) {
+            case XL -> 0.5f + dev.groundzero.content.assembly.MissileParts.STRATEGIC_TAIL / 16f;
+            case XXL -> 0.5f + dev.groundzero.content.assembly.MissileParts.ICBM_TAIL / 16f;
+            default -> 0.5f;
+        };
         this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
         state.yaw = entity.getYRot(partialTicks);
         state.size = dev.groundzero.content.assembly.MissileParts.scale(entity.body());

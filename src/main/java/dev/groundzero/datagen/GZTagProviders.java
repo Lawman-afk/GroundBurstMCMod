@@ -129,6 +129,8 @@ public final class GZTagProviders {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().key(),
                     dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().key(),
                     dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().key(),
+                    dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.block().key(),
+                    dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.block().key(),
                     dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().key());
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),

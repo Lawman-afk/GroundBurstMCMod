@@ -84,6 +84,14 @@ final class StatsTests {
         String dirty = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.DIRTY_WARHEAD.item().get()), registries));
         has(helper, dirty, "groundzero.stats.class() = S");
         has(helper, dirty, "groundzero.stats.fallout_lasts() = groundzero.stats.days(5)");
+        // Slice 8c: the whole weapons' warheads.
+        String thermo = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.THERMONUCLEAR_WARHEAD.item().get()), registries));
+        has(helper, thermo, "groundzero.stats.yield() = groundzero.stats.yield_value(1.2 Mt)");
+        has(helper, thermo, "groundzero.stats.fallout() = groundzero.stats.blocks(360)");
+        has(helper, thermo, "groundzero.stats.fallout_lasts() = groundzero.stats.days(3)");
+        String cobalt = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.COBALT_WARHEAD.item().get()), registries));
+        has(helper, cobalt, "groundzero.stats.fallout_lasts() = groundzero.stats.days(30)");
+        has(helper, cobalt, "groundzero.stats.effect.cobalt(" + dev.groundzero.content.ordnance.charge.Charges.cobaltReach() + ")");
         helper.assertTrue(AssemblyStats.warhead(new ItemStack(GZOrdnance.C4.item().get()), registries).isEmpty(), "C4 is no warhead");
         helper.succeed();
     }

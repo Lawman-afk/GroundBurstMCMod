@@ -1105,8 +1105,8 @@ Strategic Assembly Hall (§15.2) and set straight on the Launch Complex.
 | **Boosted Fission Warhead** | XL | missile | 45 kt | 28 | 95 (0.4) | 140 | 165 | 150 | 250 | 220 (2 d) | sleek grey body under a sharper dark nose, two cyan boost-gas bands, trefoil (built, 8b) |
 | **Neutron Warhead** | XL | missile | 1 kt | 4 | 10 | 16 | 12 | **180 (living only)** | 26 (blast) | 140 (0.25 d) | slim silver warhead with three cyan rings, neutron-reflector studs (built, 8b) |
 | **Dirty Warhead** | S | missile | — | 1 | 6 | 9 | 5 | 10 | 16 | 90, strength 0.8 (5 d) | rusty drum with a flat cap, yellow tape, trefoil (built, 8b) |
-| **Thermonuclear H-Bomb** | L | whole weapon | 1.2 Mt | 45 | 150 (0.35) | 220 | 260 | 260 | 420 | 360 (3 d) | long olive-drab cylinder, ribbed tail, two yellow bands, "two-stage" bulge |
-| **Cobalt (Salted) Bomb** | L | whole weapon | 400 kt | 18 | 70 | 105 | 110 | 110 | 180 | **450, spreads downwind (30 d)** | blue-black cylinder with cobalt-blue jacket plates |
+| **Thermonuclear H-Bomb** | XXL | whole weapon (intercontinental missile) | 1.2 Mt | 45 | 150 (0.35) | 220 | 260 | 260 | 420 | 360 (3 d) | the Thermonuclear Warhead: fat olive drab, blunt dark nose, two yellow bands, trefoil (built, 8c) |
+| **Cobalt (Salted) Bomb** | XXL | whole weapon (intercontinental missile) | 400 kt | 18 | 70 | 105 | 110 | 110 | 180 | **300 round the burst, strung ~1,000 downwind (30 d)** | the Cobalt Warhead: blue-black, cobalt-blue jacket bands and plate seams, trefoil (built, 8c) |
 | **Tsar-class Mega-bomb** | XL | whole weapon | 50 Mt | 80 | 250 (0.3) | 380 | 450 | 450 | 700 | 600 (3 d) | enormous dark-green bomb, parachute pack, original Cold-War stencil markings, glowing cooling vents |
 | **MIRV** | — | whole weapon (Phase 9 console) | — | per RV | | | | | | | bus with 4/8 conical re-entry vehicles |
 
@@ -1389,12 +1389,41 @@ are delivered.
 - Building blocks: Launch Pad, Gantry Frame, Gantry Arm, Radar Mast, Radar Dish, Antenna (multiblock parts, hidden
   when formed). The full platforms, guidance and multi-stage bodies remain Phase 9.
 
-### 15.2 Planned: the Strategic Assembly Hall (slice 8c)
+### 15.2 As built: the Strategic Assembly Hall and whole weapons (slice 8c, 2026-10-22)
 The user's rule after 8a: the Strategic missile is the peak of what fits in a missile; anything bigger gets its own
-fabricator, a multiblock that assembles the full weapon all at once, to be placed on the Launch Complex. Built with the
-first such weapon (the H-bomb, 8c): a large hall (gantry crane over an assembly cradle) that takes the weapon's parts
-(primary, secondary, casing or bus, booster stages, guidance) and puts out one complete weapon item, which goes
-straight into the Launch Complex's missile slot. Its own model on the complex; its own stats on its screen.
+fabricator, a multiblock that assembles the full weapon all at once, to be placed on the Launch Complex. The user chose
+the long horizontal hall (over an upright assembly tower).
+- **Structure** (`GZStrategic.HALL`): a 7x13 floor of Launch Pads (controller front middle; Energy Port back middle, an
+  Item Port two columns west of it), six Gantry Frame columns four high (corners and halfway along each long side), a
+  new **Crane Rail** block the length of each long side on top; the hall between them (5 wide, rows 0-12, layers 1-5)
+  must be clear. Formed, the controller's GeckoLib model (`tools/assets/strategic.py`) draws it: a concrete floor with
+  yellow bay lines and hazard-striped open ends, grey I-beam columns, yellow crane girders with steel rails, a
+  twin-girder bridge crane with a trolley, drum and a hook block on two cables, two cradles, a control desk, a power
+  cabinet and a pallet of crates. "working" (12 s loop): the crane runs from over the tail to the first stage and
+  lowers its hook (the cables scale as they pay out), on to the third stage and lowers it again, and back.
+- **Recipe** (`StrategicAssembly`): a Boosted Fission Core (the primary), a new **Fusion Secondary** (4 lithium
+  deuteride pellets, 2 depleted uranium ingots, a plutonium nugget, a lead plate, a plastic sheet) and a new
+  **Intercontinental Booster** (2 Liquid-fuel Stages, 3 dense steel plates, tungsten carbide, a military circuit) make a
+  Thermonuclear Warhead; a new **Cobalt-59 Jacket** (4 cobalt ingots, a dense steel plate) makes it a Cobalt Warhead;
+  guidance and Hardened Electronics optional. One minute at 250 FE a tick (400k buffer); TAKE APART returns every part.
+  While it works the model lays the missile on the cradles in four loads (first stage, second, third, the warhead's
+  shroud; `laid` and `look` sent to clients), each set down halfway through its share of the work with a clank.
+- **Whole weapons**: an intercontinental missile is a MissileSpec with the new airframe class **XXL**
+  ("Intercontinental") and the new motor **ICBM** (3,000 blocks, the Launch Computer's map; no bench motor item), so the
+  launch, flight and computer code take it unchanged. Its warhead blocks (Thermonuclear, Cobalt) are `wholeWeapon()`
+  kinds: nuclear (they fizzle any other way), refused by the bench (`MissileAssembly.Problem.WHOLE_WEAPON`), not
+  taken apart there; only a Launch Complex fires them. Its own model (`launch.py` `ICBM_SECTIONS`, item models
+  `icbm_missile_<warhead>`, the complex's `icbm` / `inose_*` bones; lifted by `ICBM_TAIL` in flight): three olive-drab
+  solid stages narrowing upward with a white, a yellow and a white band, dark riveted interstages, a gunmetal skirt
+  and four nozzles, the warhead's shroud; about 11 blocks on the complex. The complex's umbilicals gained a clamp each
+  for it (lower at its first stage, upper at its third), and the hall draws the same sections lying down.
+- **Effects**: thermonuclear (crater 150, wrecks 220, fire 260, deadly to 260, injures 420; fallout 360 for three
+  days); cobalt (crater 70, deadly to 110; fallout 300 round the burst plus four zones strung downwind 200 blocks apart,
+  each 20 smaller and 15% weaker, all lasting 30 days: about 1,000 blocks of plume; a stand-in for Phase 12's drifting
+  fallout). Stats: "1.2 Mt", "400 kt", the cobalt note "Fallout drifts N blocks downwind".
+- The hall's screen (`StrategicAssemblyScreen`, layout `strategic_assembly`): the warhead's parts over the missile's,
+  the arrow and the finished missile, the readout, Assemble / Take Apart, and the bench's right-hand column (now a
+  shared `AssemblyColumn`) with a shorter preview and a taller stats screen.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
 - `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
@@ -2243,6 +2272,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Slice 8c (the user chose the long horizontal hall): the Strategic Assembly Hall builds whole weapons as intercontinental missiles: a new airframe class XXL and an ICBM motor (3,000 blocks) on the existing missile spec, so launching and flight are unchanged; the Thermonuclear (1.2 Mt) and Cobalt (400 kt, a month-long plume of zones downwind) Warheads are built only there and fly only from the Launch Complex. |
 | 2026-10-22 | No wind drift for nukes at all (the user's request): the mushroom cloud and a nuke's crater smoke stand over ground zero. Effects are drawn after water (the after-terrain phase, as vanilla's particles), as smoke's depth had hidden all water behind it. |
 | 2026-10-22 | Contamination zones are drawn (the user's request, ahead of Phase 12): a layer of dark grey and green fallout cloud over each zone and a green cast to the sky inside one; zones are sent to clients whole. Mushroom clouds keep the stem's foot and dust ring over ground zero; only the cap drifts with the wind, and the stem leans to it (the whole cloud drifting had left it off its crater). |
 | 2026-10-22 | Slice 8b: Boosted Fission and Neutron Warheads are class XL (Strategic missile, Launch Complex); the Dirty Warhead is class S and radiological, not nuclear (any silo, never fizzles; 90 blocks at 0.8 for five days). The neutron dose is (1-(d/180)²)·e^(-Σ) over the blocks in the way (solid 0.25, liquid 0.4, obsidian/concrete/lead 1.0), suits count half; 0.3 kills. Withering works down each column from the top, so roofs shelter plants. |

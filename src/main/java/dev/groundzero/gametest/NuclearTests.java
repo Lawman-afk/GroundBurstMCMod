@@ -59,7 +59,7 @@ final class NuclearTests {
                 MissileParts.Motor.LIQUID, MissileParts.Guidance.GPS, false));
     }
 
-    private static LaunchComplexBlockEntity complex(GameTestHelper helper, BlockPos rel) {
+    static LaunchComplexBlockEntity complex(GameTestHelper helper, BlockPos rel) {
         helper.setBlock(rel, GZLaunch.COMPLEX_CONTROLLER.block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
         for (MultiblockDefinition.Cell cell : GZLaunch.COMPLEX.cells(helper.absolutePos(rel), Direction.NORTH)) {
             if (cell.key() != MultiblockDefinition.CONTROLLER && cell.key() != '.') {

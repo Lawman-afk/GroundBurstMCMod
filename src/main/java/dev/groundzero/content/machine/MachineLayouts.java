@@ -141,6 +141,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
             List.of(), 512);
 
+    public static final MachineLayout STRATEGIC_ASSEMBLY = new MachineLayout(
+            GroundZero.id("textures/gui/machine/strategic_assembly.png"), 288, 210, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 42), new MachineLayout.Pos(48, 42), new MachineLayout.Pos(66, 42), new MachineLayout.Pos(124, 31)), 8, 128,
+            new MachineLayout.Rect(8, 20, 14, 46), 436, 0,
+            new MachineLayout.Rect(90, 32, 24, 17), 452, 0,
+            null, 452, 20,
+            new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 94, 18, 18), 436, 56,
+            new MachineLayout.Rect(34, 64, 134, 24), 8, 6, List.of(),
+            List.of(), 512);
+
     public static final MachineLayout RTG = new MachineLayout(
             GroundZero.id("textures/gui/machine/rtg.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

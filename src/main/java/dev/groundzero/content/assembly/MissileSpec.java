@@ -35,9 +35,14 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
             MissileSpec::guidance,
             ByteBufCodecs.BOOL, MissileSpec::hardened, MissileSpec::new);
 
-    /** Whether only a Launch Complex can fire it: a nuclear warhead, or a Strategic body. */
+    /** Whether only a Launch Complex can fire it: a nuclear warhead, or a Strategic or intercontinental airframe. */
     public boolean needsComplex() {
-        return nuclear() || this.body == SizeClass.XL;
+        return nuclear() || this.body == SizeClass.XL || this.body == SizeClass.XXL;
+    }
+
+    /** A whole weapon from the Strategic Assembly Hall (an intercontinental missile). */
+    public boolean intercontinental() {
+        return this.body == SizeClass.XXL;
     }
 
     /** Whether it carries a nuclear warhead (only a Launch Complex can fire it). */

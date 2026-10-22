@@ -106,8 +106,9 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     }
 
     /**
-     * The model shows the loaded missile: a Strategic one is its own long model ("strategic", noses "snose_*"), any other
-     * the usual missile scaled by its body; the upper umbilical's clamp meets whichever is there.
+     * The model shows the loaded missile: a Strategic one is its own long model ("strategic", noses "snose_*"), an
+     * intercontinental one its own too ("icbm", noses "inose_*"), any other the usual missile scaled by its body; the
+     * umbilicals' clamps meet whichever is there (each arm has a clamp for each airframe's diameter).
      */
     @Override
     public java.util.Set<String> hiddenBones() {
@@ -115,20 +116,31 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
             return java.util.Set.of("frame");
         }
         var spec = missile();
-        java.util.Set<String> hidden = new java.util.HashSet<>();
-        if (spec == null) {
-            hidden.add("missile");
-            hidden.add("strategic");
-            hidden.add("clamp_high_strategic");
-            return hidden;
+        java.util.Set<String> hidden = new java.util.HashSet<>(java.util.List.of("missile", "strategic", "icbm",
+                "clamp_low", "clamp_low_icbm", "clamp_high", "clamp_high_strategic", "clamp_high_icbm"));
+        var body = spec == null ? dev.groundzero.content.assembly.SizeClass.M : spec.body();
+        String airframe = switch (body) {
+            case XL -> "strategic";
+            case XXL -> "icbm";
+            default -> "missile";
+        };
+        if (spec != null) {
+            hidden.remove(airframe);
         }
-        boolean strategic = spec.body() == dev.groundzero.content.assembly.SizeClass.XL;
-        hidden.add(strategic ? "missile" : "strategic");
-        hidden.add(strategic ? "clamp_high" : "clamp_high_strategic");   // the upper clamp reaches in to a Strategic second stage
-        String id = spec.warheadId().isEmpty() ? "none" : spec.warheadId();
-        String shown = (strategic ? "snose_" : "nose_") + id;
+        hidden.remove(body == dev.groundzero.content.assembly.SizeClass.XXL ? "clamp_low_icbm" : "clamp_low");
+        hidden.remove(switch (body) {
+            case XL -> "clamp_high_strategic";                // in to a Strategic second stage
+            case XXL -> "clamp_high_icbm";                    // in to an intercontinental third stage
+            default -> "clamp_high";
+        });
+        String id = spec == null || spec.warheadId().isEmpty() ? "none" : spec.warheadId();
+        String shown = switch (body) {
+            case XL -> "snose_";
+            case XXL -> "inose_";
+            default -> "nose_";
+        } + id;
         for (String nose : NOSES) {
-            for (String bone : new String[] {nose, "s" + nose}) {
+            for (String bone : new String[] {nose, "s" + nose, "i" + nose}) {
                 if (!bone.equals(shown)) {
                     hidden.add(bone);
                 }
@@ -140,7 +152,8 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     @Override
     public java.util.Map<String, float[]> boneScales() {
         var spec = missile();
-        return spec != null && spec.body() == dev.groundzero.content.assembly.SizeClass.XL ? java.util.Map.of() : super.boneScales();
+        return spec != null && (spec.body() == dev.groundzero.content.assembly.SizeClass.XL || spec.body() == dev.groundzero.content.assembly.SizeClass.XXL)
+                ? java.util.Map.of() : super.boneScales();
     }
 
     @Override

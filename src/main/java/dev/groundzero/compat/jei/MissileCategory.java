@@ -37,7 +37,7 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
     }
 
     static List<Recipe> recipes() {
-        return java.util.Arrays.stream(SizeClass.values()).map(Recipe::new).toList();
+        return java.util.Arrays.stream(SizeClass.values()).filter(s -> s != SizeClass.XXL).map(Recipe::new).toList();   // XXL: the hall's
     }
 
     private static List<ItemStack> warheads(SizeClass body) {

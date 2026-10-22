@@ -102,6 +102,7 @@ public final class AssemblyStats {
         effect(ChargeKind.TOXIC_WASTE_WARHEAD, "toxic_waste", "Toxic sludge splashed %s blocks round", (int) Charges.TOXIC_WASTE_RADIUS);
         effect(ChargeKind.CHEMICAL_WARHEAD, "chemical", "An anthrax cloud %s blocks round that spreads and drifts", (int) Charges.CHEMICAL_RADIUS);
         effect(ChargeKind.DIRTY_WARHEAD, "dirty", "Scatters nuclear waste");          // one line: its missile's list is long
+        effect(ChargeKind.COBALT_WARHEAD, "cobalt", "Fallout drifts %s blocks downwind", Charges.cobaltReach());
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -112,7 +113,9 @@ public final class AssemblyStats {
 
     /** The warhead kind a stack is (null: not a warhead). */
     public static @Nullable ChargeKind kindOf(ItemStack stack) {
-        return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c && WarheadAssembly.coreOf(c) != null ? c.kind : null;
+        // A warhead: one the bench assembles from a core, or one the Strategic Assembly Hall builds whole (no core).
+        return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c && (WarheadAssembly.coreOf(c) != null || c.kind.wholeWeapon())
+                ? c.kind : null;
     }
 
     /** Cluster types: their burst is only a casing opening in the air; what matters is what it scatters. */
@@ -134,6 +137,8 @@ public final class AssemblyStats {
             case FISSION_WARHEAD -> "15 kt";
             case BOOSTED_FISSION_WARHEAD -> "45 kt";
             case NEUTRON_WARHEAD -> "1 kt";
+            case THERMONUCLEAR_WARHEAD -> "1.2 Mt";
+            case COBALT_WARHEAD -> "400 kt";
             default -> null;
         };
     }

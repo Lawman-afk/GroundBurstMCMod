@@ -483,6 +483,41 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(l.silo).requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT)
                 .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.LEAD_PLATE)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // Whole weapons (slice 8c, DESIGN.md §15.2): the Strategic Assembly Hall, its rails, and the parts only it uses.
+        var s = new Object() {
+            final net.minecraft.world.level.ItemLike rail = dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.item();
+            final net.minecraft.world.level.ItemLike hall = dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike secondary = dev.groundzero.content.strategic.GZStrategic.FUSION_SECONDARY.get();
+            final net.minecraft.world.level.ItemLike jacket = dev.groundzero.content.strategic.GZStrategic.COBALT_JACKET.get();
+            final net.minecraft.world.level.ItemLike booster = dev.groundzero.content.strategic.GZStrategic.INTERCONTINENTAL_BOOSTER.get();
+        };
+        shapeless(RecipeCategory.BUILDING_BLOCKS, s.rail, 4)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(Tags.Items.DYES_YELLOW)
+                .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.REDSTONE, s.hall, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.SERVO).requires(GZParts.SERVO).requires(GZParts.ELECTRIC_MOTOR)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, s.secondary, 1)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT).requires(dev.groundzero.content.nuclear.GZNuclear.DEPLETED_URANIUM_INGOT)
+                .requires(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET).requires(GZParts.LEAD_PLATE)
+                .requires(dev.groundzero.content.chem.GZChemicals.PLASTIC_SHEET)
+                .unlockedBy(getHasName(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET),
+                        has(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET)).save(output);
+        shapeless(RecipeCategory.COMBAT, s.jacket, 1)
+                .requires(GZParts.COBALT_INGOT).requires(GZParts.COBALT_INGOT).requires(GZParts.COBALT_INGOT).requires(GZParts.COBALT_INGOT)
+                .requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(GZParts.COBALT_INGOT), has(GZParts.COBALT_INGOT)).save(output);
+        shapeless(RecipeCategory.COMBAT, s.booster, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE).requires(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.MILITARY_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE),
+                        has(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE)).save(output);
         shapeless(RecipeCategory.BUILDING_BLOCKS, l.deflector, 1)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
                 .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())

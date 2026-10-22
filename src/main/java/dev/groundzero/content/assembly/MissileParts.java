@@ -24,7 +24,9 @@ public final class MissileParts {
     public enum Motor {
         SRM_I("solid_rocket_motor_i", 400, SizeClass.S, SizeClass.M),
         SRM_II("solid_rocket_motor_ii", 1024, SizeClass.S, SizeClass.L),
-        LIQUID("liquid_fuel_stage", 2500, SizeClass.L, SizeClass.XL);
+        LIQUID("liquid_fuel_stage", 2500, SizeClass.L, SizeClass.XL),
+        /** The Intercontinental Booster: only ever in a whole weapon from the Strategic Assembly Hall (no bench motor). */
+        ICBM("intercontinental_booster", 3000, SizeClass.XXL, SizeClass.XXL);
 
         public final String id;
         /** How far it carries a missile, blocks. */
@@ -118,7 +120,8 @@ public final class MissileParts {
             GZLang.add(GroundZero.MODID + ".missile.body.s", "Tactical"),
             GZLang.add(GroundZero.MODID + ".missile.body.m", "Medium"),
             GZLang.add(GroundZero.MODID + ".missile.body.l", "Heavy"),
-            GZLang.add(GroundZero.MODID + ".missile.body.xl", "Strategic")};
+            GZLang.add(GroundZero.MODID + ".missile.body.xl", "Strategic"),
+            GZLang.add(GroundZero.MODID + ".missile.body.xxl", "Intercontinental")};
     static final String T_BODY_ONE = GZLang.add(GroundZero.MODID + ".missile.fits_one", "%s bodies");
     static final String T_BODY_TWO = GZLang.add(GroundZero.MODID + ".missile.fits_two", "%s and %s bodies");
     static final String T_BODY_THREE = GZLang.add(GroundZero.MODID + ".missile.fits_three", "%s, %s and %s bodies");
@@ -208,6 +211,7 @@ public final class MissileParts {
             case M -> new float[] {1f, 1f};
             case L -> new float[] {1.15f, 1.2f};
             case XL -> new float[] {1f, 1f};                     // its own, longer model (see STRATEGIC_TAIL)
+            case XXL -> new float[] {1f, 1f};                    // its own model too (ICBM_TAIL)
         };
     }
 
@@ -217,9 +221,20 @@ public final class MissileParts {
      */
     public static final float STRATEGIC_TAIL = 11.5f;
 
-    /** The custom model data that picks a missile's item model: its warhead's nose, on a Strategic missile its own model. */
+    /** The same for the intercontinental missile's model (launch.py's icbm_model). */
+    public static final float ICBM_TAIL = 11.5f;
+
+    /**
+     * The custom model data that picks a missile's item model: its warhead's nose, on a Strategic or an intercontinental
+     * missile its own model.
+     */
     public static String look(String warheadId, SizeClass body) {
-        return body == SizeClass.XL ? "strategic_" + (warheadId.isEmpty() ? "none" : warheadId) : warheadId;
+        String id = warheadId.isEmpty() ? "none" : warheadId;
+        return switch (body) {
+            case XL -> "strategic_" + id;
+            case XXL -> "icbm_" + id;
+            default -> warheadId;
+        };
     }
 
     public static String guidanceName(Guidance g) {

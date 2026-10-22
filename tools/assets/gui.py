@@ -222,6 +222,26 @@ LAYOUTS = {
         "readout": (34, 50, 134, 24),
         "inventory": (8, 128),
     },
+    # Strategic Assembly Hall (Phase 8 slice 8c): the warhead's parts (primary, secondary, an optional cobalt jacket) over
+    # the missile's (booster, optional guidance and module), the arrow, the finished missile; the readout under them,
+    # then the Assemble / Take Apart buttons (drawn by the screen) with the redstone button beside them. The bench's
+    # right-hand column, its preview a little shorter and its stats screen taller (a whole weapon's list is long).
+    "strategic_assembly": {
+        "title": (8, 6),
+        "size": (288, 210),
+        "inventory_width": 178,
+        "preview": (183, 22, 94, 66),
+        "stats": (183, 94, 94, 108),
+        "slots": [("core", 30, 22), ("secondary", 48, 22), ("jacket", 66, 22), ("booster", 30, 42), ("guidance", 48, 42),
+                  ("module", 66, 42), ("out_big", 124, 31)],
+        "energy": (8, 20, 14, 46),
+        "progress": (90, 32, 24, 17),                # centred between the slot columns and the output frame
+        "flame": None,
+        "status": (272, 5, 8, 8),
+        "redstone": (151, 94, 18, 18),
+        "readout": (34, 64, 134, 24),
+        "inventory": (8, 128),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),
@@ -509,6 +529,22 @@ MODULE_GHOST = ["................", "................", "....########....", "...
                 "................"]
 
 
+# The Strategic Assembly Hall: a fusion secondary (a capsule round its spark-plug rod), a cobalt jacket (a sleeve of
+# plates), an intercontinental booster (three stages narrowing upward on their nozzles).
+SECONDARY_GHOST = ["................", "......####......", ".....#....#.....", "....#......#....", "....#..##..#....",
+                   "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....",
+                   "....#..##..#....", "....#......#....", ".....#....#.....", "......####......", "................",
+                   "................"]
+JACKET_GHOST = ["................", "................", "...##########...", "...#+.#+.#+.#...", "...#..#..#..#...",
+                "...#..#..#..#...", "...##########...", "...#+.#+.#+.#...", "...#..#..#..#...", "...#..#..#..#...",
+                "...##########...", "...#+.#+.#+.#...", "...#..#..#..#...", "...##########...", "................",
+                "................"]
+BOOSTER_GHOST = ["................", "......####......", "......#..#......", "......#..#......", ".....######.....",
+                 ".....#....#.....", ".....#....#.....", ".....#....#.....", "....########....", "....#......#....",
+                 "....#......#....", "....#......#....", "....#......#....", "....########....", ".....#.##.#.....",
+                 "................"]
+
+
 # The Launch Silo's slot: a whole missile (nose, body, fins).
 MISSILE_GHOST = [".......##.......", "......#..#......", "......#..#......", "......####......", "......#..#......",
                  "......#..#......", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
@@ -749,7 +785,8 @@ def build(name: str, spec: dict) -> Path:
          "seed": ghost_slot(SEED_GHOST), "matter": ghost_slot(MATTER_GHOST),
          "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST),
          "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
-         "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST),
+         "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills

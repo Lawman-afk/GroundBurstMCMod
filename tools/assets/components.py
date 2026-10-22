@@ -15,6 +15,11 @@ Payload cores:
 Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
 Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Barometric (vent ports and a brass
 pressure ring).
+Strategic Assembly Hall parts (slice 8c):
+- Fusion Secondary: a dark depleted-uranium capsule, a pale lithium-deuteride band showing round its middle, end caps,
+  the plutonium spark plug's copper terminal standing out of the top.
+- Cobalt-59 Jacket: a sleeve of riveted cobalt-blue plates round an open middle.
+- Intercontinental Booster: three olive stages narrowing upward on four nozzles, the missile's white and yellow bands.
 """
 from __future__ import annotations
 
@@ -294,6 +299,70 @@ def dirty_payload() -> None:
     G.finish(m, t)
 
 
+DU = fixed("du_dark", "#16181a", "#202326", "#2a2e31", "#363b3f", "#454b50", "#585f65", "#70787e")
+COBALT = fixed("cobalt_plate", "#0a1430", "#102050", "#183070", "#204496", "#2c5cbc", "#4a7ed8", "#7aa6ee")
+
+
+def fusion_secondary() -> None:
+    """The thermonuclear second stage: a uranium tamper capsule with a lithium-deuteride band, its spark plug's terminal."""
+    m = model("fusion_secondary")
+    body = prism(m, "tamper", 8, 8, 3.6, 2.4, 2, 12.5)
+    caps = prism(m, "cap_lo", 8, 8, 3.0, 2.0, 1, 2) + prism(m, "cap_hi", 8, 8, 3.0, 2.0, 12.5, 13.5)
+    m.box("plug", (7.3, 13.5, 7.3), (8.7, 15.5, 8.7))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    lid = P.WHITE_CERAMIC
+    fill_all(m, t, body, banded(DU, [(8.4, lid[4]), (7.9, lid[5]), (7.4, lid[4]), (6.9, lid[3])], 12.5, 2))
+    fill_all(m, t, caps, shaded(GUN))
+    m.paint_all(t, "plug", shaded(P.COPPER))
+    G.finish(m, t)
+
+
+def cobalt_jacket() -> None:
+    """A sleeve of riveted cobalt plates round an open middle: the side plates full length, the end plates between them."""
+    m = model("cobalt_jacket")
+    walls = {"wall_w": ((3.4, 2, 3.4), (4.6, 13, 12.6), ("north", "south", "east", "west", "up", "down")),
+             "wall_e": ((11.4, 2, 3.4), (12.6, 13, 12.6), ("north", "south", "east", "west", "up", "down")),
+             "wall_n": ((4.6, 2, 3.4), (11.4, 13, 4.6), ("north", "south", "up", "down")),
+             "wall_s": ((4.6, 2, 11.4), (11.4, 13, 12.6), ("north", "south", "up", "down"))}
+    for n, (a, b, faces) in walls.items():
+        m.box(n, a, b, faces=faces)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+
+    def plates(t: Tex, r, d):
+        x, y, w, h = r
+        shaded(COBALT)(t, r, d)
+        if d in SIDES and h > 4:
+            for row in (y + h // 3, y + 2 * h // 3):         # the seams between the plates
+                t.hline(x, row, w, COBALT[1])
+            for xx in range(x + 1, x + w - 1, 3):            # rivets along the seams
+                t.px(xx, y + h // 3 - 1, COBALT[5])
+                t.px(xx, y + 2 * h // 3 - 1, COBALT[5])
+    for n in walls:
+        m.paint_all(t, n, plates)
+    G.finish(m, t)
+
+
+def intercontinental_booster() -> None:
+    """Three solid-fuel stages narrowing upward on four nozzles, in the intercontinental missile's olive livery."""
+    m = model("intercontinental_booster")
+    s1 = prism(m, "stage1", 8, 8, 3.4, 2.3, 2, 8.6)
+    s2 = prism(m, "stage2", 8, 8, 2.9, 1.95, 8.6, 12.6)
+    s3 = prism(m, "stage3", 8, 8, 2.4, 1.6, 12.6, 15.2)
+    nozzles = []
+    for i, (x, z) in enumerate(((6.1, 6.1), (8.7, 6.1), (6.1, 8.7), (8.7, 8.7))):
+        nozzles.append(f"nozzle{i}")
+        m.box(nozzles[-1], (x, 0.6, z), (x + 1.2, 2, z + 1.2), faces=("north", "south", "east", "west", "down"))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    fill_all(m, t, s1, banded(OLIVE, [(5.6, P.WHITE_CERAMIC[5]), (5.1, P.WHITE_CERAMIC[5])], 8.6, 2))
+    fill_all(m, t, s2, banded(OLIVE, [(10.8, YELLOW[4])], 12.6, 8.6))
+    fill_all(m, t, s3, banded(OLIVE, [(14.0, P.WHITE_CERAMIC[5])], 15.2, 12.6))
+    fill_all(m, t, nozzles, shaded(GUN))
+    G.finish(m, t)
+
+
 def canister_dispenser(name: str, can, cap, strap, lamp=None) -> None:
     m = model(name)
     m.box("plate", (3.5, 2, 3.5), (12.5, 3, 12.5))
@@ -459,6 +528,7 @@ CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispense
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
+STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster"]
 
 
 def main() -> None:
@@ -486,7 +556,10 @@ def main() -> None:
     strategic_casing()
     impact_fuze()
     barometric_fuze()
-    G.item_defs(CORES + CASINGS + FUZES)
+    fusion_secondary()
+    cobalt_jacket()
+    intercontinental_booster()
+    G.item_defs(CORES + CASINGS + FUZES + STRATEGIC)
     print("components written")
 
 

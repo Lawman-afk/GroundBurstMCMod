@@ -100,7 +100,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             case SLOT_MOTOR -> stack.getItem() instanceof MissileParts.MotorItem;
             case SLOT_GUIDANCE -> stack.getItem() instanceof MissileParts.GuidanceItem;
             case SLOT_MODULE -> stack.getItem() instanceof MissileParts.HardenedModule;
-            case SLOT_MISSILE -> stack.getItem() instanceof MissileItem && MissileItem.spec(stack) != null;
+            case SLOT_MISSILE -> stack.getItem() instanceof MissileItem && MissileItem.spec(stack) != null && !MissileItem.spec(stack).intercontinental();
             default -> false;
         };
     }

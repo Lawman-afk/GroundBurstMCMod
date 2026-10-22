@@ -60,6 +60,7 @@
     "ordnance/launch_site",
     "ordnance/launch_complex",
     "ordnance/nuclear",
+    "ordnance/strategic_assembly",
     "ordnance/radar_array",
     "ordnance/chemical",
     "safety/decontamination_shower",

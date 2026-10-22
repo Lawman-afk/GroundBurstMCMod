@@ -905,7 +905,7 @@ entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_
 A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back.
 """),
     text("""
-**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile there is, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it.
+**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile the bench makes, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it. Bigger still are the intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.
 
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
 """),
@@ -1013,16 +1013,16 @@ entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_co
     text("""
 The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
 
-It takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
+It takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic or an [intercontinental](ordnance/strategic_assembly) one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
 """),
     structure("launch_complex", "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."),
     craft("launch_complex"),
     craft("flame_deflector"),
 ])
 
-entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [
+entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [
     text("""
-A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile will be built whole in a separate assembly hall and set straight on the Launch Complex.
+A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile are built whole, missile and all, in the [Strategic Assembly Hall](ordnance/strategic_assembly).
 
 **Tactical Nuclear Warhead** (about 300 tonnes of TNT), the smallest nuclear weapon and still half as big again as the Massive Ordnance Warhead: a crater 42 blocks round, wrecking everything to 60 blocks and deadly to 60. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.
 
@@ -1040,6 +1040,11 @@ Plants in the open die out to **120 blocks** (under a roof they are spared): lea
 **Dirty Warhead**: not a nuclear weapon at all, but high explosive wrapped round a drum of **nuclear waste**. Its blast is small (a crater 6 blocks round), but the waste goes up as dust and settles **90 blocks round**: weaker than a nuclear blast's fallout, and it lingers for **five days**. It is class S: it takes a **Light Warhead Casing**, fits any missile body but a Strategic one and flies from any [Launch Silo](ordnance/launch_site). Being only explosive, it goes off however it is set off. Its core is a **Dirty Payload**: four Nuclear Waste, an HE Charge and a Lead Plate.
 """),
     text("""
+**Thermonuclear Warhead** (about 1.2 megatons): two stages, a boosted fission primary setting off a fusion secondary. A crater 150 blocks round, wrecking everything to 220 blocks and deadly to 260; fallout 360 blocks round for three days. It is only ever built whole, into an intercontinental missile, at the [Strategic Assembly Hall](ordnance/strategic_assembly).
+
+**Cobalt Warhead** (about 400 kilotons): the same weapon with a Cobalt-59 Jacket round its secondary. The blast is smaller (a crater 70 blocks round, deadly to 110), but the jacket turns to cobalt-60: fallout 300 blocks round the burst and strung out about **1,000 blocks downwind**, lasting **a month**. Built whole like the thermonuclear warhead.
+"""),
+    text("""
 **Fallout.** A nuclear blast leaves the ground round it **contaminated**, weakest at the edge and fading as it ages: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, 220 for two days after a boosted fission warhead, and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
 
 **Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion. A dirty warhead is not nuclear, and does not fizzle.
@@ -1049,6 +1054,23 @@ Plants in the open die out to **120 blocks** (under a roof they are spared): lea
     craft("boosted_fission_core"),
     craft("neutron_core"),
     craft("dirty_payload"),
+])
+
+entry("ordnance/strategic_assembly", "Strategic Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster"], [
+    text("""
+The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section.
+
+Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**; for a [cobalt warhead](ordnance/nuclear), a **Cobalt-59 Jacket** too. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
+"""),
+    text("""
+An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, and only a Launch Complex fires it. Its warhead goes off where it lands. What its two warheads do is under [Nuclear warheads](ordnance/nuclear).
+"""),
+    structure("strategic_assembly_hall", "A 7 by 13 floor of Launch Pads: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Gantry Frame columns four high stand at the four corners and halfway along each long side, and a Crane Rail runs the length of each long side on top of them. Keep the hall between them clear, five wide and five high: the missile and the crane need the room."),
+    craft("strategic_assembly_hall"),
+    craft("crane_rail"),
+    craft("fusion_secondary"),
+    craft("cobalt_jacket"),
+    craft("intercontinental_booster"),
 ])
 
 entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "large_radar_dish"], [

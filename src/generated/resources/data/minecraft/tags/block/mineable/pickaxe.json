@@ -72,6 +72,8 @@
     "groundzero:launch_silo",
     "groundzero:launch_computer",
     "groundzero:radar_array",
+    "groundzero:crane_rail",
+    "groundzero:strategic_assembly_hall",
     "groundzero:large_radar_dish",
     "groundzero:capacitor_bank",
     "groundzero:advanced_capacitor_bank",

@@ -22,7 +22,7 @@
     },
     {
       "type": "text",
-      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile there is, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
+      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile the bench makes, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it. Bigger still are the intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
     },
     {
       "type": "text",

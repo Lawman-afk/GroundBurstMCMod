@@ -125,6 +125,7 @@ public final class WarheadAssembly {
             case M -> 160;
             case L -> 240;
             case XL -> 320;
+            case XXL -> 400;
         };
     }
 }

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundzero:block/strategic_assembly_hall_front",
+    "side": "groundzero:block/strategic_assembly_hall_side",
+    "top": "groundzero:block/strategic_assembly_hall_top"
+  }
+}

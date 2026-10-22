@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/crane_rail"
+    },
+    "formed=true": {
+      "model": "groundzero:block/crane_rail_formed"
+    }
+  }
+}

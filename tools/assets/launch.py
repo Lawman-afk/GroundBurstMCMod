@@ -110,13 +110,17 @@ def missile_item() -> None:
     """The Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
     flight picks one by the warhead's id (custom model data), so the nose shows what it carries. A Strategic missile
     ("strategic_<warhead>") is its own longer model."""
-    for nose in W.NOSES:
+    for nose in BENCH_NOSES:
         missile_model("missile" if nose == "none" else f"missile_{nose}", nose)
         strategic_model(f"strategic_missile_{nose}", nose)
+    for nose in ICBM_NOSES:
+        icbm_model(f"icbm_missile_{nose}", nose)
     cases = [{"when": nose, "model": {"type": "minecraft:model", "model": f"groundzero:item/missile_{nose}"}}
-             for nose in W.NOSES if nose != "none"]
+             for nose in BENCH_NOSES if nose != "none"]
     cases += [{"when": f"strategic_{nose}", "model": {"type": "minecraft:model", "model": f"groundzero:item/strategic_missile_{nose}"}}
-              for nose in W.NOSES]
+              for nose in BENCH_NOSES]
+    cases += [{"when": f"icbm_{nose}", "model": {"type": "minecraft:model", "model": f"groundzero:item/icbm_missile_{nose}"}}
+              for nose in ICBM_NOSES]
     write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
         "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
@@ -262,6 +266,99 @@ def strategic_model(model_name: str, nose: str) -> None:
     t = Tex(m.tex_w, m.tex_h)
     for name, _, _, _, kind in strategic_parts():
         m.paint_all(t, name, strategic_paint(kind, nose))
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
+    lo, hi = m.bounds()
+    c = [(lo[i] + hi[i]) / 2 for i in range(3)]
+
+    def ctx(scale, base, rotation=(0, 0, 0)):
+        return {"rotation": list(rotation), "translation": [round(base[i] - (c[i] - 8) * scale, 3) for i in range(3)], "scale": [scale] * 3}
+    m.display["ground"] = ctx(0.4, (0, 0, 0))
+    m.display["fixed"] = ctx(0.4, (0, 0, 0))
+    m.display["thirdperson_righthand"] = ctx(0.32, (0, 3, 1), (0, 90, 0))
+    m.display["thirdperson_lefthand"] = ctx(0.32, (0, 3, 1), (0, 90, 0))
+    m.display["firstperson_righthand"] = ctx(0.28, (1, 3, 0), (0, -25, 0))
+    m.display["firstperson_lefthand"] = ctx(0.28, (1, 3, 0), (0, 155, 0))
+    m.save(t)
+
+
+# --- the intercontinental missile (slice 8c): a whole weapon from the Strategic Assembly Hall -----------------------------
+#: Item pixels its model reaches below the usual missile's tail line (MissileParts.ICBM_TAIL in Java).
+ICBM_TAIL = 11.5
+#: The only warheads it carries (whole weapons: the hall builds them in); every other missile carries the rest.
+ICBM_NOSES = ("thermonuclear_warhead", "cobalt_warhead")
+BENCH_NOSES = [n for n in W.NOSES if n not in ICBM_NOSES]
+
+#: Its sections, tail to nose, in item pixels (centred on x = z = 8): (name, half-width, side half-width, y0, y1, paint).
+#: Three solid-fuel stages narrowing upward, dark interstages, the warhead's shroud. Drawn upright four times over on the
+#: Launch Complex (about 11 blocks) and in flight, and lying on the Strategic Assembly Hall's cradles.
+ICBM_SECTIONS = [
+    ("skirt", 3.2, 2.15, -10, -8.6, "iskirt"),
+    ("stage1", 3.0, 2.0, -8.6, 6, "istage1"),
+    ("inter1", 2.8, 1.85, 6, 7.2, "iinter"),
+    ("stage2", 2.6, 1.75, 7.2, 16.4, "istage2"),
+    ("inter2", 2.35, 1.55, 16.4, 17.4, "iinter"),
+    ("stage3", 2.2, 1.45, 17.4, 22.4, "istage3"),
+    ("nose0", 2.0, 1.3, 22.4, 26.2, "nose_base"),
+    ("nose1", 1.35, 0.9, 26.2, 29.6, "nose"),
+]
+ICBM_TIP = ((7.5, 29.6, 7.5), (8.5, 32, 8.5))
+ICBM_NOZZLES = ((6.3, 6.3), (8.5, 6.3), (6.3, 8.5), (8.5, 8.5))
+#: Which of the hall crane's four loads each section comes in: the first stage, the second, the third, the shroud.
+ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3, "nose0": 4, "nose1": 4}
+
+
+def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """(name, from, to, faces, paint) in item pixels, tail at y -11.5 (four nozzles), nose tip at 32."""
+    all6 = ("north", "south", "east", "west", "up", "down")
+    parts = []
+    for i, (x, z) in enumerate(ICBM_NOZZLES):
+        parts.append((f"nozzle{i}", (x, -11.5, z), (x + 1.2, -10, z + 1.2), ("north", "south", "east", "west", "down"), "nozzle"))
+    for name, r, w, y0, y1, paint in ICBM_SECTIONS:
+        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("north", "south", "east", "west", "up", "down"), paint))
+        parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west", "up", "down"), paint))
+        parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west", "up", "down"), paint))
+    parts.append(("tip", ICBM_TIP[0], ICBM_TIP[1], all6, "tip"))
+    return parts
+
+
+def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
+    """The intercontinental missile's livery: olive-drab stages, a white band round the first stage's middle, a yellow
+    one round the second's and a white one round the third's, dark riveted interstages, a gunmetal skirt; the shroud in
+    its warhead's colours, its marking band at its middle. Every band sits at the middle of its section, so the lying
+    missile in the hall (whose sections run across its faces' u or v the other way round) is painted alike."""
+    ramp, mark, tip = W.NOSES[nose]
+    band = {"istage1": WHITE[5], "istage2": YELLOW[4], "istage3": WHITE[5], "nose_base": mark}.get(kind)
+    base = {"iskirt": GUN, "iinter": GUN, "nose_base": ramp, "nose": ramp, "tip": tip, "nozzle": GUN}.get(kind, OLIVE)
+    ends = ("north", "south") if lying else ("up", "down")
+
+    def fn(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, base[tone(d) + (0 if base is GUN else 1)])
+        if kind == "nozzle" and d == ("south" if lying else "down"):    # the exhaust end, dark inside
+            t.rect(x, y, w, h, BLACK[1])
+            return
+        if d in ends:
+            return
+        along_u = lying and d in ("east", "west")             # the section's length runs across the face
+        if band is not None and (w if along_u else h) > 3:
+            if along_u:
+                t.vline(x + w // 2, y, h, band)
+            else:
+                t.hline(x, y + h // 2, w, band)
+        if kind == "iinter":
+            for i in range(0, w if not along_u else h, 2):  # rivets round the ring
+                t.px(x + i, y + h // 2, STEEL[4]) if not along_u else t.px(x + w // 2, y + i, STEEL[4])
+    return fn
+
+
+def icbm_model(model_name: str, nose: str) -> None:
+    m = BlockModel(model_name, tex_size=(64, 64), kind="item")
+    for name, frm, to, faces, _ in icbm_parts():
+        m.box(name, frm, to, faces=faces)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    for name, _, _, _, kind in icbm_parts():
+        m.paint_all(t, name, icbm_paint(kind, nose))
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
@@ -498,9 +595,9 @@ def silo() -> None:
     g.bone("frame")
     g.bone("arm", pivot=(24, 101.5, 16), parent="frame")        # on its hinge pin, just off the tower's face
     g.bone("missile", pivot=(0, 14, 16), parent="frame")         # its tail on the pad: the body's size scales it from there
-    for nose in W.NOSES:
+    for nose in BENCH_NOSES:
         g.bone(f"nose_{nose}", parent="missile")
-    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}]
+    g.exclusive = [{f"nose_{nose}" for nose in BENCH_NOSES}]
     F = "frame"
     pad = [("pad_front", (-24, 0, -8), (24, 14, 10)), ("pad_back", (-24, 0, 22), (24, 14, 40)),
            ("pad_left", (-24, 0, 10), (-6, 14, 22)), ("pad_right", (6, 0, 10), (24, 14, 22))]
@@ -540,7 +637,7 @@ def silo() -> None:
         a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 16)
         b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 16)
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
         else:
             g.box("m_" + name, a, b, faces=faces, bone="missile")
@@ -590,7 +687,7 @@ def silo() -> None:
         g.paint_all(tex, n, shaded(GUN) if n != "hinge_spine" else lambda t, r, d: t.rect(*r, GANTRY[tone(d) + 1]))
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
         else:
             g.paint_all(tex, "m_" + name, missile_paint(kind))
@@ -635,17 +732,25 @@ def launch_complex() -> None:
     g.bone("frame")
     g.bone("arm_low", pivot=(38, 72, 32), parent="frame")         # each on its hinge pin, just off the tower's face
     g.bone("arm_high", pivot=(38, 136, 32), parent="frame")
-    # The upper arm's clamp: at a usual missile's body, or reaching in to a Strategic missile's slimmer second stage.
+    # Each arm's clamp, one for each airframe (LaunchComplexBlockEntity shows the loaded missile's): the lower at a usual
+    # missile's body and a Strategic first stage, or out at an intercontinental first stage; the upper at a usual
+    # missile's body, in to a Strategic second stage, or to an intercontinental third stage.
+    g.bone("clamp_low", parent="arm_low")
+    g.bone("clamp_low_icbm", parent="arm_low")
     g.bone("clamp_high", parent="arm_high")
     g.bone("clamp_high_strategic", parent="arm_high")
+    g.bone("clamp_high_icbm", parent="arm_high")
     g.bone("missile", pivot=(0, 14, 32), parent="frame")       # its tail over the trench: the body's size scales it from there
-    for nose in W.NOSES:
+    for nose in BENCH_NOSES:
         g.bone(f"nose_{nose}", parent="missile")
     g.bone("strategic", pivot=(0, 14, 32), parent="frame")     # a Strategic missile: its own model, not scaled
-    for nose in W.NOSES:
+    for nose in BENCH_NOSES:
         g.bone(f"snose_{nose}", parent="strategic")
-    g.exclusive = [{f"nose_{nose}" for nose in W.NOSES}, {f"snose_{nose}" for nose in W.NOSES}, {"missile", "strategic"},
-                   {"clamp_high", "clamp_high_strategic"}]
+    g.bone("icbm", pivot=(0, 14, 32), parent="frame")          # an intercontinental missile: its own model too
+    for nose in ICBM_NOSES:
+        g.bone(f"inose_{nose}", parent="icbm")
+    g.exclusive = [{f"nose_{nose}" for nose in BENCH_NOSES}, {f"snose_{nose}" for nose in BENCH_NOSES}, {f"inose_{nose}" for nose in ICBM_NOSES},
+                   {"missile", "strategic", "icbm"}, {"clamp_low", "clamp_low_icbm"}, {"clamp_high", "clamp_high_strategic", "clamp_high_icbm"}]
     F = "frame"
     # The deck: 5x5 with a flame trench (z 26-38) running from under the missile out of its west edge.
     deck = [("deck_front", (-40, 0, -8), (40, 14, 26), ("north", "south", "east", "west", "up")),
@@ -709,11 +814,12 @@ def launch_complex() -> None:
     hinges = ["spine"]
     g.box("spine", (39.4, 14, 30.5), (40.3, 208, 33.5), faces=("east", "north", "south", "up"), bone=F)
     for bone, y, reach in (("arm_low", 70, 9.6), ("arm_high", 134, 10.0)):
-        for n, a, b, faces in ((f"{bone}_beam", (reach + 2, y, 30), (37.5, y + 4, 34), ("north", "south", "up", "down", "west")),
-                               (f"{bone}_hose", (reach + 2.5, y - 3, 31), (36.5, y - 1, 33), ("north", "south", "down", "west", "east"))):
+        inner = 14 if bone == "arm_low" else reach + 2   # the lower beam stops short of an intercontinental first stage
+        for n, a, b, faces in ((f"{bone}_beam", (inner, y, 30), (37.5, y + 4, 34), ("north", "south", "up", "down", "west")),
+                               (f"{bone}_hose", (inner + 0.5, y - 3, 31), (36.5, y - 1, 33), ("north", "south", "down", "west", "east"))):
             g.box(n, a, b, faces=faces, bone=bone)
             arms.append(n)
-        clamp_bone = "clamp_high" if bone == "arm_high" else bone
+        clamp_bone = "clamp_high" if bone == "arm_high" else "clamp_low"
         g.box(f"{bone}_clamp", (reach, y - 2, 27), (reach + 2, y + 6, 37), faces=("west", "north", "south", "up", "down"), bone=clamp_bone)
         arms.append(f"{bone}_clamp")
         for n, a, b, faces in ((f"{bone}_knuckle_top", (36.5, y + 4.5, 30), (39.4, y + 6.5, 34), ("east", "north", "south", "up", "down")),
@@ -726,12 +832,19 @@ def launch_complex() -> None:
     g.box("arm_high_clamp_strategic", (8, 132, 27), (10, 140, 37), faces=("west", "north", "south", "up", "down"),
           bone="clamp_high_strategic")
     arms += ["arm_high_reach", "arm_high_clamp_strategic"]
+    # The lower clamp's reach out to the beam; the intercontinental clamps: the lower on the first stage (radius 12), the
+    # upper reaching in to the third (radius 8.8).
+    g.box("arm_low_reach", (11.6, 70, 30), (14, 74, 34), faces=("north", "south", "up", "down"), bone="clamp_low")
+    g.box("arm_low_clamp_icbm", (12, 68, 27), (14, 76, 37), faces=("west", "north", "south", "up", "down"), bone="clamp_low_icbm")
+    g.box("arm_high_reach_icbm", (10.8, 134, 30), (12, 138, 34), faces=("north", "south", "up", "down"), bone="clamp_high_icbm")
+    g.box("arm_high_clamp_icbm", (8.8, 132, 27), (10.8, 140, 37), faces=("west", "north", "south", "up", "down"), bone="clamp_high_icbm")
+    arms += ["arm_low_reach", "arm_low_clamp_icbm", "arm_high_reach_icbm", "arm_high_clamp_icbm"]
     # The missile: the item model four times over (8 blocks), standing over the trench.
     for name, frm, to, faces, kind in missile_parts():
         a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 32)
         b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 32)
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
         else:
             g.box("m_" + name, a, b, faces=faces, bone="missile")
@@ -740,10 +853,19 @@ def launch_complex() -> None:
         a = ((frm[0] - 8) * 4, (frm[1] + STRATEGIC_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32)
         b = ((to[0] - 8) * 4, (to[1] + STRATEGIC_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32)
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
         else:
             g.box("s_" + name, a, b, faces=faces, bone="strategic")
+    # Or an intercontinental missile: its own model four times over (about 11 blocks), its tail on the same line.
+    for name, frm, to, faces, kind in icbm_parts():
+        a = ((frm[0] - 8) * 4, (frm[1] + ICBM_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32)
+        b = ((to[0] - 8) * 4, (to[1] + ICBM_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32)
+        if kind in NOSE_PARTS:
+            for nose in ICBM_NOSES:
+                g.box(f"in_{nose}_{name}", a, b, faces=faces, bone=f"inose_{nose}")
+        else:
+            g.box("i_" + name, a, b, faces=faces, bone="icbm")
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
@@ -812,20 +934,30 @@ def launch_complex() -> None:
         g.paint_all(tex, f"{bone}_hose", lambda t, r, d: t.rect(*r, P.RUBBER[2 if d == "down" else 3]))
     g.paint_all(tex, "arm_high_reach", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
     g.paint_all(tex, "arm_high_clamp_strategic", shaded(GUN))
+    for n in ("arm_low_reach", "arm_high_reach_icbm"):
+        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
+    for n in ("arm_low_clamp_icbm", "arm_high_clamp_icbm"):
+        g.paint_all(tex, n, shaded(GUN))
     for n in hinges:
         g.paint_all(tex, n, shaded(GUN) if n != "spine" else lambda t, r, d: t.rect(*r, TOWER[tone(d) + 1]))
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.paint_all(tex, f"n_{nose}_{name}", missile_paint(kind, nose))
         else:
             g.paint_all(tex, "m_" + name, missile_paint(kind))
     for name, _, _, _, kind in strategic_parts():
         if kind in NOSE_PARTS:
-            for nose in W.NOSES:
+            for nose in BENCH_NOSES:
                 g.paint_all(tex, f"sn_{nose}_{name}", strategic_paint(kind, nose))
         else:
             g.paint_all(tex, "s_" + name, strategic_paint(kind))
+    for name, _, _, _, kind in icbm_parts():
+        if kind in NOSE_PARTS:
+            for nose in ICBM_NOSES:
+                g.paint_all(tex, f"in_{nose}_{name}", icbm_paint(kind, nose))
+        else:
+            g.paint_all(tex, "i_" + name, icbm_paint(kind))
     g.save(tex)
     # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and

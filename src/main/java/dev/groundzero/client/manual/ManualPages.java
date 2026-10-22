@@ -656,7 +656,18 @@ final class ManualPages {
                 slot(c, row.getKey(), x, yy, true);
                 String count = "\u00d7" + row.getValue();
                 int cw = c.font().width(count);
-                c.g().text(c.font(), ellipsize(c.font(), row.getKey().getHoverName().getString(), W - 24 - cw - 4), x + 22, yy + 5, ManualText.INK, false);
+                String name = row.getKey().getHoverName().getString();
+                int room = W - 24 - cw - 4;
+                // A name too long for one line takes both lines of its row (only a third line's worth is cut short).
+                List<String> lines = c.font().getSplitter().splitLines(name, room, net.minecraft.network.chat.Style.EMPTY).stream()
+                        .map(net.minecraft.network.chat.FormattedText::getString).toList();
+                if (lines.size() <= 1) {
+                    c.g().text(c.font(), name, x + 22, yy + 5, ManualText.INK, false);
+                } else {
+                    c.g().text(c.font(), lines.get(0).strip(), x + 22, yy + 1, ManualText.INK, false);
+                    String rest = String.join(" ", lines.subList(1, lines.size())).strip();
+                    c.g().text(c.font(), ellipsize(c.font(), rest, room), x + 22, yy + 10, ManualText.INK, false);
+                }
                 c.g().text(c.font(), count, x + W - cw, yy + 5, FADED, false);
                 yy += 19;
             }

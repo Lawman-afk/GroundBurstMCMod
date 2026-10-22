@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.\n\nIt takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end."
+      "text": "The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.\n\nIt takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic or an [intercontinental](ordnance/strategic_assembly) one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end."
     },
     {
       "type": "structure",

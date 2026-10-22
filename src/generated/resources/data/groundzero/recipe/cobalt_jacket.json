@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:cobalt_ingot",
+    "groundzero:cobalt_ingot",
+    "groundzero:cobalt_ingot",
+    "groundzero:cobalt_ingot",
+    "groundzero:dense_steel_plate"
+  ],
+  "result": {
+    "id": "groundzero:cobalt_jacket"
+  }
+}

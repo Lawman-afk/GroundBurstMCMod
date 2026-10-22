@@ -262,6 +262,20 @@
           "type": "minecraft:model",
           "model": "groundzero:item/strategic_missile_dirty_warhead"
         }
+      },
+      {
+        "when": "icbm_thermonuclear_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_thermonuclear_warhead"
+        }
+      },
+      {
+        "when": "icbm_cobalt_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_cobalt_warhead"
+        }
       }
     ],
     "fallback": {

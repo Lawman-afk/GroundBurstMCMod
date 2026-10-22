@@ -27,6 +27,7 @@ public final class MissileAssembly {
         WARHEAD_TOO_BIG("A class %s warhead needs a bigger body"),
         NUCLEAR_NEEDS_STRATEGIC("A nuclear warhead needs a Strategic body"),
         STRATEGIC_NUCLEAR_ONLY("A Strategic body carries nuclear warheads only"),
+        WHOLE_WEAPON("Built whole at a Strategic Assembly Hall"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
         OUTPUT_FULL("Take the finished missile out first");
 
@@ -65,6 +66,9 @@ public final class MissileAssembly {
      */
     public static Problem fit(ItemStack warhead, SizeClass body) {
         var kind = AssemblyStats.kindOf(warhead);
+        if (kind != null && kind.wholeWeapon()) {
+            return Problem.WHOLE_WEAPON;                   // a thermonuclear warhead is only ever built into its missile
+        }
         boolean nuclear = kind != null && kind.nuclear();
         if (nuclear != (body == SizeClass.XL)) {
             return nuclear ? Problem.NUCLEAR_NEEDS_STRATEGIC : Problem.STRATEGIC_NUCLEAR_ONLY;
@@ -90,10 +94,13 @@ public final class MissileAssembly {
         return out;
     }
 
-    /** A missile's parts: its warhead, body and motor, then its guidance unit and module if it has them. */
+    /**
+     * A missile's parts: its warhead, body and motor, then its guidance unit and module if it has them. None for an
+     * intercontinental missile: only the Strategic Assembly Hall takes those apart.
+     */
     public static List<ItemStack> takeApart(ItemStack missile) {
         MissileSpec s = MissileItem.spec(missile);
-        if (s == null) {
+        if (s == null || s.intercontinental()) {
             return List.of();
         }
         List<ItemStack> parts = new ArrayList<>();

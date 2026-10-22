@@ -118,6 +118,12 @@ public final class GZBlastData {
                 3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         ctx.register(Blasts.profile("boosted_fission_warhead"), new BlastProfile(28, 95, 140, 175, 165, new BlastProfile.EntityZones(150, 250, 1000, 100, 5.5f),
                 3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        // Slice 8c, whole weapons: a two-stage thermonuclear warhead, and the cobalt-salted one (a smaller blast, the fallout
+        // is the point).
+        ctx.register(Blasts.profile("thermonuclear_warhead"), new BlastProfile(45, 150, 220, 280, 260, new BlastProfile.EntityZones(260, 420, 1000, 140, 6.5f),
+                4.5f, 0.35f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        ctx.register(Blasts.profile("cobalt_warhead"), new BlastProfile(18, 70, 105, 130, 110, new BlastProfile.EntityZones(110, 180, 1000, 80, 5.0f),
+                3.5f, 0.4f, 0.2f, 0.3f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         // The neutron warhead's blast is small: its neutrons do the killing (NeutronBurst).
         ctx.register(Blasts.profile("neutron_warhead"), new BlastProfile(4, 10, 16, 14, 12, new BlastProfile.EntityZones(10, 26, 200, 20, 2.5f),
                 3, 0.5f, 0.15f, 0.3f, 0.4f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));

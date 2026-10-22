@@ -23,6 +23,9 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - Boosted Fission Warhead (8b): a sleeker grey body under a sharper dark nose, two cyan boost-gas bands, a trefoil.
 - Neutron Warhead (8b): slim and silver, three cyan rings and a row of neutron-reflector studs.
 - Dirty Warhead (8b): a rusty drum with a flat cap, two strips of yellow tape and a trefoil.
+- Thermonuclear Warhead (8c, only ever built whole into an intercontinental missile): the biggest nuclear body, dull
+  olive drab under a blunt dark nose, two yellow bands, a trefoil.
+- Cobalt Warhead (8c): as big, blue-black, its cobalt jacket's plates in cobalt-blue bands with seams between, a trefoil.
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
@@ -60,6 +63,9 @@ GAS = fixed("gas_casing", "#3a3f12", "#5a6118", "#7c8520", "#9ca82c", "#b8c44a",
 WASTE = fixed("waste_drum", "#14160e", "#1e2214", "#2a301c", "#363e24", "#46502e", "#58643a", "#6e7a4a")
 EMP_CASING = fixed("emp_casing", "#1c2026", "#282e36", "#363e48", "#48525e", "#5e6a78", "#7a8896", "#9eacba")
 BOOST_GREY = fixed("boost_grey", "#3c4044", "#555a5f", "#6f757a", "#8c9297", "#a7adb1", "#c0c5c8", "#dadee0")
+DRAB = fixed("thermo_drab", "#1a1c10", "#272a18", "#363a22", "#474c2e", "#5a603c", "#6f764c", "#8a9064")
+BLUE_BLACK = fixed("blue_black", "#08090e", "#0e1018", "#151926", "#1d2334", "#262e44", "#323c56", "#46526e")
+COBALT = fixed("cobalt_blue", "#0a1430", "#102050", "#183070", "#204496", "#2c5cbc", "#4a7ed8", "#7aa6ee")
 RUST = fixed("waste_rust", "#2a1206", "#46200c", "#663014", "#86441c", "#a35a28", "#bd7638", "#d69a5c")
 OCHRE = fixed("bomb_ochre", "#3a2a08", "#5e440e", "#846216", "#a8801e", "#c49c34", "#d8b85a", "#ecd690")
 NUKE_NOSE = fixed("nuke_nose", "#121416", "#1c1f22", "#282c30", "#363b40", "#474d53", "#5c636a", "#788088")
@@ -129,6 +135,10 @@ WARHEADS = [
          bands=[(11, P.CHERENKOV[4]), (8, P.CHERENKOV[4]), (5, P.CHERENKOV[4])], dashes=(3, P.STEEL[6])),
     Spec("dirty_warhead", 5, (1.5, 5.6), 10, ogive(10, 2.5, 4.8, 3, 3.2), (13, 1.5), RUST, RUST, STEEL,
          bands=[(8.6, YELLOW[4]), (3.4, YELLOW[4])], trefoil=6),
+    Spec("thermonuclear_warhead", 6.5, (2, 7.3), 14, ogive(14, 7.5, 6.3, 6, 2.8), (22.3, 1.5), DRAB, NUKE_NOSE, STEEL,
+         bands=[(12.6, YELLOW[4]), (3.6, YELLOW[4])], trefoil=8),
+    Spec("cobalt_warhead", 6.5, (2, 7.3), 14, ogive(14, 7.5, 6.3, 6, 2.8), (22.3, 1.5), BLUE_BLACK, BLUE_BLACK, STEEL,
+         bands=[(12.6, COBALT[4]), (3.6, COBALT[4])], dashes=(10.4, COBALT[3]), trefoil=7.2),
 ]
 
 #: The trefoil, five pixels square: black blades (K) on a yellow ground.

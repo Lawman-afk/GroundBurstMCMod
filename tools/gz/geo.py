@@ -206,11 +206,21 @@ class GeoModel(BlockModel):
         bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
         boxes = [(b.name, tuple(b.frm), tuple(b.to), list(b.faces)) for b in self.boxes
                  if not b.rotation and bone_of.get(b.name) not in rotated]
+        parent = {bone.name: bone.parent for bone in self.bones}
+
+        def chain(name: str | None) -> list[str]:
+            """The bone and its ancestors: a bone inside a hidden one is hidden too."""
+            out = []
+            while name:
+                out.append(name)
+                name = parent.get(name)
+            return out
         issues = []
         for issue in zfight.check(boxes, tol):
             a, b = issue.split(" vs ")[0].split("/")[0], issue.split(" vs ")[1].split("/")[0]
-            if any(bone_of.get(a) in grp and bone_of.get(b) in grp for grp in self.exclusive):
-                continue   # never drawn together
+            ca, cb = chain(bone_of.get(a)), chain(bone_of.get(b))
+            if any(x != y and x in grp and y in grp for grp in self.exclusive for x in ca for y in cb):
+                continue   # never drawn together (two of a group, or inside two of a group)
             issues.append(issue)
         return issues
 

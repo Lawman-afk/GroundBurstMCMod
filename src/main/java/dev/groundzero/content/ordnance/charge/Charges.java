@@ -245,7 +245,8 @@ public final class Charges {
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
             // A nuclear warhead set off anywhere but on a missile's arrival only fizzles.
-            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD -> fizzle(level, c, by, bombScale);
+            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD ->
+                    fizzle(level, c, by, bombScale);
             // A dirty warhead is only HE and waste: it goes off however it is set off.
             case DIRTY_WARHEAD -> dirty(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
@@ -305,6 +306,8 @@ public final class Charges {
             case FISSION_WARHEAD -> 180;
             case BOOSTED_FISSION_WARHEAD -> 220;
             case NEUTRON_WARHEAD -> 140;
+            case THERMONUCLEAR_WARHEAD -> 360;
+            case COBALT_WARHEAD -> 300;                    // round the burst; its plume reaches far further (COBALT_PLUME)
             default -> 90;                                 // tactical, dirty
         };
     }
@@ -314,6 +317,8 @@ public final class Charges {
             case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD -> 48_000;
             case NEUTRON_WARHEAD -> 6_000;                  // neutrons leave little behind: a quarter of a day
             case DIRTY_WARHEAD -> 120_000;                  // waste lingers: five days
+            case THERMONUCLEAR_WARHEAD -> 72_000;           // three days
+            case COBALT_WARHEAD -> 720_000;                 // cobalt-60: a month
             default -> 24_000;
         };
     }
@@ -332,6 +337,31 @@ public final class Charges {
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.ASH, c.x, c.y + 2, c.z, 400, 8, 3, 8, 0.02);
     }
 
+    /**
+     * The cobalt warhead's plume (a stand-in until Phase 12's drifting fallout): {@link #COBALT_PLUME} more zones strung
+     * out downwind, {@link #COBALT_STEP} blocks apart, each a little smaller and weaker than the last, all lasting the
+     * month. The wind is one direction drawn for the blast.
+     */
+    public static final int COBALT_PLUME = 4;
+    public static final float COBALT_STEP = 200;
+
+    private static void cobaltPlume(ServerLevel level, Vec3 at, float strength) {
+        ChargeKind kind = ChargeKind.COBALT_WARHEAD;
+        double a = level.getRandom().nextDouble() * Math.PI * 2;
+        double dx = Math.cos(a), dz = Math.sin(a);
+        for (int i = 1; i <= COBALT_PLUME; i++) {
+            double d = COBALT_STEP * i * bombScale;
+            float radius = Math.max(4, (contaminationRadius(kind) - 20 * i) * bombScale);
+            dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(
+                    at.add(dx * d, 0, dz * d), radius, strength * (1 - 0.15f * i), level.getGameTime(), contaminationTicks(kind)));
+        }
+    }
+
+    /** How far downwind the cobalt warhead's fallout reaches (from the burst to the far edge of its last zone). */
+    public static int cobaltReach() {
+        return (int) (COBALT_STEP * COBALT_PLUME + contaminationRadius(ChargeKind.COBALT_WARHEAD) - 20 * COBALT_PLUME);
+    }
+
     /** A fizzle's patch of contamination: radius, starting strength and life. */
     public static final float FIZZLE_RADIUS = 16, FIZZLE_STRENGTH = 0.6f;
     public static final int FIZZLE_TICKS = 12_000;
@@ -344,6 +374,9 @@ public final class Charges {
         Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
         dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
                 Math.max(4, contaminationRadius(kind) * bombScale), airburst ? 0.5f : 1f, level.getGameTime(), contaminationTicks(kind)));
+        if (kind == ChargeKind.COBALT_WARHEAD) {
+            cobaltPlume(level, at, airburst ? 0.5f : 1f);
+        }
         if (kind == ChargeKind.NEUTRON_WARHEAD) {
             dev.groundzero.content.nuclear.NeutronBurst.burst(level, at, by, bombScale);
         }

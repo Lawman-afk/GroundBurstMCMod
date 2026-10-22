@@ -70,7 +70,17 @@ public enum ChargeKind {
      * A dirty warhead (class S; radiological, not nuclear): a small HE blast that scatters nuclear waste, contamination
      * 90 blocks round for five days. It goes off however it is set off, and any silo fires it.
      */
-    DIRTY_WARHEAD("dirty_warhead", 10, true);
+    DIRTY_WARHEAD("dirty_warhead", 10, true),
+    /**
+     * A 1.2 Mt two-stage thermonuclear warhead (slice 8c): crater 150, deadly to 260, contamination 360 blocks round for
+     * three days. Only ever built whole, into an intercontinental missile, at the Strategic Assembly Hall.
+     */
+    THERMONUCLEAR_WARHEAD("thermonuclear_warhead", 10, true),
+    /**
+     * A 400 kt cobalt-salted thermonuclear warhead (slice 8c): a smaller blast, but its fallout spreads far downwind and
+     * lasts a month. Built whole like the thermonuclear warhead.
+     */
+    COBALT_WARHEAD("cobalt_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -112,7 +122,13 @@ public enum ChargeKind {
      * wide area (set off on the ground, it throws them out round itself).
      */
     public boolean nuclear() {
-        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD || this == BOOSTED_FISSION_WARHEAD || this == NEUTRON_WARHEAD;
+        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD || this == BOOSTED_FISSION_WARHEAD || this == NEUTRON_WARHEAD
+                || wholeWeapon();
+    }
+
+    /** A warhead only the Strategic Assembly Hall builds, whole, into its intercontinental missile. */
+    public boolean wholeWeapon() {
+        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD;
     }
 
     /** It leaves fallout (contamination): the nuclear warheads, and the dirty one. */
