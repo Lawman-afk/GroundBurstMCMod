@@ -74,6 +74,7 @@ public final class GZJeiPlugin implements IModPlugin {
         machines().forEach((kind, machine) -> registration.addRecipeCategories(new ProcessingCategory(type(kind), machine, gui)));
         registration.addRecipeCategories(new AssemblyCategory(gui));
         registration.addRecipeCategories(new MissileCategory(gui));
+        registration.addRecipeCategories(new StrategicCategory(gui));
     }
 
     @Override
@@ -83,6 +84,7 @@ public final class GZJeiPlugin implements IModPlugin {
         }
         registration.addRecipes(AssemblyCategory.TYPE, AssemblyCategory.recipes());
         registration.addRecipes(MissileCategory.TYPE, MissileCategory.recipes());
+        registration.addRecipes(StrategicCategory.TYPE, StrategicCategory.recipes());
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));
@@ -153,6 +155,7 @@ public final class GZJeiPlugin implements IModPlugin {
     @Override
     public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
         dev.groundzero.client.fx.FxPhotographer.showAssemblyRecipes = () -> runtime.getRecipesGui().showTypes(List.of(AssemblyCategory.TYPE, MissileCategory.TYPE));
+        dev.groundzero.client.fx.FxPhotographer.showHallRecipes = () -> runtime.getRecipesGui().showTypes(List.of(StrategicCategory.TYPE));
     }
 
     @Override
@@ -160,6 +163,7 @@ public final class GZJeiPlugin implements IModPlugin {
         machines().forEach((kind, machine) -> registration.addCraftingStation(type(kind), machine));
         registration.addCraftingStation(AssemblyCategory.TYPE, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.item().get());
         registration.addCraftingStation(MissileCategory.TYPE, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.item().get());
+        registration.addCraftingStation(StrategicCategory.TYPE, dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.item().get());
     }
 
     @Override
@@ -177,6 +181,9 @@ public final class GZJeiPlugin implements IModPlugin {
                     boolean missiles = screen.getMenu().extra(dev.groundzero.content.assembly.AssemblyBenchBlockEntity.DATA_PAGE)
                             == dev.groundzero.content.assembly.AssemblyBenchBlockEntity.JOB_MISSILE;
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), missiles ? MissileCategory.TYPE : AssemblyCategory.TYPE));
+                }
+                if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.strategic.StrategicAssemblyBlockEntity) {
+                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), StrategicCategory.TYPE));
                 }
                 ProcessingKind kind = kindOf(screen.getMenu().machine());
                 if (p == null || kind == null) {

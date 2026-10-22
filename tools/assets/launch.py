@@ -303,6 +303,10 @@ ICBM_SECTIONS = [
 ]
 ICBM_TIP = ((7.5, 29.6, 7.5), (8.5, 32, 8.5))
 ICBM_NOZZLES = ((6.3, 6.3), (8.5, 6.3), (6.3, 8.5), (8.5, 8.5))
+#: Four swept fins low on the first stage, one on each side (after the in-game look: it had none): a long root out to
+#: 5.4 and a shorter step above it out to 4.3, from the stage's skin (3.0). (direction: x step, z step)
+ICBM_FINS = {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}
+ICBM_FIN_ROWS = (("fin", -8.6, -3.0, 5.4), ("fin2", -3.0, -0.2, 4.3))
 #: Which of the hall crane's four loads each section comes in: the first stage, the second, the third, the shroud.
 ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3, "nose0": 4, "nose1": 4}
 
@@ -318,6 +322,16 @@ def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
         parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west", "up", "down"), paint))
         parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west", "up", "down"), paint))
     parts.append(("tip", ICBM_TIP[0], ICBM_TIP[1], all6, "tip"))
+    inner = {"n": "south", "s": "north", "w": "east", "e": "west"}     # the face against the stage
+    for d, (dx, dz) in ICBM_FINS.items():
+        for part, y0, y1, reach in ICBM_FIN_ROWS:
+            faces = tuple(f for f in all6 if f != inner[d] and not (part == "fin2" and f == "down"))   # the step sits on the root
+            if dx == 0:
+                z0, z1 = sorted((8 + dz * 3.0, 8 + dz * reach))
+                parts.append((f"{part}_{d}", (7.7, y0, z0), (8.3, y1, z1), faces, "ifin"))
+            else:
+                x0, x1 = sorted((8 + dx * 3.0, 8 + dx * reach))
+                parts.append((f"{part}_{d}", (x0, y0, 7.7), (x1, y1, 8.3), faces, "ifin"))
     return parts
 
 
@@ -328,7 +342,7 @@ def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
     missile in the hall (whose sections run across its faces' u or v the other way round) is painted alike."""
     ramp, mark, tip = W.NOSES[nose]
     band = {"istage1": WHITE[5], "istage2": YELLOW[4], "istage3": WHITE[5], "nose_base": mark}.get(kind)
-    base = {"iskirt": GUN, "iinter": GUN, "nose_base": ramp, "nose": ramp, "tip": tip, "nozzle": GUN}.get(kind, OLIVE)
+    base = {"iskirt": GUN, "iinter": GUN, "ifin": GUN, "nose_base": ramp, "nose": ramp, "tip": tip, "nozzle": GUN}.get(kind, OLIVE)
     ends = ("north", "south") if lying else ("up", "down")
 
     def fn(t: Tex, r, d):

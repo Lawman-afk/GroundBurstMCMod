@@ -5,7 +5,8 @@
 - The formed hall (GeckoLib), 7 blocks wide, 13 deep and 6 high: a concrete floor with yellow bay lines and hazard
   stripes at its open ends; six grey steel columns four high carrying a yellow crane girder down each long side; a
   twin-girder bridge crane on them with its trolley, hoist drum and a hook block on two cables; two cradles on the floor;
-  a control desk at the controller, a power cabinet and a pallet of crates at the back. The intercontinental missile
+  a control desk at the controller; the Energy Port and the Item Port as plates in the floor where their blocks are
+  (after the in-game look: a cabinet stood up where the port is a floor block), a pallet of crates beside them. The intercontinental missile
   lies on the cradles, nose to the front, laid section by section while the hall works (bones sec1-sec3, then the
   warhead's shroud, nose_<warhead>); the crane runs back and forth over it and lowers its hook ("working").
 """
@@ -70,7 +71,7 @@ def lying(frm, to):
 
 def section_of(name: str) -> int:
     """Which of the crane's four loads a part comes in (4: the warhead's shroud)."""
-    if name.startswith("nozzle"):
+    if name.startswith("nozzle") or name.startswith("fin"):
         return 1
     if name == "tip":
         return 4
@@ -103,7 +104,7 @@ def hall() -> None:
         rails.append(f"rail_{side}")
         g.box(rails[-1], (x0 + 4, 90, -8), (x0 + 8, 92, 200), faces=sides + ("up",), bone=F)
     cradles = []
-    for i, zc in enumerate((147, 95)):
+    for i, zc in enumerate((128, 95)):                       # under the first stage clear of its fins, and the second
         for n, a, b, faces in ((f"cradle{i}_base", (-14, FLOOR_Y, zc - 5), (14, 18, zc + 5), sides + ("up",)),
                                (f"cradle{i}_mid", (-8, 18, zc - 4), (8, 26, zc + 4), ("north", "south", "up")),
                                (f"cradle{i}_pad_w", (-14, 18, zc - 5), (-8, 30, zc + 5), ("north", "south", "west", "up")),
@@ -112,10 +113,12 @@ def hall() -> None:
             g.box(n, a, b, faces=faces, bone=F)
     g.box("desk", (-7, FLOOR_Y, -6), (7, 26, 2), faces=sides + ("up",), bone=F)
     g.box("screen", (-6, 26, -5), (6, 31, -3), faces=sides + ("up",), bone=F)
-    g.box("cabinet", (-7, FLOOR_Y, 188), (7, 28, 198), faces=sides + ("up",), bone=F)
-    g.box("pallet", (-38, FLOOR_Y, 186), (-26, 16, 198), faces=sides + ("up",), bone=F)
-    g.box("crate_a", (-37, 16, 187), (-31, 22, 193), faces=sides + ("up",), bone=F)
-    g.box("crate_b", (-31, 16, 191), (-27, 21, 197), faces=sides + ("up",), bone=F)
+    # The ports are floor blocks (the back row's middle and two west of it): plates flush with the floor over them.
+    g.box("energy_port", (-7, FLOOR_Y, 185), (7, FLOOR_Y + 0.5, 199), faces=sides + ("up",), bone=F)
+    g.box("item_port", (-39, FLOOR_Y, 185), (-25, FLOOR_Y + 0.5, 199), faces=sides + ("up",), bone=F)
+    g.box("pallet", (26, FLOOR_Y, 186), (38, 16, 198), faces=sides + ("up",), bone=F)
+    g.box("crate_a", (27, 16, 187), (33, 22, 193), faces=sides + ("up",), bone=F)
+    g.box("crate_b", (33, 16, 191), (37, 21, 197), faces=sides + ("up",), bone=F)
     # The bridge crane: end trucks on the rails, twin girders across, the trolley and its drum on top; the hook block
     # hangs on two cables between the girders.
     crane = []
@@ -200,8 +203,26 @@ def hall() -> None:
             for xx in range(x + 1, x + w - 1):
                 t.px(xx, y + 1 + (xx % 2), GREEN[4])
     g.paint_all(tex, "screen", screen)
-    g.paint_all(tex, "cabinet", lambda t, r, d: (t.rect(*r, GUN[tone(d) + 1]),
-                                                 t.stripes(r[0], r[1], r[2], min(2, r[3]), RED[3], BLACK[2], width=1) if d in sides else None))
+    def port_plate(edge, glyph):
+        def fn(t: Tex, r, d):
+            x, y, w, h = r
+            t.rect(x, y, w, h, GUN[tone(d)])
+            if d != "up":
+                return
+            t.outline(x, y, w, h, edge)                          # a painted border round the hatch
+            t.outline(x + 1, y + 1, w - 2, h - 2, BLACK[2])
+            glyph(t, x + w // 2, y + h // 2)
+        return fn
+
+    def bolt(t: Tex, cx, cy):                                    # the Energy Port's lightning bolt
+        for i, (dx, dy) in enumerate(((1, -3), (0, -2), (-1, -1), (0, -1), (1, -1), (0, 0), (-1, 1), (-2, 2))):
+            t.px(cx + dx, cy + dy, YELLOW[4])
+
+    def grate(t: Tex, cx, cy):                                   # the Item Port's grated hatch
+        for yy in range(cy - 4, cy + 5, 2):
+            t.hline(cx - 4, yy, 9, STEEL[4])
+    g.paint_all(tex, "energy_port", port_plate(RED[3], bolt))
+    g.paint_all(tex, "item_port", port_plate(YELLOW[3], grate))
     g.paint_all(tex, "pallet", shaded(P.WOOD) if hasattr(P, "WOOD") else shaded(OLIVE))
     g.paint_all(tex, "crate_a", shaded(OLIVE))
     g.paint_all(tex, "crate_b", shaded(OLIVE))

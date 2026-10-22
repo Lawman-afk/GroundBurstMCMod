@@ -1398,8 +1398,10 @@ the long horizontal hall (over an upright assembly tower).
   new **Crane Rail** block the length of each long side on top; the hall between them (5 wide, rows 0-12, layers 1-5)
   must be clear. Formed, the controller's GeckoLib model (`tools/assets/strategic.py`) draws it: a concrete floor with
   yellow bay lines and hazard-striped open ends, grey I-beam columns, yellow crane girders with steel rails, a
-  twin-girder bridge crane with a trolley, drum and a hook block on two cables, two cradles, a control desk, a power
-  cabinet and a pallet of crates. "working" (12 s loop): the crane runs from over the tail to the first stage and
+  twin-girder bridge crane with a trolley, drum and a hook block on two cables, two cradles, a control desk and a
+  pallet of crates; the Energy and Item Ports are flush floor plates (a bolt and a grate) on their blocks, since the
+  port blocks are in the floor (after the user's look: the first model's power cabinet stood up over the port).
+  "working" (12 s loop): the crane runs from over the tail to the first stage and
   lowers its hook (the cables scale as they pay out), on to the third stage and lowers it again, and back.
 - **Recipe** (`StrategicAssembly`): a Boosted Fission Core (the primary), a new **Fusion Secondary** (4 lithium
   deuteride pellets, 2 depleted uranium ingots, a plutonium nugget, a lead plate, a plastic sheet) and a new
@@ -1415,7 +1417,8 @@ the long horizontal hall (over an upright assembly tower).
   taken apart there; only a Launch Complex fires them. Its own model (`launch.py` `ICBM_SECTIONS`, item models
   `icbm_missile_<warhead>`, the complex's `icbm` / `inose_*` bones; lifted by `ICBM_TAIL` in flight): three olive-drab
   solid stages narrowing upward with a white, a yellow and a white band, dark riveted interstages, a gunmetal skirt
-  and four nozzles, the warhead's shroud; about 11 blocks on the complex. The complex's umbilicals gained a clamp each
+  and four nozzles, four swept fins in two steps round the first stage (added after the user's look: the first model
+  had none), the warhead's shroud; about 11 blocks on the complex. The complex's umbilicals gained a clamp each
   for it (lower at its first stage, upper at its third), and the hall draws the same sections lying down.
 - **Effects**: thermonuclear (crater 150, wrecks 220, fire 260, deadly to 260, injures 420; fallout 360 for three
   days); cobalt (crater 70, deadly to 110; fallout 300 round the burst plus four zones strung downwind 200 blocks apart,
@@ -1423,7 +1426,9 @@ the long horizontal hall (over an upright assembly tower).
   fallout). Stats: "1.2 Mt", "400 kt", the cobalt note "Fallout drifts N blocks downwind".
 - The hall's screen (`StrategicAssemblyScreen`, layout `strategic_assembly`): the warhead's parts over the missile's,
   the arrow and the finished missile, the readout, Assemble / Take Apart, and the bench's right-hand column (now a
-  shared `AssemblyColumn`) with a shorter preview and a taller stats screen.
+  shared `AssemblyColumn`) with a shorter preview and a taller stats screen. JEI: a "Strategic Assembly" category
+  (`StrategicCategory`) laid out like the screen, one recipe per warhead (thermonuclear; cobalt with the jacket),
+  guidance and Hardened Electronics marked optional, the hall as its station, and the screen's arrow opens it.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
 - `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
@@ -2272,6 +2277,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | After the user's look at 8c: the intercontinental missile gets fins, the hall's port housings sit flush in the floor (the port blocks are floor blocks), and the hall's recipes show in JEI. |
 | 2026-10-22 | Slice 8c (the user chose the long horizontal hall): the Strategic Assembly Hall builds whole weapons as intercontinental missiles: a new airframe class XXL and an ICBM motor (3,000 blocks) on the existing missile spec, so launching and flight are unchanged; the Thermonuclear (1.2 Mt) and Cobalt (400 kt, a month-long plume of zones downwind) Warheads are built only there and fly only from the Launch Complex. |
 | 2026-10-22 | No wind drift for nukes at all (the user's request): the mushroom cloud and a nuke's crater smoke stand over ground zero. Effects are drawn after water (the after-terrain phase, as vanilla's particles), as smoke's depth had hidden all water behind it. |
 | 2026-10-22 | Contamination zones are drawn (the user's request, ahead of Phase 12): a layer of dark grey and green fallout cloud over each zone and a green cast to the sky inside one; zones are sent to clients whole. Mushroom clouds keep the stem's foot and dust ring over ground zero; only the cap drifts with the wind, and the stem leans to it (the whole cloud drifting had left it off its crater). |

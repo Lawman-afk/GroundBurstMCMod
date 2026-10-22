@@ -417,6 +417,8 @@
   "groundzero.jei.missile_info": "Warheads to class %s, range %s-%s, %s FE/t",
   "groundzero.jei.missiles": "Missile Assembly",
   "groundzero.jei.optional": "Optional",
+  "groundzero.jei.strategic_assembly": "Strategic Assembly",
+  "groundzero.jei.strategic_assembly_info": "Range %s, %s FE/t",
   "groundzero.jei.strategic_info": "Nuclear warheads, range %s, %s FE/t",
   "groundzero.manual.all_layers": "All layers",
   "groundzero.manual.back": "Back",

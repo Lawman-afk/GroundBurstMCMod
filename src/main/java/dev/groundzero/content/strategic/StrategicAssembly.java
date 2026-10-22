@@ -25,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 public final class StrategicAssembly {
     /** A whole weapon takes a minute. */
     public static final int TICKS = 1200;
+    public static final String JEI_TITLE = GZLang.add(GroundZero.MODID + ".jei.strategic_assembly", "Strategic Assembly");
+    public static final String JEI_INFO = GZLang.add(GroundZero.MODID + ".jei.strategic_assembly_info", "Range %s, %s FE/t");
 
     public enum Problem {
         NONE(""),

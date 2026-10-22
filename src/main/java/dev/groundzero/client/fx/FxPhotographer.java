@@ -66,6 +66,7 @@ public final class FxPhotographer {
                 // screen, the Launch Complex with an intercontinental missile, the H-bomb, and the cobalt warhead's plume.
                 new Scene("hall_aerial", "hall", 26, 24, List.of(60, 300, 700, 1000, 1260)),
                 new Scene("hall_ui", "hall", 4, 0, List.of(30)),
+                new Scene("hall_jei", "hall", 4, 0, List.of(25)),
                 new Scene("complex_icbm", "complex_icbm", 34, -12, List.of(20)),
                 new Scene("complex_icbm_close", "complex_icbm", 13, -38, List.of(20)),
                 new Scene("nuke_thermonuclear", "thermonuclear_warhead", 600, -18, List.of(3, 40, 160, 500, 1200)),
@@ -401,6 +402,8 @@ public final class FxPhotographer {
     private static net.minecraft.core.BlockPos benchAt, pressAt;
     /** Set by the JEI plugin when JEI is running: opens its Assembly Bench recipes (the "assembly_jei" scene). */
     public static Runnable showAssemblyRecipes = () -> {};
+    /** Set by the JEI plugin when JEI is running: opens the Strategic Assembly Hall's recipes (the "hall_jei" scene). */
+    public static Runnable showHallRecipes = () -> {};
 
     /**
      * Phase 7: two Ordnance Assembly Benches facing the camera. The near one is assembling a Poison Gas Warhead (parts
@@ -819,6 +822,9 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("assembly_jei") && step >= 0 && clock == 12) {
             showAssemblyRecipes.run();
+        }
+        if (scene.name().equals("hall_jei") && step >= 0 && clock == 12) {
+            showHallRecipes.run();
         }
         // Then its side-configuration tab opened (the two-block layout), for the second shot.
         if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.gui.screen() != null) {
