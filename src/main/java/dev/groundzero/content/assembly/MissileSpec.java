@@ -35,7 +35,10 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
             MissileSpec::guidance,
             ByteBufCodecs.BOOL, MissileSpec::hardened, MissileSpec::new);
 
-    /** Whether only a Launch Complex can fire it: a nuclear warhead, or a Strategic or intercontinental airframe. */
+    /**
+     * Whether the basic Launch Silo cannot fire it: a nuclear warhead, or a Strategic or intercontinental airframe (the
+     * Launch Complex fires any; the Missile Silo any but an intercontinental one).
+     */
     public boolean needsComplex() {
         return nuclear() || this.body == SizeClass.XL || this.body == SizeClass.XXL;
     }
@@ -45,7 +48,7 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return this.body == SizeClass.XXL;
     }
 
-    /** Whether it carries a nuclear warhead (only a Launch Complex can fire it). */
+    /** Whether it carries a nuclear warhead (only a Launch Complex or a Missile Silo fires it). */
     public boolean nuclear() {
         ChargeKind kind = AssemblyStats.kindOf(this.warhead);
         return kind != null && kind.nuclear();

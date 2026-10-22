@@ -48,8 +48,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
     public static final int SLOT_MISSILE = 0;
     private static final int RECHECK_INTERVAL = 40;
-    /** What the silo can do right now (shown on its screen and the computer's). */
-    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_POWER, READY, COUNTING }
+    /** What the silo can do right now (shown on its screen and the computer's). BLOCKED: the way up is not clear. */
+    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_POWER, READY, COUNTING, BLOCKED }
 
     private static final String[] T_STATE = {
             GZLang.add(GroundZero.MODID + ".silo.state.not_formed", "Structure incomplete"),
@@ -58,7 +58,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             GZLang.add(GroundZero.MODID + ".silo.state.no_missile", "No missile loaded"),
             GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs %sk FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
-            GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s")};
+            GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s"),
+            GZLang.add(GroundZero.MODID + ".silo.state.blocked", "Hatch blocked")};
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".silo.state.armed", "ARMED");
     private static final String T_HINT = GZLang.add(GroundZero.MODID + ".silo.hint", "Launch from a Launch Computer");
     private static final String T_WARHEAD = GZLang.add(GroundZero.MODID + ".silo.warhead", "Warhead: %s");
@@ -95,6 +96,26 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     /** Just after the missile is lit (the complex's trench smoke). */
     protected void onLiftOff(ServerLevel level, BlockPos pad) {}
 
+    /** Whether to hold the countdown at T-1 (the Missile Silo until its doors are open). */
+    protected boolean holdLaunch(ServerLevel level) {
+        return false;
+    }
+
+    /** Where the missile's tail is lit: on the pad (the Missile Silo's launch ring, at the bottom of its shaft). */
+    protected Vec3 launchPoint(BlockPos pad) {
+        return Vec3.atBottomCenterOf(pad);
+    }
+
+    /** How far the missile climbs straight up out of a shaft before it turns (0: none, it stands on a pad). */
+    protected double shaftHeight() {
+        return 0;
+    }
+
+    /** Whether something is in the missile's way up (a block over the Missile Silo's hatch). */
+    protected boolean blocked() {
+        return false;
+    }
+
     /** Whether a stack can be a warhead: any bomb. */
     public static boolean isWarhead(ItemStack stack) {
         return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock;
@@ -103,12 +124,15 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
         var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
-        return slot == SLOT_MISSILE && spec != null && (!spec.needsComplex() || firesNuclear());
+        return slot == SLOT_MISSILE && spec != null && accepts(spec);
     }
 
-    /** Whether it can fire a nuclear missile: only a Launch Complex can. */
-    public boolean firesNuclear() {
-        return false;
+    /**
+     * Whether it can fire this missile: the Launch Silo none that needs more (a nuclear warhead, a Strategic or an
+     * intercontinental airframe); the Launch Complex any; the Missile Silo any but an intercontinental one.
+     */
+    public boolean accepts(dev.groundzero.content.assembly.MissileSpec spec) {
+        return !spec.needsComplex();
     }
 
     /** The loaded missile (null: none). */
@@ -137,6 +161,9 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
         if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
             return Readiness.NO_MISSILE;
+        }
+        if (blocked()) {
+            return Readiness.BLOCKED;
         }
         return this.energy.stored() < launchCost() ? Readiness.NO_POWER : Readiness.READY;
     }
@@ -286,8 +313,13 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             return false;
         }
         this.status = MachineStatus.RUNNING;
-        this.countdown--;
         BlockPos pad = padCentre();
+        if (this.countdown <= 1 && holdLaunch(level)) {
+            this.countdown = 1;                              // held at T-1 (the silo's doors still opening)
+            onCountdown(level, pad, 1);
+            return true;
+        }
+        this.countdown--;
         if (this.countdown > 0 && this.countdown % 20 == 0) {
             level.playSound(null, pad, dev.groundzero.content.ordnance.GZOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f, this.countdown <= 60 ? 1.4f : 1f);
         }
@@ -330,9 +362,9 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.energy.consume(launchCost());
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
         // Its guidance decides how close to the target it comes down.
-        Vec3 from = Vec3.atBottomCenterOf(pad);
+        Vec3 from = launchPoint(pad);
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
-        MissileEntity.launch(level, from, aim, spec, by);
+        MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
         onLiftOff(level, pad);
         setChanged();
     }

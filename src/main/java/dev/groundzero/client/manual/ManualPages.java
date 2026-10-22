@@ -1120,7 +1120,12 @@ final class ManualPages {
     private static List<GraphicPage> materials(MultiblockDefinition def) {
         Map<Item, Integer> counts = new java.util.LinkedHashMap<>();
         for (StructureView.Block b : StructureView.blocks(def)) {
-            counts.merge(b.state().getBlock().asItem(), 1, Integer::sum);
+            var state = b.state();
+            if (state.getBlock() instanceof dev.groundzero.content.multiblock.SpreadPartBlock
+                    && state.getValue(dev.groundzero.content.multiblock.SpreadPartBlock.PART) == dev.groundzero.content.multiblock.SpreadPartBlock.Part.EDGE) {
+                continue;                                    // one item places a whole 3x3 (a Silo Hatch, a Large Radar Dish): its middle counts
+            }
+            counts.merge(state.getBlock().asItem(), 1, Integer::sum);
         }
         List<Map.Entry<ItemStack, Integer>> rows = counts.entrySet().stream()
                 .map(e -> Map.entry(new ItemStack(e.getKey()), e.getValue())).toList();

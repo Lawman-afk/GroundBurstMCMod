@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/hazard_concrete"
+    },
+    "formed=true": {
+      "model": "groundzero:block/hazard_concrete_formed"
+    }
+  }
+}

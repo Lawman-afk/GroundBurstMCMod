@@ -163,6 +163,9 @@ public final class GZSounds {
             register("missile.staging", "Missile stage separates", List.of("launch/stage_separation"), false, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_REENTRY =
             register("missile.reentry", "Missile screams down", List.of("launch/reentry_loop"), false, 192);
+    // Slice 9b: the Missile Silo's doors unlatching and grinding apart (or shut).
+    public static final DeferredHolder<SoundEvent, SoundEvent> SILO_DOORS =
+            register("silo.doors", "Silo doors grind", List.of("launch/silo_doors"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

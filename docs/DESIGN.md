@@ -1341,7 +1341,7 @@ on its fins.
 |---|---|---|---|
 | **Launch Pad** | 3×3 multiblock (pad blocks + side control panel) | M | Erector arm raises the missile from horizontal to vertical when loaded; clamps release at T-0; flame-deflector smoke. 10 s countdown with siren & beeps. |
 | **Launch Complex** | 5×5 base + 1×2×9 service gantry | XL | Umbilical arms swing away, deluge water spray, ignition smoke billowing out of the flame trench. 15 s countdown. |
-| **Missile Silo** | 5×5 surface, 14 deep shaft | XL | Hatch doors slide open, missile rides up/launches from the shaft (exhaust erupts from side vents). Missile inside is protected until doors open. 20 s countdown. |
+| **Missile Silo** | 5×5 surface, 14 deep shaft | XL (nuclear too) | Hatch doors slide open, missile launches from the shaft (exhaust erupts from side vents). Missile inside is protected until doors open. 20 s countdown. As built: §17.10. |
 | **Cruise Missile Launcher** | 2×3 box launcher on a pedestal | M (cruise only) | Box elevates to 45° and fires; 2 missiles per load. |
 
 Pad GUI: missile readout (what's loaded), target X/Y/Z, distance & bearing, in-range check, flight time, arm key
@@ -1519,6 +1519,43 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
   burns and a re-entry roar coming down, each pitched by the missile's speed toward or away from the listener (Doppler,
   sound at 17.15 blocks a tick) and faded in and out; staging is a crack, a ringing clank and a thump from where it
   parts (delayed by distance). The server no longer plays the engine every 2 s.
+
+### 17.10 As built: the Missile Silo (Phase 9 slice 9b, 2026-10-22)
+- **Structure** (`GZLaunch.MISSILE_SILO`), dug into the ground, 5×5 and 14 layers: a floor of **Reinforced Concrete**
+  with the Flame Deflector in its middle; twelve rings of Reinforced Concrete round a 3×3 shaft that must be clear;
+  the top layer, level with the ground, a ring of **Hazard Concrete** round a **Silo Hatch** over the shaft, the
+  controller in the middle of the ring's front and an Energy Port in the middle of its back. Reinforced Concrete is not
+  a part, so the shaft's walls stay the blocks you built; the top ring, hatch and deflector hide while formed.
+- **New blocks:** Reinforced Concrete (8 from 8 concrete round a steel rod; blast resistance 1200 like obsidian,
+  hardness 15, an iron pickaxe), a building block in its own right; Hazard Concrete (4 from 4 Reinforced Concrete and
+  yellow and black dye); the Silo Hatch (4 dense steel plates, 2 servos, a Hazard Concrete): one item placing a 3×3
+  lid drawn by its middle, the Large Radar Dish's way (both now on `SpreadPartBlock`); the Missile Silo Controller
+  (machine casing, military circuit, CRT display, 2 Reinforced Concrete, a lever). Creative: a dug-in Structure Spawner
+  (its top replaces the block clicked; it digs out anything but unbreakable blocks and blocks that hold things).
+- **What it fires:** any missile but an intercontinental one, nuclear ones too (`LaunchSiloBlockEntity.accepts`): the
+  Launch Complex is no longer the only nuclear launcher, and stays the only one for intercontinental missiles (§30).
+  250,000 FE a launch, 500,000 buffer, run from a Launch Computer like any launcher.
+- **Doors and launch** (`MissileSiloBlockEntity`): a 20 s countdown; at T-15 the doors unlatch (0.5 s) and slide apart
+  (3 s); the launch holds at T-1 until they are open (`holdLaunch`). The missile is lit on its launch ring at the
+  bottom of the shaft. Its flight (`Flights.Flight.silo`) climbs straight up the middle of the shaft to 1.5 blocks past
+  the mouth, then joins the usual arc: the straight part takes the share of the path's parameter that keeps the speed
+  the same across the join (u0 = rise / (rise + 3 × 1.35 × apex)), and nothing is checked for collisions while it climbs
+  out. The doors shut 10 s after lift-off; smoke pours from the mouth and the vents for 6 s. Shut, the hatch is solid to
+  the leaves' top (1.5 blocks: you can walk on the doors) and dark below; open, there is nothing there and daylight
+  falls down the shaft. The screen's **DOORS** button opens or shuts them except during a launch. A new readiness,
+  **Hatch blocked**: anything solid within 6 blocks over the hatch's middle (the missile would hit it).
+- **Model** (`tools/assets/silo.py`): a concrete collar flush with the ground with a hazard border, a striped steel
+  coaming round the opening, two thick blue-grey armour leaves on rails that run out past the collar (moved by the
+  block entity each frame through the new `AnimatedMachine.boneOffsets`, so they are right however a client joins), an
+  exhaust grate at each corner, a squat olive console with a green CRT and two red beacons that flash in turn while it
+  works, the Energy Port's flush plate; down the shaft, conduits in the corners, caged amber lamps (glowing) and the
+  launch ring with hold-down posts over the duct grate; the missile as on the complex (a Strategic one its own model).
+  `MachineGeoRenderer` takes a depth: the silo's culling box reaches 14 blocks down.
+- **Client** (`Spectacle`): a missile lit in a silo (`MissileEntity.SILO`: the hatch's middle) sends its smoke straight
+  up the shaft; jets of fire and smoke burst from the four corner vents and smoke billows out of the mouth over
+  the ground, building through the ignition, full while it climbs the shaft and dying away once it is clear.
+- **Sound:** `silo.doors`: two bolts unlatching, a motor and rollers grinding, a click at each rail joint, a bang into
+  the stops. **Screen:** its own layout (`missile_silo`): a taller CRT (state, warhead, doors) and the DOORS button.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -1849,9 +1886,9 @@ stairs lose their outer corner, the two inner stairs their inner corner), so out
 **Launch Complex** (5×5 base + gantry): `y0` 5×5 of `R` with a 3×3 `H` flame-trench centre and `X` at one edge
 midpoint; gantry 1×2 column of `F` 9 tall at the opposite edge with an `E` at its foot.
 
-**Missile Silo** (5×5 × 14 deep): 13 layers of `R` rings (5×5 hollow, 3×3 shaft) dug into the ground; bottom layer
-full `R` with the elevator plate; top layer `H` ring with the two-part `Silo Hatch` covering the 3×3 opening; `X`
-in the shaft wall at the top layer.
+**Missile Silo** (5×5 × 14 deep, as built in 9b; rows front first): `y0` 5×5 `R` with the Flame Deflector in the
+middle; `y1–y12` `RRRRR / R...R / R...R / R...R / RRRRR`; `y13` (the ground) `HHXHH / HoooH / HoOoH / HoooH / HHEHH`,
+where `O`/`o` are the Silo Hatch's middle and edges (one item) and `E` the Energy Port.
 
 **Satellite Uplink** (5×5×4): `y0` 5×5 `R` with `X` front-middle and `E` back-middle; `y1` 3×3 `F` centre column;
 `y2` 5×5 `D` dish ring with `F` centre; `y3` single `F` feed horn mast.
@@ -2102,7 +2139,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 |---|---|
 | Launch Pad blocks ×9 / controller | 9: 4 hazard concrete + 4 steel plate + machine frame / controller: machine casing + CRT display + advanced circuit + lever |
 | Launch Complex controller / gantry | machine casing + military circuit + 2 CRT display / 4 steel frame + servo + copper cable |
-| Missile Silo controller / Silo Hatch | machine casing + military circuit + CRT / 4 dense steel plate + 2 servo + hazard concrete |
+| Missile Silo controller / Silo Hatch | machine casing + military circuit + CRT display + 2 reinforced concrete + lever / 4 dense steel plate + 2 servo + hazard concrete |
 | Cruise Missile Launcher | machine frame, 2 servo, 4 steel plate, advanced circuit |
 | Launch Control Station | machine casing, 3 CRT display, military circuit, antenna, 2 lever |
 | Data Link Tool / Comms Relay | antenna + basic circuit + steel rod / 3 antenna + machine frame + advanced circuit |
@@ -2347,6 +2384,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Slice 9b, the Missile Silo (the user's go-ahead): it fires any missile but an intercontinental one, nuclear ones too (the design's class XL), so the Launch Complex is no longer the only nuclear launcher but stays the only one for intercontinental missiles (the 8c rule). Its doors slide apart on rails (they overhang the 5×5 a little when open), and the launch holds at T-1 until they are open; its missile climbs straight out of the shaft before turning; a DOORS button opens them at other times. Reinforced Concrete resists blasts like obsidian. |
 | 2026-10-22 | Phase 9 begins with missile flight (slice 9a, the roadmap's order: the user said "continue"): burn-out and coasting, spent stages dropping and tumbling down, re-entry heat, and a following engine sound with Doppler; the arc itself is unchanged. |
 | 2026-10-22 | After 8d, the user's request: every machine draws its glowmask (GeckoLib's auto-glow layer in `MachineGeoRenderer`, only where the texture has one), so lamps, screens, charge bars, fires, plasma and cores glow in the dark as designed. |
 | 2026-10-22 | Slice 8d (the user's "continue"): the Tsar is the hall's third whole weapon (a Tertiary Stage in the jacket slot) on the intercontinental missile, bursting where it lands (no aircraft for a parachute drop yet). Benchmarked first on a generated world: the shock front now runs at full speed with the crater forming behind it under the budget; the chunk band stops at the terrain work; rays split as reached; the rim is found after the front; the radius limit is 720 (`maxBlastRadius`, renamed so old configs take the new default). |

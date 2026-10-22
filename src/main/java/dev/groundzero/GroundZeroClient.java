@@ -49,6 +49,7 @@ public class GroundZeroClient {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(GZMenus.ORE_CRUSHER.get(), MachineScreen::new);
         event.register(GZMenus.LAUNCH_SILO.get(), MachineScreen::new);
+        event.register(GZMenus.MISSILE_SILO.get(), MachineScreen::new);
         event.register(GZMenus.ASSEMBLY_BENCH.get(), dev.groundzero.client.screen.AssemblyBenchScreen::new);
         event.register(GZMenus.STRATEGIC_ASSEMBLY.get(), dev.groundzero.client.screen.StrategicAssemblyScreen::new);
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
@@ -84,6 +85,9 @@ public class GroundZeroClient {
         // The hall: 13 blocks deep behind its controller, its crane 6 up.
         event.registerBlockEntityRenderer(dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(), 7, 13));
+        // The Missile Silo: its console and open doors stand a little over the ground; its shaft reaches 14 blocks down.
+        event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(), 2, 4, 14));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(),

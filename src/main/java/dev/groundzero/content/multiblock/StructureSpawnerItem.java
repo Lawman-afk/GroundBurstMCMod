@@ -24,7 +24,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Creative-only Structure Spawner (DESIGN.md §23.1): places a complete multiblock against the clicked face, its
- * controller facing the player, and forms it. Refuses if anything solid is in the way.
+ * controller facing the player, and forms it. Refuses if anything solid is in the way. A structure that is dug in (the
+ * Missile Silo) goes into the ground instead: its controller takes the place of the block clicked on top, and it
+ * digs out whatever is in its way (refusing only at blocks nothing can break, or that hold things).
  */
 public class StructureSpawnerItem extends Item {
     public static final String TOOLTIP = GZLang.add(GroundZero.MODID + ".structure_spawner.tooltip",
@@ -35,10 +37,16 @@ public class StructureSpawnerItem extends Item {
             "Structure Spawners only work in creative mode");
 
     private final Supplier<MultiblockDefinition> definition;
+    private final boolean dugIn;
 
     public StructureSpawnerItem(Properties properties, Supplier<MultiblockDefinition> definition) {
+        this(properties, definition, false);
+    }
+
+    public StructureSpawnerItem(Properties properties, Supplier<MultiblockDefinition> definition, boolean dugIn) {
         super(properties);
         this.definition = definition;
+        this.dugIn = dugIn;
     }
 
     @Override
@@ -57,7 +65,8 @@ public class StructureSpawnerItem extends Item {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        BlockPos controller = context.getClickedPos().relative(context.getClickedFace());
+        BlockPos controller = this.dugIn && context.getClickedFace() == Direction.UP ? context.getClickedPos()
+                : context.getClickedPos().relative(context.getClickedFace());
         Direction facing = context.getHorizontalDirection().getOpposite();
         return spawn(level, controller, facing) ? InteractionResult.SUCCESS_SERVER : blocked(level, player, controller, facing);
     }
@@ -72,7 +81,10 @@ public class StructureSpawnerItem extends Item {
 
     private BlockPos firstObstruction(Level level, BlockPos controller, Direction facing) {
         for (MultiblockDefinition.Cell cell : this.definition.get().cells(controller, facing)) {
-            if (!level.getBlockState(cell.pos()).canBeReplaced()) {
+            BlockState state = level.getBlockState(cell.pos());
+            boolean inTheWay = this.dugIn ? state.getDestroySpeed(level, cell.pos()) < 0 || level.getBlockEntity(cell.pos()) != null
+                    : !state.canBeReplaced();
+            if (inTheWay) {
                 return cell.pos();
             }
         }
@@ -85,7 +97,7 @@ public class StructureSpawnerItem extends Item {
             return false;
         }
         MultiblockDefinition def = this.definition.get();
-        for (MultiblockDefinition.Cell cell : def.cells(controller, facing)) {
+        for (MultiblockDefinition.Cell cell : buildOrder(def, controller, facing)) {
             BlockState state;
             if (cell.key() == '.') {
                 state = Blocks.AIR.defaultBlockState();
@@ -101,6 +113,23 @@ public class StructureSpawnerItem extends Item {
             c.revalidate();
         }
         return true;
+    }
+
+    /**
+     * The cells in the order to set them: as laid out (bottom layer first), but the edges of any 3x3 spread (a Silo
+     * Hatch, a Large Radar Dish) after everything else, so each finds its middle already there when its neighbours
+     * change (an edge without one takes itself away).
+     */
+    public static java.util.List<MultiblockDefinition.Cell> buildOrder(MultiblockDefinition def, BlockPos controller, Direction facing) {
+        java.util.List<MultiblockDefinition.Cell> first = new java.util.ArrayList<>(), last = new java.util.ArrayList<>();
+        for (MultiblockDefinition.Cell cell : def.cells(controller, facing)) {
+            boolean edge = cell.key() != '.' && cell.key() != MultiblockDefinition.CONTROLLER
+                    && def.legend().get(cell.key()).preview().get() instanceof BlockState s && s.getBlock() instanceof SpreadPartBlock
+                    && s.getValue(SpreadPartBlock.PART) == SpreadPartBlock.Part.EDGE;
+            (edge ? last : first).add(cell);
+        }
+        first.addAll(last);
+        return first;
     }
 
     @Override

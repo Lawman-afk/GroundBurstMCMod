@@ -483,6 +483,29 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(l.silo).requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT)
                 .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.LEAD_PLATE)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // The Missile Silo (slice 9b, DESIGN.md §17.10, §26.7): its concrete, its hatch and its controller.
+        var m = new Object() {
+            final net.minecraft.world.level.ItemLike concrete = dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE.item();
+            final net.minecraft.world.level.ItemLike hazard = dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE.item();
+            final net.minecraft.world.level.ItemLike hatch = dev.groundzero.content.launch.GZLaunch.SILO_HATCH.item();
+            final net.minecraft.world.level.ItemLike silo = dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.item();
+        };
+        shaped(RecipeCategory.BUILDING_BLOCKS, m.concrete, 8)
+                .define('C', Tags.Items.CONCRETES).define('R', GZTags.commonItem("rods/steel"))
+                .pattern("CCC").pattern("CRC").pattern("CCC")
+                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, m.hazard, 4)
+                .requires(m.concrete).requires(m.concrete).requires(m.concrete).requires(m.concrete)
+                .requires(Tags.Items.DYES_YELLOW).requires(Tags.Items.DYES_BLACK)
+                .unlockedBy(getHasName(m.concrete), has(m.concrete)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, m.hatch, 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.SERVO).requires(GZParts.SERVO).requires(m.hazard)
+                .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.REDSTONE, m.silo, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
+                .requires(m.concrete).requires(m.concrete).requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
         // Whole weapons (slice 8c, DESIGN.md §15.2): the Strategic Assembly Hall, its rails, and the parts only it uses.
         var s = new Object() {
             final net.minecraft.world.level.ItemLike rail = dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.item();

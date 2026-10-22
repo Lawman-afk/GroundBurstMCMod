@@ -131,7 +131,14 @@ public final class GZTagProviders {
                     dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().key(),
                     dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.block().key(),
                     dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.block().key(),
-                    dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().key());
+                    dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().key());
+            // The Missile Silo's concrete and hatch are bunker material: an iron pickaxe at least.
+            for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE, dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE,
+                    dev.groundzero.content.launch.GZLaunch.SILO_HATCH)) {
+                tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
+                tag(BlockTags.NEEDS_IRON_TOOL).add(b.block().key());
+            }
             GZMachines.CAPACITOR_BANKS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GZMachines.FISSION_REACTOR.block().key(), GZMachines.PARTICLE_ACCELERATOR.block().key(),
                     GZMachines.FUSION_REACTOR.block().key(), GZMachines.SINGULARITY_REACTOR.block().key(), GZMultiblocks.TOROIDAL_FIELD_COIL.block().key(),

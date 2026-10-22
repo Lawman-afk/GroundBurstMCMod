@@ -68,7 +68,8 @@ public class LaunchComputerScreen extends Screen {
             GZLang.add(GroundZero.MODID + ".computer.silo.no_missile", "No Missile"),
             GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "No Power"),
             GZLang.add(GroundZero.MODID + ".computer.silo.ready", "READY"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s")};
+            GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.blocked", "Hatch Blocked")};
 
     private static final int W = 336, H = 214, MAP = 184;
     /** The right-hand column: its left edge (from the panel's) and width; the silo list's rows. */
@@ -462,7 +463,8 @@ public class LaunchComputerScreen extends Screen {
             boolean counting = r == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
             Component state = counting ? Component.translatable(T_SILO_STATE[r], (silo.countdown() + 19) / 20)
                     : silo.armed() ? Component.translatable(T_ARMED) : Component.translatable(T_SILO_STATE[r]);
-            boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal();
+            boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal()
+                    || r == LaunchSiloBlockEntity.Readiness.BLOCKED.ordinal();
             int color = counting || down ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
             // Right: how far its target is (or that it has none); left: its number and state, cut to what is left.
             String aim = silo.hasTarget() ? (int) range(silo) + "m" : Component.translatable(T_NO_TARGET).getString();

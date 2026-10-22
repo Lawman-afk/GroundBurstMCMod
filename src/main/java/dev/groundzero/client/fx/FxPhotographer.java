@@ -96,6 +96,14 @@ public final class FxPhotographer {
                 // missile coming back down over the camera, glowing.
                 new Scene("flight_icbm", "flight_icbm", 230, -18, List.of(30, 70, 145, 175, 245, 300, 350, 420)),
                 new Scene("flight_reentry", "flight_reentry", 120, -16, List.of(60, 110, 140, 160, 175, 185)),
+                // Slice 9b: the Missile Silo dug into a plateau (the test world is flat), launched at clock 25: its doors
+                // sliding apart from T-15, the vents and the shaft blasting at T-0, the missile climbing out, the doors
+                // shutting again; from above into the open shaft; at night (its lamps and beacons); and its screen.
+                new Scene("msilo", "msilo", 22, 22, List.of(20, 150, 230, 430, 455, 470, 480, 540, 720)),
+                new Scene("msilo_close", "msilo", 9, 24, List.of(20, 230, 445)),
+                new Scene("msilo_aerial", "msilo", 8, 58, List.of(230, 445, 470)),
+                new Scene("msilo_night_aerial", "msilo", 8, 58, List.of(230, 445), "midnight"),
+                new Scene("msilo_ui", "msilo", 5, 0, List.of(30)),
                 // Smoke in front of water, seen from above: the water must still show through the smoke.
                 new Scene("water_smoke_aerial", "water_smoke", 16, 28, List.of(60, 160)),
                 new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
@@ -583,13 +591,50 @@ public final class FxPhotographer {
         formed(level, at, controller, def, net.minecraft.core.Direction.WEST);
     }
 
+    /** Builds a structure as the Structure Spawner does (each 3x3's middle before its edges; its required air dug out). */
     private static void formed(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.world.level.block.Block controller,
             dev.groundzero.content.multiblock.MultiblockDefinition def, net.minecraft.core.Direction facing) {
         level.setBlockAndUpdate(at, controller.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING, facing));
-        for (var cell : def.cells(at, facing)) {
-            if (cell.key() != dev.groundzero.content.multiblock.MultiblockDefinition.CONTROLLER && cell.key() != '.') {
+        for (var cell : dev.groundzero.content.multiblock.StructureSpawnerItem.buildOrder(def, at, facing)) {
+            if (cell.key() == '.') {
+                level.setBlockAndUpdate(cell.pos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            } else if (cell.key() != dev.groundzero.content.multiblock.MultiblockDefinition.CONTROLLER) {
                 level.setBlockAndUpdate(cell.pos(), def.legend().get(cell.key()).preview().get());
             }
+        }
+    }
+
+    /** How high the silo scenes' plateau stands over the flat world: the silo's 14 layers go down into it. */
+    private static final int SILO_PLATEAU = 14;
+
+    /**
+     * The silo scenes: a grassy plateau, the Missile Silo dug into it with its front (the controller) to the camera and
+     * a Launch Computer beside it; a Strategic tactical-nuke missile in the shaft, aimed 400 blocks off and armed.
+     */
+    private static void siloSite(ServerLevel level, int x, int ground) {
+        int top = ground + SILO_PLATEAU - 1;                                   // the plateau's grass: the silo's top layer
+        var source = level.getServer().createCommandSourceStack().withSuppressedOutput();
+        level.getServer().getCommands().performPrefixedCommand(source, "fill " + (x - 40) + " " + ground + " -24 " + (x + 8) + " " + (top - 1)
+                + " 24 minecraft:dirt");
+        level.getServer().getCommands().performPrefixedCommand(source, "fill " + (x - 40) + " " + top + " -24 " + (x + 8) + " " + top
+                + " 24 minecraft:grass_block");
+        launchTarget = new net.minecraft.core.BlockPos(x + 400, 64, 140);
+        launchSilo = new net.minecraft.core.BlockPos(x - 2, top, 0);
+        launchComputer = new net.minecraft.core.BlockPos(x - 6, top + 1, 5);
+        formed(level, launchSilo, dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.MISSILE_SILO,
+                net.minecraft.core.Direction.WEST);
+        formed(level, launchComputer, dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.COMPUTER);
+        if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.MissileSiloBlockEntity silo) {
+            silo.revalidate();
+            silo.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                    dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.XL, dev.groundzero.content.assembly.MissileParts.Motor.LIQUID, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
+            silo.energy().generate(dev.groundzero.content.launch.MissileSiloBlockEntity.SILO_ENERGY);
+            silo.setTarget(launchTarget.getX(), launchTarget.getZ());
+            silo.arm(true);
+        }
+        if (level.getBlockEntity(launchComputer) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity computer) {
+            computer.revalidate();
+            computer.energy().generate(dev.groundzero.content.launch.LaunchComputerBlockEntity.ENERGY_CAPACITY);
         }
     }
 
@@ -640,6 +685,9 @@ public final class FxPhotographer {
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;              // another window taking the focus must not pause the shots
+        if (mc.options.tutorialStep != net.minecraft.client.tutorial.TutorialSteps.NONE) {
+            mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);    // no "Move with W, A, S and D" toast
+        }
         if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
@@ -683,6 +731,9 @@ public final class FxPhotographer {
                 level.getChunk(x >> 4, 0);
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 double lift = s.name().endsWith("_aerial") ? s.distance() * 0.5 : 1.6;    // an aerial scene looks down from above
+                if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
+                    lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
+                }
                 player.teleportTo(level, x - s.distance() + 0.5, ground + lift, 0.5, java.util.Set.of(), -90, s.pitch(), true);
             });
             return;
@@ -780,6 +831,10 @@ public final class FxPhotographer {
                     complexSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("msilo")) {
+                    siloSite(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("complex_icbm")) {
                     complexSite(level, x, ground, true, net.minecraft.world.item.ItemStack.EMPTY);
                     return;
@@ -870,7 +925,8 @@ public final class FxPhotographer {
         if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
             dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
         }
-        if ((scene.profile().startsWith("launch") || scene.profile().equals("complex")) && step >= 0 && clock == 25 && launchSilo != null) {
+        if ((scene.profile().startsWith("launch") || scene.profile().equals("complex") || scene.profile().equals("msilo")) && step >= 0
+                && clock == 25 && launchSilo != null) {
             var silo = launchSilo;
             var computerAt = launchComputer;
             server.execute(() -> {
@@ -1021,6 +1077,24 @@ public final class FxPhotographer {
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
+        }
+        // The Missile Silo's screen (its DOORS button, the doors' state on the CRT).
+        if (scene.name().equals("msilo_ui") && step >= 0 && clock == 12 && launchSilo != null) {
+            var silo = launchSilo;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(silo) instanceof dev.groundzero.content.launch.MissileSiloBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, silo);
+                }
+            });
+        }
+        // The silo's missile is a live tactical nuke: called off once it is out of the pictures.
+        if (scene.profile().equals("msilo") && step >= 0 && clock == 600) {
+            server.execute(() -> {
+                var flights = dev.groundzero.content.launch.Flights.of(server.overworld());
+                flights.all().forEach(f -> flights.cancelForTest(server.overworld(), f));
+            });
         }
         // The silo's own screen, a Massive Ordnance Warhead loaded (the longest name).
         if (scene.name().equals("silo_ui") && step >= 0 && clock == 12 && launchSilo != null) {

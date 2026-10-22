@@ -905,7 +905,7 @@ entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_
 A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back.
 """),
     text("""
-**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile the bench makes, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) fires it. Bigger still are the intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.
+**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile the bench makes, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires it. Bigger still are the intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.
 
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
 """),
@@ -1011,18 +1011,36 @@ Whatever it hits on the way sets off the warhead there, so keep the sky above th
 
 entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_complex", "flame_deflector"], [
     text("""
-The **Launch Complex** is the heavy launcher, and the only one that fires [nuclear missiles](ordnance/nuclear): a deck with a flame trench under the missile and a service tower beside it. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
+The **Launch Complex** is the heavy launcher on the surface: a deck with a flame trench under the missile and a service tower beside it. It fires [nuclear missiles](ordnance/nuclear), as the [Missile Silo](ordnance/missile_silo) does. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
 
-It takes any [missile](ordnance/missiles), and it is the only launcher for a Strategic or an [intercontinental](ordnance/strategic_assembly) one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
+It takes any [missile](ordnance/missiles), and it is the only launcher for an [intercontinental](ordnance/strategic_assembly) one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
 """),
     structure("launch_complex", "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."),
     craft("launch_complex"),
     craft("flame_deflector"),
 ])
 
+entry("ordnance/missile_silo", "Missile Silo", "missile_silo", ["missile_silo", "silo_hatch", "reinforced_concrete", "hazard_concrete"], [
+    text("""
+The **Missile Silo** is the hardened launcher: a shaft dug into the ground and lined with concrete, the missile standing at the bottom under a pair of heavy doors. It fires any [missile](ordnance/missiles) but an [intercontinental](ordnance/strategic_assembly) one, Strategic missiles and their [nuclear warheads](ordnance/nuclear) too. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
+
+Each launch takes the missile and 250,000 FE (it holds 500,000). The countdown runs 20 seconds: the siren sounds, the beacons on its console flash, and with 15 seconds to go the doors unlatch and slide apart on their rails. If they are not open by the end of the count, it waits for them. At ignition the exhaust blasts up out of the four vents at the silo's corners and smoke pours out of the shaft; the missile climbs straight up and out, and turns onto its course once it is clear. The doors shut again ten seconds later.
+
+Shut, the doors keep everything out of the shaft, and you can walk on them. The **DOORS** button on the controller's screen opens or shuts them when it is not launching, to look at the missile. Anything solid over the hatch, in the missile's way out, stops it launching (**Hatch blocked**): the missile would hit it.
+"""),
+    structure("missile_silo", "Dug into the ground: 5 by 5 and 14 deep. The bottom layer is Reinforced Concrete with the Flame Deflector in its middle. Above it are twelve rings of Reinforced Concrete round a 3 by 3 shaft, which must be clear: the missile stands in it. The top layer, level with the ground, is a ring of Hazard Concrete round a Silo Hatch over the shaft (one Silo Hatch covers all nine blocks), with the controller in the middle of the ring's front and the Energy Port in the middle of its back."),
+    text("""
+**Reinforced Concrete** is concrete cast round a steel rod. It stands up to blasts as well as obsidian does, so it makes bunkers as well as silos, and it takes an iron pickaxe and a while to break. **Hazard Concrete** is the same painted in yellow and black stripes.
+"""),
+    craft("missile_silo"),
+    craft("silo_hatch"),
+    craft("reinforced_concrete"),
+    craft("hazard_concrete"),
+])
+
 entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [
     text("""
-A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) fires it. Weapons too big for any missile are built whole, missile and all, in the [Strategic Assembly Hall](ordnance/strategic_assembly).
+A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and flies on a **Strategic** [missile](ordnance/missiles), the longest missile there is: a nuclear warhead fits no other body. Only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires it. Weapons too big for any missile are built whole, missile and all, in the [Strategic Assembly Hall](ordnance/strategic_assembly).
 
 **Tactical Nuclear Warhead** (about 300 tonnes of TNT), the smallest nuclear weapon and still half as big again as the Massive Ordnance Warhead: a crater 42 blocks round, wrecking everything to 60 blocks and deadly to 60. Its core is a **Tactical Fission Core**: three plutonium nuggets in a high-explosive shell.
 

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_reinforced_concrete": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:reinforced_concrete"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:hazard_concrete"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_reinforced_concrete"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:hazard_concrete"
+    ]
+  }
+}

@@ -553,6 +553,15 @@
     ],
     "subtitle": "subtitles.groundzero.reactor.singularity_collapse"
   },
+  "silo.doors": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundzero:launch/silo_doors"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.silo.doors"
+  },
   "smoke.hiss": {
     "sounds": [
       {

@@ -80,7 +80,7 @@ public final class AssemblyStats {
     static final String V_DAY = GZLang.add(P + "day", "1 day");
     static final String V_HOURS = GZLang.add(P + "hours", "%s hours");
     static final String V_YIELD = GZLang.add(P + "yield_value", "%s");
-    static final String NOTE_NUCLEAR = GZLang.add(P + "nuclear", "Fires only from a Launch Complex");
+    static final String NOTE_NUCLEAR = GZLang.add(P + "nuclear", "Fires from a Launch Complex or a Missile Silo");
     static final String V_HARDENED = GZLang.add(P + "hardened", "Hardened");
     static final String V_UNHARDENED = GZLang.add(P + "unhardened", "May Fail");
     public static final String EMPTY_WARHEAD = GZLang.add(P + "empty_warhead", "Fit a payload core to see what it will do");

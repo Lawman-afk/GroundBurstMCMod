@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundzero:machine_casing",
+    "groundzero:military_circuit",
+    "groundzero:crt_display",
+    "groundzero:reinforced_concrete",
+    "groundzero:reinforced_concrete",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundzero:missile_silo"
+  }
+}

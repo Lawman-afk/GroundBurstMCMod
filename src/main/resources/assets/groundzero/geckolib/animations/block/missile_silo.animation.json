@@ -1,0 +1,149 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "working": {
+      "animation_length": 1.0,
+      "bones": {
+        "beacon_l": {
+          "scale": {
+            "0": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "0.49": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "0.5": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.99": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "1": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "beacon_r": {
+          "scale": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.49": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.5": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "0.99": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "1": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": true
+    },
+    "idle": {
+      "animation_length": 1.0,
+      "bones": {
+        "beacon_l": {
+          "scale": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "1": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "beacon_r": {
+          "scale": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "1": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    },
+    "preview_doors": {
+      "animation_length": 2.0,
+      "bones": {
+        "door_l": {
+          "position": {
+            "0": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2": {
+              "vector": [
+                24.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        },
+        "door_r": {
+          "position": {
+            "0": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2": {
+              "vector": [
+                -24.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

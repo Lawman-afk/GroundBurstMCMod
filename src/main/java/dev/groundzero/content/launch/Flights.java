@@ -58,13 +58,15 @@ public final class Flights extends SavedData {
             ItemStack.OPTIONAL_CODEC.fieldOf("warhead").forGetter(f -> f.warhead),
             UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner)),
             Codec.BOOL.optionalFieldOf("hardened", false).forGetter(f -> f.hardened),
-            Codec.STRING.optionalFieldOf("body", "M").forGetter(f -> f.body.name())
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body) -> {
+            Codec.STRING.optionalFieldOf("body", "M").forGetter(f -> f.body.name()),
+            Codec.DOUBLE.optionalFieldOf("silo", 0.0).forGetter(f -> f.silo)
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
         f.hardened = hardened;
         f.body = SizeClass.valueOf(body);
+        f.silo = silo;
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundZero.id("missile_flights"), Flights::new,
@@ -97,7 +99,16 @@ public final class Flights extends SavedData {
 
     /** An assembled missile lit at {@code pad} (its tail), bound for {@code target}: its warhead, body and hardening go with it. */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec, @Nullable Entity owner) {
-        return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner);
+        return launch(level, pad, target, spec, owner, 0);
+    }
+
+    /**
+     * The same from the bottom of a silo's shaft {@code silo} blocks deep (to the ground at its mouth): it climbs
+     * straight up the shaft and a little past its mouth before it turns onto its arc.
+     */
+    public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec, @Nullable Entity owner,
+            double silo) {
+        return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner, silo);
     }
 
     /** How high a flight of {@code range} blocks climbs above its pad. */
@@ -112,16 +123,18 @@ public final class Flights extends SavedData {
 
     /** A medium missile lit at {@code pad} (its tail), bound for {@code target}, carrying {@code warhead}. */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, @Nullable Entity owner) {
-        return launch(level, pad, target, warhead, SizeClass.M, false, owner);
+        return launch(level, pad, target, warhead, SizeClass.M, false, owner, 0);
     }
 
-    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner) {
+    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
+            double silo) {
         double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
         double apex = apex(range);
         int ticks = flightTicks(range);
         Flight f = new Flight(UUID.randomUUID(), pad, target, apex, ticks, warhead.copyWithCount(1), owner == null ? null : owner.getUUID());
         f.body = body;
         f.hardened = hardened;
+        f.silo = Math.max(0, silo);
         Flights fs = of(level);
         fs.flights.add(f);
         fs.setDirty();
@@ -162,6 +175,8 @@ public final class Flights extends SavedData {
         private boolean dud, empChecked;
         private boolean hardened;
         private SizeClass body = SizeClass.M;
+        /** Launched from a silo: how far below the ground at the shaft's mouth its pad is (0: a pad on the surface). */
+        private double silo;
 
         Flight(UUID id, Vec3 start, Vec3 target, double apex, int flightTicks, ItemStack warhead, @Nullable UUID owner) {
             this.id = id;
@@ -256,14 +271,42 @@ public final class Flights extends SavedData {
             return (float) Math.toRadians(this.yaw);
         }
 
-        /** Where it is {@code u} (0-1) of the way along its path: a cubic curve up off the pad and down onto the target. */
+        /** How far a missile climbs past a silo's mouth before it turns (so its body clears the mouth as it tilts). */
+        public static final double CLEAR_MOUTH = 1.5;
+
+        /**
+         * Where it is {@code u} (0-1) of the way along its path: a cubic curve up off the pad and down onto the target.
+         * From a silo the path first runs straight up the shaft to just past its mouth, then the curve takes over from
+         * there; the straight part takes the share of {@code u} that makes the missile's speed the same on both sides of
+         * the join (the curve starts straight up, so the turn is smooth too).
+         */
         private Vec3 path(double u) {
+            Vec3 from = this.start;
+            if (this.silo > 0) {
+                double rise = this.silo + CLEAR_MOUTH;
+                double u0 = rise / (rise + 3 * this.apex * 1.35);    // the curve sets off at 3 * |p1 - p0| per unit of u
+                if (u < u0) {
+                    return this.start.add(0, rise * u / u0, 0);
+                }
+                from = this.start.add(0, rise, 0);
+                u = (u - u0) / (1 - u0);
+            }
             Vec3 up = new Vec3(0, this.apex * 1.35, 0);
-            Vec3 p1 = this.start.add(up);
-            Vec3 back = new Vec3(this.start.x - this.target.x, 0, this.start.z - this.target.z).scale(0.12);
+            Vec3 p1 = from.add(up);
+            Vec3 back = new Vec3(from.x - this.target.x, 0, from.z - this.target.z).scale(0.12);
             Vec3 p2 = this.target.add(up).add(back);
             double v = 1 - u;
-            return this.start.scale(v * v * v).add(p1.scale(3 * v * v * u)).add(p2.scale(3 * v * u * u)).add(this.target.scale(u * u * u));
+            return from.scale(v * v * v).add(p1.scale(3 * v * v * u)).add(p2.scale(3 * v * u * u)).add(this.target.scale(u * u * u));
+        }
+
+        /** Launched from a silo: the ground at the shaft's mouth, over its pad (null: launched from a pad). */
+        public @Nullable Vec3 siloMouth() {
+            return this.silo > 0 ? this.start.add(0, this.silo, 0) : null;
+        }
+
+        /** Still in its silo's shaft (its tail below the mouth). */
+        public boolean inShaft() {
+            return this.silo > 0 && this.pos.y < this.start.y + this.silo;
         }
 
         /** Where it is at {@code age} ticks after lighting (on the pad through its ignition). */
@@ -292,8 +335,10 @@ public final class Flights extends SavedData {
                     this.dud = !this.hardened && level.getRandom().nextBoolean();
                 }
                 Vec3 v = to.subtract(from);
-                // It can only hit what is loaded; past the first stretch of its climb (clear of its own gantry).
-                if (s > 0.1 && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
+                // It can only hit what is loaded; past the first stretch of its climb (clear of its own gantry, or of its
+                // silo's shaft and mouth: straight up the middle of the open shaft, it cannot touch it).
+                boolean climbingOut = this.silo > 0 && to.y < this.start.y + this.silo + CLEAR_MOUTH;
+                if (s > 0.1 && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
                     BlockHitResult hit = level.clip(new ClipContext(from, to.add(v.normalize().scale(0.5)), ClipContext.Block.COLLIDER,
                             ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
                     if (hit.getType() != HitResult.Type.MISS) {
@@ -353,6 +398,7 @@ public final class Flights extends SavedData {
             MissileEntity m = new MissileEntity(GZLaunch.MISSILE.get(), level);
             m.setUUID(this.id);
             m.setLook(this.warhead, this.body);
+            m.setSilo(siloMouth());
             m.setPos(this.pos);
             m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
             level.addFreshEntity(m);

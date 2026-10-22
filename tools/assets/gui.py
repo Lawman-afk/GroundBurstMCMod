@@ -184,6 +184,20 @@ LAYOUTS = {
         "readout": (58, 22, 108, 30),
         "inventory": (8, 84),
     },
+    # Missile Silo (DESIGN.md §17.10): the missile and the energy for a launch as on the Launch Silo; a taller CRT for its
+    # state, warhead and doors, and under it the DOORS button that opens or shuts the hatch (not while it counts down).
+    "missile_silo": {
+        "title": (8, 6),
+        "slots": [("missile", 34, 37)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (58, 17, 110, 38),
+        "controls": [("doors", 58, 58, 30, 18, -1, 0, 0, "groundzero.gui.silo_doors")],
+        "inventory": (8, 84),
+    },
     # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout
     # under them; the fuze's setting (label and field, drawn by the screen) under that, then the Assemble / Take Apart
     # buttons (drawn by the screen) with the redstone button beside them. A right-hand column (slice 7c): the 3D preview
@@ -704,6 +718,22 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
         t.outline(x + w // 2 - 3, y + h // 2 - 3, 6, 6, P.WARNING_RED[2])
         return
     button(t, x, y, w, h)
+    if kind == "doors":
+        # Two door leaves parting, an arrow out from each.
+        cx, cy = x + w // 2, y + (h - 10) // 2
+        for lx in (cx - 6, cx + 1):
+            t.rect(lx, cy, 5, 10, P.GUNMETAL[2])
+            t.outline(lx, cy, 5, 10, P.GUNMETAL[1])
+            t.vline(lx + 1, cy + 1, 8, P.GUNMETAL[4])
+        for k in range(3):
+            t.vline(cx - 1, cy + 1 + k * 3, 2, P.HAZARD_YELLOW[4])               # the seam's stripes
+            t.vline(cx, cy + 2 + k * 3, 2, P.HAZARD_BLACK[3])
+        ay = cy + 4
+        for tip, step in ((cx - 11, 1), (cx + 10, -1)):             # each arrow points out from its leaf
+            t.px(tip, ay + 1, P.WHITE_CERAMIC[5])
+            t.vline(tip + step, ay, 3, P.WHITE_CERAMIC[5])
+            t.hline(min(tip + step * 2, tip + step * 3), ay + 1, 2, P.WHITE_CERAMIC[5])
+        return
     rows = ARROW_UP if kind == "up" else ARROW_UP[::-1]
     gx, gy = x + (w - 7) // 2, y + (h - 7) // 2
     for yy, row in enumerate(rows):

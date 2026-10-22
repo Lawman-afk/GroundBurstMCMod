@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Launch Complex (DESIGN.md §17.2, Phase 8): the heavy launcher, and the only one that fires nuclear missiles. A
+ * The Launch Complex (DESIGN.md §17.2, Phase 8): the heavy launcher, the only one that fires intercontinental missiles. A
  * 5x5 deck with a flame trench under the missile (the Flame Deflector at its middle) and a service tower 13 high beside
  * it, two umbilical arms reaching in to the missile. Run like a Launch Silo from a Launch Computer, with a 15 s
  * countdown: the umbilicals swing away, the deluge soaks the trench for the last five seconds, and at ignition steam
@@ -38,8 +38,9 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
         return GZLaunch.COMPLEX;
     }
 
+    /** Any missile: the only launcher that fires an intercontinental one. */
     @Override
-    public boolean firesNuclear() {
+    public boolean accepts(dev.groundzero.content.assembly.MissileSpec spec) {
         return true;
     }
 

@@ -24,7 +24,7 @@ public class MissileItem extends Item {
     private static final String T_RANGE = GZLang.add(GroundZero.MODID + ".missile.tip.range", "Range: %s blocks");
     private static final String T_GUIDANCE = GZLang.add(GroundZero.MODID + ".missile.tip.guidance", "Guidance: %s");
     private static final String T_HARDENED = GZLang.add(GroundZero.MODID + ".missile.tip.hardened", "Hardened against EMP");
-    private static final String T_NUCLEAR = GZLang.add(GroundZero.MODID + ".missile.tip.nuclear", "Nuclear: fires only from a Launch Complex");
+    private static final String T_NUCLEAR = GZLang.add(GroundZero.MODID + ".missile.tip.nuclear", "Nuclear: fires from a Launch Complex or a Missile Silo");
     static final String T_NAMED = GZLang.add(GroundZero.MODID + ".missile.named", "%s Missile");
 
     public MissileItem(Properties properties) {

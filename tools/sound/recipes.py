@@ -805,8 +805,46 @@ def effect_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def silo_sounds() -> dict[str, np.ndarray]:
+    """The Missile Silo (slice 9b): its doors unlatching, grinding apart on their rails and banging into the stops."""
+    out = {}
+    n = 4.3
+    t = S.t_axis(n)
+    N = len(t)
+
+    def clack(at: float, seed: int, gain: float = 1.0) -> np.ndarray:
+        """A heavy bolt drawing back: a ringing metal clack over a dull thud."""
+        burst = S.white(0.4, seed) * S.exp_decay(int(0.4 * S.SR), 0.006)
+        ring = S.resonator(burst, 620, q=25) * 1.6 + S.resonator(burst, 1340, q=30) * 0.9
+        thud = S.lowpass(S.white(0.4, seed + 1), 140) * S.exp_decay(int(0.4 * S.SR), 0.05) * 2.5
+        return S.place((ring + thud) * gain, at, n)
+
+    # The drive, from 0.45 s to 3.65 s: a motor's whine spinning up, the rollers' rumble, a scrape, a click at each rail joint.
+    drive = S.breakpoints(N, [(0, 0), (0.45, 0), (0.85, 1), (3.3, 1), (3.62, 0.15), (3.75, 0), (n, 0)])
+    f = 72 + 22 * np.clip((t - 0.45) / 0.5, 0, 1) - 6 * np.clip((t - 3.3) / 0.35, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    whine = S.bandpass(np.sin(phase) * 0.6 + np.sin(2 * phase) * 0.35 + np.sin(3 * phase) * 0.25 + np.sin(5 * phase) * 0.12, 60, 900)
+    rumble = S.lowpass(S.brown(n, 650), 260) * (0.65 + 0.35 * np.sin(2 * np.pi * 6.5 * t)) * 1.0
+    scrape = S.bandpass(S.white(n, 651), 900, 3000) * (0.4 + S.lowpass(np.abs(S.grains(n, rate=30, grain_ms=30, seed=652)), 20) * 6) * 0.18
+    clicks = np.zeros(N)
+    for k, at in enumerate(np.arange(0.9, 3.4, 0.36)):
+        clicks += clack(float(at), 660 + k, 0.4)
+    body = (whine * 0.7 + rumble + scrape) * drive + clicks
+    # Unlatching (both leaves' bolts), and the leaves banging into their stops.
+    latches = clack(0.02, 670, 3.0) + clack(0.22, 672, 2.6)
+    hit = S.white(1.2, 680) * S.exp_decay(int(1.2 * S.SR), 0.01)
+    clang = (S.resonator(hit, 220, q=40) * S.exp_decay(int(1.2 * S.SR), 0.5) * 1.8
+             + S.resonator(hit, 520, q=50) * S.exp_decay(int(1.2 * S.SR), 0.3) * 1.1
+             + S.resonator(hit, 1100, q=60) * S.exp_decay(int(1.2 * S.SR), 0.15) * 0.6
+             + S.lowpass(S.white(1.2, 681), 120) * S.exp_decay(int(1.2 * S.SR), 0.08) * 3.0)
+    stop = S.place(clang * 2.4, 3.62, n)
+    mixed = S.reverb(body + latches + stop, seconds=0.9, damping_hz=2500, mix=0.2, seed=690)[:N]
+    out["launch/silo_doors"] = S.normalize(S.fade(S.saturate(mixed, 1.15), 0.0, 0.25), -2)
+    return out
+
+
 RECIPES = [geiger_clicks, nuke_set, tsar_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds]
+           effect_sounds, assembly_sounds, silo_sounds]
 
 
 def build_sounds() -> list[Path]:

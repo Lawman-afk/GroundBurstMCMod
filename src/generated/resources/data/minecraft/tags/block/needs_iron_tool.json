@@ -13,6 +13,9 @@
     "groundzero:raw_rare_earth_block",
     "groundzero:corium",
     "groundzero:cooled_corium",
-    "groundzero:voidstone"
+    "groundzero:voidstone",
+    "groundzero:reinforced_concrete",
+    "groundzero:hazard_concrete",
+    "groundzero:silo_hatch"
   ]
 }

@@ -32,7 +32,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * Launching (DESIGN.md §17, a basic launch site built ahead of Phase 9): the gantry Launch Silo, the Launch Computer
- * with its radar, their component blocks, the Basic Missile and the missile in flight.
+ * with its radar, their component blocks, the Basic Missile and the missile in flight; the Launch Complex (Phase 8);
+ * the Missile Silo dug into the ground, its concrete and its hatch (Phase 9 slice 9b).
  */
 public final class GZLaunch {
     public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(GroundZero.MODID);
@@ -50,6 +51,21 @@ public final class GZLaunch {
     public static final WithItem<MultiblockPartBlock> ANTENNA = part("antenna", "Antenna", MapColor.METAL, SoundType.METAL, true);
     /** The Launch Complex's flame trench: the steel wedge under the missile that turns its exhaust out of the trench. */
     public static final WithItem<MultiblockPartBlock> FLAME_DEFLECTOR = part("flame_deflector", "Flame Deflector", MapColor.COLOR_GRAY, SoundType.METAL, false);
+    /**
+     * The Missile Silo's walls (slice 9b), and a building block in its own right: concrete that shrugs off blasts like
+     * obsidian. Not a part: it stays as it is in the silo's shaft.
+     */
+    public static final WithItem<net.minecraft.world.level.block.Block> REINFORCED_CONCRETE = GZBlocks.register("reinforced_concrete",
+            "Reinforced Concrete", GZTab.MISSILES, net.minecraft.world.level.block.Block::new,
+            p -> p.mapColor(MapColor.STONE).strength(15f, 1200f).requiresCorrectToolForDrops().sound(SoundType.STONE));
+    /** The same striped yellow and black: the Missile Silo's top ring (a part, hidden while formed). */
+    public static final WithItem<MultiblockPartBlock> HAZARD_CONCRETE = GZBlocks.register("hazard_concrete", "Hazard Concrete", GZTab.MISSILES,
+            MultiblockPartBlock::new, p -> p.mapColor(MapColor.COLOR_YELLOW).strength(15f, 1200f).requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE).pushReaction(PushReaction.IMMOVEABLE));
+    /** The Missile Silo's lid: one item that places a 3x3 hatch. */
+    public static final WithItem<SiloHatchBlock> SILO_HATCH = GZBlocks.register("silo_hatch", "Silo Hatch", GZTab.MISSILES, SiloHatchBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(15f, 1200f).requiresCorrectToolForDrops().sound(SoundType.NETHERITE_BLOCK)
+                    .pushReaction(PushReaction.IMMOVEABLE));
 
     // --- controllers ---
     public static final WithItem<MultiblockControllerBlock> SILO_CONTROLLER = GZBlocks.register("launch_silo", "Launch Silo Controller",
@@ -58,6 +74,9 @@ public final class GZLaunch {
     public static final WithItem<MultiblockControllerBlock> COMPLEX_CONTROLLER = GZBlocks.register("launch_complex", "Launch Complex Controller",
             GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.COMPLEX_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final WithItem<MultiblockControllerBlock> MISSILE_SILO_CONTROLLER = GZBlocks.register("missile_silo", "Missile Silo Controller",
+            GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.MISSILE_SILO_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 1200f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GZBlocks.register("launch_computer", "Launch Computer",
             GZTab.MISSILES, p -> new LaunchComputerBlock(p, GZLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -72,6 +91,9 @@ public final class GZLaunch {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComplexBlockEntity>> COMPLEX_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_complex", () -> new BlockEntityType<>(LaunchComplexBlockEntity::new,
                     COMPLEX_CONTROLLER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileSiloBlockEntity>> MISSILE_SILO_ENTITY =
+            GZBlockEntities.BLOCK_ENTITIES.register("missile_silo", () -> new BlockEntityType<>(MissileSiloBlockEntity::new,
+                    MISSILE_SILO_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> new BlockEntityType<>(LaunchComputerBlockEntity::new,
                     COMPUTER_CONTROLLER.block().get()));
@@ -140,6 +162,34 @@ public final class GZLaunch {
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPLEX_CONTROLLER.block().get())));
 
     /**
+     * The Missile Silo (Phase 9 slice 9b), dug into the ground: a floor of Reinforced Concrete with the Flame Deflector
+     * in its middle; twelve rings of Reinforced Concrete round a 3x3 shaft that must be clear (the missile stands in
+     * it); at the top, level with the ground, a ring of Hazard Concrete round a Silo Hatch over the shaft, with the
+     * controller in the middle of the ring's front and an Energy Port in the middle of its back.
+     */
+    public static final MultiblockDefinition MISSILE_SILO = new MultiblockDefinition(GroundZero.id("missile_silo"), siloLayers(),
+            Map.of('R', Entry.of(() -> REINFORCED_CONCRETE.block().get()), 'H', Entry.of(() -> HAZARD_CONCRETE.block().get()),
+                    'F', Entry.of(() -> FLAME_DEFLECTOR.block().get()), 'O', hatch(SiloHatchBlock.Part.CENTER), 'o', hatch(SiloHatchBlock.Part.EDGE),
+                    'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> MISSILE_SILO_CONTROLLER.block().get())));
+
+    private static String[][] siloLayers() {
+        String[][] layers = new String[14][];
+        layers[0] = new String[] {"RRRRR", "RRRRR", "RRFRR", "RRRRR", "RRRRR"};
+        for (int y = 1; y <= 12; y++) {
+            layers[y] = new String[] {"RRRRR", "R...R", "R...R", "R...R", "RRRRR"};
+        }
+        layers[13] = new String[] {"HHXHH", "HoooH", "HoOoH", "HoooH", "HHEHH"};
+        return layers;
+    }
+
+    /** A cell of the Silo Hatch: its middle, or one of the parts round it. */
+    private static Entry hatch(SiloHatchBlock.Part part) {
+        return new Entry(s -> s.is(SILO_HATCH.block().get()) && s.getValue(SiloHatchBlock.PART) == part,
+                () -> SILO_HATCH.block().get().defaultBlockState().setValue(SiloHatchBlock.PART, part));
+    }
+
+    /**
      * The Launch Computer: the terminal (controller) with an Energy Port beside it and an Antenna on top; behind it a
      * Radar Mast three high with the Radar Dish on top.
      */
@@ -177,6 +227,12 @@ public final class GZLaunch {
         return new Entry(s -> s.is(LARGE_RADAR_DISH.block().get()) && s.getValue(LargeRadarDishBlock.PART) == part,
                 () -> LARGE_RADAR_DISH.block().get().defaultBlockState().setValue(LargeRadarDishBlock.PART, part));
     }
+
+    /** Creative: places a whole Missile Silo dug into the ground where you click (its top level with what you clicked). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundzero.content.multiblock.StructureSpawnerItem> MISSILE_SILO_SPAWNER =
+            GZItems.register("missile_silo_spawner", "Structure Spawner: Missile Silo", GZTab.MISSILES,
+                    p -> new dev.groundzero.content.multiblock.StructureSpawnerItem(p, () -> MISSILE_SILO, true),
+                    p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     private GZLaunch() {}
 

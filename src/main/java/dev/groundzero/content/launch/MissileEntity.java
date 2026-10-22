@@ -38,6 +38,12 @@ public class MissileEntity extends Entity {
     private static final EntityDataAccessor<Boolean> BURNING = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.BOOLEAN);
     /** How hot its nose glows coming back down (0-1). */
     private static final EntityDataAccessor<Float> REENTRY = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.FLOAT);
+    /**
+     * Launched from a Missile Silo (slice 9b): the block at the middle of the silo's mouth (its hatch), whose top is the
+     * ground: the client lets the exhaust out of the shaft and the silo's vents.
+     */
+    private static final EntityDataAccessor<java.util.Optional<net.minecraft.core.BlockPos>> SILO =
+            SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
 
     /** Ticks it burns on the pad before lifting off. */
     public static final int IGNITION = 40;
@@ -58,6 +64,12 @@ public class MissileEntity extends Entity {
         return Flights.launch(level, pad, target, spec, owner);
     }
 
+    /** The same from the bottom of a silo's shaft, {@code silo} blocks below the ground at its mouth (0: a pad). */
+    public static Flights.Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec,
+            @Nullable Entity owner, double silo) {
+        return Flights.launch(level, pad, target, spec, owner, silo);
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(AGE, 0);
@@ -66,6 +78,17 @@ public class MissileEntity extends Entity {
         builder.define(DROPPED, 0);
         builder.define(BURNING, true);
         builder.define(REENTRY, 0f);
+        builder.define(SILO, java.util.Optional.empty());
+    }
+
+    void setSilo(@Nullable Vec3 mouth) {
+        this.entityData.set(SILO, mouth == null ? java.util.Optional.empty()
+                : java.util.Optional.of(net.minecraft.core.BlockPos.containing(mouth.x, mouth.y - 0.5, mouth.z)));
+    }
+
+    /** Launched from a Missile Silo: the hatch block in the middle of its mouth (its top is the ground), as the client knows it. */
+    public java.util.Optional<net.minecraft.core.BlockPos> silo() {
+        return this.entityData.get(SILO);
     }
 
     /** Spent stages it has dropped (as the client knows it). */

@@ -69,6 +69,13 @@ public class GZBlockLoot extends BlockLootSubProvider {
         }
         dropSelf(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.COMPLEX_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE.block().get());
+        // The Silo Hatch, like the Large Radar Dish, drops itself from its middle only.
+        add(dev.groundzero.content.launch.GZLaunch.SILO_HATCH.block().get(), createSinglePropConditionTable(
+                dev.groundzero.content.launch.GZLaunch.SILO_HATCH.block().get(), dev.groundzero.content.launch.SiloHatchBlock.PART,
+                dev.groundzero.content.launch.SiloHatchBlock.Part.CENTER));
         dropSelf(dev.groundzero.content.launch.GZLaunch.COMPUTER_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.block().get());

@@ -247,7 +247,10 @@ public final class Spectacle {
         // The burning engine: the tail, or the bell of the stage now lowest once the spent ones have gone.
         double up = dev.groundzero.content.assembly.MissileParts.engineHeight(body, dropped);
         double x = missile.getX() - back.x * up, y = missile.getY() - back.y * up, z = missile.getZ() - back.z * up;
-        if (missile.igniting()) {
+        var silo = missile.silo();
+        if (missile.igniting() && silo.isPresent()) {
+            shaftSmoke(missile, x, y, z, q, t);                   // in a silo: up the shaft, not out round a pad
+        } else if (missile.igniting()) {
             int n = (int) (q * 6);
             for (int i = 0; i < n; i++) {
                 Puffs.Puff p = new Puffs.Puff();
@@ -296,6 +299,9 @@ public final class Spectacle {
             f.rot = random.nextFloat() * 6.283f;
             PUFFS.add(f, 1);
         }
+        if (silo.isPresent()) {
+            siloVents(missile, silo.get(), q, t);
+        }
         if (missile.igniting()) {
             return;
         }
@@ -323,6 +329,136 @@ public final class Spectacle {
             p.variant = random.nextInt(8);
             p.rot = random.nextFloat() * 6.283f;
             p.spin = (random.nextFloat() - 0.5f) * 0.01f;
+            PUFFS.add(p, q);
+        }
+    }
+
+    /** Lit at the bottom of a silo's shaft: its smoke goes straight up the shaft (the vents and the mouth do the rest). */
+    private static void shaftSmoke(dev.groundzero.content.launch.MissileEntity missile, double x, double y, double z, float q, double t) {
+        var random = missile.level().getRandom();
+        int n = Math.max(1, (int) (q * 4));
+        for (int i = 0; i < n; i++) {
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            p.x = x + (random.nextDouble() - 0.5) * 1.2;
+            p.y = y + 0.3;
+            p.z = z + (random.nextDouble() - 0.5) * 1.2;
+            p.vx = (float) (random.nextGaussian() * 0.03);
+            p.vz = (float) (random.nextGaussian() * 0.03);
+            p.vy = 0.45f + random.nextFloat() * 0.3f;
+            p.drag = 0.02f;
+            p.rise = 0.01f;
+            p.birth = t;
+            p.life = 50 + random.nextInt(30);
+            p.size0 = 1.4f;
+            p.size1 = 3.2f;
+            p.color0 = 0xEDEBE6;
+            p.color1 = 0xC8C4BE;
+            p.alpha = 0.8f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(p, q);
+        }
+    }
+
+    /**
+     * A silo launch: the exhaust driven down the shaft into the flame duct bursts up out of the four corner vents as
+     * jets of fire and smoke, and smoke and steam billow out of the open mouth over the ground. It builds through
+     * the ignition, roars while the missile climbs the shaft, and dies away once its tail is clear of the mouth.
+     */
+    private static void siloVents(dev.groundzero.content.launch.MissileEntity missile, net.minecraft.core.BlockPos hatch, float q, double t) {
+        var random = missile.level().getRandom();
+        double top = hatch.getY() + 1, cx = hatch.getX() + 0.5, cz = hatch.getZ() + 0.5;
+        float s = missile.igniting() ? Math.min(1, 0.25f + missile.age() / 30f)
+                : (float) net.minecraft.util.Mth.clamp(1 - (missile.getY() - top) / 12, 0, 1);
+        if (s <= 0) {
+            return;
+        }
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int sz = -1; sz <= 1; sz += 2) {
+                double vx = cx + sx * 2, vz = cz + sz * 2;
+                for (int i = 0; i < 3; i++) {                      // the jet of fire, a few blocks tall
+                    Puffs.Puff f = new Puffs.Puff();
+                    f.kind = Puffs.Kind.FIRE;
+                    f.x = vx + (random.nextDouble() - 0.5) * 0.6;
+                    f.y = top + 0.3 + i * 0.4;
+                    f.z = vz + (random.nextDouble() - 0.5) * 0.6;
+                    f.vx = (float) (random.nextGaussian() * 0.03);
+                    f.vz = (float) (random.nextGaussian() * 0.03);
+                    f.vy = (0.9f + random.nextFloat() * 0.6f) * (0.5f + 0.5f * s);
+                    f.drag = 0.1f;
+                    f.birth = t;
+                    f.life = 7 + random.nextInt(6);
+                    f.size0 = 1.8f + 1.0f * s;
+                    f.size1 = 0.7f;
+                    f.color0 = 0xFFF2C8;
+                    f.color1 = 0xFF6A18;
+                    f.alpha = s;
+                    f.variant = random.nextInt(4);
+                    f.rot = random.nextFloat() * 6.283f;
+                    PUFFS.add(f, 1);
+                }
+                Puffs.Puff g = new Puffs.Puff();                   // the duct's white-hot mouth under it
+                g.kind = Puffs.Kind.GLOW;
+                g.x = vx;
+                g.y = top + 0.4;
+                g.z = vz;
+                g.birth = t;
+                g.life = 2;
+                g.size0 = 1.8f * s + 0.4f;
+                g.size1 = g.size0;
+                g.color0 = 0xFFE2A0;
+                g.color1 = 0xFF9A40;
+                g.alpha = 0.8f * s;
+                g.variant = random.nextInt(4);
+                PUFFS.add(g, 1);
+                if (random.nextFloat() < 0.4f + 0.6f * s * q) {     // and the smoke over it
+                    Puffs.Puff p = new Puffs.Puff();
+                    p.kind = Puffs.Kind.SMOKE;
+                    p.x = vx + (random.nextDouble() - 0.5) * 0.5;
+                    p.y = top + 0.4;
+                    p.z = vz + (random.nextDouble() - 0.5) * 0.5;
+                    p.vx = (float) (sx * 0.02 + random.nextGaussian() * 0.02);
+                    p.vz = (float) (sz * 0.02 + random.nextGaussian() * 0.02);
+                    p.vy = 0.35f + random.nextFloat() * 0.25f;
+                    p.drag = 0.04f;
+                    p.rise = 0.008f;
+                    p.birth = t;
+                    p.life = 140 + random.nextInt(80);
+                    p.size0 = 1.2f;
+                    p.size1 = 4.5f + random.nextFloat() * 1.5f;
+                    p.color0 = 0xD6D2CC;
+                    p.color1 = 0x9C9892;
+                    p.alpha = 0.75f;
+                    p.variant = random.nextInt(8);
+                    p.rot = random.nextFloat() * 6.283f;
+                    PUFFS.add(p, q);
+                }
+            }
+        }
+        int n = (int) (q * 3 * s + random.nextFloat());
+        for (int i = 0; i < n; i++) {                              // the mouth: billowing out over the ground
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            double a = random.nextDouble() * 2 * Math.PI;
+            p.x = cx + Math.cos(a) * 0.8;
+            p.y = top + 0.3;
+            p.z = cz + Math.sin(a) * 0.8;
+            float speed = 0.2f + random.nextFloat() * 0.3f;
+            p.vx = (float) Math.cos(a) * speed;
+            p.vz = (float) Math.sin(a) * speed;
+            p.vy = 0.08f + random.nextFloat() * 0.1f;
+            p.drag = 0.05f;
+            p.rise = 0.01f;
+            p.birth = t;
+            p.life = 180 + random.nextInt(80);
+            p.size0 = 2;
+            p.size1 = 7 + random.nextFloat() * 2;
+            p.color0 = 0xEAE8E4;
+            p.color1 = 0xB6B2AC;
+            p.alpha = 0.8f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
             PUFFS.add(p, q);
         }
     }

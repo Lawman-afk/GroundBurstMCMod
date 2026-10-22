@@ -27,6 +27,14 @@ public interface AnimatedMachine extends GeoBlockEntity {
         return java.util.Map.of();
     }
 
+    /**
+     * Bones moved {x, y, z} model pixels right now, x as GeckoLib has it (negated), e.g. the Missile Silo's door leaves
+     * sliding apart. Read on the client every frame.
+     */
+    default java.util.Map<String, float[]> boneOffsets(float partialTick) {
+        return java.util.Map.of();
+    }
+
     /** Model bones not to draw right now (e.g. the dies a press is not holding). Read on the client. */
     default java.util.Set<String> hiddenBones() {
         return java.util.Set.of();

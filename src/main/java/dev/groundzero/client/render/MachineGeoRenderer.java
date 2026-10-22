@@ -40,6 +40,7 @@ import net.minecraft.world.phys.AABB;
 public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
     private final int height;
     private final int reach;
+    private final int depth;
 
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height) {
         this(context, type, height, 0);
@@ -47,9 +48,15 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     /** {@code reach}: how many blocks the model extends sideways beyond its own (multiblock structures). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach) {
+        this(context, type, height, reach, reach > 0 ? 1 : 0);
+    }
+
+    /** {@code depth}: how many blocks the model reaches down below its controller (the Missile Silo's shaft). */
+    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach, int depth) {
         super(context, type);
         this.height = height;
         this.reach = reach;
+        this.depth = depth;
         withGlow();
     }
 
@@ -84,12 +91,15 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundzero_hidden_bones", new TypeToken<Set<String>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_SCALES = DataTicket.create("groundzero_bone_scales",
             new TypeToken<java.util.Map<String, float[]>>() {});
+    private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundzero_bone_offsets",
+            new TypeToken<java.util.Map<String, float[]>>() {});
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
         if (animatable instanceof AnimatedMachine machine) {
             ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
+            ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, machine.boneOffsets(partialTick));
         }
         captureTank(animatable, (GeoRenderState) renderState);
     }
@@ -101,6 +111,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         java.util.Map<String, float[]> scales = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_SCALES);
         if (scales != null) {
             scales.forEach((bone, s) -> snapshots.ifPresent(bone, snapshot -> snapshot.setScale(s[0], s[1], s[2])));
+        }
+        java.util.Map<String, float[]> offsets = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_OFFSETS);
+        if (offsets != null) {
+            offsets.forEach((bone, o) -> snapshots.ifPresent(bone, snapshot -> snapshot.setTranslation(o[0], o[1], o[2])));
         }
         Set<String> hidden = (Set<String>) renderPassInfo.getGeckolibData(HIDDEN_BONES);
         if (hidden != null) {
@@ -182,8 +196,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     @Override
     public AABB getRenderBoundingBox(T blockEntity) {
-        // Structures may also reach one block below the controller (the accelerator ring's plinth).
+        // Structures may also reach below the controller (the accelerator ring's plinth, a block; the silo's shaft).
         return new AABB(blockEntity.getBlockPos()).inflate(0.25 + this.reach, 0, 0.25 + this.reach).expandTowards(0, this.height - 1, 0)
-                .expandTowards(0, this.reach > 0 ? -1 : 0, 0);
+                .expandTowards(0, -this.depth, 0);
     }
 }

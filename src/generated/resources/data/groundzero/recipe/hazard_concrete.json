@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundzero:reinforced_concrete",
+    "groundzero:reinforced_concrete",
+    "groundzero:reinforced_concrete",
+    "groundzero:reinforced_concrete",
+    "#c:dyes/yellow",
+    "#c:dyes/black"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundzero:hazard_concrete"
+  }
+}
