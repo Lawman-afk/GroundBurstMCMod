@@ -161,7 +161,11 @@ tune radii without code, and keeps the visual and damage numbers in one place.
 - **Wear:** edge chipping exposing primer, scratches along handled edges, soot near exhausts, drips below vents,
   sun-bleaching on top faces. Applied with deliberate stamps, never random noise fill.
 - **Emissive layers:** lights, screens, energy cores and charge indicators render fullbright on a separate emissive
-  texture (GeckoLib auto-glow layer / emissive model faces), with charge-dependent brightness where relevant.
+  texture (GeckoLib auto-glow layer / emissive model faces), with charge-dependent brightness where relevant. As
+  built (after slice 8d, the user's request): `MachineGeoRenderer` gives every GeckoLib machine GeckoLib's auto-glow
+  layer, drawn only where the model's texture has a `_glowmask` (GeckoLib does not check; a missing one would draw as
+  the missing texture). Until then no renderer drew the glowmasks the machines were made with. Parts shown only while
+  a machine runs (fire, melt, plasma, cores: hidden bones) glow only then.
 - **Recognisable by silhouette and colour** — e.g. the H-bomb is a long olive-drab cylinder with a ribbed tail and
   yellow bands; the antimatter bomb is a white ceramic capsule with glowing violet magnetic rings and no fins; the
   singularity bomb is a matte-black sphere clamped in a gyroscopic ring with a violet void core. See each weapon's
@@ -1468,8 +1472,7 @@ the long horizontal hall (over an upright assembly tower).
   regardless of the light round them); on the missile the bomb rides bare on the third stage from just above the
   complex's upper clamp, wider than any stage (`launch.py` `TSAR_SECTIONS`; each warhead now brings its own nose,
   `icbm_nose_parts`), and lies the same way on the hall's cradles. The vents glow on the complex and the hall through
-  GeckoLib's auto-glow layer (`MachineGeoRenderer.withGlow`), turned on for those two only: no machine renderer drew its
-  `_glowmask` texture before, so turning it on for all would change many machines' look. No aircraft yet: the
+  GeckoLib's auto-glow layer, since turned on for every machine with a glowmask (§4.1). No aircraft yet: the
   parachute pack stays packed, and the Tsar goes off where its missile hits, like the H-bomb.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
@@ -2319,6 +2322,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | After 8d, the user's request: every machine draws its glowmask (GeckoLib's auto-glow layer in `MachineGeoRenderer`, only where the texture has one), so lamps, screens, charge bars, fires, plasma and cores glow in the dark as designed. |
 | 2026-10-22 | Slice 8d (the user's "continue"): the Tsar is the hall's third whole weapon (a Tertiary Stage in the jacket slot) on the intercontinental missile, bursting where it lands (no aircraft for a parachute drop yet). Benchmarked first on a generated world: the shock front now runs at full speed with the crater forming behind it under the budget; the chunk band stops at the terrain work; rays split as reached; the rim is found after the front; the radius limit is 720 (`maxBlastRadius`, renamed so old configs take the new default). |
 | 2026-10-22 | After the user's look at 8c: the intercontinental missile gets fins, the hall's port housings sit flush in the floor (the port blocks are floor blocks), and the hall's recipes show in JEI. |
 | 2026-10-22 | Slice 8c (the user chose the long horizontal hall): the Strategic Assembly Hall builds whole weapons as intercontinental missiles: a new airframe class XXL and an ICBM motor (3,000 blocks) on the existing missile spec, so launching and flight are unchanged; the Thermonuclear (1.2 Mt) and Cobalt (400 kt, a month-long plume of zones downwind) Warheads are built only there and fly only from the Launch Complex. |

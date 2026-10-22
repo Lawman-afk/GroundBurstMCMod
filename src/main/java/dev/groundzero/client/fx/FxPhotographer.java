@@ -77,6 +77,21 @@ public final class FxPhotographer {
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
+                // The machines' glow layers (turned on after slice 8d): every machine with a glowmask, at midnight and at
+                // noon, in three rows of single blocks and two of formed multiblocks, shown running (see glowAt).
+                new Scene("glow_machines0_night", "glow_machines0", 9, 12, List.of(60), "midnight"),
+                new Scene("glow_machines0_day", "glow_machines0", 9, 12, List.of(60)),
+                new Scene("glow_machines1_night", "glow_machines1", 9, 12, List.of(60), "midnight"),
+                new Scene("glow_machines1_day", "glow_machines1", 9, 12, List.of(60)),
+                new Scene("glow_machines2_night", "glow_machines2", 9, 12, List.of(60), "midnight"),
+                new Scene("glow_machines2_day", "glow_machines2", 9, 12, List.of(60)),
+                new Scene("glow_reactors0_night", "glow_reactors0", 13, 16, List.of(60), "midnight"),
+                new Scene("glow_reactors0_day", "glow_reactors0", 13, 16, List.of(60)),
+                new Scene("glow_reactors1_night", "glow_reactors1", 19, 22, List.of(60), "midnight"),
+                new Scene("glow_reactors1_day", "glow_reactors1", 19, 22, List.of(60)),
+                new Scene("glow_radar_night", "radar", 10, -4, List.of(60), "midnight"),
+                new Scene("glow_complex_night", "complex_tsar", 16, -24, List.of(30), "midnight"),
+                new Scene("glow_hall_night", "hall_tsar", 14, 34, List.of(1850), "midnight"),
                 // Smoke in front of water, seen from above: the water must still show through the smoke.
                 new Scene("water_smoke_aerial", "water_smoke", 16, 28, List.of(60, 160)),
                 new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
@@ -306,6 +321,111 @@ public final class FxPhotographer {
             inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_JACKET, option.copy());
             hall.energy().generate(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.CAPACITY);
             hall.startAssembly();
+        }
+    }
+
+    /**
+     * The glow scenes' machines: the photographer turns them on (ACTIVE) on the client only, so they look as they do
+     * running (fire, melt, plasma, cores) without each being fuelled and fed; the server leaves them be.
+     */
+    private static final List<net.minecraft.core.BlockPos> glowAt = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** The single-block machines with glowmasks, in three rows of seven (the glow scenes). */
+    private static List<java.util.function.Supplier<net.minecraft.world.level.block.Block>> glowRow(int row) {
+        var M = new Object() {
+            java.util.function.Supplier<net.minecraft.world.level.block.Block> of(dev.groundzero.registry.GZBlocks.WithItem<?> w) {
+                return () -> w.block().get();
+            }
+        };
+        return switch (row) {
+            case 0 -> List.of(M.of(dev.groundzero.content.machine.GZMachines.COMBUSTION_GENERATOR), M.of(dev.groundzero.content.machine.GZMachines.ORE_CRUSHER),
+                    M.of(dev.groundzero.content.machine.GZMachines.ARC_FURNACE), M.of(dev.groundzero.content.machine.GZMachines.INDUSTRIAL_PRESS),
+                    M.of(dev.groundzero.content.machine.GZMachines.ELECTROLYTIC_SEPARATOR), M.of(dev.groundzero.content.machine.GZMachines.WATER_PUMP),
+                    M.of(dev.groundzero.content.machine.GZMachines.CRYOGENIC_CONDENSER));
+            case 1 -> List.of(M.of(dev.groundzero.content.machine.GZMachines.CIRCUIT_FABRICATOR), M.of(dev.groundzero.content.machine.GZMachines.GAS_CENTRIFUGE),
+                    M.of(dev.groundzero.content.machine.GZMachines.FUSION_FUEL_SYNTHESIZER), M.of(dev.groundzero.content.machine.GZMachines.EXOTIC_MATTER_FABRICATOR),
+                    M.of(dev.groundzero.content.machine.GZMachines.DIESEL_GENERATOR), M.of(dev.groundzero.content.machine.GZMachines.RTG),
+                    M.of(dev.groundzero.content.machine.GZMachines.BATTERY_CHARGER));
+            default -> {
+                List<java.util.function.Supplier<net.minecraft.world.level.block.Block>> out = new java.util.ArrayList<>();
+                out.add(M.of(dev.groundzero.content.machine.GZMachines.DECONTAMINATION_SHOWER));
+                out.add(M.of(dev.groundzero.content.machine.GZMachines.CANNING_MACHINE));
+                dev.groundzero.content.machine.GZMachines.CAPACITOR_BANKS.forEach(b -> out.add(M.of(b)));
+                out.add(M.of(dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH));
+                yield out;
+            }
+        };
+    }
+
+    /**
+     * One row of single-block machines across the view, three blocks apart, fronts to the camera, charged; a coal fire
+     * in the combustion generator and a battery charging in the charger.
+     */
+    private static void glowMachines(ServerLevel level, int x, int ground, int row) {
+        var blocks = glowRow(row);
+        glowAt.clear();
+        int z = -3 * (blocks.size() - 1) / 2;
+        for (var supplier : blocks) {
+            var block = supplier.get();
+            var pos = new net.minecraft.core.BlockPos(x, ground, z);
+            var state = block.defaultBlockState().setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST);
+            level.setBlockAndUpdate(pos, state);
+            block.setPlacedBy(level, pos, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+            glowAt.add(pos);
+            if (level.getBlockEntity(pos) instanceof dev.groundzero.content.machine.MachineBlockEntity machine) {
+                if (machine instanceof dev.groundzero.content.power.CombustionGeneratorBlockEntity) {
+                    machine.inventory().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL, 16));   // it burns
+                } else {
+                    machine.energy().generate(Integer.MAX_VALUE);
+                }
+                if (machine instanceof dev.groundzero.content.power.BatteryChargerBlockEntity) {
+                    machine.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.part.GZParts.BATTERY.get()));
+                }
+            }
+            z += 3;
+        }
+    }
+
+    /**
+     * Formed multiblocks across the view, fronts to the camera, powered: the chemical plant, fission reactor and
+     * singularity reactor (row 0), or the fusion reactor and particle accelerator (row 1).
+     */
+    private static void glowReactors(ServerLevel level, int x, int ground, int row) {
+        List<Object[]> list = row == 0
+                ? List.of(new Object[] {dev.groundzero.content.machine.GZMachines.CHEMICAL_PLANT, dev.groundzero.content.multiblock.GZMultiblocks.CHEMICAL_PLANT},
+                        new Object[] {dev.groundzero.content.machine.GZMachines.FISSION_REACTOR, dev.groundzero.content.multiblock.GZMultiblocks.FISSION_REACTOR},
+                        new Object[] {dev.groundzero.content.machine.GZMachines.SINGULARITY_REACTOR, dev.groundzero.content.multiblock.GZMultiblocks.SINGULARITY_REACTOR})
+                : List.of(new Object[] {dev.groundzero.content.machine.GZMachines.FUSION_REACTOR, dev.groundzero.content.multiblock.GZMultiblocks.FUSION_REACTOR},
+                        new Object[] {dev.groundzero.content.machine.GZMachines.PARTICLE_ACCELERATOR, dev.groundzero.content.multiblock.GZMultiblocks.PARTICLE_ACCELERATOR});
+        // Each one's width across the view (z), from its cells with the controller at the origin facing west.
+        int total = 0;
+        int[][] spans = new int[list.size()][];
+        for (int i = 0; i < list.size(); i++) {
+            var def = (dev.groundzero.content.multiblock.MultiblockDefinition) list.get(i)[1];
+            int lo = 0, hi = 0;
+            for (var cell : def.cells(net.minecraft.core.BlockPos.ZERO, net.minecraft.core.Direction.WEST)) {
+                lo = Math.min(lo, cell.pos().getZ());
+                hi = Math.max(hi, cell.pos().getZ());
+            }
+            spans[i] = new int[] {lo, hi};
+            total += hi - lo + 1 + (i > 0 ? 3 : 0);
+        }
+        int z = -total / 2;
+        glowAt.clear();
+        for (int i = 0; i < list.size(); i++) {
+            @SuppressWarnings("unchecked")
+            var controller = ((dev.groundzero.registry.GZBlocks.WithItem<? extends net.minecraft.world.level.block.Block>) list.get(i)[0]).block().get();
+            var def = (dev.groundzero.content.multiblock.MultiblockDefinition) list.get(i)[1];
+            var at = new net.minecraft.core.BlockPos(x, ground, z - spans[i][0]);
+            formed(level, at, controller, def);
+            glowAt.add(at);
+            if (level.getBlockEntity(at) instanceof dev.groundzero.content.multiblock.MultiblockController mc) {
+                mc.revalidate();
+            }
+            if (level.getBlockEntity(at) instanceof dev.groundzero.content.machine.MachineBlockEntity machine) {
+                machine.energy().generate(Integer.MAX_VALUE);
+            }
+            z += spans[i][1] - spans[i][0] + 1 + 3;
         }
     }
 
@@ -665,6 +785,14 @@ public final class FxPhotographer {
                     hallSite(level, x, ground);
                     return;
                 }
+                if (s.profile().startsWith("glow_machines")) {
+                    glowMachines(level, x, ground, s.profile().charAt(s.profile().length() - 1) - '0');
+                    return;
+                }
+                if (s.profile().startsWith("glow_reactors")) {
+                    glowReactors(level, x, ground, s.profile().charAt(s.profile().length() - 1) - '0');
+                    return;
+                }
                 if (s.profile().equals("hall_tsar")) {
                     hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get()));
                     return;
@@ -849,6 +977,17 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("hall_jei") && step >= 0 && clock == 12) {
             showHallRecipes.run();
+        }
+        // The glow scenes' machines shown running (on the client only: see glowAt).
+        if (scene.name().startsWith("glow_machines") || scene.name().startsWith("glow_reactors")) {
+            if (step >= 0 && clock == 30 && mc.level != null) {
+                for (var pos : glowAt) {
+                    var state = mc.level.getBlockState(pos);
+                    if (state.hasProperty(dev.groundzero.content.machine.MachineBlock.ACTIVE)) {
+                        mc.level.setBlock(pos, state.setValue(dev.groundzero.content.machine.MachineBlock.ACTIVE, true), net.minecraft.world.level.block.Block.UPDATE_ALL);
+                    }
+                }
+            }
         }
         // Then its side-configuration tab opened (the two-block layout), for the second shot.
         if (scene.name().equals("assembly_ui") && step == 1 && clock == 36 && mc.gui.screen() != null) {

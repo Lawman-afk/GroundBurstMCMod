@@ -33,7 +33,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.AABB;
 
-/** GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. */
+/**
+ * GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. A
+ * model whose texture has a {@code _glowmask} draws it lit, whatever the light round it ({@link GlowLayer}).
+ */
 public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
     private final int height;
     private final int reach;
@@ -47,17 +50,35 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         super(context, type);
         this.height = height;
         this.reach = reach;
+        withGlow();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void withGlow() {
+        // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
+        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
     }
 
     /**
-     * Draws the model's {@code <texture>_glowmask.png} lit, whatever the light round it (GeckoLib's auto-glow layer). Only
-     * for models whose texture has one: GeckoLib does not check, and a missing one draws as the missing texture.
+     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models that have one:
+     * GeckoLib does not check, and a missing one would draw as the missing texture. (Until this, no renderer drew the
+     * glowmasks the machine models were made with.)
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public MachineGeoRenderer<T> withGlow() {
-        // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
-        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer(this));
-        return this;
+    private static final class GlowLayer<A extends GeoAnimatable, O, R extends com.geckolib.renderer.base.GeoRenderState>
+            extends com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer<A, O, R> {
+        private static final java.util.Map<net.minecraft.resources.Identifier, Boolean> EXISTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+        GlowLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
+            super(renderer);
+        }
+
+        @Override
+        public void submitRenderTask(RenderPassInfo<R> pass, SubmitNodeCollector collector) {
+            net.minecraft.resources.Identifier glow = getTextureResource(pass.renderState());
+            if (EXISTS.computeIfAbsent(glow, id -> net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(id).isPresent())) {
+                super.submitRenderTask(pass, collector);
+            }
+        }
     }
 
     private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundzero_hidden_bones", new TypeToken<Set<String>>() {});
