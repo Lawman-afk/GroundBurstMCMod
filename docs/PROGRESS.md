@@ -224,7 +224,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
 | Launch Pad multiblock + erector/clamp animations + GUI | todo |
 | Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8) |
-| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, and its shaft lamps stand in even rows, the same on every wall — needs in-game look |
+| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, and its shaft has no lamps (the user's request) — needs in-game look |
 | Cruise Missile Launcher | todo |
 | Launch Control Station: map, pads, salvo, time-on-target | todo |
 | Laser Designator, Targeting Binoculars, Data Link Tool, Comms Relay | todo |

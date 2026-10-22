@@ -100,7 +100,7 @@ public final class FxPhotographer {
                 new Scene("flight_reentry", "flight_reentry", 120, -16, List.of(60, 110, 140, 160, 175, 185)),
                 // Slice 9b: the Missile Silo dug into a plateau (the test world is flat), launched at clock 25: its doors
                 // sliding apart from T-15, the vents and the shaft blasting at T-0, the missile climbing out, the doors
-                // shutting again; from above into the open shaft; at night (its lamps and beacons); and its screen.
+                // shutting again; from above into the open shaft; at night (its beacons); and its screen.
                 new Scene("msilo", "msilo", 22, 22, List.of(20, 150, 230, 430, 455, 470, 480, 540, 720)),
                 new Scene("msilo_close", "msilo", 9, 24, List.of(20, 230, 445)),
                 new Scene("msilo_aerial", "msilo", 8, 58, List.of(230, 445, 470)),

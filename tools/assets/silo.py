@@ -10,8 +10,8 @@ cabinet, the formed structure (GeckoLib) and its Structure Spawner.
   opening, two heavy door leaves on rails that run out to either side (they slide apart for a launch, moved by the
   block entity: MissileSiloBlockEntity#boneOffsets), an exhaust vent grate at each corner, a squat armoured console at
   the front with a green CRT and two red beacons (they flash while it counts down: the "working" animation), the
-  Energy Port's flush plate at the back; down the shaft, conduits in its corners, caged amber lamps on its walls, and
-  the missile standing on its launch ring over the flame duct at the bottom.
+  Energy Port's flush plate at the back; down the shaft, conduits in its corners and the missile standing on its
+  launch ring over the flame duct at the bottom (no lamps: the user asked for them to go after 9b).
 
 Coordinates are model pixels with the controller's cell centred on x = z = 0 and y = 0 the bottom of the top layer:
 the opening is x -24..24, z 8..56; the ground (the collar's top) is y 16; the shaft's floor is y -192.
@@ -36,10 +36,9 @@ import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import structures as ST  # noqa: E402
 
-GUN, OLIVE = P.GUNMETAL, P.OLIVE
+OLIVE = P.OLIVE
 YELLOW, BLACK, RED, GREEN = P.HAZARD_YELLOW, P.HAZARD_BLACK, P.WARNING_RED, P.INDICATOR_GREEN
 WHITE = P.WHITE_CERAMIC
-AMBER = P.NUCLEAR_AMBER
 CLEAR = (0, 0, 0, 0)
 
 TOP = 16                      # the ground: the collar's top face
@@ -259,7 +258,7 @@ def formed() -> None:
     g.box("socket", (-2, TOP + 0.6, 62), (2, TOP + 2, 66), faces=sides + ("up",), bone=F)
     g.open_ok.add(("socket", "down"))
 
-    # Down the shaft: a conduit in each corner (just off the walls, which are the blocks you built), lamps on the walls.
+    # Down the shaft: a conduit in each corner (just off the walls, which are the blocks you built).
     conduits = []
     for i, (x0, z0, walls) in enumerate(((-23.9, 8.1, ("west", "north")), (21.9, 8.1, ("east", "north")),
                                           (-23.9, 53.9, ("west", "south")), (21.9, 53.9, ("east", "south")))):
@@ -268,20 +267,6 @@ def formed() -> None:
         for d in ("up", "down") + walls:                      # its ends meet floor and collar; its back the walls
             g.open_ok.add((n, d))
         conduits.append(n)
-    # The lamps: four rows three blocks apart (a block and a half from the floor and from the top), a pair on each wall
-    # in every row, 12 px either side of the wall's middle (clear of the fins, which point at the middles): the same on
-    # all four walls, so the shaft is lit evenly all round.
-    lamps = []
-    for k, y in enumerate((-168, -120, -72, -24)):
-        for s, off in (("a", -12), ("b", 12)):
-            for wall, back, a, b in (("f", "north", (off - 1.5, y - 1.25, 8.05), (off + 1.5, y + 1.25, 9.5)),
-                                     ("b", "south", (off - 1.5, y - 1.25, 54.5), (off + 1.5, y + 1.25, 55.95)),
-                                     ("l", "west", (-23.95, y - 1.25, CZ + off - 1.5), (-22.5, y + 1.25, CZ + off + 1.5)),
-                                     ("r", "east", (22.5, y - 1.25, CZ + off - 1.5), (23.95, y + 1.25, CZ + off + 1.5))):
-                n = f"lamp{k}{wall}{s}"
-                g.box(n, a, b, faces=tuple(d for d in sides + ("up", "down") if d != back), bone=F)
-                g.open_ok.add((n, back))                      # against the wall
-                lamps.append(n)
     # The launch ring the missile stands on, its hold-down posts on the diagonals (clear of the fins), and the flame
     # duct's grate under it (the Flame Deflector's cell, hidden while formed); the duct's floor is dark.
     stand = [("ring_n", (-14, FLOOR, CZ - 14), (14, TAIL, CZ - 8)), ("ring_s", (-14, FLOOR, CZ + 8), (14, TAIL, CZ + 14)),
@@ -401,17 +386,10 @@ def formed() -> None:
                                    other=M.painted(M.BLACK_RAMP, tone=0.5), width=1.5))
     S.overlay(tex, "port", lambda f, img: M.paste(img, S.material_on(f, M.steel(tone=0.5)), f.edge_near() > 2) if f.d == "up" else None)
     S.paint(tex, "socket", M.steel(tone=0.3))
-    # Down the shaft: grey-painted conduits clamped every block, caged amber lamps, the yellow launch ring and posts,
-    # the sooted grate over the duct.
+    # Down the shaft: grey-painted conduits clamped every block, the yellow launch ring and posts, the sooted grate over
+    # the duct.
     S.paint(tex, conduits, M.painted(M.GREY_PAINT_RAMP, tone=0.48, wear=0.2, rust=0.15))
     S.overlay(tex, conduits, lambda f, img: M.seams(f, img, every=16, axis="v", offset=7) if f.vertical else None)
-    for n in lamps:
-        def lamp(t: Tex, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, AMBER[5])
-            t.outline(x, y, w, h, GUN[2])                        # the cage round it
-        g.paint_all(tex, n, lamp)
-        g.paint_all(glow, n, lambda t, r, d: (t.rect(*r, AMBER[5]), t.outline(*r, AMBER[3])))
     S.paint(tex, [n for n, _, _ in stand], M.painted(M.YELLOW_PAINT_RAMP, tone=0.5, wear=0.55, rust=0.2))
     S.paint(tex, posts, M.stripes(width=2, wear=0.4, under=M.STEEL_RAMP[2:7]))
     S.paint(tex, grate, M.steel(tone=0.22, rust=0.2))
