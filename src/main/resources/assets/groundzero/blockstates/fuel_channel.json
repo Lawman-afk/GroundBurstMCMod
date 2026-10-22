@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "groundzero:block/fuel_channel"
+    },
+    "lit=true": {
+      "model": "groundzero:block/fuel_channel_lit"
+    }
+  }
+}

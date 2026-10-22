@@ -139,6 +139,7 @@ public final class GZJeiPlugin implements IModPlugin {
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
         info(registration, MachineText.INFO_FISSION_REACTOR, GZMachines.FISSION_REACTOR.item().get(), GZMultiblocks.LEAD_LINED_CASING.item().get(),
+                GZMultiblocks.FUEL_CHANNEL.item().get(),
                 GZMultiblocks.ENERGY_PORT.item().get(), GZMultiblocks.FISSION_REACTOR_SPAWNER.get(), dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD.get(),
                 dev.groundzero.content.nuclear.GZNuclear.DU_TARGET_ROD.get(), dev.groundzero.content.nuclear.GZNuclear.LI6_TARGET_ROD.get());
         info(registration, MachineText.INFO_PARTICLE_ACCELERATOR, GZMachines.PARTICLE_ACCELERATOR.item().get(), GZMultiblocks.MAGNET_SEGMENT.item().get(),

@@ -60,7 +60,7 @@ public class GroundZeroClient {
         event.register(GZMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
         event.register(GZMenus.WATER_PUMP.get(), MachineScreen::new);
         event.register(GZMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
-        event.register(GZMenus.FISSION_REACTOR.get(), MachineScreen::new);
+        event.register(GZMenus.FISSION_REACTOR.get(), dev.groundzero.client.screen.FissionReactorScreen::new);
         event.register(GZMenus.FUSION_REACTOR.get(), MachineScreen::new);
         event.register(GZMenus.SINGULARITY_REACTOR.get(), MachineScreen::new);
         event.register(GZMenus.PARTICLE_ACCELERATOR.get(), MachineScreen::new);
@@ -104,8 +104,9 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GZBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
         event.registerBlockEntityRenderer(GZBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.WATER_PUMP.get(), 1));
-        // Multiblocks: the formed model reaches beyond the controller (reactor 1 block each side, accelerator ring 8).
-        event.registerBlockEntityRenderer(GZBlockEntities.FISSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FISSION_REACTOR.get(), 4, 3));
+        // Multiblocks: the formed model reaches beyond the controller (accelerator ring 8). The Fission Reactor is built of
+        // ordinary blocks: its renderer only fills the core with coolant.
+        event.registerBlockEntityRenderer(GZBlockEntities.FISSION_REACTOR.get(), ctx -> new dev.groundzero.client.render.FissionReactorRenderer());
         event.registerBlockEntityRenderer(GZBlockEntities.FUSION_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.FUSION_REACTOR.get(), 3, 8));
         event.registerBlockEntityRenderer(GZBlockEntities.SINGULARITY_REACTOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GZBlockEntities.SINGULARITY_REACTOR.get(), 5, 4));
         event.registerBlockEntityRenderer(GZBlockEntities.PARTICLE_ACCELERATOR.get(),

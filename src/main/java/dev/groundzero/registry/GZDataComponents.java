@@ -31,5 +31,10 @@ public final class GZDataComponents {
             COMPONENTS.registerComponentType("missile", b -> b.persistent(dev.groundzero.content.assembly.MissileSpec.CODEC)
                     .networkSynchronized(dev.groundzero.content.assembly.MissileSpec.STREAM_CODEC));
 
+    /** How far a uranium fuel rod has burned in a reactor (DESIGN.md §7). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundzero.content.nuclear.FuelBurnup>> FUEL_BURNUP =
+            COMPONENTS.registerComponentType("fuel_burnup", b -> b.persistent(dev.groundzero.content.nuclear.FuelBurnup.CODEC)
+                    .networkSynchronized(dev.groundzero.content.nuclear.FuelBurnup.STREAM_CODEC));
+
     private GZDataComponents() {}
 }

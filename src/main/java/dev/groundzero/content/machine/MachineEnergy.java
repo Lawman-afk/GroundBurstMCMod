@@ -24,6 +24,16 @@ public class MachineEnergy extends SimpleEnergyHandler {
         return this.capacity;
     }
 
+    /** Resizes the buffer (a structure that changed size); energy above the new capacity is lost. */
+    public void setCapacity(int capacity) {
+        this.capacity = Math.max(0, capacity);
+        if (this.energy > this.capacity) {
+            set(this.capacity);
+        } else {
+            this.onChanged.run();
+        }
+    }
+
     /** Machine-internal draw that ignores the external extract limit. Returns whether the full amount was taken. */
     public boolean consume(int amount) {
         if (this.energy < amount) {

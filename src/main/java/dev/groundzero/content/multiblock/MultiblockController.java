@@ -1,8 +1,14 @@
 package dev.groundzero.content.multiblock;
 
+import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** A block entity that owns a multiblock: knows its pattern, whether it is formed, and re-checks itself on demand. */
 public interface MultiblockController {
@@ -20,6 +26,30 @@ public interface MultiblockController {
     /** Whether {@code pos} is one of this structure's cells (formed or not). */
     default boolean covers(BlockPos pos) {
         return definition().contains(controllerPos(), controllerFacing(), pos);
+    }
+
+    /**
+     * What is missing or wrong, for the ghost preview and the controller's status line (either side); empty when the
+     * structure is complete. A structure that is not one fixed pattern (the Fission Reactor, any size of box) works out
+     * what the player is building.
+     */
+    default List<MultiblockDefinition.Mismatch> mismatches(Level level) {
+        return definition().check(level, controllerPos(), controllerFacing());
+    }
+
+    /** The block a ghost shows where a cell is missing. */
+    default BlockState ghostState(MultiblockDefinition.Mismatch mismatch) {
+        return definition().legend().get(mismatch.key()).preview().get();
+    }
+
+    /** How many layers the Holo-Projector steps through (bottom-up, as {@link MultiblockDefinition.Mismatch#layer}). */
+    default int previewLayers() {
+        return definition().layerCount();
+    }
+
+    /** Why the structure will not form beyond missing and wrong blocks (too big, an empty core), or null. */
+    default @Nullable Component problem(Level level) {
+        return null;
     }
 
     /**

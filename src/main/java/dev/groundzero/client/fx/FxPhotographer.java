@@ -143,7 +143,13 @@ public final class FxPhotographer {
                 new Scene("assembly_nuke_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_neutron_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_dirty_ui", "assembly", 4, 0, List.of(30, 44)),
-                new Scene("launch_map_ui", "launch", 9, 0, List.of(40, 80)))) {
+                new Scene("launch_map_ui", "launch", 9, 0, List.of(40, 80)),
+                // After 9b: the Fission Reactor at two sizes (the 4x4x4 example and a full 6x6x6), running: their Fuel
+                // Channels lit and the coolant glowing through the glass, by day and at night; and the big one's screen.
+                new Scene("fission", "fission", 15, 14, List.of(60)),
+                new Scene("fission_night", "fission", 15, 14, List.of(60), "midnight"),
+                new Scene("fission_close", "fission", 7, 10, List.of(60), "midnight"),
+                new Scene("fission_ui", "fission", 5, 0, List.of(30)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -300,6 +306,8 @@ public final class FxPhotographer {
 
     /** The launch scenes' silo and computer, for the tick to launch from and open the screen of. */
     private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
+    /** The fission scenes' 6x6x6 reactor (its screen is opened for the UI shot). */
+    private static net.minecraft.core.BlockPos fissionBig;
 
     /**
      * A formed, powered Launch Complex with a Strategic tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
@@ -610,6 +618,77 @@ public final class FxPhotographer {
         }
     }
 
+    /**
+     * The fission scenes: the 4x4x4 example (four rods, water) and a 6x6x6 reactor with sixteen channels (heavy water),
+     * fronts to the camera, fuelled with rods part burned and the control rods 70% out, so both run.
+     */
+    private static void fissionSite(ServerLevel level, int x, int ground) {
+        var controller = dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get();
+        var small = new net.minecraft.core.BlockPos(x, ground, -5);
+        formed(level, small, controller, dev.groundzero.content.multiblock.GZMultiblocks.FISSION_REACTOR);
+        fissionBig = new net.minecraft.core.BlockPos(x, ground, 5);
+        fissionBox(level, fissionBig, net.minecraft.core.Direction.WEST, 6, 6, 6);
+        for (var at : List.of(small, fissionBig)) {
+            if (level.getBlockEntity(at) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity r) {
+                r.revalidate();
+                boolean big = at == fissionBig;
+                r.tank(0).fillInternal(new net.neoforged.neoforge.fluids.FluidStack(big ? dev.groundzero.content.fluid.GZFluids.HEAVY_WATER.source().get()
+                        : net.minecraft.world.level.material.Fluids.WATER, 32_000));
+                int k = 0;
+                for (int slot : r.channelSlots()) {
+                    var rod = new net.minecraft.world.item.ItemStack(dev.groundzero.content.nuclear.GZNuclear.URANIUM_FUEL_ROD.get());
+                    int life = dev.groundzero.content.machine.FissionReactorBlockEntity.ROD_LIFE + (k * 977) % 9_000 - 4_500;
+                    rod.set(dev.groundzero.registry.GZDataComponents.FUEL_BURNUP.get(),
+                            new dev.groundzero.content.nuclear.FuelBurnup(life * ((k * 37) % 90) / 100f, life));
+                    r.inventory().setItem(slot, rod);
+                    k++;
+                }
+                for (int i = 0; i < 7; i++) {
+                    r.handleButton(dev.groundzero.content.machine.FissionReactorBlockEntity.BUTTON_WITHDRAW);
+                }
+            }
+        }
+    }
+
+    /**
+     * A {@code w} x {@code h} x {@code d} Fission Reactor round a controller at {@code at} (in the bottom of its front
+     * wall, second from the left as patterns have it): lead casing, reactor glass in the middle of each wall, a Fluid
+     * Port and an Item Port at the back, an Energy Port in the roof; a Fuel Channel column in every core column.
+     */
+    private static void fissionBox(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.core.Direction facing, int w, int h, int d) {
+        level.setBlockAndUpdate(at, dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get().defaultBlockState()
+                .setValue(dev.groundzero.content.machine.MachineBlock.FACING, facing));
+        var right = facing.getClockWise();
+        var back = facing.getOpposite();
+        for (int l = 0; l < h; l++) {
+            for (int r = 0; r < d; r++) {
+                for (int c = -1; c <= w - 2; c++) {
+                    var pos = at.relative(right, c).above(l).relative(back, r);
+                    if (pos.equals(at)) {
+                        continue;
+                    }
+                    int sides = (c == -1 || c == w - 2 ? 1 : 0) + (l == 0 || l == h - 1 ? 1 : 0) + (r == 0 || r == d - 1 ? 1 : 0);
+                    net.minecraft.world.level.block.Block block;
+                    if (sides == 0) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.FUEL_CHANNEL.block().get();
+                    } else if (sides == 1 && l == h - 1) {
+                        block = c == 1 && r == 1 ? dev.groundzero.content.multiblock.GZMultiblocks.ENERGY_PORT.block().get()
+                                : dev.groundzero.content.multiblock.GZMultiblocks.LEAD_LINED_CASING.block().get();
+                    } else if (sides == 1 && l > 0) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.REACTOR_GLASS.block().get();
+                    } else if (sides == 2 && l == 0 && r == d - 1 && c == 0) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.FLUID_PORT.block().get();
+                    } else if (sides == 2 && l == 0 && r == d - 1 && c == 1) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.ITEM_PORT.block().get();
+                    } else {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.LEAD_LINED_CASING.block().get();
+                    }
+                    level.setBlockAndUpdate(pos, block.defaultBlockState());
+                }
+            }
+        }
+    }
+
     /** How high the silo scenes' plateau stands over the flat world: the silo's 14 layers go down into it. */
     private static final int SILO_PLATEAU = 14;
 
@@ -757,6 +836,10 @@ public final class FxPhotographer {
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
                 if (s.profile().equals("grenades")) {
                     grenades(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("fission")) {
+                    fissionSite(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("chemical")) {
@@ -1095,6 +1178,17 @@ public final class FxPhotographer {
             var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
+        }
+        // The 6x6x6 Fission Reactor's screen: its core map, sixteen rods part burned.
+        if (scene.name().equals("fission_ui") && step >= 0 && clock == 12 && fissionBig != null) {
+            var at = fissionBig;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
         }
         // The Missile Silo's screen (its DOORS button, the doors' state on the CRT).
         if (scene.name().equals("msilo_ui") && step >= 0 && clock == 12 && launchSilo != null) {

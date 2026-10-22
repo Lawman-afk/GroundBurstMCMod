@@ -13,7 +13,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor); it comes out as a **spent fuel rod**.\n\n**Target rods** ride along in the reactor's breeding slots and come out irradiated: depleted uranium rods for plutonium, lithium-6 rods for tritium. See [Breeding and reprocessing](nuclear/reprocessing)."
+      "text": "A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor), one rod to each column of Fuel Channels. Once it has burned, a bar under it shows the fuel it has left; a used-up rod comes out as a **spent fuel rod**. Take a half-burned rod out and it keeps its burn.\n\n**Target rods** ride along in the reactor's breeding slots and come out irradiated: depleted uranium rods for plutonium, lithium-6 rods for tritium. See [Breeding and reprocessing](nuclear/reprocessing)."
     },
     {
       "type": "crafting",

@@ -215,5 +215,11 @@ public class MachineMenu extends AbstractContainerMenu {
         public boolean mayPlace(ItemStack stack) {
             return isActive() && this.container.canPlaceItem(getContainerSlot(), stack);
         }
+
+        @Override
+        public int getMaxStackSize() {
+            return this.container instanceof MachineInventory inv ? Math.min(super.getMaxStackSize(), inv.slotLimit(getContainerSlot()))
+                    : super.getMaxStackSize();
+        }
     }
 }

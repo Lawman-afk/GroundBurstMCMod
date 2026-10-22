@@ -2,9 +2,11 @@ package dev.groundzero.content.machine;
 
 import java.util.function.BiPredicate;
 import java.util.function.IntConsumer;
+import java.util.function.IntUnaryOperator;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
@@ -16,12 +18,29 @@ import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 public class MachineInventory extends ItemStacksResourceHandler implements Container {
     private final BiPredicate<Integer, ItemStack> validator;
     private final IntConsumer onChanged;
+    /** Most items a slot holds (a reactor's fuel channels take one rod each), on top of the item's own stack size. */
+    private final IntUnaryOperator limit;
 
     /** {@code onChanged} receives the slot that changed, or -1 when any slot may have. */
     public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, IntConsumer onChanged) {
+        this(size, validator, onChanged, slot -> Item.ABSOLUTE_MAX_STACK_SIZE);
+    }
+
+    public MachineInventory(int size, BiPredicate<Integer, ItemStack> validator, IntConsumer onChanged, IntUnaryOperator limit) {
         super(size);
         this.validator = validator;
         this.onChanged = onChanged;
+        this.limit = limit;
+    }
+
+    /** Most items slot {@code index} holds, whatever the item. */
+    public int slotLimit(int index) {
+        return this.limit.applyAsInt(index);
+    }
+
+    @Override
+    protected int getCapacity(int index, ItemResource resource) {
+        return Math.min(super.getCapacity(index, resource), slotLimit(index));
     }
 
     /**
@@ -71,7 +90,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
             return ItemStack.EMPTY;
         }
         ItemStack current = this.stacks.get(index);
-        int limit = Math.min(stack.getMaxStackSize(), getMaxStackSize());
+        int limit = Math.min(stack.getMaxStackSize(), Math.min(getMaxStackSize(), slotLimit(index)));
         if (current.isEmpty()) {
             int moved = Math.min(limit, stack.getCount());
             if (!simulate) {

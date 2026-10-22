@@ -80,6 +80,16 @@ public class MachineTank extends FluidStacksResourceHandler {
         return this.capacity;
     }
 
+    /** Resizes the tank (a structure that changed size); fluid above the new capacity is lost. */
+    public void setCapacity(int capacity) {
+        this.capacity = Math.max(1, capacity);
+        if (amount() > this.capacity) {
+            set(0, FluidResource.of(this.stacks.get(0)), this.capacity);
+        } else {
+            this.onChanged.run();
+        }
+    }
+
     public boolean isEmpty() {
         return this.stacks.get(0).isEmpty();
     }

@@ -1106,6 +1106,12 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZMachines.CABLES.get(1).item()).requires(Tags.Items.DUSTS_REDSTONE)
                 .unlockedBy(getHasName(GZMultiblocks.MACHINE_CASING.item()), has(GZMultiblocks.MACHINE_CASING.item()))
                 .save(output);
+        // Fuel Channels: steel rods for the corner posts, steel plates for the spacer grids (DESIGN.md §23.3).
+        shaped(RecipeCategory.BUILDING_BLOCKS, GZMultiblocks.FUEL_CHANNEL.item(), 2)
+                .define('R', GZParts.STEEL_ROD).define('P', GZTags.commonItem("plates/steel"))
+                .pattern("RPR").pattern("R R").pattern("RPR")
+                .unlockedBy(getHasName(GZParts.STEEL_ROD), has(GZParts.STEEL_ROD))
+                .save(output);
         shapeless(RecipeCategory.REDSTONE, GZMachines.FISSION_REACTOR.item(), 1)
                 .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT))

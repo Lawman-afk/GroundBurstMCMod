@@ -357,7 +357,7 @@ Charges a battery, or any other mod's chargeable item, at up to 512 FE a tick an
 
 entry("power/fission", "Nuclear power", "uranium_fuel_rod", [], [
     text("""
-For the late game, a [Fission Reactor](nuclear/fission_reactor) makes up to 1,200 FE a tick from uranium fuel rods, and breeds plutonium and tritium on the side.
+For the late game, a [Fission Reactor](nuclear/fission_reactor) makes power from uranium fuel rods, 300 FE a tick a rod: build it bigger for more rods, up to 4,800 FE a tick from sixteen. It breeds plutonium and tritium on the side.
 
 Fusion and singularity reactors will follow.
 """),
@@ -589,7 +589,7 @@ Enriched uranium goes into fuel rods and RTG slugs; depleted uranium into target
 entry("nuclear/fuel", "Fuel and target rods", "uranium_fuel_rod", ["uranium_fuel_rod", "spent_fuel_rod", "du_target_rod", "li6_target_rod",
                                                                     "irradiated_du_target_rod", "irradiated_li6_target_rod"], [
     text("""
-A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor); it comes out as a **spent fuel rod**.
+A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor), one rod to each column of Fuel Channels. Once it has burned, a bar under it shows the fuel it has left; a used-up rod comes out as a **spent fuel rod**. Take a half-burned rod out and it keeps its burn.
 
 **Target rods** ride along in the reactor's breeding slots and come out irradiated: depleted uranium rods for plutonium, lithium-6 rods for tritium. See [Breeding and reprocessing](nuclear/reprocessing).
 """),
@@ -598,31 +598,40 @@ A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor); it
     craft("li6_target_rod"),
 ])
 
-entry("nuclear/fission_reactor", "Fission Reactor", "fission_reactor", ["fission_reactor", "fission_reactor_spawner", "lead_lined_casing"], [
-    plate("fission_reactor", "The formed Fission Reactor."),
+entry("nuclear/fission_reactor", "Fission Reactor", "fission_reactor", ["fission_reactor", "fission_reactor_spawner", "lead_lined_casing",
+                                                                        "fuel_channel"], [
+    plate("fission_reactor", "A 4x4x4 Fission Reactor with four channels."),
     text("""
-A 3x3x4 structure of lead-lined casing round a two-block core, with reactor glass windows on all four sides. Load up to four uranium fuel rods and **withdraw the control rods**: up to **1,200 FE a tick** out of its Energy Port.
+Build it **any size** from 3x3x3 to 6x6x6: a hollow box of **lead-lined casing** with **Fuel Channels** standing in its core. Each column of channels, floor to roof, holds **one uranium fuel rod**, up to 16 in a 4x4 core; leave the rest of the core empty, for the coolant. Withdraw the control rods and every rod gives **300 FE a tick**: 1,200 from four, **4,800 from sixteen**.
 
-Everything goes through its ports: coolant into the **Fluid Port** at the back of the bottom layer, fuel and target rods into the front **Item Port** on top, products out of the back one.
+- **Corners:** lead-lined casing.
+- **Edges:** casing, or ports.
+- **Walls:** casing, **reactor glass** or ports. The controller goes in a wall or an edge.
+
+Coolant goes into a **Fluid Port**, rods into an **Item Port** (spent rods and irradiated targets come out of it too) and power out of an **Energy Port**: as many of each as you like. Right-click the controller or hold a Holo-Projector to see what is missing.
 """),
-    structure("fission_reactor", "Controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port in the middle and a second Item Port."),
+    structure("fission_reactor", "The example: 4x4x4 with four channels. The controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port, a second Item Port and a window."),
     text("""
-**Heat.** The further the rods are out, the more power and the more heat. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. Past **900 C** the core goes **critical**: press the red **SCRAM** button (every rod drops in) or it melts down. See [Reactor safety](safety/reactor_safety).
+**The core map.** The controller's screen shows the core from above, the controller's wall at the bottom: a rod slot on each channel, coolant between them. Every loaded rod burns at once. Each lasts about **40 minutes** at full power, a little more or less (no two alike), and the bar under it shows the fuel left; a used-up rod comes out as a spent fuel rod.
 
-- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. Up to 25 mB a tick.
+**Heat.** The further the rods are out, the more power and the more heat. Heat goes by how full the core is, so a big reactor runs as hot as a small one loaded alike. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. Past **900 C** the core goes **critical**: press the red **SCRAM** button (every rod drops in) or it melts down. See [Reactor safety](safety/reactor_safety).
+
+- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. Up to 6.25 mB a tick a rod.
 - **Heavy water:** keeps the core well below 900 C even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.
 
-The coolant gauge has a dump button to empty it. The heat and rod gauges sit beside the rod buttons; the red button is the manual SCRAM.
+A taller core holds more water and steel: it heats up and cools down more slowly, half as fast with a four-block core. The energy buffer and the coolant tank grow with the number of channels.
 """),
     table([
-        ["Full power", "1,200 FE/t"],
-        ["Fuel rod lasts", "12,000 ticks"],
-        ["Target rod", "6,000 ticks"],
+        ["A rod", "300 FE/t"],
+        ["Sixteen rods", "4,800 FE/t"],
+        ["A rod lasts", "about 48,000 ticks"],
+        ["Target rod", "6,000 ticks (four rods)"],
         ["Critical at", "900 C"],
-        ["Water", "25 mB/t"],
-        ["Heavy water", "5 mB/t"],
+        ["Water", "6.25 mB/t a rod"],
+        ["Heavy water", "1.25 mB/t a rod"],
     ], "At full power"),
     craft("fission_reactor"),
+    craft("fuel_channel"),
     craft("lead_lined_casing"),
     links(["nuclear/fuel", "nuclear/reprocessing", "safety/reactor_safety"]),
 ])
@@ -694,17 +703,17 @@ entry("nuclear/singularity_reactor", "Singularity Reactor", "singularity_reactor
                                                                                "containment_emitter", "core_cradle"], [
     plate("singularity_reactor", "The formed Singularity Reactor, holding a seed."),
     text("""
-A 5x5x5 cage that holds a **singularity seed** and makes power by **eating items**: any item at all. Feed it fast enough and it makes up to **25,000 FE a tick**.
+A 5x5x5 cage that holds a **singularity seed** and makes power by **eating items**: any item at all. Feed it fast enough and it makes up to **10,000 FE a tick**.
 
 A machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber.
 """),
     structure("singularity_reactor", "The chamber inside must be empty but for the cradle. Any floor block may be swapped for an extra Item Port."),
     text("""
-**The output rule.** Every item it eats is worth **10,000 FE**, and it eats at most **50 items a second**. So the power is set by how fast you feed it:
+**The output rule.** Every item it eats is worth **10,000 FE**, and it eats at most **20 items a second**. So the power is set by how fast you feed it:
 
+- 5 items a second: 2,500 FE a tick.
 - 10 items a second: 5,000 FE a tick.
-- 25 items a second: 12,500 FE a tick.
-- 50 items a second: the full 25,000 FE a tick.
+- 20 items a second: the full 10,000 FE a tick.
 
 Holding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a trickle of items does not even pay for itself. Run it from automatic farms: cobblestone generators, tree farms, quarries.
 """),
@@ -717,8 +726,8 @@ Holding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a 
 """),
     table([
         ["Per item eaten", "10,000 FE"],
-        ["Most it eats", "50 items/s"],
-        ["Full output", "25,000 FE/t"],
+        ["Most it eats", "20 items/s"],
+        ["Full output", "10,000 FE/t"],
         ["Cage upkeep", "1,000 FE/t"],
         ["To engage", "500,000 FE"],
         ["Reserve kept", "500,000 FE"],

@@ -145,6 +145,7 @@ public final class GZTagProviders {
                     GZMultiblocks.VACUUM_VESSEL.block().key(), GZMultiblocks.CENTRAL_SOLENOID.block().key(), GZMultiblocks.CONTAINMENT_EMITTER.block().key(),
                     GZMultiblocks.CORE_CRADLE.block().key(),
                     GZMultiblocks.LEAD_LINED_CASING.block().key(), GZMultiblocks.ENERGY_PORT.block().key(), GZMultiblocks.FLUID_PORT.block().key(), GZMultiblocks.STEEL_PLATING.block().key(),
+                    GZMultiblocks.FUEL_CHANNEL.block().key(),
                     GZMultiblocks.MAGNET_SEGMENT.block().key(), GZMultiblocks.INJECTOR.block().key(),
                     GZMultiblocks.TARGET_CHAMBER.block().key());
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());

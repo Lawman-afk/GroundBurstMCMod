@@ -27,7 +27,8 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
  * Phase 4 slice 7: the Fission Reactor (forming, power, coolant and heat balance, SCRAM, heavy water, breeding, ports)
- * and the Particle Accelerator; Phase 5: the meltdown and contamination.
+ * and the Particle Accelerator; Phase 5: the meltdown and contamination. After 9b: the reactor at any size from 3x3x3
+ * to 6x6x6, its channel columns, every rod burning at once with its own lifetime, and the GUI's core map.
  */
 final class ReactorTests {
     private ReactorTests() {}
@@ -48,6 +49,11 @@ final class ReactorTests {
         GZGameTests.test("contamination_sickens_the_living", GZGameTests.FLOOR_16, 60, ReactorTests::contamination);
         GZGameTests.test("reactor_critical_with_coolant_still_melts_down", GZGameTests.FLOOR_16, 300, ReactorTests::cooledMeltdown);
         GZGameTests.test("hazmat_suits_stop_radiation", GZGameTests.FLOOR_16, 20, ReactorTests::hazmat);
+        GZGameTests.test("reactor_forms_at_any_size_to_six", GZGameTests.FLOOR_16, 20, ReactorTests::reactorSizes);
+        GZGameTests.test("reactor_channels_run_floor_to_roof", GZGameTests.FLOOR_16, 20, ReactorTests::channelColumns);
+        GZGameTests.test("reactor_burns_every_rod_at_once", GZGameTests.FLOOR_16, 120, ReactorTests::everyRodBurns);
+        GZGameTests.test("reactor_gui_has_a_slot_per_channel", GZGameTests.FLOOR_16, 20, ReactorTests::guiSlots);
+        GZGameTests.test("reactor_big_core_makes_more_power", GZGameTests.FLOOR_16, 60, ReactorTests::bigCore);
     }
 
     /** Builds a structure by hand around a controller placed at {@code rel}. */
@@ -66,10 +72,44 @@ final class ReactorTests {
         return helper.getBlockEntity(rel, FissionReactorBlockEntity.class);
     }
 
+    /** Loads {@code rods} fresh fuel rods into the first channels on the core map. */
     private static void fuel(FissionReactorBlockEntity r, int rods) {
+        var slots = r.channelSlots();
         for (int i = 0; i < rods; i++) {
-            r.inventory().setItem(i, new ItemStack(GZNuclear.URANIUM_FUEL_ROD.get()));
+            r.inventory().setItem(slots.get(i), new ItemStack(GZNuclear.URANIUM_FUEL_ROD.get()));
         }
+    }
+
+    /**
+     * Builds a {@code w} x {@code h} x {@code d} reactor by hand round a controller at {@code rel} facing north, the
+     * controller second from the west in the bottom of the north wall (as the example): casing walls with an Energy Port
+     * in the middle of the roof, and in the core a Fuel Channel column wherever {@code channel} says (core column x
+     * from the west, z from the north).
+     */
+    private static FissionReactorBlockEntity box(GameTestHelper helper, BlockPos rel, int w, int h, int d,
+            java.util.function.BiPredicate<Integer, Integer> channel) {
+        helper.setBlock(rel, GZMachines.FISSION_REACTOR.block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        BlockPos corner = helper.absolutePos(rel).west();
+        var level = helper.getLevel();
+        for (int y = 0; y < h; y++) {
+            for (int z = 0; z < d; z++) {
+                for (int x = 0; x < w; x++) {
+                    BlockPos pos = corner.offset(x, y, z);
+                    if (pos.equals(helper.absolutePos(rel))) {
+                        continue;
+                    }
+                    boolean wall = x == 0 || x == w - 1 || y == 0 || y == h - 1 || z == 0 || z == d - 1;
+                    var state = wall ? (y == h - 1 && x == w / 2 && z == d / 2 ? GZMultiblocks.ENERGY_PORT : GZMultiblocks.LEAD_LINED_CASING).block().get()
+                            .defaultBlockState()
+                            : channel.test(x - 1, z - 1) ? GZMultiblocks.FUEL_CHANNEL.block().get().defaultBlockState()
+                            : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+                    level.setBlockAndUpdate(pos, state);
+                }
+            }
+        }
+        FissionReactorBlockEntity r = helper.getBlockEntity(rel, FissionReactorBlockEntity.class);
+        r.revalidate();
+        return r;
     }
 
     private static void withdrawAll(FissionReactorBlockEntity r) {
@@ -89,12 +129,13 @@ final class ReactorTests {
     /** Four rods, rods fully out, water in: 1 200 FE/t, water drawn, the core warms but stays well below SCRAM. */
     private static void reactorRuns(GameTestHelper helper) {
         FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        helper.assertTrue(r.channelSlots().size() == 4, "the example has four channels, " + r.channelSlots());
         fuel(r, 4);
         r.tank(0).fillInternal(new FluidStack(Fluids.WATER, 16_000));
         withdrawAll(r);
         helper.assertTrue(r.insertion() == 0 && Math.abs(r.powerLevel() - 1f) < 1e-4f, "full power with four rods and the rods out");
         helper.runAfterDelay(40, () -> {
-            helper.assertTrue(r.energy().stored() >= 30 * FissionReactorBlockEntity.MAX_OUTPUT, "about 1 200 FE a tick, have " + r.energy().stored());
+            helper.assertTrue(r.energy().stored() >= 30 * 4 * FissionReactorBlockEntity.ROD_OUTPUT, "about 1 200 FE a tick, have " + r.energy().stored());
             helper.assertTrue(r.tank(0).amount() < 16_000, "coolant is used");
             helper.assertTrue(r.heat() > FissionReactorBlockEntity.AMBIENT && r.heat() < FissionReactorBlockEntity.WARN_HEAT, "the core warms, " + r.heat());
             helper.assertTrue(r.status() == MachineStatus.RUNNING, "running, status " + r.status());
@@ -146,7 +187,7 @@ final class ReactorTests {
             helper.assertTrue(!r.scrammed() && r.status() != MachineStatus.SCRAM, "no SCRAM, heat " + r.heat());
             helper.assertTrue(r.heat() > 600 && r.heat() < FissionReactorBlockEntity.SCRAM_HEAT, "the core runs hot but holds, " + r.heat());
             int used = 16_000 - r.tank(0).amount();
-            int water = 300 * FissionReactorBlockEntity.WATER_AT_FULL_POWER;
+            int water = Math.round(300 * 4 * FissionReactorBlockEntity.WATER_PER_ROD);
             helper.assertTrue(used > 0 && used <= water / FissionReactorBlockEntity.HEAVY_WATER_SAVING + 10, "a fifth of the water rate, used " + used);
             helper.succeed();
         });
@@ -346,6 +387,138 @@ final class ReactorTests {
             helper.assertTrue(r.critical() && r.tank(0).amount() > 0, "critical, with water in the tank");
             helper.succeedWhen(() -> helper.assertTrue(!(helper.getLevel().getBlockEntity(ctrl) instanceof FissionReactorBlockEntity),
                     "the cooled core still melts down"));
+        });
+    }
+
+    /**
+     * Any box from 3x3x3 to 6x6x6 forms; its channel count, energy buffer and coolant tank follow its core. A 7-wide box
+     * does not, nor one with no channels.
+     */
+    private static void reactorSizes(GameTestHelper helper) {
+        FissionReactorBlockEntity small = box(helper, new BlockPos(1, 1, 1), 3, 3, 3, (x, z) -> true);
+        helper.assertTrue(small.isFormed() && small.channelSlots().size() == 1, "a 3x3x3 reactor forms with one channel");
+        helper.assertTrue(small.core().width() == 3 && small.core().height() == 3 && small.core().depth() == 3, "its size is found");
+        helper.assertTrue(small.energy().capacity() == FissionReactorBlockEntity.ENERGY_PER_CHANNEL
+                && small.tank(0).capacity() == FissionReactorBlockEntity.COOLANT_PER_CHANNEL, "buffers for one channel");
+        FissionReactorBlockEntity big = box(helper, new BlockPos(6, 1, 1), 6, 6, 6, (x, z) -> true);
+        helper.assertTrue(big.isFormed() && big.channelSlots().size() == 16, "a 6x6x6 reactor forms with sixteen channels, " + big.channelSlots());
+        helper.assertTrue(big.energy().capacity() == 16 * FissionReactorBlockEntity.ENERGY_PER_CHANNEL
+                && big.tank(0).capacity() == FissionReactorBlockEntity.COOLANT_MAX, "buffers for sixteen channels (the tank capped)");
+        helper.assertTrue(big.thermalMass() == 2f, "a four-block core heats half as fast");
+        // Part of the core left as coolant: only the channel columns get rod slots.
+        FissionReactorBlockEntity mixed = box(helper, new BlockPos(1, 1, 8), 5, 4, 5, (x, z) -> (x + z) % 2 == 0);
+        helper.assertTrue(mixed.isFormed() && mixed.channelSlots().size() == 5, "a checkerboard core: five channels, " + mixed.channelSlots());
+        // Too wide: seven blocks.
+        FissionReactorBlockEntity wide = box(helper, new BlockPos(8, 1, 9), 7, 3, 3, (x, z) -> true);
+        helper.assertTrue(!wide.isFormed() && wide.problem(helper.getLevel()) != null, "a 7-wide box does not form");
+        helper.succeed();
+    }
+
+    /** A channel column must run floor to roof: a gap un-forms the reactor, and the ghost preview asks for the missing block. */
+    private static void channelColumns(GameTestHelper helper) {
+        FissionReactorBlockEntity r = box(helper, new BlockPos(3, 1, 3), 4, 5, 4, (x, z) -> true);
+        helper.assertTrue(r.isFormed() && r.channelSlots().size() == 4, "a 4x5x4 reactor with four channel columns forms");
+        var level = helper.getLevel();
+        BlockPos gap = r.core().column(r.channelSlots().get(0)).get(1);
+        level.setBlockAndUpdate(gap, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        helper.assertTrue(!r.isFormed(), "a gap in a column un-forms it");
+        var missing = r.mismatches(level);
+        helper.assertTrue(missing.size() == 1 && missing.get(0).pos().equals(gap) && missing.get(0).empty(),
+                "the preview asks for the missing channel, " + missing);
+        helper.assertTrue(r.ghostState(missing.get(0)).is(GZMultiblocks.FUEL_CHANNEL.block().get()), "shown as a Fuel Channel");
+        // Emptying the column instead makes it a coolant column: the reactor forms again with three channels.
+        for (int dy = -4; dy <= 4; dy++) {
+            if (level.getBlockState(gap.above(dy)).is(GZMultiblocks.FUEL_CHANNEL.block().get())) {
+                level.setBlockAndUpdate(gap.above(dy), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            }
+        }
+        r.revalidate();
+        helper.assertTrue(r.isFormed() && r.channelSlots().size() == 3, "an empty column is coolant: three channels, " + r.channelSlots());
+        // Glass on an edge is wrong.
+        BlockPos edge = r.core().pos(r.core().col0(), 1, 0);
+        level.setBlockAndUpdate(edge, GZMultiblocks.REACTOR_GLASS.block().get().defaultBlockState());
+        helper.assertTrue(!r.isFormed() && r.mismatches(level).stream().anyMatch(m -> m.pos().equals(edge) && !m.empty()),
+                "glass on an edge is outlined as wrong");
+        helper.succeed();
+    }
+
+    /**
+     * Every loaded rod burns at once (each takes burnup every tick), each rod's lifetime is its own (within 15% of the
+     * average), and a rod at the end of its life comes out spent while the others keep burning.
+     */
+    private static void everyRodBurns(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        fuel(r, 4);
+        r.tank(0).fillInternal(new FluidStack(Fluids.WATER, 16_000));
+        withdrawAll(r);
+        var slots = r.channelSlots();
+        helper.runAfterDelay(41, () -> {
+            r.burnForTest();
+            java.util.Set<Integer> lives = new java.util.HashSet<>();
+            for (int slot : slots) {
+                var burnup = r.inventory().getItem(slot).get(dev.groundzero.registry.GZDataComponents.FUEL_BURNUP.get());
+                helper.assertTrue(burnup != null && burnup.used() >= 38, "rod in slot " + slot + " has burned, " + burnup);
+                int life = burnup.life();
+                int avg = FissionReactorBlockEntity.ROD_LIFE;
+                helper.assertTrue(Math.abs(life - avg) <= avg * FissionReactorBlockEntity.ROD_LIFE_SPREAD + 1, "its lifetime is near the average, " + life);
+                lives.add(life);
+            }
+            helper.assertTrue(lives.size() > 1, "each rod has its own lifetime, " + lives);
+            // One rod near its end: it comes out spent; the others go on.
+            int first = slots.get(0);
+            ItemStack worn = r.inventory().getItem(first).copy();
+            var b = worn.get(dev.groundzero.registry.GZDataComponents.FUEL_BURNUP.get());
+            worn.set(dev.groundzero.registry.GZDataComponents.FUEL_BURNUP.get(), new dev.groundzero.content.nuclear.FuelBurnup(b.life() - 5, b.life()));
+            r.inventory().setItem(first, worn);
+            helper.runAfterDelay(25, () -> {
+                r.burnForTest();
+                helper.assertTrue(r.inventory().getItem(first).isEmpty(), "the used-up rod has left its channel");
+                helper.assertTrue(r.inventory().getItem(FissionReactorBlockEntity.SPENT_SLOT).is(GZNuclear.SPENT_FUEL_ROD.get()), "as a spent fuel rod");
+                helper.assertTrue(r.loadedRods() == 3, "the other three still burn, " + r.loadedRods());
+                helper.succeed();
+            });
+        });
+    }
+
+    /** The menu offers a rod slot on each channel only (one rod each), and on a cell still holding a rod after a rebuild. */
+    private static void guiSlots(GameTestHelper helper) {
+        FissionReactorBlockEntity r = reactor(helper, new BlockPos(5, 1, 3));
+        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = (dev.groundzero.content.machine.MachineMenu) r.createMenu(1, player.getInventory(), player);
+        var channels = r.channelSlots();
+        for (int slot = 0; slot < FissionReactorBlockEntity.CHANNELS; slot++) {
+            helper.assertTrue(menu.slotShown(slot) == channels.contains(slot), "slot " + slot + " shown only on a channel");
+        }
+        player.getInventory().setItem(0, new ItemStack(GZNuclear.URANIUM_FUEL_ROD.get(), 8));
+        int hotbar0 = menu.layout().slots().size() + 27;
+        menu.clicked(hotbar0, 0, net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);    // a shift-click, as the game does it
+        for (int slot : channels) {
+            helper.assertTrue(r.inventory().getItem(slot).getCount() == 1, "one rod in each channel, slot " + slot);
+        }
+        helper.assertTrue(player.getInventory().getItem(0).getCount() == 4, "the other four stay in hand");
+        // Not a channel any more (the reactor broken): the rods stay shown, to be taken out, but nothing more goes in.
+        helper.getLevel().destroyBlock(r.controllerPos().above(), false);
+        helper.assertTrue(!r.isFormed(), "broken");
+        for (int slot : channels) {
+            helper.assertTrue(menu.slotShown(slot), "the rod in slot " + slot + " can still be taken out");
+        }
+        helper.assertTrue(!r.inventory().canPlaceItem(channels.get(0), new ItemStack(GZNuclear.URANIUM_FUEL_ROD.get())), "no rods go in now");
+        helper.succeed();
+    }
+
+    /** Sixteen rods in a 6x6x6 reactor: 4 800 FE/t, four times the coolant of four rods. */
+    private static void bigCore(GameTestHelper helper) {
+        FissionReactorBlockEntity r = box(helper, new BlockPos(5, 1, 3), 6, 6, 6, (x, z) -> true);
+        fuel(r, 16);
+        r.tank(0).fillInternal(new FluidStack(GZFluids.HEAVY_WATER.source().get(), 32_000));
+        withdrawAll(r);
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(r.status() == MachineStatus.RUNNING, "running, " + r.status());
+            int made = r.energy().stored();
+            helper.assertTrue(made >= 18 * FissionReactorBlockEntity.MAX_OUTPUT, "about 4 800 FE a tick, have " + made);
+            helper.assertTrue(r.data().get(dev.groundzero.content.machine.MachineBlockEntity.DATA_BASE_COUNT + FissionReactorBlockEntity.DATA_POWER)
+                    == FissionReactorBlockEntity.MAX_OUTPUT, "the GUI shows 4 800 FE/t");
+            helper.succeed();
         });
     }
 

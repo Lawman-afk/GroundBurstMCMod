@@ -23,7 +23,8 @@ public final class GZNuclear {
     public static final DeferredItem<Item> DEPLETED_URANIUM_INGOT = GZItems.simple("depleted_uranium_ingot", "Depleted Uranium Ingot", GZTab.RESOURCES);
 
     // --- Fission Reactor (slice 7): fuel, breeding targets and what comes out -------------------------------------------
-    public static final DeferredItem<Item> URANIUM_FUEL_ROD = GZItems.simple("uranium_fuel_rod", "Uranium Fuel Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
+    public static final DeferredItem<FuelRodItem> URANIUM_FUEL_ROD = GZItems.register("uranium_fuel_rod", "Uranium Fuel Rod", GZTab.NUCLEAR,
+            FuelRodItem::new, p -> p.stacksTo(16));
     public static final DeferredItem<Item> SPENT_FUEL_ROD = GZItems.simple("spent_fuel_rod", "Spent Fuel Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
     public static final DeferredItem<Item> DU_TARGET_ROD = GZItems.simple("du_target_rod", "Depleted Uranium Target Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));
     public static final DeferredItem<Item> LI6_TARGET_ROD = GZItems.simple("li6_target_rod", "Lithium-6 Target Rod", GZTab.NUCLEAR, p -> p.stacksTo(16));

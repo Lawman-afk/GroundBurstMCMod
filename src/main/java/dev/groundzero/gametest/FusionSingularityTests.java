@@ -168,7 +168,7 @@ final class FusionSingularityTests {
         s.energy().generate(SingularityReactorBlockEntity.ENGAGE);
     }
 
-    /** The seed stays in its slot; with a full feed the core eats 50 items a second for 10 000 FE each: 25 000 FE a tick. */
+    /** The seed stays in its slot; with a full feed the core eats 20 items a second for 10 000 FE each: 10 000 FE a tick. */
     private static void singularityRuns(GameTestHelper helper) {
         SingularityReactorBlockEntity s = singularity(helper);
         helper.assertTrue(s.isFormed(), "the cage forms");
@@ -184,10 +184,10 @@ final class FusionSingularityTests {
                 helper.assertTrue(s.inventory().getItem(SingularityReactorBlockEntity.SEED_SLOT).is(GZNuclear.SINGULARITY_SEED.get()),
                         "the seed stays in its slot");
                 int rate = s.feedRate();
-                helper.assertTrue(rate == SingularityReactorBlockEntity.MAX_ITEMS_PER_SECOND, "it eats 50 items a second, ate " + rate);
+                helper.assertTrue(rate == SingularityReactorBlockEntity.MAX_ITEMS_PER_SECOND, "it eats 20 items a second, ate " + rate);
                 helper.assertTrue(s.status() == MachineStatus.RUNNING, "running, " + s.status());
                 helper.assertTrue((long) rate * SingularityReactorBlockEntity.FE_PER_ITEM / 20 == SingularityReactorBlockEntity.MAX_OUTPUT,
-                        "50 items a second at 10 000 FE each is the 25 000 FE/t ceiling");
+                        "20 items a second at 10 000 FE each is the 10 000 FE/t ceiling");
                 // The port only gives power above the reserve.
                 BlockPos port = cellOf(s.definition(), s.controllerPos(), 'E');
                 var handler = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);

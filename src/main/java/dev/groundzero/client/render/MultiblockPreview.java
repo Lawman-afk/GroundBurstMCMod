@@ -127,17 +127,17 @@ public final class MultiblockPreview {
         rangeLayers = 0;
         List<Ghost> ghosts = new ArrayList<>();
         for (MultiblockController c : shown) {
-            MultiblockDefinition def = c.definition();
-            rangeLayers = Math.max(rangeLayers, def.layerCount());
-            int only = projecting && layer > 0 ? Math.min(layer, def.layerCount()) - 1 : -1;
-            for (MultiblockDefinition.Mismatch m : def.check(level, c.controllerPos(), c.controllerFacing())) {
+            int layers = c.previewLayers();
+            rangeLayers = Math.max(rangeLayers, layers);
+            int only = projecting && layer > 0 ? Math.min(layer, layers) - 1 : -1;
+            for (MultiblockDefinition.Mismatch m : c.mismatches(level)) {
                 if (only >= 0 && m.layer() != only) {
                     continue;
                 }
                 if (!m.empty()) {
                     ghosts.add(new Ghost(m.pos(), level.getBlockState(m.pos()), true));
                 } else if (m.key() != '.') {
-                    ghosts.add(new Ghost(m.pos(), def.legend().get(m.key()).preview().get(), false));
+                    ghosts.add(new Ghost(m.pos(), c.ghostState(m), false));
                 }
             }
         }

@@ -431,19 +431,55 @@ All machines use **NeoForge Energy (FE)** so they interoperate with other tech m
 | Combustion Generator | 60 FE/t | Burns any furnace fuel; synthetic fuel canister = 24 000 FE. Exhaust smoke, rumble loop. |
 | Diesel Generator | 180 FE/t | Burns synthetic fuel or liquid rocket fuel piped into its tank (canisters/buckets pour in). Piston animation. |
 | RTG, "Radioisotope Generator" in game | 40 FE/t forever-ish | Fuel slug in a slot: enriched uranium ingot lasts 2 in-game days now; plutonium ingot (Fission Reactor) will last 10. The slug decays whether or not the power is used. Emits low radiation if not shielded by lead blocks (Phase 12). Glowing fins. |
-| Fission Reactor (multiblock, replaces the Breeder Reactor) | ~1 200 FE/t | Burns uranium fuel rods and breeds plutonium from DU target rods and tritium from Li-6 target rods. Runs on core heat: a GUI slider sets control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown unless SCRAMmed in time, on by default (§7.1; the server can turn it off). Cherenkov-blue core. |
+| Fission Reactor (multiblock any size from 3×3×3 to 6×6×6, replaces the Breeder Reactor) | 300 FE/t a rod, up to 4 800 FE/t (16 rods) | Burns uranium fuel rods, one to each column of Fuel Channels in its core (§7.2), and breeds plutonium from DU target rods and tritium from Li-6 target rods. Every loaded rod burns at once, each with its own lifetime. Runs on core heat: buttons set control-rod insertion, water coolant is piped in, a heat gauge shows core temperature. Overheats and SCRAMs (shuts down) if starved; a damaging meltdown unless SCRAMmed in time, on by default (§7.1; the server can turn it off). Cherenkov-blue core. |
 | Fusion Reactor (tokamak ring multiblock) | ~6 000 FE/t | Burns deuterium + tritium gas (LiD pellets are kept for the thermonuclear weapons). Needs a large ignition charge from capacitor banks to start, and liquid nitrogen for its magnets while running; once lit it sustains itself. A glowing plasma ring races round the torus. Ties together the Fusion Fuel Synthesizer, Cryogenic Condenser and capacitor banks. |
-| Singularity Reactor ("special" multiblock) | up to 25 000 FE/t | A singularity seed sits in the controller (it stays there, like a battery in the charger) and is held in a powered containment cage. It eats items, any items: each is worth 10 000 FE and it eats at most 50 a second, so its output is set by the feed rate (10 items/s = 5 000 FE/t, 50 items/s = 25 000 FE/t). Holding the cage costs 1 000 FE/t (2 items/s). Built to need automatic cobblestone or tree farms. Taking the seed out shuts it down safely; if the cage runs dry or the structure is broken while it holds the seed, the core collapses and the seed is destroyed (a destructive collapse, a small Phase 11 singularity effect, will be a config option). |
+| Singularity Reactor ("special" multiblock) | up to 10 000 FE/t | A singularity seed sits in the controller (it stays there, like a battery in the charger) and is held in a powered containment cage. It eats items, any items: each is worth 10 000 FE and it eats at most 20 a second (one a tick), so its output is set by the feed rate (10 items/s = 5 000 FE/t, 20 items/s = 10 000 FE/t; it was 50 a second and 25 000 FE/t until the user asked for 10 000 after 9b). Holding the cage costs 1 000 FE/t (2 items/s). Built to need automatic cobblestone or tree farms. Taking the seed out shuts it down safely; if the cage runs dry or the structure is broken while it holds the seed, the core collapses and the seed is destroyed (a destructive collapse, a small Phase 11 singularity effect, will be a config option). |
 | Capacitor Bank / Advanced / Superconducting | 100k / 1M / 10M FE, 1 024 / 8 192 / 32 768 FE/t | Every face takes power in except the front, which pushes it out; keeps its charge when picked up; comparator output; 8-bar charge gauge on the model. Superweapons draw from these during charge. |
 | Power cables: copper (256 FE/t), insulated (1 024), high-voltage (8 192) | — | Connected-texture cable models with insulators on HV; HV cable arcs when EMPed. |
 
 Superweapons and large machines need power while charging (as in Generals: low power pauses the countdown).
 
-**Power ladder** (agreed with the user 2026-10-20): Combustion Generator 60 → Diesel Generator 180 / RTG 40 (slice 6,
-with Capacitor Banks to buffer the big reactors and superweapons) → Fission Reactor ~1 200 (slice 7, with the
-Particle Accelerator) → Fusion Reactor ~6 000 and Singularity Reactor ~25 000 (slice 8). For scale: the Exotic Matter
-Fabricator (400 FE/t) needs 7 Combustion Generators, 3 Diesel Generators, or a third of a Fission Reactor. All three
+**Power ladder** (agreed with the user 2026-10-20; 2026-10-23: the Fission Reactor scales, the Singularity Reactor
+cut to 10 000): Combustion Generator 60 → Diesel Generator 180 / RTG 40 (slice 6, with Capacitor Banks to buffer the
+big reactors and superweapons) → Fission Reactor 300 a rod, 1 200 from four up to 4 800 from sixteen (slice 7, with
+the Particle Accelerator) → Fusion Reactor ~6 000 and Singularity Reactor up to 10 000 (slice 8). For scale: the
+Exotic Matter Fabricator (400 FE/t) needs 7 Combustion Generators, 3 Diesel Generators, or a four-rod Fission Reactor
+at a third. All three
 reactors are game abstractions (invented parts, simple fuel-in/energy-out rules), never real reactor designs (§30).
+
+### 7.2 The Fission Reactor at any size (2026-10-23, after 9b, the user's request)
+"Scalable like in other mods, with a UI that scales the fuel rod count", and every rod burning at once.
+- **The box** (`FissionCore`): any hollow box from 3×3×3 to 6×6×6 outside (each side 3 to 6: the core at most 4×4×4,
+  so at most 16 rods, 4 800 FE/t, below the Fusion Reactor). Corners Lead-Lined Casing; edges casing or ports; faces
+  casing, Reactor Glass or ports (Item, Fluid, Energy: as many as you like); the controller in a face or an edge (not a
+  corner). Inside, **Fuel Channels** (a new block) stand in columns the full height of the core, one fuel rod a
+  column; the rest of the core is left empty, for the coolant. A column with a gap, a stray block in the core, glass on
+  an edge or a box too big does not form; neither does a core with no channels.
+- **Finding the box**: from the controller, wall blocks counted along its row and column give the front wall; walks
+  back from the front corners give the depth. Where nothing is built yet along a side the example's size (4) is
+  assumed, so the ghost preview shows where the rest goes (casing for walls, Fuel Channels to finish a column). Reactor
+  blocks touching from outside make the box too big, as in other mods. Checked every 2 s and whenever a structure
+  block near it changes (`covers` is the box once formed, the reach of a 6×6×6 before).
+- **It stays as built**: the walls are ordinary blocks (the controller too, `MultiblockControllerBlock` without
+  hiding). The old GeckoLib model is retired; a renderer fills the core round the channels with the coolant up to the
+  tank's level, glowing Cherenkov blue while it runs, and the channels light up (`lit`: light 10, their water glows).
+  The example (`GZMultiblocks.FISSION_REACTOR`, the Field Manual, Structure Spawner and GameTests) is 4×4×4 with four
+  channels: the old reactor's 1 200 FE/t.
+- **Rods**: 300 FE/t each × rods withdrawn. Every loaded rod burns at once. A rod lasts 48 000 ticks of full power on
+  average (the same energy a rod gave before: four rods had shared one 12 000-tick counter, so they ran out one at a
+  time); each rod's own lifetime is drawn when it first burns, up to 15% either side (two random draws added, so most
+  are near the middle), so a core loaded at once runs out over minutes, not in one tick. The rod carries its burnup
+  (`groundzero:fuel_burnup`: used, life), shown as a bar under it and in its tooltip; taken out and put back it keeps
+  it. A used-up rod becomes a spent rod in its channel and moves to the spent slot when there is room.
+- **Heat** goes by how full the core is (loaded rods / channels × rods out), so the rules of §7 hold at any size. A
+  taller core heats and cools more slowly: every rate divided by core height / 2 (0.5 to 2). Coolant 6.25 mB/t a rod at
+  full power (heavy water a fifth). Breeding goes at loaded rods / 4 × rods out (sixteen rods four times as fast).
+  Buffers: 50 000 FE and 4 000 mB of coolant a channel (the tank stops at 32 000 mB, what a GUI sync slot carries).
+- **The GUI** (226×218): a 4×4 core map seen from above, the controller's wall at the bottom, a smaller core in its
+  middle; a rod slot on each channel (one rod each), coolant cells between, casing outside the core, a red-ringed slot
+  where a rod is left on a cell that is no longer a channel (to take it out). Heat (0 to 1 400 °C) and rod gauges and
+  the withdraw / insert / SCRAM buttons the map's height; the spent slot and the breeding (two targets over their
+  outputs) in a right-hand column; the CRT shows output, core temperature, size and rods loaded.
 
 ### 7.1 Fission Reactor meltdown (as built, Phase 5)
 A game abstraction of a reactor accident, on by default (the user's call); the server config `reactor.meltdowns` turns
@@ -496,7 +532,7 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Circuit Fabricator** | 1 block | 40 FE/t | circuits, sensor arrays, superconducting coils | Glass-topped clean box, robotic arm (animated) placing chips; green PCB visible. |
 | **Exotic Matter Fabricator** | 1×2 tall | 400 FE/t (needs insulated or HV cable) | stabilised exotic matter, containment cells, singularity seeds | Magnetic cage of rings around a floating violet shard; rings rotate on different axes; lensing shimmer. |
 | **Particle Accelerator** | octagonal multiblock ring, 9×9×2 | 2 000 FE/t | antimatter cells (slow) | Ring of magnet segments + injector + target chamber; a glowing bunch races around the ring when running. |
-| **Fission Reactor** | multiblock 3×3×4 | generates | power + Pu + tritium | See §7. |
+| **Fission Reactor** | multiblock 3×3×3 to 6×6×6 | generates | power + Pu + tritium | See §7, §7.2. |
 | **Fusion Reactor** | multiblock octagonal ring 9×9×3 | generates (ignition from capacitor banks) | power | See §7. |
 | **Singularity Reactor** | multiblock 5×5×5 | generates (feeds on matter) | power | See §7. |
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
@@ -1927,12 +1963,14 @@ Layer `y0` is the bottom. `X` = controller, `R` = reinforced concrete, `H` = haz
 `C` = capacitor cell, `S` = magnet segment, `E` = energy port, `I` = item port, `W` = coolant port, `U` = fuel port,
 `.` = air (required empty), `*` = any.
 
-**Fission Reactor** (3×3×4, formerly the Breeder Reactor; rows written front first):
+**Fission Reactor** (any size from 3×3×3 to 6×6×6 since 2026-10-23, §7.2; `C` = Fuel Channel). Until then it was
+3×3×4 round an empty core the formed model filled. The example (Field Manual, Structure Spawner, GameTests), rows
+written front first:
 ```
-y0: LXL / LLL / LWL      (X at the front middle, W the Fluid Port at the back middle)
-y1: LGL / G.G / LGL      (core space: rendered fuel bundle, control rods, water, Cherenkov glow)
-y2: LGL / G.G / LGL
-y3: LUL / LEL / LIL
+y0: LXLL / LLLL / LLLL / LLWL      (X at the front of the bottom layer, W the Fluid Port behind)
+y1: LGGL / GCCG / GCCG / LGGL      (four Fuel Channel columns in the 2x2 core; glass round it)
+y2: LGGL / GCCG / GCCG / LGGL
+y3: LLLL / LUEL / LIGL / LLLL      (Item Port, Energy Port, Item Port and a window on top)
 ```
 W is a Fluid Port (coolant in), U and I are Item Ports (fuel/targets in, products out), E is an Energy Port (power
 out). The controller itself connects to nothing and has no side-configuration tab.
@@ -2514,6 +2552,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-23 | The Fission Reactor scales (the user's request, "like in other mods"): any hollow box from 3×3×3 to 6×6×6, Fuel Channel columns in its core, one rod a column (up to 16, 4 800 FE/t: still below Fusion); its walls stay as built (the GeckoLib model retired; a renderer fills the core with glowing coolant); a GUI whose 4×4 core map shows a rod slot on each channel. Its fuel bug fixed: all rods share no counter any more; every loaded rod burns at once with its own lifetime (±15%), carrying its burnup on the item. Details §7.2. |
+| 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |
 | 2026-10-23 | The Missile Silo's shaft lamps are removed (the user's request, after the even rows): the shaft is lit by daylight through the open doors. |

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": "#c:plates/steel",
+    "R": "groundzero:steel_rod"
+  },
+  "pattern": [
+    "RPR",
+    "R R",
+    "RPR"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundzero:fuel_channel"
+  }
+}

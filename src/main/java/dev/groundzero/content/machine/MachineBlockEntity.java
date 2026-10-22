@@ -121,7 +121,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             throw new IllegalArgumentException("at most " + MAX_TANKS + " tanks");
         }
         this.energy = new MachineEnergy(energyCapacity, maxInsert, maxExtract, this::setChanged);
-        this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged);
+        this.inventory = new MachineInventory(slotCount, this::isItemValid, this::onSlotChanged, this::slotLimit);
         List<MachineTank> list = new ArrayList<>();
         for (int i = 0; i < tankSpecs.size(); i++) {
             int index = i;
@@ -159,6 +159,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected abstract boolean tickMachine(ServerLevel level);
 
     protected abstract boolean isItemValid(int slot, ItemStack stack);
+
+    /** Most items slot {@code slot} holds, whatever the item (the reactor's fuel channels: one rod each). */
+    protected int slotLimit(int slot) {
+        return net.minecraft.world.item.Item.ABSOLUTE_MAX_STACK_SIZE;
+    }
 
     /** Whether input tank {@code tank} may take this fluid (beyond its spec's filter), e.g. "a recipe uses it". */
     protected boolean acceptsFluid(int tank, FluidResource resource) {

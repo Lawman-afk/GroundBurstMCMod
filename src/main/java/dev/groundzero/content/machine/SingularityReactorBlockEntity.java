@@ -42,8 +42,8 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 /**
  * Singularity Reactor (DESIGN.md §7, §23.3): a 5x5x5 cage run from this controller. A game abstraction: a seed held in
  * a powered cage eats matter and turns it into power. One rule sets the output: <b>every item eaten is worth 10 000
- * FE, and the core eats at most 50 items a second</b> (2 and 3 on alternate ticks), so 50 items a second gives the
- * full 25 000 FE a tick and 10 items a second gives 5 000.
+ * FE, and the core eats at most 20 items a second</b> (one a tick), so 20 items a second gives the full 10 000 FE a
+ * tick and 10 items a second gives 5 000 (the user's call after 9b: it had been 50 a second and 25 000 FE a tick).
  *
  * <ul>
  * <li>The seed sits in its slot like a battery in the charger and stays there. With a seed in and the buffer charged to
@@ -53,20 +53,20 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
  *     seed is destroyed.</li>
  * <li>Matter comes from the four feed slots (any item but a seed), filled through Item Ports: the one in the floor's
  *     west side and any floor block swapped for an Item Port. Eaten matter waits in a store of up to 50 items' worth
- *     and becomes power at up to 25 000 FE a tick. Only power above a 500 000 FE reserve is pushed out, so the cage
+ *     and becomes power at up to 10 000 FE a tick. Only power above a 500 000 FE reserve is pushed out, so the cage
  *     keeps about 25 seconds of grace when the feed stops.</li>
  * </ul>
  */
 public class SingularityReactorBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
-    public static final int MAX_OUTPUT = 25_000;
+    public static final int MAX_OUTPUT = 10_000;
     public static final int CAPACITY = 5_000_000;
     public static final int TRANSFER = 32_768;
     public static final int ENGAGE = 500_000;
     public static final int RESERVE = 500_000;
     public static final int UPKEEP = 1_000;
     public static final int FE_PER_ITEM = 10_000;
-    /** Most items eaten a second: with {@link #FE_PER_ITEM} this is what sets the 25 000 FE/t ceiling. */
-    public static final int MAX_ITEMS_PER_SECOND = 50;
+    /** Most items eaten a second (one a tick): with {@link #FE_PER_ITEM} this is what sets the 10 000 FE/t ceiling. */
+    public static final int MAX_ITEMS_PER_SECOND = 20;
     public static final int MASS_CAP = 50 * FE_PER_ITEM;
     public static final int SEED_SLOT = 0, FEED_START = 1, FEED_SLOTS = 4;
     /** Sync slots: stored matter (%), output (FE/t), cage engaged (0/1), cage charge toward engaging (%), items eaten in the last second. */
@@ -205,8 +205,8 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
             this.engaged = true;
             setChanged();
         }
-        // Eat: 2 or 3 items a tick (50 a second), while the store has room.
-        int bite = 2 + (int) (level.getGameTime() & 1);
+        // Eat: one item a tick (20 a second), while the store has room.
+        int bite = MAX_ITEMS_PER_SECOND / 20;
         int ate = 0;
         for (int slot = FEED_START; slot < FEED_START + FEED_SLOTS && ate < bite; slot++) {
             while (ate < bite && this.mass + FE_PER_ITEM <= MASS_CAP && !this.inventory.getItem(slot).isEmpty()) {

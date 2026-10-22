@@ -316,27 +316,32 @@ LAYOUTS = {
         "readout": (64, 22, 96, 14),
         "inventory": (8, 84),
     },
-    # Slice 7. Fission Reactor: coolant tank (water or heavy water, dumpable), 4 fuel rods, 2 breeding targets, 3
-    # outputs, heat and control-rod gauges, rod buttons (withdraw / insert / SCRAM) and a CRT with output and core
-    # temperature.
+    # Fission Reactor (any size, DESIGN.md §23.3): the core map, 4x4 cells of lead casing (slots 0-15) on which the
+    # screen draws the reactor's own core: a rod slot on each fuel channel, coolant round them (FissionReactorScreen
+    # mirrors MAP and the cell sprites); the coolant tank, heat (0 to 1 400 °C) and control-rod gauges and the rod
+    # buttons (withdraw / insert / SCRAM) the height of the map; a right-hand column with the breeding (two target rods
+    # over their irradiated outputs) and the spent fuel; under them a CRT with the output, core temperature, size and rods.
     "fission_reactor": {
         "title": (8, 6),
-        "size": (176, 194),
-        "slots": [("rod", 46, 21), ("rod", 64, 21), ("rod", 46, 39), ("rod", 64, 39), ("target", 46, 61), ("target", 64, 61),
-                  ("out", 92, 21), ("out", 92, 39), ("out", 92, 61)],
+        "size": (226, 218),
+        "inventory_width": 178,
+        "core_map": (43, 19),
+        "slots": [("core_cell", 44 + 18 * (k % 4), 20 + 18 * (k // 4)) for k in range(16)]
+                 + [("target", 184, 22), ("target", 202, 22), ("spent", 193, 78), ("out", 184, 50), ("out", 202, 50)],
+        "chevrons": [(190, 42, False), (208, 42, False)],
         "energy": (8, 20, 14, 46),
         "tanks": [(26, 20, 12, 42, None, True)],
         "progress": None,
         "flame": None,
-        "status": (160, 5, 8, 8),
-        "redstone": (151, 82, 18, 18),
-        "readout": (11, 82, 132, 18),
-        "controls": [("heat", 116, 20, 8, 56, 0, 1000, -1, "groundzero.gui.heat"),
-                     ("rods", 128, 20, 8, 56, 1, 100, -1, "groundzero.gui.rods_gauge"),
-                     ("up", 140, 20, 18, 14, -1, 0, 0, "groundzero.gui.withdraw"),
-                     ("down", 140, 36, 18, 14, -1, 0, 1, "groundzero.gui.insert"),
-                     ("scram", 140, 54, 18, 22, -1, 0, 2, "groundzero.gui.scram")],
-        "inventory": (8, 112),
+        "status": (210, 5, 8, 8),
+        "redstone": (192, 103, 18, 18),
+        "readout": (11, 100, 154, 24),
+        "controls": [("heat", 121, 20, 8, 72, 0, 1400, -1, "groundzero.gui.heat"),
+                     ("rods", 133, 20, 8, 72, 1, 100, -1, "groundzero.gui.rods_gauge"),
+                     ("up", 147, 20, 18, 22, -1, 0, 0, "groundzero.gui.withdraw"),
+                     ("down", 147, 44, 18, 22, -1, 0, 1, "groundzero.gui.insert"),
+                     ("scram", 147, 68, 18, 24, -1, 0, 2, "groundzero.gui.scram")],
+        "inventory": (8, 136),
     },
     # Fusion Reactor: deuterium, tritium and liquid nitrogen tanks, the ignition-charge gauge.
     "fusion_reactor": {
@@ -480,6 +485,11 @@ ROD_GHOST = ["................", "................", ".......##.......", "......
              "......#..#......", "......#..#......", "......#..#......", "......#..#......", "......#..#......",
              "......#..#......", "......#..#......", "......#..#......", ".......##.......", "................",
              "................"]
+# A spent rod: the fuel rod's outline, its fuel gone grey and cracked.
+SPENT_GHOST = ["................", "................", ".......##.......", "......#..#......", "......#+.#......",
+               "......#..#......", "......#.+#......", "......#..#......", "......#+.#......", "......#..#......",
+               "......#.+#......", "......#..#......", "......#..#......", ".......##.......", "................",
+               "................"]
 TARGET_GHOST = ["................", "................", ".......##.......", "......#..#......", "......####......",
                 "......#..#......", "......#..#......", "......####......", "......#..#......", "......#..#......",
                 "......####......", "......#..#......", "......#..#......", ".......##.......", "................",
@@ -702,13 +712,14 @@ def button(t: Tex, x: int, y: int, w: int, h: int) -> None:
 ARROW_UP = ["...#...", "..###..", ".#####.", "#######", "..###..", "..###..", "..###.."]
 
 
-def control(t: Tex, kind: str, x: int, y: int, w: int, h: int) -> None:
-    """Machine controls: vertical gauges (filled live by the screen) and push buttons with their icon."""
+def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000) -> None:
+    """Machine controls: vertical gauges (filled live by the screen) and push buttons with their icon. {top} is a
+    gauge's full scale."""
     if kind in ("heat", "rods", "charge", "mass"):
         gauge_frame(t, x, y, w, h)
         if kind == "heat":
-            # Red warning band at the top tenth (900 °C and up): where the core SCRAMs.
-            t.rect(x - 2, y, 1, max(1, h // 10), P.WARNING_RED.base)
+            # Red warning band from 900 °C up: where the core SCRAMs (or goes critical).
+            t.rect(x - 2, y, 1, max(1, round(h * (1 - 900 / top))), P.WARNING_RED.base)
         return
     if kind == "scram":
         t.stripes(x - 1, y - 1, w + 2, h + 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)   # guard collar
@@ -791,6 +802,59 @@ def readout_panel(t: Tex, x: int, y: int, w: int, h: int) -> None:
     t.hline(x, y, w, GLASS.highlight)
 
 
+LEAD_GUI = P.LEAD
+WATER = fixed("core_water", "#061428", "#0a2040", "#10305c", "#18447c", "#2460a0", "#3a86c4", "#8cc8f0")
+CORE_SPRITES = (180, 80)      # three 18x18 cells: a fuel channel, coolant, a rod left off the channels
+
+
+def core_cell(t: Tex, x: int, y: int) -> None:
+    """One cell of the reactor's core map as the window has it: a lead casing plate, its seam on the right and bottom."""
+    t.rect(x, y, 18, 18, LEAD_GUI[2])
+    t.hline(x, y, 17, LEAD_GUI[3])
+    t.vline(x, y, 17, LEAD_GUI[3])
+    t.hline(x, y + 17, 18, LEAD_GUI[0])
+    t.vline(x + 17, y, 18, LEAD_GUI[0])
+    for bx, by in ((2, 2), (14, 2), (2, 14), (14, 14)):
+        t.px(x + bx, y + by, LEAD_GUI[4])
+        t.px(x + bx + 1, y + by + 1, LEAD_GUI[1])
+
+
+def core_map_frame(t: Tex, x: int, y: int) -> None:
+    """The map's bezel: the 4x4 cells set into the panel, a lit lower lip."""
+    t.panel(x - 3, y - 3, 78, 78, PANEL, base=2, style="inset")
+    t.rect(x - 1, y - 1, 74, 74, PANEL.outline)
+    t.hline(x - 1, y + 73, 74, PANEL.light)
+
+
+def core_sprites(t: Tex, dx: int) -> None:
+    """The screen's map cells: a fuel channel (a slot sunk in deep water, a thin blue ring of light round its bore),
+    open coolant (water with ripples), and a slot ringed in red (a rod on a cell that is no longer a channel)."""
+    x0, y0 = CORE_SPRITES[0] + dx, CORE_SPRITES[1]
+    # Fuel channel.
+    t.rect(x0, y0, 18, 18, WATER[2])
+    t.hline(x0, y0 + 17, 18, WATER[0])
+    t.vline(x0 + 17, y0, 18, WATER[0])
+    t.rect(x0 + 1, y0 + 1, 16, 16, WATER[0])
+    t.outline(x0 + 1, y0 + 1, 16, 16, WATER[4])
+    t.hline(x0 + 2, y0 + 2, 14, WATER[1])
+    t.vline(x0 + 2, y0 + 2, 14, WATER[1])
+    for bx, by in ((1, 1), (16, 1), (1, 16), (16, 16)):
+        t.px(x0 + bx, y0 + by, P.STEEL[4])                     # the assembly's corner posts
+    # Coolant.
+    c0 = x0 + 20
+    t.rect(c0, y0, 18, 18, WATER[3])
+    t.hline(c0, y0 + 17, 18, WATER[1])
+    t.vline(c0 + 17, y0, 18, WATER[1])
+    for rx, ry, n in ((3, 4, 4), (9, 8, 5), (4, 12, 3), (11, 14, 3), (12, 3, 3)):
+        t.hline(c0 + rx, y0 + ry, n, WATER[5])
+        t.hline(c0 + rx + 1, y0 + ry + 1, n - 1, WATER[2])
+    # A rod left off the channels.
+    s0 = x0 + 40
+    slot(t, s0, y0)
+    t.outline(s0 + 1, y0 + 1, 16, 16, P.WARNING_RED.base)
+    t.outline(s0 + 2, y0 + 2, 14, 14, P.WARNING_RED.shadow)
+
+
 def texture_width(spec: dict) -> int:
     """256, or 512 for a window too wide to leave the fill sprites (x 180 on) clear."""
     return 256 if spec.get("size", (W, H))[0] <= 178 else 512
@@ -808,6 +872,8 @@ def build(name: str, spec: dict) -> Path:
         blueprint_view(t, *spec["preview"])
     if spec.get("stats"):
         readout_panel(t, *spec["stats"])
+    if spec.get("core_map"):
+        core_map_frame(t, *spec["core_map"])
     for kind, x, y in spec["slots"]:
         {"out_big": big_slot, "die": die_slot, "bucket": ghost_slot(BUCKET_GHOST), "canister": ghost_slot(CANISTER_GHOST),
          "membrane": ghost_slot(MEMBRANE_GHOST), "fill_in": ghost_slot(BUCKET_GHOST), "battery": ghost_slot(BATTERY_GHOST),
@@ -816,7 +882,8 @@ def build(name: str, spec: dict) -> Path:
          "core": ghost_slot(CORE_GHOST), "casing": ghost_slot(CASING_GHOST), "fuze": ghost_slot(FUZE_GHOST),
          "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
          "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST),
-         "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST),
+         "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills
@@ -844,8 +911,8 @@ def build(name: str, spec: dict) -> Path:
     button(t, *spec["redstone"])
     if spec["readout"]:
         readout_panel(t, *spec["readout"])
-    for kind, cx, cy, cw, ch, *_ in spec.get("controls", []):
-        control(t, kind, cx, cy, cw, ch)
+    for kind, cx, cy, cw, ch, _data, top, *_ in spec.get("controls", []):
+        control(t, kind, cx, cy, cw, ch, top or 1000)
     ix, iy = spec["inventory"]
     for row in range(3):
         for col in range(9):
@@ -856,6 +923,8 @@ def build(name: str, spec: dict) -> Path:
     progress_fill(t, fill_dx(spec))
     flame_fill(t, fill_dx(spec))
     redstone_icons(t, fill_dx(spec))
+    if spec.get("core_map"):
+        core_sprites(t, fill_dx(spec))
     return t.save(paths.TEXTURES / "gui" / "machine" / f"{name}.png")
 
 

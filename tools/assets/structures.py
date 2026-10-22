@@ -360,7 +360,9 @@ def part_block(name: str, tex: Tex, translucent: bool = False, cutout: bool = Fa
     write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
 
 
-def controller(name: str, front: Tex, top: Tex, side: Tex) -> None:
+def controller(name: str, front: Tex, top: Tex, side: Tex, hides: bool = True) -> None:
+    """A controller block. {hides}: whether its structure's model draws it once formed (the Fission Reactor, built of
+    ordinary blocks, keeps its controller as it is)."""
     front.save(paths.TEXTURES / "block" / f"{name}_front.png")
     top.save(paths.TEXTURES / "block" / f"{name}_top.png")
     side.save(paths.TEXTURES / "block" / f"{name}_side.png")
@@ -368,13 +370,18 @@ def controller(name: str, front: Tex, top: Tex, side: Tex) -> None:
         "parent": "minecraft:block/orientable",
         "textures": {"front": f"groundzero:block/{name}_front", "side": f"groundzero:block/{name}_side",
                      "top": f"groundzero:block/{name}_top"}})
-    write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundzero:block/{name}_side"))
+    formed_model = f"groundzero:block/{name}_formed" if hides else f"groundzero:block/{name}"
+    if hides:
+        write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundzero:block/{name}_side"))
+    else:
+        (paths.MODELS / "block" / f"{name}_formed.json").unlink(missing_ok=True)
     variants = {}
     rot = {"north": 0, "east": 90, "south": 180, "west": 270}
     for facing, y in rot.items():
         for active in ("false", "true"):
-            variants[f"active={active},facing={facing},formed=false"] = {"model": f"groundzero:block/{name}", **({"y": y} if y else {})}
-            variants[f"active={active},facing={facing},formed=true"] = {"model": f"groundzero:block/{name}_formed"}
+            turn = {"y": y} if y else {}
+            variants[f"active={active},facing={facing},formed=false"] = {"model": f"groundzero:block/{name}", **turn}
+            variants[f"active={active},facing={facing},formed=true"] = {"model": formed_model, **({} if hides else turn)}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
     write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
 
@@ -392,7 +399,7 @@ if __name__ == "__main__":
     part_block("magnet_segment", magnet_segment())
     part_block("accelerator_injector", injector())
     part_block("accelerator_target_chamber", target_chamber())
-    controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing())
+    controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing(), hides=False)
     controller("particle_accelerator", controller_front(orbit_placard), controller_top(), casing())
     # Slice 8.
     part_block("toroidal_field_coil", toroidal_field_coil())

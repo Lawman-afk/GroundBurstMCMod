@@ -35,9 +35,22 @@ public class MultiblockControllerBlock extends MachineBlock {
     public static final String STATUS = GZLang.add(GroundZero.MODID + ".multiblock.status",
             "Structure incomplete: %s missing, %s wrong. Sneak-right-click to open the controller.");
 
+    /** False for a structure built of ordinary blocks that stay as they are once formed (the Fission Reactor). */
+    private final boolean hidesWhenFormed;
+
     public MultiblockControllerBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type) {
+        this(properties, type, true);
+    }
+
+    public MultiblockControllerBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type,
+            boolean hidesWhenFormed) {
         super(properties, type, false, Shapes.block());
+        this.hidesWhenFormed = hidesWhenFormed;
         registerDefaultState(defaultBlockState().setValue(MultiblockPartBlock.FORMED, false).setValue(MultiblockPartBlock.CUT, PartCut.NONE));
+    }
+
+    private boolean hidden(BlockState state) {
+        return this.hidesWhenFormed && state.getValue(MultiblockPartBlock.FORMED);
     }
 
     @Override
@@ -49,17 +62,17 @@ public class MultiblockControllerBlock extends MachineBlock {
     @Override
     protected VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
-        return state.getValue(MultiblockPartBlock.FORMED) ? state.getValue(MultiblockPartBlock.CUT).shape() : super.getShape(state, level, pos, context);
+        return hidden(state) ? state.getValue(MultiblockPartBlock.CUT).shape() : super.getShape(state, level, pos, context);
     }
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        return state.getValue(MultiblockPartBlock.FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return hidden(state) ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
     protected VoxelShape getOcclusionShape(BlockState state) {
-        return state.getValue(MultiblockPartBlock.FORMED) ? Shapes.empty() : super.getOcclusionShape(state);
+        return hidden(state) ? Shapes.empty() : super.getOcclusionShape(state);
     }
 
     /**
@@ -80,9 +93,14 @@ public class MultiblockControllerBlock extends MachineBlock {
             if (controller.isFormed()) {
                 return super.useWithoutItem(level.getBlockState(pos), level, pos, player, hit);
             }
-            List<MultiblockDefinition.Mismatch> wrong = controller.definition().check(level, pos, controller.controllerFacing());
-            long missing = wrong.stream().filter(MultiblockDefinition.Mismatch::empty).count();
-            player.sendOverlayMessage(Component.translatable(STATUS, missing, wrong.size() - missing).withStyle(ChatFormatting.YELLOW));
+            Component problem = controller.problem(level);
+            if (problem != null) {
+                player.sendOverlayMessage(problem.copy().withStyle(ChatFormatting.YELLOW));
+            } else {
+                List<MultiblockDefinition.Mismatch> wrong = controller.mismatches(level);
+                long missing = wrong.stream().filter(MultiblockDefinition.Mismatch::empty).count();
+                player.sendOverlayMessage(Component.translatable(STATUS, missing, wrong.size() - missing).withStyle(ChatFormatting.YELLOW));
+            }
         }
         return InteractionResult.SUCCESS_SERVER;
     }
