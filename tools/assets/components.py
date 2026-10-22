@@ -20,6 +20,8 @@ Strategic Assembly Hall parts (slice 8c):
   the plutonium spark plug's copper terminal standing out of the top.
 - Cobalt-59 Jacket: a sleeve of riveted cobalt-blue plates round an open middle.
 - Intercontinental Booster: three olive stages narrowing upward on four nozzles, the missile's white and yellow bands.
+- Tertiary Stage (8d, the Tsar's): a fat lead radiation case, two dark slots where the two secondaries' pale lithium
+  deuteride shows, a hazard band, a gunmetal cap with the two spark plugs' copper terminals, a yellow stencil 3.
 """
 from __future__ import annotations
 
@@ -363,6 +365,46 @@ def intercontinental_booster() -> None:
     G.finish(m, t)
 
 
+def tertiary_stage() -> None:
+    """The Tsar's third stage: two fusion secondaries in a lead radiation channel, their lithium deuteride showing
+    through two slots, their spark plugs' terminals out of the cap."""
+    m = model("tertiary_stage")
+    base = prism(m, "base", 8, 8, 3.6, 2.4, 1, 2)
+    case = prism(m, "case", 8, 8, 4.2, 2.8, 2, 13.4)
+    cap = prism(m, "cap", 8, 8, 3.2, 2.1, 13.4, 14.4)
+    for i, x in enumerate((6.0, 8.8)):
+        m.box(f"plug{i}", (x, 14.4, 7.4), (x + 1.2, 16, 8.6))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    lid = P.WHITE_CERAMIC
+
+    def lead_case(t: Tex, r, d):
+        x, y, w, h = r
+        tone = {"up": 5, "north": 4, "west": 4, "south": 3, "east": 3, "down": 2}[d]     # dull lead, a step lighter
+        t.rect(x, y, w, h, P.LEAD[tone])
+        if d in SIDES and h > 2:
+            t.hline(x, y, w, P.LEAD[tone + 1])
+            t.hline(x, y + h - 1, w, P.LEAD[tone - 1])
+        if d not in SIDES or h < 8:
+            return
+        def row(by: float) -> int:
+            return y + max(0, min(h - 1, int(round((13.4 - by) * h / (13.4 - 2) - 0.5))))
+        for by in (9.6, 5.2):                              # the two slots: a dark frame round a pale lithium band
+            p = row(by)
+            t.hline(x, p - 1, w, P.LEAD[2])
+            t.hline(x, p, w, lid[4])
+            t.hline(x, p + 1, w, P.LEAD[2])
+        for i in range(w):                                 # the hazard band under the cap
+            t.px(x + i, row(12.4), YELLOW[4] if (i // 2) % 2 == 0 else BLACK[2])
+        if d == "north" and w >= 4:
+            t.text(x + (w - Tex.text_width("3")) // 2, row(7.9) - 2, "3", YELLOW[4])
+    fill_all(m, t, case, lead_case)
+    fill_all(m, t, base + cap, shaded(GUN))
+    for i in range(2):
+        m.paint_all(t, f"plug{i}", shaded(P.COPPER))
+    G.finish(m, t)
+
+
 def canister_dispenser(name: str, can, cap, strap, lamp=None) -> None:
     m = model(name)
     m.box("plate", (3.5, 2, 3.5), (12.5, 3, 12.5))
@@ -528,7 +570,7 @@ CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispense
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
-STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster"]
+STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage"]
 
 
 def main() -> None:
@@ -559,6 +601,7 @@ def main() -> None:
     fusion_secondary()
     cobalt_jacket()
     intercontinental_booster()
+    tertiary_stage()
     G.item_defs(CORES + CASINGS + FUZES + STRATEGIC)
     print("components written")
 

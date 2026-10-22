@@ -70,11 +70,9 @@ def lying(frm, to):
 
 
 def section_of(name: str) -> int:
-    """Which of the crane's four loads a part comes in (4: the warhead's shroud)."""
+    """Which of the crane's first three loads a booster part comes in (the fourth is the warhead's nose)."""
     if name.startswith("nozzle") or name.startswith("fin"):
         return 1
-    if name == "tip":
-        return 4
     return L.ICBM_LOAD[name.rsplit("_", 1)[0]]
 
 
@@ -131,19 +129,18 @@ def hall() -> None:
         g.box(n, (x, HOOK_TOP, CRANE_Z - 0.5), (x + 1, TROLLEY_Y, CRANE_Z + 0.5), faces=sides, bone="cable")
     g.box("hook_block", (-4, HOOK_TOP - 8, CRANE_Z - 3), (4, HOOK_TOP, CRANE_Z + 3), faces=sides + ("up", "down"), bone="hook")
     g.box("hook", (-1, HOOK_TOP - 14, CRANE_Z - 1), (1, HOOK_TOP - 8, CRANE_Z + 1), faces=sides + ("down",), bone="hook")
-    # The missile on the cradles, by the crane's loads; the shroud once for each warhead it may carry.
+    # The missile on the cradles, by the crane's loads; the nose once for each warhead it may carry (the Tsar's is its
+    # bomb, wider than the stages).
     missile = []
     for name, frm, to, faces, kind in L.icbm_parts():
         a, b = lying(frm, to)
-        hall_faces = tuple(FACE[f] for f in faces)
-        k = section_of(name)
-        if k == 4:
-            for nose in L.ICBM_NOSES:
-                g.box(f"n_{nose}_{name}", a, b, faces=hall_faces, bone=f"nose_{nose}")
-                missile.append((f"n_{nose}_{name}", kind, nose))
-        else:
-            g.box(f"m_{name}", a, b, faces=hall_faces, bone=f"sec{k}")
-            missile.append((f"m_{name}", kind, "none"))
+        g.box(f"m_{name}", a, b, faces=tuple(FACE[f] for f in faces), bone=f"sec{section_of(name)}")
+        missile.append((f"m_{name}", kind, "none"))
+    for nose in L.ICBM_NOSES:
+        for name, frm, to, faces, kind in L.icbm_nose_parts(nose):
+            a, b = lying(frm, to)
+            g.box(f"n_{nose}_{name}", a, b, faces=tuple(FACE[f] for f in faces), bone=f"nose_{nose}")
+            missile.append((f"n_{nose}_{name}", kind, nose))
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
@@ -237,9 +234,12 @@ def hall() -> None:
         g.paint_all(tex, n, lambda t, r, d: t.rect(*r, BLACK[1]))
     g.paint_all(tex, "hook_block", lambda t, r, d: (t.rect(*r, YELLOW[tone(d)]), t.stripes(*r, YELLOW[4], BLACK[2], width=1) if d in sides else None))
     g.paint_all(tex, "hook", shaded(STEEL))
+    glow = Tex(g.tex_w, g.tex_h, L.CLEAR)                    # the Tsar's vents (the renderer draws it lit)
     for name, kind, nose in missile:
         g.paint_all(tex, name, L.icbm_paint(kind, nose, lying=True))
-    g.save(tex)
+        if kind == "tsar_vent":
+            g.paint_all(glow, name, L.tsar_vent_glow(lying=True))
+    g.save(tex, glow)
     # Working (12 s, looped while the hall runs): the crane runs from over the tail to the first stage and lowers its
     # hook, on to the third stage and lowers it again, and back; the cables pay out as the hook drops.
     work = Animation("working", 12.0, loop=True)

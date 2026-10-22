@@ -78,6 +78,18 @@ neoForge {
             systemProperty 'groundzero.fxShots.only', (project.findProperty('fxOnly') ?: '').toString()
         }
 
+        // Makes a normal world, generates the ground round its spawn, sets a blast off there with the player watching
+        // from 360 blocks east, records every server tick until it has finished and writes run/bench/<profile>_<time>.csv
+        // and .txt, then quits (see BlastBench). -Pbench=<profile> (default the Tsar); -PbenchSeed=<seed>.
+        blastBench {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundzero.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
+            if (project.findProperty('benchSeed') != null) {
+                systemProperty 'groundzero.blastBench.seed', project.findProperty('benchSeed').toString()
+            }
+        }
+
         server {
             server()
             programArgument '--nogui'

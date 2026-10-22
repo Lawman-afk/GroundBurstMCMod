@@ -92,6 +92,11 @@ final class StatsTests {
         String cobalt = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.COBALT_WARHEAD.item().get()), registries));
         has(helper, cobalt, "groundzero.stats.fallout_lasts() = groundzero.stats.days(30)");
         has(helper, cobalt, "groundzero.stats.effect.cobalt(" + dev.groundzero.content.ordnance.charge.Charges.cobaltReach() + ")");
+        // Slice 8d: the Tsar.
+        String tsar = all(AssemblyStats.warhead(new ItemStack(GZOrdnance.TSAR_WARHEAD.item().get()), registries));
+        has(helper, tsar, "groundzero.stats.yield() = groundzero.stats.yield_value(50 Mt)");
+        has(helper, tsar, "groundzero.stats.fallout() = groundzero.stats.blocks(600)");
+        has(helper, tsar, "groundzero.stats.fallout_lasts() = groundzero.stats.days(3)");
         helper.assertTrue(AssemblyStats.warhead(new ItemStack(GZOrdnance.C4.item().get()), registries).isEmpty(), "C4 is no warhead");
         helper.succeed();
     }

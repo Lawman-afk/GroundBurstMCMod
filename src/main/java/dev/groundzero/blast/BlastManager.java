@@ -37,6 +37,8 @@ public final class BlastManager extends SavedData {
     /** What is left of this server tick's budget, across every level. */
     private static long nanosLeft;
     private static int blocksLeft;
+    /** Time the blasts took this server tick, across every level (for {@link BlastBench}). */
+    static long nanosUsed;
 
     private final @Nullable ServerLevel level;
     private final List<BlastJob> running = new ArrayList<>();
@@ -73,6 +75,7 @@ public final class BlastManager extends SavedData {
     static void resetBudget() {
         nanosLeft = GZServerConfig.MS_BUDGET_PER_TICK.get() * 1_000_000L;
         blocksLeft = GZServerConfig.MAX_BLOCK_CHANGES_PER_TICK.get();
+        nanosUsed = 0;
     }
 
     static void forget(ServerLevel level) {
@@ -82,6 +85,11 @@ public final class BlastManager extends SavedData {
     /** Blasts running or waiting in this level. */
     public int active() {
         return this.running.size() + this.queued.size();
+    }
+
+    /** The blasts running now. */
+    List<? extends Blast> running() {
+        return List.copyOf(this.running);
     }
 
     void add(BlastJob job) {
@@ -118,7 +126,9 @@ public final class BlastManager extends SavedData {
                     broadcast(new BlastPayloads.End(job.netId));
                 }
             }
-            nanosLeft -= System.nanoTime() - start;
+            long used = System.nanoTime() - start;
+            nanosLeft -= used;
+            nanosUsed += used;
         }
         if (this.level.getGameTime() % FRONT_INTERVAL == 0) {
             for (BlastJob job : this.running) {

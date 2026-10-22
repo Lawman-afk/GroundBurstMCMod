@@ -26,7 +26,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -34,13 +33,14 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.Tags;
 
 /**
- * One running blast (DESIGN.md §11.2-11.4). The front advances one shell (one block of radius) at a time, at the
- * profile's speed, inside the time and block budgets the {@link BlastManager} hands it each tick.
+ * One running blast (DESIGN.md §11.2-11.4). The terrain front advances one shell (one block of radius) at a time, at
+ * the profile's speed, inside the time and block budgets the {@link BlastManager} hands it each tick. The shock front
+ * (what hits entities, and what clients draw) always runs at the profile's speed: when a big blast's terrain work falls
+ * behind its budget, the crater goes on forming behind the shock (slice 8d, after benchmarking the Tsar).
  *
  * <p><b>Terrain.</b> Each ray carries energy. Inside its crater reach a ray destroys the blocks it enters while its
  * energy lasts, paying {@code 0.3 + resistance^0.75} per block (air costs little), so dense blocks shield what is
@@ -49,7 +49,7 @@ import net.neoforged.neoforge.common.Tags;
  * reach a surviving ray becomes a pressure ray: in the structural band it blows light blocks out of its way, and then
  * it stops at the first thing it cannot. Bedrock and other unbreakable blocks stop every ray (a shadow behind them). A
  * ray that is not heading down and has climbed above the highest block anywhere in the blast's reach can hit nothing
- * more, and is dropped.
+ * more, and is dropped. Rays split as the front reaches them ({@link RayField}).
  *
  * <p><b>Ground.</b> After each shell a ground pass looks at the ring of columns that far out, as the burst sees them:
  * a column hidden behind a nearer, higher one (a hill, a wall) is spared. Visible ground in the scorch band is
@@ -64,14 +64,17 @@ import net.neoforged.neoforge.common.Tags;
  * left hanging in the air, attached to nothing, goes, so no lone block floats over the crater floor. Then the fires and
  * rubble the ground pass chose are put down, each only where its ground is still there: the crater reaches the ground
  * under a ring after the ring itself (it lies further off in 3D), so placing them as the ring passed left fire in mid
- * air. Last the crater's rim gets ordinary neighbour updates, so sand and gravel fall and water flows in.
+ * air. The clean-up also finds the crater's rim (every destroyed block next to one a ray reached and left standing);
+ * last the rim gets ordinary neighbour updates, so sand and gravel fall and water flows in.
  *
- * <p><b>Entities.</b> As the front passes each entity it takes damage and knockback scaled by distance and by
- * exposure (how many of 4 lines from the burst to its body are unblocked), and catches fire inside the fire radius.
- * Items and experience in the crater are destroyed.
+ * <p><b>Entities.</b> As the shock front passes each entity it takes damage and knockback scaled by distance and by
+ * exposure (how many of 4 lines from the burst to its body are unblocked: ground that is not loaded counts as open,
+ * never loaded for it), and catches fire inside the fire radius. One the shock finds wholly shielded, where the terrain
+ * work has yet to reach (the crater may still dig its cover away), is looked at again once it has. Items and experience
+ * in the crater are destroyed.
  *
- * <p><b>Chunks and saving.</b> A blast that takes more than a tick keeps the chunks round its front loaded
- * ({@link BlastChunks}) and is saved with the level ({@link State}): the rays, the front's radius and the crater rim,
+ * <p><b>Chunks and saving.</b> A blast that takes more than a tick keeps the chunks round its terrain front loaded
+ * ({@link BlastChunks}; out to where its terrain work ends, not its entity reach) and is saved with the level ({@link State}): the rays, the front's radius and the crater rim,
  * so it carries on where it left off after a restart.
  */
 final class BlastJob implements Blast {
@@ -83,10 +86,13 @@ final class BlastJob implements Blast {
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** How far down from the fireball's height the ground pass looks for a column's ground. */
     private static final int GROUND_SCAN = 64;
+    /** Chunk tickets let go a tick once a blast is over. */
+    private static final int RELEASE_PER_TICK = 64;
     /** The biggest cluster of blocks the clean-up removes when nothing holds it up. */
     static final int FLOATER = 4;
 
-    enum Phase { FRONT, CLEAN, RIM, DONE }
+    /** FRONT: the fronts run; CLEAN: floaters and the rim; RIM: its neighbour updates; RELEASE: its chunks let go, a few a tick. */
+    enum Phase { FRONT, CLEAN, RIM, RELEASE, DONE }
 
     final ServerLevel level;
     final UUID id;
@@ -120,7 +126,6 @@ final class BlastJob implements Blast {
     private RayField rays;
     private int shell;
     private int cursor;
-    private boolean shellSplit;
     private float entityRadius = -1;
     private int age;
     private Phase phase = Phase.FRONT;
@@ -137,6 +142,8 @@ final class BlastJob implements Blast {
     /** How many floating blocks the clean-up took away (for GameTests). */
     int floatersRemoved;
     private final IntOpenHashSet hit = new IntOpenHashSet();
+    /** Entities the shock found shielded by ground the terrain work had not reached yet: looked at again once it has. */
+    private final IntOpenHashSet waiting = new IntOpenHashSet();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private int blocksChanged;
 
@@ -157,7 +164,7 @@ final class BlastJob implements Blast {
         this.random = RandomSource.create(seed);
         this.ceiling = highestBlock(level, center, profile.terrainRadius());
         this.chunks = profile.isInstant() ? null
-                : new BlastChunks(level, id, center, profile.outerRadius(), GZServerConfig.GENERATE_CHUNKS.get(), this::raiseCeiling);
+                : new BlastChunks(level, id, center, workRadius(profile), GZServerConfig.GENERATE_CHUNKS.get(), this::raiseCeiling);
         this.streakSeed = StreakNoise.seed(seed);
         float streaks = profile.streaks();
         int noiseSeed = this.streakSeed;
@@ -226,6 +233,11 @@ final class BlastJob implements Blast {
         ).apply(i, State::new));
     }
 
+    /** How far the terrain work runs: the crater, the bands beyond it and the ground pass. */
+    private static float workRadius(BlastProfile p) {
+        return Math.max(p.terrainRadius(), p.groundRadius() + 1);
+    }
+
     private void raiseCeiling(int top) {
         this.ceiling = Math.max(this.ceiling, top);
     }
@@ -245,10 +257,15 @@ final class BlastJob implements Blast {
         return phase;
     }
 
-    /** The radius the front has reached (what clients draw the shockwave at). */
+    /**
+     * The radius the shock front has reached (what clients draw the shockwave at): the profile's speed from the start,
+     * never behind the terrain work.
+     */
     @Override
     public int radius() {
-        return this.shell;
+        float outer = this.profile.outerRadius();
+        float shock = this.profile.isInstant() || this.phase != Phase.FRONT ? outer : Math.min(outer, this.age * this.profile.frontSpeed());
+        return (int) Math.max(this.shell, shock);
     }
 
     @Override
@@ -259,6 +276,12 @@ final class BlastJob implements Blast {
     @Override
     public int blocksChanged() {
         return this.blocksChanged;
+    }
+
+    @Override
+    public Stats stats() {
+        return new Stats(this.phase.name(), this.shell, this.rays.size, this.rays.room(), this.chunks == null ? 0 : this.chunks.forcedCount(),
+                this.visited.size(), this.rim.size(), this.fires.size() + this.rubbleAt.size());
     }
 
     /** The top of the highest block in the loaded chunks within {@code radius} of {@code center} (horizontally). */
@@ -296,10 +319,10 @@ final class BlastJob implements Blast {
         boolean instant = this.profile.isInstant();
         this.age++;
         int changesBefore = this.blocksChanged;
-        float outer = this.profile.outerRadius();
+        float outer = this.profile.outerRadius(), work = workRadius(this.profile);
         float target = instant ? Float.MAX_VALUE : this.age * this.profile.frontSpeed();
-        while (this.phase == Phase.FRONT && this.shell <= outer && this.shell <= target) {
-            if (this.chunks != null && !this.chunks.prepare(this.shell)) {
+        while (this.phase == Phase.FRONT && this.shell <= work && this.shell <= target) {
+            if (this.terrain && this.chunks != null && !this.chunks.prepare(this.shell)) {
                 break;                                     // its chunks are still loading: wait
             }
             if (this.terrain && this.shell <= this.profile.terrainRadius() && this.rays.size > 0) {
@@ -313,13 +336,13 @@ final class BlastJob implements Blast {
             }
             this.shell++;
             this.cursor = 0;
-            this.shellSplit = false;
             if (!instant && System.nanoTime() > deadline) {
                 break;
             }
         }
-        affectEntities(Math.min(this.shell, outer));
-        if (this.phase == Phase.FRONT && this.shell > outer) {
+        // The shock reaches entities at the profile's speed, however far behind the terrain work is.
+        affectEntities(Math.min(Math.max(this.shell, target), outer));
+        if (this.phase == Phase.FRONT && this.shell > work && target >= outer) {
             this.phase = Phase.CLEAN;
             this.rays = new RayField();                    // free the ray arrays
             this.cleanCursor = this.visited.long2ObjectEntrySet().fastIterator();
@@ -331,8 +354,8 @@ final class BlastJob implements Blast {
         if (this.phase == Phase.RIM) {
             updateRim(instant ? Long.MAX_VALUE : deadline);
         }
-        if (this.phase == Phase.DONE && this.chunks != null) {
-            this.chunks.release();
+        if (this.phase == Phase.RELEASE && (this.chunks == null || this.chunks.release(RELEASE_PER_TICK))) {
+            this.phase = Phase.DONE;                       // (a Tsar holds hundreds: let go at once they stalled a tick)
         }
         return this.blocksChanged - changesBefore;
     }
@@ -341,10 +364,6 @@ final class BlastJob implements Blast {
     /** Runs (the rest of) one shell. False if it stopped early for the budget. */
     private boolean runShell(int r, long deadline, int budget) {
         RayField f = this.rays;
-        if (!this.shellSplit) {
-            f.splitFor(Math.max(1, r), this.grain);
-            this.shellSplit = true;
-        }
         int startChanges = this.blocksChanged;
         int maxY = this.level.getMaxY(), minY = this.level.getMinY();
         float crater = this.profile.crater(), core = this.profile.core();
@@ -356,16 +375,20 @@ final class BlastJob implements Blast {
             if (f.mode[k] == RayField.DEAD) {
                 continue;
             }
+            if (f.needsSplit(k, r)) {
+                f.split(k, this.grain);                    // its four children are added at the end: this shell reaches them later
+                continue;
+            }
             int bx = (int) Math.floor(this.center.x + f.dx[k] * r);
             int by = (int) Math.floor(this.center.y + f.dy[k] * r);
             int bz = (int) Math.floor(this.center.z + f.dz[k] * r);
             if (by < minY || by > maxY) {
-                f.mode[k] = RayField.DEAD;
+                f.kill(k);
                 continue;
             }
             this.pos.set(bx, by, bz);
             if (!this.level.isLoaded(this.pos)) {
-                f.mode[k] = RayField.DEAD;                 // (5b: chunk tickets keep the band loaded)
+                f.kill(k);                                 // (5b: chunk tickets keep the band loaded)
                 continue;
             }
             BlockState state = this.level.getBlockState(this.pos);
@@ -374,13 +397,13 @@ final class BlastJob implements Blast {
                 // Above everything there is to hit in the whole blast, and not coming down: nothing more to do.
                 // (Not the ground under the ray itself: a tree or a hill further out may still be in its path.)
                 if (f.dy[k] >= 0 && by > this.ceiling) {
-                    f.mode[k] = RayField.DEAD;
+                    f.kill(k);
                 }
                 continue;
             }
             if (!markVisited(bx, by, bz)) {
                 // Another ray has dealt with this block already: whatever is left there blocks this one.
-                f.mode[k] = RayField.DEAD;
+                f.kill(k);
                 continue;
             }
             float reach = crater * f.grain[k];
@@ -394,20 +417,22 @@ final class BlastJob implements Blast {
                 f.mode[k] = RayField.PRESSURE;
             }
         }
-        f.compact();
+        if (f.dead * 4 > f.size) {
+            f.compact();                                   // only once a quarter of them are dead: it costs a pass over them all
+        }
         return true;
     }
 
     private void crater(RayField f, int k, int r, BlockState state, boolean inCore) {
         if (isProtected() || state.getDestroySpeed(this.level, this.pos) < 0) {
-            f.mode[k] = RayField.DEAD;                     // bedrock, barriers, protected spawn: a shadow behind
+            f.kill(k);                                     // bedrock, barriers, protected spawn: a shadow behind
             return;
         }
         boolean liquid = state.getBlock() instanceof LiquidBlock;
         float c = liquid ? FLUID_COST : cost(state.getBlock().getExplosionResistance());
         if (!inCore) {
             if (f.energy[k] < c) {
-                f.mode[k] = RayField.DEAD;
+                f.kill(k);
                 return;
             }
             f.energy[k] -= c;
@@ -417,14 +442,14 @@ final class BlastJob implements Blast {
 
     private void pressure(RayField f, int k, int r, BlockState state) {
         if (isProtected() || !state.getFluidState().isEmpty() && state.getBlock() instanceof LiquidBlock) {
-            f.mode[k] = RayField.DEAD;
+            f.kill(k);
             return;
         }
         if (r <= this.profile.structural() && this.table.blowsOut(state)) {
             write(this.pos, AIR);                          // blown out; the shock carries on through the gap
             return;
         }
-        f.mode[k] = RayField.DEAD;                         // (the ground pass scorches and sets fires)
+        f.kill(k);                                         // (the ground pass scorches and sets fires)
     }
 
     // --- ground pass -----------------------------------------------------------------------------------------------------------
@@ -568,7 +593,7 @@ final class BlastJob implements Blast {
         };
     }
 
-    /** Destroys the block at {@link #pos} (maybe dropping it) and remembers rim candidates around it. */
+    /** Destroys the block at {@link #pos} (maybe dropping it). */
     private void destroy(BlockState state) {
         int kind = this.profile.ejecta() > 0 ? kind(state) : -1;
         if (kind >= 0) {
@@ -583,13 +608,6 @@ final class BlastJob implements Blast {
         }
         write(this.pos, AIR);
         markDestroyed(this.pos.getX(), this.pos.getY(), this.pos.getZ());
-        for (Direction d : Direction.values()) {
-            BlockPos n = this.pos.relative(d);
-            if (!isDestroyed(n.getX(), n.getY(), n.getZ()) && !this.level.getBlockState(n).isAir()) {
-                this.rim.add(this.pos.asLong());
-                break;
-            }
-        }
     }
 
     private void write(BlockPos at, BlockState state) {
@@ -604,8 +622,10 @@ final class BlastJob implements Blast {
     }
 
     /**
-     * After the front: every block a ray reached but did not destroy is looked at, and if it belongs to a little cluster
-     * (up to {@link #FLOATER} blocks) that touches no other solid block, the cluster goes. True when done.
+     * After the front: every block a ray reached but did not destroy is looked at. The destroyed blocks next to it are
+     * the crater's rim (they get neighbour updates last); and if it belongs to a little cluster (up to {@link #FLOATER}
+     * blocks) that touches no other solid block, the cluster goes. True when done. (The rim used to be gathered as
+     * blocks were destroyed, which took in nearly every destroyed block: 20 million for the Tsar.)
      */
     private boolean clean(long deadline) {
         var it = this.cleanCursor;
@@ -623,7 +643,14 @@ final class BlastJob implements Blast {
                 while (survivors != 0) {
                     int b = (w << 6) | Long.numberOfTrailingZeros(survivors);
                     survivors &= survivors - 1;
-                    dropIfFloating(sx + (b & 15), sy + (b >> 8), sz + ((b >> 4) & 15));
+                    int x = sx + (b & 15), y = sy + (b >> 8), z = sz + ((b >> 4) & 15);
+                    for (Direction d : Direction.values()) {
+                        int nx = x + d.getStepX(), ny = y + d.getStepY(), nz = z + d.getStepZ();
+                        if (isDestroyed(nx, ny, nz)) {
+                            this.rim.add(BlockPos.asLong(nx, ny, nz));
+                        }
+                    }
+                    dropIfFloating(x, y, z);
                 }
             }
         }
@@ -736,7 +763,7 @@ final class BlastJob implements Blast {
                 this.level.updateNeighborsAt(p, Blocks.AIR);
             }
         }
-        this.phase = Phase.DONE;
+        this.phase = Phase.RELEASE;
     }
 
     // --- visited / destroyed bitsets, one pair of 4096-bit sets per chunk section ------------------------------------------
@@ -773,30 +800,51 @@ final class BlastJob implements Blast {
     }
 
     // --- entities --------------------------------------------------------------------------------------------------------------
-    /** Hits every entity the front has reached since the last call (up to {@code r}). */
+    /**
+     * Hits every entity the shock has reached since the last call (up to {@code r}); and those it found shielded where
+     * the terrain work has since caught up with them.
+     */
     private void affectEntities(float r) {
         BlastProfile p = this.profile;
         float reach = Math.max(Math.max(p.damage(), p.lethal()), Math.max(p.crater(), p.fire()));
-        if (r <= this.entityRadius || this.entityRadius >= reach) {
+        boolean grows = r > this.entityRadius && this.entityRadius < reach;
+        if (!grows && this.waiting.isEmpty()) {
             return;
         }
-        float to = Math.min(r, reach);
+        float to = grows ? Math.min(r, reach) : this.entityRadius;
         this.entityRadius = to;
-        AABB box = new AABB(this.center, this.center).inflate(to);
-        List<Entity> entities = this.level.getEntities((Entity) null, box, e -> !e.isSpectator() && !this.hit.contains(e.getId()));
-        for (Entity e : entities) {
-            double d = e.position().distanceTo(this.center);
-            if (d > to) {
+        // How far the terrain work has got (all the way once the fronts are done), and how far it will go.
+        float dug = this.phase == Phase.FRONT ? this.shell : Float.MAX_VALUE, work = workRadius(p);
+        // Every loaded entity, not a box query: a big blast's box covers thousands of empty chunk sections.
+        List<Entity> entities = new java.util.ArrayList<>();
+        for (Entity e : this.level.getAllEntities()) {
+            if (e == null || e.isSpectator() || this.hit.contains(e.getId())) {
                 continue;
             }
-            this.hit.add(e.getId());
+            double d2 = e.position().distanceToSqr(this.center);
+            boolean waits = this.waiting.contains(e.getId());
+            // New ones inside the shock; waiting ones once the terrain work has passed them (wherever they have got to).
+            if (waits ? d2 <= (double) dug * dug : grows && d2 <= (double) to * to) {
+                entities.add(e);
+            }
+        }
+        for (Entity e : entities) {
+            double d = e.position().distanceTo(this.center);
             if (e instanceof ItemEntity || e instanceof ExperienceOrb) {
+                this.hit.add(e.getId());
+                this.waiting.remove(e.getId());
                 if (d <= p.crater()) {
                     e.discard();
                 }
                 continue;
             }
             float exposure = exposure(e);
+            if (exposure <= 0 && d > dug && d < work) {
+                this.waiting.add(e.getId());               // its cover may yet be dug away: look again when the work gets there
+                continue;
+            }
+            this.hit.add(e.getId());
+            this.waiting.remove(e.getId());
             if (exposure <= 0) {
                 continue;
             }
@@ -827,12 +875,29 @@ final class BlastJob implements Blast {
                 new Vec3(b.minX + 0.05, b.minY + 0.1, b.minZ + 0.05), new Vec3(b.maxX - 0.05, b.minY + 0.1, b.maxZ - 0.05)};
         int open = 0;
         for (Vec3 to : points) {
-            HitResult hitResult = this.level.clip(new ClipContext(this.center, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, e));
-            if (hitResult.getType() == HitResult.Type.MISS) {
+            if (clear(this.center, to)) {
                 open++;
             }
         }
         return open / 4f;
+    }
+
+    /**
+     * Whether no block's collision shape stands between two points. Ground that is not loaded counts as open: a line of
+     * sight never loads a chunk (a level's own clip would, on the server thread).
+     */
+    private boolean clear(Vec3 from, Vec3 to) {
+        return net.minecraft.world.level.BlockGetter.traverseBlocks(from, to, this.level, (level, at) -> {
+            if (!level.isLoaded(at)) {
+                return null;
+            }
+            BlockState state = level.getBlockState(at);
+            if (state.isAir()) {
+                return null;
+            }
+            net.minecraft.world.phys.shapes.VoxelShape shape = state.getCollisionShape(level, at);
+            return shape.isEmpty() || shape.clip(from, to, at) == null ? null : Boolean.FALSE;
+        }, level -> Boolean.TRUE);
     }
 
     /** Smooth, seeded variation of ray energy over the sphere: a lobed, irregular crater rim. */

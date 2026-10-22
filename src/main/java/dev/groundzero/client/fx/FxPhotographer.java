@@ -71,6 +71,12 @@ public final class FxPhotographer {
                 new Scene("complex_icbm_close", "complex_icbm", 13, -38, List.of(20)),
                 new Scene("nuke_thermonuclear", "thermonuclear_warhead", 600, -18, List.of(3, 40, 160, 500, 1200)),
                 new Scene("cobalt_aerial", "cobalt_plume", 420, 28, List.of(400, 3300)),
+                // Slice 8d: the hall building a Tsar (a minute and a half), the complex carrying one, and the Tsar itself.
+                new Scene("hall_tsar_aerial", "hall_tsar", 26, 24, List.of(60, 1000, 1850)),
+                new Scene("hall_tsar_ui", "hall_tsar", 4, 0, List.of(30)),
+                new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
+                new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
+                new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
                 // Smoke in front of water, seen from above: the water must still show through the smoke.
                 new Scene("water_smoke_aerial", "water_smoke", 16, 28, List.of(60, 160)),
                 new Scene("fallout_inside", "fallout", 30, -32, List.of(60, 400)),
@@ -278,6 +284,11 @@ public final class FxPhotographer {
      * south from it), powered and given a thermonuclear missile's parts with GPS, and set to work.
      */
     private static void hallSite(ServerLevel level, int x, int ground) {
+        hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY);
+    }
+
+    /** As {@link #hallSite(ServerLevel, int, int)}, with {@code option} in the jacket slot (a Tertiary Stage: a Tsar). */
+    private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option) {
         hallAt = new net.minecraft.core.BlockPos(x, ground, -6);
         formed(level, hallAt, dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.block().get(), dev.groundzero.content.strategic.GZStrategic.HALL,
                 net.minecraft.core.Direction.NORTH);
@@ -292,17 +303,21 @@ public final class FxPhotographer {
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.INTERCONTINENTAL_BOOSTER.get()));
             inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_GUIDANCE,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()));
+            inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_JACKET, option.copy());
             hall.energy().generate(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.CAPACITY);
             hall.startAssembly();
         }
     }
 
     private static void complexSite(ServerLevel level, int x, int ground) {
-        complexSite(level, x, ground, false);
+        complexSite(level, x, ground, false, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
-    /** The Launch Complex and its computer; with {@code icbm} a thermonuclear intercontinental missile on the pad, not armed. */
-    private static void complexSite(ServerLevel level, int x, int ground, boolean icbm) {
+    /**
+     * The Launch Complex and its computer; with {@code icbm} an intercontinental missile on the pad, not armed (built
+     * with {@code option} in the hall's jacket slot: nothing for a thermonuclear one, a Tertiary Stage for the Tsar).
+     */
+    private static void complexSite(ServerLevel level, int x, int ground, boolean icbm, net.minecraft.world.item.ItemStack option) {
         launchTarget = new net.minecraft.core.BlockPos(x + 400, 64, 140);
         launchSilo = new net.minecraft.core.BlockPos(x, ground, -4);
         launchComputer = new net.minecraft.core.BlockPos(x - 6, ground, 4);
@@ -311,7 +326,7 @@ public final class FxPhotographer {
         if (level.getBlockEntity(launchSilo) instanceof dev.groundzero.content.launch.LaunchComplexBlockEntity complex) {
             complex.revalidate();
             complex.inventory().setItem(dev.groundzero.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE, icbm
-                    ? dev.groundzero.content.strategic.StrategicAssembly.assemble(net.minecraft.world.item.ItemStack.EMPTY,
+                    ? dev.groundzero.content.strategic.StrategicAssembly.assemble(option,
                             new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()), net.minecraft.world.item.ItemStack.EMPTY)
                     : dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get()), dev.groundzero.content.assembly.SizeClass.XL, dev.groundzero.content.assembly.MissileParts.Motor.LIQUID, dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false)));
             complex.energy().generate(dev.groundzero.content.launch.LaunchComplexBlockEntity.COMPLEX_ENERGY);
@@ -497,6 +512,7 @@ public final class FxPhotographer {
 
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
+        mc.options.pauseOnLostFocus = false;              // another window taking the focus must not pause the shots
         if (mc.level == null && !worldMade && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
             worldMade = true;
             try {
@@ -638,11 +654,19 @@ public final class FxPhotographer {
                     return;
                 }
                 if (s.profile().equals("complex_icbm")) {
-                    complexSite(level, x, ground, true);
+                    complexSite(level, x, ground, true, net.minecraft.world.item.ItemStack.EMPTY);
+                    return;
+                }
+                if (s.profile().equals("complex_tsar")) {
+                    complexSite(level, x, ground, true, new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
                 if (s.profile().equals("hall")) {
                     hallSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("hall_tsar")) {
+                    hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
                 if (s.profile().equals("cobalt_plume")) {
@@ -792,7 +816,7 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.name().equals("hall_ui") && step >= 0 && clock == 12 && hallAt != null) {
+        if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui")) && step >= 0 && clock == 12 && hallAt != null) {
             var hall = hallAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(hall) instanceof dev.groundzero.content.strategic.StrategicAssemblyBlockEntity be) {

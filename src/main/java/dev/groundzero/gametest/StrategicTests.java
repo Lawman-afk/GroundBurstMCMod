@@ -30,7 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-/** Phase 8 slice 8c (DESIGN.md §15.2): the Strategic Assembly Hall and the whole weapons it builds. */
+/** Phase 8 slices 8c and 8d (DESIGN.md §15.2): the Strategic Assembly Hall and the whole weapons it builds. */
 final class StrategicTests {
     private StrategicTests() {}
 
@@ -41,6 +41,8 @@ final class StrategicTests {
         GZGameTests.test("intercontinental_missile_fires_only_from_the_complex", GZGameTests.FLOOR_16, 20, StrategicTests::complexOnly);
         GZGameTests.test("thermonuclear_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, StrategicTests::thermonuclear);
         GZGameTests.test("cobalt_warhead_leaves_a_plume_downwind", GZGameTests.FLOOR_16, 40, StrategicTests::cobaltPlume);
+        GZGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GZGameTests.FLOOR_16, 40, StrategicTests::tsar);
+        GZGameTests.test("tsar_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, StrategicTests::tsarBlast);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -134,6 +136,39 @@ final class StrategicTests {
         });
     }
 
+    /**
+     * A Tertiary Stage in the jacket slot makes the Tsar: its own model, a minute and a half's work, the Tsar on the
+     * cradles; TAKE APART gives the Tertiary Stage back with the rest.
+     */
+    private static void tsar(GameTestHelper helper) {
+        floor(helper);
+        StrategicAssemblyBlockEntity hall = hall(helper, true);
+        Container inv = hall.inventory();
+        parts(inv, false);
+        ItemStack tertiary = new ItemStack(GZStrategic.TERTIARY_STAGE.get());
+        helper.assertTrue(inv.canPlaceItem(StrategicAssemblyBlockEntity.SLOT_JACKET, tertiary), "the jacket slot takes a Tertiary Stage");
+        helper.assertTrue(!inv.canPlaceItem(StrategicAssemblyBlockEntity.SLOT_SECONDARY, tertiary), "the secondary's slot does not");
+        inv.setItem(StrategicAssemblyBlockEntity.SLOT_JACKET, tertiary);
+        helper.assertTrue(StrategicAssembly.ticks(tertiary) == StrategicAssembly.TSAR_TICKS, "a minute and a half");
+        hall.energy().generate(StrategicAssemblyBlockEntity.CAPACITY);
+        helper.assertTrue(hall.startAssembly(), "it starts");
+        hall.skipToEndForTest();
+        helper.succeedWhen(() -> {
+            ItemStack out = inv.getItem(StrategicAssemblyBlockEntity.SLOT_OUTPUT);
+            MissileSpec spec = MissileItem.spec(out);
+            helper.assertTrue(spec != null && spec.intercontinental() && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.TSAR_WARHEAD,
+                    "a Tsar missile: " + spec);
+            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            helper.assertTrue(look != null && look.strings().getFirst().equals("icbm_tsar_warhead"), "its own model: " + look);
+            helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && hall.hiddenBones().contains("nose_thermonuclear_warhead")
+                    && !hall.hiddenBones().contains("nose_tsar_warhead"), "the Tsar on the cradles: " + hall.hiddenBones());
+            helper.assertTrue(hall.takeApart(), "taken apart");
+            helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GZStrategic.TERTIARY_STAGE.get())
+                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GZAssembly.BOOSTED_FISSION_CORE.get())
+                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_BOOSTER).is(GZStrategic.INTERCONTINENTAL_BOOSTER.get()), "every part back");
+        });
+    }
+
     /** Unbuilt, the hall will not work; built, it says what is missing, and its slots take only their own parts. */
     private static void needsParts(GameTestHelper helper) {
         floor(helper);
@@ -179,10 +214,45 @@ final class StrategicTests {
         Charges.impact(helper.getLevel(), ChargeKind.THERMONUCLEAR_WARHEAD, helper.absolutePos(at), null);
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
-            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, 0, 8))).isAir(), "a crater where it hit");
+            helper.assertTrue(dug(helper), "a crater where it hit");
             var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
             helper.assertTrue(zone.isPresent() && Math.abs(zone.get().radius() - 360 * 0.02f) < 0.01f && zone.get().duration() == 72_000,
                     "360 blocks for three days: " + zone);
+            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+        });
+    }
+
+    /**
+     * Whether the floor round the burst point (8, 1, 8) is dug: at a test's tiny scale the straight-down ray has only
+     * just enough for one block of stone, so any of the nine under and beside the burst will do.
+     */
+    private static boolean dug(GameTestHelper helper) {
+        for (BlockPos p : BlockPos.betweenClosed(7, 0, 7, 9, 0, 9)) {
+            if (helper.getLevel().getBlockState(helper.absolutePos(p)).isAir()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Delivered (at a fiftieth of its size), the Tsar leaves a crater and fallout 600 blocks round for three days; and
+     * the server's radius limit lets it reach all the way at full size (700 blocks: the limit is 720 by default).
+     */
+    private static void tsarBlast(GameTestHelper helper) {
+        floor(helper);
+        helper.assertTrue(dev.groundzero.config.GZServerConfig.MAX_RADIUS.getDefault() >= 700, "the default limit reaches the Tsar's 700 blocks");
+        BlockPos at = new BlockPos(8, 1, 8);
+        Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
+        float scale = Charges.bombScale;
+        Charges.bombScale = 0.02f;
+        Charges.impact(helper.getLevel(), ChargeKind.TSAR_WARHEAD, helper.absolutePos(at), null);
+        Charges.bombScale = scale;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(dug(helper), "a crater where it hit");
+            var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
+            helper.assertTrue(zone.isPresent() && Math.abs(zone.get().radius() - 600 * 0.02f) < 0.01f && zone.get().duration() == 72_000,
+                    "600 blocks for three days: " + zone);
             Contamination.of(helper.getLevel()).removeNear(centre, 2);
         });
     }

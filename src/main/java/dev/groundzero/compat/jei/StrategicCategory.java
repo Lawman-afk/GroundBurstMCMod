@@ -22,11 +22,23 @@ import net.minecraft.world.item.ItemStack;
 /**
  * JEI category for the Strategic Assembly Hall (DESIGN.md §15.2): a Boosted Fission Core, a Fusion Secondary and an
  * Intercontinental Booster (with the guidance and Hardened Electronics optional) make an intercontinental missile with
- * a Thermonuclear Warhead; a Cobalt-59 Jacket as well makes it a Cobalt Warhead. Laid out like the hall's screen.
+ * a Thermonuclear Warhead; a Cobalt-59 Jacket as well makes it a Cobalt Warhead, a Tertiary Stage the Tsar Mega-bomb.
+ * Laid out like the hall's screen.
  */
 final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.Recipe> {
-    /** The thermonuclear missile, or the cobalt one. */
-    record Recipe(boolean cobalt) {}
+    enum Weapon { THERMONUCLEAR, COBALT, TSAR }
+
+    /** One weapon the hall builds. */
+    record Recipe(Weapon weapon) {
+        /** What goes in the jacket slot for it (nothing for the thermonuclear missile). */
+        ItemStack option() {
+            return switch (this.weapon) {
+                case COBALT -> new ItemStack(GZStrategic.COBALT_JACKET.get());
+                case TSAR -> new ItemStack(GZStrategic.TERTIARY_STAGE.get());
+                default -> ItemStack.EMPTY;
+            };
+        }
+    }
 
     static final IRecipeType<Recipe> TYPE = IRecipeType.create(GroundZero.id("strategic_assembly"), Recipe.class);
     private static final int WIDTH = 150, HEIGHT = 50;
@@ -37,15 +49,16 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
     }
 
     static List<Recipe> recipes() {
-        return List.of(new Recipe(false), new Recipe(true));
+        return java.util.Arrays.stream(Weapon.values()).map(Recipe::new).toList();
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
         builder.addInputSlot(1, 1).setStandardSlotBackground().add(GZAssembly.BOOSTED_FISSION_CORE.get());
         builder.addInputSlot(19, 1).setStandardSlotBackground().add(GZStrategic.FUSION_SECONDARY.get());
-        if (recipe.cobalt()) {
-            builder.addInputSlot(37, 1).setStandardSlotBackground().add(GZStrategic.COBALT_JACKET.get());
+        ItemStack option = recipe.option();
+        if (!option.isEmpty()) {
+            builder.addInputSlot(37, 1).setStandardSlotBackground().add(option);
         }
         builder.addInputSlot(1, 21).setStandardSlotBackground().add(GZStrategic.INTERCONTINENTAL_BOOSTER.get());
         builder.addInputSlot(19, 21).setStandardSlotBackground()
@@ -53,14 +66,13 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
         builder.addInputSlot(37, 21).setStandardSlotBackground().add(GZAssembly.HARDENED_ELECTRONICS.get())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        ItemStack jacket = recipe.cobalt() ? new ItemStack(GZStrategic.COBALT_JACKET.get()) : ItemStack.EMPTY;
         builder.addOutputSlot(100, 11).setOutputSlotBackground()
-                .add(StrategicAssembly.assemble(jacket, new ItemStack(GZAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY));
+                .add(StrategicAssembly.assemble(option, new ItemStack(GZAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY));
     }
 
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addAnimatedRecipeArrowWidget(StrategicAssembly.TICKS).setPosition(63, 11);
+        builder.addAnimatedRecipeArrowWidget(StrategicAssembly.ticks(recipe.option())).setPosition(63, 11);
         Component info = Component.translatable(StrategicAssembly.JEI_INFO, MissileParts.Motor.ICBM.range, StrategicAssemblyBlockEntity.ENERGY_PER_TICK);
         builder.addText(info, WIDTH, 10).setPosition(0, HEIGHT - 10).setColor(0xFF606060);
     }

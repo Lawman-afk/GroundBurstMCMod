@@ -720,7 +720,10 @@ plus cross-section), tuned there, then ported with the same formulas.
 
 ### 11.5 Chunks, persistence, absence
 - A `TicketController` (`groundzero:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
-  them behind the front. Ungenerated chunks are not generated (configurable).
+  them behind the front. Ungenerated chunks are not generated (configurable). The band runs only as far as the terrain
+  work (crater, the bands beyond it, the ground pass); entity zones past that reach the entities already loaded
+  (slice 8d: loading the Tsar's outer 220 blocks of chunks in a few ticks stalled the server). A finished blast lets
+  its chunks go 64 a tick.
 - Jobs live in a per-level `SavedData` (`BlastManager`); ray fields are stored compactly in
   `data/groundzero/blasts/<id>.bin`. On world load, jobs resume and clients re-sync their visuals.
 - Jobs never depend on a player being nearby; they finish while the server runs.
@@ -730,7 +733,7 @@ plus cross-section), tuned there, then ported with the same formulas.
 |---|---|---|
 | `blast.destroyBlocks` | true | master switch for terrain damage |
 | `blast.radiusMultiplier` | 1.0 (0.1–2.0) | scales every profile |
-| `blast.maxRadius` | 320 | hard cap on any zone radius |
+| `blast.maxBlastRadius` | 720 (8–1 024) | hard cap on any zone radius (was `maxRadius`, 320: renamed in 8d so configs written before pick up the new default; the Tsar reaches 700) |
 | `blast.msBudgetPerTick` | 12 | time budget across all jobs |
 | `blast.maxBlockChangesPerTick` | 60 000 | |
 | `blast.maxConcurrentJobs` | 8 | further blasts queue |
@@ -747,6 +750,34 @@ plus cross-section), tuned there, then ported with the same formulas.
 
 Client config (`groundzero-client.toml`): `fx.quality` (low/medium/high/ultra, default high), `fx.flashStrength`
 (1.0), `fx.cameraShake` (1.0), `fx.farClouds` (true), `hud.geigerCorner` (bottom right).
+
+### 11.7 As built: the blast bench and the engine at the Tsar's size (slice 8d, 2026-10-22)
+- **Bench** (`BlastBench` on the server thread, `BlastBenchClient`; `gradlew runBlastBench -Pbench=<profile>`
+  `[-PbenchSeed=]`): a normal world (fixed seed), the ground round the spawn generated out past the blast's reach (the
+  Tsar: 6,784 chunks, ~25 s on the user's PC) and left to unload, the blast set off at the spawn with the player
+  watching from 360 blocks east and 60 up; every server tick recorded (its length, the blasts' share, the shock and
+  terrain fronts, rays, chunks held and loaded, marked sections, rim, heap, client fps), a save like the autosave 30 s
+  in; `run/bench/<profile>_<time>.csv` and a `.txt` summary. The window losing focus no longer pauses it (nor the fx
+  shots).
+- **First Tsar run, old engine:** 212 s, 20.6 million blocks changed; server ticks mean 20.3 ms, p99 39.9, max 284;
+  31 ticks over 50 ms, 9 over 100. Causes: a whole generation of rays splitting at once (74, 146 ms); the last terrain
+  rings; then the front racing from 480 to 700 in 8 ticks force-loading ~3,800 chunks only for entity damage (up to
+  284 ms); and the crater rim, gathered as blocks were destroyed, held almost every destroyed block (20.4 million),
+  with a 5.9 GB heap peak.
+- **Changes:** the **shock front** (entities, and what clients draw) runs at the profile's speed while the terrain work
+  keeps to its budget behind it, the crater forming under the dust for a minute or two after the shock has passed; the
+  chunk band only to the terrain work; entity hits from the loaded entities (no box query) with lines of sight that
+  never load a chunk, and an entity the shock finds wholly shielded where the terrain work has yet to reach looked at
+  again once it has (its cover may be dug away); rays split one at a time as the front reaches them, inside the
+  budgeted loop (`RayField.split`, each ray's split radius kept), the arrays grown straight to their limit past 200,000
+  rays, compacted only once a quarter are dead, and a save no longer compacts them (it moved rays under a shell's
+  cursor); the rim found by the clean-up (destroyed blocks next to blocks a ray reached and left: 0.73 million for the
+  Tsar); chunks let go 64 a tick.
+- **Second run:** 138 s, 22.0 million blocks; ticks mean 19.6 ms, p99 27.7, max 53.8 (the release of 440 tickets at
+  once, since spread); 1 tick over 50 ms; heap peak 3.5 GB; the save 30 s in 123 ms (1.5 million rays); client 33 fps.
+- **Third run**, chunks let go gradually: 128 s, 21.9 million blocks; ticks mean 18.5 ms, p99 25.2, max 39.2, none
+  over 50 ms (the §28 target met); heap peak 4.4 GB; the save 30 s in 115 ms (an autosave during a Tsar's front costs
+  about that, once); client 32 fps.
 
 ---
 
@@ -848,7 +879,7 @@ condensation cloud, a spreading base surge). Our own design from that:
 
 As built (2026-10-21):
 - `MushroomCloud` (nuke preset, 3000 ticks, halved from 6000 after the in-game look): ~900 cap, ~900 stem, ~260 collar and ~220 condensation cloudlets at high
-  quality. Cap height H = clamp(2 craters, 40, 400) reached as `1 - e^(-t/260)`; core ring radius from 0.55 fireball to
+  quality. Cap height H = clamp(2 craters, 40, 520) (520 since 8d: the Tsar's climbs to 500) reached as `1 - e^(-t/260)`; core ring radius from 0.55 fireball to
   0.42 H (`e^(-t/420)`); minor radius 0.55 R; roll one turn per 5.5 s slowing over a minute (`e^(-t/1200)`). A cap
   cloudlet moves each tick by the roll (perpendicular to its offset from the core circle, up on the inside), a pull
   of 0.035 a tick toward its own shell, the torus's climb and widening, and a little jitter. Stem cloudlets are fed
@@ -1107,11 +1138,11 @@ Strategic Assembly Hall (§15.2) and set straight on the Launch Complex.
 | **Dirty Warhead** | S | missile | — | 1 | 6 | 9 | 5 | 10 | 16 | 90, strength 0.8 (5 d) | rusty drum with a flat cap, yellow tape, trefoil (built, 8b) |
 | **Thermonuclear H-Bomb** | XXL | whole weapon (intercontinental missile) | 1.2 Mt | 45 | 150 (0.35) | 220 | 260 | 260 | 420 | 360 (3 d) | the Thermonuclear Warhead: fat olive drab, blunt dark nose, two yellow bands, trefoil (built, 8c) |
 | **Cobalt (Salted) Bomb** | XXL | whole weapon (intercontinental missile) | 400 kt | 18 | 70 | 105 | 110 | 110 | 180 | **300 round the burst, strung ~1,000 downwind (30 d)** | the Cobalt Warhead: blue-black, cobalt-blue jacket bands and plate seams, trefoil (built, 8c) |
-| **Tsar-class Mega-bomb** | XL | whole weapon | 50 Mt | 80 | 250 (0.3) | 380 | 450 | 450 | 700 | 600 (3 d) | enormous dark-green bomb, parachute pack, original Cold-War stencil markings, glowing cooling vents |
+| **Tsar Mega-bomb** | XXL | whole weapon (intercontinental missile) | 50 Mt | 80 | 250 (0.3) | 380 | 450 | 450 | 700 | 600 (3 d) | a fat dark-green bomb on four tail fins round its canvas parachute pack, a rounded nose, white stencils ("50", a trefoil, stencil lines), four glowing cooling vents; on its missile it rides bare on the third stage, wider than any stage (built, 8d) |
 | **MIRV** | — | whole weapon (Phase 9 console) | — | per RV | | | | | | | bus with 4/8 conical re-entry vehicles |
 
-The Tsar's wreck radius (380) is beyond the explosion engine's default limit (`blast.maxRadius` 320, max 512): its slice
-raises the limit and benchmarks the blast first.
+The Tsar's reach was beyond the explosion engine's old limit (`blast.maxRadius` 320, max 512): slice 8d benchmarked it
+and raised the limit (`blast.maxBlastRadius` 720, max 1,024; §11.7).
 
 Neutron bomb specifics: lethal radiation dose to every living entity in r 180 with line attenuation through blocks
 (water/lead/concrete/obsidian attenuate strongly — a deep enough bunker survives); crops, saplings, grass and leaves
@@ -1427,8 +1458,19 @@ the long horizontal hall (over an upright assembly tower).
 - The hall's screen (`StrategicAssemblyScreen`, layout `strategic_assembly`): the warhead's parts over the missile's,
   the arrow and the finished missile, the readout, Assemble / Take Apart, and the bench's right-hand column (now a
   shared `AssemblyColumn`) with a shorter preview and a taller stats screen. JEI: a "Strategic Assembly" category
-  (`StrategicCategory`) laid out like the screen, one recipe per warhead (thermonuclear; cobalt with the jacket),
-  guidance and Hardened Electronics marked optional, the hall as its station, and the screen's arrow opens it.
+  (`StrategicCategory`) laid out like the screen, one recipe per warhead (thermonuclear; cobalt with the jacket; the
+  Tsar with the Tertiary Stage), guidance and Hardened Electronics marked optional, the hall as its station, and the
+  screen's arrow opens it.
+- **The Tsar** (slice 8d): the jacket slot takes a **Tertiary Stage** instead (2 Fusion Secondaries, 4 lead plates, 2
+  military circuits, a dense steel plate): the hall builds a **Tsar Mega-bomb** missile in a minute and a half
+  (`StrategicAssembly.ticks`). Effects as in the table above, its own heavier, longer sound set (`blast/tsar_*`, 17 s
+  near) and a cloud to 500 blocks (the cap's limit raised to 520). Models: the block (`warheads.py` `tsar()`: vents lit
+  regardless of the light round them); on the missile the bomb rides bare on the third stage from just above the
+  complex's upper clamp, wider than any stage (`launch.py` `TSAR_SECTIONS`; each warhead now brings its own nose,
+  `icbm_nose_parts`), and lies the same way on the hall's cradles. The vents glow on the complex and the hall through
+  GeckoLib's auto-glow layer (`MachineGeoRenderer.withGlow`), turned on for those two only: no machine renderer drew its
+  `_glowmask` texture before, so turning it on for all would change many machines' look. No aircraft yet: the
+  parachute pack stays packed, and the Tsar goes off where its missile hits, like the H-bomb.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
 - `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
@@ -2277,6 +2319,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-22 | Slice 8d (the user's "continue"): the Tsar is the hall's third whole weapon (a Tertiary Stage in the jacket slot) on the intercontinental missile, bursting where it lands (no aircraft for a parachute drop yet). Benchmarked first on a generated world: the shock front now runs at full speed with the crater forming behind it under the budget; the chunk band stops at the terrain work; rays split as reached; the rim is found after the front; the radius limit is 720 (`maxBlastRadius`, renamed so old configs take the new default). |
 | 2026-10-22 | After the user's look at 8c: the intercontinental missile gets fins, the hall's port housings sit flush in the floor (the port blocks are floor blocks), and the hall's recipes show in JEI. |
 | 2026-10-22 | Slice 8c (the user chose the long horizontal hall): the Strategic Assembly Hall builds whole weapons as intercontinental missiles: a new airframe class XXL and an ICBM motor (3,000 blocks) on the existing missile spec, so launching and flight are unchanged; the Thermonuclear (1.2 Mt) and Cobalt (400 kt, a month-long plume of zones downwind) Warheads are built only there and fly only from the Launch Complex. |
 | 2026-10-22 | No wind drift for nukes at all (the user's request): the mushroom cloud and a nuke's crater smoke stand over ground zero. Effects are drawn after water (the after-terrain phase, as vanilla's particles), as smoke's depth had hidden all water behind it. |

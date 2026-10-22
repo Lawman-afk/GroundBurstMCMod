@@ -61,13 +61,16 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     public static final int ENERGY_PER_TICK = 250, CAPACITY = 400_000;
     /** The missile's sections as the crane lays them: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
-    /** Which nose the cradles show: none yet, a thermonuclear warhead's, a cobalt one's. */
-    public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2;
+    /** Which nose the cradles show: none yet, a thermonuclear warhead's, a cobalt one's, the Tsar. */
+    public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2, LOOK_TSAR = 3;
+    /** The model's nose bone for each look (tools/assets/strategic.py). */
+    private static final String[] NOSE_BONES = {"", "nose_thermonuclear_warhead", "nose_cobalt_warhead", "nose_tsar_warhead"};
     private static final int RECHECK_INTERVAL = 40;
 
     private static final String T_MAKES = GZLang.add(GroundZero.MODID + ".strategic.makes", "Makes: %s");
     private static final String T_THERMONUCLEAR = GZLang.add(GroundZero.MODID + ".strategic.thermonuclear", "Thermonuclear Missile");
     private static final String T_COBALT = GZLang.add(GroundZero.MODID + ".strategic.cobalt", "Cobalt Missile");
+    private static final String T_TSAR = GZLang.add(GroundZero.MODID + ".strategic.tsar", "Tsar Missile");
     private static final String T_READY = GZLang.add(GroundZero.MODID + ".strategic.ready", "Range %s, %s: press Assemble");
     private static final String T_WORKING = GZLang.add(GroundZero.MODID + ".strategic.working", "Assembling: %s%%");
     private static final String T_DONE = GZLang.add(GroundZero.MODID + ".strategic.done", "Finished: %s");
@@ -91,7 +94,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         return switch (slot) {
             case SLOT_PRIMARY -> stack.is(GZAssembly.BOOSTED_FISSION_CORE.get());
             case SLOT_SECONDARY -> stack.is(GZStrategic.FUSION_SECONDARY.get());
-            case SLOT_JACKET -> stack.is(GZStrategic.COBALT_JACKET.get());
+            case SLOT_JACKET -> stack.is(GZStrategic.COBALT_JACKET.get()) || stack.is(GZStrategic.TERTIARY_STAGE.get());
             case SLOT_BOOSTER -> stack.is(GZStrategic.INTERCONTINENTAL_BOOSTER.get());
             case SLOT_GUIDANCE -> stack.getItem() instanceof MissileParts.GuidanceItem;
             case SLOT_MODULE -> stack.getItem() instanceof MissileParts.HardenedModule;
@@ -146,7 +149,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             return false;
         }
         this.progress = 0;
-        this.total = StrategicAssembly.TICKS;
+        this.total = StrategicAssembly.ticks(slot(SLOT_JACKET));
         setChanged();
         syncModel();
         return true;
@@ -243,10 +246,10 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         var out = MissileItem.spec(slot(SLOT_OUTPUT));
         if (assembling()) {
             laid = sectionsFor(this.progress);
-            look = slot(SLOT_JACKET).is(GZStrategic.COBALT_JACKET.get()) ? LOOK_COBALT : LOOK_THERMONUCLEAR;
+            look = lookOf(StrategicAssembly.warhead(slot(SLOT_JACKET)).kind);
         } else if (out != null && out.intercontinental()) {
             laid = SECTIONS;
-            look = AssemblyStats.kindOf(out.warhead()) == ChargeKind.COBALT_WARHEAD ? LOOK_COBALT : LOOK_THERMONUCLEAR;
+            look = lookOf(AssemblyStats.kindOf(out.warhead()));
         } else {
             laid = 0;
             look = LOOK_NONE;
@@ -259,6 +262,10 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
                 this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
             }
         }
+    }
+
+    private static int lookOf(@org.jspecify.annotations.Nullable ChargeKind kind) {
+        return kind == ChargeKind.COBALT_WARHEAD ? LOOK_COBALT : kind == ChargeKind.TSAR_WARHEAD ? LOOK_TSAR : LOOK_THERMONUCLEAR;
     }
 
     @Override
@@ -298,7 +305,11 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         ItemStack primary = slot(SLOT_PRIMARY), out = slot(SLOT_OUTPUT);
         boolean parts = !primary.isEmpty() || !slot(SLOT_SECONDARY).isEmpty() || !slot(SLOT_BOOSTER).isEmpty();
         Component first = parts || total > 0 ? Component.translatable(T_MAKES,
-                Component.translatable(slot(SLOT_JACKET).is(GZStrategic.COBALT_JACKET.get()) ? T_COBALT : T_THERMONUCLEAR))
+                Component.translatable(switch (lookOf(StrategicAssembly.warhead(slot(SLOT_JACKET)).kind)) {
+                    case LOOK_COBALT -> T_COBALT;
+                    case LOOK_TSAR -> T_TSAR;
+                    default -> T_THERMONUCLEAR;
+                }))
                 : !out.isEmpty() ? Component.translatable(T_DONE, out.getHoverName()) : Component.translatable(T_IDLE);
         Component second;
         if (total > 0) {
@@ -398,11 +409,10 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         for (int k = this.laid + 1; k <= SECTIONS - 1; k++) {
             hidden.add("sec" + k);
         }
-        if (this.laid < SECTIONS || this.look != LOOK_COBALT) {
-            hidden.add("nose_cobalt_warhead");
-        }
-        if (this.laid < SECTIONS || this.look == LOOK_COBALT) {
-            hidden.add("nose_thermonuclear_warhead");
+        for (int look = LOOK_THERMONUCLEAR; look <= LOOK_TSAR; look++) {
+            if (this.laid < SECTIONS || this.look != look) {
+                hidden.add(NOSE_BONES[look]);
+            }
         }
         return hidden;
     }

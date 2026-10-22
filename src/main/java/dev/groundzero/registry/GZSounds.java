@@ -36,6 +36,15 @@ public final class GZSounds {
             register("blast.nuke.far", "Distant nuclear detonation", List.of("blast/nuke_far"), true, 2048);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_VERY_FAR =
             register("blast.nuke.very_far", "Far-off rumble", List.of("blast/nuke_very_far"), true, 4096);
+    // The Tsar's own, heavier and longer (slice 8d).
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_NEAR =
+            register("blast.tsar.near", "Thermonuclear detonation", List.of("blast/tsar_near"), true, 768);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_MID =
+            register("blast.tsar.mid", "Thermonuclear detonation thunders", List.of("blast/tsar_mid"), true, 1536);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_FAR =
+            register("blast.tsar.far", "Distant thermonuclear detonation", List.of("blast/tsar_far"), true, 3072);
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_VERY_FAR =
+            register("blast.tsar.very_far", "Far-off thunder", List.of("blast/tsar_very_far"), true, 6144);
 
     // Conventional explosions by size, heard near / mid / far / very far (the distance-delayed sound system picks one).
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_SMALL_NEAR =
@@ -172,12 +181,13 @@ public final class GZSounds {
         return IntStream.rangeClosed(1, count).mapToObj(i -> base + i).toList();
     }
 
-    /** A blast sound by set (small, medium, large, nuke) and distance band (0 near, 1 mid, 2 far, 3 very far). */
+    /** A blast sound by set (small, medium, large, nuke, tsar) and distance band (0 near, 1 mid, 2 far, 3 very far). */
     public static SoundEvent blast(String set, int band) {
         List<DeferredHolder<SoundEvent, SoundEvent>> sounds = switch (set) {
             case "small" -> List.of(BLAST_SMALL_NEAR, BLAST_SMALL_MID, BLAST_SMALL_FAR, BLAST_SMALL_VERY_FAR);
             case "large" -> List.of(BLAST_LARGE_NEAR, BLAST_LARGE_MID, BLAST_LARGE_FAR, BLAST_LARGE_VERY_FAR);
             case "nuke" -> List.of(BLAST_NUKE_NEAR, BLAST_NUKE_MID, BLAST_NUKE_FAR, BLAST_NUKE_VERY_FAR);
+            case "tsar" -> List.of(BLAST_TSAR_NEAR, BLAST_TSAR_MID, BLAST_TSAR_FAR, BLAST_TSAR_VERY_FAR);
             default -> List.of(BLAST_MEDIUM_NEAR, BLAST_MEDIUM_MID, BLAST_MEDIUM_FAR, BLAST_MEDIUM_VERY_FAR);
         };
         return sounds.get(Math.max(0, Math.min(3, band))).get();

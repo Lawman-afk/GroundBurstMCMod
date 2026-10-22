@@ -20,7 +20,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **done, awaiting the user's in-game check** (5a server engine, 5b sync/persistence/sound, crater character, 5c Spectacle and its v2 with the mushroom cloud, 5d reactor meltdown; heat haze deferred) |
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
 | 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
-| 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; next 8d, the Tsar) |
+| 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; 8d: the Tsar Mega-bomb, and the explosion engine benchmarked and reworked at its size; Phase 8 complete but for the in-game look) |
 | 9 | Launch platforms, missile flight, launch control, designators | started (basic launch site built early, 2026-10-21) |
 | 10 | Radar & interceptors | todo |
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | todo |
@@ -202,7 +202,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 8 — Nuclear weapons
 | Item | Status |
 |---|---|
-| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | 8a: tactical and fission warheads with cores, models, profiles, contamination (rescaled: tactical 1.5x MOW); 8b: boosted fission, neutron (neutron burst through shielding, plants wither) and dirty (class S, radiological) warheads with cores, models, profiles ; 8c: thermonuclear (H-bomb) and cobalt warheads as whole weapons (intercontinental missiles from the Strategic Assembly Hall) — needs in-game look; Tsar in 8d |
+| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | 8a: tactical and fission warheads with cores, models, profiles, contamination (rescaled: tactical 1.5x MOW); 8b: boosted fission, neutron (neutron burst through shielding, plants wither) and dirty (class S, radiological) warheads with cores, models, profiles ; 8c: thermonuclear (H-bomb) and cobalt warheads as whole weapons (intercontinental missiles from the Strategic Assembly Hall); 8d: the Tsar Mega-bomb (Tertiary Stage, 50 Mt, its own sound) — needs in-game look |
 | Strategic missile (XL body, nuclear only, its own long model) | done (8a feedback) — needs in-game look |
 | Strategic Assembly Hall (multiblock building whole weapons for the Launch Complex) | done (8c): 7x13 crane hall, parts, a minute's assembly with the crane laying the missile, screen with preview and stats — needs in-game look |
 | Intercontinental missile (class XXL, 3,000 blocks, its own model on the complex and in flight) | done (8c) — needs in-game look |
@@ -306,7 +306,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Item | Status |
 |---|---|
 | Re-review every model/texture/sound/effect | todo |
-| Performance pass (Tsar MSPT target < 50) | todo |
+| Performance pass (Tsar MSPT target < 50) | 8d: the blast bench (`runBlastBench`) and the engine reworked at the Tsar's size: p99 tick 27.7 ms, one tick over 50 ms (since spread) on the user's PC; a wider pass (fx, fallout, saving) still todo |
 | Balance pass | todo |
 
 ---

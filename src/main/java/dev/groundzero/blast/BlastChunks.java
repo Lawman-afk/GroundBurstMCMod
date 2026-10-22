@@ -116,12 +116,19 @@ final class BlastChunks {
         return ready;
     }
 
-    /** Lets every chunk go (the blast is finished). */
-    void release() {
-        for (LongIterator it = this.forced.iterator(); it.hasNext(); ) {
+    /** How many chunks it keeps loaded now. */
+    int forcedCount() {
+        return this.forced.size();
+    }
+
+    /** Lets up to {@code n} chunks go (the blast is finished); true once none is held. */
+    boolean release(int n) {
+        LongIterator it = this.forced.iterator();
+        for (int i = 0; i < n && it.hasNext(); i++) {
             long key = it.nextLong();
             TICKETS.forceChunk(this.level, this.owner, ChunkPos.getX(key), ChunkPos.getZ(key), false, false);
+            it.remove();
         }
-        this.forced.clear();
+        return this.forced.isEmpty();
     }
 }

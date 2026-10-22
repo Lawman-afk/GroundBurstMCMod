@@ -46,6 +46,9 @@ public final class GZStrategic {
             "Optional: wrapped round the secondary, it salts the fallout with cobalt");
     public static final DeferredItem<StrategicPart> INTERCONTINENTAL_BOOSTER = part("intercontinental_booster", "Intercontinental Booster",
             "Three solid-fuel stages: 3,000 blocks");
+    /** Slice 8d: the Tsar's third stage. */
+    public static final DeferredItem<StrategicPart> TERTIARY_STAGE = part("tertiary_stage", "Tertiary Stage",
+            "In place of a jacket: a third fusion stage in a lead radiation channel, for a Tsar Mega-bomb");
 
     /**
      * The Strategic Assembly Hall: a 7x13 floor of Launch Pad (the controller at the front middle; an Energy Port at the

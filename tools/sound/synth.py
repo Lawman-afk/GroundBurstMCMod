@@ -257,7 +257,9 @@ def save_ogg(x: np.ndarray, path: Path, quality: float = 0.6) -> Path:
     # libsndfile's Vorbis "compression level": 0 = best quality / largest file.
     with sf.SoundFile(path, "w", samplerate=SR, channels=1, format="OGG", subtype="VORBIS",
                       compression_level=1 - quality) as f:
-        f.write(data)
+        # In blocks: handed a long sound in one go (the Tsar's 16 s), the Vorbis encoder overflows the stack on Windows.
+        for i in range(0, len(data), 1 << 16):
+            f.write(data[i:i + (1 << 16)])
     return path
 
 

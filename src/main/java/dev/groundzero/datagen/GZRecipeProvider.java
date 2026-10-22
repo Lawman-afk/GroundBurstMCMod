@@ -490,6 +490,7 @@ public class GZRecipeProvider extends RecipeProvider {
             final net.minecraft.world.level.ItemLike secondary = dev.groundzero.content.strategic.GZStrategic.FUSION_SECONDARY.get();
             final net.minecraft.world.level.ItemLike jacket = dev.groundzero.content.strategic.GZStrategic.COBALT_JACKET.get();
             final net.minecraft.world.level.ItemLike booster = dev.groundzero.content.strategic.GZStrategic.INTERCONTINENTAL_BOOSTER.get();
+            final net.minecraft.world.level.ItemLike tertiary = dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get();
         };
         shapeless(RecipeCategory.BUILDING_BLOCKS, s.rail, 4)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
@@ -518,6 +519,12 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.MILITARY_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE),
                         has(dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE)).save(output);
+        // The Tsar's third stage (slice 8d): two fusion secondaries in a lead radiation channel, and its own firing circuits.
+        shapeless(RecipeCategory.COMBAT, s.tertiary, 1)
+                .requires(s.secondary).requires(s.secondary).requires(GZParts.LEAD_PLATE).requires(GZParts.LEAD_PLATE)
+                .requires(GZParts.LEAD_PLATE).requires(GZParts.LEAD_PLATE).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(s.secondary), has(s.secondary)).save(output);
         shapeless(RecipeCategory.BUILDING_BLOCKS, l.deflector, 1)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
                 .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())

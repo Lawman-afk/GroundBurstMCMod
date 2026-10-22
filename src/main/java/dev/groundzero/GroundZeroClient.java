@@ -40,6 +40,7 @@ public class GroundZeroClient {
         dev.groundzero.client.blast.ClientBlasts.register(modBus);
         dev.groundzero.client.fx.Spectacle.register(modBus);
         dev.groundzero.client.fx.FxPhotographer.register();
+        dev.groundzero.client.fx.BlastBenchClient.register();
         dev.groundzero.client.screen.ChargeScreens.register();
         dev.groundzero.client.screen.LaunchComputerScreen.register();
         dev.groundzero.client.screen.RadarArrayScreen.register();
@@ -79,10 +80,10 @@ public class GroundZeroClient {
         event.registerBlockEntityRenderer(dev.groundzero.content.ordnance.GZOrdnance.CHARGE.get(), dev.groundzero.client.render.ChargeRenderer::new);
         event.registerEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE.get(), dev.groundzero.client.fx.MissileRenderer::new);
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPLEX_ENTITY.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPLEX_ENTITY.get(), 14, 4));
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.COMPLEX_ENTITY.get(), 14, 4).withGlow());   // the Tsar's vents
         // The hall: 13 blocks deep behind its controller, its crane 6 up.
         event.registerBlockEntityRenderer(dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(), 7, 13));
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(), 7, 13).withGlow());
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(),

@@ -49,6 +49,17 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         this.reach = reach;
     }
 
+    /**
+     * Draws the model's {@code <texture>_glowmask.png} lit, whatever the light round it (GeckoLib's auto-glow layer). Only
+     * for models whose texture has one: GeckoLib does not check, and a missing one draws as the missing texture.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public MachineGeoRenderer<T> withGlow() {
+        // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
+        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer(this));
+        return this;
+    }
+
     private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundzero_hidden_bones", new TypeToken<Set<String>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_SCALES = DataTicket.create("groundzero_bone_scales",
             new TypeToken<java.util.Map<String, float[]>>() {});

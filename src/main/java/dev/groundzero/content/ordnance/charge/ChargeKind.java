@@ -80,7 +80,13 @@ public enum ChargeKind {
      * A 400 kt cobalt-salted thermonuclear warhead (slice 8c): a smaller blast, but its fallout spreads far downwind and
      * lasts a month. Built whole like the thermonuclear warhead.
      */
-    COBALT_WARHEAD("cobalt_warhead", 10, true);
+    COBALT_WARHEAD("cobalt_warhead", 10, true),
+    /**
+     * The 50 Mt Tsar Mega-bomb (slice 8d), the biggest weapon there is: a three-stage thermonuclear bomb (crater 250,
+     * wrecks to 380, burns to 450, deadly to 450, injures to 700; contamination 600 blocks round for three days). Built
+     * whole like the thermonuclear warhead, a Tertiary Stage in place of the jacket.
+     */
+    TSAR_WARHEAD("tsar_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -128,7 +134,7 @@ public enum ChargeKind {
 
     /** A warhead only the Strategic Assembly Hall builds, whole, into its intercontinental missile. */
     public boolean wholeWeapon() {
-        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD;
+        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD || this == TSAR_WARHEAD;
     }
 
     /** It leaves fallout (contamination): the nuclear warheads, and the dirty one. */

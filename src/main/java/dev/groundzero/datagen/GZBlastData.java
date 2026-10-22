@@ -124,6 +124,9 @@ public final class GZBlastData {
                 4.5f, 0.35f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         ctx.register(Blasts.profile("cobalt_warhead"), new BlastProfile(18, 70, 105, 130, 110, new BlastProfile.EntityZones(110, 180, 1000, 80, 5.0f),
                 3.5f, 0.4f, 0.2f, 0.3f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
+        // Slice 8d: the Tsar, the biggest weapon there is; it wrecks and burns further than the engine's old limit (320).
+        ctx.register(Blasts.profile("tsar_warhead"), new BlastProfile(80, 250, 380, 480, 450, new BlastProfile.EntityZones(450, 700, 1000, 160, 8f),
+                5f, 0.3f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("tsar"), Optional.of("tsar")));
         // The neutron warhead's blast is small: its neutrons do the killing (NeutronBurst).
         ctx.register(Blasts.profile("neutron_warhead"), new BlastProfile(4, 10, 16, 14, 12, new BlastProfile.EntityZones(10, 26, 200, 20, 2.5f),
                 3, 0.5f, 0.15f, 0.3f, 0.4f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));

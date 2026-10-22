@@ -8,7 +8,9 @@ import java.util.Arrays;
  * <p>Rays start on a cube-sphere grid: each of the 6 cube faces carries a 4x4 grid of cells in face coordinates
  * (u, v) in [-1, 1]; a ray points through its cell's centre. As the front moves out the gap between neighbouring rays
  * grows with the radius; when it would pass {@link #SPLIT_SPACING} blocks a ray splits into the 2x2 rays of its
- * quartered cell, each inheriting its energy, so every block of every shell is reached with no holes.
+ * quartered cell, each inheriting its energy, so every block of every shell is reached with no holes. A ray splits
+ * when the front reaches it at that radius ({@link #needsSplit}), inside the blast's budgeted loop: a whole generation
+ * splitting at once used to stall a big blast's tick (slice 8d's benchmark).
  *
  * <p>Each ray also has a grain: how strong its direction is ({@link StreakNoise}). It scales the ray's energy and how
  * far it may dig, and a child's energy is rescaled by its own grain when it splits, so the fine streaks sharpen as the
@@ -19,6 +21,8 @@ final class RayField {
     static final float SPLIT_SPACING = 0.7f;
     /** Rays stop splitting past this many (a far pressure band may then miss the odd block, but memory stays bounded). */
     static final int MAX_RAYS = 1_500_000;
+    /** Past this many rays the arrays grow straight to their limit, so a big blast copies them once, not every doubling. */
+    private static final int GROW_TO_LIMIT = 200_000;
     static final byte CRATER = 0, PRESSURE = 1, DEAD = 2;
 
     /** Face normals and the two tangents spanning each face. */
@@ -27,12 +31,16 @@ final class RayField {
     private static final float[][] B = {{0, 0, 1}, {0, 0, 1}, {1, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 1, 0}};
 
     int size;
+    /** Rays killed since the last {@link #compact()}. */
+    int dead;
     byte[] face = new byte[0];
     float[] u = new float[0], v = new float[0], s = new float[0];
     float[] dx = new float[0], dy = new float[0], dz = new float[0];
     float[] energy = new float[0];
     /** Strength of the ray's direction (1 on average): multiplies its energy and its crater reach. */
     float[] grain = new float[0];
+    /** The radius past which the ray is too far from its neighbours and must split. */
+    float[] splitAt = new float[0];
     byte[] mode = new byte[0];
 
     /** The starting 96 rays, each with grain {@code grain.at(d)} and energy {@code energy.at(d) * grain}. */
@@ -74,6 +82,10 @@ final class RayField {
         this.energy[k] = e;
         this.grain[k] = g;
         this.mode[k] = m;
+        // Its gap to its neighbours at radius r is r * cell size * stretch: it must split once that passes the spacing.
+        float d = 1 + cu * cu + cv * cv;
+        float stretch = (float) Math.max(Math.sqrt(1 + cu * cu), Math.sqrt(1 + cv * cv)) / d;
+        this.splitAt[k] = SPLIT_SPACING / (cs * stretch);
         return k;
     }
 
@@ -81,7 +93,7 @@ final class RayField {
         if (n <= this.face.length) {
             return;
         }
-        int cap = Math.max(n, this.face.length * 2 + 16);
+        int cap = n > GROW_TO_LIMIT ? Math.max(n, MAX_RAYS + 8) : Math.max(n, this.face.length * 2 + 16);
         this.face = Arrays.copyOf(this.face, cap);
         this.u = Arrays.copyOf(this.u, cap);
         this.v = Arrays.copyOf(this.v, cap);
@@ -91,44 +103,43 @@ final class RayField {
         this.dz = Arrays.copyOf(this.dz, cap);
         this.energy = Arrays.copyOf(this.energy, cap);
         this.grain = Arrays.copyOf(this.grain, cap);
+        this.splitAt = Arrays.copyOf(this.splitAt, cap);
         this.mode = Arrays.copyOf(this.mode, cap);
     }
 
-    /** Gap in blocks between ray {@code k} and its neighbours at radius {@code r}. */
-    private float spacing(int k, float r) {
-        float cu = this.u[k], cv = this.v[k];
-        float d = 1 + cu * cu + cv * cv;
-        float stretch = (float) Math.max(Math.sqrt(1 + cu * cu), Math.sqrt(1 + cv * cv)) / d;
-        return r * this.s[k] * stretch;
+    /** How many rays the arrays have room for. */
+    int room() {
+        return this.face.length;
+    }
+
+    /** Ends ray {@code k}. */
+    void kill(int k) {
+        if (this.mode[k] != DEAD) {
+            this.mode[k] = DEAD;
+            this.dead++;
+        }
+    }
+
+    /** Whether live ray {@code k} is too far from its neighbours at radius {@code r} (and there is room to split it). */
+    boolean needsSplit(int k, float r) {
+        return r > this.splitAt[k] && this.size + 4 <= MAX_RAYS;
     }
 
     /**
-     * Splits every live ray whose gap at radius {@code r} is too wide (repeatedly, until none is). A child takes its
-     * grain from {@code grain} and its parent's energy rescaled by the two grains.
+     * Splits ray {@code k} into the four rays of its quartered cell, added at the end (the shell in hand reaches them
+     * after the rest). A child takes its grain from {@code grain} and its parent's energy rescaled by the two grains.
      */
-    void splitFor(float r, DirectionalEnergy grain) {
-        boolean again = true;
-        while (again && this.size < MAX_RAYS) {
-            again = false;
-            int n = this.size;
-            for (int k = 0; k < n && this.size < MAX_RAYS; k++) {
-                if (this.mode[k] == DEAD || spacing(k, r) <= SPLIT_SPACING) {
-                    continue;
-                }
-                float q = this.s[k] / 4, half = this.s[k] / 2;
-                int fc = this.face[k];
-                float cu = this.u[k], cv = this.v[k], e = this.energy[k] / this.grain[k];
-                byte m = this.mode[k];
-                this.mode[k] = DEAD;                       // replaced by its four children
-                for (int c = 0; c < 4; c++) {
-                    int child = add(fc, cu + ((c & 1) == 0 ? -q : q), cv + ((c & 2) == 0 ? -q : q), half, 0, 1, m);
-                    float g = grain.at(this.dx[child], this.dy[child], this.dz[child]);
-                    this.grain[child] = g;
-                    this.energy[child] = e * g;
-                }
-                again = true;
-            }
-            compact();
+    void split(int k, DirectionalEnergy grain) {
+        float q = this.s[k] / 4, half = this.s[k] / 2;
+        int fc = this.face[k];
+        float cu = this.u[k], cv = this.v[k], e = this.energy[k] / this.grain[k];
+        byte m = this.mode[k];
+        kill(k);                                           // replaced by its four children
+        for (int c = 0; c < 4; c++) {
+            int child = add(fc, cu + ((c & 1) == 0 ? -q : q), cv + ((c & 2) == 0 ? -q : q), half, 0, 1, m);
+            float g = grain.at(this.dx[child], this.dy[child], this.dz[child]);
+            this.grain[child] = g;
+            this.energy[child] = e * g;
         }
     }
 
@@ -137,14 +148,22 @@ final class RayField {
     /** Marks the current save layout (older saves, without grain, start with the ray count). */
     private static final int SAVED_VERSION = -2;
 
-    /** The live rays, packed for saving with the blast (a few MB for the biggest blasts). */
+    /**
+     * The live rays, packed for saving with the blast (a few tens of MB for the biggest). It leaves the arrays as they
+     * are: a world saved part way through a shell must not move rays under the shell's cursor.
+     */
     java.nio.ByteBuffer save() {
-        compact();
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(8 + this.size * SAVED_BYTES);
-        buf.putInt(SAVED_VERSION).putInt(this.size);
+        int live = 0;
         for (int k = 0; k < this.size; k++) {
-            buf.put(this.face[k]).put(this.mode[k]).putFloat(this.u[k]).putFloat(this.v[k]).putFloat(this.s[k]).putFloat(this.energy[k])
-                    .putFloat(this.grain[k]);
+            live += this.mode[k] == DEAD ? 0 : 1;
+        }
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(8 + live * SAVED_BYTES);
+        buf.putInt(SAVED_VERSION).putInt(live);
+        for (int k = 0; k < this.size; k++) {
+            if (this.mode[k] != DEAD) {
+                buf.put(this.face[k]).put(this.mode[k]).putFloat(this.u[k]).putFloat(this.v[k]).putFloat(this.s[k]).putFloat(this.energy[k])
+                        .putFloat(this.grain[k]);
+            }
         }
         return buf.flip();
     }
@@ -185,10 +204,12 @@ final class RayField {
                 this.dz[w] = this.dz[k];
                 this.energy[w] = this.energy[k];
                 this.grain[w] = this.grain[k];
+                this.splitAt[w] = this.splitAt[k];
                 this.mode[w] = this.mode[k];
             }
             w++;
         }
         this.size = w;
+        this.dead = 0;
     }
 }

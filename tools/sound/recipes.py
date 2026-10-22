@@ -79,6 +79,48 @@ def nuke_set() -> dict[str, np.ndarray]:
     }
 
 
+def tsar_source(seed: int = 11, length: float = 16.0) -> np.ndarray:
+    """The Tsar (slice 8d): the nuke's recipe a size up. A heavier crack, a thump that falls lower and lasts longer, a
+    second pressure wave a moment after the first (the shock off the ground), a roar that keeps rolling for ten
+    seconds and more, darkening all the while, and a long fall of debris."""
+    n = int(length * S.SR)
+    t = S.t_axis(length)
+
+    crack_len = 0.4
+    crack = S.white(crack_len, seed) * S.exp_decay(int(crack_len * S.SR), 0.05)
+    crack = S.saturate(S.highpass(crack, 90) * 3.4, 3.2)
+
+    thump = S.sine_sweep(5.0, 58, 15, curve=2.2) * S.exp_decay(int(5.0 * S.SR), 1.6)
+    thump = S.saturate(thump * 1.8, 2.0)
+    second = S.sine_sweep(3.0, 44, 18, curve=2.0) * S.exp_decay(int(3.0 * S.SR), 1.0) * 0.7
+    second = S.saturate(second * 1.5, 1.6)
+
+    roar = S.brown(length, seed + 1) * 0.85 + S.pink(length, seed + 2) * 0.3
+    roar = S.sweep_lowpass(roar, 2200, 110)
+    flutter = 1 + 0.3 * np.sin(2 * np.pi * 1.1 * t + 0.7) * np.sin(2 * np.pi * 0.19 * t)
+    roar_env = S.breakpoints(n, [(0, 0), (0.03, 1.0), (1.2, 0.95), (4.0, 0.65), (9.0, 0.3), (13.0, 0.1), (length, 0)])
+    roar = roar * roar_env * flutter
+
+    debris = S.bandpass(S.grains(length, 50, 7, seed + 3, decay=3.5), 700, 5000) * 0.3
+    clods = S.lowpass(S.grains(length, 8, 50, seed + 4, decay=5.0), 350) * 0.7
+    debris = S.place(debris, 0.6, length) + S.place(clods, 1.2, length)
+
+    x = S.mix((S.place(crack, 0, length), 0.9), (S.place(thump, 0, length), 1.0), (S.place(second, 2.1, length), 0.8),
+              (roar, 0.95), (debris, 0.5))
+    x = S.reverb(x, 4.0, 1800, 0.35, seed=seed + 5)
+    return S.limit(S.normalize(x, 0), -1.0)
+
+
+def tsar_set() -> dict[str, np.ndarray]:
+    near = tsar_source()
+    return {
+        "blast/tsar_near": S.trim_silence(S.fade(near, 0, 1.0)),
+        "blast/tsar_mid": S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "mid"), 0), -1.5), 0, 1.5)),
+        "blast/tsar_far": S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "far"), 0), -2.0), 0, 2.0)),
+        "blast/tsar_very_far": S.trim_silence(S.fade(S.limit(S.normalize(S.distant(near, "very_far"), 0), -3.0), 0, 2.5)),
+    }
+
+
 # --- Conventional blasts ---------------------------------------------------------------------------------------------
 # One recipe, three sizes. Each size is heard near, mid, far and very far (DESIGN.md §13): the client picks the band by
 # distance and delays it by the speed of sound.
@@ -731,7 +773,7 @@ def effect_sounds() -> dict[str, np.ndarray]:
     return out
 
 
-RECIPES = [geiger_clicks, nuke_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
+RECIPES = [geiger_clicks, nuke_set, tsar_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds]
 
 

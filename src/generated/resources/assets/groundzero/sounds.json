@@ -165,6 +165,46 @@
     ],
     "subtitle": "subtitles.groundzero.blast.small.very_far"
   },
+  "blast.tsar.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 3072,
+        "name": "groundzero:blast/tsar_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.tsar.far"
+  },
+  "blast.tsar.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 1536,
+        "name": "groundzero:blast/tsar_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.tsar.mid"
+  },
+  "blast.tsar.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 768,
+        "name": "groundzero:blast/tsar_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.tsar.near"
+  },
+  "blast.tsar.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 6144,
+        "name": "groundzero:blast/tsar_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundzero.blast.tsar.very_far"
+  },
   "bomb.beep": {
     "sounds": [
       {

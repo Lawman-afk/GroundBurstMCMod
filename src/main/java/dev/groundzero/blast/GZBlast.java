@@ -48,6 +48,7 @@ public final class GZBlast {
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(BlastChunks.TICKETS));
+        BlastBench.register();
         // Players arriving while blasts run are told about them (sound timing, the shockwave in slice 5c).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {

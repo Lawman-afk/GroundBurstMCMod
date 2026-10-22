@@ -26,6 +26,9 @@ the nose. The front (stencil band, lamp) is the model's south side: the blocksta
 - Thermonuclear Warhead (8c, only ever built whole into an intercontinental missile): the biggest nuclear body, dull
   olive drab under a blunt dark nose, two yellow bands, a trefoil.
 - Cobalt Warhead (8c): as big, blue-black, its cobalt jacket's plates in cobalt-blue bands with seams between, a trefoil.
+- Tsar Mega-bomb (8d, built whole like them): the biggest of all, a fat dark-green bomb standing on four tail fins round
+  its canvas parachute pack, a rounded nose, white stencils ("50" for its megatons, stencil lines, a trefoil), and four
+  cooling vents glowing orange low on its body (lit regardless of the light round it).
 - Cluster Bomblet (item): a small yellow cylinder with a ribbon tail.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
@@ -66,6 +69,9 @@ BOOST_GREY = fixed("boost_grey", "#3c4044", "#555a5f", "#6f757a", "#8c9297", "#a
 DRAB = fixed("thermo_drab", "#1a1c10", "#272a18", "#363a22", "#474c2e", "#5a603c", "#6f764c", "#8a9064")
 BLUE_BLACK = fixed("blue_black", "#08090e", "#0e1018", "#151926", "#1d2334", "#262e44", "#323c56", "#46526e")
 COBALT = fixed("cobalt_blue", "#0a1430", "#102050", "#183070", "#204496", "#2c5cbc", "#4a7ed8", "#7aa6ee")
+TSAR = fixed("tsar_green", "#0f160b", "#172111", "#1f2c17", "#29391e", "#344826", "#435b31", "#577340")
+CANVAS = fixed("chute_canvas", "#2a2314", "#3d331d", "#534627", "#6a5a33", "#837042", "#9d8858", "#baa67a")
+VENT = ((40, 12, 6, 255), (255, 112, 32, 255), (255, 196, 96, 255))   # the vents' slats, glow and hottest glow
 RUST = fixed("waste_rust", "#2a1206", "#46200c", "#663014", "#86441c", "#a35a28", "#bd7638", "#d69a5c")
 OCHRE = fixed("bomb_ochre", "#3a2a08", "#5e440e", "#846216", "#a8801e", "#c49c34", "#d8b85a", "#ecd690")
 NUKE_NOSE = fixed("nuke_nose", "#121416", "#1c1f22", "#282c30", "#363b40", "#474d53", "#5c636a", "#788088")
@@ -148,6 +154,7 @@ TREFOIL = ["YYYYY", "YKYKY", "YYKYY", "YYKYY", "YYYYY"]
 NOSES = {"none": (STEEL, None, STEEL)}
 for _s in WARHEADS:
     NOSES[_s.name] = (_s.nose_ramp, _s.bands[0][1] if _s.bands else None, _s.tip_ramp)
+NOSES["tsar_warhead"] = (TSAR, P.WHITE_CERAMIC[5], STEEL)          # its own model (tsar()); on the missile, launch.py
 
 
 def side_row(rect, y0: float, y1: float, y: float) -> int:
@@ -214,6 +221,93 @@ def warhead(s: Spec) -> list[str]:
     return C.save(m, paint)
 
 
+def tsar() -> list[str]:
+    """The Tsar Mega-bomb, standing on its tail: four fins round the parachute pack, the tail cone, the fat body (the
+    front's stencils, a white band, four glowing vents low down), a rounded nose and its fuze cap."""
+    m = BlockModel("tsar_warhead", tex_size=(128, 128), kind="block")
+    pack = G.prism(m, "pack", 8, 8, 3.4, 2.3, 0, 5)
+    tail = G.prism(m, "tail", 8, 8, 5.0, 3.4, 5, 8)
+    body = G.prism(m, "body", 8, 8, 7.0, 4.7, 8, 21)
+    nose, y = [], 21
+    for i, (top, r) in enumerate([(23.4, 6.5), (25.4, 5.6), (27.0, 4.4), (28.3, 3.0), (29.2, 1.7)]):
+        nose += G.prism(m, f"nose{i}", 8, 8, r, round(r * 0.67, 2), y, top)
+        y = top
+    m.box("tip", (7.3, 29.2, 7.3), (8.7, 30, 8.7))
+    # Four fins, a root along the pack and a swept step up against the tail cone.
+    fins = []
+    all6 = ("north", "south", "east", "west", "up", "down")
+    for d, (dx, dz) in {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}.items():
+        inner = {"n": "south", "s": "north", "w": "east", "e": "west"}[d]
+        for part, y0, y1, r0, r1 in (("fin", 0, 5, 3.4, 7.4), ("fin2", 5, 7.5, 5.0, 6.4)):
+            faces = tuple(f for f in all6 if f != inner and not (part == "fin2" and f == "down"))
+            if dx == 0:
+                z0, z1 = sorted((8 + dz * r0, 8 + dz * r1))
+                m.box(f"{part}_{d}", (7.5, y0, z0), (8.5, y1, z1), faces=faces)
+            else:
+                x0, x1 = sorted((8 + dx * r0, 8 + dx * r1))
+                m.box(f"{part}_{d}", (x0, y0, 7.5), (x1, y1, 8.5), faces=faces)
+            fins.append(f"{part}_{d}")
+    # The cooling vents: a plate standing proud of each side low on the body, lit regardless of the light round it.
+    vents = []
+    for d, (a, b, faces) in {"n": ((6, 8.8, 0.8), (10, 11.6, 1.0), ("north", "east", "west", "up", "down")),
+                             "s": ((6, 8.8, 15.0), (10, 11.6, 15.2), ("south", "east", "west", "up", "down")),
+                             "w": ((0.8, 8.8, 6), (1.0, 11.6, 10), ("west", "north", "south", "up", "down")),
+                             "e": ((15.0, 8.8, 6), (15.2, 11.6, 10), ("east", "north", "south", "up", "down"))}.items():
+        m.box(f"vent_{d}", a, b, faces=faces, light=15)
+        vents.append(f"vent_{d}")
+    # The armed lamp on the pack's front.
+    C.lamp(m, (7.4, 1.2, 11.4), (8.6, 2.0, 11.7), faces=("north", "south", "east", "west", "up", "down"))
+    m.layout()
+
+    def paint(m: BlockModel, t: Tex, lamp_colour) -> None:
+        def canvas(t: Tex, rect, d):
+            shaded(CANVAS)(t, rect, d)
+            x, yy, w, h = rect
+            if d in ("north", "south", "east", "west") and h > 2:
+                t.hline(x, yy + h // 2, w, CANVAS[1])            # the strap round the pack
+                if w > 3:
+                    t.vline(x + w // 2, yy, h, CANVAS[1])        # and the one over it
+        fill_all(m, t, pack, canvas)
+        fill_all(m, t, tail, shaded(TSAR))
+
+        def body_fn(t: Tex, rect, d):
+            shaded(TSAR)(t, rect, d)
+            if d not in ("north", "south", "east", "west"):
+                return
+            x, yy, w, h = rect                                   # (13 rows: the shoulder at the top)
+            white = P.WHITE_CERAMIC[5]
+            t.hline(x, yy + 1, w, white)                         # a white stencil band under the shoulder
+            cx = x + w // 2
+            if d == "south" and w >= 9:                          # the front: its 50 megatons
+                t.text(cx - Tex.text_width("50") // 2, yy + 3, "50", white)
+            if d == "north" and w >= 5:                          # the back: a trefoil
+                for j, line in enumerate(TREFOIL):
+                    for i, ch in enumerate(line):
+                        t.px(cx - 2 + i, yy + 3 + j, BLACK[1] if ch == "K" else YELLOW[4])
+            if d in ("east", "west") and w >= 6:                 # stencil lines: serial and handling marks
+                for row, marks in ((yy + 3, "xx.xxx"), (yy + 5, "xxx.x"), (yy + 7, "x.xxxx")):
+                    for i, ch in enumerate(marks):
+                        if ch == "x":
+                            t.px(cx - len(marks) // 2 + i, row, P.WHITE_CERAMIC[4])
+        fill_all(m, t, body, body_fn)
+        fill_all(m, t, nose, shaded(TSAR))
+        m.paint_all(t, "tip", shaded(STEEL))
+        fill_all(m, t, fins, shaded(TSAR))
+
+        def vent(t: Tex, rect, d):
+            x, yy, w, h = rect
+            t.rect(x, yy, w, h, VENT[0])
+            if d in ("north", "south", "east", "west"):
+                for r in range(yy, yy + h, 2):                    # glowing slits between dark slats
+                    t.hline(x + 1 if w > 2 else x, r, max(1, w - 2), VENT[1])
+                if w > 2 and h > 1:
+                    t.px(x + w // 2, yy + (h - 1) // 2 // 2 * 2, VENT[2])
+        fill_all(m, t, vents, vent)
+        C.paint_lamp(m, t, lamp_colour)
+    finish(m)
+    return C.save(m, paint)
+
+
 def finish(m: BlockModel) -> None:
     """Display: fitted in the GUI; in the hand and on the ground scaled so a warhead is warhead-sized, not 2 blocks."""
     m.fit_display(gui_rotation=(30, 225, 0), gui_margin=1.0)
@@ -260,19 +354,20 @@ def napalm_fire() -> None:
 
 
 def blockstates() -> None:
-    for s in WARHEADS:
+    for name in [s.name for s in WARHEADS] + ["tsar_warhead"]:
         v = {}
         for facing, rot in C.HORIZONTAL.items():
             for armed in (False, True):
-                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/{s.name}{'_armed' if armed else ''}", **rot}
-        write_json(paths.ASSETS / "blockstates" / f"{s.name}.json", {"variants": v})
-        write_json(paths.ASSETS / "items" / f"{s.name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{s.name}"}})
+                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/{name}{'_armed' if armed else ''}", **rot}
+        write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": v})
+        write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
 
 
 def main() -> None:
     names = []
     for s in WARHEADS:
         names += warhead(s)
+    names += tsar()
     blockstates()
     bomblet()
     G.item_defs(["cluster_bomblet"])

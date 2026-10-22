@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_fusion_secondary": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:fusion_secondary"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:tertiary_stage"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_fusion_secondary"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:tertiary_stage"
+    ]
+  }
+}

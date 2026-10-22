@@ -245,7 +245,8 @@ public final class Charges {
                 schedule(level, new Pending(kind, pos, facing, 0, by == null ? null : by.getUUID(), level.getGameTime() + THERMOBARIC_DELAY, IGNITE));
             }
             // A nuclear warhead set off anywhere but on a missile's arrival only fizzles.
-            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD ->
+            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD,
+                 TSAR_WARHEAD ->
                     fizzle(level, c, by, bombScale);
             // A dirty warhead is only HE and waste: it goes off however it is set off.
             case DIRTY_WARHEAD -> dirty(level, c, by, bombScale);
@@ -308,6 +309,7 @@ public final class Charges {
             case NEUTRON_WARHEAD -> 140;
             case THERMONUCLEAR_WARHEAD -> 360;
             case COBALT_WARHEAD -> 300;                    // round the burst; its plume reaches far further (COBALT_PLUME)
+            case TSAR_WARHEAD -> 600;
             default -> 90;                                 // tactical, dirty
         };
     }
@@ -317,7 +319,7 @@ public final class Charges {
             case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD -> 48_000;
             case NEUTRON_WARHEAD -> 6_000;                  // neutrons leave little behind: a quarter of a day
             case DIRTY_WARHEAD -> 120_000;                  // waste lingers: five days
-            case THERMONUCLEAR_WARHEAD -> 72_000;           // three days
+            case THERMONUCLEAR_WARHEAD, TSAR_WARHEAD -> 72_000;   // three days
             case COBALT_WARHEAD -> 720_000;                 // cobalt-60: a month
             default -> 24_000;
         };

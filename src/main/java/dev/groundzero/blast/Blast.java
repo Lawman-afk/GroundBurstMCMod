@@ -10,4 +10,13 @@ public interface Blast {
 
     /** Blocks changed so far. */
     int blocksChanged();
+
+    /**
+     * What the blast is holding, for benchmarks ({@link BlastBench}): its phase, how far its terrain work has got, its
+     * live rays (and the arrays' room), the chunks it keeps loaded, the chunk sections it has marked, its crater rim,
+     * and the fires and rubble waiting.
+     */
+    record Stats(String phase, int terrain, int rays, int rayRoom, int chunks, int sections, int rim, int deferred) {}
+
+    Stats stats();
 }

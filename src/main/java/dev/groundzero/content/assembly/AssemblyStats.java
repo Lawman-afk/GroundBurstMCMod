@@ -139,6 +139,7 @@ public final class AssemblyStats {
             case NEUTRON_WARHEAD -> "1 kt";
             case THERMONUCLEAR_WARHEAD -> "1.2 Mt";
             case COBALT_WARHEAD -> "400 kt";
+            case TSAR_WARHEAD -> "50 Mt";
             default -> null;
         };
     }

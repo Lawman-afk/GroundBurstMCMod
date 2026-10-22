@@ -138,6 +138,7 @@ public class ChargeBlock extends Block implements EntityBlock {
             case NEUTRON_WARHEAD -> Block.box(4, 0, 4, 12, 16, 12);
             case DIRTY_WARHEAD -> Block.box(2, 0, 2, 14, 14, 14);
             case THERMONUCLEAR_WARHEAD, COBALT_WARHEAD -> Block.box(2, 0, 2, 14, 16, 14);
+            case TSAR_WARHEAD -> Block.box(1, 0, 1, 15, 16, 15);
             case CLUSTER_WARHEAD, THERMOBARIC_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD,
                  CHEMICAL_WARHEAD ->
                     Block.box(2.5, 0, 2.5, 13.5, 15, 13.5);

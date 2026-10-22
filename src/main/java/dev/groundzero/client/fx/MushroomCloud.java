@@ -83,7 +83,7 @@ final class MushroomCloud {
         this.floor = Math.min(this.ground, floor);
         this.crater = crater;
         this.fireball = fireball;
-        this.height = Math.max(40, Math.min(400, crater * 2));
+        this.height = Math.max(40, Math.min(520, crater * 2));       // the Tsar's climbs to 500
         this.r0 = fireball * 0.55f;
         this.r1 = this.height * 0.42f;
         this.random = RandomSource.create(seed ^ 0x6C8E9CF570932BD5L);

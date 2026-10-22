@@ -285,12 +285,13 @@ def strategic_model(model_name: str, nose: str) -> None:
 #: Item pixels its model reaches below the usual missile's tail line (MissileParts.ICBM_TAIL in Java).
 ICBM_TAIL = 11.5
 #: The only warheads it carries (whole weapons: the hall builds them in); every other missile carries the rest.
-ICBM_NOSES = ("thermonuclear_warhead", "cobalt_warhead")
+ICBM_NOSES = ("thermonuclear_warhead", "cobalt_warhead", "tsar_warhead")
 BENCH_NOSES = [n for n in W.NOSES if n not in ICBM_NOSES]
 
 #: Its sections, tail to nose, in item pixels (centred on x = z = 8): (name, half-width, side half-width, y0, y1, paint).
-#: Three solid-fuel stages narrowing upward, dark interstages, the warhead's shroud. Drawn upright four times over on the
-#: Launch Complex (about 11 blocks) and in flight, and lying on the Strategic Assembly Hall's cradles.
+#: Three solid-fuel stages narrowing upward and dark interstages; then its warhead's nose (ICBM_SHROUD, or the Tsar's
+#: bomb, TSAR_SECTIONS). Drawn upright four times over on the Launch Complex (about 11 blocks) and in flight, and lying
+#: on the Strategic Assembly Hall's cradles.
 ICBM_SECTIONS = [
     ("skirt", 3.2, 2.15, -10, -8.6, "iskirt"),
     ("stage1", 3.0, 2.0, -8.6, 6, "istage1"),
@@ -298,41 +299,116 @@ ICBM_SECTIONS = [
     ("stage2", 2.6, 1.75, 7.2, 16.4, "istage2"),
     ("inter2", 2.35, 1.55, 16.4, 17.4, "iinter"),
     ("stage3", 2.2, 1.45, 17.4, 22.4, "istage3"),
+]
+#: The thermonuclear and cobalt warheads' shroud over the third stage, and its tip.
+ICBM_SHROUD = [
     ("nose0", 2.0, 1.3, 22.4, 26.2, "nose_base"),
     ("nose1", 1.35, 0.9, 26.2, 29.6, "nose"),
 ]
 ICBM_TIP = ((7.5, 29.6, 7.5), (8.5, 32, 8.5))
+#: The Tsar rides bare on the third stage, wider than any stage (slice 8d): its canvas parachute pack wrapped round the
+#: stage's top just above the complex's upper clamp (item y 18-20), the tail cone, the fat body (a white stencil band,
+#: four glowing vents), a rounded nose and its fuze cap; four fins round the pack.
+TSAR_SECTIONS = [
+    ("tpack", 2.7, 1.8, 20.4, 21.8, "tsar_pack"),
+    ("ttail", 3.3, 2.2, 21.8, 23.0, "tsar_tail"),
+    ("tbody", 3.8, 2.55, 23.0, 29.4, "tsar_body"),
+    ("tnose0", 3.2, 2.15, 29.4, 30.6, "tsar_nose"),
+    ("tnose1", 2.2, 1.45, 30.6, 31.4, "tsar_nose"),
+]
+TSAR_TIP = ((7.4, 31.4, 7.4), (8.6, 32, 8.6))
+#: Its fins: a root along the pack out to 4.4, a step against the tail cone out to 4.0 (from its skin).
+TSAR_FIN_ROWS = (("tfin", 20.4, 21.8, 2.7, 4.4), ("tfin2", 21.8, 22.6, 3.3, 4.0))
+#: Its vents, one on each side of the body: lit in flight (item model) and on the GeckoLib models (a glow layer).
+TSAR_VENT = (23.6, 24.8, 0.8)                              # (y0, y1, half-width along the face)
 ICBM_NOZZLES = ((6.3, 6.3), (8.5, 6.3), (6.3, 8.5), (8.5, 8.5))
 #: Four swept fins low on the first stage, one on each side (after the in-game look: it had none): a long root out to
 #: 5.4 and a shorter step above it out to 4.3, from the stage's skin (3.0). (direction: x step, z step)
 ICBM_FINS = {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}
 ICBM_FIN_ROWS = (("fin", -8.6, -3.0, 5.4), ("fin2", -3.0, -0.2, 4.3))
-#: Which of the hall crane's four loads each section comes in: the first stage, the second, the third, the shroud.
-ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3, "nose0": 4, "nose1": 4}
+#: Which of the hall crane's four loads each section comes in: the first stage, the second, the third (the warhead's
+#: nose is the fourth).
+ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3}
+ALL6 = ("north", "south", "east", "west", "up", "down")
+#: The face of a fin (or vent) that lies against the body, by the side it stands out from.
+INNER = {"n": "south", "s": "north", "w": "east", "e": "west"}
+
+
+def _sections(table) -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """Round sections as "plus" prisms: a core box full width in x, and a box either side of it in z."""
+    parts = []
+    for name, r, w, y0, y1, paint in table:
+        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ALL6, paint))
+        parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west", "up", "down"), paint))
+        parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west", "up", "down"), paint))
+    return parts
+
+
+def _fins(rows, thick: float, paint: str) -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """Four fins, one on each side: rows of (name, y0, y1, from radius, to radius), each row resting on the one below."""
+    parts = []
+    for d, (dx, dz) in ICBM_FINS.items():
+        for i, (part, y0, y1, r0, r1) in enumerate(rows):
+            faces = tuple(f for f in ALL6 if f != INNER[d] and not (i > 0 and f == "down"))
+            if dx == 0:
+                z0, z1 = sorted((8 + dz * r0, 8 + dz * r1))
+                parts.append((f"{part}_{d}", (8 - thick, y0, z0), (8 + thick, y1, z1), faces, paint))
+            else:
+                x0, x1 = sorted((8 + dx * r0, 8 + dx * r1))
+                parts.append((f"{part}_{d}", (x0, y0, 8 - thick), (x1, y1, 8 + thick), faces, paint))
+    return parts
 
 
 def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
-    """(name, from, to, faces, paint) in item pixels, tail at y -11.5 (four nozzles), nose tip at 32."""
-    all6 = ("north", "south", "east", "west", "up", "down")
+    """The booster: (name, from, to, faces, paint) in item pixels, tail at y -11.5 (four nozzles), up to the third
+    stage's top at 22.4; its four fins. The warhead's nose comes from icbm_nose_parts."""
     parts = []
     for i, (x, z) in enumerate(ICBM_NOZZLES):
         parts.append((f"nozzle{i}", (x, -11.5, z), (x + 1.2, -10, z + 1.2), ("north", "south", "east", "west", "down"), "nozzle"))
-    for name, r, w, y0, y1, paint in ICBM_SECTIONS:
-        parts.append((f"{name}_c", (8 - r, y0, 8 - w), (8 + r, y1, 8 + w), ("north", "south", "east", "west", "up", "down"), paint))
-        parts.append((f"{name}_n", (8 - w, y0, 8 - r), (8 + w, y1, 8 - w), ("north", "east", "west", "up", "down"), paint))
-        parts.append((f"{name}_s", (8 - w, y0, 8 + w), (8 + w, y1, 8 + r), ("south", "east", "west", "up", "down"), paint))
-    parts.append(("tip", ICBM_TIP[0], ICBM_TIP[1], all6, "tip"))
-    inner = {"n": "south", "s": "north", "w": "east", "e": "west"}     # the face against the stage
-    for d, (dx, dz) in ICBM_FINS.items():
-        for part, y0, y1, reach in ICBM_FIN_ROWS:
-            faces = tuple(f for f in all6 if f != inner[d] and not (part == "fin2" and f == "down"))   # the step sits on the root
-            if dx == 0:
-                z0, z1 = sorted((8 + dz * 3.0, 8 + dz * reach))
-                parts.append((f"{part}_{d}", (7.7, y0, z0), (8.3, y1, z1), faces, "ifin"))
-            else:
-                x0, x1 = sorted((8 + dx * 3.0, 8 + dx * reach))
-                parts.append((f"{part}_{d}", (x0, y0, 7.7), (x1, y1, 8.3), faces, "ifin"))
+    parts += _sections(ICBM_SECTIONS)
+    parts += _fins([(part, y0, y1, 3.0, reach) for part, y0, y1, reach in ICBM_FIN_ROWS], 0.3, "ifin")
     return parts
+
+
+def icbm_nose_parts(nose: str) -> list[tuple[str, tuple, tuple, tuple, str]]:
+    """What sits on the third stage for a warhead, up to y 32: the shroud and its tip, or the Tsar's bomb."""
+    if nose != "tsar_warhead":
+        return _sections(ICBM_SHROUD) + [("tip", ICBM_TIP[0], ICBM_TIP[1], ALL6, "tip")]
+    parts = _sections(TSAR_SECTIONS) + [("ttip", TSAR_TIP[0], TSAR_TIP[1], ALL6, "tsar_tip")]
+    parts += _fins(TSAR_FIN_ROWS, 0.3, "tsar_fin")
+    y0, y1, half = TSAR_VENT
+    r = TSAR_SECTIONS[2][1]                                  # the body's half-width
+    for d, (dx, dz) in ICBM_FINS.items():
+        faces = tuple(f for f in ALL6 if f != INNER[d])
+        if dx == 0:
+            z0, z1 = sorted((8 + dz * r, 8 + dz * (r + 0.15)))
+            parts.append((f"tvent_{d}", (8 - half, y0, z0), (8 + half, y1, z1), faces, "tsar_vent"))
+        else:
+            x0, x1 = sorted((8 + dx * r, 8 + dx * (r + 0.15)))
+            parts.append((f"tvent_{d}", (x0, y0, 8 - half), (x1, y1, 8 + half), faces, "tsar_vent"))
+    return parts
+
+
+def _slits(t: Tex, r, d, colour, lying: bool) -> None:
+    """A vent's slits across the bomb's length: rows on an upright vent; on a lying one, columns on its east and west
+    faces (their u runs along the bomb) and rows on its top and bottom."""
+    x, y, w, h = r
+    if lying and d in ("east", "west"):
+        for i in range(0, w, 2):
+            t.vline(x + i, y, h, colour)
+    else:
+        for i in range(0, h, 2):
+            t.hline(x, y + i, w, colour)
+
+
+def tsar_vent_glow(lying: bool = False):
+    """The Tsar's vents on a glow layer: their slits lit, the slats left dark."""
+    ends = ("north", "south") if lying else ("up", "down")
+
+    def fn(t: Tex, r, d):
+        if d not in ends:
+            _slits(t, r, d, W.VENT[1], lying)
+    return fn
 
 
 def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
@@ -340,6 +416,8 @@ def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
     one round the second's and a white one round the third's, dark riveted interstages, a gunmetal skirt; the shroud in
     its warhead's colours, its marking band at its middle. Every band sits at the middle of its section, so the lying
     missile in the hall (whose sections run across its faces' u or v the other way round) is painted alike."""
+    if kind.startswith("tsar_"):
+        return tsar_paint(kind, lying)
     ramp, mark, tip = W.NOSES[nose]
     band = {"istage1": WHITE[5], "istage2": YELLOW[4], "istage3": WHITE[5], "nose_base": mark}.get(kind)
     base = {"iskirt": GUN, "iinter": GUN, "ifin": GUN, "nose_base": ramp, "nose": ramp, "tip": tip, "nozzle": GUN}.get(kind, OLIVE)
@@ -365,13 +443,47 @@ def icbm_paint(kind: str, nose: str = "none", lying: bool = False):
     return fn
 
 
+def tsar_paint(kind: str, lying: bool = False):
+    """The Tsar's livery on the missile: dark green, its canvas pack strapped, a white stencil band round the middle of
+    its body, a gunmetal adapter, steel fuze cap, the vents' glowing slits between dark slats."""
+    ends = ("north", "south") if lying else ("up", "down")
+
+    def fn(t: Tex, r, d):
+        x, y, w, h = r
+        along_u = lying and d in ("east", "west")             # the section's length runs across the face
+        if kind == "tsar_vent":
+            t.rect(x, y, w, h, W.VENT[0])
+            if d not in ends:
+                _slits(t, r, d, W.VENT[1], lying)
+            return
+        ramp = {"tsar_adapter": GUN, "tsar_pack": W.CANVAS, "tsar_tip": STEEL}.get(kind, W.TSAR)
+        t.rect(x, y, w, h, ramp[tone(d) + (0 if ramp is GUN else 1)])
+        if d in ends:
+            return
+        if kind == "tsar_pack" and (h if not along_u else w) > 2:   # a strap round the pack
+            if along_u:
+                t.vline(x + w // 2, y, h, W.CANVAS[1])
+            else:
+                t.hline(x, y + h // 2, w, W.CANVAS[1])
+        if kind == "tsar_body" and (w if along_u else h) > 6:      # a white stencil band near the shoulder
+            if along_u:
+                t.vline(x + w - 3, y, h, WHITE[5])
+            else:
+                t.hline(x, y + 2, w, WHITE[5])
+        if kind == "tsar_adapter":
+            for i in range(0, w if not along_u else h, 2):      # rivets round the ring
+                t.px(x + i, y + h // 2, STEEL[4]) if not along_u else t.px(x + w // 2, y + i, STEEL[4])
+    return fn
+
+
 def icbm_model(model_name: str, nose: str) -> None:
-    m = BlockModel(model_name, tex_size=(64, 64), kind="item")
-    for name, frm, to, faces, _ in icbm_parts():
-        m.box(name, frm, to, faces=faces)
+    m = BlockModel(model_name, tex_size=(128, 64) if nose == "tsar_warhead" else (64, 64), kind="item")   # the bomb's faces need room
+    parts = icbm_parts() + icbm_nose_parts(nose)
+    for name, frm, to, faces, kind in parts:
+        m.box(name, frm, to, faces=faces, light=15 if kind == "tsar_vent" else 0)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for name, _, _, _, kind in icbm_parts():
+    for name, _, _, _, kind in parts:
         m.paint_all(t, name, icbm_paint(kind, nose))
     m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
     lo, hi = m.bounds()
@@ -871,15 +983,16 @@ def launch_complex() -> None:
                 g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
         else:
             g.box("s_" + name, a, b, faces=faces, bone="strategic")
-    # Or an intercontinental missile: its own model four times over (about 11 blocks), its tail on the same line.
+    # Or an intercontinental missile: its own model four times over (about 11 blocks), its tail on the same line; each
+    # warhead's nose its own bone.
+    def icbm_box(frm, to):
+        return (((frm[0] - 8) * 4, (frm[1] + ICBM_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32),
+                ((to[0] - 8) * 4, (to[1] + ICBM_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32))
     for name, frm, to, faces, kind in icbm_parts():
-        a = ((frm[0] - 8) * 4, (frm[1] + ICBM_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32)
-        b = ((to[0] - 8) * 4, (to[1] + ICBM_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32)
-        if kind in NOSE_PARTS:
-            for nose in ICBM_NOSES:
-                g.box(f"in_{nose}_{name}", a, b, faces=faces, bone=f"inose_{nose}")
-        else:
-            g.box("i_" + name, a, b, faces=faces, bone="icbm")
+        g.box("i_" + name, *icbm_box(frm, to), faces=faces, bone="icbm")
+    for nose in ICBM_NOSES:
+        for name, frm, to, faces, kind in icbm_nose_parts(nose):
+            g.box(f"in_{nose}_{name}", *icbm_box(frm, to), faces=faces, bone=f"inose_{nose}")
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
@@ -967,12 +1080,14 @@ def launch_complex() -> None:
         else:
             g.paint_all(tex, "s_" + name, strategic_paint(kind))
     for name, _, _, _, kind in icbm_parts():
-        if kind in NOSE_PARTS:
-            for nose in ICBM_NOSES:
-                g.paint_all(tex, f"in_{nose}_{name}", icbm_paint(kind, nose))
-        else:
-            g.paint_all(tex, "i_" + name, icbm_paint(kind))
-    g.save(tex)
+        g.paint_all(tex, "i_" + name, icbm_paint(kind))
+    glow = Tex(g.tex_w, g.tex_h, CLEAR)                       # the Tsar's vents (the renderer draws it lit)
+    for nose in ICBM_NOSES:
+        for name, _, _, _, kind in icbm_nose_parts(nose):
+            g.paint_all(tex, f"in_{nose}_{name}", icbm_paint(kind, nose))
+            if kind == "tsar_vent":
+                g.paint_all(glow, f"in_{nose}_{name}", tsar_vent_glow())
+    g.save(tex, glow)
     # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and
     # an empty complex rests in "clear" with both arms still away.

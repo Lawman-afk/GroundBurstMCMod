@@ -28,9 +28,10 @@ public final class GZServerConfig {
             .defineInRange("radiusMultiplier", 1.0, 0.1, 2.0);
 
     public static final ModConfigSpec.IntValue MAX_RADIUS = B
-            .comment("Hard cap on any blast zone radius, after the multiplier.")
-            .translation(GZLang.config("blast.maxRadius", "Maximum radius"))
-            .defineInRange("maxRadius", 320, 8, 512);
+            .comment("Hard cap on any blast zone radius, after the multiplier. The default lets the Tsar reach all the way.")
+            // (Was maxRadius, 320: renamed with the new default so configs written before the Tsar pick it up.)
+            .translation(GZLang.config("blast.maxBlastRadius", "Maximum radius"))
+            .defineInRange("maxBlastRadius", 720, 8, 1024);
 
     public static final ModConfigSpec.IntValue MS_BUDGET_PER_TICK = B
             .comment("Milliseconds per server tick that all running blasts may use together.",

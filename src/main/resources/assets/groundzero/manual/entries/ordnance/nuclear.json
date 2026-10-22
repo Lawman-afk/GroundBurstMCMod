@@ -10,6 +10,7 @@
     "groundzero:dirty_warhead",
     "groundzero:thermonuclear_warhead",
     "groundzero:cobalt_warhead",
+    "groundzero:tsar_warhead",
     "groundzero:tactical_fission_core",
     "groundzero:fission_core",
     "groundzero:boosted_fission_core",
@@ -28,6 +29,10 @@
     {
       "type": "text",
       "text": "**Thermonuclear Warhead** (about 1.2 megatons): two stages, a boosted fission primary setting off a fusion secondary. A crater 150 blocks round, wrecking everything to 220 blocks and deadly to 260; fallout 360 blocks round for three days. It is only ever built whole, into an intercontinental missile, at the [Strategic Assembly Hall](ordnance/strategic_assembly).\n\n**Cobalt Warhead** (about 400 kilotons): the same weapon with a Cobalt-59 Jacket round its secondary. The blast is smaller (a crater 70 blocks round, deadly to 110), but the jacket turns to cobalt-60: fallout 300 blocks round the burst and strung out about **1,000 blocks downwind**, lasting **a month**. Built whole like the thermonuclear warhead."
+    },
+    {
+      "type": "text",
+      "text": "**Tsar Mega-bomb** (about 50 megatons), the biggest weapon there is: a fat dark-green bomb with a parachute pack in its tail and cooling vents that glow, riding on top of its intercontinental missile. Three stages: a boosted fission primary, a fusion secondary, and a **Tertiary Stage** set off by the secondary. A crater **250 blocks** round, wrecking everything to 380 blocks, burning to 450, deadly to 450 and hurting to 700; fallout 600 blocks round for three days. Its cloud climbs 500 blocks.\n\nSo much ground goes that the crater keeps forming for a minute or two after the shock wave has passed, out of sight under the dust. Built whole at the [Strategic Assembly Hall](ordnance/strategic_assembly), a Tertiary Stage in place of the jacket."
     },
     {
       "type": "text",

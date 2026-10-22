@@ -276,6 +276,13 @@
           "type": "minecraft:model",
           "model": "groundzero:item/icbm_missile_cobalt_warhead"
         }
+      },
+      {
+        "when": "icbm_tsar_warhead",
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/icbm_missile_tsar_warhead"
+        }
       }
     ],
     "fallback": {
