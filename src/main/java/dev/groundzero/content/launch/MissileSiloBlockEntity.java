@@ -30,7 +30,7 @@ import net.minecraft.world.phys.Vec3;
  * The Missile Silo (DESIGN.md §17.2, §17.10; Phase 9 slice 9b): the hardened launcher, dug into the ground. A 5x5 shaft
  * 14 deep lined with Reinforced Concrete, a Flame Deflector in the middle of its floor, and at the top a ring of Hazard
  * Concrete round a Silo Hatch, with this controller in the middle of the ring's front and an Energy Port in the middle
- * of its back. It fires any missile but an intercontinental one, nuclear ones too. A Launch Computer aims and arms it
+ * of its back. It fires any missile, nuclear and intercontinental ones too. A Launch Computer aims and arms it
  * like any launcher. Its countdown runs 20 s: at T-15 the hatch's doors slide apart (the launch holds at T-1 until they
  * are open); at T-0 the missile is lit at the bottom of the shaft and climbs straight up out of it, the exhaust
  * bursting out of the shaft and the four corner vents; the doors shut again 10 s after. Its screen's DOORS button opens
@@ -79,10 +79,10 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
         return GZLaunch.MISSILE_SILO;
     }
 
-    /** Anything but an intercontinental missile (those fly only from a Launch Complex). */
+    /** Any missile at all, as the Launch Complex (an intercontinental one too, since the user's look at 9b). */
     @Override
     public boolean accepts(MissileSpec spec) {
-        return !spec.intercontinental();
+        return true;
     }
 
     @Override
@@ -313,7 +313,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     // --- model --------------------------------------------------------------------------------------------------------------
     /**
      * The model shows the loaded missile standing in the shaft: a Strategic one is its own long model ("strategic",
-     * noses "snose_*"), any other the usual missile scaled by its body ("missile", noses "nose_*").
+     * noses "snose_*"), an intercontinental one its own too ("icbm", noses "inose_*"), any other the usual missile
+     * scaled by its body ("missile", noses "nose_*").
      */
     @Override
     public Set<String> hiddenBones() {
@@ -321,15 +322,23 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
             return Set.of("frame");
         }
         var spec = missile();
-        Set<String> hidden = new java.util.HashSet<>(List.of("missile", "strategic"));
-        boolean strategic = spec != null && spec.body() == SizeClass.XL;
+        Set<String> hidden = new java.util.HashSet<>(List.of("missile", "strategic", "icbm"));
+        SizeClass body = spec == null ? SizeClass.M : spec.body();
         if (spec != null) {
-            hidden.remove(strategic ? "strategic" : "missile");
+            hidden.remove(switch (body) {
+                case XL -> "strategic";
+                case XXL -> "icbm";
+                default -> "missile";
+            });
         }
         String id = spec == null || spec.warheadId().isEmpty() ? "none" : spec.warheadId();
-        String shown = (strategic ? "snose_" : "nose_") + id;
+        String shown = switch (body) {
+            case XL -> "snose_";
+            case XXL -> "inose_";
+            default -> "nose_";
+        } + id;
         for (String nose : NOSES) {
-            for (String bone : new String[] {nose, "s" + nose}) {
+            for (String bone : new String[] {nose, "s" + nose, "i" + nose}) {
                 if (!bone.equals(shown)) {
                     hidden.add(bone);
                 }
@@ -341,7 +350,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     @Override
     public Map<String, float[]> boneScales() {
         var spec = missile();
-        return spec != null && spec.body() == SizeClass.XL ? Map.of() : super.boneScales();
+        return spec != null && (spec.body() == SizeClass.XL || spec.body() == SizeClass.XXL) ? Map.of() : super.boneScales();
     }
 
     /** The door leaves slid apart (x as GeckoLib has it: negated). */

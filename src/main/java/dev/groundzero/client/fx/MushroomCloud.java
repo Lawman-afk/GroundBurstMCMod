@@ -29,9 +29,10 @@ import net.minecraft.world.phys.Vec3;
  * <p><b>Look.</b> Cloudlets are lit like clouds ({@link FxLight}): a normal out from the core circle (cap) or the axis
  * (stem), sunlight from the sun's direction, the sky's colour in the shade, undersides darker. Near the core the cap
  * glows: hot yellow-orange at first, cooling through red to nothing over about a minute. The cloud stands still over
- * ground zero all its life: no wind drift (after the in-game looks: drifting, it slid off its crater). It thins out over
- * its last 45 seconds (it lasts 2.5 minutes). It is drawn with the far-cloud pipeline, so it shows above the horizon from
- * well beyond the render distance.
+ * ground zero all its life: no wind drift (after the in-game looks: drifting, it slid off its crater). It stands at full
+ * strength until the blast has finished digging its crater (the server's end of the blast: a Tsar's takes minutes),
+ * and only then does its countdown start: it lasts 2.5 minutes from there, thinning out over the last 45 seconds. It is
+ * drawn with the far-cloud pipeline, so it shows above the horizon from well beyond the render distance.
  */
 final class MushroomCloud {
     private enum Role { CAP, STEM, COLLAR, SHELL, BASE }
@@ -56,7 +57,12 @@ final class MushroomCloud {
     private final double ground, floor;
     private final float crater;
     private final float fireball, height, r0, r1;
+    /** How long it lasts once its countdown has started. */
     private final int life;
+    /** When its countdown started (ticks after the burst): NaN while it waits for the crater to be finished. */
+    private double countdown = Double.NaN;
+    /** The longest it waits for the crater, should the blast's end never reach this client: a quarter of an hour. */
+    private static final int MAX_HOLD = 20 * 60 * 15;
     private final float quality;
     private final RandomSource random;
     private final int earth;
@@ -99,6 +105,8 @@ final class MushroomCloud {
 
     // --- the shape over time ---------------------------------------------------------------------------------------------------
     private static final double RISE = 260, WIDEN = 420, SPIN_FADE = 1200, COOL = 550;
+    /** The cap's own cloudlets last as long as the cloud (it may wait a long time for its crater): they go with it. */
+    private static final int CAP_LIFE = Integer.MAX_VALUE / 2;
 
     double capY(double t) {
         return this.center.y + this.height * (1 - Math.exp(-t / RISE));
@@ -134,18 +142,30 @@ final class MushroomCloud {
         return Math.exp(-t / COOL);
     }
 
-    /** The whole cloud's opacity: thinning out over the last 30% of its life. */
+    /** The blast has finished (its crater is dug): the countdown starts now, once. */
+    void release(double t) {
+        if (Double.isNaN(this.countdown)) {
+            this.countdown = Math.min(t, MAX_HOLD);
+        }
+    }
+
+    /** When it will be gone (ticks after the burst): a life after its countdown started; while it waits, always a life ahead. */
+    private double end(double t) {
+        return (Double.isNaN(this.countdown) ? Math.min(t, MAX_HOLD) : this.countdown) + this.life;
+    }
+
+    /** The whole cloud's opacity: thinning out over the last 30% of its countdown. */
     private double fade(double t) {
-        return Math.max(0, Math.min(1, (this.life - t) / (this.life * 0.3)));
+        return Math.max(0, Math.min(1, (end(t) - t) / (this.life * 0.3)));
     }
 
     /** The stem is fed from the ground until the cloud starts thinning out. */
-    private double stemFeed() {
-        return this.life * 0.7;
+    private double stemFeed(double t) {
+        return end(t) - this.life * 0.3;
     }
 
     boolean done(double t) {
-        return t >= this.life;
+        return t >= end(t);
     }
 
     /** The base ring's major radius (round the axis) and minor radius, at {@code t}: it spreads out a little as it rolls. */
@@ -234,7 +254,7 @@ final class MushroomCloud {
         int capDue = (int) (this.capCount * Math.min(1, t / 40));
         while (this.capSent < capDue) {
             this.capSent++;
-            Cloudlet c = cloudlet(Role.CAP, t, this.life);
+            Cloudlet c = cloudlet(Role.CAP, t, CAP_LIFE);
             double[] d = sphere();
             double at = this.fireball * Math.cbrt(this.random.nextDouble());
             c.x = this.center.x + d[0] * at;
@@ -246,7 +266,7 @@ final class MushroomCloud {
         }
         // The stem: fed from the ground over ground zero, most at first, then a trickle that keeps it standing until the
         // cloud thins out.
-        if (t > 12 && t < stemFeed()) {
+        if (t > 12 && t < stemFeed(t)) {
             int stemDue = (int) (this.stemCount * (1 - Math.exp(-(t - 12) / 300)) + (t - 12) * 0.35 * this.quality);
             double ax = this.center.x, az = this.center.z;
             while (this.stemSent < stemDue) {
@@ -263,7 +283,7 @@ final class MushroomCloud {
             }
         }
         // The ring of dust round the stem's foot, from a couple of seconds in.
-        if (t > 30 && t < stemFeed()) {
+        if (t > 30 && t < stemFeed(t)) {
             int baseDue = (int) (this.baseCount * Math.min(1, (t - 30) / 260));
             while (this.baseSent < baseDue) {
                 this.baseSent++;
@@ -342,7 +362,7 @@ final class MushroomCloud {
         this.shellSent = true;
         this.collarSent = t < 450 ? this.collarCount : this.collarSent;
         for (int i = 0; i < this.capCount + this.stemCount / 2; i++) {
-            Cloudlet c = cloudlet(Role.CAP, t - this.random.nextInt(200), this.life);
+            Cloudlet c = cloudlet(Role.CAP, t - this.random.nextInt(200), CAP_LIFE);
             c.shell = (float) Math.sqrt(0.08 + 0.92 * this.random.nextDouble());
             c.scale = 0.7f + 0.45f * this.random.nextFloat();
             double phi = this.random.nextDouble() * 2 * Math.PI, roll = this.random.nextDouble() * 2 * Math.PI;
@@ -352,7 +372,7 @@ final class MushroomCloud {
             c.z = az + Math.sin(phi) * rho;
             add(c);
         }
-        if (t < stemFeed()) {
+        if (t < stemFeed(t)) {
             this.stemSent = this.stemCount;
             double underside = capY - small * 0.6;
             for (int i = 0; i < this.stemCount / 2; i++) {

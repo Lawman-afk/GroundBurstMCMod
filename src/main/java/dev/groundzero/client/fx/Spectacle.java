@@ -161,6 +161,9 @@ public final class Spectacle {
         BlastFx fx = BLASTS.get(id);
         if (fx != null) {
             fx.ended = true;
+            if (fx.mushroom != null) {
+                fx.mushroom.release(fx.age(ticks));        // the crater is dug: the cloud's countdown starts now
+            }
         }
     }
 

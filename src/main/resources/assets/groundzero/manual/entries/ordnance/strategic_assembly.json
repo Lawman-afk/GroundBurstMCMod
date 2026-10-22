@@ -8,16 +8,17 @@
     "groundzero:fusion_secondary",
     "groundzero:cobalt_jacket",
     "groundzero:intercontinental_booster",
-    "groundzero:tertiary_stage"
+    "groundzero:tertiary_stage",
+    "groundzero:twin_boosted_core"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section.\n\nFit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port."
+      "text": "The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section.\n\nFit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port."
     },
     {
       "type": "text",
-      "text": "An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, and only a Launch Complex fires it. Its warhead goes off where it lands. What its three warheads do is under [Nuclear warheads](ordnance/nuclear)."
+      "text": "An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, from a Launch Complex or a Missile Silo. Its warhead goes off where it lands. What its three warheads do is under [Nuclear warheads](ordnance/nuclear)."
     },
     {
       "type": "structure",
@@ -52,6 +53,11 @@
     {
       "type": "crafting",
       "item": "groundzero:tertiary_stage",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:twin_boosted_core",
       "text": ""
     }
   ]

@@ -24,27 +24,23 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
-import grenades as G  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import structures as ST  # noqa: E402
 
-CONCRETE, STEEL, GUN, OLIVE = P.CONCRETE, P.STEEL, P.GUNMETAL, P.OLIVE
+GUN, OLIVE = P.GUNMETAL, P.OLIVE
 YELLOW, BLACK, RED, GREEN = P.HAZARD_YELLOW, P.HAZARD_BLACK, P.WARNING_RED, P.INDICATOR_GREEN
 WHITE = P.WHITE_CERAMIC
 AMBER = P.NUCLEAR_AMBER
-SOOT = L.SOOT
-#: The door leaves' armour: a dark blue-grey steel, darker than the collar so the doors read from a distance.
-ARMOUR = fixed("silo_armour", "#16191d", "#22272c", "#30363c", "#40474e", "#535b63", "#6c757e", "#8e98a2")
 CLEAR = (0, 0, 0, 0)
-shaded = G.shaded
-tone = L.tone
 
 TOP = 16                      # the ground: the collar's top face
 FLOOR = -192                  # the shaft's floor (the top of the bottom layer)
@@ -57,37 +53,23 @@ SLIDE = 24                    # how far each leaf slides out to open
 
 # --- the building blocks ---------------------------------------------------------------------------------------------------
 def reinforced_concrete() -> Tex:
-    """Formed concrete: smooth and even, the seam where two formwork boards met across the middle and at the bottom
-    (each a dark line with the lip above it catching the light), the formwork's four tie holes, a little grit."""
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, CONCRETE[3])
-    t.speckle(0, 0, 16, 16, [CONCRETE[4]], seed=41, density=0.05)
-    t.speckle(0, 0, 16, 16, [(*CONCRETE[2][:3], 255)], seed=42, density=0.04)
+    """Cast concrete: even, a little grit; the seams where two formwork boards met across the middle and at the bottom
+    (each a dark line, the lip above it catching the light), and the formwork's four tie holes."""
+    img = M.tile(M.concrete(**M.CONCRETE_TILE), seed=41)
+    col, row = M.grid_xy()
     for y in (7, 15):
-        t.hline(0, y, 16, CONCRETE[2])                     # the board seams
-        t.hline(0, y - 1 if y > 0 else 0, 16, CONCRETE[4])
+        M.darken(img, row == y, 0.66)
+        M.lighten(img, row == y - 1, 1.08, 4)
     for x, y in ((3, 3), (12, 3), (3, 11), (12, 11)):
-        t.px(x, y, CONCRETE[1])                            # the tie holes, their lower edge lit
-        t.px(x, y + 1, CONCRETE[4])
-    return t
+        img[y, x, :3] = M.CONCRETE_RAMP[1]
+        img[y + 1, x, :3] = M.CONCRETE_RAMP[6]
+    return M.to_tex(img)
 
 
 def hazard_concrete() -> Tex:
-    """Concrete painted in diagonal yellow and black stripes (period 8: they run on across a row of blocks), a few
-    scuffs where boots have worn the paint."""
-    t = Tex(16, 16)
-    for y in range(16):
-        for x in range(16):
-            yellow = ((x + y) // 4) % 2 == 0
-            t.px(x, y, YELLOW[4] if yellow else BLACK[3])
-    for x, y in ((2, 5), (13, 11), (6, 13)):
-        t.px(x, y, CONCRETE[3])                            # scuffed through to the concrete
-    for x, y in ((3, 5), (6, 12)):
-        t.px(x, y, CONCRETE[2])
-    for x, y in ((9, 1), (1, 9), (12, 5), (5, 3), (14, 13)):
-        if ((x + y) // 4) % 2 == 0:
-            t.px(x, y, YELLOW[3])                          # the paint a little uneven (on the yellow only)
-    return t
+    """Concrete painted in diagonal yellow and black stripes (four texels each: they run on across a row of blocks),
+    worn through to the concrete here and there by boots."""
+    return M.to_tex(M.hazard_tile(width=4, seed=43, scuff=0.22))
 
 
 def concrete_block(name: str, tex: Tex) -> None:
@@ -100,14 +82,12 @@ def concrete_block(name: str, tex: Tex) -> None:
 
 # --- the Silo Hatch (one item, a 3x3 lid) ----------------------------------------------------------------------------------
 def hatch_icon() -> Tex:
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, ARMOUR[3])
-    t.outline(0, 0, 16, 16, GUN[1])
-    t.outline(1, 1, 14, 14, GUN[4])
-    for y in range(2, 14):
-        t.px(7, y, YELLOW[4] if (y // 2) % 2 == 0 else BLACK[2])
-        t.px(8, y, BLACK[2] if (y // 2) % 2 == 0 else YELLOW[4])
-    return t
+    img = M.tile(M.painted(M.ARMOUR_RAMP, tone=0.56), seed=9, edges=True)
+    col, row = M.grid_xy()
+    seam = (col >= 7) & (col <= 8) & (row >= 2) & (row <= 13)
+    img[seam] = M.hazard_tile(width=2, seed=10)[seam]
+    M.darken(img, (np.minimum(np.minimum(col, 15 - col), np.minimum(row, 15 - row)) == 1), 0.75)
+    return M.to_tex(img)
 
 
 def hatch_block(particle: str) -> BlockModel:
@@ -123,44 +103,15 @@ def hatch_block(particle: str) -> BlockModel:
     m.box("leaf_e", (8, 0, -13), (29, 15, 29), faces=("up", "down", "east", "north", "south"))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    for n in ("frame_n", "frame_s", "frame_w", "frame_e"):
-        def frame(t, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, GUN[tone(d) + 1])
-            if d == "up":
-                t.outline(x, y, w, h, GUN[1])
-        m.paint_all(t, n, frame)
-
-    def leaf(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, ARMOUR[tone(d) + 1])
-        if d == "up":
-            t.outline(x, y, w, h, ARMOUR[1])
-            for yy in range(y + 3, y + h - 2, 6):
-                for xx in range(x + 3, x + w - 2, 6):
-                    t.px(xx, yy, ARMOUR[5])
-            # The stripes along the seam (the leaves' inner edges meet in the middle).
-            for yy in range(y, y + h):
-                for k in range(3):
-                    xx = x + w - 1 - k if w > 3 else x
-                    t.px(xx, yy, YELLOW[4] if ((yy - y) // 3 + k) % 2 == 0 else BLACK[3])
-    m.paint_all(t, "leaf_w", leaf)
-    m.paint_all(t, "leaf_e", lambda t, r, d: leaf(t, r, d) if d != "up" else _leaf_east_up(t, r))
+    S = M.Surfacer(m, seed=89)
+    S.paint(t, ["frame_n", "frame_s", "frame_w", "frame_e"], M.steel(tone=0.45, rust=0.12))
+    S.paint(t, ["leaf_w", "leaf_e"], M.painted(M.ARMOUR_RAMP, tone=0.56, wear=0.35, rust=0.1))
+    seam = M.stripes(width=3, wear=0.3, under=M.ARMOUR_RAMP[1:6])
+    S.overlay(t, ["leaf_w", "leaf_e"], lambda f, img: M.paste(img, S.material_on(f, seam), np.abs(f.X - 8) < 3), only=("up",))
+    S.overlay(t, ["leaf_w", "leaf_e"], lambda f, img: M.rivets(f, img, every=5, inset=2, axis="v"), only=("up",))
     m.fit_display(gui_rotation=(30, 225, 0))
     m.save(t)
     return m
-
-
-def _leaf_east_up(t: Tex, r) -> None:
-    x, y, w, h = r
-    t.rect(x, y, w, h, ARMOUR[5])
-    t.outline(x, y, w, h, ARMOUR[1])
-    for yy in range(y + 3, y + h - 2, 6):
-        for xx in range(x + 3, x + w - 2, 6):
-            t.px(xx, yy, ARMOUR[6])
-    for yy in range(y, y + h):
-        for k in range(3):
-            t.px(x + k, yy, YELLOW[4] if ((yy - y) // 3 + k) % 2 == 0 else BLACK[3])
 
 
 def silo_hatch() -> None:
@@ -220,7 +171,11 @@ def formed() -> None:
     g.bone("strategic", pivot=(0, TAIL, CZ), parent=F)           # a Strategic missile: its own model, not scaled
     for nose in L.BENCH_NOSES:
         g.bone(f"snose_{nose}", parent="strategic")
-    g.exclusive = [{f"nose_{nose}" for nose in L.BENCH_NOSES}, {f"snose_{nose}" for nose in L.BENCH_NOSES}, {"missile", "strategic"}]
+    g.bone("icbm", pivot=(0, TAIL, CZ), parent=F)                # an intercontinental missile: its own model too
+    for nose in L.ICBM_NOSES:
+        g.bone(f"inose_{nose}", parent="icbm")
+    g.exclusive = [{f"nose_{nose}" for nose in L.BENCH_NOSES}, {f"snose_{nose}" for nose in L.BENCH_NOSES},
+                   {f"inose_{nose}" for nose in L.ICBM_NOSES}, {"missile", "strategic", "icbm"}]
     sides = ("north", "south", "east", "west")
 
     # The collar: the top layer round the opening, its top the ground.
@@ -313,17 +268,20 @@ def formed() -> None:
         for d in ("up", "down") + walls:                      # its ends meet floor and collar; its back the walls
             g.open_ok.add((n, d))
         conduits.append(n)
+    # The lamps: four rows three blocks apart (a block and a half from the floor and from the top), a pair on each wall
+    # in every row, 12 px either side of the wall's middle (clear of the fins, which point at the middles): the same on
+    # all four walls, so the shaft is lit evenly all round.
     lamps = []
-    for k, y in enumerate((-170, -122, -74, -26)):
-        off = 14 if k % 2 == 0 else -14
-        for wall, back, a, b in (("f", "north", (off - 1.5, y, 8.05), (off + 1.5, y + 2.5, 9.5)),
-                                 ("b", "south", (-off - 1.5, y, 54.5), (-off + 1.5, y + 2.5, 55.95)),
-                                 ("l", "west", (-23.95, y, CZ - off - 1.5), (-22.5, y + 2.5, CZ - off + 1.5)),
-                                 ("r", "east", (22.5, y, CZ + off - 1.5), (23.95, y + 2.5, CZ + off + 1.5))):
-            n = f"lamp{k}{wall}"
-            g.box(n, a, b, faces=tuple(d for d in sides + ("up", "down") if d != back), bone=F)
-            g.open_ok.add((n, back))                          # against the wall
-            lamps.append(n)
+    for k, y in enumerate((-168, -120, -72, -24)):
+        for s, off in (("a", -12), ("b", 12)):
+            for wall, back, a, b in (("f", "north", (off - 1.5, y - 1.25, 8.05), (off + 1.5, y + 1.25, 9.5)),
+                                     ("b", "south", (off - 1.5, y - 1.25, 54.5), (off + 1.5, y + 1.25, 55.95)),
+                                     ("l", "west", (-23.95, y - 1.25, CZ + off - 1.5), (-22.5, y + 1.25, CZ + off + 1.5)),
+                                     ("r", "east", (22.5, y - 1.25, CZ + off - 1.5), (23.95, y + 1.25, CZ + off + 1.5))):
+                n = f"lamp{k}{wall}{s}"
+                g.box(n, a, b, faces=tuple(d for d in sides + ("up", "down") if d != back), bone=F)
+                g.open_ok.add((n, back))                      # against the wall
+                lamps.append(n)
     # The launch ring the missile stands on, its hold-down posts on the diagonals (clear of the fins), and the flame
     # duct's grate under it (the Flame Deflector's cell, hidden while formed); the duct's floor is dark.
     stand = [("ring_n", (-14, FLOOR, CZ - 14), (14, TAIL, CZ - 8)), ("ring_s", (-14, FLOOR, CZ + 8), (14, TAIL, CZ + 14)),
@@ -364,89 +322,59 @@ def formed() -> None:
                 g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
         else:
             g.box("s_" + name, a, b, faces=faces, bone="strategic")
+    # Or an intercontinental missile, its tail on the same line, each warhead's nose its own bone (as on the complex).
+    def icbm_box(frm, to):
+        return (((frm[0] - 8) * 4, (frm[1] + L.ICBM_TAIL) * 4 + TAIL, (frm[2] - 8) * 4 + CZ),
+                ((to[0] - 8) * 4, (to[1] + L.ICBM_TAIL) * 4 + TAIL, (to[2] - 8) * 4 + CZ))
+    for name, frm, to, faces, kind in L.icbm_parts():
+        g.box("i_" + name, *icbm_box(frm, to), faces=faces, bone="icbm")
+    for nose in L.ICBM_NOSES:
+        for name, frm, to, faces, kind in L.icbm_nose_parts(nose):
+            g.box(f"in_{nose}_{name}", *icbm_box(frm, to), faces=faces, bone=f"inose_{nose}")
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h, CLEAR)
 
-    # --- paint ---
-    def collar_paint(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
-        if d == "up":
-            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.07)
-            t.speckle(x, y, w, h, [CONCRETE[2]], seed=x * 3 + y * 5, density=0.02)
-        else:
-            t.hline(x, y, w, CONCRETE[5])
-            t.speckle(x, y + 1, w, h - 1, [CONCRETE[2]], seed=x + y, density=0.05)
-    for n, _, _ in collar:
-        g.paint_all(tex, n, collar_paint)
-    # The ring's outer edge: a band of hazard stripes along the outside of the collar's top.
-    for n in ("c_fl", "c_fr", "c_bl", "c_br", "m_front", "m_back", "s_left", "s_right"):
-        x, y, w, h = g.rect(n, "up")
-        box = g.get(n)
-        # (up face: top row = north, left column = west)
-        if box.frm[2] <= -8:
-            _stripe_band(tex, x, y, w, 1, horizontal=True)
-        if box.to[2] >= 72:
-            _stripe_band(tex, x, y + h - 1, w, 1, horizontal=True)
-        if box.frm[0] <= -40:
-            _stripe_band(tex, x, y, 1, h, horizontal=False)
-        if box.to[0] >= 40:
-            _stripe_band(tex, x + w - 1, y, 1, h, horizontal=False)
-    for n, _, _ in lips:
-        g.paint_all(tex, n, lambda t, r, d: _stripe_band(t, *r, horizontal=r[2] >= r[3]) if d == "up"
-                    else t.rect(*r, YELLOW[tone(d)]))
-    for n in rails:
-        g.paint_all(tex, n, (lambda t, r, d: (t.rect(*r, STEEL[tone(d) + 1]), t.hline(r[0], r[1], r[2], STEEL[5]) if d == "up" else None))
-                    if n.startswith("rail") else lambda t, r, d: t.rect(*r, YELLOW[tone(d) + 1]))
+    # --- paint: materials in model space (tools/gz/materials.py, the remaster after 9b) ---
+    S = M.Surfacer(g, seed=31)
+    # The collar: one cast slab round the opening, a band of worn hazard paint round its outer edge.
+    collar_names = [n for n, _, _ in collar]
+    S.paint(tex, collar_names, M.concrete(tone=0.62))
+    band = M.stripes(width=3, wear=0.35)
 
-    def plate(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, ARMOUR[tone(d) + 1])
-        if d == "up":
-            t.outline(x, y, w, h, ARMOUR[1])
-            t.outline(x + 1, y + 1, w - 2, h - 2, ARMOUR[4])
-            for yy in range(y + 3, y + h - 2, 5):              # bolt rows along the long edges
-                t.px(x + 2, yy, ARMOUR[6])
-                t.px(x + w - 3, yy, ARMOUR[6])
-        elif d in ("north", "south", "east", "west"):
-            t.hline(x, y, w, ARMOUR[5])
-            t.hline(x, y + h - 1, w, ARMOUR[1])
+    def outer_band(f, img):
+        if f.d == "up":
+            M.paste(img, S.material_on(f, band), np.maximum(np.abs(f.X), np.abs(f.Z - CZ)) > 40 - 2.6)
+    S.overlay(tex, collar_names, outer_band)
+    # The coaming round the opening: striped steel lips. The rails: rolled steel, their stops yellow.
+    S.paint(tex, [n for n, _, _ in lips], M.stripes(width=2, wear=0.45, under=M.STEEL_RAMP[2:7]))
+    S.paint(tex, [n for n in rails if n.startswith("rail")], M.steel(tone=0.58, brushed=0.06))
+    S.paint(tex, [n for n in rails if n.startswith("stop")], M.painted(M.YELLOW_PAINT_RAMP, wear=0.6))
+    # The doors: heavy blue-grey armour, chipped at its edges, bolted along its long sides, striped where they meet.
     for bone in ("door_l", "door_r"):
-        g.paint_all(tex, f"{bone}_plate", plate)
-        # The stripes along the seam where the leaves meet.
-        x, y, w, h = g.rect(f"{bone}_plate", "up")
-        seam_x = x + w - 4 if bone == "door_l" else x
-        for yy in range(y + 1, y + h - 1):
-            for k in range(4):
-                tex.px(seam_x + k, yy, YELLOW[4] if ((yy - y) // 3 + k) % 2 == 0 else BLACK[3])
-        for d in ("east" if bone == "door_l" else "west",):     # the meeting edge itself
-            ex, ey, ew, eh = g.rect(f"{bone}_plate", d)
-            for xx in range(ex, ex + ew):
-                for yy in range(ey, ey + eh):
-                    tex.px(xx, yy, YELLOW[3] if ((xx - ex + yy - ey) // 2) % 2 == 0 else BLACK[2])
-        g.paint_all(tex, f"{bone}_rib", lambda t, r, d: (t.rect(*r, ARMOUR[tone(d) + 2]), t.outline(*r, ARMOUR[2]) if d == "up" else None))
-        for k in range(2):
-            g.paint_all(tex, f"{bone}_eye{k}", shaded(STEEL))
+        plate = f"{bone}_plate"
+        S.paint(tex, plate, M.painted(M.ARMOUR_RAMP, tone=0.56, wear=0.35, rust=0.12))
+        seam = M.stripes(width=3, wear=0.3, under=M.ARMOUR_RAMP[1:6])
+        inner = "east" if bone == "door_l" else "west"
 
-    def vent_paint(t: Tex, r, d, n):
-        x, y, w, h = r
-        if n.endswith("mouth"):
-            t.rect(x, y, w, h, SOOT[0])
-            t.speckle(x, y, w, h, [SOOT[1]], seed=x + y, density=0.2)
-            return
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if "slat" in n and d == "up":
-            t.hline(x, y, w, GUN[5])
-            t.speckle(x, y, w, h, [SOOT[3]], seed=x * 5 + y, density=0.25)   # sooted from the exhaust
-    for n in vents:
-        g.paint_all(tex, n, lambda t, r, d, n=n: vent_paint(t, r, d, n))
+        def meeting(f, img, inner=inner, seam=seam):
+            mask = (np.abs(f.X) < 4) if f.d == "up" else np.full(f.shape, f.d == inner)
+            M.paste(img, S.material_on(f, seam), mask)
+        S.overlay(tex, plate, meeting)
+        S.overlay(tex, plate, lambda f, img: M.rivets(f, img, every=5, inset=2, axis="v") if f.d == "up" else None)
+        S.paint(tex, f"{bone}_rib", M.painted(M.ARMOUR_RAMP, tone=0.68, wear=0.3))
+        S.paint(tex, [f"{bone}_eye{k}" for k in range(2)], M.steel(tone=0.62))
+    # The vents: sooted steel rims and slats over the duct's black mouth.
+    S.paint(tex, [n for n in vents if not n.endswith("mouth") and "slat" not in n], M.steel(tone=0.42, rust=0.25))
+    S.paint(tex, [n for n in vents if "slat" in n], M.Material(ramp=M.SOOT_RAMP, tone=0.62, edge_light=0.3, dither=0.6))
+    S.paint(tex, [n for n in vents if n.endswith("mouth")], M.Material(ramp=M.SOOT_RAMP, tone=0.12, dither=1.0, grain=0.06))
+    # The console: olive paint, its screen and lamps drawn over it.
+    S.paint(tex, ["console", "hood"], M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
 
-    def console(t: Tex, r, d):
+    def screen(t: Tex, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
         if d == "north" and w > 8:
-            # The CRT: a green phosphor screen with a status line and a count, and two lamps under it.
+            # The CRT: a green phosphor screen with a status line and a count, and three lamps under it.
             t.rect(x + 2, y + 1, w - 4, 5, P.BLACK_PAINT.deep)
             t.outline(x + 1, y, w - 2, 7, OLIVE[1])
             for xx in range(x + 3, x + w - 3):
@@ -456,33 +384,27 @@ def formed() -> None:
             t.px(x + 3, y + h - 2, RED[4])
             t.px(x + 5, y + h - 2, YELLOW[4])
             t.px(x + w - 4, y + h - 2, GREEN[4])
-    g.paint_all(tex, "console", console)
+    g.paint_all(tex, "console", screen)
     cx, cy, cw, ch = g.rect("console", "north")
     glow.rect(cx + 2, cy + 1, cw - 4, 5, (20, 60, 24, 255))
     for xx in range(cx + 3, cx + cw - 3):
         glow.px(xx, cy + 2, GREEN[3] if xx % 3 else GREEN[1])
     for xx in range(cx + 3, cx + 3 + (cw - 6) // 2):
         glow.px(xx, cy + 4, GREEN[4])
-    g.paint_all(tex, "hood", lambda t, r, d: (t.rect(*r, OLIVE[tone(d)]), t.hline(r[0], r[1], r[2], OLIVE[4]) if d != "down" else None))
     for bone in ("beacon_l", "beacon_r"):
         n = f"{bone}_lamp"
         g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, RED[4]), t.px(r[0], r[1], RED[6])))
         g.paint_all(glow, n, lambda t, r, d: (t.rect(*r, RED[4]), t.px(r[0], r[1], RED[6])))
         g.paint_all(tex, f"{bone}_glass", lambda t, r, d: (t.rect(*r, RED[1]), t.px(r[0], r[1], RED[3])))
-
-    def port(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d == "up":
-            t.stripes(x, y, w, h, RED[3], BLACK[2], width=1)
-            t.rect(x + 2, y + 2, w - 4, h - 4, GUN[3])
-            for bx, by in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.px(bx, by, STEEL[5])
-    g.paint_all(tex, "port", port)
-    g.paint_all(tex, "socket", lambda t, r, d: (t.rect(*r, GUN[tone(d)]), t.rect(r[0] + 1, r[1] + 1, max(1, r[2] - 2), max(1, r[3] - 2), BLACK[1]) if d == "up" else None))
-    for n in conduits:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, GUN[tone(d) + 1]),
-                                             [t.hline(r[0], yy, r[2], GUN[1]) for yy in range(r[1] + 7, r[1] + r[3], 16)]))
+    # The Energy Port's plate: red and black hazard paint round a steel socket plate.
+    S.paint(tex, "port", M.Striped(ramp=M.RED_PAINT_RAMP, tone=0.55, dither=0.4, wear=0.3, under=M.STEEL_RAMP[2:7],
+                                   other=M.painted(M.BLACK_RAMP, tone=0.5), width=1.5))
+    S.overlay(tex, "port", lambda f, img: M.paste(img, S.material_on(f, M.steel(tone=0.5)), f.edge_near() > 2) if f.d == "up" else None)
+    S.paint(tex, "socket", M.steel(tone=0.3))
+    # Down the shaft: grey-painted conduits clamped every block, caged amber lamps, the yellow launch ring and posts,
+    # the sooted grate over the duct.
+    S.paint(tex, conduits, M.painted(M.GREY_PAINT_RAMP, tone=0.48, wear=0.2, rust=0.15))
+    S.overlay(tex, conduits, lambda f, img: M.seams(f, img, every=16, axis="v", offset=7) if f.vertical else None)
     for n in lamps:
         def lamp(t: Tex, r, d):
             x, y, w, h = r
@@ -490,13 +412,10 @@ def formed() -> None:
             t.outline(x, y, w, h, GUN[2])                        # the cage round it
         g.paint_all(tex, n, lamp)
         g.paint_all(glow, n, lambda t, r, d: (t.rect(*r, AMBER[5]), t.outline(*r, AMBER[3])))
-    for n, _, _ in stand:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, GUN[tone(d) + 1]), t.outline(*r, YELLOW[3]) if d == "up" else None))
-    for n in posts:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, YELLOW[tone(d) + 1]), t.hline(r[0], r[1], r[2], BLACK[3])))
-    for n in grate:
-        g.paint_all(tex, n, lambda t, r, d: t.rect(*r, SOOT[tone(d) + 2]))
-    g.paint_all(tex, "duct", lambda t, r, d: t.rect(*r, SOOT[0]))
+    S.paint(tex, [n for n, _, _ in stand], M.painted(M.YELLOW_PAINT_RAMP, tone=0.5, wear=0.55, rust=0.2))
+    S.paint(tex, posts, M.stripes(width=2, wear=0.4, under=M.STEEL_RAMP[2:7]))
+    S.paint(tex, grate, M.steel(tone=0.22, rust=0.2))
+    S.paint(tex, "duct", M.Material(ramp=M.SOOT_RAMP, tone=0.08, dither=1.0))
     for name, _, _, _, kind in L.missile_parts():
         if kind in L.NOSE_PARTS:
             for nose in L.BENCH_NOSES:
@@ -509,6 +428,13 @@ def formed() -> None:
                 g.paint_all(tex, f"sn_{nose}_{name}", L.strategic_paint(kind, nose))
         else:
             g.paint_all(tex, "s_" + name, L.strategic_paint(kind))
+    for name, _, _, _, kind in L.icbm_parts():
+        g.paint_all(tex, "i_" + name, L.icbm_paint(kind))
+    for nose in L.ICBM_NOSES:
+        for name, _, _, _, kind in L.icbm_nose_parts(nose):
+            g.paint_all(tex, f"in_{nose}_{name}", L.icbm_paint(kind, nose))
+            if kind == "tsar_vent":
+                g.paint_all(glow, f"in_{nose}_{name}", L.tsar_vent_glow())       # the Tsar's vents, lit as on the complex
     g.save(tex, glow)
     # While it counts down (the machine's "working"), the beacons flash in turn, twice a second.
     count = Animation("working", 1.0, loop=True)

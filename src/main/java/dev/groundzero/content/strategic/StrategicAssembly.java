@@ -19,8 +19,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * The Strategic Assembly Hall's recipe (DESIGN.md §15.2): a Boosted Fission Core (the primary) and a Fusion Secondary
  * make a thermonuclear warhead; the hall's jacket slot may add a Cobalt-59 Jacket round the secondary (a cobalt warhead)
- * or a Tertiary Stage (the Tsar, slice 8d). Set on an Intercontinental Booster, with a guidance unit and Hardened
- * Electronics if fitted, they make one intercontinental missile. Taken apart, the missile gives them all back.
+ * or a Tertiary Stage (the Tsar, slice 8d), whose primary is a Twin Boosted Core instead. Set on an Intercontinental
+ * Booster, with a guidance unit and Hardened Electronics if fitted, they make one intercontinental missile. Taken apart,
+ * the missile gives them all back.
  */
 public final class StrategicAssembly {
     /** A whole weapon takes a minute; the Tsar a minute and a half. */
@@ -32,6 +33,8 @@ public final class StrategicAssembly {
         NONE(""),
         NOT_FORMED("Finish building the hall first"),
         NO_PRIMARY("Primary: a Boosted Fission Core"),
+        NO_TWIN("Tsar primary: a Twin Boosted Core"),
+        TWIN_FOR_TSAR("Twin Boosted Core: Tsar only"),
         NO_SECONDARY("Fit a Fusion Secondary"),
         NO_BOOSTER("Fit an Intercontinental Booster"),
         OUTPUT_FULL("Take the finished missile out first");
@@ -45,8 +48,26 @@ public final class StrategicAssembly {
 
     private StrategicAssembly() {}
 
-    public static Problem check(ItemStack primary, ItemStack secondary, ItemStack booster, ItemStack output) {
-        if (!primary.is(GZAssembly.BOOSTED_FISSION_CORE.get())) {
+    /** Whether a stack is a primary the hall takes: a Boosted Fission Core, or the Tsar's Twin Boosted Core. */
+    public static boolean isPrimary(ItemStack stack) {
+        return stack.is(GZAssembly.BOOSTED_FISSION_CORE.get()) || stack.is(GZStrategic.TWIN_BOOSTED_CORE.get());
+    }
+
+    /** The primary the jacket slot's part asks for: a Twin Boosted Core for the Tsar, a Boosted Fission Core otherwise. */
+    public static ItemStack primaryFor(ItemStack jacket) {
+        return new ItemStack(jacket.is(GZStrategic.TERTIARY_STAGE.get()) ? GZStrategic.TWIN_BOOSTED_CORE.get() : GZAssembly.BOOSTED_FISSION_CORE.get());
+    }
+
+    /** What stops the parts making a missile (NONE: they will). */
+    public static Problem check(ItemStack primary, ItemStack secondary, ItemStack jacket, ItemStack booster, ItemStack output) {
+        boolean tsar = jacket.is(GZStrategic.TERTIARY_STAGE.get());
+        if (tsar && !primary.is(GZStrategic.TWIN_BOOSTED_CORE.get())) {
+            return Problem.NO_TWIN;
+        }
+        if (!tsar && primary.is(GZStrategic.TWIN_BOOSTED_CORE.get())) {
+            return Problem.TWIN_FOR_TSAR;
+        }
+        if (!tsar && !primary.is(GZAssembly.BOOSTED_FISSION_CORE.get())) {
             return Problem.NO_PRIMARY;
         }
         if (!secondary.is(GZStrategic.FUSION_SECONDARY.get())) {
@@ -94,7 +115,7 @@ public final class StrategicAssembly {
                 : kind == ChargeKind.TSAR_WARHEAD ? new ItemStack(GZStrategic.TERTIARY_STAGE.get()) : ItemStack.EMPTY;
         ItemStack guidance = s.guidance() == MissileParts.Guidance.UNGUIDED ? ItemStack.EMPTY
                 : new ItemStack(s.guidance() == MissileParts.Guidance.INERTIAL ? GZAssembly.INERTIAL_GUIDANCE.get() : GZAssembly.GPS_GUIDANCE.get());
-        return List.of(new ItemStack(GZAssembly.BOOSTED_FISSION_CORE.get()), new ItemStack(GZStrategic.FUSION_SECONDARY.get()),
+        return List.of(primaryFor(third), new ItemStack(GZStrategic.FUSION_SECONDARY.get()),
                 third, new ItemStack(GZStrategic.INTERCONTINENTAL_BOOSTER.get()),
                 guidance, s.hardened() ? new ItemStack(GZAssembly.HARDENED_ELECTRONICS.get()) : ItemStack.EMPTY);
     }

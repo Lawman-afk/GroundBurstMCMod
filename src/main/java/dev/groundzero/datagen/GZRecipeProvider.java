@@ -514,6 +514,7 @@ public class GZRecipeProvider extends RecipeProvider {
             final net.minecraft.world.level.ItemLike jacket = dev.groundzero.content.strategic.GZStrategic.COBALT_JACKET.get();
             final net.minecraft.world.level.ItemLike booster = dev.groundzero.content.strategic.GZStrategic.INTERCONTINENTAL_BOOSTER.get();
             final net.minecraft.world.level.ItemLike tertiary = dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get();
+            final net.minecraft.world.level.ItemLike twin = dev.groundzero.content.strategic.GZStrategic.TWIN_BOOSTED_CORE.get();
         };
         shapeless(RecipeCategory.BUILDING_BLOCKS, s.rail, 4)
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
@@ -548,6 +549,13 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZParts.LEAD_PLATE).requires(GZParts.LEAD_PLATE).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
                 .requires(GZParts.DENSE_STEEL_PLATE)
                 .unlockedBy(getHasName(s.secondary), has(s.secondary)).save(output);
+        // The Tsar's primary (after 9b): two boosted cores, fresh tritium for both, one firing circuit to set them off together.
+        shapeless(RecipeCategory.COMBAT, s.twin, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE).requires(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE)
+                .requires(dev.groundzero.content.chem.GZChemicals.TRITIUM_CANISTER).requires(dev.groundzero.content.chem.GZChemicals.TRITIUM_CANISTER)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE),
+                        has(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE)).save(output);
         shapeless(RecipeCategory.BUILDING_BLOCKS, l.deflector, 1)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
                 .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(Items.CONCRETE.gray()).requires(Items.CONCRETE.gray())

@@ -196,6 +196,66 @@ GeckoLib models are centred on the block's bottom centre (x, z −8…8). 16 tex
 
 Each asset gets a "review" status in PROGRESS.md: *drafted → previewed → revised → approved*.
 
+### 4.3 Surface materials (the remaster after slice 9b, 2026-10-23)
+The user asked for the recent structures (the Strategic Assembly Hall, both silos, the Radar Array, the Launch Computer
+and the Launch Complex) to look better, above all their metal and concrete, either by researching how or by finding
+something else to do it; they took the research. The structures had the right shapes but flat fills per box: one shade
+a face, a speckle on concrete. They are now painted by a material library, `tools/gz/materials.py`, the way a texture
+artist would paint them, over the model's geometry rather than box by box.
+
+**What the research said** (the Faithful packs' write-up of Jappa's vanilla rules, pixel-art practice for metal, and
+weathering references):
+- Limited palettes: about ten colours a texture, ramps of short hue-shifted steps (shadows cooler, lights warmer); at 16
+  px a material needs two or three shades of its ramp, not a gradient. The darkest and lightest never touch without a
+  step between. Avoid banding, large flat areas and lone pixels, and do not over-dither.
+- Smooth metal: a small, contrasty palette, crisp lit and shaded lips, at most a little linear (brushed) variation.
+  Rough metal and stone: dithering is fine there. Big panels: 1-2 px seams, darker, with a lit lip. Round things: a
+  highlight down the middle.
+- Weathering tells where a thing is handled and rained on: paint chips on exposed edges, corners and rivets, never in
+  the middle of a panel; rust starts in crevices and at edges, a dark dry core (#3B1E12) with a fresh orange halo
+  (#C85A17), and runs down under gravity; grime gathers low and in corners, dust on top; rain streaks hang from top
+  edges. A texture must still read from a distance.
+
+**How the library works:**
+- *World space.* Every texel is placed at its point on the model and the noise is sampled there, so eight boxes of one
+  slab read as one slab and stripes run on across seams and round corners.
+- *Edges.* For each face border it works out whether the solid really ends there or carries on in another box: lips
+  catch the light (top/left) or fall in shadow (bottom/right), and paint chips only where an edge is real. A thin
+  member (a 2-px post) is all edge, so its chipping is scaled down by its size.
+- *Contact shadows.* Each texel looks out over the face for other boxes of its bone close above it: shadows at the feet
+  of posts, in corners, under hoods.
+- *Palettes.* A material works out a value per texel (base tone, mottle at two scales, grain, brushing, lips, skylight
+  falloff down upright faces, shadows, grime, dust, streaks, scorching), then puts it on its ramp with ordered (Bayer)
+  dithering aligned to the model's grid; smooth materials then lose their lone pixels, rough ones (concrete, soot) keep
+  their grain (cleaning it turned concrete into camouflage blotches). Chips, rust and pits go on after.
+- *Materials:* concrete, painted steel (any ramp: grey, yellow, orange, red, olive, armour, white), bare steel,
+  galvanised steel, rubber, wood, soot; hazard stripes (yellow/black) and warning stripes (red/black) as two materials
+  in 45-degree bands; details on top in the same space: seams, rivet rows, grating, scuffed floor paint, dithered
+  scorching (scattered, not ordered: an ordered pattern read as a checkerboard), lighten/darken masks.
+- *Block textures* are tiles: the same materials on a 16x16 face whose noise wraps, so a block joins its neighbours
+  without a seam; scattered dithering there (an ordered pattern repeats block after block), and a base tone right on a
+  ramp shade (between two shades, noise flickers half the texels between them like static).
+- Review: `tools/preview/geo_views.py <model>` renders a structure from four angles and in close-up crops at a readable
+  size; `tools/preview/tile_sheet.py <textures>` shows block textures alone and tiled 3x3.
+
+**As painted:**
+- *Strategic Assembly Hall:* a sealed concrete floor cut into slabs at the column lines, worn yellow bay lines, hazard
+  bands at its open ends; grey I-beam columns, their webs in shadow; yellow girders bolted along their sides, striped
+  at the ends, rails bright where the wheels run; dark cradles with yellow cheeks and rubber saddles; a hoist drum wound
+  with rope; a wooden pallet of olive crates.
+- *Launch Complex:* a concrete deck cut into slabs round the missile, scorched along its trench (concentric, ragged at
+  the edges), banded round its edge; a sooted trench and deflector with heat-blued welds; galvanised deluge pipes; a
+  grey tower with galvanised grating walkways, orange toe boards and rails; orange arms, rubber hoses.
+- *Launch Silo:* a concrete pad scorched round its flame hole, banded round the hole and its edge; a red gantry; a
+  galvanised platform. *Launch Computer:* an olive desk with drawers, dark screens and keys, a galvanised mast, a white
+  dish. *Radar Array:* a banded concrete deck, yellow railings, a galvanised mast, a white dish on a dark yoke.
+- *Missile Silo:* a concrete collar banded round its outer edge, striped steel lips, armour-grey doors bolted along
+  their long sides and striped where they meet.
+- *Blocks:* Launch Pad, Reinforced and Hazard Concrete (formwork seams and tie holes; worn paint), Gantry Frame and Arm
+  (a Warren truss), Radar Mast, Flame Deflector, Crane Rail, Silo Hatch, the dishes and the antenna.
+- Unchanged: the missiles' paint (their own style), and the controller cabinets, Machine Casing and ports shared with
+  every older multiblock.
+
 ---
 
 ## 5. Resources and world generation
@@ -895,6 +955,12 @@ As built (2026-10-21):
   the in-game looks: drifting at 0.015 blocks a tick, the column slid off its crater by up to 40 blocks; anchoring the
   stem's foot and letting only the cap drift still read as off-centre, and the user asked for no wind at all): the whole
   cloud stands over ground zero, and a nuke's crater smoke rises straight too (conventional blasts' smoke still drifts).
+- **The cloud waits for its crater** (2026-10-23, after 9b, the user's request: the Tsar's cloud was gone long before its
+  crater was dug): a mushroom cloud stands at full strength until the server's blast job is done (its `BlastPayloads.End`,
+  sent once the crater, clean-up, rim and release are finished: minutes for a Tsar), and only then starts its 2.5-minute
+  countdown (`MushroomCloud.release`; thinning out over the last 45 s, the stem fed until then). Should the end never
+  reach a client, it waits a quarter of an hour at most. Cap cloudlets now last as long as the cloud; a late joiner
+  always gets the cloud laid out while its blast is still running.
 - Colour: cap reddish-brown greying over 40 s; glow `heat x (e^(-(d / 0.8 r)^2) + early boost)` with heat
   `e^(-t/550)`, added on top through the fire heat ramp; collar and shell white. Lighting: `FxLight` (sun direction
   from the sky state's sun angle, sun colour warmed by the sunrise/sunset glow, ambient = the sky colour greyed and
@@ -1449,7 +1515,7 @@ the long horizontal hall (over an upright assembly tower).
   ("Intercontinental") and the new motor **ICBM** (3,000 blocks, the Launch Computer's map; no bench motor item), so the
   launch, flight and computer code take it unchanged. Its warhead blocks (Thermonuclear, Cobalt) are `wholeWeapon()`
   kinds: nuclear (they fizzle any other way), refused by the bench (`MissileAssembly.Problem.WHOLE_WEAPON`), not
-  taken apart there; only a Launch Complex fires them. Its own model (`launch.py` `ICBM_SECTIONS`, item models
+  taken apart there; a Launch Complex fires them, and since 9b a Missile Silo too. Its own model (`launch.py` `ICBM_SECTIONS`, item models
   `icbm_missile_<warhead>`, the complex's `icbm` / `inose_*` bones; lifted by `ICBM_TAIL` in flight): three olive-drab
   solid stages narrowing upward with a white, a yellow and a white band, dark riveted interstages, a gunmetal skirt
   and four nozzles, four swept fins in two steps round the first stage (added after the user's look: the first model
@@ -1474,6 +1540,13 @@ the long horizontal hall (over an upright assembly tower).
   `icbm_nose_parts`), and lies the same way on the hall's cradles. The vents glow on the complex and the hall through
   GeckoLib's auto-glow layer, since turned on for every machine with a glowmask (§4.1). No aircraft yet: the
   parachute pack stays packed, and the Tsar goes off where its missile hits, like the H-bomb.
+- **The Twin Boosted Core** (2026-10-23, after 9b, the user's request: the Tsar's power far beyond the other two whole
+  weapons on the same primary): the Tsar's own primary, two Boosted Fission Cores fired together (recipe: 2 Boosted
+  Fission Cores, 2 tritium canisters, a military circuit, a dense steel plate). The hall's primary slot takes either
+  core (`StrategicAssembly.isPrimary`); `check(primary, secondary, jacket, booster, output)` asks for the twin with a
+  Tertiary Stage (`NO_TWIN`) and refuses it with anything else (`TWIN_FOR_TSAR`); TAKE APART returns it; JEI shows it
+  in the Tsar's recipe (`primaryFor`). Model (`components.py` `twin_boosted_core`): two lens-shaped spheres on a
+  cradle, a copper bus between them, two tritium bottles, a hazard band.
 
 ### 17.8 As built: the Launch Complex (Phase 8 slice 8a, 2026-10-22)
 - `launch_complex`: a 5×5 deck of Launch Pads (controller front middle, Energy Port back middle, a new **Flame
@@ -1481,7 +1554,8 @@ the long horizontal hall (over an upright assembly tower).
   deck's middle and back rows (the clockwise side of the controller's facing, like the silo's gantry), Gantry Arms at
   layers 4 and 8 as the umbilicals, and the missile's column clear 11 up.
 - `LaunchComplexBlockEntity` extends the silo (same menu, computer link and targeting): takes **any** missile, and is
-  the only launcher that takes a nuclear one (`firesNuclear()`; the silo refuses them). 250 000 FE a launch, 500 000
+  the only launcher that takes a nuclear one (`firesNuclear()`; the silo refuses them; since 9b the Missile Silo
+  takes them too). 250 000 FE a launch, 500 000
   buffer, **15 s** countdown: siren, beeps, the deluge (splash and falling-water particles round the pad) for the last
   5 s, and at ignition 3.5 s of steam and smoke out of the trench's open end (the side away from the tower) and round
   the deck.
@@ -1532,8 +1606,10 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
   lid drawn by its middle, the Large Radar Dish's way (both now on `SpreadPartBlock`); the Missile Silo Controller
   (machine casing, military circuit, CRT display, 2 Reinforced Concrete, a lever). Creative: a dug-in Structure Spawner
   (its top replaces the block clicked; it digs out anything but unbreakable blocks and blocks that hold things).
-- **What it fires:** any missile but an intercontinental one, nuclear ones too (`LaunchSiloBlockEntity.accepts`): the
-  Launch Complex is no longer the only nuclear launcher, and stays the only one for intercontinental missiles (§30).
+- **What it fires:** any missile at all, nuclear and intercontinental ones too (`MissileSiloBlockEntity.accepts`; at
+  first it refused intercontinental ones, which the user asked for after 9b): the Launch Complex is no longer the only
+  nuclear or intercontinental launcher (§30). An intercontinental missile stands in the shaft as on the complex (bones
+  `icbm` / `inose_*`, not scaled).
   250,000 FE a launch, 500,000 buffer, run from a Launch Computer like any launcher.
 - **Doors and launch** (`MissileSiloBlockEntity`): a 20 s countdown; at T-15 the doors unlatch (0.5 s) and slide apart
   (3 s); the launch holds at T-1 until they are open (`holdLaunch`). The missile is lit on its launch ring at the
@@ -1548,9 +1624,12 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
   coaming round the opening, two thick blue-grey armour leaves on rails that run out past the collar (moved by the
   block entity each frame through the new `AnimatedMachine.boneOffsets`, so they are right however a client joins), an
   exhaust grate at each corner, a squat olive console with a green CRT and two red beacons that flash in turn while it
-  works, the Energy Port's flush plate; down the shaft, conduits in the corners, caged amber lamps (glowing) and the
+  works, the Energy Port's flush plate; down the shaft, conduits in the corners, caged amber lamps (glowing: four rows
+  three blocks apart, a pair on every wall in each row, 12 px either side of its middle, the same all round, after the
+  user found the first ones scattered) and the
   launch ring with hold-down posts over the duct grate; the missile as on the complex (a Strategic one its own model).
-  `MachineGeoRenderer` takes a depth: the silo's culling box reaches 14 blocks down.
+  `MachineGeoRenderer` takes a depth: the silo's culling box reaches 14 blocks down. Painted with the material
+  library since the remaster (§4.3).
 - **Client** (`Spectacle`): a missile lit in a silo (`MissileEntity.SILO`: the hatch's middle) sends its smoke straight
   up the shaft; jets of fire and smoke burst from the four corner vents and smoke billows out of the mouth over
   the ground, building through the ignition, full while it climbs the shaft and dying away once it is clear.
@@ -1972,6 +2051,12 @@ tooltip to its page (GuideME: hold G). Ponder adds animated scenes; heavy, and n
 Custom categories for every machine, the assembly bench (component combinations and resulting stats), multiblock
 info pages, salvage, decontamination, and ore/resource info pages.
 
+As built (2026-10-23, after 9b, the user's request): the ingredient list carries one **intercontinental missile per
+whole weapon** (`GZJeiPlugin.registerExtraIngredients`, the Strategic Assembly category's outputs, with GPS guidance),
+each its own subtype by its warhead (`registerItemSubtypes`; every other missile stays one entry) and named by it
+("Intercontinental Missile (Tsar Mega-bomb)"), so R on one shows how the hall builds it. The whole weapons' warhead
+blocks, which have no recipe of their own, are taken out of the list (`removeIngredientsAtRuntime`).
+
 ### 24.4 Tooltips
 Every weapon: class, yield, radii (crater / fire / lethal / radiation), deployment options, fuze & settings,
 range/guidance for missiles; Shift for detail, Ctrl for lore. Components show what they enable. Radioactive items
@@ -2384,6 +2469,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-23 | Texture remaster (the user chose researching it over handing it to something else): the recent structures and their blocks are painted by a material library (`tools/gz/materials.py`, §4.3): world-space noise, wear only on real edges, baked contact shadows, short hue-shifted ramps, weathering, tileable block textures. The missiles' paint and the shared controller cabinets, casing and ports are unchanged. |
+| 2026-10-23 | After 9b, the user's requests: the Missile Silo's lamps are four rows of pairs, the same on every wall; it fires every missile, intercontinental ones too, so the Launch Complex is no longer the only intercontinental launcher. JEI lists one intercontinental missile per warhead (named by it, its recipe on R) and drops the whole weapons' warheads, which have no recipe of their own. The Tsar's primary is its own Twin Boosted Core (two Boosted Fission Cores fired together). A mushroom cloud stands until its crater is finished (the server's end of the blast, at most a quarter of an hour) and only then starts its 2.5-minute countdown. |
 | 2026-10-22 | Slice 9b, the Missile Silo (the user's go-ahead): it fires any missile but an intercontinental one, nuclear ones too (the design's class XL), so the Launch Complex is no longer the only nuclear launcher but stays the only one for intercontinental missiles (the 8c rule). Its doors slide apart on rails (they overhang the 5×5 a little when open), and the launch holds at T-1 until they are open; its missile climbs straight out of the shaft before turning; a DOORS button opens them at other times. Reinforced Concrete resists blasts like obsidian. |
 | 2026-10-22 | Phase 9 begins with missile flight (slice 9a, the roadmap's order: the user said "continue"): burn-out and coasting, spent stages dropping and tumbling down, re-entry heat, and a following engine sound with Doppler; the arc itself is unchanged. |
 | 2026-10-22 | After 8d, the user's request: every machine draws its glowmask (GeckoLib's auto-glow layer in `MachineGeoRenderer`, only where the texture has one), so lamps, screens, charge bars, fires, plasma and cores glow in the dark as designed. |

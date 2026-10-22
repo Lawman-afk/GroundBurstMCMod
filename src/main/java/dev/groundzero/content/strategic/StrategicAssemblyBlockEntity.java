@@ -92,7 +92,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
         return switch (slot) {
-            case SLOT_PRIMARY -> stack.is(GZAssembly.BOOSTED_FISSION_CORE.get());
+            case SLOT_PRIMARY -> StrategicAssembly.isPrimary(stack);
             case SLOT_SECONDARY -> stack.is(GZStrategic.FUSION_SECONDARY.get());
             case SLOT_JACKET -> stack.is(GZStrategic.COBALT_JACKET.get()) || stack.is(GZStrategic.TERTIARY_STAGE.get());
             case SLOT_BOOSTER -> stack.is(GZStrategic.INTERCONTINENTAL_BOOSTER.get());
@@ -109,7 +109,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
 
     public StrategicAssembly.Problem problem() {
         return !isFormed() ? StrategicAssembly.Problem.NOT_FORMED
-                : StrategicAssembly.check(slot(SLOT_PRIMARY), slot(SLOT_SECONDARY), slot(SLOT_BOOSTER), slot(SLOT_OUTPUT));
+                : StrategicAssembly.check(slot(SLOT_PRIMARY), slot(SLOT_SECONDARY), slot(SLOT_JACKET), slot(SLOT_BOOSTER), slot(SLOT_OUTPUT));
     }
 
     public boolean assembling() {
@@ -197,7 +197,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             this.status = MachineStatus.IDLE;
             return false;
         }
-        if (StrategicAssembly.check(slot(SLOT_PRIMARY), slot(SLOT_SECONDARY), slot(SLOT_BOOSTER), slot(SLOT_OUTPUT))
+        if (StrategicAssembly.check(slot(SLOT_PRIMARY), slot(SLOT_SECONDARY), slot(SLOT_JACKET), slot(SLOT_BOOSTER), slot(SLOT_OUTPUT))
                 != StrategicAssembly.Problem.NONE) {                // a part was taken out: the job is dropped
             this.progress = this.total = 0;
             this.status = MachineStatus.IDLE;

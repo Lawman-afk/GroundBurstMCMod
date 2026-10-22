@@ -42,13 +42,13 @@ def tile(q, pitch, yaw, cell=420, centre=None, extent=None):
 
 
 def main() -> None:
-    strategic_only = ("missile",)                      # hide the usual missile: the Strategic one shows
-    usual_only = ("strategic",)
+    strategic_only = ("missile", "icbm")               # hide the others: the Strategic one shows
+    usual_only = ("strategic", "icbm")
     noses = ("nose_he_warhead", "snose_he_warhead")
     hide_noses = tuple(n for n in ())
     shots = []
-    top_shut = quads(0.0, usual_only + ("strategic",), ymin=-20)
-    top_open = quads(2.0, usual_only + ("strategic",), ymin=-20)
+    top_shut = quads(0.0, ("missile", "strategic", "icbm"), ymin=-20)
+    top_open = quads(2.0, ("missile", "strategic", "icbm"), ymin=-20)
     shots.append(("top, doors shut (iso)", tile(top_shut, 35, 225)))
     shots.append(("top, doors open (iso)", tile(top_open, 35, 225)))
     shots.append(("top, doors open (from above)", tile(top_open, 85, 180)))

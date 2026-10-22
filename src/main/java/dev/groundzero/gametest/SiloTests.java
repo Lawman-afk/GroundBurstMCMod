@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Missile Silo (DESIGN.md §17.10, Phase 9 slice 9b): it forms dug into the plot, takes any missile but an
- * intercontinental one, its doors open and shut the hatch, it holds its launch until they are open and its missile
+ * The Missile Silo (DESIGN.md §17.10, Phase 9 slice 9b): it forms dug into the plot, takes any missile (an
+ * intercontinental one too), its doors open and shut the hatch, it holds its launch until they are open and its missile
  * climbs straight up the middle of the shaft, and a block over the hatch stops it.
  */
 final class SiloTests {
@@ -32,7 +32,7 @@ final class SiloTests {
 
     static void register() {
         // Open sky: the silo needs the air over its hatch clear (a test plot's lid would block it).
-        GZGameTests.testOpenSky("missile_silo_forms_and_fires_all_but_intercontinental", GZGameTests.FLOOR_16, 20, SiloTests::forms);
+        GZGameTests.testOpenSky("missile_silo_forms_and_fires_every_missile", GZGameTests.FLOOR_16, 20, SiloTests::forms);
         GZGameTests.testOpenSky("missile_silo_doors_open_and_shut_the_hatch", GZGameTests.FLOOR_16, 200, SiloTests::doors);
         GZGameTests.testOpenSky("missile_silo_launches_straight_up_its_shaft", GZGameTests.FLOOR_16, 200, SiloTests::launches);
         GZGameTests.testOpenSky("missile_silo_will_not_fire_through_a_blocked_hatch", GZGameTests.FLOOR_16, 20, SiloTests::blocked);
@@ -61,14 +61,14 @@ final class SiloTests {
         return s;
     }
 
-    /** It takes Strategic (nuclear) and ordinary missiles but not an intercontinental one; its walls stay, its top hides. */
+    /** It takes Strategic (nuclear), intercontinental and ordinary missiles; its walls stay, its top hides. */
     private static void forms(GameTestHelper helper) {
         MissileSiloBlockEntity s = silo(helper);
         var level = helper.getLevel();
         helper.assertTrue(s.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, NuclearTests.nuke()), "takes a Strategic nuclear missile");
         helper.assertTrue(s.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile()), "and an HE one");
         ItemStack icbm = StrategicAssembly.assemble(ItemStack.EMPTY, new ItemStack(GZAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY);
-        helper.assertTrue(!s.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, icbm), "but not an intercontinental one");
+        helper.assertTrue(s.inventory().canPlaceItem(LaunchSiloBlockEntity.SLOT_MISSILE, icbm), "and an intercontinental one");
         BlockPos wall = helper.absolutePos(new BlockPos(5, 6, 5));
         helper.assertTrue(level.getBlockState(wall).is(GZLaunch.REINFORCED_CONCRETE.block().get()), "the shaft's walls stay as built");
         BlockState ring = level.getBlockState(helper.absolutePos(new BlockPos(5, 14, 3)));

@@ -37,7 +37,7 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
 
     /**
      * Whether the basic Launch Silo cannot fire it: a nuclear warhead, or a Strategic or intercontinental airframe (the
-     * Launch Complex fires any; the Missile Silo any but an intercontinental one).
+     * Launch Complex and the Missile Silo fire any).
      */
     public boolean needsComplex() {
         return nuclear() || this.body == SizeClass.XL || this.body == SizeClass.XXL;

@@ -230,12 +230,14 @@ class GeoModel(BlockModel):
     def holes(self, plane: float = 0.3, eps: float = 0.02, step: float = 0.25) -> list[str]:
         """Missing faces you can see into: on a solid box (thicker than a plane), the part of a left-out face that no
         other box covers. A face may be left out only where another box hides it. Ignores rotated boxes/bones."""
+        import numpy as np  # noqa: PLC0415
         rotated = {b.name for b in self.bones if any(b.rotation)}
         bone_of = {bx.name: bone.name for bone in self.bones for bx in bone.boxes}
         solid = [b for b in self.boxes if not b.rotation and bone_of.get(b.name) not in rotated]
         axis = {"west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1), "north": (2, 0), "south": (2, 1)}
+        arr = np.array([[*c.frm, *c.to] for c in solid], dtype=np.float64).reshape(-1, 6)
         issues = []
-        for b in solid:
+        for i, b in enumerate(solid):
             lo, hi = b.frm, b.to
             if any(hi[k] - lo[k] < plane for k in range(3)) or (b.name, "*") in self.open_ok:
                 continue
@@ -243,18 +245,29 @@ class GeoModel(BlockModel):
                 if d in b.faces or (b.name, d) in self.open_ok:
                     continue
                 o = [k for k in range(3) if k != ax]
-                open_n = 0
-                u = lo[o[0]] + step / 2
-                while u < hi[o[0]]:
-                    v = lo[o[1]] + step / 2
-                    while v < hi[o[1]]:
-                        p = [0.0, 0.0, 0.0]
-                        p[o[0]], p[o[1]] = u, v
-                        p[ax] = hi[ax] + eps if side else lo[ax] - eps
-                        if not any(c is not b and all(c.frm[k] - 2 * eps <= p[k] <= c.to[k] + 2 * eps for k in range(3)) for c in solid):
-                            open_n += 1
-                        v += step
-                    u += step
+                at = hi[ax] + eps if side else lo[ax] - eps
+                us = np.arange(lo[o[0]] + step / 2, hi[o[0]], step)
+                vs = np.arange(lo[o[1]] + step / 2, hi[o[1]], step)
+                if us.size == 0 or vs.size == 0:
+                    continue
+                # The boxes that could cover any of this face's sample points (all but the box itself).
+                near = np.ones(len(solid), dtype=bool)
+                near[i] = False
+                near &= (arr[:, ax] - 2 * eps <= at) & (arr[:, 3 + ax] + 2 * eps >= at)
+                for k in o:
+                    near &= (arr[:, 3 + k] + 2 * eps >= lo[k]) & (arr[:, k] - 2 * eps <= hi[k])
+                cand = arr[near]
+                uu, vv = np.meshgrid(us, vs, indexing="ij")
+                pts = np.zeros((uu.size, 3))
+                pts[:, o[0]], pts[:, o[1]], pts[:, ax] = uu.ravel(), vv.ravel(), at
+                if cand.shape[0] == 0:
+                    open_n = pts.shape[0]
+                else:
+                    covered = np.zeros(pts.shape[0], dtype=bool)
+                    for s in range(0, pts.shape[0], 4096):
+                        q = pts[s:s + 4096, None, :]
+                        covered[s:s + 4096] = np.all((q >= cand[None, :, :3] - 2 * eps) & (q <= cand[None, :, 3:] + 2 * eps), axis=2).any(axis=1)
+                    open_n = int((~covered).sum())
                 if open_n * step * step > 0.2:
                     issues.append(f"{b.name} has no {d} face: {open_n * step * step:.2f} px2 open")
         return issues

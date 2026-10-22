@@ -38,7 +38,7 @@ final class StrategicTests {
         GZGameTests.test("strategic_hall_builds_a_thermonuclear_missile", GZGameTests.FLOOR_16, 40, StrategicTests::builds);
         GZGameTests.test("strategic_hall_builds_a_cobalt_missile_and_takes_it_apart", GZGameTests.FLOOR_16, 40, StrategicTests::cobalt);
         GZGameTests.test("strategic_hall_needs_its_structure_and_parts", GZGameTests.FLOOR_16, 20, StrategicTests::needsParts);
-        GZGameTests.test("intercontinental_missile_fires_only_from_the_complex", GZGameTests.FLOOR_16, 20, StrategicTests::complexOnly);
+        GZGameTests.test("intercontinental_missile_needs_a_heavy_launcher", GZGameTests.FLOOR_16, 20, StrategicTests::complexOnly);
         GZGameTests.test("thermonuclear_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, StrategicTests::thermonuclear);
         GZGameTests.test("cobalt_warhead_leaves_a_plume_downwind", GZGameTests.FLOOR_16, 40, StrategicTests::cobaltPlume);
         GZGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GZGameTests.FLOOR_16, 40, StrategicTests::tsar);
@@ -137,8 +137,9 @@ final class StrategicTests {
     }
 
     /**
-     * A Tertiary Stage in the jacket slot makes the Tsar: its own model, a minute and a half's work, the Tsar on the
-     * cradles; TAKE APART gives the Tertiary Stage back with the rest.
+     * A Tertiary Stage in the jacket slot makes the Tsar, with a Twin Boosted Core for its primary (a single Boosted
+     * Fission Core will not do, nor the twin for anything else): its own model, a minute and a half's work, the Tsar on
+     * the cradles; TAKE APART gives the Tertiary Stage and the twin core back with the rest.
      */
     private static void tsar(GameTestHelper helper) {
         floor(helper);
@@ -148,7 +149,14 @@ final class StrategicTests {
         ItemStack tertiary = new ItemStack(GZStrategic.TERTIARY_STAGE.get());
         helper.assertTrue(inv.canPlaceItem(StrategicAssemblyBlockEntity.SLOT_JACKET, tertiary), "the jacket slot takes a Tertiary Stage");
         helper.assertTrue(!inv.canPlaceItem(StrategicAssemblyBlockEntity.SLOT_SECONDARY, tertiary), "the secondary's slot does not");
+        ItemStack twin = new ItemStack(GZStrategic.TWIN_BOOSTED_CORE.get());
+        inv.setItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY, twin.copy());
+        helper.assertTrue(hall.problem() == StrategicAssembly.Problem.TWIN_FOR_TSAR, "the twin core is for a Tsar: " + hall.problem());
+        inv.setItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY, new ItemStack(GZAssembly.BOOSTED_FISSION_CORE.get()));
         inv.setItem(StrategicAssemblyBlockEntity.SLOT_JACKET, tertiary);
+        helper.assertTrue(hall.problem() == StrategicAssembly.Problem.NO_TWIN, "a Tsar wants the twin core: " + hall.problem());
+        inv.setItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY, twin);
+        helper.assertTrue(hall.problem() == StrategicAssembly.Problem.NONE, "ready: " + hall.problem());
         helper.assertTrue(StrategicAssembly.ticks(tertiary) == StrategicAssembly.TSAR_TICKS, "a minute and a half");
         hall.energy().generate(StrategicAssemblyBlockEntity.CAPACITY);
         helper.assertTrue(hall.startAssembly(), "it starts");
@@ -164,7 +172,7 @@ final class StrategicTests {
                     && !hall.hiddenBones().contains("nose_tsar_warhead"), "the Tsar on the cradles: " + hall.hiddenBones());
             helper.assertTrue(hall.takeApart(), "taken apart");
             helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GZStrategic.TERTIARY_STAGE.get())
-                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GZAssembly.BOOSTED_FISSION_CORE.get())
+                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GZStrategic.TWIN_BOOSTED_CORE.get())
                     && inv.getItem(StrategicAssemblyBlockEntity.SLOT_BOOSTER).is(GZStrategic.INTERCONTINENTAL_BOOSTER.get()), "every part back");
         });
     }
@@ -189,7 +197,8 @@ final class StrategicTests {
     }
 
     /**
-     * A whole weapon fires only from a Launch Complex (a silo refuses it), and the bench neither builds its warhead into
+     * A whole weapon fires only from a heavy launcher (the basic Launch Silo refuses it; the Launch Complex takes it, as the
+     * Missile Silo does: SiloTests), and the bench neither builds its warhead into
      * a missile of its own nor takes it apart.
      */
     private static void complexOnly(GameTestHelper helper) {

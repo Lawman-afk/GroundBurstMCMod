@@ -1013,7 +1013,7 @@ entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_co
     text("""
 The **Launch Complex** is the heavy launcher on the surface: a deck with a flame trench under the missile and a service tower beside it. It fires [nuclear missiles](ordnance/nuclear), as the [Missile Silo](ordnance/missile_silo) does. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
 
-It takes any [missile](ordnance/missiles), and it is the only launcher for an [intercontinental](ordnance/strategic_assembly) one. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
+It takes any [missile](ordnance/missiles), an [intercontinental](ordnance/strategic_assembly) one too, as the Missile Silo does. Each launch takes the missile and 250,000 FE (it holds 500,000), and the countdown runs 15 seconds: the siren sounds, the two umbilical arms swing away from the missile one after the other, and for the last five seconds the deluge soaks the deck and the trench. At ignition steam and smoke pour out of the trench's open end.
 """),
     structure("launch_complex", "A 5 by 5 deck of Launch Pads, the controller in the middle of its front edge, the Energy Port in the middle of its back edge and the Flame Deflector in its middle, under the missile. The service tower, Gantry Frame, stands two blocks deep beside the deck's middle and back rows, on your left as you face the controller: 13 high, with Gantry Arms (the umbilicals) reaching in at the fifth and ninth blocks up. The 11 blocks above the deflector must be clear: that is where the missile stands. The trench opens on the side away from the tower."),
     craft("launch_complex"),
@@ -1022,7 +1022,7 @@ It takes any [missile](ordnance/missiles), and it is the only launcher for an [i
 
 entry("ordnance/missile_silo", "Missile Silo", "missile_silo", ["missile_silo", "silo_hatch", "reinforced_concrete", "hazard_concrete"], [
     text("""
-The **Missile Silo** is the hardened launcher: a shaft dug into the ground and lined with concrete, the missile standing at the bottom under a pair of heavy doors. It fires any [missile](ordnance/missiles) but an [intercontinental](ordnance/strategic_assembly) one, Strategic missiles and their [nuclear warheads](ordnance/nuclear) too. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
+The **Missile Silo** is the hardened launcher: a shaft dug into the ground and lined with concrete, the missile standing at the bottom under a pair of heavy doors. It fires any [missile](ordnance/missiles) at all: Strategic and [intercontinental](ordnance/strategic_assembly) ones and their [nuclear warheads](ordnance/nuclear) too. A [Launch Computer](ordnance/launch_site) aims and arms it like any Launch Silo, and its **LAUNCH** fires it with the rest.
 
 Each launch takes the missile and 250,000 FE (it holds 500,000). The countdown runs 20 seconds: the siren sounds, the beacons on its console flash, and with 15 seconds to go the doors unlatch and slide apart on their rails. If they are not open by the end of the count, it waits for them. At ignition the exhaust blasts up out of the four vents at the silo's corners and smoke pours out of the shaft; the missile climbs straight up and out, and turns onto its course once it is clear. The doors shut again ten seconds later.
 
@@ -1063,9 +1063,9 @@ Plants in the open die out to **120 blocks** (under a roof they are spared): lea
 **Cobalt Warhead** (about 400 kilotons): the same weapon with a Cobalt-59 Jacket round its secondary. The blast is smaller (a crater 70 blocks round, deadly to 110), but the jacket turns to cobalt-60: fallout 300 blocks round the burst and strung out about **1,000 blocks downwind**, lasting **a month**. Built whole like the thermonuclear warhead.
 """),
     text("""
-**Tsar Mega-bomb** (about 50 megatons), the biggest weapon there is: a fat dark-green bomb with a parachute pack in its tail and cooling vents that glow, riding on top of its intercontinental missile. Three stages: a boosted fission primary, a fusion secondary, and a **Tertiary Stage** set off by the secondary. A crater **250 blocks** round, wrecking everything to 380 blocks, burning to 450, deadly to 450 and hurting to 700; fallout 600 blocks round for three days. Its cloud climbs 500 blocks.
+**Tsar Mega-bomb** (about 50 megatons), the biggest weapon there is: a fat dark-green bomb with a parachute pack in its tail and cooling vents that glow, riding on top of its intercontinental missile. Three stages: a **Twin Boosted Core** for its primary (two boosted fission cores fired together: one is too small a spark for the rest), a fusion secondary, and a **Tertiary Stage** set off by the secondary. A crater **250 blocks** round, wrecking everything to 380 blocks, burning to 450, deadly to 450 and hurting to 700; fallout 600 blocks round for three days. Its cloud climbs 500 blocks.
 
-So much ground goes that the crater keeps forming for a minute or two after the shock wave has passed, out of sight under the dust. Built whole at the [Strategic Assembly Hall](ordnance/strategic_assembly), a Tertiary Stage in place of the jacket.
+So much ground goes that the crater keeps forming for a minute or two after the shock wave has passed, out of sight under the dust. Built whole at the [Strategic Assembly Hall](ordnance/strategic_assembly), a Tertiary Stage in place of the jacket and a Twin Boosted Core in place of the Boosted Fission Core. Its mushroom cloud stands until the crater is finished, then lasts two and a half minutes more.
 """),
     text("""
 **Fallout.** A nuclear blast leaves the ground round it **contaminated**, weakest at the edge and fading as it ages: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, 220 for two days after a boosted fission warhead, and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
@@ -1079,14 +1079,14 @@ So much ground goes that the crater keeps forming for a minute or two after the 
     craft("dirty_payload"),
 ])
 
-entry("ordnance/strategic_assembly", "Strategic Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage"], [
+entry("ordnance/strategic_assembly", "Strategic Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"], [
     text("""
-The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section.
+The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section.
 
-Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
+Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
 """),
     text("""
-An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, and only a Launch Complex fires it. Its warhead goes off where it lands. What its three warheads do is under [Nuclear warheads](ordnance/nuclear).
+An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, from a Launch Complex or a Missile Silo. Its warhead goes off where it lands. What its three warheads do is under [Nuclear warheads](ordnance/nuclear).
 """),
     structure("strategic_assembly_hall", "A 7 by 13 floor of Launch Pads: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Gantry Frame columns four high stand at the four corners and halfway along each long side, and a Crane Rail runs the length of each long side on top of them. Keep the hall between them clear, five wide and five high: the missile and the crane need the room."),
     craft("strategic_assembly_hall"),
@@ -1095,6 +1095,7 @@ An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer
     craft("cobalt_jacket"),
     craft("intercontinental_booster"),
     craft("tertiary_stage"),
+    craft("twin_boosted_core"),
 ])
 
 entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "large_radar_dish"], [

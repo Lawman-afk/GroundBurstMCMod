@@ -67,6 +67,8 @@ public final class FxPhotographer {
                 new Scene("hall_aerial", "hall", 26, 24, List.of(60, 300, 700, 1000, 1260)),
                 new Scene("hall_ui", "hall", 4, 0, List.of(30)),
                 new Scene("hall_jei", "hall", 4, 0, List.of(25)),
+                // After 9b: JEI's list filtered to the intercontinental missiles (one per warhead), then R on the Tsar's.
+                new Scene("icbm_jei", "hall", 4, 0, List.of(25, 45)),
                 new Scene("complex_icbm", "complex_icbm", 34, -12, List.of(20)),
                 new Scene("complex_icbm_close", "complex_icbm", 13, -38, List.of(20)),
                 new Scene("nuke_thermonuclear", "thermonuclear_warhead", 600, -18, List.of(3, 40, 160, 500, 1200)),
@@ -323,7 +325,7 @@ public final class FxPhotographer {
             hall.revalidate();
             var inv = hall.inventory();
             inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_PRIMARY,
-                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE.get()));
+                    dev.groundzero.content.strategic.StrategicAssembly.primaryFor(option));                // a Tsar's twin core
             inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_SECONDARY,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.FUSION_SECONDARY.get()));
             inv.setItem(dev.groundzero.content.strategic.StrategicAssemblyBlockEntity.SLOT_BOOSTER,
@@ -554,6 +556,10 @@ public final class FxPhotographer {
     public static Runnable showAssemblyRecipes = () -> {};
     /** Set by the JEI plugin when JEI is running: opens the Strategic Assembly Hall's recipes (the "hall_jei" scene). */
     public static Runnable showHallRecipes = () -> {};
+    /** Set by the JEI plugin: filters its list by some text (the "icbm_jei" scene). */
+    public static java.util.function.Consumer<String> jeiFilter = s -> {};
+    /** Set by the JEI plugin: shows the recipes that make a stack, as R on it in the list does. */
+    public static java.util.function.Consumer<net.minecraft.world.item.ItemStack> jeiRecipesFor = s -> {};
 
     /**
      * Phase 7: two Ordnance Assembly Benches facing the camera. The near one is assembling a Poison Gas Warhead (parts
@@ -1058,6 +1064,18 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("hall_jei") && step >= 0 && clock == 12) {
             showHallRecipes.run();
+        }
+        if (scene.name().equals("icbm_jei") && step >= 0 && clock == 10) {
+            server.execute(() -> server.getPlayerList().getPlayers().getFirst().setGameMode(GameType.CREATIVE));
+        }
+        if (scene.name().equals("icbm_jei") && step >= 0 && clock == 14) {
+            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            jeiFilter.accept("Intercontinental");
+        }
+        if (scene.name().equals("icbm_jei") && step >= 0 && clock == 35) {
+            jeiRecipesFor.accept(dev.groundzero.content.strategic.StrategicAssembly.assemble(
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.strategic.GZStrategic.TERTIARY_STAGE.get()),
+                    net.minecraft.world.item.ItemStack.EMPTY, net.minecraft.world.item.ItemStack.EMPTY));      // an unguided one: any of its kind
         }
         // The glow scenes' machines shown running (on the client only: see glowAt).
         if (scene.name().startsWith("glow_machines") || scene.name().startsWith("glow_reactors")) {

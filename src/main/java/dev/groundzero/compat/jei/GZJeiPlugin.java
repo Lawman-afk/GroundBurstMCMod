@@ -68,6 +68,24 @@ public final class GZJeiPlugin implements IModPlugin {
         return GroundZero.id("jei_plugin");
     }
 
+    /**
+     * Missiles: an intercontinental one is told apart by its warhead (each is its own weapon, with its own recipe in the
+     * Strategic Assembly category); every other missile is one ingredient, whatever the bench put in it.
+     */
+    @Override
+    public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(dev.groundzero.content.assembly.GZAssembly.MISSILE.get(), (stack, context) -> {
+            var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
+            return spec != null && spec.intercontinental() ? spec.warheadId() : null;
+        });
+    }
+
+    /** The intercontinental missiles in JEI's list, one per warhead: R on one shows how the hall builds it. */
+    @Override
+    public void registerExtraIngredients(mezz.jei.api.registration.IExtraIngredientRegistration registration) {
+        registration.addExtraItemStacks(StrategicCategory.recipes().stream().map(StrategicCategory::output).toList());
+    }
+
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         var gui = registration.getJeiHelpers().getGuiHelper();
@@ -154,8 +172,16 @@ public final class GZJeiPlugin implements IModPlugin {
     /** For the FxPhotographer's pictures (a JEI-free hook): opens JEI on the Assembly Bench's recipes. */
     @Override
     public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        // The whole weapons' warheads have no recipe of their own (the hall builds them into their missiles): out of the
+        // list, where they only got in the way of the missiles.
+        runtime.getIngredientManager().removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                dev.groundzero.content.ordnance.GZOrdnance.WARHEADS.stream().filter(w -> w.block().get().kind.wholeWeapon())
+                        .map(w -> new net.minecraft.world.item.ItemStack(w.item().get())).toList());
         dev.groundzero.client.fx.FxPhotographer.showAssemblyRecipes = () -> runtime.getRecipesGui().showTypes(List.of(AssemblyCategory.TYPE, MissileCategory.TYPE));
         dev.groundzero.client.fx.FxPhotographer.showHallRecipes = () -> runtime.getRecipesGui().showTypes(List.of(StrategicCategory.TYPE));
+        dev.groundzero.client.fx.FxPhotographer.jeiFilter = text -> runtime.getIngredientFilter().setFilterText(text);
+        dev.groundzero.client.fx.FxPhotographer.jeiRecipesFor = stack -> runtime.getRecipesGui().show(runtime.getJeiHelpers().getFocusFactory()
+                .createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT, mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack));
     }
 
     @Override

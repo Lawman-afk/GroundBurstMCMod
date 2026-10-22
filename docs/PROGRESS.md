@@ -4,7 +4,7 @@ Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `block
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
 **Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
-**Last updated:** 2026-10-22
+**Last updated:** 2026-10-23
 
 ---
 
@@ -202,7 +202,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 8 — Nuclear weapons
 | Item | Status |
 |---|---|
-| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | 8a: tactical and fission warheads with cores, models, profiles, contamination (rescaled: tactical 1.5x MOW); 8b: boosted fission, neutron (neutron burst through shielding, plants wither) and dirty (class S, radiological) warheads with cores, models, profiles ; 8c: thermonuclear (H-bomb) and cobalt warheads as whole weapons (intercontinental missiles from the Strategic Assembly Hall); 8d: the Tsar Mega-bomb (Tertiary Stage, 50 Mt, its own sound) — needs in-game look |
+| Tactical nuke, fission, boosted fission, H-bomb, Tsar, neutron, cobalt, dirty bomb (blocks + models + profiles) | 8a: tactical and fission warheads with cores, models, profiles, contamination (rescaled: tactical 1.5x MOW); 8b: boosted fission, neutron (neutron burst through shielding, plants wither) and dirty (class S, radiological) warheads with cores, models, profiles ; 8c: thermonuclear (H-bomb) and cobalt warheads as whole weapons (intercontinental missiles from the Strategic Assembly Hall); 8d: the Tsar Mega-bomb (Tertiary Stage, 50 Mt, its own sound); after 9b: the Tsar's own Twin Boosted Core primary, and every mushroom cloud stands until its crater is finished before its 2.5-minute countdown — needs in-game look |
 | Strategic missile (XL body, nuclear only, its own long model) | done (8a feedback) — needs in-game look |
 | Strategic Assembly Hall (multiblock building whole weapons for the Launch Complex) | done (8c): 7x13 crane hall, parts, a minute's assembly with the crane laying the missile, screen with preview and stats — needs in-game look |
 | Intercontinental missile (class XXL, 3,000 blocks, its own model on the complex and in flight) | done (8c) — needs in-game look |
@@ -224,7 +224,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
 | Launch Pad multiblock + erector/clamp animations + GUI | todo |
 | Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8) |
-| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked — needs in-game look |
+| Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, and its shaft lamps stand in even rows, the same on every wall — needs in-game look |
 | Cruise Missile Launcher | todo |
 | Launch Control Station: map, pads, salvo, time-on-target | todo |
 | Laser Designator, Targeting Binoculars, Data Link Tool, Comms Relay | todo |
@@ -300,12 +300,12 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Field Manual GUI + layout engine + page types | done (book item, home/chapter/entry spreads, flowing layout, text/spotlight/crafting/smelting/machine/structure/image/table/links pages, search, bookmarks, unread dots, tooltip key) — needs in-game test |
 | Manual content: every resource, machine, component, weapon, multiblock, system | partly (everything built so far: 7 chapters, 41 entries; weapons etc. arrive with their phases) |
 | 3D multiblock viewer with layer slider | done (real block models in a GUI picture-in-picture; drag to turn, layer buttons, block list) |
-| JEI plugin + custom categories | todo |
+| JEI plugin + custom categories | categories built with their machines since Phase 4; 2026-10-23: one intercontinental missile per whole weapon in the list (R shows the hall's recipe), the whole weapons' bare warheads out of it |
 
 ## Phase 17 — Polish
 | Item | Status |
 |---|---|
-| Re-review every model/texture/sound/effect | todo |
+| Re-review every model/texture/sound/effect | 2026-10-23, the user's request: the recent structures (Strategic Assembly Hall, Launch Complex, Launch Silo, Missile Silo, Launch Computer, Radar Array) and their blocks repainted with a material library after researching texture practice (DESIGN §4.3) — needs in-game look; the rest todo |
 | Performance pass (Tsar MSPT target < 50) | 8d: the blast bench (`runBlastBench`) and the engine reworked at the Tsar's size: p99 tick 27.7 ms, one tick over 50 ms (since spread) on the user's PC; a wider pass (fx, fallout, saving) still todo |
 | Balance pass | todo |
 

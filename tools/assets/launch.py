@@ -22,18 +22,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import structures as ST  # noqa: E402
 import warheads as W  # noqa: E402
 
-STEEL, GUN, OLIVE, CONCRETE = P.STEEL, P.GUNMETAL, P.OLIVE, P.CONCRETE
-GANTRY = fixed("gantry_red", "#3a0e06", "#64180a", "#8e2410", "#b83418", "#d4502a", "#e67a52", "#f4ac8c")
+STEEL, GUN, OLIVE = P.STEEL, P.GUNMETAL, P.OLIVE
 WHITE = P.WHITE_CERAMIC
 BLACK = P.HAZARD_BLACK
 YELLOW = P.HAZARD_YELLOW
@@ -540,38 +541,47 @@ def icbm_model(model_name: str, nose: str, stages=(1, 2, 3)) -> None:
 
 # --- component blocks -----------------------------------------------------------------------------------------------------
 def launch_pad() -> Tex:
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, CONCRETE[3])
-    t.speckle(0, 0, 16, 16, [CONCRETE[2], CONCRETE[4]], seed=31, density=0.12)
-    for i in range(16):                                  # a hazard-striped border
-        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
-            t.px(x, y, YELLOW[4] if (i // 2) % 2 == 0 else BLACK[3])
-    t.outline(1, 1, 14, 14, CONCRETE[2])
-    return t
+    """Concrete with a hazard-striped border two texels wide and a groove inside it."""
+    img = M.tile(M.concrete(**M.CONCRETE_TILE), seed=31)
+    col, row = M.grid_xy()
+    ring = np.minimum(np.minimum(col, 15 - col), np.minimum(row, 15 - row))
+    img[ring < 2] = M.hazard_tile(width=2, seed=32, scuff=0.2)[ring < 2]
+    M.darken(img, ring == 2, 0.72)
+    return M.to_tex(img)
 
 
-def lattice(ramp, step: int = 4) -> Tex:
-    """A see-through lattice face: a frame with an X brace, the rest clear."""
-    t = Tex(16, 16, CLEAR)
-    t.outline(0, 0, 16, 16, ramp[3])
-    t.outline(1, 1, 14, 14, ramp[2])
-    for i in range(2, 14):
-        t.px(i, i, ramp[4])
-        t.px(15 - i, i, ramp[3])
+def lattice(material: "M.Material", step: int = 4, seed: int = 0) -> Tex:
+    """A see-through lattice face: a frame two texels wide, an X brace and cross bars, the rest clear; the bars shaded
+    round (lit above and left, dark below and right), the brace in front lighter than the one behind."""
+    col, row = M.grid_xy()
+    ring = np.minimum(np.minimum(col, 15 - col), np.minimum(row, 15 - row))
+    inner = (col >= 2) & (col <= 13) & (row >= 2) & (row <= 13)
+    front, back = inner & (col == row), inner & (col == 15 - row)
+    bars = np.zeros_like(front)
     for y in range(step, 16, step * 2):
-        t.hline(1, y, 14, ramp[2])
-    return t
+        bars |= (row == y) & (col >= 1) & (col <= 14)
+    mask = (ring < 2) | front | back | bars
+    img = M.tile(material, seed)
+    M.bevel(img, mask)
+    M.lighten(img, front, 1.1, 4)
+    M.darken(img, back & ~front, 0.82)
+    img[~mask, 3] = 0
+    return M.to_tex(img)
 
 
-def truss(ramp) -> Tex:
-    t = Tex(16, 16, CLEAR)
-    t.rect(0, 0, 16, 2, ramp[4])
-    t.rect(0, 14, 16, 2, ramp[2])
-    for i in range(0, 16, 4):
-        t.vline(i, 2, 12, ramp[3])
-    for i in range(2, 14):
-        t.px((i * 2) % 16, i, ramp[4])
-    return t
+def truss(material: "M.Material", seed: int = 0) -> Tex:
+    """A see-through truss face (a Warren truss): top and bottom chords, a post every half block and a diagonal in
+    each bay, the two leaning opposite ways; the chords shaded round."""
+    col, row = M.grid_xy()
+    mask = (row < 2) | (row > 13) | (((col % 8) == 0) & (row >= 2) & (row <= 13))
+    for r in range(2, 14):
+        mask |= (row == r) & (col == 1 + round((13 - r) * 6 / 11))
+        mask |= (row == r) & (col == 9 + round((r - 2) * 6 / 11))
+    img = M.tile(material, seed)
+    M.bevel(img, mask)
+    M.darken(img, row > 13, 0.86)
+    img[~mask, 3] = 0
+    return M.to_tex(img)
 
 
 def shaped_part(name: str, build, icon: Tex) -> None:
@@ -589,9 +599,7 @@ def shaped_part(name: str, build, icon: Tex) -> None:
 
 
 def radar_dish_icon() -> Tex:
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, GUN[2])
-    t.outline(0, 0, 16, 16, GUN[1])
+    t = M.to_tex(M.tile(M.painted(M.ARMOUR_RAMP, tone=0.45), seed=5, edges=True))
     for y in range(16):
         for x in range(16):
             d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
@@ -604,9 +612,7 @@ def radar_dish_icon() -> Tex:
 
 
 def antenna_icon() -> Tex:
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, GUN[2])
-    t.outline(0, 0, 16, 16, GUN[1])
+    t = M.to_tex(M.tile(M.painted(M.ARMOUR_RAMP, tone=0.45), seed=6, edges=True))
     t.rect(7, 1, 2, 13, STEEL[4])                                # the whip and its cross bars
     for i, y in enumerate((4, 7, 10)):
         t.rect(4 + i, y, 8 - 2 * i, 1, STEEL[3])
@@ -626,11 +632,9 @@ def radar_dish_block(particle: str) -> BlockModel:
     m.box("feed", (7.5, 10.5, 0.5), (8.5, 11.5, 3))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    m.paint_all(t, "stub", shaded(GUN))
-    m.paint_all(t, "yoke", shaded(GUN))
-    for i in range(3):
-        m.paint_all(t, f"ring{i}", lambda t, r, d: (t.rect(*r, WHITE[tone(d) + 1]), t.outline(*r, WHITE[2]) if d == "north" and min(r[2], r[3]) > 3 else None))
-    m.paint_all(t, "feed", shaded(GUN))
+    S = M.Surfacer(m, seed=73, ao_reach=2.0)
+    S.paint(t, ["stub", "yoke", "feed"], M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+    S.paint(t, [f"ring{i}" for i in range(3)], M.white_paint())
     m.fit_display(gui_rotation=(30, 225, 0))
     m.save(t)
     return m
@@ -647,11 +651,9 @@ def antenna_block(particle: str) -> BlockModel:
         m.box(f"bar{i}e", (8.5, y, 7.7), (8 + w, y + 0.6, 8.3), faces=("north", "south", "east", "up", "down"))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    m.paint_all(t, "base", shaded(GUN))
-    m.paint_all(t, "whip", shaded(STEEL))
-    for i in range(3):
-        m.paint_all(t, f"bar{i}", shaded(STEEL))
-        m.paint_all(t, f"bar{i}e", shaded(STEEL))
+    S = M.Surfacer(m, seed=79, ao_reach=2.0)
+    S.paint(t, "base", M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+    S.paint(t, ["whip"] + [f"bar{i}{e}" for i in range(3) for e in ("", "e")], M.steel(tone=0.62))
     m.fit_display(gui_rotation=(30, 225, 0))
     m.save(t)
     return m
@@ -683,13 +685,12 @@ def plus_ring(r_out: float, r_in: float) -> list[tuple[float, float, float, floa
 
 
 def large_dish_icon() -> Tex:
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, WHITE[3])
+    t = M.to_tex(M.tile(M.white_paint(tone=0.62), seed=7, edges=True))
     for y in range(16):
         for x in range(16):
             d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
-            t.px(x, y, WHITE[5] if d > 6.5 else WHITE[4] if d > 4.5 else WHITE[3] if d > 2 else GUN[3])
-    t.outline(0, 0, 16, 16, WHITE[2])
+            if d <= 6.5:
+                t.px(x, y, WHITE[4] if d > 4.5 else WHITE[3] if d > 2 else GUN[3])
     return t
 
 
@@ -710,15 +711,12 @@ def large_dish_block(particle: str) -> BlockModel:
     m.box("horn", (6.5, 13, 6.5), (9.5, 16, 9.5))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    m.paint_all(t, "hub", shaded(GUN))
-    for n, k in names:
-        # The bowl's face lighter toward the rim (it catches the light), its underside and sides plain.
-        def fn(t, rr, d, k=k):
-            x, y, w, h = rr
-            t.rect(x, y, w, h, WHITE[(tone(d) + 1) if d != "up" else 2 + k])
-        m.paint_all(t, n, fn)
-    m.paint_all(t, "post", shaded(STEEL))
-    m.paint_all(t, "horn", shaded(GUN))
+    S = M.Surfacer(m, seed=83, ao_reach=3.0)
+    S.paint(t, ["hub", "horn"], M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+    for k in range(len(rings)):
+        # The bowl's face lighter toward the rim (it catches the light).
+        S.paint(t, [n for n, kk in names if kk == k], M.white_paint(tone=0.6 + 0.04 * k))
+    S.paint(t, "post", M.steel(tone=0.6))
     m.fit_display(gui_rotation=(30, 225, 0))
     m.save(t)
     return m
@@ -808,47 +806,7 @@ def silo() -> None:
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
-    def concrete(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
-        if d == "up":
-            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.06)
-            for i in range(w):                           # the hazard border along the pad's outer edges
-                t.px(x + i, y, YELLOW[4] if (i // 3) % 2 == 0 else BLACK[3])
-        elif d in ("north", "south", "east", "west"):
-            t.hline(x, y, w, CONCRETE[5])
-    for n, _, _ in pad:
-        g.paint_all(tex, n, concrete)
-    g.paint_all(tex, "grate", lambda t, r, d: (t.rect(*r, BLACK[1]), [t.vline(xx, r[1], r[3], GUN[3]) for xx in range(r[0], r[0] + r[2], 2)]))
-    for p in posts:
-        g.paint_all(tex, p, lambda t, r, d: (t.rect(*r, YELLOW[tone(d) + 1]), t.hline(r[0], r[1], r[2], BLACK[3])))
-
-    def console(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
-        if d == "north" and w > 6:
-            t.rect(x + 2, y + 1, w - 4, 4, P.BLACK_PAINT.deep)
-            for xx in range(x + 2, x + w - 2):
-                t.px(xx, y + 3 + (xx % 2), GREEN[4])
-            t.px(x + 2, y + h - 2, RED[4])
-            t.px(x + 4, y + h - 2, GREEN[4])
-    g.paint_all(tex, "console", console)
-
-    def housing(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d in ("north", "south", "east", "west"):
-            t.stripes(x, y, w, min(2, h), RED[3], BLACK[2], width=1)
-        if d == "south" and w > 4:
-            t.rect(x + w // 2 - 2, y + 2, 4, 3, GUN[4])
-            t.rect(x + w // 2 - 1, y + 3, 2, 1, BLACK[1])
-    g.paint_all(tex, "housing", housing)
-    for p in tower + girders + ["platform"]:
-        g.paint_all(tex, p, lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1], r[2], GANTRY[5]) if d != "down" and r[3] > 2 else None))
-    g.paint_all(tex, "arm_beam", lambda t, r, d: (t.rect(*r, GANTRY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], GANTRY[2])))
-    g.paint_all(tex, "arm_clamp", shaded(GUN))
-    for n in hinge:
-        g.paint_all(tex, n, shaded(GUN) if n != "hinge_spine" else lambda t, r, d: t.rect(*r, GANTRY[tone(d) + 1]))
+    paint_silo(g, tex, [n for n, _, _ in pad], posts, tower, girders, hinge)
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
             for nose in BENCH_NOSES:
@@ -864,23 +822,25 @@ def silo() -> None:
 
 
 # --- the formed Launch Complex (Phase 8) ---------------------------------------------------------------------------------
-TOWER = fixed("service_grey", "#1e2226", "#30353a", "#464c52", "#5e656c", "#7a8188", "#9aa1a8", "#c0c6cc")
-SAFETY = fixed("safety_orange", "#3e1606", "#682208", "#96340c", "#c04a14", "#dc6a2c", "#ec9258", "#f6c098")
-SOOT = fixed("trench_soot", "#0a0a0b", "#121214", "#1a1b1d", "#24262a", "#303338", "#40444a", "#565b62")
 
 
 def flame_deflector() -> Tex:
-    """The deflector block: heavy sooted steel with heat-blued welds and a hazard edge."""
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, SOOT[4])
-    t.speckle(0, 0, 16, 16, [SOOT[3], SOOT[5]], seed=17, density=0.18)
-    for y in range(3, 16, 4):
-        t.hline(1, y, 14, SOOT[2])                        # weld seams between the wedge's plates
-        t.hline(1, y + 1, 14, (70, 82, 120, 255))
-    for i in range(16):
-        t.px(i, 0, YELLOW[4] if (i // 2) % 2 == 0 else BLACK[3])
-    t.outline(0, 1, 16, 15, SOOT[1])
-    return t
+    """The deflector block: heavy steel plates blackened by exhaust, heat-tinted (straw, then blue) along their welds,
+    a hazard edge along the top."""
+    f = M.tile_face()
+    img = M.Material(ramp=M.STEEL_RAMP[:7], tone=0.5, mottle=0.06, grain=0.05, dither=0.7, despeckle=False).render(f, 17)
+    img = np.clip(img, 0, 255).astype(np.uint8)
+    M.sooted(f, img, 0.35 + 0.5 * M.noise(f, 6.0, 19, 2), 0.6)
+    col, row = M.grid_xy()
+    for y in (3, 7, 11, 15):
+        img[row == y, :3] = (22, 23, 26)                          # the weld between two plates
+        if y + 1 < 16:                                           # heat-blued just below it, here and there
+            tint = (row == y + 1) & (M.noise(f, (5.0, 16.0, 1.0), 29 + y) > 0.4)
+            img[tint, :3] = np.clip(img[tint, :3].astype(np.float32) * 0.55 + np.array([58, 66, 104]) * 0.45, 0, 255)
+    top = (row == 0)
+    img[top] = M.hazard_tile(width=2, seed=18)[top]
+    M.darken(img, ((col == 0) | (col == 15) | (row == 15)) & (row > 0), 0.7)
+    return M.to_tex(img)
 
 
 def complex_placard(t: Tex) -> None:
@@ -1034,77 +994,7 @@ def launch_complex() -> None:
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
-    def concrete(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
-        if d == "up":
-            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.06)
-            for i in range(w):                           # the hazard border along the deck's outer edges
-                t.px(x + i, y, YELLOW[4] if (i // 3) % 2 == 0 else BLACK[3])
-        elif d in ("north", "south", "east", "west"):
-            t.hline(x, y, w, CONCRETE[5])
-    for n, _, _, _ in deck:
-        g.paint_all(tex, n, concrete)
-    g.paint_all(tex, "trench_floor", lambda t, r, d: (t.rect(*r, SOOT[1]), t.speckle(*r, [SOOT[0], SOOT[2]], seed=r[0] + r[1], density=0.2)))
-    for n in wedge:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, SOOT[3 if d == "up" else 2]), t.hline(r[0], r[1], r[2], (70, 82, 120, 255))))
-
-    def deluge(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, TOWER[tone(d) + 2])
-        if d in ("north", "south") and w > 4:
-            for xx in range(x + 2, x + w, 5):            # nozzles
-                t.px(xx, y + h // 2, P.CHERENKOV[4])
-    for n in pipes:
-        g.paint_all(tex, n, deluge)
-    for n in posts:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, YELLOW[tone(d) + 1]), t.hline(r[0], r[1], r[2], BLACK[3])))
-
-    def console(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
-        if d == "north" and w > 6:
-            t.rect(x + 2, y + 1, w - 4, 4, P.BLACK_PAINT.deep)
-            for xx in range(x + 2, x + w - 2):
-                t.px(xx, y + 3 + (xx % 2), GREEN[4])
-            t.px(x + 2, y + h - 2, RED[4])
-            t.px(x + 4, y + h - 2, YELLOW[4])
-    g.paint_all(tex, "console", console)
-
-    def housing(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d in ("north", "south", "east", "west"):
-            t.stripes(x, y, w, min(2, h), RED[3], BLACK[2], width=1)
-    g.paint_all(tex, "housing", housing)
-    for n in tower + girders + braces + ["mast"]:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, TOWER[tone(d) + 1]), t.hline(r[0], r[1], r[2], TOWER[5]) if d != "down" and r[3] > 2 else None))
-
-    def grating(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, TOWER[tone(d) + 2])
-        if d in ("up", "down"):
-            for xx in range(x, x + w, 2):
-                t.vline(xx, y, h, TOWER[2])
-        elif d in ("north", "south", "east", "west"):
-            t.hline(x, y, w, SAFETY[4])
-    for n in decks + ["roof"]:
-        g.paint_all(tex, n, grating)
-    for n in rails:
-        g.paint_all(tex, n, shaded(SAFETY))
-    g.paint_all(tex, "beacon", lambda t, r, d: t.rect(*r, RED[5] if d != "down" else RED[3]))
-    for bone in ("arm_low", "arm_high"):
-        g.paint_all(tex, f"{bone}_beam", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
-        g.paint_all(tex, f"{bone}_clamp", shaded(GUN))
-        g.paint_all(tex, f"{bone}_hose", lambda t, r, d: t.rect(*r, P.RUBBER[2 if d == "down" else 3]))
-    g.paint_all(tex, "arm_high_reach", lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
-    g.paint_all(tex, "arm_high_clamp_strategic", shaded(GUN))
-    for n in ("arm_low_reach", "arm_high_reach_icbm"):
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, SAFETY[tone(d) + 1]), t.hline(r[0], r[1] + r[3] - 1, r[2], SAFETY[2])))
-    for n in ("arm_low_clamp_icbm", "arm_high_clamp_icbm"):
-        g.paint_all(tex, n, shaded(GUN))
-    for n in hinges:
-        g.paint_all(tex, n, shaded(GUN) if n != "spine" else lambda t, r, d: t.rect(*r, TOWER[tone(d) + 1]))
+    paint_complex(g, tex, [n for n, _, _, _ in deck], wedge, pipes, posts, tower, girders, braces, decks, rails, hinges)
     for name, _, _, _, kind in missile_parts():
         if kind in NOSE_PARTS:
             for nose in BENCH_NOSES:
@@ -1189,56 +1079,7 @@ def computer() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h)
 
-    def desk(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
-        if d in ("north", "south", "east", "west") and h > 4:
-            t.outline(x, y, w, h, OLIVE[1])
-        if d == "north" and w > 20:
-            for i in range(4):                           # drawers
-                t.rect(x + 2 + i * (w // 4), y + 3, w // 4 - 3, h - 5, OLIVE[2])
-                t.px(x + 2 + i * (w // 4) + (w // 8) - 1, y + 4, STEEL[5])
-    g.paint_all(tex, "desk", desk)
-
-    def console(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d == "up":
-            for i in range(x + 2, x + w - 2, 3):          # keys and lamps
-                t.px(i, y + 2, STEEL[5])
-                t.px(i, y + h - 3, [RED[4], YELLOW[4], GREEN[4]][(i // 3) % 3])
-    g.paint_all(tex, "console", console)
-
-    def crt(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d == "north" and w > 6:
-            t.rect(x + 1, y + 1, w - 2, h - 3, P.BLACK_PAINT.deep)
-            glow.rect(x + 1, y + 1, w - 2, h - 3, (0, 0, 0, 255))
-            for xx in range(x + 1, x + w - 1):            # a sweep and a few blips, glowing
-                yy = y + 1 + (h - 4) // 2 + ((xx * 7) % 5) - 2
-                for target in (t, glow):
-                    target.px(xx, yy, GREEN[4])
-            for target in (t, glow):
-                target.px(x + 3, y + 3, GREEN[6])
-                target.px(x + w - 4, y + h - 4, GREEN[6])
-    for n in ("crt_l", "crt_r"):
-        g.paint_all(tex, n, crt)
-
-    def socket(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d == "east":
-            t.stripes(x, y, w, 2, RED[3], BLACK[2], width=1)
-            t.rect(x + w // 2 - 2, y + 3, 4, 3, GUN[4])
-            t.rect(x + w // 2 - 1, y + 4, 2, 1, BLACK[1])
-    g.paint_all(tex, "socket", socket)
-    for n in ["ant_base", "ant_whip", *bars, "feed_arm", "feed", "back", "yoke", "mast_cap"]:
-        g.paint_all(tex, n, shaded(STEEL if n.startswith("ant") or n.startswith("feed") else GUN))
-    for n in mast:
-        g.paint_all(tex, n, shaded(STEEL))
-    for n in rings:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, WHITE[tone(d) + 1]), t.outline(*r, WHITE[2]) if d == "north" and min(r[2], r[3]) > 3 else None))
+    paint_computer(g, tex, glow, bars, mast, rings)
     g.save(tex, glow)
     spin = Animation("working", 4.0, loop=True)
     spin.rotate("dish", {0: (0, 0, 0), 4: (0, 360, 0)})
@@ -1304,22 +1145,217 @@ def radar_array() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h)
 
-    def deck(t: Tex, rr, d):
-        x, y, w, h = rr
-        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
-        if d == "up":
-            t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 5 + y, density=0.05)
-            for i in range(w):                           # a hazard border round the deck
-                c = YELLOW[4] if (i // 3) % 2 == 0 else BLACK[3]
-                t.px(x + i, y, c)
-                t.px(x + i, y + h - 1, c)
-        elif d in ("north", "south", "east", "west"):
-            t.hline(x, y, w, CONCRETE[5])
-    g.paint_all(tex, "deck", deck)
+    paint_radar(g, tex, glow, rails, mast, rings)
+    g.save(tex, glow)
+    spin = Animation("working", 4.8, loop=True)                 # one turn every 4.8 s, as its screen's sweep
+    spin.rotate("dish", {0: (0, 0, 0), 4.8: (0, 360, 0)})
+    print(save_animations("radar_array", [spin]))
 
-    def cabinet(t: Tex, rr, d):
+
+# --- surfaces (the remaster after slice 9b: tools/gz/materials.py, DESIGN.md §4.3) --------------------------------------
+GANTRY_RAMP = M.ramp("#2a0904", "#3a0e06", "#64180a", "#8e2410", "#b83418", "#d4502a", "#e67a52", "#f4ac8c", "#fbd2bd")
+SIDES = ("north", "south", "east", "west")
+
+
+def _hazard_posts(S, tex, posts, top: float) -> None:
+    """Hold-down posts: yellow, worn, their tops black."""
+    S.paint(tex, posts, M.painted(M.YELLOW_PAINT_RAMP, tone=0.6, wear=0.45))
+    black = M.painted(M.BLACK_RAMP, tone=0.5, wear=0.3)
+    S.overlay(tex, posts, lambda f, img: M.paste(img, S.material_on(f, black), (f.Y > top) if f.vertical else np.ones(f.shape, bool)))
+
+
+def _console(S, g, tex, name: str, lamps=(RED, GREEN)) -> None:
+    """An olive console with its screen and two lamps on its front."""
+    S.paint(tex, name, M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
+
+    def front(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "north" and w > 6:
+            t.rect(x + 2, y + 1, w - 4, 4, P.BLACK_PAINT.deep)
+            for xx in range(x + 2, x + w - 2):
+                t.px(xx, y + 3 + (xx % 2), GREEN[4])
+            t.px(x + 2, y + h - 2, lamps[0][4])
+            t.px(x + 4, y + h - 2, lamps[1][4])
+    g.paint_all(tex, name, front)
+
+
+def _power_housing(S, g, tex, name: str, plug: str | None = "south") -> None:
+    """The Energy Port's housing: dark steel, a red-and-black band round its top, its socket on one face."""
+    S.paint(tex, name, M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.3, rust=0.08))
+    band = M.warning_stripes(width=2)
+    S.overlay(tex, name, lambda f, img: M.paste(img, S.material_on(f, band), f.border["top"] < 3), only=SIDES)
+
+    def socket(t: Tex, r, d):
+        x, y, w, h = r
+        if d == plug and w > 4:
+            t.rect(x + w // 2 - 2, y + 2, 4, 3, GUN[4])
+            t.rect(x + w // 2 - 1, y + 3, 2, 1, BLACK[1])
+    if plug:
+        g.paint_all(tex, name, socket)
+
+
+def _grating(S, tex, names, toe) -> None:
+    """Galvanised walkway grating, its toe boards painted."""
+    S.paint(tex, names, M.galvanized(tone=0.6))
+    S.overlay(tex, names, lambda f, img: M.grid(f, img, every=2, depth=0.5), only=("up", "down"))
+    S.paint(tex, names, M.painted(toe, tone=0.58, wear=0.35), only=SIDES)
+
+
+def _apron(cx: float, cz: float, half: float, reach: float, seed: int, trench=None):
+    """How scorched a launch apron is round its flame hole (a square of half-size {half} at cx, cz), or along its trench
+    (x0, x1, z0, z1): heaviest at the lip, gone {reach} pixels out, patchy."""
+    def amount(f):
+        if trench is None:
+            d = np.maximum(np.abs(f.X - cx), np.abs(f.Z - cz)) - half
+        else:
+            x0, x1, z0, z1 = trench
+            dx = np.maximum(0, np.maximum(x0 - f.X, f.X - x1))
+            dz = np.maximum(0, np.maximum(z0 - f.Z, f.Z - z1))
+            d = np.hypot(dx, dz)
+        # Concentric with the source, its boundaries ragged (noise moves them in and out), not blotches of its own.
+        d = d + (M.fbm(f.X, f.Y, f.Z, 3.0, seed, 3) - 0.5) * reach * 0.6
+        return np.clip(1 - d / reach, 0, 1) ** 1.1
+    return amount
+
+
+def paint_silo(g: GeoModel, tex: Tex, pad, posts, tower, girders, hinge) -> None:
+    """The Launch Silo's surfaces: a concrete pad scorched round its flame hole, hazard bands round its edge and the
+    hole; a red gantry, its platform galvanised grating; a dark steel grate over the hole."""
+    S = M.Surfacer(g, seed=61)
+    S.paint(tex, pad, M.concrete(tone=0.6))
+    band = M.stripes(width=3, wear=0.4)
+    scorch = _apron(0, 16, 6, 10, 7)
+
+    def apron(f, img):
+        hole = np.maximum(np.abs(f.X), np.abs(f.Z - 16))
+        M.paste(img, S.material_on(f, band), (np.abs(f.X) > 21) | (f.Z < -5) | (f.Z > 37) | (hole < 8))
+        M.sooted(f, img, scorch(f), 0.62)
+    S.overlay(tex, pad, apron, only=("up",))
+    S.paint(tex, "grate", M.steel(tone=0.32, rust=0.2))
+    S.overlay(tex, "grate", lambda f, img: (M.darken(img, (np.floor(f.X) % 2) == 1, 0.25), M.sooted(f, img, np.full(f.shape, 0.6), 0.5)))
+    _hazard_posts(S, tex, posts, top=17)
+    _console(S, g, tex, "console")
+    _power_housing(S, g, tex, "housing")
+    red = M.painted(GANTRY_RAMP, tone=0.6, wear=0.18, rust=0.08, streaks=0.05)
+    S.paint(tex, tower + girders + ["hinge_spine", "arm_beam"], red)
+    _grating(S, tex, ["platform"], GANTRY_RAMP)
+    S.paint(tex, ["arm_clamp"] + [n for n in hinge if n != "hinge_spine"], M.painted(M.ARMOUR_RAMP, tone=0.58, wear=0.3))
+
+
+def paint_complex(g: GeoModel, tex: Tex, deck, wedge, pipes, posts, tower, girders, braces, decks, rails, hinges) -> None:
+    """The Launch Complex's surfaces: a concrete deck cut into slabs round the missile, scorched along its trench and
+    banded round its edge; a sooted trench and deflector; galvanised deluge pipes; a grey tower with galvanised
+    walkways and orange toe boards and rails; orange umbilical arms."""
+    S = M.Surfacer(g, seed=53)
+    S.paint(tex, deck, M.concrete(tone=0.6))
+    band = M.stripes(width=3, wear=0.4)
+    scorch = _apron(0, 0, 0, 16, 11, trench=(-40, 8, 26, 38))
+
+    def apron(f, img):
+        joint = (np.abs(np.abs(f.X) - 24.5) < 0.25) | (np.abs(np.abs(f.Z - 32) - 24.5) < 0.25)
+        M.darken(img, joint, 0.62)
+        M.paste(img, S.material_on(f, band), (np.abs(f.X) > 37) | (f.Z < -5) | (f.Z > 69))
+        M.sooted(f, img, scorch(f), 0.62)
+    S.overlay(tex, deck, apron, only=("up",))
+    S.paint(tex, "trench_floor", M.soot(tone=0.25))
+    S.paint(tex, wedge, M.soot(tone=0.45, edge_light=0.3))
+
+    def weld(f, img):                                          # heat-blued welds along the deflector's steps
+        lip = (f.border["left"] < 1) if f.d == "up" else (f.border["top"] < 1)
+        img[lip, :3] = (70, 82, 120)
+    S.overlay(tex, wedge, weld)
+    S.paint(tex, pipes, M.galvanized(tone=0.62, rust=0.12))
+
+    def nozzles(t: Tex, r, d):
+        x, y, w, h = r
+        if d in ("north", "south") and w > 4:
+            for xx in range(x + 2, x + w, 5):
+                t.px(xx, y + h // 2, P.CHERENKOV[4])
+                t.px(xx, y + h // 2 + 1, P.BLACK_PAINT.deep)
+    for n in pipes:
+        g.paint_all(tex, n, nozzles)
+    _hazard_posts(S, tex, posts, top=18)
+    _console(S, g, tex, "console", lamps=(RED, YELLOW))
+    _power_housing(S, g, tex, "housing", plug=None)
+    grey = M.painted(M.GREY_PAINT_RAMP, tone=0.58, wear=0.15, rust=0.08, streaks=0.05)
+    S.paint(tex, tower + girders + braces + ["mast", "spine"], grey)
+    _grating(S, tex, decks + ["roof"], M.ORANGE_PAINT_RAMP)
+    S.paint(tex, rails, M.painted(M.ORANGE_PAINT_RAMP, tone=0.6, wear=0.3))
+    g.paint_all(tex, "beacon", lambda t, r, d: t.rect(*r, RED[5] if d != "down" else RED[3]))
+    orange = M.painted(M.ORANGE_PAINT_RAMP, tone=0.58, wear=0.3, rust=0.06)
+    S.paint(tex, ["arm_low_beam", "arm_high_beam", "arm_high_reach", "arm_low_reach", "arm_high_reach_icbm"], orange)
+    clamps = ["arm_low_clamp", "arm_high_clamp", "arm_high_clamp_strategic", "arm_low_clamp_icbm", "arm_high_clamp_icbm"]
+    S.paint(tex, clamps + [n for n in hinges if n != "spine"], M.painted(M.ARMOUR_RAMP, tone=0.58, wear=0.3))
+    S.paint(tex, ["arm_low_hose", "arm_high_hose"], M.rubber(tone=0.55))
+
+
+def paint_computer(g: GeoModel, tex: Tex, glow: Tex, bars, mast, rings) -> None:
+    """The Launch Computer's surfaces: an olive desk with drawers, a dark console and screens, a galvanised mast and a
+    white dish."""
+    S = M.Surfacer(g, seed=67)
+    S.paint(tex, "desk", M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
+
+    def drawers(f, img):                                       # four drawers: a dark gap round each, a steel pull
+        col, row = f.border["left"], f.border["top"]
+        h = f.shape[0]
+        for i in range(4):
+            s = 2 + 7 * i
+            ring = (col >= s) & (col <= s + 4) & (row >= 2) & (row <= h - 2)
+            inside = (col > s) & (col < s + 4) & (row > 2) & (row < h - 2)
+            M.darken(img, ring & ~inside, 0.55)
+            M.darken(img, inside, 0.92)
+            img[(col == s + 2) & (row == 4), :3] = STEEL[5][:3]
+    S.overlay(tex, "desk", drawers, only=("north",))
+    S.paint(tex, ["console", "crt_l", "crt_r", "socket", "yoke", "back", "mast_cap"], M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+
+    def keys(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "up":
+            for i in range(x + 2, x + w - 2, 3):
+                t.px(i, y + 2, STEEL[5])
+                t.px(i, y + h - 3, [RED[4], YELLOW[4], GREEN[4]][(i // 3) % 3])
+    g.paint_all(tex, "console", keys)
+
+    def crt(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "north" and w > 6:
+            t.rect(x + 1, y + 1, w - 2, h - 3, P.BLACK_PAINT.deep)
+            glow.rect(x + 1, y + 1, w - 2, h - 3, (0, 0, 0, 255))
+            for xx in range(x + 1, x + w - 1):            # a sweep and a few blips, glowing
+                yy = y + 1 + (h - 4) // 2 + ((xx * 7) % 5) - 2
+                for target in (t, glow):
+                    target.px(xx, yy, GREEN[4])
+            for target in (t, glow):
+                target.px(x + 3, y + 3, GREEN[6])
+                target.px(x + w - 4, y + h - 4, GREEN[6])
+    for n in ("crt_l", "crt_r"):
+        g.paint_all(tex, n, crt)
+    band = M.warning_stripes(width=2)
+    S.overlay(tex, "socket", lambda f, img: M.paste(img, S.material_on(f, band), f.border["top"] < 3), only=("east",))
+
+    def plug(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "east":
+            t.rect(x + w // 2 - 2, y + 3, 4, 3, GUN[4])
+            t.rect(x + w // 2 - 1, y + 4, 2, 1, BLACK[1])
+    g.paint_all(tex, "socket", plug)
+    S.paint(tex, ["ant_base", "ant_whip", *bars, "feed_arm", "feed"], M.steel(tone=0.6))
+    S.paint(tex, mast, M.galvanized(tone=0.6, wear=0.0))
+    S.paint(tex, rings, M.white_paint())
+
+
+def paint_radar(g: GeoModel, tex: Tex, glow: Tex, rails, mast, rings) -> None:
+    """The Radar Array's surfaces: a concrete deck banded round its edge, yellow railings, an olive cabinet with its
+    scope, the power box, a galvanised mast and a white dish on a dark yoke."""
+    S = M.Surfacer(g, seed=71)
+    S.paint(tex, "deck", M.concrete(tone=0.6))
+    band = M.stripes(width=3, wear=0.4)
+    S.overlay(tex, "deck", lambda f, img: M.paste(img, S.material_on(f, band), (np.abs(f.X) > 20) | (f.Z < -4) | (f.Z > 36)),
+              only=("up",))
+    S.paint(tex, "cabinet", M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
+
+    def scope(t: Tex, rr, d):
         x, y, w, h = rr
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
         if d == "north" and w > 8:
             t.rect(x + 2, y + 2, w - 4, 6, P.BLACK_PAINT.deep)
             glow.rect(x + 2, y + 2, w - 4, 6, (0, 0, 0, 255))
@@ -1330,39 +1366,23 @@ def radar_array() -> None:
                 target.px(x + 3, y + 3, GREEN[2])
             t.px(x + 2, y + h - 3, RED[4])
             t.px(x + 4, y + h - 3, GREEN[4])
-    g.paint_all(tex, "cabinet", cabinet)
-
-    def powerbox(t: Tex, rr, d):
-        x, y, w, h = rr
-        t.rect(x, y, w, h, GUN[tone(d) + 1])
-        if d in ("north", "south", "east", "west"):
-            t.stripes(x, y, w, min(2, h), RED[3], BLACK[2], width=1)
-    g.paint_all(tex, "powerbox", powerbox)
-    for n in rails:
-        g.paint_all(tex, n, shaded(YELLOW))
-    for n in mast + ["mast_cap"]:
-        g.paint_all(tex, n, shaded(STEEL))
+    g.paint_all(tex, "cabinet", scope)
+    _power_housing(S, g, tex, "powerbox", plug=None)
+    S.paint(tex, rails, M.painted(M.YELLOW_PAINT_RAMP, tone=0.6, wear=0.35, rust=0.08))
+    S.paint(tex, mast + ["mast_cap"], M.galvanized(tone=0.6, wear=0.0))
     g.paint_all(tex, "lamp", lambda t, rr, d: t.rect(*rr, RED[5]))
-    glow.rect(*g.rect("lamp", "north"), RED[5])
-    for d in ("south", "east", "up", "down"):
+    for d in ("north", "south", "east", "up", "down"):
         glow.rect(*g.rect("lamp", d), RED[5])
-    for n in ("yoke", "yoke_arm_w", "yoke_arm_e", "dish_back", "feed_arm", "feed"):
-        g.paint_all(tex, n, shaded(GUN))
-    for n in rings:
-        g.paint_all(tex, n, lambda t, rr, d: (t.rect(*rr, WHITE[tone(d) + 1]),
-                                              t.outline(*rr, WHITE[2]) if d == "north" and min(rr[2], rr[3]) > 3 else None))
-    g.save(tex, glow)
-    spin = Animation("working", 4.8, loop=True)                 # one turn every 4.8 s, as its screen's sweep
-    spin.rotate("dish", {0: (0, 0, 0), 4.8: (0, 360, 0)})
-    print(save_animations("radar_array", [spin]))
+    S.paint(tex, ["yoke", "yoke_arm_w", "yoke_arm_e", "dish_back", "feed_arm", "feed"], M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.25))
+    S.paint(tex, rings, M.white_paint())
 
 
 def main() -> None:
     missile_item()
     ST.part_block("launch_pad", launch_pad())
-    ST.part_block("gantry_frame", lattice(GANTRY), cutout=True)
-    ST.part_block("gantry_arm", truss(GANTRY), cutout=True)
-    ST.part_block("radar_mast", lattice(STEEL, step=3), cutout=True)
+    ST.part_block("gantry_frame", lattice(M.painted(GANTRY_RAMP, tone=0.6, wear=0.0), seed=3), cutout=True)
+    ST.part_block("gantry_arm", truss(M.painted(GANTRY_RAMP, tone=0.6, wear=0.0), seed=4), cutout=True)
+    ST.part_block("radar_mast", lattice(M.galvanized(tone=0.6), step=3, seed=5), cutout=True)
     shaped_part("radar_dish", radar_dish_block, radar_dish_icon())
     shaped_part("antenna", antenna_block, antenna_icon())
     large_dish()

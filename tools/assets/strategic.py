@@ -18,16 +18,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import structures as ST  # noqa: E402
 
-STEEL, GUN, OLIVE, CONCRETE = P.STEEL, P.GUNMETAL, P.OLIVE, P.CONCRETE
-YELLOW, BLACK, RED, GREEN = P.HAZARD_YELLOW, P.HAZARD_BLACK, P.WARNING_RED, P.INDICATOR_GREEN
-TOWER = L.TOWER
-tone, shaded = L.tone, L.shaded
+STEEL = P.STEEL
+YELLOW, GREEN = P.HAZARD_YELLOW, P.INDICATOR_GREEN
 
 #: The floor's top, the lying missile's axis height, and where its tail lies (pixels; the controller's block is at 0).
 FLOOR_Y, AXIS_Y, Z_TAIL = 14, 38, 188
@@ -38,17 +39,23 @@ FACE = {"up": "north", "down": "south", "north": "down", "south": "up", "east": 
 
 
 def crane_rail() -> Tex:
-    """The part block: a yellow box girder, a steel rail along its top, hazard stripes at its ends."""
-    t = Tex(16, 16)
-    t.rect(0, 0, 16, 16, YELLOW[3])
-    t.rect(0, 0, 16, 3, STEEL[4])                            # the rail
-    t.hline(0, 3, 16, STEEL[2])
-    t.rect(0, 13, 16, 3, YELLOW[2])                          # the bottom flange
-    t.stripes(0, 4, 3, 9, YELLOW[4], BLACK[2], width=2)
-    t.stripes(13, 4, 3, 9, YELLOW[4], BLACK[2], width=2)
-    for x in range(4, 13, 4):
-        t.px(x, 8, YELLOW[1])                                # bolt heads on the web
-    return t
+    """The part block: a yellow box girder, a steel rail along its top (bright where the wheels run), a bolted web,
+    hazard stripes at its ends."""
+    f = M.tile_face()
+    img = np.clip(M.painted(M.YELLOW_PAINT_RAMP, tone=0.6, wear=0.0, rust=0.0).render(f, 21), 0, 255).astype(np.uint8)
+    col, row = M.grid_xy()
+    rail = np.clip(M.steel(tone=0.55, brushed=0.08).render(f, 22), 0, 255).astype(np.uint8)
+    img[row < 3] = rail[row < 3]
+    M.lighten(img, row == 0, 1.25, 10)                          # the running surface
+    M.darken(img, row == 3, 0.5)                                # the rail's shadow on the girder
+    M.darken(img, row >= 13, 0.8)                               # the bottom flange
+    M.lighten(img, row == 13, 1.15, 4)
+    ends = ((col < 3) | (col > 12)) & (row >= 4) & (row <= 12)
+    img[ends] = M.hazard_tile(width=2, seed=23)[ends]
+    for x in (5, 8, 11):                                        # bolt heads on the web
+        M.lighten(img, (col == x) & (row == 8), 1.3, 14)
+        M.darken(img, (col == x) & (row == 9), 0.65)
+    return M.to_tex(img)
 
 
 def hall_placard(t: Tex) -> None:
@@ -143,97 +150,7 @@ def hall() -> None:
             missile.append((f"n_{nose}_{name}", kind, nose))
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
-
-    def floor(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, CONCRETE[tone(d) + 1])
-        if d != "up":
-            t.hline(x, y, w, CONCRETE[5])
-            return
-        t.speckle(x, y, w, h, [CONCRETE[3], CONCRETE[5]], seed=x * 7 + y, density=0.05)
-        for u in (36, w - 37):                                 # the bay's yellow lines, down the hall
-            t.vline(x + u, y + 6, h - 12, YELLOW[4])
-        for row in (y, y + 1, y + h - 2, y + h - 1):           # hazard stripes at the open ends
-            for i in range(w):
-                t.px(x + i, row, YELLOW[4] if ((i + row) // 3) % 2 == 0 else BLACK[3])
-    g.paint_all(tex, "floor", floor)
-
-    def column(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, TOWER[tone(d) + 1])
-        if d in ("east", "west") and w > 4:
-            t.rect(x + w // 2 - 1, y, 2, h, TOWER[2])           # the I-beam's web between its flanges
-        t.hline(x, y, w, TOWER[5])
-    for n in columns:
-        g.paint_all(tex, n, column)
-
-    def girder(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, YELLOW[tone(d)])
-        if d in ("north", "south"):
-            t.stripes(x, y, w, h, YELLOW[4], BLACK[2], width=2)
-        elif d in ("east", "west") and h > 4:
-            t.hline(x, y + h - 1, w, YELLOW[1])                  # the bottom flange's shadow
-            for xx in range(x + 3, x + w, 8):
-                t.px(xx, y + h // 2, YELLOW[1])                  # bolt heads
-    for n in girders:
-        g.paint_all(tex, n, girder)
-    for n in rails:
-        g.paint_all(tex, n, shaded(STEEL))
-    for n in cradles:
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, GUN[tone(d)]), t.hline(r[0], r[1], r[2], YELLOW[4]) if d == "up" and "pad" in n else None))
-
-    def desk(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, OLIVE[tone(d) + 1])
-        if d == "north" and w > 6:
-            t.rect(x + 1, y + 1, w - 2, min(3, h - 2), P.BLACK_PAINT.deep)
-            for xx in range(x + 1, x + w - 1):
-                t.px(xx, y + 2, GREEN[4] if xx % 3 else YELLOW[4])
-    g.paint_all(tex, "desk", desk)
-
-    def screen(t: Tex, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GUN[tone(d)])
-        if d == "north" and w > 4:
-            t.rect(x + 1, y + 1, w - 2, max(1, h - 2), P.BLACK_PAINT.deep)
-            for xx in range(x + 1, x + w - 1):
-                t.px(xx, y + 1 + (xx % 2), GREEN[4])
-    g.paint_all(tex, "screen", screen)
-    def port_plate(edge, glyph):
-        def fn(t: Tex, r, d):
-            x, y, w, h = r
-            t.rect(x, y, w, h, GUN[tone(d)])
-            if d != "up":
-                return
-            t.outline(x, y, w, h, edge)                          # a painted border round the hatch
-            t.outline(x + 1, y + 1, w - 2, h - 2, BLACK[2])
-            glyph(t, x + w // 2, y + h // 2)
-        return fn
-
-    def bolt(t: Tex, cx, cy):                                    # the Energy Port's lightning bolt
-        for i, (dx, dy) in enumerate(((1, -3), (0, -2), (-1, -1), (0, -1), (1, -1), (0, 0), (-1, 1), (-2, 2))):
-            t.px(cx + dx, cy + dy, YELLOW[4])
-
-    def grate(t: Tex, cx, cy):                                   # the Item Port's grated hatch
-        for yy in range(cy - 4, cy + 5, 2):
-            t.hline(cx - 4, yy, 9, STEEL[4])
-    g.paint_all(tex, "energy_port", port_plate(RED[3], bolt))
-    g.paint_all(tex, "item_port", port_plate(YELLOW[3], grate))
-    g.paint_all(tex, "pallet", shaded(P.WOOD) if hasattr(P, "WOOD") else shaded(OLIVE))
-    g.paint_all(tex, "crate_a", shaded(OLIVE))
-    g.paint_all(tex, "crate_b", shaded(OLIVE))
-    for n in ("truck_w", "truck_e"):
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, YELLOW[tone(d)]), t.stripes(r[0], r[1], r[2], r[3], YELLOW[4], BLACK[2], width=2)
-                                             if d in ("north", "south") else None))
-    for n in ("bridge_n", "bridge_s"):
-        g.paint_all(tex, n, lambda t, r, d: (t.rect(*r, YELLOW[tone(d)]), t.hline(r[0], r[1] + r[3] - 1, r[2], YELLOW[1]) if d in sides else None))
-    g.paint_all(tex, "trolley", shaded(GUN))
-    g.paint_all(tex, "drum", shaded(STEEL))
-    for n in ("cable_w", "cable_e"):
-        g.paint_all(tex, n, lambda t, r, d: t.rect(*r, BLACK[1]))
-    g.paint_all(tex, "hook_block", lambda t, r, d: (t.rect(*r, YELLOW[tone(d)]), t.stripes(*r, YELLOW[4], BLACK[2], width=1) if d in sides else None))
-    g.paint_all(tex, "hook", shaded(STEEL))
+    paint_hall(g, tex, columns, girders, rails, cradles)
     glow = Tex(g.tex_w, g.tex_h, L.CLEAR)                    # the Tsar's vents (the renderer draws it lit)
     for name, kind, nose in missile:
         g.paint_all(tex, name, L.icbm_paint(kind, nose, lying=True))
@@ -254,6 +171,112 @@ def hall() -> None:
     idle = Animation("idle", 1.0, loop="hold_on_last_frame")
     idle.move("crane", {0: (0, 0, 0), 1: (0, 0, 0)})
     print(save_animations("strategic_assembly_hall", [work, idle]))
+
+
+def paint_hall(g: GeoModel, tex: Tex, columns, girders, rails, cradles) -> None:
+    """The hall's surfaces, in model space (tools/gz/materials.py): a sealed concrete floor cut into slabs at the column
+    lines, worn yellow bay lines and hazard bands; grey steel columns, yellow crane girders bolted along their sides,
+    rails polished where the wheels run; dark cradles with yellow cheeks and rubber saddles."""
+    S = M.Surfacer(g, seed=43)
+    S.paint(tex, "floor", M.concrete(tone=0.66, mottle=0.028, grain=0.035))
+    S.paint(tex, "floor", M.concrete(tone=0.6), only=("north", "south", "east", "west"))
+    line = M.painted(M.YELLOW_PAINT_RAMP, tone=0.62, wear=0.0, grime=0.0, edge_light=0.0, edge_dark=0.0)
+    band = M.stripes(width=3, wear=0.4)
+
+    def floor(f, img):
+        joint = np.abs(((f.Z - 0.5) + 24) % 48 - 24) < 0.25          # saw cuts at the column lines and between
+        M.darken(img, joint, 0.62)
+        bay = (np.abs(np.abs(f.X) - 20) < 0.75) & (f.Z > -2) & (f.Z < 194)
+        M.paste(img, S.material_on(f, line), bay & ~M.scuffed(f, 0.35, seed=5))
+        M.paste(img, S.material_on(f, band), (f.Z < -5) | (f.Z > 197))
+    S.overlay(tex, "floor", floor, only=("up",))
+
+    grey = M.painted(M.GREY_PAINT_RAMP, tone=0.56, wear=0.3, rust=0.1)
+    S.paint(tex, columns, grey)
+
+    def web(f, img):                                                    # the I-beam's web between its flanges
+        zc = (f.box.frm[2] + f.box.to[2]) / 2
+        M.darken(img, np.abs(f.Z - zc) < 1, 0.6)
+        M.darken(img, (np.abs(f.Z - zc) >= 1) & (np.abs(f.Z - zc) < 2), 0.84)
+    S.overlay(tex, columns, web, only=("east", "west"))
+
+    yellow = M.painted(M.YELLOW_PAINT_RAMP, tone=0.6, wear=0.35, rust=0.12, streaks=0.05)
+    hazard = M.stripes(width=2, wear=0.4, under=M.STEEL_RAMP[2:7])
+    S.paint(tex, girders, yellow)
+    S.paint(tex, girders, hazard, only=("north", "south"))
+    S.overlay(tex, girders, lambda f, img: M.rivets(f, img, every=8, inset=1), only=("east", "west"))
+    S.paint(tex, rails, M.steel(tone=0.5, brushed=0.08, rust=0.1))
+
+    def running(f, img):                                                # bright where the crane's wheels run
+        xc = (f.box.frm[0] + f.box.to[0]) / 2
+        M.lighten(img, np.abs(f.X - xc) < 1, 1.25, 12)
+    S.overlay(tex, rails, running, only=("up",))
+
+    body = [n for n in cradles if "pad" not in n]
+    S.paint(tex, body, M.painted(M.ARMOUR_RAMP, tone=0.6, wear=0.3, rust=0.1))
+    S.paint(tex, [n for n in cradles if "pad" in n], M.painted(M.YELLOW_PAINT_RAMP, tone=0.58, wear=0.45))
+    S.paint(tex, [n for n in cradles if n.endswith("mid")], M.rubber(tone=0.5), only=("up",))
+
+    S.paint(tex, "desk", M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3))
+    S.paint(tex, "screen", M.painted(M.ARMOUR_RAMP, tone=0.5, wear=0.2))
+
+    def desk(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "north" and w > 6:
+            t.rect(x + 1, y + 1, w - 2, min(3, h - 2), P.BLACK_PAINT.deep)
+            for xx in range(x + 1, x + w - 1):
+                t.px(xx, y + 2, GREEN[4] if xx % 3 else YELLOW[4])
+    g.paint_all(tex, "desk", desk)
+
+    def screen(t: Tex, r, d):
+        x, y, w, h = r
+        if d == "north" and w > 4:
+            t.rect(x + 1, y + 1, w - 2, max(1, h - 2), P.BLACK_PAINT.deep)
+            for xx in range(x + 1, x + w - 1):
+                t.px(xx, y + 1 + (xx % 2), GREEN[4])
+    g.paint_all(tex, "screen", screen)
+
+    # The ports: dark steel hatches in the floor, a painted border (red for power, hazard for items) and a glyph.
+    plate = M.steel(tone=0.4, brushed=0.04, rust=0.08)
+    for name, border in (("energy_port", M.painted(M.RED_PAINT_RAMP, tone=0.58, wear=0.3)), ("item_port", M.stripes(width=2, wear=0.3))):
+        S.paint(tex, name, plate)
+
+        def rim(f, img, border=border):
+            ring = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+            M.paste(img, S.material_on(f, border), ring < 2)
+            M.darken(img, ring == 2, 0.55)
+        S.overlay(tex, name, rim, only=("up",))
+
+    def bolt(t: Tex, r, d):                                             # the Energy Port's lightning bolt
+        if d == "up":
+            cx, cy = r[0] + r[2] // 2, r[1] + r[3] // 2
+            for dx, dy in ((1, -3), (0, -2), (-1, -1), (0, -1), (1, -1), (0, 0), (-1, 1), (-2, 2)):
+                t.px(cx + dx, cy + dy, YELLOW[4])
+
+    def grate(t: Tex, r, d):                                            # the Item Port's grated hatch
+        if d == "up":
+            cx, cy = r[0] + r[2] // 2, r[1] + r[3] // 2
+            for yy in range(cy - 3, cy + 4, 2):
+                t.hline(cx - 3, yy, 7, STEEL[5])
+                t.hline(cx - 3, yy + 1, 7, P.BLACK_PAINT.deep)
+    g.paint_all(tex, "energy_port", bolt)
+    g.paint_all(tex, "item_port", grate)
+
+    S.paint(tex, "pallet", M.wood(tone=0.55))
+    S.overlay(tex, "pallet", lambda f, img: M.seams(f, img, every=3, axis="u", light=False), only=("up",))
+    crate = M.painted(M.OLIVE_RAMP, tone=0.5, wear=0.35, under=M.WOOD_RAMP[2:6])
+    S.paint(tex, ["crate_a", "crate_b"], crate)
+
+    # The crane: yellow, hazard-striped at its ends, the girders bolted along; a grey trolley, the drum wound with rope.
+    S.paint(tex, ["truck_w", "truck_e", "bridge_n", "bridge_s", "hook_block"], yellow)
+    S.paint(tex, ["truck_w", "truck_e"], hazard, only=("north", "south"))
+    S.paint(tex, "hook_block", hazard, only=("north", "south", "east", "west"))
+    S.overlay(tex, ["bridge_n", "bridge_s"], lambda f, img: M.rivets(f, img, every=6, inset=1), only=("north", "south"))
+    S.paint(tex, "trolley", M.painted(M.GREY_PAINT_RAMP, tone=0.42, wear=0.3, rust=0.1))
+    S.paint(tex, "drum", M.steel(tone=0.55))
+    S.overlay(tex, "drum", lambda f, img: M.darken(img, (np.floor(f.X) % 2) == 0, 0.72), only=("north", "south", "up"))
+    S.paint(tex, ["cable_w", "cable_e"], M.Material(ramp=M.BLACK_RAMP, tone=0.45, dither=0.3, edge_light=0.25))
+    S.paint(tex, "hook", M.steel(tone=0.35))
 
 
 def main() -> None:

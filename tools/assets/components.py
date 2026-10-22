@@ -265,6 +265,53 @@ def boosted_fission_core() -> None:
     G.finish(m, t)
 
 
+def ball_at(m: BlockModel, name: str, cx: float, cz: float, r: float, y0: float) -> list[str]:
+    """As ball(), centred on (cx, cz)."""
+    boxes = []
+    rows = [(0.0, 0.25, 0.6), (0.25, 0.75, 0.92), (0.75, 1.25, 1.0), (1.25, 1.75, 0.92), (1.75, 2.0, 0.6)]
+    for i, (a, b, k) in enumerate(rows):
+        boxes += prism(m, f"{name}{i}", cx, cz, round(r * k, 2), round(r * k * 0.66, 2), y0 + a * r, y0 + b * r)
+    return boxes
+
+
+def twin_boosted_core() -> None:
+    """The Tsar's primary: two boosted lens spheres side by side on one long cradle, a copper firing bus over both (so
+    they go off together), a tritium bottle behind each, piped in."""
+    m = model("twin_boosted_core")
+    m.box("cradle", (1.6, 2, 6.2), (14.4, 3.4, 9.8))
+    m.box("foot_w", (1.6, 1, 4.6), (3.4, 2, 11.4))
+    m.box("foot_e", (12.6, 1, 4.6), (14.4, 2, 11.4))
+    shells = ball_at(m, "lens_w", 4.85, 8, 3.1, 3.4) + ball_at(m, "lens_e", 11.15, 8, 3.1, 3.4)
+    bottles = prism(m, "bottle_w", 5, 12.6, 1.1, 0.75, 3.4, 8.4) + prism(m, "bottle_e", 11, 12.6, 1.1, 0.75, 3.4, 8.4)
+    m.box("bus", (4.4, 9.6, 7.5), (11.6, 10.4, 8.5))
+    m.box("lead_w", (4.6, 8.8, 7.6), (5.4, 9.6, 8.4), faces=("north", "south", "east", "west"))
+    m.box("lead_e", (10.6, 8.8, 7.6), (11.4, 9.6, 8.4), faces=("north", "south", "east", "west"))
+    m.box("pipe", (4.6, 7.4, 12.0), (11.4, 8.0, 12.8))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    for n in ("cradle", "foot_w", "foot_e"):
+        m.paint_all(t, n, shaded(GUN))
+    TAN = fixed("lens_tan_t", "#3a2a14", "#5a4220", "#7a5c2e", "#9a7840", "#b89656", "#d0b274", "#e6d0a0")
+
+    def lenses(t: Tex, r, d):
+        x, y, w, h = r
+        t.rect(x, y, w, h, TAN[{"up": 5, "down": 2, "north": 4, "west": 4}.get(d, 3)])
+        for xx in range(x + 2, x + w, 3):
+            t.vline(xx, y, h, TAN[1])
+        if d in SIDES:
+            for yy in range(y + 1, y + h, 3):
+                t.hline(x, yy, w, TAN[1])
+    fill_all(m, t, shells, lenses)
+    fill_all(m, t, bottles, banded(P.CHERENKOV, [(6, WHITE_STRIPE)], 8.4, 3.4))
+    for n in ("bus", "lead_w", "lead_e", "pipe"):
+        m.paint_all(t, n, shaded(P.COPPER))
+    # A yellow and black band along the cradle's front: it is the bigger bomb's primary.
+    x, y, w, h = m.rect("cradle", "north")
+    for i in range(w):
+        t.px(x + i, y + h // 2, YELLOW[4] if (i // 2) % 2 == 0 else BLACK[2])
+    G.finish(m, t)
+
+
 def neutron_core() -> None:
     """A small pit in a cage of tungsten reflector bars, glowing cyan through the gaps, on a base plate."""
     m = model("neutron_core")
@@ -570,7 +617,7 @@ CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispense
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
-STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage"]
+STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"]
 
 
 def main() -> None:
@@ -602,6 +649,7 @@ def main() -> None:
     cobalt_jacket()
     intercontinental_booster()
     tertiary_stage()
+    twin_boosted_core()
     G.item_defs(CORES + CASINGS + FUZES + STRATEGIC)
     print("components written")
 

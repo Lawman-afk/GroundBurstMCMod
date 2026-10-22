@@ -78,8 +78,8 @@ final class BlastFx {
             this.dustRadius = frontRadius(t);
             this.fireballSmoked = t > this.preset.fireballLife() * 0.55;
             this.smokeSent = smokeDue(t);
-            if (this.mushroom != null && t < this.preset.mushroom()) {
-                this.mushroom.prefill(t);
+            if (this.mushroom != null) {
+                this.mushroom.prefill(t);                    // it is still running, so the cloud still stands (it waits for the crater)
             }
         } else {
             sampleCrater(level);

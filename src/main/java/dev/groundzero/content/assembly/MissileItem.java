@@ -26,6 +26,8 @@ public class MissileItem extends Item {
     private static final String T_HARDENED = GZLang.add(GroundZero.MODID + ".missile.tip.hardened", "Hardened against EMP");
     private static final String T_NUCLEAR = GZLang.add(GroundZero.MODID + ".missile.tip.nuclear", "Nuclear: fires from a Launch Complex or a Missile Silo");
     static final String T_NAMED = GZLang.add(GroundZero.MODID + ".missile.named", "%s Missile");
+    /** An intercontinental missile is a whole weapon, named by its warhead (so a search for "Tsar" finds it). */
+    static final String T_NAMED_ICBM = GZLang.add(GroundZero.MODID + ".missile.named_icbm", "Intercontinental Missile (%s)");
 
     public MissileItem(Properties properties) {
         super(properties.stacksTo(1));
@@ -35,11 +37,15 @@ public class MissileItem extends Item {
         return stack.get(GZDataComponents.MISSILE.get());
     }
 
-    /** "Heavy Missile", by its body. */
+    /** "Heavy Missile", by its body; an intercontinental one by its warhead: "Intercontinental Missile (Tsar Mega-bomb)". */
     @Override
     public Component getName(ItemStack stack) {
         MissileSpec s = spec(stack);
-        return s == null ? super.getName(stack) : Component.translatable(T_NAMED, Component.translatable(MissileParts.bodyName(s.body())));
+        if (s == null) {
+            return super.getName(stack);
+        }
+        return s.intercontinental() && !s.warhead().isEmpty() ? Component.translatable(T_NAMED_ICBM, s.warhead().getHoverName())
+                : Component.translatable(T_NAMED, Component.translatable(MissileParts.bodyName(s.body())));
     }
 
     @Override

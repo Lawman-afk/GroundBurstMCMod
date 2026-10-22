@@ -129,7 +129,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     /**
      * Whether it can fire this missile: the Launch Silo none that needs more (a nuclear warhead, a Strategic or an
-     * intercontinental airframe); the Launch Complex any; the Missile Silo any but an intercontinental one.
+     * intercontinental airframe); the Launch Complex and the Missile Silo any.
      */
     public boolean accepts(dev.groundzero.content.assembly.MissileSpec spec) {
         return !spec.needsComplex();

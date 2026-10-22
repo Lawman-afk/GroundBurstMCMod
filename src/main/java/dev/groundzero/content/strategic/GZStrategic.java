@@ -49,6 +49,9 @@ public final class GZStrategic {
     /** Slice 8d: the Tsar's third stage. */
     public static final DeferredItem<StrategicPart> TERTIARY_STAGE = part("tertiary_stage", "Tertiary Stage",
             "In place of a jacket: a third fusion stage in a lead radiation channel, for a Tsar Mega-bomb");
+    /** The Tsar's primary (after the user's look at 9b): one boosted core is too small a spark for three stages. */
+    public static final DeferredItem<StrategicPart> TWIN_BOOSTED_CORE = part("twin_boosted_core", "Twin Boosted Core",
+            "The Tsar's primary: two boosted fission cores fired together");
 
     /**
      * The Strategic Assembly Hall: a 7x13 floor of Launch Pad (the controller at the front middle; an Energy Port at the

@@ -22,7 +22,8 @@ import net.minecraft.world.item.ItemStack;
 /**
  * JEI category for the Strategic Assembly Hall (DESIGN.md §15.2): a Boosted Fission Core, a Fusion Secondary and an
  * Intercontinental Booster (with the guidance and Hardened Electronics optional) make an intercontinental missile with
- * a Thermonuclear Warhead; a Cobalt-59 Jacket as well makes it a Cobalt Warhead, a Tertiary Stage the Tsar Mega-bomb.
+ * a Thermonuclear Warhead; a Cobalt-59 Jacket as well makes it a Cobalt Warhead, a Tertiary Stage (with a Twin Boosted
+ * Core for the primary) the Tsar Mega-bomb.
  * Laid out like the hall's screen.
  */
 final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.Recipe> {
@@ -52,11 +53,16 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
         return java.util.Arrays.stream(Weapon.values()).map(Recipe::new).toList();
     }
 
+    /** The missile a recipe makes (with GPS guidance): also listed in JEI, one per warhead, for its recipe. */
+    static ItemStack output(Recipe recipe) {
+        return StrategicAssembly.assemble(recipe.option(), new ItemStack(GZAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY);
+    }
+
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addInputSlot(1, 1).setStandardSlotBackground().add(GZAssembly.BOOSTED_FISSION_CORE.get());
-        builder.addInputSlot(19, 1).setStandardSlotBackground().add(GZStrategic.FUSION_SECONDARY.get());
         ItemStack option = recipe.option();
+        builder.addInputSlot(1, 1).setStandardSlotBackground().add(StrategicAssembly.primaryFor(option));
+        builder.addInputSlot(19, 1).setStandardSlotBackground().add(GZStrategic.FUSION_SECONDARY.get());
         if (!option.isEmpty()) {
             builder.addInputSlot(37, 1).setStandardSlotBackground().add(option);
         }
@@ -66,8 +72,7 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
         builder.addInputSlot(37, 21).setStandardSlotBackground().add(GZAssembly.HARDENED_ELECTRONICS.get())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addOutputSlot(100, 11).setOutputSlotBackground()
-                .add(StrategicAssembly.assemble(option, new ItemStack(GZAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY));
+        builder.addOutputSlot(100, 11).setOutputSlotBackground().add(output(recipe));
     }
 
     @Override

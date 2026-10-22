@@ -83,9 +83,9 @@ public class StrategicAssemblyScreen extends MachineScreen {
 
     /** What the column shows: the missile the parts make once they are all there, otherwise whatever waits in the output. */
     private ItemStack subject() {
-        boolean parts = slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(dev.groundzero.content.assembly.GZAssembly.BOOSTED_FISSION_CORE.get())
-                && slot(StrategicAssemblyBlockEntity.SLOT_SECONDARY).is(GZStrategic.FUSION_SECONDARY.get())
-                && slot(StrategicAssemblyBlockEntity.SLOT_BOOSTER).is(GZStrategic.INTERCONTINENTAL_BOOSTER.get());
+        var problem = StrategicAssembly.check(slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY), slot(StrategicAssemblyBlockEntity.SLOT_SECONDARY),
+                slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_BOOSTER), ItemStack.EMPTY);
+        boolean parts = problem == StrategicAssembly.Problem.NONE;
         return parts ? StrategicAssembly.assemble(slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_GUIDANCE),
                 slot(StrategicAssemblyBlockEntity.SLOT_MODULE)) : slot(StrategicAssemblyBlockEntity.SLOT_OUTPUT);
     }
