@@ -17,7 +17,12 @@ public enum GasAgent {
     /** Chlorine: the gas grenade's and gas warhead's yellow-green cloud. Heavy; gone in about half a minute. */
     CHLORINE(0xC6DA5E, 1.0f, 100, Toxins.GAS, 0.45f, 0.022f),
     /** Anthrax: the chemical warhead's pale green cloud. Heavy, slow to clear (about a minute and a half), and harsher. */
-    ANTHRAX(0x9CE070, 2.0f, 160, Toxins.TOXIN, 0.4f, 0.010f);
+    ANTHRAX(0x9CE070, 2.0f, 160, Toxins.TOXIN, 0.4f, 0.010f),
+    /**
+     * The GLA's toxin, a toxin SCUD's vivid green cloud (DESIGN.md §19.5): heavy, the harshest of them, and slow to clear
+     * (two minutes and more), the game's "prolonged contamination".
+     */
+    SCUD_TOXIN(0x76E83C, 2.5f, 200, Toxins.TOXIN, 0.45f, 0.007f);
 
     public final int colour;
     public final float damage;

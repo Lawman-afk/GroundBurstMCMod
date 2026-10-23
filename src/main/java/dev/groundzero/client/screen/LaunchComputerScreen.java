@@ -69,7 +69,12 @@ public class LaunchComputerScreen extends Screen {
             GZLang.add(GroundZero.MODID + ".computer.silo.no_power", "No Power"),
             GZLang.add(GroundZero.MODID + ".computer.silo.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".computer.silo.counting", "T-%s"),
-            GZLang.add(GroundZero.MODID + ".computer.silo.blocked", "Hatch Blocked")};
+            GZLang.add(GroundZero.MODID + ".computer.silo.blocked", "Hatch Blocked"),
+            GZLang.add(GroundZero.MODID + ".computer.silo.charging", "Charging %s")};
+    /** The superweapons' names in the list (LaunchSite.Kind order, the launcher none). */
+    private static final String[] T_KIND = {"",
+            GZLang.add(GroundZero.MODID + ".computer.kind.scud_storm", "SCUD Storm"),
+            GZLang.add(GroundZero.MODID + ".computer.kind.nuclear_missile", "Nuclear Missile")};
 
     private static final int W = 336, H = 214, MAP = 184;
     /** The right-hand column: its left edge (from the panel's) and width; the silo list's rows. */
@@ -461,8 +466,14 @@ public class LaunchComputerScreen extends Screen {
             }
             int r = Mth.clamp(silo.readiness(), 0, T_SILO_STATE.length - 1);
             boolean counting = r == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+            boolean charging = r == LaunchSiloBlockEntity.Readiness.CHARGING.ordinal();
             Component state = counting ? Component.translatable(T_SILO_STATE[r], (silo.countdown() + 19) / 20)
+                    : charging ? Component.translatable(T_SILO_STATE[r], clock(silo.countdown()))
                     : silo.armed() ? Component.translatable(T_ARMED) : Component.translatable(T_SILO_STATE[r]);
+            int kind = Mth.clamp(silo.kind(), 0, T_KIND.length - 1);
+            if (kind > 0) {                                            // a superweapon: its name first
+                state = Component.translatable(T_KIND[kind]).append(" ").append(state);
+            }
             boolean down = r == LaunchSiloBlockEntity.Readiness.EMP.ordinal() || r == LaunchSiloBlockEntity.Readiness.HALTED.ordinal()
                     || r == LaunchSiloBlockEntity.Readiness.BLOCKED.ordinal();
             int color = counting || down ? AMBER : silo.armed() ? RED : ready(silo) ? BRIGHT : DIM;
@@ -483,6 +494,12 @@ public class LaunchComputerScreen extends Screen {
             g.fill(x + CW - 3, y + 1, x + CW - 1, y + h - 1, 0xFF0E2A16);
             g.fill(x + CW - 3, ty, x + CW - 1, ty + thumb, DIM);
         }
+    }
+
+    /** Ticks as a clock, M:SS (a superweapon's charge). */
+    private static String clock(int ticks) {
+        int s = Math.max(0, (ticks + 19) / 20);
+        return s / 60 + ":" + String.format(java.util.Locale.ROOT, "%02d", s % 60);
     }
 
     @Override

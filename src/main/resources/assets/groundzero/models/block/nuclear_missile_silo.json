@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundzero:block/nuclear_missile_silo_front",
+    "side": "groundzero:block/nuclear_missile_silo_side",
+    "top": "groundzero:block/nuclear_missile_silo_top"
+  }
+}

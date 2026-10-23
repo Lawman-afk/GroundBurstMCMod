@@ -57,6 +57,12 @@ public final class GZMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> MISSILE_ASSEMBLER = machine("missile_assembler",
             () -> MachineLayouts.MISSILE_ASSEMBLER);
 
+    /** The superweapons' controller screen (DESIGN.md §19.5), shared: titled with the controller's name. */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> SUPERWEAPON = machine("superweapon", () -> MachineLayouts.SUPERWEAPON);
+    /** The ammunition factories' screens (DESIGN.md §19.5): the Arms Dealer's four parts, the War Factory's five. */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ARMS_DEALER = machine("arms_dealer", () -> MachineLayouts.ARMS_DEALER);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> WAR_FACTORY = machine("war_factory", () -> MachineLayouts.WAR_FACTORY);
+
     private GZMenus() {}
 
     @SuppressWarnings("unchecked")

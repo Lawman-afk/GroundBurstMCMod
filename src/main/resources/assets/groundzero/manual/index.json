@@ -7,6 +7,7 @@
     "components",
     "nuclear",
     "ordnance",
+    "superweapons",
     "safety"
   ],
   "entries": [
@@ -65,6 +66,11 @@
     "ordnance/strategic_assembly",
     "ordnance/radar_array",
     "ordnance/chemical",
+    "superweapons/scud_storm",
+    "superweapons/toxin",
+    "superweapons/nuclear_missile_silo",
+    "superweapons/arms_dealer",
+    "superweapons/war_factory",
     "safety/decontamination_shower",
     "safety/chemical_hazards",
     "safety/reactor_safety",

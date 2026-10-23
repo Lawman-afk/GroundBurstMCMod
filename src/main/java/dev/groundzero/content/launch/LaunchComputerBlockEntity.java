@@ -63,22 +63,22 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     }
 
     /** A silo this computer runs (it formed and powered, the silo within its reach), or null. */
-    private @Nullable LaunchSiloBlockEntity linked(ServerLevel level, BlockPos silo) {
+    private @Nullable LaunchSite linked(ServerLevel level, BlockPos silo) {
         if (!isFormed() || !this.powered || silo.distSqr(this.worldPosition) > (double) Launches.LINK_RANGE * Launches.LINK_RANGE) {
             return null;
         }
-        return level.getBlockEntity(silo) instanceof LaunchSiloBlockEntity s ? s : null;
+        return level.getBlockEntity(silo) instanceof LaunchSite s ? s : null;
     }
 
     /** Aims one silo. */
     public boolean setTarget(ServerLevel level, BlockPos silo, int x, int z) {
-        LaunchSiloBlockEntity s = linked(level, silo);
+        LaunchSite s = linked(level, silo);
         return s != null && s.setTarget(x, z);
     }
 
     /** Arms one silo (it must be ready, with a target in range) or makes it safe. */
     public boolean arm(ServerLevel level, BlockPos silo, boolean on) {
-        LaunchSiloBlockEntity s = linked(level, silo);
+        LaunchSite s = linked(level, silo);
         return s != null && s.arm(on);
     }
 
@@ -88,7 +88,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
             return 0;
         }
         int n = 0;
-        for (LaunchSiloBlockEntity s : Launches.silosNear(level, this.worldPosition)) {
+        for (LaunchSite s : Launches.silosNear(level, this.worldPosition)) {
             if (s.launchArmed(level, by)) {
                 n++;
             }
@@ -207,10 +207,10 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     private void sendScope(ServerLevel level, ServerPlayer player) {
         List<LaunchPayloads.Silo> silos = new ArrayList<>();
         if (isFormed()) {
-            for (LaunchSiloBlockEntity s : Launches.silosNear(level, this.worldPosition)) {
+            for (LaunchSite s : Launches.silosNear(level, this.worldPosition)) {
                 BlockPos t = s.target();
                 silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.readiness().ordinal(), s.countdown(), s.armed(), t != null,
-                        t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), s.range()));
+                        t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), s.range(), s.siteKind().ordinal()));
             }
         }
         List<LaunchPayloads.Contact> contacts = new ArrayList<>();

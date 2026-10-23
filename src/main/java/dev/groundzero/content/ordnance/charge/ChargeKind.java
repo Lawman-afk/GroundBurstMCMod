@@ -86,7 +86,19 @@ public enum ChargeKind {
      * wrecks to 380, burns to 450, deadly to 450, injures to 700; contamination 600 blocks round for three days). Built
      * whole like the thermonuclear warhead, a Tertiary Stage in place of the jacket.
      */
-    TSAR_WARHEAD("tsar_warhead", 10, true);
+    TSAR_WARHEAD("tsar_warhead", 10, true),
+    // The superweapons' warheads (DESIGN.md §19.5): never built on their own, only whole into their superweapon's
+    // ammunition at its factory, and fired only by that superweapon.
+    /**
+     * A toxin SCUD's warhead (the GLA's SCUD Storm fires nine): a heavy blast, then a cloud of toxin welling up out of
+     * the crater and a front of glowing anthrax residue spreading out over the ground round it.
+     */
+    SCUD_STORM_WARHEAD("scud_storm_warhead", 10, true),
+    /**
+     * China's Nuclear Missile's warhead: a nuclear blast between the fission and the boosted fission warheads', and the
+     * game's radiation field round it (contamination 200 blocks round for two days).
+     */
+    NUCLEAR_MISSILE_WARHEAD("nuclear_missile_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -123,18 +135,26 @@ public enum ChargeKind {
         this.bomb = bomb;
     }
 
-    /**
-     * A cluster warhead: carried by a missile, it bursts high over its target and rains its submunitions down over a
-     * wide area (set off on the ground, it throws them out round itself).
-     */
+    /** A nuclear warhead: its full yield only when a missile delivers it; set off any other way it fizzles. */
     public boolean nuclear() {
-        return this == TACTICAL_NUCLEAR_WARHEAD || this == FISSION_WARHEAD || this == BOOSTED_FISSION_WARHEAD || this == NEUTRON_WARHEAD
-                || wholeWeapon();
+        return switch (this) {
+            case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD,
+                 TSAR_WARHEAD, NUCLEAR_MISSILE_WARHEAD -> true;
+            default -> false;
+        };
     }
 
-    /** A warhead only the Strategic Assembly Hall builds, whole, into its intercontinental missile. */
+    /**
+     * A warhead only ever built whole into its missile: the Strategic Assembly Hall's intercontinental ones, and the
+     * superweapons' ammunition.
+     */
     public boolean wholeWeapon() {
-        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD || this == TSAR_WARHEAD;
+        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD || this == TSAR_WARHEAD || superweapon();
+    }
+
+    /** A superweapon's warhead (DESIGN.md §19.5): only its superweapon fires it. */
+    public boolean superweapon() {
+        return this == SCUD_STORM_WARHEAD || this == NUCLEAR_MISSILE_WARHEAD;
     }
 
     /** It leaves fallout (contamination): the nuclear warheads, and the dirty one. */
@@ -142,6 +162,10 @@ public enum ChargeKind {
         return nuclear() || this == DIRTY_WARHEAD;
     }
 
+    /**
+     * A cluster warhead: carried by a missile, it bursts high over its target and rains its submunitions down over a
+     * wide area (set off on the ground, it throws them out round itself).
+     */
     public boolean airburst() {
         return this == CLUSTER_WARHEAD || this == GAS_WARHEAD || this == SMOKE_WARHEAD || this == CRYO_WARHEAD || this == EMP_WARHEAD;
     }

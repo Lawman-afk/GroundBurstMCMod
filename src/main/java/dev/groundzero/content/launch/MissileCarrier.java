@@ -18,6 +18,15 @@ public interface MissileCarrier {
     @Nullable Shown shownMissile();
 
     /**
+     * Every missile its model shows now, each at its own bone (a superweapon's rack of them); by default the one
+     * {@link #shownMissile} gives.
+     */
+    default List<Shown> shownMissiles() {
+        Shown shown = shownMissile();
+        return shown == null ? List.of() : List.of(shown);
+    }
+
+    /**
      * The arms that hold the shown missile (DESIGN.md §10.4): every missile is its own length and girth, so each arm's
      * collar slides up its spine to its place on the missile and its beam telescopes in to the missile's skin (worked out
      * on the client from the missile's shape, MachineGeoRenderer). None: nothing holds it.

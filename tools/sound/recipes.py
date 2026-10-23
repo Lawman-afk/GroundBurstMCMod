@@ -843,8 +843,77 @@ def silo_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def superweapon_sounds() -> dict[str, np.ndarray]:
+    """The superweapons (DESIGN.md §19.5): the warning tone everyone in the dimension hears when one is built or launched
+    (the game's announcer's alert: three rising whoops over a radio's narrow band), the chime when one is ready, and the
+    SCUD Storm's erectors raising their missiles (a pump spinning up, the rams' whine climbing, creaks, the lock home)."""
+    out = {}
+    # Warning: three whoops, each a sweep up through a buzzy square-ish tone, through a radio's band with a little crackle.
+    length = 2.2
+    n = int(length * S.SR)
+    alert = np.zeros(n)
+    for k in range(3):
+        seg = 0.52
+        t = S.t_axis(seg)
+        f = 330 + 620 * (t / seg) ** 1.4
+        phase = 2 * np.pi * np.cumsum(f) / S.SR
+        tone = np.sin(phase) + 0.5 * np.sin(3 * phase) + 0.3 * np.sin(5 * phase) + 0.18 * np.sin(7 * phase)
+        env = S.adsr(len(t), 0.02, 0.05, 0.9, 0.08)
+        alert += S.place(S.saturate(tone * env * 0.55, 1.8), 0.08 + k * 0.66, length)
+    crackle = S.highpass(S.grains(length, rate=40, grain_ms=4, seed=901), 2500) * 0.05
+    radio = S.bandpass(alert + crackle, 300, 3400)
+    out["superweapon/warning"] = S.normalize(S.fade(S.reverb(radio, seconds=0.6, mix=0.15, seed=902)[:n], 0.0, 0.1), -2)
+    # Ready: a bright rising arpeggio of three bell-like notes, held, over the same radio band.
+    length = 1.8
+    n = int(length * S.SR)
+    chime = np.zeros(n)
+    for k, freq in enumerate((523.25, 659.25, 783.99)):
+        t = S.t_axis(length - k * 0.16)
+        bell = (np.sin(2 * np.pi * freq * t) + 0.35 * np.sin(2 * np.pi * freq * 2.01 * t) * np.exp(-t / 0.3)
+                + 0.15 * np.sin(2 * np.pi * freq * 3.02 * t) * np.exp(-t / 0.15)) * np.exp(-t / 0.9)
+        chime += S.place(bell * 0.5, k * 0.16, length)
+    out["superweapon/ready"] = S.normalize(S.fade(S.reverb(S.bandpass(chime, 250, 5000), seconds=0.8, mix=0.2, seed=903)[:n], 0.0, 0.2), -3)
+    # The erectors: the hydraulic pump spinning up and running, the rams' whine climbing as they push, the booms creaking,
+    # and the locks clanking home as the SCUDs stand upright (at 3 s).
+    length = 3.6
+    t = S.t_axis(length)
+    N = len(t)
+    run = S.breakpoints(N, [(0, 0), (0.25, 1), (3.0, 1), (3.15, 0.2), (length, 0)])
+    f = 48 + 10 * np.clip(t / 0.4, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    pump = S.highpass(S.lowpass(0.6 * np.sin(phase) + 0.6 * np.sin(2 * phase) + 0.45 * np.sin(3 * phase) + 0.3 * np.sin(5 * phase), 600), 70) * 0.3
+    whine_f = 380 + 260 * np.clip((t - 0.2) / 2.8, 0, 1)
+    whine = S.bandpass(np.sin(2 * np.pi * np.cumsum(whine_f) / S.SR) + 0.4 * np.sin(4 * np.pi * np.cumsum(whine_f) / S.SR), 250, 2000) * 0.35
+    hiss = S.bandpass(S.white(length, 911), 2500, 7000) * 0.06
+    creak = S.bandpass(S.grains(length, rate=6, grain_ms=60, seed=912), 300, 1200) * 0.5
+    hit = S.white(0.8, 913) * S.exp_decay(int(0.8 * S.SR), 0.01)
+    lock = (S.resonator(hit, 340, q=35) * 1.6 + S.resonator(hit, 900, q=40) * 0.8 + S.lowpass(S.white(0.8, 914), 150) * S.exp_decay(int(0.8 * S.SR), 0.06) * 2.5)
+    body = (pump + whine + hiss) * run + creak * run + S.place(lock * 3.5, 3.02, length) + S.place(lock * 2.6, 3.14, length)
+    out["superweapon/scud_erect"] = S.normalize(S.fade(S.reverb(body, seconds=0.8, mix=0.18, seed=915)[:N], 0.02, 0.2), -2)
+    # The Nuclear Missile Silo: the roof's motors grinding its four sections open one after another (clanking home at
+    # their stops), then the erector's pumps and the long heavy groan of the rams raising the missile, its lock home, and
+    # the arm's latch.
+    length = 6.8
+    t = S.t_axis(length)
+    N = len(t)
+    roof_run = S.breakpoints(N, [(0, 0), (0.15, 1), (1.9, 1), (2.1, 0), (length, 0)])
+    gear_f = 85 + 15 * np.sin(2 * np.pi * 0.7 * t)
+    gear = S.bandpass(np.sin(2 * np.pi * np.cumsum(gear_f) / S.SR) * 0.5 + np.sin(2 * np.pi * 3 * np.cumsum(gear_f) / S.SR) * 0.3, 60, 1200)
+    rattle = S.bandpass(S.grains(length, rate=18, grain_ms=25, seed=921), 400, 2500) * 0.25
+    stops = sum(S.place(lock * (1.6 - 0.2 * i), 1.75 + 0.15 * i, length) for i in range(4))
+    erect_run = S.breakpoints(N, [(0, 0), (1.4, 0), (1.7, 1), (5.4, 1), (5.6, 0.2), (length, 0)])
+    groan_f = 110 + 50 * np.clip((t - 1.6) / 3.8, 0, 1)
+    groan = S.lowpass(np.sin(2 * np.pi * np.cumsum(groan_f) / S.SR) + 0.6 * np.sin(4 * np.pi * np.cumsum(groan_f) / S.SR), 900) * 0.5
+    pumps = S.highpass(S.lowpass(S.brown(length, 922), 500), 60) * 0.6
+    creaks = S.bandpass(S.grains(length, rate=4, grain_ms=90, seed=923), 200, 900) * 0.6
+    body = ((gear + rattle) * roof_run + (groan + pumps + creaks) * erect_run + stops + S.place(lock * 3.2, 5.5, length)
+            + S.place(lock * 1.2, 6.45, length))
+    out["superweapon/nuclear_erect"] = S.normalize(S.fade(S.reverb(body, seconds=1.0, mix=0.2, seed=924)[:N], 0.02, 0.25), -2)
+    return out
+
+
 RECIPES = [geiger_clicks, nuke_set, tsar_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds, silo_sounds]
+           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds]
 
 
 def build_sounds() -> list[Path]:

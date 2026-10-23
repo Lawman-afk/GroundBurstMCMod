@@ -4,7 +4,7 @@ Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `block
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
 **Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
-**Last updated:** 2026-10-23
+**Last updated:** 2026-10-23 (superweapons: the SCUD Storm and the Nuclear Missile, the Arms Dealer and the War Factory; 241/241 GameTests)
 
 ---
 
@@ -26,7 +26,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | todo |
 | 12 | Aftermath: radiation, fallout, EMP fields, terrain, wasteland, gear, medical | todo |
 | 13 | Guns | todo |
-| 14 | Superweapons + Zero Hour doctrine modules | todo |
+| 14 | Superweapons + Zero Hour doctrine modules | **in progress** (2026-10-23: the SCUD Storm and the Nuclear Missile with their factories, the Arms Dealer and the War Factory; the toxin strike) — needs the user's in-game look; Particle Uplink Cannon and doctrine modules todo |
 | 15 | World structures & loot | todo |
 | 16 | Field Manual & JEI | in progress (Field Manual built early, 2026-10-20; JEI categories exist since Phase 4) |
 | 17 | Polish pass (every model, texture, sound, effect) + performance pass | todo |
@@ -276,12 +276,13 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 14 — Superweapons
 | Item | Status |
 |---|---|
-| Superweapon base (charge, power, announcements, controller GUI, doctrine + upgrade slots) | todo |
+| Superweapon base (charge, power, announcements, controller GUI, Launch Computer firing) | done 2026-10-23 — needs in-game test (doctrine + upgrade slots todo) |
 | Particle Uplink Cannon (structure, charge visuals, steerable beam, trench, remote) | todo |
-| Nuclear Missile Silo (doors, elevator, plume, silo nuke) | todo |
-| SCUD Storm (rack raise, 9-missile barrage, anthrax) | todo |
+| Nuclear Missile Silo (C&C's coffin: roof opening, erector, DF-5, 200-block radiation field) | done 2026-10-23 — needs in-game test |
+| SCUD Storm (erectors raising nine SCUDs, the barrage, toxin cloud and anthrax residue) | done 2026-10-23 — needs in-game test |
+| Ammunition factories: Arms Dealer (Toxin SCUD), War Factory (Nuclear Missile) | done 2026-10-23 — needs in-game test |
 | Doctrine modules (10) + generic upgrades (4) | todo |
-| Creative structure spawners | todo |
+| Creative structure spawners | done for the four built |
 
 ## Phase 15 — Structures & loot
 | Item | Status |

@@ -1111,6 +1111,110 @@
           "type": "minecraft:model",
           "model": "groundzero:item/missile/tsar_warhead_stage2"
         }
+      },
+      {
+        "when": [
+          "scud_storm_warhead",
+          "strategic_scud_storm_warhead",
+          "icbm_scud_storm_warhead",
+          "flight_scud_storm_warhead",
+          "flight_strategic_scud_storm_warhead",
+          "flight_icbm_scud_storm_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/scud_storm_warhead"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/scud_storm_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/scud_storm_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/scud_storm_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead",
+          "strategic_nuclear_missile_warhead",
+          "icbm_nuclear_missile_warhead",
+          "flight_nuclear_missile_warhead",
+          "flight_strategic_nuclear_missile_warhead",
+          "flight_icbm_nuclear_missile_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_s1",
+          "strategic_nuclear_missile_warhead_s1",
+          "icbm_nuclear_missile_warhead_s1",
+          "flight_strategic_nuclear_missile_warhead_s1",
+          "flight_icbm_nuclear_missile_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/nuclear_missile_warhead_stage1"
+        }
       }
     ],
     "fallback": {

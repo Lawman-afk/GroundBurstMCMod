@@ -44,12 +44,15 @@ import com.geckolib.util.GeckoLibUtil;
  * the back of the pad) and runs a 10 s countdown with a siren, then the missile lights and lifts off the pad. An armed
  * silo that stops being ready (power, missile or warhead gone) disarms itself.
  */
-public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, MissileCarrier {
+public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, MissileCarrier, LaunchSite {
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
     public static final int SLOT_MISSILE = 0;
     private static final int RECHECK_INTERVAL = 40;
-    /** What the silo can do right now (shown on its screen and the computer's). BLOCKED: the way up is not clear. */
-    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_POWER, READY, COUNTING, BLOCKED }
+    /**
+     * What a launch site can do right now (shown on its screen and the computer's). BLOCKED: the way up is not clear;
+     * CHARGING: a superweapon readying its strike (§19.5).
+     */
+    public enum Readiness { NOT_FORMED, EMP, HALTED, NO_MISSILE, NO_POWER, READY, COUNTING, BLOCKED, CHARGING }
 
     private static final String[] T_STATE = {
             GZLang.add(GroundZero.MODID + ".silo.state.not_formed", "Structure incomplete"),
@@ -59,7 +62,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             GZLang.add(GroundZero.MODID + ".silo.state.no_power", "No power: needs %sk FE"),
             GZLang.add(GroundZero.MODID + ".silo.state.ready", "READY"),
             GZLang.add(GroundZero.MODID + ".silo.state.counting", "LAUNCH IN %s"),
-            GZLang.add(GroundZero.MODID + ".silo.state.blocked", "Hatch blocked")};
+            GZLang.add(GroundZero.MODID + ".silo.state.blocked", "Hatch blocked"),
+            GZLang.add(GroundZero.MODID + ".silo.state.charging", "Charging: %s")};
     private static final String T_ARMED = GZLang.add(GroundZero.MODID + ".silo.state.armed", "ARMED");
     private static final String T_HINT = GZLang.add(GroundZero.MODID + ".silo.hint", "Launch from a Launch Computer");
     private static final String T_WARHEAD = GZLang.add(GroundZero.MODID + ".silo.warhead", "Warhead: %s");
@@ -141,11 +145,13 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** How far the loaded missile flies (0: none loaded). */
+    @Override
     public int range() {
         var spec = missile();
         return spec == null ? 0 : spec.range();
     }
 
+    @Override
     public Readiness readiness() {
         if (!isFormed()) {
             return Readiness.NOT_FORMED;
@@ -168,6 +174,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return this.energy.stored() < launchCost() ? Readiness.NO_POWER : Readiness.READY;
     }
 
+    @Override
     public int countdown() {
         return this.countdown;
     }
@@ -179,15 +186,18 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
     }
 
+    @Override
     public @Nullable BlockPos target() {
         return this.target;
     }
 
+    @Override
     public boolean armed() {
         return this.armed;
     }
 
     /** Aims the silo (not while it counts down). */
+    @Override
     public boolean setTarget(int x, int z) {
         if (this.countdown >= 0) {
             return false;
@@ -206,6 +216,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** Arms (only a ready silo with a target in range) or makes safe. */
+    @Override
     public boolean arm(boolean on) {
         if (on && (readiness() != Readiness.READY || this.target == null || !inRange(this.target))) {
             return false;
@@ -216,6 +227,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** Fires if armed: the countdown to launch at its target. */
+    @Override
     public boolean launchArmed(ServerLevel level, @Nullable Entity by) {
         return this.armed && this.target != null && launch(level, this.target, by);
     }

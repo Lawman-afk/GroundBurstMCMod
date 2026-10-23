@@ -170,7 +170,25 @@ public final class FxPhotographer {
                 // Strategic missile's and the intercontinental missile's.
                 new Scene("missiles0", "missiles0", 8, -6, List.of(20)),
                 new Scene("missiles1", "missiles1", 8, -6, List.of(20)),
-                new Scene("missiles2", "missiles2", 9, -14, List.of(20)))) {
+                new Scene("missiles2", "missiles2", 9, -14, List.of(20)),
+                // The superweapons (DESIGN.md §19.5). The SCUD Storm, charged with nine Toxin SCUDs, launched at clock 25:
+                // its erectors raising them, the countdown, the nine lighting one after another and climbing away; from the
+                // air too. A SCUD strike close up: three toxin SCUDs coming down 0.6 s apart, the blasts, the toxin welling
+                // up and its residue spreading out over the ground, the cloud drifting.
+                new Scene("scud_storm", "scud_storm", 34, 16, List.of(20, 90, 228, 245, 270, 300, 330)),
+                new Scene("scud_storm_aerial", "scud_storm", 30, 34, List.of(20, 90, 240, 290)),
+                new Scene("scud_strike", "scud_strike", 26, 14, List.of(27, 36, 46, 60, 90, 160, 400)),
+                new Scene("scud_strike_aerial", "scud_strike", 22, 40, List.of(46, 90, 400)),
+                // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
+                // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
+                new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
+                new Scene("nuke_silo_aerial", "nuke_silo", 26, 34, List.of(20, 150, 235)),
+                // The ammunition factories at work, their parts loaded: the Arms Dealer laying a Toxin SCUD out section by
+                // section on its trestles under its hoist; the War Factory its Nuclear Missile under its gantry crane.
+                // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
+                // from its yard's side, the missile's length across the view.
+                new Scene("factory_arms", "factory_arms", 2, 42, List.of(60, 200, 420, 640)),
+                new Scene("factory_war", "factory_war", 5, 36, List.of(60, 500, 900, 1260)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -588,6 +606,62 @@ public final class FxPhotographer {
     }
 
     private static net.minecraft.core.BlockPos radarAt;
+    private static net.minecraft.core.BlockPos scudAt;
+
+    /**
+     * The SCUD Storm (DESIGN.md §19.5) facing the camera (its pad running away east), nine Toxin SCUDs loaded, charged,
+     * aimed 170 blocks off and armed (the scene launches it at clock 25).
+     */
+    /** China's Nuclear Missile Silo (DESIGN.md §19.5) facing the camera, its missile loaded, charged, aimed 600 blocks off. */
+    private static void nukeSiloSite(ServerLevel level, int x, int ground) {
+        scudAt = new net.minecraft.core.BlockPos(x + 2, ground, 0);
+        formed(level, scudAt, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_CONTROLLER.block().get(),
+                dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE, net.minecraft.core.Direction.WEST);
+        if (level.getBlockEntity(scudAt) instanceof dev.groundzero.content.superweapon.NuclearMissileBlockEntity be) {
+            be.revalidate();
+            be.inventory().setItem(dev.groundzero.content.superweapon.SuperweaponBlockEntity.SLOT_AMMO,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_ROUND.get()));
+            be.energy().generate(400_000);
+            be.chargeForTest();
+            be.setTarget(x + 600, -300);
+            be.arm(true);
+        }
+    }
+
+    /**
+     * An ammunition factory (DESIGN.md §19.5), its parts loaded and powered: it sets to work at once. The Arms Dealer
+     * faces the camera; the War Factory faces south, so its yard (on its right) is nearest the camera and its missile
+     * lies across the view, the hall and the annex behind it.
+     */
+    private static void factorySite(ServerLevel level, int x, int ground, boolean arms) {
+        var at = arms ? new net.minecraft.core.BlockPos(x + 2, ground, 0) : new net.minecraft.core.BlockPos(x + 6, ground, 6);
+        formed(level, at, (arms ? dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER : dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER).block().get(),
+                arms ? dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER : dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY,
+                arms ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.SOUTH);
+        if (level.getBlockEntity(at) instanceof dev.groundzero.content.superweapon.AmmoFactoryBlockEntity be) {
+            be.revalidate();
+            var inputs = be.kind().inputs;
+            for (int i = 0; i < inputs.size(); i++) {
+                be.inventory().setItem(i, new net.minecraft.world.item.ItemStack(inputs.get(i).item().get(), inputs.get(i).count()));
+            }
+            be.energy().generate(be.kind().capacity);
+        }
+    }
+
+    private static void scudStormSite(ServerLevel level, int x, int ground) {
+        scudAt = new net.minecraft.core.BlockPos(x + 2, ground, 0);
+        formed(level, scudAt, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_CONTROLLER.block().get(), dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM,
+                net.minecraft.core.Direction.WEST);
+        if (level.getBlockEntity(scudAt) instanceof dev.groundzero.content.superweapon.ScudStormBlockEntity be) {
+            be.revalidate();
+            be.inventory().setItem(dev.groundzero.content.superweapon.SuperweaponBlockEntity.SLOT_AMMO,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_SCUD.get(), dev.groundzero.content.superweapon.ScudStormBlockEntity.CAPACITY));
+            be.energy().generate(400_000);
+            be.chargeForTest();
+            be.setTarget(x + 170, -60);
+            be.arm(true);
+        }
+    }
 
     /**
      * A formed, powered Radar Array facing the camera, and missiles in the air round it (no warheads): two coming down
@@ -954,6 +1028,9 @@ public final class FxPhotographer {
                 level.getChunk(x >> 4, 0);
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
                 double lift = s.name().endsWith("_aerial") ? s.distance() * 0.5 : 1.6;    // an aerial scene looks down from above
+                if (s.profile().startsWith("factory_")) {
+                    lift = 7;                                  // over the factories' walls, into their yards
+                }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
@@ -974,6 +1051,21 @@ public final class FxPhotographer {
                 Vec3 at = new Vec3(x + 0.5, ground + 0.5, 0.5);
                 if (s.profile().equals("grenades")) {
                     grenades(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("scud_storm")) {
+                    scudStormSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("scud_strike")) {
+                    return;                                // the SCUDs come down in tick()
+                }
+                if (s.profile().equals("nuke_silo")) {
+                    nukeSiloSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().startsWith("factory_")) {
+                    factorySite(level, x, ground, s.profile().endsWith("arms"));
                     return;
                 }
                 if (s.profile().equals("fission")) {
@@ -1186,6 +1278,25 @@ public final class FxPhotographer {
                 if (server.overworld().getBlockEntity(computerAt) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity be) {
                     be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
                 }
+            });
+        }
+        if ((scene.profile().equals("scud_storm") || scene.profile().equals("nuke_silo")) && step >= 0 && clock == 25 && scudAt != null) {
+            var at = scudAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.superweapon.SuperweaponBlockEntity be) {
+                    be.launchArmed(server.overworld(), null);
+                }
+            });
+        }
+        if (scene.profile().equals("scud_strike") && step >= 0 && (clock == 25 || clock == 37 || clock == 49)) {
+            int x = site * 1200, i = (clock - 25) / 12;
+            server.execute(() -> {
+                ServerLevel level = server.overworld();
+                int[][] spots = {{4, -7}, {11, 6}, {-3, 9}};
+                int bx = x + spots[i][0], bz = spots[i][1];
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz);
+                dev.groundzero.content.ordnance.charge.Charges.impact(level, dev.groundzero.content.ordnance.charge.ChargeKind.SCUD_STORM_WARHEAD,
+                        new net.minecraft.core.BlockPos(bx, y, bz), null);
             });
         }
         if (scene.name().equals("radar_ui") && step >= 0 && clock == 10 && radarAt != null) {

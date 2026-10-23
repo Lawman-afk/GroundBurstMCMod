@@ -76,9 +76,14 @@ def console(g: GeoModel) -> None:
     g.box("console", (-5, DECK_Y, -7), (5, 22, -2), faces=NO_DOWN, bone="frame")
 
 
-def housing(g: GeoModel, cx: float, cz: float) -> None:
-    """The Energy Port's housing along the back of its cell (PartCut.HOUSING)."""
-    g.box("housing", (cx - 5, DECK_Y, cz + 3), (cx + 5, 19, cz + 8), faces=NO_DOWN, bone="frame")
+def housing(g: GeoModel, cx: float, cz: float, edge: str = "back") -> None:
+    """The Energy Port's housing against the structure's outer edge, so its banded box shows from outside where the port
+    is: along the back of its cell (PartCut.HOUSING_NORTH) or, a port on the right-hand edge, along its east side
+    (PartCut.HOUSING_WEST)."""
+    if edge == "east":
+        g.box("housing", (cx + 3, DECK_Y, cz - 5), (cx + 8, 19, cz + 5), faces=NO_DOWN, bone="frame")
+    else:
+        g.box("housing", (cx - 5, DECK_Y, cz + 3), (cx + 5, 19, cz + 8), faces=NO_DOWN, bone="frame")
 
 
 def hatch(g: GeoModel, cx: float, cz: float) -> None:
@@ -118,10 +123,11 @@ def paint_deck(S: M.Surfacer, tex: Tex, bounds, bay_half: float, seed: int, bay_
     S.overlay(tex, "deck", floor, only=("up",))
 
 
-def paint_ports(S: M.Surfacer, g: GeoModel, tex: Tex) -> None:
-    """The console, the Energy Port's housing and the Item Port's grated hatch (hazard-bordered)."""
+def paint_ports(S: M.Surfacer, g: GeoModel, tex: Tex, plug: str = "south") -> None:
+    """The console, the Energy Port's housing (its socket on its outer face: "south" for a back edge, "west" for the
+    +x edge, as GeckoLib models name their faces) and the Item Port's grated hatch (hazard-bordered)."""
     L._console(S, g, tex, "console")
-    L._power_housing(S, g, tex, "housing", plug="west")
+    L._power_housing(S, g, tex, "housing", plug=plug)
     S.paint(tex, "item_port", M.steel(tone=0.4, brushed=0.04, rust=0.08))
     border = M.stripes(width=2, wear=0.3)
 
@@ -190,7 +196,7 @@ def light() -> None:
     g.bone("hook", pivot=(0, 39, LIGHT_PARK), parent="trolley")
     deck(g, -24, 24, -8, 88)
     console(g)
-    housing(g, 16, 64)
+    housing(g, 16, 64, edge="east")                       # on the deck's right-hand edge
     hatch(g, -16, 64)
     cradles = []
     for i, h in enumerate(c["at"]):
@@ -240,7 +246,7 @@ def light() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     S = M.Surfacer(g, seed=71)
     paint_deck(S, tex, (-24, 24, -8, 88), 10, 71, bay_z=(10, 86))
-    paint_ports(S, g, tex)
+    paint_ports(S, g, tex, plug="west")
     paint_cradles(S, tex, cradles)
     olive = M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3, rust=0.08)
     S.paint(tex, frames + heads, olive)

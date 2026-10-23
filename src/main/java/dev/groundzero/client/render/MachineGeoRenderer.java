@@ -82,22 +82,31 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
         @Override
         public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<com.geckolib.cache.model.GeoBone, com.geckolib.renderer.base.PerBoneRender<R>> consumer) {
-            ShownMissile shown = pass.getGeckolibData(MISSILE);
-            if (shown == null || !pass.willRender()) {
+            List<ShownMissile> all = pass.getGeckolibData(MISSILE);
+            if (all == null || all.isEmpty() || !pass.willRender()) {
                 return;
             }
-            pass.model().getBone(shown.bone()).ifPresent(bone -> consumer.accept(bone, (info, b, collector) -> {
-                PoseStack pose = info.poseStack();
-                pose.scale(4, 4, 4);                                   // the item model is a quarter of the world's size
-                if (shown.lying()) {
-                    pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));          // its nose toward the model's front
+            // One render per bone, drawing every missile at it (in the bone's frame, as it is animated: a rack raised).
+            java.util.Map<String, List<ShownMissile>> byBone = new java.util.LinkedHashMap<>();
+            for (ShownMissile s : all) {
+                byBone.computeIfAbsent(s.bone(), k -> new ArrayList<>()).add(s);
+            }
+            byBone.forEach((name, shownHere) -> pass.model().getBone(name).ifPresent(bone -> consumer.accept(bone, (info, b, collector) -> {
+                for (ShownMissile shown : shownHere) {
+                    PoseStack pose = info.poseStack();
+                    pose.pushPose();
+                    pose.scale(4, 4, 4);                               // the item model is a quarter of the world's size
+                    if (shown.lying()) {
+                        pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));      // its nose toward the model's front
+                    }
+                    pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
+                    pose.translate(0, shown.lift(), 0);                // drawn about its middle: its tail at the bone
+                    for (net.minecraft.client.renderer.item.ItemStackRenderState item : shown.items()) {
+                        item.submit(pose, collector, info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
+                    }
+                    pose.popPose();
                 }
-                pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
-                pose.translate(0, shown.lift(), 0);                    // drawn about its middle: its tail at the bone
-                for (net.minecraft.client.renderer.item.ItemStackRenderState item : shown.items()) {
-                    item.submit(pose, collector, info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
-                }
-            }));
+            })));
         }
     }
 
@@ -155,7 +164,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundzero_bone_offsets",
             new TypeToken<java.util.Map<String, float[]>>() {});
-    private static final DataTicket<ShownMissile> MISSILE = DataTicket.create("groundzero_missile", ShownMissile.class);
+    private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundzero_missile", new TypeToken<List<ShownMissile>>() {});
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
@@ -166,19 +175,23 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             offsets = machine.boneOffsets(partialTick);
         }
         if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
-            MissileCarrier.Shown shown = carrier.shownMissile();
             String held = carrier.gripsFor();
             if (held != null) {
                 offsets = withGrips(offsets, carrier.grips(), MissileShapes.get(held));
             }
-            if (shown != null) {
-                ((GeoRenderState) renderState).addGeckolibData(MISSILE, resolve(shown, animatable.getLevel()));
-                MissileShapes.Shape shape = MissileShapes.get(shown.warhead());
+            List<MissileCarrier.Shown> shownAll = carrier.shownMissiles();
+            if (!shownAll.isEmpty()) {
+                List<ShownMissile> resolved = new ArrayList<>(shownAll.size());
                 MissileCarrier.Cradles cradles = carrier.cradles();
-                if (shown.lying() && cradles != null && shape != null) {
-                    offsets = new java.util.HashMap<>(offsets);
-                    offsets.put(shown.bone(), new float[] {0, onCradles(cradles, shape) - cradles.axisY(), 0});
+                for (MissileCarrier.Shown shown : shownAll) {
+                    resolved.add(resolve(shown, animatable.getLevel()));
+                    MissileShapes.Shape shape = MissileShapes.get(shown.warhead());
+                    if (shown.lying() && cradles != null && shape != null) {
+                        offsets = new java.util.HashMap<>(offsets);
+                        offsets.put(shown.bone(), new float[] {0, onCradles(cradles, shape) - cradles.axisY(), 0});
+                    }
                 }
+                ((GeoRenderState) renderState).addGeckolibData(MISSILE, resolved);
             }
         }
         ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, offsets);

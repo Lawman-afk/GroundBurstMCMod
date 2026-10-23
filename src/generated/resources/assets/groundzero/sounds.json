@@ -535,6 +535,15 @@
     ],
     "subtitle": "subtitles.groundzero.missile.staging"
   },
+  "nuclear_missile.erect": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundzero:superweapon/nuclear_erect"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.nuclear_missile.erect"
+  },
   "reactor.alarm": {
     "sounds": [
       {
@@ -552,6 +561,15 @@
       }
     ],
     "subtitle": "subtitles.groundzero.reactor.singularity_collapse"
+  },
+  "scud_storm.erect": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundzero:superweapon/scud_erect"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.scud_storm.erect"
   },
   "silo.doors": {
     "sounds": [
@@ -576,6 +594,18 @@
       "groundzero:ordnance/sticky_stick"
     ],
     "subtitle": "subtitles.groundzero.sticky.stick"
+  },
+  "superweapon.ready": {
+    "sounds": [
+      "groundzero:superweapon/ready"
+    ],
+    "subtitle": "subtitles.groundzero.superweapon.ready"
+  },
+  "superweapon.warning": {
+    "sounds": [
+      "groundzero:superweapon/warning"
+    ],
+    "subtitle": "subtitles.groundzero.superweapon.warning"
   },
   "thermite.burn": {
     "sounds": [

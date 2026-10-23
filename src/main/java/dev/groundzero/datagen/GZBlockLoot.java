@@ -83,6 +83,12 @@ public class GZBlockLoot extends BlockLootSubProvider {
         for (var c : dev.groundzero.content.assembler.AssemblerClass.values()) {
             dropSelf(dev.groundzero.content.assembler.GZAssemblers.controller(c).block().get());
         }
+        // The superweapons (DESIGN.md §19.5).
+        for (var b : java.util.List.of(dev.groundzero.content.superweapon.GZSuperweapons.ADOBE_WALL, dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_TANK, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_ERECTOR, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_CONTROLLER,
+                dev.groundzero.content.superweapon.GZSuperweapons.FIELDSTONE_WALL, dev.groundzero.content.superweapon.GZSuperweapons.MISSILE_ERECTOR, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_CONTROLLER, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER,
+                dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER)) {
+            dropSelf(b.block().get());
+        }
         // The Large Radar Dish drops itself from its middle only (its parts go with it).
         add(dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().get(), createSinglePropConditionTable(
                 dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().get(), dev.groundzero.content.launch.LargeRadarDishBlock.PART,

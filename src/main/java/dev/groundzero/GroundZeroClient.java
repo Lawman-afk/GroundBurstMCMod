@@ -78,6 +78,9 @@ public class GroundZeroClient {
         event.register(GZMenus.FUSION_FUEL_SYNTHESIZER.get(), MachineScreen::new);
         event.register(GZMenus.CANNING_MACHINE.get(), MachineScreen::new);
         event.register(GZMenus.EXOTIC_MATTER_FABRICATOR.get(), MachineScreen::new);
+        event.register(GZMenus.SUPERWEAPON.get(), MachineScreen::new);
+        event.register(GZMenus.ARMS_DEALER.get(), MachineScreen::new);
+        event.register(GZMenus.WAR_FACTORY.get(), MachineScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -104,6 +107,18 @@ public class GroundZeroClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(), 2, 4, 14));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
+        // The superweapons (DESIGN.md §19.5): the SCUD Storm's pad and wall reach 14 blocks back, its raised SCUDs 7 up.
+        event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get(), 8, 14));
+        // The ammunition factories: the Arms Dealer's compound 7 back, its hoist 4 up; the War Factory 13 back, its
+        // chimney 6 up.
+        event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_ENTITY.get(), 5, 7));
+        event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_ENTITY.get(), 7, 13));
+        // The Nuclear Missile Silo: its hall 15 blocks back, its tower and raised missile 11 up.
+        event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_ENTITY.get(), 11, 15));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.RADAR_ENTITY.get(), 7, 2));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.COMPUTER_ENTITY.get(),

@@ -156,6 +156,16 @@ public final class GZSounds {
             register("launch.siren", "Launch siren wails", List.of("launch/siren"), false, 96);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =
             register("missile.launch", "Missile lights", List.of("launch/missile_launch"), false, 160);
+    // The superweapons (DESIGN.md §19.5): the announcer's warning tone and its ready chime, heard by everyone in the
+    // dimension; the SCUD Storm's erectors raising their missiles.
+    public static final DeferredHolder<SoundEvent, SoundEvent> SUPERWEAPON_WARNING =
+            register("superweapon.warning", "Superweapon warning sounds", List.of("superweapon/warning"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SUPERWEAPON_READY =
+            register("superweapon.ready", "Superweapon ready", List.of("superweapon/ready"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCUD_ERECT =
+            register("scud_storm.erect", "Erectors raise the SCUDs", List.of("superweapon/scud_erect"), false, 96);
+    public static final DeferredHolder<SoundEvent, SoundEvent> NUCLEAR_ERECT =
+            register("nuclear_missile.erect", "The roof opens and the missile is raised", List.of("superweapon/nuclear_erect"), false, 128);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_ENGINE =
             register("missile.engine", "Missile roars overhead", List.of("launch/missile_engine_loop"), false, 256);
     // Slice 9a: a stage parting in flight, and a warhead's nose coming back down.

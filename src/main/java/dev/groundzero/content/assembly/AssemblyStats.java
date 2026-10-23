@@ -103,6 +103,8 @@ public final class AssemblyStats {
         effect(ChargeKind.CHEMICAL_WARHEAD, "chemical", "An anthrax cloud %s blocks round that spreads and drifts", (int) Charges.CHEMICAL_RADIUS);
         effect(ChargeKind.DIRTY_WARHEAD, "dirty", "Scatters nuclear waste");          // one line: its missile's list is long
         effect(ChargeKind.COBALT_WARHEAD, "cobalt", "Fallout drifts %s blocks downwind", Charges.cobaltReach());
+        effect(ChargeKind.SCUD_STORM_WARHEAD, "scud_storm", "Toxin residue spreads %s blocks round, under a toxin cloud", (int) Charges.SCUD_SPREAD);
+        effect(ChargeKind.NUCLEAR_MISSILE_WARHEAD, "nuclear_missile", "Fired only by a Nuclear Missile silo");
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -127,7 +129,8 @@ public final class AssemblyStats {
     /** Warheads whose blast is their point, so a TNT figure means something. */
     private static boolean explosive(ChargeKind kind) {
         return kind == ChargeKind.HE_WARHEAD || kind == ChargeKind.HEAVY_WARHEAD || kind == ChargeKind.MASSIVE_WARHEAD
-                || kind == ChargeKind.THERMOBARIC_WARHEAD || kind == ChargeKind.BUNKER_BUSTER || kind.nuclear();
+                || kind == ChargeKind.THERMOBARIC_WARHEAD || kind == ChargeKind.BUNKER_BUSTER || kind == ChargeKind.SCUD_STORM_WARHEAD
+                || kind.nuclear();
     }
 
     /** The nuclear warheads' design yields (DESIGN.md §15), in place of the TNT figure from the crater. */
@@ -140,6 +143,7 @@ public final class AssemblyStats {
             case THERMONUCLEAR_WARHEAD -> "1.2 Mt";
             case COBALT_WARHEAD -> "400 kt";
             case TSAR_WARHEAD -> "50 Mt";
+            case NUCLEAR_MISSILE_WARHEAD -> "25 kt";
             default -> null;
         };
     }
@@ -198,7 +202,7 @@ public final class AssemblyStats {
             out.add(Stat.row(FALLOUT, Component.translatable(V_BLOCKS, (int) Charges.contaminationRadius(kind))));
             out.add(Stat.row(FALLOUT_LASTS, ticks < 24_000 ? Component.translatable(V_HOURS, ticks / 1000)
                     : ticks == 24_000 ? Component.translatable(V_DAY) : Component.translatable(V_DAYS, ticks / 24_000)));
-            if (full && kind.nuclear()) {
+            if (full && kind.nuclear() && !kind.superweapon()) {
                 out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }

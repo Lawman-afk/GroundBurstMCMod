@@ -2018,6 +2018,7 @@ Common to all three:
 - **Launch:** siren (5 s) → doors slide open → the missile rises on its elevator → ignition with a huge exhaust
   plume erupting from the vents and silo mouth → launch → ICBM flight → **Silo Nuke** strike: crater 48, fire 80,
   lethal 80, damage 140, radiation 160 with heavy fallout; full nuclear visuals.
+- *Superseded by §19.5 (2026-10-23): ammo built at the War Factory, the game's own above-ground launcher.*
 
 ### 19.3 SCUD Storm (GLA)
 - **Structure:** 7×7 footprint, 5 tall base. Scrappy, improvised: rusted and patched plates, visible welds,
@@ -2026,6 +2027,123 @@ Common to all three:
 - **Charge:** 5:00 at 800 FE/t.
 - **Firing:** rack raises (3 s), the 9 SCUDs fire in quick succession (one every 0.6 s) at the target area with
   spread r 16. Each SCUD: HE blast 4 + **Anthrax α** cloud r 7 for 60 s.
+- *Superseded by §19.5 (2026-10-23): the game's own radial layout, ammo built at the Arms Dealer.*
+
+### 19.5 The SCUD Storm and the Nuclear Missile, as the game has them (planned and built 2026-10-23)
+The user's request: the two main C&C Generals superweapons of the GLA and China as multiblocks that look like the
+game's, each taking its own ammo, made at a C&C-themed multiblock of its own (the user chose one per faction over a
+shared one), with effects to match ("like the toxic waste spread on the ground").
+
+**Research** (the game's models, the C&C wiki):
+- *SCUD Storm*: a big square sand-coloured pad, about twice the size of the other superweapons. Nine SCUDs (white
+  bodies, green noses and fins) lie like the spokes of a wheel, tails in, each on its own launch crane, round a
+  central green toxin tank with a biohazard mark on a rusty base. A low adobe wall runs along two sides with two
+  square adobe watchtowers (one with an orange dome, one with an antenna), a guard hut flies the GLA flag, crates lie
+  about and steam rises from vents in the pad. Firing, the cranes raise the missiles upright and nine SCUDs go one
+  after another; they come down at random over a wide area, "explode with devastating force" and leave deadly toxin
+  clouds behind ("prolonged contamination"). 5:00 between strikes.
+- *Nuclear Missile* (China): not a true silo: an above-ground "coffin" like the SM-65 Atlas-D launchers, storing
+  the missile lying down and raising it upright before launch. A long hall with fieldstone lower walls, grey upper
+  walls between green steel pilasters and a brown pitched roof in sections with red ridge stripes and gold finials, a
+  red star on its white gable; an octagonal control house with a conical roof and two antenna masts beside a fenced
+  yard, a fan unit on the wall, a rack of shells. Ready, the roof over the missile is gone and two hydraulic rams
+  have raised the silver missile (red bands) upright beside a green lattice tower. It leaves radiation round the
+  blast. 6:00 between strikes.
+- *Arms Dealer* (GLA): a walled compound of tan adobe with green trim: a workshop behind big dark double doors, a
+  corrugated awning over racks of rockets and crates, a tiled-roof annex, a smoking chimney.
+- *War Factory* (China): an octagonal hall under brown pagoda roofs with red-trimmed eaves, cream walls with
+  fieldstone corners, a garage door under a corrugated awning with a star; a red star badge on the apron, a gantry
+  crane on rails in the yard (green lattice post, yellow boom with a claw), a floor hatch, a furnace annex with a
+  red-and-grey striped chimney, a conveyor of crates.
+
+**How they work:**
+- *Ammo*: the **Toxin SCUD** (stacks to 9) is built at the **Arms Dealer** from a Medium Missile Body, a Solid Rocket
+  Motor II, a Chemical Agent Canister (the anthrax) and a Toxic Waste Tank (the ground contamination); the **Nuclear
+  Missile** at the **War Factory** from a Strategic Missile Body, two Liquid-fuel Stages, a Boosted Fission Core, a
+  Strategic Warhead Casing and a GPS Guidance Unit. Each factory lays the missile out section by section while it
+  works (the assemblers' way), its crane animated.
+- *Charge*: loaded, a superweapon charges while powered (SCUD Storm 5:00, Nuclear Missile 6:00, as the game's timers),
+  then it is READY. A **Launch Computer** within reach finds it (on its map and in its list, with its charge time),
+  aims it, arms it and fires it with LAUNCH; range 4 096 blocks.
+- *Announcements* (all players in the dimension): a superweapon detected (formed), ready, launched; an alarm.
+- *SCUD Storm strike*: the cranes raise the missiles upright (3 s), then the loaded SCUDs (up to nine) fire one every
+  0.6 s, each coming down anywhere within 16 blocks of the target. Each: a blast, a ground-hugging anthrax cloud, and a
+  front of glowing **anthrax residue** sludge spreading out over the ground from where it hit (a ring growing over a
+  second or so, splashing as it goes), lasting minutes and poisoning anything on it.
+- *Nuclear strike*: the roof slides open and the rams raise the missile beside its tower, then it lights (exhaust
+  pouring out of the hall) and climbs straight out; a big nuclear blast (between the fission and the boosted fission
+  warheads') and heavy contamination, the game's radiation field.
+- Both are multiblocks of new themed part blocks (adobe walls, the toxin tank, SCUD erectors; fieldstone walls, the
+  missile erector) on Launch Pad decks, with GeckoLib models painted with the material library.
+
+**As built (2026-10-23):**
+- *Warheads* (`ChargeKind.superweapon()`, whole weapons: never fitted at an assembler, out of JEI's list): the **Toxin
+  SCUD Warhead** (`scud_storm_warhead`: a heavy warhead's blast, crater 10, then its toxin; not nuclear, goes off however
+  set off) and the **Nuclear Missile Warhead** (`nuclear_missile_warhead`: crater 85, wrecks to 125, deadly to 135, burns
+  to 150, "25 kt"; contamination 200 blocks round for two days; fizzles if set off any other way). Their models are the
+  missiles' noses (`tools/assets/warheads.py`): the SCUD's long toxin-green ogive, the DF-5 re-entry vehicle's silver cone
+  with a red tip and a red star.
+- *Missiles* (`tools/assets/missiles.py`): the **Toxin SCUD** (class M, an R-17 in the game's white and toxin green,
+  green fins, graphite vanes, 70 px) and China's **Nuclear Missile** (class XL, a DF-5: two liquid stages of one width on
+  four engines, silver, red bands and interstage, a big red star, 141 px).
+- *The toxin strike* (`Charges.scud`, `ToxinSpreads`, `AnthraxResidueBlock`, `GasAgent.SCUD_TOXIN`): 8 ticks after the
+  blast (its crater dug), a heavy vivid-green cloud fills 12 blocks round at 1.6 (it decays 0.7% a step: two minutes and
+  more) and a front runs out 0.6 blocks a tick to 16 blocks, laying **Anthrax Residue** (solid near the middle, spattered
+  toward the edge, down into the crater), spraying green and dosing what it washes over (4 toxin, Poison IV, nausea).
+  The residue is the toxin grenade's sludge made worse: brighter (light 10 falling to 4), its texture animated (8 frames
+  of bubbles welling, swelling and popping, a sheen drifting), fuming and bubbling with pops, 2.5 toxin and Poison IV
+  every half second, drying in four stages of 2 min (+ up to 30 s): about eight minutes.
+- *The superweapons* (`SuperweaponBlockEntity`, a `LaunchSite`): charge while formed and powered (SCUD Storm 6000 ticks
+  at 400 FE/t, Nuclear Missile 7200 at 800; paused without power); readiness NOT_FORMED, EMP, HALTED, NO_POWER/CHARGING,
+  NO_MISSILE (charged, empty), READY, COUNTING. A Launch Computer lists them by kind with the charge's clock, aims, arms
+  and fires them (range 4096). LAUNCH: the warning to the dimension, the siren, the launchers raised (a GeckoLib
+  "launchers" controller: raise / lower / lowered; it lowers only once that client has seen them up), a 200-tick countdown
+  with beeps; then FIRING: the SCUD Storm lights one SCUD every 12 ticks from each raised SCUD's tail (the last loaded
+  first), each aimed anywhere within 16 blocks of the target; the Nuclear Missile its one, within 3. Then 40 ticks up,
+  60 lowering, and (if anything fired) charging again from empty. An EMP, a redstone halt or a broken structure scrubs a
+  strike: what was not fired stays loaded, a strike that fired nothing keeps its charge. *Announcements* (DETECTED when
+  first formed, READY, LAUNCHED): a bold line in chat in the faction's colour (GLA green, China red) and a tone
+  (`superweapon.warning`, `superweapon.ready`) to every player in the dimension.
+- *The SCUD Storm* (14 x 14 x 7, `tools/assets/scud_storm.py`): a 13 x 13 pad of Launch Pad behind an L of **Adobe Wall**
+  (two high, a watchtower four high at each end), a 3 x 3 **Toxin Tank** two high in the middle and nine **SCUD
+  Erectors** round it, the pad clear six high. The model: a sand concrete pad (slab cuts, a curb, launch scorch round the
+  raised SCUDs' feet, oil, toxin stains, tyre tracks, steam vents), the adobe wall with its vigas, the orange-domed and
+  the antenna watchtowers (slit windows, doors, a little radar turning while it charges), the green tank on its rusty base
+  (straps, biohazard marks, a ladder, its sight gauge glowing), nine erectors at bearings 20 + 40k degrees (each built
+  pointing to the front and turned by its bone: launch table, hinge, a boom with cradles under its SCUD, a two-stage ram
+  whose rod slides out as the boom rises), a guard hut flying a waving GLA flag, crates and drums.
+- *The Nuclear Missile Silo* (9 x 15 x 11, `tools/assets/nuclear_silo.py`): the hall of **Fieldstone Wall** two high on a
+  floor of Launch Pad with the **Missile Erector** at its back, a 3 x 3 control house, a Gantry Frame tower nine high. The
+  model: fieldstone below, grey walls between green pilasters with windows, the roof in four sections of brown tiles with
+  red ridges (their halves fold up to stand open), white gables (the front's red star) with gold finials, the octagonal
+  control house under its cone and aerials, a fan unit; inside, a fork erector (two rails beside the missile, so the
+  raised missile shows between them, not behind a girder) on two rams raising the DF-5 onto its launch table, the green
+  lattice tower's arm swinging in to it, its lamp blinking; vapour boiling off the raised missile, fire and smoke out of
+  the hall as it lights.
+- *The factories* (`AmmoFactoryBlockEntity`, `tools/assets/ammo_factories.py`): each takes its parts, one slot each, and
+  sets to work by itself with all of them in, power and room: the **Arms Dealer** (9 x 7: an Adobe Wall compound round a
+  yard of Launch Pad, its workshop at the back) builds a Toxin SCUD from a Medium Missile Body, a Solid Rocket Motor II, a
+  Chemical Agent Canister and a Toxic Waste Tank (30 s at 160 FE/t); the **War Factory** (9 x 13: a hall and an annex of
+  Fieldstone Wall with its chimney, a yard of Launch Pad, a Crane Rail) a Nuclear Missile from a Strategic Missile Body, two
+  Liquid-fuel Stages, a Boosted Fission Core, a Strategic Warhead Casing and a GPS Guidance Unit (60 s at 480 FE/t). The
+  missile is laid out section by section on its trestles or cradles (MissileCarrier) while the A-frame hoist or the gantry
+  crane works; the models: the GLA compound (green coping, dark workshop doors, a smoking chimney, a tiled annex, an
+  awning over racks of rockets, a gate arch with the GLA sign) and the War Factory (a two-tier octagonal pagoda hall with
+  red eaves and fieldstone quoins, a roller door under an awning with the star, the glowing furnace and its red-and-grey
+  chimney, crates riding a conveyor, the gantry crane: green lattice post, red machinery house, yellow boom, claw).
+- Recipes: Adobe Wall x4 (mud bricks, sand, wheat), Toxin Tank x2 (steel plates, a pressure vessel, green dye), SCUD
+  Erector (steel rods and plates, a pressure vessel, a motor), Fieldstone Wall x8 (cobblestone, stone bricks, a mossy
+  cobblestone), Missile Erector (dense steel plates, two pressure vessels, two motors, green dye); the controllers: the
+  SCUD Storm's a machine casing, two military circuits, a CRT, a sensor array, a Chemical Agent Canister and a lever;
+  the Nuclear Missile Silo's a lead-lined casing, three military circuits, a CRT, a sensor array, red dye and a lever;
+  the Arms Dealer's a machine casing, an advanced circuit, two motors, a servo, a steel plate and an Adobe Wall (a
+  Medium Missile Assembler's rung); the War Factory's a lead-lined casing, a military circuit, a sensor array, two
+  motors, a pressure vessel and a Fieldstone Wall (a Strategic one's). JEI: a Superweapon Ammunition category and
+  information pages. Field Manual: a
+  Superweapons chapter (five entries). Sounds: `superweapon/warning`, `ready`, `scud_erect`, `nuclear_erect`. Review
+  tool: `tools/preview/superweapon_view.py` (a structure's missiles drawn at their bones as the animation poses them, and
+  where the block entity lights each). GameTests: `SuperweaponTests` (8).
+- Not yet: §19.4's doctrine modules and the generic upgrades, the Particle Uplink Cannon, a configurable range.
 
 ### 19.4 Zero Hour doctrine modules
 One **Doctrine** module per superweapon (they are mutually exclusive). Researched behaviour of the Zero Hour generals
@@ -2814,6 +2932,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | Missiles carry their warheads' own models (the user's request; §4.5): the warhead's block model stands on the missile's body, fitted so its mounting ring meets the body's sides (a long one drawn smaller), everywhere a missile is drawn (items through a special item model, in flight, on the three launchers and the hall through a warhead bone and a GeckoLib layer); the painted noses, their per-warhead item models and nose bones went. The tips of four warheads flickered (rings of one radius stacked, their sides in one plane): every nose ring now steps in and a fuze goes inside the ring under it, and the model script fails any coplanar side faces too. |
 | 2026-10-23 | One missile per warhead and an assembler per class (the user's request and choices; §10.4): Light, Medium, Heavy and Strategic Missile Assemblers (multiblocks, crafting harder class by class, the hall's recipe on the same ladder) replace the bench's missile page; each missile is made for its warhead (the warhead's own model as its head on a body of its radius in its paint); the Thermobaric, Bunker Buster and EMP warheads move to class L so the Heavy class has a family; the Tsar loses its fins and parachute pack. |
 | 2026-10-23 | §10.4 as built: the machines draw each missile from its own item model at a bone (no missile geometry in their models); the launchers' arms slide to each missile's own hold and telescope in to its skin (no stretched textures); a lying missile is set on its cradles by its own girth. The four assemblers are one block entity, its slots taking only its class's warhead and body; the Strategic one stacks the missile upright with platforms folding round it. The bench drops anything left in its old missile slots. JEI: one Missile Assembly recipe per warhead, its assembler as the station. |
+| 2026-10-23 | The Light Missile Assembler's Energy Port housing runs along its cell's outer (right-hand) edge, its banded side facing out, so where the port is reads from outside. |
+| 2026-10-23 | Superweapons (§19.5; the user asked for the GLA's and China's two from C&C Generals, each taking its own ammunition, made at a C&C-themed factory, one per faction by the user's choice): the SCUD Storm (nine Toxin SCUDs) and the Nuclear Missile (China's above-ground coffin), charging on power (5:00 / 6:00) and fired from a Launch Computer (both are LaunchSites); their ammunition built by the Arms Dealer and the War Factory. A toxin SCUD's strike spreads a toxin cloud and glowing anthrax residue 16 blocks round (the "toxic waste spread on the ground"); the nuke falls between the fission and boosted warheads with a 200-block radiation field. Everyone in the dimension hears when one is built, ready or launched. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

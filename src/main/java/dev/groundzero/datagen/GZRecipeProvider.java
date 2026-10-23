@@ -506,6 +506,60 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
                 .requires(m.concrete).requires(m.concrete).requires(Items.LEVER)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // The SCUD Storm (DESIGN.md §19.5): adobe (mud brick and sand bound with straw), the tank of toxin, the SCUDs'
+        // erectors (hydraulics and a pump), and its controller (the toxin's canister for its placard).
+        var sw = new Object() {
+            final net.minecraft.world.level.ItemLike adobe = dev.groundzero.content.superweapon.GZSuperweapons.ADOBE_WALL.item();
+            final net.minecraft.world.level.ItemLike tank = dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_TANK.item();
+            final net.minecraft.world.level.ItemLike erector = dev.groundzero.content.superweapon.GZSuperweapons.SCUD_ERECTOR.item();
+            final net.minecraft.world.level.ItemLike scudStorm = dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike fieldstone = dev.groundzero.content.superweapon.GZSuperweapons.FIELDSTONE_WALL.item();
+            final net.minecraft.world.level.ItemLike missileErector = dev.groundzero.content.superweapon.GZSuperweapons.MISSILE_ERECTOR.item();
+            final net.minecraft.world.level.ItemLike nuke = dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike armsDealer = dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike warFactory = dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER.item();
+        };
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.adobe, 4)
+                .requires(Items.MUD_BRICKS).requires(Items.MUD_BRICKS).requires(Tags.Items.SANDS).requires(Tags.Items.SANDS).requires(Items.WHEAT)
+                .unlockedBy(getHasName(Items.MUD_BRICKS), has(Items.MUD_BRICKS)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.tank, 2)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.PRESSURE_VESSEL).requires(Tags.Items.DYES_GREEN)
+                .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.erector, 1)
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("plates/steel")).requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ELECTRIC_MOTOR)
+                .unlockedBy(getHasName(GZParts.ELECTRIC_MOTOR), has(GZParts.ELECTRIC_MOTOR)).save(output);
+        shapeless(RecipeCategory.REDSTONE, sw.scudStorm, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.CRT_DISPLAY).requires(GZParts.SENSOR_ARRAY).requires(dev.groundzero.content.assembly.GZAssembly.CHEMICAL_AGENT_CANISTER)
+                .requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // The Nuclear Missile Silo (DESIGN.md §19.5): dressed fieldstone (stone set in mortar), the missile's erector (a
+        // strongback on two rams), and its controller (lead-lined: it looks after a nuclear missile).
+        shaped(RecipeCategory.BUILDING_BLOCKS, sw.fieldstone, 8)
+                .define('C', Items.COBBLESTONE).define('S', Items.STONE_BRICKS).define('M', Items.MOSSY_COBBLESTONE)
+                .pattern("CSC").pattern("SMS").pattern("CSC")
+                .unlockedBy(getHasName(Items.STONE_BRICKS), has(Items.STONE_BRICKS)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.missileErector, 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.PRESSURE_VESSEL)
+                .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.ELECTRIC_MOTOR).requires(Tags.Items.DYES_GREEN)
+                .unlockedBy(getHasName(GZParts.PRESSURE_VESSEL), has(GZParts.PRESSURE_VESSEL)).save(output);
+        shapeless(RecipeCategory.REDSTONE, sw.nuke, 1)
+                .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY).requires(GZParts.SENSOR_ARRAY).requires(Tags.Items.DYES_RED)
+                .requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // The superweapons' ammunition factories (DESIGN.md §19.5): the Arms Dealer a Medium Missile Assembler's rung
+        // (motors, an advanced circuit), the War Factory a Strategic one's (a military circuit, a sensor array).
+        shapeless(RecipeCategory.REDSTONE, sw.armsDealer, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.ELECTRIC_MOTOR)
+                .requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.SERVO).requires(GZTags.commonItem("plates/steel")).requires(sw.adobe)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, sw.warFactory, 1)
+                .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.SENSOR_ARRAY)
+                .requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.PRESSURE_VESSEL).requires(sw.fieldstone)
+                .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
         // Whole weapons (slice 8c, DESIGN.md §15.2): the Strategic Assembly Hall, its rails, and the parts only it uses.
         var s = new Object() {
             final net.minecraft.world.level.ItemLike rail = dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.item();

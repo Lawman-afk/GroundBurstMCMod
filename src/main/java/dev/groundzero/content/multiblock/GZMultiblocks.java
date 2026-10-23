@@ -200,7 +200,8 @@ public final class GZMultiblocks {
                 dev.groundzero.content.launch.GZLaunch.RADAR, dev.groundzero.content.strategic.GZStrategic.HALL,
                 dev.groundzero.content.launch.GZLaunch.MISSILE_SILO, dev.groundzero.content.assembler.GZAssemblers.LIGHT,
                 dev.groundzero.content.assembler.GZAssemblers.MEDIUM, dev.groundzero.content.assembler.GZAssemblers.HEAVY,
-                dev.groundzero.content.assembler.GZAssemblers.STRATEGIC);
+                dev.groundzero.content.assembler.GZAssemblers.STRATEGIC, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM,
+                dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER, dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY);
     }
 
     public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {

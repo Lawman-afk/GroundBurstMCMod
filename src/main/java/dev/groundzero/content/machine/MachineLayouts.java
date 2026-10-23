@@ -132,6 +132,33 @@ public final class MachineLayouts {
             new MachineLayout.Rect(58, 17, 110, 38), 8, 6, List.of(),
             List.of(new MachineLayout.Control("doors", new MachineLayout.Rect(58, 58, 30, 18), -1, 0, 0, "groundzero.gui.silo_doors")), 256);
 
+    public static final MachineLayout SUPERWEAPON = new MachineLayout(
+            GroundZero.id("textures/gui/machine/superweapon.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            null, 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            new MachineLayout.Rect(58, 17, 110, 38), 8, 6, List.of(),
+            List.of(), 256);
+
+    public static final MachineLayout ARMS_DEALER = new MachineLayout(
+            GroundZero.id("textures/gui/machine/arms_dealer.png"), 176, 166, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 40), new MachineLayout.Pos(124, 31)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            new MachineLayout.Rect(92, 32, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            new MachineLayout.Rect(30, 60, 118, 20), 8, 6, List.of(),
+            List.of(), 256);
+
+    public static final MachineLayout WAR_FACTORY = new MachineLayout(
+            GroundZero.id("textures/gui/machine/war_factory.png"), 176, 166, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 40), new MachineLayout.Pos(48, 40), new MachineLayout.Pos(124, 31)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            new MachineLayout.Rect(92, 32, 24, 17), 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            new MachineLayout.Rect(30, 60, 118, 20), 8, 6, List.of(),
+            List.of(), 256);
+
     public static final MachineLayout ASSEMBLY_BENCH = new MachineLayout(
             GroundZero.id("textures/gui/machine/assembly_bench.png"), 288, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 436, 0,

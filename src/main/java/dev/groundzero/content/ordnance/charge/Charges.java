@@ -246,8 +246,10 @@ public final class Charges {
             }
             // A nuclear warhead set off anywhere but on a missile's arrival only fizzles.
             case TACTICAL_NUCLEAR_WARHEAD, FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD,
-                 TSAR_WARHEAD ->
+                 TSAR_WARHEAD, NUCLEAR_MISSILE_WARHEAD ->
                     fizzle(level, c, by, bombScale);
+            // A toxin SCUD is a heavy warhead and its toxin: it goes off however it is set off.
+            case SCUD_STORM_WARHEAD -> scud(level, c, by, bombScale);
             // A dirty warhead is only HE and waste: it goes off however it is set off.
             case DIRTY_WARHEAD -> dirty(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
@@ -300,6 +302,20 @@ public final class Charges {
     public static final float CLUSTER_DUD_CHANCE = 0.05f;
     /** Napalm: the radius of the pool it throws out round itself (an upright warhead has no length to spread along). */
     public static final float NAPALM_RADIUS = 10;
+    /**
+     * A toxin SCUD (DESIGN.md §19.5): how far its residue spreads (well past its crater, over the ground round it), and how far
+     * its cloud reaches as it wells up.
+     */
+    public static final float SCUD_SPREAD = 16, SCUD_CLOUD = 12;
+
+    /**
+     * A toxin SCUD coming down: a heavy blast, then (the crater dug) its toxin wells up out of the crater as a heavy
+     * green cloud and spreads out over the ground as a front of glowing residue ({@link ToxinSpreads}).
+     */
+    private static void scud(ServerLevel level, Vec3 c, @Nullable Entity by, float scale) {
+        Blasts.detonate(level, c, Blasts.profile(ChargeKind.SCUD_STORM_WARHEAD.id), by, scale);
+        dev.groundzero.content.ordnance.ToxinSpreads.start(level, c, Math.max(2, SCUD_SPREAD * scale), Math.max(2, SCUD_CLOUD * scale));
+    }
 
     /** A radiological warhead's contamination: radius (blocks), how long it lasts (ticks) and its strength (DESIGN.md §15). */
     public static float contaminationRadius(ChargeKind kind) {
@@ -310,13 +326,14 @@ public final class Charges {
             case THERMONUCLEAR_WARHEAD -> 360;
             case COBALT_WARHEAD -> 300;                    // round the burst; its plume reaches far further (COBALT_PLUME)
             case TSAR_WARHEAD -> 600;
+            case NUCLEAR_MISSILE_WARHEAD -> 200;
             default -> 90;                                 // tactical, dirty
         };
     }
 
     public static int contaminationTicks(ChargeKind kind) {
         return switch (kind) {
-            case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD -> 48_000;
+            case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NUCLEAR_MISSILE_WARHEAD -> 48_000;
             case NEUTRON_WARHEAD -> 6_000;                  // neutrons leave little behind: a quarter of a day
             case DIRTY_WARHEAD -> 120_000;                  // waste lingers: five days
             case THERMONUCLEAR_WARHEAD, TSAR_WARHEAD -> 72_000;   // three days

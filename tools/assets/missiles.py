@@ -16,7 +16,8 @@ Each missile follows its warhead's character and a real family (the research, DE
 tactical missiles, an ATACMS-like dispenser carrier, Luna-M spin verniers, a Scud's riveted aft skirt and exhaust vanes,
 an Iskander's boat-tail, a Pershing II's penetrator on its taper, a Lance for the neutron warhead, Minuteman and R-36M
 for the hall's two re-entry vehicles, and the UR-500, designed for a Tsar-class warhead, its first stage a core ringed
-by six engine-carrying tanks.
+by six engine-carrying tanks. The superweapons' ammunition (DESIGN.md §19.5) follows C&C Generals: the GLA's Toxin SCUD
+(an R-17 in the game's white and toxin green) and China's Nuclear Missile (a DF-5 in silver and red).
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\missiles.py [names...]
 """
@@ -1245,13 +1246,90 @@ def tsar() -> dict:
     return save(rk, lv)
 
 
+# --- The superweapons' ammunition (DESIGN.md §19.5) ---------------------------------------------------------------------------
+
+#: A star of nine rows (China's red star on a broad body).
+STAR9 = ["....R....", "...RRR...", "...RRR...", "RRRRRRRRR", ".RRRRRRR.", "..RRRRR..", "..RRRRR..", ".RRR.RRR.", ".R.....R."]
+
+
+def scud_storm() -> dict:
+    """A Toxin SCUD (the GLA's SCUD Storm fires nine; C&C Generals): an R-17 Scud as the game paints it, a white body
+    under the toxin-green warhead, four green trapezoid fins on a riveted aft section, graphite vanes in its bell, black
+    rings where its tanks join, the GLA's green band and black stencils; weathered, as kept in the open."""
+    rk = Rocket("scud_storm_warhead", "M")
+    R = 4.0
+    rk.bell("bell", 2.6, 1.8, 0.0, 3)
+    rk.vanes("vane", 2.0, 0.0)
+    rk.ring("skirt", R + 0.4, 3.0, 13.0, caps=("up", "down"), top=True, bottom=True)
+    rk.fins("fin", R + 0.4, 3.0, 10.0, 4.0, 4.6, thick=0.9)
+    rk.closure("aft", R + 0.4, 3.0)
+    rk.tube("body", R, 13.0, 29.0)
+    rk.joint("joint", R + 0.3, 29.0)
+    rk.tube("body", R, 30.0, 44.0, on_joint=True)
+    rk.joint("joint", R + 0.3, 44.0)
+    rk.tube("guidance", R, 45.0, 49.0, on_joint=True)
+    rk.on_side("raceway", 90, R, 14.0, 43.0, 0.6, 1.0)
+    rk.mount(49.0)
+    rk.parts, rk.stages, rk.engines = [13.0, 49.0, rk.tip], [rk.tip], [0.0]
+    white = paint(W.WHITE, 0.72, wear=0.16, grime=0.1)
+    green = paint(W.SCUD_GREEN, 0.6, wear=0.18)
+    lv = Livery(body=white, skirt=paint(W.WHITE, 0.66, wear=0.2, grime=0.14), fin=green, joint=W.metal(W.BLACK, 0.42), guidance=white,
+                bell=NOZZLE, vane=W.metal(W.BLACK, 0.3), raceway=paint(W.WHITE, 0.62, wear=0.16))
+    lv.on("body", band(40, 42, green))
+    lv.on("body", stencil((37.0, 36.0, 34.0), W.BLACK[2], 5, "xx.xxx.x"))
+    lv.on("body", stencil((22.0, 21.0), W.BLACK[2], 4, "x.xx"))
+    lv.on("body", seam(21.5, 0.8))
+    lv.on("body", patches(31, 0.04, W.WHITE[3], size=3.0))
+    lv.on("skirt", rivets(11.5)).on("skirt", rivets(4.5)).on("joint", rivets(29.0)).on("joint", rivets(44.0))
+    lv.on("guidance", rivets(47.5))
+    lv.on("bell", soot)
+    return save(rk, lv)
+
+
+def nuclear_missile() -> dict:
+    """China's Nuclear Missile (C&C Generals' superweapon): a DF-5, the two-stage liquid ICBM, in silver: four engines
+    under a first stage as broad as the second, a bolted red interstage ring, a short taper up to the re-entry vehicle;
+    the warhead's red repeated in bands, a big red star on the first stage, red serials down the second."""
+    rk = Rocket("nuclear_missile_warhead", "XL")
+    R1 = 7.0
+    engines = [(8 + dx, 8 + dz) for dx, dz in ((-3.4, -3.4), (3.4, -3.4), (-3.4, 3.4), (3.4, 3.4))]
+    for i, (cx, cz) in enumerate(engines):
+        rk.bell(f"ebell{i}", 2.2, 1.5, 0.0, 3, cx=cx, cz=cz)
+    rk.ring("skirt", R1 + 0.4, 3.0, 8.0, caps=("up", "down"), top=True, bottom=True)
+    rk.closure("aft", R1 + 0.4, 3.0, inner=0.0)
+    rk.tube("stage1", R1, 8.0, 68.0, on_joint=True)
+    rk.joint("inter", R1 + 0.35, 68.0, 2.0)
+    rk.bell("bell2", 3.6, 2.6, 66.0, 2)
+    rk.tube("stage2", R1, 70.0, 110.0, on_joint=True)
+    top = rk.taper("adapter", R1 - 0.1, 6.2, 110.0, 3)
+    rk.on_side("raceway", 90, R1, 9.0, 67.0, 0.8, 1.6)
+    rk.on_side("raceway2", 90, R1, 71.0, 109.0, 0.7, 1.4)
+    rk.mount(top)
+    rk.parts, rk.stages, rk.engines = [68.0, top, rk.tip], [68.0, rk.tip], [0.0, 66.0]
+    silver = W.metal(W.STEEL, 0.64, brushed=0.06)
+    red = W.paint(W.PLA_RED, 0.55, 0.15)
+    lv = Livery(body=silver, stage1=silver, stage2=silver, skirt=W.metal(W.GUNMETAL, 0.45), inter=red, adapter=silver,
+                bell2=NOZZLE, raceway=W.metal(W.STEEL, 0.55), raceway2=W.metal(W.STEEL, 0.55),
+                **{f"ebell{i}": NOZZLE for i in range(len(engines))})
+    lv.on("stage1", band(60, 62, red)).on("stage1", band(12, 13, red)).on("stage2", band(102, 104, red))
+    lv.on("stage1", decal(STAR9, {"R": W.PLA_RED[4]}, 52.0))
+    lv.on("stage2", stencil((96.0, 95.0, 94.0, 92.0, 91.0, 90.0), W.PLA_RED[3], 5, "xx.x.xx.xxx"))
+    lv.on("stage1", stencil((36.0, 35.0, 33.0), W.BLACK[2], 7, "xx.xxx.x"))
+    lv.on("stage1", seam(30.0, 0.78)).on("stage2", seam(88.0, 0.78))
+    lv.on("inter", rivets(69.0)).on("skirt", rivets(5.5))
+    for i, (cx, cz) in enumerate(engines):
+        lv.on(f"ebell{i}", soot_at(cx, cz))
+    lv.on("bell2", soot)
+    return save(rk, lv)
+
+
 #: Every missile, by its warhead, in the order the warheads are listed.
 BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chemical, "toxic_waste_warhead": toxic_waste,
             "dirty_warhead": dirty, "heavy_warhead": heavy, "cluster_warhead": cluster, "gas_warhead": gas, "smoke_warhead": smoke,
             "cryo_warhead": cryo, "thermobaric_warhead": thermobaric, "bunker_buster_warhead": bunker_buster, "emp_warhead": emp,
             "massive_warhead": massive, "tactical_nuclear_warhead": tactical, "fission_warhead": fission,
             "boosted_fission_warhead": boosted, "neutron_warhead": neutron, "thermonuclear_warhead": thermonuclear,
-            "cobalt_warhead": cobalt, "tsar_warhead": tsar}
+            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile}
 
 
 def build(names=None) -> dict:

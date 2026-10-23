@@ -1,0 +1,25 @@
+{
+  "title": "Arms Dealer",
+  "icon": "groundzero:arms_dealer",
+  "order": 3,
+  "items": [
+    "groundzero:arms_dealer",
+    "groundzero:arms_dealer_spawner"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The GLA's factory for **Toxin SCUDs**: a walled adobe compound with a workshop at its back, an awning over racks of rockets and an A-frame hoist over its yard. Load its parts (a Medium Missile Body, a Solid Rocket Motor II, a Chemical Agent Canister and a Toxic Waste Tank) and give it power: it sets to work by itself, its hoist laying the SCUD out on its trestles section by section, **30 seconds** at 160 FE a tick for each. The finished SCUD waits on the trestles and in the output."
+    },
+    {
+      "type": "structure",
+      "structure": "groundzero:arms_dealer",
+      "text": "The Arms Dealer: a 9 by 7 compound walled with Adobe Wall two high, the controller in the middle of its front wall, an Item Port in its left wall and an Energy Port in its right. Inside, a yard of Launch Pads; across the back of it, the workshop, a 7 by 2 block of Adobe Wall two high. Keep the yard clear three blocks up."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:arms_dealer",
+      "text": ""
+    }
+  ]
+}

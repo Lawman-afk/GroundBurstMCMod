@@ -38,6 +38,10 @@ for high explosive, light red for incendiary, dark green for a toxic chemical.
 - Cobalt Warhead: the same cone in blue-black, its cobalt jacket's plates banded cobalt blue.
 - Tsar Mega-bomb (built whole): a fat dark-green bomb on four tail fins round its parachute pack, a rounded nose,
   white stencils ("50" for its megatons), a trefoil, four cooling vents glowing orange low on its body.
+- Toxin SCUD Warhead (a superweapon's, DESIGN.md §19.5; built whole into its Toxin SCUD): the C&C Generals SCUD's
+  toxin-green nose, a long ogive over a short green section, a black band and white stencils.
+- Nuclear Missile Warhead (China's superweapon, built whole into its Nuclear Missile): a DF-5's re-entry vehicle, a long
+  silver cone over a short skirt, its tip and a band red, a red star on its front and a trefoil on its back.
 - Cluster Bomblet (item): a small yellow can with a ring of tail tabs and a ribbon.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
@@ -97,12 +101,17 @@ ABLATIVE = fixed("ablative", "#110d0a", "#1a1410", "#241c16", "#30261e", "#3e322
 FROST = fixed("frost", "#5a7884", "#7896a2", "#98b4be", "#b6ced6", "#cfe2e8", "#e4f0f4", "#f6fbfc")
 CHEM_GREEN = fixed("chem_green", "#0e1a0e", "#152816", "#1d3820", "#264a2a", "#305c34", "#3c7040", "#4c864e")
 SMOKE_GREEN = fixed("smoke_green", "#2a3a1c", "#3c5228", "#506c36", "#668646", "#7ea05a", "#98b874", "#b8d29a")
+#: The GLA's toxin green (the SCUD's nose and fins, C&C Generals), and China's red.
+SCUD_GREEN = fixed("scud_green", "#0d1f07", "#15330b", "#1f4b11", "#2b6518", "#3a8222", "#4f9f30", "#71bc4c")
+PLA_RED = fixed("pla_red", "#2e0604", "#4c0a06", "#6e1009", "#92180c", "#b42412", "#d23c22", "#e8664a")
 GREEN = P.INDICATOR_GREEN
 WHITE = P.WHITE_CERAMIC
 CYAN = P.CHERENKOV
 
 #: The trefoil, five pixels square: black blades (K) on a yellow ground.
 TREFOIL = ["YYYYY", "YKYKY", "YYKYY", "YYKYY", "YYYYY"]
+#: A five-pointed star (China's red star).
+STAR = ["..R..", ".RRR.", "RRRRR", ".RRR.", "R...R"]
 SIDES = ("north", "south", "east", "west")
 
 
@@ -582,6 +591,9 @@ def build_all() -> list[str]:
     names += reentry("thermonuclear_warhead", ABLATIVE, DRAB, YELLOW, None)
     names += reentry("cobalt_warhead", BLUE_BLACK, BLUE_BLACK, COBALT, COBALT)
     names += tsar()
+    # --- the superweapons' (DESIGN.md §19.5) ---
+    names += scud_storm()
+    names += nuclear_missile()
     return names
 
 
@@ -849,6 +861,56 @@ def tsar() -> list[str]:
     return save(w, look)
 
 
+# --- the superweapons' warheads (DESIGN.md §19.5) --------------------------------------------------------------------------------
+
+def scud_storm() -> list[str]:
+    """A toxin SCUD's warhead (the GLA's SCUD Storm, C&C Generals): the Scud's long nose, painted the GLA's toxin green,
+    over a short section of the same green, a black band where it bolts on, white stencils."""
+    w = Build("scud_storm_warhead")
+    r, hb = 4.0, 2.0
+    mounting_ring(w, r + 0.6, hb)
+    w.ring("body", r, hb, 6.0, caps=("up",), top=False)
+    top = w.nose("nose", r, 6.0, 16.0, "ogive", 16)
+    tip(w, 0.75, top, 0.9, "fuze")
+    green = paint(SCUD_GREEN, 0.6, 0.26)
+    look = Look(body=green, nose=green, base=BASE, fuze=metal(DARK, 0.42))
+    look.on("body", lambda k, f, img: band(k, f, img, 2, 3, paint(BLACK, 0.5, 0.2)))
+    look.on("nose", lambda k, f, img: stencil(f, img, (9.0, 8.0), WHITE[5], 4, "xx.x"))
+    look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
+    return save(w, look)
+
+
+def nuclear_missile() -> list[str]:
+    """China's Nuclear Missile's warhead (C&C Generals; a DF-5's re-entry vehicle): a long silver cone over a short skirt,
+    its tip and a band at its foot red, a red star on the front of its skirt, a trefoil on its back."""
+    w = Build("nuclear_missile_warhead")
+    r, hb = 6.0, 2.0
+    mounting_ring(w, r + 0.6, hb)
+    w.ring("body", r, hb, 8.0, caps=("up",), top=False)
+    top = w.nose("nose", r, 8.0, 18.0, "ogive", 18)
+    tip(w, 0.7, top, 0.8, "fuze")
+    silver = metal(STEEL, 0.64, brushed=0.06)
+    red = paint(PLA_RED, 0.55, 0.15)
+    look = Look(body=silver, nose=silver, base=BASE, fuze=red)
+    def red_tip(k, f, img):                                    # the tip red, its rings' ledges with it
+        y0 = top - 4
+        M.paste(img, k.on(f, red), (np.floor(f.Y + 0.1) >= y0) if f.d in SIDES else (f.Y > y0 + 0.01))
+    look.on("nose", red_tip)
+    look.on("body", lambda k, f, img: band(k, f, img, 2, 3, red))
+    look.on("body", lambda k, f, img: decal(f, img, STAR, {"R": PLA_RED[4]}, 7.6))
+
+    def back(k, f, img):                                       # the trefoil on the back
+        if f.d in SIDES and f.normal[2] < -0.5:
+            col = np.floor(f.X - 5.5).astype(int)
+            row = np.floor(13.5 - f.Y).astype(int)
+            for j, line in enumerate(TREFOIL):
+                for i, ch in enumerate(line):
+                    img[(row == j) & (col == 4 - i)] = BLACK[1] if ch == "K" else YELLOW[4]
+    look.on("nose", back)
+    look.on("base", lambda k, f, img: bolts(f, img, 1.2))
+    return save(w, look)
+
+
 # --- the missile's view of each warhead, the bomblet, the fire, the blockstates ------------------------------------------------
 
 #: The nose of a missile with no warhead: (nose ramp, band colour or None, tip ramp), bare steel. (A missile with a warhead
@@ -859,7 +921,7 @@ NOSES = {"none": (STEEL, None, STEEL)}
 WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead", "bunker_buster_warhead", "napalm_warhead",
             "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
             "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
-            "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead"]
+            "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead"]
 
 
 def mount(name: str) -> tuple[float, float, float]:

@@ -23,11 +23,12 @@ public final class Launches {
 
     private Launches() {}
 
-    static void track(ServerLevel level, BlockPos pos) {
+    /** A launch site at {@code pos} (a silo, a superweapon) for the computers to find. */
+    public static void track(ServerLevel level, BlockPos pos) {
         SILOS.computeIfAbsent(level.dimension(), k -> new LongOpenHashSet()).add(pos.asLong());
     }
 
-    static void untrack(ServerLevel level, BlockPos pos) {
+    public static void untrack(ServerLevel level, BlockPos pos) {
         LongOpenHashSet set = SILOS.get(level.dimension());
         if (set != null) {
             set.remove(pos.asLong());
@@ -66,16 +67,16 @@ public final class Launches {
         return false;
     }
 
-    /** The silos within reach of a computer at {@code from}, nearest first. */
-    public static List<LaunchSiloBlockEntity> silosNear(ServerLevel level, BlockPos from) {
+    /** The launch sites (silos, superweapons) within reach of a computer at {@code from}, nearest first. */
+    public static List<LaunchSite> silosNear(ServerLevel level, BlockPos from) {
         LongOpenHashSet set = SILOS.get(level.dimension());
-        List<LaunchSiloBlockEntity> out = new ArrayList<>();
+        List<LaunchSite> out = new ArrayList<>();
         if (set == null) {
             return out;
         }
         for (long l : set.toLongArray()) {
             BlockPos p = BlockPos.of(l);
-            if (p.distSqr(from) <= (double) LINK_RANGE * LINK_RANGE && level.getBlockEntity(p) instanceof LaunchSiloBlockEntity silo) {
+            if (p.distSqr(from) <= (double) LINK_RANGE * LINK_RANGE && level.getBlockEntity(p) instanceof LaunchSite silo) {
                 out.add(silo);
             }
         }

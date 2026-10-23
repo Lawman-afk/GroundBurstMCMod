@@ -1166,6 +1166,68 @@ Salt is leached out of dried kelp with water; chlorine comes from salt water. To
 ])
 
 # =========================================================================================================================
+chapter("superweapons", "Superweapons", "scud_storm", """
+The two great superweapons of the old wars: the GLA's **SCUD Storm** and China's **Nuclear Missile**. Each is a structure of its own, takes only its own ammunition (built at a factory of its own faction, the **Arms Dealer** or the **War Factory**), charges for minutes on power and is fired from a [Launch Computer](ordnance/launch_site). When one is built, readied or launched, everyone in the dimension hears the warning.
+""")
+
+entry("superweapons/scud_storm", "SCUD Storm", "scud_storm", ["scud_storm", "adobe_wall", "toxin_tank", "scud_erector", "scud_storm_spawner",
+                                                               "toxin_scud"], [
+    text("""
+The GLA's superweapon: a square sand pad, nine **Toxin SCUDs** lying like the spokes of a wheel on their erectors round a tank of toxin, behind a low adobe wall with a watchtower at each end, a guard hut flying its flag.
+
+Load it with up to nine Toxin SCUDs and give it power through its Energy Port (pipes can feed it through its Item Port). It **charges for 5 minutes** at 400 FE a tick (charging pauses without power); then it is **READY**. A [Launch Computer](ordnance/launch_site) within reach lists it with its charge; aim it, arm it and press LAUNCH. Its erectors raise the SCUDs upright, a 10 second countdown runs and they go **one after another**, each coming down anywhere within **16 blocks** of the target. Then it charges again from empty.
+"""),
+    structure("scud_storm", "The SCUD Storm: a 13 by 13 pad of Launch Pads, the controller in the middle of its front edge with an Item Port three to its left and an Energy Port three to its right. Behind the pad and down its left side, an L of Adobe Wall two high, with a watchtower four high at each end. On the pad, a 3 by 3 Toxin Tank two high in the middle and nine SCUD Erectors round it (the Holo-Projector shows where). Keep everything else over the pad clear six blocks up: the SCUDs lie on it and rise over it."),
+    spot("toxin_scud", """
+A SCUD as the GLA paints it: white, its fins and nose toxin green. Built at an [Arms Dealer](superweapons/arms_dealer); only a SCUD Storm fires it. Where it comes down: a heavy blast, then [toxin](superweapons/toxin) wells up out of the crater.
+"""),
+    craft("scud_storm"),
+    craft("adobe_wall"),
+    craft("toxin_tank"),
+    craft("scud_erector"),
+])
+
+entry("superweapons/toxin", "Toxin strikes", "toxin_scud", ["toxin_scud"], [
+    text("""
+A Toxin SCUD's warhead is the point of it. A moment after its blast has dug its crater, its **toxin** wells up out of it as a heavy green cloud that hugs the ground, sinks into hollows and drifts with the wind for two minutes and more, and a **front of glowing anthrax residue** runs out over the ground round it, 16 blocks, splashing as it goes and dosing whatever it washes over.
+
+The residue bubbles and fumes and poisons whatever walks through it (Poison IV and nausea), drying out over about eight minutes. A hazmat suit keeps out both the cloud and the residue.
+"""),
+])
+
+entry("superweapons/nuclear_missile_silo", "Nuclear Missile Silo", "nuclear_missile_silo", ["nuclear_missile_silo", "fieldstone_wall",
+                                                                                         "missile_erector", "nuclear_missile_silo_spawner",
+                                                                                         "nuclear_missile"], [
+    text("""
+China's superweapon is not a silo dug into the ground but an above-ground "coffin": a long hall, fieldstone below and grey walls between green steel pilasters under a brown roof in four sections, a red star on its gable; the missile lies inside on its erector. Beside the hall's front stands an octagonal control house, at its back a green lattice tower.
+
+Load it with a **Nuclear Missile** and give it power. It **charges for 6 minutes** at 800 FE a tick; then a [Launch Computer](ordnance/launch_site) aims, arms and fires it. The roof folds open, the erector raises the missile upright beside the tower, its arm swings in, and after a 10 second countdown it climbs straight out of the hall. Where it comes down: a nuclear blast (a crater about 85 blocks across) and a **radiation field 200 blocks round** that lasts two days.
+"""),
+    structure("nuclear_missile_silo", "The Nuclear Missile Silo: the hall, 5 wide and 15 long, its walls Fieldstone Wall two high with the controller in the middle of the front wall, an Energy Port in the right wall near the front and an Item Port in the left; inside, a floor of Launch Pads with the Missile Erector on it at the back. Beside the hall's front on the left, the control house: a 3 by 3 of Fieldstone Wall two high. Beside the hall's back on the right, a Gantry Frame tower nine high. Keep the hall's inside and the space over its roof clear, and the missile's column over its back end eleven blocks up."),
+    spot("nuclear_missile", """
+China's missile, a two-stage liquid-fuelled ICBM in silver with red bands and a red star, a boosted fission warhead under its cone. Built at a [War Factory](superweapons/war_factory); only a Nuclear Missile Silo fires it.
+"""),
+    craft("nuclear_missile_silo"),
+    craft("fieldstone_wall"),
+    craft("missile_erector"),
+])
+
+entry("superweapons/arms_dealer", "Arms Dealer", "arms_dealer", ["arms_dealer", "arms_dealer_spawner"], [
+    text("""
+The GLA's factory for **Toxin SCUDs**: a walled adobe compound with a workshop at its back, an awning over racks of rockets and an A-frame hoist over its yard. Load its parts (a Medium Missile Body, a Solid Rocket Motor II, a Chemical Agent Canister and a Toxic Waste Tank) and give it power: it sets to work by itself, its hoist laying the SCUD out on its trestles section by section, **30 seconds** at 160 FE a tick for each. The finished SCUD waits on the trestles and in the output.
+"""),
+    structure("arms_dealer", "The Arms Dealer: a 9 by 7 compound walled with Adobe Wall two high, the controller in the middle of its front wall, an Item Port in its left wall and an Energy Port in its right. Inside, a yard of Launch Pads; across the back of it, the workshop, a 7 by 2 block of Adobe Wall two high. Keep the yard clear three blocks up."),
+    craft("arms_dealer"),
+])
+
+entry("superweapons/war_factory", "War Factory", "war_factory", ["war_factory", "war_factory_spawner"], [
+    text("""
+China's factory for **Nuclear Missiles**: an octagonal hall under two pagoda roofs, a furnace annex with its striped chimney, a conveyor of crates and a missile yard with a gantry crane on rails. Load its parts (a Strategic Missile Body, two Liquid-fuel Stages, a Boosted Fission Core, a Strategic Warhead Casing and a GPS Guidance Unit) and give it power: it builds by itself, its crane laying the missile out on the cradles section by section, **60 seconds** at 480 FE a tick for each.
+"""),
+    structure("war_factory", "The War Factory: 9 wide and 13 long. At the back left, the hall: a 5 by 5 ring of Fieldstone Wall two high round a floor of Launch Pads. At the front left, the furnace annex: a 3 by 3 of Fieldstone Wall two high, its chimney (Fieldstone Wall) six high in the front left corner. Down the right, the missile's yard, three Launch Pads wide and eleven long, with a row of Crane Rail along its far side. Launch Pads everywhere else, the controller in the middle of the front row, an Energy Port and an Item Port in the back row. Keep the yard, the crane's way and the space over the hall clear."),
+    craft("war_factory"),
+])
+
 chapter("safety", "Safety", "decontamination_shower", """
 Hazards the mod adds, and how to deal with them.
 """)

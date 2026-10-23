@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundzero:block/toxin_tank"
+    },
+    "formed=true": {
+      "model": "groundzero:block/toxin_tank_formed"
+    }
+  }
+}

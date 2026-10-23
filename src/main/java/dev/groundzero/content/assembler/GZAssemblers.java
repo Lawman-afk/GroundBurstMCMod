@@ -46,8 +46,12 @@ public final class GZAssemblers {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileAssemblerBlockEntity>> STRATEGIC_ENTITY =
             entity(AssemblerClass.STRATEGIC, () -> GZAssemblers.STRATEGIC_ENTITY, STRATEGIC_CONTROLLER);
 
-    /** The deck's cuts: the Launch Pad decks and the Item Port 14 px high, the controller's console, the Energy Port's housing. */
-    private static final Map<Character, PartCut> DECK = Map.of('D', PartCut.DECK, 'C', PartCut.CONSOLE_NORTH, 'H', PartCut.HOUSING_NORTH);
+    /**
+     * The deck's cuts: the Launch Pad decks and the Item Port 14 px high, the controller's console, the Energy Port's
+     * housing along the outer edge of its cell (the back, or {@code h} the right-hand side).
+     */
+    private static final Map<Character, PartCut> DECK = Map.of('D', PartCut.DECK, 'C', PartCut.CONSOLE_NORTH, 'H', PartCut.HOUSING_NORTH,
+            'h', PartCut.HOUSING_WEST);
 
     /**
      * The Light Missile Assembler: a 3x6 deck of Launch Pad (the controller at the front middle, the Item Port and Energy
@@ -62,7 +66,7 @@ public final class GZAssemblers {
                     {" R ", " R ", " R ", " R ", " R ", " R "},
             },
             legend(LIGHT_CONTROLLER),
-            MultiblockDefinition.layerCuts(0, new String[] {"DCD", "DDD", "DDD", "DDD", "DDH", "DDD"}, DECK));
+            MultiblockDefinition.layerCuts(0, new String[] {"DCD", "DDD", "DDD", "DDD", "DDh", "DDD"}, DECK));
 
     /**
      * The Medium Missile Assembler: a 5x7 deck of Launch Pad (the controller at the front middle, the Item Port and

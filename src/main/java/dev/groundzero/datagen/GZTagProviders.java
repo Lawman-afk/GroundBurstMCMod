@@ -136,6 +136,11 @@ public final class GZTagProviders {
             for (var c : dev.groundzero.content.assembler.AssemblerClass.values()) {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.assembler.GZAssemblers.controller(c).block().key());
             }
+            for (var b : java.util.List.of(dev.groundzero.content.superweapon.GZSuperweapons.ADOBE_WALL, dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_TANK, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_ERECTOR, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_CONTROLLER,
+                    dev.groundzero.content.superweapon.GZSuperweapons.FIELDSTONE_WALL, dev.groundzero.content.superweapon.GZSuperweapons.MISSILE_ERECTOR, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_CONTROLLER, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER,
+                    dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER)) {
+                tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
+            }
             // The Missile Silo's concrete and hatch are bunker material: an iron pickaxe at least.
             for (var b : java.util.List.of(dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE, dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE,
                     dev.groundzero.content.launch.GZLaunch.SILO_HATCH)) {

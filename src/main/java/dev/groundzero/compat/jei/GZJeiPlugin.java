@@ -94,6 +94,7 @@ public final class GZJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new AssemblyCategory(gui));
         registration.addRecipeCategories(new MissileCategory(gui));
         registration.addRecipeCategories(new StrategicCategory(gui));
+        registration.addRecipeCategories(new AmmoFactoryCategory(gui));
     }
 
     @Override
@@ -104,6 +105,15 @@ public final class GZJeiPlugin implements IModPlugin {
         registration.addRecipes(AssemblyCategory.TYPE, AssemblyCategory.recipes());
         registration.addRecipes(MissileCategory.TYPE, MissileCategory.recipes());
         registration.addRecipes(StrategicCategory.TYPE, StrategicCategory.recipes());
+        registration.addRecipes(AmmoFactoryCategory.TYPE, AmmoFactoryCategory.recipes());
+        // The superweapons (DESIGN.md §19.5): how each is built and works.
+        info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_SCUD_STORM, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.ADOBE_WALL.item().get(),
+                dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_TANK.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.SCUD_ERECTOR.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_SPAWNER.get(), dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_SCUD.get());
+        info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_NUCLEAR_MISSILE, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.FIELDSTONE_WALL.item().get(),
+                dev.groundzero.content.superweapon.GZSuperweapons.MISSILE_ERECTOR.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_SPAWNER.get(), dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_ROUND.get());
+        info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_TOXIN, dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_SCUD.get());
+        info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_ARMS_DEALER, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_SPAWNER.get());
+        info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_WAR_FACTORY, dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_SPAWNER.get());
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));
@@ -194,6 +204,8 @@ public final class GZJeiPlugin implements IModPlugin {
             registration.addCraftingStation(MissileCategory.TYPE, dev.groundzero.content.assembler.GZAssemblers.controller(c).item().get());
         }
         registration.addCraftingStation(StrategicCategory.TYPE, dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.item().get());
+        registration.addCraftingStation(AmmoFactoryCategory.TYPE, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER.item().get(),
+                dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER.item().get());
     }
 
     @Override
@@ -212,6 +224,9 @@ public final class GZJeiPlugin implements IModPlugin {
                 }
                 if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.assembler.MissileAssemblerBlockEntity) {
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), MissileCategory.TYPE));
+                }
+                if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.superweapon.AmmoFactoryBlockEntity) {
+                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), AmmoFactoryCategory.TYPE));
                 }
                 if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.strategic.StrategicAssemblyBlockEntity) {
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), StrategicCategory.TYPE));

@@ -46,6 +46,14 @@ public final class GZOrdnance {
                     .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
 
+    /** The glowing residue a toxin SCUD spreads over the ground (DESIGN.md §19.5). */
+    public static final net.neoforged.neoforge.registries.DeferredBlock<AnthraxResidueBlock> ANTHRAX_RESIDUE = dev.groundzero.registry.GZBlocks.blockOnly(
+            "anthrax_residue", "Anthrax Residue", AnthraxResidueBlock::new,
+            p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollision().noOcclusion()
+                    .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
+                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
+                    .lightLevel(s -> 10 - 2 * s.getValue(ToxicSludgeBlock.AGE)));
+
     // --- placed charges (slice 6b) ---
     public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> C4 =
             dev.groundzero.registry.GZBlocks.register("c4", "C4 Charge", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.ChargeBlock.C4::new,
@@ -120,11 +128,17 @@ public final class GZOrdnance {
             "tsar_warhead", "Tsar Mega-bomb", dev.groundzero.content.ordnance.charge.ChargeKind.TSAR_WARHEAD);
     public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> DIRTY_WARHEAD = bomb(
             "dirty_warhead", "Dirty Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.DIRTY_WARHEAD);
+    /** DESIGN.md §19.5: the superweapons' warheads, only ever built whole into their ammunition. */
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> SCUD_STORM_WARHEAD = bomb(
+            "scud_storm_warhead", "Toxin SCUD Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.SCUD_STORM_WARHEAD);
+    public static final dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock> NUCLEAR_MISSILE_WARHEAD = bomb(
+            "nuclear_missile_warhead", "Nuclear Missile Warhead", dev.groundzero.content.ordnance.charge.ChargeKind.NUCLEAR_MISSILE_WARHEAD);
     /** Every warhead, in the order the creative tab and the Field Manual show them. */
     public static final java.util.List<dev.groundzero.registry.GZBlocks.WithItem<dev.groundzero.content.ordnance.charge.ChargeBlock>> WARHEADS =
             java.util.List.of(HE_WARHEAD, HEAVY_WARHEAD, THERMOBARIC_WARHEAD, CLUSTER_WARHEAD, BUNKER_BUSTER, NAPALM_WARHEAD, MASSIVE_WARHEAD,
                     GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD, CHEMICAL_WARHEAD, DIRTY_WARHEAD, TACTICAL_NUCLEAR_WARHEAD,
-                    FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD, TSAR_WARHEAD);
+                    FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD, TSAR_WARHEAD,
+                    SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
     /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundzero.registry.GZBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
@@ -143,7 +157,8 @@ public final class GZOrdnance {
                     TOXIC_WASTE_WARHEAD.block().get(),
                     CHEMICAL_WARHEAD.block().get(), TACTICAL_NUCLEAR_WARHEAD.block().get(), FISSION_WARHEAD.block().get(),
                     BOOSTED_FISSION_WARHEAD.block().get(), NEUTRON_WARHEAD.block().get(), DIRTY_WARHEAD.block().get(),
-                    THERMONUCLEAR_WARHEAD.block().get(), COBALT_WARHEAD.block().get(), TSAR_WARHEAD.block().get()));
+                    THERMONUCLEAR_WARHEAD.block().get(), COBALT_WARHEAD.block().get(), TSAR_WARHEAD.block().get(),
+                    SCUD_STORM_WARHEAD.block().get(), NUCLEAR_MISSILE_WARHEAD.block().get()));
     public static final DeferredItem<dev.groundzero.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GZItems.register("remote_detonator",
             "Remote Detonator", GZTab.ORDNANCE, dev.groundzero.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 
@@ -203,6 +218,7 @@ public final class GZOrdnance {
      */
     public static void register() {
         dev.groundzero.content.ordnance.charge.Charges.register();
+        ToxinSpreads.register();
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingVisibilityEvent e) -> {
             var seen = e.getEntity();
             var looker = e.getLookingEntity();

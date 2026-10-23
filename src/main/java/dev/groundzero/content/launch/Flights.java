@@ -126,7 +126,11 @@ public final class Flights extends SavedData {
         return launch(level, pad, target, warhead, SizeClass.M, false, owner, 0);
     }
 
-    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
+    /**
+     * A missile lit at {@code pad} (its tail), bound for {@code target}: its warhead, airframe class (its stages), whether
+     * it is hardened against EMP, and how deep in a silo's shaft it starts (0: on a pad). (A superweapon's missiles.)
+     */
+    public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
             double silo) {
         double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
         double apex = apex(range);

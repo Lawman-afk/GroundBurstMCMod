@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundzero:machine_casing",
+    "groundzero:military_circuit",
+    "groundzero:military_circuit",
+    "groundzero:crt_display",
+    "groundzero:sensor_array",
+    "groundzero:chemical_agent_canister",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundzero:scud_storm"
+  }
+}

@@ -172,7 +172,8 @@ public final class LaunchPayloads {
      * A linked silo: where, its readiness ({@link LaunchSiloBlockEntity.Readiness} ordinal), its countdown (-1: none),
      * whether it is armed, and its target if it has one.
      */
-    public record Silo(BlockPos pos, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ, int range) {
+    public record Silo(BlockPos pos, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ, int range,
+            int kind) {
         public static final StreamCodec<FriendlyByteBuf, Silo> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
             buf.writeVarInt(s.readiness());
@@ -182,8 +183,9 @@ public final class LaunchPayloads {
             buf.writeVarInt(s.targetX());
             buf.writeVarInt(s.targetZ());
             buf.writeVarInt(s.range());
+            buf.writeVarInt(s.kind());
         }, buf -> new Silo(buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
-                buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
     }
 
     /**

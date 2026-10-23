@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundzero:pressure_vessel",
+    "groundzero:electric_motor"
+  ],
+  "result": {
+    "id": "groundzero:scud_erector"
+  }
+}

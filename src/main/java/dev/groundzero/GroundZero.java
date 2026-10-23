@@ -47,6 +47,7 @@ public class GroundZero {
         dev.groundzero.content.assembly.GZAssembly.init();
         dev.groundzero.content.strategic.GZStrategic.init();
         dev.groundzero.content.assembler.GZAssemblers.init();
+        dev.groundzero.content.superweapon.GZSuperweapons.init();
         dev.groundzero.content.effect.EffectSystems.init();
         dev.groundzero.content.fluid.GZFluids.init();
         dev.groundzero.content.pipe.GZPipes.init();
