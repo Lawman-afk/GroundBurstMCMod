@@ -2,18 +2,28 @@
 cell, by FissionReactorRenderer (the walls' own blocks hide while it is formed).
 
 Every section is a block model for one cell, written for the cell's north side (corners and posts for the north-west):
-the renderer turns it to the side it faces. The look follows the old formed model: a lead-lined vessel of bolted lead
-plates, steel-angled corner posts, deep window bays with leaded panes, a dark steel plinth banded in hazard paint, a
-gunmetal head with a raised rim and a control-rod drive over every column that holds fuel (its rod rising as the
-control rods come out), the ports' striped housings, and the control console where the controller stands. Painted with
-the material library (DESIGN.md §4.3: every model).
+the renderer turns it to the side it faces. Together they make one continuous vessel, as the old fixed formed model
+was: a dark steel base banded in hazard paint all the way round, lead pillars with steel angles up the corners, wide
+lead walls with a rivet grid that runs on from cell to cell, a lead head band under a steel rim, a steel roof with its
+own rivet grid, a control-rod drive over every column that holds fuel (its rod rising as the control rods come out),
+the ports' striped housings and the control console where the controller stands. Glass is clear and runs on too:
+windows and skylights side by side make one glazed panel, a thin steel lip round its outside only (the renderer picks
+each cell's lip pieces from its neighbours).
 
-    tools\\.venv\\Scripts\\python.exe tools\\assets\\fission_formed.py        writes the sections and a review sheet
+To join with no seam, a section's outer faces are painted as part of the whole (the material library's `period` and
+`context`): the noise wraps every block, and the neighbouring cells' sections stand round it while it is painted, so a
+face that runs on into the next cell has no lip, shadow or grime there; only the vessel's real edges (its corners, the
+step from a pillar to a wall, the base's ledge, the head's overhang) are lit and shaded. The faces seen only through
+the glass (a wall's cut side, the core's floor and ceiling) are painted as they are, on their own.
+
+    tools\\.venv\\Scripts\\python.exe tools\\assets\\fission_formed.py        writes the sections, checks the joins,
+                                                                           writes a review sheet
 
 Sections (models/block/fission_<name>.json; the renderer's list is FissionSections.java):
-    wall, post, corner_bottom, edge_bottom, bottom, corner_top, edge_top, top, window, window_glass, skylight,
-    skylight_glass, drive, drive_rod, port_item, port_fluid, port_energy, port_item_top, port_fluid_top,
-    port_energy_top, console
+    wall, post, corner_bottom, edge_bottom, bottom, corner_top, edge_top, top, window_glass, skylight_glass,
+    wlip_up, wlip_down, wlip_lo, wlip_hi, wlip_lo_up, wlip_hi_up, wlip_lo_down, wlip_hi_down,
+    slip_n, slip_s, slip_w, slip_e, slip_nw, slip_ne, slip_sw, slip_se,
+    drive, drive_rod, port_item, port_fluid, port_energy, port_item_top, port_fluid_top, port_energy_top, console
 """
 from __future__ import annotations
 
@@ -32,21 +42,28 @@ from gz.model import BlockModel  # noqa: E402
 from gz.palette import fixed  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 
-#: The vessel's materials. Each section is painted as its own model, so the ones that run on from cell to cell keep their
-#: weathering even (no grime, streaks or skylight falloff gathering at every cell's foot): each cell reads as a bolted
-#: plate of one continuous wall.
-CALM = dict(grime=0.03, streaks=0.0, falloff=0.015, dust=0.02)
-LEAD = M.Material(ramp=K.ramp_of(P.LEAD), tone=0.52, mottle=0.04, grain=0.03, dither=0.5, edge_light=0.16, edge_dark=0.12, ao=0.45,
-                  **CALM)
-LINING = M.Material(ramp=K.ramp_of(P.LEAD), tone=0.38, mottle=0.03, grain=0.03, dither=0.5, edge_light=0.08, edge_dark=0.08, ao=0.5,
-                    **CALM)
+#: The vessel's materials: even weathering (no grime, streaks or skylight falloff gathering at each cell's foot), so the
+#: cells read as one surface; each tone sits right on a shade of its ramp (with the face's own lift: a roof's +0.1), so
+#: the surface is that shade with specks of the next, not a dithered blotch that repeats every block.
+CALM = dict(grime=0.03, streaks=0.0, falloff=0.0, dust=0.0)
+LEAD_RAMP = np.stack([np.interp(np.linspace(0, 6, 9), np.arange(7), K.ramp_of(P.LEAD)[:, c]) for c in range(3)],
+                     axis=1).astype(np.float32)           # the palette's lead in nine shades: fine steps for a big surface
+LEAD = M.Material(ramp=LEAD_RAMP, tone=0.5, mottle=0.035, grain=0.035, dither=0.45, edge_light=0.16, edge_dark=0.12,
+                  ao=0.45, brushed=0.02, **CALM)
+LINING = M.Material(ramp=K.ramp_of(P.LEAD), tone=0.38, mottle=0.03, grain=0.03, dither=0.5, edge_light=0.08, edge_dark=0.08,
+                    ao=0.5, **CALM)
+ROOF = M.Material(ramp=M.STEEL_RAMP, tone=0.567, mottle=0.035, grain=0.035, dither=0.45, edge_light=0.14, edge_dark=0.1,
+                  ao=0.45, brushed=0.02, **CALM)
 GUN = replace(K.GUN, **CALM)
 PLINTH = replace(K.PLINTH, **CALM)
 STEEL = replace(K.STEEL, **CALM)
+LIP = replace(STEEL, ao=0.0)                       # the glazing's lips: thin, no contact shadow from the next piece
+HAZARD = replace(K.HAZARD, **CALM)
 GLASS = fixed("reactor_pane", "#141a1e", "#1e262c", "#2a343c", "#36424c", "#4a5864", "#6a7a88", "#a4b4c0")
 FLUID_BLUE = fixed("fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3a6ec8", "#6a98e0", "#a8c8f4")
-CLEAR = (0, 0, 0, 0)
 SECTIONS: dict[str, BlockModel] = {}
+#: Every section's noise wraps every block (16 px), so a cell joins the next with no seam.
+PERIOD = 16
 
 
 def _model(name: str, size: int = 64) -> BlockModel:
@@ -60,187 +77,250 @@ def _save(name: str, m: BlockModel, t: Tex) -> None:
     SECTIONS[name] = m
 
 
-def ring(f) -> np.ndarray:
-    return K.ring(f)
+def kits(m: BlockModel, seed: int, context) -> tuple[K.Kit, K.Kit]:
+    """Two painters for a section: one with its neighbours round it (its outer faces, which run on into theirs), one
+    without (the faces seen only through the glass, which really end where the cell does)."""
+    return K.Kit(m, {}, seed=seed, period=PERIOD, context=context), K.Kit(m, {}, seed=seed + 1, period=PERIOD)
 
 
-def plates(f, img, panel: bool = True) -> None:
-    """Bolted lead plates a block square: a seam between them (on one side of each cell, so each joint gets one), the
-    next plate's lit lip, a bolt in each corner and a shallow inspection panel in the middle."""
-    if not f.vertical and f.d != "up":
-        return
+def cell(dx: int = 0, dy: int = 0, dz: int = 0, frm=(0, 0, 0), to=(16, 16, 16)) -> tuple[tuple, tuple]:
+    """A box in the cell {dx, dy, dz} cells away: a neighbour standing round a section while it is painted."""
+    return (tuple(frm[i] + 16 * d for i, d in enumerate((dx, dy, dz))), tuple(to[i] + 16 * d for i, d in enumerate((dx, dy, dz))))
+
+
+#: Neighbours: a wall plate (recessed a pixel), a full block, the ground under the vessel.
+WALL_BOX = ((0, 0, 1), (16, 16, 16))
+GROUND = ((-32, -32, -32), (48, 0, 48))
+
+
+def studs(f, img, every: float = 8.0, at: float = 4.5) -> None:
+    """Rivet heads in a grid every {every} pixels, on the vessel's grid: a lit head with its shadow under it."""
     a, b = f.plane_uv()
-    ua, vb = np.mod(a, 16.0), np.mod(b, 16.0)
-    M.darken(img, (ua < 1) | (vb < 1), 0.6)
-    M.lighten(img, ((ua >= 1) & (ua < 2) & (vb >= 1)) | ((vb >= 15) & (ua >= 1)), 1.08, 3)
-    if panel:
-        edge = np.minimum(np.minimum(ua - 1, 16 - ua), np.minimum(vb - 1, 16 - vb))
-        M.darken(img, (edge >= 4) & (edge < 5), 0.78)
-        M.lighten(img, (edge >= 5) & (edge < 6) & ((np.abs(vb - 10.5) < 0.6) | (np.abs(ua - 5.5) < 0.6)), 1.07, 2)
-    bolt = ((np.abs(ua - 2.5) < 0.6) | (np.abs(ua - 14.5) < 0.6)) & ((np.abs(vb - 2.5) < 0.6) | (np.abs(vb - 14.5) < 0.6))
-    M.lighten(img, bolt, 1.32, 14)
-    M.darken(img, np.roll(bolt, 1, axis=0) & ~bolt, 0.7)
+    rivet(img, (np.abs(np.mod(a, every) - at) < 0.5) & (np.abs(np.mod(b, every) - at) < 0.5))
 
 
-def hazard_band(k: K.Kit, f, img, y0: float, y1: float) -> None:
-    M.paste(img, k.on(f, K.HAZARD), (f.Y >= y0) & (f.Y < y1))
+def rivet(img, on) -> None:
+    M.lighten(img, on, 1.42, 16)
+    M.darken(img, np.roll(on, 1, axis=0) & ~on, 0.8)
 
 
-# --- the walls ---------------------------------------------------------------------------------------------------------------
+def courses(f, img) -> None:
+    """The vessel's cladding: courses a block tall, a thin seam at each block's foot and a row of rivets either side of
+    it every 4 px. The courses run on round the whole vessel at the same heights (walls, pillars, the head band; on the
+    roof, deck plates the same way), so the cells read as one skin, not a grid of tiles."""
+    a, b = f.plane_uv()
+    vb = np.mod(b, 16.0)
+    seam = vb < 1
+    M.darken(img, seam, 0.72)
+    rivet(img, ((np.abs(vb - 1.5) < 0.5) | (np.abs(vb - 14.5) < 0.5)) & (np.abs(np.mod(a, 4.0) - 2.5) < 0.5))
 
-def wall() -> None:
-    m = _model("wall")
-    m.box("plate", (0, 0, 1), (16, 16, 16))
+
+def band(k: K.Kit, f, img) -> None:
+    """The base's hazard band (y 11 to 14), a shadowed groove under it."""
+    M.paste(img, k.on(f, HAZARD), (f.Y >= 11) & (f.Y < 14))
+    M.darken(img, (f.Y >= 10.5) & (f.Y < 11), 0.6)
+
+
+def tread(f, img) -> None:
+    """Tread plate (the base's top: the ledge, the window sills, the core's floor)."""
+    a, b = f.plane_uv()
+    bar = ((np.floor(a) % 4) == 1) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 1)
+    M.lighten(img, bar, 1.22, 7)
+    M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.74)
+
+
+def angle(k: K.Kit, f, img) -> None:
+    """A pillar's steel angle: 3 px up each side of the corner, a rivet every 4 px up it."""
+    across = f.X if f.d == "north" else f.Z
+    strip = across < 3
+    M.paste(img, k.on(f, STEEL), strip)
+    M.darken(img, (across >= 3) & (across < 3.6), 0.7)
+    rivet = (np.abs(across - 1.5) < 0.5) & (np.abs(np.mod(f.Y, 4.0) - 2.5) < 0.5)
+    M.lighten(img, rivet, 1.3, 14)
+    M.darken(img, np.roll(rivet, 1, axis=0) & ~rivet, 0.75)
+
+
+# --- the base ----------------------------------------------------------------------------------------------------------------
+
+def corner_bottom() -> None:
+    m = _model("corner_bottom")
+    m.box("base", (0, 0, 0), (16, 16, 16))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    k = K.Kit(m, {}, seed=401)
-    k.paint(t, "plate", LEAD)
-    k.paint(t, "plate", LINING, only=("south",))
-    k.overlay(t, "plate", plates, only=("north",))
-    _save("wall", m, t)
+    kc, kp = kits(m, 407, [cell(1), cell(dz=1), cell(1, 0, 1), cell(dy=1), GROUND])
+    kp.paint(t, "base", PLINTH)
+    kc.paint(t, "base", PLINTH, only=("north", "west"))
+    kc.overlay(t, "base", lambda f, img: band(kc, f, img), only=("north", "west"))
+    _save("corner_bottom", m, t)
 
+
+def edge_bottom() -> None:
+    m = _model("edge_bottom")
+    m.box("base", (0, 0, 0), (16, 16, 16))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    kc, kp = kits(m, 408, [cell(-1), cell(1), cell(dz=1), cell(-1, 0, 1), cell(1, 0, 1), GROUND])
+    kp.paint(t, "base", PLINTH)
+    kc.paint(t, "base", PLINTH, only=("north", "up"))
+    kc.overlay(t, "base", lambda f, img: band(kc, f, img), only=("north",))
+    kc.overlay(t, "base", tread, only=("up",))
+    _save("edge_bottom", m, t)
+
+
+def bottom() -> None:
+    m = _model("bottom")
+    m.box("base", (0, 0, 0), (16, 16, 16))
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    kc, kp = kits(m, 409, [cell(dx, 0, dz) for dx in (-1, 0, 1) for dz in (-1, 0, 1) if dx or dz] + [GROUND])
+    kp.paint(t, "base", PLINTH)
+    kc.paint(t, "base", PLINTH, only=("up",))
+    kc.overlay(t, "base", tread, only=("up",))
+    _save("bottom", m, t)
+
+
+# --- pillars and walls -------------------------------------------------------------------------------------------------------
 
 def post() -> None:
     m = _model("post")
-    m.box("post", (0, 0, 0), (16, 16, 16))
+    m.box("pillar", (0, 0, 0), (16, 16, 16))
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    k = K.Kit(m, {}, seed=403)
-    k.paint(t, "post", LEAD)
-    k.paint(t, "post", LINING, only=("south", "east"))
-
-    def angle(f, img):                                                        # the steel angle on the corner, banded
-        corner = (f.X < 3) if f.d == "north" else (f.Z < 3)
-        M.paste(img, k.on(f, STEEL), corner)
-        M.darken(img, corner & ((f.X < 3) & (f.Z < 3) | False) & (f.Y % 4 < 0.5), 0.8)
-        band = (f.Y > 13.5) & (f.Y < 15)
-        M.paste(img, k.on(f, STEEL), band)
-        M.lighten(img, band & (f.Y > 14.5), 1.15, 6)
-        bolt = corner & (np.abs(np.mod(f.Y, 8.0) - 4) < 0.6) & ((np.abs(f.X - 1.5) < 0.6) if f.d == "north" else (np.abs(f.Z - 1.5) < 0.6))
-        M.lighten(img, bolt, 1.35, 16)
-    k.overlay(t, "post", plates, only=("north", "west"))
-    k.overlay(t, "post", angle, only=("north", "west"))
-    k.overlay(t, "post", lambda f, img: M.darken(img, (f.X < 3) & (f.Z < 3) & (ring(f) < 1), 0.8), only=("up", "down"))
+    kc, kp = kits(m, 403, [cell(dy=1), cell(dy=-1), cell(1, frm=WALL_BOX[0], to=WALL_BOX[1]),
+                           cell(dz=1, frm=(1, 0, 0), to=(16, 16, 16))])
+    kp.paint(t, "pillar", LINING)
+    kc.paint(t, "pillar", LEAD, only=("north", "west"))
+    kc.overlay(t, "pillar", courses, only=("north", "west"))
+    kc.overlay(t, "pillar", lambda f, img: angle(kc, f, img), only=("north", "west"))
     _save("post", m, t)
 
 
-def window() -> None:
-    """A window: a steel frame at the wall's face, standing a pixel proud of the plates, the pane (a translucent section
-    of its own) just behind it. There is no bay: the sides of the walls and posts round it frame the opening, so windows
-    side by side make one glazed panel and the core shows through from any angle."""
-    m = _model("window", 64)
-    bars = (("bar_t", (0, 14, 0), (16, 16, 2)), ("bar_b", (0, 0, 0), (16, 2, 2)),
-            ("bar_l", (0, 2, 0), (2, 14, 2)), ("bar_r", (14, 2, 0), (16, 14, 2)))
-    for name, frm, to in bars:
-        m.box(name, frm, to)
+def wall() -> None:
+    m = _model("wall")
+    m.box("plate", WALL_BOX[0], WALL_BOX[1])
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    k = K.Kit(m, {}, seed=405)
-    names = [n for n, _, _ in bars]
-    k.paint(t, names, STEEL)
-    k.paint(t, names, LINING, only=("south",))
-
-    def gasket(f, img):                                                       # a dark seal round the pane, on the frame's inner sides
-        inner = {"bar_t": "down", "bar_b": "up", "bar_l": "east", "bar_r": "west"}[f.box.name]
-        if f.d == inner:
-            M.darken(img, f.Z > 1.2, 0.55)
-    k.overlay(t, names, gasket)
-    _save("window", m, t)
-
-    g = _model("window_glass", 32)
-    g.box("pane", (2, 2, 1.25), (14, 14, 1.75), faces=("north", "south"))
-    g.layout()
-    tg = Tex(g.tex_w, g.tex_h)
-    g.paint_all(tg, "pane", leaded)
-    g.render_type = "minecraft:translucent"
-    _save("window_glass", g, tg)
+    kc, kp = kits(m, 401, [cell(dx, dy, frm=WALL_BOX[0], to=WALL_BOX[1]) for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1))])
+    kp.paint(t, "plate", LINING)
+    kc.paint(t, "plate", LEAD, only=("north",))
+    kc.overlay(t, "plate", courses, only=("north",))
+    _save("wall", m, t)
 
 
-def leaded(t: Tex, r, d) -> None:
-    """A leaded pane: clear, faintly tinted glass in four lights (the core's glow shows through it), a lead came across
-    it each way, a glint on each light."""
-    x, y, w, h = r
-    for yy in range(h):
-        for xx in range(w):
-            t.px(x + xx, y + yy, (*GLASS[5][:3], 60))
-    for i in range(w):
-        t.px(x + i, y + h // 2, P.LEAD[1])
-    for j in range(h):
-        t.px(x + w // 2, y + j, P.LEAD[1])
-    for ox, oy in ((0, 0), (w // 2 + 1, 0), (0, h // 2 + 1), (w // 2 + 1, h // 2 + 1)):
-        t.px(x + ox + 1, y + oy + 1, (*GLASS[6][:3], 170))
-        t.px(x + ox + 2, y + oy + 1, (*GLASS[5][:3], 140))
-        t.px(x + ox + 1, y + oy + 2, (*GLASS[5][:3], 140))
+# --- the head and roof -------------------------------------------------------------------------------------------------------
 
-
-# --- the plinth --------------------------------------------------------------------------------------------------------------
-
-def _plinth(name: str, outer: tuple[str, ...], seed: int) -> None:
+def _head(name: str, lips: list[tuple[str, tuple, tuple]], outer: tuple[str, ...], context, seed: int) -> None:
+    """A cell of the head: a full block, its roof a steel plate with a rivet grid, its outer faces lead (the head band),
+    the steel rim along its outer edge. {context} stands the neighbouring cells round it, the rim running on into theirs."""
     m = _model(name)
-    m.box("plinth", (0, 0, 0), (16, 16, 16))
-    m.layout()
-    t = Tex(m.tex_w, m.tex_h)
-    k = K.Kit(m, {}, seed=seed)
-    k.paint(t, "plinth", PLINTH)
-
-    def band(f, img):
-        hazard_band(k, f, img, 11, 14)
-        M.darken(img, (f.Y >= 10.5) & (f.Y < 11), 0.6)
-        M.lighten(img, f.Y >= 15, 1.15, 6)                                       # the plinth's lit top edge
-        M.seams(f, img, every=16, axis="u", offset=0)
-    k.overlay(t, "plinth", band, only=outer)
-
-    def tread(f, img):
-        a, b = f.plane_uv()
-        bar = ((np.floor(a) % 4) == 1) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 1)
-        M.lighten(img, bar, 1.25, 8)
-        M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.72)
-    k.overlay(t, "plinth", tread, only=("up",))
-    _save(name, m, t)
-
-
-# --- the head ----------------------------------------------------------------------------------------------------------------
-
-def _head(name: str, lips: list[tuple[str, tuple, tuple]], outer: tuple[str, ...], seed: int, opening: bool = False) -> None:
-    m = _model(name)
-    if opening:                                                               # a skylight: a frame at the roof's face, as a window
-        for bn, frm, to in (("head_l", (0, 14, 0), (2, 16, 16)), ("head_r", (14, 14, 0), (16, 16, 16)),
-                            ("head_f", (2, 14, 0), (14, 16, 2)), ("head_k", (2, 14, 14), (14, 16, 16))):
-            m.box(bn, frm, to)
-        for bn, frm, to in (("rim_f", (1, 16, 1), (15, 17, 2)), ("rim_k", (1, 16, 14), (15, 17, 15)),
-                            ("rim_l", (1, 16, 2), (2, 17, 14)), ("rim_r", (14, 16, 2), (15, 17, 14))):
-            m.box(bn, frm, to)
-    else:
-        m.box("head", (0, 0, 0), (16, 16, 16))
+    m.box("head", (0, 0, 0), (16, 16, 16))
     for bn, frm, to in lips:
         m.box(bn, frm, to)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    k = K.Kit(m, {}, seed=seed)
-    heads = [b.name for b in m.boxes if b.name.startswith("head")]
-    k.paint(t, heads, GUN)
-    k.paint(t, heads, LINING, only=("down",))
-    if opening:
-        k.paint(t, ["rim_f", "rim_k", "rim_l", "rim_r"], STEEL)
+    kc, kp = kits(m, seed, context)
+    kp.paint(t, "head", LINING)
+    kc.paint(t, "head", ROOF, only=("up",))
+    kc.overlay(t, "head", courses, only=("up",))
+    if outer:
+        kc.paint(t, "head", LEAD, only=outer)
+        kc.overlay(t, "head", courses, only=outer)
     if lips:
-        k.paint(t, [n for n, _, _ in lips], STEEL)
-        k.overlay(t, [n for n, _, _ in lips], lambda f, img: M.lighten(img, (np.abs(np.mod(f.X + f.Z, 6.0) - 3) < 0.6), 1.3, 12),
-                  only=("up",))
-
-    def ring_band(f, img):                                                    # the head's outer ring: lead plates, a steel band
-        M.paste(img, k.on(f, LEAD), f.Y < 12)
-        plates(f, img, panel=False)
-        M.darken(img, (f.Y >= 11.5) & (f.Y < 12), 0.6)
-    k.overlay(t, heads, ring_band, only=outer)
-
-    def plate(f, img):
-        a, b = f.plane_uv()
-        M.darken(img, (np.mod(a, 16.0) < 0.5) | (np.mod(b, 16.0) < 0.5), 0.7)
-        bolt = (np.abs(np.mod(a, 16.0) - 2.5) < 0.6) & (np.abs(np.mod(b, 16.0) - 2.5) < 0.6)
-        M.lighten(img, bolt, 1.3, 12)
-    k.overlay(t, heads, plate, only=("up",))
+        names = [n for n, _, _ in lips]
+        kc.paint(t, names, STEEL)
+        kc.overlay(t, names, lambda f, img: studs(f, img, every=4.0, at=2.5) if f.d == "up" else None)
     _save(name, m, t)
 
+
+# --- glass: clear panes, and the lips round the outside of a glazed panel ------------------------------------------------------
+
+def _glass(m: BlockModel, t: Tex, box: str, seed: int) -> None:
+    """Clear, faintly tinted glass: the core's glow shows through it. A sheen of thin diagonal streaks runs on from
+    pane to pane (the glazing reads as one sheet)."""
+    k = K.Kit(m, {}, seed=seed, period=PERIOD)
+    for f in k.S.faces(box):
+        x, y, w, h = f.rect
+        a, b = f.plane_uv()
+        img = np.zeros((h, w, 4), dtype=np.uint8)
+        img[..., :3] = GLASS[5][:3]
+        img[..., 3] = 44
+        diag = np.mod(a + b, 16.0)
+        img[(diag >= 3) & (diag < 4)] = (*GLASS[6][:3], 80)
+        img[(diag >= 5.5) & (diag < 6)] = (*GLASS[6][:3], 60)
+        t.a[y:y + h, x:x + w] = img
+
+
+def window_glass() -> None:
+    g = _model("window_glass", 64)
+    g.box("pane", (0, 0, 1.5), (16, 16, 1.75), faces=("north", "south"))
+    g.layout()
+    t = Tex(g.tex_w, g.tex_h)
+    _glass(g, t, "pane", 451)
+    g.render_type = "minecraft:translucent"
+    _save("window_glass", g, t)
+
+
+def skylight_glass() -> None:
+    g = _model("skylight_glass", 64)
+    g.box("pane", (0, 15, 0), (16, 15.25, 16), faces=("up", "down"))
+    g.layout()
+    t = Tex(g.tex_w, g.tex_h)
+    _glass(g, t, "pane", 452)
+    g.render_type = "minecraft:translucent"
+    _save("skylight_glass", g, t)
+
+
+#: A window's lip pieces, in the cell's own frame (the wall's face to the north, x across it, y up): a side's run where
+#: the cell beside it is not glass, a corner where any of the three cells round that corner is not. "lo" is the low-x
+#: side, "hi" the high-x side.
+WINDOW_LIPS = {
+    "up": ((1, 15, 0), (15, 16, 1.4)), "down": ((1, 0, 0), (15, 1, 1.4)),
+    "lo": ((0, 1, 0), (1, 15, 1.4)), "hi": ((15, 1, 0), (16, 15, 1.4)),
+    "lo_up": ((0, 15, 0), (1, 16, 1.4)), "hi_up": ((15, 15, 0), (16, 16, 1.4)),
+    "lo_down": ((0, 0, 0), (1, 1, 1.4)), "hi_down": ((15, 0, 0), (16, 1, 1.4)),
+}
+#: A skylight's lip pieces in the roof (x east, z south), standing a pixel proud of it.
+SKYLIGHT_LIPS = {
+    "n": ((1, 15.5, 0), (15, 17, 1)), "s": ((1, 15.5, 15), (15, 17, 16)),
+    "w": ((0, 15.5, 1), (1, 17, 15)), "e": ((15, 15.5, 1), (16, 17, 15)),
+    "nw": ((0, 15.5, 0), (1, 17, 1)), "ne": ((15, 15.5, 0), (16, 17, 1)),
+    "sw": ((0, 15.5, 15), (1, 17, 16)), "se": ((15, 15.5, 15), (16, 17, 16)),
+}
+
+
+def _runs(frm, to, axes) -> list[tuple[tuple, tuple]]:
+    """A lip piece's run carried on a block's length either way along {axes} (the next cells' lips, for painting)."""
+    out = []
+    for axis in axes:
+        for lo_a, hi_a in ((to[axis], to[axis] + 16), (frm[axis] - 16, frm[axis])):
+            lo, hi = list(frm), list(to)
+            lo[axis], hi[axis] = lo_a, hi_a
+            out.append((tuple(lo), tuple(hi)))
+    return out
+
+
+def _lip(name: str, frm, to, axes, seed: int) -> None:
+    """One lip piece: steel, a pixel proud of the wall or roof, running on into the next cell's lip."""
+    m = _model(name, 32)
+    m.box("lip", frm, to)
+    m.layout()
+    t = Tex(m.tex_w, m.tex_h)
+    kc, _ = kits(m, seed, _runs(frm, to, axes))
+    kc.paint(t, "lip", LIP)
+    _save(name, m, t)
+
+
+def lips() -> None:
+    """The window lips run along x or up (corners both ways); the skylight lips along x or z."""
+    for i, (key, (frm, to)) in enumerate(WINDOW_LIPS.items()):
+        axes = (0,) if key in ("up", "down") else (1,) if key in ("lo", "hi") else (0, 1)
+        _lip(f"wlip_{key}", frm, to, axes, 461 + i)
+    for i, (key, (frm, to)) in enumerate(SKYLIGHT_LIPS.items()):
+        axes = (0,) if key in ("n", "s") else (2,) if key in ("w", "e") else (0, 2)
+        _lip(f"slip_{key}", frm, to, axes, 471 + i)
+
+
+# --- the control-rod drives --------------------------------------------------------------------------------------------------
 
 def drive() -> None:
     """A control-rod drive housing on the head over a column that holds fuel: a gunmetal can, a steel cap, a green lamp."""
@@ -309,7 +389,8 @@ def console() -> None:
     """The controller: a control console standing out from the wall, its front a CRT, status lamps, a rod-position
     dial and the radiation placard, a hazard strip along its foot."""
     m = _model("console", 64)
-    m.box("cabinet", (1, 0, -4), (15, 14, 1))
+    m.box("cabinet", (1, 0, -4), (15, 14, 1), faces=("north", "south", "east", "west", "up"))
+    m.open_ok = {("cabinet", "down")}                                     # it stands on the base or the ground
     m.box("desk", (0.5, 14, -5), (15.5, 15, 1))
     m.box("screen", (3, 6, -4.2), (13, 12, -4), faces=("north",), light=15)
     m.layout()
@@ -348,7 +429,7 @@ def console() -> None:
     _save("console", m, t)
 
 
-# --- a formed reactor put together (the review sheet, and the Field Manual's plate) -------------------------------------------
+# --- a formed reactor put together (the review sheet, the Field Manual's plate, the join check) -------------------------------
 
 #: Section turns (FissionSections.java turns them the same way): a quarter turn clockwise seen from above (a blockstate's
 #: y: 90) takes (x, z) to (16 - z, x), north to east. Walls and edges are written facing north, corners and posts north-west.
@@ -356,6 +437,9 @@ TURN = {"north": 0, "east": 1, "south": 2, "west": 3}
 CORNER_TURN = {frozenset(("north", "west")): 0, frozenset(("north", "east")): 1, frozenset(("south", "east")): 2,
                frozenset(("south", "west")): 3}
 PORT_KEYS = {"U": "item", "W": "fluid", "E": "energy"}
+#: For a wall facing each way, the (dx, dz) of the cells on its low-x and high-x sides (in the section's own frame): the
+#: directions anticlockwise and clockwise of the way it faces, seen from above.
+SIDES = {"north": ((-1, 0), (1, 0)), "south": ((1, 0), (-1, 0)), "west": ((0, 1), (0, -1)), "east": ((0, -1), (0, 1))}
 
 
 def pieces(layers: list[list[str]], channel_cols: set[tuple[int, int]] | None = None) -> list[tuple[str, int, tuple[int, int, int], bool]]:
@@ -365,11 +449,15 @@ def pieces(layers: list[list[str]], channel_cols: set[tuple[int, int]] | None = 
     h, d, w = len(layers), len(layers[0]), len(layers[0][0])
     if channel_cols is None:
         channel_cols = {(x, z) for y in range(h) for z in range(d) for x in range(w) if layers[y][z][x] == "C"}
+
+    def key(x, y, z):
+        return layers[y][z][x] if 0 <= y < h and 0 <= z < d and 0 <= x < w else " "
+
     out = []
     for y in range(h):
         for z in range(d):
             for x in range(w):
-                key = layers[y][z][x]
+                k = layers[y][z][x]
                 horiz = [s for s, on in (("north", z == 0), ("south", z == d - 1), ("west", x == 0), ("east", x == w - 1)) if on]
                 vert = "down" if y == 0 else "up" if y == h - 1 else None
                 cell = (x, y, z)
@@ -380,27 +468,44 @@ def pieces(layers: list[list[str]], channel_cols: set[tuple[int, int]] | None = 
                     turn = TURN[horiz[0]]
                     if vert is not None:
                         out.append(("edge_bottom" if vert == "down" else "edge_top", turn, cell, False))
-                    elif key == "G":
-                        out += [("window", turn, cell, False), ("window_glass", turn, cell, False)]
+                    elif k == "G":
+                        out.append(("window_glass", turn, cell, False))
+                        (lx, lz), (hx, hz) = SIDES[horiz[0]]
+
+                        def glass(dx, dy, dz):
+                            return key(x + dx, y + dy, z + dz) == "G"
+                        up, down, lo, hi = glass(0, 1, 0), glass(0, -1, 0), glass(lx, 0, lz), glass(hx, 0, hz)
+                        need = {"up": not up, "down": not down, "lo": not lo, "hi": not hi,
+                                "lo_up": not (up and lo and glass(lx, 1, lz)), "hi_up": not (up and hi and glass(hx, 1, hz)),
+                                "lo_down": not (down and lo and glass(lx, -1, lz)), "hi_down": not (down and hi and glass(hx, -1, hz))}
+                        out += [(f"wlip_{n}", turn, cell, False) for n, on in need.items() if on]
                     else:
                         out.append(("wall", turn, cell, False))
-                        if key in PORT_KEYS:
-                            out.append((f"port_{PORT_KEYS[key]}", turn, cell, False))
-                    if key == "X":
+                        if k in PORT_KEYS:
+                            out.append((f"port_{PORT_KEYS[k]}", turn, cell, False))
+                    if k == "X":
                         out.append(("console", turn, cell, False))
                 elif vert == "up":
-                    if key == "G":
-                        out += [("skylight", 0, cell, False), ("skylight_glass", 0, cell, False)]
+                    if k == "G":
+                        out.append(("skylight_glass", 0, cell, False))
+
+                        def glass(dx, dz):
+                            return key(x + dx, y, z + dz) == "G"
+                        n, s, wv, e = glass(0, -1), glass(0, 1), glass(-1, 0), glass(1, 0)
+                        need = {"n": not n, "s": not s, "w": not wv, "e": not e, "nw": not (n and wv and glass(-1, -1)),
+                                "ne": not (n and e and glass(1, -1)), "sw": not (s and wv and glass(-1, 1)),
+                                "se": not (s and e and glass(1, 1))}
+                        out += [(f"slip_{n_}", 0, cell, False) for n_, on in need.items() if on]
                     else:
                         out.append(("top", 0, cell, False))
-                        if key in PORT_KEYS:
-                            out.append((f"port_{PORT_KEYS[key]}_top", 0, cell, False))
+                        if k in PORT_KEYS:
+                            out.append((f"port_{PORT_KEYS[k]}_top", 0, cell, False))
                         elif (x, z) in channel_cols:
                             out += [("drive", 0, cell, False), ("drive_rod", 0, cell, False)]
                 elif vert == "down":
                     out.append(("bottom", 0, cell, False))
-                    if key in PORT_KEYS:                                       # a port in the floor: its housing hangs under it
-                        out.append((f"port_{PORT_KEYS[key]}_top", 0, cell, True))
+                    if k in PORT_KEYS:                                       # a port in the floor: its housing hangs under it
+                        out.append((f"port_{PORT_KEYS[k]}_top", 0, cell, True))
     return out
 
 
@@ -481,24 +586,53 @@ def review(layouts=(EXAMPLE, EXAMPLE_BIG), out_name: str = "fission_formed_revie
     return path
 
 
+
+
+NORMALS = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}
+
+
+def check_joins(layers) -> list[str]:
+    """Every section of a formed reactor in one model, checked for faces that would flicker (two pointing the same way on
+    one plane, as model.py checks a model): the joins between sections must have none."""
+    import json
+    from gz import paths
+    joined = BlockModel("fission_joins")
+    n = 0
+    for name, turns, (x, y, z), flip in pieces(layers):
+        if name.endswith("_glass"):
+            continue
+        data = json.loads((paths.MODELS / "block" / f"fission_{name}.json").read_text(encoding="utf-8"))
+        for el in data["elements"]:
+            corners = np.array([el["from"], el["to"]], dtype=float)
+            moved, _ = place(corners, np.zeros(3), turns, flip)
+            lo = moved.min(axis=0) + np.array([x, y, z]) * 16
+            hi = moved.max(axis=0) + np.array([x, y, z]) * 16
+            faces = []
+            for d in el["faces"]:                                          # each face turned with its section
+                _, normal = place(corners, np.array(NORMALS[d], dtype=float), turns, flip)
+                faces.append(next(k for k, v in NORMALS.items() if np.allclose(v, normal)))
+            joined.box(f"{name}_{n}", tuple(lo), tuple(hi), faces=tuple(faces))
+            n += 1
+    return joined.zfight()
+
+
 def build_all() -> None:
-    wall()
+    corner_bottom()
+    edge_bottom()
+    bottom()
     post()
-    window()
-    _plinth("corner_bottom", ("north", "west"), 407)
-    _plinth("edge_bottom", ("north",), 408)
-    _plinth("bottom", (), 409)
-    _head("corner_top", [("lip_n", (0, 16, 0), (16, 18, 2)), ("lip_w", (0, 16, 2), (2, 18, 16))], ("north", "west"), 415)
-    _head("edge_top", [("lip_n", (0, 16, 0), (16, 18, 2))], ("north",), 416)
-    _head("top", [], (), 417)
-    _head("skylight", [], (), 418, opening=True)
-    g = _model("skylight_glass", 32)
-    g.box("pane", (2, 14.25, 2), (14, 14.75, 14), faces=("up", "down"))
-    g.layout()
-    tg = Tex(g.tex_w, g.tex_h)
-    g.paint_all(tg, "pane", leaded)
-    g.render_type = "minecraft:translucent"
-    _save("skylight_glass", g, tg)
+    wall()
+    full = ((0, 0, 0), (16, 16, 16))
+    lip_n, lip_w = ((0, 16, 0), (16, 18, 2)), ((0, 16, 2), (2, 18, 16))
+    _head("corner_top", [("lip_n", *lip_n), ("lip_w", *lip_w)], ("north", "west"),
+          [cell(1), cell(dz=1), cell(1, 0, 1), cell(dy=-1)] + _runs(*lip_n, (0,))[:1] + [_runs(*lip_w, (2,))[0]], 415)
+    _head("edge_top", [("lip_n", *lip_n)], ("north",),
+          [cell(-1), cell(1), cell(dz=1), cell(-1, 0, 1), cell(1, 0, 1), cell(dy=-1, frm=WALL_BOX[0], to=WALL_BOX[1])]
+          + _runs(*lip_n, (0,)), 416)
+    _head("top", [], (), [cell(dx, 0, dz, *full) for dx in (-1, 0, 1) for dz in (-1, 0, 1) if dx or dz], 417)
+    window_glass()
+    skylight_glass()
+    lips()
     drive()
     for kind in PORTS:
         port(kind, False)
@@ -509,4 +643,9 @@ def build_all() -> None:
 if __name__ == "__main__":
     build_all()
     print(f"{len(SECTIONS)} sections written")
+    for label, layers in (("example", EXAMPLE), ("big", EXAMPLE_BIG)):
+        issues = check_joins(layers)
+        print(f"joins ({label}): {len(issues)} flicker{'s' if len(issues) != 1 else ''}")
+        for issue in issues[:12]:
+            print("  ", issue)
     print(review())

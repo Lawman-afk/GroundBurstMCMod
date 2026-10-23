@@ -235,6 +235,12 @@ weathering references):
 - *Block textures* are tiles: the same materials on a 16x16 face whose noise wraps, so a block joins its neighbours
   without a seam; scattered dithering there (an ordered pattern repeats block after block), and a base tone right on a
   ramp shade (between two shades, noise flickers half the texels between them like static).
+- *Sections of something bigger* (the formed Fission Reactor, drawn a cell at a time over any size): a model's
+  `Surfacer` takes a `period` (its noise wraps every block, as a tile's does) and a `context` (boxes standing round
+  it, such as the neighbouring cells' sections: solid for edges, contact shadows and grime, never painted), so a face
+  that runs on into the next cell has no lip, shadow or grime at the join and only the whole's real edges are lit.
+  Surface detail that must look continuous is designed, not noise (noise repeats every block: riveted courses that run
+  on round the whole, not blotches), and ramps get more shades where a big surface needs fine steps.
 - Review: `tools/preview/geo_views.py <model>` renders a structure from four angles and in close-up crops at a readable
   size; `tools/preview/tile_sheet.py <textures>` shows block textures alone and tiled 3x3.
 
@@ -491,15 +497,25 @@ missed the formed model, and found the preview confusing "with the many possibil
   it is gets a red outline (a port's suggested cell takes casing or glass once that port stands elsewhere). The status
   line counts what is missing and wrong; the Holo-Projector pages the plan's layers.
 - **Formed, it is one vessel** (`FissionSections`, `FissionReactorRenderer`): the walls' blocks hide (`FORMED`, the
-  controller too) and the renderer draws a section in every wall cell: a block model each (21 of them,
+  controller too) and the renderer draws a section in every wall cell: a block model each (35 of them,
   `tools/assets/fission_formed.py`, painted with the material library), turned a quarter turn at a time to the side it
-  faces. A dark plinth banded in hazard paint along the foot; corner posts with steel angles; bolted lead wall plates,
-  each with an inspection panel; windows (a steel frame and a leaded pane at the wall's face, no bay, so windows side by
-  side make one glazed panel and the core shows from any angle); the gunmetal head with a raised rim; skylights for
-  glass in the roof; a control-rod drive over every core column with a channel in it, its rod rising as the control
-  rods come out; the ports' striped housings (yellow, blue, red; a port in the floor hangs its housing underneath); the
-  control console where the controller stands. The panes and the coolant go in one translucent batch, sorted far to
-  near when drawn. Seen from 192 blocks (it stands in for its walls' blocks).
+  faces. It looks like the old fixed formed model, at any size, because the sections join with no seam (the user's
+  second look: the first sections, each a bevelled plate with its own frame, read as a grid of tiles): each section's
+  outer faces are painted with the neighbouring cells' sections standing round it (the library's `context`) and noise
+  that wraps every block (`period`), so there is no lip, shadow or grime where a face runs on into the next cell; only
+  the vessel's real edges are lit and shaded (its corners, the step from a pillar to a wall, the base's ledge, the
+  head's overhang). A dark steel base banded in hazard paint all the way round; lead pillars with steel angles up the
+  corners; lead walls and the head band clad in riveted courses a block tall, their seams and rivet rows running on
+  round the whole vessel at the same heights; a steel roof decked the same way under a raised rim; a control-rod drive
+  over every core column with a channel in it, its rod rising as the control rods come out; the ports' striped housings
+  (a port in the floor hangs its housing underneath); the control console where the controller stands.
+- **Glazing**: glass is a clear pane flush with the wall (or roof), no bars and no frame of its own: panes side by
+  side make one glazed panel, and a 1 px steel lip runs round its outside only. Each glass cell takes lip pieces for the
+  sides where its neighbour in the wall's plane is not glass and for the corners where any of the three cells round
+  that corner is not (8 pieces for windows, 8 for skylights). The panes and the coolant go in one translucent batch,
+  back faces culled and sorted far to near when drawn (the coolant's far sides had lain on the far walls' linings and
+  flickered against them); the coolant stands 0.01 clear of the walls. `fission_formed.py` checks every join of two
+  example reactors for faces that would flicker (none may). Seen from 192 blocks (it stands in for its walls' blocks).
 - **Rods**: 75 FE/t each × rods withdrawn: 600 from the example's eight, 4 800 from 64, still below the Fusion Reactor.
   A rod lasts 192 000 ticks of full power on average (the energy a rod always gave: 300 FE/t for 48 000 before), its
   own lifetime drawn when it first burns, up to 15% either side; every loaded rod burns at once. The rod carries its
@@ -1983,7 +1999,9 @@ concrete, overgrowth, lighting, set dressing.
 - A **controller** validates the pattern (4 rotations) on placement, neighbour change, and right-click.
 - **Ghost preview:** right-clicking an unformed controller (or holding a Holo-Projector) shows the structure as
   translucent pulsing blocks where pieces are missing, red outlines where a wrong block is present, with
-  layer-by-layer stepping. The Field Manual shows the same structure.
+  layer-by-layer stepping. Each ghost is its block's own model, tinted, a little inset and back faces culled (until
+  2026-10-23 a cube in the block's particle texture, which made a Fuel Channel, whose particle is its packed model
+  sheet, look broken). The Field Manual shows the same structure.
 - On forming, component blocks switch to a `formed` state (empty model, interactions and capabilities delegated to
   the controller) and the controller renders **one cohesive animated model** (GeckoLib). Breaking any component
   un-forms the structure; nothing is lost.
@@ -2592,6 +2610,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | The material library's third pass (the user's request): every machine and every other non-ordnance block repainted, on a shared machine kit (`machine_kit.py`) and, for small packed sheets (cables, pipes, tank parts), `atlas.py`; ores, raw blocks and natural blocks keep vanilla's style; warheads and other ordnance next, then items. |
 | 2026-10-23 | The Fission Reactor scales (the user's request, "like in other mods"): any hollow box from 3×3×3 to 6×6×6, Fuel Channel columns in its core, one rod a column (up to 16, 4 800 FE/t: still below Fusion); its walls stay as built (the GeckoLib model retired; a renderer fills the core with glowing coolant); a GUI whose 4×4 core map shows a rod slot on each channel. Its fuel bug fixed: all rods share no counter any more; every loaded rod burns at once with its own lifetime (±15%), carrying its burnup on the item. Details §7.2. |
 | 2026-10-23 | The Fission Reactor reworked (the user: height did nothing for the rods, the formed model was missed, the preview confused): a rod in every Fuel Channel wherever it stands (up to 64 at 75 FE/t, 4 800 at most, the same energy a rod); exactly one Item, Fluid and Energy Port, in the walls; the controller in a wall or the bottom edge; water left in the core slows its heat. The ghost preview shows one plan, its size set on the controller's screen, and outlines only wrong blocks. Formed, the walls hide and a sectional vessel is drawn over any size (21 section models turned cell by cell: plinth, posts, plates, windows, head, skylights, rod drives, port housings, console). The GUI's core map pages by layer. Details §7.2. |
+| 2026-10-23 | The formed Fission Reactor redesigned to read as one vessel, like the old fixed model, at any size (the user: "make the pieces actually look connected and continuous ... but done in a way that is also modular"; joins flickered; frames round the glass hid the core; the panes' crosses were misaligned): sections are painted as part of the whole (the material library gains `period` and `context`), clad in riveted courses that run on round the vessel; glazing is clear and continuous with a lip round its outside only, picked per cell from its neighbours; the panes and coolant are culled (the coolant's far sides fought the walls' linings); a join check over whole example reactors. Ghost previews draw each block's own model (the Fuel Channel's ghost had been a cube in its packed texture). |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

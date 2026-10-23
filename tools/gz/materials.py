@@ -200,12 +200,18 @@ class Face:
 
 
 class Surfacer:
-    """Paints a laid-out model's faces with materials, knowing its geometry (see the module notes)."""
+    """Paints a laid-out model's faces with materials, knowing its geometry (see the module notes).
 
-    def __init__(self, model, seed: int = 7, ao_reach: float = 4.0):
+    A section of something bigger (a cell of a structure drawn a section at a time, which must join its neighbours with
+    no seam) passes {period}, the noise wrapping every so many pixels as a block texture's does, and {context}: boxes
+    (from, to) standing round the model, such as the neighbouring cells' sections. They are not painted, but they count
+    as solid for the edges, contact shadows and grime, so a face that runs on into the next cell has no lip there."""
+
+    def __init__(self, model, seed: int = 7, ao_reach: float = 4.0, period: int | None = None, context=()):
         self.m = model
         self.seed = seed
         self.ao_reach = ao_reach
+        self.period = period
         boxes = [b for b in model.boxes if not b.rotation]
         bone_of = getattr(model, "_bone_of", {})
         self._group = {}
@@ -213,6 +219,10 @@ class Surfacer:
             self._group.setdefault(bone_of.get(b.name, ""), []).append(b)
         self._bone_of = bone_of
         self._arrays = {k: np.array([[*b.frm, *b.to] for b in v], dtype=np.float32) for k, v in self._group.items()}
+        if context:
+            extra = np.array([[*frm, *to] for frm, to in context], dtype=np.float32)
+            base = self._arrays.get("", np.zeros((0, 6), dtype=np.float32))
+            self._arrays[""] = np.concatenate([base, extra])
         self._faces: dict[tuple[str, str], Face] = {}
 
     # -- geometry ---------------------------------------------------------------------------------------------------------
@@ -246,6 +256,7 @@ class Surfacer:
             X, Y, Z = x0 + ii * sx / w, np.full_like(ii, y0), z1 - jj * sz / h
             du, dv = (sx / w, 0, 0), (0, 0, -sz / h)
         f = Face(b, d, rect, X.astype(np.float32), Y.astype(np.float32), Z.astype(np.float32), _NORMALS[d], du, dv)
+        f.period = self.period
         f.border = {"top": jj - 0.5, "bottom": h - jj - 0.5, "left": ii - 0.5, "right": w - ii - 0.5}
         if b.rotation:
             f.ao = np.zeros((h, w), dtype=np.float32)

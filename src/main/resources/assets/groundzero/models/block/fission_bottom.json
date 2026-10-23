@@ -9,7 +9,7 @@
   },
   "elements": [
     {
-      "name": "plinth",
+      "name": "base",
       "from": [
         0.0,
         0.0,

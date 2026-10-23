@@ -25,9 +25,12 @@ import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 /**
  * The formed Fission Reactor's sections (DESIGN.md §7.2): the vessel FissionReactorRenderer draws over a reactor of any
  * size while its walls' own blocks hide. Each kind of cell has a block model of its own (tools/assets/fission_formed.py,
- * whose {@code pieces} mirrors {@link #layout}): plinth corners and edges at the foot, corner posts, bolted lead walls,
- * window bays, the head's corners and edges, its plates, skylights over glass in the roof, a control-rod drive over every
- * core column that holds a channel, the ports' housings, and the console where the controller stands.
+ * whose {@code pieces} mirrors {@link #layout}), painted to join its neighbours with no seam: the base banded in hazard
+ * paint, pillars up the corners, lead walls and the head band clad in riveted courses that run on round the vessel, the
+ * steel roof, a control-rod drive over every core column that holds a channel, the ports' housings and the console
+ * where the controller stands. Glass is a clear pane flush with the wall or roof; panes side by side make one glazed
+ * panel, and a thin steel lip runs round its outside only: each glass cell takes the lip pieces for the sides and
+ * corners where its neighbours are not glass.
  *
  * <p>Every section is written for a cell's north side (corners and posts for its north-west); a piece turns it clockwise
  * a quarter turn at a time, seen from above (a blockstate's y rotation), or stands it upside down (a port in the floor).
@@ -36,7 +39,11 @@ public final class FissionSections {
     private FissionSections() {}
 
     public enum Section {
-        WALL, POST, CORNER_BOTTOM, EDGE_BOTTOM, BOTTOM, CORNER_TOP, EDGE_TOP, TOP, WINDOW, WINDOW_GLASS, SKYLIGHT, SKYLIGHT_GLASS,
+        WALL, POST, CORNER_BOTTOM, EDGE_BOTTOM, BOTTOM, CORNER_TOP, EDGE_TOP, TOP, WINDOW_GLASS, SKYLIGHT_GLASS,
+        /** A window's lip pieces, in the section's own frame: "lo" is its low-x side, "hi" its high-x side. */
+        WLIP_UP, WLIP_DOWN, WLIP_LO, WLIP_HI, WLIP_LO_UP, WLIP_HI_UP, WLIP_LO_DOWN, WLIP_HI_DOWN,
+        /** A skylight's lip pieces, by the world's sides (a skylight is never turned). */
+        SLIP_N, SLIP_S, SLIP_W, SLIP_E, SLIP_NW, SLIP_NE, SLIP_SW, SLIP_SE,
         DRIVE, DRIVE_ROD, PORT_ITEM, PORT_FLUID, PORT_ENERGY, PORT_ITEM_TOP, PORT_FLUID_TOP, PORT_ENERGY_TOP, CONSOLE;
 
         private final String id = "fission_" + name().toLowerCase(Locale.ROOT);
@@ -120,8 +127,8 @@ public final class FissionSections {
             if (vertical != null) {
                 out.add(new Piece(vertical == Direction.DOWN ? Section.EDGE_BOTTOM : Section.EDGE_TOP, x, y, z, turns, false, light));
             } else if (glass) {
-                out.add(new Piece(Section.WINDOW, x, y, z, turns, false, light));
                 out.add(new Piece(Section.WINDOW_GLASS, x, y, z, turns, false, light));
+                windowLips(level, pos, sides.getFirst(), x, y, z, turns, light, out);
             } else {
                 out.add(new Piece(Section.WALL, x, y, z, turns, false, light));
                 if (port >= 0) {
@@ -133,8 +140,8 @@ public final class FissionSections {
             }
         } else if (vertical == Direction.UP) {
             if (glass) {
-                out.add(new Piece(Section.SKYLIGHT, x, y, z, 0, false, light));
                 out.add(new Piece(Section.SKYLIGHT_GLASS, x, y, z, 0, false, light));
+                skylightLips(level, pos, x, y, z, light, out);
             } else {
                 out.add(new Piece(Section.TOP, x, y, z, 0, false, light));
                 if (port >= 0) {
@@ -148,6 +155,45 @@ public final class FissionSections {
             out.add(new Piece(Section.BOTTOM, x, y, z, 0, false, light));
             if (port >= 0) {
                 out.add(new Piece(TOP_PORTS[port], x, y, z, 0, true, light));       // a port in the floor: its housing hangs under it
+            }
+        }
+    }
+
+    private static boolean glass(Level level, BlockPos pos) {
+        return FissionCore.glass(level.getBlockState(pos));
+    }
+
+    /**
+     * A window's lips: along each side whose neighbour (in the wall's plane) is not glass, and at each corner where any
+     * of the three cells round it is not, so a glazed panel of any shape is edged round its outside only. The section's
+     * low-x side is anticlockwise of the way the wall faces, seen from above.
+     */
+    private static void windowLips(Level level, BlockPos pos, Direction facing, int x, int y, int z, int turns, int light, List<Piece> out) {
+        Direction lo = facing.getCounterClockWise(), hi = facing.getClockWise();
+        boolean up = glass(level, pos.above()), down = glass(level, pos.below()), l = glass(level, pos.relative(lo)),
+                h = glass(level, pos.relative(hi));
+        boolean[] need = {!up, !down, !l, !h,
+                !(up && l && glass(level, pos.above().relative(lo))), !(up && h && glass(level, pos.above().relative(hi))),
+                !(down && l && glass(level, pos.below().relative(lo))), !(down && h && glass(level, pos.below().relative(hi)))};
+        Section[] lips = {Section.WLIP_UP, Section.WLIP_DOWN, Section.WLIP_LO, Section.WLIP_HI, Section.WLIP_LO_UP,
+                Section.WLIP_HI_UP, Section.WLIP_LO_DOWN, Section.WLIP_HI_DOWN};
+        for (int i = 0; i < lips.length; i++) {
+            if (need[i]) {
+                out.add(new Piece(lips[i], x, y, z, turns, false, light));
+            }
+        }
+    }
+
+    /** A skylight's lips, the same way in the roof's plane (by the world's sides). */
+    private static void skylightLips(Level level, BlockPos pos, int x, int y, int z, int light, List<Piece> out) {
+        boolean n = glass(level, pos.north()), s = glass(level, pos.south()), w = glass(level, pos.west()), e = glass(level, pos.east());
+        boolean[] need = {!n, !s, !w, !e, !(n && w && glass(level, pos.north().west())), !(n && e && glass(level, pos.north().east())),
+                !(s && w && glass(level, pos.south().west())), !(s && e && glass(level, pos.south().east()))};
+        Section[] lips = {Section.SLIP_N, Section.SLIP_S, Section.SLIP_W, Section.SLIP_E, Section.SLIP_NW, Section.SLIP_NE,
+                Section.SLIP_SW, Section.SLIP_SE};
+        for (int i = 0; i < lips.length; i++) {
+            if (need[i]) {
+                out.add(new Piece(lips[i], x, y, z, 0, false, light));
             }
         }
     }

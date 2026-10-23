@@ -35,19 +35,21 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The formed Fission Reactor (DESIGN.md §7.2): while it is formed its walls' own blocks hide and this draws the vessel
- * over them, a section a cell ({@link FissionSections}): the plinth, posts, bolted lead walls and window bays, the head
- * with a control-rod drive over every column that holds fuel (the rods rising as they are withdrawn), the ports'
- * housings and the console. It fills the core round the Fuel Channels (ordinary blocks, seen through the windows) with
- * the coolant, from the floor up to the tank's level; while the core runs the water glows Cherenkov blue, lit whatever
- * the light round it. The panes go in one batch with the water, which is sorted far to near when it is drawn.
+ * over them, a section a cell ({@link FissionSections}): the base, pillars, riveted lead walls and head band, the roof
+ * with a control-rod drive over every column that holds fuel (the rods rising as they are withdrawn), the glazing, the
+ * ports' housings and the console. It fills the core round the Fuel Channels (ordinary blocks, seen through the
+ * windows) with the coolant, from the floor up to the tank's level; while the core runs the water glows Cherenkov blue,
+ * lit whatever the light round it. The panes go in one batch with the water, which is sorted far to near when drawn.
  */
 public class FissionReactorRenderer implements BlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> {
-    /** Clear of the walls' inner faces. */
-    private static final float INSET = 0.004f;
+    /** Clear of the walls' inner faces (far enough not to fight them in the depth buffer from afar). */
+    private static final float INSET = 0.01f;
     private static final int CHERENKOV = 0x5CD2FF;
     /** How far the drive rods sink as the control rods go in (blocks). */
     private static final float ROD_TRAVEL = 0.5f;
-    private static final RenderType TRANSLUCENT = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    /** The panes and the coolant: see-through, sorted far to near when drawn, and back faces culled (the coolant's far
+     *  sides would otherwise lie on the walls' linings across the core and flicker against them). */
+    private static final RenderType TRANSLUCENT = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
     private static final Direction[] DIRECTIONS = Direction.values();
 
     public static class State extends BlockEntityRenderState {

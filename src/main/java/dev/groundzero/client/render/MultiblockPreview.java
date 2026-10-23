@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import dev.groundzero.GroundZero;
@@ -18,13 +19,19 @@ import dev.groundzero.registry.GZLang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -47,6 +54,9 @@ public final class MultiblockPreview {
     private static final String LAYER_ONE = GZLang.add(GroundZero.MODID + ".holo_projector.layer", "Projecting layer %s of %s");
     private static final String NOTHING = GZLang.add(GroundZero.MODID + ".holo_projector.nothing", "No unfinished structure in range");
     private static final int WRONG_COLOR = 0xFFFF4030;
+    /** Ghosts: see-through, back faces culled (an open model such as a Fuel Channel's frame reads as its shape). */
+    private static final RenderType GHOST = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final Direction[] DIRECTIONS = Direction.values();
     private static final float INSET = 0.02f;
 
     private static final Set<BlockPos> PINNED = new HashSet<>();
@@ -166,15 +176,48 @@ public final class MultiblockPreview {
             if (ghost.wrong()) {
                 event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), RenderTypes.lines(), WRONG_COLOR, lineWidth * 2, false);
             } else {
-                TextureAtlasSprite sprite = mc.getModelManager().getBlockStateModelSet().get(ghost.state()).particleMaterial().sprite();
-                event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS),
-                        (pose, buffer) -> cube(buffer, pose, sprite, tint));
+                BlockStateModel model = mc.getModelManager().getBlockStateModelSet().get(ghost.state());
+                List<BlockStateModelPart> parts = new ArrayList<>();
+                model.collectParts(RandomSource.create(ghost.pos().asLong()), parts);
+                TextureAtlasSprite sprite = model.particleMaterial().sprite();
+                event.getSubmitNodeCollector().submitCustomGeometry(poseStack, GHOST, (pose, buffer) -> ghost(buffer, pose, parts, sprite, tint));
             }
             poseStack.popPose();
         }
     }
 
     /** A block-sized cube, inset slightly so it never fights the faces of real neighbours. Vanilla face winding. */
+    /**
+     * A ghost of the block's own model, tinted, a little smaller than the block (clear of its neighbours' faces); a plain
+     * cube in the block's particle texture if its model draws nothing.
+     */
+    private static void ghost(VertexConsumer buffer, PoseStack.Pose base, List<BlockStateModelPart> parts, TextureAtlasSprite sprite, int tint) {
+        PoseStack.Pose pose = base.copy();
+        float k = 1 - 2 * INSET;
+        pose.translate(0.5f, 0.5f, 0.5f);
+        pose.scale(k, k, k);
+        pose.translate(-0.5f, -0.5f, -0.5f);
+        QuadInstance instance = new QuadInstance();
+        instance.setColor(tint);
+        instance.setLightCoords(LightCoordsUtil.FULL_BRIGHT);
+        boolean drawn = false;
+        for (BlockStateModelPart part : parts) {
+            for (Direction d : DIRECTIONS) {
+                for (BakedQuad quad : part.getQuads(d)) {
+                    buffer.putBakedQuad(pose, quad, instance);
+                    drawn = true;
+                }
+            }
+            for (BakedQuad quad : part.getQuads(null)) {
+                buffer.putBakedQuad(pose, quad, instance);
+                drawn = true;
+            }
+        }
+        if (!drawn) {
+            cube(buffer, base, sprite, tint);
+        }
+    }
+
     private static void cube(VertexConsumer b, PoseStack.Pose pose, TextureAtlasSprite s, int color) {
         float a = INSET, z = 1 - INSET;
         float u0 = s.getU0(), u1 = s.getU1(), v0 = s.getV0(), v1 = s.getV1();

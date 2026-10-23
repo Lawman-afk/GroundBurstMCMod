@@ -153,7 +153,9 @@ public final class FxPhotographer {
                 // The reactor's plans: two lone controllers' ghost previews (a 4x4x4 half built, with stone in its core;
                 // a 6x5x5 not started), and the plan panel on the unformed controller's screen.
                 new Scene("fission_plan", "fission_plan", 13, 20, List.of(40)),
-                new Scene("fission_plan_ui", "fission_plan", 5, 0, List.of(30)))) {
+                new Scene("fission_plan_ui", "fission_plan", 5, 0, List.of(30)),
+                // Close up: a 3x3x3 plan built but for its front window and its Fuel Channel: their ghosts, straight on.
+                new Scene("fission_ghost", "fission_ghost", 2, 0, List.of(40)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -732,6 +734,32 @@ public final class FxPhotographer {
         fissionPlans = List.of(small, big);
     }
 
+    /** A lone controller planning a 3x3x3 reactor, everything built but its front window and the Fuel Channel behind it. */
+    private static void fissionGhostSite(ServerLevel level, int x, int ground) {
+        var at = new net.minecraft.core.BlockPos(x, ground + 2, 0);                // its window at the camera's eye
+        level.setBlockAndUpdate(at, dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get().defaultBlockState()
+                .setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST));
+        if (level.getBlockEntity(at) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity r) {
+            for (int b : new int[] {0, 2, 4}) {                                    // narrower, lower, shallower: 3x3x3
+                r.handleButton(dev.groundzero.content.machine.FissionReactorBlockEntity.BUTTON_PLAN + b);
+            }
+            var plan = r.plan();
+            for (int l = plan.layer0(); l <= plan.layer1(); l++) {
+                for (int row = 0; row < plan.depth(); row++) {
+                    for (int c = plan.col0(); c <= plan.col1(); c++) {
+                        var pos = plan.pos(c, l, row);
+                        boolean front = c == 0 && l == plan.layer0() + 1 && row == 0;
+                        boolean core = plan.kind(c, l, row) == dev.groundzero.content.machine.FissionCore.Kind.CORE;
+                        if (!pos.equals(at) && !front && !core) {
+                            level.setBlockAndUpdate(pos, plan.suggested(c, l, row));
+                        }
+                    }
+                }
+            }
+        }
+        fissionPlans = List.of(at);
+    }
+
     /** How high the silo scenes' plateau stands over the flat world: the silo's 14 layers go down into it. */
     private static final int SILO_PLATEAU = 14;
 
@@ -887,6 +915,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("fission_plan")) {
                     fissionPlanSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("fission_ghost")) {
+                    fissionGhostSite(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("chemical")) {
@@ -1227,7 +1259,7 @@ public final class FxPhotographer {
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
         // The plans' ghost previews, pinned as a right-click on each controller pins them.
-        if (scene.name().equals("fission_plan") && step >= 0 && clock == 12) {
+        if ((scene.name().equals("fission_plan") || scene.name().equals("fission_ghost")) && step >= 0 && clock == 12) {
             for (var at : fissionPlans) {
                 dev.groundzero.content.multiblock.MultiblockClientHooks.togglePreview.accept(at);
             }
