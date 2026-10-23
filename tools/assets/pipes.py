@@ -18,6 +18,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from gz import atlas as A  # noqa: E402
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
@@ -46,38 +49,37 @@ COLLAR_FACE = (0, 9, 7, 16)   # pull collar ring (top/bottom)
 COLLAR_SIDE = (8, 15, 15, 16) # pull collar rim: hazard stripes mark an extracting side
 
 
+def _metal_or_paint(ramp):
+    """Copper, brass and steel stay bare metal; everything else is paint."""
+    return K.metal(ramp, 0.6) if ramp in (P.COPPER, P.BRASS, P.STEEL) else K.paint_of(ramp, 0.55, 0.15)
+
+
 def texture(NAME: str, S, G, BOLT) -> Tex:
+    """The tier's 16x16 sheet, painted with the material library (tools/gz/atlas.py; the remaster after the Fission
+    Reactor rework): a round tube, a bevelled junction box with corner bolts and a raised boss, the flange with its
+    bolts round the bore, the hazard-striped pull collar."""
     t = Tex(16, 16)
-    # Pipe wall: round tube shading across its width (lit edge, body, shadowed edge).
-    for y in range(4):
-        for x, k in enumerate((5, 5, 4, 4, 3, 2)):
-            t.px(x, y, S[k])
-    # Junction box: bevelled gunmetal with corner bolts and a raised centre plate.
-    t.rect(7, 0, 7, 7, G[3])
-    t.hline(7, 0, 7, G[4])
-    t.vline(7, 0, 7, G[4])
-    t.hline(7, 6, 7, G[1])
-    t.vline(13, 0, 7, G[2])
+    tube, fit = _metal_or_paint(S), _metal_or_paint(G)
+    A.fill(t, ARM_SIDE, tube, 1, A.ROUND6)
+    A.fill(t, (7, 0, 14, 7), fit, 2)
+    A.rim(t, (7, 0, 14, 7))
     for x, y in ((8, 1), (12, 1), (8, 5), (12, 5)):
         t.px(x, y, BOLT)
-    t.rect(9, 2, 3, 3, G[4])                                   # raised boss
-    t.hline(9, 2, 3, G[5])
+    A.scale(t, (9, 2, 12, 5), 1.18)                            # raised boss
     t.px(11, 4, G[2])
-    # Flange rim and face.
-    t.hline(0, 8, 7, G[4])
-    t.px(0, 8, G[5])
-    t.rect(8, 8, 7, 7, G[3])
-    t.outline(8, 8, 7, 7, G[2])
-    t.rect(10, 10, 3, 3, P.BLACK_PAINT.deep)                  # bore
+    A.fill(t, (0, 8, 7, 9), fit, 3)                            # flange rim
+    A.scale(t, (0, 8, 1, 9), 1.2)
+    A.fill(t, (8, 8, 15, 15), fit, 4)                          # flange face
+    A.rim(t, (8, 8, 15, 15), 0.75)
+    t.rect(10, 10, 3, 3, P.BLACK_PAINT.deep)                   # bore
     t.px(10, 10, G[1])
     for x, y in ((9, 9), (13, 9), (9, 13), (13, 13)):
         t.px(x, y, BOLT)                                       # bolts
     # Pull collar: hazard-striped band, so an extracting side reads at a glance.
-    for x in range(7):
-        t.px(8 + x, 15, P.HAZARD_YELLOW[4] if (x // 2) % 2 == 0 else P.HAZARD_BLACK[3])
-    t.rect(0, 9, 7, 7, P.HAZARD_YELLOW[4])
-    t.outline(0, 9, 7, 7, P.HAZARD_YELLOW[2])
-    t.rect(2, 11, 3, 3, P.HAZARD_BLACK[2])
+    A.fill(t, (8, 15, 15, 16), M.stripes(width=2, wear=0.0), 5)
+    A.fill(t, (0, 9, 7, 16), K.YELLOW, 6)
+    A.rim(t, (0, 9, 7, 16), 0.72)
+    A.fill(t, (2, 11, 5, 14), K.BLACK, 7)
     t.save(paths.TEXTURES / "block" / f"{NAME}.png")
     return t
 
@@ -85,10 +87,11 @@ def texture(NAME: str, S, G, BOLT) -> Tex:
 def item_texture(NAME: str, S, G, GLASS) -> Tex:
     """Same regions as a fluid pipe's texture, drawn as a glass sight-tube in a metal frame."""
     t = texture(NAME, S, G, S[6])
-    # Tube wall: frame bars at both edges, glass between, with a flow chevron.
+    frame = _metal_or_paint(S)
+    A.fill(t, (0, 0, 1, 4), frame, 8)
+    A.fill(t, (5, 0, 6, 4), frame, 9)
+    A.scale(t, (5, 0, 6, 4), 0.72)
     for y in range(4):
-        t.px(0, y, S[4])
-        t.px(5, y, S[2])
         for x in range(1, 5):
             t.px(x, y, GLASS)
     shade = (GLASS[0] - 40, GLASS[1] - 40, GLASS[2] - 30, 255)

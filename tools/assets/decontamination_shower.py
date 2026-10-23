@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -61,87 +65,75 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    def floor(t, r, d):
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The shower's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel grate floor with
+    a drain and a hazard front; white tiles inside, NATO-green panels outside with a hazard placard, hazard-striped
+    front edges; a steel canopy with an extractor vent; a blue riser, a green valve box, a red handle, yellow nozzles,
+    the falling spray."""
+    k = K.Kit(g, parts, seed=331)
+    k.paint(tex, ["floor", "canopy"], k.STEEL)
+    k.paint(tex, ["floor", "canopy"], k.HAZARD, only=("north",))
+
+    def grate(f, img):
+        a, b = f.plane_uv()
+        M.darken(img, (K.ring(f) >= 1) & ((np.floor(b) % 2) == 1), 0.5)
+    k.overlay(tex, "floor", grate, only=("up",))
+    g.paint_all(tex, parts["floor"][0], lambda t, r, d: t.rect(r[0] + r[2] // 2 - 1, r[1] + r[3] // 2 - 1, 2, 2, P.BLACK_PAINT[0])
+                if d == "up" else None)                                            # the drain
+    tiles = M.white_paint(tone=0.8, wear=0.0, grime=0.14)
+
+    def grout(f, img):
+        a, b = f.plane_uv()
+        M.darken(img, ((np.floor(a) % 4) == 0) | ((np.floor(b) % 4) == 0), 0.86)
+    outside = M.painted(K.ramp_of(P.NATO_GREEN), tone=0.5, wear=0.2)
+
+    def panels(f, img):
+        M.darken(img, K.ring(f) < 1, 0.62)                                          # the steel frame's shadow line
+        M.seams(f, img, every=8, axis="v", offset=7, light=False)
+    for i, inner in enumerate(("east", "west")):
+        name = parts["wall"][i].name
+        k.paint(tex, name, outside)
+        k.paint(tex, name, tiles, only=(inner,))
+        k.overlay(tex, name, grout, only=(inner,))
+        k.paint(tex, name, k.HAZARD, only=("north",))
+        k.paint(tex, name, k.STEEL, only=("up", "down", "south"))
+        k.overlay(tex, name, panels, only=tuple({"east", "west"} - {inner}))
+    k.paint(tex, "back", outside)
+    k.paint(tex, "back", tiles, only=("north",))
+    k.overlay(tex, "back", grout, only=("north",))
+    k.paint(tex, "back", k.STEEL, only=("up", "down", "east", "west"))
+    k.overlay(tex, "back", panels, only=("south",))
+
+    def placard(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        if d == "up":
-            for yy in range(y + 1, y + h - 1, 2):
-                t.hline(x + 1, yy, w - 2, gun[1])                          # grate slots
-            t.rect(x + w // 2 - 1, y + h // 2 - 1, 2, 2, P.BLACK_PAINT[0])  # drain
-        elif d == "north":
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-    g.paint_all(tex, parts["floor"][0], floor)
-
-    def tiles(t, x, y, w, h):
-        for yy in range(h):
-            for xx in range(w):
-                t.px(x + xx, y + yy, PANEL[5] if (xx % 4 == 0 or yy % 4 == 0) else PANEL[4])
-
-    def outside(t, x, y, w, h, shade):
-        """Painted NATO-green panels in a steel frame, with a yellow hazard placard at eye height."""
-        t.rect(x, y, w, h, P.NATO_GREEN[shade])
-        t.outline(x, y, w, h, steel[3])
-        for yy in range(y + 7, y + h - 2, 8):
-            t.hline(x + 1, yy, w - 2, P.NATO_GREEN[shade - 1])
         if w >= 8:
             px, py = x + w // 2 - 3, y + 9
             t.rect(px, py, 6, 6, P.HAZARD_YELLOW.base)
             t.outline(px, py, 6, 6, P.HAZARD_BLACK.base)
             t.rect(px + 2, py + 2, 2, 2, P.HAZARD_BLACK.base)
+    g.paint_all(tex, parts["wall"][0], lambda t, r, d: placard(t, r, d) if d == "west" else None)
+    g.paint_all(tex, parts["wall"][1], lambda t, r, d: placard(t, r, d) if d == "east" else None)
 
-    def wall(t, r, d, inner):
-        x, y, w, h = r
-        if d == inner:
-            tiles(t, x, y, w, h)
-        elif d in ("east", "west"):
-            outside(t, x, y, w, h, 3 if d == "west" else 2)
-        elif d == "north":
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-        else:
-            t.rect(x, y, w, h, steel[tone(d)])
-    g.paint_all(tex, parts["wall"][0], lambda t, r, d: wall(t, r, d, "east"))
-    g.paint_all(tex, parts["wall"][1], lambda t, r, d: wall(t, r, d, "west"))
-
-    def back(t, r, d):
-        x, y, w, h = r
-        if d == "north":
-            tiles(t, x, y, w, h)
-        elif d == "south":
-            outside(t, x, y, w, h, 3)                                       # plain panel: the riser is inside
-        else:
-            t.rect(x, y, w, h, steel[tone(d)])
-    g.paint_all(tex, parts["back"][0], back)
-
-    def canopy(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        if d == "north":
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-        elif d == "down":
-            t.outline(x, y, w, h, steel[2])
-        elif d == "up":
-            t.outline(x, y, w, h, steel[2])
-            t.vent(x + 4, y + 4, w - 8, h - 8, steel, slat=2)               # extractor vent
-    g.paint_all(tex, parts["canopy"][0], canopy)
-    g.paint_all(tex, parts["riser"][0], lambda t, r, d: (t.rect(*r, P.CHERENKOV[tone(d) - 1]), t.vline(r[0], r[1], r[3], P.CHERENKOV[4])))
-
-    def valve(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.NATO_GREEN[tone(d)])
-        if d == "north":
-            t.outline(x, y, w, h, P.NATO_GREEN[1])
-            t.rect(x + 1, y + h - 2, 1, 1, P.WHITE_CERAMIC[5])              # pressure gauge
-    g.paint_all(tex, parts["valve"][0], valve)
-    g.paint_all(tex, lamp, lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
-    g.paint_all(glow, lamp, lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
-    g.paint_all(tex, parts["handle"][0], lambda t, r, d: t.rect(*r, P.WARNING_RED[tone(d) + 1]))
+    def vent(f, img):
+        a, b = f.plane_uv()
+        inside = K.ring(f) >= 4
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.45)
+    k.overlay(tex, "canopy", vent, only=("up",))
+    k.paint(tex, "riser", M.painted(K.ramp_of(P.CHERENKOV), tone=0.5, wear=0.15))
+    k.paint(tex, "valve", k.NATO)
+    g.paint_all(tex, parts["valve"][0], lambda t, r, d: t.px(r[0] + 1, r[1] + r[3] - 2, P.WHITE_CERAMIC[5]) if d == "north" else None)
+    g.paint_all(tex, parts["lamp"][0], lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
+    g.paint_all(glow, parts["lamp"][0], lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
+    k.paint(tex, "handle", k.RED)
+    k.paint(tex, "nozzle", k.YELLOW)
     for b in parts["nozzle"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.HAZARD_YELLOW[tone(d) + 1]), t.px(r[0], r[1], P.BLACK_PAINT[1]) if d == "down" else None))
+        g.paint_all(tex, b, lambda t, r, d: t.px(r[0], r[1], P.BLACK_PAINT[1]) if d == "down" else None)
     for b in parts["drop"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, WATER[5]), t.px(r[0], r[1] + r[3] - 1, WATER[6])))
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

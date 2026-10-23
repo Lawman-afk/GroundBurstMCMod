@@ -11,6 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -57,46 +61,46 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def bench(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d in ("east", "west", "south") and w > 4:
-            t.vent(x + 2, y + 1, w - 4, h - 2, gun, slat=2)
-        if d == "north":
-            t.hline(x, y, w, gun[5])
-    g.paint_all(tex, parts["bench"][0], bench)
-    g.paint_all(tex, parts["top"][0], lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d != "up" else None))
-    g.paint_all(tex, parts["pad"][0], lambda t, r, d: t.rect(*r, P.RUBBER[tone(d) + 1]))
-    for b in parts["clamp"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.HAZARD_YELLOW[tone(d)]), t.hline(r[0], r[1], r[2], P.HAZARD_YELLOW[5])))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The charger's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a gunmetal bench with
+    louvred sides on the plinth, a steel top with a rubber pad and yellow clamps; the cell in the battery item's colours
+    (olive, steel ends, a yellow band) with copper caps; black contacts and sockets; rubber cables; green LEDs."""
+    k = K.Kit(g, parts, seed=319)
+    k.plinth(tex)
+    k.paint(tex, "bench", k.GUN)
+
+    def louvres(f, img):
+        a, b = f.plane_uv()
+        inside = (f.border["left"] >= 2) & (f.border["right"] >= 2) & (f.border["top"] >= 1) & (f.border["bottom"] >= 1)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.45)
+    k.overlay(tex, "bench", louvres, only=("east", "west", "south"))
+    k.paint(tex, "top", k.STEEL)
+    k.paint(tex, ["pad", "cable"], k.RUBBER)
+    k.paint(tex, "clamp", k.YELLOW)
+    k.paint(tex, "cell", k.OLIVE)
+    k.paint(tex, "cell", k.STEEL, only=("east", "west"))
 
     def cell(t, r, d):
         """Matches the battery item: olive body, steel ends, a yellow rating band."""
         x, y, w, h = r
         if d in ("east", "west"):
-            t.rect(x, y, w, h, steel[tone(d) + 1])
             return
-        t.rect(x, y, w, h, P.OLIVE[tone(d) + 1])
-        t.vline(x, y, h, steel[4])
-        t.vline(x + w - 1, y, h, steel[4])
+        t.vline(x, y, h, P.STEEL[4])
+        t.vline(x + w - 1, y, h, P.STEEL[4])
         if w >= 6:
             t.vline(x + w // 2, y, h, P.HAZARD_YELLOW[4])                 # rating band round the cell
     g.paint_all(tex, parts["cell"][0], cell)
-    g.paint_all(tex, parts["cap"][0], lambda t, r, d: t.rect(*r, P.COPPER[tone(d) + 1]))
-    g.paint_all(tex, parts["contact"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[tone(d) + 1]),
-                                                           t.px(r[0], r[1], P.WARNING_RED.base) if d == "up" else None))
-    g.paint_all(tex, parts["cable"][0], lambda t, r, d: t.rect(*r, P.RUBBER[tone(d)]))
-    g.paint_all(tex, parts["sockets"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[1]))
-    for b in leds:
+    k.paint(tex, "cap", k.COPPER)
+    k.paint(tex, ["contact", "sockets"], k.BLACK)
+    g.paint_all(tex, parts["contact"][0], lambda t, r, d: t.px(r[0], r[1], P.WARNING_RED.base) if d == "up" else None)
+    g.paint_all(tex, parts["sockets"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[1]) if d == "north" else None)
+    for b in parts["led"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
         g.paint_all(glow, b, lambda t, r, d: t.rect(*r, P.INDICATOR_GREEN.light))
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

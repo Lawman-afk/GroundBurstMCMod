@@ -18,6 +18,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from gz import atlas as A  # noqa: E402
+from gz import machine_kit as K  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
@@ -30,12 +32,20 @@ OPP = {"north": "south", "south": "north", "east": "west", "west": "east", "up":
 
 
 def textures(name: str = NAME, frame_ramp=S, cap_ramp=G, rivet=None, hatch=None) -> None:
+    """The frame, glass and cap textures, painted with the material library (tools/gz/atlas.py; the remaster after the
+    Fission Reactor rework): brushed frame bars and corner blocks, see-through glass, a riveted cap plate round an
+    inspection hatch."""
     rivet, hatch = rivet or S, hatch or cap_ramp
+    bar = K.metal(frame_ramp, 0.55, 0.06) if frame_ramp in (P.STEEL, P.BRASS) else K.paint_of(frame_ramp, 0.5, 0.15)
+    plate = K.paint_of(cap_ramp, 0.55, 0.15)
     frame = Tex(16, 16)
-    frame.rect(0, 0, 16, 16, frame_ramp[3])
+    A.fill(frame, (0, 0, 16, 16), bar, 1)
     for i in range(0, 16, 4):
         frame.px(i, i, frame_ramp[4])
-    frame.rect(14, 14, 2, 2, cap_ramp[3])                # corner block face with a rivet
+    A.fill(frame, (0, 0, 12, 2), bar, 2, profile=None)
+    A.scale(frame, (0, 0, 12, 1), 1.15)                       # a bar's lit edge, its far edge in shadow
+    A.scale(frame, (0, 1, 12, 2), 0.82)
+    A.fill(frame, (14, 14, 16, 16), plate, 3)                 # corner block face with a rivet
     frame.px(14, 14, rivet[5])
     frame.save(paths.TEXTURES / "block" / f"{name}_frame.png")
 
@@ -49,11 +59,10 @@ def textures(name: str = NAME, frame_ramp=S, cap_ramp=G, rivet=None, hatch=None)
         glass.save(paths.TEXTURES / "block" / f"{NAME}_glass.png")
 
     cap = Tex(16, 16)
-    cap.rect(0, 0, 16, 16, cap_ramp[3])
-    cap.outline(2, 2, 12, 12, cap_ramp[2])
-    cap.hline(2, 2, 12, cap_ramp[4])
-    cap.rect(5, 5, 6, 6, hatch[4])                        # inspection hatch
-    cap.outline(5, 5, 6, 6, hatch[2])
+    A.fill(cap, (0, 0, 16, 16), plate, 4)
+    A.rim(cap, (2, 2, 14, 14), 0.72, 1.12)
+    A.fill(cap, (5, 5, 11, 11), K.paint_of(hatch, 0.62, 0.1), 5)   # inspection hatch
+    A.rim(cap, (5, 5, 11, 11), 0.7, 1.15)
     cap.px(7, 7, rivet[5])
     for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
         cap.px(x, y, rivet[5])

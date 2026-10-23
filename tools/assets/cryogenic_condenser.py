@@ -12,6 +12,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -70,64 +74,57 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def column(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, INSUL[4] if d in ("north", "west") else INSUL[3])
-        for yy in range(y + 2, y + h, 4):
-            t.hline(x, yy, w, INSUL[2])                                     # insulation wrap seams
-        for yy in (y, y + h - 1):
-            t.hline(x, yy, w, steel[3])                                     # steel hoop bands at the ends
-        if d == "north" and w >= 4:
-            t.rect(x + w // 2 - 1, y + h - 8, 3, 4, P.CHERENKOV[3])        # "LN2/LOX" decal block
-            t.px(x + w // 2, y + h - 7, P.WHITE_CERAMIC[6])
-    for b in parts["column"]:
-        g.paint_all(tex, b, column)
-    for b in parts["cap"] + parts["vent_cap"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.outline(*r, steel[2]) if d == "up" and min(r[2], r[3]) > 3 else None))
-    g.paint_all(tex, parts["vent"][0], lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.vent(r[0], r[1], r[2], r[3], gun, slat=2) if r[3] >= 2 and d != "up" else None))
-    for b in parts["coil"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.COPPER[4]), t.hline(r[0], r[1], r[2], P.COPPER[6])))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The condenser's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): white-wrapped
+    insulated columns in courses with steel hoops at their ends and a decal; steel caps; copper coils under frost; a
+    gunmetal louvred vent; a green compressor with its fan; the glowing sight window."""
+    k = K.Kit(g, parts, seed=325)
+    k.plinth(tex)
+    wrap = M.white_paint(tone=0.7, wear=0.08, grime=0.1)
+    k.paint(tex, "column", wrap)
+
+    def column(f, img):
+        if not f.vertical:
+            return
+        M.seams(f, img, every=4, axis="v", offset=2, light=False)
+        hoop = (f.border["top"] < 1) | (f.border["bottom"] < 1)
+        M.paste(img, k.on(f, k.STEEL), hoop)
+    k.overlay(tex, "column", column)
+    g.paint_all(tex, parts["column"][0], lambda t, r, d: (t.rect(r[0] + r[2] // 2 - 1, r[1] + r[3] - 8, 3, 4, P.CHERENKOV[3]),
+                                                          t.px(r[0] + r[2] // 2, r[1] + r[3] - 7, P.WHITE_CERAMIC[6]))
+                if d == "north" and r[2] >= 4 else None)
+    k.paint(tex, ["cap", "vent_cap", "fan"], k.STEEL)
+    k.paint(tex, "vent", k.GUN)
+    k.overlay(tex, "vent", lambda f, img: M.darken(img, (np.floor(f.plane_uv()[1]) % 2) == 0, 0.45) if f.vertical else None)
+    k.paint(tex, "coil", k.COPPER)
+    k.ribs(tex, "coil", every=1, k=0.8)
 
     def frost(t, r, d):
         x, y, w, h = r
         for yy in range(y, y + h):
             for xx in range(x, x + w):
-                k = (xx * 7 + yy * 13) % 5
-                t.px(xx, yy, FROST[5] if k == 0 else FROST[4] if k < 3 else FROST[3])
+                q = (xx * 7 + yy * 13) % 5
+                t.px(xx, yy, FROST[5] if q == 0 else FROST[4] if q < 3 else FROST[3])
     for b in parts["frost"]:
         g.paint_all(tex, b, frost)
-
-    def compressor(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.NATO_GREEN[tone(d)])
-        if d == "west":
-            t.outline(x, y, w, h, P.NATO_GREEN[1])
-            t.ring(x + w / 2, y + h / 2, 1.0, 2.6, P.NATO_GREEN[2])         # fan shroud
-    g.paint_all(tex, parts["compressor"][0], compressor)
+    k.paint(tex, "compressor", k.NATO)
+    g.paint_all(tex, parts["compressor"][0], lambda t, r, d: t.ring(r[0] + r[2] / 2, r[1] + r[3] / 2, 1.0, 2.6, P.NATO_GREEN[2])
+                if d == "west" else None)
     for b in parts["fan"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[4]), t.px(r[0] + r[2] // 2, r[1], P.WARNING_RED.base)))
-
-    def port(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
-        if d == "north":
-            t.outline(x, y, w, h, gun[1])
-    g.paint_all(tex, parts["port"][0], port)
+        g.paint_all(tex, b, lambda t, r, d: t.px(r[0] + r[2] // 2, r[1], P.WARNING_RED.base))
+    k.paint(tex, "port", k.GUN)
 
     def window_paint(t, r, d):
         t.gradient_v(*r, P.CRYO[5], P.CRYO[3])
         t.px(r[0], r[1], P.CRYO.shine)
-    g.paint_all(tex, window, window_paint)
-    g.paint_all(glow, window, window_paint)
+    g.paint_all(tex, parts["window"][0], window_paint)
+    g.paint_all(glow, parts["window"][0], window_paint)
     for b in parts["puff"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, FROST[5] if d == "up" else FROST[4]))
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

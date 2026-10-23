@@ -12,6 +12,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -85,88 +89,62 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    olive, gun, steel = P.OLIVE, P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d in ("north",) else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The crusher's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive housing in a
+    bolted access panel on the plinth, a nameplate and a chevron; a galvanised hopper on gunmetal posts and rim, its
+    throat dark; tungsten rollers and teeth; a gunmetal motor with dark fins and a steel pulley; the copper inlet."""
+    k = K.Kit(g, parts, seed=303)
+    k.plinth(tex)
+    k.paint(tex, "housing", k.OLIVE)
+    k.panels(tex, "housing", inset=2)
+    k.paint(tex, ["rim", "post", "chute", "tray", "motor"], k.GUN)
+    k.paint(tex, "hopper", k.GALV)
+
+    def rolled_lip(f, img):
+        if f.vertical:
+            M.lighten(img, f.border["top"] < 1, 1.2, 10)
+    k.overlay(tex, "hopper", rolled_lip)
+    k.paint(tex, "throat", k.DARK)
+    k.overlay(tex, "throat", lambda f, img: img.__setitem__((K.ring(f) >= 2, slice(0, 3)), P.BLACK_PAINT.deep[:3]))
+    k.paint(tex, "fin", k.DARK)
+    k.ribs(tex, "motor", every=2, k=0.72, along="u", only=("north", "south", "up"))
+    k.paint(tex, "pulley", k.STEEL)
+    k.paint(tex, "inlet", k.BLACK)
+    tungsten = M.steel(tone=0.42, brushed=0.03, mottle=0.05)
+    k.paint(tex, "roller", tungsten)
+    k.paint(tex, "tooth", M.steel(tone=0.62, brushed=0.0))
 
     def housing(t, r, d):
         x, y, w, h = r
-        t.panel(x, y, w, h, olive, base=tone(d), style="raised")
-        if d in ("north", "south", "east", "west"):
-            # Restraint: one access-panel seam, corner bolts, a couple of chips at the corners.
-            t.outline(x + 2, y + 2, w - 4, h - 4, olive.shadow)
-            t.hline(x + 3, y + 2, w - 6, olive.light)
-            for bx, by in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.rivet(bx, by, olive)
-            t.chip_edges(x, y, w, h, P.PRIMER_RED.shadow, seed=sum(map(ord, d)), chips=2, edges="tb", max_len=2)
         if d == "north":
-            t.rect(x + 3, y + 3, 7, 3, P.BLACK_PAINT.base)       # nameplate with a yellow ID stripe
-            t.hline(x + 4, y + 4, 5, P.HAZARD_YELLOW.base)
+            K.plate(t, x + 3, y + 3, 7, 3)                                         # nameplate with a yellow ID stripe
         if d == "west":
             t.decal("chevron5x3", x + w // 2 - 2, y + h // 2 - 1, P.HAZARD_YELLOW.base)
     g.paint_all(tex, parts["housing"][0], housing)
 
-    for b in parts["rim"] + parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1 if d != "down" else 2]))
-    for b in parts["hopper"]:
-        def hop(t, r, d):
-            x, y, w, h = r
-            if d in ("north", "south", "east", "west") and h >= 4 and w >= 4:
-                t.rect(x, y, w, h, steel[3])
-                t.hline(x, y, w, steel.highlight)          # rolled top lip
-                t.hline(x, y + h - 1, w, steel.shadow)
-                t.rivet(x + 1, y + h - 2, steel)
-                t.rivet(x + w - 2, y + h - 2, steel)
-            else:
-                t.rect(x, y, w, h, steel[tone(d)])
-        g.paint_all(tex, b, hop)
-    def throat(t, r, d):
+    def chute(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, P.GUNMETAL[2])                     # ledge under the hopper walls
-        t.rect(x + 2, y + 2, w - 4, h - 4, P.BLACK_PAINT.deep)
-    g.paint_all(tex, parts["throat"][0], throat)
-    for b in parts["chute"] + parts["tray"]:
-        def chute(t, r, d, b=b):
-            x, y, w, h = r
-            t.rect(x, y, w, h, gun[tone(d)])
-            if b.name == "chute" and d == "north":
-                t.rect(x + 1, y + h - 3, w - 2, 2, P.BLACK_PAINT.deep)   # discharge mouth
-                t.hline(x + 1, y + h - 1, w - 2, P.DESERT_TAN.shadow)    # spilled dust
+        if d == "north":
+            t.rect(x + 1, y + h - 3, w - 2, 2, P.BLACK_PAINT.deep)                 # discharge mouth
+            t.hline(x + 1, y + h - 1, w - 2, P.DESERT_TAN.shadow)                  # spilled dust
+    for b in parts["chute"]:
         g.paint_all(tex, b, chute)
+    g.paint_all(tex, parts["motor"][0], lambda t, r, d: t.ring(r[0] + r[2] / 2, r[1] + r[3] / 2, 1.0, 2.4, P.GUNMETAL.light) if d == "east" else None)
+    for b in parts["pulley"]:
+        if "disc" in b.name:
+            g.paint_all(tex, b, lambda t, r, d: t.px(r[0] + r[2] // 2, r[1] + 1, P.WARNING_RED.base) if d == "east" else None)
+    g.paint_all(tex, parts["inlet"][0], lambda t, r, d: t.rect(r[0] + 1, r[1] + 1, max(1, r[2] - 2), max(1, r[3] - 2), P.COPPER.light)
+                if d == "south" else None)
 
     def lamp_paint(t, r, d):
         t.rect(*r, P.INDICATOR_GREEN.base)
         t.px(r[0], r[1], P.INDICATOR_GREEN.shine)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-
-    def motor(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d == "east":
-            t.ring(x + w / 2, y + h / 2, 1.0, 2.4, gun.light)
-        if d in ("north", "south") and h >= 4:
-            t.hline(x, y + 1, w, gun.highlight)
-    g.paint_all(tex, parts["motor"][0], motor)
-    for b in parts["fin"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
-    for b in parts["pulley"]:
-        def pul(t, r, d, b=b):
-            t.rect(*r, steel[tone(d)])
-            if d == "east" and "disc" in b.name:
-                x, y, w, h = r
-                t.px(x + w // 2, y + 1, P.WARNING_RED.base)        # index mark shows the spin
-        g.paint_all(tex, b, pul)
-    g.paint_all(tex, parts["inlet"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT.base), t.rect(r[0] + 1, r[1] + 1, max(1, r[2] - 2), max(1, r[3] - 2), P.COPPER.light) if d == "south" else None))
-
-    for b in parts["roller"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.TUNGSTEN[tone(d) - 1]))
-    for b in parts["tooth"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.TUNGSTEN[tone(d) + 1]), t.hline(r[0], r[1], r[2], P.TUNGSTEN.shine)))
-
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

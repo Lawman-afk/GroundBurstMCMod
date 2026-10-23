@@ -12,6 +12,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -58,62 +62,40 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, green = P.GUNMETAL, P.STEEL, P.NATO_GREEN
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    def plinth(t, r, d):
-        x, y, w, h = r
-        if d == "north":
-            t.stripes(x, y, w, h, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)
-        else:
-            t.rect(x, y, w, h, gun[tone(d)])
-            if d == "up":
-                t.outline(x, y, w, h, gun[2])
-    g.paint_all(tex, parts["plinth"][0], plinth)
 
-    def casing(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, green[tone(d)])
-        if d != "down":
-            t.outline(x, y, w, h, green[1])
-            t.hline(x + 1, y + 1, w - 2, green[4])
-        if d in ("east", "west", "south") and h > 4:
-            for px, py in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.px(px, py, steel[5])                                      # corner bolts
-        if d == "north":
-            t.hline(x + 1, y + h - 2, w - 2, P.HAZARD_YELLOW[3])            # warning strip
-    g.paint_all(tex, parts["casing"][0], casing)
-    g.paint_all(tex, parts["cap"][0], lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.outline(*r, gun[2]) if d == "up" else None))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The pump's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): the plinth; a NATO-green
+    pump casing bolted at its corners with a hazard line on its front under a gunmetal cap; a ribbed gunmetal motor with
+    a steel end bell and a white fan; steel stubs ending in bolted flanges round dark bores; a gauge and a lamp."""
+    k = K.Kit(g, parts, seed=307)
+    k.plinth(tex)
+    k.paint(tex, "casing", k.NATO)
+    k.panels(tex, "casing", inset=1, min_size=5)
+    k.overlay(tex, "casing", lambda f, img: M.paste(img, k.on(f, k.HAZARD), f.border["bottom"] == 1), only=("north",))
+    k.paint(tex, ["cap", "motor", "gauge"], k.GUN)
+    k.ribs(tex, "motor", every=2, k=0.7, along="u", only=("north", "south"))
+    k.paint(tex, "fins", k.DARK)
+    k.ribs(tex, "fins", every=2, k=0.6, along="u")
+    k.paint(tex, ["fan_hub", "stub"], k.STEEL)
+    k.paint(tex, "blade", k.CERAMIC)
+    k.paint(tex, "flange", k.GUN)
 
-    def motor(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + (1 if d == "north" else 0)])
-        if d in ("north", "south"):
-            for xx in range(x + 1, x + w - 1, 2):
-                t.vline(xx, y, h, gun[2])                                   # ribbed housing
-        if d == "west":
-            t.rect(x + 1, y + 1, w - 2, h - 2, steel[4])                    # end bell
-    g.paint_all(tex, parts["motor"][0], motor)
-    g.paint_all(tex, parts["fins"][0], lambda t, r, d: [t.vline(xx, r[1], r[3], gun[4] if xx % 2 else gun[2]) for xx in range(r[0], r[0] + r[2])])
-    g.paint_all(tex, parts["fan_hub"][0], lambda t, r, d: t.rect(*r, steel[5]))
-    for b in parts["blade"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.WHITE_CERAMIC[4] if d in ("east", "west") else P.WHITE_CERAMIC[3]))
-    for b in parts["stub"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5])))
-
-    def flange(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[3])
-        if w >= 4 and h >= 4:
-            t.rect(x + 1, y + 1, w - 2, h - 2, P.BLACK_PAINT.deep)           # open bore inside a bolted rim
-            t.hline(x + 1, y + 1, w - 2, gun[1])
-            for px, py in ((x, y), (x + w - 1, y), (x, y + h - 1), (x + w - 1, y + h - 1)):
-                t.px(px, py, steel[5])
+    def bore(f, img):
+        if min(f.shape) >= 4:
+            r = K.ring(f)
+            img[r >= 1, :3] = P.BLACK_PAINT.deep[:3]
+            M.lighten(img, (r == 0) & (np.minimum(f.border["top"], f.border["bottom"]) == 0)
+                      & (np.minimum(f.border["left"], f.border["right"]) == 0), 1.4, 20)   # corner bolts
     for b in parts["flange"]:
-        g.paint_all(tex, b, flange)
+        big = max(b.faces, key=lambda d: (lambda r: r[2] * r[3])(g.rect(b, d)) if b.faces[d].rect else 0)
+        k.overlay(tex, b.name, bore, only=(big,))
+    g.paint_all(tex, parts["motor"][0], lambda t, r, d: t.rect(r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, P.STEEL[4]) if d == "west" else None)
 
     def gauge(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[2])
         if d == "north":
             t.rect(x + 1, y + 1, w - 2, h - 2, P.WHITE_CERAMIC[5])
             t.px(x + 1, y + 2, P.WARNING_RED.base)                          # needle
@@ -124,7 +106,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         t.rect(*r, P.CHERENKOV[5])
     g.paint_all(tex, parts["lamp"][0], lamp)
     g.paint_all(glow, parts["lamp"][0], lamp)
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

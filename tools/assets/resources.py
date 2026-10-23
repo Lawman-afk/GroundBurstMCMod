@@ -11,7 +11,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import numpy as np  # noqa: E402
+
+from gz import materials as MT  # noqa: E402
 from gz import palette as P  # noqa: E402
+from gz import panels as PN  # noqa: E402
 from gz import paths  # noqa: E402
 from gz import vanilla as V  # noqa: E402
 from gz.model import write_json  # noqa: E402
@@ -195,47 +199,49 @@ def build_powders() -> None:
 
 # --- storage & raw blocks ---------------------------------------------------------------------------------------------------
 
+def _metal(ramp, tone: float = 0.55, brushed: float = 0.05) -> MT.Material:
+    return MT.Material(ramp=np.array([s[:3] for s in ramp.shades], dtype=np.float32), tone=tone, mottle=0.035, grain=0.03, dither=0.45,
+                       edge_light=0.14, edge_dark=0.1, ao=0.0, grime=0.0, dust=0.0, brushed=brushed)
+
+
 def uranium_block() -> Tex:
-    t = Tex(16, 16)
-    t.stripes(0, 0, 16, 16, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.light, width=2)
-    t.panel(2, 2, 12, 12, URANIUM_METAL, base=3, style="inset")
-    t.panel(3, 3, 10, 10, URANIUM_METAL, base=3, style="raised")
+    """A uranium billet in a hazard-striped frame, a trefoil placard on it (the material library, the remaster after the
+    Fission Reactor rework)."""
+    img = PN.face(_metal(URANIUM_METAL, 0.5), frame=MT.stripes(width=2, wear=0.0), style="raised", seed=31)
+    PN.bevel_box(img, 3, 3, 10, 10, True, 0.6)
+    t = MT.to_tex(img)
     t.trefoil(8, 8, 3.1, P.HAZARD_BLACK.base, bg=P.HAZARD_YELLOW.base)
-    for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
-        t.rivet(x, y, URANIUM_METAL)
     t.outline(0, 0, 16, 16, P.HAZARD_BLACK.base)
     return t
 
 
 def lead_block() -> Tex:
-    """Interlocking lead shielding bricks (chevron-edged, as used for radiation caves)."""
-    t = Tex(16, 16, LEAD_METAL.base)
-    for row, y in enumerate((0, 4, 8, 12)):
-        off = 0 if row % 2 == 0 else 4
-        for x in range(-8, 16, 8):
-            bx = x + off
-            t.panel(bx, y, 8, 4, LEAD_METAL, base=3, style="raised")
-            t.px(bx + 7, y + 1, LEAD_METAL.deep)      # interlock notch
-            t.px(bx, y + 2, LEAD_METAL.highlight)
-    t.scratches(0, 0, 16, 16, (*LEAD_METAL.highlight[:3], 160), seed=3, count=3, length=3)
-    return t
+    """Interlocking lead shielding bricks (chevron-edged, as used for radiation caves): dull lead in courses, each brick
+    lit along its top and left, an interlock notch at its end."""
+    img = PN.tile(_metal(LEAD_METAL, 0.5, 0.0), 33)
+    col, row = PN.grid()
+    off = np.where((row // 4) % 2 == 0, 0, 4)
+    bx = (col - off) % 8
+    by = row % 4
+    MT.darken(img, (by == 3) | (bx == 7), 0.58)                 # mortarless joints between the bricks
+    MT.lighten(img, ((by == 0) | (bx == 0)) & (by != 3) & (bx != 7), 1.14, 5)
+    MT.darken(img, (bx == 6) & (by == 1), 0.5)                   # interlock notch
+    return MT.to_tex(img)
 
 
 def tungsten_block() -> Tex:
-    t = Tex(16, 16)
-    t.panel(0, 0, 16, 16, TUNGSTEN_METAL, base=3, style="raised")
-    # Fly-cut machining arcs.
+    """A machined tungsten plate in four, fly-cut arcs in its top-left quarter, bolted at its corners."""
+    img = PN.tile(_metal(TUNGSTEN_METAL, 0.55, 0.04), 35)
+    PN.bevel_box(img, 0, 0, 16, 16, True, 1.0)
+    col, row = PN.grid()
     for r in (3.5, 5.5, 7.5):
-        for a in range(0, 90, 6):
-            x = int(2 + r * math.cos(math.radians(a)))
-            y = int(2 + r * math.sin(math.radians(a)))
-            if 1 <= x < 15 and 1 <= y < 15:
-                t.px(x, y, TUNGSTEN_METAL.light)
-    t.seam_h(1, 8, 14, TUNGSTEN_METAL)
-    t.seam_v(8, 1, 7, TUNGSTEN_METAL)
+        d = np.sqrt((col + 0.5 - 2) ** 2 + (row + 0.5 - 2) ** 2)
+        MT.lighten(img, (np.abs(d - r) < 0.5) & (col >= 1) & (row >= 1) & (col < 15) & (row < 15), 1.12, 6)
+    MT.darken(img, ((row == 8) & (col >= 1) & (col < 15)) | ((col == 8) & (row >= 1) & (row < 8)), 0.62)
+    MT.lighten(img, ((row == 9) & (col >= 1) & (col < 15)) | ((col == 9) & (row >= 1) & (row < 8)), 1.1, 4)
     for x, y in ((2, 2), (13, 2), (2, 13), (13, 13)):
-        t.rivet(x, y, TUNGSTEN_METAL, size=2) if x < 13 and y < 13 else t.rivet(x, y, TUNGSTEN_METAL)
-    return t
+        PN.bolt(img, x, y)
+    return MT.to_tex(img)
 
 
 def raw_block(ramp, spot_color, seed: int) -> Tex:

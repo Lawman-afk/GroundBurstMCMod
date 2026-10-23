@@ -15,6 +15,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -103,34 +107,42 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def housing(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[tone(d) + 1])
-        if d == "up":
-            t.outline(x, y, w, h, P.BLACK_PAINT[1])
-            for k in range(2, min(w, h) // 2, 2):                           # concentric field-plate rings
-                t.outline(x + k, y + k, w - 2 * k, h - 2 * k, P.BLACK_PAINT[3])
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The fabricator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a black field
+    housing with copper windings through its vents, concentric field plates on top, a violet warning placard and a
+    readout; steel emitters with glowing violet lenses; gunmetal posts banded yellow; a black canopy with brass
+    insulator caps; copper ring windings in steel clamps, their field lines glowing; the shard and its sparks."""
+    k = K.Kit(g, parts, seed=329)
+    k.plinth(tex)
+    k.paint(tex, ["housing", "canopy"], k.BLACK)
+
+    def windings(f, img):
+        if not f.vertical:
+            r = K.ring(f)
+            M.lighten(img, (r >= 2) & (np.floor(r) % 2 == 0), 1.35, 8)          # concentric field-plate rings
             return
-        t.hline(x, y, w, P.BLACK_PAINT[5])
+        a, b = f.plane_uv()
+        inside = (f.border["top"] >= 1) & (f.border["bottom"] >= 1) & (f.border["left"] >= 1) & (f.border["right"] >= 1)
+        if f.d == "north":
+            inside &= (f.border["left"] >= 8) & (f.border["right"] >= 7)
+        slot = inside & ((np.floor(a) % 2) == 0)
+        M.paste(img, k.on(f, k.COPPER), slot)
+        M.lighten(img, slot & (f.border["top"] < 2), 1.2, 10)
+    k.overlay(tex, "housing", windings, only=("north", "south", "east", "west", "up"))
+
+    def placard(t, r, d):
+        x, y, w, h = r
         if d == "north":
-            # Front: violet-and-black warning placard and a readout.
             t.stripes(x + 2, y + 1, 5, h - 2, P.SINGULARITY[4], P.HAZARD_BLACK.base, width=1)
             t.outline(x + 2, y + 1, 5, h - 2, P.BLACK_PAINT[1])
             t.rect(x + w - 6, y + 1, 4, 2, P.BLACK_PAINT[0])
             t.hline(x + w - 6, y + 1, 3, P.SINGULARITY[5])
-        # Copper windings seen through the vent slots.
-        for xx in range(x + 1 if d != "north" else x + 8, x + w - 1 if d != "north" else x + w - 7, 2):
-            t.vline(xx, y + 1, h - 2, P.COPPER[3])
-            t.px(xx, y + 1, P.COPPER[5])
-    g.paint_all(tex, parts["housing"][0], housing)
-    for b in parts["emitter"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.outline(*r, steel[2]) if min(r[2], r[3]) >= 4 else None))
+    g.paint_all(tex, parts["housing"][0], placard)
+    k.paint(tex, "emitter", k.STEEL)
 
     def lens(t, r, d):
         x, y, w, h = r
@@ -140,43 +152,30 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for b in parts["lens"]:
         g.paint_all(tex, b, lens)
         g.paint_all(glow, b, lens)
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.vline(r[0], r[1], r[3], gun[5]),
-                                             [t.hline(r[0], yy, r[2], P.HAZARD_YELLOW.base) for yy in range(r[1] + 2, r[1] + r[3] - 2, 6)]))
-
-    def canopy(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[tone(d) + 1])
-        if d == "up":
-            t.outline(x, y, w, h, P.BLACK_PAINT[1])
-            for cx_, cy_ in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.px(cx_, cy_, P.BRASS[5])                                  # insulator caps
-        else:
-            t.hline(x, y, w, P.BLACK_PAINT[5])
-    g.paint_all(tex, parts["canopy"][0], canopy)
-    g.paint_all(tex, parts["cap"][0], lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
-
-    # Ring segments (the first even and first odd segment of each ring are painted; the rest share them): dark coil
-    # former with copper windings, and a violet field line on the inside face that glows.
+    k.paint(tex, ["post", "cap"], k.GUN)
+    k.overlay(tex, "post", lambda f, img: M.paste(img, k.on(f, k.YELLOW), (f.border["top"] % 6 >= 2) & (f.border["top"] % 6 < 3))
+              if f.vertical else None)
+    g.paint_all(tex, parts["canopy"][0], lambda t, r, d: [t.px(cx_, cy_, P.BRASS[5]) for cx_, cy_ in
+                                                          ((r[0] + 1, r[1] + 1), (r[0] + r[2] - 2, r[1] + 1), (r[0] + 1, r[1] + r[3] - 2),
+                                                           (r[0] + r[2] - 2, r[1] + r[3] - 2))] if d == "up" else None)
+    # Ring segments (the first even and first odd segment of each ring are painted; the rest share them): copper winding
+    # with a steel clamp at each end, and a violet field line on the inside face that glows.
     inner = {"xy": "down", "xz": "north", "yz": "down"}
 
     def seg(t, r, d, plane):
-        """Copper winding with a steel clamp at each end of the segment; the field line inside glows violet."""
         x, y, w, h = r
         if d == inner[plane]:
             t.rect(x, y, w, h, P.SINGULARITY[5])
             return
-        t.rect(x, y, w, h, P.COPPER[tone(d)])
         if w >= h and w >= 3:
-            t.vline(x, y, h, steel[4])
-            t.vline(x + w - 1, y, h, steel[4])
-            t.hline(x + 1, y, w - 2, P.COPPER[5])
+            t.vline(x, y, h, P.STEEL[4])
+            t.vline(x + w - 1, y, h, P.STEEL[4])
         elif h >= 3:
-            t.hline(x, y, w, steel[4])
-            t.hline(x, y + h - 1, w, steel[4])
-            t.vline(x, y + 1, h - 2, P.COPPER[5])
+            t.hline(x, y, w, P.STEEL[4])
+            t.hline(x, y + h - 1, w, P.STEEL[4])
     for bone, _, plane in RINGS:
         for first in parts[bone][:2]:
+            k.paint(tex, first.name, k.COPPER)
             g.paint_all(tex, first, lambda t, r, d, plane=plane: seg(t, r, d, plane))
             g.paint_all(glow, first, lambda t, r, d, plane=plane: t.rect(*r, P.SINGULARITY[5]) if d == inner[plane] else None)
 
@@ -199,7 +198,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     for b in parts["spark"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, SHARD[6]))
         g.paint_all(glow, b, lambda t, r, d: t.rect(*r, SHARD[6]))
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

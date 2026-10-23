@@ -14,6 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -81,90 +85,56 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, olive = P.GUNMETAL, P.STEEL, P.OLIVE
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The canning machine's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a glass filling
+    cell on steel posts under an olive lid with a brass filler; an olive column with a kick plate; a gunmetal arm with
+    brass nozzles over a steel grate cradle; the canisters, bare steel with a stencil band; steel pipes; a dial."""
+    k = K.Kit(g, parts, seed=313)
+    k.plinth(tex)
 
     def glass(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, CLEAR)
         t.hline(x, y, w, (200, 230, 240, 255))                               # top edge catch-light
-        for k in range(min(w, h) // 3):                                      # diagonal glints
-            t.px(x + 1 + k, y + 2 + k, (210, 236, 246, 255))
+        for i in range(min(w, h) // 3):                                      # diagonal glints
+            t.px(x + 1 + i, y + 2 + i, (210, 236, 246, 255))
         t.px(x + w - 2, y + h - 3, (190, 220, 232, 255))
     for b in parts["glass"]:
         g.paint_all(tex, b, glass)
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5]) if d in ("north", "west") else None))
 
-    def lid(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, olive[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, olive.shadow)
-            t.rivet(x + 1, y + 1, olive)
-            t.rivet(x + w - 2, y + h - 2, olive)
-        else:
-            t.hline(x, y, w, olive.light)
-    g.paint_all(tex, parts["lid"][0], lid)
-    g.paint_all(tex, parts["filler"][0], lambda t, r, d: (t.rect(*r, P.BRASS[tone(d) + 1]),
-                                                          t.px(r[0] + r[2] // 2, r[1] + r[3] // 2, P.BRASS[6]) if d == "up" else None))
+    k.paint(tex, ["post", "cradle", "pipe", "can_top"], k.STEEL)
+    k.paint(tex, ["lid", "column"], k.OLIVE)
+    k.overlay(tex, "lid", lambda f, img: M.darken(img, K.ring(f) == 0, 0.75), only=("up",))
+    k.panels(tex, "column", inset=1, min_size=5, only=("east", "west"))
+    k.overlay(tex, "column", lambda f, img: M.darken(img, (f.border["bottom"] >= 2) & (f.border["bottom"] < 4)
+                                                     & (f.border["left"] >= 1) & (f.border["right"] >= 1), 0.62), only=("north",))
+    k.paint(tex, ["filler", "nozzle"], k.BRASS)
+    k.paint(tex, "arm", k.GUN)
 
-    def column(t, r, d):
-        x, y, w, h = r
-        if d == "up" or min(w, h) < 3:
-            t.rect(x, y, w, h, olive[tone(d)])
-            return
-        t.panel(x, y, w, h, olive, base=tone(d), style="raised")
-        if d == "north":
-            t.rect(x + 1, y + h - 4, w - 2, 2, olive[1])                           # kick plate
-        if d in ("east", "west"):
-            t.rivet(x + 1, y + 1, olive)
-            t.rivet(x + w - 2, y + 1, olive)
-    g.paint_all(tex, parts["column"][0], column)
-
-    def arm(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
-        if d in ("east", "west"):
-            t.hline(x, y, w, gun[5])
-            t.hline(x, y + h - 1, w, gun[2])
-    g.paint_all(tex, parts["arm"][0], arm)
-
-    def cradle(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, steel[2])
-            for k in range(1, h - 1, 2):                                         # grate slots
-                t.hline(x + 1, y + k, w - 2, steel[2])
-    g.paint_all(tex, parts["cradle"][0], cradle)
-    for b in parts["nozzle"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.BRASS[tone(d) + 1]), t.vline(r[0], r[1], r[3], P.BRASS[6]) if d in ("north", "west") else None))
+    def grate(f, img):
+        a, b = f.plane_uv()
+        M.darken(img, (K.ring(f) >= 1) & ((np.floor(b) % 2) == 1), 0.55)
+    k.overlay(tex, "cradle", grate, only=("up",))
+    k.paint(tex, "can_body", M.steel(tone=0.66, brushed=0.05))
 
     def can_body(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d) + (1 if d in ("north", "west") else 0)])
-        if d in sides and h >= 4:
+        if d in ("north", "south", "east", "west") and h >= 4:
             t.rect(x, y + 1, w, 1, P.HAZARD_YELLOW.base)                        # stencil band
             t.rect(x, y + h - 2, w, 1, P.OLIVE[3])                              # base ring
-            if w >= 3:
-                t.vline(x + 1, y + 2, h - 4, steel[5])                          # cylinder highlight
     for b in parts["can_body"]:
         g.paint_all(tex, b, can_body)
-    for b in parts["can_top"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d == "up" else None))
+    k.paint(tex, "dial", k.GUN)
 
     def dial(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
         if d == "north":
             t.rect(x, y, w, h, P.WHITE_CERAMIC[5])
-            t.outline(x, y, w, h, gun[1])
+            t.outline(x, y, w, h, P.GUNMETAL[1])
             t.px(x + w // 2, y + h // 2, P.WARNING_RED.base)                    # needle hub
             t.px(x + w // 2 + 1, y + h // 2 - 1, P.WARNING_RED.base)
     g.paint_all(tex, parts["dial"][0], dial)
@@ -172,9 +142,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     def lamp_paint(t, r, d):
         t.rect(*r, P.INDICATOR_GREEN.light)
         t.px(r[0], r[1], P.INDICATOR_GREEN.shine)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

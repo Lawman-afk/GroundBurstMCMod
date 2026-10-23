@@ -16,6 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
@@ -102,98 +106,62 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, olive, yellow, black = P.GUNMETAL, P.STEEL, P.OLIVE, P.HAZARD_YELLOW, P.HAZARD_BLACK
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    def bench_top(t, r, d):
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The bench's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel tread-plate top
+    with a hazard edge on the working side, on gunmetal legs, shelf and uprights; a yellow gantry beam rated 2T with a
+    green hoist, a chain and a yellow hook block; an olive drawer cabinet; rubber saddles and red vice jaws; the olive
+    warhead on the cradle; a tan pegboard with its tools; a work lamp; the blueprint."""
+    k = K.Kit(g, parts, seed=335)
+    k.paint(tex, "top", k.GUN)
+    k.paint(tex, "top", k.STEEL, only=("up",))
+    k.paint(tex, "top", k.HAZARD, only=("north",))
+
+    def tread(f, img):
+        a, b = f.plane_uv()
+        bar = ((np.floor(a) % 4) == 1) & ((np.floor(b + 2 * (np.floor(a / 4) % 2)) % 4) == 1)
+        M.lighten(img, bar, 1.25, 8)
+        M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.72)
+    k.overlay(tex, "top", tread, only=("up",))
+    k.paint(tex, ["leg", "shelf", "upright", "foot", "trolley", "lamp_post", "lamp_arm"], k.GUN)
+    k.paint(tex, ["beam", "block", "lamp_hood"], k.YELLOW)
+    g.paint_all(tex, parts["beam"][0], lambda t, r, d: t.text(r[0] + r[2] // 2 - 6, r[1] + 1, "2T", P.HAZARD_BLACK.base)
+                if d == "north" and r[2] > 8 else None)                            # rated load
+    g.paint_all(tex, parts["block"][0], lambda t, r, d: t.px(r[0] + r[2] // 2, r[1], P.HAZARD_BLACK.base))
+    k.paint(tex, "cabinet", k.OLIVE)
+
+    def drawers(t, r, d):
         x, y, w, h = r
-        if d == "up":
-            t.rect(x, y, w, h, steel[3])
-            for xx in range(x + 3, x + w - 2, 8):              # sparse tread-plate dimples
-                for yy in range(y + 2 + (xx // 8) % 2 * 2, y + h - 2, 4):
-                    t.px(xx, yy, steel[4])
-            t.outline(x, y, w, h, steel[2])
-        elif d == "north":
-            t.stripes(x, y, w, h, yellow.base, black.base, width=2)      # hazard edge on the working side
-        else:
-            t.rect(x, y, w, h, gun[tone(d)])
-            t.hline(x, y, w, gun[5])
-    g.paint_all(tex, parts["top"][0], bench_top)
-
-    def painted(ramp):
-        def paint(t, r, d):
-            x, y, w, h = r
-            t.panel(x, y, w, h, ramp, base=tone(d), style="raised") if min(w, h) >= 3 else t.rect(x, y, w, h, ramp[tone(d)])
-        return paint
-    for key in ("leg", "shelf", "upright", "foot"):
-        for b in parts[key]:
-            g.paint_all(tex, b, painted(gun))
-
-    def beam(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, yellow[3 if d != "up" else 4])
-        if d in ("north", "south") and w > 8:
-            t.hline(x, y, w, yellow[5])
-            t.hline(x, y + h - 1, w, yellow[2])
-            t.text(x + w // 2 - 6, y + 1, "2T", black.base) if d == "north" else None   # rated load
-    g.paint_all(tex, parts["beam"][0], beam)
-
-    def cabinet(t, r, d):
-        x, y, w, h = r
-        t.panel(x, y, w, h, olive, base=tone(d), style="raised")
         if d == "north":
-            for k in range(3):                                   # three drawers with pulls
-                dy = y + 1 + k * (h - 2) // 3
-                t.outline(x + 1, dy, w - 2, (h - 2) // 3 - 1, olive[2])
-                t.hline(x + w // 2 - 1, dy + 1, 3, steel[5])
-    g.paint_all(tex, parts["cabinet"][0], cabinet)
-
-    for b in parts["saddle"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.RUBBER[3] if d == "up" else gun[tone(d) + 1]),
-                                             t.hline(r[0], r[1], r[2], P.RUBBER[2]) if d == "up" else None))
-    for b in parts["jaw"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d)]), t.hline(r[0], r[1], r[2], P.WARNING_RED[5])))
-    for b in parts["screw"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[5]), t.px(r[0], r[1], steel[6])))
-
-    def work_body(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, olive[tone(d)])
-        if d in ("north", "south", "up") and w > 6:
-            t.vline(x + w - 3, y, h, yellow[4])                  # nose band
-            t.vline(x + 2, y, h, olive[1])                       # tail seam
-    g.paint_all(tex, parts["work_body"][0], work_body)
-    for b in parts["work_nose"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, olive[tone(d) + 1]))
-
-    g.paint_all(tex, parts["trolley"][0], lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.hline(r[0], r[1], r[2], gun[5])))
-    g.paint_all(tex, parts["hoist_motor"][0], lambda t, r, d: (t.rect(*r, P.NATO_GREEN[tone(d)]),
-                                                               t.vent(r[0], r[1] + 1, r[2], r[3] - 1, P.NATO_GREEN, slat=1) if d == "north" and r[3] > 2 else None))
+            for i in range(3):                                   # three drawers with pulls
+                dy = y + 1 + i * (h - 2) // 3
+                t.outline(x + 1, dy, w - 2, (h - 2) // 3 - 1, P.OLIVE[2])
+                t.hline(x + w // 2 - 1, dy + 1, 3, P.STEEL[5])
+    g.paint_all(tex, parts["cabinet"][0], drawers)
+    k.paint(tex, "saddle", k.GUN)
+    k.paint(tex, "saddle", k.RUBBER, only=("up",))
+    k.paint(tex, "jaw", k.RED)
+    k.paint(tex, ["screw", "hook", "ratchet"], k.STEEL)
+    k.paint(tex, ["work_body", "work_nose"], k.OLIVE)
+    g.paint_all(tex, parts["work_body"][0], lambda t, r, d: (t.vline(r[0] + r[2] - 3, r[1], r[3], P.HAZARD_YELLOW[4]),
+                                                             t.vline(r[0] + 2, r[1], r[3], P.OLIVE[1])) if d in ("north", "south", "up") and r[2] > 6 else None)
+    k.paint(tex, "hoist_motor", k.NATO)
+    k.overlay(tex, "hoist_motor", lambda f, img: M.darken(img, (np.floor(f.plane_uv()[1]) % 2) == 0, 0.6), only=("north",))
 
     def chain(t, r, d):
         x, y, w, h = r
         for yy in range(y, y + h):
-            t.px(x, yy, steel[5] if yy % 2 else steel[2])
+            t.px(x, yy, P.STEEL[5] if yy % 2 else P.STEEL[2])
     g.paint_all(tex, parts["chain"][0], chain)
-    g.paint_all(tex, parts["block"][0], lambda t, r, d: (t.rect(*r, yellow[tone(d)]), t.px(r[0] + r[2] // 2, r[1], black.base)))
-    g.paint_all(tex, parts["hook"][0], lambda t, r, d: t.rect(*r, steel[3]))
-
-    def pegboard(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.DESERT_TAN[tone(d)])
-        if d == "north":
-            for yy in range(y + 1, y + h - 1, 2):
-                for xx in range(x + 1 + (yy // 2) % 2, x + w - 1, 2):
-                    t.px(xx, yy, P.DESERT_TAN[1])
-    g.paint_all(tex, parts["pegboard"][0], pegboard)
-    tool_colours = (P.WARNING_RED, steel, P.HAZARD_YELLOW)
+    k.paint(tex, "pegboard", M.wood(tone=0.62, brushed=0.04))
+    k.overlay(tex, "pegboard", lambda f, img: M.darken(img, ((np.floor(f.plane_uv()[1]) % 2) == 1)
+                                                       & (((np.floor(f.plane_uv()[0]) + np.floor(f.plane_uv()[1] / 2)) % 2) == 1), 0.5),
+              only=("north",))
     for i, b in enumerate(parts["tool"]):
-        ramp = tool_colours[i]
-        g.paint_all(tex, b, lambda t, r, d, ramp=ramp: (t.rect(*r, ramp[tone(d) + 1]), t.px(r[0], r[1], steel[6])))
-    g.paint_all(tex, parts["ratchet"][0], lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.px(r[0] + r[2] - 1, r[1], steel[6])))
-
-    for key in ("lamp_post", "lamp_arm"):
-        g.paint_all(tex, parts[key][0], lambda t, r, d: t.rect(*r, gun[tone(d)]))
-    g.paint_all(tex, parts["lamp_hood"][0], lambda t, r, d: (t.rect(*r, yellow[tone(d)]), t.hline(r[0], r[1], r[2], yellow[5])))
+        k.paint(tex, b.name, (k.RED, k.STEEL, k.YELLOW)[i])
 
     def lens(t, r, d):
         x, y, w, h = r
@@ -213,7 +181,6 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.px(x + w - 3, y + h // 2, ink)
             t.px(x + 2, y + 2, ink)
     g.paint_all(tex, parts["blueprint"][0], blueprint)
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

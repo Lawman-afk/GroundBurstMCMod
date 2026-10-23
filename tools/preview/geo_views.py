@@ -28,6 +28,11 @@ import render as R  # noqa: E402
 WHOLE = [("iso front", 30, 225, None, None, None), ("iso back", 30, 45, None, None, None),
          ("low front", 10, 200, None, None, None), ("from above", 80, 180, None, None, None)]
 
+# A machine's model with no preset of its own: from all four corners, low from the front, and from above.
+DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left", 30, 135, None, None, None),
+                      ("iso back", 30, 45, None, None, None), ("iso back-right", 30, 315, None, None, None),
+                      ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
+
 PRESETS = {
     "strategic_assembly_hall": dict(
         keep_one=("nose_",), anim="working",
@@ -116,7 +121,7 @@ def main() -> None:
     ap.add_argument("model")
     ap.add_argument("--cell", type=int, default=400)
     args = ap.parse_args()
-    preset = PRESETS[args.model]
+    preset = PRESETS.get(args.model, DEFAULT)
     mid = f"groundzero:block/{args.model}"
     hidden = hidden_bones(args.model, preset.get("keep_one", ()), preset.get("hide", ()))
     anim = GP.load_animation(mid, preset["anim"]) if preset.get("anim") else None

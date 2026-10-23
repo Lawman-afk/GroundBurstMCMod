@@ -291,6 +291,28 @@ weathering references):
   Item and Fluid Ports, Lead-lined Casing, Steel Plating, the accelerator's and reactors' parts: their designs as
   they were, in a brushed steel frame with solid bevels and bolts round painted or metal panels.
 
+**Third pass (2026-10-23, the user's request: every other machine and block; warheads and the rest of the ordnance
+next, items after that):**
+- *The machines' kit* (`tools/gz/machine_kit.py`): one set of materials for every machine (olive machine paint, NATO
+  green, gunmetal fittings, dark steel, bare and stainless steel, galvanised, copper, brass, rubber, white ceramic,
+  yellow, orange, red and black paint, hazard paint, graphite, refractory brick) and the details they share: the
+  plinth (dark steel, a hazard band on its front, a tread-plate top), bolted panel seams, louvres, ribs and fins, soot
+  spreading from an exhaust's lip, sockets; glyphs (CRTs, dials, data plates, lamps, trefoils) drawn over the material.
+- *The single-block and two-block machines*, each repainted in model space on the kit, their designs, glow layers and
+  animations as they were: Combustion and Diesel Generators, RTG, Ore Crusher, Arc Furnace, Industrial Press,
+  Electrolytic Separator, Water Pump, Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter
+  Fabricator, Cryogenic Condenser, Canning Machine, Battery Charger, Decontamination Shower, the four Capacitor
+  Banks (each in its tier's finish) and the Ordnance Assembly Bench; the machines' break particle.
+- *Small packed sheets* (`tools/gz/atlas.py`): the cables, fluid and item pipes and the fluid tanks' frame and caps,
+  their regions filled from material tiles, round cables and tubes shaded across their width, details drawn on as
+  pixel art.
+- *Storage blocks*: the uranium block (a billet in a hazard frame, its trefoil), lead shielding bricks and the
+  machined tungsten plate on material tiles.
+- *Left as they are, on purpose*: the ores and raw ore blocks are vanilla-style mineral clusters drawn over vanilla's
+  own rock (so they match it and any resource pack), and voidstone, the exotic crystals and corium are natural matter
+  drawn in vanilla's manner; the fluids' animated textures. The ordnance (charges, mines, bombs, warheads, the toxic
+  sludge they leave) comes in the next pass.
+
 ---
 
 ## 5. Resources and world generation
@@ -2552,6 +2574,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-21 | Phase 7 plan (the user chose "everything via the bench"): warheads lose their direct recipes and are assembled at the Ordnance Assembly Bench from a payload core (one per warhead, with its size class S/M/L), a casing of the same class and a fuze (Impact, Timed, Proximity, Remote, Barometric); missiles are assembled from a warhead, body, guidance and propulsion (+ module). Slices: 7a components, bench (warhead line, take-apart) and fuze behaviour on placed warheads; 7b missile parts, assembled missiles in the silo, fuzes in flight; 7c stats panel and 3D preview, JEI, manual chapter. Every armed warhead keeps a contact backup (dropped or shot, it goes off) and redstone sets off any armed warhead; the fuze adds its own trigger. Cluster-type dispensers always open at height when delivered. The bench needs power (10 FE/t). |
 | 2026-10-21 | Fuzes act only in the missile (set on the bench); placed warheads have no screen and cannot be armed. Wide machines configure each half's faces separately. Casings carry no fins (the missile has them). |
 | 2026-10-22 | Only Impact and Barometric fuzes; the barometric fuze makes the missile burst its warhead over the target. Tall machines configure each half's faces too. |
+| 2026-10-23 | The material library's third pass (the user's request): every machine and every other non-ordnance block repainted, on a shared machine kit (`machine_kit.py`) and, for small packed sheets (cables, pipes, tank parts), `atlas.py`; ores, raw blocks and natural blocks keep vanilla's style; warheads and other ordnance next, then items. |
 | 2026-10-23 | The Fission Reactor scales (the user's request, "like in other mods"): any hollow box from 3×3×3 to 6×6×6, Fuel Channel columns in its core, one rod a column (up to 16, 4 800 FE/t: still below Fusion); its walls stay as built (the GeckoLib model retired; a renderer fills the core with glowing coolant); a GUI whose 4×4 core map shows a rod slot on each channel. Its fuel bug fixed: all rods share no counter any more; every loaded rod burns at once with its own lifetime (±15%), carrying its burnup on the item. Details §7.2. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |

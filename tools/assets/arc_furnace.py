@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -104,42 +108,32 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glowmask = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glowmask, parts)
+    return g, tex, glowmask
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def shell(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[3] if d in ("north", "west") else steel[2])
-        t.hline(x, y, w, steel[4])                            # lip under the roof
-        for xx in range(x + 3, x + w - 1, 5):
-            t.vline(xx, y + 1, h - 2, steel[1])               # plate seams
-            t.px(xx + 1, y + 2, steel[5])
-        t.hline(x, y + h - 1, w, P.RUST[2])                   # heat-scorched base
-    for b in parts["shell"]:
-        g.paint_all(tex, b, shell)
-    for b in parts["band"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[2]), t.hline(r[0], r[1], r[2], gun[4])))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The furnace's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel crucible in
+    welded plates, scorched at its foot, with gunmetal hoops; a roof lined with refractory brick round the throat; the
+    white-hot melt and the inspection port's glow; a yellow mast and carriage, gunmetal arms and clamps; graphite
+    electrodes in sections, their tips hot; a green transformer with white ceramic bushings and rubber cables."""
+    k = K.Kit(g, parts, seed=321)
+    k.plinth(tex)
+    k.paint(tex, ["shell", "spout", "spout_lip"], k.STEEL)
+    k.seams(tex, "shell", every=5, axis="u", offset=2)
+    scorch = lambda f, img: M.sooted(f, img, np.clip(1 - f.border["bottom"] / 3.0, 0, 1), 0.7) if f.vertical else None   # noqa: E731
+    k.overlay(tex, "shell", scorch)
+    k.paint(tex, "band", k.GUN)
+    k.paint(tex, "roof", k.STEEL)
+    k.paint(tex, ["roof", "liner", "lining"], k.REFRACTORY, only=("up",))
+    k.paint(tex, "liner", k.REFRACTORY)
 
-    def roof(t, r, d):
-        x, y, w, h = r
-        if d == "up":
-            t.rect(x, y, w, h, BRICK[3])
-            for yy in range(y, y + h, 2):                      # refractory brick courses
-                t.hline(x, yy, w, BRICK[2])
-                for xx in range(x + (yy // 2) % 2 * 2, x + w, 4):
-                    t.px(xx, yy + 1, BRICK[2])
-            t.speckle(x, y, w, h, [BRICK[4], P.BLACK_PAINT[2]], seed=x * 3 + y, density=0.1)
-        else:
-            t.rect(x, y, w, h, steel[tone(d)])
-            t.hline(x, y, w, steel[5])
-    for b in parts["roof"]:
-        g.paint_all(tex, b, roof)
-    for b in parts["liner"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, BRICK[2]), t.hline(r[0], r[1], r[2], BRICK[1])))
-    g.paint_all(tex, parts["lining"][0], lambda t, r, d: (t.rect(*r, BRICK[1]), t.speckle(*r, [P.BLACK_PAINT[1]], seed=4, density=0.3)))
+    def courses(f, img):                                                       # refractory brick courses
+        a, b = f.plane_uv()
+        M.darken(img, (np.floor(b * 2) % 2) == 0, 0.82)
+        M.darken(img, ((np.floor(a / 2) + np.floor(b * 2)) % 2 == 0) & ((np.floor(a) % 2) == 0), 0.85)
+    k.overlay(tex, ["roof"], courses, only=("up",))
+    k.overlay(tex, "spout", lambda f, img: M.paste(img, k.on(f, k.REFRACTORY), K.ring(f) >= 1), only=("up",))
 
     def melt_paint(t, r, d):
         x, y, w, h = r
@@ -151,64 +145,41 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 elif (xx + yy * 2) % 9 == 0:
                     t.px(xx, yy, P.WARNING_RED[5])            # slag skin
         t.rect(x + w // 2 - 1, y + h // 2 - 1, 2, 2, (255, 252, 236, 255))   # arc spot, white-hot
-    g.paint_all(tex, melt, melt_paint)
-    g.paint_all(glowmask, melt, melt_paint)
-
-    for b in parts["spout"] + parts["spout_lip"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], BRICK[3]) if d == "up" else None))
+    g.paint_all(tex, parts["melt"][0], melt_paint)
+    g.paint_all(glow, parts["melt"][0], melt_paint)
+    k.paint(tex, "port", k.GUN)
 
     def port(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
         if d == "north":
-            t.outline(x, y, w, h, gun[1])
+            t.outline(x, y, w, h, P.GUNMETAL[1])
             t.rect(x + 1, y + 1, w - 2, h - 2, (0, 0, 0, 0))   # open sight slit: the glow panel shows through
-            t.px(x, y, gun[5])
     g.paint_all(tex, parts["port"][0], port)
     g.paint_all(tex, parts["port_back"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT.deep))
 
     def glow_paint(t, r, d):
         t.gradient_v(*r, P.NUCLEAR_AMBER[6], P.NUCLEAR_AMBER[4])
-    g.paint_all(tex, glow, glow_paint)
-    g.paint_all(glowmask, glow, glow_paint)
+    g.paint_all(tex, parts["port_glow"][0], glow_paint)
+    g.paint_all(glow, parts["port_glow"][0], glow_paint)
+    k.paint(tex, ["mast", "carriage"], k.YELLOW)
+    k.seams(tex, "mast", every=6, axis="v", offset=2)
+    k.paint(tex, ["mast_cap", "clamp", "arm"], k.GUN)
+    k.paint(tex, ["xfmr", "fin"], k.NATO)
+    k.ribs(tex, "fin", every=2, k=0.75, along="u")
+    g.paint_all(tex, parts["xfmr"][0], lambda t, r, d: t.placard(r[0] + r[2] // 2 - 2, r[1] + 1, 5, 6, "bolt5x7", P.HAZARD_BLACK.base,
+                                                                P.HAZARD_YELLOW.base) if d == "south" and r[2] >= 6 else None)
+    k.paint(tex, ["bushing", "bushing_ring"], k.CERAMIC)
+    k.ribs(tex, "bushing", every=1, k=0.82)
+    k.paint(tex, "electrode", k.GRAPHITE)
 
-    def mast(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.HAZARD_YELLOW[3] if d in ("north", "south", "east", "west") else gun[tone(d)])
-        if d in ("north", "east") and h > 8:
-            for yy in range(y, y + h, 6):
-                t.hline(x, yy, w, P.HAZARD_YELLOW[2])         # bolted sections
-            t.vline(x, y, h, P.HAZARD_YELLOW[4])
-    g.paint_all(tex, parts["mast"][0], mast)
-    g.paint_all(tex, parts["mast_cap"][0], lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
-
-    def xfmr(t, r, d):
-        x, y, w, h = r
-        t.panel(x, y, w, h, P.NATO_GREEN, base=tone(d), style="raised") if min(w, h) >= 3 else t.rect(x, y, w, h, P.NATO_GREEN[tone(d)])
-        if d == "south" and w >= 6:
-            t.placard(x + w // 2 - 2, y + 1, 5, 6, "bolt5x7", P.HAZARD_BLACK.base, P.HAZARD_YELLOW.base)
-    g.paint_all(tex, parts["xfmr"][0], xfmr)
-    for b in parts["fin"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.NATO_GREEN[tone(d) + 1]))
-    for b in parts["bushing"] + parts["bushing_ring"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.WHITE_CERAMIC[tone(d) + 1]), t.hline(r[0], r[1], r[2], P.WHITE_CERAMIC[6])))
-
-    def electrode(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, GRAPHITE[4 if d in ("north", "west") else 2])
-        if d in ("north", "west"):
-            t.vline(x, y, h, GRAPHITE[5])                     # lit edge keeps the three columns apart
-        for yy in range(y + 4, y + h - 1, 5):
-            t.hline(x, yy, w, GRAPHITE[1])                    # nipple joints between electrode sections
-        if d != "up" and h > 6:
-            t.hline(x, y + h - 1, w, P.NUCLEAR_AMBER[3])      # tips stay hot
-    for b in parts["electrode"]:
-        g.paint_all(tex, b, electrode)
-    for b in parts["clamp"] + parts["arm"] + parts["carriage"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.hline(r[0], r[1], r[2], gun[5]) if r[3] > 1 else None))
-    for b in parts["cable"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.RUBBER[2]), t.vline(r[0], r[1], r[3], P.RUBBER[4]) if r[2] > 1 else None))
-    return g, tex, glowmask
+    def joints(f, img):                                                        # nipple joints between sections, hot tips
+        if not f.vertical:
+            return
+        M.darken(img, (f.border["top"] % 5 >= 4) & (f.border["bottom"] >= 1), 0.6)
+        tip = f.border["bottom"] < 1
+        img[tip, :3] = P.NUCLEAR_AMBER[3][:3]
+    k.overlay(tex, "electrode", joints)
+    k.paint(tex, "cable", k.RUBBER)
 
 
 def animations() -> list[Animation]:

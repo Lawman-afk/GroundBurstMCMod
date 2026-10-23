@@ -14,6 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -88,48 +92,30 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
-    body = P.WHITE_CERAMIC
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def chamber(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, body[3] if d in ("north", "west") else body[2])
-        if w >= 2 and d in ("north", "west"):
-            t.vline(x, y, h, body[4])
-        t.hline(x, y + h - 1, w, steel[2])                                 # foot ring
-        t.hline(x, y + 2, w, P.NUCLEAR_AMBER[3])                           # amber pressure-class stripe
-    for b in parts["chamber"]:
-        g.paint_all(tex, b, chamber)
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The synthesizer's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a white pressure
+    chamber with an amber class band and bolted steel flanges; steel posts; a hazard-striped crosshead driving the red
+    cylinder's steel ram; the frosted window onto the glowing pellet; an olive cabinet; a deuterium bottle; brass dials."""
+    k = K.Kit(g, parts, seed=311)
+    k.plinth(tex)
+    k.paint(tex, ["chamber", "dome"], k.WHITE)
+    k.overlay(tex, "chamber", lambda f, img: M.paste(img, k.on(f, k.ORANGE), (f.border["top"] >= 2) & (f.border["top"] < 3)) if f.vertical else None)
+    k.paint(tex, ["flange", "post", "vframe", "ram", "spout"], k.STEEL)
 
-    def flange(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        if d not in ("up", "down"):
-            for xx in range(x + 1, x + w - 1, 3):
-                t.px(xx, y + h // 2, steel[6])                             # bolt heads
-    for b in parts["flange"]:
-        g.paint_all(tex, b, flange)
-    for b in parts["dome"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, body[tone(d)]), t.outline(*r, body[1]) if d == "up" and min(r[2], r[3]) > 3 else None))
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5])))
-    g.paint_all(tex, parts["crosshead"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d in ("north", "south") else t.rect(*r, gun[tone(d) + 1])))
-    g.paint_all(tex, parts["cylinder"][0], lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d)]), t.vline(r[0], r[1], r[3], P.WARNING_RED[5]) if r[2] > 1 else None))
-    g.paint_all(tex, parts["gland"][0], lambda t, r, d: t.rect(*r, gun[tone(d)]))
-    g.paint_all(tex, parts["ram"][0], lambda t, r, d: (t.rect(*r, steel[5]), t.px(r[0], r[1], steel[6])))
-
-    g.paint_all(tex, parts["vframe"][0], lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.outline(*r, steel[2]) if d == "north" else None))
-
-    def window_paint(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[2])
-        t.hline(x, y, w, P.BLACK_PAINT[4])
-    g.paint_all(tex, window, window_paint)
+    def bolts(f, img):
+        if f.vertical:
+            a, _ = f.plane_uv()
+            M.lighten(img, ((np.floor(a) % 3) == 1) & (np.abs(f.border["top"] - f.border["bottom"]) <= 0.5), 1.35, 14)
+    k.overlay(tex, "flange", bolts)
+    k.paint(tex, "crosshead", k.GUN)
+    k.paint(tex, "crosshead", k.HAZARD, only=("north", "south"))
+    k.paint(tex, "cylinder", k.RED)
+    k.paint(tex, "gland", k.GUN)
+    g.paint_all(tex, parts["window"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[2]), t.hline(r[0], r[1], r[2], P.BLACK_PAINT[4])))
 
     def core_paint(t, r, d, target):
         """A pellet glowing in the compression cell, in a blue-white halo; the rest of the pane is clear."""
@@ -145,8 +131,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                     target.px(x + xx, y + yy, P.CHERENKOV[5])
                 elif dd < 3.0 and (xx + yy) % 2 == 0:
                     target.px(x + xx, y + yy, P.CHERENKOV[3])
-    g.paint_all(tex, core, lambda t, r, d: core_paint(t, r, d, t))
-    g.paint_all(glow, core, lambda t, r, d: core_paint(t, r, d, t))
+    g.paint_all(tex, parts["core"][0], lambda t, r, d: core_paint(t, r, d, t))
+    g.paint_all(glow, parts["core"][0], lambda t, r, d: core_paint(t, r, d, t))
 
     def frost_paint(t, r, d):
         """Frost creeping in from the frame: opaque at the edges, clear in the middle where the glow shows."""
@@ -155,64 +141,49 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         for yy in range(h):
             for xx in range(w):
                 edge = min(xx, yy, w - 1 - xx, h - 1 - yy)
-                k = (xx * 7 + yy * 13) % 5
-                if edge == 0 or (edge == 1 and k < 3) or (edge == 2 and k == 0):
-                    t.px(x + xx, y + yy, FROST[5] if k == 0 else FROST[4] if k < 3 else FROST[3])
-    g.paint_all(tex, frost, frost_paint)
+                q = (xx * 7 + yy * 13) % 5
+                if edge == 0 or (edge == 1 and q < 3) or (edge == 2 and q == 0):
+                    t.px(x + xx, y + yy, FROST[5] if q == 0 else FROST[4] if q < 3 else FROST[3])
+    g.paint_all(tex, parts["frostbox"][0], frost_paint)
+    k.paint(tex, "cabinet", k.OLIVE)
 
-    def cabinet(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, P.OLIVE.shadow)
-        elif d == "north":
-            t.outline(x, y, w, h, P.OLIVE.shadow)
-            t.px(x + 1, y + h - 2, P.INDICATOR_GREEN.light)                # power lamp
-        else:
-            t.hline(x, y, w, P.OLIVE.light)
-            t.vent(x + 1, y + 2, w - 2, h - 4, P.OLIVE, slat=2)
-    g.paint_all(tex, parts["cabinet"][0], cabinet)
+    def cab_vent(f, img):
+        a, b = f.plane_uv()
+        inside = (f.border["left"] >= 1) & (f.border["right"] >= 1) & (f.border["top"] >= 2) & (f.border["bottom"] >= 2)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.42)
+    k.overlay(tex, "cabinet", cab_vent, only=("east", "west", "south"))
+    g.paint_all(tex, parts["cabinet"][0], lambda t, r, d: t.px(r[0] + 1, r[1] + r[3] - 2, P.INDICATOR_GREEN.light) if d == "north" else None)
     g.paint_all(glow, parts["cabinet"][0], lambda t, r, d: t.px(r[0] + 1, r[1] + r[3] - 2, P.INDICATOR_GREEN.light) if d == "north" else None)
+    k.paint(tex, "dial", k.BRASS)
 
     def dial(t, r, d):
         x, y, w, h = r
-        if d != "north":
-            t.rect(x, y, w, h, P.BRASS[tone(d)])
-            return
-        t.rect(x, y, w, h, P.WHITE_CERAMIC[5])
-        for cx_, cy_ in ((x, y), (x + w - 1, y), (x, y + h - 1), (x + w - 1, y + h - 1)):
-            t.px(cx_, cy_, P.BRASS[4])                                      # brass bezel corners: a round dial
-        t.px(x + w - 1, y + 1, P.WARNING_RED.base)                         # red zone
+        if d == "north":
+            t.rect(x, y, w, h, P.WHITE_CERAMIC[5])
+            for cx_, cy_ in ((x, y), (x + w - 1, y), (x, y + h - 1), (x + w - 1, y + h - 1)):
+                t.px(cx_, cy_, P.BRASS[4])                                  # brass bezel corners: a round dial
+            t.px(x + w - 1, y + 1, P.WARNING_RED.base)                     # red zone
     for b in parts["dial"]:
         g.paint_all(tex, b, dial)
     for b in parts["needle"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.BLACK_PAINT[1]))
-
-    def bottle(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.NATO_GREEN[tone(d) + (1 if d in ("north", "west") else 0)])
-        if h >= 6:
-            t.vline(x + 1, y, h, P.NATO_GREEN.light)
-            t.rect(x, y + 1, w, 2, P.CHERENKOV[4])                         # deuterium: blue band
-            t.px(x + w // 2, y + h - 3, P.HAZARD_YELLOW.base)
-    g.paint_all(tex, parts["bottle"][0], bottle)
-    g.paint_all(tex, parts["shoulder"][0], lambda t, r, d: t.rect(*r, P.CHERENKOV[tone(d) + 1]))
-    g.paint_all(tex, parts["valve"][0], lambda t, r, d: t.rect(*r, P.BRASS[tone(d) + 1]))
-    g.paint_all(tex, parts["pipe"][0], lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], P.CHERENKOV[4]) if d == "up" else None))
-    g.paint_all(tex, parts["spout"][0], lambda t, r, d: t.rect(*r, steel[tone(d)]))
+    k.paint(tex, "bottle", k.NATO)
+    g.paint_all(tex, parts["bottle"][0], lambda t, r, d: (t.rect(r[0], r[1] + 1, r[2], 2, P.CHERENKOV[4]),
+                                                         t.px(r[0] + r[2] // 2, r[1] + r[3] - 3, P.HAZARD_YELLOW.base)) if r[3] >= 6 else None)
+    k.paint(tex, "shoulder", M.painted(K.ramp_of(P.CHERENKOV), tone=0.6, wear=0.15))
+    k.paint(tex, "valve", k.BRASS)
+    k.paint(tex, "pipe", k.STEEL)
+    k.paint(tex, "tray", k.STEEL)
 
     def tray(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d) + 1])
         if d == "up":
-            t.outline(x, y, w, h, steel[2])
-            t.rect(x + 1, y + 1, w - 2, h - 2, gun[2])                      # tray well
+            t.rect(x + 1, y + 1, w - 2, h - 2, P.GUNMETAL[2])               # tray well
             for px_, py_ in ((1, 1), (2, 1), (1, 2)):                       # pellets heaped in a corner
                 t.px(x + px_, y + py_, P.CONCRETE[6])
         elif d == "north":
             t.hline(x, y, w, P.HAZARD_YELLOW.base)
     g.paint_all(tex, parts["tray"][0], tray)
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -80,62 +84,47 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def drive(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.NATO_GREEN[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, P.NATO_GREEN.shadow)
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The centrifuge's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a NATO-green drive
+    with louvred sides and a nameplate on the plinth; a brushed aluminium casing in sections with steel end rings and a
+    hazard band lined up across the cascade, its slit dark onto the rotor; gunmetal caps and collar; steel pipes with
+    brass flanges and a red valve; the rotor's balance marks."""
+    k = K.Kit(g, parts, seed=327)
+    k.plinth(tex)
+    k.paint(tex, "drive", k.NATO)
+
+    def louvres(f, img):
+        a, b = f.plane_uv()
+        inside = (f.border["left"] >= 2) & (f.border["right"] >= 2) & (f.border["top"] >= 1) & (f.border["bottom"] >= 1)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.45)
+    k.overlay(tex, "drive", louvres, only=("east", "west", "south"))
+    g.paint_all(tex, parts["drive"][0], lambda t, r, d: (t.rect(r[0] + 2, r[1] + 1, 4, 2, P.BLACK_PAINT.base),
+                                                         t.hline(r[0] + 2, r[1] + 1, 3, P.WHITE_CERAMIC[4])) if d == "north" else None)
+    k.paint(tex, ["collar", "cap", "cap_top"], k.GUN)
+    alu = M.Material(ramp=K.ramp_of(ALU), tone=0.62, mottle=0.03, grain=0.02, dither=0.45, edge_light=0.16, edge_dark=0.1, ao=0.45,
+                     grime=0.05, dust=0.02, brushed=0.07)
+    k.paint(tex, "casing", alu)
+
+    def bands(f, img):
+        """By world height, so every unit's band lines up along the cascade."""
+        if not f.vertical:
             return
-        t.hline(x, y, w, P.NATO_GREEN.light)
-        if d == "north":
-            t.rect(x + 2, y + 1, 4, 2, P.BLACK_PAINT.base)                 # nameplate
-            t.hline(x + 2, y + 1, 3, P.WHITE_CERAMIC[4])
-        else:
-            t.vent(x + 2, y + 1, w - 4, h - 2, P.NATO_GREEN, slat=2)
-    g.paint_all(tex, parts["drive"][0], drive)
-    g.paint_all(tex, parts["collar"][0], lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.hline(r[0], r[1], r[2], gun[5]) if d != "up" else None))
-
-    # Casing: brushed aluminium with vertical brushing, a hazard band and a stencilled cascade number. Paint is
-    # laid out by world height so every row's band lines up.
-    def casing(t, r, d, box):
-        x, y, w, h = r
-        y_top = box.to[1]
-        t.rect(x, y, w, h, ALU[4] if d in ("north", "west", "up") else ALU[3])
-        if d in ("up", "down"):
-            return
-        if d in ("north", "west") and w >= 2:
-            t.vline(x, y, h, ALU[5])                                       # lit edge of each facet
-        for yy in range(h):
-            wy = y_top - yy - 0.5                                          # world height of this texel row
-            if 21.0 <= wy < 23.0:
-                for xx in range(w):
-                    t.px(x + xx, y + yy, P.HAZARD_YELLOW.base if ((xx + int(wy)) // 2) % 2 == 0 else P.HAZARD_BLACK.base)
-            elif wy < CAS_Y0 + 1 or wy > CAS_Y1 - 1:
-                t.hline(x, y + yy, w, steel[3])                            # end rings
-            elif int(wy) in (13, 18):
-                t.hline(x, y + yy, w, ALU[2])                              # casing section seams
-        if d == "north" and box.name == "cas_front_lo":
-            t.hline(x, y, w, ALU[2])
-    for b in parts["casing"]:
-        g.paint_all(tex, b, lambda t, r, d, b=b: casing(t, r, d, b))
-
-    # The slit's jambs (inner faces) and the slit back read as dark recess.
-    def jamb(t, r):
-        t.rect(*r, ROTOR[3])
-    for name, face in (("cas_front_l", "east"), ("cas_front_r", "west")):
-        g.paint(tex, name, face, lambda t, r: jamb(t, r))
-    g.paint(tex, "cas_front_lo", "up", lambda t, r: t.rect(*r, ROTOR[2]))
-    g.paint(tex, "cas_front_hi", "down", lambda t, r: t.rect(*r, ROTOR[2]))
+        y = f.Y
+        M.paste(img, k.on(f, k.HAZARD), (y >= 21.0) & (y < 23.0))
+        M.paste(img, k.on(f, k.STEEL), (y < CAS_Y0 + 1) | (y > CAS_Y1 - 1))
+        M.darken(img, (np.floor(y) == 13) | (np.floor(y) == 18), 0.7)          # casing section seams
+    k.overlay(tex, "casing", bands)
+    rotor = M.Material(ramp=K.ramp_of(ROTOR), tone=0.4, mottle=0.03, grain=0.02, dither=0.3, edge_light=0.1, edge_dark=0.05, ao=0.2,
+                       grime=0.0, dust=0.0)
+    for name, face in (("cas_front_l", "east"), ("cas_front_r", "west"), ("cas_front_lo", "up"), ("cas_front_hi", "down")):
+        k.paint(tex, name, rotor, only=(face,))                                 # the slit's jambs: a dark recess
 
     def back(t, r, d):
-        """Second casing row's north face: aluminium, with the rotor's dark drum where the slit looks in."""
-        casing(t, r, d, g.get("cas1"))
+        """The second casing row's north face: the rotor's dark drum where the slit looks in."""
         if d != "north":
             return
         x, y, w, h = r
@@ -144,23 +133,17 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         t.rect(cx - 1, y + top, 2, round(SLIT_Y1 - SLIT_Y0), ROTOR[3])
         t.vline(cx - 1, y + top, round(SLIT_Y1 - SLIT_Y0), ROTOR[4])
     g.paint_all(tex, parts["casing"][4], back)
-
-    for b in parts["cap"] + parts["cap_top"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.outline(*r, gun[2]) if d == "up" and min(r[2], r[3]) > 3 else None))
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d == "up" else None))
-    for b in parts["flange"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.BRASS[tone(d)]), t.outline(*r, P.BRASS[2]) if min(r[2], r[3]) >= 3 else None))
-    g.paint_all(tex, parts["valve"][0], lambda t, r, d: t.rect(*r, P.WARNING_RED[tone(d) + 1]))
+    k.paint(tex, "pipe", k.STEEL)
+    k.paint(tex, "flange", k.BRASS)
+    k.paint(tex, "valve", k.RED)
     for b in parts["mark"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, ALU[6]))
 
     def lamp_paint(t, r, d):
         t.rect(*r, P.NUCLEAR_AMBER.light)
         t.px(r[0], r[1], P.NUCLEAR_AMBER.shine)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

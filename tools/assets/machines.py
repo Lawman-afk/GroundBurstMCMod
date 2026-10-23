@@ -15,6 +15,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402,F401
+
+from gz import atlas as A  # noqa: E402
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
@@ -31,14 +36,11 @@ TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser",
 
 
 def machine_particle() -> None:
-    """Shared break-particle texture: a patch of the machines' olive paint with a rivet and some primer chips."""
-    t = Tex(16, 16)
-    t.panel(0, 0, 16, 16, P.OLIVE, base=3, style="raised")
-    t.outline(2, 2, 12, 12, P.OLIVE.shadow)
-    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
-        t.rivet(x, y, P.OLIVE)
-    t.chip_edges(0, 0, 16, 16, P.PRIMER_RED.shadow, seed=5, chips=3, edges="tb", max_len=2)
-    t.save(paths.TEXTURES / "block" / "machine_particle.png")
+    """Shared break-particle texture: a patch of the machines' olive paint in its bolted steel frame (the material
+    library, as the machines' own finish)."""
+    from gz import panels as PN
+    img = PN.face(K.OLIVE, style="raised", seed=5)
+    M.to_tex(img).save(paths.TEXTURES / "block" / "machine_particle.png")
 
 
 # Two-block-tall machines shrink in the GUI and hands so the whole model fits (GeckoLib draws it from the base).
@@ -82,58 +84,51 @@ HV_ORANGE = fixed("hv_orange", "#3a1404", "#6a2608", "#a03c0c", "#d05812", "#ec7
 
 
 def cable_texture(tier: str) -> Tex:
+    """The tier's 16x16 sheet, painted with the material library (tools/gz/atlas.py; the remaster after the Fission
+    Reactor rework): each region filled from its material, round cables shaded across their width, details on top."""
     t = Tex(16, 16)
+    side, core, end = (0, 0, 4, 6), (6, 0, 11, 5), (12, 0, 16, 4)
+    col, row = A.grid(side)
     if tier == "copper_cable":
         # Copper bundle under a spiral wrap of dried-kelp fibre: copper shows between the turns.
-        for y in range(6):
-            for x in range(4):
-                wrap = (x + y) % 3 == 0
-                t.px(x, y, KELP[4 if x == 0 else 3 if x < 3 else 2] if wrap else P.COPPER[5 if x == 0 else 4 if x < 3 else 3])
-        t.rect(6, 0, 5, 5, KELP[3])                              # core: a knotted wrap with a copper splice band
-        t.hline(6, 2, 5, P.COPPER.light)
+        copper = K.metal(P.COPPER, 0.62)
+        kelp = M.Material(ramp=K.ramp_of(KELP), tone=0.55, mottle=0.06, grain=0.07, dither=0.8, edge_light=0.0, edge_dark=0.0, ao=0.0,
+                          grime=0.0, dust=0.0, despeckle=False)
+        A.fill(t, side, copper, 1, A.ROUND4)
+        A.fill(t, side, kelp, 2, A.ROUND4, mask=(col + row) % 3 == 0)
+        A.fill(t, core, kelp, 3)                                 # core: a knotted wrap with a copper splice band
+        A.fill(t, (6, 2, 11, 3), copper, 4)
         t.px(6, 2, P.COPPER.highlight)
-        t.outline(6, 0, 5, 5, KELP[2])
-        t.rect(12, 0, 4, 4, P.COPPER[3])                         # end: bare copper strands
+        A.rim(t, core)
+        A.fill(t, end, K.metal(P.COPPER, 0.45), 5)               # end: bare copper strands
         t.px(13, 1, P.COPPER.highlight)
         t.px(14, 2, P.COPPER.light)
     elif tier == "insulated_cable":
-        # Black rubber sheath, a yellow ID band, a soft highlight down the lit edge.
-        r = P.RUBBER
-        for y in range(6):
-            t.px(0, y, r[5])
-            t.px(1, y, r[4])
-            t.px(2, y, r[3])
-            t.px(3, y, r[2])
-        t.hline(0, 4, 4, P.HAZARD_YELLOW[4])
-        t.px(3, 4, P.HAZARD_YELLOW[3])
-        t.rect(6, 0, 5, 5, r[3])
-        t.outline(6, 0, 5, 5, r[2])
-        t.rect(7, 1, 3, 3, r[4])
+        # Black rubber sheath, a yellow ID band.
+        rubber = M.rubber(tone=0.5)
+        A.fill(t, side, rubber, 1, A.ROUND4)
+        A.fill(t, (0, 4, 4, 5), K.YELLOW, 2, A.ROUND4)
+        A.fill(t, core, rubber, 3)
+        A.rim(t, core)
+        A.fill(t, (7, 1, 10, 4), M.rubber(tone=0.7), 4)
         t.px(8, 2, P.HAZARD_YELLOW[4])
-        t.rect(12, 0, 4, 4, r[2])
-        t.rect(13, 1, 2, 2, P.COPPER[4])                        # conductor visible at the cut end
+        A.fill(t, end, M.rubber(tone=0.3), 5)
+        A.fill(t, (13, 1, 15, 3), K.metal(P.COPPER, 0.55), 6)   # conductor visible at the cut end
     else:  # hv_cable
         # Grey armoured sheath with HV-orange marker stripes; ceramic insulator discs on the arms.
-        s = P.GUNMETAL
-        for y in range(6):
-            for x in range(4):
-                t.px(x, y, s[5 if x == 0 else 4 if x < 3 else 3])
-        t.hline(0, 1, 4, HV_ORANGE[4])
-        t.px(0, 1, HV_ORANGE[5])
-        t.px(3, 1, HV_ORANGE[3])
-        t.rect(6, 0, 5, 5, s[3])
-        t.outline(6, 0, 5, 5, s[2])
-        t.rect(7, 1, 3, 3, HV_ORANGE[4])
-        t.px(7, 1, HV_ORANGE[5])
-        t.rect(12, 0, 4, 4, s[2])
-        t.rect(13, 1, 2, 2, P.COPPER[4])
-        c = P.WHITE_CERAMIC
-        t.hline(0, 8, 6, c[4])                                   # insulator rim
-        t.px(0, 8, c[5])
-        t.rect(8, 8, 6, 6, c[4])                                 # insulator face: ribbed disc
-        t.outline(8, 8, 6, 6, c[3])
-        t.rect(10, 10, 2, 2, s[3])
-        t.px(9, 9, c[5])
+        armour = K.paint_of(P.GUNMETAL, 0.6, 0.15)
+        hv = K.paint_of(HV_ORANGE, 0.58, 0.1)
+        A.fill(t, side, armour, 1, A.ROUND4)
+        A.fill(t, (0, 1, 4, 2), hv, 2, A.ROUND4)
+        A.fill(t, core, armour, 3)
+        A.rim(t, core)
+        A.fill(t, (7, 1, 10, 4), hv, 4)
+        A.fill(t, end, K.paint_of(P.GUNMETAL, 0.4, 0.0), 5)
+        A.fill(t, (13, 1, 15, 3), K.metal(P.COPPER, 0.55), 6)
+        A.fill(t, (0, 8, 6, 9), K.CERAMIC, 7)                    # insulator rim
+        A.fill(t, (8, 8, 14, 14), K.CERAMIC, 8)                  # insulator face: ribbed disc
+        A.rim(t, (8, 8, 14, 14), 0.8)
+        A.fill(t, (10, 10, 12, 12), armour, 9)
     t.save(paths.TEXTURES / "block" / f"{tier}.png")
     return t
 

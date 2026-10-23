@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -78,89 +82,61 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, olive = P.GUNMETAL, P.STEEL, P.OLIVE
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def crankcase(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, olive[tone(d)])
-        if d == "up":
-            return
-        t.hline(x, y, w, olive.light)
-        t.hline(x, y + h - 1, w, olive.shadow)
-        if d == "north":
-            t.rect(x + 1, y + 1, w - 2, h - 3, gun[1])                      # radiator: dark core behind slats
-            for yy in range(y + 1, y + h - 2, 2):
-                t.hline(x + 1, yy, w - 2, gun[4])
-        elif d in ("east", "west"):
-            for xx in (x + 1, x + w - 2):
-                for yy in (y + 1, y + h - 2):
-                    t.rivet(xx, yy, olive)
-    g.paint_all(tex, parts["crankcase"][0], crankcase)
-    g.paint_all(tex, parts["deck"][0], lambda t, r, d: (t.rect(*r, gun[tone(d)]), t.hline(r[0], r[1], r[2], gun[5]) if d != "up" else None))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The diesel's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive crankcase with
+    a radiator grille on its front and bolted sides; a gunmetal deck; finned steel cylinder barrels with bright crowns
+    and brass injectors; a dark spoked flywheel; a red fuel tank with a yellow band; a rusted, sooty exhaust stack."""
+    k = K.Kit(g, parts, seed=315)
+    k.plinth(tex)
+    k.paint(tex, "crankcase", k.OLIVE)
+    k.panels(tex, "crankcase", inset=1, min_size=5, only=("east", "west"))
 
-    def barrel(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, steel[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, steel[2])
-            t.rect(x + 1, y + 1, w - 2, h - 2, P.BLACK_PAINT[1])            # the bore
-            return
-        for yy in range(y, y + h, 2):
-            t.hline(x, yy, w, steel[2])                                     # cooling fins
-    for b in parts["barrel"]:
-        g.paint_all(tex, b, barrel)
-    for b in parts["crown"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[5] if d == "up" else steel[4]), t.hline(r[0], r[1] + 1, r[2], steel[2]) if d != "up" and r[3] > 2 else None))
-    for b in parts["injector"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.BRASS[tone(d) + 1]))
+    def radiator(f, img):
+        a, b = f.plane_uv()
+        inside = (K.ring(f) >= 1) & (f.border["bottom"] >= 2)
+        img[inside, :3] = np.clip(img[inside, :3] * 0.32, 0, 255)
+        M.lighten(img, inside & ((np.floor(b) % 2) == 1), 2.6, 14)            # slats over the dark core
+    k.overlay(tex, "crankcase", radiator, only=("north",))
+    k.paint(tex, ["deck", "panel", "pipe_cap"], k.GUN)
+    k.paint(tex, ["barrel", "crown", "hub", "shaft"], k.STEEL)
+    k.ribs(tex, "barrel", every=2, k=0.6)
+    k.overlay(tex, "barrel", lambda f, img: (img.__setitem__((K.ring(f) >= 1, slice(0, 3)), P.BLACK_PAINT[1][:3])), only=("up",))
+    k.paint(tex, "injector", k.BRASS)
+    k.paint(tex, "fly", k.DARK)
 
     def fly(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
         if d in ("east", "west") and min(w, h) >= 5:
-            t.outline(x, y, w, h, gun[5])
-            t.line(x + 1, y + 1, x + w - 2, y + h - 2, gun[2])              # spokes
-            t.line(x + w - 2, y + 1, x + 1, y + h - 2, gun[2])
-            t.px(x + 1, y + h // 2, P.WARNING_RED.base)                    # balance mark: shows the turn
+            t.line(x + 1, y + 1, x + w - 2, y + h - 2, P.GUNMETAL[2])              # spokes
+            t.line(x + w - 2, y + 1, x + 1, y + h - 2, P.GUNMETAL[2])
+            t.px(x + 1, y + h // 2, P.WARNING_RED.base)                          # balance mark: shows the turn
     for b in parts["fly"]:
         g.paint_all(tex, b, fly)
-    g.paint_all(tex, parts["hub"][0], lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
-    g.paint_all(tex, parts["shaft"][0], lambda t, r, d: t.rect(*r, steel[tone(d)]))
-
-    def tank(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.PRIMER_RED[tone(d)])
-        if d in ("west", "north", "south") and h >= 4:
-            t.rect(x, y + h // 2 - 1, w, 2, P.HAZARD_YELLOW.base)            # fuel band
-            t.hline(x, y, w, P.PRIMER_RED.light)
-    g.paint_all(tex, parts["tank"][0], tank)
-    g.paint_all(tex, parts["tank_cap"][0], lambda t, r, d: t.rect(*r, P.BRASS[tone(d)]))
-    g.paint_all(tex, parts["stack"][0], lambda t, r, d: (t.rect(*r, P.RUST[tone(d)]), t.hline(r[0], r[1], r[2], P.BLACK_PAINT[2])))
-    g.paint_all(tex, parts["stack_cap"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT[tone(d) + 1]))
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.RUST[tone(d) + 1]))
-    g.paint_all(tex, parts["pipe_cap"][0], lambda t, r, d: t.rect(*r, P.GUNMETAL[tone(d) + 1]))
+    k.paint(tex, "tank", M.painted(M.RED_PAINT_RAMP, tone=0.42, wear=0.3))
+    k.overlay(tex, "tank", lambda f, img: M.paste(img, k.on(f, k.YELLOW), np.abs(f.border["top"] - f.border["bottom"]) <= 1)
+              if f.vertical and f.shape[0] >= 4 else None, only=("west", "north", "south"))
+    k.paint(tex, "tank_cap", k.BRASS)
+    rusted = M.painted(M.ARMOUR_RAMP, tone=0.4, wear=0.5, rust=0.6)
+    k.paint(tex, ["stack", "pipe"], rusted)
+    k.soot(tex, "stack", reach=3, strength=0.8)
+    k.paint(tex, "stack_cap", k.BLACK)
     for b in parts["puff"]:
         g.paint_all(tex, b, lambda t, r, d: t.rect(*r, SMOKE[5] if d == "up" else SMOKE[4]))
 
     def panel(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
         if d == "north":
-            t.outline(x, y, w, h, gun[1])
-            t.rect(x + 1, y + 1, 2, 2, P.WHITE_CERAMIC[5])                  # gauge
-            t.px(x + 2, y + 1, P.BLACK_PAINT[1])
+            K.dial(t, x + 1, y + 1, 2)
     g.paint_all(tex, parts["panel"][0], panel)
 
     def lamp_paint(t, r, d):
         t.rect(*r, P.NUCLEAR_AMBER.light)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

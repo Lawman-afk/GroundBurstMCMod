@@ -305,7 +305,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 ## Phase 17 — Polish
 | Item | Status |
 |---|---|
-| Re-review every model/texture/sound/effect | 2026-10-23, the user's requests: every multiblock (the six recent ones, then the Chemical Plant, Fission, Fusion and Singularity Reactors and Particle Accelerator), their blocks, the shared controller faces, casing and ports, and every missile (with finer flight models) repainted with the material library after researching texture practice (DESIGN §4.3); the library is now the rule for every model — needs in-game look; single-block machines, warheads and items still todo |
+| Re-review every model/texture/sound/effect | 2026-10-23, the user's requests: every multiblock (the six recent ones, then the Chemical Plant, Fission, Fusion and Singularity Reactors and Particle Accelerator), their blocks, the shared controller faces, casing and ports, and every missile (with finer flight models) repainted with the material library after researching texture practice (DESIGN §4.3); the library is now the rule for every model; then (third pass) every single-block and two-block machine on a shared machine kit, the cables, pipes, fluid tanks and storage blocks — needs in-game look; warheads and the other ordnance next, then items |
 | Performance pass (Tsar MSPT target < 50) | 8d: the blast bench (`runBlastBench`) and the engine reworked at the Tsar's size: p99 tick 27.7 ms, one tick over 50 ms (since spread) on the user's PC; a wider pass (fx, fallout, saving) still todo |
 | Balance pass | todo |
 

@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -78,43 +82,42 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    olive, gun, steel = P.OLIVE, P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def block(t, r, d):
-        x, y, w, h = r
-        t.panel(x, y, w, h, olive, base=tone(d), style="raised")
-        if d in ("east", "west", "south") and h >= 8:
-            t.outline(x + 2, y + 2, w - 4, h - 4, olive.shadow)
-            for bx, by in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.rivet(bx, by, olive)
-            t.chip_edges(x, y, w, h, P.PRIMER_RED.shadow, seed=sum(map(ord, d)) + 3, chips=2, edges="tb", max_len=2)
-        if d == "east":
-            t.vent(x + 3, y + 3, w - 6, 4, gun, slat=2)                  # air intake louvres
-        if d == "south":
-            t.rect(x + w - 6, y + h - 4, 4, 2, P.BLACK_PAINT.base)        # data plate
-            t.hline(x + w - 5, y + h - 3, 2, P.HAZARD_YELLOW.base)
-    g.paint_all(tex, parts["block"][0], block)
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The generator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive engine block
+    in bolted panels on the plinth, the firebox opening sooted inside, a cast-iron door frame and grille, a brass gauge
+    and handle, a gunmetal lid and hatch, a sooty exhaust stack, a dark flywheel, copper terminals."""
+    k = K.Kit(g, parts, seed=301)
+    k.plinth(tex)
+    k.paint(tex, ["block", "front"], k.OLIVE)
+    k.panels(tex, "block", inset=2, only=("east", "west", "south"))
 
-    def front(t, r, d):
-        x, y, w, h = r
-        if d == "north":
-            t.panel(x, y, w, h, olive, base=3, style="raised")
-            if w >= 4 and h >= 8:
-                t.rivet(x + 1, y + 1, olive)
-                t.rivet(x + w - 2, y + 1, olive)
-                t.rivet(x + 1, y + h - 2, olive)
-                t.rivet(x + w - 2, y + h - 2, olive)
-        else:
-            t.rect(x, y, w, h, olive[tone(d)] if d in ("up", "down") else P.BLACK_PAINT.deep)
-    for b in parts["front"]:
-        g.paint_all(tex, b, front)
-
-    g.paint_all(tex, parts["lid"][0], lambda t, r, d: t.panel(*r, gun, base=3, style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)]))
-    g.paint_all(tex, parts["firebox"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT.deep), t.hline(r[0], r[1] + r[3] - 1, r[2], P.RUST.shadow)))
+    def louvres(f, img):                                                       # the air intake on the east side
+        a, b = f.plane_uv()
+        inside = (f.border["left"] >= 3) & (f.border["right"] >= 3) & (f.border["top"] >= 3) & (f.border["top"] < 7)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.35)
+        M.lighten(img, inside & ((np.floor(b) % 2) == 1), 1.15, 6)
+    k.overlay(tex, "block", louvres, only=("east",))
+    cast = M.steel(tone=0.28, brushed=0.0, mottle=0.06, grain=0.05, dither=0.6)
+    soot = M.soot(tone=0.3)
+    inner = {"front_l": "east", "front_r": "west", "front_t": "down", "front_b": "up"}
+    for name, d in inner.items():
+        k.paint(tex, name, soot, only=(d,))                                    # the firebox opening's sooted sides
+    k.paint(tex, "firebox", soot)
+    k.paint(tex, ["bar", "doorframe"], cast)
+    k.paint(tex, "lid", k.GUN)
+    k.overlay(tex, "lid", lambda f, img: M.darken(img, K.ring(f) == 1, 0.7), only=("up",))
+    k.paint(tex, ["handle", "gauge"], k.BRASS)
+    k.paint(tex, ["stack", "collar", "cap", "cap_post"], k.GUN)
+    k.soot(tex, "stack", reach=4, strength=0.8)
+    k.paint(tex, "stack_top", soot)
+    k.paint(tex, "hatch", k.GUN)
+    k.paint(tex, ["axle", "hub"], k.STEEL)
+    k.paint(tex, "wheel", k.DARK)
+    k.paint(tex, "terminal", k.BLACK)
 
     def fire_paint(t, r, d):
         x, y, w, h = r
@@ -125,71 +128,31 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                 t.px(x + i, y, P.WARNING_RED[5])
             if (i * 5) % 4 == 1:
                 t.px(x + i, y + h - 1, amber[6])                       # white-hot coal bed
-    g.paint_all(tex, fire, fire_paint)
-    g.paint_all(glow, fire, fire_paint)
-
-    for b in parts["bar"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.BLACK_PAINT[3 if d == "north" else 2]))
-    for b in parts["doorframe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[tone(d) + 1]), t.hline(r[0], r[1], r[2], P.BLACK_PAINT.light) if d == "north" else None))
-    g.paint_all(tex, parts["handle"][0], lambda t, r, d: t.rect(*r, P.BRASS[tone(d) + 1]))
+    g.paint_all(tex, parts["fire"][0], fire_paint)
+    g.paint_all(glow, parts["fire"][0], fire_paint)
 
     def gauge(t, r, d):
-        x, y, w, h = r
         if d == "north":
-            t.rect(x, y, w, h, P.BRASS[3])
-            t.rect(x + 1, y + 1, w - 2, h - 2, P.WHITE_CERAMIC[5])
-            t.px(x + w - 2, y + 1, P.WARNING_RED.base)                  # red line
-        else:
-            t.rect(x, y, w, h, P.BRASS[tone(d)])
+            K.dial(t, r[0], r[1], min(r[2], r[3]))
+            t.px(r[0] + r[2] - 2, r[1] + 1, P.WARNING_RED.base)               # red line
     g.paint_all(tex, parts["gauge"][0], gauge)
     g.paint_all(tex, parts["needle"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT.deep))
+    g.paint_all(tex, parts["block"][0], lambda t, r, d: K.plate(t, r[0] + r[2] - 6, r[1] + r[3] - 5) if d == "south" else None)
+    g.paint_all(tex, parts["hatch"][0], lambda t, r, d: t.px(r[0] + r[2] // 2, r[1] + r[3] // 2, P.BRASS.light) if d == "up" else None)
 
-    def stack(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + (1 if d == "west" else 0)])
-        t.hline(x, y + 1, w, gun.shadow)                                # weld band
-        for i in range(w):
-            if (i + d.__len__()) % 3 == 0:
-                t.px(x + i, y, P.BLACK_PAINT.light)                     # soot at the lip
-    for b in parts["stack"]:
-        g.paint_all(tex, b, stack)
-    g.paint_all(tex, parts["stack_top"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT.deep))
-    g.paint_all(tex, parts["collar"][0], lambda t, r, d: t.rect(*r, gun[tone(d) + 1]))
-    for b in parts["cap"] + parts["cap_post"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d) + 1] if d != "down" else P.BLACK_PAINT.base))
-
-    def hatch(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, gun.shadow)
-            t.rect(x + 1, y + 1, w - 2, 1, gun.light)
-            t.px(x + w // 2, y + h // 2, P.BRASS.light)
-    g.paint_all(tex, parts["hatch"][0], hatch)
-
-    g.paint_all(tex, parts["axle"][0], lambda t, r, d: t.rect(*r, steel[tone(d)]))
-
-    def wheel(t, r, d, idx=[0]):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
+    def wheel(t, r, d):
         if d == "west":
-            t.outline(x, y, w, h, gun.shadow)
-            t.px(x + w // 2, y + 1, P.HAZARD_YELLOW.base)              # balance mark shows the spin
+            t.px(r[0] + r[2] // 2, r[1] + 1, P.HAZARD_YELLOW.base)              # balance mark shows the spin
     for b in parts["wheel"]:
         g.paint_all(tex, b, wheel)
-    g.paint_all(tex, parts["hub"][0], lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
 
     def terminal(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[tone(d)])
         if d == "south":
             t.rect(x + 1, y + 1, max(1, w - 2), max(1, h - 2), P.COPPER.light)
             t.px(x + 1, y + 1, P.COPPER.shine)
     for b in parts["terminal"]:
         g.paint_all(tex, b, terminal)
-
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

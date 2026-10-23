@@ -16,6 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import Ramp  # noqa: E402
@@ -83,38 +87,37 @@ def build(tier: Tier) -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    body, trim = tier.body, tier.trim
+    paint(g, tex, glow, parts, tier)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["skid"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else t.rect(*r, P.GUNMETAL[tone(d)])))
 
-    def cabinet(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, body[tone(d) + (1 if tier.cryo else 0)])
-        if d in ("up", "down"):
-            return
-        t.outline(x, y, w, h, trim[3])
-        for rx, ry in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-            t.rivet(rx, ry, trim)
-        if d in ("east", "west", "south"):
-            t.vent(x + 3, y + 3, w - 6, h - 6, body, slat=2)               # heat-sink louvres
-    g.paint_all(tex, parts["body"][0], cabinet)
-    g.paint_all(tex, parts["deck"][0], lambda t, r, d: (t.rect(*r, trim[tone(d) - 1]), t.hline(r[0], r[1], r[2], trim[5]) if d != "up" else None))
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, tier: Tier) -> None:
+    """A bank's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): its tier's cabinet paint in
+    a bolted panel with louvred heat sinks, trim of its tier's metal round the deck; the capacitor cans with a rating
+    band, brass terminals and copper bus bars; the front's gauge window, charge bars, red output post and lamp."""
+    k = K.Kit(g, parts, seed=333)
+    k.plinth(tex, key="skid")
+    body = M.painted(K.ramp_of(tier.body), tone=0.42 if tier.cryo else 0.5, wear=0.18)
+    metal = lambda ramp, tone: M.Material(ramp=K.ramp_of(ramp), tone=tone, mottle=0.03, grain=0.03, dither=0.4, edge_light=0.16,   # noqa: E731
+                                          edge_dark=0.1, ao=0.4, grime=0.03, dust=0.0, brushed=0.04)
+    trim = metal(tier.trim, 0.55)
+    k.paint(tex, "body", body)
+    k.panels(tex, "body", inset=1, min_size=8)
 
-    def can(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, tier.can[tone(d) + 1])
-        if d == "up":
-            t.outline(x, y, w, h, tier.can[2])
-            return
-        t.vline(x + 1, y, h, tier.can[5])                                  # cylinder highlight
-        t.hline(x, y + h // 2, w, tier.band[4])                            # rating band
-    for b in parts["can"]:
-        g.paint_all(tex, b, can)
-    for b in parts["terminal"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.BRASS[tone(d) + 1]))
-    for b in parts["bus"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.COPPER[tone(d) + 1]))
+    def louvres(f, img):
+        a, b = f.plane_uv()
+        inside = (f.border["left"] >= 3) & (f.border["right"] >= 3) & (f.border["top"] >= 3) & (f.border["bottom"] >= 3)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.45)
+        M.lighten(img, inside & ((np.floor(b) % 2) == 1), 1.1, 4)
+    k.overlay(tex, "body", louvres, only=("east", "west", "south"))
+    k.paint(tex, "deck", trim)
+    can = metal(tier.can, 0.6) if tier.can is not P.WHITE_CERAMIC else M.white_paint(tone=0.8, wear=0.05)
+    k.paint(tex, "can", can)
+    k.overlay(tex, "can", lambda f, img: M.paste(img, k.on(f, M.painted(K.ramp_of(tier.band), tone=0.6, wear=0.0)),
+                                                 np.abs(f.border["top"] - f.border["bottom"]) <= 0.5) if f.vertical else None)
+    k.overlay(tex, "can", lambda f, img: M.darken(img, K.ring(f) == 0, 0.7), only=("up",))
+    k.paint(tex, "terminal", k.BRASS)
+    k.paint(tex, "bus", k.COPPER)
     for b in parts.get("coolant", []):
         def band(t, r, d):
             x, y, w, h = r
@@ -123,25 +126,18 @@ def build(tier: Tier) -> tuple[GeoModel, Tex, Tex]:
                     t.px(x + xx, y + yy, P.CRYO[5] if (xx * 3 + yy) % 5 == 0 else P.CRYO[4])
         g.paint_all(tex, b, band)
         g.paint_all(glow, b, lambda t, r, d: t.hline(r[0], r[1], r[2], P.CRYO[3]))
-
-    def gauge(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.BLACK_PAINT[1] if d == "north" else trim[tone(d)])
-        if d == "north":
-            t.outline(x, y, w, h, trim[4])
-    g.paint_all(tex, parts["gauge"][0], gauge)
-    for i, b in enumerate(bars):
+    k.paint(tex, "gauge", trim)
+    g.paint_all(tex, parts["gauge"][0], lambda t, r, d: (t.rect(*r, P.BLACK_PAINT[1]), t.outline(*r, tier.trim[4])) if d == "north" else None)
+    for i, b in enumerate(parts["bar"]):
         ramp = BAR_COLORS[i]
         g.paint_all(tex, b, lambda t, r, d, ramp=ramp: (t.rect(*r, ramp[4]), t.hline(r[0], r[1], r[2], ramp[6])))
         g.paint_all(glow, b, lambda t, r, d, ramp=ramp: (t.rect(*r, ramp[4]), t.hline(r[0], r[1], r[2], ramp[6])))
-    g.paint_all(tex, parts["terminal_out"][0], lambda t, r, d: (t.rect(*r, P.WARNING_RED[tone(d) + 1]),
-                                                                 t.outline(*r, P.WARNING_RED[2]) if d == "north" and min(r[2], r[3]) >= 2 else None))
+    k.paint(tex, "terminal_out", k.RED)
 
     def lamp_paint(t, r, d):
         t.rect(*r, P.CHERENKOV.light)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

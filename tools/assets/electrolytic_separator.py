@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -75,62 +79,51 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel = P.GUNMETAL, P.STEEL
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
+
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The separator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): the plinth; a glass
+    cell on steel posts under an olive lid, rubber glands round a copper and a steel electrode, bubbles in the water;
+    two green gas bottles banded white (oxygen) and blue (hydrogen) with brass valves; steel pipes; a gunmetal panel."""
+    k = K.Kit(g, parts, seed=305)
+    k.plinth(tex)
 
     def glass(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, CLEAR)
         t.hline(x, y, w, (200, 230, 240, 255))                               # top edge catch-light
-        for k in range(min(w, h) // 3):                                      # diagonal glints
-            t.px(x + 1 + k, y + 2 + k, (210, 236, 246, 255))
+        for i in range(min(w, h) // 3):                                      # diagonal glints
+            t.px(x + 1 + i, y + 2 + i, (210, 236, 246, 255))
         t.px(x + w - 2, y + h - 3, (190, 220, 232, 255))
     for b in parts["glass"]:
         g.paint_all(tex, b, glass)
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5]) if d in ("north", "west") else None))
-
-    def lid(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, P.OLIVE[tone(d)])
-        if d == "up":
-            t.outline(x, y, w, h, P.OLIVE.shadow)
-            t.rivet(x + 1, y + 1, P.OLIVE)
-            t.rivet(x + w - 2, y + h - 2, P.OLIVE)
-        else:
-            t.hline(x, y, w, P.OLIVE.light)
-    g.paint_all(tex, parts["lid"][0], lid)
-    for b in parts["gland"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.RUBBER[tone(d)]))
+    k.paint(tex, "post", k.STEEL)
+    k.paint(tex, "lid", k.OLIVE)
+    k.overlay(tex, "lid", lambda f, img: M.darken(img, K.ring(f) == 0, 0.75), only=("up",))
+    k.paint(tex, "gland", k.RUBBER)
     for i, b in enumerate(parts["electrode"]):
-        metal = P.COPPER if i == 0 else P.STEEL
-        g.paint_all(tex, b, lambda t, r, d, m=metal: (t.rect(*r, m[tone(d)]), t.vline(r[0], r[1], r[3], m[5]) if r[2] > 1 else None))
+        k.paint(tex, b.name, k.COPPER if i == 0 else k.STEEL)
     for b in parts["bubble"]:
         g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, WATER[6]), t.px(r[0], r[1], (240, 250, 255, 255))))
+    for i, band in enumerate((P.WHITE_CERAMIC, P.CHERENKOV)):
+        k.paint(tex, f"bottle{i}", k.NATO)
+        k.paint(tex, f"shoulder{i}", M.painted(K.ramp_of(band), tone=0.62, wear=0.15))
 
-    for i, cap in enumerate((P.WHITE_CERAMIC, P.CHERENKOV)):
-        def bottle(t, r, d, cap=cap):
+        def bottle(t, r, d, band=band):
             x, y, w, h = r
-            t.rect(x, y, w, h, P.NATO_GREEN[tone(d) + (1 if d in ("north", "west") else 0)])
             if d in ("north", "south", "east", "west") and h >= 6:
-                t.vline(x + 1, y, h, P.NATO_GREEN.light)                    # cylinder highlight
-                t.rect(x, y + 1, w, 2, cap[4])                              # gas colour band
+                t.rect(x, y + 1, w, 2, band[4])                             # gas colour band
                 t.px(x + w // 2, y + h - 3, P.HAZARD_YELLOW.base)          # stencil mark
         g.paint_all(tex, parts[f"bottle{i}"][0], bottle)
-        g.paint_all(tex, parts[f"shoulder{i}"][0], lambda t, r, d, cap=cap: t.rect(*r, cap[tone(d) + 1]))
-    for b in parts["valve"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.BRASS[tone(d) + 1]))
-    for b in parts["pipe"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[5]) if d == "up" else None))
+    k.paint(tex, "valve", k.BRASS)
+    k.paint(tex, "pipe", k.STEEL)
+    k.paint(tex, "panel", k.GUN)
 
     def panel(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
         if d == "north":
-            t.outline(x, y, w, h, gun[1])
             t.rect(x + 1, y + 1, w - 2, 2, P.BLACK_PAINT.base)              # readout window
             t.hline(x + 2, y + 1, 2, P.INDICATOR_GREEN[3])
             t.px(x + w - 2, y + h - 2, P.WARNING_RED.base)                  # switch
@@ -139,9 +132,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     def lamp_paint(t, r, d):
         t.rect(*r, P.CHERENKOV.light)
         t.px(r[0], r[1], P.CHERENKOV.shine)
-    g.paint_all(tex, lamp, lamp_paint)
-    g.paint_all(glow, lamp, lamp_paint)
-    return g, tex, glow
+    g.paint_all(tex, parts["lamp"][0], lamp_paint)
+    g.paint_all(glow, parts["lamp"][0], lamp_paint)
 
 
 def animations() -> list[Animation]:

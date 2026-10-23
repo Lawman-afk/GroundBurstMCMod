@@ -13,6 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.palette import fixed  # noqa: E402
@@ -85,77 +89,69 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, olive = P.GUNMETAL, P.STEEL, P.OLIVE
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def cabinet(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, olive[tone(d)])
-        if d == "up":
-            t.rect(x, y, w, h, P.CONCRETE[4])                               # pale anti-static bench mat
-            for yy in range(y + 1, y + h, 3):
-                for xx in range(x + 1 + (yy // 3) % 2, x + w, 3):
-                    t.px(xx, yy, P.CONCRETE[3])
-            t.outline(x, y, w, h, P.CONCRETE[2])
-            return
-        t.hline(x, y, w, olive.light)
-        t.hline(x, y + h - 1, w, olive.shadow)
-        if d == "north":
-            t.rect(x + 2, y + 1, 5, 2, P.BLACK_PAINT.base)                 # readout
-            t.hline(x + 3, y + 1, 3, P.INDICATOR_GREEN[3])
-            t.vent(x + w - 7, y + 1, 5, h - 2, olive, slat=2)
-        elif d in ("east", "west"):
-            t.vent(x + 3, y + 1, w - 6, h - 2, olive, slat=2)
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The fabricator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive cabinet with
+    louvred vents and a readout, a pale anti-static mat on top; a glass clean box on steel posts and rim; the green
+    board with its traces; a yellow gantry bridge on gunmetal trucks over steel rails; black chips; a rubber trunk."""
+    k = K.Kit(g, parts, seed=309)
+    k.plinth(tex)
+    k.paint(tex, "cabinet", k.OLIVE)
+    mat = M.Material(ramp=M.CONCRETE_RAMP, tone=0.7, mottle=0.02, grain=0.03, dither=0.5, edge_light=0.1, edge_dark=0.08, ao=0.4,
+                     grime=0.0, dust=0.02)
+    k.paint(tex, "cabinet", mat, only=("up",))
+
+    def mat_dots(f, img):
+        a, b = f.plane_uv()
+        M.darken(img, ((np.floor(a) + np.floor(b)) % 3) == 0, 0.9)
+    k.overlay(tex, "cabinet", mat_dots, only=("up",))
+
+    def louvres(f, img):
+        a, b = f.plane_uv()
+        width = f.shape[1]
+        inside = (f.border["top"] >= 1) & (f.border["bottom"] >= 1)
+        if f.d == "north":
+            inside &= f.border["right"] >= 1
+            inside &= f.border["right"] < 6
         else:
-            t.rivet(x + 1, y + 1, olive)
-            t.rivet(x + w - 2, y + 1, olive)
-    g.paint_all(tex, parts["cabinet"][0], cabinet)
-    for b in parts["post"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.vline(r[0], r[1], r[3], steel[5])))
-    for b in parts["rim"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.hline(r[0], r[1], r[2], steel[6]) if d != "down" else None))
+            inside &= (f.border["left"] >= 3) & (f.border["right"] >= 3)
+        M.darken(img, inside & ((np.floor(b) % 2) == 0), 0.4)
+        M.lighten(img, inside & ((np.floor(b) % 2) == 1), 1.12, 5)
+    k.overlay(tex, "cabinet", louvres, only=("north", "east", "west"))
+    k.paint(tex, ["post", "rim", "rail", "quill"], k.STEEL)
 
     def glass(t, r, d):
-        """Clear pane: a faint catch-light along the top edge (walls) and one short diagonal streak."""
         x, y, w, h = r
         t.rect(x, y, w, h, CLEAR)
-        if d == "up":
-            # Roof: a catch-light along two inner edges, so the pane reads without hiding the bench.
-            t.hline(x, y, w, (186, 214, 224, 255))
-            t.vline(x, y, h, (186, 214, 224, 255))
-            return
-        t.hline(x, y, w, (176, 206, 216, 255))
-        for k in range(3):
-            t.px(x + 2 + k, y + 4 - k, (214, 238, 246, 255))
+        t.hline(x, y, w, (200, 230, 240, 255))                               # top edge catch-light
+        for i in range(min(w, h) // 3):                                      # diagonal glints
+            t.px(x + 1 + i, y + 2 + i, (210, 236, 246, 255))
+        t.px(x + w - 2, y + h - 3, (190, 220, 232, 255))
     for b in parts["glass"]:
         g.paint_all(tex, b, glass)
-    for b in parts["rail"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), t.hline(r[0], r[1], r[2], steel[6]) if d == "up" else None))
 
     def board(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, PCB[3] if d == "up" else PCB[2])
         if d != "up":
             return
-        # Copper traces and pads (fixed pattern), a gold edge connector along the west edge.
-        for yy in range(y + 2, y + h - 1, 3):
+        for yy in range(y + 2, y + h - 1, 3):                              # copper traces and pads
             t.hline(x + 2, yy, w - 4, PCB[5])
         for xx in range(x + 3, x + w - 2, 4):
             t.vline(xx, y + 1, h - 2, PCB[4])
         for yy in range(y + 1, y + h - 1, 2):
-            t.px(x, yy, P.BRASS[5])
-        t.rect(x + w - 4, y + h // 2 - 1, 2, 2, SOLDER[5])                 # empty pad where the next chip goes
+            t.px(x, yy, P.BRASS[5])                                         # a gold edge connector
+        t.rect(x + w - 4, y + h // 2 - 1, 2, 2, SOLDER[5])                 # the empty pad the next chip goes on
         t.outline(x, y, w, h, PCB[1])
     g.paint_all(tex, parts["board"][0], board)
-    for b in parts["clamp"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, P.HAZARD_YELLOW[tone(d) + 1]))
+    k.paint(tex, ["clamp", "bridge"], k.YELLOW)
+    k.paint(tex, ["tray", "truck", "carriage"], k.GUN)
 
     def tray(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
         if d == "up":
             for yy in range(y + 1, y + h - 1, 2):                          # rows of chips waiting in the tray
                 t.hline(x + 1, yy, w - 2, P.BLACK_PAINT[2])
@@ -171,30 +167,18 @@ def build() -> tuple[GeoModel, Tex, Tex]:
             t.px(x, y, P.BLACK_PAINT[5])                                    # pin-1 dot
     for b in parts["placed"] + parts["chip"]:
         g.paint_all(tex, b, chip)
+    k.paint(tex, ["gripper", "trunk"], k.RUBBER)
+    k.ribs(tex, "trunk", every=2, k=0.75)
 
-    g.paint_all(tex, parts["bridge"][0], lambda t, r, d: (t.rect(*r, P.HAZARD_YELLOW[tone(d)]),
-                                                         t.hline(r[0], r[1], r[2], P.HAZARD_YELLOW[5]) if d != "down" else None))
-    for b in parts["truck"]:
-        g.paint_all(tex, b, lambda t, r, d: t.rect(*r, gun[tone(d)]))
-
-    def carriage(t, r, d):
+    def readout(t, r, d):
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d) + 1])
         if d == "north":
-            t.px(x + w - 1, y, P.INDICATOR_GREEN.light)
-    g.paint_all(tex, parts["carriage"][0], carriage)
-    g.paint_all(tex, parts["quill"][0], lambda t, r, d: (t.rect(*r, steel[5]), t.px(r[0], r[1], steel[6])))
-    g.paint_all(tex, parts["gripper"][0], lambda t, r, d: t.rect(*r, P.RUBBER[tone(d) + 1]))
-    g.paint_all(tex, parts["trunk"][0], lambda t, r, d: (t.rect(*r, P.RUBBER[3]), [t.px(r[0], yy, P.RUBBER[5]) for yy in range(r[1], r[1] + r[3], 2)]))
-
-    # Glow: the readout and the carriage's ready lamp.
-    def cab_glow(t, r, d):
-        if d == "north":
-            x, y, w, h = r
-            t.hline(x + 3, y + 1, 3, P.INDICATOR_GREEN[4])
-    g.paint_all(glow, parts["cabinet"][0], cab_glow)
+            t.rect(x + 2, y + 1, 5, 2, P.BLACK_PAINT.base)
+            t.hline(x + 3, y + 1, 3, P.INDICATOR_GREEN[3])
+    g.paint_all(tex, parts["cabinet"][0], readout)
+    g.paint_all(tex, parts["carriage"][0], lambda t, r, d: t.px(r[0] + r[2] - 1, r[1], P.INDICATOR_GREEN.light) if d == "north" else None)
+    g.paint_all(glow, parts["cabinet"][0], lambda t, r, d: t.hline(r[0] + 3, r[1] + 1, 3, P.INDICATOR_GREEN[4]) if d == "north" else None)
     g.paint_all(glow, parts["carriage"][0], lambda t, r, d: t.px(r[0] + r[2] - 1, r[1], P.INDICATOR_GREEN.light) if d == "north" else None)
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

@@ -12,6 +12,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -72,38 +76,31 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, steel, olive = P.GUNMETAL, P.STEEL, P.OLIVE
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, gun, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, gun[tone(d)])))
 
-    def casting(t, r, d):
-        x, y, w, h = r
-        t.panel(x, y, w, h, olive, base=tone(d), style="raised") if min(w, h) >= 3 else t.rect(x, y, w, h, olive[tone(d)])
-        if d in ("north", "south", "east", "west") and w >= 6 and h >= 6:
-            for bx, by in ((x + 1, y + 1), (x + w - 2, y + 1), (x + 1, y + h - 2), (x + w - 2, y + h - 2)):
-                t.rivet(bx, by, olive)
-            t.chip_edges(x, y, w, h, P.PRIMER_RED.shadow, seed=x + y + len(d), chips=2, edges="tb", max_len=2)
-    for key in ("bed", "spine", "crown", "rib"):
-        for b in parts[key]:
-            g.paint_all(tex, b, casting)
-
-    def crown_front(t, r, d):
-        casting(t, r, d)
-        x, y, w, h = r
-        if d == "north":
-            t.stripes(x, y + h - 2, w, 2, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2)   # hazard lip
-            t.rect(x + w // 2 - 3, y + 1, 6, 2, P.BLACK_PAINT.base)       # rating plate
-            t.hline(x + w // 2 - 2, y + 1, 4, P.HAZARD_YELLOW[3])
-    g.paint_all(tex, parts["crown"][0], crown_front)
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The press's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive cast frame (bed,
+    spine, crown, ribs) bolted at its corners, a hazard lip and rating plate on the crown; gunmetal cylinders with a
+    bright steel rod; a gunmetal platen with a hazard edge; steel dies colour-banded, their cavities dark; steel tie
+    rods; a green pump and junction box with rubber hoses; a brass gauge."""
+    k = K.Kit(g, parts, seed=323)
+    k.plinth(tex)
+    k.paint(tex, ["bed", "spine", "crown", "rib"], k.OLIVE)
+    k.panels(tex, ["bed", "spine", "crown"], inset=1, min_size=6)
+    k.overlay(tex, "crown", lambda f, img: M.paste(img, k.on(f, k.HAZARD), f.border["bottom"] < 2), only=("north",))
+    g.paint_all(tex, parts["crown"][0], lambda t, r, d: K.plate(t, r[0] + r[2] // 2 - 3, r[1] + 1, 6, 2) if d == "north" else None)
+    k.paint(tex, ["cylinder", "cyl_body", "platen"], k.GUN)
+    k.overlay(tex, "platen", lambda f, img: M.paste(img, k.on(f, M.stripes(width=1, wear=0.3)), f.border["bottom"] < 1), only=("north",))
+    k.paint(tex, ["rod", "pin", "punch"], k.BRIGHT)
+    k.paint(tex, "tie", k.STEEL)
+    k.overlay(tex, "tie", lambda f, img: M.lighten(img, (f.border["top"] % 7 < 1), 1.3, 12) if f.vertical else None)
 
     def die_painter(name, band):
-        def paint(t, r, d):
+        def paint_die(t, r, d):
             x, y, w, h = r
-            t.rect(x, y, w, h, steel[tone(d)])
             if d == "up":
-                t.outline(x, y, w, h, steel[2])
                 cx, cy = x + w // 2, y + h // 2
                 cav = P.BLACK_PAINT[1]
                 if name == "die_plate":
@@ -118,49 +115,20 @@ def build() -> tuple[GeoModel, Tex, Tex]:
                     t.outline(cx - 2, cy - 2, 4, 4, P.BLACK_PAINT[2])
                 t.px(x + 1, y + 1, band[4])                              # colour-coded corner mark
             else:
-                t.hline(x, y, w, steel[5])
                 t.hline(x, y + 1, w, band[4])                            # die colour band
-        return paint
-    for name, band in DIES.items():
+        return paint_die
+    dies = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV}
+    for name, band in dies.items():
+        k.paint(tex, name, k.STEEL)
         g.paint_all(tex, parts[name][0], die_painter(name, band))
-    for b in parts["pin"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d) + 1]), t.px(r[0], r[1], steel[6])))
-
-    for b in parts["cylinder"] + parts["cyl_body"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.hline(r[0], r[1], r[2], gun[5]),
-                                               t.vline(r[0] + 1, r[1], r[3], gun[5]) if d in ("north", "west") and r[2] > 3 else None))
-    g.paint_all(tex, parts["rod"][0], lambda t, r, d: (t.rect(*r, steel[5]), t.vline(r[0] + 1, r[1], r[3], steel[6]) if r[2] > 2 else None))
-
-    def platen(t, r, d):
-        x, y, w, h = r
-        t.rect(x, y, w, h, gun[tone(d)])
-        if d in ("north", "east", "west", "south"):
-            t.hline(x, y, w, gun[5])
-            if d == "north":
-                t.stripes(x + 1, y + h - 1, w - 2, 1, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=1)
-    g.paint_all(tex, parts["platen"][0], platen)
-    g.paint_all(tex, parts["punch"][0], lambda t, r, d: t.rect(*r, steel[tone(d) + 1]))
-
-    for b in parts["tie"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, steel[tone(d)]), [t.px(r[0], yy, steel[5]) for yy in range(r[1], r[1] + r[3], 7)]))
-    g.paint_all(tex, parts["jbox"][0], lambda t, r, d: (t.rect(*r, P.NATO_GREEN[tone(d)]),
-                                                         t.px(r[0] + 1, r[1] + 1, P.HAZARD_YELLOW.base) if d == "south" else None))
-    g.paint_all(tex, parts["pump"][0], lambda t, r, d: (t.rect(*r, P.NATO_GREEN[tone(d)]),
-                                                         t.vent(r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, P.NATO_GREEN, slat=2) if d == "east" and r[2] > 3 else None))
-    for b in parts["hose"]:
-        g.paint_all(tex, b, lambda t, r, d: (t.rect(*r, P.RUBBER[2]), t.vline(r[0], r[1], r[3], P.RUBBER[4]) if r[2] > 1 else None))
-
-    def gauge(t, r, d):
-        x, y, w, h = r
-        if d == "east":
-            t.rect(x, y, w, h, P.BRASS[3])
-            t.rect(x + 1, y + 1, w - 2, h - 2, P.WHITE_CERAMIC[5])
-            t.px(x + w - 2, y + 1, P.WARNING_RED.base)
-        else:
-            t.rect(x, y, w, h, P.BRASS[tone(d)])
-    g.paint_all(tex, parts["gauge"][0], gauge)
+    k.paint(tex, ["jbox", "pump"], k.NATO)
+    g.paint_all(tex, parts["jbox"][0], lambda t, r, d: t.px(r[0] + 1, r[1] + 1, P.HAZARD_YELLOW.base) if d == "south" else None)
+    k.overlay(tex, "pump", lambda f, img: M.darken(img, (K.ring(f) >= 1) & ((np.floor(f.plane_uv()[1]) % 2) == 0), 0.45), only=("east",))
+    k.paint(tex, "hose", k.RUBBER)
+    k.paint(tex, "gauge", k.BRASS)
+    g.paint_all(tex, parts["gauge"][0], lambda t, r, d: (t.rect(r[0] + 1, r[1] + 1, r[2] - 2, r[3] - 2, P.WHITE_CERAMIC[5]),
+                                                          t.px(r[0] + r[2] - 2, r[1] + 1, P.WARNING_RED.base)) if d == "east" else None)
     g.paint_all(tex, parts["needle"][0], lambda t, r, d: t.rect(*r, P.BLACK_PAINT.deep))
-    return g, tex, glow
 
 
 def animations() -> list[Animation]:

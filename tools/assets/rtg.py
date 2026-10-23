@@ -11,6 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np  # noqa: E402
+
+from gz import machine_kit as K  # noqa: E402
+from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
@@ -53,46 +57,41 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
-    gun, lead = P.GUNMETAL, P.LEAD
+    paint(g, tex, glow, parts)
+    return g, tex, glow
 
-    g.paint_all(tex, parts["plinth"][0], lambda t, r, d: (
-        t.stripes(*r, P.HAZARD_YELLOW.base, P.HAZARD_BLACK.base, width=2) if d == "north" else
-        t.panel(*r, lead, base=tone(d), style="raised") if min(r[2], r[3]) >= 3 else t.rect(*r, lead[tone(d)])))
-    g.paint_all(tex, parts["base"][0], lambda t, r, d: (t.rect(*r, lead[tone(d) + 1]), t.hline(r[0], r[1], r[2], lead[5]) if d != "up" else
-                                                        t.outline(*r, lead[2])))
 
-    def drum(t, r, d):
+def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
+    """The RTG's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a lead plinth and base; a
+    gunmetal drum and cap; steel fins whose outer edges glow dull orange with heat; the glowing fuel core; a radiation
+    placard."""
+    k = K.Kit(g, parts, seed=317)
+    lead = M.Material(ramp=K.ramp_of(P.LEAD), tone=0.5, mottle=0.04, grain=0.03, dither=0.5, edge_light=0.14, edge_dark=0.1, ao=0.5,
+                      grime=0.08, dust=0.03)
+    k.paint(tex, ["plinth", "base"], lead)
+    k.paint(tex, "plinth", k.HAZARD, only=("north",))
+    k.paint(tex, ["drum", "cap"], k.GUN)
+    k.seams(tex, "drum", every=6, axis="v", offset=1)
+    k.paint(tex, ["fin", "fin45"], k.STEEL)
+
+    def hot(t, r, d, glow_layer=False):
+        """The fin's outer edge (the far end from the drum) glows dull orange with heat."""
         x, y, w, h = r
-        t.rect(x, y, w, h, gun[4] if d in ("north", "west") else gun[3])
-        if w >= 2 and d in ("north", "west"):
-            t.vline(x, y, h, gun[5])
-        t.hline(x, y, w, gun[2])
-        t.hline(x, y + h - 1, w, gun[2])
-    for b in parts["drum"]:
-        g.paint_all(tex, b, drum)
-    g.paint_all(tex, parts["cap"][0], lambda t, r, d: (t.rect(*r, gun[tone(d) + 1]), t.outline(*r, gun[2]) if d == "up" else None))
-
-    def fin(t, r, d, target=None):
-        """Steel fin; its outer edge (the far end from the drum) glows dull orange with heat."""
-        x, y, w, h = r
-        tt = target or t
-        if target is None:
-            t.rect(x, y, w, h, P.STEEL[tone(d)])
         if d in ("north", "south", "east", "west") and w >= 3:
-            hot = P.NUCLEAR_AMBER[3] if target is None else P.NUCLEAR_AMBER[2]
-            tt.vline(x, y + 1, h - 2, hot)
-            tt.vline(x + w - 1, y + 1, h - 2, hot)
+            c = P.NUCLEAR_AMBER[2] if glow_layer else P.NUCLEAR_AMBER[3]
+            t.vline(x, y + 1, h - 2, c)
+            t.vline(x + w - 1, y + 1, h - 2, c)
     for b in parts["fin"] + parts["fin45"]:
-        g.paint_all(tex, b, fin)
-        g.paint_all(glow, b, lambda t, r, d: fin(t, r, d, target=t))
+        g.paint_all(tex, b, hot)
+        g.paint_all(glow, b, lambda t, r, d: hot(t, r, d, True))
 
     def core_paint(t, r, d):
         x, y, w, h = r
         t.rect(x, y, w, h, P.NUCLEAR_AMBER[4])
         if d == "up" and min(w, h) >= 2:
             t.rect(x + 1, y + 1, w - 2, h - 2, P.NUCLEAR_AMBER[6])
-    g.paint_all(tex, core, core_paint)
-    g.paint_all(glow, core, core_paint)
+    g.paint_all(tex, parts["core"][0], core_paint)
+    g.paint_all(glow, parts["core"][0], core_paint)
 
     def placard(t, r, d):
         x, y, w, h = r
@@ -100,8 +99,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
         t.rect(x, y, w, h, P.HAZARD_YELLOW.base)
         for dx, dy in ((1, 1), (1, 0), (0, 2), (2, 2)):
             t.px(x + dx, y + dy, P.HAZARD_BLACK.base)
-    g.paint_all(tex, plac, placard)
-    return g, tex, glow
+    g.paint_all(tex, parts["placard"][0], placard)
 
 
 def animations() -> list[Animation]:
