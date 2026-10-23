@@ -222,6 +222,7 @@ def paint_arms_dealer(g: GeoModel, p: SS.Parts) -> tuple[Tex, Tex]:
     L._console(S, g, tex, "console")
     L._power_housing(S, g, tex, "e_housing", plug="west")
     S.paint(tex, "i_housing", M.painted(M.OLIVE_RAMP, tone=0.5, wear=0.35, rust=0.1))
+    S.paint(tex, "sign", M.painted(M.BLACK_RAMP, tone=0.45, wear=0.3, rust=0.2))   # its back and edges (they were left clear)
     g.paint_all(tex, "sign", gla_sign)
     S.paint(tex, p["door"], M.painted(M.BLACK_RAMP, tone=0.5, wear=0.35, rust=0.15))
     S.overlay(tex, p["door"], lambda f, img: M.seams(f, img, every=4, axis="v", light=False), only=("north",))
@@ -309,7 +310,7 @@ def war_factory() -> None:
     p.add("belt", "belt")
     for i in range(3):
         bone = f"crate{i}"
-        z = 60.0 + i * 16
+        z = 56.0 + i * 16
         g.bone(bone, pivot=(-42, 19.6, z), parent=F)
         g.box(f"crate{i}_box", (-46, 19.6, z), (-38, 26, z + 8), faces=NO_DOWN, bone=bone)
         p.add("crate", f"crate{i}_box")
@@ -349,9 +350,19 @@ def war_factory() -> None:
     g.bone("crane", pivot=(RAIL_X, 18, CRANE_PARK), parent=F)
     g.bone("cable", pivot=(WF_X, BOOM_Y - 3, CRANE_PARK), parent="crane")
     g.bone("claw", pivot=(WF_X, 50, CRANE_PARK), parent="crane")
-    g.box("bogie", (RAIL_X - 7, 18, CRANE_PARK - 9), (RAIL_X + 7, 24, CRANE_PARK + 9), faces=NO_DOWN, bone="crane")
+    # Its carriage: a sill beam on four wheels, one at each corner on the two rails (the beam was never painted, so it
+    # drew nothing and the crane seemed to float over its rails).
+    g.box("bogie", (RAIL_X - 7, 21, CRANE_PARK - 9), (RAIL_X + 7, 25, CRANE_PARK + 9), faces=ALL, bone="crane")
+    p.add("bogie", "bogie")
+    for s in (-1, 1):
+        for dz in (-6.0, 6.0):
+            n = f"wheel{'we'[s > 0]}{'ns'[dz > 0]}"
+            g.box(n, (RAIL_X + s * 4 - 1.4, 18, CRANE_PARK + dz - 2.6), (RAIL_X + s * 4 + 1.4, 22.6, CRANE_PARK + dz + 2.6),
+                  faces=SIDES, bone="crane")
+            g.open_ok.add((n, "down"))                        # (on the rail)
+            p.add("wheel", n)
     for i, (x, z) in enumerate(((RAIL_X - 4, CRANE_PARK - 4), (RAIL_X + 4, CRANE_PARK - 4), (RAIL_X - 4, CRANE_PARK + 4), (RAIL_X + 4, CRANE_PARK + 4))):
-        g.box(f"cpost{i}", (x - 1, 24, z - 1), (x + 1, BOOM_Y - 2, z + 1), faces=NO_DOWN, bone="crane")
+        g.box(f"cpost{i}", (x - 1, 25, z - 1), (x + 1, BOOM_Y - 2, z + 1), faces=NO_DOWN, bone="crane")
         p.add("lattice", f"cpost{i}")
     for k in range(int((BOOM_Y - 26) // 12)):
         y = 30 + k * 12
@@ -389,8 +400,15 @@ def war_factory() -> None:
     cable = BOOM_Y - 3 - 51
     work.move("claw", {t: (0, -v, 0) for t, v in keys.items()}, easing="easeInOutSine")
     work.scale("cable", {t: (1, (cable + v) / cable, 1) for t, v in keys.items()}, easing="easeInOutSine")
+    # The crates ride the belt at one speed, a third of a loop apart (48 px in 12 s, out of the annex at z 56 and into the
+    # hall's wall at 104, then back to the start unseen): each its own speed, they caught each other up and overlapped.
     for i in range(3):
-        work.move(f"crate{i}", {0: (0, 0, 0), 12.0: (0, 0, 48 - 16 * i)})
+        if i == 0:
+            keys = {0: 0.0, 12.0: 48.0}
+        else:
+            wrap = 12.0 * (1 - i / 3)
+            keys = {0: 0.0, wrap - 0.01: 48.0 - 16 * i, wrap: -16.0 * i, 12.0: 0.0}
+        work.move(f"crate{i}", {t: (0, 0, v) for t, v in keys.items()})
     print(save_animations("war_factory", [work, rest_pose([work])]))
     print(f"war_factory: {len(g.boxes)} boxes, texture {g.tex_w}x{g.tex_h}")
 
@@ -449,6 +467,11 @@ def paint_war_factory(g: GeoModel, p: SS.Parts) -> tuple[Tex, Tex]:
     S.paint(tex, p["green"], NS.PLA_GREEN)
     S.paint(tex, p["rubber"], M.rubber(tone=0.45))
     S.paint(tex, p["lattice"], NS.PLA_GREEN)
+    S.paint(tex, p["bogie"], M.steel(tone=0.3, rust=0.15))
+    S.paint(tex, p["bogie"], M.stripes(width=2, wear=0.4), only=("north", "south"))
+    S.paint(tex, p["wheel"], M.steel(tone=0.42, rust=0.2, brushed=0.1))
+    S.overlay(tex, p["wheel"], lambda f, img: M.darken(img, np.hypot(*(np.indices(f.shape) - (np.array(f.shape)[:, None, None] - 1) / 2)) < 1.1, 0.55),
+              only=("east", "west"))
     S.paint(tex, p["redhouse"], NS.RED)
     S.overlay(tex, p["redhouse"], lambda f, img: M.rivets(f, img, every=4, inset=1), only=SIDES)
     S.paint(tex, p["yellow"], YELLOW_BOOM)

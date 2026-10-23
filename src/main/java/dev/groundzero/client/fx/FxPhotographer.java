@@ -175,8 +175,8 @@ public final class FxPhotographer {
                 // its erectors raising them, the countdown, the nine lighting one after another and climbing away; from the
                 // air too. A SCUD strike close up: three toxin SCUDs coming down 0.6 s apart, the blasts, the toxin welling
                 // up and its residue spreading out over the ground, the cloud drifting.
-                new Scene("scud_storm", "scud_storm", 34, 16, List.of(20, 90, 228, 245, 270, 300, 330)),
-                new Scene("scud_storm_aerial", "scud_storm", 30, 34, List.of(20, 90, 240, 290)),
+                new Scene("scud_storm", "scud_storm", 38, 16, List.of(20, 90, 228, 245, 270, 300, 330)),
+                new Scene("scud_storm_aerial", "scud_storm", 34, 34, List.of(20, 90, 240, 290)),
                 new Scene("scud_strike", "scud_strike", 26, 14, List.of(27, 36, 46, 60, 90, 160, 400)),
                 new Scene("scud_strike_aerial", "scud_strike", 22, 40, List.of(46, 90, 400)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof

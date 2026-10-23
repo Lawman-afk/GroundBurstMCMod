@@ -212,27 +212,28 @@ LAYOUTS = {
         "inventory": (8, 84),
     },
     # The superweapons' ammunition factories (DESIGN.md §19.5): their parts in two rows of three (the Arms Dealer four,
-    # the War Factory five), the arrow, the finished round; the readout under them.
+    # the War Factory five), the arrow, the finished round; the readout under them, tall enough for its two lines to
+    # stack (a one-line glass set them side by side, half the width each, and cut the parts' names short).
     "arms_dealer": {
         "title": (8, 6),
-        "slots": [("body", 30, 22), ("motor", 48, 22), ("warhead", 66, 22), ("warhead", 30, 40), ("out_big", 124, 31)],
+        "slots": [("body", 30, 18), ("motor", 48, 18), ("warhead", 66, 18), ("warhead", 30, 36), ("out_big", 124, 27)],
         "energy": (8, 20, 14, 46),
-        "progress": (92, 32, 24, 17),
+        "progress": (92, 28, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
         "redstone": (151, 58, 18, 18),
-        "readout": (30, 60, 118, 20),
+        "readout": (30, 57, 118, 25),
         "inventory": (8, 84),
     },
     "war_factory": {
         "title": (8, 6),
-        "slots": [("body", 30, 22), ("motor", 48, 22), ("core", 66, 22), ("casing", 30, 40), ("guidance", 48, 40), ("out_big", 124, 31)],
+        "slots": [("body", 30, 18), ("motor", 48, 18), ("core", 66, 18), ("casing", 30, 36), ("guidance", 48, 36), ("out_big", 124, 27)],
         "energy": (8, 20, 14, 46),
-        "progress": (92, 32, 24, 17),
+        "progress": (92, 28, 24, 17),
         "flame": None,
         "status": (160, 5, 8, 8),
         "redstone": (151, 58, 18, 18),
-        "readout": (30, 60, 118, 20),
+        "readout": (30, 57, 118, 25),
         "inventory": (8, 84),
     },
     # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout

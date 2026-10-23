@@ -62,6 +62,7 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
     private static final String T_BUILDS = GZLang.add(GroundZero.MODID + ".factory.builds", "Builds: %s");
     private static final String T_WORKING = GZLang.add(GroundZero.MODID + ".factory.working", "Building: %s%%");
     private static final String T_NEEDS = GZLang.add(GroundZero.MODID + ".factory.needs", "Needs: %s x%s");
+    private static final String T_NEEDS_ONE = GZLang.add(GroundZero.MODID + ".factory.needs_one", "Needs: %s");
     private static final String T_NO_POWER = GZLang.add(GroundZero.MODID + ".factory.no_power", "Needs power: %s FE a tick");
     private static final String T_FULL = GZLang.add(GroundZero.MODID + ".factory.full", "Output full");
     private static final String T_INCOMPLETE = GZLang.add(GroundZero.MODID + ".factory.incomplete", "Structure incomplete");
@@ -298,7 +299,8 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else {
             Input in = missing();
-            second = in != null ? Component.translatable(T_NEEDS, new ItemStack(in.item().get()).getHoverName(), in.count())
+            Component name = in == null ? null : new ItemStack(in.item().get()).getHoverName();
+            second = in != null ? (in.count() > 1 ? Component.translatable(T_NEEDS, name, in.count()) : Component.translatable(T_NEEDS_ONE, name))
                     : outputFull() ? Component.translatable(T_FULL) : Component.empty();
         }
         return List.of(first, second);

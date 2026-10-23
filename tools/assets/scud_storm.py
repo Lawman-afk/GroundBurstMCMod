@@ -46,20 +46,27 @@ F = "frame"
 DECK_Y = 14
 
 # --- the layout (ScudStormBlockEntity and GZSuperweapons have the same figures) -----------------------------------------------
-#: The pad: 13 x 13 cells, the controller's cell at the front middle; its middle six cells back.
-PAD = (-104.0, 104.0, -8.0, 200.0)
-CX, CZ = 0.0, 96.0
-#: The wall: the column left of the pad and the row behind it; the watchtowers at its two ends.
+#: The pad: 15 x 15 cells, the controller's cell at the front middle; its middle seven cells back. (13 x 13 until the
+#: scrap round the tank pushed the SCUDs out: their noses would have run off the pad.)
+PAD = (-120.0, 120.0, -8.0, 232.0)
+CX, CZ = 0.0, 112.0
+#: The wall: the column left of the pad and the row behind it; the watchtowers at its two ends (the pattern's corners).
+WALL_X, WALL_Z = -136.0, 232.0
 WALL_H = 28.0
 TOWER_H = 56.0
+TOWER_A = (-128.0, 0.0)
+TOWER_B = (112.0, 240.0)
 #: The erectors' bearings, degrees clockwise from the front.
 FIRST_BEARING, BEARING_STEP, COUNT = 20.0, 40.0, 9
 #: An erector, built pointing to the front (u: pixels out from the pad's middle, y up): the boom's hinge, a lying SCUD's
 #: tail on its axis, the ram's foot on the deck and where its rod meets the boom (along the boom from the hinge, below it).
-HINGE = (30.0, 26.0)
-TAIL = (32.0, 30.0)
-RAM_FOOT = (60.0, 15.0)
+#: Out past the ring of scrap round the tank (ScudStormBlockEntity.RAISED_TAIL_OUT: HINGE[0] - (TAIL[1] - HINGE[1])).
+HINGE = (39.0, 26.0)
+TAIL = (41.0, 30.0)
+RAM_FOOT = (69.0, 15.0)
 RAM_ARM = (10.0, -6.0)
+#: The scrap round the tank's foot: sheets salvaged from wrecks standing in a ring (apothem, pixels), as in the game.
+SCRAP_R = 24.5
 #: The SCUD's girth on its cradles, and where along it (from its tail) they hold it.
 SCUD_R = 4.0
 CRADLES = (22.0, 48.0)
@@ -133,8 +140,9 @@ class OnBone:
 
 def ring(g: GeoModel, name: str, r: float, y0: float, y1: float, cx: float, cz: float, bone: str = F, caps=("up",),
          sides: int | None = None, stagger: str | None = None) -> list[str]:
-    """A round section (warheads.section: planks every 22.5 degrees) on a bone."""
-    names = W.section(OnBone(g, bone), name, r, y0, y1, sides or W.sides_for(r), cx=cx, cz=cz, caps=caps, stagger=stagger)
+    """A round section (warheads.section: planks every 22.5 degrees) on a bone. These structures are seen from further off
+    than a warhead, so every other plank sinks 0.15 px, not 0.06 (the depth buffer tells them apart twice as far)."""
+    names = W.section(OnBone(g, bone), name, r, y0, y1, sides or W.sides_for(r), cx=cx, cz=cz, caps=caps, stagger=stagger, step=0.15)
     ROUND.extend(names)
     return names
 
@@ -202,50 +210,54 @@ def build_pad(g: GeoModel, p: Parts) -> None:
         p.add("vent", f"vent{i}")
 
 
-#: The steam vents in the pad (x, z): ScudStormBlockEntity puffs vapour out of them while it charges.
-VENTS = [(-80.0, 24.0), (84.0, 150.0), (-64.0, 176.0), (72.0, 40.0)]
+#: The steam vents in the pad (x, z): ScudStormBlockEntity puffs vapour out of them while it charges. Clear of the SCUDs.
+VENTS = [(-100.0, 28.0), (100.0, 176.0), (-92.0, 204.0), (96.0, 40.0)]
 
 
 def build_walls(g: GeoModel, p: Parts) -> None:
-    # The L of wall: down the left of the pad from the front tower, across the back to the back tower.
-    g.box("wall_left", (-120, 0, 9), (-104, WALL_H, 200), faces=("west", "east", "up", "north"), bone=F)
-    g.box("wall_back", (-120, 0, 200), (103, WALL_H, 216), faces=("north", "south", "west", "up", "east"), bone=F)
-    g.box("cap_left", (-119, WALL_H, 9), (-105, 30.5, 201), faces=("west", "east", "up", "north"), bone=F)
-    g.box("cap_back", (-119, WALL_H, 201), (103, 30.5, 215), faces=("north", "south", "west", "up", "east"), bone=F)
+    # The L of wall: down the left of the pad from the front tower, across the back to the back tower (the pattern's
+    # column 0 and last row; the towers stand in its two corner cells).
+    x0, z1 = WALL_X, WALL_Z
+    ax, az = TOWER_A
+    bx, bz = TOWER_B
+    g.box("wall_left", (x0, 0, 9), (x0 + 16, WALL_H, z1), faces=("west", "east", "up", "north"), bone=F)
+    g.box("wall_back", (x0, 0, z1), (bx - 9, WALL_H, z1 + 16), faces=("north", "south", "west", "up", "east"), bone=F)
+    g.box("cap_left", (x0 + 1, WALL_H, 9), (x0 + 15, 30.5, z1 + 1), faces=("west", "east", "up", "north"), bone=F)
+    g.box("cap_back", (x0 + 1, WALL_H, z1 + 1), (bx - 9, 30.5, z1 + 15), faces=("north", "south", "west", "up", "east"), bone=F)
     p.add("adobe", "wall_left", "wall_back", "cap_left", "cap_back")
     # Vigas: the roof beams' ends standing out of the outer faces under the cap.
-    for i, z in enumerate(range(24, 200, 24)):
-        g.box(f"viga_l{i}", (-122.5, 20, z - 1.2), (-120, 22.4, z + 1.2), faces=("west", "north", "south", "up", "down"), bone=F)
+    for i, z in enumerate(range(24, int(z1), 24)):
+        g.box(f"viga_l{i}", (x0 - 2.5, 20, z - 1.2), (x0, 22.4, z + 1.2), faces=("west", "north", "south", "up", "down"), bone=F)
         p.add("viga", f"viga_l{i}")
-    for i, x in enumerate(range(-96, 100, 24)):
-        g.box(f"viga_b{i}", (x - 1.2, 20, 216), (x + 1.2, 22.4, 218.5), faces=("south", "east", "west", "up", "down"), bone=F)
+    for i, x in enumerate(range(int(x0) + 24, int(bx) - 12, 24)):
+        g.box(f"viga_b{i}", (x - 1.2, 20, z1 + 16), (x + 1.2, 22.4, z1 + 18.5), faces=("south", "east", "west", "up", "down"), bone=F)
         p.add("viga", f"viga_b{i}")
     # The front-left watchtower: a square tower, a band round its top, a drum and the orange dome on it.
-    g.box("tower_a", (-121, 0, -9), (-103, TOWER_H, 9), faces=ALL, bone=F)
-    g.box("tower_a_band", (-122, TOWER_H, -10), (-102, 60, 10), faces=ALL, bone=F)
+    g.box("tower_a", (ax - 9, 0, az - 9), (ax + 9, TOWER_H, az + 9), faces=ALL, bone=F)
+    g.box("tower_a_band", (ax - 10, TOWER_H, az - 10), (ax + 10, 60, az + 10), faces=ALL, bone=F)
     p.add("adobe", "tower_a", "tower_a_band")
-    drum = ring(g, "tower_a_drum", 7.0, 60, 63, -112, 0)
-    dome_planks, top = dome(g, "tower_a_dome", 7.4, 63, 9, -112, 0, 9)
-    finial = ring(g, "tower_a_finial", 0.7, top - 0.6, top + 2.5, -112, 0)
+    drum = ring(g, "tower_a_drum", 7.0, 60, 63, ax, az)
+    dome_planks, top = dome(g, "tower_a_dome", 7.4, 63, 9, ax, az, 9)
+    finial = ring(g, "tower_a_finial", 0.7, top - 0.6, top + 2.5, ax, az)
     p.add("adobe", drum)
     p.add("dome", dome_planks)
     p.add("brass", finial)
     # The back-right watchtower: a flat roof inside a low parapet, its antenna mast with crossbars and a little radar.
-    g.box("tower_b", (103, 0, 199), (121, TOWER_H, 217), faces=ALL, bone=F)
-    g.box("tower_b_band", (102, TOWER_H, 198), (122, 60, 218), faces=ALL, bone=F)
-    for n, a, b in (("pp_n", (102, 60, 198), (122, 63, 200)), ("pp_s", (102, 60, 216), (122, 63, 218)),
-                    ("pp_w", (102, 60, 200), (104, 63, 216)), ("pp_e", (120, 60, 200), (122, 63, 216))):
+    g.box("tower_b", (bx - 9, 0, bz - 9), (bx + 9, TOWER_H, bz + 9), faces=ALL, bone=F)
+    g.box("tower_b_band", (bx - 10, TOWER_H, bz - 10), (bx + 10, 60, bz + 10), faces=ALL, bone=F)
+    for n, a, b in (("pp_n", (bx - 10, 60, bz - 10), (bx + 10, 63, bz - 8)), ("pp_s", (bx - 10, 60, bz + 8), (bx + 10, 63, bz + 10)),
+                    ("pp_w", (bx - 10, 60, bz - 8), (bx - 8, 63, bz + 8)), ("pp_e", (bx + 8, 60, bz - 8), (bx + 10, 63, bz + 8))):
         g.box(n, a, b, faces=NO_DOWN, bone=F)
         p.add("adobe", n)
     p.add("adobe", "tower_b", "tower_b_band")
-    g.box("mast", (111.3, 60, 207.3), (112.7, 96, 208.7), faces=NO_DOWN, bone=F)
-    g.box("mast_bar1", (106, 82, 207.6), (118, 83, 208.4), faces=ALL, bone=F)
-    g.box("mast_bar2", (108, 89, 207.6), (116, 90, 208.4), faces=ALL, bone=F)
-    g.box("whip", (111.7, 96, 207.7), (112.3, 112, 208.3), faces=NO_DOWN, bone=F)
+    g.box("mast", (bx - 0.7, 60, bz - 0.7), (bx + 0.7, 96, bz + 0.7), faces=NO_DOWN, bone=F)
+    g.box("mast_bar1", (bx - 6, 82, bz - 0.4), (bx + 6, 83, bz + 0.4), faces=ALL, bone=F)
+    g.box("mast_bar2", (bx - 4, 89, bz - 0.4), (bx + 4, 90, bz + 0.4), faces=ALL, bone=F)
+    g.box("whip", (bx - 0.3, 96, bz - 0.3), (bx + 0.3, 112, bz + 0.3), faces=NO_DOWN, bone=F)
     p.add("mast", "mast", "mast_bar1", "mast_bar2", "whip")
-    g.bone("radar", pivot=(112, 70, 208), parent=F)
-    g.box("radar_post", (111, 63, 207), (113, 70, 209), faces=NO_DOWN, bone="radar")
-    g.box("radar_dish", (106, 70, 207.4), (118, 74, 208.6), faces=ALL, bone="radar")
+    g.bone("radar", pivot=(bx, 70, bz), parent=F)
+    g.box("radar_post", (bx - 1, 63, bz - 1), (bx + 1, 70, bz + 1), faces=NO_DOWN, bone="radar")
+    g.box("radar_dish", (bx - 6, 70, bz - 0.4), (bx + 6, 74, bz + 0.4), faces=ALL, bone="radar")   # (well inside the mast's faces)
     p.add("radar", "radar_post", "radar_dish")
 
 
@@ -256,10 +268,46 @@ def build_tank(g: GeoModel, p: Parts) -> None:
         p.add("strap", ring(g, f"strap{i}", 15.5, y, y + 2, CX, CZ, caps=("up", "down"), stagger="full"))
     planks, top = dome(g, "tank_dome", 15.0, 58, 9, CX, CZ, 9)
     p.add("tank", planks)
-    p.add("steel", ring(g, "hatch", 3.0, top - 0.5, top + 1.2, CX, CZ))
-    g.box("vent_pipe", (6, 60, 92), (8, 72, 94), faces=NO_DOWN, bone=F)
-    g.box("vent_cap", (5, 72, 91), (9, 73.5, 95), faces=ALL, bone=F)
+    # The hatch on top: nothing covers its middle, so each plank sits lower than the last ("full"): with every other one
+    # sunk ("alternate") its caps shared a plane where they cross (the flicker on the tank's top).
+    p.add("steel", ring(g, "hatch", 3.0, top - 0.5, top + 1.2, CX, CZ, stagger="full"))
+    g.box("vent_pipe", (6, 60, CZ - 4), (8, 72, CZ - 2), faces=NO_DOWN, bone=F)
+    g.box("vent_cap", (5, 72, CZ - 5), (9, 73.5, CZ - 1), faces=ALL, bone=F)
     p.add("steel", "vent_pipe", "vent_cap")
+
+
+#: The scrap ring: each sheet's bearing (degrees clockwise from the front), width, height, lean outward (degrees) and
+#: what it was cut from. Every other one stands a little further out, so where neighbours overlap they never share a plane;
+#: the narrower ones leave gaps to the tank's foot, as the game's do.
+SCRAP = [(22.5, 21.0, 19.0, 4.0, "rust"), (67.5, 22.5, 23.0, 0.0, "galv"), (112.5, 18.0, 16.0, 6.0, "white"),
+         (157.5, 21.5, 24.0, 2.0, "dark"), (202.5, 19.0, 20.0, 0.0, "rust"), (247.5, 22.5, 17.0, 5.0, "green"),
+         (292.5, 20.0, 22.0, 3.0, "galv"), (337.5, 22.0, 18.5, 0.0, "white")]
+
+
+def build_scrap(g: GeoModel, p: Parts) -> None:
+    """The ring of salvaged sheets standing round the tank's foot (the game's SCUD Storm has it): rusty plate, galvanized
+    and white corrugated iron, a dark rusted panel, a green plate off an old tank; leaning out a little, some taller, gaps
+    between some. A length of pipe and a fallen plate lie outside it between the erectors."""
+    for i, (bearing, w, h, lean, kind) in enumerate(SCRAP):
+        bone = f"scrap{i}"
+        g.bone(bone, pivot=(CX, DECK_Y, CZ), parent=F, rotation=(0, YAW_SIGN * bearing, 0))
+        r = SCRAP_R + (0.9 if i % 2 else 0.0)
+        rot = {"origin": (0.0, DECK_Y, z_of(r + 0.5)), "axis": "x", "angle": -lean} if lean else None
+        n = f"sheet{i}"
+        g.box(n, (-w / 2, DECK_Y, z_of(r + 1.0)), (w / 2, DECK_Y + h, z_of(r)), faces=NO_DOWN, rotation=rot, bone=bone)
+        p.add(f"scrap_{kind}", n)
+    # Between the erectors (bearings 40k): a pipe lying along the ring, a plate fallen flat.
+    for i, (bearing, kind) in enumerate(((40.0, "pipe"), (160.0, "plate"), (280.0, "pipe"))):
+        bone = f"junk{i}"
+        g.bone(bone, pivot=(CX, DECK_Y, CZ), parent=F, rotation=(0, YAW_SIGN * bearing, 0))
+        n = f"junk{i}"
+        if kind == "pipe":
+            g.box(n, (-7, DECK_Y, z_of(30.5)), (7, DECK_Y + 2.2, z_of(28.3)), faces=("north", "south", "east", "west", "up"), bone=bone)
+            p.add("scrap_pipe", n)
+        else:
+            g.box(n, (-5, DECK_Y, z_of(33)), (5, DECK_Y + 0.8, z_of(27)), faces=("north", "south", "east", "west", "up"),
+                  rotation={"origin": (0.0, DECK_Y, z_of(30)), "axis": "y", "angle": 14.0}, bone=bone)
+            p.add("scrap_rust", n)
     # The sight gauge up its front (the toxin glowing in the glass) and the ladder up its back.
     g.box("gauge", (-1.0, 26, z_of(16.6)), (1.0, 54, z_of(15.7)), faces=("north", "east", "west", "up", "down"), bone=F)
     for i, y in enumerate((25, 54)):
@@ -286,12 +334,12 @@ def build_erectors(g: GeoModel, p: Parts) -> None:
         g.bone(scud, pivot=(0, ty, z_of(tu)), parent=boom)
         g.bone(ram, pivot=(0, fy, z_of(fu)), parent=e)
         g.bone(rod, pivot=(0, fy, z_of(fu)), parent=ram)
-        # The fuel hose from the tank's foot, the launch table, the hinge's cheeks and pin.
-        g.box(f"hose{k}", (-1, DECK_Y, z_of(25)), (1, 16, z_of(21)), faces=NO_DOWN, bone=e)
-        g.box(f"table{k}", (-6, DECK_Y, z_of(36)), (6, 21, z_of(24)), faces=NO_DOWN, bone=e)
-        g.box(f"cheek_w{k}", (-6.5, 18, z_of(33)), (-5, 29, z_of(27)), faces=ALL, bone=e)
-        g.box(f"cheek_e{k}", (5, 18, z_of(33)), (6.5, 29, z_of(27)), faces=ALL, bone=e)
-        g.box(f"pin{k}", (-5, 24.5, z_of(31.5)), (5, 27.5, z_of(28.5)), faces=("north", "south", "up", "down"), bone=e)
+        # The fuel hose out from under the scrap, the launch table, the hinge's cheeks and pin.
+        g.box(f"hose{k}", (-1, DECK_Y, z_of(hu - 6)), (1, 16, z_of(hu - 14)), faces=NO_DOWN, bone=e)
+        g.box(f"table{k}", (-6, DECK_Y, z_of(hu + 6)), (6, 21, z_of(hu - 6)), faces=NO_DOWN, bone=e)
+        g.box(f"cheek_w{k}", (-6.5, 18, z_of(hu + 3)), (-5, 29, z_of(hu - 3)), faces=ALL, bone=e)
+        g.box(f"cheek_e{k}", (5, 18, z_of(hu + 3)), (6.5, 29, z_of(hu - 3)), faces=ALL, bone=e)
+        g.box(f"pin{k}", (-5, 24.5, z_of(hu + 1.5)), (5, 27.5, z_of(hu - 1.5)), faces=("north", "south", "up", "down"), bone=e)
         g.box(f"foot{k}", (-2.5, DECK_Y, z_of(fu + 2)), (2.5, 16.5, z_of(fu - 2)), faces=NO_DOWN, bone=e)
         p.add("hose", f"hose{k}")
         p.add("table", f"table{k}", f"foot{k}")
@@ -299,11 +347,11 @@ def build_erectors(g: GeoModel, p: Parts) -> None:
         p.add("pin", f"pin{k}")
         # The boom: its knuckle round the pin, the beam out under the SCUD, the plate its tail stands on once raised, the
         # cradles, the lug the ram pushes on and a hydraulic line down its side.
-        g.box(f"knuckle{k}", (-4.5, 20, z_of(34)), (4.5, 27, z_of(28)), faces=ALL, bone=boom)
-        g.box(f"beam{k}", (-3, 20, z_of(92)), (3, 24, z_of(34)), faces=("north", "east", "west", "up", "down"), bone=boom)
-        g.box(f"plate{k}", (-5, 22, z_of(31.2)), (5, 35, z_of(30.2)), faces=ALL, bone=boom)
-        g.box(f"lug{k}", (-1.5, 18.5, z_of(41.5)), (1.5, 20, z_of(38.5)), faces=("north", "south", "east", "west", "down"), bone=boom)
-        g.box(f"line{k}", (3, 21, z_of(88)), (3.8, 22, z_of(36)), faces=("north", "east", "up", "down"), bone=boom)
+        g.box(f"knuckle{k}", (-4.5, 20, z_of(hu + 4)), (4.5, 27, z_of(hu - 2)), faces=ALL, bone=boom)
+        g.box(f"beam{k}", (-3, 20, z_of(hu + 62)), (3, 24, z_of(hu + 4)), faces=("north", "east", "west", "up", "down"), bone=boom)
+        g.box(f"plate{k}", (-5, 22, z_of(hu + 1.2)), (5, 35, z_of(hu + 0.2)), faces=ALL, bone=boom)
+        g.box(f"lug{k}", (-1.9, 18.5, z_of(hu + 11.5)), (1.9, 20, z_of(hu + 8.5)), faces=("north", "south", "east", "west", "down"), bone=boom)
+        g.box(f"line{k}", (3, 21, z_of(hu + 58)), (3.8, 22, z_of(hu + 6)), faces=("north", "east", "up", "down"), bone=boom)
         p.add("boom", f"knuckle{k}", f"beam{k}", f"lug{k}")
         p.add("plate", f"plate{k}")
         p.add("hose", f"line{k}")
@@ -331,22 +379,24 @@ def build_erectors(g: GeoModel, p: Parts) -> None:
 
 def build_props(g: GeoModel, p: Parts) -> None:
     """The guard hut and its flag, crates by the domed tower, drums by the antenna tower."""
-    g.box("hut", (66, DECK_Y, -2), (98, 40, 26), faces=NO_DOWN, bone=F)
-    g.box("hut_roof", (64, 40, -4), (100, 42, 28), faces=ALL, bone=F)
+    hx = 16.0                                                   # (the pad grew a cell each way: the props went with it)
+    g.box("hut", (66 + hx, DECK_Y, -2), (98 + hx, 40, 26), faces=NO_DOWN, bone=F)
+    g.box("hut_roof", (64 + hx, 40, -4), (100 + hx, 42, 28), faces=ALL, bone=F)
     p.add("adobe", "hut")
     p.add("roof", "hut_roof")
-    g.box("pole", (91.4, 42, 19.4), (92.6, 76, 20.6), faces=NO_DOWN, bone=F)
+    g.box("pole", (91.4 + hx, 42, 19.4), (92.6 + hx, 76, 20.6), faces=NO_DOWN, bone=F)
     p.add("steel", "pole")
-    g.bone("flag", pivot=(92, 74, 20), parent=F)
-    g.box("flag_cloth", (92.6, 64, 19.9), (108, 74, 20.1), faces=("north", "south", "east", "up", "down"), bone="flag")
+    g.bone("flag", pivot=(92 + hx, 74, 20), parent=F)
+    g.box("flag_cloth", (92.6 + hx, 64, 19.9), (108 + hx, 74, 20.1), faces=("north", "south", "east", "up", "down"), bone="flag")
     p.add("flag", "flag_cloth")
     crates = [("crate0", (-98, DECK_Y, 2), (-86, 25, 14)), ("crate1", (-84, DECK_Y, 3), (-74, 23, 13)),
               ("crate2", (-96, 25, 4), (-88, 32, 12)), ("ammo0", (-100, DECK_Y, 17), (-88, 19, 24)),
               ("ammo1", (-99, 19, 18), (-90, 23, 23))]
     for n, a, b in crates:
+        a, b = (a[0] - hx, a[1], a[2]), (b[0] - hx, b[1], b[2])
         g.box(n, a, b, faces=NO_DOWN if a[1] == DECK_Y else ALL, bone=F)
         p.add("crate" if n.startswith("crate") else "ammo", n)
-    for i, (x, z) in enumerate(((78, 174), (87, 173), (96, 175), (82, 183), (91, 184))):
+    for i, (x, z) in enumerate(((94, 190), (103, 189), (112, 191), (98, 199), (107, 200))):
         names = ring(g, f"drum{i}", 4.0, DECK_Y, 26, x, z, sides=8, stagger="full")
         hoops = ring(g, f"hoop{i}", 4.3, 19, 20, x, z, caps=("up", "down"), sides=8, stagger="full")
         p.add(f"drum{i % 3}", names)
@@ -355,12 +405,13 @@ def build_props(g: GeoModel, p: Parts) -> None:
 
 def build() -> tuple[GeoModel, Parts]:
     g = GeoModel("scud_storm", tex_size=(1024, 1024))
-    g.open_ok = set()
+    g.open_ok = {("deck", "down"), ("tower_a", "down"), ("tower_b", "down")}       # (on the ground)
     g.bone(F)
     p = Parts()
     build_pad(g, p)
     build_walls(g, p)
     build_tank(g, p)
+    build_scrap(g, p)
     build_erectors(g, p)
     build_props(g, p)
     return g, p
@@ -402,6 +453,15 @@ def paint_model(g: GeoModel, p: Parts) -> tuple[Tex, Tex]:
     S.paint(tex, p["steel"], M.steel(tone=0.5, rust=0.1))
     S.paint(tex, p["gauge"], M.Material(ramp=W.ramp9(P.TOXIN), tone=0.7, mottle=0.02, edge_light=0.2))
     g.paint_all(glow, "gauge", lambda t, r, d: t.rect(r[0], r[1], r[2], r[3], TOXIN_GLOW) if d == "north" else None)
+    # The scrap round its foot: an orange plate rusted through, galvanized and white corrugated iron, a dark rusted panel,
+    # a green plate off an old tank, rusty pipe.
+    S.paint(tex, p["scrap_rust"], M.painted(M.ORANGE_PAINT_RAMP, tone=0.42, wear=0.6, rust=0.55, streaks=0.12))
+    S.paint(tex, p["scrap_galv"], M.galvanized(tone=0.48, rust=0.3, grime=0.2, streaks=0.12))
+    S.paint(tex, p["scrap_white"], M.white_paint(tone=0.6, wear=0.45, rust=0.35, grime=0.22, streaks=0.15))
+    S.paint(tex, p["scrap_dark"], M.steel(tone=0.3, rust=0.7))
+    S.paint(tex, p["scrap_green"], M.painted(TANK_RAMP, tone=0.5, wear=0.55, rust=0.3, streaks=0.1))
+    S.paint(tex, p["scrap_pipe"], M.steel(tone=0.38, rust=0.55))
+    S.overlay(tex, p["scrap_galv"] + p["scrap_white"], corrugated)
     # The erectors: rusty tables, tan booms and cradles, black rubber saddles, dark rams with bright rods.
     S.paint(tex, p["table"], RUSTY)
     S.paint(tex, p["cheek"] + p["boom"] + p["cradle"], TAN)
@@ -432,9 +492,10 @@ def paint_deck(S: M.Surfacer, tex: Tex) -> None:
     S.paint(tex, "deck", SAND)
     S.paint(tex, "deck", M.Material(ramp=SAND_RAMP, tone=0.5, mottle=0.04, grain=0.05, dither=0.8, despeckle=False), only=("north", "east"))
     x0, x1, z0, z1 = PAD
-    raised = [(CX + 26 * math.sin(math.radians(FIRST_BEARING + k * BEARING_STEP)), CZ - 26 * math.cos(math.radians(FIRST_BEARING + k * BEARING_STEP)))
+    out = HINGE[0] - (TAIL[1] - HINGE[1])                       # a raised SCUD's tail, out from the middle
+    raised = [(CX + out * math.sin(math.radians(FIRST_BEARING + k * BEARING_STEP)), CZ - out * math.cos(math.radians(FIRST_BEARING + k * BEARING_STEP)))
               for k in range(COUNT)]
-    tables = [(CX + 30 * math.sin(math.radians(FIRST_BEARING + k * BEARING_STEP)), CZ - 30 * math.cos(math.radians(FIRST_BEARING + k * BEARING_STEP)))
+    tables = [(CX + HINGE[0] * math.sin(math.radians(FIRST_BEARING + k * BEARING_STEP)), CZ - HINGE[0] * math.cos(math.radians(FIRST_BEARING + k * BEARING_STEP)))
               for k in range(COUNT)]
 
     def floor(f, img):
@@ -455,12 +516,12 @@ def paint_deck(S: M.Surfacer, tex: Tex) -> None:
             d = np.hypot(f.X - bx, f.Z - bz)
             M.darken(img, (d < 9) & (stain > 0.55 + d / 30), 0.55)
         dt = np.hypot(f.X - CX, f.Z - CZ)
-        toxin = (dt > 21) & (dt < 34) & (stain > 0.62)
+        toxin = (dt > 21) & (dt < SCRAP_R + 12) & (stain > 0.62)
         rgb = img[..., :3].astype(np.float32)
         rgb[toxin] = rgb[toxin] * 0.55 + np.array([60, 120, 30], dtype=np.float32) * 0.45
         img[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
         # Tyre tracks in from the front edge to the guard hut and the crates.
-        for tx in (-60.0, -50.0, 50.0, 60.0):
+        for tx in (-76.0, -66.0, 66.0, 76.0):
             track = (np.abs(f.X - tx) < 1.6) & (f.Z < 70) & (M.white(f.X, f.Y, f.Z, 71) > 0.35)
             M.darken(img, track, 0.86)
     S.overlay(tex, "deck", floor, only=("up",))
@@ -486,6 +547,15 @@ def paint_adobe(S: M.Surfacer, tex: Tex, names: list[str]) -> None:
         crack = (np.abs(M.fbm(f.X * 0.6, f.Y * 2, f.Z * 0.6, 4.0, 89, 2) - 0.5) < 0.012)
         M.darken(img, crack, 0.6)
     S.overlay(tex, names, patches)
+
+
+def corrugated(f, img) -> None:
+    """Corrugated iron: a ridge every other texel across a sheet (its ribs upright)."""
+    if f.d in ("up", "down") or f.shape[1] < 4:
+        return
+    col = np.indices(f.shape)[1]
+    M.lighten(img, col % 2 == 0, 1.12, 4)
+    M.darken(img, col % 2 == 1, 0.84)
 
 
 def biohazards(f, img) -> None:

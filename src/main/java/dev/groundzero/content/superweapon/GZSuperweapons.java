@@ -92,11 +92,14 @@ public final class GZSuperweapons {
                     GZLang.add(GroundZero.MODID + ".nuclear_missile.built", "Built at a War Factory"))),
             p -> p.stacksTo(1).rarity(Rarity.EPIC));
 
-    /** The cells of the nine SCUD Erectors round the tank, by bearing (ScudStormBlockEntity.bearing): column, row offsets. */
-    private static final int[][] ERECTOR_CELLS = {{1, -2}, {2, -1}, {2, 0}, {1, 2}, {0, 2}, {-1, 2}, {-2, 0}, {-2, -1}, {-1, -2}};
+    /**
+     * The cells of the nine SCUD Erectors round the tank, by bearing (ScudStormBlockEntity.bearing): column, row offsets.
+     * Each is the cell under its erector's launch table (2.4 blocks out, past the scrap round the tank).
+     */
+    private static final int[][] ERECTOR_CELLS = {{1, -2}, {2, -1}, {2, 0}, {2, 2}, {0, 2}, {-2, 2}, {-2, 0}, {-2, -1}, {-1, -2}};
 
     /**
-     * The SCUD Storm: a 13x13 pad of Launch Pad (the controller at the front middle, an Item Port and an Energy Port along
+     * The SCUD Storm: a 15x15 pad of Launch Pad (the controller at the front middle, an Item Port and an Energy Port along
      * the front either side of it) behind an L of Adobe Wall two high down its left side and across its back, a
      * watchtower of it four high at each end; on the pad, a 3x3 Toxin Tank two high in the middle and nine SCUD Erectors
      * round it; everything else over the pad kept clear six blocks up (the SCUDs lie on it and rise over it).
@@ -294,8 +297,8 @@ public final class GZSuperweapons {
         return cuts;
     }
 
-    /** The SCUD Storm's pattern: 14 columns (the wall in the first) by 14 rows (the wall in the last), 7 layers. */
-    public static final int SCUD_COLS = 14, SCUD_ROWS = 14, SCUD_LAYERS = 7, SCUD_CENTER_COL = 7, SCUD_CENTER_ROW = 6;
+    /** The SCUD Storm's pattern: 16 columns (the wall in the first) by 16 rows (the wall in the last), 7 layers. */
+    public static final int SCUD_COLS = 16, SCUD_ROWS = 16, SCUD_LAYERS = 7, SCUD_CENTER_COL = 8, SCUD_CENTER_ROW = 7;
 
     private static String[][] scudStormLayers() {
         char[][][] grid = new char[SCUD_LAYERS][SCUD_ROWS][SCUD_COLS];
@@ -356,7 +359,7 @@ public final class GZSuperweapons {
     public static final String JEI_AMMO_TITLE = GZLang.add("jei." + GroundZero.MODID + ".ammo_factory", "Superweapon Ammunition");
     public static final String JEI_AMMO_INFO = GZLang.add("jei." + GroundZero.MODID + ".ammo_factory.info", "%s: %s s, %s FE/t");
     public static final String INFO_SCUD_STORM = GZLang.add(GroundZero.MODID + ".info.scud_storm",
-            "The GLA's superweapon. Build it on a 13x13 pad of Launch Pad with its controller in the middle of the front edge, a "
+            "The GLA's superweapon. Build it on a 15x15 pad of Launch Pad with its controller in the middle of the front edge, a "
                     + "3x3 Toxin Tank two high in the middle, nine SCUD Erectors round it and an L of Adobe Wall (two high, a "
                     + "watchtower four high at each end) down its left side and across its back (the Holo-Projector shows it). "
                     + "Load up to nine Toxin SCUDs and power it: it charges for 5 minutes, then a Launch Computer aims, arms and "

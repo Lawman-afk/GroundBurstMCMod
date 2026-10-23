@@ -127,11 +127,12 @@ public final class GZBlastData {
         // Slice 8d: the Tsar, the biggest weapon there is; it wrecks and burns further than the engine's old limit (320).
         ctx.register(Blasts.profile("tsar_warhead"), new BlastProfile(80, 250, 380, 480, 450, new BlastProfile.EntityZones(450, 700, 1000, 160, 8f),
                 5f, 0.3f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("tsar"), Optional.of("tsar")));
-        // The superweapons' warheads (DESIGN.md §19.5). A toxin SCUD: a heavy warhead's blast (its toxin does the rest,
-        // Charges.scud); China's Nuclear Missile: between the fission and the boosted fission warheads.
-        ctx.register(Blasts.profile("scud_storm_warhead"), visual(profile(4, 10, 16, 14, 4, 12, 24, 3, 0.7f, 0.15f, 0.3f, 0.45f, 80, 22, 3.0f,
-                TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
-        ctx.register(Blasts.profile("nuclear_missile_warhead"), new BlastProfile(25, 85, 125, 160, 150, new BlastProfile.EntityZones(135, 225, 1000, 90, 5.2f),
+        // The superweapons' warheads (DESIGN.md §19.5). A toxin SCUD: a heavy warhead's blast a third bigger and harder (the
+        // user's rebalance; its toxin does the rest, Charges.scud); China's Nuclear Missile: just under the fission warhead's
+        // blast, a fifth down on its first figures (the user's rebalance: radii and damage x0.8).
+        ctx.register(Blasts.profile("scud_storm_warhead"), visual(profile(5.3f, 13.3f, 21.3f, 18.6f, 5.3f, 16, 32, 3, 0.7f, 0.15f, 0.3f, 0.45f, 106, 29,
+                4.0f, TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
+        ctx.register(Blasts.profile("nuclear_missile_warhead"), new BlastProfile(20, 68, 100, 128, 120, new BlastProfile.EntityZones(108, 180, 800, 72, 4.2f),
                 3.5f, 0.4f, 0.2f, 0.35f, 0.5f, 0f, TerrainTable.NUCLEAR, Optional.empty(), Optional.of("nuke"), Optional.of("nuke")));
         // The neutron warhead's blast is small: its neutrons do the killing (NeutronBurst).
         ctx.register(Blasts.profile("neutron_warhead"), new BlastProfile(4, 10, 16, 14, 12, new BlastProfile.EntityZones(10, 26, 200, 20, 2.5f),

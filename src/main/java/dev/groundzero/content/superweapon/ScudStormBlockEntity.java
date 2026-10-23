@@ -33,12 +33,12 @@ import net.minecraft.world.phys.Vec3;
 public class ScudStormBlockEntity extends SuperweaponBlockEntity {
     public static final int CAPACITY = 9, CHARGE_TICKS = 6000, CHARGE_POWER = 400, FIRE_INTERVAL = 12;
     public static final float SPREAD = 16;
-    /** The pad's middle: pixels back from the middle of the controller's cell. */
-    public static final float CENTER_BACK = 96;
+    /** The pad's middle: pixels back from the middle of the controller's cell (seven cells). */
+    public static final float CENTER_BACK = 112;
     /** Erector k's bearing, degrees clockwise from the front: FIRST_BEARING + k * BEARING_STEP. */
     public static final float FIRST_BEARING = 20, BEARING_STEP = 40;
-    /** A raised SCUD's tail: pixels out from the pad's middle and up from the bottom of the deck. */
-    public static final float RAISED_TAIL_OUT = 26, RAISED_TAIL_UP = 28;
+    /** A raised SCUD's tail: pixels out from the pad's middle (past the scrap round the tank) and up from the deck's bottom. */
+    public static final float RAISED_TAIL_OUT = 35, RAISED_TAIL_UP = 28;
     /** How a SCUD lies on its erector: turned a quarter of a right angle about its axis (its fins clear of the boom). */
     public static final float TURN = 45;
 
@@ -175,5 +175,5 @@ public class ScudStormBlockEntity extends SuperweaponBlockEntity {
     }
 
     /** The steam vents in the pad (the model's grates): right, back in pixels. */
-    public static final double[][] VENTS = {{-80, 24}, {84, 150}, {-64, 176}, {72, 40}};
+    public static final double[][] VENTS = {{-100, 28}, {100, 176}, {-92, 204}, {96, 40}};
 }

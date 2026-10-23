@@ -68,7 +68,7 @@ final class SuperweaponTests {
     }
 
     static ScudStormBlockEntity scudStorm(GameTestHelper helper, boolean build) {
-        BlockPos rel = new BlockPos(7, 1, 1);
+        BlockPos rel = new BlockPos(8, 1, 0);                   // (the 16x16 pattern, its controller in the front row's ninth cell)
         if (build) {
             build(helper, rel, GZSuperweapons.SCUD_STORM_CONTROLLER.block().get(), GZSuperweapons.SCUD_STORM);
         } else {

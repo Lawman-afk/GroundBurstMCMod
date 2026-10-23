@@ -107,9 +107,9 @@ public class GroundZeroClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(), 2, 4, 14));
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get(), 9, 2));
-        // The superweapons (DESIGN.md §19.5): the SCUD Storm's pad and wall reach 14 blocks back, its raised SCUDs 7 up.
+        // The superweapons (DESIGN.md §19.5): the SCUD Storm's pad and wall reach 16 blocks back, its raised SCUDs 7 up.
         event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get(), 8, 14));
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get(), 8, 17));
         // The ammunition factories: the Arms Dealer's compound 7 back, its hoist 4 up; the War Factory 13 back, its
         // chimney 6 up.
         event.registerBlockEntityRenderer(dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_ENTITY.get(),

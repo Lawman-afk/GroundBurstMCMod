@@ -1177,7 +1177,7 @@ The GLA's superweapon: a square sand pad, nine **Toxin SCUDs** lying like the sp
 
 Load it with up to nine Toxin SCUDs and give it power through its Energy Port (pipes can feed it through its Item Port). It **charges for 5 minutes** at 400 FE a tick (charging pauses without power); then it is **READY**. A [Launch Computer](ordnance/launch_site) within reach lists it with its charge; aim it, arm it and press LAUNCH. Its erectors raise the SCUDs upright, a 10 second countdown runs and they go **one after another**, each coming down anywhere within **16 blocks** of the target. Then it charges again from empty.
 """),
-    structure("scud_storm", "The SCUD Storm: a 13 by 13 pad of Launch Pads, the controller in the middle of its front edge with an Item Port three to its left and an Energy Port three to its right. Behind the pad and down its left side, an L of Adobe Wall two high, with a watchtower four high at each end. On the pad, a 3 by 3 Toxin Tank two high in the middle and nine SCUD Erectors round it (the Holo-Projector shows where). Keep everything else over the pad clear six blocks up: the SCUDs lie on it and rise over it."),
+    structure("scud_storm", "The SCUD Storm: a 15 by 15 pad of Launch Pads, the controller in the middle of its front edge with an Item Port three to its left and an Energy Port three to its right. Behind the pad and down its left side, an L of Adobe Wall two high, with a watchtower four high at each end. On the pad, a 3 by 3 Toxin Tank two high in the middle and nine SCUD Erectors round it (the Holo-Projector shows where). Keep everything else over the pad clear six blocks up: the SCUDs lie on it and rise over it."),
     spot("toxin_scud", """
 A SCUD as the GLA paints it: white, its fins and nose toxin green. Built at an [Arms Dealer](superweapons/arms_dealer); only a SCUD Storm fires it. Where it comes down: a heavy blast, then [toxin](superweapons/toxin) wells up out of the crater.
 """),
@@ -1189,7 +1189,7 @@ A SCUD as the GLA paints it: white, its fins and nose toxin green. Built at an [
 
 entry("superweapons/toxin", "Toxin strikes", "toxin_scud", ["toxin_scud"], [
     text("""
-A Toxin SCUD's warhead is the point of it. A moment after its blast has dug its crater, its **toxin** wells up out of it as a heavy green cloud that hugs the ground, sinks into hollows and drifts with the wind for two minutes and more, and a **front of glowing anthrax residue** runs out over the ground round it, 16 blocks, splashing as it goes and dosing whatever it washes over.
+A Toxin SCUD's warhead is the point of it. A moment after its blast has dug its crater, its **toxin** wells up out of it as a heavy green cloud that hugs the ground, sinks into hollows and drifts with the wind for two minutes and more, and a **front of glowing anthrax residue** runs out over the ground round it, 21 blocks, splashing as it goes and dosing whatever it washes over.
 
 The residue bubbles and fumes and poisons whatever walks through it (Poison IV and nausea), drying out over about eight minutes. A hazmat suit keeps out both the cloud and the residue.
 """),
@@ -1201,7 +1201,7 @@ entry("superweapons/nuclear_missile_silo", "Nuclear Missile Silo", "nuclear_miss
     text("""
 China's superweapon is not a silo dug into the ground but an above-ground "coffin": a long hall, fieldstone below and grey walls between green steel pilasters under a brown roof in four sections, a red star on its gable; the missile lies inside on its erector. Beside the hall's front stands an octagonal control house, at its back a green lattice tower.
 
-Load it with a **Nuclear Missile** and give it power. It **charges for 6 minutes** at 800 FE a tick; then a [Launch Computer](ordnance/launch_site) aims, arms and fires it. The roof folds open, the erector raises the missile upright beside the tower, its arm swings in, and after a 10 second countdown it climbs straight out of the hall. Where it comes down: a nuclear blast (a crater about 85 blocks across) and a **radiation field 200 blocks round** that lasts two days.
+Load it with a **Nuclear Missile** and give it power. It **charges for 6 minutes** at 800 FE a tick; then a [Launch Computer](ordnance/launch_site) aims, arms and fires it. The roof folds open, the erector raises the missile upright beside the tower, its arm swings in, and after a 10 second countdown it climbs straight out of the hall. Where it comes down: a nuclear blast (a crater about 68 blocks across) and a **radiation field 200 blocks round** that lasts two days.
 """),
     structure("nuclear_missile_silo", "The Nuclear Missile Silo: the hall, 5 wide and 15 long, its walls Fieldstone Wall two high with the controller in the middle of the front wall, an Energy Port in the right wall near the front and an Item Port in the left; inside, a floor of Launch Pads with the Missile Erector on it at the back. Beside the hall's front on the left, the control house: a 3 by 3 of Fieldstone Wall two high. Beside the hall's back on the right, a Gantry Frame tower nine high. Keep the hall's inside and the space over its roof clear, and the missile's column over its back end eleven blocks up."),
     spot("nuclear_missile", """

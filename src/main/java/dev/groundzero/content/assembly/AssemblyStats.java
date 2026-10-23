@@ -143,7 +143,7 @@ public final class AssemblyStats {
             case THERMONUCLEAR_WARHEAD -> "1.2 Mt";
             case COBALT_WARHEAD -> "400 kt";
             case TSAR_WARHEAD -> "50 Mt";
-            case NUCLEAR_MISSILE_WARHEAD -> "25 kt";
+            case NUCLEAR_MISSILE_WARHEAD -> "20 kt";
             default -> null;
         };
     }

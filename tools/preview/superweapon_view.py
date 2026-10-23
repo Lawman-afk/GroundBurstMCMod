@@ -107,7 +107,7 @@ def scud_points() -> list[tuple[float, float, float]]:
     out = []
     for k in range(9):
         a = math.radians(20 + 40 * k)
-        out.append((26 * math.sin(a), 28.0, 96 - 26 * math.cos(a)))
+        out.append((35 * math.sin(a), 28.0, 112 - 35 * math.cos(a)))
     return out
 
 
@@ -119,7 +119,8 @@ PRESETS = {
     "war_factory": dict(missiles=[("missile", "nuclear_missile_warhead", True, 90.0)], anim="working", points=lambda: [],
                         shots=[("iso front", 30, 225, None, None), ("iso back", 30, 45, None, None), ("from above", 85, 180, None, None),
                                ("low front", 8, 200, None, None), ("the hall", 20, 220, (-32, 40, 144), 110), ("the yard", 30, 230, (32, 30, 100), 150),
-                               ("crane", 20, 250, (50, 50, 150), 70), ("annex and chimney", 20, 210, (-48, 50, 32), 90),
+                               ("crane", 20, 250, (50, 50, 150), 70), ("crane's foot", 8, 270, (64, 22, 150), 40),
+                               ("crane's foot, front", 8, 180, (64, 22, 150), 40), ("annex and chimney", 20, 210, (-48, 50, 32), 90),
                                ("door and star", 15, 260, (6, 28, 144), 50), ("conveyor", 35, 200, (-42, 20, 80), 50)]),
     "nuclear_missile_silo": dict(missiles=[("missile", "nuclear_missile_warhead", True, 90.0)], anim="raise",
                                  points=lambda: [(0.0, 20.0, 192.0)],
@@ -132,11 +133,11 @@ PRESETS = {
     "scud_storm": dict(missiles=[(f"scud{k}", "scud_storm_warhead", True, 45.0) for k in range(9)], anim="raise",
                        points=scud_points,
                        shots=[("iso front", 30, 225, None, None), ("iso back", 30, 45, None, None), ("from above", 85, 180, None, None),
-                              ("low front", 8, 200, None, None), ("the ring", 35, 210, (0, 30, 96), 150),
-                              ("an erector", 25, 250, (40, 26, 60), 70), ("tails and tank", 20, 200, (0, 34, 74), 60),
-                              ("domed tower", 20, 210, (-112, 40, 0), 60), ("antenna tower", 20, 40, (112, 60, 208), 80),
-                              ("guard hut", 25, 230, (82, 40, 12), 60), ("crates and drums", 30, 135, (-86, 22, 10), 50),
-                              ("drums", 30, 315, (87, 20, 180), 40)]),
+                              ("low front", 8, 200, None, None), ("the ring", 35, 210, (0, 30, 112), 160),
+                              ("an erector", 25, 250, (50, 26, 70), 70), ("tails and tank", 20, 200, (0, 34, 86), 70),
+                              ("the scrap", 30, 160, (0, 26, 112), 70), ("domed tower", 20, 210, (-128, 40, 0), 60),
+                              ("antenna tower", 20, 40, (112, 60, 240), 80), ("guard hut", 25, 230, (98, 40, 12), 60),
+                              ("crates and drums", 30, 135, (-102, 22, 10), 50), ("drums", 30, 315, (103, 20, 195), 40)]),
 }
 
 

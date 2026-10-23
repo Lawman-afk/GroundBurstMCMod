@@ -1,17 +1,17 @@
 {
-  "core": 4.0,
-  "crater": 10.0,
+  "core": 5.3,
+  "crater": 13.3,
   "ejecta": 0.45,
   "entities": {
-    "damage": 24.0,
-    "edge_damage": 22.0,
-    "knockback": 3.0,
-    "lethal": 12.0,
-    "lethal_damage": 80.0
+    "damage": 32.0,
+    "edge_damage": 29.0,
+    "knockback": 4.0,
+    "lethal": 16.0,
+    "lethal_damage": 106.0
   },
-  "fire": 4.0,
+  "fire": 5.3,
   "front_speed": 3.0,
-  "scorch": 14.0,
-  "structural": 16.0,
+  "scorch": 18.6,
+  "structural": 21.3,
   "visual": "heavy"
 }

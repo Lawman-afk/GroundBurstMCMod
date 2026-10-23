@@ -18,7 +18,7 @@
     {
       "type": "structure",
       "structure": "groundzero:scud_storm",
-      "text": "The SCUD Storm: a 13 by 13 pad of Launch Pads, the controller in the middle of its front edge with an Item Port three to its left and an Energy Port three to its right. Behind the pad and down its left side, an L of Adobe Wall two high, with a watchtower four high at each end. On the pad, a 3 by 3 Toxin Tank two high in the middle and nine SCUD Erectors round it (the Holo-Projector shows where). Keep everything else over the pad clear six blocks up: the SCUDs lie on it and rise over it."
+      "text": "The SCUD Storm: a 15 by 15 pad of Launch Pads, the controller in the middle of its front edge with an Item Port three to its left and an Energy Port three to its right. Behind the pad and down its left side, an L of Adobe Wall two high, with a watchtower four high at each end. On the pad, a 3 by 3 Toxin Tank two high in the middle and nine SCUD Erectors round it (the Holo-Projector shows where). Keep everything else over the pad clear six blocks up: the SCUDs lie on it and rise over it."
     },
     {
       "type": "spotlight",

@@ -142,21 +142,21 @@ public final class MachineLayouts {
             List.of(), 256);
 
     public static final MachineLayout ARMS_DEALER = new MachineLayout(
-            GroundZero.id("textures/gui/machine/arms_dealer.png"), 176, 166, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 40), new MachineLayout.Pos(124, 31)), 8, 84,
+            GroundZero.id("textures/gui/machine/arms_dealer.png"), 176, 166, List.of(new MachineLayout.Pos(30, 18), new MachineLayout.Pos(48, 18), new MachineLayout.Pos(66, 18), new MachineLayout.Pos(30, 36), new MachineLayout.Pos(124, 27)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
-            new MachineLayout.Rect(92, 32, 24, 17), 196, 0,
+            new MachineLayout.Rect(92, 28, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(30, 60, 118, 20), 8, 6, List.of(),
+            new MachineLayout.Rect(30, 57, 118, 25), 8, 6, List.of(),
             List.of(), 256);
 
     public static final MachineLayout WAR_FACTORY = new MachineLayout(
-            GroundZero.id("textures/gui/machine/war_factory.png"), 176, 166, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 40), new MachineLayout.Pos(48, 40), new MachineLayout.Pos(124, 31)), 8, 84,
+            GroundZero.id("textures/gui/machine/war_factory.png"), 176, 166, List.of(new MachineLayout.Pos(30, 18), new MachineLayout.Pos(48, 18), new MachineLayout.Pos(66, 18), new MachineLayout.Pos(30, 36), new MachineLayout.Pos(48, 36), new MachineLayout.Pos(124, 27)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
-            new MachineLayout.Rect(92, 32, 24, 17), 196, 0,
+            new MachineLayout.Rect(92, 28, 24, 17), 196, 0,
             null, 196, 20,
             new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
-            new MachineLayout.Rect(30, 60, 118, 20), 8, 6, List.of(),
+            new MachineLayout.Rect(30, 57, 118, 25), 8, 6, List.of(),
             List.of(), 256);
 
     public static final MachineLayout ASSEMBLY_BENCH = new MachineLayout(

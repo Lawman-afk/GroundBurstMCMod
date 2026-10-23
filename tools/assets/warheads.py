@@ -147,7 +147,7 @@ def metal(r, tone: float = 0.5, **kw) -> M.Material:
 # --- round geometry ----------------------------------------------------------------------------------------------------------
 
 def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int = 16, cx: float = 8.0, cz: float = 8.0,
-            caps=("up", "down"), stagger: str | None = None) -> list[str]:
+            caps=("up", "down"), stagger: str | None = None, step: float = 0.06) -> list[str]:
     """A round section: a prism of {sides} sides (16, 8, or 4: a square) and apothem r. It is the union of planks
     laid every 360/sides degrees (and each turned a quarter more), each spanning the width one way and one facet the
     other (squares overlapped would make a star), so each plank shows only its two ends (two facets) and its caps.
@@ -159,7 +159,8 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
     quarter-turned planks 0.12 further ("base"), so no two of its bottom caps share a plane anywhere. A plank is sunk
     whole, never stretched, so its texels stay a pixel tall and bands line up
     from facet to facet. A section with no bottom cap stands on something wider: its planks reach a pixel down into
-    it (unseen), so no sunk cap under them leaves a slit."""
+    it (unseen), so no sunk cap under them leaves a slit. {step} is the "alternate" sink: big structures, seen from
+    further off, pass more (0.15) so the depth buffer still tells the two levels apart there."""
     if sides == 4:
         root = 0.0 if "down" in caps else 1.0
         m.box(f"{name}_0", (cx - r, y0 - root, cz - r), (cx + r, y1, cz + r), faces=tuple(SIDES) + tuple(caps))
@@ -177,7 +178,7 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
             if stagger == "base":                            # (a bottom that shows: the quarter-turned planks lower still)
                 sink = 0.06 * (index % 2) + (0.12 if not long_x else 0.0)
             else:
-                sink = 0.06 * (index % 2) if stagger == "alternate" else 0.06 * k
+                sink = step * (index % 2) if stagger == "alternate" else 0.06 * k
             ends = ("east", "west") if long_x else ("north", "south")
             rot = None if a == 0 else {"origin": (cx, y0, cz), "axis": "y", "angle": a}
             n = f"{name}_{k}"

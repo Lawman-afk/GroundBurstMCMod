@@ -131,10 +131,12 @@ def build_hall(g: GeoModel, p: SS.Parts) -> None:
             g.box(n, (x0, 0, z - 2.5), (x1, WALL_TOP, z + 2.5), faces=ALL, bone=F)
             p.add("pilaster", n)
     # The gables: each half a slab leaned to the roof's pitch, its foot hidden in the wall under it; the left half in front
-    # (a little proud of the right, so the two never share a plane), the red star on it; a gold finial on top.
+    # (a little proud of the right, so the two never share a plane), the red star on it; a gold finial on top. Both stand
+    # 0.4 px back from the end wall's face: in its plane their feet fought the wall below the eaves (the flicker the user
+    # saw on both ends).
     for end, zf, d in (("front", z0, 1), ("back", z1, -1)):
         thick = 2.0
-        for half, s, inset in (("l", -1, 0.0), ("r", 1, 0.35)):
+        for half, s, inset in (("l", -1, 0.4), ("r", 1, 0.75)):
             zz0 = zf + d * inset if d > 0 else zf - thick - inset
             zz1 = zz0 + thick
             n = f"gable_{end}_{half}"
@@ -180,9 +182,11 @@ def build_roof(g: GeoModel, p: SS.Parts) -> None:
                 g.box(n, (EAVE_X - SLOPE, WALL_TOP, za), (EAVE_X, WALL_TOP + 2, zb), faces=("up", "down", "west", "east") + ends,
                       rotation={"origin": (EAVE_X, WALL_TOP, za), "axis": "z", "angle": -PITCH}, bone=bone)
             p.add("roof", n)
-            if s < 0:                                          # the red ridge cap rides on the left halves
-                cap = f"ridge{i}"
-                g.box(cap, (-EAVE_X + SLOPE - 3, WALL_TOP + 1.5, za), (-EAVE_X + SLOPE + 0.6, WALL_TOP + 3.2, zb), faces=("up", "east") + ends,
+            if s < 0:                                          # the red ridge cap rides on the left halves (its ends
+                cap = f"ridge{i}"                              # 0.4 px in from the roof's, out of their plane)
+                ca = za + (0.4 if za == ROOF_Z[0] else 0.0)
+                cb = zb - (0.4 if zb == ROOF_Z[-1] else 0.0)
+                g.box(cap, (-EAVE_X + SLOPE - 3, WALL_TOP + 1.5, ca), (-EAVE_X + SLOPE + 0.6, WALL_TOP + 3.2, cb), faces=("up", "east") + ends,
                       rotation={"origin": (-EAVE_X, WALL_TOP, za), "axis": "z", "angle": PITCH}, bone=bone)
                 p.add("ridge", cap)
 
@@ -194,22 +198,24 @@ def build_erector(g: GeoModel, p: SS.Parts) -> None:
     g.bone("missile", pivot=(0, ty, tz), parent="erector")
     # The launch table under the raised missile's tail, its hinge's cheeks and pin.
     g.box("table", (-11, DECK_Y, 184), (11, 19.4, 202), faces=NO_DOWN, bone=F)
+    # The cheeks stand inside the knuckle's ends (a little inside its faces, raised or lying: no shared planes), the pin
+    # through both.
     for s in (-1, 1):
-        g.box(f"cheek{s}", (s * 9 - 1, 14, hz - 4), (s * 9 + 1, 25, hz + 4), faces=ALL, bone=F)
+        g.box(f"cheek{s}", (s * 9 - 0.8, 14, hz - 3.6), (s * 9 + 0.8, 24.6, hz + 3.6), faces=ALL, bone=F)
         p.add("table", f"cheek{s}")
-    g.box("pin", (-8, hy - 1.5, hz - 1.5), (8, hy + 1.5, hz + 1.5), faces=("north", "south", "up", "down"), bone=F)
+    g.box("pin", (-9.4, hy - 1.5, hz - 1.5), (9.4, hy + 1.5, hz + 1.5), faces=("north", "south", "up", "down"), bone=F)
     p.add("table", "table")
     p.add("bright", "pin")
     # The strongback: a box girder under the missile, its knuckle on the pin, the clamps round the missile, the plate its
     # tail stands on once raised, the rams' lugs.
     # A fork, not a beam under it: two box rails beside the missile (raised, the missile stands between them, not behind
     # a girder), joined at the hinge's knuckle and by the cradles.
-    g.box("knuckle", (-11, hy - 4, hz - 4), (11, hy + 3, hz + 4), faces=ALL, bone="erector")
+    g.box("knuckle", (-10.6, hy - 4, hz - 4), (10.6, hy + 3, hz + 4), faces=ALL, bone="erector")
     for s in (-1, 1):
         g.box(f"rail{s}", (s * 10.6 - (2 if s > 0 else 0), 22, 60), (s * 10.6 + (2 if s < 0 else 0), 28, hz - 4),
               faces=("north", "east", "west", "up", "down"), bone="erector")
         p.add("erector", f"rail{s}")
-    g.box("tailplate", (-7.5, 21, tz + 0.4), (7.5, 42, tz + 1.4), faces=ALL, bone="erector")
+    g.box("tailplate", (-7.5, 21, tz + 0.4), (7.5, 41.5, tz + 1.4), faces=ALL, bone="erector")   # (raised: short of the table's end)
     p.add("erector", "knuckle")
     p.add("plate", "tailplate")
     for i, cz in enumerate(CLAMPS):
@@ -223,7 +229,7 @@ def build_erector(g: GeoModel, p: SS.Parts) -> None:
         p.add("clamp", f"strap{i}", f"strapside{i}w", f"strapside{i}e")
     for s in (-1, 1):
         lug_z, lug_y = hz - RAM_LUG[0], hy + RAM_LUG[1]
-        g.box(f"lug{s}", (min(s * 8.6, s * (RAM_X + 1.5)), lug_y - 1.5, lug_z - 2), (max(s * 8.6, s * (RAM_X + 1.5)), 22.5, lug_z + 2),
+        g.box(f"lug{s}", (min(s * 8.9, s * (RAM_X + 1.5)), lug_y - 1.5, lug_z - 2), (max(s * 8.9, s * (RAM_X + 1.5)), 22.5, lug_z + 2),
               faces=ALL, bone="erector")
         p.add("erector", f"lug{s}")
     # The rams, each side: its cylinder from its foot on the floor toward the lug, the rod sliding out of it.
