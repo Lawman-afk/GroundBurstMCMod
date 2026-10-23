@@ -1,7 +1,7 @@
 {
   "title": "Launch Complex",
   "icon": "groundzero:launch_complex",
-  "order": 7,
+  "order": 8,
   "items": [
     "groundzero:launch_complex",
     "groundzero:flame_deflector"

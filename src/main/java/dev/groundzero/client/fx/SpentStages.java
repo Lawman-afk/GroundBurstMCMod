@@ -61,21 +61,24 @@ final class SpentStages {
 
     /** {@code missile} has just dropped its {@code k}th stage: let it fall from where it was. */
     static void drop(MissileEntity missile, int k) {
-        var body = missile.body();
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        if (shape == null) {
+            return;                                                // (the plain missile has one stage)
+        }
         ItemStack look = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
         look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                List.of(), List.of(), List.of(MissileParts.flight(MissileParts.spentStage(body, k))), List.of()));
-        // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position.
-        float middle = MissileParts.spentStageMiddle(body, k), tail = body == dev.groundzero.content.assembly.SizeClass.XXL
-                ? MissileParts.ICBM_TAIL : MissileParts.STRATEGIC_TAIL;
-        float[] size = MissileParts.scale(body);
-        Stage s = new Stage(look, size, 0.5f - middle / 16f);
+                List.of(), List.of(), List.of(MissileParts.spentStage(missile.warheadName(), k)), List.of()));
+        // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position. The
+        // stage's middle is the world's pixels up from the tail; in the model, a quarter of that up from its tail.
+        float middle = shape.stageMiddle(k);
+        float[] size = {1f, 1f};
+        Stage s = new Stage(look, size, (8 - shape.tail() - middle / 4f) / 16f);
         var random = missile.level().getRandom();
         Vec3 v = missile.getDeltaMovement();
         // Where its middle is now: up the missile's axis from its tail.
         double tilt = Math.toRadians(missile.tilt(1)), yaw = Math.toRadians(missile.getYRot());
         Vec3 axis = new Vec3(Math.sin(tilt) * Math.sin(yaw), Math.cos(tilt), Math.sin(tilt) * Math.cos(yaw));
-        double up = (middle + tail) / 16 * SCALE * size[1];
+        double up = middle / 16;
         s.x = s.xo = missile.getX() + axis.x * up;
         s.y = s.yo = missile.getY() + axis.y * up;
         s.z = s.zo = missile.getZ() + axis.z * up;

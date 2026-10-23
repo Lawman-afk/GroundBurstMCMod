@@ -107,7 +107,7 @@ final class StrategicTests {
                 helper.assertTrue(inv.getItem(slot).isEmpty(), "the parts used: slot " + slot);
             }
             var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
-            helper.assertTrue(look != null && look.strings().getFirst().equals("icbm_thermonuclear_warhead"), "its own model: " + look);
+            helper.assertTrue(look != null && look.strings().getFirst().equals("thermonuclear_warhead"), "its own model: " + look);
             helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS, "the whole missile on the cradles: " + hall.laid());
         });
     }
@@ -167,10 +167,11 @@ final class StrategicTests {
             helper.assertTrue(spec != null && spec.intercontinental() && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.TSAR_WARHEAD,
                     "a Tsar missile: " + spec);
             var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
-            helper.assertTrue(look != null && look.strings().getFirst().equals("icbm_tsar_warhead"), "its own model: " + look);
-            var shown = hall.shownWarhead();
+            helper.assertTrue(look != null && look.strings().getFirst().equals("tsar_warhead"), "its own model: " + look);
+            var shown = hall.shownMissile();
             helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && shown != null
-                    && shown.warhead() == dev.groundzero.content.ordnance.GZOrdnance.TSAR_WARHEAD.block().get(), "the Tsar on the cradles: " + shown);
+                    && shown.looks().size() == StrategicAssemblyBlockEntity.SECTIONS && shown.looks().getLast().equals("tsar_warhead_part4"),
+                    "the Tsar on the cradles: " + shown);
             helper.assertTrue(hall.takeApart(), "taken apart");
             helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GZStrategic.TERTIARY_STAGE.get())
                     && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GZStrategic.TWIN_BOOSTED_CORE.get())

@@ -138,7 +138,16 @@ public final class FxPhotographer {
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
                 new Scene("assembly_jei", "assembly", 4, 0, List.of(25)),
                 new Scene("tall_ui", "tall", 4, 0, List.of(30)),
-                new Scene("assembly_missile_ui", "assembly", 4, 0, List.of(30)),
+                // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
+                // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
+                new Scene("assemblers_aerial", "assemblers", 34, 28, List.of(60, 160, 260, 700)),
+                new Scene("asm_light_close", "asm_light", 9, 16, List.of(60, 120, 180, 260)),
+                new Scene("asm_medium_close", "asm_medium", 11, 18, List.of(100, 200, 280, 380)),
+                new Scene("asm_heavy_close", "asm_heavy", 14, 18, List.of(130, 270, 370, 500)),
+                new Scene("asm_strategic_close", "asm_strategic", 17, 6, List.of(60, 200, 400, 700)),
+                new Scene("asm_strategic_aerial", "asm_strategic", 14, 34, List.of(200, 700)),
+                new Scene("asm_ui", "asm_medium", 4, 0, List.of(30)),
+                new Scene("asm_jei", "asm_medium", 4, 0, List.of(25, 45)),
                 new Scene("assembly_mow_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_nuke_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_neutron_ui", "assembly", 4, 0, List.of(30, 44)),
@@ -328,6 +337,38 @@ public final class FxPhotographer {
      */
     /** Where the hall scenes put the Strategic Assembly Hall's controller. */
     private static net.minecraft.core.BlockPos hallAt;
+    private static net.minecraft.core.BlockPos assemblerAt;
+
+    /**
+     * A missile assembler (DESIGN.md §10.4), facing north with its controller at {@code z} (the structure running south
+     * from it, its missile's length across the camera's view), powered, given a warhead of its class with the class's
+     * body, its longest-range motor and GPS, and set to work.
+     */
+    private static void assemblerSite(ServerLevel level, int x, int ground, dev.groundzero.content.assembler.AssemblerClass kind, int z) {
+        var at = new net.minecraft.core.BlockPos(x, ground, z);
+        assemblerAt = at;
+        formed(level, at, dev.groundzero.content.assembler.GZAssemblers.controller(kind).block().get(),
+                dev.groundzero.content.assembler.GZAssemblers.definition(kind), net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(at) instanceof dev.groundzero.content.assembler.MissileAssemblerBlockEntity a) {
+            a.revalidate();
+            var warhead = switch (kind) {
+                case LIGHT -> dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD;
+                case MEDIUM -> dev.groundzero.content.ordnance.GZOrdnance.CRYO_WARHEAD;
+                case HEAVY -> dev.groundzero.content.ordnance.GZOrdnance.THERMOBARIC_WARHEAD;
+                case STRATEGIC -> dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD;
+            };
+            var inv = a.inventory();
+            inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_WARHEAD, new net.minecraft.world.item.ItemStack(warhead.item().get()));
+            inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_BODY,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BODIES.get(kind.size.ordinal()).get()));
+            inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_MOTOR, new net.minecraft.world.item.ItemStack(
+                    dev.groundzero.content.assembly.GZAssembly.MOTORS.get(dev.groundzero.content.assembly.MissileAssembly.motorsFor(kind.size).getLast().ordinal()).get()));
+            inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_GUIDANCE,
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()));
+            a.energy().generate(kind.capacity);
+            a.startAssembly();
+        }
+    }
 
     /**
      * The Strategic Assembly Hall, its length across the camera's view (controller facing north, the hall running
@@ -601,12 +642,6 @@ public final class FxPhotographer {
             b.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_CASING.get(), 3));
             b.inventory().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BAROMETRIC_FUZE.get(), 3));
             b.startAssembly();
-            // The missile page's parts too (its screenshot shows them).
-            b.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HEAVY_WARHEAD.item().get()));
-            b.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MEDIUM_BODY.get()));
-            b.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.SRM_II.get()));
-            b.inventory().setItem(7, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()));
-            b.inventory().setItem(8, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HARDENED_ELECTRONICS.get()));
         }
         if (level.getBlockEntity(far) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity b) {
             b.inventory().setItem(3, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD.item().get()));
@@ -783,19 +818,18 @@ public final class FxPhotographer {
             case 0 -> List.of("he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead", "bunker_buster_warhead", "napalm_warhead",
                     "massive_warhead");
             case 1 -> List.of("gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead", "toxic_waste_warhead", "dirty_warhead");
-            default -> List.of("strategic_tactical_nuclear_warhead", "strategic_fission_warhead", "strategic_boosted_fission_warhead",
-                    "strategic_neutron_warhead", "icbm_thermonuclear_warhead", "icbm_cobalt_warhead", "icbm_tsar_warhead");
+            default -> List.of("tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
+                    "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead");
         };
         var source = level.getServer().createCommandSourceStack().withSuppressedOutput();
         for (int i = 0; i < looks.size(); i++) {
             String look = looks.get(i);
-            // The item model is drawn about its middle; its tail is at its y 0 (a Strategic or intercontinental one's 11.5 below).
-            float tail = look.startsWith("strategic_") || look.startsWith("icbm_") ? 11.5f : 0;
-            double y = ground + (0.5 + tail / 16) * 2;
+            // The item model is drawn about its middle; every missile's tail is at its y -15.5 (tools/assets/missiles.py).
+            double y = ground + (8 + 15.5) / 16.0 * 2;
             double z = (i - (looks.size() - 1) / 2.0) * 1.8 + 0.5;
             level.getServer().getCommands().performPrefixedCommand(source, String.format(java.util.Locale.ROOT,
                     "summon minecraft:item_display %.2f %.3f %.2f {item:{id:\"groundzero:missile\",count:1,components:{\"minecraft:custom_model_data\":"
-                            + "{strings:[\"flight_%s\"]}}},item_display:\"none\",transformation:{left_rotation:[0f,0.7071f,0f,0.7071f],"
+                            + "{strings:[\"%s\"]}}},item_display:\"none\",transformation:{left_rotation:[0f,0.7071f,0f,0.7071f],"
                             + "right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,2f]}}", x + 0.5, y, z, look));
         }
     }
@@ -1048,6 +1082,20 @@ public final class FxPhotographer {
                     hallSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("assemblers")) {
+                    // All four in a row across the view, north (left) to south: Light, Medium, Heavy, Strategic.
+                    int z = -26;
+                    for (var kind : dev.groundzero.content.assembler.AssemblerClass.values()) {
+                        assemblerSite(level, x, ground, kind, z);
+                        z += dev.groundzero.content.assembler.GZAssemblers.definition(kind).size()[2] + 3;
+                    }
+                    return;
+                }
+                if (s.profile().startsWith("asm_")) {
+                    var kind = dev.groundzero.content.assembler.AssemblerClass.valueOf(s.profile().substring(4).toUpperCase(java.util.Locale.ROOT));
+                    assemblerSite(level, x, ground, kind, -(dev.groundzero.content.assembler.GZAssemblers.definition(kind).size()[2] - 1) / 2);
+                    return;
+                }
                 if (s.profile().startsWith("missiles")) {
                     missileLineup(level, x, ground, s.profile().charAt(s.profile().length() - 1) - '0');
                     return;
@@ -1169,7 +1217,7 @@ public final class FxPhotographer {
                 screen.mouseScrolled(cx, cy, 0, -1);
             }
         }
-        // The biggest warhead on the bench (the preview must zoom out to fit it), then as a Heavy missile.
+        // The biggest warhead on the bench (the preview must zoom out to fit it).
         // The neutron and dirty warheads have the longest stats lists (fallout rows, the neutron rows, a note).
         if ((scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui") || scene.name().equals("assembly_dirty_ui"))
                 && step >= 0 && clock == 8 && benchAt != null) {
@@ -1181,13 +1229,6 @@ public final class FxPhotographer {
                             : neutron ? dev.groundzero.content.assembly.GZAssembly.NEUTRON_CORE.get() : dev.groundzero.content.assembly.GZAssembly.FISSION_CORE.get()));
                     be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.LIGHT_CASING.get()
                             : dev.groundzero.content.assembly.GZAssembly.STRATEGIC_CASING.get()));
-                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.ordnance.GZOrdnance.DIRTY_WARHEAD.item().get()
-                            : neutron ? dev.groundzero.content.ordnance.GZOrdnance.NEUTRON_WARHEAD.item().get()
-                            : dev.groundzero.content.ordnance.GZOrdnance.FISSION_WARHEAD.item().get()));
-                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.TACTICAL_BODY.get()
-                            : dev.groundzero.content.assembly.GZAssembly.STRATEGIC_BODY.get()));
-                    be.inventory().setItem(6, new net.minecraft.world.item.ItemStack(dirty ? dev.groundzero.content.assembly.GZAssembly.SRM_I.get()
-                            : dev.groundzero.content.assembly.GZAssembly.LIQUID_FUEL_STAGE.get()));
                 }
             });
         }
@@ -1197,28 +1238,10 @@ public final class FxPhotographer {
                 if (server.overworld().getBlockEntity(bench) instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity be) {
                     be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MASSIVE_ORDNANCE_CHARGE.get()));
                     be.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HEAVY_CASING.get()));
-                    be.inventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.MASSIVE_WARHEAD.item().get()));
-                    be.inventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.HEAVY_BODY.get()));
                 }
             });
         }
-        if ((scene.name().equals("assembly_mow_ui") || scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui")
-                || scene.name().equals("assembly_dirty_ui")) && step >= 0 && clock == 36 && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();                                  // the Missiles tab
-            double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
-            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
-            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
-            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
-        }
-        // The bench's screen while it assembles.
-        if (scene.name().equals("assembly_missile_ui") && step >= 0 && clock == 20 && mc.gui.screen() != null) {
-            var screen = mc.gui.screen();                                  // the Missiles tab, on the window's left edge
-            double tx = screen.width / 2.0 - 144 - 12, ty = screen.height / 2.0 - 105 + 48;
-            var left = new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0);
-            screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
-            screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
-        }
-        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_missile_ui") || scene.name().equals("assembly_mow_ui")
+        if ((scene.name().equals("assembly_ui") || scene.name().equals("assembly_mow_ui")
                 || scene.name().equals("assembly_nuke_ui") || scene.name().equals("assembly_neutron_ui") || scene.name().equals("assembly_dirty_ui"))
                 && step >= 0 && clock == 12 && benchAt != null) {
             var bench = benchAt;
@@ -1229,6 +1252,29 @@ public final class FxPhotographer {
                     player.openMenu(be, bench);
                 }
             });
+        }
+        if (scene.name().equals("asm_ui") && step >= 0 && clock == 12 && assemblerAt != null) {
+            var at = assemblerAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.assembler.MissileAssemblerBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
+        }
+        if (scene.name().equals("asm_jei") && step >= 0 && clock == 10) {
+            server.execute(() -> server.getPlayerList().getPlayers().getFirst().setGameMode(GameType.CREATIVE));
+        }
+        if (scene.name().equals("asm_jei") && step >= 0 && clock == 14) {
+            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            jeiFilter.accept("Missile");
+        }
+        if (scene.name().equals("asm_jei") && step >= 0 && clock == 35) {
+            jeiRecipesFor.accept(dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(
+                    new net.minecraft.world.item.ItemStack(dev.groundzero.content.ordnance.GZOrdnance.CRYO_WARHEAD.item().get()),
+                    dev.groundzero.content.assembly.SizeClass.M, dev.groundzero.content.assembly.MissileParts.Motor.SRM_II,
+                    dev.groundzero.content.assembly.MissileParts.Guidance.UNGUIDED, false)));
         }
         if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui")) && step >= 0 && clock == 12 && hallAt != null) {
             var hall = hallAt;

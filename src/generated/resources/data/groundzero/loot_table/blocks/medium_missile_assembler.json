@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundzero:medium_missile_assembler"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundzero:blocks/medium_missile_assembler"
+}

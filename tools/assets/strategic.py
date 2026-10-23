@@ -27,7 +27,6 @@ from gz import paths  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
-import missile_paint as MP  # noqa: E402
 import structures as ST  # noqa: E402
 
 STEEL = P.STEEL
@@ -37,8 +36,6 @@ YELLOW, GREEN = P.HAZARD_YELLOW, P.INDICATOR_GREEN
 FLOOR_Y, AXIS_Y, Z_TAIL = 14, 38, 188
 #: The crane parks over the missile's tail; its cables run from the trolley down to the hook block.
 CRANE_Z, TROLLEY_Y, HOOK_TOP = 184, 105, 72
-#: The lying missile's faces: its item model's up (the nose end) faces the hall's front, its item z becomes height.
-FACE = {"up": "north", "down": "south", "north": "down", "south": "up", "east": "east", "west": "west"}
 
 
 def crane_rail() -> Tex:
@@ -70,33 +67,15 @@ def hall_placard(t: Tex) -> None:
     t.px(7, 10, P.BLACK_PAINT[1])
 
 
-def lying(frm, to):
-    """An item-pixel box of the intercontinental missile, lying on the cradles: x stays x, its z becomes height, its
-    length (y) runs toward the front, the tail at Z_TAIL."""
-    x0, x1 = (frm[0] - 8) * 4, (to[0] - 8) * 4
-    y0, y1 = AXIS_Y + (frm[2] - 8) * 4, AXIS_Y + (to[2] - 8) * 4
-    z0, z1 = Z_TAIL - (to[1] + L.ICBM_TAIL) * 4, Z_TAIL - (frm[1] + L.ICBM_TAIL) * 4
-    return (x0, y0, z0), (x1, y1, z1)
-
-
-def section_of(name: str) -> int:
-    """Which of the crane's first three loads a booster part comes in (the fourth is the warhead's nose)."""
-    if name.startswith("nozzle") or name.startswith("fin"):
-        return 1
-    return L.ICBM_LOAD[name.rsplit("_", 1)[0]]
-
-
 def hall() -> None:
     g = GeoModel("strategic_assembly_hall", tex_size=(512, 1024))
     g.bone("frame")
     g.bone("crane", pivot=(0, 92, CRANE_Z), parent="frame")
     g.bone("cable", pivot=(0, TROLLEY_Y, CRANE_Z), parent="crane")
     g.bone("hook", pivot=(0, HOOK_TOP, CRANE_Z), parent="crane")
-    for k in (1, 2, 3):
-        g.bone(f"sec{k}", parent="frame")
-    # The warhead's foot, once the last load is down: the game draws its own model there, lying along the missile
-    # (WarheadNose). The pivot is the middle of the third stage's top.
-    g.bone("warhead", pivot=(0, AXIS_Y, Z_TAIL - (L.AIRFRAMES["icbm"][1] + L.ICBM_TAIL) * 4), parent="frame")
+    # The missile on the cradles: the game draws its sections from its own model (MachineGeoRenderer's missile
+    # layer), lying along the hall, its tail here.
+    g.bone("missile", pivot=(0, AXIS_Y, Z_TAIL), parent="frame")
     F = "frame"
     sides = ("north", "south", "east", "west")
     g.box("floor", (-56, 0, -8), (56, FLOOR_Y, 200), faces=("up",) + sides, bone=F)
@@ -139,17 +118,9 @@ def hall() -> None:
         g.box(n, (x, HOOK_TOP, CRANE_Z - 0.5), (x + 1, TROLLEY_Y, CRANE_Z + 0.5), faces=sides, bone="cable")
     g.box("hook_block", (-4, HOOK_TOP - 8, CRANE_Z - 3), (4, HOOK_TOP, CRANE_Z + 3), faces=sides + ("up", "down"), bone="hook")
     g.box("hook", (-1, HOOK_TOP - 14, CRANE_Z - 1), (1, HOOK_TOP - 8, CRANE_Z + 1), faces=sides + ("down",), bone="hook")
-    # The missile on the cradles, by the crane's loads (its warhead, the last, is drawn from its own model).
-    missile = []
-    for name, frm, to, faces, kind in L.icbm_parts():
-        a, b = lying(frm, to)
-        g.box(f"m_{name}", a, b, faces=tuple(FACE[f] for f in faces), bone=f"sec{section_of(name)}")
-        missile.append((f"m_{name}", kind, "none"))
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
     paint_hall(g, tex, columns, girders, rails, cradles)
-    # The missile lying on the cradles, painted as it stands on a launcher (its markings in its own item pixels).
-    MP.paint(M.Surfacer(g, seed=47), tex, missile, MP.Frame(4, (0, AXIS_Y, Z_TAIL - 4 * L.ICBM_TAIL), lying=True), "icbm")
     g.save(tex)
     # (The Tsar's vents were all its glow mask lit: the Tsar's own model lights them now.)
     (paths.ASSETS / "textures" / "block" / "strategic_assembly_hall_glowmask.png").unlink(missing_ok=True)

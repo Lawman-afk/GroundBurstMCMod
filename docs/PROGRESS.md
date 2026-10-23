@@ -19,7 +19,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 4 | Power, cables, processing machines, multiblock framework, Fission Reactor, Particle Accelerator, Fusion and Singularity Reactors | **in progress** (slices 1–8 built; 6: diesel/RTG/capacitors/charger/decon; 7: Fission Reactor + Particle Accelerator; 8: Fusion + Singularity Reactors) — needs in-game test |
 | 5 | Explosion engine, Spectacle visual system, distance-delayed sound | **done, awaiting the user's in-game check** (5a server engine, 5b sync/persistence/sound, crater character, 5c Spectacle and its v2 with the mushroom cloud, 5d reactor meltdown; heat haze deferred) |
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
-| 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
+| 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats; 2026-10-23: one missile per warhead and four missile assemblers, the bench back to warheads) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
 | 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; 8d: the Tsar Mega-bomb, and the explosion engine benchmarked and reworked at its size; Phase 8 complete but for the in-game look) |
 | 9 | Launch platforms, missile flight, launch control, designators | **in progress** (basic launch site built early, 2026-10-21; 9a: missile flight: burn-out, staging, re-entry, engine sound; 9b: the Missile Silo) |
 | 10 | Radar & interceptors | todo |
@@ -197,6 +197,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Assembly GUI (schematic slots, 3D preview, stats, validation, fuze settings, Fabricate tab) | done: Warheads and Missiles pages, readout with validation, fuze setting, guidance line, Assemble/Take Apart, per-half sides, JEI categories (7a/7b); wider window with a draggable 3D preview and a stats screen (7c); Ammunition page with Phase 13 |
 | Weapon data components + tooltips | done: fuze (7a) and missile (7b) components with tooltips |
 | Assembled missiles in the silo | done (7b): one Missile slot, range from its motor, scatter from its guidance, body scales the model — needs in-game look |
+| One missile per warhead, an assembler per class (DESIGN §10.4) | done 2026-10-23: 21 missiles made for their warheads (the warhead's own model as the head, the body in its paint); Light, Medium, Heavy and Strategic Missile Assemblers (multiblocks with animated cranes, the missile laid out section by section; recipes on a ladder with the hall's); the bench back to warheads only; the launchers' arms slide and reach to each missile; JEI per-warhead recipes; Field Manual entry — needs the user's in-game look |
 | Disassembly, blueprints slot | 7a: Take Apart done; blueprints with Phase 15 loot |
 
 ## Phase 8 — Nuclear weapons

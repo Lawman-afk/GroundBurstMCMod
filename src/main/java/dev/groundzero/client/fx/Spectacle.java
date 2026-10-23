@@ -248,7 +248,7 @@ public final class Spectacle {
             return;                                           // burnt out: it coasts, no flame, no trail
         }
         // The burning engine: the tail, or the bell of the stage now lowest once the spent ones have gone.
-        double up = dev.groundzero.content.assembly.MissileParts.engineHeight(body, dropped);
+        double up = engineHeight(missile, dropped);
         double x = missile.getX() - back.x * up, y = missile.getY() - back.y * up, z = missile.getZ() - back.z * up;
         var silo = missile.silo();
         if (missile.igniting() && silo.isPresent()) {
@@ -466,10 +466,19 @@ public final class Spectacle {
         }
     }
 
+    /**
+     * Blocks up a missile's axis from its tail to the engine burning with {@code dropped} stages gone (its own shape; the
+     * plain missile's tail).
+     */
+    private static double engineHeight(dev.groundzero.content.launch.MissileEntity missile, int dropped) {
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        return shape == null ? 0 : shape.engine(dropped);
+    }
+
     /** A spent stage parts: a flash and a ring of white smoke at the joint, a bang, and the stage falling away. */
     private static void separate(dev.groundzero.content.launch.MissileEntity missile, int k, net.minecraft.world.phys.Vec3 back, float q, double t) {
         var random = missile.level().getRandom();
-        double up = dev.groundzero.content.assembly.MissileParts.engineHeight(missile.body(), k);
+        double up = engineHeight(missile, k);
         net.minecraft.world.phys.Vec3 at = missile.position().subtract(back.scale(up));
         for (int i = 0; i < 16; i++) {
             Puffs.Puff p = new Puffs.Puff();
@@ -522,7 +531,8 @@ public final class Spectacle {
             return;
         }
         var random = missile.level().getRandom();
-        double up = dev.groundzero.content.assembly.MissileParts.noseHeight(missile.body());
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        double up = shape == null ? 8 : shape.nose();
         net.minecraft.world.phys.Vec3 nose = missile.position().subtract(back.scale(up));
         // A puff every 0.4 blocks from where the last of them was, so the streak is unbroken however the missile moves.
         net.minecraft.world.phys.Vec3 tail = nose.add(back.scale(0.8));

@@ -127,11 +127,12 @@ public final class MissileParts {
     static final String T_BODY_THREE = GZLang.add(GroundZero.MODID + ".missile.fits_three", "%s, %s and %s bodies");
     static final String T_ACCURACY_SHARE = GZLang.add(GroundZero.MODID + ".missile.accuracy_share", "Lands within %s%% of the distance");
     static final String T_ACCURACY_BLOCKS = GZLang.add(GroundZero.MODID + ".missile.accuracy_blocks", "Lands within %s blocks of the target");
-    static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes conventional warheads up to class %s");
+    static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes class %s warheads");
     static final String T_STRATEGIC_TIP = GZLang.add(GroundZero.MODID + ".missile.strategic_tip", "Takes nuclear warheads only; fires from a Launch Complex or a Missile Silo");
     static final String T_MOTOR_TIP = GZLang.add(GroundZero.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");
     static final String T_HARDENED_TIP = GZLang.add(GroundZero.MODID + ".missile.hardened_tip", "Optional: an EMP never leaves the missile a dud");
-    static final String T_BENCH = GZLang.add(GroundZero.MODID + ".missile.bench", "Fitted at an Ordnance Assembly Bench (Missile page)");
+    static final String T_BENCH = GZLang.add(GroundZero.MODID + ".missile.bench", "Fitted at a missile assembler");
+    static final String T_BENCH_AT = GZLang.add(GroundZero.MODID + ".missile.bench_at", "Fitted at a %s");
     static final String[] GUIDANCE_NAMES = {
             GZLang.add(GroundZero.MODID + ".missile.guidance.unguided", "Unguided"),
             GZLang.add(GroundZero.MODID + ".missile.guidance.inertial", "Inertial"),
@@ -155,7 +156,7 @@ public final class MissileParts {
         public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
             tooltip.accept(grey(this.sizeClass == SizeClass.XL ? Component.translatable(T_STRATEGIC_TIP)
                     : Component.translatable(T_BODY_TIP, this.sizeClass.name())));
-            tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.accept(assemblerLine(this.sizeClass));
         }
     }
 
@@ -204,66 +205,32 @@ public final class MissileParts {
         }
     }
 
-    /** How a body draws the missile (the silo's and the one in flight): {across, along} its length. */
-    public static float[] scale(SizeClass body) {
-        return switch (body) {
-            case S -> new float[] {0.85f, 0.75f};
-            case M -> new float[] {1f, 1f};
-            case L -> new float[] {1.15f, 1.2f};
-            case XL -> new float[] {1f, 1f};                     // its own, longer model (see STRATEGIC_TAIL)
-            case XXL -> new float[] {1f, 1f};                    // its own model too (ICBM_TAIL)
-        };
+    /** "Fitted at a Light Missile Assembler": where a class's missiles are built (DESIGN.md §10.4). */
+    public static Component assemblerLine(SizeClass size) {
+        var assembler = dev.groundzero.content.assembler.AssemblerClass.of(size);
+        return (assembler == null ? Component.translatable(T_BENCH)
+                : Component.translatable(T_BENCH_AT, dev.groundzero.content.assembler.GZAssemblers.controller(assembler).block().get().getName()))
+                .withStyle(ChatFormatting.DARK_GRAY);
     }
 
     /**
-     * The Strategic missile's model runs this many item pixels below the usual missile's tail line (item models may
-     * reach down to -16): drawn from the item model, it is lifted by this much more to stand on its tail.
+     * The look of the missile carrying a warhead (its item model's custom model data, DESIGN.md §10.4): every warhead
+     * has a missile of its own, named by the warhead's id ("he_warhead"); "none" for a missile with none (the plain
+     * one).
      */
-    public static final float STRATEGIC_TAIL = 11.5f;
-
-    /** The same for the intercontinental missile's model (launch.py's icbm_model). */
-    public static final float ICBM_TAIL = 11.5f;
-
-    /**
-     * The custom model data that picks a missile's item model: its warhead's nose, on a Strategic or an intercontinental
-     * missile its own model.
-     */
-    public static String look(String warheadId, SizeClass body) {
-        String id = warheadId.isEmpty() ? "none" : warheadId;
-        return switch (body) {
-            case XL -> "strategic_" + id;
-            case XXL -> "icbm_" + id;
-            default -> warheadId;
-        };
+    public static String look(String warheadId) {
+        return warheadId.isEmpty() ? "none" : warheadId;
     }
 
-    /**
-     * The flight model of a look ("flight_" before it; "flight_none" for a missile with no warhead): four texels an item
-     * pixel, as fine as the missiles standing on the launchers, for a missile in flight, its spent stages and the
-     * assembly screens' big preview (after slice 9b). The inventory keeps the item model.
-     */
-    public static String flight(String look) {
-        return "flight_" + (look.isEmpty() ? "none" : look);
-    }
-
-    /** A missile as its flight model draws it (any other stack as it is), for a big preview. */
-    public static net.minecraft.world.item.ItemStack flightLook(net.minecraft.world.item.ItemStack stack) {
-        if (!stack.is(GZAssembly.MISSILE.get())) {
-            return stack;
-        }
-        var data = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
-        String look = data == null || data.strings().isEmpty() ? "" : data.strings().getFirst();
-        net.minecraft.world.item.ItemStack out = stack.copy();
-        out.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                java.util.List.of(), java.util.List.of(), java.util.List.of(flight(look)), java.util.List.of()));
-        return out;
+    /** One of its assembly sections, as an assembler or the hall lays it down ({@code k}: 1, the first). */
+    public static String part(String warheadId, int k) {
+        return look(warheadId) + "_part" + k;
     }
 
     // --- in flight (slice 9a) ------------------------------------------------------------------------------------------------
-    /** The model of a missile in flight that has dropped {@code dropped} spent stages ("_s1", "_s2" after the first). */
-    public static String look(String warheadId, SizeClass body, int dropped) {
-        String id = look(warheadId, body);
-        return dropped > 0 && (body == SizeClass.XL || body == SizeClass.XXL) ? id + "_s" + dropped : id;
+    /** The missile in flight, its spent stages gone ({@code dropped}: "_s1", "_s2" after the first). */
+    public static String flight(String warheadId, int dropped) {
+        return dropped > 0 ? look(warheadId) + "_s" + dropped : look(warheadId);
     }
 
     /**
@@ -287,34 +254,9 @@ public final class MissileParts {
         };
     }
 
-    /** The model of its {@code k}th spent stage falling away (1: the first). */
-    public static String spentStage(SizeClass body, int k) {
-        return body == SizeClass.XXL ? "icbm_stage" + k : "strategic_stage" + k;
-    }
-
-    /** The middle of its {@code k}th spent stage, in its model's own item pixels (it tumbles about this). */
-    public static float spentStageMiddle(SizeClass body, int k) {
-        return body == SizeClass.XXL ? (k == 1 ? -2.15f : 11.75f) : -1.15f;
-    }
-
-    /** How far up its axis from its tail (blocks, as drawn in flight) the engine that is burning sits. */
-    public static float engineHeight(SizeClass body, int dropped) {
-        float px = switch (body) {
-            case XL -> dropped >= 1 ? 8.1f + STRATEGIC_TAIL : 0;          // the second stage's bell
-            case XXL -> dropped >= 2 ? 16.5f + ICBM_TAIL : dropped >= 1 ? 6.1f + ICBM_TAIL : 0;
-            default -> 0;
-        };
-        return px / 16 * 4 * scale(body)[1];
-    }
-
-    /** How far up its axis from its tail (blocks, as drawn in flight) its nose tip is. */
-    public static float noseHeight(SizeClass body) {
-        float px = switch (body) {
-            case XL -> 32 + STRATEGIC_TAIL;
-            case XXL -> 32 + ICBM_TAIL;
-            default -> 32;
-        };
-        return px / 16 * 4 * scale(body)[1];
+    /** Its {@code k}th spent stage falling away (1: the first). */
+    public static String spentStage(String warheadId, int k) {
+        return look(warheadId) + "_stage" + k;
     }
 
     public static String guidanceName(Guidance g) {

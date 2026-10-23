@@ -5,2726 +5,1111 @@
     "index": 0,
     "cases": [
       {
-        "when": "he_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "heavy_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "thermobaric_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "cluster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "bunker_buster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "napalm_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "massive_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "gas_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "smoke_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "cryo_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "emp_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "chemical_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "toxic_waste_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "tactical_nuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "boosted_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "neutron_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "dirty_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_he_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_heavy_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_thermobaric_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_cluster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_bunker_buster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_napalm_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_massive_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_gas_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_smoke_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_cryo_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_emp_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_chemical_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_toxic_waste_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_tactical_nuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_boosted_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_neutron_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_dirty_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_none",
+        "when": [
+          "he_warhead",
+          "strategic_he_warhead",
+          "icbm_he_warhead",
+          "flight_he_warhead",
+          "flight_strategic_he_warhead",
+          "flight_icbm_he_warhead"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/strategic_missile_none"
+          "model": "groundzero:item/missile/he_warhead"
         }
       },
       {
-        "when": "strategic_he_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_heavy_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_thermobaric_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_cluster_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_bunker_buster_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_napalm_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_massive_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_gas_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_smoke_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_cryo_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_emp_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_chemical_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_toxic_waste_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_tactical_nuclear_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_fission_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_boosted_fission_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_neutron_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_dirty_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_none_s1",
+        "when": [
+          "he_warhead_part1"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/strategic_missile_none_s1"
+          "model": "groundzero:item/missile/he_warhead_part1"
         }
       },
       {
-        "when": "icbm_thermonuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_cobalt_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_tsar_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_thermonuclear_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_cobalt_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_tsar_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_thermonuclear_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_cobalt_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "icbm_tsar_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "strategic_stage1",
+        "when": [
+          "he_warhead_part2"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/strategic_stage1"
+          "model": "groundzero:item/missile/he_warhead_part2"
         }
       },
       {
-        "when": "icbm_stage1",
+        "when": [
+          "he_warhead_part3"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/icbm_stage1"
+          "model": "groundzero:item/missile/he_warhead_part3"
         }
       },
       {
-        "when": "icbm_stage2",
+        "when": [
+          "napalm_warhead",
+          "strategic_napalm_warhead",
+          "icbm_napalm_warhead",
+          "flight_napalm_warhead",
+          "flight_strategic_napalm_warhead",
+          "flight_icbm_napalm_warhead"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/icbm_stage2"
+          "model": "groundzero:item/missile/napalm_warhead"
         }
       },
       {
-        "when": "flight_he_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_heavy_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_thermobaric_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_cluster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_bunker_buster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_napalm_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_massive_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_gas_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_smoke_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_cryo_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_emp_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_chemical_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_toxic_waste_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_tactical_nuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_boosted_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_neutron_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_dirty_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "basic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_he_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_heavy_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_thermobaric_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_cluster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_bunker_buster_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_napalm_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_massive_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_gas_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_smoke_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_cryo_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_emp_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_chemical_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_toxic_waste_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_tactical_nuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_boosted_fission_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_neutron_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_dirty_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_none",
+        "when": [
+          "napalm_warhead_part1"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_strategic_missile_none"
+          "model": "groundzero:item/missile/napalm_warhead_part1"
         }
       },
       {
-        "when": "flight_strategic_he_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:he_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_heavy_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:heavy_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_thermobaric_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermobaric_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_cluster_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cluster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_bunker_buster_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:bunker_buster_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_napalm_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:napalm_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_massive_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:massive_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_gas_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:gas_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_smoke_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:smoke_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_cryo_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cryo_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_emp_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:emp_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_chemical_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:chemical_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_toxic_waste_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:toxic_waste_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_tactical_nuclear_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tactical_nuclear_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_fission_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_boosted_fission_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:boosted_fission_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_neutron_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:neutron_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_dirty_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_strategic_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_strategic_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:dirty_warhead",
-                "airframe": "strategic"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_none_s1",
+        "when": [
+          "napalm_warhead_part2"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_strategic_missile_none_s1"
+          "model": "groundzero:item/missile/napalm_warhead_part2"
         }
       },
       {
-        "when": "flight_icbm_thermonuclear_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_cobalt_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_tsar_warhead",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_thermonuclear_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_cobalt_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_tsar_warhead_s1",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s1"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s1",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_thermonuclear_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:thermonuclear_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_cobalt_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:cobalt_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_icbm_tsar_warhead_s2",
-        "model": {
-          "type": "minecraft:composite",
-          "models": [
-            {
-              "type": "minecraft:model",
-              "model": "groundzero:item/flight_icbm_missile_airframe_s2"
-            },
-            {
-              "type": "minecraft:special",
-              "base": "groundzero:item/flight_icbm_missile_airframe_s2",
-              "model": {
-                "type": "groundzero:warhead",
-                "warhead": "groundzero:tsar_warhead",
-                "airframe": "icbm"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "when": "flight_strategic_stage1",
+        "when": [
+          "napalm_warhead_part3"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_strategic_stage1"
+          "model": "groundzero:item/missile/napalm_warhead_part3"
         }
       },
       {
-        "when": "flight_icbm_stage1",
+        "when": [
+          "chemical_warhead",
+          "strategic_chemical_warhead",
+          "icbm_chemical_warhead",
+          "flight_chemical_warhead",
+          "flight_strategic_chemical_warhead",
+          "flight_icbm_chemical_warhead"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_icbm_stage1"
+          "model": "groundzero:item/missile/chemical_warhead"
         }
       },
       {
-        "when": "flight_icbm_stage2",
+        "when": [
+          "chemical_warhead_part1"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_icbm_stage2"
+          "model": "groundzero:item/missile/chemical_warhead_part1"
         }
       },
       {
-        "when": "flight_none",
+        "when": [
+          "chemical_warhead_part2"
+        ],
         "model": {
           "type": "minecraft:model",
-          "model": "groundzero:item/flight_missile"
+          "model": "groundzero:item/missile/chemical_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/chemical_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead",
+          "strategic_toxic_waste_warhead",
+          "icbm_toxic_waste_warhead",
+          "flight_toxic_waste_warhead",
+          "flight_strategic_toxic_waste_warhead",
+          "flight_icbm_toxic_waste_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/toxic_waste_warhead"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/toxic_waste_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/toxic_waste_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/toxic_waste_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead",
+          "strategic_dirty_warhead",
+          "icbm_dirty_warhead",
+          "flight_dirty_warhead",
+          "flight_strategic_dirty_warhead",
+          "flight_icbm_dirty_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/dirty_warhead"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/dirty_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/dirty_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/dirty_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead",
+          "strategic_heavy_warhead",
+          "icbm_heavy_warhead",
+          "flight_heavy_warhead",
+          "flight_strategic_heavy_warhead",
+          "flight_icbm_heavy_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/heavy_warhead"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/heavy_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/heavy_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/heavy_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead",
+          "strategic_cluster_warhead",
+          "icbm_cluster_warhead",
+          "flight_cluster_warhead",
+          "flight_strategic_cluster_warhead",
+          "flight_icbm_cluster_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cluster_warhead"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cluster_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cluster_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cluster_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead",
+          "strategic_gas_warhead",
+          "icbm_gas_warhead",
+          "flight_gas_warhead",
+          "flight_strategic_gas_warhead",
+          "flight_icbm_gas_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/gas_warhead"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/gas_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/gas_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/gas_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead",
+          "strategic_smoke_warhead",
+          "icbm_smoke_warhead",
+          "flight_smoke_warhead",
+          "flight_strategic_smoke_warhead",
+          "flight_icbm_smoke_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/smoke_warhead"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/smoke_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/smoke_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/smoke_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead",
+          "strategic_cryo_warhead",
+          "icbm_cryo_warhead",
+          "flight_cryo_warhead",
+          "flight_strategic_cryo_warhead",
+          "flight_icbm_cryo_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cryo_warhead"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cryo_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cryo_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cryo_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead",
+          "strategic_thermobaric_warhead",
+          "icbm_thermobaric_warhead",
+          "flight_thermobaric_warhead",
+          "flight_strategic_thermobaric_warhead",
+          "flight_icbm_thermobaric_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermobaric_warhead"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermobaric_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermobaric_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermobaric_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead",
+          "strategic_bunker_buster_warhead",
+          "icbm_bunker_buster_warhead",
+          "flight_bunker_buster_warhead",
+          "flight_strategic_bunker_buster_warhead",
+          "flight_icbm_bunker_buster_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/bunker_buster_warhead"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/bunker_buster_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/bunker_buster_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/bunker_buster_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead",
+          "strategic_emp_warhead",
+          "icbm_emp_warhead",
+          "flight_emp_warhead",
+          "flight_strategic_emp_warhead",
+          "flight_icbm_emp_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/emp_warhead"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/emp_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/emp_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/emp_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead",
+          "strategic_massive_warhead",
+          "icbm_massive_warhead",
+          "flight_massive_warhead",
+          "flight_strategic_massive_warhead",
+          "flight_icbm_massive_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/massive_warhead"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/massive_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/massive_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/massive_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead",
+          "strategic_tactical_nuclear_warhead",
+          "icbm_tactical_nuclear_warhead",
+          "flight_tactical_nuclear_warhead",
+          "flight_strategic_tactical_nuclear_warhead",
+          "flight_icbm_tactical_nuclear_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_s1",
+          "strategic_tactical_nuclear_warhead_s1",
+          "icbm_tactical_nuclear_warhead_s1",
+          "flight_strategic_tactical_nuclear_warhead_s1",
+          "flight_icbm_tactical_nuclear_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tactical_nuclear_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead",
+          "strategic_fission_warhead",
+          "icbm_fission_warhead",
+          "flight_fission_warhead",
+          "flight_strategic_fission_warhead",
+          "flight_icbm_fission_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_s1",
+          "strategic_fission_warhead_s1",
+          "icbm_fission_warhead_s1",
+          "flight_strategic_fission_warhead_s1",
+          "flight_icbm_fission_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/fission_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead",
+          "strategic_boosted_fission_warhead",
+          "icbm_boosted_fission_warhead",
+          "flight_boosted_fission_warhead",
+          "flight_strategic_boosted_fission_warhead",
+          "flight_icbm_boosted_fission_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_s1",
+          "strategic_boosted_fission_warhead_s1",
+          "icbm_boosted_fission_warhead_s1",
+          "flight_strategic_boosted_fission_warhead_s1",
+          "flight_icbm_boosted_fission_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/boosted_fission_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead",
+          "strategic_neutron_warhead",
+          "icbm_neutron_warhead",
+          "flight_neutron_warhead",
+          "flight_strategic_neutron_warhead",
+          "flight_icbm_neutron_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_s1",
+          "strategic_neutron_warhead_s1",
+          "icbm_neutron_warhead_s1",
+          "flight_strategic_neutron_warhead_s1",
+          "flight_icbm_neutron_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/neutron_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead",
+          "strategic_thermonuclear_warhead",
+          "icbm_thermonuclear_warhead",
+          "flight_thermonuclear_warhead",
+          "flight_strategic_thermonuclear_warhead",
+          "flight_icbm_thermonuclear_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_s1",
+          "strategic_thermonuclear_warhead_s1",
+          "icbm_thermonuclear_warhead_s1",
+          "flight_strategic_thermonuclear_warhead_s1",
+          "flight_icbm_thermonuclear_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_s2",
+          "strategic_thermonuclear_warhead_s2",
+          "icbm_thermonuclear_warhead_s2",
+          "flight_strategic_thermonuclear_warhead_s2",
+          "flight_icbm_thermonuclear_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/thermonuclear_warhead_stage2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead",
+          "strategic_cobalt_warhead",
+          "icbm_cobalt_warhead",
+          "flight_cobalt_warhead",
+          "flight_strategic_cobalt_warhead",
+          "flight_icbm_cobalt_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_s1",
+          "strategic_cobalt_warhead_s1",
+          "icbm_cobalt_warhead_s1",
+          "flight_strategic_cobalt_warhead_s1",
+          "flight_icbm_cobalt_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_s2",
+          "strategic_cobalt_warhead_s2",
+          "icbm_cobalt_warhead_s2",
+          "flight_strategic_cobalt_warhead_s2",
+          "flight_icbm_cobalt_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/cobalt_warhead_stage2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead",
+          "strategic_tsar_warhead",
+          "icbm_tsar_warhead",
+          "flight_tsar_warhead",
+          "flight_strategic_tsar_warhead",
+          "flight_icbm_tsar_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_s1",
+          "strategic_tsar_warhead_s1",
+          "icbm_tsar_warhead_s1",
+          "flight_strategic_tsar_warhead_s1",
+          "flight_icbm_tsar_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_s2",
+          "strategic_tsar_warhead_s2",
+          "icbm_tsar_warhead_s2",
+          "flight_strategic_tsar_warhead_s2",
+          "flight_icbm_tsar_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundzero:item/missile/tsar_warhead_stage2"
         }
       }
     ],

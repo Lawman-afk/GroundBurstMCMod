@@ -62,7 +62,7 @@ final class AssemblyColumn {
 
     /** The subject in 3D on the blueprint: a missile at its body's size, so a Tactical one stands smaller than a Heavy. */
     private void drawPreview(GuiGraphicsExtractor g, int left, int top, ItemStack picked, int mouseX, int mouseY) {
-        ItemStack subject = MissileParts.flightLook(picked);       // a missile by its finer flight model
+        ItemStack subject = picked;
         long now = Util.getMillis();
         if (!this.dragging && now - this.lastDrag > 3000) {
             this.yaw += (now - this.lastFrame) * 0.03f;           // a slow turn while it is left alone
@@ -70,14 +70,10 @@ final class AssemblyColumn {
         this.lastFrame = now;
         int x = left + this.viewX, y = top + this.viewY;
         if (!subject.isEmpty()) {
-            MissileSpec spec = subject.get(GZDataComponents.MISSILE.get());
-            float[] size = spec == null ? new float[] {1, 1} : MissileParts.scale(spec.body());
+            float[] size = {1, 1};
             net.minecraft.world.phys.AABB box = bounds(subject);
-            // Zoomed to fit the model; a bench missile as if it had a Heavy body, so a smaller body stands smaller (a
-            // Strategic or intercontinental missile is its own model, fitted as it is).
-            boolean ownModel = spec == null || spec.body() == SizeClass.XL || spec.body() == SizeClass.XXL;
-            float[] fitSize = ownModel ? size : MissileParts.scale(SizeClass.L);
-            float scale = ItemPreview.fit(box, fitSize, this.viewW - 2 * MARGIN, this.viewH - 2 * MARGIN, MIN_PITCH, MAX_PITCH);
+            // Zoomed to fit its own model (every missile is its warhead's own, at its own size).
+            float scale = ItemPreview.fit(box, size, this.viewW - 2 * MARGIN, this.viewH - 2 * MARGIN, MIN_PITCH, MAX_PITCH);
             float[] centre = {(float) (box.minX + box.maxX) / 2, (float) (box.minY + box.maxY) / 2, (float) (box.minZ + box.maxZ) / 2};
             g.submitPictureInPictureRenderState(new ItemPreview.State(subject, size, centre, this.yaw, this.pitch, x, y, x + this.viewW,
                     y + this.viewH, scale, g.peekScissorStack()));

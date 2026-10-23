@@ -1,0 +1,240 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "working": {
+      "animation_length": 10.0,
+      "bones": {
+        "trolley": {
+          "position": {
+            "0": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2.2": {
+              "vector": [
+                -0.0,
+                0.0,
+                52.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "4": {
+              "vector": [
+                -0.0,
+                0.0,
+                52.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6": {
+              "vector": [
+                -0.0,
+                0.0,
+                36.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "7.8": {
+              "vector": [
+                -0.0,
+                0.0,
+                36.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "9.6": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "10": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        },
+        "hook": {
+          "position": {
+            "0": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2.4": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3": {
+              "vector": [
+                -0.0,
+                -3.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3.6": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6.2": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6.8": {
+              "vector": [
+                -0.0,
+                -3.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "7.4": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "10": {
+              "vector": [
+                -0.0,
+                0.0,
+                0.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        },
+        "chain_rope0": {
+          "scale": {
+            "0": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "2.4": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3": {
+              "vector": [
+                1.0,
+                1.75,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "3.6": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6.2": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "6.8": {
+              "vector": [
+                1.0,
+                1.75,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "7.4": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            },
+            "10": {
+              "vector": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "easing": "easeInOutSine"
+            }
+          }
+        }
+      },
+      "loop": true
+    },
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "trolley": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "hook": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "chain_rope0": {
+          "scale": {
+            "0": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

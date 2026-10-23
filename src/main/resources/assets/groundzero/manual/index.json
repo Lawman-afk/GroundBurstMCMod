@@ -56,6 +56,7 @@
     "ordnance/mines",
     "ordnance/assembly",
     "ordnance/missiles",
+    "ordnance/missile_assemblers",
     "ordnance/warheads",
     "ordnance/launch_site",
     "ordnance/launch_complex",

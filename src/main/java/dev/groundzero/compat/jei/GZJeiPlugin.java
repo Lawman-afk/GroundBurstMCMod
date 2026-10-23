@@ -69,20 +69,21 @@ public final class GZJeiPlugin implements IModPlugin {
     }
 
     /**
-     * Missiles: an intercontinental one is told apart by its warhead (each is its own weapon, with its own recipe in the
-     * Strategic Assembly category); every other missile is one ingredient, whatever the bench put in it.
+     * Missiles are told apart by their warheads (DESIGN.md §10.4): each warhead has a missile of its own, with its own
+     * recipe (the Missile Assembly category, or the Strategic Assembly category for the hall's).
      */
     @Override
     public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
         registration.registerSubtypeInterpreter(dev.groundzero.content.assembly.GZAssembly.MISSILE.get(), (stack, context) -> {
             var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
-            return spec != null && spec.intercontinental() ? spec.warheadId() : null;
+            return spec != null ? spec.warheadId() : null;
         });
     }
 
-    /** The intercontinental missiles in JEI's list, one per warhead: R on one shows how the hall builds it. */
+    /** Every warhead's missile in JEI's list: R on one shows how its assembler (or the hall) builds it. */
     @Override
     public void registerExtraIngredients(mezz.jei.api.registration.IExtraIngredientRegistration registration) {
+        registration.addExtraItemStacks(MissileCategory.recipes().stream().map(MissileCategory::output).toList());
         registration.addExtraItemStacks(StrategicCategory.recipes().stream().map(StrategicCategory::output).toList());
     }
 
@@ -189,7 +190,9 @@ public final class GZJeiPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         machines().forEach((kind, machine) -> registration.addCraftingStation(type(kind), machine));
         registration.addCraftingStation(AssemblyCategory.TYPE, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.item().get());
-        registration.addCraftingStation(MissileCategory.TYPE, dev.groundzero.content.assembly.GZAssembly.ASSEMBLY_BENCH.item().get());
+        for (var c : dev.groundzero.content.assembler.AssemblerClass.values()) {
+            registration.addCraftingStation(MissileCategory.TYPE, dev.groundzero.content.assembler.GZAssemblers.controller(c).item().get());
+        }
         registration.addCraftingStation(StrategicCategory.TYPE, dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.item().get());
     }
 
@@ -205,9 +208,10 @@ public final class GZJeiPlugin implements IModPlugin {
             public Collection<IGuiClickableArea> getGuiClickableAreas(MachineScreen screen, double mouseX, double mouseY) {
                 MachineLayout.Rect p = screen.pageLayout().progress();
                 if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.assembly.AssemblyBenchBlockEntity) {
-                    boolean missiles = screen.getMenu().extra(dev.groundzero.content.assembly.AssemblyBenchBlockEntity.DATA_PAGE)
-                            == dev.groundzero.content.assembly.AssemblyBenchBlockEntity.JOB_MISSILE;
-                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), missiles ? MissileCategory.TYPE : AssemblyCategory.TYPE));
+                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), AssemblyCategory.TYPE));
+                }
+                if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.assembler.MissileAssemblerBlockEntity) {
+                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), MissileCategory.TYPE));
                 }
                 if (p != null && screen.getMenu().machine() instanceof dev.groundzero.content.strategic.StrategicAssemblyBlockEntity) {
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), StrategicCategory.TYPE));

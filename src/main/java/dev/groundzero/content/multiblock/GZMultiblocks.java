@@ -198,7 +198,9 @@ public final class GZMultiblocks {
         return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR,
                 dev.groundzero.content.launch.GZLaunch.SILO, dev.groundzero.content.launch.GZLaunch.COMPLEX, dev.groundzero.content.launch.GZLaunch.COMPUTER,
                 dev.groundzero.content.launch.GZLaunch.RADAR, dev.groundzero.content.strategic.GZStrategic.HALL,
-                dev.groundzero.content.launch.GZLaunch.MISSILE_SILO);
+                dev.groundzero.content.launch.GZLaunch.MISSILE_SILO, dev.groundzero.content.assembler.GZAssemblers.LIGHT,
+                dev.groundzero.content.assembler.GZAssemblers.MEDIUM, dev.groundzero.content.assembler.GZAssemblers.HEAVY,
+                dev.groundzero.content.assembler.GZAssemblers.STRATEGIC);
     }
 
     public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {

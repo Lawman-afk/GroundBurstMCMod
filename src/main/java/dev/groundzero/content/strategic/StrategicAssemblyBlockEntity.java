@@ -55,7 +55,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * one back into its parts. Pipes feed and empty it through its Item Port.
  */
 public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController,
-        dev.groundzero.content.launch.WarheadCarrier {
+        dev.groundzero.content.launch.MissileCarrier {
     public static final int SLOT_PRIMARY = 0, SLOT_SECONDARY = 1, SLOT_JACKET = 2, SLOT_BOOSTER = 3, SLOT_GUIDANCE = 4, SLOT_MODULE = 5,
             SLOT_OUTPUT = 6;
     public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1;
@@ -396,33 +396,38 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     /**
-     * The model: unformed, nothing (the controller is its own block); formed, the hall, with the sections laid so far on
-     * the cradles and, once the last is down, the warhead it carries (its own model, {@link #shownWarhead}).
+     * The model: unformed, nothing (the controller is its own block); formed, the hall. The missile on its cradles is
+     * drawn from its own model's sections, the warhead last ({@link #shownMissile}).
      */
     @Override
     public Set<String> hiddenBones() {
-        if (!isFormed()) {
-            return Set.of("frame");
-        }
-        Set<String> hidden = new HashSet<>();
-        for (int k = this.laid + 1; k <= SECTIONS - 1; k++) {
-            hidden.add("sec" + k);
-        }
-        return hidden;
+        return isFormed() ? Set.of() : Set.of("frame");
     }
 
-    /** The warhead lying on the cradles at the missile's nose, once the crane has laid it (the last load). */
-    @Override
-    public dev.groundzero.content.launch.WarheadCarrier.@org.jspecify.annotations.Nullable Shown shownWarhead() {
-        if (!isFormed() || this.laid < SECTIONS || this.look == LOOK_NONE) {
-            return null;
-        }
+    /** The warhead the hall is building, by its look (none: the empty string). */
+    public String lookWarhead() {
         var warhead = switch (this.look) {
             case LOOK_COBALT -> dev.groundzero.content.ordnance.GZOrdnance.COBALT_WARHEAD;
             case LOOK_TSAR -> dev.groundzero.content.ordnance.GZOrdnance.TSAR_WARHEAD;
-            default -> dev.groundzero.content.ordnance.GZOrdnance.THERMONUCLEAR_WARHEAD;
+            case LOOK_THERMONUCLEAR -> dev.groundzero.content.ordnance.GZOrdnance.THERMONUCLEAR_WARHEAD;
+            default -> null;
         };
-        return new dev.groundzero.content.launch.WarheadCarrier.Shown(warhead.block().get(), "icbm", "warhead", false, true, 0);
+        return warhead == null ? "" : warhead.block().getId().getPath();
+    }
+
+    /** The missile on the cradles: the sections the crane has laid so far, the warhead last, lying nose to the front. */
+    @Override
+    public dev.groundzero.content.launch.MissileCarrier.@org.jspecify.annotations.Nullable Shown shownMissile() {
+        return isFormed() ? dev.groundzero.content.launch.MissileCarrier.lying(lookWarhead(), this.laid, "missile", 0) : null;
+    }
+
+    /** The two cradles' rubber saddles (tools/assets/strategic.py: tops at 26, under the first stage and the second). */
+    private static final dev.groundzero.content.launch.MissileCarrier.Cradles CRADLES =
+            new dev.groundzero.content.launch.MissileCarrier.Cradles(26, 38, new float[] {60, 93});
+
+    @Override
+    public dev.groundzero.content.launch.MissileCarrier.@org.jspecify.annotations.Nullable Cradles cradles() {
+        return CRADLES;
     }
 
     @Override

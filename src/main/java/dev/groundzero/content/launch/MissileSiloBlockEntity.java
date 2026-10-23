@@ -311,39 +311,10 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     }
 
     // --- model --------------------------------------------------------------------------------------------------------------
-    /**
-     * The model shows the loaded missile standing in the shaft: a Strategic one is its own long model ("strategic"), an
-     * intercontinental one its own too ("icbm"), any other the usual missile scaled by its body ("missile"), each
-     * carrying its warhead's own model (or a bare nose, "nose_none" / "snose_none", with none).
-     */
+    /** The model shows the shaft and its doors; the loaded missile is drawn from its own model (MissileCarrier, inherited). */
     @Override
     public Set<String> hiddenBones() {
-        if (!isFormed()) {
-            return Set.of("frame");
-        }
-        var spec = missile();
-        Set<String> hidden = new java.util.HashSet<>(List.of("missile", "strategic", "icbm"));
-        SizeClass body = spec == null ? SizeClass.M : spec.body();
-        if (spec != null) {
-            hidden.remove(switch (body) {
-                case XL -> "strategic";
-                case XXL -> "icbm";
-                default -> "missile";
-            });
-        }
-        // A bare nose with no warhead (an intercontinental missile always has one); with one, the warhead's own model.
-        hidden.add("nose_none");
-        hidden.add("snose_none");
-        if (spec != null && spec.warheadId().isEmpty()) {
-            hidden.remove(body == SizeClass.XL ? "snose_none" : "nose_none");
-        }
-        return hidden;
-    }
-
-    @Override
-    public Map<String, float[]> boneScales() {
-        var spec = missile();
-        return spec != null && (spec.body() == SizeClass.XL || spec.body() == SizeClass.XXL) ? Map.of() : super.boneScales();
+        return isFormed() ? Set.of() : Set.of("frame");
     }
 
     /** The door leaves slid apart (x as GeckoLib has it: negated). */

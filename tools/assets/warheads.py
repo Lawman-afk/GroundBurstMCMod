@@ -146,7 +146,9 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
     No two caps may lie in one plane where they show (they would flicker). Planks side by side round the section meet
     only near its rim, so every other plank is sunk 0.06 px ("alternate"); planks a quarter turn apart meet only near
     the middle, which the ring above covers. A small section, or one whose top shows, sinks each plank a little more
-    than the last ("full"). A plank is sunk whole, never stretched, so its texels stay a pixel tall and bands line up
+    than the last ("full"). A section whose bottom shows with nothing under its middle (a missile's tail) sinks the
+    quarter-turned planks 0.12 further ("base"), so no two of its bottom caps share a plane anywhere. A plank is sunk
+    whole, never stretched, so its texels stay a pixel tall and bands line up
     from facet to facet. A section with no bottom cap stands on something wider: its planks reach a pixel down into
     it (unseen), so no sunk cap under them leaves a slit."""
     if sides == 4:
@@ -163,7 +165,10 @@ def section(m: BlockModel, name: str, r: float, y0: float, y1: float, sides: int
         for long_x in (True, False):
             hx, hz = (r, s) if long_x else (s, r)
             index = i if long_x else i + sides // 4                  # the plank's place round the section, in facets
-            sink = 0.06 * (index % 2) if stagger == "alternate" else 0.06 * k
+            if stagger == "base":                            # (a bottom that shows: the quarter-turned planks lower still)
+                sink = 0.06 * (index % 2) + (0.12 if not long_x else 0.0)
+            else:
+                sink = 0.06 * (index % 2) if stagger == "alternate" else 0.06 * k
             ends = ("east", "west") if long_x else ("north", "south")
             rot = None if a == 0 else {"origin": (cx, y0, cz), "axis": "y", "angle": a}
             n = f"{name}_{k}"
@@ -803,29 +808,22 @@ def reentry(name: str, cone_ramp, skirt_ramp, band_ramp, jacket_ramp) -> list[st
 
 
 def tsar() -> list[str]:
-    """The Tsar Mega-bomb, standing on its tail: four fins round the parachute pack, the tail cone, the fat body (the
-    front's stencils, a white band, four glowing vents low down), a rounded nose and its fuze cap."""
+    """The Tsar Mega-bomb as a missile's warhead (after the user's look: tail fins and a parachute pack were odd on a
+    missile): the fat body (the front's stencils, a white band, four glowing vents low down), a rounded nose and its
+    fuze cap, over a boat-tail that steps in, a pixel at a time, to the mounting ring it is bolted to its missile by."""
     w = Build("tsar_warhead", 256)
-    w.ring("pack", 3.4, 0, 5.0, caps=("up", "down"), top=True, foot=True)
-    w.ring("tail", 5.0, 5.0, 8.0, caps=("up",), top=True, foot=False)
+    mounting_ring(w, 5.2, 2.0)
+    # The boat-tail, ring by ring out to the body (each covered above by the next, so only its foot shows).
+    for r, y0, y1 in ((5.6, 2.0, 4.0), (6.2, 4.0, 6.0), (6.6, 6.0, 8.0)):
+        w.ring("tail", r, y0, y1, caps=("down",), top=False, foot=False)
     w.ring("body", 7.0, 8.0, 21.0, caps=("up",), top=False, foot=False)
     top = w.nose("nose", 7.0, 21.0, 8.0, "blunt", 8)
     tip(w, 0.9, top, 0.8, "fuze")
-    for d, (dx, dz) in {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}.items():
-        for y0, y1, r0, r1 in ((0, 5, 3.0, 7.4), (5, 7.5, 4.6, 6.4)):
-            if dx == 0:
-                z0, z1 = sorted((8 + dz * r0, 8 + dz * r1))
-                w.box("fin", (7.5, y0, z0), (8.5, y1, z1))
-            else:
-                x0, x1 = sorted((8 + dx * r0, 8 + dx * r1))
-                w.box("fin", (x0, y0, 7.5), (x1, y1, 8.5))
     for d, (a, b) in {"n": ((6, 8.8, 0.8), (10, 11.6, 1.05)), "s": ((6, 8.8, 14.95), (10, 11.6, 15.2)),
                       "w": ((0.8, 8.8, 6), (1.05, 11.6, 10)), "e": ((14.95, 8.8, 6), (15.2, 11.6, 10))}.items():
         w.box("vent", a, b, light=15)
-    C.lamp(w.m, (7.4, 1.2, 11.4), (8.6, 2.0, 11.75), faces=("north", "south", "east", "west", "up", "down"))
-    look = Look(body=paint(TSAR, 0.5, 0.18), nose=paint(TSAR, 0.5, 0.18), tail=paint(TSAR, 0.5, 0.18), fin=paint(TSAR, 0.45, 0.25),
-                pack=M.Material(ramp=ramp9(CANVAS), tone=0.55, mottle=0.05, grain=0.05, dither=0.7, edge_light=0.1, edge_dark=0.12,
-                                ao=0.4, grime=0.08, dust=0.0), fuze=FUZE, vent=metal(BLACK, 0.3))
+    look = Look(body=paint(TSAR, 0.5, 0.18), nose=paint(TSAR, 0.5, 0.18), tail=paint(TSAR, 0.45, 0.2), base=BASE,
+                fuze=FUZE, vent=metal(BLACK, 0.3))
     look.on("body", lambda k, f, img: band(k, f, img, 19, 20, paint(WHITE, 0.75, 0.2)))
     look.on("body", lambda k, f, img: decal(f, img, ["WWW.WWW", "W...W.W", "WWW.W.W", "..W.W.W", "WWW.WWW"],
                                             {"W": WHITE[5]}, 17.0))
@@ -839,12 +837,8 @@ def tsar() -> list[str]:
                 for i, ch in enumerate(line):
                     img[(row == j) & (col == 4 - i)] = BLACK[1] if ch == "K" else YELLOW[4]
     look.on("body", back)
-
-    def pack(k, f, img):                                       # the straps round and over the parachute pack
-        if f.d in SIDES:
-            M.darken(img, np.floor(f.Y) == 2, 0.62)
-            M.darken(img, np.abs(angle_of(f)) % 90 < 6, 0.7)
-    look.on("pack", pack)
+    look.on("tail", lambda k, f, img: bolts(f, img, 7.4))     # where the body's case bolts to its tail
+    look.on("base", lambda k, f, img: bolts(f, img, 1.2))
 
     def vent(k, f, img):
         img[...] = VENT[0]

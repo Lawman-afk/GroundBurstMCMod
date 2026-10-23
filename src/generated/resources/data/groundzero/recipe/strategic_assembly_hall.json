@@ -2,15 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundzero:machine_casing",
-    "groundzero:crt_display",
-    "groundzero:advanced_circuit",
+    "groundzero:lead_lined_casing",
     "groundzero:military_circuit",
-    "groundzero:servo",
-    "groundzero:servo",
-    "groundzero:electric_motor",
-    "groundzero:dense_steel_plate",
-    "groundzero:dense_steel_plate"
+    "groundzero:military_circuit",
+    "groundzero:military_circuit",
+    "groundzero:superconducting_coil",
+    "groundzero:superconducting_coil",
+    "groundzero:sensor_array",
+    "groundzero:tungsten_plate",
+    "groundzero:crt_display"
   ],
   "result": {
     "id": "groundzero:strategic_assembly_hall"

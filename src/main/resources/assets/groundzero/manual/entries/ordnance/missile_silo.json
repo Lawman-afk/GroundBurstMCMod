@@ -1,7 +1,7 @@
 {
   "title": "Missile Silo",
   "icon": "groundzero:missile_silo",
-  "order": 8,
+  "order": 9,
   "items": [
     "groundzero:missile_silo",
     "groundzero:silo_hatch",

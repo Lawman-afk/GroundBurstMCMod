@@ -1,7 +1,7 @@
 {
   "title": "Warheads",
   "icon": "groundzero:he_warhead",
-  "order": 5,
+  "order": 6,
   "items": [
     "groundzero:he_warhead",
     "groundzero:heavy_warhead",
@@ -20,7 +20,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "Warheads are what a [missile](ordnance/launch_site) carries: built into one at the bench, the warhead rides on the missile's nose, so you can tell a missile by the warhead you see on it. Each goes off as described below where the missile comes down.\n\nWarheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, or in the air over its target.\n\nPlaced on their own, warheads stand nose up on their mounting rings, waiting to be fitted to a missile; with nothing under them they fall. A placed warhead cannot be armed and nothing sets it off, except another explosion."
+      "text": "Warheads are what a [missile](ordnance/missiles) carries: each has a missile of its own, built at the [missile assembler](ordnance/missile_assemblers) of its class, its nose the warhead itself. Each goes off as described below where the missile comes down.\n\nWarheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, or in the air over its target.\n\nPlaced on their own, warheads stand nose up on their mounting rings, waiting to be fitted to a missile; with nothing under them they fall. A placed warhead cannot be armed and nothing sets it off, except another explosion."
     },
     {
       "type": "spotlight",

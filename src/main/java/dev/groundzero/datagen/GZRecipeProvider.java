@@ -520,11 +520,41 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
                 .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel")).requires(Tags.Items.DYES_YELLOW)
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
-        shapeless(RecipeCategory.REDSTONE, s.hall, 1)
-                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
-                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.SERVO).requires(GZParts.SERVO).requires(GZParts.ELECTRIC_MOTOR)
+        // The missile assemblers' ladder (DESIGN.md §10.4), each a rung harder than the last, the hall at the top: the
+        // Light's servos and basic circuits (the early missile age), the Medium's electric motors and an advanced circuit,
+        // the Heavy's hydraulics (pressure vessels), tungsten and a military circuit, the Strategic's lead-lined casing, two
+        // military circuits and a sensor array; the hall's superconducting coils and three military circuits.
+        var a = new Object() {
+            final net.minecraft.world.level.ItemLike light = dev.groundzero.content.assembler.GZAssemblers.LIGHT_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike medium = dev.groundzero.content.assembler.GZAssemblers.MEDIUM_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike heavy = dev.groundzero.content.assembler.GZAssemblers.HEAVY_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike strategic = dev.groundzero.content.assembler.GZAssemblers.STRATEGIC_CONTROLLER.item();
+        };
+        shapeless(RecipeCategory.REDSTONE, a.light, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.BASIC_CIRCUIT).requires(GZParts.BASIC_CIRCUIT)
+                .requires(GZParts.SERVO).requires(GZParts.SERVO).requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel"))
+                .requires(GZTags.commonItem("rods/steel")).requires(GZTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GZParts.SERVO), has(GZParts.SERVO)).save(output);
+        shapeless(RecipeCategory.REDSTONE, a.medium, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.BASIC_CIRCUIT)
+                .requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.SERVO).requires(GZParts.CRT_DISPLAY)
                 .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, a.heavy, 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.ELECTRIC_MOTOR)
+                .requires(GZParts.TUNGSTEN_CARBIDE_INGOT).requires(GZParts.DENSE_STEEL_PLATE)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, a.strategic, 1)
+                .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.SENSOR_ARRAY).requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ELECTRIC_MOTOR).requires(GZParts.ELECTRIC_MOTOR)
+                .requires(GZParts.TUNGSTEN_PLATE).requires(GZParts.TUNGSTEN_PLATE)
+                .unlockedBy(getHasName(GZParts.SENSOR_ARRAY), has(GZParts.SENSOR_ARRAY)).save(output);
+        shapeless(RecipeCategory.REDSTONE, s.hall, 1)
+                .requires(GZMultiblocks.LEAD_LINED_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.MILITARY_CIRCUIT)
+                .requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.SUPERCONDUCTING_COIL).requires(GZParts.SUPERCONDUCTING_COIL)
+                .requires(GZParts.SENSOR_ARRAY).requires(GZParts.TUNGSTEN_PLATE).requires(GZParts.CRT_DISPLAY)
+                .unlockedBy(getHasName(GZParts.SUPERCONDUCTING_COIL), has(GZParts.SUPERCONDUCTING_COIL)).save(output);
         shapeless(RecipeCategory.COMBAT, s.secondary, 1)
                 .requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET)
                 .requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundzero.content.nuclear.GZNuclear.LITHIUM_DEUTERIDE_PELLET)

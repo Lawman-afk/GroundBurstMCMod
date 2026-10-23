@@ -59,9 +59,14 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return this.motor.range;
     }
 
-    /** The id of its warhead ("he_warhead"; empty with none): what its nose is painted as. */
+    /** The id of its warhead ("he_warhead"; empty with none): which missile it is (its own model). */
     public String warheadId() {
-        return this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c
+        return warheadId(this.warhead);
+    }
+
+    /** A warhead's id ("he_warhead"; empty for anything else). */
+    public static String warheadId(ItemStack warhead) {
+        return warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c
                 ? net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(c).getPath() : "";
     }
 

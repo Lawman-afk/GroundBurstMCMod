@@ -93,6 +93,19 @@ class BlockModel:
         self.extra_textures: dict[str, str] = {}   # additional texture keys, e.g. vanilla stone for ore bases
         self._laid_out = False
         self.particle: str | None = None
+        #: Where the texture goes, under textures/ (by default the model's kind): an item model whose faces share an atlas
+        #: with block textures keeps its own texture under block/ too (a missile, whose head is a warhead's block model).
+        self.texture_folder: str = kind
+        #: (scale, offset): the JSON's coordinates are the model's times scale plus offset. A missile is built in the
+        #: world's pixels and written at a quarter of that, as an item model the game draws four times over.
+        self.export: tuple[float, tuple[float, float, float]] | None = None
+
+    def exported(self, p) -> tuple[float, float, float]:
+        """A model point as the JSON has it."""
+        if self.export is None:
+            return tuple(float(v) for v in p)  # type: ignore[return-value]
+        s, o = self.export
+        return (p[0] * s + o[0], p[1] * s + o[1], p[2] * s + o[2])
 
     # -- geometry ------------------------------------------------------------------------------------------------
     def box(self, name: str, frm: Vec3, to: Vec3, faces: str | tuple[str, ...] = DIRS, rotation: dict | None = None,
@@ -262,9 +275,10 @@ class BlockModel:
 
     # -- display ---------------------------------------------------------------------------------------------------------
     def bounds(self, also: tuple[Vec3, Vec3] | None = None) -> tuple[Vec3, Vec3]:
-        """The box round every element (and round {also} too, if given)."""
+        """The box round every element (and round {also} too, if given), as the JSON has it."""
         lo = [min(b.frm[i] for b in self.boxes) for i in range(3)]
         hi = [max(b.to[i] for b in self.boxes) for i in range(3)]
+        lo, hi = list(self.exported(lo)), list(self.exported(hi))
         if also is not None:
             lo = [min(lo[i], also[0][i]) for i in range(3)]
             hi = [max(hi[i], also[1][i]) for i in range(3)]
@@ -304,7 +318,7 @@ class BlockModel:
 
     # -- export ------------------------------------------------------------------------------------------------------------
     def texture_ref(self) -> str:
-        return f"{paths.MODID}:{self.kind}/{self.name}"
+        return f"{paths.MODID}:{self.texture_folder}/{self.name}"
 
     def to_json(self) -> dict:
         if not self._laid_out:
@@ -312,9 +326,12 @@ class BlockModel:
         su, sv = 16.0 / self.tex_w, 16.0 / self.tex_h
         elements = []
         for b in self.boxes:
-            el: dict = {"name": b.name, "from": list(b.frm), "to": list(b.to)}
+            el: dict = {"name": b.name, "from": [round(v, 5) for v in self.exported(b.frm)],
+                        "to": [round(v, 5) for v in self.exported(b.to)]}
             if b.rotation:
                 el["rotation"] = {k: (list(v) if isinstance(v, tuple) else v) for k, v in b.rotation.items()}
+                if "origin" in el["rotation"]:
+                    el["rotation"]["origin"] = [round(v, 5) for v in self.exported(el["rotation"]["origin"])]
             if not b.shade:
                 el["shade"] = False
             if b.light_emission:
@@ -355,7 +372,7 @@ class BlockModel:
         return paths.MODELS / self.kind / f"{self.name}.json"
 
     def texture_path(self) -> Path:
-        return paths.TEXTURES / self.kind / f"{self.name}.png"
+        return paths.TEXTURES / self.texture_folder / f"{self.name}.png"
 
     def bleed(self, tex) -> None:
         """Copies every face's edge pixels one texel outward into the layout gutter. Sampling a face right at its UV

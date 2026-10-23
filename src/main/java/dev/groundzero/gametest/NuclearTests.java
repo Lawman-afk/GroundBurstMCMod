@@ -153,7 +153,7 @@ final class NuclearTests {
         MissileSpec spec = dev.groundzero.content.assembly.MissileItem.spec(missile);
         helper.assertTrue(spec != null && spec.body() == SizeClass.XL && spec.range() == 2500 && spec.needsComplex(), "a Strategic missile: " + spec);
         var look = missile.get(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA);
-        helper.assertTrue(look != null && look.strings().getFirst().equals("strategic_tactical_nuclear_warhead"), "its own model: " + look);
+        helper.assertTrue(look != null && look.strings().getFirst().equals("tactical_nuclear_warhead"), "its own model: " + look);
         helper.succeed();
     }
 

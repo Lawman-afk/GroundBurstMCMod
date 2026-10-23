@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_military_circuit": {
+    "has_superconducting_coil": {
       "conditions": {
         "items": [
           {
-            "items": "groundzero:military_circuit"
+            "items": "groundzero:superconducting_coil"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_military_circuit"
+      "has_superconducting_coil"
     ]
   ],
   "rewards": {

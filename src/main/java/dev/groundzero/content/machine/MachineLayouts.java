@@ -133,7 +133,7 @@ public final class MachineLayouts {
             List.of(new MachineLayout.Control("doors", new MachineLayout.Rect(58, 58, 30, 18), -1, 0, 0, "groundzero.gui.silo_doors")), 256);
 
     public static final MachineLayout ASSEMBLY_BENCH = new MachineLayout(
-            GroundZero.id("textures/gui/machine/assembly_bench.png"), 288, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24), new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
+            GroundZero.id("textures/gui/machine/assembly_bench.png"), 288, 210, List.of(new MachineLayout.Pos(32, 24), new MachineLayout.Pos(52, 24), new MachineLayout.Pos(72, 24), new MachineLayout.Pos(132, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 436, 0,
             new MachineLayout.Rect(97, 24, 24, 17), 452, 0,
             null, 452, 20,
@@ -141,8 +141,8 @@ public final class MachineLayouts {
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
             List.of(), 512);
 
-    public static final MachineLayout ASSEMBLY_BENCH_MISSILE = new MachineLayout(
-            GroundZero.id("textures/gui/machine/assembly_bench_missile.png"), 288, 210, List.of(new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
+    public static final MachineLayout MISSILE_ASSEMBLER = new MachineLayout(
+            GroundZero.id("textures/gui/machine/missile_assembler.png"), 288, 210, List.of(new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
             new MachineLayout.Rect(8, 20, 14, 46), 436, 0,
             new MachineLayout.Rect(119, 24, 24, 17), 452, 0,
             null, 452, 20,

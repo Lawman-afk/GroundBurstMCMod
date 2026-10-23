@@ -37,12 +37,50 @@ public class MissileItem extends Item {
         return stack.get(GZDataComponents.MISSILE.get());
     }
 
-    /** "Heavy Missile", by its body; an intercontinental one by its warhead: "Intercontinental Missile (Tsar Mega-bomb)". */
+    /** Each warhead's own missile, by name (DESIGN.md §10.4): the warhead's id to its name's key. */
+    private static final java.util.Map<String, String> NAMES = new java.util.HashMap<>();
+
+    private static void name(String warhead, String english) {
+        NAMES.put(warhead, GZLang.add(GroundZero.MODID + ".missile.name." + warhead, english));
+    }
+
+    static {
+        name("he_warhead", "HE Missile");
+        name("napalm_warhead", "Napalm Missile");
+        name("chemical_warhead", "Chemical Missile");
+        name("toxic_waste_warhead", "Toxic Waste Missile");
+        name("dirty_warhead", "Dirty Missile");
+        name("heavy_warhead", "Heavy HE Missile");
+        name("cluster_warhead", "Cluster Missile");
+        name("gas_warhead", "Poison Gas Missile");
+        name("smoke_warhead", "Smoke Missile");
+        name("cryo_warhead", "Cryo Missile");
+        name("thermobaric_warhead", "Thermobaric Missile");
+        name("bunker_buster_warhead", "Bunker Buster Missile");
+        name("emp_warhead", "EMP Missile");
+        name("massive_warhead", "Massive Ordnance Missile");
+        name("tactical_nuclear_warhead", "Tactical Nuclear Missile");
+        name("fission_warhead", "Fission Missile");
+        name("boosted_fission_warhead", "Boosted Fission Missile");
+        name("neutron_warhead", "Neutron Missile");
+        name("thermonuclear_warhead", "Thermonuclear ICBM");
+        name("cobalt_warhead", "Cobalt ICBM");
+        name("tsar_warhead", "Tsar ICBM");
+    }
+
+    /**
+     * Named by its warhead, every missile being its warhead's own: "HE Missile", "Tsar ICBM" (a search for "Tsar" finds
+     * it); a missile whose warhead has no missile of its own by its body: "Heavy Missile".
+     */
     @Override
     public Component getName(ItemStack stack) {
         MissileSpec s = spec(stack);
         if (s == null) {
             return super.getName(stack);
+        }
+        String key = NAMES.get(s.warheadId());
+        if (key != null) {
+            return Component.translatable(key);
         }
         return s.intercontinental() && !s.warhead().isEmpty() ? Component.translatable(T_NAMED_ICBM, s.warhead().getHoverName())
                 : Component.translatable(T_NAMED, Component.translatable(MissileParts.bodyName(s.body())));

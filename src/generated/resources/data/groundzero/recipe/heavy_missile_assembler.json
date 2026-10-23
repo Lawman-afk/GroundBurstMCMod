@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundzero:machine_casing",
+    "groundzero:military_circuit",
+    "groundzero:advanced_circuit",
+    "groundzero:pressure_vessel",
+    "groundzero:pressure_vessel",
+    "groundzero:electric_motor",
+    "groundzero:electric_motor",
+    "groundzero:tungsten_carbide_ingot",
+    "groundzero:dense_steel_plate"
+  ],
+  "result": {
+    "id": "groundzero:heavy_missile_assembler"
+  }
+}

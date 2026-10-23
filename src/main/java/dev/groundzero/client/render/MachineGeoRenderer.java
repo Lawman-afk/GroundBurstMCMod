@@ -17,7 +17,7 @@ import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import dev.groundzero.content.launch.WarheadCarrier;
+import dev.groundzero.content.launch.MissileCarrier;
 import dev.groundzero.content.machine.AnimatedMachine;
 import dev.groundzero.content.machine.MachineBlockEntity;
 import dev.groundzero.content.machine.MachineTank;
@@ -37,7 +37,7 @@ import net.minecraft.world.phys.AABB;
 /**
  * GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. A
  * model whose texture has a {@code _glowmask} draws it lit, whatever the light round it ({@link GlowLayer}). A machine
- * holding a missile ({@link WarheadCarrier}) has its warhead's own model drawn on the missile ({@link WarheadLayer}).
+ * holding a missile ({@link MissileCarrier}) has it drawn from the missile's own model ({@link MissileLayer}).
  */
 public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
     private final int height;
@@ -66,35 +66,66 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private void withGlow() {
         // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
         withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
-        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new WarheadLayer(this));
+        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new MissileLayer(this));
     }
 
     /**
-     * The warhead of the missile a launcher (or the hall) holds: its own block model, drawn at the model's warhead bone
-     * (the middle of the top of the missile's body) by {@link WarheadNose}. The launchers' models draw their missiles
-     * four times the item's size, so the bone's pose is scaled up to the item's pixels first.
+     * The missile a launcher, an assembler or the hall holds ({@link MissileCarrier}): drawn from its own item model (one
+     * per warhead, a quarter of the world's size) at the model's bone at its
+     * tail, so the machines' models carry no missile of their own. The item states are resolved when the frame's state is
+     * taken.
      */
-    private static final class WarheadLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends com.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
-        WarheadLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
+    private static final class MissileLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends com.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
+        MissileLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
             super(renderer);
         }
 
         @Override
         public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<com.geckolib.cache.model.GeoBone, com.geckolib.renderer.base.PerBoneRender<R>> consumer) {
-            WarheadCarrier.Shown shown = pass.getGeckolibData(WARHEAD);
+            ShownMissile shown = pass.getGeckolibData(MISSILE);
             if (shown == null || !pass.willRender()) {
                 return;
             }
             pass.model().getBone(shown.bone()).ifPresent(bone -> consumer.accept(bone, (info, b, collector) -> {
                 PoseStack pose = info.poseStack();
-                pose.scale(4, 4, 4);
+                pose.scale(4, 4, 4);                                   // the item model is a quarter of the world's size
                 if (shown.lying()) {
-                    pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));          // the missile's up toward the model's front
+                    pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));          // its nose toward the model's front
                 }
                 pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
-                WarheadNose.submit(pose, collector, shown.warhead(), shown.airframe(), shown.armed(), info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
+                pose.translate(0, shown.lift(), 0);                    // drawn about its middle: its tail at the bone
+                for (net.minecraft.client.renderer.item.ItemStackRenderState item : shown.items()) {
+                    item.submit(pose, collector, info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
+                }
             }));
         }
+    }
+
+    /**
+     * A missile to draw this frame: its looks resolved to item states, where and how it lies, and how far its item model
+     * is lifted to stand its tail at the bone (MissileShapes; the plain missile's tail is at its y 0).
+     */
+    record ShownMissile(List<net.minecraft.client.renderer.item.ItemStackRenderState> items, String bone, boolean lying, float turn, float lift) {}
+
+    /** The Missile item for a look (its custom model data), one per look. */
+    private static final java.util.Map<String, net.minecraft.world.item.ItemStack> LOOKS = new java.util.HashMap<>();
+
+    private static ShownMissile resolve(MissileCarrier.Shown shown, net.minecraft.world.level.Level level) {
+        var resolver = net.minecraft.client.Minecraft.getInstance().getItemModelResolver();
+        List<net.minecraft.client.renderer.item.ItemStackRenderState> items = new ArrayList<>();
+        for (String look : shown.looks()) {
+            net.minecraft.world.item.ItemStack stack = LOOKS.computeIfAbsent(look, key -> {
+                var s = new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
+                s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
+                        List.of(), List.of(), List.of(key), List.of()));
+                return s;
+            });
+            var state = new net.minecraft.client.renderer.item.ItemStackRenderState();
+            resolver.updateForTopItem(state, stack, net.minecraft.world.item.ItemDisplayContext.NONE, level instanceof net.minecraft.client.multiplayer.ClientLevel cl ? cl : null, null, 0);
+            items.add(state);
+        }
+        var shape = MissileShapes.get(shown.warhead());
+        return new ShownMissile(items, shown.bone(), shown.lying(), shown.turn(), shape == null ? 0.5f : shape.lift());
     }
 
     /**
@@ -124,22 +155,62 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundzero_bone_offsets",
             new TypeToken<java.util.Map<String, float[]>>() {});
-    private static final DataTicket<WarheadCarrier.Shown> WARHEAD = DataTicket.create("groundzero_warhead", WarheadCarrier.Shown.class);
+    private static final DataTicket<ShownMissile> MISSILE = DataTicket.create("groundzero_missile", ShownMissile.class);
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
+        java.util.Map<String, float[]> offsets = java.util.Map.of();
         if (animatable instanceof AnimatedMachine machine) {
             ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
-            ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, machine.boneOffsets(partialTick));
+            offsets = machine.boneOffsets(partialTick);
         }
-        if (animatable instanceof WarheadCarrier carrier) {
-            WarheadCarrier.Shown shown = carrier.shownWarhead();
+        if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
+            MissileCarrier.Shown shown = carrier.shownMissile();
+            String held = carrier.gripsFor();
+            if (held != null) {
+                offsets = withGrips(offsets, carrier.grips(), MissileShapes.get(held));
+            }
             if (shown != null) {
-                ((GeoRenderState) renderState).addGeckolibData(WARHEAD, shown);
+                ((GeoRenderState) renderState).addGeckolibData(MISSILE, resolve(shown, animatable.getLevel()));
+                MissileShapes.Shape shape = MissileShapes.get(shown.warhead());
+                MissileCarrier.Cradles cradles = carrier.cradles();
+                if (shown.lying() && cradles != null && shape != null) {
+                    offsets = new java.util.HashMap<>(offsets);
+                    offsets.put(shown.bone(), new float[] {0, onCradles(cradles, shape) - cradles.axisY(), 0});
+                }
             }
         }
+        ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, offsets);
         captureTank(animatable, (GeoRenderState) renderState);
+    }
+
+    /** Where a lying missile's axis is, resting on its cradles' saddles by its own girth where they hold it (model px). */
+    private static float onCradles(MissileCarrier.Cradles cradles, MissileShapes.Shape shape) {
+        float r = 0;
+        for (float h : cradles.at()) {
+            r = Math.max(r, shape.skinRadius(h));
+        }
+        return cradles.topY() + r;
+    }
+
+    /**
+     * The arms that hold a standing missile, fitted to it (DESIGN.md §10.4): each arm's collar slides to its hold on the
+     * missile and its clamp moves in or out to the missile's skin there, the inner beam sliding in its sleeve.
+     */
+    private static java.util.Map<String, float[]> withGrips(java.util.Map<String, float[]> offsets, List<MissileCarrier.Grip> grips,
+            MissileShapes.@Nullable Shape shape) {
+        if (grips.isEmpty() || shape == null) {
+            return offsets;
+        }
+        java.util.Map<String, float[]> out = new java.util.HashMap<>(offsets);
+        for (MissileCarrier.Grip grip : grips) {
+            float h = shape.holdHeight(grip.hold());
+            float r = shape.skinRadius(h);
+            out.put(grip.mount(), new float[] {0, grip.tailY() + h - grip.restY(), 0});
+            out.put(grip.reach(), new float[] {grip.clampX() - r, 0, 0});          // out from the axis (x as GeckoLib has it: negated)
+        }
+        return out;
     }
 
     // Raw type: GeckoLib injects GeoRenderState into BlockEntityRenderState at runtime, which javac cannot see here.

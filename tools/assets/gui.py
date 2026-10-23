@@ -201,7 +201,8 @@ LAYOUTS = {
     # Ordnance Assembly Bench (Phase 7): core, casing and fuze in a row, the arrow, the finished warhead; the readout
     # under them; the fuze's setting (label and field, drawn by the screen) under that, then the Assemble / Take Apart
     # buttons (drawn by the screen) with the redstone button beside them. A right-hand column (slice 7c): the 3D preview
-    # of what the parts make over a stats screen (both drawn into by the screen).
+    # of what the parts make over a stats screen (both drawn into by the screen). (Its missile page went to the missile
+    # assemblers, DESIGN.md §10.4.)
     "assembly_bench": {
         "title": (8, 6),
         "size": (288, 210),
@@ -209,8 +210,6 @@ LAYOUTS = {
         "preview": (183, 22, 94, 80),
         "stats": (183, 110, 94, 92),
         "slots": [("core", 32, 24), ("casing", 52, 24), ("fuze", 72, 24), ("out_big", 132, 24)],
-        # The missile page's slots (slots 4-9): in the menu, but drawn by the "assembly_bench_missile" texture.
-        "hidden_slots": [("warhead", 26, 24), ("body", 44, 24), ("motor", 62, 24), ("guidance", 80, 24), ("module", 98, 24), ("out_big", 150, 24)],
         "energy": (8, 20, 14, 46),
         "progress": (97, 24, 24, 17),                # centred between the fuze slot and the output frame
         "flame": None,
@@ -219,9 +218,10 @@ LAYOUTS = {
         "readout": (34, 50, 134, 24),
         "inventory": (8, 128),
     },
-    # The bench's missile page (slice 7b): warhead, body, motor, guidance and module in a row, the arrow, the missile.
-    # Only its texture and progress arrow are used: the slots belong to "assembly_bench" (its hidden slots).
-    "assembly_bench_missile": {
+    # The missile assemblers (DESIGN.md §10.4; once the bench's missile page): warhead, body, motor, guidance and module
+    # in a row, the arrow, the missile; the readout, the guidance's accuracy, then Assemble / Take Apart (drawn by the
+    # screen); the bench's right-hand column.
+    "missile_assembler": {
         "title": (8, 6),
         "size": (288, 210),
         "inventory_width": 178,
@@ -1123,7 +1123,6 @@ def page_tabs_texture() -> Path:
 
 if __name__ == "__main__":
     print(side_config_texture())
-    print(page_tabs_texture())
     for n, spec in LAYOUTS.items():
         print(build(n, spec))
     print(write_java())

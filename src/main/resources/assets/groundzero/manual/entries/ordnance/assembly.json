@@ -32,7 +32,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "The **Ordnance Assembly Bench** puts warheads and [missiles](ordnance/missiles) together, one page for each (the tabs on the left of its screen). It is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick.\n\nThe bench stays on the page you last turned it to, even with the screen closed: shift-clicks put parts into that page's slots, and pipes and hoppers feed that page's slots and take from its output. Turn it to the page you want to automate.\n\nA warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy; a nuclear core is class XL, Strategic, and takes the lead-lined Strategic Warhead Casing); and a **fuze**, which decides where the missile carrying it sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 16 seconds later (longer for heavier warheads) the warhead is in the output slot.\n\n**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped or set again.\n\nThe bench is two blocks wide, and its side configuration (the wrench tab) covers both halves: each half's top, front, bottom and back, and its two ends, can be set separately."
+      "text": "The **Ordnance Assembly Bench** puts warheads together; a [missile assembler](ordnance/missile_assemblers) of the warhead's class then builds it into its [missile](ordnance/missiles). The bench is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick. Pipes and hoppers feed its part slots and take from its output.\n\nA warhead is three parts: a **payload core**, which decides what the warhead does; a **casing** of the core's size class (Light, Medium or Heavy; a nuclear core is class XL, Strategic, and takes the lead-lined Strategic Warhead Casing); and a **fuze**, which decides where the missile carrying it sets it off. Put them in the three slots along the top and press **Assemble**: the hoist lowers the casing onto the core, the clamps close, and 5 to 16 seconds later (longer for heavier warheads) the warhead is in the output slot.\n\n**Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped or set again.\n\nThe bench is two blocks wide, and its side configuration (the wrench tab) covers both halves: each half's top, front, bottom and back, and its two ends, can be set separately."
     },
     {
       "type": "spotlight",
@@ -41,7 +41,7 @@
     },
     {
       "type": "text",
-      "text": "**Preview and figures.** The column on the right of the screen shows what the parts make (or what waits in the output slot) as a model you can drag round, and under it its figures: a warhead's blast radii, its yield and its fuze; a missile's warhead, then its range, how high it climbs, how long it flies and how close it lands at full range, and whether it is hardened against EMP."
+      "text": "**Preview and figures.** The column on the right of the screen shows the warhead the parts make (or the one waiting in the output slot) as a model you can drag round, and under it its figures: its blast radii, its yield and its fuze."
     },
     {
       "type": "crafting",
@@ -50,11 +50,11 @@
     },
     {
       "type": "text",
-      "text": "**Payload cores** decide what a warhead does; each makes one warhead (its class in brackets).\n\n**Explosives:** the HE Charge (S), Heavy HE Charge (M), Thermobaric Charge (M), Penetrator Charge (M, a Bunker Buster), Incendiary Charge (S, Napalm) and Massive Ordnance Charge (L)."
+      "text": "**Payload cores** decide what a warhead does; each makes one warhead (its class in brackets).\n\n**Explosives:** the HE Charge (S), Heavy HE Charge (M), Thermobaric Charge (L), Penetrator Charge (L, a Bunker Buster), Incendiary Charge (S, Napalm) and Massive Ordnance Charge (L)."
     },
     {
       "type": "text",
-      "text": "**Dispensers** (all M) open in the air when a missile brings them down: the Cluster Dispenser and the Gas, Smoke, Cryo and EMP Canister Dispensers.\n\n**Chemical cores** (S): the Toxic Waste Tank and the Chemical Agent Canister.\n\nA core's tooltip names the warhead it makes."
+      "text": "**Dispensers** open in the air when a missile brings them down: the Cluster Dispenser and the Gas, Smoke and Cryo Canister Dispensers (all M), and the EMP Canister Dispenser (L: its flux generators are heavy).\n\n**Chemical cores** (S): the Toxic Waste Tank and the Chemical Agent Canister.\n\nA core's tooltip names the warhead it makes."
     },
     {
       "type": "text",

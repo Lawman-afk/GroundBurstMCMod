@@ -107,48 +107,25 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     }
 
     /**
-     * The model shows the loaded missile: a Strategic one is its own long model ("strategic"), an intercontinental one
-     * its own too ("icbm"), any other the usual missile scaled by its body, each carrying its warhead's own model (or a
-     * bare nose, "nose_none" / "snose_none", with none); the
-     * umbilicals' clamps meet whichever is there (each arm has a clamp for each airframe's diameter).
+     * The model shows its frame; the loaded missile is drawn from its own model (MissileCarrier, inherited), and the
+     * two umbilicals slide and reach to hold it wherever its own shape puts its stages ({@link #grips}).
      */
     @Override
     public java.util.Set<String> hiddenBones() {
-        if (!isFormed()) {
-            return java.util.Set.of("frame");
-        }
-        var spec = missile();
-        java.util.Set<String> hidden = new java.util.HashSet<>(java.util.List.of("missile", "strategic", "icbm",
-                "clamp_low", "clamp_low_icbm", "clamp_high", "clamp_high_strategic", "clamp_high_icbm"));
-        var body = spec == null ? dev.groundzero.content.assembly.SizeClass.M : spec.body();
-        String airframe = switch (body) {
-            case XL -> "strategic";
-            case XXL -> "icbm";
-            default -> "missile";
-        };
-        if (spec != null) {
-            hidden.remove(airframe);
-        }
-        hidden.remove(body == dev.groundzero.content.assembly.SizeClass.XXL ? "clamp_low_icbm" : "clamp_low");
-        hidden.remove(switch (body) {
-            case XL -> "clamp_high_strategic";                // in to a Strategic second stage
-            case XXL -> "clamp_high_icbm";                    // in to an intercontinental third stage
-            default -> "clamp_high";
-        });
-        // A bare nose with no warhead (an intercontinental missile always has one); with one, the warhead's own model.
-        hidden.add("nose_none");
-        hidden.add("snose_none");
-        if (spec != null && spec.warheadId().isEmpty()) {
-            hidden.remove(body == dev.groundzero.content.assembly.SizeClass.XL ? "snose_none" : "nose_none");
-        }
-        return hidden;
+        return isFormed() ? java.util.Set.of() : java.util.Set.of("frame");
     }
 
+    /**
+     * The umbilicals (tools/assets/launch.py: COMPLEX_LOW_Y, COMPLEX_HIGH_Y, COMPLEX_CLAMP_X): the lower holds the
+     * missile low (an intercontinental one on its second stage), the upper just under its warhead.
+     */
+    private static final java.util.List<MissileCarrier.Grip> GRIPS = java.util.List.of(
+            new MissileCarrier.Grip("arm_low_mount", "arm_low_reach", 72, 14, 7, MissileCarrier.Hold.LOW),
+            new MissileCarrier.Grip("arm_high_mount", "arm_high_reach", 136, 14, 7, MissileCarrier.Hold.UNDER_WARHEAD));
+
     @Override
-    public java.util.Map<String, float[]> boneScales() {
-        var spec = missile();
-        return spec != null && (spec.body() == dev.groundzero.content.assembly.SizeClass.XL || spec.body() == dev.groundzero.content.assembly.SizeClass.XXL)
-                ? java.util.Map.of() : super.boneScales();
+    public java.util.List<MissileCarrier.Grip> grips() {
+        return GRIPS;
     }
 
     @Override

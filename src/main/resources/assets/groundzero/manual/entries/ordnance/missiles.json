@@ -18,11 +18,11 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **missile** is put together on the **Missile** page of the [Assembly Bench](ordnance/assembly) (the tabs on the left of its screen): a [warhead](ordnance/warheads), a **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. Press Assemble; 8 seconds later the missile is ready for a [Launch Silo](ordnance/launch_site). **Take Apart** gives every part back."
+      "text": "Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: the warhead is its nose, and the body under it is cut to the warhead's own girth and painted to match all the way down, with its own fins, bands and markings. A missile is put together at the [missile assembler](ordnance/missile_assemblers) of its warhead's class: the warhead, the class's **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. **Take Apart** gives every part back."
     },
     {
       "type": "text",
-      "text": "**Bodies** carry the warhead: a **Tactical** body takes class S warheads, a **Medium** body S or M, a **Heavy** body any conventional one. A bigger body makes a bigger missile on the pad. A **Strategic** body is the biggest missile the bench makes, a long two-stage rocket in black and white, and it carries [nuclear warheads](ordnance/nuclear) and nothing else (a nuclear warhead fits no other body); only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires it. Bigger still are the intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
+      "text": "**Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
     },
     {
       "type": "text",
@@ -31,7 +31,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:missile",
-      "text": "Its tooltip lists its warhead and fuze, its range and its guidance. A missile's name says its body: a Tactical, Medium or Heavy Missile."
+      "text": "Its tooltip lists its warhead and fuze, its range and its guidance; its name is its own (an HE Missile, a Thermobaric Missile, a Fission Missile...)."
     },
     {
       "type": "crafting",

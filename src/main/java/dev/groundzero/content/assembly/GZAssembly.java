@@ -33,12 +33,14 @@ public final class GZAssembly {
     public static final DeferredItem<ComponentItems.PayloadCore> HE_CHARGE = core("he_charge", "HE Charge", () -> GZOrdnance.HE_WARHEAD.block().get(), SizeClass.S);
     public static final DeferredItem<ComponentItems.PayloadCore> HEAVY_HE_CHARGE = core("heavy_he_charge", "Heavy HE Charge",
             () -> GZOrdnance.HEAVY_WARHEAD.block().get(), SizeClass.M);
+    // The Thermobaric, Penetrator and EMP payloads are class L (DESIGN.md §10.4): real fuel-air, penetrating and
+    // flux-compression warheads are among the heaviest, and the Heavy Missile Assembler has a family to build.
     public static final DeferredItem<ComponentItems.PayloadCore> THERMOBARIC_CHARGE = core("thermobaric_charge", "Thermobaric Charge",
-            () -> GZOrdnance.THERMOBARIC_WARHEAD.block().get(), SizeClass.M);
+            () -> GZOrdnance.THERMOBARIC_WARHEAD.block().get(), SizeClass.L);
     public static final DeferredItem<ComponentItems.PayloadCore> CLUSTER_DISPENSER = core("cluster_dispenser", "Cluster Dispenser",
             () -> GZOrdnance.CLUSTER_WARHEAD.block().get(), SizeClass.M);
     public static final DeferredItem<ComponentItems.PayloadCore> PENETRATOR_CHARGE = core("penetrator_charge", "Penetrator Charge",
-            () -> GZOrdnance.BUNKER_BUSTER.block().get(), SizeClass.M);
+            () -> GZOrdnance.BUNKER_BUSTER.block().get(), SizeClass.L);
     public static final DeferredItem<ComponentItems.PayloadCore> INCENDIARY_CHARGE = core("incendiary_charge", "Incendiary Charge",
             () -> GZOrdnance.NAPALM_WARHEAD.block().get(), SizeClass.S);
     public static final DeferredItem<ComponentItems.PayloadCore> MASSIVE_ORDNANCE_CHARGE = core("massive_ordnance_charge", "Massive Ordnance Charge",
@@ -62,7 +64,7 @@ public final class GZAssembly {
     public static final DeferredItem<ComponentItems.PayloadCore> CRYO_DISPENSER = core("cryo_dispenser", "Cryo Canister Dispenser",
             () -> GZOrdnance.CRYO_WARHEAD.block().get(), SizeClass.M);
     public static final DeferredItem<ComponentItems.PayloadCore> EMP_DISPENSER = core("emp_dispenser", "EMP Canister Dispenser",
-            () -> GZOrdnance.EMP_WARHEAD.block().get(), SizeClass.M);
+            () -> GZOrdnance.EMP_WARHEAD.block().get(), SizeClass.L);
     public static final DeferredItem<ComponentItems.PayloadCore> TOXIC_WASTE_TANK = core("toxic_waste_tank", "Toxic Waste Tank",
             () -> GZOrdnance.TOXIC_WASTE_WARHEAD.block().get(), SizeClass.S);
     public static final DeferredItem<ComponentItems.PayloadCore> CHEMICAL_AGENT_CANISTER = core("chemical_agent_canister", "Chemical Agent Canister",

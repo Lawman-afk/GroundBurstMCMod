@@ -80,6 +80,9 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.launch.GZLaunch.RADAR_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.block().get());
         dropSelf(dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.block().get());
+        for (var c : dev.groundzero.content.assembler.AssemblerClass.values()) {
+            dropSelf(dev.groundzero.content.assembler.GZAssemblers.controller(c).block().get());
+        }
         // The Large Radar Dish drops itself from its middle only (its parts go with it).
         add(dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().get(), createSinglePropConditionTable(
                 dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().get(), dev.groundzero.content.launch.LargeRadarDishBlock.PART,

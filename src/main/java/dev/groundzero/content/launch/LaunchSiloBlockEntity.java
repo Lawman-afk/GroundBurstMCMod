@@ -44,7 +44,7 @@ import com.geckolib.util.GeckoLibUtil;
  * the back of the pad) and runs a 10 s countdown with a siren, then the missile lights and lifts off the pad. An armed
  * silo that stops being ready (power, missile or warhead gone) disarms itself.
  */
-public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, WarheadCarrier {
+public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, MissileCarrier {
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
     public static final int SLOT_MISSILE = 0;
     private static final int RECHECK_INTERVAL = 40;
@@ -431,9 +431,22 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     protected void onSlotChanged(int slot) {
         super.onSlotChanged(slot);
+        var spec = missile();
+        if (spec != null && !spec.warheadId().equals(this.held)) {
+            this.held = spec.warheadId();
+            setChanged();
+        }
         if (this.level != null && !this.level.isClientSide()) {
             this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
+    }
+
+    /** The last missile loaded (its warhead's id): the arms stay set for it after it has gone, until another comes. */
+    private String held = "";
+
+    @Override
+    public @org.jspecify.annotations.Nullable String gripsFor() {
+        return isFormed() && !this.held.isEmpty() ? this.held : null;
     }
 
     @Override
@@ -448,36 +461,22 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     public Set<String> hiddenBones() {
-        if (!isFormed()) {
-            return Set.of("frame");
-        }
-        if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
-            return Set.of("missile");
-        }
-        // A bare steel nose with no warhead; with one, the warhead's own model stands there instead (shownWarhead).
-        var spec = missile();
-        return spec != null && spec.warheadId().isEmpty() ? Set.of() : Set.of("nose_none");
+        return isFormed() ? Set.of() : Set.of("frame");
     }
 
-    /** The loaded missile's warhead, its armed lamp lit while the launcher counts down (ACTIVE: synced with the block). */
+    /** The loaded missile, standing on the pad: its own model, drawn at the "missile" bone (its tail). */
     @Override
-    public WarheadCarrier.@org.jspecify.annotations.Nullable Shown shownWarhead() {
-        if (!isFormed()) {
-            return null;
-        }
-        return WarheadCarrier.standing(missile(), getBlockState().hasProperty(dev.groundzero.content.machine.MachineBlock.ACTIVE)
-                && getBlockState().getValue(dev.groundzero.content.machine.MachineBlock.ACTIVE));
+    public MissileCarrier.@org.jspecify.annotations.Nullable Shown shownMissile() {
+        return isFormed() ? MissileCarrier.standing(missile()) : null;
     }
 
-    /** The missile drawn the size of its body. */
+    /** The gantry's arm (tools/assets/launch.py: ARM_Y, SILO_CLAMP_X) holds the missile just under its warhead. */
+    private static final java.util.List<MissileCarrier.Grip> GRIPS = java.util.List.of(
+            new MissileCarrier.Grip("arm_mount", "arm_reach", 101.5f, 14, 6, MissileCarrier.Hold.UNDER_WARHEAD));
+
     @Override
-    public java.util.Map<String, float[]> boneScales() {
-        var spec = missile();
-        if (spec == null) {
-            return java.util.Map.of();
-        }
-        float[] s = dev.groundzero.content.assembly.MissileParts.scale(spec.body());
-        return java.util.Map.of("missile", new float[] {s[0], s[1], s[0]});
+    public java.util.List<MissileCarrier.Grip> grips() {
+        return GRIPS;
     }
 
     @Override
@@ -497,6 +496,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.launchedBy != null) {
             output.putString("launched_by", this.launchedBy.toString());
         }
+        output.putString("held", this.held);
     }
 
     @Override
@@ -506,5 +506,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.armed = input.getBooleanOr("armed", false);
         this.target = input.getLong("target").map(BlockPos::of).orElse(null);
         this.launchedBy = input.getString("launched_by").map(UUID::fromString).orElse(null);
+        this.held = input.getStringOr("held", "");
     }
 }

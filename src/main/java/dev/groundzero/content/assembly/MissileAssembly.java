@@ -29,7 +29,12 @@ public final class MissileAssembly {
         STRATEGIC_NUCLEAR_ONLY("A Strategic body carries nuclear warheads only"),
         WHOLE_WEAPON("Built whole at a Strategic Assembly Hall"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
-        OUTPUT_FULL("Take the finished missile out first");
+        OUTPUT_FULL("Take the finished missile out first"),
+        // The missile assemblers (DESIGN.md §10.4): each builds one class.
+        NOT_FORMED("Finish building the structure first"),
+        NEEDS_WARHEAD("Fit a class %s warhead"),
+        WRONG_CLASS("A class %s warhead: build it at a %s"),
+        NEEDS_BODY("Fit a %s");
 
         public final String key;
 
@@ -78,6 +83,44 @@ public final class MissileAssembly {
         return !nuclear && size != null && size.ordinal() > body.ordinal() ? Problem.WARHEAD_TOO_BIG : Problem.NONE;
     }
 
+    /**
+     * What stops a missile assembler of class {@code size} building these parts (DESIGN.md §10.4): a warhead of its
+     * class, its class's body, a motor that fits that body, and room in the output.
+     */
+    public static Problem check(ItemStack warhead, ItemStack body, ItemStack motor, ItemStack output, SizeClass size) {
+        if (!WarheadAssembly.isWarhead(warhead)) {
+            return Problem.NEEDS_WARHEAD;
+        }
+        if (classOf(warhead) != size) {
+            return Problem.WRONG_CLASS;
+        }
+        if (!(body.getItem() instanceof MissileParts.Body b) || b.sizeClass != size) {
+            return Problem.NEEDS_BODY;
+        }
+        if (!(motor.getItem() instanceof MissileParts.MotorItem m)) {
+            return Problem.NO_MOTOR;
+        }
+        if (!m.motor.fits(size)) {
+            return Problem.MOTOR_DOES_NOT_FIT;
+        }
+        Problem fit = fit(warhead, size);
+        if (fit != Problem.NONE) {
+            return fit;
+        }
+        return output.isEmpty() ? Problem.NONE : Problem.OUTPUT_FULL;
+    }
+
+    /** A warhead's size class (null: not an assembled warhead). */
+    public static @org.jspecify.annotations.Nullable SizeClass classOf(ItemStack warhead) {
+        return warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof dev.groundzero.content.ordnance.charge.ChargeBlock c
+                ? WarheadAssembly.sizeOf(c) : null;
+    }
+
+    /** The motors that fit a class's body, shortest range first. */
+    public static List<MissileParts.Motor> motorsFor(SizeClass size) {
+        return java.util.Arrays.stream(MissileParts.Motor.values()).filter(m -> m != MissileParts.Motor.ICBM && m.fits(size)).toList();
+    }
+
     /** The missile these parts make (guidance and module may be empty). */
     public static ItemStack assemble(ItemStack warhead, MissileParts.Body body, MissileParts.MotorItem motor, ItemStack guidance, ItemStack module) {
         MissileParts.Guidance g = guidance.getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;
@@ -88,8 +131,8 @@ public final class MissileAssembly {
     public static ItemStack missile(MissileSpec spec) {
         ItemStack out = new ItemStack(GZAssembly.MISSILE.get());
         out.set(GZDataComponents.MISSILE.get(), spec);
-        // The item picks its nose (painted as its warhead) by this, like the missile in flight.
-        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.warheadId(), spec.body())),
+        // The item picks its model (its warhead's own missile) by this, like the missile in flight and on its launcher.
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.warheadId())),
                 List.of()));
         return out;
     }

@@ -853,6 +853,112 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   figures cover it), the Ammunition page (Phase 13 guns) and the blueprint slot (Phase 15 loot).
 - Machine layouts carry their texture's width (`MachineLayout.textureWidth`): a window wider than 178 px uses a 512-wide
   sheet with its fill sprites moved to the right half.
+
+### 10.4 One missile per warhead, and an assembler per class (2026-10-23)
+The user's request after §4.5: a new missile assembler for each class below the Strategic Assembly Hall, crafting
+harder class by class (the hall's recipe brought onto the same ladder), and missiles made entirely for their warheads,
+so the head fits the body and the paint runs all the way down. The hall keeps its way of building, with a missile of
+its own for each of its three warheads. The user chose an assembler per class (over one shared one or single-block
+machines) and one missile per warhead, sized by the warhead's class (over every body size it fits).
+
+**Research** (real missiles, by what each warhead is):
+- *Tactical rockets and missiles*: the Honest John (three shipping sections: warhead, motor, fins), the Luna-M / FROG-7
+  (its warhead the body's own diameter, which reads cleaner than a bulbous head; spin verniers behind it), the Scud
+  (welded tank sections, a riveted aft skirt with four trapezoid fins, graphite vanes in the exhaust), the Tochka
+  (lattice rudders), the ATACMS (a cluster dispenser), the Lance (slim, 0.56 m across, and the actual carrier of the
+  W70-3 neutron warhead), the Pershing (two olive-drab stages, both finned).
+- *Strategic missiles*: Minuteman and Peacekeeper (three solid stages, a post-boost bus, re-entry vehicles under a
+  shroud; large solid missiles are stacked upright, stage by stage, lifted by crane and mated), the R-36M (a heavy
+  two-stage liquid missile). The UR-500, which became the Proton launcher, was designed as a heavy two-stage missile to
+  carry a 50-100 Mt Tsar-class warhead; its first stage is a central oxidiser tank ringed by six fuel tanks, each
+  carrying an engine (the core is as wide as the rail gauge allowed).
+- *Markings*: black-and-white roll patterns are test markings (V-2, Redstone, Jupiter: to see roll in flight);
+  service missiles are olive drab or green, ICBMs white or grey; bands and stencils follow the warhead.
+
+**Classes rebalanced** (so each assembler has a family to build; the Heavy class had only the Massive Ordnance
+Warhead): the Thermobaric, Penetrator (Bunker Buster) and EMP payloads become class L (they take the Heavy Warhead
+Casing): real fuel-air, penetrating and flux-compression warheads are among the heaviest. Light (S): HE, Napalm,
+Chemical, Toxic Waste, Dirty. Medium (M): Heavy HE, Cluster, Poison Gas, Smoke, Cryo. Heavy (L): Thermobaric, Bunker
+Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Boosted Fission, Neutron. Intercontinental
+(XXL, the hall): Thermonuclear, Cobalt, Tsar.
+
+**The missiles** (`tools/assets/missiles.py`):
+- *The head is the warhead itself*: the warhead's own block model, its elements merged into the missile's item model
+  at its own size (one texel a pixel, like the missile's flight paint), its lugs left off (a missile warhead hangs on
+  nothing). The body under it is the warhead's own radius, built of the same 16-sided plank sections with the same
+  facets, so the warhead's mounting ring is the joint and the body runs on below it in the warhead's own materials and
+  colours: its paint, bands and stencils, then the missile's own markings, fins and nozzle.
+- *Sizes by class*: Light about 4 blocks, Medium 5.5, Heavy 7.5, Strategic about 9.5 (two stages), Intercontinental
+  about 11.5 (three). A slim warhead too narrow for a missile body (the Bunker Buster's penetrator) stands on a conical
+  adapter. Each missile's shape follows its warhead's character (an improvised, patched rocket for the Toxic Waste and
+  Dirty warheads; a frosted white one for the Cryo; a Lance-like slim one for the Neutron; a UR-500 with its clustered
+  first stage for the Tsar; ...).
+- *One model used everywhere* (the inventory, hands, the screens' preview, the launchers, in flight), with variants
+  that share its texture: with spent stages gone (`_s1`, `_s2`), each spent stage falling (`_stage1`, `_stage2`) and
+  each assembly section (`_part1`...). Picked by custom model data (the warhead's id and the variant). A table written
+  with them (`assets/groundzero/missiles.json`: tail, length, stage and section bounds, radius by height) tells the
+  client where things are: the launchers' arms, the exhaust, the nose's re-entry glow, the spent stages' middles.
+- *The Tsar* loses its tail fins and parachute pack (odd on a missile): a re-entry body with a flared skirt.
+
+**The assemblers** (one block entity class, one per class; multiblocks with GeckoLib models, like the hall):
+- *Light Missile Assembler*: an open concrete stand under an A-frame hoist beam; the missile laid on V-cradles in
+  three sections (motor and fins, body, warhead).
+- *Medium Missile Assembler*: a bay with a slewing jib crane on a post that swings each section from a rack.
+- *Heavy Missile Assembler*: a portal gantry crane that runs on rails along the cradles.
+- *Strategic Missile Assembler*: an upright integration tower; the missile is stacked on its stand stage by stage,
+  work platforms folding in round it.
+- Each takes a warhead of its class, its class's missile body and a motor that fits, with an optional guidance unit and
+  Hardened Electronics, and lays the custom missile out section by section while it works (the sections drawn from the
+  missile's own model). The Ordnance Assembly Bench goes back to warheads only. Assembly time and power grow with class.
+- *Recipes, a ladder*: Light (servos, basic circuits: the early missile age), Medium (electric motors, advanced
+  circuits), Heavy (hydraulics: pressure vessels, tungsten, a military circuit), Strategic (lead-lined casing, two
+  military circuits, sensors), then the Strategic Assembly Hall (superconducting coils and three military circuits).
+
+**As built (2026-10-23).**
+- *The missiles* (`tools/assets/missiles.py`, 21, one per warhead): the warhead's block model elements are the head;
+  the body under it is built of the same plank sections in the warhead's paint (`textures/block/missile/<warhead>.png`,
+  under the block atlas so one item model mixes it with the warhead's texture). Variants share the texture: `_partK`
+  (assembly sections, three for S-XL, four for the hall's), `_sK` (in flight, spent stages gone), `_stageK` (a spent
+  stage falling). Picked by custom model data: the warhead's id (and the old `strategic_`, `icbm_`, `flight_` prefixes,
+  so missiles from older worlds still draw). `assets/groundzero/missiles.json` (read by `MissileShapes` on the client)
+  holds each one's class, tail, length, the warhead's foot, stage tops, engine heights, section tops and radius by
+  height. JEI tells missiles apart by warhead and lists every one; each missile item is named by its warhead.
+- *Drawn by the machines* (`MissileCarrier`, `MachineGeoRenderer`'s missile layer): the launchers' and the hall's models
+  lost their missile geometry; each has a "missile" bone at the tail, where the client draws the missile's own item model
+  (x4), lying (its nose to the front) or standing, turned to face its markings outward. A lying missile is set on its
+  cradles' flat saddles by its own girth where they hold it (`Cradles`), so every missile rests on them.
+- *The launchers' arms fit each missile* (`MissileCarrier.Grip`): the Launch Silo's arm and the Launch Complex's two
+  umbilicals each slide on a collar up their tower's hinge spine to their hold on the missile (just under the warhead;
+  low: an intercontinental missile's second stage, a Strategic one's first, any other two fifths up to the warhead) and
+  telescope (a galvanised inner beam in the painted sleeve, so nothing stretches) in to its skin there. They stay set
+  for the last missile loaded (`gripsFor`, saved), so at lift-off they swing clear where they held it. The complex's
+  five clamp variants are gone.
+- *The assemblers* (`content/assembler`: `AssemblerClass`, `MissileAssemblerBlockEntity`, `GZAssemblers`; models
+  `tools/assets/assemblers.py`): slots warhead, body, motor, guidance, module, output; the warhead and body slots take
+  only the class's own, the motor slot only motors that fit; the readout names a warhead of another class and the
+  assembler it belongs to. Three sections (motor and fins or first stage, body or second stage, warhead), each set down
+  two thirds of the way through its share of the job, with a clank. Unformed it will not start. Built of Launch Pad,
+  Gantry Frame and Crane Rail with an Energy Port and an Item Port; formed, the deck cells are cut to the 14 px deck,
+  the controller to its console and the Energy Port to its housing (`PartCut`).
+  | Assembler | Structure | Time, power | Model |
+  |---|---|---|---|
+  | Light (S) | 3x6x4: two A-frames of Gantry Frame, a Crane Rail beam | 10 s, 20 FE/t | olive A-frames, yellow I-beam, a trolley with a chain hoist that runs back over the two cradles in turn; tool chest, crated parts |
+  | Medium (M) | 5x7x5: the jib's post (Gantry Frame, 4 high) mid-side | 15 s, 40 FE/t | grey post, yellow slewing jib with mast, tie rods and counterweight; it swings to a cantilever rack of crated sections and over the tail and the nose; tool cart |
+  | Heavy (L) | 5x9x6: Crane Rail track down both sides, the crane parked over the back row (Gantry Frame legs, Crane Rail bridge) | 20 s, 80 FE/t | orange portal crane: splayed legs on bogies, twin box girders, trolley and two-fall hoist, driver's cab; it runs to a flatbed of crated sections and back to the cradles; three cradles, rail buffers |
+  | Strategic (XL) | 5x5x13: four Gantry Frame corner columns 11 high, Crane Rail girders on top | 30 s, 160 FE/t | white lattice columns, yellow girders and hoist beam with a trolley; the missile stacked upright on a stand with hold-down posts; three levels of grating work platforms that fold down round it while a missile stands there (their own animation controller) |
+- *The bench* is warheads only (its missile page gone, `assembly_bench_missile` with it): anything an older world left in
+  that page's slots is dropped beside the bench once it loads. The Thermobaric, Penetrator and EMP cores are class L.
+- *Recipes as built*: Light: Machine Casing, 2 Basic Circuits, 2 Servos, 2 steel plates, 2 steel rods. Medium: Machine
+  Casing, Advanced and Basic Circuits, 2 Electric Motors, a Servo, a CRT Display, 2 Dense Steel Plates. Heavy: Machine
+  Casing, Military and Advanced Circuits, 2 Pressure Vessels, 2 Electric Motors, Tungsten Carbide, a Dense Steel Plate.
+  Strategic: Lead-Lined Casing, 2 Military Circuits, a Sensor Array, a Pressure Vessel, 2 Electric Motors, 2 Tungsten
+  Plates. The hall now: Lead-Lined Casing, 3 Military Circuits, 2 Superconducting Coils, a Sensor Array, a Tungsten
+  Plate, a CRT Display.
+- *JEI*: the Missile Assembly category has one recipe per warhead (its assembler shown as the station, the warhead,
+  the class's body, the motors that fit, the optional parts, the missile), the four controllers its stations. Tooltips:
+  a warhead names the assembler its missile is built at, a body the assembler it is fitted at.
+- *Review tool*: `tools/preview/assembler_view.py <model> <warhead> [--laid n] [--anim a --time t]` draws a formed
+  model with a missile on it as the game does (sections, cradle seating, standing or lying).
 ---
 
 ## 11. Explosion engine (`dev.groundzero.blast`)
@@ -2187,6 +2293,18 @@ midpoint; gantry 1×2 column of `F` 9 tall at the opposite edge with an `E` at i
 middle; `y1–y12` `RRRRR / R...R / R...R / R...R / RRRRR`; `y13` (the ground) `HHXHH / HoooH / HoOoH / HoooH / HHEHH`,
 where `O`/`o` are the Silo Hatch's middle and edges (one item) and `E` the Energy Port.
 
+**The missile assemblers** (§10.4, as built 2026-10-23; rows front first, `P` Launch Pad, `F` Gantry Frame, `R` Crane
+Rail, `I` Item Port, `E` Energy Port, `.` must be air; the deck cells cut to the 14 px deck, the controller to its
+console, the Energy Port to its housing):
+- *Light* (3×6×4): `y0 PXP / PPP / PPP / PPP / IPE / PPP`; `y1 F F / .  / … / F.F`; `y2 F F / … / F F` (the A-frames'
+  legs); `y3` an `R` down the middle column, the hoist beam; the middle column under it clear.
+- *Medium* (5×7×5): `y0 PPXPP / PPPPP ×5 / PIPEP`; the jib's post `F` in the right-hand column's middle row, `y1–y4`;
+  the middle three columns clear on `y1–y2`.
+- *Heavy* (5×9×6): `y0 RPXPR / RPPPR ×7 / RIPER`; `y1–y4` the back row `F...F` (the parked crane's legs); `y5` the back
+  row `RRRRR` (its bridge); every other cell over the deck clear (rows 0-7, `y1–y5`).
+- *Strategic* (5×5×13): `y0 PPXPP / PPPPP ×3 / PIPEP`; `y1–y11` `F` at the four corners, the middle 3×3 clear;
+  `y12 R   R / R   R / RRRRR / R   R / R   R`.
+
 **Satellite Uplink** (5×5×4): `y0` 5×5 `R` with `X` front-middle and `E` back-middle; `y1` 3×3 `F` centre column;
 `y2` 5×5 `D` dish ring with `F` centre; `y3` single `F` feed horn mast.
 
@@ -2694,6 +2812,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | The formed Fission Reactor's corners and roof edge are outlined in steel (the user's request): the pillars' angles run up through the top corner pieces into a steel angle along the top of the head band, under the rim, riveted on the same pitch. |
 | 2026-10-23 | The warheads remastered, models and textures, after researching model design (the user's request; §4.4): round sections become true prisms of turned planks, noses follow real profiles (no stair-stepped ziggurats), each type gets its own silhouette and details from real ordnance and the US colour codes, painted with the material library (which learns to paint turned boxes and per-material facing tones); caps never share a plane where they show (checked from above). The reactor's running loop loses its relay ticks (the user: a clicking that never stopped). |
 | 2026-10-23 | Missiles carry their warheads' own models (the user's request; §4.5): the warhead's block model stands on the missile's body, fitted so its mounting ring meets the body's sides (a long one drawn smaller), everywhere a missile is drawn (items through a special item model, in flight, on the three launchers and the hall through a warhead bone and a GeckoLib layer); the painted noses, their per-warhead item models and nose bones went. The tips of four warheads flickered (rings of one radius stacked, their sides in one plane): every nose ring now steps in and a fuze goes inside the ring under it, and the model script fails any coplanar side faces too. |
+| 2026-10-23 | One missile per warhead and an assembler per class (the user's request and choices; §10.4): Light, Medium, Heavy and Strategic Missile Assemblers (multiblocks, crafting harder class by class, the hall's recipe on the same ladder) replace the bench's missile page; each missile is made for its warhead (the warhead's own model as its head on a body of its radius in its paint); the Thermobaric, Bunker Buster and EMP warheads move to class L so the Heavy class has a family; the Tsar loses its fins and parachute pack. |
+| 2026-10-23 | §10.4 as built: the machines draw each missile from its own item model at a bone (no missile geometry in their models); the launchers' arms slide to each missile's own hold and telescope in to its skin (no stretched textures); a lying missile is set on its cradles by its own girth. The four assemblers are one block entity, its slots taking only its class's warhead and body; the Strategic one stacks the missile upright with platforms folding round it. The bench drops anything left in its old missile slots. JEI: one Missile Assembly recipe per warhead, its assembler as the station. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

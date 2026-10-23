@@ -35,11 +35,9 @@ public class GroundZeroClient {
                 e.register(dev.groundzero.client.screen.ItemPreview.State.class, dev.groundzero.client.screen.ItemPreview.Renderer::new));
         modBus.addListener(GroundZeroClient::registerRenderers);
         modBus.addListener(dev.groundzero.client.render.FissionSections::register);
-        // A missile's warhead, drawn from the warhead's own model on the missile (as an item, in flight, on its launcher).
-        modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent e) -> e.register(
-                dev.groundzero.client.render.WarheadSpecialRenderer.TYPE, dev.groundzero.client.render.WarheadSpecialRenderer.Unbaked.MAP_CODEC));
+        // Each missile's shape (its stages, engines and sections), read with its models (tools/assets/missiles.py).
         modBus.addListener((net.neoforged.neoforge.client.event.AddClientReloadListenersEvent e) -> e.addListener(
-                dev.groundzero.GroundZero.id("missile_warheads"), new dev.groundzero.client.render.WarheadMounts.Loader()));
+                dev.groundzero.GroundZero.id("missile_shapes"), new dev.groundzero.client.render.MissileShapes.Loader()));
         dev.groundzero.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);
@@ -58,6 +56,7 @@ public class GroundZeroClient {
         event.register(GZMenus.MISSILE_SILO.get(), MachineScreen::new);
         event.register(GZMenus.ASSEMBLY_BENCH.get(), dev.groundzero.client.screen.AssemblyBenchScreen::new);
         event.register(GZMenus.STRATEGIC_ASSEMBLY.get(), dev.groundzero.client.screen.StrategicAssemblyScreen::new);
+        event.register(GZMenus.MISSILE_ASSEMBLER.get(), dev.groundzero.client.screen.MissileAssemblerScreen::new);
         event.register(GZMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GZMenus.ARC_FURNACE.get(), MachineScreen::new);
         event.register(GZMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
@@ -91,6 +90,15 @@ public class GroundZeroClient {
         // The hall: 13 blocks deep behind its controller, its crane 6 up.
         event.registerBlockEntityRenderer(dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.strategic.GZStrategic.HALL_ENTITY.get(), 7, 13));
+        // The missile assemblers (DESIGN.md §10.4): each drawn as far as its structure reaches, up and out.
+        event.registerBlockEntityRenderer(dev.groundzero.content.assembler.GZAssemblers.LIGHT_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.assembler.GZAssemblers.LIGHT_ENTITY.get(), 4, 6));
+        event.registerBlockEntityRenderer(dev.groundzero.content.assembler.GZAssemblers.MEDIUM_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.assembler.GZAssemblers.MEDIUM_ENTITY.get(), 6, 7));
+        event.registerBlockEntityRenderer(dev.groundzero.content.assembler.GZAssemblers.HEAVY_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.assembler.GZAssemblers.HEAVY_ENTITY.get(), 7, 9));
+        event.registerBlockEntityRenderer(dev.groundzero.content.assembler.GZAssemblers.STRATEGIC_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.assembler.GZAssemblers.STRATEGIC_ENTITY.get(), 14, 5));
         // The Missile Silo: its console and open doors stand a little over the ground; its shaft reaches 14 blocks down.
         event.registerBlockEntityRenderer(dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_ENTITY.get(), 2, 4, 14));

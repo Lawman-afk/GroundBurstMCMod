@@ -1,9 +1,11 @@
 package dev.groundzero.compat.jei;
 
+import java.util.Comparator;
 import java.util.List;
 
 import dev.groundzero.GroundZero;
-import dev.groundzero.content.assembly.AssemblyBenchBlockEntity;
+import dev.groundzero.content.assembler.AssemblerClass;
+import dev.groundzero.content.assembler.GZAssemblers;
 import dev.groundzero.content.assembly.GZAssembly;
 import dev.groundzero.content.assembly.MissileAssembly;
 import dev.groundzero.content.assembly.MissileParts;
@@ -15,6 +17,7 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.ChatFormatting;
@@ -22,58 +25,63 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * JEI category for the Assembly Bench's missile page (DESIGN.md §10): one recipe per body, with the warheads it takes,
- * the motors that fit it, and the optional guidance units and hardened electronics, making a missile.
+ * JEI category for the missile assemblers (DESIGN.md §10.4): one recipe per warhead, each the warhead's own missile:
+ * the assembler of its class, the warhead, its class's body, the motors that fit it and the optional guidance units and
+ * Hardened Electronics.
  */
 final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recipe> {
-    /** One body and what goes with it. */
-    record Recipe(SizeClass body) {}
+    /** One warhead's missile, and the assembler that builds it. */
+    record Recipe(ItemStack warhead, AssemblerClass assembler) {}
 
     static final IRecipeType<Recipe> TYPE = IRecipeType.create(GroundZero.id("missile_assembly"), Recipe.class);
-    private static final int WIDTH = 150, HEIGHT = 40;
+    private static final int WIDTH = 156, HEIGHT = 48;
 
     MissileCategory(IGuiHelper gui) {
         super(TYPE, Component.translatable(WarheadAssembly.JEI_MISSILES), gui.createDrawableItemLike(GZAssembly.MISSILE.get()), WIDTH, HEIGHT);
     }
 
+    /** Every warhead an assembler builds into a missile, the smallest class first. */
     static List<Recipe> recipes() {
-        return java.util.Arrays.stream(SizeClass.values()).filter(s -> s != SizeClass.XXL).map(Recipe::new).toList();   // XXL: the hall's
+        return GZOrdnance.WARHEADS.stream().map(w -> new ItemStack(w.item().get())).filter(WarheadAssembly::isWarhead)
+                .map(s -> {
+                    SizeClass size = MissileAssembly.classOf(s);
+                    AssemblerClass assembler = size == null ? null : AssemblerClass.of(size);
+                    return assembler == null ? null : new Recipe(s, assembler);
+                })
+                .filter(java.util.Objects::nonNull).sorted(Comparator.comparingInt(r -> r.assembler().ordinal())).toList();
     }
 
-    private static List<ItemStack> warheads(SizeClass body) {
-        return GZOrdnance.WARHEADS.stream().map(w -> new ItemStack(w.item().get()))
-                .filter(s -> WarheadAssembly.isWarhead(s) && MissileAssembly.fit(s, body) == MissileAssembly.Problem.NONE).toList();
-    }
-
-    private static List<MissileParts.Motor> motors(SizeClass body) {
-        return java.util.Arrays.stream(MissileParts.Motor.values()).filter(m -> m.fits(body)).toList();
+    /** The missile a recipe makes (its longest-range motor, GPS guidance): also listed in JEI, one per warhead. */
+    static ItemStack output(Recipe recipe) {
+        return MissileAssembly.missile(new MissileSpec(recipe.warhead(), recipe.assembler().size,
+                MissileAssembly.motorsFor(recipe.assembler().size).getLast(), MissileParts.Guidance.GPS, false));
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addInputSlot(1, 5).setStandardSlotBackground().addItemStacks(warheads(recipe.body()));
-        builder.addInputSlot(19, 5).setStandardSlotBackground().add(GZAssembly.BODIES.get(recipe.body().ordinal()).get());
-        builder.addInputSlot(37, 5).setStandardSlotBackground()
-                .addItemStacks(motors(recipe.body()).stream().map(m -> new ItemStack(GZAssembly.MOTORS.get(m.ordinal()).get())).toList());
-        builder.addInputSlot(55, 5).setStandardSlotBackground()
+        SizeClass size = recipe.assembler().size;
+        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 1, 5).setStandardSlotBackground()
+                .add(GZAssemblers.controller(recipe.assembler()).item().get());
+        builder.addInputSlot(23, 5).setStandardSlotBackground().add(recipe.warhead());
+        builder.addInputSlot(41, 5).setStandardSlotBackground().add(GZAssembly.BODIES.get(size.ordinal()).get());
+        builder.addInputSlot(59, 5).setStandardSlotBackground()
+                .addItemStacks(MissileAssembly.motorsFor(size).stream().map(m -> new ItemStack(GZAssembly.MOTORS.get(m.ordinal()).get())).toList());
+        builder.addInputSlot(77, 5).setStandardSlotBackground()
                 .addItemStacks(List.of(new ItemStack(GZAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GZAssembly.GPS_GUIDANCE.get())))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addInputSlot(73, 5).setStandardSlotBackground().add(GZAssembly.HARDENED_ELECTRONICS.get())
+        builder.addInputSlot(95, 5).setStandardSlotBackground().add(GZAssembly.HARDENED_ELECTRONICS.get())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        ItemStack warhead = warheads(recipe.body()).getLast();
-        MissileParts.Motor motor = motors(recipe.body()).getLast();
-        builder.addOutputSlot(128, 5).setOutputSlotBackground()
-                .add(MissileAssembly.missile(new MissileSpec(warhead, recipe.body(), motor, MissileParts.Guidance.GPS, false)));
+        builder.addOutputSlot(136, 5).setOutputSlotBackground().add(output(recipe));
     }
 
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addAnimatedRecipeArrowWidget(MissileAssembly.TICKS).setPosition(96, 5);
-        List<MissileParts.Motor> motors = motors(recipe.body());
-        Component info = recipe.body() == SizeClass.XL
-                ? Component.translatable(WarheadAssembly.JEI_STRATEGIC_INFO, motors.getLast().range, AssemblyBenchBlockEntity.ENERGY_PER_TICK)
-                : Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, recipe.body().name(), motors.getFirst().range, motors.getLast().range,
-                        AssemblyBenchBlockEntity.ENERGY_PER_TICK);
-        builder.addText(info, WIDTH, 10).setPosition(0, HEIGHT - 10).setColor(0xFF606060);
+        AssemblerClass a = recipe.assembler();
+        builder.addAnimatedRecipeArrowWidget(a.ticks).setPosition(114, 5);
+        List<MissileParts.Motor> motors = MissileAssembly.motorsFor(a.size);
+        builder.addText(Component.translatable(WarheadAssembly.JEI_MISSILE_INFO, a.size.name(), motors.getFirst().range, motors.getLast().range),
+                WIDTH, 10).setPosition(0, HEIGHT - 20).setColor(0xFF606060);
+        builder.addText(Component.translatable(WarheadAssembly.JEI_MISSILE_POWER, a.energyPerTick, a.ticks / 20), WIDTH, 10)
+                .setPosition(0, HEIGHT - 10).setColor(0xFF606060);
     }
 }

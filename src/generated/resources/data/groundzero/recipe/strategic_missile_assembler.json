@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundzero:lead_lined_casing",
+    "groundzero:military_circuit",
+    "groundzero:military_circuit",
+    "groundzero:sensor_array",
+    "groundzero:pressure_vessel",
+    "groundzero:electric_motor",
+    "groundzero:electric_motor",
+    "groundzero:tungsten_plate",
+    "groundzero:tungsten_plate"
+  ],
+  "result": {
+    "id": "groundzero:strategic_missile_assembler"
+  }
+}

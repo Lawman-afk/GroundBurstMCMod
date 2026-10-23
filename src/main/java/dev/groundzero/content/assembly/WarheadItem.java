@@ -19,6 +19,8 @@ public class WarheadItem extends BlockItem {
             GZLang.add(GroundZero.MODID + ".warhead.fuze.impact", "Fuze: Impact"),
             GZLang.add(GroundZero.MODID + ".warhead.fuze.barometric", "Fuze: Barometric, bursts %s blocks up")};
 
+    private static final String T_MISSILE = GZLang.add(GroundZero.MODID + ".warhead.missile", "Its missile is built at a %s");
+
     public WarheadItem(ChargeBlock block, Properties properties) {
         super(block, properties.component(GZDataComponents.FUZE.get(), FuzeSettings.IMPACT));
     }
@@ -34,6 +36,11 @@ public class WarheadItem extends BlockItem {
         SizeClass size = WarheadAssembly.sizeOf((ChargeBlock) getBlock());
         if (size != null) {
             tooltip.accept(Component.translatable(size.label).withStyle(ChatFormatting.GRAY));
+            var assembler = dev.groundzero.content.assembler.AssemblerClass.of(size);
+            if (assembler != null) {
+                tooltip.accept(Component.translatable(T_MISSILE, dev.groundzero.content.assembler.GZAssemblers.controller(assembler).block().get().getName())
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
     }
 }
