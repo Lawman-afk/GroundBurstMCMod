@@ -207,11 +207,16 @@ class Surfacer:
     (from, to) standing round the model, such as the neighbouring cells' sections. They are not painted, but they count
     as solid for the edges, contact shadows and grime, so a face that runs on into the next cell has no lip there."""
 
-    def __init__(self, model, seed: int = 7, ao_reach: float = 4.0, period: int | None = None, context=()):
+    def __init__(self, model, seed: int = 7, ao_reach: float = 4.0, period: int | None = None, context=(),
+                 turned: bool = False):
         self.m = model
         self.seed = seed
         self.ao_reach = ao_reach
         self.period = period
+        #: Paint a box turned about one axis where it really stands (its texels' points, normal and steps turned with
+        #: it), so bands, decals and noise run on round a faceted body made of turned boxes. Off by default: models
+        #: painted before it came keep their look.
+        self.turned = turned
         boxes = [b for b in model.boxes if not b.rotation]
         bone_of = getattr(model, "_bone_of", {})
         self._group = {}
@@ -255,7 +260,10 @@ class Surfacer:
         else:
             X, Y, Z = x0 + ii * sx / w, np.full_like(ii, y0), z1 - jj * sz / h
             du, dv = (sx / w, 0, 0), (0, 0, -sz / h)
-        f = Face(b, d, rect, X.astype(np.float32), Y.astype(np.float32), Z.astype(np.float32), _NORMALS[d], du, dv)
+        normal = _NORMALS[d]
+        if self.turned and b.rotation and "axis" in b.rotation:
+            X, Y, Z, normal, du, dv = _turn(b.rotation, X, Y, Z, normal, du, dv)
+        f = Face(b, d, rect, X.astype(np.float32), Y.astype(np.float32), Z.astype(np.float32), normal, du, dv)
         f.period = self.period
         f.border = {"top": jj - 0.5, "bottom": h - jj - 0.5, "left": ii - 0.5, "right": w - ii - 0.5}
         if b.rotation:
@@ -371,6 +379,19 @@ class Surfacer:
         return material.render(f, self._seed(f))
 
 
+def _turn(rot: dict, X, Y, Z, normal, du, dv):
+    """A box's texel points, normal and steps turned as the game turns the element (by its angle about the axis through
+    its origin, right-handed, as JOML's rotation does)."""
+    a = np.radians(float(rot.get("angle", 0.0)))
+    c, s = float(np.cos(a)), float(np.sin(a))
+    m = {"x": np.array([[1, 0, 0], [0, c, -s], [0, s, c]]), "y": np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]),
+         "z": np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])}[rot["axis"]]
+    o = np.array(rot.get("origin", (8, 8, 8)), dtype=np.float32)
+    P = np.stack([X - o[0], Y - o[1], Z - o[2]], axis=-1) @ m.T + o
+    turn = lambda v: tuple(float(q) for q in (m @ np.array(v, dtype=float)))  # noqa: E731
+    return P[..., 0], P[..., 1], P[..., 2], turn(normal), turn(du), turn(dv)
+
+
 def _blit(tex: Tex, rect, rgba: np.ndarray) -> None:
     x, y, w, h = rect
     tex.a[y:y + h, x:x + w] = np.clip(rgba, 0, 255).astype(np.uint8)
@@ -451,11 +472,14 @@ class Material:
     extra: Callable[[Face], np.ndarray] | None = None
     #: Clean lone pixels away (smooth paint and metal); rough stuff (concrete, soot) keeps its grain.
     despeckle: bool = True
+    #: Tone offsets by the way a face points, in place of FACING (a round body made of turned facets wants its sides
+    #: alike, the game lighting them; its ledges a touch darker, against the game's brighter tops).
+    facing: dict | None = None
 
     def value(self, f: Face, seed: int) -> np.ndarray:
         X, Y, Z = f.X, f.Y, f.Z
         s = self.scale
-        v = np.full(f.shape, self.tone + FACING[f.d], dtype=np.float32)
+        v = np.full(f.shape, self.tone + (self.facing or FACING).get(f.d, 0.0), dtype=np.float32)
         v += self.mottle * (noise(f, 18 * s, seed, 3) - 0.5) * 2
         v += self.mottle * 0.6 * (noise(f, 3 * s, seed + 7, 2) - 0.5) * 2
         if self.grain:

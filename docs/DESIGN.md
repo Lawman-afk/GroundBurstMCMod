@@ -319,6 +319,56 @@ next, items after that):**
   drawn in vanilla's manner; the fluids' animated textures. The ordnance (charges, mines, bombs, warheads, the toxic
   sludge they leave) comes in the next pass.
 
+### 4.4 Model design (the warhead remaster, 2026-10-23)
+The user asked for the warheads to be remastered, models as well as textures, with the model design researched first.
+The old warheads were "plus" prisms (a core box and a box either side) in flat palette fills, their noses stair-stepped
+boxes that read as ziggurats, the cluster family one shape in different colours.
+
+**What the research said** (the Blockbench Minecraft Style Guide; hard-surface prop practice; real ordnance):
+- *Shape from the model, detail from the texture*: keep elements few but the object recognisable. Don't build slants
+  and curves as stair steps of elements; turn an element instead. No "mixels" (elements under a pixel, or textures
+  scaled finer than the model): one texel a model pixel, never squashed or stretched.
+- *Silhouette first*, then the big forms, then details; only as much detail as reads at the distance it is seen
+  (a background prop needs a strong silhouette more than fine detail); zoom out and check.
+- *Ramps* of a midtone with a shadow and a highlight first, hue-shifted; purposeful palettes; no pillow or pancake
+  shading; tops brighter than bottoms.
+- *Real ordnance*: the US low-drag bomb shape (Aero 1A: about 8:1, a tangent-ogive nose, nose and tail fuze wells,
+  suspension lugs 30 inches apart and a hoisting lug at the balance point); the Tactical Munitions Dispenser
+  (a strapped canister that splits open at height to scatter its bomblets); the Mk 77 firebomb (an unfinned sheet
+  metal tank); penetrators (long, slim, thick-walled, a sharp hardened nose); re-entry vehicles (the Mk 21: a sharp
+  cone, about 22 inches across and 69 long, in ablative heat shield, on its skirt). Colour codes (MIL-STD-709): a
+  yellow band for a high-explosive filling, light red for incendiary, dark green for a toxic chemical agent.
+
+**How the warheads are built now** (`tools/assets/warheads.py`):
+- *Round sections are true prisms*: 26.x model elements turn by any angle, so a 16-sided section is the union of
+  eight planks laid every 22.5 degrees, each spanning the width one way and exactly one facet the other (squares
+  overlapped would make a star); a small one is an octagon (four planks). Each plank shows only its two ends (two
+  facets) and its caps, so the textures stay small (most 128x64).
+- *Noses follow real profiles* a ring at a time, a whole pixel a step: a tangent ogive (the classic nose), a dome, a
+  blunt mix, a cone (re-entry vehicles); each ring at least 0.12 px inside the one under it.
+- *No flicker*: caps of planks side by side round a section (which meet near its rim) stand 0.06 px apart, every
+  other plank sunk whole (so its texels stay a pixel tall and bands line up facet to facet); planks a quarter turn
+  apart meet only near the middle, which the ring above covers; small sections sink each plank further. A section
+  with no bottom reaches a pixel down into what it stands on, unseen, so a sunk cap leaves no slit. The script looks
+  straight down on every model and fails any place two caps lie within 0.03 px (`check_caps`).
+- *Painting*: the material library paints turned boxes where they really stand (`Surfacer(turned=True)`), so noise,
+  bands and decals run on round the facets; a round body's facets are toned alike (the game lights them) and its
+  ledges a touch darker against the game's brighter tops (a material's `facing`), so a stepped nose reads as a taper;
+  edge lips only where a section really ends. Bands sit on whole texel rows; seams, dashes and bolts on each facet's
+  middle column; trefoils and stencils are laid across the front facets by position.
+- *Each type has its own silhouette and the details of its kind*: HE (olive drab, ogive and nose fuze, a yellow
+  band, two suspension lugs; the Heavy a size up with two bands and a hoisting lug; the Massive Ordnance Warhead huge,
+  riveted seams round it, a blunt orange nose); Thermobaric (stubby, a blunt dome, a ring of fuel ports, two orange
+  bands); Bunker Buster (long and slim, a long sharp tungsten nose); Napalm (a silver firebomb tank, a filler cap, a
+  light red band); the dispensers (Cluster, Poison Gas, Smoke, Cryo, EMP: a strapped canister split down its sides,
+  each in its own colours, the Cryo frosted with vent caps, the EMP with a copper coil between ceramic insulators);
+  Chemical (pale grey, two dark green bands, a filler plug); Toxic Waste (a hooped drum, a glowing toxin-green dome);
+  the nuclear ones (a squat Tactical with an arming panel; a fat ochre Fission with a bolted equator; a sleeker grey
+  Boosted Fission with its boost-gas reservoir; a slim silver Neutron with reflector studs; a rusty Dirty drum with a
+  lid and tape); the Thermonuclear and Cobalt as re-entry vehicles (a dark ablative cone on a banded skirt; the
+  Cobalt's cone banded where its jacket's plates meet); the Tsar on its fins and parachute pack.
+- The missiles keep their noses' colours (`NOSES`, unchanged). The warheads' selection boxes follow the new sizes.
+
 ---
 
 ## 5. Resources and world generation
@@ -2614,6 +2664,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | The Fission Reactor reworked (the user: height did nothing for the rods, the formed model was missed, the preview confused): a rod in every Fuel Channel wherever it stands (up to 64 at 75 FE/t, 4 800 at most, the same energy a rod); exactly one Item, Fluid and Energy Port, in the walls; the controller in a wall or the bottom edge; water left in the core slows its heat. The ghost preview shows one plan, its size set on the controller's screen, and outlines only wrong blocks. Formed, the walls hide and a sectional vessel is drawn over any size (21 section models turned cell by cell: plinth, posts, plates, windows, head, skylights, rod drives, port housings, console). The GUI's core map pages by layer. Details §7.2. |
 | 2026-10-23 | The formed Fission Reactor redesigned to read as one vessel, like the old fixed model, at any size (the user: "make the pieces actually look connected and continuous ... but done in a way that is also modular"; joins flickered; frames round the glass hid the core; the panes' crosses were misaligned): sections are painted as part of the whole (the material library gains `period` and `context`), clad in riveted courses that run on round the vessel; glazing is clear and continuous with a lip round its outside only, picked per cell from its neighbours; the panes and coolant are culled (the coolant's far sides fought the walls' linings); a join check over whole example reactors. Ghost previews draw each block's own model (the Fuel Channel's ghost had been a cube in its packed texture). |
 | 2026-10-23 | The formed Fission Reactor's corners and roof edge are outlined in steel (the user's request): the pillars' angles run up through the top corner pieces into a steel angle along the top of the head band, under the rim, riveted on the same pitch. |
+| 2026-10-23 | The warheads remastered, models and textures, after researching model design (the user's request; §4.4): round sections become true prisms of turned planks, noses follow real profiles (no stair-stepped ziggurats), each type gets its own silhouette and details from real ordnance and the US colour codes, painted with the material library (which learns to paint turned boxes and per-material facing tones); caps never share a plane where they show (checked from above). The reactor's running loop loses its relay ticks (the user: a clicking that never stopped). |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

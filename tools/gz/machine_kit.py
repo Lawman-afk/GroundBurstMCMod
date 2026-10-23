@@ -76,10 +76,11 @@ class Kit:
                                                                                 ORANGE, RED, BLACK, HAZARD)
     GRAPHITE, REFRACTORY = GRAPHITE, REFRACTORY
 
-    def __init__(self, g, parts: dict, seed: int, ao_reach: float = 3.0, period: int | None = None, context=()):
+    def __init__(self, g, parts: dict, seed: int, ao_reach: float = 3.0, period: int | None = None, context=(),
+                 turned: bool = False):
         self.g = g
         self.parts = parts
-        self.S = M.Surfacer(g, seed=seed, ao_reach=ao_reach, period=period, context=context)
+        self.S = M.Surfacer(g, seed=seed, ao_reach=ao_reach, period=period, context=context, turned=turned)
 
     # -- picking parts -------------------------------------------------------------------------------------------------
     def names(self, *keys: str) -> list[str]:

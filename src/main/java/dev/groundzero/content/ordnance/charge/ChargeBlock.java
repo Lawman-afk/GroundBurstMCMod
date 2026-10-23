@@ -132,19 +132,24 @@ public class ChargeBlock extends Block implements EntityBlock {
             case LANDMINE -> Block.box(3, 0, 3, 13, 1.5, 13);
             case BOUNCING_MINE -> Block.box(4, 0, 4, 12, 2.5, 12);
             case CLAYMORE -> Block.box(2, 0, 6.6, 14, 7, 9.7);
-            // Warheads stand nose up on their mounting rings (the tall ones run on above their block).
-            case HE_WARHEAD, NAPALM_WARHEAD, TACTICAL_NUCLEAR_WARHEAD -> Block.box(3.5, 0, 3.5, 12.5, 15, 12.5);
-            case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD -> Block.box(1.5, 0, 1.5, 14.5, 16, 14.5);
-            case NEUTRON_WARHEAD -> Block.box(4, 0, 4, 12, 16, 12);
-            case DIRTY_WARHEAD -> Block.box(2, 0, 2, 14, 14, 14);
-            case THERMONUCLEAR_WARHEAD, COBALT_WARHEAD -> Block.box(2, 0, 2, 14, 16, 14);
-            case TSAR_WARHEAD -> Block.box(1, 0, 1, 15, 16, 15);
-            case CLUSTER_WARHEAD, THERMOBARIC_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD,
-                 CHEMICAL_WARHEAD ->
-                    Block.box(2.5, 0, 2.5, 13.5, 15, 13.5);
-            case BUNKER_BUSTER -> Block.box(5, 0, 5, 11, 16, 11);
-            case HEAVY_WARHEAD -> Block.box(1.5, 0, 1.5, 14.5, 16, 14.5);
-            case MASSIVE_WARHEAD -> Block.box(0.5, 0, 0.5, 15.5, 16, 15.5);
+            // Warheads stand nose up on their mounting rings (the tall ones run on above their block): each box is the
+            // widest of its ring and body (tools/assets/warheads.py) and as tall as it stands, up to its block's top.
+            case HE_WARHEAD -> Block.box(3.25, 0, 3.25, 12.75, 16, 12.75);
+            case NAPALM_WARHEAD -> Block.box(3, 0, 3, 13, 14, 13);
+            case TACTICAL_NUCLEAR_WARHEAD -> Block.box(3.3, 0, 3.3, 12.7, 15, 12.7);
+            case FISSION_WARHEAD -> Block.box(1.1, 0, 1.1, 14.9, 16, 14.9);
+            case BOOSTED_FISSION_WARHEAD -> Block.box(1.7, 0, 1.7, 14.3, 16, 14.3);
+            case NEUTRON_WARHEAD -> Block.box(4.1, 0, 4.1, 11.9, 16, 11.9);
+            case DIRTY_WARHEAD -> Block.box(2.4, 0, 2.4, 13.6, 14, 13.6);
+            case THERMONUCLEAR_WARHEAD, COBALT_WARHEAD -> Block.box(1, 0, 1, 15, 16, 15);
+            case TSAR_WARHEAD -> Block.box(0.6, 0, 0.6, 15.4, 16, 15.4);
+            case THERMOBARIC_WARHEAD -> Block.box(1.7, 0, 1.7, 14.3, 15, 14.3);
+            case TOXIC_WASTE_WARHEAD -> Block.box(2.4, 0, 2.4, 13.6, 15, 13.6);
+            case CLUSTER_WARHEAD, GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD -> Block.box(2.7, 0, 2.7, 13.3, 16, 13.3);
+            case CHEMICAL_WARHEAD -> Block.box(3.1, 0, 3.1, 12.9, 16, 12.9);
+            case BUNKER_BUSTER -> Block.box(4.7, 0, 4.7, 11.3, 16, 11.3);
+            case HEAVY_WARHEAD -> Block.box(1.25, 0, 1.25, 14.75, 16, 14.75);
+            case MASSIVE_WARHEAD -> Block.box(0, 0, 0, 16, 16, 16);
         };
     }
 
