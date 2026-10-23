@@ -4,8 +4,9 @@ the Basic Missile, and the two formed structures (GeckoLib).
 - Component blocks (cubes, see-through where they are frames): Launch Pad (grey concrete with a hazard-striped
   border), Gantry Frame (a red lattice), Gantry Arm (a red truss), Radar Mast (a grey lattice); the Radar Dish and the
   Antenna are modelled (a dish on a stub, a whip with crossbars).
-- Basic Missile (item, 2 blocks tall as drawn; the missile in flight and on the pad is it three times over): a white
-  body with two black roll bands, a red nose, four grey fins with black tips, a dark nozzle.
+- Basic Missile (item, 2 blocks tall as drawn; the missile in flight and on the pad is it four times over): a white
+  body with two black roll bands, four grey fins with black tips, a dark nozzle; on its nose the warhead it carries, the
+  warhead's own model (drawn by the game, WarheadNose, fitted to the body by warhead_mounts), or a bare steel nose.
 - Launch Silo, formed: a concrete pad with a hazard border and a flame trench under the missile (a grate in it),
   four hold-down posts, a control box at the front with a green CRT, the Energy Port's red-hatched housing at the
   back; beside it a red lattice gantry tower 9 blocks tall with a platform on top and an arm reaching in to the
@@ -21,6 +22,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import math  # noqa: E402
 
 import numpy as np  # noqa: E402
 
@@ -76,51 +79,131 @@ NOSE_PARTS = ("nose_base", "nose", "tip")
 
 FLIGHT_DENSITY = 4
 
+# --- a missile's warhead: its own model on the missile's nose --------------------------------------------------------------
+#: Where each missile carries its warhead (item pixels): the half-width of the body under it, the height of the body's
+#: top (the warhead's foot), and the longest a warhead may stand there (a long, slim one is drawn smaller than its ring
+#: would fit, so a penetrator does not tower over the missile).
+AIRFRAMES = {"basic": (2.0, 26.0, 9.0), "strategic": (2.0, 23.0, 9.5), "icbm": (2.2, 22.4, 10.0)}
+#: Scales set by eye: the Tsar rides on the intercontinental missile's third stage as the fat bomb it is, wider than any
+#: stage (as it did before it was drawn from its own model).
+MOUNT_SCALES = {("icbm", "tsar_warhead"): 0.5}
+#: The table the game draws missiles' warheads by (WarheadMounts).
+MOUNTS_FILE = paths.ASSETS / "missile_warheads.json"
+
+
+def warhead_scale(airframe: str, name: str) -> float:
+    """Item pixels a pixel of a warhead's model is drawn on this missile: its mounting ring's corners just inside the
+    body's sides, so the warhead reads as the missile's front section bolted on, unless that makes it too long."""
+    if (airframe, name) in MOUNT_SCALES:
+        return MOUNT_SCALES[(airframe, name)]
+    half, _, longest = AIRFRAMES[airframe]
+    base, _, height = W.mount(name)
+    return round(min((half - 0.03) / (base / math.cos(math.pi / 16)), longest / height), 4)
+
+
+def airframe_warheads(airframe: str) -> list[str]:
+    """The warheads a missile may carry: an intercontinental one only its own three, the others any of the rest (the
+    bench decides which body takes which)."""
+    return list(ICBM_WARHEADS) if airframe == "icbm" else BENCH_WARHEADS
+
+
+def warhead_mounts() -> None:
+    """Writes the table the game places missiles' warheads by (WarheadMounts): for each missile its body's top and, for
+    each warhead it may carry, its scale and its size (for framing it in the inventory)."""
+    table = {}
+    for airframe, (_, top, _) in AIRFRAMES.items():
+        warheads = {}
+        for n in airframe_warheads(airframe):
+            _, half, height = W.mount(n)
+            warheads[n] = {"scale": warhead_scale(airframe, n), "half": half, "height": height}
+        table[airframe] = {"top": top, "warheads": warheads}
+    write_json(MOUNTS_FILE, table)
+
+
+def warhead_reach(airframe: str) -> tuple[tuple, tuple]:
+    """The box (item pixels) round every warhead this missile may carry, as drawn on it: the display fits it in."""
+    _, top, _ = AIRFRAMES[airframe]
+    half = height = 0.0
+    for n in airframe_warheads(airframe):
+        k = warhead_scale(airframe, n)
+        _, h, tall = W.mount(n)
+        half, height = max(half, h * k), max(height, tall * k)
+    return (8 - half, top, 8 - half), (8 + half, top + height, 8 + half)
+
 
 def missile_item() -> None:
-    """The Missile (bare steel nose), and a model for each warhead it can carry: the renderer of a missile in
-    flight picks one by the warhead's id (custom model data), so the nose shows what it carries. A Strategic missile
-    ("strategic_<warhead>") is its own longer model. Each has a flight model too ("flight_<look>"), four texels an
-    item pixel, for the missile in flight, its spent stages and the assembly screens' preview; the inventory keeps the
-    item model (fine details would only be noise at icon size)."""
+    """The Missile: with no warhead, a bare steel nose ("missile"); carrying one, its body ("missile_airframe") and the
+    warhead's own model standing on it, drawn by the game (a composite item model: the body and a "groundzero:warhead"
+    special model, placed by missile_warheads.json). A Strategic missile and an intercontinental one have their own,
+    longer bodies, and models with their spent stages gone ("_s1", "_s2") for the flight. Each has a flight model too
+    ("flight_..."), four texels an item pixel, for the missile in flight, its spent stages and the assembly screens'
+    preview; the inventory keeps the item model (fine details would only be noise at icon size)."""
+    warhead_mounts()
     for pre, d in (("", 1), ("flight_", FLIGHT_DENSITY)):
-        for nose in BENCH_NOSES:
-            missile_model(pre + ("missile" if nose == "none" else f"missile_{nose}"), nose, d)
-            strategic_model(f"{pre}strategic_missile_{nose}", nose, density=d)
-            strategic_model(f"{pre}strategic_missile_{nose}_s1", nose, stages=(2,), density=d)    # in flight, the first stage gone
-        for nose in ICBM_NOSES:
-            icbm_model(f"{pre}icbm_missile_{nose}", nose, density=d)
-            icbm_model(f"{pre}icbm_missile_{nose}_s1", nose, stages=(2, 3), density=d)
-            icbm_model(f"{pre}icbm_missile_{nose}_s2", nose, stages=(3,), density=d)
+        missile_model(pre + "missile", "none", d)
+        missile_model(pre + "missile_airframe", None, d)
+        strategic_model(f"{pre}strategic_missile_none", "none", density=d)
+        strategic_model(f"{pre}strategic_missile_none_s1", "none", stages=(2,), density=d)  # in flight, the first stage gone
+        strategic_model(f"{pre}strategic_missile_airframe", None, density=d)
+        strategic_model(f"{pre}strategic_missile_airframe_s1", None, stages=(2,), density=d)
+        icbm_model(f"{pre}icbm_missile_airframe", density=d)
+        icbm_model(f"{pre}icbm_missile_airframe_s1", stages=(2, 3), density=d)
+        icbm_model(f"{pre}icbm_missile_airframe_s2", stages=(3,), density=d)
         # The spent stages falling away (slice 9a).
         strategic_model(f"{pre}strategic_stage1", "none", stages=(1,), density=d)
-        icbm_model(f"{pre}icbm_stage1", "none", stages=(1,), density=d)
-        icbm_model(f"{pre}icbm_stage2", "none", stages=(2,), density=d)
-    def case(when, model):
-        return {"when": when, "model": {"type": "minecraft:model", "model": f"groundzero:item/{model}"}}
+        icbm_model(f"{pre}icbm_stage1", stages=(1,), density=d)
+        icbm_model(f"{pre}icbm_stage2", stages=(2,), density=d)
+
+    def model(name):
+        return {"type": "minecraft:model", "model": f"groundzero:item/{name}"}
+
+    def carrying(body, warhead, airframe):
+        """The body and, on its nose, the warhead's own model (WarheadSpecialRenderer)."""
+        return {"type": "minecraft:composite", "models": [model(body), {
+            "type": "minecraft:special", "base": f"groundzero:item/{body}",
+            "model": {"type": "groundzero:warhead", "warhead": f"groundzero:{warhead}", "airframe": airframe}}]}
+
+    def case(when, m):
+        return {"when": when, "model": m}
     cases = []
     for pre in ("", "flight_"):
-        cases += [case(pre + nose, f"{pre}missile_{nose}") for nose in BENCH_NOSES if nose != "none"]
-        cases += [case(f"{pre}strategic_{nose}", f"{pre}strategic_missile_{nose}") for nose in BENCH_NOSES]
-        cases += [case(f"{pre}strategic_{nose}_s1", f"{pre}strategic_missile_{nose}_s1") for nose in BENCH_NOSES]
-        cases += [case(f"{pre}icbm_{nose}", f"{pre}icbm_missile_{nose}") for nose in ICBM_NOSES]
-        cases += [case(f"{pre}icbm_{nose}_s{k}", f"{pre}icbm_missile_{nose}_s{k}") for nose in ICBM_NOSES for k in (1, 2)]
-        cases += [case(pre + stage, pre + stage) for stage in ("strategic_stage1", "icbm_stage1", "icbm_stage2")]
-    cases.append(case("flight_none", "flight_missile"))                    # a missile with no warhead, in flight
+        cases += [case(pre + w, carrying(f"{pre}missile_airframe", w, "basic")) for w in BENCH_WARHEADS]
+        for s in ("", "_s1"):
+            cases += [case(f"{pre}strategic_{w}{s}", carrying(f"{pre}strategic_missile_airframe{s}", w, "strategic")) for w in BENCH_WARHEADS]
+            cases.append(case(f"{pre}strategic_none{s}", model(f"{pre}strategic_missile_none{s}")))
+        for s in ("", "_s1", "_s2"):
+            cases += [case(f"{pre}icbm_{w}{s}", carrying(f"{pre}icbm_missile_airframe{s}", w, "icbm")) for w in ICBM_WARHEADS]
+        cases += [case(pre + stage, model(pre + stage)) for stage in ("strategic_stage1", "icbm_stage1", "icbm_stage2")]
+    cases.append(case("flight_none", model("flight_missile")))             # a missile with no warhead, in flight
     write_json(paths.ASSETS / "items" / "missile.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:custom_model_data", "index": 0, "cases": cases,
-        "fallback": {"type": "minecraft:model", "model": "groundzero:item/missile"}}})
+        "fallback": model("missile")}})
+    stale()
 
 
-def missile_model(model_name: str, nose: str, density: int = 1) -> None:
+def stale() -> None:
+    """Deletes the item models (and their textures) of the missiles that once painted their warheads' colours on their own
+    noses, one per warhead and missile: each missile now has one airframe and carries the warhead's own model."""
+    import re
+    old = re.compile(r"(flight_)?(missile|strategic_missile|icbm_missile)_(" + "|".join(W.WARHEADS) + r")(_s[12])?")
+    for folder, ext in ((paths.MODELS / "item", ".json"), (paths.ASSETS / "textures" / "item", ".png")):
+        for f in folder.glob(f"*{ext}"):
+            if old.fullmatch(f.name[:-len(ext)]):
+                f.unlink()
+
+
+def missile_model(model_name: str, nose: str | None, density: int = 1) -> None:
+    """The basic missile: with a bare nose ("none"), or its body alone (None), a warhead's model to stand on it."""
+    parts = [p for p in missile_parts() if nose is not None or p[4] not in NOSE_PARTS]
     m = BlockModel(model_name, tex_size=(64 * density, 64 * density), kind="item", density=density)
-    for name, frm, to, faces, _ in missile_parts():
+    for name, frm, to, faces, _ in parts:
         m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    MP.paint(M.Surfacer(m, seed=101), t, [(name, kind, nose) for name, _, _, _, kind in missile_parts()], MP.Frame(), "basic")
-    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
-    lo, hi = m.bounds()
+    MP.paint(M.Surfacer(m, seed=101), t, [(name, kind, nose or "none") for name, _, _, _, kind in parts], MP.Frame(), "basic")
+    also = None if nose is not None else warhead_reach("basic")
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5, also=also)
+    lo, hi = m.bounds(also)
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
 
     def ctx(scale, base, rotation=(0, 0, 0)):
@@ -167,9 +250,10 @@ STRATEGIC_TAIL = 11.5
 
 
 def strategic_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
-    """(name, from, to, faces, paint) in item pixels, centred on x = z = 8, tail at y -11.5, nose tip at 32: a wide
-    first stage with four big swept fins and four nozzles, an interstage ring, a slimmer second stage, the warhead's
-    nose. Drawn 4x over on the Launch Complex (about 11 blocks) and in flight."""
+    """(name, from, to, faces, paint) in item pixels, centred on x = z = 8, tail at y -11.5, the second stage's top at
+    23: a wide first stage with four big swept fins and four nozzles, an interstage ring, a slimmer second stage, a bare
+    nose to y 32 (a missile carrying a warhead has the warhead's own model there instead). Drawn 4x over on the Launch
+    Complex (about 11 blocks) and in flight."""
     all6 = ("north", "south", "east", "west", "up", "down")
     parts = []
     for i, (x, z) in enumerate(((6.5, 6.5), (8.3, 6.5), (6.5, 8.3), (8.3, 8.3))):
@@ -207,18 +291,20 @@ def strategic_flight_stage(name: str) -> int:
     return 1 if name.startswith(("nozzle", "stage1_", "sfin", "inter_")) else 2
 
 
-def strategic_model(model_name: str, nose: str, stages=(1, 2), density: int = 1) -> None:
+def strategic_model(model_name: str, nose: str | None, stages=(1, 2), density: int = 1) -> None:
     """The Strategic missile as an item (and in flight), or only some of its stages: (2,) once the first has dropped,
-    (1,) the spent first stage falling away."""
+    (1,) the spent first stage falling away. With a bare nose ("none"), or without one (None): a warhead's model stands
+    on its second stage."""
     m = BlockModel(model_name, tex_size=(64 * density, 64 * density), kind="item", density=density)
-    parts = [p for p in strategic_parts() if strategic_flight_stage(p[0]) in stages]
+    parts = [p for p in strategic_parts() if strategic_flight_stage(p[0]) in stages and (nose is not None or p[4] not in NOSE_PARTS)]
     for name, frm, to, faces, _ in parts:
         m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    MP.paint(M.Surfacer(m, seed=103), t, [(name, kind, nose) for name, _, _, _, kind in parts], MP.Frame(), "strategic")
-    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
-    lo, hi = m.bounds()
+    MP.paint(M.Surfacer(m, seed=103), t, [(name, kind, nose or "none") for name, _, _, _, kind in parts], MP.Frame(), "strategic")
+    also = warhead_reach("strategic") if nose is None and 2 in stages else None
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5, also=also)
+    lo, hi = m.bounds(also)
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
 
     def ctx(scale, base, rotation=(0, 0, 0)):
@@ -236,13 +322,13 @@ def strategic_model(model_name: str, nose: str, stages=(1, 2), density: int = 1)
 #: Item pixels its model reaches below the usual missile's tail line (MissileParts.ICBM_TAIL in Java).
 ICBM_TAIL = 11.5
 #: The only warheads it carries (whole weapons: the hall builds them in); every other missile carries the rest.
-ICBM_NOSES = ("thermonuclear_warhead", "cobalt_warhead", "tsar_warhead")
-BENCH_NOSES = [n for n in W.NOSES if n not in ICBM_NOSES]
+ICBM_WARHEADS = ("thermonuclear_warhead", "cobalt_warhead", "tsar_warhead")
+BENCH_WARHEADS = [n for n in W.WARHEADS if n not in ICBM_WARHEADS]
 
 #: Its sections, tail to nose, in item pixels (centred on x = z = 8): (name, half-width, side half-width, y0, y1, paint).
-#: Three solid-fuel stages narrowing upward and dark interstages; then its warhead's nose (ICBM_SHROUD, or the Tsar's
-#: bomb, TSAR_SECTIONS). Drawn upright four times over on the Launch Complex (about 11 blocks) and in flight, and lying
-#: on the Strategic Assembly Hall's cradles.
+#: Three solid-fuel stages narrowing upward and dark interstages; on the third its warhead's own model (a re-entry
+#: vehicle, or the Tsar riding bare, wider than any stage). Drawn upright four times over on the Launch Complex (about 11
+#: blocks) and in flight, and lying on the Strategic Assembly Hall's cradles.
 ICBM_SECTIONS = [
     ("skirt", 3.2, 2.15, -10, -8.6, "iskirt"),
     ("stage1", 3.0, 2.0, -8.6, 6, "istage1"),
@@ -251,34 +337,13 @@ ICBM_SECTIONS = [
     ("inter2", 2.35, 1.55, 16.4, 17.4, "iinter"),
     ("stage3", 2.2, 1.45, 17.4, 22.4, "istage3"),
 ]
-#: The thermonuclear and cobalt warheads' shroud over the third stage, and its tip.
-ICBM_SHROUD = [
-    ("nose0", 2.0, 1.3, 22.4, 26.2, "nose_base"),
-    ("nose1", 1.35, 0.9, 26.2, 29.6, "nose"),
-]
-ICBM_TIP = ((7.5, 29.6, 7.5), (8.5, 32, 8.5))
-#: The Tsar rides bare on the third stage, wider than any stage (slice 8d): its canvas parachute pack wrapped round the
-#: stage's top just above the complex's upper clamp (item y 18-20), the tail cone, the fat body (a white stencil band,
-#: four glowing vents), a rounded nose and its fuze cap; four fins round the pack.
-TSAR_SECTIONS = [
-    ("tpack", 2.7, 1.8, 20.4, 21.8, "tsar_pack"),
-    ("ttail", 3.3, 2.25, 21.8, 23.0, "tsar_tail"),        # (not 2.2: that is the third stage's width, z-fighting)
-    ("tbody", 3.8, 2.55, 23.0, 29.4, "tsar_body"),
-    ("tnose0", 3.2, 2.15, 29.4, 30.6, "tsar_nose"),
-    ("tnose1", 2.2, 1.45, 30.6, 31.4, "tsar_nose"),
-]
-TSAR_TIP = ((7.4, 31.4, 7.4), (8.6, 32, 8.6))
-#: Its fins: a root along the pack out to 4.4, a step against the tail cone out to 4.0 (from its skin).
-TSAR_FIN_ROWS = (("tfin", 20.4, 21.8, 2.7, 4.4), ("tfin2", 21.8, 22.6, 3.3, 4.0))
-#: Its vents, one on each side of the body: lit in flight (item model) and on the GeckoLib models (a glow layer).
-TSAR_VENT = (23.6, 24.8, 0.8)                              # (y0, y1, half-width along the face)
 ICBM_NOZZLES = ((6.3, 6.3), (8.5, 6.3), (6.3, 8.5), (8.5, 8.5))
 #: Four swept fins low on the first stage, one on each side (after the in-game look: it had none): a long root out to
 #: 5.4 and a shorter step above it out to 4.3, from the stage's skin (3.0). (direction: x step, z step)
 ICBM_FINS = {"n": (0, -1), "s": (0, 1), "w": (-1, 0), "e": (1, 0)}
 ICBM_FIN_ROWS = (("fin", -8.6, -3.0, 5.4), ("fin2", -3.0, -0.2, 4.3))
-#: Which of the hall crane's four loads each section comes in: the first stage, the second, the third (the warhead's
-#: nose is the fourth). The bells are the upper stages' engines.
+#: Which of the hall crane's four loads each section comes in: the first stage, the second, the third (the warhead is
+#: the fourth). The bells are the upper stages' engines.
 ICBM_LOAD = {"skirt": 1, "stage1": 1, "inter1": 2, "stage2": 2, "inter2": 3, "stage3": 3, "bell2": 2, "bell3": 3}
 #: Which stage each section flies off with (slice 9a): the first drops with its interstage, then the second with its
 #: own; the third stays on to the end with the warhead. The upper stages' engine bells hang inside the interstage
@@ -287,7 +352,7 @@ ICBM_FLIGHT = {"skirt": 1, "stage1": 1, "inter1": 1, "stage2": 2, "inter2": 2, "
 
 
 def icbm_flight_stage(name: str) -> int:
-    """Which stage a part of the intercontinental missile flies off with (3: on to the end, as the nose does)."""
+    """Which stage a part of the intercontinental missile flies off with (3: on to the end, with the warhead)."""
     if name.startswith(("nozzle", "fin")):
         return 1
     return ICBM_FLIGHT.get(name.rsplit("_", 1)[0], 3)
@@ -323,7 +388,7 @@ def _fins(rows, thick: float, paint: str) -> list[tuple[str, tuple, tuple, tuple
 
 def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
     """The booster: (name, from, to, faces, paint) in item pixels, tail at y -11.5 (four nozzles), up to the third
-    stage's top at 22.4; its four fins. The warhead's nose comes from icbm_nose_parts."""
+    stage's top at 22.4, where its warhead's own model stands; its four fins."""
     parts = []
     for i, (x, z) in enumerate(ICBM_NOZZLES):
         parts.append((f"nozzle{i}", (x, -11.5, z), (x + 1.2, -10, z + 1.2), ("north", "south", "east", "west", "down"), "nozzle"))
@@ -336,40 +401,20 @@ def icbm_parts() -> list[tuple[str, tuple, tuple, tuple, str]]:
     return parts
 
 
-def icbm_nose_parts(nose: str) -> list[tuple[str, tuple, tuple, tuple, str]]:
-    """What sits on the third stage for a warhead, up to y 32: the shroud and its tip, or the Tsar's bomb."""
-    if nose != "tsar_warhead":
-        return _sections(ICBM_SHROUD) + [("tip", ICBM_TIP[0], ICBM_TIP[1], ALL6, "tip")]
-    parts = _sections(TSAR_SECTIONS) + [("ttip", TSAR_TIP[0], TSAR_TIP[1], ALL6, "tsar_tip")]
-    parts += _fins(TSAR_FIN_ROWS, 0.3, "tsar_fin")
-    y0, y1, half = TSAR_VENT
-    r = TSAR_SECTIONS[2][1]                                  # the body's half-width
-    for d, (dx, dz) in ICBM_FINS.items():
-        faces = tuple(f for f in ALL6 if f != INNER[d])
-        if dx == 0:
-            z0, z1 = sorted((8 + dz * r, 8 + dz * (r + 0.15)))
-            parts.append((f"tvent_{d}", (8 - half, y0, z0), (8 + half, y1, z1), faces, "tsar_vent"))
-        else:
-            x0, x1 = sorted((8 + dx * r, 8 + dx * (r + 0.15)))
-            parts.append((f"tvent_{d}", (x0, y0, 8 - half), (x1, y1, 8 + half), faces, "tsar_vent"))
-    return parts
-
-
-def icbm_model(model_name: str, nose: str, stages=(1, 2, 3), density: int = 1) -> None:
+def icbm_model(model_name: str, stages=(1, 2, 3), density: int = 1) -> None:
     """The intercontinental missile as an item (and in flight), or only some of its stages: (2, 3) or (3,) once the
-    first stages have dropped in flight (the nose stays with the third), (1,) or (2,) a spent stage falling away."""
-    size = (128, 64) if nose == "tsar_warhead" else (64, 64)                # the bomb's faces need room
-    m = BlockModel(model_name, tex_size=(size[0] * density, size[1] * density), kind="item", density=density)
+    first stages have dropped in flight (the warhead stays with the third), (1,) or (2,) a spent stage falling away. Its
+    warhead's own model stands on the third stage."""
+    m = BlockModel(model_name, tex_size=(64 * density, 64 * density), kind="item", density=density)
     parts = [p for p in icbm_parts() if icbm_flight_stage(p[0]) in stages]
-    if 3 in stages:
-        parts += icbm_nose_parts(nose)
     for name, frm, to, faces, kind in parts:
-        m.box(name, frm, to, faces=faces, light=15 if kind == "tsar_vent" else 0)
+        m.box(name, frm, to, faces=faces)
     m.layout()
     t = Tex(m.tex_w, m.tex_h)
-    MP.paint(M.Surfacer(m, seed=107), t, [(name, kind, nose) for name, _, _, _, kind in parts], MP.Frame(), "icbm")
-    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5)
-    lo, hi = m.bounds()
+    MP.paint(M.Surfacer(m, seed=107), t, [(name, kind, "none") for name, _, _, _, kind in parts], MP.Frame(), "icbm")
+    also = warhead_reach("icbm") if 3 in stages else None
+    m.fit_display(gui_rotation=(30, 45, 30), gui_margin=0.5, also=also)
+    lo, hi = m.bounds(also)
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]
 
     def ctx(scale, base, rotation=(0, 0, 0)):
@@ -579,27 +624,42 @@ def large_dish() -> None:
     write_json(paths.ASSETS / "items" / "large_radar_dish.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/large_radar_dish"}})
 
 
-def missile_boxes(body: str, nose: str, parts=None, noses=None) -> list[tuple[str, str, str]]:
-    """A structure's missile boxes for missile_paint: (box name, kind, nose), the nose parts once for each warhead
-    (named <nose prefix><warhead>_<part>, as the structures name them)."""
+def missile_boxes(body: str, nose: str, parts=None) -> list[tuple[str, str, str]]:
+    """A structure's missile boxes for missile_paint: (box name, kind, nose), the bare nose's parts named <nose prefix>none_
+    <part> (a missile with a warhead hides them: the game draws the warhead's own model on its "warhead" bone)."""
     out = []
     for name, _, _, _, kind in (parts if parts is not None else missile_parts()):
-        if kind in NOSE_PARTS:
-            out += [(f"{nose}{n}_{name}", kind, n) for n in (noses if noses is not None else BENCH_NOSES)]
-        else:
-            out.append((body + name, kind, "none"))
+        out.append((f"{nose}none_{name}" if kind in NOSE_PARTS else body + name, kind, "none"))
     return out
 
 
-def paint_missiles(g: GeoModel, tex: Tex, glow: Tex, tail_y: float, cz: float) -> None:
+def paint_missiles(g: GeoModel, tex: Tex, tail_y: float, cz: float) -> None:
     """The three missiles a heavy launcher can hold (the complex, the Missile Silo), standing with their tails at
-    tail_y over z = cz: the usual missile, a Strategic one and an intercontinental one with each of its warheads."""
+    tail_y over z = cz: the usual missile, a Strategic one and an intercontinental one (their warheads are drawn by the
+    game from their own models)."""
     S = M.Surfacer(g, seed=97)
     MP.paint(S, tex, missile_boxes("m_", "n_"), MP.Frame(4, (0, tail_y, cz)), "basic")
     MP.paint(S, tex, missile_boxes("s_", "sn_", strategic_parts()), MP.Frame(4, (0, tail_y + 4 * STRATEGIC_TAIL, cz)), "strategic")
-    icbm = [("i_" + name, kind, "none") for name, _, _, _, kind in icbm_parts()]
-    icbm += [(f"in_{nose}_{name}", kind, nose) for nose in ICBM_NOSES for name, _, _, _, kind in icbm_nose_parts(nose)]
-    MP.paint(S, tex, icbm, MP.Frame(4, (0, tail_y + 4 * ICBM_TAIL, cz)), "icbm", glow=glow)
+    MP.paint(S, tex, [("i_" + name, kind, "none") for name, _, _, _, kind in icbm_parts()], MP.Frame(4, (0, tail_y + 4 * ICBM_TAIL, cz)), "icbm")
+
+
+def warhead_bone(g: GeoModel, bone: str, parent: str, airframe: str, tail_y: float, cz: float, tail: float = 0.0) -> None:
+    """A missile's "warhead" bone: no boxes, its pivot at the foot of the warhead it carries (the middle of the body's
+    top, the model four times the item's size): the game draws the warhead's own model there (WarheadNose)."""
+    g.bone(bone, pivot=(0, (AIRFRAMES[airframe][1] + tail) * 4 + tail_y, cz), parent=parent)
+
+
+def place_missile(g: GeoModel, parts, prefix: str, bone: str, nose_prefix: str, nose_bone: str, tail_y: float, cz: float,
+                  tail: float = 0.0) -> None:
+    """A missile's boxes in a structure, its item model four times over with its tail at tail_y over z = cz; the bare
+    nose's parts on their own bone."""
+    for name, frm, to, faces, kind in parts:
+        a = ((frm[0] - 8) * 4, (frm[1] + tail) * 4 + tail_y, (frm[2] - 8) * 4 + cz)
+        b = ((to[0] - 8) * 4, (to[1] + tail) * 4 + tail_y, (to[2] - 8) * 4 + cz)
+        if kind in NOSE_PARTS:
+            g.box(f"{nose_prefix}none_{name}", a, b, faces=faces, bone=nose_bone)
+        else:
+            g.box(prefix + name, a, b, faces=faces, bone=bone)
 
 
 def missile_placard(t: Tex) -> None:
@@ -624,9 +684,8 @@ def silo() -> None:
     g.bone("frame")
     g.bone("arm", pivot=(24, 101.5, 16), parent="frame")        # on its hinge pin, just off the tower's face
     g.bone("missile", pivot=(0, 14, 16), parent="frame")         # its tail on the pad: the body's size scales it from there
-    for nose in BENCH_NOSES:
-        g.bone(f"nose_{nose}", parent="missile")
-    g.exclusive = [{f"nose_{nose}" for nose in BENCH_NOSES}]
+    g.bone("nose_none", parent="missile")                       # the bare nose of a missile with no warhead
+    warhead_bone(g, "warhead", "missile", "basic", 14, 16)       # or the warhead's own model, drawn by the game
     F = "frame"
     pad = [("pad_front", (-24, 0, -8), (24, 14, 10)), ("pad_back", (-24, 0, 22), (24, 14, 40)),
            ("pad_left", (-24, 0, 10), (-6, 14, 22)), ("pad_right", (6, 0, 10), (24, 14, 22))]
@@ -662,14 +721,7 @@ def silo() -> None:
     g.box("hinge_pin", (23.5, 96.5, 15.5), (24.5, 106.5, 16.5), faces=("west", "north", "south", "east", "up", "down"), bone=F)
     # The missile, standing on the pad: the item model four times over (8 blocks), its tail on the pad's top; the
     # gantry arm holds its body below the nose.
-    for name, frm, to, faces, kind in missile_parts():
-        a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 16)
-        b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 16)
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
-        else:
-            g.box("m_" + name, a, b, faces=faces, bone="missile")
+    place_missile(g, missile_parts(), "m_", "missile", "n_", "nose_none", 14, 16)
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
@@ -727,16 +779,14 @@ def launch_complex() -> None:
     g.bone("clamp_high_strategic", parent="arm_high")
     g.bone("clamp_high_icbm", parent="arm_high")
     g.bone("missile", pivot=(0, 14, 32), parent="frame")       # its tail over the trench: the body's size scales it from there
-    for nose in BENCH_NOSES:
-        g.bone(f"nose_{nose}", parent="missile")
+    g.bone("nose_none", parent="missile")                     # its bare nose with no warhead, or the warhead's own model
+    warhead_bone(g, "warhead", "missile", "basic", 14, 32)
     g.bone("strategic", pivot=(0, 14, 32), parent="frame")     # a Strategic missile: its own model, not scaled
-    for nose in BENCH_NOSES:
-        g.bone(f"snose_{nose}", parent="strategic")
+    g.bone("snose_none", parent="strategic")
+    warhead_bone(g, "swarhead", "strategic", "strategic", 14, 32, STRATEGIC_TAIL)
     g.bone("icbm", pivot=(0, 14, 32), parent="frame")          # an intercontinental missile: its own model too
-    for nose in ICBM_NOSES:
-        g.bone(f"inose_{nose}", parent="icbm")
-    g.exclusive = [{f"nose_{nose}" for nose in BENCH_NOSES}, {f"snose_{nose}" for nose in BENCH_NOSES}, {f"inose_{nose}" for nose in ICBM_NOSES},
-                   {"missile", "strategic", "icbm"}, {"clamp_low", "clamp_low_icbm"}, {"clamp_high", "clamp_high_strategic", "clamp_high_icbm"}]
+    warhead_bone(g, "iwarhead", "icbm", "icbm", 14, 32, ICBM_TAIL)
+    g.exclusive = [{"missile", "strategic", "icbm"}, {"clamp_low", "clamp_low_icbm"}, {"clamp_high", "clamp_high_strategic", "clamp_high_icbm"}]
     F = "frame"
     # The deck: 5x5 with a flame trench (z 26-38) running from under the missile out of its west edge.
     deck = [("deck_front", (-40, 0, -8), (40, 14, 26), ("north", "south", "east", "west", "up")),
@@ -825,41 +875,19 @@ def launch_complex() -> None:
     g.box("arm_high_reach_icbm", (10.8, 134, 30), (12, 138, 34), faces=("north", "south", "up", "down"), bone="clamp_high_icbm")
     g.box("arm_high_clamp_icbm", (8.8, 132, 27), (10.8, 140, 37), faces=("west", "north", "south", "up", "down"), bone="clamp_high_icbm")
     arms += ["arm_low_reach", "arm_low_clamp_icbm", "arm_high_reach_icbm", "arm_high_clamp_icbm"]
-    # The missile: the item model four times over (8 blocks), standing over the trench.
-    for name, frm, to, faces, kind in missile_parts():
-        a = ((frm[0] - 8) * 4, frm[1] * 4 + 14, (frm[2] - 8) * 4 + 32)
-        b = ((to[0] - 8) * 4, to[1] * 4 + 14, (to[2] - 8) * 4 + 32)
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
-        else:
-            g.box("m_" + name, a, b, faces=faces, bone="missile")
-    # Or a Strategic missile: its own model four times over (about 11 blocks), its tail on the same line.
-    for name, frm, to, faces, kind in strategic_parts():
-        a = ((frm[0] - 8) * 4, (frm[1] + STRATEGIC_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32)
-        b = ((to[0] - 8) * 4, (to[1] + STRATEGIC_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32)
-        if kind in NOSE_PARTS:
-            for nose in BENCH_NOSES:
-                g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
-        else:
-            g.box("s_" + name, a, b, faces=faces, bone="strategic")
-    # Or an intercontinental missile: its own model four times over (about 11 blocks), its tail on the same line; each
-    # warhead's nose its own bone.
-    def icbm_box(frm, to):
-        return (((frm[0] - 8) * 4, (frm[1] + ICBM_TAIL) * 4 + 14, (frm[2] - 8) * 4 + 32),
-                ((to[0] - 8) * 4, (to[1] + ICBM_TAIL) * 4 + 14, (to[2] - 8) * 4 + 32))
-    for name, frm, to, faces, kind in icbm_parts():
-        g.box("i_" + name, *icbm_box(frm, to), faces=faces, bone="icbm")
-    for nose in ICBM_NOSES:
-        for name, frm, to, faces, kind in icbm_nose_parts(nose):
-            g.box(f"in_{nose}_{name}", *icbm_box(frm, to), faces=faces, bone=f"inose_{nose}")
+    # The missile: the item model four times over (8 blocks), standing over the trench; or a Strategic missile, its
+    # own model four times over (about 11 blocks), its tail on the same line; or an intercontinental one, the same.
+    place_missile(g, missile_parts(), "m_", "missile", "n_", "nose_none", 14, 32)
+    place_missile(g, strategic_parts(), "s_", "strategic", "sn_", "snose_none", 14, 32, STRATEGIC_TAIL)
+    place_missile(g, icbm_parts(), "i_", "icbm", "in_", "icbm", 14, 32, ICBM_TAIL)
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
 
     paint_complex(g, tex, [n for n, _, _, _ in deck], wedge, pipes, posts, tower, girders, braces, decks, rails, hinges)
-    glow = Tex(g.tex_w, g.tex_h, CLEAR)                       # the Tsar's vents (the renderer draws it lit)
-    paint_missiles(g, tex, glow, 14, 32)
-    g.save(tex, glow)
+    paint_missiles(g, tex, 14, 32)
+    g.save(tex)
+    glowmask = paths.ASSETS / "textures" / "block" / "launch_complex_glowmask.png"
+    glowmask.unlink(missing_ok=True)                           # (the Tsar's vents were all it lit: its own model lights them now)
     # The countdown (15 s): the lower umbilical swings away at T-13, the upper one at T-9; both stay away. The clip runs
     # 20 s, past the countdown and the ignition smoke while the complex is still working (the machine loops it), and
     # an empty complex rests in "clear" with both arms still away.

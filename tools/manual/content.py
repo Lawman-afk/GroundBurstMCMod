@@ -946,7 +946,7 @@ entry("ordnance/warheads", "Warheads", "he_warhead", ["he_warhead", "heavy_warhe
                                                       "smoke_warhead", "cryo_warhead", "emp_warhead", "toxic_waste_warhead",
                                                       "chemical_warhead"], [
     text("""
-Warheads are what a [missile](ordnance/launch_site) carries: fit one in a Launch Silo with the missile, and the missile's nose is painted to match it. Each goes off as described below where the missile comes down.
+Warheads are what a [missile](ordnance/launch_site) carries: built into one at the bench, the warhead rides on the missile's nose, so you can tell a missile by the warhead you see on it. Each goes off as described below where the missile comes down.
 
 Warheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, or in the air over its target.
 

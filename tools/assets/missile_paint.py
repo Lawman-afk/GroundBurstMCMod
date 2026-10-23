@@ -9,7 +9,8 @@ cradles.
 A Frame says where the missile's item pixels are in the model. Fine details (panel seams, rivets, data plates,
 stencils) are drawn only where a texel is at most half an item pixel: on the launchers and in flight, not on the
 inventory icon, where they would only be noise. Families: "basic" (missile_parts), "strategic" (strategic_parts),
-"icbm" (icbm_parts and icbm_nose_parts).
+"icbm" (icbm_parts). A missile's warhead is not painted here: the game draws the warhead's own model on its nose
+(launch.py's warhead_mounts); a missile with no warhead has a bare steel nose (NOSES["none"]).
 """
 from __future__ import annotations
 
@@ -80,8 +81,8 @@ def _span(a: np.ndarray, t: float) -> tuple[float, float]:
 
 
 class _Painter:
-    def __init__(self, S: M.Surfacer, tex: Tex, frame: Frame, glow: Tex | None):
-        self.S, self.tex, self.frame, self.glow = S, tex, frame, glow
+    def __init__(self, S: M.Surfacer, tex: Tex, frame: Frame):
+        self.S, self.tex, self.frame = S, tex, frame
 
     def rounded(self, mat: M.Material, strength: float = 0.05) -> M.Material:
         """A material with each side face lit down its middle, darker toward its sides: round bodies read round."""
@@ -136,14 +137,11 @@ OLIVE = factory(M.OLIVE_RAMP, tone=0.5)
 NOZZLE = M.steel(tone=0.34, brushed=0.04)
 PLATE = M.painted(M.BLACK_RAMP, tone=0.7, wear=0.0)               # data plates
 STEEL_LINE = M.steel(tone=0.7)
-CANVAS = M.Material(ramp=_ramp(W.CANVAS), tone=0.55, mottle=0.05, grain=0.05, dither=0.7, edge_light=0.1, edge_dark=0.12,
-                    ao=0.5, grime=0.06, dust=0.03, brushed=0.06, despeckle=False)
-TSAR = factory(_ramp(W.TSAR), tone=0.55)
 
 
-def paint(S: M.Surfacer, tex: Tex, parts, frame: Frame, family: str, glow: Tex | None = None) -> None:
+def paint(S: M.Surfacer, tex: Tex, parts, frame: Frame, family: str) -> None:
     """Paints a missile's parts: [(box name, kind, nose)] as missile_parts / strategic_parts / icbm_parts name them."""
-    p = _Painter(S, tex, frame, glow)
+    p = _Painter(S, tex, frame)
     groups: dict[tuple[str, str], list[str]] = {}
     for name, kind, nose in parts:
         groups.setdefault((kind, nose), []).append(name)
@@ -172,23 +170,9 @@ def _paint_kind(p: _Painter, names, kind: str, nose: str, family: str) -> None:
                     p.paste(f, img, PLATE, plate)
                     p.paste(f, img, STEEL_LINE, plate & (np.abs(iy - 13.8) < 0.13))
         p.mark(names, body)
-    elif kind in ("nose_base", "nose", "tip"):
-        ramp, mark, tip = W.NOSES[nose]
-        mat = factory(_ramp(tip if kind == "tip" else ramp), tone=0.56)
-        p.base(names, p.rounded(mat))
-        if kind == "nose_base" and mark is not None:
-            band = p.rounded(factory(_ramp_round(mark), tone=0.6))
-
-            def marking(f, img, ix, iy, iz, t):
-                if p.frame.side(f) not in sides:
-                    return
-                lo, hi = _span(iy, t)
-                if family == "icbm":                                    # round the shroud's middle
-                    c = (lo + hi) / 2
-                    p.paste(f, img, band, _band(iy, c - 0.4, c + 0.4, t))
-                else:                                                   # at the cone's foot
-                    p.paste(f, img, band, _band(iy, lo, lo + 0.75, t))
-            p.mark(names, marking)
+    elif kind in ("nose_base", "nose", "tip"):                          # the bare nose of a missile with no warhead
+        ramp, _, tip = W.NOSES[nose]
+        p.base(names, p.rounded(factory(_ramp(tip if kind == "tip" else ramp), tone=0.56)))
     elif kind == "fin":                                                 # the basic missile's fins: black trailing edges
         p.base(names, FIN)
         p.mark(names, lambda f, img, ix, iy, iz, t: p.paste(f, img, BLACK, _band(iy, -1, 1.5 + 0.75, t))
@@ -281,34 +265,5 @@ def _paint_kind(p: _Painter, names, kind: str, nose: str, family: str) -> None:
         p.mark(names, stage)
     elif kind == "ifin":
         p.base(names, DARK)
-    elif kind == "tsar_pack":                                           # the canvas parachute pack, strapped
-        p.base(names, CANVAS)
-
-        def strap(f, img, ix, iy, iz, t):
-            if p.frame.side(f) in sides:
-                lo, hi = _span(iy, t)
-                M.darken(img, _band(iy, (lo + hi) / 2 - 0.25, (lo + hi) / 2 + 0.25, t), 0.62)
-        p.mark(names, strap)
-    elif kind in ("tsar_tail", "tsar_body", "tsar_nose", "tsar_fin"):
-        p.base(names, p.rounded(TSAR))
-        if kind == "tsar_body":                                         # a white stencil band near the shoulder
-            p.mark(names, lambda f, img, ix, iy, iz, t: p.paste(f, img, WHITE, _band(iy, 27.6, 28.2, t))
-                   if p.frame.side(f) in sides else None)
-    elif kind == "tsar_tip":
-        p.base(names, M.steel(tone=0.62))
-    elif kind == "tsar_vent":                                           # dark slats over glowing slits
-        def vent(f, img, ix, iy, iz, t):
-            img[...] = W.VENT[0]
-            if p.frame.side(f) in ("up", "down"):
-                return
-            lo = _span(iy, t)[0]
-            pitch = max(t, 0.25)
-            slit = (np.floor((iy - lo) / pitch) % 2) == 0
-            img[slit, :3] = W.VENT[1][:3]
-            if p.glow is not None:
-                x, y, w, h = f.rect
-                g = p.glow.a[y:y + h, x:x + w]
-                g[slit] = W.VENT[1]
-        p.mark(names, vent)
     else:
         raise ValueError(f"no livery for {kind}")

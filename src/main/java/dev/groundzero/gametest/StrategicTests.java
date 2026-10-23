@@ -168,8 +168,9 @@ final class StrategicTests {
                     "a Tsar missile: " + spec);
             var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
             helper.assertTrue(look != null && look.strings().getFirst().equals("icbm_tsar_warhead"), "its own model: " + look);
-            helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && hall.hiddenBones().contains("nose_thermonuclear_warhead")
-                    && !hall.hiddenBones().contains("nose_tsar_warhead"), "the Tsar on the cradles: " + hall.hiddenBones());
+            var shown = hall.shownWarhead();
+            helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && shown != null
+                    && shown.warhead() == dev.groundzero.content.ordnance.GZOrdnance.TSAR_WARHEAD.block().get(), "the Tsar on the cradles: " + shown);
             helper.assertTrue(hall.takeApart(), "taken apart");
             helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GZStrategic.TERTIARY_STAGE.get())
                     && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GZStrategic.TWIN_BOOSTED_CORE.get())

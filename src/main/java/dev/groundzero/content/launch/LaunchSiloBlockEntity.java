@@ -44,7 +44,7 @@ import com.geckolib.util.GeckoLibUtil;
  * the back of the pad) and runs a 10 s countdown with a siren, then the missile lights and lifts off the pad. An armed
  * silo that stops being ready (power, missile or warhead gone) disarms itself.
  */
-public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
+public class LaunchSiloBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, WarheadCarrier {
     public static final int ENERGY_CAPACITY = 200_000, LAUNCH_COST = 100_000, COUNTDOWN = 200;
     public static final int SLOT_MISSILE = 0;
     private static final int RECHECK_INTERVAL = 40;
@@ -427,7 +427,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     }
 
     // --- model ------------------------------------------------------------------------------------------------------------
-    /** The model shows the missile while one is loaded, its nose painted as its warhead, so the client hears about both slots. */
+    /** The model shows the missile while one is loaded, carrying its warhead, so the client hears about both slots. */
     @Override
     protected void onSlotChanged(int slot) {
         super.onSlotChanged(slot);
@@ -454,17 +454,19 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.inventory.getItem(SLOT_MISSILE).isEmpty()) {
             return Set.of("missile");
         }
-        // Every nose but the fitted warhead's (a bare steel nose with none).
+        // A bare steel nose with no warhead; with one, the warhead's own model stands there instead (shownWarhead).
         var spec = missile();
-        String id = spec == null ? "" : spec.warheadId();
-        String shown = "nose_" + (id.isEmpty() ? "none" : id);
-        Set<String> hidden = new java.util.HashSet<>();
-        for (String nose : NOSES) {
-            if (!nose.equals(shown)) {
-                hidden.add(nose);
-            }
+        return spec != null && spec.warheadId().isEmpty() ? Set.of() : Set.of("nose_none");
+    }
+
+    /** The loaded missile's warhead, its armed lamp lit while the launcher counts down (ACTIVE: synced with the block). */
+    @Override
+    public WarheadCarrier.@org.jspecify.annotations.Nullable Shown shownWarhead() {
+        if (!isFormed()) {
+            return null;
         }
-        return hidden;
+        return WarheadCarrier.standing(missile(), getBlockState().hasProperty(dev.groundzero.content.machine.MachineBlock.ACTIVE)
+                && getBlockState().getValue(dev.groundzero.content.machine.MachineBlock.ACTIVE));
     }
 
     /** The missile drawn the size of its body. */
@@ -477,10 +479,6 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         float[] s = dev.groundzero.content.assembly.MissileParts.scale(spec.body());
         return java.util.Map.of("missile", new float[] {s[0], s[1], s[0]});
     }
-
-    /** The silo model's nose bones (tools/assets/launch.py), one per warhead. */
-    protected static final List<String> NOSES = java.util.stream.Stream.concat(java.util.stream.Stream.of("nose_none"),
-            dev.groundzero.content.ordnance.GZOrdnance.WARHEADS.stream().map(w -> "nose_" + w.block().getId().getPath())).toList();
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

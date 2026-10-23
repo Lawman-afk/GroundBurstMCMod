@@ -35,6 +35,11 @@ public class GroundZeroClient {
                 e.register(dev.groundzero.client.screen.ItemPreview.State.class, dev.groundzero.client.screen.ItemPreview.Renderer::new));
         modBus.addListener(GroundZeroClient::registerRenderers);
         modBus.addListener(dev.groundzero.client.render.FissionSections::register);
+        // A missile's warhead, drawn from the warhead's own model on the missile (as an item, in flight, on its launcher).
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent e) -> e.register(
+                dev.groundzero.client.render.WarheadSpecialRenderer.TYPE, dev.groundzero.client.render.WarheadSpecialRenderer.Unbaked.MAP_CODEC));
+        modBus.addListener((net.neoforged.neoforge.client.event.AddClientReloadListenersEvent e) -> e.addListener(
+                dev.groundzero.GroundZero.id("missile_warheads"), new dev.groundzero.client.render.WarheadMounts.Loader()));
         dev.groundzero.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);

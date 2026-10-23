@@ -54,17 +54,16 @@ import net.minecraft.world.level.storage.ValueOutput;
  * intercontinental missile waits in the output (and on the cradles) for the Launch Complex. TAKE APART puts a finished
  * one back into its parts. Pipes feed and empty it through its Item Port.
  */
-public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController {
+public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController,
+        dev.groundzero.content.launch.WarheadCarrier {
     public static final int SLOT_PRIMARY = 0, SLOT_SECONDARY = 1, SLOT_JACKET = 2, SLOT_BOOSTER = 3, SLOT_GUIDANCE = 4, SLOT_MODULE = 5,
             SLOT_OUTPUT = 6;
     public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1;
     public static final int ENERGY_PER_TICK = 250, CAPACITY = 400_000;
     /** The missile's sections as the crane lays them: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
-    /** Which nose the cradles show: none yet, a thermonuclear warhead's, a cobalt one's, the Tsar. */
+    /** Which warhead the cradles show: none yet, a thermonuclear warhead, a cobalt one, the Tsar. */
     public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2, LOOK_TSAR = 3;
-    /** The model's nose bone for each look (tools/assets/strategic.py). */
-    private static final String[] NOSE_BONES = {"", "nose_thermonuclear_warhead", "nose_cobalt_warhead", "nose_tsar_warhead"};
     private static final int RECHECK_INTERVAL = 40;
 
     private static final String T_MAKES = GZLang.add(GroundZero.MODID + ".strategic.makes", "Makes: %s");
@@ -398,7 +397,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
 
     /**
      * The model: unformed, nothing (the controller is its own block); formed, the hall, with the sections laid so far on
-     * the cradles and, once the last is down, the nose of the warhead it carries.
+     * the cradles and, once the last is down, the warhead it carries (its own model, {@link #shownWarhead}).
      */
     @Override
     public Set<String> hiddenBones() {
@@ -409,12 +408,21 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         for (int k = this.laid + 1; k <= SECTIONS - 1; k++) {
             hidden.add("sec" + k);
         }
-        for (int look = LOOK_THERMONUCLEAR; look <= LOOK_TSAR; look++) {
-            if (this.laid < SECTIONS || this.look != look) {
-                hidden.add(NOSE_BONES[look]);
-            }
-        }
         return hidden;
+    }
+
+    /** The warhead lying on the cradles at the missile's nose, once the crane has laid it (the last load). */
+    @Override
+    public dev.groundzero.content.launch.WarheadCarrier.@org.jspecify.annotations.Nullable Shown shownWarhead() {
+        if (!isFormed() || this.laid < SECTIONS || this.look == LOOK_NONE) {
+            return null;
+        }
+        var warhead = switch (this.look) {
+            case LOOK_COBALT -> dev.groundzero.content.ordnance.GZOrdnance.COBALT_WARHEAD;
+            case LOOK_TSAR -> dev.groundzero.content.ordnance.GZOrdnance.TSAR_WARHEAD;
+            default -> dev.groundzero.content.ordnance.GZOrdnance.THERMONUCLEAR_WARHEAD;
+        };
+        return new dev.groundzero.content.launch.WarheadCarrier.Shown(warhead.block().get(), "icbm", "warhead", false, true, 0);
     }
 
     @Override

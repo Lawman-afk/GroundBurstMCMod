@@ -17,6 +17,7 @@ import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import dev.groundzero.content.launch.WarheadCarrier;
 import dev.groundzero.content.machine.AnimatedMachine;
 import dev.groundzero.content.machine.MachineBlockEntity;
 import dev.groundzero.content.machine.MachineTank;
@@ -35,7 +36,8 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. A
- * model whose texture has a {@code _glowmask} draws it lit, whatever the light round it ({@link GlowLayer}).
+ * model whose texture has a {@code _glowmask} draws it lit, whatever the light round it ({@link GlowLayer}). A machine
+ * holding a missile ({@link WarheadCarrier}) has its warhead's own model drawn on the missile ({@link WarheadLayer}).
  */
 public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
     private final int height;
@@ -64,6 +66,35 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private void withGlow() {
         // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
         withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
+        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new WarheadLayer(this));
+    }
+
+    /**
+     * The warhead of the missile a launcher (or the hall) holds: its own block model, drawn at the model's warhead bone
+     * (the middle of the top of the missile's body) by {@link WarheadNose}. The launchers' models draw their missiles
+     * four times the item's size, so the bone's pose is scaled up to the item's pixels first.
+     */
+    private static final class WarheadLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends com.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
+        WarheadLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
+            super(renderer);
+        }
+
+        @Override
+        public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<com.geckolib.cache.model.GeoBone, com.geckolib.renderer.base.PerBoneRender<R>> consumer) {
+            WarheadCarrier.Shown shown = pass.getGeckolibData(WARHEAD);
+            if (shown == null || !pass.willRender()) {
+                return;
+            }
+            pass.model().getBone(shown.bone()).ifPresent(bone -> consumer.accept(bone, (info, b, collector) -> {
+                PoseStack pose = info.poseStack();
+                pose.scale(4, 4, 4);
+                if (shown.lying()) {
+                    pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));          // the missile's up toward the model's front
+                }
+                pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
+                WarheadNose.submit(pose, collector, shown.warhead(), shown.airframe(), shown.armed(), info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
+            }));
+        }
     }
 
     /**
@@ -93,6 +124,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundzero_bone_offsets",
             new TypeToken<java.util.Map<String, float[]>>() {});
+    private static final DataTicket<WarheadCarrier.Shown> WARHEAD = DataTicket.create("groundzero_warhead", WarheadCarrier.Shown.class);
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
@@ -100,6 +132,12 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
             ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, machine.boneOffsets(partialTick));
+        }
+        if (animatable instanceof WarheadCarrier carrier) {
+            WarheadCarrier.Shown shown = carrier.shownWarhead();
+            if (shown != null) {
+                ((GeoRenderState) renderState).addGeckolibData(WARHEAD, shown);
+            }
         }
         captureTank(animatable, (GeoRenderState) renderState);
     }

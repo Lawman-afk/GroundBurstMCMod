@@ -261,19 +261,25 @@ class BlockModel:
                 fn(tex, f.rect, d)
 
     # -- display ---------------------------------------------------------------------------------------------------------
-    def bounds(self) -> tuple[Vec3, Vec3]:
+    def bounds(self, also: tuple[Vec3, Vec3] | None = None) -> tuple[Vec3, Vec3]:
+        """The box round every element (and round {also} too, if given)."""
         lo = [min(b.frm[i] for b in self.boxes) for i in range(3)]
         hi = [max(b.to[i] for b in self.boxes) for i in range(3)]
+        if also is not None:
+            lo = [min(lo[i], also[0][i]) for i in range(3)]
+            hi = [max(hi[i], also[1][i]) for i in range(3)]
         return tuple(lo), tuple(hi)  # type: ignore[return-value]
 
-    def fit_display(self, gui_rotation: tuple[float, float, float] | None = None, gui_margin: float = 1.0) -> None:
+    def fit_display(self, gui_rotation: tuple[float, float, float] | None = None, gui_margin: float = 1.0,
+                    also: tuple[Vec3, Vec3] | None = None) -> None:
         """Fits an oversized model into every display context and centres it.
 
         The GUI transform is fitted using the model's projected silhouette under its GUI rotation, so a long
         object can lie diagonally across the slot instead of shrinking to a speck. Other contexts scale by the
-        largest dimension.
+        largest dimension. {also}: a box drawn with the model that is not among its elements (a missile's warhead,
+        drawn by the game from its own model), fitted in too.
         """
-        lo, hi = self.bounds()
+        lo, hi = self.bounds(also)
         extent = max(hi[i] - lo[i] for i in range(3))
         k = min(1.0, 16.0 / extent)
         centre = [(lo[i] + hi[i]) / 2 - 8 for i in range(3)]

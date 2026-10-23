@@ -275,10 +275,10 @@ weathering references):
 - *Missiles* (`missile_paint.py`): a factory finish, smooth and clean (no wear, no corner shading: a round body has
   no corners, its plus-shaped boxes only stand in for one), lit edges, each side face lit down its middle so a body
   reads round; markings laid out in the missile's own item pixels, so a missile looks the same as an item, in flight,
-  standing on any launcher and lying in the hall. Roll bands and quadrants, warhead noses and their bands, black
-  fins with white leading edges, ring seams with lit lips, rivet rings round interstages, data plates, a cable raceway
-  and a stencilled marking on the intercontinental first stage, the Tsar's canvas pack, stencil band and glowing
-  vents. Fine details only where a texel is at most half an item pixel (not on the inventory icon).
+  standing on any launcher and lying in the hall. Roll bands and quadrants, black fins with white leading edges, ring
+  seams with lit lips, rivet rings round interstages, data plates, a cable raceway and a stencilled marking on the
+  intercontinental first stage (their warheads are the warheads' own models since 2026-10-23, §4.5). Fine details
+  only where a texel is at most half an item pixel (not on the inventory icon).
 - *Flight models:* each missile has a second model, `flight_<look>`, four texels an item pixel (the model tool gained
   a texel density): a missile in flight and its spent stages are the item model drawn four times its size, so they
   had been four times coarser than the same missile standing on its launcher. `MissileParts.flight` picks it in
@@ -367,7 +367,33 @@ boxes that read as ziggurats, the cluster family one shape in different colours.
   Boosted Fission with its boost-gas reservoir; a slim silver Neutron with reflector studs; a rusty Dirty drum with a
   lid and tape); the Thermonuclear and Cobalt as re-entry vehicles (a dark ablative cone on a banded skirt; the
   Cobalt's cone banded where its jacket's plates meet); the Tsar on its fins and parachute pack.
-- The missiles keep their noses' colours (`NOSES`, unchanged). The warheads' selection boxes follow the new sizes.
+- The warheads' selection boxes follow the new sizes. Missiles carry the warheads' own models (§4.5).
+
+### 4.5 Missiles carry their warheads' own models (2026-10-23)
+The user asked for the missiles to show the warhead models they are built with, not a generic stepped nose painted in
+the warhead's colours. A missile now carries the warhead's own block model as its front section, everywhere it is
+drawn: as an item (the inventory, a hand, the ground, the assembly screens' preview), in flight, standing on the
+Launch Silo, the Launch Complex and the Missile Silo, and lying on the Strategic Assembly Hall's cradles.
+- *Fit:* a warhead stands on the top of the missile's body, drawn at the scale that puts its mounting ring's corners
+  just inside the body's sides (so it reads as the missile's front section, bolted on), unless that would make it
+  longer than the airframe allows (9 item pixels on the usual missile, 9.5 on the Strategic one, 10 on the
+  intercontinental one: the long, slim Bunker Buster is drawn smaller, its penetrator rising from the body's top
+  rather than towering over the missile). The Tsar keeps the look it had: wider than any stage of its missile
+  (scale set by eye). A missile drawn stretched along its length (a Light or a Heavy body) does not stretch its
+  warhead: it takes the body's scale across as its own. The warhead's markings face the launcher's front.
+- *Data:* `tools/assets/launch.py` measures each warhead's model (`warheads.mount`: its mounting ring, its reach, its
+  height) and writes `assets/groundzero/missile_warheads.json` (for each airframe its body's top; for each warhead it
+  may carry, the scale): `WarheadMounts` reads it with the client's resources.
+- *Drawing:* `WarheadNose` draws the warhead's block model (unarmed; armed, its lamp lit, while a launcher counts
+  down) at the body's top. Items: each missile's item model is a composite of its airframe (`missile_airframe`,
+  `strategic_missile_airframe`, `icbm_missile_airframe` and their flight models and spent-stage variants) and a
+  `groundzero:warhead` special model (`WarheadSpecialRenderer`, naming the warhead and the airframe), so the missile in
+  flight, drawn from its item model, carries it too. Launchers and the hall: their GeckoLib models have an empty
+  bone at the warhead's foot (`warhead`, `swarhead`, `iwarhead`) and the block entity says what to draw there
+  (`WarheadCarrier`); `MachineGeoRenderer`'s warhead layer draws it. The per-warhead painted noses, their item models
+  (one per warhead and airframe) and the launchers' and hall's nose bones are gone; a missile with no warhead keeps its
+  bare steel nose (`nose_none`, `snose_none`). The Tsar's vents glow by its own model's light, so the complex's and
+  the hall's glow masks went.
 
 ---
 
@@ -802,7 +828,7 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
 - **Hardened Electronics** (the one module so far): an EMP field never makes the missile a dud (without it, an even
   chance).
 - The **Missile** item (`groundzero:missile` component, `MissileSpec`) stacks to 1, is named by its body ("Heavy
-  Missile") and lists warhead, fuze, range, guidance and hardening; its nose model follows the warhead. It replaces
+  Missile") and lists warhead, fuze, range, guidance and hardening; it carries its warhead's model (§4.5). It replaces
   the Basic Missile and the silo's warhead slot: the **Launch Silo takes one missile**, and its range is the missile's.
   The Launch Computer shows each silo's range and will not arm a silo whose target is beyond it.
 - JEI: a Missile Assembly category (one recipe per body, with the warheads and motors that fit it).
@@ -1416,7 +1442,7 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   Core** (a plutonium ingot, 3 HE Charges, a depleted uranium ingot, a lead plate, a military circuit). Blast profiles
   with the nuclear terrain table and the `nuke` look and sound (mushroom cloud sized by the crater). Models: a squat
   olive body with a dark cap and a yellow-over-black band; a fat ochre body with a dark nose and a red band; both with a
-  radiation trefoil on the front. Missile noses follow them.
+  radiation trefoil on the front. Missiles carry them (§4.5).
 - **Delivery only.** A missile's impact or burst gives the full yield (`Charges.nuclear`) and a contamination zone
   (tactical 90 blocks for a day, fission 180 blocks for two days; an airburst from a barometric fuze leaves half the
   strength). Set off any other way (dropped, shot, caught in a blast) a nuclear warhead **fizzles**
@@ -1425,8 +1451,9 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   nothing else (`MissileAssembly.fit`); only the Liquid-fuel Stage fits it (2500 blocks); only a Launch Complex fires it
   (`MissileSpec.needsComplex`). Its own model (`launch.py` `strategic_parts()`, custom model data `strategic_<warhead>`):
   a wide first stage in black-and-white roll quadrants with four big swept black fins and four nozzles, a riveted
-  interstage, a slimmer white second stage with a data plate, the warhead's nose; about 11 blocks on the complex (its
-  own bones, `strategic` / `snose_*`) and in flight (lifted by `STRATEGIC_TAIL`, as item models stop at y -16).
+  interstage, a slimmer white second stage with a data plate, its warhead (§4.5); about 11 blocks on the complex (its
+  own bone, `strategic`, the warhead at `swarhead`) and in flight (lifted by `STRATEGIC_TAIL`, as item models stop at
+  y -16).
 - **Class XL** (after the in-game look: the warheads' tooltips said S and M): both nuclear cores are class XL
   (Strategic) and take the new lead-lined **Strategic Warhead Casing** (a Heavy casing, lead and dense plates), so the
   warhead's class matches the Strategic missile that carries it.
@@ -1633,8 +1660,8 @@ are delivered.
 - **Warheads** (`he_warhead`, `heavy_warhead`, `thermobaric_warhead`, `cluster_warhead`, `bunker_buster_warhead`,
   `napalm_warhead`, `massive_warhead` "Massive Ordnance Warhead", once the MOAB): placed, they stand nose up on a
   mounting ring (ogive noses, each its own colours and bands); still armable charges with an impact fuze. The napalm
-  warhead throws a pool 10 blocks round (no length to spread along). A missile's nose is painted as its warhead (item
-  model variants chosen by custom model data in flight; nose bones on the silo model).
+  warhead throws a pool 10 blocks round (no length to spread along). A missile carries its warhead's own model (§4.5;
+  until 2026-10-23 its nose was painted as its warhead).
 - **Scale.** These warheads and the Basic Missile are the **tactical, conventional tier** (size classes S/M of §9):
   deliberately far weaker than the full-scale weapons still to come (the nuclear and special bombs of §15-16, the L/XL
   casings and strategic missiles of §9, the superweapons of §19), which arrive with their own launch structures,
@@ -1691,11 +1718,13 @@ the long horizontal hall (over an upright assembly tower).
   ("Intercontinental") and the new motor **ICBM** (3,000 blocks, the Launch Computer's map; no bench motor item), so the
   launch, flight and computer code take it unchanged. Its warhead blocks (Thermonuclear, Cobalt) are `wholeWeapon()`
   kinds: nuclear (they fizzle any other way), refused by the bench (`MissileAssembly.Problem.WHOLE_WEAPON`), not
-  taken apart there; a Launch Complex fires them, and since 9b a Missile Silo too. Its own model (`launch.py` `ICBM_SECTIONS`, item models
-  `icbm_missile_<warhead>`, the complex's `icbm` / `inose_*` bones; lifted by `ICBM_TAIL` in flight): three olive-drab
+  taken apart there; a Launch Complex fires them, and since 9b a Missile Silo too. Its own model (`launch.py` `ICBM_SECTIONS`, item model
+  `icbm_missile_airframe` with the warhead's own model on it (§4.5), the complex's `icbm` bone, the warhead at
+  `iwarhead`; lifted by `ICBM_TAIL` in flight): three olive-drab
   solid stages narrowing upward with a white, a yellow and a white band, dark riveted interstages, a gunmetal skirt
   and four nozzles, four swept fins in two steps round the first stage (added after the user's look: the first model
-  had none), the warhead's shroud; about 11 blocks on the complex. The complex's umbilicals gained a clamp each
+  had none), its warhead on the third stage (a re-entry vehicle; the shroud it had until 2026-10-23 went, §4.5);
+  about 11 blocks on the complex. The complex's umbilicals gained a clamp each
   for it (lower at its first stage, upper at its third), and the hall draws the same sections lying down.
 - **Effects**: thermonuclear (crater 150, wrecks 220, fire 260, deadly to 260, injures 420; fallout 360 for three
   days); cobalt (crater 70, deadly to 110; fallout 300 round the burst plus four zones strung downwind 200 blocks apart,
@@ -1711,10 +1740,9 @@ the long horizontal hall (over an upright assembly tower).
   military circuits, a dense steel plate): the hall builds a **Tsar Mega-bomb** missile in a minute and a half
   (`StrategicAssembly.ticks`). Effects as in the table above, its own heavier, longer sound set (`blast/tsar_*`, 17 s
   near) and a cloud to 500 blocks (the cap's limit raised to 520). Models: the block (`warheads.py` `tsar()`: vents lit
-  regardless of the light round them); on the missile the bomb rides bare on the third stage from just above the
-  complex's upper clamp, wider than any stage (`launch.py` `TSAR_SECTIONS`; each warhead now brings its own nose,
-  `icbm_nose_parts`), and lies the same way on the hall's cradles. The vents glow on the complex and the hall through
-  GeckoLib's auto-glow layer, since turned on for every machine with a glowmask (§4.1). No aircraft yet: the
+  regardless of the light round them); on the missile the bomb rides bare on the third stage, wider than any
+  stage, and lies the same way on the hall's cradles: since 2026-10-23 its own block model (§4.5; before,
+  `launch.py`'s `TSAR_SECTIONS`), its vents lit by the model's own light. No aircraft yet: the
   parachute pack stays packed, and the Tsar goes off where its missile hits, like the H-bomb.
 - **The Twin Boosted Core** (2026-10-23, after 9b, the user's request: the Tsar's power far beyond the other two whole
   weapons on the same primary): the Tsar's own primary, two Boosted Fission Cores fired together (recipe: 2 Boosted
@@ -2665,6 +2693,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | The formed Fission Reactor redesigned to read as one vessel, like the old fixed model, at any size (the user: "make the pieces actually look connected and continuous ... but done in a way that is also modular"; joins flickered; frames round the glass hid the core; the panes' crosses were misaligned): sections are painted as part of the whole (the material library gains `period` and `context`), clad in riveted courses that run on round the vessel; glazing is clear and continuous with a lip round its outside only, picked per cell from its neighbours; the panes and coolant are culled (the coolant's far sides fought the walls' linings); a join check over whole example reactors. Ghost previews draw each block's own model (the Fuel Channel's ghost had been a cube in its packed texture). |
 | 2026-10-23 | The formed Fission Reactor's corners and roof edge are outlined in steel (the user's request): the pillars' angles run up through the top corner pieces into a steel angle along the top of the head band, under the rim, riveted on the same pitch. |
 | 2026-10-23 | The warheads remastered, models and textures, after researching model design (the user's request; §4.4): round sections become true prisms of turned planks, noses follow real profiles (no stair-stepped ziggurats), each type gets its own silhouette and details from real ordnance and the US colour codes, painted with the material library (which learns to paint turned boxes and per-material facing tones); caps never share a plane where they show (checked from above). The reactor's running loop loses its relay ticks (the user: a clicking that never stopped). |
+| 2026-10-23 | Missiles carry their warheads' own models (the user's request; §4.5): the warhead's block model stands on the missile's body, fitted so its mounting ring meets the body's sides (a long one drawn smaller), everywhere a missile is drawn (items through a special item model, in flight, on the three launchers and the hall through a warhead bone and a GeckoLib layer); the painted noses, their per-warhead item models and nose bones went. The tips of four warheads flickered (rings of one radius stacked, their sides in one plane): every nose ring now steps in and a fuze goes inside the ring under it, and the model script fails any coplanar side faces too. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

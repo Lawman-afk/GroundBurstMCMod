@@ -41,7 +41,9 @@ for high explosive, light red for incendiary, dark green for a toxic chemical.
 - Cluster Bomblet (item): a small yellow can with a ring of tail tabs and a ribbon.
 - Napalm Fire: vanilla's fire, drawn on its own block.
 
-NOSES gives each warhead's nose colours to the missile (launch.py): a missile shows the warhead it carries.
+A missile carries its warhead's own model on its nose: the game draws it there (WarheadNose), fitted to the missile's
+body by launch.py's warhead_mounts, which measures each warhead with `mount` here. NOSES is the bare nose of a missile
+with no warhead.
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\warheads.py
 """
@@ -196,22 +198,27 @@ def profile(shape: str, x: float, R: float, L: float) -> float:
     return math.sqrt(max(0.0, rho * rho - (x * L) ** 2)) + R - rho
 
 
-def nose(m: BlockModel, name: str, R: float, y0: float, L: float, shape: str, steps: int, min_r: float = 0.7) -> tuple[list[list[str]], float]:
-    """A nose of {steps} rings on a body of radius R from y0, {L} long: each ring the profile's radius at its middle.
-    Returns the rings (bottom up) and the nose's top."""
-    rings = []
-    last = R
+def nose(m: BlockModel, name: str, R: float, y0: float, L: float, shape: str, steps: int, min_r: float = 0.7) -> tuple[list[list[str]], float, float]:
+    """A nose of up to {steps} rings on a body of radius R from y0, {L} long: each ring the profile's radius at its
+    middle and at least 0.12 px inside the ring under it (it reaches a pixel down into that ring, unseen: rings of one
+    radius would put their sides in one plane and flicker). Where the profile thins below {min_r} the nose ends and its
+    last ring runs on to the top. Returns the rings (bottom up), the nose's top and its last ring's radius."""
     radii = []
+    last = R
     for i in range(steps):
-        r = max(min_r, min(profile(shape, (i + 0.5) / steps, R, L), last - 0.12))   # each ring clear of the one under it
-        radii.append(r)
-        last = r
+        r = min(profile(shape, (i + 0.5) / steps, R, L), last - 0.12)
+        if r < min_r and radii:
+            break
+        radii.append(max(r, min_r))
+        last = radii[-1]
+    rings = []
     for i, r in enumerate(radii):
-        a, b = y0 + L * i / steps, y0 + L * (i + 1) / steps          # (callers give whole-pixel steps: L / steps = 1 or 2)
+        a = y0 + L * i / steps
+        b = y0 + L * (i + 1) / steps if i + 1 < len(radii) else y0 + L        # (whole-pixel steps: L / steps = 1 or 2)
         above = radii[i + 1] if i + 1 < len(radii) else 0.0
         stagger = "alternate" if sides_for(r) == 16 and above >= 0.55 * r else "full"
         rings.append(section(m, f"{name}{i}", round(r, 3), round(a, 3), round(b, 3), sides_for(r), caps=("up",), stagger=stagger))
-    return rings, y0 + L
+    return rings, y0 + L, radii[-1]
 
 
 # --- painting round things -----------------------------------------------------------------------------------------------------
@@ -300,6 +307,7 @@ class Build:
     def __init__(self, name: str, tex: int = 128):
         self.m = BlockModel(name, tex_size=(tex, tex), kind="block")
         self.m.open_ok = set()
+        self.last_r: float | None = None                       # the radius of the last nose ring (a tip goes inside it)
         self.groups: dict[str, list[str]] = {}
         self.round: dict[str, tuple[bool, bool, bool]] = {}       # a round section's plank -> (top lip, bottom lip, grime at foot)
 
@@ -315,7 +323,7 @@ class Build:
                                        stagger=stagger), top, bottom, foot)
 
     def nose(self, group: str, R: float, y0: float, L: float, shape: str, steps: int, min_r: float = 0.7) -> float:
-        rings, top = nose(self.m, group, R, y0, L, shape, steps, min_r)
+        rings, top, self.last_r = nose(self.m, group, R, y0, L, shape, steps, min_r)
         for names in rings:
             self.add(group, names, False, False, False)
         return top
@@ -377,7 +385,12 @@ def straps(w: Build, r: float, ys) -> None:
 
 
 def tip(w: Build, r: float, y0: float, h: float, group: str = "tip") -> float:
-    w.ring(group, r, y0, y0 + h, caps=("up",), top=True, foot=False)
+    """A fuze or cap on the nose: at least 0.12 px inside the ring under it (it reaches down into it), so their sides
+    never share a plane. Each tip after the first goes inside the one before."""
+    if w.last_r is not None:
+        r = min(r, w.last_r - 0.12)
+    w.ring(group, round(r, 3), y0, y0 + h, caps=("up",), top=True, foot=False)
+    w.last_r = r
     return y0 + h
 
 
@@ -619,11 +632,11 @@ def napalm() -> list[str]:
     w.ring("cap", 1.0, 11.0, 12.6, caps=("up",), top=True, foot=False, sides=8)                   # the filler cap
     for n in w.groups["cap"]:                                 # off to one side of the dome
         b = w.m.get(n)
-        b.frm = (b.frm[0] + 2.0, b.frm[1], b.frm[2] - 1.0)
-        b.to = (b.to[0] + 2.0, b.to[1], b.to[2] - 1.0)
+        b.frm = (b.frm[0] + 2.2, b.frm[1], b.frm[2] - 0.9)
+        b.to = (b.to[0] + 2.2, b.to[1], b.to[2] - 0.9)
         if b.rotation:
             o = b.rotation["origin"]
-            b.rotation["origin"] = (o[0] + 2.0, o[1], o[2] - 1.0)
+            b.rotation["origin"] = (o[0] + 2.2, o[1], o[2] - 0.9)
     look = Look(body=metal(STEEL, 0.62, brushed=0.06), nose=metal(STEEL, 0.62, brushed=0.06), base=BASE, fuze=metal(RED, 0.5),
                 cap=metal(GUNMETAL, 0.5))
     look.on("body", lambda k, f, img: band(k, f, img, 5.0, 6.0, paint(RED, 0.625, 0.3)))
@@ -844,21 +857,38 @@ def tsar() -> list[str]:
 
 # --- the missile's view of each warhead, the bomblet, the fire, the blockstates ------------------------------------------------
 
-#: A missile's nose for each warhead it can carry: (nose ramp, band colour or None, tip ramp). "none": bare steel.
-NOSES = {
-    "none": (STEEL, None, STEEL),
-    "he_warhead": (OLIVE, YELLOW[4], STEEL), "heavy_warhead": (OLIVE, YELLOW[4], STEEL),
-    "thermobaric_warhead": (GUNMETAL, ORANGE[4], GUNMETAL), "cluster_warhead": (CASING, YELLOW[4], STEEL),
-    "bunker_buster_warhead": (TUNGSTEN, YELLOW[4], TUNGSTEN), "napalm_warhead": (STEEL, RED[4], STEEL),
-    "massive_warhead": (ORANGE, ORANGE[4], STEEL), "gas_warhead": (GAS, YELLOW[5], STEEL),
-    "smoke_warhead": (STEEL, WHITE[5], STEEL), "cryo_warhead": (G.CRYO_CAN, WHITE[6], STEEL),
-    "emp_warhead": (EMP_CASING, P.COPPER[5], STEEL), "chemical_warhead": (STEEL, GREEN[3], STEEL),
-    "toxic_waste_warhead": (P.TOXIN, P.TOXIN[4], WASTE), "tactical_nuclear_warhead": (NUKE_NOSE, YELLOW[4], STEEL),
-    "fission_warhead": (NUKE_NOSE, RED[4], STEEL), "boosted_fission_warhead": (NUKE_NOSE, CYAN[4], STEEL),
-    "neutron_warhead": (STEEL, CYAN[4], STEEL), "dirty_warhead": (RUST, YELLOW[4], STEEL),
-    "thermonuclear_warhead": (NUKE_NOSE, YELLOW[4], STEEL), "cobalt_warhead": (BLUE_BLACK, COBALT[4], STEEL),
-    "tsar_warhead": (TSAR, P.WHITE_CERAMIC[5], STEEL),
-}
+#: The nose of a missile with no warhead: (nose ramp, band colour or None, tip ramp), bare steel. (A missile with a warhead
+#: carries the warhead's own model, launch.py's warhead_mounts.)
+NOSES = {"none": (STEEL, None, STEEL)}
+
+#: Every warhead, in the order they are built and listed.
+WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead", "bunker_buster_warhead", "napalm_warhead",
+            "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
+            "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
+            "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead"]
+
+
+def mount(name: str) -> tuple[float, float, float]:
+    """How a warhead stands on a missile (launch.py's warhead_mounts), from its saved model: the radius of the widest round
+    section standing on its floor (its mounting ring; the Tsar's parachute pack), as the middle of a facet (its corners
+    reach about 2% further); how far it reaches out from its axis anywhere (lugs, fins); and its height."""
+    import json
+    data = json.loads((paths.MODELS / "block" / f"{name}.json").read_text(encoding="utf-8"))
+    base = half = height = 0.0
+    for el in data["elements"]:
+        (x0, y0, z0), (x1, y1, z1) = el["from"], el["to"]
+        height = max(height, y1)
+        if abs((x0 + x1) / 2 - 8) < 0.05 and abs((z0 + z1) / 2 - 8) < 0.05 and y0 <= 0.5:
+            base = max(base, (x1 - x0) / 2, (z1 - z0) / 2)
+        rot = el.get("rotation")
+        a = math.radians(rot["angle"]) if rot and rot.get("axis") == "y" else 0.0
+        ox, oz = (rot["origin"][0], rot["origin"][2]) if rot else (8.0, 8.0)
+        for x in (x0, x1):
+            for z in (z0, z1):
+                wx = math.cos(a) * (x - ox) + math.sin(a) * (z - oz) + ox
+                wz = -math.sin(a) * (x - ox) + math.cos(a) * (z - oz) + oz
+                half = max(half, abs(wx - 8), abs(wz - 8))
+    return round(base, 3), round(half, 3), round(height, 3)
 
 
 def bomblet() -> None:
@@ -889,9 +919,6 @@ def napalm_fire() -> None:
         write_json(paths.MODELS / "block" / f"napalm_fire_floor{k}.json", {"parent": f"minecraft:block/fire_floor{k}", "render_type": "minecraft:cutout"})
     variants = {f"age={a}": [{"model": f"groundzero:block/napalm_fire_floor{k}"} for k in (0, 1)] for a in range(4)}
     write_json(paths.ASSETS / "blockstates" / "napalm_fire.json", {"variants": variants})
-
-
-WARHEADS = [n for n in NOSES if n not in ("none",)]
 
 
 def blockstates() -> None:
@@ -936,12 +963,52 @@ def check_caps(name: str, step: float = 0.05, tol: float = 0.03) -> float:
     return float(fight.sum()) * step * step
 
 
+def check_faces(name: str, tol: float = 0.03) -> list[str]:
+    """Upright faces that would flicker: two pointing the same way (turned elements turned) on one plane (within {tol})
+    and overlapping, as rings of one radius one above the other would be."""
+    import json
+    data = json.loads((paths.MODELS / "block" / f"{name}.json").read_text(encoding="utf-8"))
+    normals = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0)}
+    faces = []
+    for el in data["elements"]:
+        rot = el.get("rotation")
+        a = math.radians(rot["angle"]) if rot and rot.get("axis") == "y" else 0.0
+        c, s = math.cos(a), math.sin(a)
+        ox, oz = (rot["origin"][0], rot["origin"][2]) if rot else (8.0, 8.0)
+        (x0, y0, z0), (x1, y1, z1) = el["from"], el["to"]
+        for d in el["faces"]:
+            if d not in normals:
+                continue
+            nx, _, nz = normals[d]
+            # The face's middle and its half-width along it, before turning.
+            px, pz = (x1 if nx > 0 else x0 if nx < 0 else (x0 + x1) / 2), (z1 if nz > 0 else z0 if nz < 0 else (z0 + z1) / 2)
+            half = (z1 - z0) / 2 if nx else (x1 - x0) / 2
+            wx, wz = c * (px - ox) + s * (pz - oz) + ox, -s * (px - ox) + c * (pz - oz) + oz       # (as the game turns: +y, right-handed)
+            n = (c * nx + s * nz, -s * nx + c * nz)
+            t = (-n[1], n[0])
+            faces.append((el["name"], d, n, n[0] * wx + n[1] * wz, t[0] * wx + t[1] * wz, half, y0, y1))
+    issues = []
+    for i in range(len(faces)):
+        n1, d1, nn1, off1, mid1, half1, ya1, yb1 = faces[i]
+        for j in range(i + 1, len(faces)):
+            n2, d2, nn2, off2, mid2, half2, ya2, yb2 = faces[j]
+            if nn1[0] * nn2[0] + nn1[1] * nn2[1] < 0.9999 or abs(off1 - off2) > tol:
+                continue
+            across = min(mid1 + half1, mid2 + half2) - max(mid1 - half1, mid2 - half2)
+            up = min(yb1, yb2) - max(ya1, ya2)
+            if across > 0.01 and up > 0.01:
+                issues.append(f"{n1}/{d1} vs {n2}/{d2}: {across * up:.2f} px2")
+    return issues
+
+
 def main() -> None:
     names = build_all()
     for n in names:
         area = check_caps(n)
         if area > 0:
             print(f"  cap flicker [{n}]: {area:.2f} px2 seen from above")
+        for issue in check_faces(n)[:6]:
+            print(f"  face flicker [{n}]: {issue}")
     blockstates()
     bomblet()
     G.item_defs(["cluster_bomblet"])

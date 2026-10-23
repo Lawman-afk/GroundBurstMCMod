@@ -8,7 +8,8 @@
   a control desk at the controller; the Energy Port and the Item Port as plates in the floor where their blocks are
   (after the in-game look: a cabinet stood up where the port is a floor block), a pallet of crates beside them. The intercontinental missile
   lies on the cradles, nose to the front, laid section by section while the hall works (bones sec1-sec3, then the
-  warhead's shroud, nose_<warhead>); the crane runs back and forth over it and lowers its hook ("working").
+  warhead, its own model drawn by the game at the bone "warhead"); the crane runs back and forth over it and lowers its
+  hook ("working").
 """
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ import numpy as np  # noqa: E402
 
 from gz import materials as M  # noqa: E402
 from gz import palette as P  # noqa: E402
+from gz import paths  # noqa: E402
 from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
@@ -92,9 +94,9 @@ def hall() -> None:
     g.bone("hook", pivot=(0, HOOK_TOP, CRANE_Z), parent="crane")
     for k in (1, 2, 3):
         g.bone(f"sec{k}", parent="frame")
-    for nose in L.ICBM_NOSES:
-        g.bone(f"nose_{nose}", parent="frame")
-    g.exclusive = [{f"nose_{nose}" for nose in L.ICBM_NOSES}]
+    # The warhead's foot, once the last load is down: the game draws its own model there, lying along the missile
+    # (WarheadNose). The pivot is the middle of the third stage's top.
+    g.bone("warhead", pivot=(0, AXIS_Y, Z_TAIL - (L.AIRFRAMES["icbm"][1] + L.ICBM_TAIL) * 4), parent="frame")
     F = "frame"
     sides = ("north", "south", "east", "west")
     g.box("floor", (-56, 0, -8), (56, FLOOR_Y, 200), faces=("up",) + sides, bone=F)
@@ -137,25 +139,20 @@ def hall() -> None:
         g.box(n, (x, HOOK_TOP, CRANE_Z - 0.5), (x + 1, TROLLEY_Y, CRANE_Z + 0.5), faces=sides, bone="cable")
     g.box("hook_block", (-4, HOOK_TOP - 8, CRANE_Z - 3), (4, HOOK_TOP, CRANE_Z + 3), faces=sides + ("up", "down"), bone="hook")
     g.box("hook", (-1, HOOK_TOP - 14, CRANE_Z - 1), (1, HOOK_TOP - 8, CRANE_Z + 1), faces=sides + ("down",), bone="hook")
-    # The missile on the cradles, by the crane's loads; the nose once for each warhead it may carry (the Tsar's is its
-    # bomb, wider than the stages).
+    # The missile on the cradles, by the crane's loads (its warhead, the last, is drawn from its own model).
     missile = []
     for name, frm, to, faces, kind in L.icbm_parts():
         a, b = lying(frm, to)
         g.box(f"m_{name}", a, b, faces=tuple(FACE[f] for f in faces), bone=f"sec{section_of(name)}")
         missile.append((f"m_{name}", kind, "none"))
-    for nose in L.ICBM_NOSES:
-        for name, frm, to, faces, kind in L.icbm_nose_parts(nose):
-            a, b = lying(frm, to)
-            g.box(f"n_{nose}_{name}", a, b, faces=tuple(FACE[f] for f in faces), bone=f"nose_{nose}")
-            missile.append((f"n_{nose}_{name}", kind, nose))
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
     paint_hall(g, tex, columns, girders, rails, cradles)
-    glow = Tex(g.tex_w, g.tex_h, L.CLEAR)                    # the Tsar's vents (the renderer draws it lit)
     # The missile lying on the cradles, painted as it stands on a launcher (its markings in its own item pixels).
-    MP.paint(M.Surfacer(g, seed=47), tex, missile, MP.Frame(4, (0, AXIS_Y, Z_TAIL - 4 * L.ICBM_TAIL), lying=True), "icbm", glow=glow)
-    g.save(tex, glow)
+    MP.paint(M.Surfacer(g, seed=47), tex, missile, MP.Frame(4, (0, AXIS_Y, Z_TAIL - 4 * L.ICBM_TAIL), lying=True), "icbm")
+    g.save(tex)
+    # (The Tsar's vents were all its glow mask lit: the Tsar's own model lights them now.)
+    (paths.ASSETS / "textures" / "block" / "strategic_assembly_hall_glowmask.png").unlink(missing_ok=True)
     # Working (12 s, looped while the hall runs): the crane runs from over the tail to the first stage and lowers its
     # hook, on to the third stage and lowers it again, and back; the cables pay out as the hook drops.
     work = Animation("working", 12.0, loop=True)

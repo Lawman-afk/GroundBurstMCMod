@@ -312,9 +312,9 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
 
     // --- model --------------------------------------------------------------------------------------------------------------
     /**
-     * The model shows the loaded missile standing in the shaft: a Strategic one is its own long model ("strategic",
-     * noses "snose_*"), an intercontinental one its own too ("icbm", noses "inose_*"), any other the usual missile
-     * scaled by its body ("missile", noses "nose_*").
+     * The model shows the loaded missile standing in the shaft: a Strategic one is its own long model ("strategic"), an
+     * intercontinental one its own too ("icbm"), any other the usual missile scaled by its body ("missile"), each
+     * carrying its warhead's own model (or a bare nose, "nose_none" / "snose_none", with none).
      */
     @Override
     public Set<String> hiddenBones() {
@@ -331,18 +331,11 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
                 default -> "missile";
             });
         }
-        String id = spec == null || spec.warheadId().isEmpty() ? "none" : spec.warheadId();
-        String shown = switch (body) {
-            case XL -> "snose_";
-            case XXL -> "inose_";
-            default -> "nose_";
-        } + id;
-        for (String nose : NOSES) {
-            for (String bone : new String[] {nose, "s" + nose, "i" + nose}) {
-                if (!bone.equals(shown)) {
-                    hidden.add(bone);
-                }
-            }
+        // A bare nose with no warhead (an intercontinental missile always has one); with one, the warhead's own model.
+        hidden.add("nose_none");
+        hidden.add("snose_none");
+        if (spec != null && spec.warheadId().isEmpty()) {
+            hidden.remove(body == SizeClass.XL ? "snose_none" : "nose_none");
         }
         return hidden;
     }

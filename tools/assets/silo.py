@@ -165,16 +165,14 @@ def formed() -> None:
     g.bone("beacon_l", parent=F)                                  # the console's beacons flash in turn while it counts down
     g.bone("beacon_r", parent=F)
     g.bone("missile", pivot=(0, TAIL, CZ), parent=F)             # its tail on the launch ring: the body's size scales it from there
-    for nose in L.BENCH_NOSES:
-        g.bone(f"nose_{nose}", parent="missile")
+    g.bone("nose_none", parent="missile")                        # its bare nose with no warhead, or the warhead's own model
+    L.warhead_bone(g, "warhead", "missile", "basic", TAIL, CZ)
     g.bone("strategic", pivot=(0, TAIL, CZ), parent=F)           # a Strategic missile: its own model, not scaled
-    for nose in L.BENCH_NOSES:
-        g.bone(f"snose_{nose}", parent="strategic")
+    g.bone("snose_none", parent="strategic")
+    L.warhead_bone(g, "swarhead", "strategic", "strategic", TAIL, CZ, L.STRATEGIC_TAIL)
     g.bone("icbm", pivot=(0, TAIL, CZ), parent=F)                # an intercontinental missile: its own model too
-    for nose in L.ICBM_NOSES:
-        g.bone(f"inose_{nose}", parent="icbm")
-    g.exclusive = [{f"nose_{nose}" for nose in L.BENCH_NOSES}, {f"snose_{nose}" for nose in L.BENCH_NOSES},
-                   {f"inose_{nose}" for nose in L.ICBM_NOSES}, {"missile", "strategic", "icbm"}]
+    L.warhead_bone(g, "iwarhead", "icbm", "icbm", TAIL, CZ, L.ICBM_TAIL)
+    g.exclusive = [{"missile", "strategic", "icbm"}]
     sides = ("north", "south", "east", "west")
 
     # The collar: the top layer round the opening, its top the ground.
@@ -292,32 +290,11 @@ def formed() -> None:
     g.box("duct", (-7.9, FLOOR - 15, CZ - 7.9), (7.9, FLOOR - 14, CZ + 7.9), faces=("up",), bone=F)
     g.open_ok.add(("duct", "*"))
 
-    # The missile: as on the Launch Complex, the item model four times over, its tail on the ring.
-    for name, frm, to, faces, kind in L.missile_parts():
-        a = ((frm[0] - 8) * 4, frm[1] * 4 + TAIL, (frm[2] - 8) * 4 + CZ)
-        b = ((to[0] - 8) * 4, to[1] * 4 + TAIL, (to[2] - 8) * 4 + CZ)
-        if kind in L.NOSE_PARTS:
-            for nose in L.BENCH_NOSES:
-                g.box(f"n_{nose}_{name}", a, b, faces=faces, bone=f"nose_{nose}")
-        else:
-            g.box("m_" + name, a, b, faces=faces, bone="missile")
-    for name, frm, to, faces, kind in L.strategic_parts():
-        a = ((frm[0] - 8) * 4, (frm[1] + L.STRATEGIC_TAIL) * 4 + TAIL, (frm[2] - 8) * 4 + CZ)
-        b = ((to[0] - 8) * 4, (to[1] + L.STRATEGIC_TAIL) * 4 + TAIL, (to[2] - 8) * 4 + CZ)
-        if kind in L.NOSE_PARTS:
-            for nose in L.BENCH_NOSES:
-                g.box(f"sn_{nose}_{name}", a, b, faces=faces, bone=f"snose_{nose}")
-        else:
-            g.box("s_" + name, a, b, faces=faces, bone="strategic")
-    # Or an intercontinental missile, its tail on the same line, each warhead's nose its own bone (as on the complex).
-    def icbm_box(frm, to):
-        return (((frm[0] - 8) * 4, (frm[1] + L.ICBM_TAIL) * 4 + TAIL, (frm[2] - 8) * 4 + CZ),
-                ((to[0] - 8) * 4, (to[1] + L.ICBM_TAIL) * 4 + TAIL, (to[2] - 8) * 4 + CZ))
-    for name, frm, to, faces, kind in L.icbm_parts():
-        g.box("i_" + name, *icbm_box(frm, to), faces=faces, bone="icbm")
-    for nose in L.ICBM_NOSES:
-        for name, frm, to, faces, kind in L.icbm_nose_parts(nose):
-            g.box(f"in_{nose}_{name}", *icbm_box(frm, to), faces=faces, bone=f"inose_{nose}")
+    # The missile: as on the Launch Complex, the item model four times over, its tail on the ring (or a Strategic or an
+    # intercontinental one's own model, its tail on the same line).
+    L.place_missile(g, L.missile_parts(), "m_", "missile", "n_", "nose_none", TAIL, CZ)
+    L.place_missile(g, L.strategic_parts(), "s_", "strategic", "sn_", "snose_none", TAIL, CZ, L.STRATEGIC_TAIL)
+    L.place_missile(g, L.icbm_parts(), "i_", "icbm", "in_", "icbm", TAIL, CZ, L.ICBM_TAIL)
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h, CLEAR)
@@ -396,7 +373,7 @@ def formed() -> None:
     S.paint(tex, posts, M.stripes(width=2, wear=0.4, under=M.STEEL_RAMP[2:7]))
     S.paint(tex, grate, M.steel(tone=0.22, rust=0.2))
     S.paint(tex, "duct", M.Material(ramp=M.SOOT_RAMP, tone=0.08, dither=1.0))
-    L.paint_missiles(g, tex, glow, TAIL, CZ)                     # as on the complex (the Tsar's vents lit too)
+    L.paint_missiles(g, tex, TAIL, CZ)                           # as on the complex
     g.save(tex, glow)
     # While it counts down (the machine's "working"), the beacons flash in turn, twice a second.
     count = Animation("working", 1.0, loop=True)

@@ -155,7 +155,13 @@ public final class FxPhotographer {
                 new Scene("fission_plan", "fission_plan", 13, 20, List.of(40)),
                 new Scene("fission_plan_ui", "fission_plan", 5, 0, List.of(30)),
                 // Close up: a 3x3x3 plan built but for its front window and its Fuel Channel: their ghosts, straight on.
-                new Scene("fission_ghost", "fission_ghost", 2, 0, List.of(40)))) {
+                new Scene("fission_ghost", "fission_ghost", 2, 0, List.of(40)),
+                // After the warheads' remaster: missiles carrying their warheads' own models, in rows of seven (their
+                // flight models twice the item's size, four blocks tall): the usual missile's warheads, then the
+                // Strategic missile's and the intercontinental missile's.
+                new Scene("missiles0", "missiles0", 8, -6, List.of(20)),
+                new Scene("missiles1", "missiles1", 8, -6, List.of(20)),
+                new Scene("missiles2", "missiles2", 9, -14, List.of(20)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -767,6 +773,33 @@ public final class FxPhotographer {
      * The silo scenes: a grassy plateau, the Missile Silo dug into it with its front (the controller) to the camera and
      * a Launch Computer beside it; a Strategic tactical-nuke missile in the shaft, aimed 400 blocks off and armed.
      */
+    /**
+     * A row of missiles carrying their warheads' own models, across the view: item displays of their flight models twice
+     * the item's size (four blocks tall), their tails on the ground, their warheads' fronts to the camera. Group 0 and 1:
+     * the usual missile's warheads; 2: the Strategic missile's and the intercontinental missile's.
+     */
+    private static void missileLineup(ServerLevel level, int x, int ground, int group) {
+        List<String> looks = switch (group) {
+            case 0 -> List.of("he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead", "bunker_buster_warhead", "napalm_warhead",
+                    "massive_warhead");
+            case 1 -> List.of("gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead", "toxic_waste_warhead", "dirty_warhead");
+            default -> List.of("strategic_tactical_nuclear_warhead", "strategic_fission_warhead", "strategic_boosted_fission_warhead",
+                    "strategic_neutron_warhead", "icbm_thermonuclear_warhead", "icbm_cobalt_warhead", "icbm_tsar_warhead");
+        };
+        var source = level.getServer().createCommandSourceStack().withSuppressedOutput();
+        for (int i = 0; i < looks.size(); i++) {
+            String look = looks.get(i);
+            // The item model is drawn about its middle; its tail is at its y 0 (a Strategic or intercontinental one's 11.5 below).
+            float tail = look.startsWith("strategic_") || look.startsWith("icbm_") ? 11.5f : 0;
+            double y = ground + (0.5 + tail / 16) * 2;
+            double z = (i - (looks.size() - 1) / 2.0) * 1.8 + 0.5;
+            level.getServer().getCommands().performPrefixedCommand(source, String.format(java.util.Locale.ROOT,
+                    "summon minecraft:item_display %.2f %.3f %.2f {item:{id:\"groundzero:missile\",count:1,components:{\"minecraft:custom_model_data\":"
+                            + "{strings:[\"flight_%s\"]}}},item_display:\"none\",transformation:{left_rotation:[0f,0.7071f,0f,0.7071f],"
+                            + "right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,2f]}}", x + 0.5, y, z, look));
+        }
+    }
+
     private static void siloSite(ServerLevel level, int x, int ground) {
         int top = ground + SILO_PLATEAU - 1;                                   // the plateau's grass: the silo's top layer
         var source = level.getServer().createCommandSourceStack().withSuppressedOutput();
@@ -1013,6 +1046,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("hall")) {
                     hallSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().startsWith("missiles")) {
+                    missileLineup(level, x, ground, s.profile().charAt(s.profile().length() - 1) - '0');
                     return;
                 }
                 if (s.profile().equals("flight_icbm")) {

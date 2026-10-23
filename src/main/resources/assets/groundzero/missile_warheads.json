@@ -1,0 +1,212 @@
+{
+  "basic": {
+    "top": 26.0,
+    "warheads": {
+      "he_warhead": {
+        "scale": 0.4068,
+        "half": 5.2,
+        "height": 16.8
+      },
+      "heavy_warhead": {
+        "scale": 0.2862,
+        "half": 7.2,
+        "height": 26.8
+      },
+      "thermobaric_warhead": {
+        "scale": 0.3067,
+        "half": 6.65,
+        "height": 14.7
+      },
+      "cluster_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "bunker_buster_warhead": {
+        "scale": 0.3782,
+        "half": 3.65,
+        "height": 23.8
+      },
+      "napalm_warhead": {
+        "scale": 0.3864,
+        "half": 5.35,
+        "height": 13.5
+      },
+      "massive_warhead": {
+        "scale": 0.243,
+        "half": 8.4,
+        "height": 30.8
+      },
+      "gas_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "smoke_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "cryo_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "emp_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "chemical_warhead": {
+        "scale": 0.3943,
+        "half": 5.25,
+        "height": 16.0
+      },
+      "toxic_waste_warhead": {
+        "scale": 0.345,
+        "half": 5.95,
+        "height": 14.6
+      },
+      "tactical_nuclear_warhead": {
+        "scale": 0.4111,
+        "half": 5.05,
+        "height": 14.8
+      },
+      "fission_warhead": {
+        "scale": 0.28,
+        "half": 7.25,
+        "height": 18.8
+      },
+      "boosted_fission_warhead": {
+        "scale": 0.3067,
+        "half": 7.7,
+        "height": 20.8
+      },
+      "neutron_warhead": {
+        "scale": 0.4545,
+        "half": 4.25,
+        "height": 19.8
+      },
+      "dirty_warhead": {
+        "scale": 0.345,
+        "half": 5.95,
+        "height": 13.4
+      }
+    }
+  },
+  "strategic": {
+    "top": 23.0,
+    "warheads": {
+      "he_warhead": {
+        "scale": 0.4068,
+        "half": 5.2,
+        "height": 16.8
+      },
+      "heavy_warhead": {
+        "scale": 0.2862,
+        "half": 7.2,
+        "height": 26.8
+      },
+      "thermobaric_warhead": {
+        "scale": 0.3067,
+        "half": 6.65,
+        "height": 14.7
+      },
+      "cluster_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "bunker_buster_warhead": {
+        "scale": 0.3992,
+        "half": 3.65,
+        "height": 23.8
+      },
+      "napalm_warhead": {
+        "scale": 0.3864,
+        "half": 5.35,
+        "height": 13.5
+      },
+      "massive_warhead": {
+        "scale": 0.243,
+        "half": 8.4,
+        "height": 30.8
+      },
+      "gas_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "smoke_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "cryo_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "emp_warhead": {
+        "scale": 0.3646,
+        "half": 5.65,
+        "height": 17.0
+      },
+      "chemical_warhead": {
+        "scale": 0.3943,
+        "half": 5.25,
+        "height": 16.0
+      },
+      "toxic_waste_warhead": {
+        "scale": 0.345,
+        "half": 5.95,
+        "height": 14.6
+      },
+      "tactical_nuclear_warhead": {
+        "scale": 0.4111,
+        "half": 5.05,
+        "height": 14.8
+      },
+      "fission_warhead": {
+        "scale": 0.28,
+        "half": 7.25,
+        "height": 18.8
+      },
+      "boosted_fission_warhead": {
+        "scale": 0.3067,
+        "half": 7.7,
+        "height": 20.8
+      },
+      "neutron_warhead": {
+        "scale": 0.4798,
+        "half": 4.25,
+        "height": 19.8
+      },
+      "dirty_warhead": {
+        "scale": 0.345,
+        "half": 5.95,
+        "height": 13.4
+      }
+    }
+  },
+  "icbm": {
+    "top": 22.4,
+    "warheads": {
+      "thermonuclear_warhead": {
+        "scale": 0.304,
+        "half": 7.35,
+        "height": 24.8
+      },
+      "cobalt_warhead": {
+        "scale": 0.304,
+        "half": 7.35,
+        "height": 24.8
+      },
+      "tsar_warhead": {
+        "scale": 0.5,
+        "half": 7.4,
+        "height": 29.8
+      }
+    }
+  }
+}
