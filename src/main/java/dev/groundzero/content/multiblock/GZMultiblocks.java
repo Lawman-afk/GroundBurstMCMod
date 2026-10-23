@@ -35,7 +35,7 @@ public final class GZMultiblocks {
     public static final WithItem<EnergyPortBlock> ENERGY_PORT = GZBlocks.register("energy_port", "Energy Port", GZTab.MACHINES,
             EnergyPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.IMMOVEABLE));
-    /** Stood in a Fission Reactor's core in full-height columns, one fuel rod a column (DESIGN.md §23.3). */
+    /** Stood anywhere in a Fission Reactor's core, one fuel rod a channel (DESIGN.md §7.2). */
     public static final WithItem<FuelChannelBlock> FUEL_CHANNEL = GZBlocks.register("fuel_channel", "Fuel Channel", GZTab.MACHINES,
             FuelChannelBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.IMMOVEABLE)
@@ -59,23 +59,23 @@ public final class GZMultiblocks {
     }
 
     /**
-     * Fission Reactor (DESIGN.md §23.3): any hollow box of lead-lined casing from 3x3x3 to 6x6x6 with Fuel Channel columns
+     * Fission Reactor (DESIGN.md §7.2, §23.3): any hollow box of lead-lined casing from 3x3x3 to 6x6x6 with Fuel Channels
      * in its core ({@code FissionCore} has the rules). This is the example the Field Manual shows and the Structure
-     * Spawner and the GameTests build: 4x4x4, the controller at the front of the bottom layer and a Fluid Port at the back
-     * of it (coolant in), reactor glass windows round the core on all four sides, and on top an Item Port (fuel and
-     * targets in), the Energy Port (power out), a second Item Port (products out) and a window; its 2x2 core four
-     * columns of Fuel Channels (four rods: 1,200 FE a tick). The controller itself connects to nothing: everything goes
-     * through the ports. 'L' and 'C' are also what the ghost preview shows for any size of reactor.
+     * Spawner and the GameTests build, laid out as the ghost preview plans a 4x4x4: the controller at the front of the
+     * bottom layer, reactor glass windows round the core, the Fluid Port low at the back of the left wall, the Energy
+     * Port low in the back wall, the Item Port in the roof over the front of the core; its 2x2x2 core eight Fuel
+     * Channels (eight rods: 600 FE a tick). The controller itself connects to nothing: everything goes through the ports.
+     * 'L', 'G', 'C' and the ports' letters are also what the ghost preview shows for any size of reactor.
      */
     public static final MultiblockDefinition FISSION_REACTOR = new MultiblockDefinition(GroundZero.id("fission_reactor"),
             new String[][] {
-                    {"LXLL", "LLLL", "LLLL", "LLWL"},
+                    {"LXLL", "LLLL", "LLLL", "LLLL"},
+                    {"LGGL", "GCCG", "WCCG", "LEGL"},
                     {"LGGL", "GCCG", "GCCG", "LGGL"},
-                    {"LGGL", "GCCG", "GCCG", "LGGL"},
-                    {"LLLL", "LUEL", "LIGL", "LLLL"},
+                    {"LLLL", "LLUL", "LLLL", "LLLL"},
             },
             Map.of('L', Entry.of(() -> LEAD_LINED_CASING.block().get()), 'G', Entry.of(REACTOR_GLASS.block()),
-                    'W', Entry.of(() -> FLUID_PORT.block().get()), 'U', Entry.of(ITEM_PORT.block()), 'I', Entry.of(ITEM_PORT.block()),
+                    'W', Entry.of(() -> FLUID_PORT.block().get()), 'U', Entry.of(ITEM_PORT.block()),
                     'E', Entry.of(() -> ENERGY_PORT.block().get()), 'C', Entry.of(() -> FUEL_CHANNEL.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GZMachines.FISSION_REACTOR.block().get())));
 

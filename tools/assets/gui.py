@@ -316,17 +316,19 @@ LAYOUTS = {
         "readout": (64, 22, 96, 14),
         "inventory": (8, 84),
     },
-    # Fission Reactor (any size, DESIGN.md §23.3): the core map, 4x4 cells of lead casing (slots 0-15) on which the
-    # screen draws the reactor's own core: a rod slot on each fuel channel, coolant round them (FissionReactorScreen
-    # mirrors MAP and the cell sprites); the coolant tank, heat (0 to 1 400 °C) and control-rod gauges and the rod
-    # buttons (withdraw / insert / SCRAM) the height of the map; a right-hand column with the breeding (two target rods
-    # over their irradiated outputs) and the spent fuel; under them a CRT with the output, core temperature, size and rods.
+    # Fission Reactor (any size, DESIGN.md §7.2): the core map, 4x4 cells of lead casing on which the screen draws the
+    # layer of the core picked with the tabs beside it: a rod slot on each fuel channel, coolant round them
+    # (FissionReactorScreen mirrors MAP and the cell sprites; slots 0-63 are the four layers' cells, at the same places);
+    # while the reactor is not formed the screen draws its plan panel over the map. The coolant tank, heat (0 to
+    # 1 400 °C) and control-rod gauges and the rod buttons (withdraw / insert / SCRAM) the height of the map; a
+    # right-hand column with the breeding (two target rods over their irradiated outputs) and the spent fuel; under them
+    # a CRT with the output, core temperature, size and rods.
     "fission_reactor": {
         "title": (8, 6),
         "size": (226, 218),
         "inventory_width": 178,
-        "core_map": (43, 19),
-        "slots": [("core_cell", 44 + 18 * (k % 4), 20 + 18 * (k // 4)) for k in range(16)]
+        "core_map": (57, 19),
+        "slots": [("core_cell", 58 + 18 * (k % 4), 20 + 18 * (k // 4)) for _layer in range(4) for k in range(16)]
                  + [("target", 184, 22), ("target", 202, 22), ("spent", 193, 78), ("out", 184, 50), ("out", 202, 50)],
         "chevrons": [(190, 42, False), (208, 42, False)],
         "energy": (8, 20, 14, 46),
@@ -336,11 +338,12 @@ LAYOUTS = {
         "status": (210, 5, 8, 8),
         "redstone": (192, 103, 18, 18),
         "readout": (11, 100, 154, 24),
-        "controls": [("heat", 121, 20, 8, 72, 0, 1400, -1, "groundzero.gui.heat"),
-                     ("rods", 133, 20, 8, 72, 1, 100, -1, "groundzero.gui.rods_gauge"),
-                     ("up", 147, 20, 18, 22, -1, 0, 0, "groundzero.gui.withdraw"),
-                     ("down", 147, 44, 18, 22, -1, 0, 1, "groundzero.gui.insert"),
-                     ("scram", 147, 68, 18, 24, -1, 0, 2, "groundzero.gui.scram")],
+        "controls": [("heat", 135, 20, 8, 72, 0, 1400, -1, "groundzero.gui.heat"),
+                     ("rods", 147, 20, 8, 72, 1, 100, -1, "groundzero.gui.rods_gauge"),
+                     ("up", 158, 20, 16, 22, -1, 0, 0, "groundzero.gui.withdraw"),
+                     ("down", 158, 44, 16, 22, -1, 0, 1, "groundzero.gui.insert"),
+                     ("scram", 158, 68, 16, 24, -1, 0, 2, "groundzero.gui.scram")]
+                    + [("layer", 42, 74 - 18 * y, 11, 17, y, 0, 3 + y, "groundzero.gui.reactor_layer") for y in range(4)],
         "inventory": (8, 136),
     },
     # Fusion Reactor: deuterium, tritium and liquid nitrogen tanks, the ignition-charge gauge.
@@ -712,9 +715,21 @@ def button(t: Tex, x: int, y: int, w: int, h: int) -> None:
 ARROW_UP = ["...#...", "..###..", ".#####.", "#######", "..###..", "..###..", "..###.."]
 
 
-def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000) -> None:
+DIGITS = {1: [".#.", "##.", ".#.", ".#.", "###"], 2: ["##.", "..#", ".#.", "#..", "###"], 3: ["##.", "..#", ".#.", "..#", "##."],
+          4: ["#.#", "#.#", "###", "..#", "..#"]}
+
+
+def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000, data: int = 0) -> None:
     """Machine controls: vertical gauges (filled live by the screen) and push buttons with their icon. {top} is a
-    gauge's full scale."""
+    gauge's full scale; a layer tab shows layer {data} + 1."""
+    if kind == "layer":
+        button(t, x, y, w, h)
+        gx, gy = x + (w - 3) // 2, y + (h - 5) // 2
+        for yy, row in enumerate(DIGITS[data + 1]):
+            for xx, c in enumerate(row):
+                if c == "#":
+                    t.px(gx + xx, gy + yy, P.WHITE_CERAMIC[5])
+        return
     if kind in ("heat", "rods", "charge", "mass"):
         gauge_frame(t, x, y, w, h)
         if kind == "heat":
@@ -911,8 +926,8 @@ def build(name: str, spec: dict) -> Path:
     button(t, *spec["redstone"])
     if spec["readout"]:
         readout_panel(t, *spec["readout"])
-    for kind, cx, cy, cw, ch, _data, top, *_ in spec.get("controls", []):
-        control(t, kind, cx, cy, cw, ch, top or 1000)
+    for kind, cx, cy, cw, ch, data, top, *_ in spec.get("controls", []):
+        control(t, kind, cx, cy, cw, ch, top or 1000, data)
     ix, iy = spec["inventory"]
     for row in range(3):
         for col in range(9):

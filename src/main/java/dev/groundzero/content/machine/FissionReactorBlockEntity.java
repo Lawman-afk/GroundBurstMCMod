@@ -53,45 +53,52 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 /**
- * Fission Reactor (DESIGN.md §7, §23.3): a box of lead-lined casing any size from 3x3x3 to 6x6x6 ({@link FissionCore}),
- * run from this controller. Each column of Fuel Channels in its core holds one fuel rod, up to 16 in a 4x4 core; the GUI
- * shows the core as a map with a rod slot on each channel. A game abstraction, not a reactor design: fuel rods in, a
- * control-rod setting, water coolant and a heat gauge.
+ * Fission Reactor (DESIGN.md §7, §7.2, §23.3): a box of lead-lined casing any size from 3x3x3 to 6x6x6
+ * ({@link FissionCore}), run from this controller. Every Fuel Channel in its core holds one fuel rod, up to 64 in a 4x4x4
+ * core; the GUI shows the core a layer at a time as a map with a rod slot on each channel. Once formed, its walls are
+ * drawn as one vessel (FissionReactorRenderer: sections for every corner, edge, wall, window, port and the console).
+ * A game abstraction, not a reactor design: fuel rods in, a control-rod setting, water coolant and a heat gauge.
  *
  * <ul>
- * <li>Power: 300 FE/t for every loaded rod x (rods withdrawn %): 1 200 FE/t from four rods, 4 800 from sixteen. Every
- *     loaded rod burns at once. A rod lasts 48 000 ticks of full power on average, each its own lifetime a little either
- *     side of that (drawn when it first burns, up to 15% off), so a core loaded all at once runs out over a while, not in
- *     the same tick. The rod carries its burnup ({@link FuelBurnup}, shown as a bar under it); a used-up rod becomes a
- *     spent fuel rod and moves to the spent slot (it waits in its channel while that is full).</li>
+ * <li>Power: 75 FE/t for every loaded rod x (rods withdrawn %): 600 FE/t from a 2x2x2 core, 4 800 from a full 4x4x4.
+ *     Every loaded rod burns at once. A rod lasts 192 000 ticks of full power on average, each its own lifetime a little
+ *     either side of that (drawn when it first burns, up to 15% off), so a core loaded all at once runs out over a while,
+ *     not in the same tick. The rod carries its burnup ({@link FuelBurnup}, shown as a bar under it); a used-up rod
+ *     becomes a spent fuel rod and moves to the spent slot (it waits in its channel while that is full).</li>
  * <li>Heat goes by how full the core is: loaded rods / channels x rods withdrawn, so any size runs as hot as any other
  *     loaded alike. With coolant flowing the core heads for 20 + 1 150 x that / quality °C (water quality 1: past about
  *     70% the core would pass 900 °C; heavy water 1.6: even full power settles near 740 °C). Each rod uses up to
- *     6.25 mB of water a tick, heavy water a fifth of that. A taller core is slower to heat and to cool (more water
- *     and steel): half as fast for every block of core above two, twice as fast for a one-block core.</li>
+ *     1.5625 mB of water a tick, heavy water a fifth of that. Water left in the core (cells without a channel) slows
+ *     heating and cooling: by 1 + water cells / channels (up to 3).</li>
  * <li>With meltdowns turned off, at 900 °C it SCRAMs (all rods in) until the rods are withdrawn again. With them on
  *     (server config {@code reactor.meltdowns}, the default) there is no automatic SCRAM: past 900 °C with the rods out
  *     the core is <b>critical</b> and runs away (coolant only slows it); a klaxon sounds, nearby players are warned and
  *     steam vents from the top. SCRAM (or all rods in) still saves it. At 1 400 °C it melts down: the whole reactor is
  *     destroyed with its fuel, a dirty blast goes off, molten Corium pools in the crater and a contaminated zone is left
  *     for a day.</li>
- * <li>Breeding: a DU or Li-6 target rod in a target slot becomes irradiated after 6 000 ticks at the flux of four rods
- *     at full power (sixteen rods breed four times as fast).</li>
- * <li>Buffers grow with the core: 50 000 FE and 4 000 mB of coolant a channel (the tank up to 32 000 mB).</li>
+ * <li>Breeding: a DU or Li-6 target rod in a target slot becomes irradiated after 6 000 ticks at 1 200 FE/t of output
+ *     (faster as the reactor makes more).</li>
+ * <li>Buffers grow with the core: 12 500 FE and 2 000 mB of coolant a channel (at least 50 000 FE and 4 000 mB, the
+ *     tank up to 32 000 mB).</li>
+ * <li>The plan: until it is formed the controller keeps a planned size (4x4x4 at first, set in its screen) and the
+ *     ghost preview shows that reactor to build; once formed, the plan is the reactor's own size.</li>
  * </ul>
- * Slots: 0-15 the core map's fuel rods (one a channel), 16-17 target rods, 18 spent fuel, 19-20 irradiated targets.
+ * Slots: 0-63 the core map's fuel rods (layer by layer, one a channel), 64-65 target rods, 66 spent fuel, 67-68
+ * irradiated targets.
  */
 public class FissionReactorBlockEntity extends MachineBlockEntity implements MultiblockController {
-    public static final int CHANNELS = FissionCore.GRID * FissionCore.GRID;
+    public static final int CHANNELS = FissionCore.CELLS;
     /** FE/t a loaded rod gives with the control rods fully out. */
-    public static final int ROD_OUTPUT = 300;
+    public static final int ROD_OUTPUT = 75;
     public static final int MAX_OUTPUT = ROD_OUTPUT * CHANNELS;
     /** Average ticks of full power a fuel rod lasts, and how far either side of that one rod's lifetime may be. */
-    public static final int ROD_LIFE = 48_000;
+    public static final int ROD_LIFE = 192_000;
     public static final float ROD_LIFE_SPREAD = 0.15f;
     public static final int BREED_TIME = 6_000;
+    /** Output at which a target breeds in {@link #BREED_TIME}. */
+    public static final float BREED_POWER = 1_200;
     /** Water a rod uses a tick at full power; heavy water is used this many times slower. */
-    public static final float WATER_PER_ROD = 6.25f;
+    public static final float WATER_PER_ROD = 1.5625f;
     public static final int HEAVY_WATER_SAVING = 5;
     /** Core temperature rise with a full core at full power on water coolant; divided by the coolant's quality. */
     public static final float HEAT_RISE = 1_150;
@@ -100,13 +107,18 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     /** The contaminated zone a meltdown leaves: radius, and how long it lasts (one day). */
     public static final float CONTAMINATION_RADIUS = 48;
     public static final int CONTAMINATION_TICKS = 24_000;
-    /** Buffers per fuel channel; the tank stops short of what a GUI sync slot can carry. */
-    public static final int ENERGY_PER_CHANNEL = 50_000, COOLANT_PER_CHANNEL = 4_000, COOLANT_MAX = 32_000;
-    public static final int PUSH = 4_800;
+    /** Buffers per fuel channel and their floors; the tank stops short of what a GUI sync slot can carry. */
+    public static final int ENERGY_PER_CHANNEL = 12_500, MIN_ENERGY = 50_000, COOLANT_PER_CHANNEL = 2_000, MIN_COOLANT = 4_000,
+            COOLANT_MAX = 32_000;
+    public static final int PUSH = MAX_OUTPUT;
     public static final int TARGET_START = CHANNELS, SPENT_SLOT = CHANNELS + 2, IRRADIATED_START = CHANNELS + 3, SLOTS = CHANNELS + 5;
-    /** Sync slots: core heat (°C), rod insertion (%), output (FE/t), channel map (a bit a cell), size (w | h << 3 | d << 6), loaded rods. */
-    public static final int DATA_HEAT = 0, DATA_RODS = 1, DATA_POWER = 2, DATA_CHANNELS = 3, DATA_SIZE = 4, DATA_LOADED = 5;
-    public static final int BUTTON_WITHDRAW = 0, BUTTON_INSERT = 1, BUTTON_SCRAM = 2;
+    /**
+     * Sync slots: core heat (°C), rod insertion (%), output (FE/t), size (w | h << 3 | d << 6, 0 unformed), loaded rods,
+     * the map's layer shown, the plan (packed as the size), and the channel map, 16 bits a layer.
+     */
+    public static final int DATA_HEAT = 0, DATA_RODS = 1, DATA_POWER = 2, DATA_SIZE = 3, DATA_LOADED = 4, DATA_LAYER = 5,
+            DATA_PLAN = 6, DATA_CHANNELS = 7;
+    public static final int BUTTON_WITHDRAW = 0, BUTTON_INSERT = 1, BUTTON_SCRAM = 2, BUTTON_LAYER = 3, BUTTON_PLAN = 7;
     private static final int RECHECK_INTERVAL = 40;
     /** Burnup is written to the rods this often (each write re-syncs the rod's slot to anyone looking). */
     private static final int BURN_INTERVAL = 20;
@@ -115,13 +127,17 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
 
     public static final String SIZE_LINE = GZLang.add(GroundZero.MODID + ".gui.reactor_size", "SIZE %sx%sx%s");
     public static final String RODS_LINE = GZLang.add(GroundZero.MODID + ".gui.reactor_rods", "RODS %s/%s");
-    /** Tooltips over the GUI's core map where there is no rod slot. */
+    public static final String PLAN_LINE = GZLang.add(GroundZero.MODID + ".gui.reactor_plan", "PLAN %sx%sx%s");
+    /** Tooltips over the GUI's core map and its controls. */
     public static final String MAP_COOLANT = GZLang.add(GroundZero.MODID + ".gui.reactor_map_coolant",
-            "Coolant: no Fuel Channel in this column of the core");
+            "Coolant: no Fuel Channel in this cell of the core");
     public static final String MAP_CASING = GZLang.add(GroundZero.MODID + ".gui.reactor_map_casing",
             "Outside the core: a bigger reactor reaches here");
-    public static final String MAP_UNFORMED = GZLang.add(GroundZero.MODID + ".gui.reactor_map_unformed",
-            "The core map shows once the reactor is complete");
+    public static final String LAYER_TIP = GZLang.add(GroundZero.MODID + ".gui.reactor_layer", "Core layer %s (1 is the bottom)");
+    public static final String PLAN_TIP = GZLang.add(GroundZero.MODID + ".gui.reactor_plan_tip",
+            "The reactor to build: the ghost preview shows it (right-click the controller). The controller sits in the middle of the bottom of its front wall.");
+    public static final String STATUS = GZLang.add(GroundZero.MODID + ".reactor.status",
+            "Reactor plan %sx%sx%s: %s missing, %s wrong. Sneak-right-click the controller to change the plan.");
 
     /** The formed reactor (null while not formed); on clients, as last synced. */
     private @Nullable FissionCore core;
@@ -142,10 +158,14 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     private boolean critical;
     private boolean lit;
     private int darkTicks;
-    private @Nullable List<BlockPos> energyPorts;
+    /** The core layer the GUI's map shows (0 the bottom). */
+    private int viewLayer;
+    /** The planned size, outside (the ghost preview's reactor). */
+    private int planW = 4, planH = 4, planD = 4;
+    private @Nullable BlockPos energyPort;
     /** The last check of the build, for the ghost preview (it asks several times a frame). */
-    private FissionCore.@Nullable Scan scan;
-    private long scanTime = Long.MIN_VALUE;
+    private @Nullable List<MultiblockDefinition.Mismatch> planned;
+    private long plannedTime = Long.MIN_VALUE;
 
     public FissionReactorBlockEntity(BlockPos pos, BlockState state) {
         super(GZBlockEntities.FISSION_REACTOR.get(), pos, state, ENERGY_PER_CHANNEL * CHANNELS, 0, PUSH, SLOTS, inputs(), new int[] {SPENT_SLOT,
@@ -188,33 +208,45 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         return this.core;
     }
 
+    /** The reactor the ghost preview shows. */
+    public FissionCore plan() {
+        return FissionCore.plan(this.worldPosition, controllerFacing(), this.planW, this.planH, this.planD);
+    }
+
     @Override
     public boolean covers(BlockPos pos) {
         return this.core != null ? this.core.contains(pos) : FissionCore.inReach(this.worldPosition, controllerFacing(), pos);
     }
 
-    private FissionCore.Scan scan(Level level) {
-        if (this.scan == null || this.scanTime != level.getGameTime()) {
-            this.scan = FissionCore.scan(level, this.worldPosition, controllerFacing());
-            this.scanTime = level.getGameTime();
-        }
-        return this.scan;
-    }
-
     @Override
     public List<MultiblockDefinition.Mismatch> mismatches(Level level) {
-        FissionCore.Scan s = scan(level);
-        return s.core() != null ? List.of() : s.mismatches();
+        if (isFormed()) {
+            return List.of();
+        }
+        if (this.planned == null || this.plannedTime != level.getGameTime()) {
+            this.planned = plan().planMismatches(level);
+            this.plannedTime = level.getGameTime();
+        }
+        return this.planned;
     }
 
     @Override
     public int previewLayers() {
-        return this.level == null ? definition().layerCount() : scan(this.level).box().height();
+        return this.planH;
     }
 
+    /** The status line: the plan's size and what is left to build, or what else stops it forming. */
     @Override
     public @Nullable Component problem(Level level) {
-        return scan(level).problem();
+        List<MultiblockDefinition.Mismatch> left = mismatches(level);
+        if (left.isEmpty()) {
+            FissionCore.Scan scan = FissionCore.scan(level, this.worldPosition, controllerFacing());
+            if (scan.problem() != null) {
+                return scan.problem();
+            }
+        }
+        long missing = left.stream().filter(MultiblockDefinition.Mismatch::empty).count();
+        return Component.translatable(STATUS, this.planW, this.planH, this.planD, missing, left.size() - missing);
     }
 
     /** Checks the box and forms, re-forms (it changed size or shape) or un-forms the reactor. */
@@ -223,9 +255,11 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         if (this.level == null || this.level.isClientSide() || isRemoved()) {
             return;
         }
-        this.scan = null;
-        FissionCore found = FissionCore.scan(this.level, this.worldPosition, controllerFacing()).core();
+        this.planned = null;
+        FissionCore.Scan scan = FissionCore.scan(this.level, this.worldPosition, controllerFacing());
+        FissionCore found = scan.core();
         boolean formed = found != null;
+        this.energyPort = formed ? scan.ports()[2] : null;
         if (java.util.Objects.equals(found, this.core) && formed == isFormed()) {
             return;
         }
@@ -234,11 +268,14 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
             connect(this.core, false);
         }
         this.core = found;
-        this.energyPorts = null;
         this.lit = false;
         if (found != null) {
             connect(found, true);
             size(found.channelCount());
+            this.planW = found.width();
+            this.planH = found.height();
+            this.planD = found.depth();
+            this.viewLayer = Math.min(this.viewLayer, found.coreHeight() - 1);
         }
         if (isFormed() != formed) {
             this.level.setBlock(this.worldPosition, getBlockState().setValue(MultiblockPartBlock.FORMED, formed), Block.UPDATE_ALL);
@@ -247,16 +284,16 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         sync();
     }
 
-    /**
-     * Points the walls' ports at this controller (or at nothing). Its walls stay as they are, but a wall block a 3x3x4
-     * reactor from before had hidden is shown again.
-     */
+    /** Hides the walls (the renderer draws the vessel over them) and points the ports at this controller, or undoes it. */
     private void connect(FissionCore box, boolean formed) {
         for (BlockPos pos : box.shell()) {
+            if (pos.equals(this.worldPosition)) {
+                continue;
+            }
             BlockState state = this.level.getBlockState(pos);
-            if (state.hasProperty(MultiblockPartBlock.FORMED) && !pos.equals(this.worldPosition)
-                    && (state.getValue(MultiblockPartBlock.FORMED) || state.getValue(MultiblockPartBlock.CUT) != PartCut.NONE)) {
-                this.level.setBlock(pos, state.setValue(MultiblockPartBlock.FORMED, false).setValue(MultiblockPartBlock.CUT, PartCut.NONE),
+            if (state.hasProperty(MultiblockPartBlock.FORMED)
+                    && (state.getValue(MultiblockPartBlock.FORMED) != formed || state.getValue(MultiblockPartBlock.CUT) != PartCut.NONE)) {
+                this.level.setBlock(pos, state.setValue(MultiblockPartBlock.FORMED, formed).setValue(MultiblockPartBlock.CUT, PartCut.NONE),
                         Block.UPDATE_ALL);
             }
             if (this.level.getBlockEntity(pos) instanceof PortBlockEntity port) {
@@ -268,21 +305,20 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     /** Sizes the energy buffer and the coolant tank for a core of {@code channels} channels. */
     private void size(int channels) {
         this.sizedFor = channels;
-        this.energy.setCapacity(ENERGY_PER_CHANNEL * Math.max(1, channels));
-        this.tanks.get(0).setCapacity(Math.min(COOLANT_MAX, COOLANT_PER_CHANNEL * Math.max(1, channels)));
+        this.energy.setCapacity(Math.max(MIN_ENERGY, ENERGY_PER_CHANNEL * channels));
+        this.tanks.get(0).setCapacity(Math.min(COOLANT_MAX, Math.max(MIN_COOLANT, COOLANT_PER_CHANNEL * channels)));
     }
 
     /** The channels glow (light and their lit model) while the core makes power. */
     private void light(FissionCore box, boolean on) {
         for (int slot = 0; slot < CHANNELS; slot++) {
-            if (!box.channel(slot)) {
+            BlockPos pos = box.channel(slot) ? box.cellOf(slot) : null;
+            if (pos == null) {
                 continue;
             }
-            for (BlockPos pos : box.column(slot)) {
-                BlockState state = this.level.getBlockState(pos);
-                if (state.getBlock() instanceof FuelChannelBlock && state.getValue(FuelChannelBlock.LIT) != on) {
-                    this.level.setBlock(pos, state.setValue(FuelChannelBlock.LIT, on), Block.UPDATE_CLIENTS);
-                }
+            BlockState state = this.level.getBlockState(pos);
+            if (state.getBlock() instanceof FuelChannelBlock && state.getValue(FuelChannelBlock.LIT) != on) {
+                this.level.setBlock(pos, state.setValue(FuelChannelBlock.LIT, on), Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -331,12 +367,12 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         return stack.is(GZNuclear.DU_TARGET_ROD.get()) || stack.is(GZNuclear.LI6_TARGET_ROD.get());
     }
 
-    /** Whether core map cell {@code slot} is a fuel channel (on clients, as last synced). */
+    /** Whether fuel slot {@code slot} is a fuel channel (on clients, as last synced). */
     public boolean isChannel(int slot) {
         return this.core != null && slot < CHANNELS && this.core.channel(slot);
     }
 
-    /** The fuel slots that are channels now, in map order. */
+    /** The fuel slots that are channels now, layer by layer in map order. */
     public List<Integer> channelSlots() {
         List<Integer> out = new ArrayList<>();
         for (int slot = 0; slot < CHANNELS; slot++) {
@@ -362,15 +398,29 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     /**
-     * The map shows a rod slot on every channel, and on any other cell that still holds something (a rod left behind
-     * when the reactor was rebuilt, so it can be taken out).
+     * The map shows the layer picked: a rod slot on each of its channels, and on any other cell that still holds
+     * something (a rod left behind when the reactor was rebuilt, so it can be taken out).
      */
     @Override
     public boolean slotShown(int slot, MachineMenu menu) {
         if (slot >= CHANNELS) {
             return true;
         }
-        return (menu.extra(DATA_CHANNELS) >> slot & 1) != 0 || !this.inventory.getItem(slot).isEmpty();
+        if (slot / FissionCore.LAYER != menu.extra(DATA_LAYER)) {
+            return false;
+        }
+        return channelBit(menu, slot) || !this.inventory.getItem(slot).isEmpty();
+    }
+
+    /** Shift-clicked rods go to the channels of every layer, not only the one shown. */
+    @Override
+    public boolean slotTakesHidden(int slot) {
+        return slot < CHANNELS;
+    }
+
+    /** Whether fuel slot {@code slot} is a channel, from a menu's synced map (either side). */
+    public static boolean channelBit(MachineMenu menu, int slot) {
+        return (menu.extra(DATA_CHANNELS + slot / FissionCore.LAYER) >> (slot % FissionCore.LAYER) & 1) != 0;
     }
 
     // --- the core ------------------------------------------------------------------------------------------------------------
@@ -398,9 +448,13 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         return loadedRods() / (float) this.core.channelCount() * flux();
     }
 
-    /** How slowly the core heats and cools: 1 for a two-block core, half a block of core more or less. */
+    /** How slowly the core heats and cools: 1 for a core packed with channels, more for water left between them (up to 3). */
     public float thermalMass() {
-        return this.core == null ? 1 : Math.max(0.5f, this.core.coreHeight() / 2f);
+        if (this.core == null) {
+            return 1;
+        }
+        int channels = Math.max(1, this.core.channelCount());
+        return Math.min(3f, 1f + (this.core.coreVolume() - channels) / (float) channels);
     }
 
     public float heat() {
@@ -435,7 +489,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         return this.critical;
     }
 
-    /** Breeding progress of target slot {@code t} (0 or 1), in ticks at the flux of four rods at full power. */
+    /** Breeding progress of target slot {@code t} (0 or 1), in ticks at 1 200 FE/t of output. */
     public float breedProgress(int t) {
         return this.breed[t];
     }
@@ -510,7 +564,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
                     this.pending[slot] += flux;        // every loaded rod burns at once
                 }
             }
-            float rate = this.loaded * flux / 4f;
+            float rate = this.power / BREED_POWER;
             for (int t = 0; t < 2; t++) {
                 ItemStack target = this.inventory.getItem(TARGET_START + t);
                 if (!isTarget(target)) {
@@ -679,23 +733,41 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         Contamination.of(level).add(new Contamination.Zone(centre, CONTAMINATION_RADIUS, 1f, level.getGameTime(), CONTAMINATION_TICKS));
     }
 
-    /** Pushes power out of every Energy Port in the walls. */
+    /** Pushes power out of the Energy Port. */
     private void pushPower(ServerLevel level) {
-        if (this.energyPorts == null) {
-            this.energyPorts = new ArrayList<>();
+        if (this.energyPort == null) {
             for (BlockPos pos : this.core.shell()) {
                 if (level.getBlockState(pos).is(GZMultiblocks.ENERGY_PORT.block().get())) {
-                    this.energyPorts.add(pos);
+                    this.energyPort = pos;
                 }
             }
         }
-        for (BlockPos port : this.energyPorts) {
-            PowerUtil.pushToNeighbours(level, port, this.energy, PUSH);
+        if (this.energyPort != null) {
+            PowerUtil.pushToNeighbours(level, this.energyPort, this.energy, PUSH);
         }
     }
 
     @Override
     public boolean handleButton(int button) {
+        if (button >= BUTTON_LAYER && button < BUTTON_LAYER + FissionCore.GRID) {
+            this.viewLayer = button - BUTTON_LAYER;
+            return true;
+        }
+        if (button >= BUTTON_PLAN && button < BUTTON_PLAN + 6) {
+            if (isFormed()) {
+                return false;                          // a formed reactor's plan is its own size
+            }
+            int axis = (button - BUTTON_PLAN) / 2, step = (button - BUTTON_PLAN) % 2 == 0 ? -1 : 1;
+            switch (axis) {
+                case 0 -> this.planW = Math.clamp(this.planW + step, FissionCore.MIN, FissionCore.MAX);
+                case 1 -> this.planH = Math.clamp(this.planH + step, FissionCore.MIN, FissionCore.MAX);
+                default -> this.planD = Math.clamp(this.planD + step, FissionCore.MIN, FissionCore.MAX);
+            }
+            this.planned = null;
+            setChanged();
+            sync();
+            return true;
+        }
         switch (button) {
             case BUTTON_WITHDRAW -> {
                 this.insertion = Math.max(0, this.insertion - 10);
@@ -715,7 +787,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         return true;
     }
 
-    /** Tells clients what the renderer and the GUI read from the block entity (the box, the rods, the coolant). */
+    /** Tells clients what the renderer and the GUI read from the block entity (the box, the rods, the coolant, the plan). */
     private void sync() {
         if (this.level != null && !this.level.isClientSide()) {
             this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -730,25 +802,36 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         int size = menu.extra(DATA_SIZE);
         if (size != 0) {
             lines.add(Component.translatable(SIZE_LINE, size & 7, size >> 3 & 7, size >> 6 & 7));
-            lines.add(Component.translatable(RODS_LINE, menu.extra(DATA_LOADED), Integer.bitCount(menu.extra(DATA_CHANNELS) & 0xFFFF)));
+            int channels = 0;
+            for (int y = 0; y < FissionCore.GRID; y++) {
+                channels += Integer.bitCount(menu.extra(DATA_CHANNELS + y) & 0xFFFF);
+            }
+            lines.add(Component.translatable(RODS_LINE, menu.extra(DATA_LOADED), channels));
+        } else {
+            int plan = menu.extra(DATA_PLAN);
+            lines.add(Component.translatable(PLAN_LINE, plan & 7, plan >> 3 & 7, plan >> 6 & 7));
         }
         return lines;
     }
 
     @Override
     protected int extraDataCount() {
-        return 6;
+        return DATA_CHANNELS + FissionCore.GRID;
     }
 
     @Override
     protected int getExtraData(int index) {
+        if (index >= DATA_CHANNELS) {
+            return this.core == null ? 0 : (int) (this.core.channels() >>> (FissionCore.LAYER * (index - DATA_CHANNELS)) & 0xFFFF);
+        }
         return switch (index) {
             case DATA_HEAT -> Math.round(this.heat);
             case DATA_RODS -> this.insertion;
             case DATA_POWER -> this.power;
-            case DATA_CHANNELS -> this.core == null ? 0 : this.core.channels();
             case DATA_SIZE -> this.core == null ? 0 : this.core.width() | this.core.height() << 3 | this.core.depth() << 6;
             case DATA_LOADED -> this.loaded;
+            case DATA_LAYER -> this.viewLayer;
+            case DATA_PLAN -> this.planW | this.planH << 3 | this.planD << 6;
             default -> 0;
         };
     }
@@ -800,14 +883,16 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         output.putBoolean("scrammed", this.scrammed);
         output.putInt("sized_for", this.sizedFor);
         output.putBoolean("lit", this.lit);
+        output.putInt("layer", this.viewLayer);
+        output.putIntArray("plan", new int[] {this.planW, this.planH, this.planD});
         for (int slot = 0; slot < CHANNELS; slot++) {
             if (this.pending[slot] > 0) {
                 output.putFloat("pending" + slot, this.pending[slot]);
             }
         }
         if (this.core != null) {
-            output.putIntArray("core", new int[] {this.core.col0(), this.core.layer0(), this.core.width(), this.core.height(), this.core.depth(),
-                    this.core.channels()});
+            output.putIntArray("core", new int[] {this.core.col0(), this.core.layer0(), this.core.width(), this.core.height(), this.core.depth()});
+            output.putLong("channels", this.core.channels());
         }
     }
 
@@ -815,8 +900,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     protected void loadAdditional(ValueInput input) {
         // Sized first, so the saved energy and coolant load into buffers big enough for them.
         int[] c = input.getIntArray("core").orElse(null);
-        this.core = c != null && c.length == 6
-                ? new FissionCore(this.worldPosition, controllerFacing(), c[0], c[1], c[2], c[3], c[4], c[5]) : null;
+        this.core = c != null && c.length == 5
+                ? new FissionCore(this.worldPosition, controllerFacing(), c[0], c[1], c[2], c[3], c[4], input.getLongOr("channels", 0L)) : null;
         size(input.getIntOr("sized_for", this.core == null ? 0 : this.core.channelCount()));
         super.loadAdditional(input);
         this.insertion = input.getIntOr("insertion", 100);
@@ -825,9 +910,17 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         this.breed[1] = input.getFloatOr("breed1", 0);
         this.scrammed = input.getBooleanOr("scrammed", false);
         this.lit = input.getBooleanOr("lit", false);
+        this.viewLayer = input.getIntOr("layer", 0);
+        int[] plan = input.getIntArray("plan").orElse(null);
+        if (plan != null && plan.length == 3) {
+            this.planW = Math.clamp(plan[0], FissionCore.MIN, FissionCore.MAX);
+            this.planH = Math.clamp(plan[1], FissionCore.MIN, FissionCore.MAX);
+            this.planD = Math.clamp(plan[2], FissionCore.MIN, FissionCore.MAX);
+        }
         for (int slot = 0; slot < CHANNELS; slot++) {
             this.pending[slot] = input.getFloatOr("pending" + slot, 0);
         }
-        this.energyPorts = null;
+        this.energyPort = null;
+        this.planned = null;
     }
 }

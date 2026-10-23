@@ -34,6 +34,7 @@ public class GroundZeroClient {
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent e) ->
                 e.register(dev.groundzero.client.screen.ItemPreview.State.class, dev.groundzero.client.screen.ItemPreview.Renderer::new));
         modBus.addListener(GroundZeroClient::registerRenderers);
+        modBus.addListener(dev.groundzero.client.render.FissionSections::register);
         dev.groundzero.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::register);
         modBus.addListener(dev.groundzero.client.render.GZFluidModels::registerTints);

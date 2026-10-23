@@ -1,6 +1,7 @@
 """Field Manual photo plates: the formed multiblocks rendered by the preview renderer, from the front-right at 30
 degrees, on a transparent background, cropped to the model and fitted to the plate size listed in content.PLATES.
-A structure built of ordinary blocks (the Fission Reactor) is drawn block by block from its example pattern.
+The Fission Reactor, built of ordinary blocks at any size, is drawn formed as the game draws it: its example pattern's
+vessel sections (tools/assets/fission_formed.py), with the lit Fuel Channels and the glowing coolant inside.
 
 Writes textures/gui/manual/plates/<name>.png. Run after the models change:
     tools\\.venv\\Scripts\\python.exe tools\\manual\\plates.py
@@ -16,6 +17,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "assets"))
 
 from gz import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
@@ -32,10 +34,10 @@ HIDDEN = {"singularity_reactor": ("hatch_", "disk0", "disk1")}
 # the front facing north), a block model for each legend character, which of them are full opaque blocks (faces against
 # them are hidden), and the box of cells the coolant fills (it is drawn glowing, as while the reactor runs).
 REACTOR = [
-    ["LXLL", "LLLL", "LLLL", "LLWL"],
+    ["LXLL", "LLLL", "LLLL", "LLLL"],
+    ["LGGL", "GCCG", "WCCG", "LEGL"],
     ["LGGL", "GCCG", "GCCG", "LGGL"],
-    ["LGGL", "GCCG", "GCCG", "LGGL"],
-    ["LLLL", "LUEL", "LIGL", "LLLL"],
+    ["LLLL", "LLUL", "LLLL", "LLLL"],
 ]
 BLOCK_PLATES = {
     "fission_reactor": (REACTOR, {"L": "lead_lined_casing", "G": "reactor_glass", "W": "fluid_port", "U": "item_port", "I": "item_port",
@@ -77,6 +79,11 @@ def block_structure_quads(name: str) -> list:
             moved = R.Quad(q.pos + np.array([x * 16, y * 16, z * 16], dtype=float), q.uv, q.tex, q.shade, q.emissive, q.normal,
                            q.directional)
             (glass if key == "G" else opaque).append(moved)
+    return opaque, _water_quads(lo, hi, fill), glass
+
+
+def _water_quads(lo, hi, fill: float) -> list:
+    """The coolant filling the box of cells lo..hi to {fill} of its height, glowing (as while the reactor runs)."""
     tex = _water_tex()
     f = tuple(c * 16 + 0.05 for c in lo)
     t = (hi[0] * 16 - 0.05, lo[1] * 16 + (hi[1] - lo[1]) * 16 * fill, hi[2] * 16 - 0.05)
@@ -87,12 +94,32 @@ def block_structure_quads(name: str) -> list:
         hgt = np.ptp(pos[:, 1]) if d != "up" else np.ptp(pos[:, 2])
         uv = np.array([(0, 0), (w, 0), (w, hgt), (0, hgt)], dtype=float)
         water.append(R.Quad(pos, uv, tex, 1.0, True, np.array(R.NORMALS[d], dtype=float), False))
-    return opaque, water, glass
+    return water
+
+
+def formed_reactor_quads() -> tuple[list, list, list]:
+    """The example Fission Reactor formed: the vessel's sections with the drive rods 70% out, the lit Fuel Channels and
+    the glowing coolant inside, and the panes."""
+    import fission_formed as F
+    layers, _legend, _solid, (lo, hi, fill) = BLOCK_PLATES["fission_reactor"]
+    opaque, panes = F.compose(layers, rod_out=0.7)
+    channel = R.build_quads(R.load_model("groundzero:block/fuel_channel_lit"))
+    for y, layer in enumerate(layers):
+        for z, row in enumerate(layer):
+            for x, key in enumerate(row):
+                if key == "C":
+                    opaque += [R.Quad(q.pos + np.array([x * 16, y * 16, z * 16], dtype=float), q.uv, q.tex, q.shade, q.emissive,
+                                      q.normal, q.directional) for q in channel]
+    return opaque, _water_quads(lo, hi, fill), panes
+
+
+#: Structures drawn formed by their own composer rather than block by block.
+FORMED = {"fission_reactor": formed_reactor_quads}
 
 
 def plate(name: str, w: int, h: int) -> Path:
     if name in BLOCK_PLATES:
-        opaque, water, glass = block_structure_quads(name)
+        opaque, water, glass = FORMED[name]() if name in FORMED else block_structure_quads(name)
         center, extent = R.model_bounds(opaque + glass)
         rot = R.view_matrix(30, 225)
         glass.sort(key=lambda q: float((rot @ (q.pos.mean(axis=0) - center))[2]))   # far panes first

@@ -13,9 +13,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Fuel Channel (DESIGN.md §7, §23.3): stood in a Fission Reactor's core in columns the full height of the core, each
- * column holding one fuel rod. An open fuel-assembly frame (corner posts, spacer grids, the fuel pins between them), so
- * the coolant shows round it. While its reactor runs it glows Cherenkov blue ({@link #LIT}, set by the reactor).
+ * Fuel Channel (DESIGN.md §7, §23.3): stood anywhere in a Fission Reactor's core, each channel holding one fuel rod.
+ * An open fuel-assembly frame (corner posts, spacer grids, the fuel pins between them), so the coolant shows round
+ * it. While its reactor runs it glows Cherenkov blue ({@link #LIT}, set by the reactor).
  * Placing or breaking one tells nearby reactors to re-check, as structure blocks do.
  */
 public class FuelChannelBlock extends Block {

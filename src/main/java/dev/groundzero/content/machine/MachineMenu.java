@@ -23,7 +23,7 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_ITEMS_NEXT = 10, BUTTON_ITEMS_PREV = 20, BUTTON_ENERGY = 30, BUTTON_FLUID = 40;
     /** + tank index: empty that tank. */
     public static final int BUTTON_DUMP = 50;
-    /** + n: a machine's own control button n (e.g. reactor control rods), see MachineBlockEntity#handleButton. */
+    /** + n (up to 29): a machine's own control button n (e.g. reactor control rods), see MachineBlockEntity#handleButton. */
     public static final int BUTTON_MACHINE = 70;
     /** Added to a face button (items, energy, fluid) to mean a two-block machine's second half (side or upper). */
     public static final int BUTTON_SIDE_HALF = 100;
@@ -126,7 +126,7 @@ public class MachineMenu extends AbstractContainerMenu {
             this.machine.changeSides(SideConfig::toggleAutoEject);
             return true;
         }
-        if (id >= BUTTON_MACHINE && id < BUTTON_MACHINE + 10) {
+        if (id >= BUTTON_MACHINE && id < BUTTON_SIDE_HALF) {
             return this.machine.handleButton(id - BUTTON_MACHINE);
         }
         if (id >= BUTTON_DUMP && id < BUTTON_DUMP + MachineBlockEntity.MAX_TANKS) {
@@ -213,7 +213,7 @@ public class MachineMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return isActive() && this.container.canPlaceItem(getContainerSlot(), stack);
+            return (isActive() || this.menu.machine().slotTakesHidden(getContainerSlot())) && this.container.canPlaceItem(getContainerSlot(), stack);
         }
 
         @Override

@@ -357,7 +357,7 @@ Charges a battery, or any other mod's chargeable item, at up to 512 FE a tick an
 
 entry("power/fission", "Nuclear power", "uranium_fuel_rod", [], [
     text("""
-For the late game, a [Fission Reactor](nuclear/fission_reactor) makes power from uranium fuel rods, 300 FE a tick a rod: build it bigger for more rods, up to 4,800 FE a tick from sixteen. It breeds plutonium and tritium on the side.
+For the late game, a [Fission Reactor](nuclear/fission_reactor) makes power from uranium fuel rods, 75 FE a tick a rod, one rod in each Fuel Channel: build it bigger for more channels, up to 4,800 FE a tick from sixty-four. It breeds plutonium and tritium on the side.
 
 Fusion and singularity reactors will follow.
 """),
@@ -589,7 +589,7 @@ Enriched uranium goes into fuel rods and RTG slugs; depleted uranium into target
 entry("nuclear/fuel", "Fuel and target rods", "uranium_fuel_rod", ["uranium_fuel_rod", "spent_fuel_rod", "du_target_rod", "li6_target_rod",
                                                                     "irradiated_du_target_rod", "irradiated_li6_target_rod"], [
     text("""
-A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor), one rod to each column of Fuel Channels. Once it has burned, a bar under it shows the fuel it has left; a used-up rod comes out as a **spent fuel rod**. Take a half-burned rod out and it keeps its burn.
+A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor), one rod in each Fuel Channel. Once it has burned, a bar under it shows the fuel it has left; a used-up rod comes out as a **spent fuel rod**. Take a half-burned rod out and it keeps its burn.
 
 **Target rods** ride along in the reactor's breeding slots and come out irradiated: depleted uranium rods for plutonium, lithium-6 rods for tritium. See [Breeding and reprocessing](nuclear/reprocessing).
 """),
@@ -600,35 +600,38 @@ A **uranium fuel rod** powers the [Fission Reactor](nuclear/fission_reactor), on
 
 entry("nuclear/fission_reactor", "Fission Reactor", "fission_reactor", ["fission_reactor", "fission_reactor_spawner", "lead_lined_casing",
                                                                         "fuel_channel"], [
-    plate("fission_reactor", "A 4x4x4 Fission Reactor with four channels."),
+    plate("fission_reactor", "A formed 4x4x4 Fission Reactor with eight channels."),
     text("""
-Build it **any size** from 3x3x3 to 6x6x6: a hollow box of **lead-lined casing** with **Fuel Channels** standing in its core. Each column of channels, floor to roof, holds **one uranium fuel rod**, up to 16 in a 4x4 core; leave the rest of the core empty, for the coolant. Withdraw the control rods and every rod gives **300 FE a tick**: 1,200 from four, **4,800 from sixteen**.
+Build it **any size** from 3x3x3 to 6x6x6: a hollow box of **lead-lined casing** with **Fuel Channels** in its core. Every channel holds **one uranium fuel rod**, wherever it stands, so a bigger core holds more: up to 64 in a 4x4x4 core. Leave the rest of the core empty, for the coolant. Withdraw the control rods and every rod gives **75 FE a tick**: 600 from the example's eight, **4,800 from sixty-four**.
 
-- **Corners:** lead-lined casing.
-- **Edges:** casing, or ports.
-- **Walls:** casing, **reactor glass** or ports. The controller goes in a wall or an edge.
+- **Corners and edges:** lead-lined casing.
+- **Walls:** casing or **reactor glass**, with **one Item Port, one Fluid Port and one Energy Port** among them, anywhere in the walls, roof or floor.
+- **The controller:** in a wall, or in the bottom edge of its wall.
 
-Coolant goes into a **Fluid Port**, rods into an **Item Port** (spent rods and irradiated targets come out of it too) and power out of an **Energy Port**: as many of each as you like. Right-click the controller or hold a Holo-Projector to see what is missing.
+Coolant goes into the **Fluid Port**, rods into the **Item Port** (spent rods and irradiated targets come out of it too) and power out of the **Energy Port**. Once formed, the walls become one vessel: a plinth, windows onto the core, a head with a control-rod drive over every column of channels (their rods rise as you withdraw the control rods), the ports' housings and the console where the controller stands.
 """),
-    structure("fission_reactor", "The example: 4x4x4 with four channels. The controller at the front of the bottom layer, the Fluid Port behind it; on top an Item Port, the Energy Port, a second Item Port and a window."),
     text("""
-**The core map.** The controller's screen shows the core from above, the controller's wall at the bottom: a rod slot on each channel, coolant between them. Every loaded rod burns at once. Each lasts about **40 minutes** at full power, a little more or less (no two alike), and the bar under it shows the fuel left; a used-up rod comes out as a spent fuel rod.
+**The plan.** Right-click the controller (or hold a Holo-Projector) to see its plan as ghost blocks: one reactor of the size set on its screen, 4x4x4 at first, with casing on the edges, glass in the side walls, the three ports and channels filling the core. Sneak-right-click to open the screen and change the size with the **PLAN** buttons. The ghosts are only a suggestion: casing instead of glass, a port in another wall or water left in the core are all fine. Only a block that cannot stand where it is gets a red outline.
+"""),
+    structure("fission_reactor", "The example: 4x4x4 with a 2x2x2 core of eight channels. The controller at the front of the bottom layer, the Fluid Port low in a side wall, the Energy Port low in the back wall and the Item Port in the roof."),
+    text("""
+**The core map.** The controller's screen shows the core a layer at a time from above, the controller's wall at the bottom: pick the layer with the numbered tabs beside it. There is a rod slot on each channel, coolant between them. Shift-click fills every channel at once. Every loaded rod burns at the same time. Each lasts about **2 hours 40 minutes** at full power, a little more or less (no two alike), and the bar under it shows the fuel left; a used-up rod comes out as a spent fuel rod.
 
 **Heat.** The further the rods are out, the more power and the more heat. Heat goes by how full the core is, so a big reactor runs as hot as a small one loaded alike. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. Past **900 C** the core goes **critical**: press the red **SCRAM** button (every rod drops in) or it melts down. See [Reactor safety](safety/reactor_safety).
 
-- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. Up to 6.25 mB a tick a rod.
+- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. About 1.6 mB a tick a rod.
 - **Heavy water:** keeps the core well below 900 C even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.
 
-A taller core holds more water and steel: it heats up and cools down more slowly, half as fast with a four-block core. The energy buffer and the coolant tank grow with the number of channels.
+Water left in the core between the channels makes it heat up and cool down more slowly: as much water as fuel halves the rate, twice as much makes it a third. The energy buffer and the coolant tank grow with the number of channels.
 """),
     table([
-        ["A rod", "300 FE/t"],
-        ["Sixteen rods", "4,800 FE/t"],
-        ["A rod lasts", "about 48,000 ticks"],
-        ["Target rod", "6,000 ticks (four rods)"],
+        ["A rod", "75 FE/t"],
+        ["Sixty-four rods", "4,800 FE/t"],
+        ["A rod lasts", "about 192,000 ticks"],
+        ["Target rod", "6,000 ticks at 1,200 FE/t"],
         ["Critical at", "900 C"],
-        ["Water", "6.25 mB/t a rod"],
-        ["Heavy water", "1.25 mB/t a rod"],
+        ["Water", "1.5625 mB/t a rod"],
+        ["Heavy water", "0.3125 mB/t a rod"],
     ], "At full power"),
     craft("fission_reactor"),
     craft("fuel_channel"),

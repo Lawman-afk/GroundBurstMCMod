@@ -1,37 +1,54 @@
 package dev.groundzero.client.render;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import dev.groundzero.client.render.FissionSections.Piece;
 import dev.groundzero.content.machine.FissionCore;
 import dev.groundzero.content.machine.FissionReactorBlockEntity;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.machine.MachineTank;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Fission Reactor's coolant (DESIGN.md §23.3): its walls and Fuel Channels are ordinary blocks, so this only fills
- * the core round the channels with the coolant, from the floor up to the tank's level, seen through the reactor
- * glass. While the core runs the water glows Cherenkov blue, lit whatever the light round it.
+ * The formed Fission Reactor (DESIGN.md §7.2): while it is formed its walls' own blocks hide and this draws the vessel
+ * over them, a section a cell ({@link FissionSections}): the plinth, posts, bolted lead walls and window bays, the head
+ * with a control-rod drive over every column that holds fuel (the rods rising as they are withdrawn), the ports'
+ * housings and the console. It fills the core round the Fuel Channels (ordinary blocks, seen through the windows) with
+ * the coolant, from the floor up to the tank's level; while the core runs the water glows Cherenkov blue, lit whatever
+ * the light round it. The panes go in one batch with the water, which is sorted far to near when it is drawn.
  */
 public class FissionReactorRenderer implements BlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> {
     /** Clear of the walls' inner faces. */
     private static final float INSET = 0.004f;
     private static final int CHERENKOV = 0x5CD2FF;
+    /** How far the drive rods sink as the control rods go in (blocks). */
+    private static final float ROD_TRAVEL = 0.5f;
+    private static final RenderType TRANSLUCENT = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final Direction[] DIRECTIONS = Direction.values();
 
     public static class State extends BlockEntityRenderState {
         @Nullable Fluid fluid;
@@ -40,6 +57,9 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
         boolean glowing;
         /** The core's inside, relative to the controller block. */
         float x0, y0, z0, x1, y1, z1;
+        /** The vessel's sections, and how far down the drive rods sit. */
+        final List<Piece> pieces = new ArrayList<>();
+        float rodDrop;
     }
 
     @Override
@@ -52,10 +72,13 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
         state.fluid = null;
+        state.pieces.clear();
         FissionCore core = be.core();
         if (core == null || !be.isFormed() || be.getLevel() == null) {
             return;
         }
+        FissionSections.layout(core, be.getLevel(), be.getBlockPos(), state.pieces);
+        state.rodDrop = (1 - be.flux()) * ROD_TRAVEL;
         MachineTank tank = be.tank(0);
         if (tank.amount() <= 0) {
             return;
@@ -87,14 +110,22 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        if (state.fluid == null) {
+        if (state.pieces.isEmpty()) {
             return;
         }
-        TextureAtlasSprite sprite = FluidVisuals.still(state.fluid);
+        List<Piece> pieces = List.copyOf(state.pieces);                        // drawn later, after this state may be reused
+        float drop = state.rodDrop;
+        collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockItemSheet(), (pose, buffer) -> sections(pose, buffer, pieces, drop, false));
+        Fluid fluid = state.fluid;
+        TextureAtlasSprite sprite = fluid != null ? FluidVisuals.still(fluid) : null;
         float x0 = state.x0, x1 = state.x1, z0 = state.z0, z1 = state.z1, y0 = state.y0;
         float y1 = y0 + (state.y1 - state.y0) * state.fill;
         int c = state.color, light = state.glowing ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, TRANSLUCENT, (pose, buffer) -> {
+            sections(pose, buffer, pieces, drop, true);
+            if (sprite == null) {
+                return;
+            }
             float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
             // The surface, a block-sized tile at a time.
             for (float xa = x0; xa < x1 - 1e-4f; xa = next(xa, x1)) {
@@ -126,6 +157,29 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
         });
     }
 
+    /** The vessel's opaque sections, or its panes, each moved into its cell. */
+    private static void sections(PoseStack.Pose base, VertexConsumer buffer, List<Piece> pieces, float drop, boolean glass) {
+        PoseStack.Pose pose = base.copy();
+        QuadInstance instance = new QuadInstance();
+        for (Piece piece : pieces) {
+            BlockStateModelPart part = piece.section().glass() == glass ? piece.section().part() : null;
+            if (part == null) {
+                continue;
+            }
+            pose.set(base);
+            piece.place(pose, drop);
+            instance.setLightCoords(piece.light());
+            for (Direction d : DIRECTIONS) {
+                for (BakedQuad quad : part.getQuads(d)) {
+                    buffer.putBakedQuad(pose, quad, instance);
+                }
+            }
+            for (BakedQuad quad : part.getQuads(null)) {
+                buffer.putBakedQuad(pose, quad, instance);
+            }
+        }
+    }
+
     /** The next block boundary after {@code a}, but no further than {@code end}. */
     private static float next(float a, float end) {
         return Math.min(end, (float) Math.floor(a + 1e-4f) + 1f);
@@ -151,7 +205,13 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
     @Override
     public AABB getRenderBoundingBox(FissionReactorBlockEntity be) {
         FissionCore core = be.core();
-        return core != null ? core.bounds() : new AABB(be.getBlockPos());
+        return core != null ? core.bounds().inflate(1) : new AABB(be.getBlockPos());
+    }
+
+    /** The vessel stands in for its walls' blocks, so it is seen from further off than most block entities. */
+    @Override
+    public int getViewDistance() {
+        return 192;
     }
 
     @Override

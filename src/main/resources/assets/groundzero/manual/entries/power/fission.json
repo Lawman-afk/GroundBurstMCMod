@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "For the late game, a [Fission Reactor](nuclear/fission_reactor) makes power from uranium fuel rods, 300 FE a tick a rod: build it bigger for more rods, up to 4,800 FE a tick from sixteen. It breeds plutonium and tritium on the side.\n\nFusion and singularity reactors will follow."
+      "text": "For the late game, a [Fission Reactor](nuclear/fission_reactor) makes power from uranium fuel rods, 75 FE a tick a rod, one rod in each Fuel Channel: build it bigger for more channels, up to 4,800 FE a tick from sixty-four. It breeds plutonium and tritium on the side.\n\nFusion and singularity reactors will follow."
     },
     {
       "type": "links",

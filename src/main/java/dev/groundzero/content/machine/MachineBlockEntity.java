@@ -155,6 +155,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return true;
     }
 
+    /** Whether shift-clicks may fill this slot while the screen hides it (the reactor's other core layers). */
+    public boolean slotTakesHidden(int slot) {
+        return false;
+    }
+
     /** One server tick of work. Returns whether the machine is actively working (drives ACTIVE, sound, animation). */
     protected abstract boolean tickMachine(ServerLevel level);
 

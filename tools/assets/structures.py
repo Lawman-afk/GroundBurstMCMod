@@ -399,7 +399,7 @@ if __name__ == "__main__":
     part_block("magnet_segment", magnet_segment())
     part_block("accelerator_injector", injector())
     part_block("accelerator_target_chamber", target_chamber())
-    controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing(), hides=False)
+    controller("fission_reactor", controller_front(trefoil_placard), controller_top(), lead_casing())
     controller("particle_accelerator", controller_front(orbit_placard), controller_top(), casing())
     # Slice 8.
     part_block("toroidal_field_coil", toroidal_field_coil())

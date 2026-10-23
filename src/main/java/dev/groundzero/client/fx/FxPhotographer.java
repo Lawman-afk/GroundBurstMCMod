@@ -149,7 +149,11 @@ public final class FxPhotographer {
                 new Scene("fission", "fission", 15, 14, List.of(60)),
                 new Scene("fission_night", "fission", 15, 14, List.of(60), "midnight"),
                 new Scene("fission_close", "fission", 7, 10, List.of(60), "midnight"),
-                new Scene("fission_ui", "fission", 5, 0, List.of(30)))) {
+                new Scene("fission_ui", "fission", 5, 0, List.of(30)),
+                // The reactor's plans: two lone controllers' ghost previews (a 4x4x4 half built, with stone in its core;
+                // a 6x5x5 not started), and the plan panel on the unformed controller's screen.
+                new Scene("fission_plan", "fission_plan", 13, 20, List.of(40)),
+                new Scene("fission_plan_ui", "fission_plan", 5, 0, List.of(30)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -308,6 +312,7 @@ public final class FxPhotographer {
     private static net.minecraft.core.BlockPos launchSilo, launchComputer, launchTarget;
     /** The fission scenes' 6x6x6 reactor (its screen is opened for the UI shot). */
     private static net.minecraft.core.BlockPos fissionBig;
+    private static List<net.minecraft.core.BlockPos> fissionPlans = List.of();
 
     /**
      * A formed, powered Launch Complex with a Strategic tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
@@ -619,8 +624,8 @@ public final class FxPhotographer {
     }
 
     /**
-     * The fission scenes: the 4x4x4 example (four rods, water) and a 6x6x6 reactor with sixteen channels (heavy water),
-     * fronts to the camera, fuelled with rods part burned and the control rods 70% out, so both run.
+     * The fission scenes: the 4x4x4 example (eight rods, water) and a 6x6x6 reactor with 32 channels in a checkerboard
+     * (heavy water), fronts to the camera, fuelled with rods part burned and the control rods 70% out, so both run.
      */
     private static void fissionSite(ServerLevel level, int x, int ground) {
         var controller = dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get();
@@ -652,8 +657,9 @@ public final class FxPhotographer {
 
     /**
      * A {@code w} x {@code h} x {@code d} Fission Reactor round a controller at {@code at} (in the bottom of its front
-     * wall, second from the left as patterns have it): lead casing, reactor glass in the middle of each wall, a Fluid
-     * Port and an Item Port at the back, an Energy Port in the roof; a Fuel Channel column in every core column.
+     * wall, second from the left as patterns have it): lead casing, reactor glass in the side walls, the Item Port in the
+     * roof, the Energy Port low in the back wall and the Fluid Port low in the left wall; Fuel Channels in a checkerboard
+     * through the core, water between them.
      */
     private static void fissionBox(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.core.Direction facing, int w, int h, int d) {
         level.setBlockAndUpdate(at, dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get().defaultBlockState()
@@ -670,16 +676,17 @@ public final class FxPhotographer {
                     int sides = (c == -1 || c == w - 2 ? 1 : 0) + (l == 0 || l == h - 1 ? 1 : 0) + (r == 0 || r == d - 1 ? 1 : 0);
                     net.minecraft.world.level.block.Block block;
                     if (sides == 0) {
-                        block = dev.groundzero.content.multiblock.GZMultiblocks.FUEL_CHANNEL.block().get();
+                        block = (c + l + r) % 2 == 0 ? dev.groundzero.content.multiblock.GZMultiblocks.FUEL_CHANNEL.block().get()
+                                : net.minecraft.world.level.block.Blocks.AIR;
                     } else if (sides == 1 && l == h - 1) {
-                        block = c == 1 && r == 1 ? dev.groundzero.content.multiblock.GZMultiblocks.ENERGY_PORT.block().get()
+                        block = c == w / 2 - 1 && r == 1 ? dev.groundzero.content.multiblock.GZMultiblocks.ITEM_PORT.block().get()
                                 : dev.groundzero.content.multiblock.GZMultiblocks.LEAD_LINED_CASING.block().get();
+                    } else if (sides == 1 && l == 1 && r == d - 1 && c == (w - 3) / 2) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.ENERGY_PORT.block().get();
+                    } else if (sides == 1 && l == 1 && c == -1 && r == d - 2) {
+                        block = dev.groundzero.content.multiblock.GZMultiblocks.FLUID_PORT.block().get();
                     } else if (sides == 1 && l > 0) {
                         block = dev.groundzero.content.multiblock.GZMultiblocks.REACTOR_GLASS.block().get();
-                    } else if (sides == 2 && l == 0 && r == d - 1 && c == 0) {
-                        block = dev.groundzero.content.multiblock.GZMultiblocks.FLUID_PORT.block().get();
-                    } else if (sides == 2 && l == 0 && r == d - 1 && c == 1) {
-                        block = dev.groundzero.content.multiblock.GZMultiblocks.ITEM_PORT.block().get();
                     } else {
                         block = dev.groundzero.content.multiblock.GZMultiblocks.LEAD_LINED_CASING.block().get();
                     }
@@ -687,6 +694,42 @@ public final class FxPhotographer {
                 }
             }
         }
+    }
+
+    /**
+     * The plan scenes: two lone Fission Reactor controllers, fronts to the camera: one planning the 4x4x4 example with its
+     * floor and the front of its first layer built (and stone where a Fuel Channel should be), one planning a 6x5x5.
+     */
+    private static void fissionPlanSite(ServerLevel level, int x, int ground) {
+        var controller = dev.groundzero.content.machine.GZMachines.FISSION_REACTOR.block().get();
+        var small = new net.minecraft.core.BlockPos(x, ground, -4);
+        var big = new net.minecraft.core.BlockPos(x, ground, 6);
+        for (var at : List.of(small, big)) {
+            level.setBlockAndUpdate(at, controller.defaultBlockState()
+                    .setValue(dev.groundzero.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST));
+        }
+        if (level.getBlockEntity(big) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity r) {
+            for (int b : new int[] {1, 1, 3, 5}) {                                 // wider twice, taller, deeper
+                r.handleButton(dev.groundzero.content.machine.FissionReactorBlockEntity.BUTTON_PLAN + b);
+            }
+        }
+        if (level.getBlockEntity(small) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity r) {
+            var plan = r.plan();
+            for (int l = plan.layer0(); l <= plan.layer0() + 1; l++) {
+                for (int row = 0; row < plan.depth(); row++) {
+                    for (int c = plan.col0(); c <= plan.col1(); c++) {
+                        var pos = plan.pos(c, l, row);
+                        if (pos.equals(small) || l > plan.layer0() && row > 1) {
+                            continue;
+                        }
+                        boolean core = plan.kind(c, l, row) == dev.groundzero.content.machine.FissionCore.Kind.CORE;
+                        level.setBlockAndUpdate(pos, core && c == plan.col0() + 1 ? net.minecraft.world.level.block.Blocks.STONE.defaultBlockState()
+                                : plan.suggested(c, l, row));
+                    }
+                }
+            }
+        }
+        fissionPlans = List.of(small, big);
     }
 
     /** How high the silo scenes' plateau stands over the flat world: the silo's 14 layers go down into it. */
@@ -840,6 +883,10 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("fission")) {
                     fissionSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("fission_plan")) {
+                    fissionPlanSite(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("chemical")) {
@@ -1179,7 +1226,24 @@ public final class FxPhotographer {
             screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left), false);
             screen.mouseReleased(new net.minecraft.client.input.MouseButtonEvent(tx, ty, left));
         }
-        // The 6x6x6 Fission Reactor's screen: its core map, sixteen rods part burned.
+        // The plans' ghost previews, pinned as a right-click on each controller pins them.
+        if (scene.name().equals("fission_plan") && step >= 0 && clock == 12) {
+            for (var at : fissionPlans) {
+                dev.groundzero.content.multiblock.MultiblockClientHooks.togglePreview.accept(at);
+            }
+        }
+        // The unformed controller's screen: the plan panel over its core map.
+        if (scene.name().equals("fission_plan_ui") && step >= 0 && clock == 12 && !fissionPlans.isEmpty()) {
+            var at = fissionPlans.getFirst();
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.machine.FissionReactorBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
+        }
+        // The 6x6x6 Fission Reactor's screen: its core map, a layer of its checkerboard core, the rods part burned.
         if (scene.name().equals("fission_ui") && step >= 0 && clock == 12 && fissionBig != null) {
             var at = fissionBig;
             server.execute(() -> {
