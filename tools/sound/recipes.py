@@ -456,13 +456,13 @@ def decontamination_shower_loop() -> np.ndarray:
 
 def fission_reactor_loop() -> np.ndarray:
     """Fission Reactor: a deep, steady plant hum (coolant pumps at 50 Hz with harmonics), water rushing through the
-    core, a low transformer drone, and the odd soft relay tick from the control-rod drives."""
+    core and a low transformer drone. (The control-rod drives' relay ticks were taken out at the user's request: three
+    in every loop, they read as a clicking that never stopped.)"""
     t = S.t_axis(TOTAL)
     pumps = (np.sin(2 * np.pi * 50 * t) * 0.5 + np.sin(2 * np.pi * 100 * t) * 0.3 + np.sin(2 * np.pi * 150 * t) * 0.12) * 0.3
     flow = S.bandpass(S.pink(TOTAL, 191), 150, 1200) * (0.8 + 0.2 * np.sin(2 * np.pi * 0.5 * t)) * 0.35
     drone = S.lowpass(S.brown(TOTAL, 192), 90) * 0.3
-    tick = S.bandpass(S.white(0.02, 193), 1500, 5000) * S.exp_decay(int(0.02 * S.SR), 0.004) * 0.2
-    x = S.mix((pumps, 1.0), (flow, 1.0), (drone, 1.0), (_pulses([0.7, -1.3, 2.7], tick), 1.0))
+    x = S.mix((pumps, 1.0), (flow, 1.0), (drone, 1.0))
     return S.normalize(S.seamless_loop(x, LOOP, XF, PRE), -7)
 
 
