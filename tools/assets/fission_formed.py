@@ -58,6 +58,7 @@ GUN = replace(K.GUN, **CALM)
 PLINTH = replace(K.PLINTH, **CALM)
 STEEL = replace(K.STEEL, **CALM)
 LIP = replace(STEEL, ao=0.0)                       # the glazing's lips: thin, no contact shadow from the next piece
+ANGLE = replace(STEEL, tone=5 / 9, brushed=0.02, mottle=0.03, grain=0.03)   # the angles outlining the vessel: calm bars
 HAZARD = replace(K.HAZARD, **CALM)
 GLASS = fixed("reactor_pane", "#141a1e", "#1e262c", "#2a343c", "#36424c", "#4a5864", "#6a7a88", "#a4b4c0")
 FLUID_BLUE = fixed("fluid_blue", "#0c1a3a", "#12285a", "#1a3a7e", "#2452a6", "#3a6ec8", "#6a98e0", "#a8c8f4")
@@ -129,15 +130,35 @@ def tread(f, img) -> None:
     M.darken(img, np.roll(bar, 1, axis=0) & ~bar, 0.74)
 
 
-def angle(k: K.Kit, f, img) -> None:
-    """A pillar's steel angle: 3 px up each side of the corner, a rivet every 4 px up it."""
+#: Where the head's steel angle starts: 3 px under the roof's edge, as wide as a pillar's angle.
+TOP_ANGLE = 13.0
+
+
+def angle(k: K.Kit, f, img, below: float = 16.0) -> None:
+    """A pillar's steel angle: 3 px up each side of the corner, a rivet every 4 px up it. At a top corner it runs up the
+    head band to {below}, where it meets the head's angle along the roof's edge."""
     across = f.X if f.d == "north" else f.Z
-    strip = across < 3
-    M.paste(img, k.on(f, STEEL), strip)
-    M.darken(img, (across >= 3) & (across < 3.6), 0.7)
-    rivet = (np.abs(across - 1.5) < 0.5) & (np.abs(np.mod(f.Y, 4.0) - 2.5) < 0.5)
-    M.lighten(img, rivet, 1.3, 14)
-    M.darken(img, np.roll(rivet, 1, axis=0) & ~rivet, 0.75)
+    strip = (across < 3) & (f.Y < below)
+    M.paste(img, k.on(f, ANGLE), strip)
+    M.darken(img, (across >= 3) & (across < 3.6) & (f.Y < below), 0.7)
+    rivet(img, strip & (np.abs(across - 1.5) < 0.5) & (np.abs(np.mod(f.Y, 4.0) - 2.5) < 0.5))
+
+
+def head_angle(k: K.Kit, f, img, corner: bool) -> None:
+    """The head's steel angle along the roof's edge: the top 3 px of the head band under the rim, a rivet every 4 px
+    along it on the pillars' pitch. With the pillars' angles it outlines the vessel's top in steel; at a top corner the
+    pillar's angle comes up into it, one rivet in the corner where they meet."""
+    a, _ = f.plane_uv()                                                   # along the edge, 0 at a corner's outer edge
+    strip = f.Y >= TOP_ANGLE
+    M.paste(img, k.on(f, ANGLE), strip)
+    edge = (f.Y >= TOP_ANGLE - 0.6) & (f.Y < TOP_ANGLE)
+    row = strip & (np.abs(f.Y - 14.5) < 0.5)
+    rivets = row & (np.abs(np.mod(a, 4.0) - 2.5) < 0.5)
+    if corner:
+        edge &= a >= 3
+        rivets = (rivets & (a >= 3)) | (row & (np.abs(a - 1.5) < 0.5))
+    M.darken(img, edge, 0.7)
+    rivet(img, rivets)
 
 
 # --- the base ----------------------------------------------------------------------------------------------------------------
@@ -210,8 +231,9 @@ def wall() -> None:
 # --- the head and roof -------------------------------------------------------------------------------------------------------
 
 def _head(name: str, lips: list[tuple[str, tuple, tuple]], outer: tuple[str, ...], context, seed: int) -> None:
-    """A cell of the head: a full block, its roof a steel plate with a rivet grid, its outer faces lead (the head band),
-    the steel rim along its outer edge. {context} stands the neighbouring cells round it, the rim running on into theirs."""
+    """A cell of the head: a full block, its roof decked in steel, its outer faces lead (the head band) under a steel
+    angle along the roof's edge (at a corner the pillar's angle runs up into it), the steel rim on top. {context} stands
+    the neighbouring cells round it, the rim running on into theirs."""
     m = _model(name)
     m.box("head", (0, 0, 0), (16, 16, 16))
     for bn, frm, to in lips:
@@ -223,8 +245,12 @@ def _head(name: str, lips: list[tuple[str, tuple, tuple]], outer: tuple[str, ...
     kc.paint(t, "head", ROOF, only=("up",))
     kc.overlay(t, "head", courses, only=("up",))
     if outer:
+        corner = len(outer) == 2
         kc.paint(t, "head", LEAD, only=outer)
         kc.overlay(t, "head", courses, only=outer)
+        kc.overlay(t, "head", lambda f, img: head_angle(kc, f, img, corner), only=outer)
+        if corner:
+            kc.overlay(t, "head", lambda f, img: angle(kc, f, img, below=TOP_ANGLE), only=outer)
     if lips:
         names = [n for n, _, _ in lips]
         kc.paint(t, names, STEEL)
