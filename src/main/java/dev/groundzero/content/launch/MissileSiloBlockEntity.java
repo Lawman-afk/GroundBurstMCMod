@@ -82,7 +82,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     /** Any missile at all, as the Launch Complex (an intercontinental one too, since the user's look at 9b). */
     @Override
     public boolean accepts(MissileSpec spec) {
-        return true;
+        return !spec.cruise();                                // (a cruise missile: the Cruise Missile Launcher's)
     }
 
     @Override

@@ -61,13 +61,13 @@ final class SpentStages {
 
     /** {@code missile} has just dropped its {@code k}th stage: let it fall from where it was. */
     static void drop(MissileEntity missile, int k) {
-        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.look());
         if (shape == null) {
             return;                                                // (the plain missile has one stage)
         }
         ItemStack look = new ItemStack(dev.groundzero.content.assembly.GZAssembly.MISSILE.get());
         look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                List.of(), List.of(), List.of(MissileParts.spentStage(missile.warheadName(), k)), List.of()));
+                List.of(), List.of(), List.of(MissileParts.spentStage(missile.look(), k)), List.of()));
         // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position. The
         // stage's middle is the world's pixels up from the tail; in the model, a quarter of that up from its tail.
         float middle = shape.stageMiddle(k);

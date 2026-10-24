@@ -263,10 +263,11 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         MissileSpec out = isOwnMissile(slot(SLOT_OUTPUT)) ? MissileItem.spec(slot(SLOT_OUTPUT)) : null;
         if (assembling()) {
             laid = sectionsFor(this.progress);
-            shown = MissileSpec.warheadId(slot(SLOT_WARHEAD));
+            // (a Cruise Engine in the motor slot: the warhead's cruise missile, laid out section by section the same way)
+            shown = MissileSpec.look(slot(SLOT_WARHEAD), slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem m && m.motor.cruise());
         } else if (out != null) {
             laid = SECTIONS;
-            shown = out.warheadId();
+            shown = out.look();
         } else {
             laid = 0;
             shown = "";

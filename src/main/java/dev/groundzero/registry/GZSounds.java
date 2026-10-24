@@ -176,6 +176,14 @@ public final class GZSounds {
     // Slice 9b: the Missile Silo's doors unlatching and grinding apart (or shut).
     public static final DeferredHolder<SoundEvent, SoundEvent> SILO_DOORS =
             register("silo.doors", "Silo doors grind", List.of("launch/silo_doors"), false, 64);
+    // Slice 9c (DESIGN.md §17.11): a cruise missile's box cover banging open and its booster's roar out of the box; its
+    // jet's whine following it; the Cruise Missile Launcher's rams raising (or lowering) its boxes.
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRUISE_LAUNCH =
+            register("cruise.launch", "Cruise missile fires from its box", List.of("launch/cruise_launch"), false, 128);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRUISE_ENGINE =
+            register("cruise.engine", "Cruise missile whines past", List.of("launch/cruise_engine_loop"), false, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRUISE_ELEVATE =
+            register("cruise.elevate", "Launcher boxes rise", List.of("launch/cruise_elevate"), false, 48);
     public static final DeferredHolder<SoundEvent, SoundEvent> REACTOR_ALARM =
             register("reactor.alarm", "Reactor alarm wails", List.of("reactor/alarm"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_FISSION_REACTOR =

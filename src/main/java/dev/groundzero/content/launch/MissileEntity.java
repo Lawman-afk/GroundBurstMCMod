@@ -44,6 +44,8 @@ public class MissileEntity extends Entity {
      */
     private static final EntityDataAccessor<java.util.Optional<net.minecraft.core.BlockPos>> SILO =
             SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    /** A cruise missile (slice 9c): its warhead's cruise missile's look, a jet's exhaust and whine after its booster. */
+    private static final EntityDataAccessor<Boolean> CRUISE = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** Ticks it burns on the pad before lifting off. */
     public static final int IGNITION = 40;
@@ -79,6 +81,21 @@ public class MissileEntity extends Entity {
         builder.define(BURNING, true);
         builder.define(REENTRY, 0f);
         builder.define(SILO, java.util.Optional.empty());
+        builder.define(CRUISE, false);
+    }
+
+    /** A cruise missile, as the client knows it. */
+    public boolean cruise() {
+        return this.entityData.get(CRUISE);
+    }
+
+    /**
+     * Which missile it is, as the client knows it: its warhead's id, or that warhead's cruise missile's
+     * ("he_warhead_cruise"): its model and its shape in the client's table.
+     */
+    public String look() {
+        String w = warheadName();
+        return w.isEmpty() || !cruise() ? w : w + dev.groundzero.content.assembly.MissileSpec.CRUISE_LOOK;
     }
 
     void setSilo(@Nullable Vec3 mouth) {
@@ -111,9 +128,14 @@ public class MissileEntity extends Entity {
         return this.entityData.get(AGE);
     }
 
-    /** Still on the pad, burning, not yet climbing. */
+    /** Still on the pad (or in its box), burning, not yet climbing. */
     public boolean igniting() {
-        return age() < IGNITION;
+        return age() < (cruise() ? Flights.CruisePlan.IGNITION : IGNITION);
+    }
+
+    /** A cruise missile still in its box or leaving it: its wings and scoop stowed (they would stand out through the box). */
+    public boolean folded() {
+        return cruise() && age() < Flights.CruisePlan.IGNITION + Flights.CruisePlan.FOLDED;
     }
 
     /** A warhead's id for the missile's nose ("" for none or not a warhead). */
@@ -121,9 +143,10 @@ public class MissileEntity extends Entity {
         return LaunchSiloBlockEntity.isWarhead(stack) ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() : "";
     }
 
-    void setLook(ItemStack warhead, dev.groundzero.content.assembly.SizeClass body) {
+    void setLook(ItemStack warhead, dev.groundzero.content.assembly.SizeClass body, boolean cruise) {
         this.entityData.set(WARHEAD, warheadId(warhead));
         this.entityData.set(BODY, body.ordinal());
+        this.entityData.set(CRUISE, cruise);
     }
 
     /** Its body's size class, as the client knows it. */

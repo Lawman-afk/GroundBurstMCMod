@@ -15,23 +15,29 @@ import net.minecraft.world.phys.Vec3;
  * A missile's sound in flight (DESIGN.md §17.5, slice 9a), the client's own and following it: its engine's roar while
  * an engine burns, and the roar of its nose coming back down; each pitched by the missile's speed toward or away from
  * the listener (sound travels 17.15 blocks a tick), fading in and out. A stage dropping is a bang from where it parts.
+ * A cruise missile (slice 9c) roars only while its booster burns; after, its jet whines.
  */
 final class MissileSounds {
     /** The speed of sound, blocks a tick. */
     private static final double SOUND = 17.15;
 
-    /** One sound following one missile: its engine, or its re-entry. */
+    /** What a following sound is: a rocket's roar, a cruise missile's jet, or a nose coming back down. */
+    private enum Kind { ENGINE, JET, REENTRY }
+
+    /** One sound following one missile: its engine, its jet, or its re-entry. */
     private static final class Follow extends AbstractTickableSoundInstance {
         private final MissileEntity missile;
         private final boolean reentry;
+        private final Kind kind;
         private final float loudness;
         private double lastDistance = -1;
         private float fade;
 
-        Follow(MissileEntity missile, SoundEvent event, boolean reentry, float loudness) {
+        Follow(MissileEntity missile, SoundEvent event, Kind kind, float loudness) {
             super(event, SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
             this.missile = missile;
-            this.reentry = reentry;
+            this.kind = kind;
+            this.reentry = kind == Kind.REENTRY;
             this.loudness = loudness;
             this.looping = true;
             this.delay = 0;
@@ -48,7 +54,11 @@ final class MissileSounds {
         }
 
         boolean wanted() {
-            return !this.missile.isRemoved() && (this.reentry ? this.missile.reentry() > 0.03f : this.missile.burning());
+            return !this.missile.isRemoved() && switch (this.kind) {
+                case REENTRY -> this.missile.reentry() > 0.03f;
+                case JET -> jet(this.missile);
+                case ENGINE -> rocket(this.missile);
+            };
         }
 
         @Override
@@ -76,11 +86,22 @@ final class MissileSounds {
         }
     }
 
-    private static final Int2ObjectMap<Follow> ENGINES = new Int2ObjectOpenHashMap<>(), REENTRIES = new Int2ObjectOpenHashMap<>();
+    private static final Int2ObjectMap<Follow> ENGINES = new Int2ObjectOpenHashMap<>(), REENTRIES = new Int2ObjectOpenHashMap<>(),
+            JETS = new Int2ObjectOpenHashMap<>();
 
     private MissileSounds() {}
 
-    /** Each client tick per missile: start its roar or its re-entry when they begin (each runs and fades by itself). */
+    /** A rocket burning: a ballistic missile's engine, or a cruise missile's booster (until it drops). */
+    private static boolean rocket(MissileEntity missile) {
+        return missile.burning() && !jet(missile);
+    }
+
+    /** A cruise missile's jet, once its booster has dropped. */
+    private static boolean jet(MissileEntity missile) {
+        return missile.cruise() && missile.dropped() >= 1;
+    }
+
+    /** Each client tick per missile: start its roar, its jet or its re-entry when they begin (each runs and fades by itself). */
     static void tick(MissileEntity missile) {
         var sounds = Minecraft.getInstance().getSoundManager();
         float loudness = switch (missile.body()) {
@@ -90,14 +111,20 @@ final class MissileSounds {
             default -> 3.5f;
         };
         Follow engine = ENGINES.get(missile.getId());
-        if (missile.burning() && (engine == null || engine.isStopped())) {
-            engine = new Follow(missile, GZSounds.MISSILE_ENGINE.get(), false, loudness);
+        if (rocket(missile) && (engine == null || engine.isStopped())) {
+            engine = new Follow(missile, GZSounds.MISSILE_ENGINE.get(), Kind.ENGINE, loudness);
             ENGINES.put(missile.getId(), engine);
             sounds.play(engine);
         }
+        Follow jet = JETS.get(missile.getId());
+        if (jet(missile) && (jet == null || jet.isStopped())) {
+            jet = new Follow(missile, GZSounds.CRUISE_ENGINE.get(), Kind.JET, 2.6f);
+            JETS.put(missile.getId(), jet);
+            sounds.play(jet);
+        }
         Follow reentry = REENTRIES.get(missile.getId());
         if (missile.reentry() > 0.03f && (reentry == null || reentry.isStopped())) {
-            reentry = new Follow(missile, GZSounds.MISSILE_REENTRY.get(), true, loudness);
+            reentry = new Follow(missile, GZSounds.MISSILE_REENTRY.get(), Kind.REENTRY, loudness);
             REENTRIES.put(missile.getId(), reentry);
             sounds.play(reentry);
         }
@@ -113,10 +140,12 @@ final class MissileSounds {
     static void clean() {
         ENGINES.values().removeIf(Follow::isStopped);
         REENTRIES.values().removeIf(Follow::isStopped);
+        JETS.values().removeIf(Follow::isStopped);
     }
 
     static void clear() {
         ENGINES.clear();
         REENTRIES.clear();
+        JETS.clear();
     }
 }

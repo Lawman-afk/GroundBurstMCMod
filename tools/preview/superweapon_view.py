@@ -71,7 +71,8 @@ def bone_matrices(geo: dict, animation: dict | None, time: float) -> dict[str, n
 def missile_quads(warhead: str, bone: dict, matrix: np.ndarray, lying: bool, turn: float) -> list[R.Quad]:
     """The missile carrying {warhead} as the game draws it at {bone}: its tail at the bone's pivot, lying nose to the bone's
     front or standing, turned {turn} degrees about its axis, all moved with the bone."""
-    shape = json.loads((paths.ASSETS / "missiles.json").read_text(encoding="utf-8"))[warhead]
+    table = json.loads((paths.ASSETS / "missiles.json").read_text(encoding="utf-8"))
+    shape = table.get(warhead) or table[warhead.rsplit("_", 1)[0]]       # (a variant: "<look>_folded" has its look's shape)
     pivot = np.array([-bone["pivot"][0], bone["pivot"][1], bone["pivot"][2]], dtype=float)
     rot = (_rx(math.radians(-90)) if lying else np.eye(3)) @ _ry(math.radians(turn))
     out: list[R.Quad] = []
@@ -111,7 +112,19 @@ def scud_points() -> list[tuple[float, float, float]]:
     return out
 
 
+def cruise_points() -> list[tuple[float, float, float]]:
+    """Where CruiseLauncherBlockEntity lights each box's missile (its tail, the boxes raised 45 degrees)."""
+    a = math.radians(45)
+    return [(x, 20 + math.sin(a) * 3 + math.cos(a) * 8, 76 - math.cos(a) * 3 + math.sin(a) * 8) for x in (0.0, 16.0)]
+
+
 PRESETS = {
+    "cruise_launcher": dict(missiles=[("tail_a", "heavy_warhead_cruise_folded", True, 180.0), ("tail_b", "toxic_waste_warhead_cruise_folded", True, 180.0)],
+                            anim="raise", points=cruise_points,
+                            shots=[("iso front", 30, 225, None, None), ("iso back", 30, 45, None, None), ("from the side", 10, 270, None, None),
+                                   ("low front", 8, 200, None, None), ("mouths", 20, 200, (8, 50, 0), 50), ("hinge and rams", 15, 250, (8, 26, 64), 50),
+                                   ("rams", 10, 300, (8, 26, 48), 40), ("console end", 20, 160, (8, 20, -4), 40),
+                                   ("beacon", 30, 135, (8, 38, 76), 24), ("aft ends", 20, 20, (8, 30, 80), 40)]),
     "arms_dealer": dict(missiles=[("missile", "scud_storm_warhead", True, 45.0)], anim="working", points=lambda: [],
                         shots=[("iso front", 30, 225, None, None), ("iso back", 30, 45, None, None), ("from above", 85, 180, None, None),
                                ("low front", 8, 200, None, None), ("the yard", 35, 210, (0, 30, 32), 90), ("workshop doors", 15, 190, (-12, 24, 56), 60),

@@ -910,7 +910,7 @@ Casings come in three classes, marked by yellow bands: one for **Light**, two fo
     craft("chemical_agent_canister"),
 ])
 
-entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
+entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "cruise_engine", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
     text("""
 Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: the warhead is its nose, and the body under it is cut to the warhead's own girth and painted to match all the way down, with its own fins, bands and markings. A missile is put together at the [missile assembler](ordnance/missile_assemblers) of its warhead's class: the warhead, the class's **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. **Take Apart** gives every part back.
 """),
@@ -918,6 +918,9 @@ Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: t
 **Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.
 
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
+"""),
+    text("""
+**Cruise missiles.** A **Cruise Engine** (Tactical and Medium bodies, 1500 blocks) is a small jet with its own launch booster. A missile built with one is a **cruise missile**: the same warhead on its own winged body, painted as that warhead's missile (an HE Cruise Missile, a Cryo Cruise Missile...). It does not arc through the sky: its booster lights it out of its box and falls away, its wings unfold, and its jet carries it **40 blocks over the ground** all the way, climbing early for a hill and easing down after it, at 32 blocks a second. 50 blocks short of the target it pops up and dives on it. Anything standing taller than its cruise height in its way stops it there. Only the [Cruise Missile Launcher](ordnance/cruise_launcher) fires it, and no other launcher will take one.
 """),
     text("""
 **Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks.
@@ -934,6 +937,7 @@ Its tooltip lists its warhead and fuze, its range and its guidance; its name is 
     craft("solid_rocket_motor_i"),
     craft("solid_rocket_motor_ii"),
     craft("liquid_fuel_stage"),
+    craft("cruise_engine"),
     craft("inertial_guidance_unit"),
     craft("gps_guidance_unit"),
     craft("hardened_electronics"),
@@ -946,7 +950,7 @@ entry("ordnance/missile_assemblers", "Missile Assemblers", "light_missile_assemb
     text("""
 A **missile assembler** builds [missiles](ordnance/missiles): one for each class of warhead, each a bigger structure than the last and a harder one to craft. Each takes only its own class: a warhead of that class, the class's missile body, a motor that fits it, and optionally a guidance unit and Hardened Electronics. Its screen is the [bench's](ordnance/assembly), with the missile the parts make turning in the window on the right. Press **Assemble**; while it works the crane lays the missile out section by section (motor and fins, then the body, then the warhead) and the finished missile waits on the cradles until you take it out. **Take Apart** gives every part back. Each draws power through an Energy Port, and pipes feed and empty it through an Item Port.
 
-**Light** (class S: HE, Napalm, Chemical, Toxic Waste, Dirty): 10 seconds at 20 FE a tick. **Medium** (class M: Heavy HE, Cluster, Poison Gas, Smoke, Cryo): 15 seconds at 40 FE a tick. **Heavy** (class L: Thermobaric, Bunker Buster, EMP, Massive Ordnance): 20 seconds at 80 FE a tick. **Strategic** (class XL, the nuclear warheads): 30 seconds at 160 FE a tick.
+**Light** (class S: HE, Napalm, Chemical, Toxic Waste, Dirty): 10 seconds at 20 FE a tick. **Medium** (class M: Heavy HE, Cluster, Poison Gas, Smoke, Cryo): 15 seconds at 40 FE a tick. These two also build [cruise missiles](ordnance/missiles): give one a Cruise Engine for its motor. **Heavy** (class L: Thermobaric, Bunker Buster, EMP, Massive Ordnance): 20 seconds at 80 FE a tick. **Strategic** (class XL, the nuclear warheads): 30 seconds at 160 FE a tick.
 """),
     structure("light_missile_assembler", "The Light Missile Assembler: a 3 by 6 deck of Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port on either side of the fifth row. An A-frame stands over each end: a Gantry Frame block on each side, two high. A Crane Rail runs the deck's length three blocks up, over the middle: the hoist beam. Keep the middle clear under it, the missile lies there."),
     structure("medium_missile_assembler", "The Medium Missile Assembler: a 5 by 7 deck of Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The slewing jib crane's post, Gantry Frame four high, stands in the middle of the side on your left as you face the controller. Keep the middle three columns clear two blocks up: the missile's bay."),
@@ -1018,7 +1022,7 @@ entry("ordnance/launch_site", "Launch site", "launch_silo", ["launch_silo", "lau
     text("""
 A **Launch Silo** sends an assembled [missile](ordnance/missiles) to its target, as far as the missile's motor reaches (400 to 2500 blocks). A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.
 
-The silo takes one Light, Medium or Heavy missile, built at its [missile assembler](ordnance/missile_assemblers). Each launch takes the missile and 100,000 FE. The gantry's arm slides up or down its tower and reaches in to hold whichever missile stands on the pad, just under its warhead.
+The silo takes one Light, Medium or Heavy missile, built at its [missile assembler](ordnance/missile_assemblers) (not a cruise missile: those go from a [Cruise Missile Launcher](ordnance/cruise_launcher)). Each launch takes the missile and 100,000 FE. The gantry's arm slides up or down its tower and reaches in to hold whichever missile stands on the pad, just under its warhead.
 """),
     structure("launch_silo", "A 3 by 3 launch pad, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. The gantry tower stands beside the pad's middle row, on your left as you face the controller: 9 high, with the Gantry Arm reaching in at the seventh block up. The column above the middle of the pad must be clear: that is where the missile stands."),
     structure("launch_computer", "The controller and its Energy Port side by side, with the radar mast behind the controller: three Radar Masts with the Radar Dish on top, and the Antenna on the controller."),
@@ -1068,6 +1072,22 @@ Shut, the doors keep everything out of the shaft, and you can walk on them. The 
     craft("silo_hatch"),
     craft("reinforced_concrete"),
     craft("hazard_concrete"),
+])
+
+entry("ordnance/cruise_launcher", "Cruise Missile Launcher", "cruise_launcher", ["cruise_launcher", "launch_box", "cruise_launcher_spawner"], [
+    text("""
+The **Cruise Missile Launcher** fires [cruise missiles](ordnance/missiles), and only those: two armored boxes side by side on a concrete deck, hinged at the back, a missile in each. A [Launch Computer](ordnance/launch_site) aims, arms and fires it like any launcher, and its **LAUNCH** fires it with the rest.
+
+Load a cruise missile into each box (right-click the controller) and power it: each missile takes 60,000 FE (it holds 150,000). Its range is the shorter of its two missiles'.
+"""),
+    structure("cruise_launcher", "A 2 by 6 deck of Launch Pads, the controller and an Energy Port side by side in its front row (the port on your left as you face the controller), and two Launch Boxes side by side on top of its back row: the boxes' hinged ends. Keep the space over the deck clear where the boxes lie and swing up: two blocks over all of it, and higher toward its front, up to five blocks over its second and third rows."),
+    text("""
+**Firing.** The siren sounds and the count runs 10 seconds while the beacon on the boxes turns and the rams raise them to 45 degrees. Then the first missile goes: its booster lights in its box, bursting the box's front cover, blasts smoke out of the box's back over the deck, and drives it out along the launcher's front. The second follows 3 seconds later, at the same target (each with its own guidance's scatter). A few seconds after the last, the boxes come down again, fresh covers in their mouths.
+
+Out of its box, each climbs on its booster, drops it, unfolds its wings and turns toward the target low over the ground. An EMP, a redstone signal or a broken structure stops a launch; whatever has not gone stays loaded.
+"""),
+    craft("cruise_launcher"),
+    craft("launch_box"),
 ])
 
 entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [

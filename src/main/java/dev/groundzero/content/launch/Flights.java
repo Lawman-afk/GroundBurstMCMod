@@ -59,14 +59,21 @@ public final class Flights extends SavedData {
             UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(f -> Optional.ofNullable(f.owner)),
             Codec.BOOL.optionalFieldOf("hardened", false).forGetter(f -> f.hardened),
             Codec.STRING.optionalFieldOf("body", "M").forGetter(f -> f.body.name()),
-            Codec.DOUBLE.optionalFieldOf("silo", 0.0).forGetter(f -> f.silo)
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo) -> {
+            Codec.DOUBLE.optionalFieldOf("silo", 0.0).forGetter(f -> f.silo),
+            // A cruise missile's plan (slice 9c): the heading it left its launcher on and its height along its path.
+            Codec.DOUBLE.optionalFieldOf("cruise_heading").forGetter(f -> f.plan == null ? Optional.empty() : Optional.of(f.plan.heading)),
+            Codec.FLOAT.listOf().optionalFieldOf("cruise_alt", List.of()).forGetter(f -> f.plan == null ? List.of() : f.plan.altList())
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
         f.hardened = hardened;
         f.body = SizeClass.valueOf(body);
         f.silo = silo;
+        if (heading.isPresent() && !alt.isEmpty()) {
+            f.plan = CruisePlan.of(start, heading.get(), target);
+            f.plan.setAlt(alt);
+        }
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundZero.id("missile_flights"), Flights::new,
@@ -148,6 +155,251 @@ public final class Flights extends SavedData {
         return f;
     }
 
+    /**
+     * A cruise missile (slice 9c, DESIGN.md §17.11) lit in its launcher's box at {@code pad} (its tail), the box pointing
+     * along {@code heading} (radians, as {@link Flight#heading}) at 45 degrees: out of the box on its booster, a level turn
+     * onto the target and low over the ground to it (see {@link CruisePlan}).
+     */
+    public static Flight launchCruise(ServerLevel level, Vec3 pad, double heading, Vec3 target, dev.groundzero.content.assembly.MissileSpec spec,
+            @Nullable Entity owner) {
+        CruisePlan plan = CruisePlan.of(pad, heading, target);
+        plan.survey(level);
+        Flight f = new Flight(UUID.randomUUID(), pad, target, 0, plan.ticks(), spec.warhead().copyWithCount(1), owner == null ? null : owner.getUUID());
+        f.body = spec.body();
+        f.hardened = spec.hardened();
+        f.plan = plan;
+        f.yaw = (float) Math.toDegrees(heading);              // lying along its box until it moves
+        f.tilt = 45f;
+        Flights fs = of(level);
+        fs.flights.add(f);
+        fs.setDirty();
+        f.keepLoaded(level);
+        f.proxy(level);
+        level.playSound(null, pad.x, pad.y, pad.z, GZLaunch.CRUISE_LAUNCH.get(), SoundSource.BLOCKS, 6f, 1f);
+        return f;
+    }
+
+    /**
+     * A cruise missile's way to its target (DESIGN.md §17.11), planned at launch and fixed after (so where it is at any
+     * tick is known, as for a ballistic flight, and the chunks ahead can be loaded): along the ground, its path is
+     * {@value #BOOST} blocks straight out of its box along the launcher's heading, an arc of a circle turning it onto the
+     * target's bearing, and a straight run to the target; over the ground, it climbs at 45 degrees on its booster, then
+     * holds {@value #HEIGHT} blocks over the ground under it (sampled every {@value #STEP} blocks at launch: the real
+     * ground where it is loaded, the generator's surface (and a tree's height) where not), climbing early for a ridge and
+     * easing down after it, smoothed; {@value #POP} blocks short of the target it pops up and from {@value #DIVE} blocks
+     * short it dives onto it (the dive's foot is the target's ground as the flight knows it then).
+     */
+    public static final class CruisePlan {
+        /**
+         * Ticks it burns in its box before it moves; ticks after that its wings stay stowed (until they are clear of the
+         * box's mouth: 3 blocks out along the box); the boost (ticks, blocks along the ground); speed, blocks a tick.
+         */
+        public static final int IGNITION = 10, FOLDED = 6, BOOST_TICKS = 22;
+        public static final double BOOST = 24, SPEED = 1.6;
+        /** Its height over the ground; how the ground is sampled; the most it climbs and sinks per block along. */
+        public static final double HEIGHT = 40, STEP = 4, CLIMB = 0.6, SINK = 0.5;
+        /** The pop-up (how far short of the target it starts; how high over the target's ground at its top) and the dive. */
+        public static final double POP = 50, POP_HEIGHT = 55, DIVE = 30;
+        /** What an unloaded column's generated surface leaves out: its trees. */
+        static final double TREES = 8;
+
+        final Vec3 start;
+        final double heading;
+        private final double hx, hz;
+        private final double cx, cz, r, theta0, sweep, qx, qz, tx, tz, arc, line;
+        private final int side;
+        /** Its height every STEP blocks along the ground (null until surveyed). */
+        private float @Nullable [] alt;
+
+        private CruisePlan(Vec3 start, double heading, double cx, double cz, double r, int side, double theta0, double sweep, double qx,
+                double qz, double tx, double tz) {
+            this.start = start;
+            this.heading = heading;
+            this.hx = Math.sin(heading);
+            this.hz = Math.cos(heading);
+            this.cx = cx;
+            this.cz = cz;
+            this.r = r;
+            this.side = side;
+            this.theta0 = theta0;
+            this.sweep = sweep;
+            this.qx = qx;
+            this.qz = qz;
+            this.tx = tx;
+            this.tz = tz;
+            this.arc = r * sweep;
+            this.line = Math.hypot(tx - qx, tz - qz);
+        }
+
+        /** The path along the ground from {@code start} on {@code heading} to {@code target} (its height comes from {@link #survey}). */
+        static CruisePlan of(Vec3 start, double heading, Vec3 target) {
+            double hx = Math.sin(heading), hz = Math.cos(heading);
+            double ex = start.x + hx * BOOST, ez = start.z + hz * BOOST;
+            double wx = target.x - ex, wz = target.z - ez;
+            int side = hx * wz - hz * wx >= 0 ? 1 : -1;      // the target's side of its heading: the way it turns
+            double px = -hz * side, pz = hx * side;            // toward the turn's middle
+            double dist = Math.hypot(wx, wz);
+            double r = Mth.clamp(dist / 4, 12, 48);
+            for (int k = 0; k < 4; k++) {
+                double cx = ex + px * r, cz = ez + pz * r;
+                double rho = Math.hypot(target.x - cx, target.z - cz);
+                if (rho > r * 1.05) {
+                    double theta0 = Math.atan2(ez - cz, ex - cx);
+                    double psi = Math.atan2(target.z - cz, target.x - cx), a = Math.acos(r / rho);
+                    double best = Double.NaN;
+                    for (double th : new double[] {psi + a, psi - a}) {
+                        double vx = -Math.sin(th) * side, vz = Math.cos(th) * side;
+                        double qx = cx + r * Math.cos(th), qz = cz + r * Math.sin(th);
+                        if (vx * (target.x - qx) + vz * (target.z - qz) > 0) {
+                            best = th;
+                        }
+                    }
+                    if (!Double.isNaN(best)) {
+                        double sweep = Mth.positiveModulo(side * (best - theta0), Math.PI * 2);
+                        return new CruisePlan(start, heading, cx, cz, r, side, theta0, sweep, cx + r * Math.cos(best), cz + r * Math.sin(best),
+                                target.x, target.z);
+                    }
+                }
+                r /= 2;                                        // the target inside its turn: turn tighter
+            }
+            // Too close to turn onto: straight at it from the end of the boost.
+            return new CruisePlan(start, heading, ex, ez, 0, side, 0, 0, ex, ez, target.x, target.z);
+        }
+
+        /** Along the ground from its launcher to the target, blocks. */
+        double length() {
+            return BOOST + this.arc + this.line;
+        }
+
+        /** Ticks from lift-off (the end of its ignition) to the target. */
+        int ticks() {
+            return BOOST_TICKS + (int) Math.ceil((length() - BOOST) / SPEED);
+        }
+
+        /** How far along the ground it is {@code t} ticks after lift-off: speeding up on the booster, then steady. */
+        double along(double t) {
+            if (t <= 0) {
+                return 0;
+            }
+            if (t <= BOOST_TICKS) {
+                return BOOST * Math.pow(t / BOOST_TICKS, 1.5);
+            }
+            return Math.min(length(), BOOST + SPEED * (t - BOOST_TICKS));
+        }
+
+        /** Where it is over the ground {@code d} blocks along its path (x, z). */
+        double[] ground(double d) {
+            if (d <= BOOST) {
+                return new double[] {this.start.x + this.hx * d, this.start.z + this.hz * d};
+            }
+            d -= BOOST;
+            if (this.r > 0 && d <= this.arc) {
+                double th = this.theta0 + this.side * d / this.r;
+                return new double[] {this.cx + this.r * Math.cos(th), this.cz + this.r * Math.sin(th)};
+            }
+            d -= this.arc;
+            double u = this.line > 1e-6 ? Math.min(1, d / this.line) : 1;
+            return new double[] {this.qx + (this.tx - this.qx) * u, this.qz + (this.tz - this.qz) * u};
+        }
+
+        /** Its height {@code d} blocks along, the target's ground {@code targetY} under the dive's foot. */
+        double height(double d, double targetY) {
+            if (d <= BOOST) {
+                return this.start.y + d;
+            }
+            double length = length();
+            double popStart = Math.max(BOOST, length - POP), diveStart = Math.max(popStart, length - DIVE);
+            if (d < popStart) {
+                return profile(d);
+            }
+            double base = profile(popStart);
+            double top = Math.max(base, targetY + POP_HEIGHT);
+            if (d < diveStart) {
+                return Mth.lerp((d - popStart) / Math.max(1e-6, diveStart - popStart), base, top);
+            }
+            return Mth.lerp((d - diveStart) / Math.max(1e-6, length - diveStart), top, targetY);
+        }
+
+        /** Whether it is in its dive ({@code d} blocks along). */
+        boolean diving(double d) {
+            return d >= Math.max(BOOST, length() - DIVE);
+        }
+
+        private double profile(double d) {
+            if (this.alt == null || this.alt.length == 0) {
+                return this.start.y + BOOST;
+            }
+            double i = Math.clamp(d / STEP, 0, this.alt.length - 1);
+            int a = (int) Math.floor(i), b = Math.min(this.alt.length - 1, a + 1);
+            return Mth.lerp(i - a, this.alt[a], this.alt[b]);
+        }
+
+        /** Samples the ground along its path and plans its height over it (at launch). */
+        void survey(ServerLevel level) {
+            int n = (int) Math.ceil(length() / STEP) + 1;
+            int boostEnd = (int) Math.floor(BOOST / STEP);
+            double[] want = new double[n];
+            for (int i = 0; i < n; i++) {
+                double[] at = ground(Math.min(length(), i * STEP));
+                want[i] = groundAt(level, at[0], at[1]) + HEIGHT;
+            }
+            double[] a = new double[n];
+            for (int i = 0; i < n; i++) {
+                a[i] = i <= boostEnd ? this.start.y + i * STEP : want[i];
+            }
+            // Climb early enough for what is ahead, sink no faster than it may after what is behind (the boost included).
+            for (int i = n - 2; i > boostEnd; i--) {
+                a[i] = Math.max(a[i], a[i + 1] - CLIMB * STEP);
+            }
+            for (int i = boostEnd + 1; i < n; i++) {
+                a[i] = Math.max(a[i], a[i - 1] - SINK * STEP);
+            }
+            // Smoothed (five samples), never far under what it wants.
+            float[] out = new float[n];
+            for (int i = 0; i < n; i++) {
+                if (i <= boostEnd) {
+                    out[i] = (float) a[i];
+                    continue;
+                }
+                double sum = 0;
+                int c = 0;
+                for (int k = Math.max(boostEnd, i - 2); k <= Math.min(n - 1, i + 2); k++) {
+                    sum += a[k];
+                    c++;
+                }
+                out[i] = (float) Math.max(sum / c, want[i] - 3);
+            }
+            this.alt = out;
+        }
+
+        /** The top of the ground at (x, z): the real top where its chunk is loaded, the generator's surface (and trees) where not. */
+        private static double groundAt(ServerLevel level, double x, double z) {
+            int bx = Mth.floor(x), bz = Mth.floor(z);
+            if (level.hasChunk(bx >> 4, bz >> 4)) {
+                return level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz);
+            }
+            var chunks = level.getChunkSource();
+            return chunks.getGenerator().getBaseHeight(bx, bz, Heightmap.Types.WORLD_SURFACE_WG, level, chunks.randomState()) + TREES;
+        }
+
+        List<Float> altList() {
+            List<Float> out = new ArrayList<>();
+            if (this.alt != null) {
+                for (float v : this.alt) {
+                    out.add(v);
+                }
+            }
+            return out;
+        }
+
+        void setAlt(List<Float> list) {
+            this.alt = new float[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                this.alt[i] = list.get(i);
+            }
+        }
+    }
+
     /** A server tick: every flight moves on (or hits). */
     void tick(ServerLevel level) {
         if (this.flights.isEmpty()) {
@@ -181,6 +433,13 @@ public final class Flights extends SavedData {
         private SizeClass body = SizeClass.M;
         /** Launched from a silo: how far below the ground at the shaft's mouth its pad is (0: a pad on the surface). */
         private double silo;
+        /** A cruise missile's plan (null: a ballistic missile on its arc). */
+        private @Nullable CruisePlan plan;
+        /**
+         * The missile it put in the world last (not saved). The level cannot find an entity in a chunk whose entities are
+         * not active yet, and its id then stops a new one being added; held here, it is moved along all the same.
+         */
+        private @Nullable MissileEntity shown;
 
         Flight(UUID id, Vec3 start, Vec3 target, double apex, int flightTicks, ItemStack warhead, @Nullable UUID owner) {
             this.id = id;
@@ -220,13 +479,26 @@ public final class Flights extends SavedData {
             return true;
         }
 
-        /** How far through its flight it is: 0 on the pad, 1 at the target. */
-        public float progress() {
-            return this.age < MissileEntity.IGNITION ? 0 : Math.min(1, (this.age - MissileEntity.IGNITION) / (float) this.flightTicks);
+        /** A cruise missile (slice 9c): low over the ground on its plan. */
+        public boolean cruise() {
+            return this.plan != null;
         }
 
-        /** Spent stages it has dropped so far. */
+        /** Ticks it burns where it was lit before it moves: a cruise missile's booster less than a rocket's ignition. */
+        int ignition() {
+            return this.plan != null ? CruisePlan.IGNITION : MissileEntity.IGNITION;
+        }
+
+        /** How far through its flight it is: 0 on the pad, 1 at the target. */
+        public float progress() {
+            return this.age < ignition() ? 0 : Math.min(1, (this.age - ignition()) / (float) this.flightTicks);
+        }
+
+        /** Spent stages it has dropped so far (a cruise missile's booster, once its boost is done). */
         public int dropped() {
+            if (this.plan != null) {
+                return this.age >= ignition() + CruisePlan.BOOST_TICKS ? 1 : 0;
+            }
             float s = progress();
             int n = 0;
             for (float drop : dev.groundzero.content.assembly.MissileParts.stageDrops(this.body)) {
@@ -235,16 +507,19 @@ public final class Flights extends SavedData {
             return n;
         }
 
-        /** Whether an engine is burning: on the pad, and climbing until its last stage burns out. */
+        /** Whether an engine is burning: on the pad, and climbing until its last stage burns out (a cruise missile's jet: always). */
         public boolean burning() {
-            return this.age < MissileEntity.IGNITION || progress() < dev.groundzero.content.assembly.MissileParts.burnout(this.body);
+            return this.plan != null || this.age < MissileEntity.IGNITION || progress() < dev.groundzero.content.assembly.MissileParts.burnout(this.body);
         }
 
         /**
          * How hot its nose glows coming back down: from past the top of its arc, brighter the higher it came from (a
-         * short flight barely warms).
+         * short flight barely warms; a cruise missile never).
          */
         public float reentry() {
+            if (this.plan != null) {
+                return 0;
+            }
             float s = progress();
             if (s < 0.55f || s >= 1) {
                 return 0;
@@ -267,7 +542,7 @@ public final class Flights extends SavedData {
 
         /** Ticks until it comes down (if nothing is in its way). */
         public int ticksToImpact() {
-            return Math.max(0, MissileEntity.IGNITION + this.flightTicks - this.age);
+            return Math.max(0, ignition() + this.flightTicks - this.age);
         }
 
         /** Which way it is heading over the ground (radians, 0 = south, as atan2(dx, dz)). */
@@ -315,8 +590,13 @@ public final class Flights extends SavedData {
 
         /** Where it is at {@code age} ticks after lighting (on the pad through its ignition). */
         private Vec3 at(int age) {
-            if (age < MissileEntity.IGNITION) {
+            if (age < ignition()) {
                 return this.start;
+            }
+            if (this.plan != null) {
+                double d = this.plan.along(age - ignition());
+                double[] g = this.plan.ground(d);
+                return new Vec3(g[0], this.plan.height(d, this.target.y), g[1]);
             }
             double s = Math.min(1, (age - MissileEntity.IGNITION) / (double) this.flightTicks);
             return path(Math.pow(s, 1.25));                 // slow off the pad, fastest coming down
@@ -326,13 +606,13 @@ public final class Flights extends SavedData {
         boolean tick(ServerLevel level) {
             this.age++;
             keepLoaded(level);
-            if (this.age >= MissileEntity.IGNITION) {
+            if (this.age >= ignition()) {
                 // The ground at the target, once its chunk is in (it is ticket-loaded from launch).
                 BlockPos tc = BlockPos.containing(this.target);
                 if (level.hasChunkAt(tc)) {
                     this.target = new Vec3(this.target.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, tc.getX(), tc.getZ()), this.target.z);
                 }
-                double s = Math.min(1, (this.age - MissileEntity.IGNITION) / (double) this.flightTicks);
+                double s = Math.min(1, (this.age - ignition()) / (double) this.flightTicks);
                 Vec3 from = this.pos, to = at(this.age);
                 if (!this.empChecked && dev.groundzero.content.effect.EmpFields.inField(level, to)) {
                     this.empChecked = true;
@@ -340,9 +620,11 @@ public final class Flights extends SavedData {
                 }
                 Vec3 v = to.subtract(from);
                 // It can only hit what is loaded; past the first stretch of its climb (clear of its own gantry, or of its
-                // silo's shaft and mouth: straight up the middle of the open shaft, it cannot touch it).
+                // silo's shaft and mouth: straight up the middle of the open shaft, it cannot touch it; a cruise missile
+                // once its booster has carried it clear of its box).
                 boolean climbingOut = this.silo > 0 && to.y < this.start.y + this.silo + CLEAR_MOUTH;
-                if (s > 0.1 && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
+                boolean clear = this.plan != null ? this.age > ignition() + CruisePlan.BOOST_TICKS : s > 0.1;
+                if (clear && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
                     BlockHitResult hit = level.clip(new ClipContext(from, to.add(v.normalize().scale(0.5)), ClipContext.Block.COLLIDER,
                             ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
                     if (hit.getType() != HitResult.Type.MISS) {
@@ -359,7 +641,8 @@ public final class Flights extends SavedData {
                 // warhead on an impact fuze still opens 30 blocks over its target. Otherwise it goes off where it hits.
                 if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
                     FuzeSettings fuze = fuze();
-                    boolean falling = s > 0.5 && v.y < 0;
+                    // (a cruise missile sinks over falling ground too: only its dive counts)
+                    boolean falling = this.plan != null ? this.plan.diving(this.plan.along(this.age - ignition())) : s > 0.5 && v.y < 0;
                     double over = to.y - this.target.y;
                     double height = fuze.fuze() == Fuze.BAROMETRIC ? fuze.value() : bomb.kind.airburst() ? Charges.AIRBURST_HEIGHT : -1;
                     boolean burst = falling && height >= 0 && over <= height;
@@ -375,7 +658,7 @@ public final class Flights extends SavedData {
             MissileEntity proxy = proxy(level);
             if (proxy != null) {
                 // (Its engine's roar is the client's own, following it: MissileSounds.)
-                int left = MissileEntity.IGNITION + this.flightTicks - this.age;
+                int left = ignition() + this.flightTicks - this.age;
                 if (!this.whistled && left <= WHISTLE_AT && left > 0) {
                     this.whistled = true;                     // the dive: it screams down on its target
                     level.playSound(null, proxy, GZOrdnance.BOMB_WHISTLE.get(), SoundSource.BLOCKS, 8f, 0.8f);
@@ -384,28 +667,39 @@ public final class Flights extends SavedData {
             return false;
         }
 
-        /** The missile players see, where its chunk is loaded: found, made, or moved along. */
+        /**
+         * The missile players see, where its chunk is loaded: found, made, or moved along. It is only made where entities
+         * are active (one added where they are not would wait there unseen, and its id would stop another being added).
+         */
         private @Nullable MissileEntity proxy(ServerLevel level) {
             Entity e = level.getEntity(this.id);
-            boolean loaded = level.hasChunkAt(BlockPos.containing(this.pos));
+            if (!(e instanceof MissileEntity) && this.shown != null && !this.shown.isRemoved()) {
+                e = this.shown;                                // (where the level cannot see it: moving it brings it out)
+            }
+            BlockPos at = BlockPos.containing(this.pos);
+            boolean loaded = level.hasChunkAt(at);
             if (e instanceof MissileEntity m && !m.isRemoved()) {
                 if (!loaded) {
                     m.discard();                               // on into unloaded ground: put back when it is loaded
+                    this.shown = null;
                     return null;
                 }
                 m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
                 return m;
             }
-            if (!loaded) {
+            if (!loaded || !level.isPositionEntityTicking(at)) {
                 return null;
             }
             MissileEntity m = new MissileEntity(GZLaunch.MISSILE.get(), level);
             m.setUUID(this.id);
-            m.setLook(this.warhead, this.body);
+            m.setLook(this.warhead, this.body, this.plan != null);
             m.setSilo(siloMouth());
             m.setPos(this.pos);
             m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
-            level.addFreshEntity(m);
+            if (!level.addFreshEntity(m)) {
+                return null;
+            }
+            this.shown = m;
             return m;
         }
 
@@ -451,6 +745,10 @@ public final class Flights extends SavedData {
         private void finish(ServerLevel level) {
             if (level.getEntity(this.id) instanceof MissileEntity m) {
                 m.discard();
+            }
+            if (this.shown != null) {
+                this.shown.discard();
+                this.shown = null;
             }
             for (long c : this.tickets.toLongArray()) {
                 GZLaunch.TICKETS.forceChunk(level, this.id, ChunkPos.getX(c), ChunkPos.getZ(c), false, true);

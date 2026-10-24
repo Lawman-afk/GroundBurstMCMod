@@ -132,7 +132,9 @@ public final class GZTagProviders {
                     dev.groundzero.content.strategic.GZStrategic.CRANE_RAIL.block().key(),
                     dev.groundzero.content.strategic.GZStrategic.HALL_CONTROLLER.block().key(),
                     dev.groundzero.content.launch.GZLaunch.LARGE_RADAR_DISH.block().key(),
-                    dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().key());
+                    dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.LAUNCH_BOX.block().key());
             for (var c : dev.groundzero.content.assembler.AssemblerClass.values()) {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.assembler.GZAssemblers.controller(c).block().key());
             }

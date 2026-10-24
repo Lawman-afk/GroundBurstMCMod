@@ -81,6 +81,8 @@ class Rocket:
         self.part_stage: list[int] = []
         self.head: float = 0.0                                 # the warhead's foot
         self.tip: float = 0.0                                  # the nose's tip
+        #: Groups stowed while it is in its box (a cruise missile's wings and scoop): its "_folded" variant leaves them out.
+        self.folds: set[str] = set()
 
     # --- building -------------------------------------------------------------------------------------------------------------
     def next_name(self, group: str) -> str:
@@ -381,11 +383,13 @@ def stage_of(rk: Rocket, el: dict) -> int:
 
 
 def variants(rk: Rocket, data: dict) -> None:
-    """The variants sharing the missile's texture: its assembly sections (_part1...) and, for a missile of stages, the
-    missile with its spent stages gone (_s1, _s2) and each spent stage (_stage1, _stage2)."""
+    """The variants sharing the missile's texture: its assembly sections (_part1...); for a missile of stages, the
+    missile with its spent stages gone (_s1, _s2) and each spent stage (_stage1, _stage2); for a cruise missile, itself
+    with its wings and scoop stowed (_folded: in its box and leaving it)."""
     folder = paths.MODELS / "item" / "missile"
     for old in folder.glob(f"{rk.name}_*.json"):
-        old.unlink()
+        if _own(rk.name, old.stem):                         # (not the warhead's cruise missile's)
+            old.unlink()
 
     def write(suffix: str, keep) -> None:
         v = {k: val for k, val in data.items() if k != "display"}
@@ -396,6 +400,8 @@ def variants(rk: Rocket, data: dict) -> None:
     for k in range(1, len(rk.stages)):
         write(f"s{k}", lambda e, k=k: stage_of(rk, e) >= k)
         write(f"stage{k}", lambda e, k=k: stage_of(rk, e) == k - 1)
+    if rk.folds:
+        write("folded", lambda e: e["name"].split("-")[0] not in rk.folds)
 
 
 def entry(rk: Rocket) -> dict:
@@ -1323,13 +1329,168 @@ def nuclear_missile() -> dict:
     return save(rk, lv)
 
 
+# --- cruise missiles (slice 9c, DESIGN.md §17.11) ------------------------------------------------------------------------------
+
+#: A cruise missile's length from its tail (the booster gone) to its nose's tip, at most (its box holds no more).
+CRUISE_TIP = 79.0
+#: Its booster: from its bell's mouth to the top of its case (the missile's tail sits on it, the jet's nozzle between).
+BOOSTER_TOP = 12.8
+CRUISE_TAIL = 13.0
+
+
+def cruise(warhead: str, cls: str, R: float, body: M.Material, fin: M.Material, marks=None) -> dict:
+    """A Light or Medium warhead's cruise missile (a Tomahawk's lines): the warhead's own head on a body its width, a
+    boat-tail with the jet's nozzle and four small fins in an X, a pair of straight wings at mid-body (out: as it flies
+    and as an item), the air scoop under its belly (+z: down in level flight) behind them; under its tail the solid
+    booster that lights it out of its box and falls away (its first stage). Painted as the warhead's own missile:
+    {body} and {fin}, and {marks}(lv, body's foot, warhead's foot) for its bands and stencils."""
+    rk = Rocket(warhead + "_cruise", cls)
+    rk.warhead = warhead
+    head_h = max(el["to"][1] for el in warhead_json(warhead)["elements"])
+    mount = max(48.0, CRUISE_TIP - head_h)
+    # The booster: bell, case, its aft closure.
+    exit_r = min(2.6, R * 0.55)
+    rk.bell("bbell", exit_r, exit_r * 0.66, 0.0, 3)
+    rk.ring("booster", R, 3.0, BOOSTER_TOP, caps=("up", "down"), top=True, bottom=True)
+    rk.closure("baft", R, 3.0, inner=exit_r)
+    # The missile's tail: the jet's nozzle on the booster, the boat-tail rising to the body, its fins in an X.
+    rk.ring("nozzle", round(R * 0.45, 3), CRUISE_TAIL, 14.2, caps=("up", "down"), top=True, bottom=True, stagger="full")
+    tail_top = rk.taper("tail", R * 0.62, R - 0.15, 14.2, 5)
+    rk.tube("body", R, tail_top, mount)
+    root = R * 0.7
+    for b in (45, 135, 225, 315):
+        rk.box("tfin", (8 - 0.3, 14.6, 8 + root), (8 + 0.3, 20.0, 8 + root + 5.4), faces=("east", "west", "south", "up", "down"),
+               rotation={"origin": (8, 14.6, 8), "axis": "y", "angle": b})
+    # Wings out at mid-body, square to its belly; the scoop under it behind them.
+    wing = mount - 17.0
+    for s in (-1, 1):
+        x0, x1 = (8 + R - 0.4, 8 + R + 13.5) if s > 0 else (8 - R - 13.5, 8 - R + 0.4)
+        rk.box("wing", (x0, wing, 8 - 0.35), (x1, wing + 5.0, 8 + 0.35),
+               faces=("north", "south", "up", "down", "east" if s > 0 else "west"))
+        rk.box("wroot", (8 + s * (R - 0.2) - 0.8, wing - 0.4, 8 - 1.0), (8 + s * (R - 0.2) + 0.8, wing + 5.4, 8 + 1.0),
+               faces=("north", "south", "up", "down", "east" if s > 0 else "west"))
+    rk.box("scoop", (8 - 1.8, wing - 11.0, 8 + R - 0.3), (8 + 1.8, wing - 3.0, 8 + R + 1.6), faces=("east", "west", "south", "up", "down"))
+    rk.mount(mount)
+    rk.parts, rk.stages, rk.engines = [CRUISE_TAIL, wing - 1.0, rk.tip], [CRUISE_TAIL, rk.tip], [0.0, CRUISE_TAIL]
+    rk.part_stage = [0, 1, 1]
+    rk.folds = {"wing", "scoop"}                                # (stowed in its box, out as it leaves: "_folded")
+    lv = Livery(body=body, tail=body, fin=fin, tfin=fin, wing=fin, wroot=body, scoop=body, booster=W.metal(W.GUNMETAL, 0.36),
+                baft=W.metal(W.GUNMETAL, 0.3), bbell=NOZZLE, nozzle=W.metal(W.BLACK, 0.34))
+    lv.on("booster", hazard(BOOSTER_TOP - 2.0, BOOSTER_TOP - 0.6, width=0.8))
+    lv.on("booster", stencil((6.0,), W.WHITE[5], 4, "x.xx"))
+    lv.on("bbell", soot).on("nozzle", soot)
+    lv.on("scoop", lambda k, f, img: M.darken(img, np.ones(f.shape, dtype=bool), 0.2) if f.d == "up" else None)   # its mouth
+    lv.on("body", seam(tail_top + 1.0, 0.7)).on("body", seam(wing + 7.0, 0.72))
+    if marks:
+        marks(lv, tail_top, mount)
+    return save(rk, lv)
+
+
+def _he_cruise() -> dict:
+    def marks(lv, foot, top):
+        lv.on("body", band(top - 9, top - 8, W.paint(W.YELLOW, 0.625, 0.3)))
+        lv.on("body", stencil((top - 4.0, top - 5.0), W.WHITE[5], 6, "xx.xxx.x"))
+    return cruise("he_warhead", "S", 4.0, paint(W.OLIVE), paint(W.OLIVE, 0.42), marks)
+
+
+def _napalm_cruise() -> dict:
+    def marks(lv, foot, top):
+        red = W.paint(W.RED, 0.625, 0.3)
+        lv.on("body", band(top - 8, top - 6, red)).on("body", band(foot + 3, foot + 4, red))
+        lv.on("body", stencil((top - 12.0, top - 13.0), W.BLACK[2], 5, "xx.xx"))
+    return cruise("napalm_warhead", "S", 4.4, W.metal(W.STEEL, 0.62, brushed=0.06), W.metal(W.STEEL, 0.5), marks)
+
+
+def _chemical_cruise() -> dict:
+    def marks(lv, foot, top):
+        green = W.paint(W.CHEM_GREEN, 0.5, 0.15)
+        for y in (top - 6, top - 8, foot + 6, foot + 4):
+            lv.on("body", band(y, y + 1, green))
+        lv.on("body", stencil((top - 13.0, top - 14.0), W.BLACK[2], 5, "x.xxx"))
+    return cruise("chemical_warhead", "S", 4.2, W.paint(W.WHITE, 0.625, CLEAN), W.paint(W.WHITE, 0.56, CLEAN), marks)
+
+
+def _toxic_waste_cruise() -> dict:
+    def marks(lv, foot, top):
+        toxin = M.Material(ramp=W.ramp9(P.TOXIN), tone=0.62, mottle=0.05, grain=0.03, dither=0.4, edge_light=0, edge_dark=0, ao=0)
+        lv.on("body", band(top - 7, top - 6, toxin))
+        lv.on("body", drips(P.TOXIN.shades[4], top, 11))
+        lv.on("body", hazard(foot + 1.0, foot + 4.0, width=1.0))
+        lv.on("body", decal(W.TREFOIL, {"Y": W.YELLOW[4], "K": W.BLACK[1]}, top - 11.0))
+    return cruise("toxic_waste_warhead", "S", 5.0, paint(W.WASTE, 0.5, rust=0.08), W.metal(W.RUST, 0.48, rust=0.2), marks)
+
+
+def _dirty_cruise() -> dict:
+    def marks(lv, foot, top):
+        tape = W.paint(W.YELLOW, 0.625, 0.45)
+        lv.on("body", band(top - 6, top - 4, tape)).on("body", band(foot + 2, foot + 3, tape))
+        lv.on("body", decal(W.TREFOIL, {"Y": W.YELLOW[4], "K": W.BLACK[1]}, top - 10.0))
+    return cruise("dirty_warhead", "S", 5.0, paint(W.RUST, 0.5, rust=0.2), W.metal(W.GUNMETAL, 0.42, rust=0.25), marks)
+
+
+def _heavy_cruise() -> dict:
+    def marks(lv, foot, top):
+        yellow = W.paint(W.YELLOW, 0.625, 0.3)
+        lv.on("body", band(top - 7, top - 6, yellow)).on("body", band(top - 9, top - 8, yellow))
+        lv.on("body", stencil((top - 13.0, top - 14.0, top - 16.0), W.WHITE[5], 7, "xx.xxx.x"))
+    return cruise("heavy_warhead", "M", 6.0, paint(W.OLIVE), paint(W.OLIVE, 0.42), marks)
+
+
+def _cluster_cruise() -> dict:
+    def marks(lv, foot, top):
+        lv.on("body", band(top - 5, top - 4, W.paint(W.YELLOW, 0.625, 0.3)))
+        lv.on("body", band(foot + 2, foot + 4, W.paint(W.BLACK, 0.5, CLEAN)))
+        lv.on("body", stencil((top - 10.0, top - 11.0), W.BLACK[2], 6, "x.xx.xx"))
+    return cruise("cluster_warhead", "M", 4.6, paint(W.CASING, 0.5), paint(W.CASING, 0.4), marks)
+
+
+def _gas_cruise() -> dict:
+    def marks(lv, foot, top):
+        lv.on("body", band(top - 6, top - 5, W.paint(W.YELLOW, 0.66, 0.3)))
+        lv.on("body", hazard(foot + 1.0, foot + 4.0))
+
+        def dashes(k, f, img, y=int(top - 14)):
+            if f.d in SIDES and (round(math.degrees(math.atan2(f.normal[0], f.normal[2])) / 22.5) % 2 == 0):
+                img[W.facet_mid(f) & (np.floor(f.Y) == y)] = W.YELLOW[3]
+        lv.on("body", dashes)
+    return cruise("gas_warhead", "M", 4.6, paint(W.GAS), paint(W.GAS, 0.4), marks)
+
+
+def _smoke_cruise() -> dict:
+    def marks(lv, foot, top):
+        white = W.paint(W.WHITE, 0.75, 0.2)
+        for y in (top - 6, top - 8, foot + 3):
+            lv.on("body", band(y, y + 1, white))
+        lv.on("body", stencil((top - 13.0, top - 14.0), W.BLACK[2], 5, "x.xx.x"))
+    return cruise("smoke_warhead", "M", 4.6, paint(W.STEEL, 0.5), paint(W.STEEL, 0.42), marks)
+
+
+def _cryo_cruise() -> dict:
+    def marks(lv, foot, top):
+        lv.on("body", frost(foot, top))
+        lv.on("body", band(top - 6, top - 5, W.paint(W.WHITE, 0.8, 0.15)))
+        lv.on("body", stencil((top - 12.0, top - 13.0), W.WHITE[6], 5, "xx.x.x"))
+    return cruise("cryo_warhead", "M", 4.6, paint(G.CRYO_CAN, 0.55), paint(W.WHITE, 0.68), marks)
+
+
 #: Every missile, by its warhead, in the order the warheads are listed.
 BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chemical, "toxic_waste_warhead": toxic_waste,
             "dirty_warhead": dirty, "heavy_warhead": heavy, "cluster_warhead": cluster, "gas_warhead": gas, "smoke_warhead": smoke,
             "cryo_warhead": cryo, "thermobaric_warhead": thermobaric, "bunker_buster_warhead": bunker_buster, "emp_warhead": emp,
             "massive_warhead": massive, "tactical_nuclear_warhead": tactical, "fission_warhead": fission,
             "boosted_fission_warhead": boosted, "neutron_warhead": neutron, "thermonuclear_warhead": thermonuclear,
-            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile}
+            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
+            # The cruise missiles (slice 9c): each Light and Medium warhead's, its look "<warhead>_cruise".
+            "he_warhead_cruise": _he_cruise, "napalm_warhead_cruise": _napalm_cruise, "chemical_warhead_cruise": _chemical_cruise,
+            "toxic_waste_warhead_cruise": _toxic_waste_cruise, "dirty_warhead_cruise": _dirty_cruise,
+            "heavy_warhead_cruise": _heavy_cruise, "cluster_warhead_cruise": _cluster_cruise, "gas_warhead_cruise": _gas_cruise,
+            "smoke_warhead_cruise": _smoke_cruise, "cryo_warhead_cruise": _cryo_cruise}
+
+
+def _own(name: str, file_stem: str) -> bool:
+    """Whether a model file ("he_warhead_s1") is a variant of missile {name}, not of another missile whose name runs on
+    from it ("he_warhead_cruise", the warhead's cruise missile)."""
+    return file_stem.startswith(name + "_") and not (not name.endswith("_cruise") and file_stem.startswith(name + "_cruise"))
 
 
 def build(names=None) -> dict:
@@ -1353,6 +1514,8 @@ def item_definition(table: dict) -> None:
                       "model": model(f"missile/{n}")})
         for v in sorted(folder.glob(f"{n}_*.json")):
             look = v.name[:-5]
+            if not _own(n, look):
+                continue                                       # another missile's (the warhead's cruise missile)
             when = [look]
             if look.startswith(f"{n}_s") and look[len(n) + 2:].isdigit():   # the old flight looks of the stages gone
                 k = look[len(n) + 2:]

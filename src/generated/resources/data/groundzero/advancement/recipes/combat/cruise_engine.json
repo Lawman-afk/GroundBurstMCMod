@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_solid_rocket_motor_i": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:solid_rocket_motor_i"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:cruise_engine"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_solid_rocket_motor_i"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:cruise_engine"
+    ]
+  }
+}

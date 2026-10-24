@@ -116,9 +116,15 @@ public final class MissileAssembly {
                 ? WarheadAssembly.sizeOf(c) : null;
     }
 
-    /** The motors that fit a class's body, shortest range first. */
+    /** The motors that fit a class's body, shortest range first (the Cruise Engine among them for Light and Medium). */
     public static List<MissileParts.Motor> motorsFor(SizeClass size) {
-        return java.util.Arrays.stream(MissileParts.Motor.values()).filter(m -> m != MissileParts.Motor.ICBM && m.fits(size)).toList();
+        return java.util.Arrays.stream(MissileParts.Motor.values()).filter(m -> m != MissileParts.Motor.ICBM && m.fits(size))
+                .sorted(java.util.Comparator.comparingInt(m -> m.range)).toList();
+    }
+
+    /** The rocket motors that fit a class's body (no Cruise Engine: a ballistic missile's), shortest range first. */
+    public static List<MissileParts.Motor> rocketsFor(SizeClass size) {
+        return motorsFor(size).stream().filter(m -> !m.cruise()).toList();
     }
 
     /** The missile these parts make (guidance and module may be empty). */
@@ -131,8 +137,9 @@ public final class MissileAssembly {
     public static ItemStack missile(MissileSpec spec) {
         ItemStack out = new ItemStack(GZAssembly.MISSILE.get());
         out.set(GZDataComponents.MISSILE.get(), spec);
-        // The item picks its model (its warhead's own missile) by this, like the missile in flight and on its launcher.
-        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.warheadId())),
+        // The item picks its model (its warhead's own missile, or that warhead's cruise missile) by this, like the missile
+        // in flight and on its launcher.
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.look())),
                 List.of()));
         return out;
     }

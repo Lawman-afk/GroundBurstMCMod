@@ -188,7 +188,18 @@ public final class FxPhotographer {
                 // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
                 // from its yard's side, the missile's length across the view.
                 new Scene("factory_arms", "factory_arms", 2, 42, List.of(60, 200, 420, 640)),
-                new Scene("factory_war", "factory_war", 5, 36, List.of(60, 500, 900, 1260)))) {
+                new Scene("factory_war", "factory_war", 5, 36, List.of(60, 500, 900, 1260)),
+                // Slice 9c: the Cruise Missile Launcher side on (its front to the camera's left), two cruise missiles in
+                // it, launched at clock 25: its boxes rising, raised with the beacon turning, box A's cover bursting as its
+                // missile lights, the missile leaving its box (wings stowed), climbing on its booster (wings out), the
+                // booster falling away, box B firing, the boxes coming down; close up, from the air, and its screen. A
+                // cruise missile crossing the view low overhead, and another popping up and diving onto a target.
+                new Scene("cruise", "cruise", 22, -10, List.of(20, 50, 110, 228, 232, 238, 244, 252, 262, 290, 300, 365, 440)),
+                new Scene("cruise_close", "cruise", 11, -18, List.of(110, 228, 232, 238, 242)),
+                new Scene("cruise_aerial", "cruise", 24, 30, List.of(110, 240, 300)),
+                new Scene("cruise_ui", "cruise", 5, 0, List.of(30)),
+                new Scene("cruise_flight", "cruise_flight", 30, -25, List.of(4, 12, 20, 28, 36)),
+                new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
             }
@@ -380,7 +391,7 @@ public final class FxPhotographer {
             inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_BODY,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.BODIES.get(kind.size.ordinal()).get()));
             inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_MOTOR, new net.minecraft.world.item.ItemStack(
-                    dev.groundzero.content.assembly.GZAssembly.MOTORS.get(dev.groundzero.content.assembly.MissileAssembly.motorsFor(kind.size).getLast().ordinal()).get()));
+                    dev.groundzero.content.assembly.GZAssembly.MOTORS.get(dev.groundzero.content.assembly.MissileAssembly.rocketsFor(kind.size).getLast().ordinal()).get()));
             inv.setItem(dev.groundzero.content.assembler.MissileAssemblerBlockEntity.SLOT_GUIDANCE,
                     new net.minecraft.world.item.ItemStack(dev.groundzero.content.assembly.GZAssembly.GPS_GUIDANCE.get()));
             a.energy().generate(kind.capacity);
@@ -646,6 +657,50 @@ public final class FxPhotographer {
             }
             be.energy().generate(be.kind().capacity);
         }
+    }
+
+    private static net.minecraft.core.BlockPos cruiseAt;
+
+    /**
+     * The Cruise Missile Launcher (slice 9c), side on to the camera: facing north, its front to the camera's left, its
+     * deck running across the view; an HE and a Cryo cruise missile in it, powered, aimed far off east of north, armed.
+     */
+    private static void cruiseSite(ServerLevel level, int x, int ground) {
+        cruiseAt = new net.minecraft.core.BlockPos(x, ground, -3);
+        formed(level, cruiseAt, dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.block().get(), dev.groundzero.content.launch.GZLaunch.CRUISE_LAUNCHER,
+                net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(cruiseAt) instanceof dev.groundzero.content.launch.CruiseLauncherBlockEntity be) {
+            be.revalidate();
+            be.inventory().setItem(dev.groundzero.content.launch.CruiseLauncherBlockEntity.SLOT_A, cruiseMissile(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD,
+                    dev.groundzero.content.assembly.SizeClass.S));
+            be.inventory().setItem(dev.groundzero.content.launch.CruiseLauncherBlockEntity.SLOT_B, cruiseMissile(dev.groundzero.content.ordnance.GZOrdnance.CRYO_WARHEAD,
+                    dev.groundzero.content.assembly.SizeClass.M));
+            be.energy().generate(dev.groundzero.content.launch.CruiseLauncherBlockEntity.ENERGY_CAPACITY);
+            be.setTarget(x + 700, -500);
+            be.arm(true);
+        }
+    }
+
+    private static net.minecraft.world.item.ItemStack cruiseMissile(dev.groundzero.registry.GZBlocks.WithItem<?> warhead, dev.groundzero.content.assembly.SizeClass body) {
+        return dev.groundzero.content.assembly.MissileAssembly.missile(new dev.groundzero.content.assembly.MissileSpec(
+                new net.minecraft.world.item.ItemStack(warhead.item().get()), body, dev.groundzero.content.assembly.MissileParts.Motor.CRUISE,
+                dev.groundzero.content.assembly.MissileParts.Guidance.GPS, false));
+    }
+
+    /**
+     * A cruise missile from far off to the camera's left (north), southbound along a line 40 blocks beyond the site:
+     * passing the camera's line of sight low overhead, or ({@code dive}) 70 blocks short of a target 10 blocks beyond
+     * the site, about to pop up and dive onto it.
+     */
+    private static dev.groundzero.content.launch.Flights.Flight cruiseFlight(ServerLevel level, int x, int ground, boolean dive) {
+        double lane = dive ? 10.5 : 40.5;
+        Vec3 pad = new Vec3(x + lane, ground + 1, dive ? -300 : -520);
+        Vec3 target = new Vec3(x + lane, ground, dive ? 0.5 : 520);
+        var spec = dev.groundzero.content.assembly.MissileItem.spec(cruiseMissile(dev.groundzero.content.ordnance.GZOrdnance.HE_WARHEAD,
+                dev.groundzero.content.assembly.SizeClass.S));
+        var f = dev.groundzero.content.launch.Flights.launchCruise(level, pad, 0, target, spec, null);
+        f.skipForTest(dive ? f.ticksToImpact() - 45 : 322);
+        return f;
     }
 
     private static void scudStormSite(ServerLevel level, int x, int ground) {
@@ -1064,6 +1119,14 @@ public final class FxPhotographer {
                     nukeSiloSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("cruise")) {
+                    cruiseSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("cruise_flight") || s.profile().equals("cruise_dive")) {
+                    flightShown = cruiseFlight(level, x, ground, s.profile().equals("cruise_dive"));
+                    return;
+                }
                 if (s.profile().startsWith("factory_")) {
                     factorySite(level, x, ground, s.profile().endsWith("arms"));
                     return;
@@ -1277,6 +1340,31 @@ public final class FxPhotographer {
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(computerAt) instanceof dev.groundzero.content.launch.LaunchComputerBlockEntity be) {
                     be.launchArmed(server.overworld(), null);              // LAUNCH: every armed silo
+                }
+            });
+        }
+        if (scene.profile().equals("cruise") && !scene.name().endsWith("_ui") && step >= 0 && clock == 25 && cruiseAt != null) {
+            var at = cruiseAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.launch.CruiseLauncherBlockEntity be) {
+                    be.launchArmed(server.overworld(), null);
+                }
+            });
+        }
+        // Its missiles fly off far beyond the pictures: called off once they are out of them.
+        if (scene.profile().equals("cruise") && step >= 0 && clock == scene.moments().getLast() + 5) {
+            server.execute(() -> {
+                var flights = dev.groundzero.content.launch.Flights.of(server.overworld());
+                flights.all().forEach(f -> flights.cancelForTest(server.overworld(), f));
+            });
+        }
+        if (scene.name().equals("cruise_ui") && step >= 0 && clock == 12 && cruiseAt != null) {
+            var at = cruiseAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundzero.content.launch.CruiseLauncherBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
                 }
             });
         }

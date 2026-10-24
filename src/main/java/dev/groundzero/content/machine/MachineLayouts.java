@@ -132,6 +132,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(58, 17, 110, 38), 8, 6, List.of(),
             List.of(new MachineLayout.Control("doors", new MachineLayout.Rect(58, 58, 30, 18), -1, 0, 0, "groundzero.gui.silo_doors")), 256);
 
+    public static final MachineLayout CRUISE_LAUNCHER = new MachineLayout(
+            GroundZero.id("textures/gui/machine/cruise_launcher.png"), 176, 166, List.of(new MachineLayout.Pos(28, 37), new MachineLayout.Pos(46, 37)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            null, 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            new MachineLayout.Rect(66, 17, 104, 38), 8, 6, List.of(),
+            List.of(), 256);
+
     public static final MachineLayout SUPERWEAPON = new MachineLayout(
             GroundZero.id("textures/gui/machine/superweapon.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

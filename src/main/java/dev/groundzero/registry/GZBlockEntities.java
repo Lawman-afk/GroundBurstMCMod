@@ -149,6 +149,7 @@ public final class GZBlockEntities {
         machine(event, SINGULARITY_REACTOR.get());
         machine(event, PARTICLE_ACCELERATOR.get());
         machine(event, dev.groundzero.content.launch.GZLaunch.SILO_ENTITY.get());
+        machine(event, dev.groundzero.content.launch.GZLaunch.CRUISE_ENTITY.get());
         machine(event, dev.groundzero.content.superweapon.GZSuperweapons.SCUD_STORM_ENTITY.get());
         machine(event, dev.groundzero.content.superweapon.GZSuperweapons.NUCLEAR_MISSILE_ENTITY.get());
         machine(event, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_ENTITY.get());

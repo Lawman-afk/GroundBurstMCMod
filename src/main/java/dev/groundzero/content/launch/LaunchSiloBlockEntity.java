@@ -133,10 +133,11 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     /**
      * Whether it can fire this missile: the Launch Silo none that needs more (a nuclear warhead, a Strategic or an
-     * intercontinental airframe); the Launch Complex and the Missile Silo any.
+     * intercontinental airframe); the Launch Complex and the Missile Silo any. No vertical launcher fires a cruise
+     * missile: that is the Cruise Missile Launcher's (§17.11).
      */
     public boolean accepts(dev.groundzero.content.assembly.MissileSpec spec) {
-        return !spec.needsComplex();
+        return !spec.needsComplex() && !spec.cruise();
     }
 
     /** The loaded missile (null: none). */

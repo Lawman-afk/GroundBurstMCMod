@@ -41,7 +41,7 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
     /** Any missile (as the Missile Silo). */
     @Override
     public boolean accepts(dev.groundzero.content.assembly.MissileSpec spec) {
-        return true;
+        return !spec.cruise();                                // (a cruise missile: the Cruise Missile Launcher's)
     }
 
     @Override

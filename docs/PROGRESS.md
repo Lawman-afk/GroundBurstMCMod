@@ -4,7 +4,7 @@ Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `block
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
 **Current phase:** Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
-**Last updated:** 2026-10-23 (superweapons and their factories, then a feedback pass: flicker, the SCUD Storm's scrap ring on a bigger pad, the War Factory's crane, the factories' readout, the rebalance; 241/241 GameTests)
+**Last updated:** 2026-10-24 (slice 9c: cruise missiles, the Cruise Engine and the Cruise Missile Launcher; 246/246 GameTests)
 
 ---
 
@@ -21,7 +21,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 6 | Conventional explosives | done (6a-6e) — needs the user's in-game look |
 | 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats; 2026-10-23: one missile per warhead and four missile assemblers, the bench back to warheads) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
 | 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; 8d: the Tsar Mega-bomb, and the explosion engine benchmarked and reworked at its size; Phase 8 complete but for the in-game look) |
-| 9 | Launch platforms, missile flight, launch control, designators | **in progress** (basic launch site built early, 2026-10-21; 9a: missile flight: burn-out, staging, re-entry, engine sound; 9b: the Missile Silo) |
+| 9 | Launch platforms, missile flight, launch control, designators | **in progress** (basic launch site built early, 2026-10-21; 9a: missile flight: burn-out, staging, re-entry, engine sound; 9b: the Missile Silo; 9c: cruise missiles and the Cruise Missile Launcher) |
 | 10 | Radar & interceptors | todo |
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | todo |
 | 12 | Aftermath: radiation, fallout, EMP fields, terrain, wasteland, gear, medical | todo |
@@ -220,13 +220,13 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 |---|---|
 | Basic launch site: Launch Silo, Launch Computer (terrain map), Basic Missile, flight tracker, 6 building blocks (DESIGN §17.6) | done — needs in-game look |
 | Missile entity + composed renderer (body/warhead/propulsion parts) | missiles drawn by body and warhead (7b, 8a, 8c); 9a: drawn without their spent stages |
-| Flight model (boost, pitch-over, ballistic, re-entry, terminal; cruise) | 9a: burn-out and coasting, staging and re-entry on the fixed arc — needs in-game look; cruise todo |
+| Flight model (boost, pitch-over, ballistic, re-entry, terminal; cruise) | 9a: burn-out and coasting, staging and re-entry on the fixed arc; 9c: cruise (out of its box on a booster that drops, a level turn, 40 blocks over the ground surveyed at launch, a pop-up and a dive; DESIGN §17.11) — needs in-game look |
 | MissileTracker (analytic high-altitude flight, re-materialisation, destination chunk loading) | todo |
 | Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
-| Launch Pad multiblock + erector/clamp animations + GUI | todo |
+| Launch Pad multiblock + erector/clamp animations + GUI | not planned (the user, at 9c: the Launch Silo does this job) |
 | Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8); 2026-10-23: walkable once formed (its deck, the flame trench under the missile and the deflector's steps; DESIGN §23.3) |
 | Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, its shaft has no lamps and its corner conduits run up to the ground — needs in-game look |
-| Cruise Missile Launcher | todo |
+| Cruise Missile Launcher | done (9c, DESIGN §17.11): 2x6 deck with two Launch Boxes, armoured boxes raised to 45° by telescopic rams, frangible covers, two missiles 3 s apart, 60k FE each; the Cruise Engine (1,500 blocks) makes any Light or Medium missile a cruise missile with its own winged airframe (folded in its box); sounds, Field Manual entry, JEI info — needs in-game look |
 | Launch Control Station: map, pads, salvo, time-on-target | todo |
 | Laser Designator, Targeting Binoculars, Data Link Tool, Comms Relay | todo |
 | MIRV bus & re-entry vehicles | todo |

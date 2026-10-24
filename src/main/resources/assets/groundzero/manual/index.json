@@ -62,6 +62,7 @@
     "ordnance/launch_site",
     "ordnance/launch_complex",
     "ordnance/missile_silo",
+    "ordnance/cruise_launcher",
     "ordnance/nuclear",
     "ordnance/strategic_assembly",
     "ordnance/radar_array",

@@ -506,6 +506,16 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.MILITARY_CIRCUIT).requires(GZParts.CRT_DISPLAY)
                 .requires(m.concrete).requires(m.concrete).requires(Items.LEVER)
                 .unlockedBy(getHasName(GZParts.MILITARY_CIRCUIT), has(GZParts.MILITARY_CIRCUIT)).save(output);
+        // The Cruise Missile Launcher (slice 9c, DESIGN.md §17.11): its armored Launch Boxes (dense plate, a frangible cover's
+        // steel, a servo for the cover) and its controller (the silo's, with a servo to raise the boxes).
+        shapeless(RecipeCategory.BUILDING_BLOCKS, dev.groundzero.content.launch.GZLaunch.LAUNCH_BOX.item(), 1)
+                .requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE).requires(GZParts.DENSE_STEEL_PLATE)
+                .requires(GZTags.commonItem("plates/steel")).requires(GZTags.commonItem("plates/steel")).requires(GZParts.SERVO)
+                .unlockedBy(getHasName(GZParts.DENSE_STEEL_PLATE), has(GZParts.DENSE_STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.item(), 1)
+                .requires(GZMultiblocks.MACHINE_CASING.item()).requires(GZParts.CRT_DISPLAY).requires(GZParts.ADVANCED_CIRCUIT)
+                .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ELECTRIC_MOTOR).requires(Items.LEVER)
+                .unlockedBy(getHasName(GZParts.ADVANCED_CIRCUIT), has(GZParts.ADVANCED_CIRCUIT)).save(output);
         // The SCUD Storm (DESIGN.md §19.5): adobe (mud brick and sand bound with straw), the tank of toxin, the SCUDs'
         // erectors (hydraulics and a pump), and its controller (the toxin's canister for its placard).
         var sw = new Object() {
@@ -700,6 +710,14 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZChemicals.LIQUID_OXYGEN_CANISTER).requires(GZParts.DENSE_STEEL_PLATE)
                 .requires(GZParts.PRESSURE_VESSEL).requires(GZParts.ADVANCED_CIRCUIT)
                 .unlockedBy(getHasName(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER), has(GZChemicals.LIQUID_ROCKET_FUEL_CANISTER)).save(output);
+        // Slice 9c (DESIGN.md §17.11): the Cruise Engine, a small turbojet (a pressure vessel for its combustor, tungsten
+        // for its turbine, an advanced circuit to run it, jet fuel) and its launch booster (a Solid Rocket Motor I).
+        shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.CRUISE_ENGINE, 1)
+                .requires(dev.groundzero.content.assembly.GZAssembly.SRM_I).requires(GZChemicals.SYNTHETIC_FUEL_CANISTER)
+                .requires(GZChemicals.SYNTHETIC_FUEL_CANISTER).requires(GZParts.PRESSURE_VESSEL).requires(GZParts.TUNGSTEN_PLATE)
+                .requires(GZParts.ADVANCED_CIRCUIT).requires(GZTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(dev.groundzero.content.assembly.GZAssembly.SRM_I), has(dev.groundzero.content.assembly.GZAssembly.SRM_I))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundzero.content.assembly.GZAssembly.INERTIAL_GUIDANCE, 1)
                 .requires(GZParts.ADVANCED_CIRCUIT).requires(GZParts.SERVO)
                 .requires(GZTags.commonItem("plates/steel"))

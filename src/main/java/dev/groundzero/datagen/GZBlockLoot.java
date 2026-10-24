@@ -70,6 +70,8 @@ public class GZBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundzero.content.launch.GZLaunch.SILO_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.COMPLEX_CONTROLLER.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.MISSILE_SILO_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.block().get());
+        dropSelf(dev.groundzero.content.launch.GZLaunch.LAUNCH_BOX.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE.block().get());
         dropSelf(dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE.block().get());
         // The Silo Hatch, like the Large Radar Dish, drops itself from its middle only.

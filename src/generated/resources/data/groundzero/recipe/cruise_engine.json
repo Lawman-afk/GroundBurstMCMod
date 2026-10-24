@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundzero:solid_rocket_motor_i",
+    "groundzero:synthetic_fuel_canister",
+    "groundzero:synthetic_fuel_canister",
+    "groundzero:pressure_vessel",
+    "groundzero:tungsten_plate",
+    "groundzero:advanced_circuit",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundzero:cruise_engine"
+  }
+}

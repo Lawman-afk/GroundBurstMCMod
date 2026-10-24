@@ -1945,6 +1945,78 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
 - **Sound:** `silo.doors`: two bolts unlatching, a motor and rollers grinding, a click at each rail joint, a bang into
   the stops. **Screen:** its own layout (`missile_silo`): a taller CRT (state, warhead, doors) and the DOORS button.
 
+### 17.11 Cruise missiles and the Cruise Missile Launcher (Phase 9 slice 9c, 2026-10-24)
+The user chose the cruise launcher alone for 9c (not the erector Launch Pad of §17.2: the basic Launch Silo already
+fires Light to Heavy missiles from a pad) and a motor that makes a missile a cruise missile, each warhead's its own.
+
+**Research** (the Tomahawk, its canisters and launchers): 5.56 m long (6.25 m with its booster), 0.52 m across, wings
+2.67 m tip to tip; a solid booster lights it out of its canister and falls away, then its wings unfold, a scoop opens
+under its belly and its turbofan carries it subsonic (Mach 0.74) low over the ground, matching the ground to its map
+(TERCOM) all the way to the target. Ships carried the canisters in Armored Box Launchers that rose to fire; the
+ground-launched Gryphon rode a truck.
+
+**How it works:**
+- *The Cruise Engine*: a new motor (`MissileParts.Motor.CRUISE`: a small turbojet with its own launch booster) for
+  Light and Medium bodies, 1,500 blocks. A missile with one is a **cruise missile**: the same warhead, its own winged
+  airframe (each of the ten Light and Medium warheads' cruise missiles its own, painted as that warhead's missile, the
+  head fitting the body), built at the Light or Medium Missile Assembler, named "<warhead> Cruise Missile". Its look is
+  `<warhead>_cruise` (`MissileSpec.look()`): the whole missile with its booster; `_s1` without it; `_stage1` the booster.
+- *Only the Cruise Missile Launcher fires them*, and it fires nothing else (the vertical launchers refuse them).
+- *The Cruise Missile Launcher*: a 2×6 deck of Launch Pads (the controller and an Energy Port in its front row) with
+  two new **Launch Box** blocks on its back row, clear above for the boxes to rise. Formed: two armored boxes side by
+  side on a cradle hinged at the back; a missile in each (two slots). A Launch Computer aims, arms and fires it like any
+  launcher: a 10 s countdown while hydraulic rams raise the boxes to 45°, then each box's front cover swings open and its
+  missile goes, 3 s apart, at the same target (each its own guidance's scatter). 60,000 FE a missile.
+- *Flight* (`Flights.Flight` with a cruise plan): out of its box along the launcher's front at 45° on its booster; the
+  booster falls away (the spent-stage machinery), and it turns toward the target in a level arc while it settles to its
+  cruise height, 40 blocks over the ground, which it follows at 1.6 blocks a tick (planned at launch from the ground along
+  its path: the real ground where loaded, the generator's where not; climbing early for a ridge, easing down after it).
+  50 blocks short it pops up and dives onto the target. Anything taller than its cruise height in its way stops it.
+- *Look and sound*: the booster's flame and smoke, then a small hot jet and a thin trail; a jet's whine following it
+  (Doppler); the booster's roar and the box cover's bang at launch.
+
+**As built (2026-10-24):**
+- *Cruise Engine* (`cruise_engine`, 1,500 blocks, Light and Medium): Solid Rocket Motor I, two synthetic fuel canisters,
+  a pressure vessel, a tungsten plate, an advanced circuit, a steel plate. Its model: a turbojet (intake with its spike,
+  case, nozzle, fuel pump) on its hazard-banded booster. `MissileAssembly.motorsFor` lists it; `rocketsFor` (the
+  rockets alone) does not.
+- *The missiles* (`missiles.py` `cruise()`, ten of them): the warhead's head on a body its width, a boat-tail with the
+  jet's nozzle, four small fins in an X, straight wings at mid-body, the scoop under the belly, the solid booster under
+  the tail; each in its warhead's livery. Variants: `_s1` (booster gone), `_stage1` (the booster falling), `_part1-3`
+  (the assembler's sections) and `_folded`: wings and scoop stowed, as a Tomahawk's are in its canister. The wings are
+  wider than the box, so the missile is drawn folded from lighting until 6 ticks after it moves (its wings clear of the
+  box's mouth; `MissileEntity.folded()`).
+- *The flight* (`Flights.CruisePlan`, fixed at launch, saved with its heading and heights): 10 ticks burning in its
+  box; 24 blocks out along the launcher's heading at 45 degrees in 22 ticks on its booster (speeding up), then the
+  booster drops; a circular arc onto the target's bearing (radius a quarter of the distance left, 12 to 48 blocks,
+  halved while the target is inside it) and a straight run, at 1.6 blocks a tick; 40 blocks over the ground, sampled
+  every 4 blocks at launch (the real top where loaded, the generator's surface plus 8 for trees where not), climbing at
+  most 0.6 and sinking 0.5 a block (the climb planned ahead), smoothed over five samples and never 3 under what it
+  wants; 50 blocks short it climbs to 55 over the target's ground and from 30 short dives on it. It hits whatever is in
+  its way once its boost is over.
+- *Look and sound*: while its booster burns, the box's blast (`Spectacle.boxBlast`) and the rocket's roar; then a small
+  jet glow and a thin trail (`cruiseJet`) and the jet's whine (`cruise.engine`, a seamless loop, Doppler). At the
+  launcher, `cruise.launch` (the cover's bang, the booster tearing away) and `cruise.elevate` (the rams' pump and whine,
+  the lock home; played slower as the boxes come down).
+- *The launcher's model* (`cruise_launcher.py`): two haze-grey armoured boxes (16 px square, 84 long, 0.8 px apart)
+  banded by two steel straps, a hazard-striped collar round each mouth with a cover stencilled 1 or 2 set in it, the aft
+  faces louvred under a red band, white stencils down the sides; hinge barrels on a pin through three cheeks on a base
+  beam at the deck's back; a yellow rest beam with rubber pads under each end of the lowered boxes; under each box a
+  telescopic ram of three sections (black cylinder, chrome stage and rod) from a clevis in a pit in the deck to a lug
+  under the box (its foot on the line through the lug's two ends, so it barely turns: it only stretches, 16.6 to 38
+  px); a low olive console and the Energy Port's housing at the front edge, under the boxes' mouths; a heat-blued blast
+  plate behind the hinge; an amber beacon on the boxes' backs, lit and turning only while it launches. The rams raise
+  the boxes in 3 s. A box's cover is frangible: as its missile lights it bursts off (it tumbles out of the mouth and is
+  gone; a puff and sparks there) and a fresh one is in place once the boxes are down. (A door hinged at the mouth would
+  have swung up above the clear space.)
+- *The structure*: the 2x6 deck is walkable at 14 px everywhere (its front row too). The clear space was measured from
+  the model (every part, lying to raised, every 0.05 s): two blocks over the deck (but its back row's Launch Boxes),
+  the third block up over its first five rows, the fourth over its first four, the fifth over its second and third.
+  The plan's pattern had missed three of those places and asked for some the boxes never reach.
+- *Tests*: `CruiseTests` (it forms; a block where the boxes sweep stops it; it takes only cruise missiles and no other
+  launcher takes them; it fires both, 3 s apart, from its boxes' tails, and lowers them; a flight followed tick by tick;
+  the Light assembler builds one). 246/246.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -2954,6 +3026,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | The Light Missile Assembler's Energy Port housing runs along its cell's outer (right-hand) edge, its banded side facing out, so where the port is reads from outside. |
 | 2026-10-23 | Superweapons (§19.5; the user asked for the GLA's and China's two from C&C Generals, each taking its own ammunition, made at a C&C-themed factory, one per faction by the user's choice): the SCUD Storm (nine Toxin SCUDs) and the Nuclear Missile (China's above-ground coffin), charging on power (5:00 / 6:00) and fired from a Launch Computer (both are LaunchSites); their ammunition built by the Arms Dealer and the War Factory. A toxin SCUD's strike spreads a toxin cloud and glowing anthrax residue 16 blocks round (the "toxic waste spread on the ground"); the nuke falls between the fission and boosted warheads with a 200-block radiation field. Everyone in the dimension hears when one is built, ready or launched. |
 | 2026-10-23 | Superweapons after the user's first look (§19.5): the SCUD Storm's pad grows to 15 x 15 so a ring of scrap (the game's) fits round its tank with the SCUDs moved out; the nuke's blast down a fifth (radii and damage x0.8, "20 kt"), the Toxin SCUD's blast and toxin up a third (x1.33: residue 21 blocks, cloud 16); "power" taken as Minecraft's explosion power, the blast's size and damage (the radiation field stays 200 blocks). Round sections in the big structures sink every other plank 0.15 px, not 0.06 (they are seen from further off). |
+| 2026-10-24 | Slice 9c (the user chose the cruise launcher alone, no erector Launch Pad: the Launch Silo does that job; and a motor that makes a cruise missile): any Light or Medium missile built with a Cruise Engine (1,500 blocks) is a cruise missile, each warhead its own winged airframe; it flies a plan fixed at launch (out of its box at 45 degrees on its booster, a level turn, 40 blocks over the ground as surveyed at launch, a pop-up and a dive), and only the Cruise Missile Launcher (two boxes, 60k FE a missile) fires it; the vertical launchers refuse it. Its boxes' covers are frangible (a hinged door would swing above the clear space) and its wings stay stowed until it is clear of its box (they are wider than the box). §17.11. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

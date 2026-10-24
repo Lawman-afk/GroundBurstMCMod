@@ -253,6 +253,33 @@
     ],
     "subtitle": "subtitles.groundzero.charge.disarm"
   },
+  "cruise.elevate": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundzero:launch/cruise_elevate"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.cruise.elevate"
+  },
+  "cruise.engine": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundzero:launch/cruise_engine_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.cruise.engine"
+  },
+  "cruise.launch": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundzero:launch/cruise_launch"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.cruise.launch"
+  },
   "cryo.burst": {
     "sounds": [
       {

@@ -198,6 +198,19 @@ LAYOUTS = {
         "controls": [("doors", 58, 58, 30, 18, -1, 0, 0, "groundzero.gui.silo_doors")],
         "inventory": (8, 84),
     },
+    # The Cruise Missile Launcher (DESIGN.md §17.11): a cruise missile for each of its two boxes, the energy for their
+    # launch, and the CRT with its state, missiles and target.
+    "cruise_launcher": {
+        "title": (8, 6),
+        "slots": [("missile", 28, 37), ("missile", 46, 37)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (66, 17, 104, 38),
+        "inventory": (8, 84),
+    },
     # The superweapons (DESIGN.md §19.5): their ammunition (a SCUD Storm's nine Toxin SCUDs, a Nuclear Missile Silo's one
     # missile), the energy they charge from, and the CRT with the state (the charge's clock), ammunition and target.
     "superweapon": {

@@ -912,8 +912,63 @@ def superweapon_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def cruise_sounds() -> dict[str, np.ndarray]:
+    """The Cruise Missile Launcher (slice 9c, DESIGN.md §17.11): its boxes rising on their rams (played slower as they
+    come down), a missile leaving its box (its cover's bang, the booster's tearing roar going away) and the cruise
+    missile's jet in flight (a seamless loop the client follows it with, pitched by its speed toward the listener)."""
+    out = {}
+    # Elevate: the pump spinning up, the rams' whine climbing as they push, creaks, the boxes locking at 45 degrees (3 s).
+    length = 3.2
+    t = S.t_axis(length)
+    N = len(t)
+    run = S.breakpoints(N, [(0, 0), (0.15, 1), (2.85, 1), (3.0, 0.15), (length, 0)])
+    f = 56 + 14 * np.clip(t / 0.35, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    pump = S.highpass(S.lowpass(0.6 * np.sin(phase) + 0.5 * np.sin(2 * phase) + 0.35 * np.sin(3 * phase) + 0.25 * np.sin(5 * phase), 700), 70) * 0.35
+    whine_f = 520 + 300 * np.clip((t - 0.15) / 2.7, 0, 1)
+    wp = 2 * np.pi * np.cumsum(whine_f) / S.SR
+    whine = S.bandpass(np.sin(wp) + 0.35 * np.sin(2 * wp), 300, 2600) * 0.3
+    hiss = S.bandpass(S.white(length, 940), 2500, 8000) * 0.07
+    creak = S.bandpass(S.grains(length, rate=5, grain_ms=50, seed=941), 400, 1500) * 0.35
+    hit = S.white(0.8, 942) * S.exp_decay(int(0.8 * S.SR), 0.008)
+    lock = (S.resonator(hit, 410, q=35) * 1.5 + S.resonator(hit, 1150, q=45) * 0.7
+            + S.lowpass(S.white(0.8, 943), 150) * S.exp_decay(int(0.8 * S.SR), 0.05) * 2.2)
+    body = (pump + whine + hiss + creak) * run + S.place(lock * 2.8, 2.95, length)
+    out["launch/cruise_elevate"] = S.normalize(S.fade(S.reverb(body, seconds=0.7, mix=0.16, seed=944)[:N], 0.02, 0.2), -2)
+    # Launch: the frangible cover's bang (a sharp crack, a thump, a short metal ring), then the booster's roar, higher and
+    # hissier than a big missile's, building fast, holding while it climbs out and falling away as it goes (4 s).
+    length = 4.0
+    t = S.t_axis(length)
+    N = len(t)
+    crack = S.highpass(S.white(length, 950), 1800) * S.exp_decay(N, 0.01) * 1.4
+    thump = S.lowpass(S.white(length, 951), 200) * S.exp_decay(N, 0.07) * 4.0
+    ring = S.white(length, 952) * S.exp_decay(N, 0.004)
+    clang = (S.resonator(ring, 720, q=30) * 3.0 + S.resonator(ring, 1640, q=40) * 1.6) * S.exp_decay(N, 0.18)
+    burn = S.breakpoints(N, [(0, 0), (0.03, 0), (0.15, 1), (1.0, 1), (length, 0)]) ** 1.6
+    roar = S.bandpass(S.brown(length, 953), 60, 1500) * 1.2 + S.bandpass(S.white(length, 954), 1500, 8000) * 0.45
+    crackle = S.bandpass(S.grains(length, rate=140, grain_ms=3, seed=955), 800, 6000) * 0.45
+    going = S.sweep_lowpass((roar + crackle) * burn, 9000, 1400)
+    whoosh = S.bandpass(S.white(length, 956), 400, 2500) * S.breakpoints(N, [(0, 0), (0.25, 0), (0.6, 0.6), (1.4, 0)]) * 0.5
+    mixed = S.reverb(S.saturate(crack + thump + clang + going + whoosh, 1.5), seconds=1.6, damping_hz=3000, mix=0.25, seed=957)[:N]
+    out["launch/cruise_launch"] = S.normalize(S.fade(mixed, 0.0, 0.4), -1)
+    # The jet: a small turbojet's broadband roar and rumble, its compressor's whine riding on it (its tones whole cycles
+    # in the 4 s loop, its slow wobble too, so the seam does not show), a buzz from the blades, a flutter.
+    n = 4.4
+    t = S.t_axis(n)
+    roar = S.bandpass(S.pink(n, 960), 120, 3200) * 0.8
+    rumble = S.lowpass(S.brown(n, 961), 220) * 0.5
+    wobble = 1 + 0.004 * np.sin(2 * np.pi * 0.5 * t)
+    wphase = 2 * np.pi * np.cumsum(1850.0 * wobble) / S.SR
+    whine = (np.sin(wphase) + 0.4 * np.sin(2 * wphase)) * 0.16
+    bphase = 2 * np.pi * 310.0 * t
+    buzz = S.lowpass(sum(np.sin(k * bphase) / k for k in range(1, 9)), 2000) * 0.08
+    flutter = 1 + 0.06 * np.sin(2 * np.pi * 1.25 * t)
+    out["launch/cruise_engine_loop"] = S.normalize(_seamless(S.saturate((roar + rumble + whine + buzz) * flutter, 1.2)), -3)
+    return out
+
+
 RECIPES = [geiger_clicks, nuke_set, tsar_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds]
+           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds]
 
 
 def build_sounds() -> list[Path]:

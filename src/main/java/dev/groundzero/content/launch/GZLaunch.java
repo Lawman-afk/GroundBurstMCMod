@@ -63,6 +63,11 @@ public final class GZLaunch {
     public static final WithItem<MultiblockPartBlock> HAZARD_CONCRETE = GZBlocks.register("hazard_concrete", "Hazard Concrete", GZTab.MISSILES,
             MultiblockPartBlock::new, p -> p.mapColor(MapColor.COLOR_YELLOW).strength(15f, 1200f).requiresCorrectToolForDrops()
                     .sound(SoundType.STONE).pushReaction(PushReaction.IMMOVEABLE));
+    /**
+     * The Cruise Missile Launcher's boxes (slice 9c): an armored box a cruise missile is fired from, two side by side on
+     * its back row (a part, hidden while formed: the model draws the boxes).
+     */
+    public static final WithItem<MultiblockPartBlock> LAUNCH_BOX = part("launch_box", "Launch Box", MapColor.COLOR_GREEN, SoundType.METAL, true);
     /** The Missile Silo's lid: one item that places a 3x3 hatch. */
     public static final WithItem<SiloHatchBlock> SILO_HATCH = GZBlocks.register("silo_hatch", "Silo Hatch", GZTab.MISSILES, SiloHatchBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(15f, 1200f).requiresCorrectToolForDrops().sound(SoundType.NETHERITE_BLOCK)
@@ -78,6 +83,9 @@ public final class GZLaunch {
     public static final WithItem<MultiblockControllerBlock> MISSILE_SILO_CONTROLLER = GZBlocks.register("missile_silo", "Missile Silo Controller",
             GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.MISSILE_SILO_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(5f, 1200f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final WithItem<MultiblockControllerBlock> CRUISE_CONTROLLER = GZBlocks.register("cruise_launcher", "Cruise Missile Launcher Controller",
+            GZTab.MISSILES, p -> new MultiblockControllerBlock(p, GZLaunch.CRUISE_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GZBlocks.register("launch_computer", "Launch Computer",
             GZTab.MISSILES, p -> new LaunchComputerBlock(p, GZLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -95,6 +103,9 @@ public final class GZLaunch {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileSiloBlockEntity>> MISSILE_SILO_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("missile_silo", () -> new BlockEntityType<>(MissileSiloBlockEntity::new,
                     MISSILE_SILO_CONTROLLER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CruiseLauncherBlockEntity>> CRUISE_ENTITY =
+            GZBlockEntities.BLOCK_ENTITIES.register("cruise_launcher", () -> new BlockEntityType<>(CruiseLauncherBlockEntity::new,
+                    CRUISE_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
             GZBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> new BlockEntityType<>(LaunchComputerBlockEntity::new,
                     COMPUTER_CONTROLLER.block().get()));
@@ -106,6 +117,7 @@ public final class GZLaunch {
     public static final Supplier<SoundEvent> SIREN = GZSounds.LAUNCH_SIREN;
     public static final Supplier<SoundEvent> MISSILE_LAUNCH = GZSounds.MISSILE_LAUNCH;
     public static final Supplier<SoundEvent> MISSILE_ENGINE = GZSounds.MISSILE_ENGINE;
+    public static final Supplier<SoundEvent> CRUISE_LAUNCH = GZSounds.CRUISE_LAUNCH;
 
     /** Keeps a missile's chunk, and its target's, loaded while it flies. */
     public static final TicketController TICKETS = new TicketController(GroundZero.id("missile"), (level, tickets) -> {
@@ -188,6 +200,46 @@ public final class GZLaunch {
         layers[13] = new String[] {"HHXHH", "HoooH", "HoOoH", "HoooH", "HHEHH"};
         return layers;
     }
+
+    /**
+     * The Cruise Missile Launcher (slice 9c, DESIGN.md §17.11): a 2x6 deck of Launch Pad, the controller and an Energy
+     * Port side by side in its front row; on its back row two Launch Boxes (the boxes' hinged ends); clear over the deck
+     * where the boxes lie and sweep as they rise to 45 degrees (tools/assets/cruise_launcher.py: two blocks over all of
+     * it, then higher toward the front, five blocks up over its second and third rows). Formed, the deck's blocks are the
+     * model's deck, 14 px high, to walk on.
+     */
+    public static final MultiblockDefinition CRUISE_LAUNCHER = new MultiblockDefinition(GroundZero.id("cruise_launcher"),
+            new String[][] {
+                    {"XE", "PP", "PP", "PP", "PP", "PP"},
+                    {"..", "..", "..", "..", "..", "BB"},
+                    {"..", "..", "..", "..", "..", ".."},
+                    {"..", "..", "..", "..", "..", "  "},
+                    {"..", "..", "..", "..", "  ", "  "},
+                    {"  ", "..", "..", "  ", "  ", "  "},
+            },
+            Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'B', Entry.of(() -> LAUNCH_BOX.block().get()),
+                    'E', Entry.of(() -> GZMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> CRUISE_CONTROLLER.block().get())),
+            MultiblockDefinition.layerCuts(0, new String[] {"DD", "DD", "DD", "DD", "DD", "DD"}, Map.of('D', PartCut.DECK)));
+
+    /** JEI: how the Cruise Missile Launcher is built and works, and what the Cruise Engine makes (DESIGN.md §17.11). */
+    public static final String INFO_CRUISE_LAUNCHER = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.cruise_launcher",
+            "Fires cruise missiles, and only those. Build a 2x6 deck of Launch Pad with the controller and an Energy Port side "
+                    + "by side in its front row and two Launch Boxes on its back row; keep the space over the deck clear where its "
+                    + "boxes lie and rise (the Holo-Projector shows it). Load two cruise missiles and power it (60,000 FE a "
+                    + "missile); a Launch Computer aims, arms and fires it. Its rams raise the boxes during a 10 s countdown, then "
+                    + "the two missiles go 3 s apart at the same target, each bursting its box's cover.");
+    public static final String INFO_CRUISE_ENGINE = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.cruise_engine",
+            "A missile assembled with a Cruise Engine (Light and Medium missiles) is a cruise missile, winged and painted as its "
+                    + "warhead's own: a booster lights it out of its box, then its jet carries it 40 blocks over the ground, "
+                    + "following the ground's rise and fall, for up to 1,500 blocks; short of the target it pops up and dives on "
+                    + "it. Only the Cruise Missile Launcher fires it.");
+
+    /** Creative: places a whole Cruise Missile Launcher where you click. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundzero.content.multiblock.StructureSpawnerItem> CRUISE_SPAWNER =
+            GZItems.register("cruise_launcher_spawner", "Structure Spawner: Cruise Missile Launcher", GZTab.MISSILES,
+                    p -> new dev.groundzero.content.multiblock.StructureSpawnerItem(p, () -> CRUISE_LAUNCHER),
+                    p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     /** A cell of the Silo Hatch: its middle, or one of the parts round it. */
     private static Entry hatch(SiloHatchBlock.Part part) {

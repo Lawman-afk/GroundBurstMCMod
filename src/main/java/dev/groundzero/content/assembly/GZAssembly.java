@@ -94,6 +94,8 @@ public final class GZAssembly {
     public static final DeferredItem<MissileParts.MotorItem> SRM_I = motor("Solid Rocket Motor I", MissileParts.Motor.SRM_I);
     public static final DeferredItem<MissileParts.MotorItem> SRM_II = motor("Solid Rocket Motor II", MissileParts.Motor.SRM_II);
     public static final DeferredItem<MissileParts.MotorItem> LIQUID_FUEL_STAGE = motor("Liquid-fuel Stage", MissileParts.Motor.LIQUID);
+    /** Slice 9c (DESIGN.md §17.11): a turbojet and its launch booster; the missile it drives is a cruise missile. */
+    public static final DeferredItem<MissileParts.MotorItem> CRUISE_ENGINE = motor("Cruise Engine", MissileParts.Motor.CRUISE);
     public static final DeferredItem<MissileParts.GuidanceItem> INERTIAL_GUIDANCE = GZItems.register("inertial_guidance_unit",
             "Inertial Guidance Unit", GZTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.INERTIAL));
     public static final DeferredItem<MissileParts.GuidanceItem> GPS_GUIDANCE = GZItems.register("gps_guidance_unit",

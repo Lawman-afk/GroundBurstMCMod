@@ -147,6 +147,57 @@ def liquid_stage() -> None:
     G.finish(m, t)
 
 
+def cruise_engine() -> None:
+    """The Cruise Engine (slice 9c, DESIGN.md §17.11): a small turbojet, its intake lip on top (the dark mouth with the
+    fan's hub in it), its brushed compressor case, the hot tungsten turbine section and a short nozzle, on the launch
+    booster under it (a dark solid motor, a hazard band at its joint), a fuel line and pump down its side. Round parts
+    are true prisms (warheads.section) painted with the material library, as the missiles are."""
+    import numpy as np  # noqa: PLC0415
+    import missiles as MS  # noqa: PLC0415
+    import warheads as W  # noqa: PLC0415
+    from gz import machine_kit as K  # noqa: PLC0415
+    m = BlockModel("cruise_engine", tex_size=(64, 64), kind="item", render_type="minecraft:cutout")
+    m.open_ok = set()
+    groups: dict[str, list[str]] = {}
+
+    def ring(group, r, y0, y1, caps=("up", "down"), stagger=None):
+        names = W.section(m, f"{group}{len(groups.get(group, []))}", r, y0, y1, W.sides_for(r), caps=caps, stagger=stagger)
+        groups.setdefault(group, []).extend(names)
+        return names
+    ring("bell", 1.5, 0.6, 1.8, stagger="full")
+    ring("booster", 2.5, 1.8, 6.2, stagger="base")
+    ring("nozzle", 1.5, 6.4, 7.4, stagger="full")
+    ring("turbine", 2.25, 7.4, 9.2)
+    ring("case", 2.55, 9.2, 13.0)
+    ring("lip", 2.8, 13.0, 13.9, stagger="full")                 # (its top shows: no two caps level)
+    m.box("line", (10.5, 7.6, 7.6), (11.1, 12.6, 8.4), faces=("north", "south", "east", "up", "down"))
+    m.box("pump", (10.3, 9.4, 6.9), (11.7, 11.0, 9.1), faces=("north", "south", "east", "up", "down"))
+    groups["line"], groups["pump"] = ["line"], ["pump"]
+    m.layout()
+    k = K.Kit(m, {}, seed=731, ao_reach=1.5, turned=True)
+    W.round_faces(k.S, [n for g in ("bell", "booster", "nozzle", "turbine", "case", "lip") for n in groups[g]], True, True, False)
+    t = Tex(m.tex_w, m.tex_h)
+    k.paint(t, groups["bell"] + groups["nozzle"], W.metal(W.GUNMETAL, 0.3))
+    k.paint(t, groups["booster"], W.metal(W.GUNMETAL, 0.38))
+    k.paint(t, groups["turbine"], W.metal(W.TUNGSTEN, 0.45))
+    k.paint(t, groups["case"], W.metal(W.STEEL, 0.6, brushed=0.06))
+    k.paint(t, groups["lip"], W.metal(W.STEEL, 0.72))
+    k.paint(t, groups["line"], W.metal(W.STEEL, 0.45))
+    k.paint(t, groups["pump"], W.paint(W.OLIVE, 0.5))
+    k.overlay(t, groups["booster"], lambda f, img: MS.hazard(4.6, 5.8, width=0.7)(k, f, img))
+    k.overlay(t, groups["bell"] + groups["nozzle"], lambda f, img: MS.soot(k, f, img))
+
+    def mouth(f, img):
+        if f.d != "up":
+            return
+        d = np.hypot(f.X - 8, f.Z - 8)
+        dark = d < 2.1
+        img[dark, :3] = (img[dark, :3] * 0.2).astype(np.uint8)              # the intake's mouth
+        img[d < 0.7, :3] = (150, 154, 160)                                  # the fan's hub
+    k.overlay(t, groups["lip"], mouth)
+    G.finish(m, t)
+
+
 def inertial() -> None:
     m = model("inertial_guidance_unit")
     m.box("box", (4.5, 1, 4.5), (11.5, 5, 11.5))
@@ -225,10 +276,15 @@ def hardened() -> None:
 
 
 NAMES = ["tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii",
-         "liquid_fuel_stage", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"]
+         "liquid_fuel_stage", "cruise_engine", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"]
 
 
 def main() -> None:
+    if sys.argv[1:] == ["cruise_engine"]:                        # just the Cruise Engine (slice 9c)
+        cruise_engine()
+        G.item_defs(["cruise_engine"])
+        print("cruise engine written")
+        return
     body("tactical_missile_body", 2.5, 1.5, 11, 4, 1)
     body("medium_missile_body", 3, 2, 12.5, 4.6, 2)
     body("heavy_missile_body", 3.5, 2.5, 14, 5.4, 3)

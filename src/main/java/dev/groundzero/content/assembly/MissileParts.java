@@ -25,6 +25,12 @@ public final class MissileParts {
         SRM_I("solid_rocket_motor_i", 400, SizeClass.S, SizeClass.M),
         SRM_II("solid_rocket_motor_ii", 1024, SizeClass.S, SizeClass.L),
         LIQUID("liquid_fuel_stage", 2500, SizeClass.L, SizeClass.XL),
+        /**
+         * The Cruise Engine (slice 9c, DESIGN.md §17.11): a turbojet with its own launch booster. The missile it drives is
+         * a cruise missile: low over the ground all the way, fired only by a Cruise Missile Launcher. (Before ICBM, which
+         * has no item: GZAssembly.MOTORS is indexed by ordinal.)
+         */
+        CRUISE("cruise_engine", 1500, SizeClass.S, SizeClass.M),
         /** The Intercontinental Booster: only ever in a whole weapon from the Strategic Assembly Hall (no bench motor). */
         ICBM("intercontinental_booster", 3000, SizeClass.XXL, SizeClass.XXL);
 
@@ -42,6 +48,11 @@ public final class MissileParts {
 
         public boolean fits(SizeClass body) {
             return body.ordinal() >= this.smallest.ordinal() && body.ordinal() <= this.largest.ordinal();
+        }
+
+        /** Whether the missile it drives is a cruise missile. */
+        public boolean cruise() {
+            return this == CRUISE;
         }
 
         /** "Tactical and Medium bodies", "Tactical, Medium and Heavy bodies", for tooltips and the bench. */
@@ -130,6 +141,8 @@ public final class MissileParts {
     static final String T_BODY_TIP = GZLang.add(GroundZero.MODID + ".missile.body_tip", "Takes class %s warheads");
     static final String T_STRATEGIC_TIP = GZLang.add(GroundZero.MODID + ".missile.strategic_tip", "Takes nuclear warheads only; fires from a Launch Complex or a Missile Silo");
     static final String T_MOTOR_TIP = GZLang.add(GroundZero.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");
+    static final String T_CRUISE_TIP = GZLang.add(GroundZero.MODID + ".missile.cruise_tip",
+            "Makes a cruise missile: low over the ground all the way; fires from a Cruise Missile Launcher");
     static final String T_HARDENED_TIP = GZLang.add(GroundZero.MODID + ".missile.hardened_tip", "Optional: an EMP never leaves the missile a dud");
     static final String T_BENCH = GZLang.add(GroundZero.MODID + ".missile.bench", "Fitted at a missile assembler");
     static final String T_BENCH_AT = GZLang.add(GroundZero.MODID + ".missile.bench_at", "Fitted at a %s");
@@ -172,6 +185,9 @@ public final class MissileParts {
         @SuppressWarnings("deprecation")
         public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
             tooltip.accept(grey(Component.translatable(T_MOTOR_TIP, this.motor.range, this.motor.bodies())));
+            if (this.motor.cruise()) {
+                tooltip.accept(Component.translatable(T_CRUISE_TIP).withStyle(ChatFormatting.AQUA));
+            }
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
@@ -231,6 +247,11 @@ public final class MissileParts {
     /** The missile in flight, its spent stages gone ({@code dropped}: "_s1", "_s2" after the first). */
     public static String flight(String warheadId, int dropped) {
         return dropped > 0 ? look(warheadId) + "_s" + dropped : look(warheadId);
+    }
+
+    /** A cruise missile in its box and leaving it, its wings and scoop stowed ("_folded", slice 9c). */
+    public static String folded(String look) {
+        return look(look) + "_folded";
     }
 
     /**

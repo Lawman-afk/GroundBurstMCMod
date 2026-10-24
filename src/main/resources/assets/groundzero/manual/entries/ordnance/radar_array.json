@@ -1,7 +1,7 @@
 {
   "title": "Radar Array",
   "icon": "groundzero:radar_array",
-  "order": 12,
+  "order": 13,
   "items": [
     "groundzero:radar_array",
     "groundzero:large_radar_dish"

@@ -69,14 +69,15 @@ public final class GZJeiPlugin implements IModPlugin {
     }
 
     /**
-     * Missiles are told apart by their warheads (DESIGN.md §10.4): each warhead has a missile of its own, with its own
-     * recipe (the Missile Assembly category, or the Strategic Assembly category for the hall's).
+     * Missiles are told apart by their looks (DESIGN.md §10.4, §17.11): each warhead has a missile of its own, and a
+     * Light or Medium one a cruise missile too, each with its own recipe (the Missile Assembly category, or the
+     * Strategic Assembly category for the hall's).
      */
     @Override
     public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
         registration.registerSubtypeInterpreter(dev.groundzero.content.assembly.GZAssembly.MISSILE.get(), (stack, context) -> {
             var spec = dev.groundzero.content.assembly.MissileItem.spec(stack);
-            return spec != null ? spec.warheadId() : null;
+            return spec != null ? spec.look() : null;
         });
     }
 
@@ -114,6 +115,10 @@ public final class GZJeiPlugin implements IModPlugin {
         info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_TOXIN, dev.groundzero.content.superweapon.GZSuperweapons.TOXIN_SCUD.get());
         info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_ARMS_DEALER, dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.ARMS_DEALER_SPAWNER.get());
         info(registration, dev.groundzero.content.superweapon.GZSuperweapons.INFO_WAR_FACTORY, dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_CONTROLLER.item().get(), dev.groundzero.content.superweapon.GZSuperweapons.WAR_FACTORY_SPAWNER.get());
+        // The Cruise Missile Launcher and the motor that makes a cruise missile (slice 9c, DESIGN.md §17.11).
+        info(registration, dev.groundzero.content.launch.GZLaunch.INFO_CRUISE_LAUNCHER, dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.item().get(),
+                dev.groundzero.content.launch.GZLaunch.LAUNCH_BOX.item().get(), dev.groundzero.content.launch.GZLaunch.CRUISE_SPAWNER.get());
+        info(registration, dev.groundzero.content.launch.GZLaunch.INFO_CRUISE_ENGINE, dev.groundzero.content.assembly.GZAssembly.CRUISE_ENGINE.get());
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));

@@ -39,6 +39,7 @@ public final class WarheadAssembly {
     public static final String JEI_MISSILES = GZLang.add(GroundZero.MODID + ".jei.missiles", "Missile Assembly");
     public static final String JEI_OPTIONAL = GZLang.add(GroundZero.MODID + ".jei.optional", "Optional");
     public static final String JEI_MISSILE_INFO = GZLang.add(GroundZero.MODID + ".jei.missile_info", "Class %s, range %s-%s blocks");
+    public static final String JEI_CRUISE_INFO = GZLang.add(GroundZero.MODID + ".jei.cruise_info", "Class %s cruise missile, range %s blocks");
     public static final String JEI_MISSILE_POWER = GZLang.add(GroundZero.MODID + ".jei.missile_power", "%s FE/t for %s s");
     public static final String JEI_ANY_FUZE = GZLang.add(GroundZero.MODID + ".jei.any_fuze", "Impact or Barometric: where it hits, or in the air over the target");
 

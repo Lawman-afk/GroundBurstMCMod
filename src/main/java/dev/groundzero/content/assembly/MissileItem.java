@@ -25,6 +25,8 @@ public class MissileItem extends Item {
     private static final String T_GUIDANCE = GZLang.add(GroundZero.MODID + ".missile.tip.guidance", "Guidance: %s");
     private static final String T_HARDENED = GZLang.add(GroundZero.MODID + ".missile.tip.hardened", "Hardened against EMP");
     private static final String T_NUCLEAR = GZLang.add(GroundZero.MODID + ".missile.tip.nuclear", "Nuclear: fires from a Launch Complex or a Missile Silo");
+    private static final String T_CRUISE = GZLang.add(GroundZero.MODID + ".missile.tip.cruise",
+            "Cruise missile: flies low over the ground; fires from a Cruise Missile Launcher");
     static final String T_NAMED = GZLang.add(GroundZero.MODID + ".missile.named", "%s Missile");
     /** An intercontinental missile is a whole weapon, named by its warhead (so a search for "Tsar" finds it). */
     static final String T_NAMED_ICBM = GZLang.add(GroundZero.MODID + ".missile.named_icbm", "Intercontinental Missile (%s)");
@@ -37,11 +39,19 @@ public class MissileItem extends Item {
         return stack.get(GZDataComponents.MISSILE.get());
     }
 
-    /** Each warhead's own missile, by name (DESIGN.md §10.4): the warhead's id to its name's key. */
+    /**
+     * Each warhead's own missile, by name (DESIGN.md §10.4): its look (the warhead's id, or "<id>_cruise" for that
+     * warhead's cruise missile, §17.11) to its name's key.
+     */
     private static final java.util.Map<String, String> NAMES = new java.util.HashMap<>();
 
     private static void name(String warhead, String english) {
         NAMES.put(warhead, GZLang.add(GroundZero.MODID + ".missile.name." + warhead, english));
+    }
+
+    /** A Light or Medium warhead's cruise missile ("HE Cruise Missile"). */
+    private static void cruise(String warhead, String english) {
+        name(warhead + MissileSpec.CRUISE_LOOK, english);
     }
 
     static {
@@ -66,6 +76,16 @@ public class MissileItem extends Item {
         name("thermonuclear_warhead", "Thermonuclear ICBM");
         name("cobalt_warhead", "Cobalt ICBM");
         name("tsar_warhead", "Tsar ICBM");
+        cruise("he_warhead", "HE Cruise Missile");
+        cruise("napalm_warhead", "Napalm Cruise Missile");
+        cruise("chemical_warhead", "Chemical Cruise Missile");
+        cruise("toxic_waste_warhead", "Toxic Waste Cruise Missile");
+        cruise("dirty_warhead", "Dirty Cruise Missile");
+        cruise("heavy_warhead", "Heavy HE Cruise Missile");
+        cruise("cluster_warhead", "Cluster Cruise Missile");
+        cruise("gas_warhead", "Poison Gas Cruise Missile");
+        cruise("smoke_warhead", "Smoke Cruise Missile");
+        cruise("cryo_warhead", "Cryo Cruise Missile");
     }
 
     /**
@@ -78,7 +98,7 @@ public class MissileItem extends Item {
         if (s == null) {
             return super.getName(stack);
         }
-        String key = NAMES.get(s.warheadId());
+        String key = NAMES.get(s.look());
         if (key != null) {
             return Component.translatable(key);
         }
@@ -104,6 +124,9 @@ public class MissileItem extends Item {
         }
         if (s.nuclear()) {
             tooltip.accept(Component.translatable(T_NUCLEAR).withStyle(ChatFormatting.YELLOW));
+        }
+        if (s.cruise()) {
+            tooltip.accept(Component.translatable(T_CRUISE).withStyle(ChatFormatting.AQUA));
         }
     }
 }

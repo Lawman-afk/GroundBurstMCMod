@@ -107,7 +107,7 @@ final class AssemblerTests {
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_WARHEAD, warhead);
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_BODY, new ItemStack(GZAssembly.BODIES.get(size.ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MOTOR,
-                new ItemStack(GZAssembly.MOTORS.get(MissileAssembly.motorsFor(size).getLast().ordinal()).get()));
+                new ItemStack(GZAssembly.MOTORS.get(MissileAssembly.rocketsFor(size).getLast().ordinal()).get()));
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_GUIDANCE, guidance);
         a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MODULE, module);
     }
@@ -125,7 +125,7 @@ final class AssemblerTests {
             MissileSpec s = MissileItem.spec(a.inventory().getItem(MissileAssemblerBlockEntity.SLOT_OUTPUT));
             helper.assertTrue(s != null, "a missile");
             helper.assertTrue(s.warhead().is(warheadOf(kind).getItem()) && s.body() == kind.size
-                    && s.motor() == MissileAssembly.motorsFor(kind.size).getLast() && s.guidance() == MissileParts.Guidance.GPS && s.hardened(),
+                    && s.motor() == MissileAssembly.rocketsFor(kind.size).getLast() && s.guidance() == MissileParts.Guidance.GPS && s.hardened(),
                     "its parts: " + s);
             helper.assertTrue(s.warhead().getOrDefault(GZDataComponents.FUZE.get(), FuzeSettings.IMPACT).value() == 40, "the fuze kept its setting");
             for (int i = MissileAssemblerBlockEntity.SLOT_WARHEAD; i <= MissileAssemblerBlockEntity.SLOT_MODULE; i++) {

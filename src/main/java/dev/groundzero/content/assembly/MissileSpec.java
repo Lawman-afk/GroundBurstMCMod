@@ -48,6 +48,28 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return this.body == SizeClass.XXL;
     }
 
+    /** A cruise missile (a Cruise Engine, slice 9c): only the Cruise Missile Launcher fires it, and it fires nothing else. */
+    public boolean cruise() {
+        return this.motor.cruise();
+    }
+
+    /** What a cruise missile's look adds to its warhead's id: "he_warhead_cruise" (DESIGN.md §17.11). */
+    public static final String CRUISE_LOOK = "_cruise";
+
+    /**
+     * Which missile it is (its own model and its shape in the client's table): its warhead's id, and for a cruise missile
+     * that warhead's cruise missile ("he_warhead_cruise"); empty with no warhead.
+     */
+    public String look() {
+        return look(this.warhead, cruise());
+    }
+
+    /** The look of the missile a warhead makes, a cruise missile or not. */
+    public static String look(ItemStack warhead, boolean cruise) {
+        String id = warheadId(warhead);
+        return id.isEmpty() || !cruise ? id : id + CRUISE_LOOK;
+    }
+
     /** Whether it carries a nuclear warhead (only a Launch Complex or a Missile Silo fires it). */
     public boolean nuclear() {
         ChargeKind kind = AssemblyStats.kindOf(this.warhead);

@@ -250,9 +250,15 @@ public final class Spectacle {
         // The burning engine: the tail, or the bell of the stage now lowest once the spent ones have gone.
         double up = engineHeight(missile, dropped);
         double x = missile.getX() - back.x * up, y = missile.getY() - back.y * up, z = missile.getZ() - back.z * up;
+        if (missile.cruise() && dropped >= 1) {
+            cruiseJet(missile, x, y, z, back, q, t);              // a cruise missile's booster gone: its jet
+            return;
+        }
         var silo = missile.silo();
         if (missile.igniting() && silo.isPresent()) {
             shaftSmoke(missile, x, y, z, q, t);                   // in a silo: up the shaft, not out round a pad
+        } else if (missile.igniting() && missile.cruise()) {
+            boxBlast(missile, x, y, z, back, q, t);                // in its box: out of the box's back
         } else if (missile.igniting()) {
             int n = (int) (q * 6);
             for (int i = 0; i < n; i++) {
@@ -332,6 +338,105 @@ public final class Spectacle {
             p.variant = random.nextInt(8);
             p.rot = random.nextFloat() * 6.283f;
             p.spin = (random.nextFloat() - 0.5f) * 0.01f;
+            PUFFS.add(p, q);
+        }
+    }
+
+    /**
+     * A cruise missile's booster lit in its box (slice 9c): the exhaust blasts out of the back of the box, fire close to
+     * it and a cloud of smoke rolling back over the ground behind the launcher.
+     */
+    private static void boxBlast(dev.groundzero.content.launch.MissileEntity missile, double x, double y, double z,
+            net.minecraft.world.phys.Vec3 back, float q, double t) {
+        var random = missile.level().getRandom();
+        int n = Math.max(1, (int) (q * 5));
+        for (int i = 0; i < n; i++) {
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            double along = 0.4 + random.nextDouble() * 1.2;
+            p.x = x + back.x * along + (random.nextDouble() - 0.5) * 0.5;
+            p.y = y + back.y * along + (random.nextDouble() - 0.5) * 0.5;
+            p.z = z + back.z * along + (random.nextDouble() - 0.5) * 0.5;
+            float speed = 0.45f + random.nextFloat() * 0.35f;
+            p.vx = (float) (back.x * speed + random.nextGaussian() * 0.06);
+            p.vy = (float) Math.max(back.y * speed, -0.15) + 0.02f;
+            p.vz = (float) (back.z * speed + random.nextGaussian() * 0.06);
+            p.drag = 0.06f;
+            p.rise = 0.01f;
+            p.birth = t;
+            p.life = 120 + random.nextInt(80);
+            p.size0 = 1.2f;
+            p.size1 = 5 + random.nextFloat() * 2;
+            p.color0 = 0xECEAE6;
+            p.color1 = 0xB4B0AA;
+            p.alpha = 0.85f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(p, q);
+        }
+        for (int i = 0; i < 2; i++) {
+            Puffs.Puff f = new Puffs.Puff();
+            f.kind = Puffs.Kind.FIRE;
+            f.x = x + back.x * (0.6 + i * 0.7);
+            f.y = y + back.y * (0.6 + i * 0.7);
+            f.z = z + back.z * (0.6 + i * 0.7);
+            f.vx = (float) back.x * 0.4f;
+            f.vy = (float) back.y * 0.4f;
+            f.vz = (float) back.z * 0.4f;
+            f.drag = 0.25f;
+            f.birth = t;
+            f.life = 3 + random.nextInt(3);
+            f.size0 = 1.6f - i * 0.4f;
+            f.size1 = 0.6f;
+            f.color0 = 0xFFF2CC;
+            f.color1 = 0xFF7020;
+            f.alpha = 0.9f;
+            f.variant = random.nextInt(4);
+            PUFFS.add(f, 1);
+        }
+    }
+
+    /**
+     * A cruise missile on its jet (slice 9c): a small hot glow in its nozzle and a thin haze of exhaust behind it that
+     * soon thins away, nothing like a rocket's plume (it is hard to see coming, as a real one is).
+     */
+    private static void cruiseJet(dev.groundzero.content.launch.MissileEntity missile, double x, double y, double z,
+            net.minecraft.world.phys.Vec3 back, float q, double t) {
+        var random = missile.level().getRandom();
+        Puffs.Puff g = new Puffs.Puff();
+        g.kind = Puffs.Kind.GLOW;
+        g.x = x + back.x * 0.25;
+        g.y = y + back.y * 0.25;
+        g.z = z + back.z * 0.25;
+        g.birth = t;
+        g.life = 2;
+        g.size0 = 0.75f;
+        g.size1 = 0.55f;
+        g.color0 = 0xFFD8A0;
+        g.color1 = 0xFF8040;
+        g.alpha = 0.7f;
+        g.variant = random.nextInt(4);
+        PUFFS.add(g, 1);
+        double speed = Math.sqrt(missile.distanceToSqr(missile.xo, missile.yo, missile.zo));
+        int n = Math.max(1, (int) (speed * 0.8 * q));
+        for (int i = 0; i < n; i++) {
+            double k = i / (double) n;
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            p.x = x + back.x * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.15;
+            p.y = y + back.y * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.15;
+            p.z = z + back.z * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.15;
+            p.drag = 0.05f;
+            p.rise = 0.002f;
+            p.birth = t - k;
+            p.life = 50 + random.nextInt(25);
+            p.size0 = 0.35f;
+            p.size1 = 1.4f;
+            p.color0 = 0xDAD8D4;
+            p.color1 = 0xBEBAB4;
+            p.alpha = 0.28f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
             PUFFS.add(p, q);
         }
     }
@@ -471,7 +576,7 @@ public final class Spectacle {
      * plain missile's tail).
      */
     private static double engineHeight(dev.groundzero.content.launch.MissileEntity missile, int dropped) {
-        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.look());
         return shape == null ? 0 : shape.engine(dropped);
     }
 
@@ -531,7 +636,7 @@ public final class Spectacle {
             return;
         }
         var random = missile.level().getRandom();
-        var shape = dev.groundzero.client.render.MissileShapes.get(missile.warheadName());
+        var shape = dev.groundzero.client.render.MissileShapes.get(missile.look());
         double up = shape == null ? 8 : shape.nose();
         net.minecraft.world.phys.Vec3 nose = missile.position().subtract(back.scale(up));
         // A puff every 0.4 blocks from where the last of them was, so the streak is unbroken however the missile moves.

@@ -15,7 +15,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **Launch Silo** sends an assembled [missile](ordnance/missiles) to its target, as far as the missile's motor reaches (400 to 2500 blocks). A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.\n\nThe silo takes one Light, Medium or Heavy missile, built at its [missile assembler](ordnance/missile_assemblers). Each launch takes the missile and 100,000 FE. The gantry's arm slides up or down its tower and reaches in to hold whichever missile stands on the pad, just under its warhead."
+      "text": "A **Launch Silo** sends an assembled [missile](ordnance/missiles) to its target, as far as the missile's motor reaches (400 to 2500 blocks). A **Launch Computer** aims it: its screen is a map of the ground round it, with the silos it controls and every missile in flight.\n\nThe silo takes one Light, Medium or Heavy missile, built at its [missile assembler](ordnance/missile_assemblers) (not a cruise missile: those go from a [Cruise Missile Launcher](ordnance/cruise_launcher)). Each launch takes the missile and 100,000 FE. The gantry's arm slides up or down its tower and reaches in to hold whichever missile stands on the pad, just under its warhead."
     },
     {
       "type": "structure",
