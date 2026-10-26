@@ -1329,13 +1329,17 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   recordings the recipes actually cut from; the mod's metadata points at it.
 - **Reading a recording without hearing it**: `tools/sound/survey.py` prints a recording's length,
   peak, clipped share and its loudest bangs (time, level, rise), and draws its waveform over a spectrogram with a time
-  scale; `key@from-to` zooms in. Cuts are chosen from those sheets.
+  scale; `key@from-to` zooms in. Cuts are chosen from those sheets. `tools/sound/loudness.py` measures how loud and
+  heavy sounds are (BS.1770 loudness of the loudest 400 ms and 3 s, the weight at 30-150 Hz, the bite at 1-5 kHz, how
+  long a sound stays loud); `--ladder` checks every band's blast sets in order of size.
 - **Processing** (`tools/sound/sources.py`): cuts cleaned of their background by spectral subtraction against a quiet
   stretch of the same recording (a camcorder's hiss, wind, a truck idling), faded on raised-cosine curves; varispeed (a
   recording played slower is a bigger event: lower and longer); air absorption over distance, frequency by frequency
   (ISO 9613-1, 15 °C, 70 % humidity: at 1 km, 4 dB at 1 kHz, 27 dB at 4 kHz, 95 dB at 8 kHz); the soft ground's dip in
   the low mids far off; the blast wave's pressure pulse (Friedlander) for the punch close up that a microphone loses;
-  tails that darken as they die; convolution; layering by loudness.
+  tails that darken as they die; convolution; layering by loudness; since round 3, loudness without buzz (`tame_lows`:
+  the sub-bass under 28 Hz cut, as no speaker plays it yet it sets the peak, and the low band saturated on its own;
+  `maximize`: a look-ahead limiter that lifts a blast's body under its peaks).
 - **The blasts, round 1** (`tools/sound/blasts.py`). The four bands are, in metres, roughly: small 6 / 20 / 55 / 175,
   medium 15 / 50 / 140 / 440, large 45 / 150 / 420 / 1300, nuclear 150 / 500 / 1400 / 4400, Tsar 500 / 1700 / 4800 /
   15000 (from the blasts' damage radii and ClientBlasts' bands). Each band uses recordings whose own distance suits it:
@@ -1361,6 +1365,19 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   lightning never stand in for a blast (they are recognized at once); a recording with people in it (voices, clapping)
   is no use however good its bang; a small charge needs body under its snap or it reads as a firework. Each round
   remakes only what was rated down and keeps the rest.
+- **The blasts, round 3** (the ratings of round 2: 13 of 14 rated, most 4 or 5, both very far nuclear sounds 5). Changed:
+  the medium near and mid swapped (the user: round 2's mid sounded like the near one), the near trimmed 1.5 dB to stay
+  under the large near; the nuke near, "a bit weak in comparison to the near large blast", made louder, heavier and
+  longer than it; the Tsar near, "still sounds a bit like lightning", rebuilt; the Tsar mid and far, "bit weak", given a
+  deep boom and lifted. The game plays every set at one volume for a band (`ClientBlasts.BAND_VOLUME`), so a bigger
+  blast must be bigger in its file: every band's sets now measure in order of size (the near ones' loudest 3 s, small to
+  Tsar: -18.6, -11.1, -10.8, -8.0, -7.4 LUFS; the nuke and the Tsar equally loud at first, the Tsar deeper and twice as
+  long). Thunder's marks, found in the Tsar's old bed: a roar swelling about once a second, a second clap 2 s after the
+  first, a long tearing crack, a crackle through the roar, and nothing breaking. The rebuilt one (`blasts.steady_bed`,
+  `nuclear_near`) has a steady roar and one short crack, wreckage from the first second (a building collapsing, rocks, a
+  chimney falling, stones and gravel, landing for 8 s) and the blast wind (`blast_wind`: a gale rushing past,
+  darkening). A near nuclear blast's crack is left sharp: a strong shock's front stays steep where air dulls ordinary
+  sound. Bigger must measure bigger, and loudness comes from the body between about 100 Hz and 4 kHz, not from sub-bass.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3078,6 +3095,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-24 | Slice 9c (the user chose the cruise launcher alone, no erector Launch Pad: the Launch Silo does that job; and a motor that makes a cruise missile): any Light or Medium missile built with a Cruise Engine (1,500 blocks) is a cruise missile, each warhead its own winged airframe; it flies a plan fixed at launch (out of its box at 45 degrees on its booster, a level turn, 40 blocks over the ground as surveyed at launch, a pop-up and a dive), and only the Cruise Missile Launcher (two boxes, 60k FE a missile) fires it; the vertical launchers refuse it. Its boxes' covers are frangible (a hinged door would swing above the clear space) and its wings stay stowed until it is clear of its box (they are wider than the box). §17.11. |
 | 2026-10-27 | Sound remaster (the user chose the hybrid; §13.1): sounds are made from free real recordings (CC0 or CC BY 4.0 only, no non-commercial licences) wherever reality has them, with physics for what recordings cannot give (air absorption by ISO 9613-1, the blast wave's pulse, slowing for size) and synthesis only where nothing real sounds alike; blasts first. Raw recordings stay out of git (a ledger fetches them again); the mod ships a credits file. The user listens and rates on the Sound Lab page, whose ratings plan the next round. |
 | 2026-10-27 | Sound remaster, round 2 (the user's ratings; §13.1): no thunder or lightning in any blast (it sounds like lightning); the large, nuclear and Tsar blasts are built on the old synthesized boom and roar, whose weight the user preferred, with the recordings over them; a low whump and a harder drive where a blast was weak. Sounds rated well are kept as they are: each round remakes only what was rated down. |
+| 2026-10-27 | Sound remaster, round 3 (the user's ratings of round 2; §13.1): each blast set must sound bigger than the one below it in its own file, since the game plays every set at one volume for a band (checked with `loudness.py --ladder`); the Tsar near rebuilt on a steady roar with wreckage and the blast wind (thunder's marks: a roar swelling about once a second, a second clap); the medium near and mid swapped at the user's request, the near trimmed under the large near. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

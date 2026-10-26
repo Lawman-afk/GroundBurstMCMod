@@ -1,4 +1,4 @@
-"""Recordings as raw material for the mod's sounds (DESIGN.md §13.4, the sound remaster).
+"""Recordings as raw material for the mod's sounds (DESIGN.md §13.1, the sound remaster).
 
 Real recordings (sources/ledger.json, fetched into sources/raw/) are cut, cleaned and brought to the game's rate here,
 and the physics that turns them into a blast heard at a given size and distance:
@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 import soundfile as sf
-from scipy import signal
+from scipy import ndimage, signal
 
 import synth as S
 
@@ -213,6 +213,33 @@ def punch(x: np.ndarray, drive_db: float) -> np.ndarray:
     (how a blast is made to sound powerful rather than thin; the crack stays on top)."""
     y = S.normalize(x, drive_db)
     return S.limit(y, -0.5, knee=1.2)
+
+
+def tame_lows(x: np.ndarray, split: float = 140.0, drive: float = 2.5, highs_db: float = 3.0) -> np.ndarray:
+    """Weight without the headroom it costs: below 28 Hz removed (no speaker plays it, yet it sets the peak), the band
+    under {split} Hz saturated on its own so its peaks come down and its body up, the rest raised {highs_db} dB."""
+    x = S.highpass(x, 28, 2)
+    low = S.lowpass(x, split, 4)
+    high = x - low
+    peak = np.max(np.abs(low)) + 1e-12
+    return S.saturate(low / peak, drive) * peak + high * 10 ** (highs_db / 20)
+
+
+def maximize(x: np.ndarray, gain_db: float, ceiling_db: float = -1.0, release: float = 0.1, lookahead: float = 0.004) -> np.ndarray:
+    """Louder without clipping: raised {gain_db} dB (from a peak of {ceiling_db}) under a look-ahead peak limiter, whose gain
+    dips just before a peak and recovers over {release} s: the body of a blast comes up, its peaks held at the ceiling
+    (cleaner than driving a clipper that far, which would buzz the low end)."""
+    c = 10 ** (ceiling_db / 20)
+    y = S.normalize(x, ceiling_db + gain_db)
+    la = max(1, int(lookahead * S.SR))
+    need = ndimage.minimum_filter1d(np.minimum(1.0, c / (np.abs(y) + 1e-12)), size=2 * la + 1)
+    coef = np.exp(-1.0 / (release * S.SR))
+    g = np.empty_like(need)
+    cur = 1.0
+    for i, v in enumerate(need):                          # falls at once, rises at the release rate
+        cur = v if v < cur else v + (cur - v) * coef
+        g[i] = cur
+    return y * ndimage.uniform_filter1d(g, size=la, mode="nearest")
 
 
 def finish(x: np.ndarray, peak_db: float = -1.0, tail: float = 0.4) -> np.ndarray:
