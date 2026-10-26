@@ -11,7 +11,6 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "Mud Splat" by Breviceps, https://freesound.org/people/Breviceps/sounds/445109/
   "detonator switching" by cambrianman, https://freesound.org/people/cambrianman/sounds/418329/
   "G16-09-Factory-Overhead Crane.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438133/
-  "R12-27-Falling Bombs Whistle.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/479924/
   "Opening Closing Big Heavy Metal Exterior Door" by deleted_user_7146007, https://freesound.org/people/deleted_user_7146007/sounds/383830/
   "Maroon.wav" by dwareing, https://freesound.org/people/dwareing/sounds/172983/
   "fuse_burning_48khz.wav" by elonen, https://freesound.org/people/elonen/sounds/45650/
