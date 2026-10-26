@@ -17,6 +17,7 @@ import synth as S  # noqa: E402
 import blasts as BL  # noqa: E402
 import launches as LA  # noqa: E402
 import ordnance as ORD  # noqa: E402
+import machines as MA  # noqa: E402
 
 
 # --- Geiger counter ---------------------------------------------------------------------------------------------------
@@ -976,8 +977,12 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # (The launches, the superweapons' erectors, the ordnance and the bombs' effects are made from recordings too since the
 # remaster, launches.py and ordnance.py; the synthesized ones above stay to compare, and for the sounds they still make:
 # the superweapons' warning and ready tones, the timed bomb's beep. A later recipe's sound replaces an earlier one's.)
+# (So are the machines, the reactor's alarm and the Geiger counter's clicks, machines.py; the Exotic Matter Fabricator, the
+# Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
+# the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
 RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set]
+           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
+           MA.machine_set]
 
 
 def build_sounds() -> list[Path]:

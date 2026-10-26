@@ -1415,6 +1415,25 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   original: the recording of falling bombs carries the other bombs' whistles in its rushing air, and no filter takes
   them all out ("I can still hear the other whistles"). Every launch and ordnance sound now stands at 4 or 5, or is the
   original the user chose (the drill, the whistle); the EMP's round 3 awaits its rating. The machines next.
+- **Machines** (`tools/sound/machines.py`; the EMP's round 3 passed: "The EMP is fine"): every machine's loop, the
+  Assembly Bench's finishing clank, the Fission Reactor's alarm and the Geiger counter's clicks (26 sounds) from
+  recordings of the machines or their nearest kin, 23 more CC0 recordings (24 fetched; a fire alarm lost to a factory
+  alarm): a single-cylinder engine, a stone crusher, high-voltage arcs and arc welding, a hydraulic press and a 20-ton
+  punch press, a transformer's hum, an air compressor, a paint mixer, a water pump, a CNC machine's stepper motors, a
+  washing machine's spin (the centrifuge's drum), a diesel generator, a shower, the pump room of a nuclear power plant,
+  a scroll vacuum pump, hoist chains, a ratchet, an impact wrench, a factory's warning alarm, a civil-defence Geiger
+  counter. Two kinds of loop: a steady machine's is 4 s of its recording (twice the old 2 s, so a real recording's
+  repeat does not show); a machine timed to its model's animation keeps its 2 s cycle, real events at the moments the
+  model shows them (the press's blow at 1.0 s, the fabricator's gantry, the canner's nozzle, the bench's hoist). A loop
+  is built in `machines.Cycle`: the recordings under the whole of it closed into a seamless loop first, then its
+  moments and any old synthesized loop added, wrapping round the end (so a sound at 0 s is neither swallowed by the
+  crossfade nor doubled, and a periodic old loop is never crossfaded with itself, which had made a 3 dB bump). Each
+  loop is levelled to the old one's loudness as it plays (repeated), peaks limited over three copies so the seam stays
+  closed: all 26 within 0.4 dB of the old. Where nothing real has the sound, the old synthesized one stays with
+  recordings under it: the centrifuge's rotor whine, the diesel's knock (in step with the pistons), the Fusion
+  Reactor's magnet hum and plasma roar, the accelerator's magnet buzz and RF tone. The Exotic Matter Fabricator, the
+  Singularity Reactor and its collapse stay synthesized. The Sound Lab plays the loops 8 s over, as a machine runs, and
+  the clicks as the Geiger counter will (§21.3: random, rising with the dose). Awaiting the user's ratings.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3137,6 +3156,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Launches, superweapons' machinery, ordnance and the bombs' effects remade from real recordings (§13.1; CC0 only, 32 recordings for 27 sounds): each keeps its length and the moments its animation is timed to, and is set as loud as the synthesized sound it replaces (the game's volumes were tuned to those); electronics stay synthesized. Machines next. |
 | 2026-10-27 | Launches and ordnance round 2 (the user's ratings; §13.1): where the user preferred the synthesized sound, it is the base and the recordings lie under it (the missile launch, re-entry, grenade pin, bomb whistle); the bunker buster's drill stays the synthesized original, at the user's word. |
 | 2026-10-27 | The falling bomb's whistle stays the synthesized original (a recording of falling bombs carries other bombs' whistles that no filter removes); the EMP is the arc alone, without a synthesized whine (the user's asks). |
+| 2026-10-27 | Machines remade from real recordings (§13.1; `machines.py`, CC0): a steady machine's loop is 4 s of a recording (2 s would let a real recording's repeat show); a machine timed to its animation keeps its 2 s cycle with real events at its moments; a loop's seam is closed before its events are added (`machines.Cycle`), and it is levelled as it plays, repeated, to the old loudness. Where nothing real has the sound (the centrifuge's rotor, the fusion and accelerator cores, the diesel's knock) the old synthesized sound stays with recordings under it; the Exotic Matter Fabricator and the Singularity Reactor stay synthesized. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |
