@@ -1382,6 +1382,22 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   variants: three takes of every blast sound, picked at random, were made and then dropped (the user: "Variants aren't
   needed"; the game already shifts each blast's pitch a few percent). One sound per set and band, as rated. Next:
   launches and ordnance, then machines.
+- **Launches, ordnance and the bombs' effects** (2026-10-27; the user: "move onto the other sounds"). 27 sounds remade
+  from 32 Freesound recordings, all CC0 (37 were found and downloaded with the user's OK; five went unused: a HIMARS
+  video with an engine humming under it, an F-18 taken on a voice recorder 500 m off, a quiet firework candle, a second
+  fuse and a short HIMARS clip), in `tools/sound/launches.py` and `ordnance.py`: a real air-raid siren (a test in
+  Prague) for the countdown; NASA's Space Shuttle lighting and roaring for a missile's ignition and its engine loop; a
+  rocket fired from a US Army vehicle for the cruise launch; a fighter's low pass, played faster, for re-entry; an
+  electric gate's motor, hydraulic lifts, a forklift, a truck's diesel, a factory crane and heavy steel doors for the
+  silo, the launcher and the superweapons' machinery (each keeping the moments its animation is timed to); small metal
+  parts, a fuse, a mud splat, a road flare, sparklers, an extinguisher, a covered arming switch, scissors, a trap's snap,
+  a mortar, a drill, falling bombs' whistle, high-voltage arcs, a Jacob's ladder, liquid nitrogen and ice for the
+  ordnance and the EMP and cryo bombs. Left synthesized: electronics (the superweapons' warning and ready tones, the
+  arming beeps, the timed bomb's beep, the detonator's radio squelch), a small turbojet's compressor whine, a few deep
+  thumps. Each is brought to the loudness of the synthesized sound it replaces (`sources.loud_as`), whose in-game volume
+  was tuned to it, so the game's balance holds. Turned down in survey: a jackhammer with voices in it (voices spoiled the
+  round 1 factory), a "gas grenade" made by hissing into a microphone, a gate's beeper. New tools in `sources.py`:
+  `take` (a module's own table of cuts), `glide` (pitch sliding as it plays), `seamless` (loops), `loud_as`.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3101,6 +3117,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Sound remaster, round 2 (the user's ratings; §13.1): no thunder or lightning in any blast (it sounds like lightning); the large, nuclear and Tsar blasts are built on the old synthesized boom and roar, whose weight the user preferred, with the recordings over them; a low whump and a harder drive where a blast was weak. Sounds rated well are kept as they are: each round remakes only what was rated down. |
 | 2026-10-27 | Sound remaster, round 3 (the user's ratings of round 2; §13.1): each blast set must sound bigger than the one below it in its own file, since the game plays every set at one volume for a band (checked with `loudness.py --ladder`); the Tsar near rebuilt on a steady roar with wreckage and the blast wind (thunder's marks: a roar swelling about once a second, a second clap); the medium near and mid swapped at the user's request, the near trimmed under the large near. |
 | 2026-10-27 | No blast variants (the user: "Variants aren't needed"): one sound per set and band, as rated. The blasts are done (every sound rated 4 or 5); the remaster moves on to launches and ordnance, then machines. |
+| 2026-10-27 | Launches, superweapons' machinery, ordnance and the bombs' effects remade from real recordings (§13.1; CC0 only, 32 recordings for 27 sounds): each keeps its length and the moments its animation is timed to, and is set as loud as the synthesized sound it replaces (the game's volumes were tuned to those); electronics stay synthesized. Machines next. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

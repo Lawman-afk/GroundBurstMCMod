@@ -8,12 +8,44 @@ Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/):
   "BurlingtonIndustriesImplosion.wav" by the_toilet_guy, https://freesound.org/people/the_toilet_guy/sounds/98852/
 
 Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/1.0/):
+  "Mud Splat" by Breviceps, https://freesound.org/people/Breviceps/sounds/445109/
+  "detonator switching" by cambrianman, https://freesound.org/people/cambrianman/sounds/418329/
+  "G16-09-Factory-Overhead Crane.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438133/
+  "R12-27-Falling Bombs Whistle.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/479924/
+  "Opening Closing Big Heavy Metal Exterior Door" by deleted_user_7146007, https://freesound.org/people/deleted_user_7146007/sounds/383830/
+  "Maroon.wav" by dwareing, https://freesound.org/people/dwareing/sounds/172983/
+  "fuse_burning_48khz.wav" by elonen, https://freesound.org/people/elonen/sounds/45650/
+  "Metal Grinding Very Slow" by Ev-Dawg, https://freesound.org/people/Ev-Dawg/sounds/336001/
+  "small moving metallic part" by F3ather, https://freesound.org/people/F3ather/sounds/725813/
+  "ROAD FLARE.wav" by frankelmedico, https://freesound.org/people/frankelmedico/sounds/348766/
   "mortar line.wav" by greenbastardd, https://freesound.org/people/greenbastardd/sounds/240567/
+  "J7_fire extinguisher.mp3" by Iamgiorgio, https://freesound.org/people/Iamgiorgio/sounds/371839/
+  "liquid nitrogen dispensing.flac" by interkin3tic, https://freesound.org/people/interkin3tic/sounds/349365/
+  "Metallic Clang.aif" by jasonLON, https://freesound.org/people/jasonLON/sounds/125404/
+  "Jet fighter flyby over Bardenas Reales Spain" by JoanCalsina, https://freesound.org/people/JoanCalsina/sounds/851222/
   "2024-11-16 0750 field recording czestochowa zawodzie power plant chimney detonation explosion zoom h4npro" by julujanus, https://freesound.org/people/julujanus/sounds/768370/
+  "High Voltage Sparks 3x" by Kinoton, https://freesound.org/people/Kinoton/sounds/499690/
+  "shuttlelaunch.wav" by klangfabrik, https://freesound.org/people/klangfabrik/sounds/220127/
+  "door metal big heavy close kinda slam thud echo offmic.wav" by kyles, https://freesound.org/people/kyles/sounds/406197/
+  "scissor lifts machines up down hydraulic movements2.flac" by kyles, https://freesound.org/people/kyles/sounds/637811/
+  "machine metal vibrating grinding drilling hole maybe.flac" by kyles, https://freesound.org/people/kyles/sounds/453328/
+  "Scissors Snipping in Air 170427_1459.wav" by megashroom, https://freesound.org/people/megashroom/sounds/390167/
   "1 Liter Stoichiometric Oxyhydrogen Detonation (Tampere, Mustavuori)" by modusmogulus, https://freesound.org/people/modusmogulus/sounds/734099/
   "Gunshot 500m Pine Forest High Quality" by modusmogulus, https://freesound.org/people/modusmogulus/sounds/734093/
+  "Air raid siren (Prague)" by nooly, https://freesound.org/people/nooly/sounds/382611/
+  "Ice cracking_northern87" by northern87, https://freesound.org/people/northern87/sounds/369982/
   "Foley_Stones_Falls_Debris_Stereo_DR05.wav" by Nox_Sound, https://freesound.org/people/Nox_Sound/sounds/550342/
+  "hydraulics.wav" by nuckan, https://freesound.org/people/nuckan/sounds/212941/
+  "jacobs ladder from side.wav" by parabolix, https://freesound.org/people/parabolix/sounds/449013/
+  "Rocket Launch.flac" by qubodup, https://freesound.org/people/qubodup/sounds/182794/
+  "Truck Engine Idle Loops.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187564/
+  "M-327 Mortar Shots.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187542/
   "Sharp Explosion 4 (of 5)" by Rudmer_Rotteveel, https://freesound.org/people/Rudmer_Rotteveel/sounds/336011/
+  "twoSparklers.flac" by RytmenPinnen, https://freesound.org/people/RytmenPinnen/sounds/102265/
   "Gravel Stone Dirt Debris Falling Small 1 12" by Sheyvan, https://freesound.org/people/Sheyvan/sounds/569745/
   "Explosion with debris - authentic. 4kg TNT" by sidohzen, https://freesound.org/people/sidohzen/sounds/165808/
+  "mousetrap.mp3" by sirkhandijoan, https://freesound.org/people/sirkhandijoan/sounds/560094/
+  "Switch - 6.wav" by SpaceJoe, https://freesound.org/people/SpaceJoe/sounds/484083/
+  "Electronic sliding gate" by ThabzMalik, https://freesound.org/people/ThabzMalik/sounds/767060/
+  "Afterburner" by TiesWijnen, https://freesound.org/people/TiesWijnen/sounds/413312/
   "Firecracker Explosion" by unfa, https://freesound.org/people/unfa/sounds/609588/

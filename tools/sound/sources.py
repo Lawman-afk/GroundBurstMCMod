@@ -215,6 +215,59 @@ def punch(x: np.ndarray, drive_db: float) -> np.ndarray:
     return S.limit(y, -0.5, knee=1.2)
 
 
+def take(cuts: dict, name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
+    """A named cut from a module's table, {name: (recording, from s, to s, quiet stretch or None[, options])}; options:
+    "hp"/"lp" (Hz, filtered 4th order), "fade" (s faded out at its end), "gain" (dB). Aligned on its bang if asked, played
+    at {speed} (below 1: lower and slower, a bigger thing)."""
+    key, a, b, noise, *rest = cuts[name]
+    o = rest[0] if rest else {}
+    x = cut(key, a, b, noise=noise, fade_out=o.get("fade"))
+    if "hp" in o:
+        x = S.highpass(x, o["hp"], 4)
+    if "lp" in o:
+        x = S.lowpass(x, o["lp"], 4)
+    if aligned:
+        x = align(x)
+    if "gain" in o:
+        x = x * 10 ** (o["gain"] / 20)
+    return varispeed(x, speed) if speed != 1.0 else x
+
+
+def glide(x: np.ndarray, start: float, end: float) -> np.ndarray:
+    """{x} played at a speed sliding from {start} to {end} (pitch and pace together, as a tape slowed by hand): a sound
+    falling (or rising) in pitch as it goes."""
+    n_out = int(len(x) / ((start + end) / 2))
+    speed = np.linspace(start, end, n_out)
+    pos = np.concatenate([[0.0], np.cumsum(speed)[:-1]])
+    pos = pos[pos < len(x) - 1]
+    return np.interp(pos, np.arange(len(x)), x)
+
+
+def loud_as(x: np.ndarray, target: float, ceiling_db: float = -1.0) -> np.ndarray:
+    """{x} brought to a loudness (its loudest 3 s, LUFS, within 0.3 dB; loudness.py): a sound remade from recordings is
+    set as loud as the one it replaces, whose in-game volume was tuned to it. Raised under the look-ahead limiter where
+    its peaks would pass {ceiling_db}."""
+    import loudness  # noqa: PLC0415
+    for _ in range(5):
+        diff = target - loudness.measure_array(x, S.SR)["S-max"]
+        if abs(diff) < 0.3:
+            break
+        x = x * 10 ** (diff / 20)
+        over = 20 * np.log10(np.max(np.abs(x)) + 1e-12) - ceiling_db
+        if over > 0:
+            x = maximize(x, over, ceiling_db=ceiling_db)
+    return x
+
+
+def seamless(x: np.ndarray, overlap: float = 0.4) -> np.ndarray:
+    """A loop with no seam: its last {overlap} seconds crossfaded into its start (and cut from its end)."""
+    k = int(overlap * S.SR)
+    ramp = np.linspace(0, 1, k)
+    y = x[:-k].copy()
+    y[:k] = x[:k] * ramp + x[-k:] * (1 - ramp)
+    return y
+
+
 def tame_lows(x: np.ndarray, split: float = 140.0, drive: float = 2.5, highs_db: float = 3.0) -> np.ndarray:
     """Weight without the headroom it costs: below 28 Hz removed (no speaker plays it, yet it sets the peak), the band
     under {split} Hz saturated on its own so its peaks come down and its body up, the rest raised {highs_db} dB."""

@@ -15,6 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gz import paths  # noqa: E402
 import synth as S  # noqa: E402
 import blasts as BL  # noqa: E402
+import launches as LA  # noqa: E402
+import ordnance as ORD  # noqa: E402
 
 
 # --- Geiger counter ---------------------------------------------------------------------------------------------------
@@ -971,16 +973,18 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # (The blasts are made from recordings now, blasts.py. nuke_set, tsar_set and blast_sets above are the synthesized ones they
 # replaced, kept to compare; blast_source, nuke_source and tsar_source are still the bed of the large, nuclear and Tsar
 # blasts since round 2, the boom and roar the recordings lie on.)
+# (The launches, the superweapons' erectors, the ordnance and the bombs' effects are made from recordings too since the
+# remaster, launches.py and ordnance.py; the synthesized ones above stay to compare, and for the sounds they still make:
+# the superweapons' warning and ready tones, the timed bomb's beep. A later recipe's sound replaces an earlier one's.)
 RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds]
+           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set]
 
 
 def build_sounds() -> list[Path]:
-    written = []
+    sounds = {}
     for recipe in RECIPES:
-        for rel, samples in recipe().items():
-            written.append(S.save_ogg(samples, paths.SOUNDS / f"{rel}.ogg"))
-    return written
+        sounds.update(recipe())
+    return [S.save_ogg(samples, paths.SOUNDS / f"{rel}.ogg") for rel, samples in sounds.items()]
 
 
 if __name__ == "__main__":
