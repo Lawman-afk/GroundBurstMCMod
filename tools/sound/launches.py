@@ -6,7 +6,8 @@ Nuclear Missile's roof and erector. Each keeps the length and the moments the ga
 doors' drive from 0.45 to 3.65 s, the erectors' locks), made from recordings wherever the world has the sound: a real
 air-raid siren tested in Prague, NASA's Space Shuttle launch, a rocket fired from a US Army vehicle, a fighter's low pass,
 an electric sliding gate, hydraulic lifts and a forklift, a factory crane, heavy steel doors. Synthesis is left only for
-what no recording gives: a small turbojet's compressor whine, a deep thump under the pad.
+what no recording gives: a small turbojet's compressor whine, a deep thump under the pad. Where the user preferred the
+old (round 2: the launch, the re-entry), the old synthesized sound is the base and the recordings lie under it.
 
 Every cut names its recording (sources/ledger.json) and where in it; the windows were picked from survey.py's sheets.
 """
@@ -21,12 +22,11 @@ import synth as S
 CUTS = {
     "siren_up": ("siren_prague", 0.75, 6.35, None, {"fade": 0.05}),     # spinning up from 0.9 s to its howl, holding
     "siren_down": ("siren_prague", 37.9, 43.4, None, {"fade": 0.05}),   # ... and the start of its wind-down
-    "shuttle_ignition": ("shuttle_launch", 0.0, 6.0, None),             # the Shuttle's engines lighting, the roar building
     "shuttle_roar": ("shuttle_launch", 22.0, 26.4, None, {"fade": 0.01}),  # a steady stretch of its roar and crackle
+    "shuttle_steady": ("shuttle_launch", 20.0, 25.2, None, {"fade": 0.01}),  # ... a longer one
     "rocket": ("rocket_launch_gov", 0.5, 6.5, None, {"fade": 1.0}),     # a rocket fired from a vehicle: crack, roar falling away
     "maroon": ("maroon", 0.0, 3.5, None),                                # a signal pyrotechnic's bang and its long tail
     "clang": ("metal_clang", 0.12, 1.75, None),                          # struck sheet metal, ringing
-    "flyby_roar": ("f18_flyby_low", 4.5, 10.0, None, {"fade": 0.01}),   # a fighter's roar at its loudest, low overhead
     "afterburner": ("afterburner", 0.4, 5.2, None, {"fade": 0.01}),     # a turbojet's steady roar
     "gate": ("sliding_gate", 6.1, 11.9, None),                           # an electric gate's motor and rolling steel
                                                                          # (after its lock's click and beeper at 5.8 s)
@@ -43,6 +43,18 @@ CUTS = {
 
 def take(name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
     return R.take(CUTS, name, speed, aligned)
+
+
+_OLD: dict[str, np.ndarray] = {}
+
+
+def old(rel: str) -> np.ndarray:
+    """The synthesized sound {rel} the remakes replaced (recipes.py). Where the user preferred it, round 2 lays the
+    recordings under it, as the big blasts' round 2 did (DESIGN.md §13.1)."""
+    if not _OLD:
+        import recipes  # noqa: PLC0415  (lazily: recipes imports this module)
+        _OLD.update(recipes.launch_sounds())
+    return _OLD[rel]
 
 
 def at(x: np.ndarray, db: float) -> np.ndarray:
@@ -72,11 +84,13 @@ def siren() -> np.ndarray:
 
 
 def missile_launch() -> np.ndarray:
-    """A missile lighting on its pad (5 s): the Shuttle's main engines starting and the roar building, a rocket's sharp
-    ignition crack on top, and the pad's deep thump under it."""
+    """A missile lighting on its pad (5 s). Round 2 (the user: round 1, the Shuttle's engines starting and its roar
+    building, "more sounds like a missile in flight rather than a launch"; they preferred the old): the old synthesized
+    launch, a deep crack and the roar at full power from the first instant, with the Shuttle's real roar and crackle
+    under it from the start and a rocket's ignition crack on top."""
+    roar = R.tail_fade(S.fade(take("shuttle_steady"), 0.02, 0.0), 0.8)
     crack = R.tail_fade(take("rocket", aligned=True)[: int(0.5 * S.SR)], 0.2)
-    x = R.layer(5.0, (at(take("shuttle_ignition"), -16), 0.0, 1.0), (at(crack, -19), 0.15, 1.0),
-                (at(thump(1.5, 140, 0.3, 610), -21), 0.15, 1.0))
+    x = R.layer(5.0, (at(old("launch/missile_launch"), -14), 0.0, 1.0), (at(roar, -20), 0.0, 1.0), (at(crack, -19), 0.0, 1.0))
     return R.finish(R.punch(x, 2), tail=0.8)
 
 
@@ -87,21 +101,23 @@ def missile_engine_loop() -> np.ndarray:
 
 
 def stage_separation() -> np.ndarray:
-    """A stage parting, high overhead (1.8 s): the separation bolts' charge (a pyrotechnic's bang), the stages' metal
-    clanging apart (struck steel, slowed: bigger), the stage's gas venting and a dull thump."""
-    vent = S.bandpass(take("rocket", aligned=True)[int(0.4 * S.SR): int(1.9 * S.SR)], 300, 3000)
-    vent = R.tail_fade(S.fade(vent, 0.05, 0.0), 1.0)
-    x = R.layer(1.8, (at(take("maroon", aligned=True), -15), 0.0, 1.0), (at(take("clang", 0.8, aligned=True), -18), 0.02, 1.0),
-                (at(vent, -25), 0.04, 1.0), (at(thump(0.8, 160, 0.1, 634), -22), 0.0, 1.0))
-    x = S.reverb(x, 1.4, 2500, 0.3, seed=635)[: len(x)]
+    """A stage parting, high overhead (1.8 s). Round 2 (round 1, with a clang and a long echo, sounded "like something
+    being dropped in a tunnel"): open sky, nothing ringing: the separation bolts' sharp crack (a pyrotechnic's bang, cut
+    short), then the next stage's engine lighting and roaring away (a rocket fired from a vehicle), heard from high
+    above (the air takes its edge)."""
+    crack = R.tail_fade(take("maroon", aligned=True)[: int(0.3 * S.SR)], 0.2)
+    light = R.tail_fade(take("rocket", aligned=True)[: int(1.6 * S.SR)], 0.8)
+    x = R.air(R.layer(1.8, (at(crack, -15), 0.0, 1.0), (at(light, -19), 0.18, 1.0)), 600)
     return R.finish(x, tail=0.3)
 
 
 def reentry_loop() -> np.ndarray:
-    """A warhead roaring back down: a seamless 4 s loop of a fighter's roar at its loudest, played faster (a higher,
-    tearing scream: a warhead is smaller and far faster than a jet)."""
-    x = S.highpass(take("flyby_roar", 1.15)[: int(4.4 * S.SR)], 120, 2)
-    return R.seamless(R.loud_as(x, LOUDNESS["launch/reentry_loop"]), 0.4)
+    """A warhead roaring back down: a seamless 4 s loop. Round 2 (round 1, a fighter's pass played faster, "sounds
+    nothing like a re-entry and just sounds like a jet fly over"; the user preferred the old): the old synthesized
+    hissing, tearing roar with its whistle, the Shuttle's real crackle (its highs: the tearing) laid under it, both
+    seamless loops of the same length, so their sum is one too."""
+    crackle = R.seamless(S.highpass(take("shuttle_roar"), 700, 2), 0.4)
+    return R.loud_as(at(old("launch/reentry_loop"), -18) + at(crackle, -25), LOUDNESS["launch/reentry_loop"])
 
 
 def silo_doors() -> np.ndarray:

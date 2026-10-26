@@ -1,12 +1,13 @@
 """Ordnance and the bombs' effects, remastered from real recordings (DESIGN.md §13.1).
 
 A grenade's pin, dynamite's fuse, a sticky grenade sticking, smoke pouring out, charges armed and made safe, thermite
-burning, the detonator, a wire cut, a mine's plate and a bouncing mine's launch, a fuel cloud bursting out, a bunker
-buster boring down, a bomb's whistle, the EMP's discharge and the cryo burst. Each keeps the length the game plays it at
+burning, the detonator, a wire cut, a mine's plate and a bouncing mine's launch, a fuel cloud bursting out, a bomb's
+whistle, the EMP's discharge and the cryo burst (the bunker buster's drill stays the synthesized one: the user liked it). Each keeps the length the game plays it at
 (the smoke's 3.2 s, played every 3 s; thermite's 1.2 s, every second), made from recordings: small metal parts fiddled
 for a pin pull, a fireworks fuse, a muddy splat, a road flare and sparklers burning, a fire extinguisher, an arming
-switch under its red cover, scissors, a trap's snap, a mortar firing, a machine drilling metal, falling bombs whistling,
-high-voltage arcs and a Jacob's ladder, liquid nitrogen, ice cracking. Synthesis is left for the electronics (the arming
+switch under its red cover, scissors, a trap's snap, a mortar firing, falling bombs' rushing air, high-voltage arcs and
+a Jacob's ladder, liquid nitrogen, ice cracking. Where the user preferred the old (round 2), the old synthesized sound is
+the base and the recordings lie under it, as with the big blasts. Synthesis is left for the electronics (the arming
 beeps, the detonator's radio squelch, the timed bomb's beep, recipes.ordnance_sounds) and a few deep thumps.
 
 Every cut names its recording (sources/ledger.json) and where in it; the windows were picked from survey.py's sheets.
@@ -35,7 +36,6 @@ CUTS = {
     "snip": ("scissors", 2.16, 2.36, None, {"hp": 200, "fade": 0.05}),     # one hard snip
     "snap": ("mousetrap", 1.90, 2.12, None, {"fade": 0.07}),               # a trap's snap (its long ring cut short)
     "mortar": ("mortar_shots", 0.0, 0.9, None, {"fade": 0.3}),             # a mortar's launch thump
-    "drill": ("metal_drilling", 20.0, 22.4, None),                         # a machine drilling through metal
     "whistle": ("bombs_whistle", 0.6, 4.6, None),                          # a falling bomb's whistle over the rushing air
     "arc_on": ("hv_sparks", 16.55, 18.0, None),                            # a high-voltage arc striking
     "arc_off": ("hv_sparks", 14.0, 15.8, None),                            # ... and dying as the power goes
@@ -47,6 +47,18 @@ CUTS = {
 
 def take(name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
     return R.take(CUTS, name, speed, aligned)
+
+
+_OLD: dict[str, np.ndarray] = {}
+
+
+def old(rel: str) -> np.ndarray:
+    """The synthesized sound {rel} the remakes replaced (recipes.py). Where the user preferred it, round 2 lays the
+    recordings under it, as the big blasts' round 2 did (DESIGN.md §13.1)."""
+    if not _OLD:
+        import recipes  # noqa: PLC0415  (lazily: recipes imports this module)
+        _OLD.update(recipes.ordnance_sounds())
+    return _OLD[rel]
 
 
 def at(x: np.ndarray, db: float) -> np.ndarray:
@@ -72,9 +84,11 @@ def thump(length: float, cutoff: float, decay: float, seed: int) -> np.ndarray:
 
 
 def grenade_pin() -> np.ndarray:
-    """A grenade's pin pulled: its ring's clicks and the pin sliding free (small metal parts, which their recordist
-    used for just this)."""
-    return S.normalize(take("pin", aligned=True), -3)
+    """A grenade's pin pulled. Round 2 (round 1, small metal parts alone, sounded "like the click of a pen"; the user
+    preferred the old): the old synthesized pin, a scrape and one bright ringing click, with a real metal click under
+    it, slowed (heavier)."""
+    click = R.tail_fade(take("pin", 0.75, aligned=True)[: int(0.25 * S.SR)], 0.1)
+    return R.layer(0.32, (at(old("ordnance/grenade_pin"), -24), 0.0, 1.0), (at(click, -30), 0.06, 1.0))
 
 
 def dynamite_light() -> np.ndarray:
@@ -150,20 +164,14 @@ def fuel_disperse() -> np.ndarray:
     return S.normalize(R.tail_fade(x, 0.1), -2)
 
 
-def bomb_drill() -> np.ndarray:
-    """A bunker buster boring down through rock and concrete (2 s, played again as it goes): a machine grinding and
-    drilling through metal, with the ground's low rumble under it."""
-    rumble = S.lowpass(S.brown(2.0, 532), 120)
-    x = R.layer(2.0, (at(span(take("drill"), 0.0, 2.0, 0.05, 0.4), -18), 0.0, 1.0), (at(rumble, -24), 0.0, 1.0))
-    return S.normalize(x, -3)
-
-
 def bomb_whistle() -> np.ndarray:
-    """A falling bomb's whistle (3.5 s): a real bomb's whistle over the rushing air, falling in pitch as it comes down and
-    louder as it nears."""
-    x = S.highpass(R.glide(take("whistle"), 1.1, 0.8), 250, 2)[: int(3.5 * S.SR)]
-    swell = np.clip(np.linspace(0, 1, len(x)), 0, 1) ** 1.5 * 0.8 + 0.2
-    return S.normalize(R.tail_fade(S.fade(x * swell, 0.3, 0.0), 0.15), -2)
+    """A falling bomb's whistle (3.5 s). Round 2 (round 1, the recording of falling bombs, sounded "like multiple bombs
+    are creating a whistle"; the user preferred the old): the old synthesized single whistle, falling in pitch and
+    louder as it comes, over the recording's rushing air with its own whistles filtered out (below 1.5 kHz)."""
+    rush = S.lowpass(take("whistle"), 1500, 4)[: int(3.5 * S.SR)]
+    swell = np.clip(np.linspace(0, 1, len(rush)), 0, 1) ** 1.5 * 0.8 + 0.2
+    rush = R.tail_fade(S.fade(rush * swell, 0.3, 0.0), 0.15)
+    return R.layer(3.5, (at(old("ordnance/bomb_whistle"), -16), 0.0, 1.0), (at(rush, -24), 0.0, 1.0))
 
 
 def emp_zap() -> np.ndarray:
@@ -177,7 +185,7 @@ def emp_zap() -> np.ndarray:
     on = R.tail_fade(take("arc_on", aligned=True)[: int(1.1 * S.SR)], 0.4)
     off = S.fade(take("arc_off"), 0.3, 0.0)
     x = R.layer(n, (at(on, -16), 0.0, 1.0), (at(off, -19), 0.75, 1.0), (at(span(take("ladder"), 0.0, 1.3, 0.02, 0.5), -24), 0.0, 1.0),
-                (at(whine, -27), 0.0, 1.0))
+                (at(whine, -33), 0.0, 1.0))                 # (round 2: the whine more subtle, as the user asked)
     x = S.reverb(x, 1.0, 3000, 0.2, seed=700)[: len(x)]
     return S.normalize(R.tail_fade(x, 0.3), -1)
 
@@ -196,17 +204,17 @@ LOUDNESS = {"ordnance/grenade_pin": -34.7, "ordnance/dynamite_light": -21.6, "or
             "ordnance/smoke_hiss": -18.5, "ordnance/charge_arm": -22.3, "ordnance/charge_disarm": -22.5,
             "ordnance/thermite_burn": -20.7, "ordnance/detonator_click": -35.0, "ordnance/wire_snip": -40.0,
             "ordnance/mine_click": -36.0, "ordnance/mine_pop": -28.7, "ordnance/fuel_disperse": -24.3,
-            "ordnance/bomb_drill": -24.3, "ordnance/bomb_whistle": -12.5, "effect/emp_zap": -22.0, "effect/cryo_burst": -20.9}
+            "ordnance/bomb_whistle": -12.5, "effect/emp_zap": -22.0, "effect/cryo_burst": -20.9}
 
 
 def ordnance_set() -> dict[str, np.ndarray]:
-    """Every ordnance and effect sound made from recordings (the timed bomb's beep stays synthesized: recipes.ordnance_sounds),
-    each as loud as the one it replaces."""
+    """Every ordnance and effect sound made from recordings (the timed bomb's beep and the bunker buster's drill stay
+    synthesized: recipes.ordnance_sounds), each as loud as the one it replaces."""
     made = {"ordnance/grenade_pin": grenade_pin(), "ordnance/dynamite_light": dynamite_light(),
             "ordnance/sticky_stick": sticky_stick(), "ordnance/smoke_hiss": smoke_hiss(), "ordnance/charge_arm": charge_arm(),
             "ordnance/charge_disarm": charge_disarm(), "ordnance/thermite_burn": thermite_burn(),
             "ordnance/detonator_click": detonator_click(), "ordnance/wire_snip": wire_snip(), "ordnance/mine_click": mine_click(),
-            "ordnance/mine_pop": mine_pop(), "ordnance/fuel_disperse": fuel_disperse(), "ordnance/bomb_drill": bomb_drill(),
+            "ordnance/mine_pop": mine_pop(), "ordnance/fuel_disperse": fuel_disperse(),
             "ordnance/bomb_whistle": bomb_whistle(), "effect/emp_zap": emp_zap(), "effect/cryo_burst": cryo_burst()}
     return {rel: R.loud_as(x, LOUDNESS[rel]) for rel, x in made.items()}
 

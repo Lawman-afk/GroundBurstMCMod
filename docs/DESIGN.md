@@ -1398,6 +1398,18 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   was tuned to it, so the game's balance holds. Turned down in survey: a jackhammer with voices in it (voices spoiled the
   round 1 factory), a "gas grenade" made by hissing into a microphone, a gate's beeper. New tools in `sources.py`:
   `take` (a module's own table of cuts), `glide` (pitch sliding as it plays), `seamless` (loops), `loud_as`.
+- **Launches and ordnance, round 2** (the user's ratings of the 27): 21 rated 4 or 5 (the cruise launch "Perfect", the
+  wire snip 5). Rated down: the missile launch, which "more sounds like a missile in flight rather than a launch" (the
+  Shuttle's engines starting, a dip, the roar building); the re-entry, a fighter's pass that "just sounds like a jet fly
+  over" (1); the stage separation, "something being dropped in a tunnel" (its clang and echo); the grenade pin, "the
+  click of a pen"; the bomb whistle, which sounded "like multiple bombs" (the recording has several); the bunker
+  buster's drill, "keep the original"; the EMP's whine, to be "more subtle". Round 2: where the user preferred the old
+  (the launch, the re-entry, the pin, the whistle), the old synthesized sound is the base and the recordings lie under
+  it (`launches.old`, `ordnance.old`), as the big blasts' round 2; the stage separation in open sky (a sharp crack, the
+  next stage lighting, no ring, no echo); the drill back to the synthesized original; the EMP's whine 6 dB down. What it
+  taught: a real recording of a recognizable thing reads as that thing (a jet stays a jet, played faster or not); where
+  the old sound has the game's feel the user likes (full power from the first instant, one clean whistle), recordings
+  belong under it, not instead of it.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3118,6 +3130,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Sound remaster, round 3 (the user's ratings of round 2; §13.1): each blast set must sound bigger than the one below it in its own file, since the game plays every set at one volume for a band (checked with `loudness.py --ladder`); the Tsar near rebuilt on a steady roar with wreckage and the blast wind (thunder's marks: a roar swelling about once a second, a second clap); the medium near and mid swapped at the user's request, the near trimmed under the large near. |
 | 2026-10-27 | No blast variants (the user: "Variants aren't needed"): one sound per set and band, as rated. The blasts are done (every sound rated 4 or 5); the remaster moves on to launches and ordnance, then machines. |
 | 2026-10-27 | Launches, superweapons' machinery, ordnance and the bombs' effects remade from real recordings (§13.1; CC0 only, 32 recordings for 27 sounds): each keeps its length and the moments its animation is timed to, and is set as loud as the synthesized sound it replaces (the game's volumes were tuned to those); electronics stay synthesized. Machines next. |
+| 2026-10-27 | Launches and ordnance round 2 (the user's ratings; §13.1): where the user preferred the synthesized sound, it is the base and the recordings lie under it (the missile launch, re-entry, grenade pin, bomb whistle); the bunker buster's drill stays the synthesized original, at the user's word. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |
