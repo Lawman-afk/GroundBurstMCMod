@@ -1304,7 +1304,7 @@ As built (2026-10-21):
   that follow their source and fade.
 
 Sound list (each with its own synthesis recipe):
-`blast.small/medium/large/nuke/tsar × near/mid/far/very_far`, `grenade.pin`, `grenade.bounce`, `c4.place`, `c4.beep`,
+`blast.small/medium/large/nuke/tsar × near/mid/far/very_far` (three variants each, §13.1), `grenade.pin`, `grenade.bounce`, `c4.place`, `c4.beep`,
 `bomb.arm`, `bomb.timer_tick`, `bomb.timer_final`, `mine.click`, `claymore.trip`, `missile.ignite`, `missile.engine`
 (loop), `missile.flyby`, `missile.reentry`, `missile.stage_sep`, `launch.siren`, `launch.countdown_beep`,
 `pad.clamps_release`, `pad.erect`, `silo.doors`, `silo.elevator`, `radar.ping`, `radar.alarm`, `interceptor.launch`,
@@ -1378,6 +1378,16 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   chimney falling, stones and gravel, landing for 8 s) and the blast wind (`blast_wind`: a gale rushing past,
   darkening). A near nuclear blast's crack is left sharp: a strong shock's front stays steep where air dulls ordinary
   sound. Bigger must measure bigger, and loudness comes from the body between about 100 Hz and 4 kHz, not from sub-bass.
+- **Variants** (2026-10-27). Round 3 was rated 4 for all six, so every blast sound stands at 4 or 5. Every blast sound
+  now has three variants (`blast/<set>_<band>`, `_2`, `_3`, listed by `GZSounds.blastVariants`), and the game picks one at
+  random each time (its pitch still shifted a few percent), so blasts in a row differ. The first is the one rated; the
+  others play the same recipe as another blast of its kind would sound (`blasts.Vary`): other takes where the
+  recordings have them (two more mortar shots off the same line; two more falls of stones, taken whole and faded over
+  their last 1.8 s, as the recordist's edits end each fall abruptly), up to 4 % faster or slower, debris landing a few
+  tenths of a second earlier or later and a decibel or two louder or softer, other noise in the synthesized layers and
+  in the open air's tail. Each is brought to the first's loudness (its loudest 3 s, within 0.3 dB; `blasts.matched`),
+  so none stands out. The Sound Lab asks of each three whether they pass as the same blast another time (yes, too
+  alike, one is off), saved as `verdicts/<set>.<band>@variants`.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3096,6 +3106,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Sound remaster (the user chose the hybrid; §13.1): sounds are made from free real recordings (CC0 or CC BY 4.0 only, no non-commercial licences) wherever reality has them, with physics for what recordings cannot give (air absorption by ISO 9613-1, the blast wave's pulse, slowing for size) and synthesis only where nothing real sounds alike; blasts first. Raw recordings stay out of git (a ledger fetches them again); the mod ships a credits file. The user listens and rates on the Sound Lab page, whose ratings plan the next round. |
 | 2026-10-27 | Sound remaster, round 2 (the user's ratings; §13.1): no thunder or lightning in any blast (it sounds like lightning); the large, nuclear and Tsar blasts are built on the old synthesized boom and roar, whose weight the user preferred, with the recordings over them; a low whump and a harder drive where a blast was weak. Sounds rated well are kept as they are: each round remakes only what was rated down. |
 | 2026-10-27 | Sound remaster, round 3 (the user's ratings of round 2; §13.1): each blast set must sound bigger than the one below it in its own file, since the game plays every set at one volume for a band (checked with `loudness.py --ladder`); the Tsar near rebuilt on a steady roar with wreckage and the blast wind (thunder's marks: a roar swelling about once a second, a second clap); the medium near and mid swapped at the user's request, the near trimmed under the large near. |
+| 2026-10-27 | Blast variants (§13.1; the user's "continue" after round 3 was rated 4 throughout): every blast sound has three variants, the one rated and two made by the same recipe as another blast of its kind would sound (other takes, timing, noise), each matched to the first's loudness; the game picks one at random. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

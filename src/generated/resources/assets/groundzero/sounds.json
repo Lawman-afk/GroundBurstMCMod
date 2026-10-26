@@ -11,6 +11,16 @@
         "attenuation_distance": 1024,
         "name": "groundzero:blast/large_far",
         "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/large_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/large_far_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.large.far"
@@ -20,6 +30,16 @@
       {
         "attenuation_distance": 512,
         "name": "groundzero:blast/large_mid",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/large_mid_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/large_mid_3",
         "stream": true
       }
     ],
@@ -31,6 +51,16 @@
         "attenuation_distance": 256,
         "name": "groundzero:blast/large_near",
         "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/large_near_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/large_near_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.large.near"
@@ -40,6 +70,16 @@
       {
         "attenuation_distance": 2048,
         "name": "groundzero:blast/large_very_far",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/large_very_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/large_very_far_3",
         "stream": true
       }
     ],
@@ -51,6 +91,16 @@
         "attenuation_distance": 1024,
         "name": "groundzero:blast/medium_far",
         "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/medium_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/medium_far_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.medium.far"
@@ -60,6 +110,16 @@
       {
         "attenuation_distance": 512,
         "name": "groundzero:blast/medium_mid",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/medium_mid_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/medium_mid_3",
         "stream": true
       }
     ],
@@ -71,6 +131,16 @@
         "attenuation_distance": 256,
         "name": "groundzero:blast/medium_near",
         "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/medium_near_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/medium_near_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.medium.near"
@@ -80,6 +150,16 @@
       {
         "attenuation_distance": 2048,
         "name": "groundzero:blast/medium_very_far",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/medium_very_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/medium_very_far_3",
         "stream": true
       }
     ],
@@ -91,6 +171,16 @@
         "attenuation_distance": 2048,
         "name": "groundzero:blast/nuke_far",
         "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/nuke_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/nuke_far_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.nuke.far"
@@ -100,6 +190,16 @@
       {
         "attenuation_distance": 1024,
         "name": "groundzero:blast/nuke_mid",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/nuke_mid_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/nuke_mid_3",
         "stream": true
       }
     ],
@@ -111,6 +211,16 @@
         "attenuation_distance": 512,
         "name": "groundzero:blast/nuke_near",
         "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/nuke_near_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/nuke_near_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.nuke.near"
@@ -120,6 +230,16 @@
       {
         "attenuation_distance": 4096,
         "name": "groundzero:blast/nuke_very_far",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 4096,
+        "name": "groundzero:blast/nuke_very_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 4096,
+        "name": "groundzero:blast/nuke_very_far_3",
         "stream": true
       }
     ],
@@ -131,6 +251,16 @@
         "attenuation_distance": 1024,
         "name": "groundzero:blast/small_far",
         "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/small_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1024,
+        "name": "groundzero:blast/small_far_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.small.far"
@@ -140,6 +270,16 @@
       {
         "attenuation_distance": 512,
         "name": "groundzero:blast/small_mid",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/small_mid_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 512,
+        "name": "groundzero:blast/small_mid_3",
         "stream": true
       }
     ],
@@ -151,6 +291,16 @@
         "attenuation_distance": 256,
         "name": "groundzero:blast/small_near",
         "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/small_near_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundzero:blast/small_near_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.small.near"
@@ -160,6 +310,16 @@
       {
         "attenuation_distance": 2048,
         "name": "groundzero:blast/small_very_far",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/small_very_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 2048,
+        "name": "groundzero:blast/small_very_far_3",
         "stream": true
       }
     ],
@@ -171,6 +331,16 @@
         "attenuation_distance": 3072,
         "name": "groundzero:blast/tsar_far",
         "stream": true
+      },
+      {
+        "attenuation_distance": 3072,
+        "name": "groundzero:blast/tsar_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 3072,
+        "name": "groundzero:blast/tsar_far_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.tsar.far"
@@ -180,6 +350,16 @@
       {
         "attenuation_distance": 1536,
         "name": "groundzero:blast/tsar_mid",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1536,
+        "name": "groundzero:blast/tsar_mid_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 1536,
+        "name": "groundzero:blast/tsar_mid_3",
         "stream": true
       }
     ],
@@ -191,6 +371,16 @@
         "attenuation_distance": 768,
         "name": "groundzero:blast/tsar_near",
         "stream": true
+      },
+      {
+        "attenuation_distance": 768,
+        "name": "groundzero:blast/tsar_near_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 768,
+        "name": "groundzero:blast/tsar_near_3",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.groundzero.blast.tsar.near"
@@ -200,6 +390,16 @@
       {
         "attenuation_distance": 6144,
         "name": "groundzero:blast/tsar_very_far",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 6144,
+        "name": "groundzero:blast/tsar_very_far_2",
+        "stream": true
+      },
+      {
+        "attenuation_distance": 6144,
+        "name": "groundzero:blast/tsar_very_far_3",
         "stream": true
       }
     ],

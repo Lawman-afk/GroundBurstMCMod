@@ -29,16 +29,21 @@ roar without thunder's marks (a roar swelling about once a second, a second clap
 wreckage of what it knocks down from the first second and the blast wind; the Tsar mid and far get a deep boom. The
 medium near and mid are swapped, as the user asked.
 
+Variants (after round 3, all rated 4): every sound has three, the one rated and two more (Vary: the same recipe as another
+blast of its kind would sound), each matched to the first's loudness; the game picks one at random each time.
+
 Every cut names its recording (sources/ledger.json) and where in it; the windows were picked from survey.py's sheets.
 """
 from __future__ import annotations
+
+import zlib
 
 import numpy as np
 
 import sources as R
 import synth as S
 
-# --- the cuts: (recording, from s, to s, the quiet stretch its background is measured on) ---------------------------------------
+# --- the cuts: (recording, from s, to s, the quiet stretch its background is measured on[, fade-out s]) -----------------------
 CUTS = {
     "oxy": ("oxyhydrogen_1l", 0.0, 4.5, None),                 # a 1 L oxyhydrogen detonation: a sharp crack, a long open tail
     "firecracker": ("firecracker_street", 0.0, 2.2, None),     # a firecracker in a street: snap and slapback
@@ -52,6 +57,12 @@ CUTS = {
     "stones": ("stones_falling", 15.0, 21.5, (3.4, 4.4)),       # stones raining down
     "gravel": ("gravel_debris", 0.0, 3.39, None),               # gravel and dirt falling
     "rocks": ("rocks_falling", 0.15, 1.23, None),               # a few rocks clattering down
+    # Other takes, for a blast's variants (Vary.cut): two more shots off the mortar line, two more falls of stones.
+    "mortar@2": ("mortar_line", 67.95, 70.2, (62.0, 66.5)),
+    "mortar@3": ("mortar_line", 28.8, 31.0, (25.5, 28.5)),
+    # (each fall whole, to where the recordist's edit ends it, faded over its last 1.8 s so its stones thin out)
+    "stones@2": ("stones_falling", 4.8, 8.5, (3.4, 4.4), 1.8),
+    "stones@3": ("stones_falling", 10.0, 13.9, (3.4, 4.4), 1.8),
 }
 #: Rumble under some recordings (wind on the microphone, a recorder's hum): cut below this many Hz.
 HIGHPASS = {"mortar": 70, "stones": 110, "gravel": 90, "rocks": 60, "collapse": 35, "forest": 30}
@@ -62,16 +73,54 @@ DARKEN = {"tnt": (0.25, 3.0, 14000, 2500),
 
 
 def take(name: str, speed: float = 1.0, aligned: bool = True) -> np.ndarray:
-    """A cut, cleaned, aligned on its bang and played at {speed} (below 1: a bigger, slower event)."""
-    key, a, b, noise = CUTS[name]
-    x = R.cut(key, a, b, noise=noise)
-    if name in HIGHPASS:
-        x = S.highpass(x, HIGHPASS[name], 4)
+    """A cut, cleaned, aligned on its bang and played at {speed} (below 1: a bigger, slower event). Another take of a cut
+    (name@2) is filtered as the cut is."""
+    key, a, b, noise, *fade = CUTS[name]
+    base = name.split("@")[0]
+    x = R.cut(key, a, b, noise=noise, fade_out=fade[0] if fade else None)
+    if base in HIGHPASS:
+        x = S.highpass(x, HIGHPASS[base], 4)
     if aligned:
         x = R.align(x)
-    if name in DARKEN:
-        x = R.darken(x, *DARKEN[name])
+    if base in DARKEN:
+        x = R.darken(x, *DARKEN[base])
     return R.varispeed(x, speed) if speed != 1.0 else x
+
+
+class Vary:
+    """One of a blast's variants: the game picks one of them at random each time, so blasts in a row differ (GZSounds lists
+    them). Variant 0 is the sound as the user rated it, unchanged; the others play the same recipe as another blast of its
+    kind would sound: other takes where the recordings have them (another mortar shot, another fall of stones), a touch
+    faster or slower, its debris landing a moment earlier or later and a little louder or softer, other noise in the
+    synthesized layers and the open air's tail. Every draw is seeded, so a variant comes out the same each time."""
+
+    def __init__(self, family: str, n: int):
+        self.n = n
+        self.rng = np.random.default_rng([zlib.crc32(family.encode()), n])
+
+    def cut(self, name: str) -> str:
+        """{name}, or this variant's own take of it where the recording has another."""
+        other = f"{name}@{self.n + 1}"
+        return other if self.n and other in CUTS else name
+
+    def speed(self, s: float, spread: float = 0.04) -> float:
+        return s * (1 + self.rng.uniform(-spread, spread)) if self.n else s
+
+    def at(self, t: float, spread: float = 0.25) -> float:
+        return max(0.0, t + self.rng.uniform(-spread, spread)) if self.n else t
+
+    def db(self, d: float, spread: float = 1.0) -> float:
+        return d + self.rng.uniform(-spread, spread) if self.n else d
+
+    def scale(self, x: float, spread: float = 0.06) -> float:
+        return x * (1 + self.rng.uniform(-spread, spread)) if self.n else x
+
+    def seed(self, s: int) -> int:
+        return s + 1000 * self.n
+
+
+#: Variants per blast sound: the first as rated, then blast/<set>_<band>_2, _3.
+VARIANTS = 3
 
 
 def roar(length: float, lp_from: float, lp_to: float, seed: int) -> np.ndarray:
@@ -147,14 +196,14 @@ def blast_wind(seed: int, peak: float, decay: float) -> np.ndarray:
     return x * env * (1 + 0.15 * gust)
 
 
-def wreckage(total: float, ref: np.ndarray, plan: list[tuple[str, float, float, float, float]]) -> np.ndarray:
+def wreckage(total: float, ref: np.ndarray, plan: list[tuple[str, float, float, float, float]], vary: Vary) -> np.ndarray:
     """What a blast knocks down, landing for seconds after it: (cut, speed, at s, dB under {ref}'s loudness, lowpass Hz or 0)."""
     parts = []
     for name, speed, at, db, lowpass in plan:
-        x = take(name, speed, aligned=name == "rocks")
+        x = take(vary.cut(name), vary.speed(speed), aligned=name == "rocks")
         if lowpass:
             x = S.lowpass(x, lowpass, 2)
-        parts.append((lvl(x, ref, db), at, 1.0))
+        parts.append((lvl(x, ref, vary.db(db, 1.5)), vary.at(at, 0.3), 1.0))
     return R.layer(total, *parts)
 
 
@@ -165,73 +214,85 @@ def wreckage(total: float, ref: np.ndarray, plan: list[tuple[str, float, float, 
 # big blasts on the old recipes' boom and roar, the recordings over them; more weight where it was too weak.
 # Round 2 (2026-10-27): kept but for the medium near and mid ("swap" them), the nuke near ("a bit weak in comparison to the
 # near large blast"), the Tsar near ("still sounds a bit like lightning") and the Tsar mid and far ("bit weak"): round 3.
-def small() -> dict[str, np.ndarray]:
-    oxy, cracker, shell = take("oxy"), take("firecracker"), take("firework")
-    punch = S.lowpass(R.friedlander(0.004, 0.25), 1200, 2)
-    blast = R.layer(3.4, (oxy, 0, 1.0), (lvl(cracker, oxy, -4), 0, 1.0), (lvl(shell, oxy, -6), 0, 1.0), (lvl(punch, oxy, -3), 0, 1.0))
+# Round 3: all six rated 4. Each set makes the variant it is asked for ({v}, Vary); variant 0 is the one rated.
+def small(v: int = 0) -> dict[str, np.ndarray]:
+    V = Vary("small", v)
+    oxy, cracker, shell = take("oxy", V.speed(1.0)), take("firecracker", V.speed(1.0)), take("firework", V.speed(1.0))
+    punch = S.lowpass(R.friedlander(V.scale(0.004, 0.1), 0.25), 1200, 2)
+    blast = R.layer(3.4, (oxy, 0, 1.0), (lvl(cracker, oxy, V.db(-4)), 0, 1.0), (lvl(shell, oxy, V.db(-6)), 0, 1.0),
+                    (lvl(punch, oxy, -3), 0, 1.0))
     # (what it throws up comes down after: thrown 5-10 m up, a second or so)
-    debris = R.layer(3.4, (lvl(take("rocks"), oxy, -17), 0.8, 1.0), (lvl(take("gravel", aligned=False), oxy, -15), 1.1, 1.0))
+    debris = R.layer(3.4, (lvl(take("rocks", V.speed(1.0)), oxy, V.db(-17, 2)), V.at(0.8), 1.0),
+                     (lvl(take("gravel", V.speed(1.0), aligned=False), oxy, V.db(-15, 2)), V.at(1.1, 0.3), 1.0))
     # Round 2: a grenade, not a firecracker: more weight under the near one (a low whump, a harder pulse).
-    weight = R.layer(3.4, (lvl(thump(0.8, 120, 45, 0.2), oxy, -5), 0, 1.0), (lvl(punch, oxy, -4), 0, 1.0))
+    weight = R.layer(3.4, (lvl(thump(0.8, V.scale(120), V.scale(45), 0.2), oxy, -5), 0, 1.0), (lvl(punch, oxy, -4), 0, 1.0))
     near = R.punch(blast + debris + weight, 3)
-    mid = distant(blast + debris * 0.4, 14, 1.4, 0.3, 3000, 21)
-    far = distant(blast, 55, 1.8, 0.45, 1500, 22)
-    forest = take("forest", 0.9)
-    very_far = R.layer(3.0, (forest, 0, 1.0), (lvl(distant(blast, 175, 2.2, 0.55, 800, 23), forest, -3), 0, 1.0))
+    mid = distant(blast + debris * 0.4, 14, 1.4, 0.3, 3000, V.seed(21))
+    far = distant(blast, 55, 1.8, 0.45, 1500, V.seed(22))
+    forest = take("forest", V.speed(0.9))
+    very_far = R.layer(3.0, (forest, 0, 1.0), (lvl(distant(blast, 175, 2.2, 0.55, 800, V.seed(23)), forest, -3), 0, 1.0))
     return {"near": R.finish(near, tail=0.6), "mid": R.finish(mid, tail=0.8), "far": R.finish(far, tail=1.0),
             "very_far": R.finish(very_far, tail=1.0)}
 
 
-def medium() -> dict[str, np.ndarray]:
-    tnt, mortar = take("tnt"), take("mortar", 0.85)
-    punch = S.lowpass(R.friedlander(0.010, 0.4), 900, 2)
-    close = R.layer(7.0, (tnt, 0, 1.0), (lvl(punch, tnt, -2), 0, 1.0), (lvl(take("oxy"), tnt, -10), 0, 1.0))
+def medium(v: int = 0) -> dict[str, np.ndarray]:
+    V = Vary("medium", v)
+    tnt, mortar = take("tnt", V.speed(1.0)), take(V.cut("mortar"), V.speed(0.85))
+    punch = S.lowpass(R.friedlander(V.scale(0.010, 0.1), 0.4), 900, 2)
+    close = R.layer(7.0, (tnt, 0, 1.0), (lvl(punch, tnt, -2), 0, 1.0), (lvl(take("oxy", V.speed(1.0)), tnt, V.db(-10)), 0, 1.0))
     # (thrown 20-30 m up, its debris lands 2 to 5 s after the bang)
-    debris = R.layer(7.0, (lvl(take("rocks"), tnt, -14), 1.6, 1.0), (lvl(take("stones", aligned=False), tnt, -12), 2.0, 1.0),
-                     (lvl(take("gravel", aligned=False), tnt, -16), 2.8, 1.0))
+    debris = R.layer(7.0, (lvl(take("rocks", V.speed(1.0)), tnt, V.db(-14, 2)), V.at(1.6), 1.0),
+                     (lvl(take(V.cut("stones"), V.speed(1.0), aligned=False), tnt, V.db(-12, 2)), V.at(2.0, 0.4), 1.0),
+                     (lvl(take("gravel", V.speed(1.0), aligned=False), tnt, V.db(-16, 2)), V.at(2.8, 0.4), 1.0))
     close_by = close + debris                                  # (round 1's near)
     # Round 2: the TNT the user liked close up, carried 50 m (the factory recording had clapping in it), with its whump.
-    boom = thump(1.4, 95, 34, 0.4)
-    heavy = R.punch(R.layer(7.0, (distant(close, 40, 1.6, 0.35, 2500, 33), 0, 1.0), (lvl(boom, close, -5), 0, 1.0),
+    boom = thump(1.4, V.scale(95), V.scale(34), 0.4)
+    heavy = R.punch(R.layer(7.0, (distant(close, 40, 1.6, 0.35, 2500, V.seed(33)), 0, 1.0), (lvl(boom, close, -5), 0, 1.0),
                             (debris * 0.12, 0, 1.0)), 3)       # (round 2's mid)
     # Round 2: "too weak": the whump under it and more of the TNT, slowed a little, carried 140 m.
-    far = R.punch(R.layer(7.0, (mortar, 0, 1.0), (lvl(distant(take("tnt", 0.8), 140, 2.5, 0.45, 1200, 31), mortar, -2), 0, 1.0),
-                          (lvl(R.air(thump(1.6, 80, 30, 0.45), 140), mortar, -3), 0, 1.0)), 4)
-    forest = take("forest", 0.7)
-    very_far = R.layer(6.0, (forest, 0, 1.0), (lvl(distant(tnt, 440, 3.0, 0.6, 600, 32), forest, -3), 0, 1.0))
+    far = R.punch(R.layer(7.0, (mortar, 0, 1.0),
+                          (lvl(distant(take("tnt", V.speed(0.8)), 140, 2.5, 0.45, 1200, V.seed(31)), mortar, -2), 0, 1.0),
+                          (lvl(R.air(thump(1.6, V.scale(80), V.scale(30), 0.45), 140), mortar, -3), 0, 1.0)), 4)
+    forest = take("forest", V.speed(0.7))
+    very_far = R.layer(6.0, (forest, 0, 1.0), (lvl(distant(tnt, 440, 3.0, 0.6, 600, V.seed(32)), forest, -3), 0, 1.0))
     # Round 3: the user swapped the near and the mid (round 2's mid sounded like the near one). The near is trimmed 1.5 dB
     # to stay under the large near: the game plays every set at one volume for a band.
     return {"near": R.finish(heavy, tail=1.2) * gain(-1.5), "mid": R.finish(close_by, tail=1.0),
             "far": R.finish(far, tail=1.2), "very_far": R.finish(very_far, tail=1.5)}
 
 
-def large() -> dict[str, np.ndarray]:
-    bed = old().blast_source("large", 320)                     # the old large blast: crack, whump, roar, debris
-    tnt = S.lowpass(take("tnt", 0.7), 7000, 2)
-    punch = S.lowpass(R.friedlander(0.025, 0.6), 400, 2)
-    blast = R.layer(9.0, (bed, 0, 1.0), (lvl(tnt, bed, -3), 0, 1.0), (lvl(punch, bed, -4), 0, 1.0),
-                    (lvl(S.lowpass(take("collapse", aligned=False), 1200, 2), bed, -10), 0.8, 1.0))
-    debris = R.layer(9.0, (lvl(take("stones", aligned=False), bed, -14), 2.4, 1.0), (lvl(take("chimney_fall", aligned=False), bed, -14), 3.2, 1.0))
+def large(v: int = 0) -> dict[str, np.ndarray]:
+    V = Vary("large", v)
+    bed = old().blast_source("large", V.seed(320))             # the old large blast: crack, whump, roar, debris
+    tnt = S.lowpass(take("tnt", V.speed(0.7)), 7000, 2)
+    punch = S.lowpass(R.friedlander(V.scale(0.025, 0.1), 0.6), 400, 2)
+    blast = R.layer(9.0, (bed, 0, 1.0), (lvl(tnt, bed, V.db(-3)), 0, 1.0), (lvl(punch, bed, -4), 0, 1.0),
+                    (lvl(S.lowpass(take("collapse", V.speed(1.0), aligned=False), 1200, 2), bed, V.db(-10)), V.at(0.8, 0.2), 1.0))
+    debris = R.layer(9.0, (lvl(take(V.cut("stones"), V.speed(1.0), aligned=False), bed, V.db(-14, 2)), V.at(2.4, 0.4), 1.0),
+                     (lvl(take("chimney_fall", V.speed(1.0), aligned=False), bed, V.db(-14, 2)), V.at(3.2, 0.4), 1.0))
     near = R.punch(blast + debris, 3)
-    mid = R.punch(R.layer(10.0, (old_band(bed, "mid"), 0, 1.0), (lvl(distant(blast, 150, 2.5, 0.4, 1800, 44), old_band(bed, "mid"), -3), 0, 1.0)), 3)
-    slow = take("chimney", 0.85)                               # (round 1's far one, which the user liked, as it was)
-    far = R.layer(8.0, (distant(slow, 350, 3.5, 0.5, 1000, 41), 0, 1.0), (lvl(distant(take("mortar", 0.6), 300, 3.0, 0.5, 900, 42), slow, -6), 0, 1.0))
+    mid = R.punch(R.layer(10.0, (old_band(bed, "mid"), 0, 1.0),
+                          (lvl(distant(blast, 150, 2.5, 0.4, 1800, V.seed(44)), old_band(bed, "mid"), -3), 0, 1.0)), 3)
+    slow = take("chimney", V.speed(0.85))                      # (round 1's far one, which the user liked, as it was)
+    far = R.layer(8.0, (distant(slow, 350, 3.5, 0.5, 1000, V.seed(41)), 0, 1.0),
+                  (lvl(distant(take(V.cut("mortar"), V.speed(0.6)), 300, 3.0, 0.5, 900, V.seed(42)), slow, -6), 0, 1.0))
     vfar_bed = old_band(bed, "very_far")
-    very_far = R.layer(12.0, (vfar_bed, 0, 1.0), (lvl(distant(blast, 1300, 5.0, 0.7, 400, 43), vfar_bed, -4), 0, 1.0))
+    very_far = R.layer(12.0, (vfar_bed, 0, 1.0), (lvl(distant(blast, 1300, 5.0, 0.7, 400, V.seed(43)), vfar_bed, -4), 0, 1.0))
     return {"near": R.finish(near, tail=1.5), "mid": R.finish(mid, tail=2.0), "far": R.finish(far, tail=2.0),
             "very_far": R.finish(very_far, tail=2.5)}
 
 
-def nuclear_blast(bed: np.ndarray, scale: float, length: float, second_wave: bool) -> np.ndarray:
+def nuclear_blast(bed: np.ndarray, scale: float, length: float, second_wave: bool, vary: Vary) -> np.ndarray:
     """Round 2's nuclear blast before distance, on the old recipe's boom and roar ({bed}), the recordings slowed by {scale}
     over it (1: the nuke; below 1, slower still: the Tsar). Still what the bands the user rated well carry."""
-    core = S.lowpass(take("tnt", 0.45 * scale), 5000, 2)
+    V = vary
+    core = S.lowpass(take("tnt", V.speed(0.45 * scale)), 5000, 2)
     shove = S.lowpass(R.friedlander(0.09 / scale, 1.6 / scale), 200, 2)
     parts = [(bed, 0, 1.0), (lvl(core, bed, -4), 0, 1.0), (lvl(shove, bed, -3), 0, 1.0),
-             (lvl(S.lowpass(take("collapse", 0.6 * scale, aligned=False), 800, 2), bed, -8), 1.0, 1.0),
-             (lvl(take("stones", 0.8, aligned=False), bed, -16), 3.5 / scale, 1.0)]
+             (lvl(S.lowpass(take("collapse", V.speed(0.6 * scale), aligned=False), 800, 2), bed, V.db(-8)), V.at(1.0, 0.2), 1.0),
+             (lvl(take(V.cut("stones"), V.speed(0.8), aligned=False), bed, V.db(-16, 2)), V.at(3.5 / scale, 0.4), 1.0)]
     if second_wave:                                       # the shock off the ground, a moment after the first
-        parts.append((lvl(S.lowpass(take("tnt", 0.4 * scale), 4000, 2), bed, -8), 2.1, 1.0))
+        parts.append((lvl(S.lowpass(take("tnt", V.speed(0.4 * scale)), 4000, 2), bed, V.db(-8)), V.at(2.1, 0.2), 1.0))
     blast = R.layer(length, *parts)
     return R.darken(blast, 0.4 / scale, 6.0 / scale, 9000, 1500)
 
@@ -254,7 +315,7 @@ def heard_from(bed: np.ndarray, blast: np.ndarray, band: str, metres: float, see
 
 
 def nuclear_near(bed: np.ndarray, size: float, length: float, metres: float, wreck: list[tuple[str, float, float, float, float]],
-                 wind_db: float, lift: float, drive: float, seed: int) -> np.ndarray:
+                 wind_db: float, lift: float, drive: float, seed: int, vary: Vary) -> np.ndarray:
     """Round 3's near nuclear blast, which must sound bigger than the large one (the user: the nuke near was "a bit weak in
     comparison to the near large blast"; the game plays every set at one volume for a band): the bed's boom and roar, the
     TNT slowed under it ({size} 1: the nuke; above 1, slower and longer: the Tsar) and the pressure shove held down (it
@@ -262,13 +323,15 @@ def nuclear_near(bed: np.ndarray, size: float, length: float, metres: float, wre
     sharp (a strong shock's front stays steep where the air dulls ordinary sound); the wreckage of what it knocks down
     ({wreck}, landing close by, so not dulled either) and the blast wind. Then made loud: the sub-bass that only took
     headroom taken out, lifted {lift} dB under the look-ahead limiter, driven {drive} dB into the soft one."""
-    body = S.lowpass(take("tnt", 0.45 / size), 5000, 2)
-    front = S.fade(take("tnt", 0.85)[: int(0.7 * S.SR)], 0.0, 0.35)
+    V = vary
+    body = S.lowpass(take("tnt", V.speed(0.45 / size)), 5000, 2)
+    front = S.fade(take("tnt", V.speed(0.85, 0.02))[: int(0.7 * S.SR)], 0.0, 0.35)
     shove = S.lowpass(R.friedlander(0.09 * size, 1.6 * size), 200, 2)
     blast = R.layer(length, (bed, 0, 1.0), (lvl(body, bed, -2), 0, 1.0), (lvl(shove, bed, -8), 0, 1.0))
     x = R.air(R.darken(blast, 0.4 * size, 6.0 * size, 9000, 1500), metres)
-    x = x + R.layer(length, (lvl(front, bed, -1), 0, 1.0)) + wreckage(length, bed, wreck)
-    x = x + R.layer(length, (lvl(blast_wind(seed, 0.5 * size, 4.0 * size), bed, wind_db), 0.05, 1.0))
+    x = x + R.layer(length, (lvl(front, bed, -1), 0, 1.0)) + wreckage(length, bed, wreck, V)
+    wind = blast_wind(V.seed(seed), V.scale(0.5 * size, 0.1), V.scale(4.0 * size, 0.1))
+    x = x + R.layer(length, (lvl(wind, bed, wind_db), 0.05, 1.0))
     return R.finish(R.punch(R.maximize(R.tame_lows(x), lift), drive), tail=2.0)
 
 
@@ -280,35 +343,60 @@ TSAR_WRECK = [("collapse", 0.75, 0.8, -6, 3500), ("rocks", 0.85, 1.4, -11, 0), (
               ("stones", 1.0, 7.2, -16, 0)]
 
 
-def nuke() -> dict[str, np.ndarray]:
-    bed = old().nuke_source()
-    blast = nuclear_blast(bed, 1.0, 12.0, False)
+def nuke(v: int = 0) -> dict[str, np.ndarray]:
+    V = Vary("nuke", v)
+    bed = old().nuke_source(seed=V.seed(1))
+    blast = nuclear_blast(bed, 1.0, 12.0, False, V)
     # Round 3: the near one bigger than the large near; the rest as rated (round 2's).
-    return {"near": nuclear_near(bed, 1.0, 12.0, 150, NUKE_WRECK, -12, 4.0, 4.0, 501),
-            "mid": heard_from(bed, blast, "mid", 500, 501, -4), "far": heard_from(bed, blast, "far", 1400, 501, -4),
-            "very_far": heard_from(bed, blast, "very_far", 4400, 501, -6)}
+    return {"near": nuclear_near(bed, 1.0, 12.0, 150, NUKE_WRECK, -12, 4.0, 4.0, 501, V),
+            "mid": heard_from(bed, blast, "mid", 500, V.seed(501), -4), "far": heard_from(bed, blast, "far", 1400, V.seed(501), -4),
+            "very_far": heard_from(bed, blast, "very_far", 4400, V.seed(501), -6)}
 
 
-def tsar() -> dict[str, np.ndarray]:
-    bed = old().tsar_source()
-    blast = nuclear_blast(bed, 0.72, 16.0, True)
+def tsar(v: int = 0) -> dict[str, np.ndarray]:
+    V = Vary("tsar", v)
+    bed = old().tsar_source(seed=V.seed(11))
+    blast = nuclear_blast(bed, 0.72, 16.0, True, V)
     # Round 3: the near one rebuilt on a steady roar ("still sounds a bit like lightning"); the mid and far "a bit weak":
     # a deep boom under them and driven harder; the very far as rated (round 2's).
-    return {"near": nuclear_near(steady_bed(), 1.0 / 0.72, 16.0, 500, TSAR_WRECK, -8, 5.0, 5.0, 511),
-            "mid": heard_from(bed, blast, "mid", 1700, 511, -2, 3.0, thump(4.0, 60, 25, 1.2), -2, lift=6.0),
-            "far": heard_from(bed, blast, "far", 4800, 511, -2, 3.0, thump(5.0, 55, 22, 1.5), -1, lift=4.0),
-            "very_far": heard_from(bed, blast, "very_far", 15000, 511, -6)}
+    return {"near": nuclear_near(steady_bed(V.seed(11)), 1.0 / 0.72, 16.0, 500, TSAR_WRECK, -8, 5.0, 5.0, 511, V),
+            "mid": heard_from(bed, blast, "mid", 1700, V.seed(511), -2, 3.0, thump(4.0, V.scale(60), V.scale(25), 1.2), -2, lift=6.0),
+            "far": heard_from(bed, blast, "far", 4800, V.seed(511), -2, 3.0, thump(5.0, V.scale(55), V.scale(22), 1.5), -1, lift=4.0),
+            "very_far": heard_from(bed, blast, "very_far", 15000, V.seed(511), -6)}
+
+
+SETS = (("small", small), ("medium", medium), ("large", large), ("nuke", nuke), ("tsar", tsar))
+
+
+def matched(x: np.ndarray, ref: np.ndarray, ceiling_db: float = -1.0) -> np.ndarray:
+    """{x} brought to {ref}'s loudness (its loudest 3 s, within 0.3 dB): a variant must be no louder or softer than the one
+    the user rated, as the game picks among them at random. Raised under the look-ahead limiter where its peaks would pass
+    {ceiling_db}."""
+    import loudness  # noqa: PLC0415
+    want = loudness.measure_array(ref, S.SR)["S-max"]
+    for _ in range(4):
+        diff = want - loudness.measure_array(x, S.SR)["S-max"]
+        if abs(diff) < 0.3:
+            break
+        x = x * gain(diff)
+        over = 20 * np.log10(np.max(np.abs(x)) + 1e-12) - ceiling_db
+        if over > 0:
+            x = R.maximize(x, over, ceiling_db=ceiling_db)
+    return x
 
 
 def blast_sets() -> dict[str, np.ndarray]:
-    """Every blast sound: blast/<set>_<band>."""
+    """Every blast sound, blast/<set>_<band>, and its variants blast/<set>_<band>_2 and _3 (Vary; GZSounds lists all three),
+    each matched to the first's loudness."""
     out = {}
-    sets = {"small": small(), "medium": medium(), "large": large(), "nuke": nuke(), "tsar": tsar()}
-    for name, bands in sets.items():
-        for band, x in bands.items():
+    for name, make in SETS:
+        first = make(0)
+        for band, x in first.items():
             out[f"blast/{name}_{band}"] = x
+        for v in range(1, VARIANTS):
+            for band, x in make(v).items():
+                out[f"blast/{name}_{band}_{v + 1}"] = matched(x, first[band])
     return out
-
 
 if __name__ == "__main__":
     import sys
