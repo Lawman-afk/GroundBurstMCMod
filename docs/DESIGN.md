@@ -1434,6 +1434,23 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   Reactor's magnet hum and plasma roar, the accelerator's magnet buzz and RF tone. The Exotic Matter Fabricator, the
   Singularity Reactor and its collapse stay synthesized. The Sound Lab plays the loops 8 s over, as a machine runs, and
   the clicks as the Geiger counter will (§21.3: random, rising with the dose). Awaiting the user's ratings.
+- **Machines, round 2** (the user's ratings of the 23 cards: 8 at 5, 6 at 4). Five notes ("a sound in the middle",
+  "loop before the drop") had one cause: every 4 s loop faded out and back in at its seam, 6 to 15 dB, because
+  `sources.cut` fades a cut's last quarter by default and the loop read into it; the seam check had compared samples,
+  not loudness. Now a steady loop's cuts are longer than it and faded only at their very end; its length is fitted
+  (4 ± 0.25 s) to where the sound after its end best matches the sound after its start (the compressor's pistons, the
+  pump's pulse and the plant's hum stay in step across it), the two joined on a crossfade whose curve holds the level
+  whatever their likeness (`machines.join`); `machine_set` fails a steady loop that dips at its seam. Also, from the
+  notes: the Ore Crusher and the RTG back to the synthesized originals ("just keep the original please, I like it");
+  the centrifuge's rotor whine lower (720 Hz, was 900) and about 5 dB softer, its third harmonic gone ("so it doesn't
+  hurt your ears as much"); the reactor's alarm holds the alarm's next buzz steady about 10 dB down between blasts
+  (2.25 s, so no gap opens when the server's 2 s runs a tick late; "a little jarring with the constant on and off");
+  the Battery Charger calm, a soft hum and a gentle tick, no coil whine, 5 dB under the old ("you don't want as much
+  realism so it's not as constantly annoying"); the Canning Machine on the old cycle the user preferred, a real fire
+  extinguisher's discharge driving the fill and ringing higher as the canister fills (round 1's pour was "a light
+  trickle rather than a pressurised filling"); the Particle Accelerator on the old loop with only a steady real hum
+  under it (round 1's scroll vacuum pump swelled twice more in each 2 s: "more than one particle group"). The timed
+  loops rated well are bit-identical to round 1; the arc furnace and separator only lost the dip.
 - **The Sound Lab** (a review web page): every sound before and
   remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
   the newest, which is best, and a note. Ratings are kept in the
@@ -3157,6 +3174,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Launches and ordnance round 2 (the user's ratings; §13.1): where the user preferred the synthesized sound, it is the base and the recordings lie under it (the missile launch, re-entry, grenade pin, bomb whistle); the bunker buster's drill stays the synthesized original, at the user's word. |
 | 2026-10-27 | The falling bomb's whistle stays the synthesized original (a recording of falling bombs carries other bombs' whistles that no filter removes); the EMP is the arc alone, without a synthesized whine (the user's asks). |
 | 2026-10-27 | Machines remade from real recordings (§13.1; `machines.py`, CC0): a steady machine's loop is 4 s of a recording (2 s would let a real recording's repeat show); a machine timed to its animation keeps its 2 s cycle with real events at its moments; a loop's seam is closed before its events are added (`machines.Cycle`), and it is levelled as it plays, repeated, to the old loudness. Where nothing real has the sound (the centrifuge's rotor, the fusion and accelerator cores, the diesel's knock) the old synthesized sound stays with recordings under it; the Exotic Matter Fabricator and the Singularity Reactor stay synthesized. |
+| 2026-10-27 | Machines round 2 (the user's ratings; §13.1): a loop is checked across its seam for loudness, not only for a sample step (round 1's steady loops dipped there: a cut's default fade reached the seam); a steady loop's cuts are unfaded where it reads them and its length is fitted so its end leads on like its start, crossfaded on a curve that holds the level. The Ore Crusher and the RTG stay synthesized at the user's word; where the user preferred the old sound (the Canning Machine, the Particle Accelerator) it is the base with recordings under it; the Battery Charger is kept calm and 5 dB quieter (comfort over realism, the user's call). |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

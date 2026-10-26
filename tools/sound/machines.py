@@ -2,55 +2,63 @@
 
 Every machine's working loop, the Assembly Bench's finishing clank, the Fission Reactor's alarm and the Geiger counter's
 clicks. Machines that exist in the world are made from recordings of them or their nearest kin: a single-cylinder engine,
-a stone crusher, arcs and welding, a punch press and a hydraulic press, a transformer's hum, an air compressor, a paint
-mixer, a water pump, a CNC machine's stepper motors, a washing machine's spin, a diesel generator, a shower, the pump room
-of a nuclear power plant, a physics lab's vacuum pump, hoist chains, a ratchet and an impact wrench, a fusion company's
-factory alarm, a civil-defence Geiger counter.
+arcs and welding, a punch press and a hydraulic press, a transformer's hum, an air compressor, a paint mixer, a water
+pump, a CNC machine's stepper motors, a washing machine's spin, a diesel generator, a shower, the pump room of a nuclear
+power plant, hoist chains, a ratchet and an impact wrench, a fire extinguisher's discharge, a fusion company's factory
+alarm, a civil-defence Geiger counter.
 
-Loops come in two kinds. A steady machine (the generators, crusher, furnace, pumps, centrifuge, shower, reactor) is a 4 s
-loop of the recording itself, longer than the old 2 s so a real recording's repeat does not show. A machine whose sound is
-timed to its model's animation (the presses, the Circuit Fabricator's gantry, the Canning Machine's nozzle, the Chemical
-Plant's valve, the Assembly Bench's hoist, the charger's LEDs, the diesel's pistons) keeps its 2 s cycle, real events
-placed at the moments the animation shows them. The machines nothing real sounds like (the Exotic Matter Fabricator, the
-Singularity Reactor and its collapse) stay synthesized (recipes.py); the Fusion Reactor and the Particle Accelerator keep
-their synthesized cores with real hum and pumps under them, as the old diesel keeps its knock under the real engine.
-Each loop is as loud as the one it replaces (sources.loud_as), whose in-game volume was tuned to it.
+Loops come in two kinds. A steady machine (the generators, furnace, pumps, centrifuge, shower, reactor) loops about 4 s of
+the recording itself, longer than the old 2 s so a real recording's repeat does not show. Nothing is faded at its seam
+(round 1's cuts were, and every steady loop dipped at its seam: "the drop in the middle"), and its length is fitted so
+the sound after its end leads on like the sound after its start (an engine's firing, a compressor's pistons in step). A
+machine whose sound is timed to its model's animation (the presses, the Circuit Fabricator's gantry, the Canning
+Machine's nozzle, the Chemical Plant's valve, the Assembly Bench's hoist, the charger's LEDs, the diesel's pistons) keeps
+its 2 s cycle, real events placed at the moments the animation shows them.
+
+Some stay synthesized (recipes.py): what nothing real sounds like (the Exotic Matter Fabricator, the Singularity Reactor
+and its collapse) and, at the user's word, the Ore Crusher and the RTG ("just keep the original please, I like it").
+Where the user preferred the old sound, or nothing real has it, the old is the base with recordings under it: the
+centrifuge's rotor (retuned lower and softer, as the user asked), the Fusion Reactor's and the Particle Accelerator's
+cores, the diesel's knock, the Canning Machine's fill. Each loop is as loud as the one it replaces (sources.loud_as),
+whose in-game volume was tuned to it, unless the user asked otherwise (LEVEL_DB).
 
 Every cut names its recording (sources/ledger.json) and where in it; the windows were picked from survey.py's sheets.
 """
 from __future__ import annotations
 
 import numpy as np
+from scipy import ndimage, signal
 
 import sources as R
 import synth as S
 
 # (recording, from s, to s, the quiet stretch its background is measured on[, options: hp/lp Hz, fade s, gain dB])
 CUTS = {
-    "engine": ("single_cylinder", 10.0, 14.6, None),                     # a single-cylinder engine clattering steadily
-    "crusher": ("stone_crusher", 24.0, 28.6, None, {"hp": 30}),           # a stone crusher grinding, one heavy crush
-    "arc": ("hv_sparks", 18.0, 22.6, None),                              # high-voltage arcs in a hall, steady
-    "weld": ("arc_welding", 48.0, 52.6, None, {"hp": 150}),              # arc welding's bursts of crackle (its mains hum cut)
+    # The steady machines' beds: longer than their loop (its length is fitted, and the sound after its end compared) and
+    # faded only at the very end, so no fade reaches the seam.
+    "engine": ("single_cylinder", 10.0, 15.4, None, {"fade": 0.05}),      # a single-cylinder engine clattering steadily
+    "arc": ("hv_sparks", 18.0, 23.4, None, {"fade": 0.05}),               # high-voltage arcs in a hall, steady
+    "weld": ("arc_welding", 48.0, 53.4, None, {"hp": 150, "fade": 0.05}),  # arc welding's crackle (its mains hum cut)
+    "bubbles": ("bubbles_glass", 2.0, 7.4, None, {"fade": 0.05}),         # air bubbling up through water
+    "hum": ("transformer_hum", 5.0, 10.4, None, {"fade": 0.05}),          # a transformer humming in a large room
+    "compressor": ("air_compressor", 0.3, 5.4, None, {"fade": 0.05}),     # an air compressor's pistons (all of the take)
+    "pump": ("water_pump", 3.0, 8.4, None, {"fade": 0.05}),               # a motor water pump, steady
+    "spin": ("spin_cycle", 60.0, 65.4, None, {"fade": 0.05}),             # a washing machine's drum at full spin
+    "shower": ("shower", 1.0, 6.4, None, {"fade": 0.05}),                 # a shower's spray
+    "plant": ("npp_pump_room", 20.0, 25.4, None, {"fade": 0.05}),         # the pump room of a nuclear power plant
+    # The timed machines' parts, and the one-shots'.
     "press_pump": ("hydraulic_press", 10.0, 13.2, None),                 # a hydraulic press's pump droning
     "stroke": ("punch_press", 9.2, 10.0, None, {"fade": 0.15}),          # a 20-ton punch press's blow and the ram's return
-    "bubbles": ("bubbles_glass", 2.0, 6.6, None),                        # air bubbling up through water
-    "hum": ("transformer_hum", 5.0, 9.6, None),                          # a transformer humming in a large room
-    "compressor": ("air_compressor", 0.3, 4.9, None),                    # an air compressor's pistons
     "mixer": ("paint_mixer", 40.0, 43.0, None),                          # a paint mixer's motor and paddles
-    "pump": ("water_pump", 3.0, 7.6, None),                              # a motor water pump, steady
     "whir_up": ("cnc_steppers", 24.5, 24.95, None, {"fade": 0.1}),       # a CNC stepper accelerating
     "whir_down": ("cnc_steppers", 27.0, 27.45, None, {"fade": 0.1}),     # ... and slowing
-    "spin": ("spin_cycle", 60.0, 64.6, None),                            # a washing machine's drum at full spin
-    "pour": ("liquid_pour", 4.3, 5.5, None, {"fade": 0.2}),              # liquid poured into a container, filling
+    "fill": ("extinguisher", 4.7, 6.3, None, {"fade": 0.1}),             # a fire extinguisher's steady discharge
     "diesel": ("diesel_generator", 20.0, 23.0, None),                    # a large diesel generator running
-    "coil": ("coil_whine", 2.0, 5.0, None, {"hp": 300}),                 # electronics' coil whine
-    "shower": ("shower", 1.0, 5.6, None),                                # a shower's spray
-    "plant": ("npp_pump_room", 20.0, 24.6, None),                        # the pump room of a nuclear power plant
-    "vacuum": ("scroll_pump", 100.0, 103.0, None),                       # a physics lab's scroll vacuum pump
     "chains": ("hoist_chains", 2.7, 3.35, None, {"fade": 0.1}),          # hoist chains rattling
     "ratchet": ("ratchet", 24.0, 24.38, None, {"fade": 0.05}),           # a ratchet's run of clicks
     "wrench": ("impact_wrench", 2.35, 2.6, None, {"fade": 0.06}),        # an impact wrench's burst
     "alarm": ("factory_alarm", 24.15, 25.05, None, {"fade": 0.05}),      # one buzz of a factory warning alarm
+    "alarm_hold": ("factory_alarm", 25.65, 26.58, None, {"fade": 0.08}),  # ... and the next
     "puff": ("extinguisher", 0.66, 1.06, None, {"fade": 0.1}),           # a burst of gas
     "nitrogen": ("liquid_nitrogen", 20.6, 21.3, None, {"fade": 0.15}),   # cryogen boiling off
     "clank": ("heavy_metal_door", 6.35, 7.8, None, {"hp": 30}),          # a latch's clack and a heavy steel thud
@@ -65,7 +73,13 @@ GEIGER = (3.36, 8.18, 11.77, 14.17)
 
 #: The loops' timing, as recipes.py's machine loops: {LOOP} s, events at t + {PRE}, the tail past the end faded in.
 LOOP, PRE, XF = 2.0, 0.25, 0.15
-STEADY = 4.0                                                             # a steady machine's loop, s
+STEADY = 4.0                                                             # a steady machine's loop, s (about: FIT)
+#: A steady loop's length is fitted within STEADY ± FIT s: the one whose end leads on most like its start, judged on the
+#: waveform across the crossfade (a pitch, a fast beat in phase) and the loudness over the next ENVELOPE s (a slow beat).
+FIT, ENVELOPE = 0.25, 0.5
+#: Loudness against the sound replaced, where the user asked for a change (dB): the charger calmer, the centrifuge's
+#: whine softer (it was most of the old one's loudness).
+LEVEL_DB = {"machine/battery_charger": -5.0, "machine/gas_centrifuge": -1.5}
 
 
 def take(name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
@@ -96,15 +110,22 @@ def tiled(x: np.ndarray, times: int) -> np.ndarray:
 
 
 class Cycle:
-    """A machine's loop being built: recordings laid under the whole of it (closed into a seamless loop, their tail faded
-    into their head), then the things that happen at moments of it (a press's blow, a relay's tick) and the old
-    synthesized loops the hybrids keep, added after the seam is closed and wrapping round its end. A sound at the loop's
-    start is so neither swallowed by the crossfade nor doubled, and a periodic one is never crossfaded with itself."""
+    """A machine's loop being built: recordings laid under the whole of it (closed into a seamless loop, the sound
+    after its end crossfaded into its start), then the things that happen at moments of it (a press's blow, a relay's
+    tick) and the old synthesized loops the hybrids keep, added after the seam is closed and wrapping round its end. A
+    sound at the loop's start is so neither swallowed by the crossfade nor doubled, and a periodic one is never
+    crossfaded with itself. A steady machine's loop has its length fitted ({fit} s either way)."""
 
-    def __init__(self, length: float = LOOP):
-        self.length = length
-        self.bed = np.zeros(int((PRE + length + XF) * S.SR))
+    def __init__(self, length: float = LOOP, fit: float = 0.0):
+        self.length, self.fit, self.steady = length, fit, False
+        after = max(XF, ENVELOPE) + 0.05 if fit else XF
+        self.bed = np.zeros(int((PRE + length + fit + after) * S.SR))
         self.events: list[tuple[np.ndarray, float]] = []
+
+    @property
+    def seconds(self) -> float:
+        """How long the bed is: what a layer laid under the loop must cover."""
+        return len(self.bed) / S.SR
 
     def lay(self, y: np.ndarray, db: float) -> "Cycle":
         """{y} under the whole loop (at {db} dB loudness); it must be long enough to cover it."""
@@ -119,12 +140,18 @@ class Cycle:
 
     def under(self, loop: np.ndarray, db: float) -> "Cycle":
         """A loop of its own (the old synthesized one), repeated in step under this one: its start at this one's 0."""
+        assert not self.fit, "a loop of fitted length cannot keep another loop in step"
         repeats = int(round(self.length / (len(loop) / S.SR)))
         return self.put(tiled(loop, repeats), 0.0, db)
 
     def close(self) -> np.ndarray:
-        n = int(round(self.length * S.SR))
-        out = S.seamless_loop(self.bed, self.length, XF, PRE)[:n].copy()
+        if self.fit:
+            n, likeness = self.fitted()
+            self.length = (n + 0.25) / S.SR
+            out = join(self.bed, n, likeness)
+        else:
+            n = int(round(self.length * S.SR))
+            out = S.seamless_loop(self.bed, self.length, XF, PRE)[:n].copy()
         for y, t in self.events:
             i = int(round(t * S.SR)) % n
             while len(y):
@@ -133,13 +160,58 @@ class Cycle:
                 y, i = y[k:], 0
         return out
 
+    def fitted(self) -> tuple[int, float]:
+        """The loop's length (samples, within its length ± fit) whose end leads on most like its start, and how alike
+        the waveforms are across the crossfade there (0 to 1)."""
+        bed, p, w = self.bed, int(PRE * S.SR), int(XF * S.SR)
+        lo, hi = int((self.length - self.fit) * S.SR), int((self.length + self.fit) * S.SR)
+        head, region = bed[p:p + w], bed[p + lo:p + hi + w]
+        energy = np.convolve(region ** 2, np.ones(w), mode="valid")
+        wave = signal.correlate(region, head, mode="valid") / (np.sqrt(energy * np.sum(head ** 2)) + 1e-12)
+        hop = int(0.005 * S.SR)                                          # loudness in 5 ms steps, on a log scale
+        frames = len(bed) // hop
+        env = np.log(np.sqrt(np.mean(bed[:frames * hop].reshape(frames, hop) ** 2, axis=1)) + 1e-6)
+        fp, fm = p // hop, int(ENVELOPE * S.SR) // hop
+        h = env[fp:fp + fm] - env[fp:fp + fm].mean()
+        offsets = np.arange(lo // hop, hi // hop + 2)
+        alike = np.empty(len(offsets))
+        for i, o in enumerate(offsets):
+            seg = env[fp + o:fp + o + fm]
+            seg = seg - seg.mean()
+            alike[i] = np.dot(h, seg) / (np.linalg.norm(h) * np.linalg.norm(seg) + 1e-12)
+        candidates = np.arange(lo, hi + 1)
+        score = wave[:len(candidates)] + np.interp(candidates / hop, offsets, alike)
+        best = int(np.argmax(score))
+        return int(candidates[best]), float(np.clip(wave[best], 0.0, 1.0))
 
-def steady(*layers: tuple[np.ndarray, float]) -> Cycle:
-    """A steady machine's {STEADY} s loop from recordings ((cut, dB) each, under the whole of it)."""
-    c = Cycle(STEADY)
+
+def join(bed: np.ndarray, n: int, likeness: float) -> np.ndarray:
+    """bed[PRE:PRE+n] closed into a loop, the sound after its end crossfaded into its start. The two gains follow a curve
+    that holds the level whatever the two sounds' {likeness}: equal power for unrelated sounds (noise, a spray), equal
+    gain for the same sound in phase (a compressor's pistons, fitted in step), and between for between."""
+    p, w = int(PRE * S.SR), int(XF * S.SR)
+    body = bed[p:p + n].copy()
+    tail = bed[p + n:p + n + w]
+    u = 0.5 - 0.5 * np.cos(np.linspace(0, np.pi, w))
+    a, b = u, 1 - u
+    body[:w] = (body[:w] * a + tail * b) / np.sqrt(a ** 2 + b ** 2 + 2 * likeness * a * b)
+    return body
+
+
+def steady(*layers: tuple[np.ndarray, float], fit: float = FIT) -> Cycle:
+    """A steady machine's loop, about {STEADY} s, from recordings ((cut, dB) each, under the whole of it)."""
+    c = Cycle(STEADY, fit)
+    c.steady = True
     for y, db in layers:
         c.lay(y, db)
     return c
+
+
+def seam_dip(loop: np.ndarray, span: float = 0.3) -> float:
+    """How much quieter a loop is across its seam (its last and first {span} s) than as a whole, dB. A steady loop must
+    not dip there: round 1's dipped 6 to 15 dB, a fade-out and back every 4 s."""
+    k = int(span * S.SR)
+    return R.rms_db(loop) - R.rms_db(np.concatenate([loop[-k:], loop[:k]]))
 
 
 # --- steady machines ------------------------------------------------------------------------------------------------------
@@ -148,16 +220,11 @@ def combustion_generator() -> Cycle:
     return steady((take("engine"), -18))
 
 
-def ore_crusher() -> Cycle:
-    """A stone crusher grinding rock, with a heavy crush in each loop."""
-    return steady((take("crusher"), -18))
-
-
 def arc_furnace() -> Cycle:
     """An electric arc furnace: high-voltage arcs roaring and buzzing, welding's spitting crackle over them, the melt's low
     roar under them (synthesized: no recording of a melt)."""
-    melt = S.lowpass(S.brown(PRE + STEADY + XF, 211), 300)
-    return steady((take("arc"), -18), (take("weld"), -24), (melt, -26))
+    c = steady((take("arc"), -18), (take("weld"), -24))
+    return c.lay(S.lowpass(S.brown(c.seconds, 211), 300), -26)
 
 
 def electrolytic_separator() -> Cycle:
@@ -175,10 +242,23 @@ def water_pump() -> Cycle:
     return steady((take("pump"), -18))
 
 
+def rotor() -> np.ndarray:
+    """The old synthesized centrifuge loop (recipes.gas_centrifuge_loop) with its rotor's whine retuned at the user's
+    ask ("a little quieter or lower pitch so it doesn't hurt your ears as much"): 720 Hz beating with 722 (it was 900
+    with 903), the octave fainter, no third harmonic; the motor's hum and the casing's hiss as they were. Whole cycles in
+    its 2 s."""
+    total = PRE + LOOP + XF
+    t = S.t_axis(total)
+    whine = (np.sin(2 * np.pi * 720 * t) + 0.8 * np.sin(2 * np.pi * 722 * t)) * 0.18 + np.sin(2 * np.pi * 1440 * t) * 0.03
+    hum = (S.tone(total, 50) * 0.5 + S.tone(total, 100) * 0.25) * 0.25
+    hiss = S.bandpass(S.white(total, 121), 4000, 9000) * 0.05
+    return S.normalize(S.seamless_loop(S.mix((whine, 1.0), (hum, 1.0), (hiss, 1.0)), LOOP, XF, PRE), -9)
+
+
 def gas_centrifuge() -> Cycle:
-    """A gas centrifuge: the old synthesized rotor's high whine (900 Hz beating with 903) over a drum's real roar at full
-    spin (a washing machine's, the nearest a recording comes)."""
-    return steady((take("spin"), -22)).under(old("machine/gas_centrifuge"), -20)
+    """A gas centrifuge: the rotor's whine (the old synthesized one, lower and softer) over a drum's real roar at full
+    spin (a washing machine's, the nearest a recording comes). Exactly 4 s, so the 2 s rotor stays in step."""
+    return steady((take("spin"), -22), fit=0.0).under(rotor(), -27)
 
 
 def decontamination_shower() -> Cycle:
@@ -189,14 +269,6 @@ def decontamination_shower() -> Cycle:
 def fission_reactor() -> Cycle:
     """The Fission Reactor: the pump room of a real nuclear power plant (Barsebaeck, Sweden)."""
     return steady((take("plant"), -18))
-
-
-def rtg() -> Cycle:
-    """An RTG: nearly silent. A faint transformer hum and, now and then, a real Geiger counter's click from the casing."""
-    c = steady((S.lowpass(take("hum"), 600), -36))
-    for t, k in ((0.7, 0), (2.3, 2), (3.4, 1)):
-        c.put(click(k), t, -40)
-    return c
 
 
 # --- machines timed to their animation (2 s cycles) -----------------------------------------------------------------------
@@ -227,11 +299,26 @@ def circuit_fabricator() -> Cycle:
             .put(take("click_a", aligned=True), 0.15, -34).put(take("click_b", aligned=True), 1.15, -30))
 
 
+def rising(x: np.ndarray, f0: float, f1: float, boost_db: float = 10.0, width: float = 0.35) -> np.ndarray:
+    """{x} through a resonance gliding from {f0} to {f1} Hz as it plays ({width} octaves wide, {boost_db} dB): the air
+    left in a container ringing higher as it fills."""
+    f, t, X = signal.stft(x, S.SR, nperseg=1024, noverlap=768)
+    fc = f0 * (f1 / f0) ** np.clip(t / t[-1], 0.0, 1.0)
+    peak = np.exp(-0.5 * (np.log2((f[:, None] + 1.0) / fc[None, :]) / width) ** 2)
+    _, y = signal.istft(X * (1.0 + (10 ** (boost_db / 20) - 1.0) * peak), S.SR, nperseg=1024, noverlap=768)
+    return np.pad(y, (0, max(0, len(x) - len(y))))[:len(x)]
+
+
 def canning_machine() -> Cycle:
-    """The Canning Machine, one 2 s canister (the nozzle's animation): the nozzle seating with a clunk at 0.3 s, fluid
-    pouring in under the feed pump's hum, a valve snapping shut at 1.6 s and the line venting."""
-    return (Cycle().lay(S.lowpass(take("pump"), 800), -32).put(take("click_b", 0.7, aligned=True), 0.3, -26)
-            .put(take("pour"), 0.4, -22).put(take("flip", aligned=True), 1.6, -26).put(take("puff", 1.3), 1.65, -28))
+    """The Canning Machine, one 2 s canister (the nozzle's animation), on the old synthesized cycle the user preferred
+    (round 1's pour sounded "like a light trickle rather than a pressurised filling"): its pump's hum and the fluid's
+    rush and gurgle, with a real pressurised discharge (a fire extinguisher's) driving the fill from 0.32 to 1.6 s,
+    ringing higher as the canister fills; the real nozzle seating with a clunk at 0.3 s, a valve snapping shut at 1.6 s
+    and the line venting."""
+    fill = R.tail_fade(S.fade(rising(take("fill")[: int(1.3 * S.SR)], 380, 900), 0.04, 0), 0.06)
+    return (Cycle().under(old("machine/canning_machine"), -21).put(fill, 0.32, -27)
+            .put(take("click_b", 0.7, aligned=True), 0.3, -27).put(take("flip", aligned=True), 1.6, -27)
+            .put(take("puff", 1.3), 1.65, -29))
 
 
 def diesel_generator() -> Cycle:
@@ -241,10 +328,12 @@ def diesel_generator() -> Cycle:
 
 
 def battery_charger() -> Cycle:
-    """The Battery Charger: a transformer's hum, its electronics' whine, and a relay's tick each second (the LED chase)."""
-    c = Cycle().lay(take("hum"), -24).lay(take("coil"), -32)
+    """The Battery Charger, kept calm (the user: a charger is "a different case where you don't want as much realism so
+    it's not as constantly annoying"): a transformer's hum, softened, and a soft relay tick each second with the LED
+    chase; no electronics' whine. Quieter than the old (LEVEL_DB)."""
+    c = Cycle().lay(S.lowpass(take("hum"), 300), -26)
     for t in (0.0, 1.0):
-        c.put(take("click_a", 1.4, aligned=True), t, -34)
+        c.put(S.lowpass(take("click_a", 1.4, aligned=True), 2500), t, -40)
     return c
 
 
@@ -255,9 +344,11 @@ def fusion_reactor() -> Cycle:
 
 
 def particle_accelerator() -> Cycle:
-    """The Particle Accelerator: the old synthesized magnet buzz and RF cavity tone (it swells once a second with the
-    bunch's lap), with a physics lab's real vacuum pump and a transformer's hum under it."""
-    return Cycle().lay(take("vacuum"), -26).lay(take("hum"), -30).under(old("machine/particle_accelerator"), -19)
+    """The Particle Accelerator: the old synthesized magnet buzz and RF cavity tone, swelling once a second as the bunch
+    laps the ring, with a real transformer's steady hum (the magnets' supply) under it. (Round 1 also laid a scroll
+    vacuum pump under it, whose own swishes swelled twice more in each 2 s: the user heard "more than one particle
+    group", the swell "not in a circle pattern".)"""
+    return Cycle().lay(take("hum"), -30).under(old("machine/particle_accelerator"), -19)
 
 
 def assembly_bench() -> Cycle:
@@ -276,9 +367,26 @@ def assembly_clank() -> np.ndarray:
 
 
 def reactor_alarm() -> np.ndarray:
-    """The Fission Reactor's critical alarm (1.9 s, played every 2 s while the core is critical): one long buzz of a real
-    factory warning alarm (a fusion company's), played slower: deeper, and filling the 2 s as one blast and a pause."""
-    return R.layer(1.9, (at(take("alarm", 0.75), -14), 0.0, 1.0))
+    """The Fission Reactor's critical alarm, played every 2 s while the core is critical: one long buzz of a real factory
+    warning alarm (a fusion company's), played slower so it is deeper, then the alarm's next buzz held steady about
+    10 dB down until the next blast (the user found the on and off jarring: "maybe making a quieter version persist
+    between the loud ones"). 2.25 s long: the quiet buzz runs on past the next blast's start, so no gap opens if it
+    comes a tick late."""
+    loud = at(take("alarm", 0.75), -14)
+    hold = S.lowpass(at(level_out(take("alarm_hold", 0.75), 0.15, 1.05), -27), 3000)
+    return R.tail_fade(R.layer(2.25, (loud, 0.0, 1.0), (hold, 0.95, 1.0)), 0.1)
+
+
+def level_out(x: np.ndarray, start: float, end: float, window: float = 0.15) -> np.ndarray:
+    """{x} held at one level from {start} to {end} s: its slow swells and sags evened out (a gain following its loudness
+    over {window} s, at most 8 dB either way, eased in and out), the rest left as it was. A buzz that sags as its
+    recording's air gives out, held steady."""
+    k = int(window * S.SR)
+    env = np.sqrt(ndimage.uniform_filter1d(x ** 2, k) + 1e-12)
+    a, b = int(start * S.SR), int(end * S.SR)
+    gain = np.ones_like(x)
+    gain[a:b] = np.clip(np.median(env[a:b]) / env[a:b], 0.4, 2.5)
+    return x * ndimage.uniform_filter1d(gain, int(0.05 * S.SR))
 
 
 def click(k: int) -> np.ndarray:
@@ -308,11 +416,10 @@ def level_loop(loop: np.ndarray, target: float, ceiling_db: float = -1.0) -> np.
     return loop
 
 
-LOOPS = {"machine/combustion_generator": combustion_generator, "machine/ore_crusher": ore_crusher,
-         "machine/arc_furnace": arc_furnace, "machine/electrolytic_separator": electrolytic_separator,
-         "machine/cryogenic_condenser": cryogenic_condenser, "machine/water_pump": water_pump,
-         "machine/gas_centrifuge": gas_centrifuge, "machine/decontamination_shower": decontamination_shower,
-         "machine/fission_reactor": fission_reactor, "machine/rtg": rtg,
+LOOPS = {"machine/combustion_generator": combustion_generator, "machine/arc_furnace": arc_furnace,
+         "machine/electrolytic_separator": electrolytic_separator, "machine/cryogenic_condenser": cryogenic_condenser,
+         "machine/water_pump": water_pump, "machine/gas_centrifuge": gas_centrifuge,
+         "machine/decontamination_shower": decontamination_shower, "machine/fission_reactor": fission_reactor,
          "machine/industrial_press": industrial_press, "machine/fusion_fuel_synthesizer": fusion_fuel_synthesizer,
          "machine/chemical_plant": chemical_plant, "machine/circuit_fabricator": circuit_fabricator,
          "machine/canning_machine": canning_machine, "machine/diesel_generator": diesel_generator,
@@ -322,14 +429,19 @@ LOOPS = {"machine/combustion_generator": combustion_generator, "machine/ore_crus
 
 def machine_set() -> dict[str, np.ndarray]:
     """Every machine sound made from recordings, each as loud as the synthesized one it replaces (the Exotic Matter
-    Fabricator, the Singularity Reactor and its collapse stay synthesized)."""
+    Fabricator, the Singularity Reactor and its collapse, the Ore Crusher and the RTG stay synthesized)."""
     import loudness  # noqa: PLC0415
     out = {}
     for rel, make in LOOPS.items():
-        target = loudness.measure_array(tiled(old(rel), 2), S.SR)["S-max"]
-        out[rel] = level_loop(make().close(), target)
+        cycle = make()
+        loop = cycle.close()
+        if cycle.steady:
+            dip = seam_dip(loop)
+            assert dip < 4.0, f"{rel} is {dip:.1f} dB quieter across its seam than as a whole"
+        target = loudness.measure_array(tiled(old(rel), 2), S.SR)["S-max"] + LEVEL_DB.get(rel, 0.0)
+        out[rel] = level_loop(loop, target)
     for rel, x in {"machine/assembly_clank": assembly_clank(), "reactor/alarm": reactor_alarm(), **geiger_clicks()}.items():
-        out[rel] = R.loud_as(x, loudness.measure_array(old(rel), S.SR)["S-max"])
+        out[rel] = R.loud_as(x, loudness.measure_array(old(rel), S.SR)["S-max"] + LEVEL_DB.get(rel, 0.0))
     return out
 
 

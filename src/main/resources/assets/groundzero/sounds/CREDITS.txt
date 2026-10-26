@@ -8,7 +8,6 @@ Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/):
   "BurlingtonIndustriesImplosion.wav" by the_toilet_guy, https://freesound.org/people/the_toilet_guy/sounds/98852/
 
 Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/1.0/):
-  "dry_scroll_pump .wav" by 01me0w, https://freesound.org/people/01me0w/sounds/477409/
   "air compressor.wav" by aerror, https://freesound.org/people/aerror/sounds/328752/
   "Hydraulic press working and shut down" by Andriejus, https://freesound.org/people/Andriejus/sounds/866648/
   "Mud Splat" by Breviceps, https://freesound.org/people/Breviceps/sounds/445109/
@@ -17,12 +16,10 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "G16-09-Factory-Overhead Crane.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438133/
   "G40-15-Single Cylinder Engine.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438663/
   "G32-12-Arc Welding.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438496/
-  "Coil Whine" by csigusz_foxoup, https://freesound.org/people/csigusz_foxoup/sounds/711418/
   "Opening Closing Big Heavy Metal Exterior Door" by deleted_user_7146007, https://freesound.org/people/deleted_user_7146007/sounds/383830/
   "Punch Press, 20 Ton, Clip1.wav" by dnewtonjr, https://freesound.org/people/dnewtonjr/sounds/232597/
   "Maroon.wav" by dwareing, https://freesound.org/people/dwareing/sounds/172983/
   "fuse_burning_48khz.wav" by elonen, https://freesound.org/people/elonen/sounds/45650/
-  "Liquid Pouring No Ice.wav" by ericlichtenberg, https://freesound.org/people/ericlichtenberg/sounds/432350/
   "Metal Grinding Very Slow" by Ev-Dawg, https://freesound.org/people/Ev-Dawg/sounds/336001/
   "small moving metallic part" by F3ather, https://freesound.org/people/F3ather/sounds/725813/
   "ROAD FLARE.wav" by frankelmedico, https://freesound.org/people/frankelmedico/sounds/348766/
@@ -67,5 +64,4 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "Electronic sliding gate" by ThabzMalik, https://freesound.org/people/ThabzMalik/sounds/767060/
   "Afterburner" by TiesWijnen, https://freesound.org/people/TiesWijnen/sounds/413312/
   "Firecracker Explosion" by unfa, https://freesound.org/people/unfa/sounds/609588/
-  "stonemachine.wav" by vumseplutten1709, https://freesound.org/people/vumseplutten1709/sounds/243355/
   "Washing Machine Spin Cycle" by Yoyodaman234, https://freesound.org/people/Yoyodaman234/sounds/270275/
