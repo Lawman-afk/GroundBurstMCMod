@@ -968,8 +968,9 @@ def cruise_sounds() -> dict[str, np.ndarray]:
     return out
 
 
-# (The blasts are made from recordings now, blasts.py; nuke_set, tsar_set and blast_sets above are the synthesized ones they
-# replaced, kept to compare.)
+# (The blasts are made from recordings now, blasts.py. nuke_set, tsar_set and blast_sets above are the synthesized ones they
+# replaced, kept to compare; blast_source, nuke_source and tsar_source are still the bed of the large, nuclear and Tsar
+# blasts since round 2, the boom and roar the recordings lie on.)
 RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds]
 

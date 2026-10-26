@@ -1345,8 +1345,25 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   and its fall; nuclear and Tsar, the TNT and the water tower slowed to under half speed, close lightning's crackle, a
   building's collapse, then thunder slowed and carried kilometres. Debris lands 1 to 5 s after the bang, as debris
   thrown that high does. The old synthesized recipes stay in recipes.py to compare.
+- **The blasts, round 2** (the user's ratings of round 1 on the Sound Lab). Better than the old: the small set and the
+  medium near, far and very far; the large far liked as it was. Six were kept (the small mid, far and very far, the
+  medium near and very far, the large far). Rated down: everything with thunder in it (the large near and very far, all
+  eight nuclear and Tsar sounds) "sounds like lightning"; the chimney (the large mid) "way too weak"; the factory
+  demolition (the medium mid) had clapping and the crowd's ambience in it; the medium far too weak; the small near "more
+  like a firecracker than a grenade". So, 14 remade: no thunder or lightning anywhere (the thunder, lightning, water
+  tower and factory cuts dropped); the large, nuclear and Tsar blasts lie on the old synthesized recipes' boom and roar
+  (`recipes.blast_source`, `nuke_source`, `tsar_source`), whose weight the user preferred, with the slowed TNT, the
+  pressure shove, the collapse kept low and the debris over them, and their further bands are the old bands with the new
+  blast carried under them; the medium mid is the near TNT carried 50 m; a low whump (`blasts.thump`, a saturated
+  falling sine) and a harder drive into a soft limiter (`sources.punch`) under the small near and the medium mid and far.
+- **What the ratings taught** (for the sounds still to come): real recordings carry the texture (the crack, the debris,
+  the open air's tail) but rarely the weight a game's blast needs, so the low end is built under them; thunder and
+  lightning never stand in for a blast (they are recognized at once); a recording with people in it (voices, clapping)
+  is no use however good its bang; a small charge needs body under its snap or it reads as a firework. Each round
+  remakes only what was rated down and keeps the rest.
 - **The Sound Lab** (a review web page): every sound before and
-  remade, side by side with waveforms, a realism rating (1 to 5), which is better, and a note. Ratings are kept in the
+  remade (every take so far: before, round 1, round 2), side by side with waveforms, a realism rating (1 to 5) of
+  the newest, which is best, and a note. Ratings are kept in the
   page's database (`verdicts/<set>.<band>@r<round>`); they are read to plan the next round. The user's ears decide.
 
 ---
@@ -3060,6 +3077,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | Superweapons after the user's first look (§19.5): the SCUD Storm's pad grows to 15 x 15 so a ring of scrap (the game's) fits round its tank with the SCUDs moved out; the nuke's blast down a fifth (radii and damage x0.8, "20 kt"), the Toxin SCUD's blast and toxin up a third (x1.33: residue 21 blocks, cloud 16); "power" taken as Minecraft's explosion power, the blast's size and damage (the radiation field stays 200 blocks). Round sections in the big structures sink every other plank 0.15 px, not 0.06 (they are seen from further off). |
 | 2026-10-24 | Slice 9c (the user chose the cruise launcher alone, no erector Launch Pad: the Launch Silo does that job; and a motor that makes a cruise missile): any Light or Medium missile built with a Cruise Engine (1,500 blocks) is a cruise missile, each warhead its own winged airframe; it flies a plan fixed at launch (out of its box at 45 degrees on its booster, a level turn, 40 blocks over the ground as surveyed at launch, a pop-up and a dive), and only the Cruise Missile Launcher (two boxes, 60k FE a missile) fires it; the vertical launchers refuse it. Its boxes' covers are frangible (a hinged door would swing above the clear space) and its wings stay stowed until it is clear of its box (they are wider than the box). §17.11. |
 | 2026-10-27 | Sound remaster (the user chose the hybrid; §13.1): sounds are made from free real recordings (CC0 or CC BY 4.0 only, no non-commercial licences) wherever reality has them, with physics for what recordings cannot give (air absorption by ISO 9613-1, the blast wave's pulse, slowing for size) and synthesis only where nothing real sounds alike; blasts first. Raw recordings stay out of git (a ledger fetches them again); the mod ships a credits file. The user listens and rates on the Sound Lab page, whose ratings plan the next round. |
+| 2026-10-27 | Sound remaster, round 2 (the user's ratings; §13.1): no thunder or lightning in any blast (it sounds like lightning); the large, nuclear and Tsar blasts are built on the old synthesized boom and roar, whose weight the user preferred, with the recordings over them; a low whump and a harder drive where a blast was weak. Sounds rated well are kept as they are: each round remakes only what was rated down. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

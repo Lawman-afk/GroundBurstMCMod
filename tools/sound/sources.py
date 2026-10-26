@@ -208,6 +208,13 @@ def match(x: np.ndarray, reference_db: float) -> np.ndarray:
     return x * 10 ** ((reference_db - rms_db(x)) / 20)
 
 
+def punch(x: np.ndarray, drive_db: float) -> np.ndarray:
+    """Denser and heavier: driven {drive_db} into a soft limiter, so the body of the blast comes up under its first crack
+    (how a blast is made to sound powerful rather than thin; the crack stays on top)."""
+    y = S.normalize(x, drive_db)
+    return S.limit(y, -0.5, knee=1.2)
+
+
 def finish(x: np.ndarray, peak_db: float = -1.0, tail: float = 0.4) -> np.ndarray:
     """Ready for the game: peak-normalised under a soft limiter (the Vorbis encoder overshoots a raw peak), its tail
     faded and the silence after trimmed."""
