@@ -1,7 +1,7 @@
 {
   "title": "Reactor safety",
   "icon": "groundzero:lead_lined_casing",
-  "order": 2,
+  "order": 6,
   "items": [
     "groundzero:nuclear_waste",
     "groundzero:corium",
@@ -14,7 +14,7 @@
     },
     {
       "type": "text",
-      "text": "**Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day."
+      "text": "**Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is radioactive for a day."
     },
     {
       "type": "table",
@@ -36,8 +36,16 @@
           "the longer"
         ],
         [
-          "Contaminated",
-          "48 blocks, 1 day"
+          "Radiation",
+          "48 blocks"
+        ],
+        [
+          "  at the core",
+          "40,000 RAD/h"
+        ],
+        [
+          "  safe again",
+          "after a day"
         ]
       ],
       "text": "",
@@ -50,7 +58,7 @@
     },
     {
       "type": "text",
-      "text": "**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**, worse the nearer the crater: hunger, slowness and damage that ordinary armour does not stop, from half a heart every two seconds at level I to four hearts a second at level IV. A [hazmat suit](safety/hazmat_suits) stops most of it. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune."
+      "text": "**Radiation.** The land round a meltdown is [radioactive](safety/radiation): 40,000 RAD/h at the core when fresh, falling off to nothing 48 blocks out, and halving every couple of minutes. Anything alive in it takes a dose, and the dose brings **Radiation Sickness**. Corium is deadly up close. A [hazmat suit](safety/hazmat_suits) stops most of what comes from outside; check with a [Geiger Counter](safety/geiger_counter) before going in."
     },
     {
       "type": "spotlight",
@@ -60,8 +68,9 @@
     {
       "type": "links",
       "entries": [
+        "safety/radiation",
         "safety/hazmat_suits",
-        "safety/decontamination_shower"
+        "safety/geiger_counter"
       ],
       "text": ""
     }

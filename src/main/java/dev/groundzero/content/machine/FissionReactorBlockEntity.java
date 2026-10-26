@@ -16,7 +16,6 @@ import dev.groundzero.content.multiblock.MultiblockDefinition;
 import dev.groundzero.content.multiblock.MultiblockPartBlock;
 import dev.groundzero.content.multiblock.PartCut;
 import dev.groundzero.content.multiblock.PortBlockEntity;
-import dev.groundzero.content.nuclear.Contamination;
 import dev.groundzero.content.nuclear.FuelBurnup;
 import dev.groundzero.content.nuclear.GZNuclear;
 import dev.groundzero.content.nuclear.Meltdown;
@@ -104,9 +103,13 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     public static final float HEAT_RISE = 1_150;
     public static final float WATER_QUALITY = 1.0f, HEAVY_WATER_QUALITY = 1.6f;
     public static final int SCRAM_HEAT = 900, WARN_HEAT = 700, AMBIENT = 20, MELTDOWN_HEAT = 1_400;
-    /** The contaminated zone a meltdown leaves: radius, and how long it lasts (one day). */
+    /**
+     * The radiation a meltdown leaves (DESIGN.md §21.8): radius, how long until its centre is under 10 RAD/h (one day),
+     * and its centre's dose rate when fresh (RAD/h). The corium left in the core is radioactive on its own.
+     */
     public static final float CONTAMINATION_RADIUS = 48;
     public static final int CONTAMINATION_TICKS = 24_000;
+    public static final float CONTAMINATION_PEAK = 40_000;
     /** Buffers per fuel channel and their floors; the tank stops short of what a GUI sync slot can carry. */
     public static final int ENERGY_PER_CHANNEL = 12_500, MIN_ENERGY = 50_000, COOLANT_PER_CHANNEL = 2_000, MIN_COOLANT = 4_000,
             COOLANT_MAX = 32_000;
@@ -730,7 +733,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
             level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
         }
         Meltdown.afterBlast(level, centre, Blasts.detonate(level, centre, Blasts.profile("reactor_meltdown"), null));
-        Contamination.of(level).add(new Contamination.Zone(centre, CONTAMINATION_RADIUS, 1f, level.getGameTime(), CONTAMINATION_TICKS));
+        dev.groundzero.content.radiation.RadiationSources.of(level).add(dev.groundzero.content.radiation.RadiationSource.lasting(centre,
+                CONTAMINATION_RADIUS, CONTAMINATION_PEAK, CONTAMINATION_TICKS, level.getGameTime(),
+                dev.groundzero.config.GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
     }
 
     /** Pushes power out of the Energy Port. */

@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -39,6 +38,8 @@ public final class NeutronBurst {
     public static final float LETHAL_RADIUS = 180, WITHER_RADIUS = 120;
     /** A dose (0 to 1) at or over this kills; under it, down to {@link #SICK_DOSE}, makes radiation-sick. */
     public static final double LETHAL_DOSE = 0.3, SICK_DOSE = 0.03;
+    /** Rad taken for a dose of 1 (so {@link #SICK_DOSE} is 120 rad, the start of Radiation Sickness I). */
+    public static final double RAD_PER_DOSE = 4_000;
     /** How much one block on the line takes out (as e^-sum): ordinary solid, liquid, and dense shielding. */
     private static final double SOLID = 0.25, LIQUID = 0.4, DENSE = 1.0;
     /** How much of a suit's radiation protection counts against neutrons. */
@@ -76,8 +77,9 @@ public final class NeutronBurst {
             double dose = (1 - Math.pow(d / reach, 2)) * shielding(level, at, body) * (1 - SUIT_SHARE * GZArmor.radiationProtection(e));
             if (dose >= LETHAL_DOSE) {
                 e.hurtServer(level, level.damageSources().source(GZEffects.RADIATION_DAMAGE), 1000);
-            } else if (dose >= SICK_DOSE) {
-                e.addEffect(new MobEffectInstance(GZEffects.RADIATION_SICKNESS, 1200, Math.min(3, (int) (dose * 12))));
+            } else if (dose > 0.001) {
+                // Taken at once, as rad (DESIGN.md §21.8): from SICK_DOSE (120 rad) it brings Radiation Sickness I and up.
+                dev.groundzero.content.radiation.Radiation.addDose(e, (float) (dose * RAD_PER_DOSE));
             }
         }
         WITHERING.computeIfAbsent(level, l -> new ArrayList<>()).add(new Withering(BlockPos.containing(at),

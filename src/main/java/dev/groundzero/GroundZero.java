@@ -41,6 +41,7 @@ public class GroundZero {
         GZChemicals.init();
         dev.groundzero.content.nuclear.GZNuclear.init();
         dev.groundzero.content.gear.GZArmor.init();
+        dev.groundzero.content.radiation.RadiationItems.init();
         dev.groundzero.content.ordnance.GZOrdnance.init();
         dev.groundzero.content.ordnance.GZOrdnance.register();
         dev.groundzero.content.launch.GZLaunch.init();
@@ -68,7 +69,8 @@ public class GroundZero {
         dev.groundzero.content.ordnance.GZOrdnance.ENTITIES.register(modBus);
         dev.groundzero.content.launch.GZLaunch.register(modBus);
         dev.groundzero.content.effect.EffectSystems.register();
-        dev.groundzero.content.nuclear.Contamination.register();
+        dev.groundzero.content.radiation.GZRadiation.register(modBus);
+        dev.groundzero.content.radiation.RadiationItems.register(modBus);
         dev.groundzero.content.nuclear.NeutronBurst.register();
         dev.groundzero.content.nuclear.Meltdown.register();
         GZWorldgen.PLACEMENT_MODIFIERS.register(modBus);

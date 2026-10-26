@@ -1,0 +1,43 @@
+{
+  "title": "Geiger Counter and Dosimeter",
+  "icon": "groundzero:geiger_counter",
+  "order": 1,
+  "items": [
+    "groundzero:geiger_counter",
+    "groundzero:dosimeter_badge"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundzero:geiger_counter",
+      "text": "A civil-defence survey meter. Hold it in either hand: it **clicks** at random, faster the stronger the radiation where you stand (a few clicks a second near uranium ore, a roar in a crater), and its **meter** shows in a corner of the screen: a needle on a scale from 0.1 to 10,000 RAD/h and the reading. Anywhere in your hotbar it still clicks, and shows the reading alone."
+    },
+    {
+      "type": "text",
+      "text": "**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 10.\n\n**Power.** It runs on its own charge, 20,000 FE, using 5 FE a second while it is on (an hour on a full charge). Charge it in a [Battery Charger](power/batteries). An EMP knocks it out until 10 seconds after you leave the field."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:dosimeter_badge",
+      "text": "A film badge: carry it anywhere in your inventory. Its film darkens with the dose you take (white, yellow, orange, red, black), its tooltip gives the dose in rad and the sickness it brings, and the dose shows under the Geiger reading."
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:geiger_counter",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundzero:dosimeter_badge",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/radiation",
+        "safety/radiation_medicine"
+      ],
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "values": {
+    "groundzero:cooled_corium": {
+      "rate": 300.0
+    },
+    "groundzero:corium": {
+      "rate": 2000.0
+    },
+    "groundzero:deepslate_uranium_ore": {
+      "rate": 0.5
+    },
+    "groundzero:raw_uranium_block": {
+      "rate": 5.0
+    },
+    "groundzero:uranium_block": {
+      "rate": 8.0
+    },
+    "groundzero:uranium_ore": {
+      "rate": 0.5
+    }
+  }
+}

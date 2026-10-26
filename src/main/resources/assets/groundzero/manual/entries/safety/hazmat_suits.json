@@ -1,7 +1,7 @@
 {
   "title": "Hazmat suits",
   "icon": "groundzero:hazmat_hood",
-  "order": 3,
+  "order": 7,
   "items": [
     "groundzero:hazmat_hood",
     "groundzero:hazmat_coat",
@@ -58,7 +58,7 @@
     },
     {
       "type": "text",
-      "text": "In the contaminated land round a [meltdown](safety/reactor_safety), a full Hazmat Suit keeps Radiation Sickness to its second level even at the crater, and the lead-lined suit to the first. Wash it off afterwards in a [Decontamination Shower](safety/decontamination_shower).\n\nThe hood needs plastic sheet, a glass pane for the visor and charcoal for the filter; the lead-lined suit is a Hazmat Suit piece with four lead plates round it."
+      "text": "Against [radiation](safety/radiation), a suit stops its share of what comes from outside (craters, meltdowns, radioactive blocks), not of what you carry: keep that in a [Lead Container](safety/lead_container).\n\nThe hood needs plastic sheet, a glass pane for the visor and charcoal for the filter; the lead-lined suit is a Hazmat Suit piece with four lead plates round it."
     },
     {
       "type": "crafting",
@@ -88,6 +88,7 @@
     {
       "type": "links",
       "entries": [
+        "safety/radiation",
         "safety/reactor_safety",
         "safety/decontamination_shower"
       ],

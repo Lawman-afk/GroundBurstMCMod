@@ -13,7 +13,8 @@ import dev.groundzero.content.launch.LaunchComplexBlockEntity;
 import dev.groundzero.content.launch.LaunchSiloBlockEntity;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
-import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.radiation.RadiationSource;
+import dev.groundzero.content.radiation.RadiationSources;
 import dev.groundzero.content.nuclear.GZEffects;
 import dev.groundzero.content.nuclear.NeutronBurst;
 import dev.groundzero.content.ordnance.GZOrdnance;
@@ -44,7 +45,7 @@ final class NuclearTests {
         GZGameTests.testOpenSky("neutron_warhead_kills_through_all_but_thick_walls", GZGameTests.FLOOR_16, 100, NuclearTests::neutron);
         GZGameTests.test("dirty_warhead_goes_off_however_set_off", GZGameTests.FLOOR_16, 100, NuclearTests::dirty);
         GZGameTests.test("dirty_warhead_flies_from_any_silo", GZGameTests.FLOOR_16, 20, NuclearTests::dirtyMissile);
-        GZGameTests.test("contamination_zones_reach_clients_intact", GZGameTests.FLOOR_16, 20, NuclearTests::zonesPayload);
+        GZGameTests.test("radiation_sources_reach_clients_intact", GZGameTests.FLOOR_16, 20, NuclearTests::sourcesPayload);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -110,7 +111,7 @@ final class NuclearTests {
         });
     }
 
-    /** Delivered by a missile, a tactical nuke blasts a crater and leaves contamination at full strength. */
+    /** Delivered by a missile, a tactical nuke blasts a crater and leaves its fallout at full strength. */
     private static void fullYield(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 1, 8);
@@ -122,9 +123,9 @@ final class NuclearTests {
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, 0, 8))).isAir(), "a crater where it hit");
-            float level = Contamination.of(helper.getLevel()).levelAt(helper.getLevel(), centre);
-            helper.assertTrue(level > 0.9f, "full contamination at ground zero: " + level);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            float rate = RadiationSources.of(helper.getLevel()).rateAt(helper.getLevel(), centre);
+            helper.assertTrue(rate > 0.9f * Charges.falloutPeak(ChargeKind.TACTICAL_NUCLEAR_WARHEAD), "full fallout at ground zero: " + rate);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 
@@ -157,14 +158,19 @@ final class NuclearTests {
         helper.succeed();
     }
 
-    /** Our contamination zone (centred where the warhead went off). */
-    private static Contamination.Zone zoneAt(GameTestHelper helper, Vec3 centre) {
-        var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
-        helper.assertTrue(zone.isPresent(), "contamination where it went off");
-        return zone.get();
+    /** Our radiation source (centred where the warhead went off). */
+    static RadiationSource sourceAt(GameTestHelper helper, Vec3 centre) {
+        var source = RadiationSources.of(helper.getLevel()).sources().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
+        helper.assertTrue(source.isPresent(), "fallout where it went off");
+        return source.get();
     }
 
-    /** A boosted fission warhead delivered by a missile: a crater, and full contamination reaching past a fission warhead's. */
+    /** Whether {@code source} falls under 10 RAD/h after {@code lasts} ticks (its half-life is the one that gives). */
+    static boolean lasts(RadiationSource source, int lasts) {
+        return source.halfLife() == RadiationSource.lasting(Vec3.ZERO, 1, source.peak(), lasts, 0, 1).halfLife();
+    }
+
+    /** A boosted fission warhead delivered by a missile: a crater, and full fallout reaching past a fission warhead's. */
     private static void boosted(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 1, 8);
@@ -176,11 +182,11 @@ final class NuclearTests {
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(8, 0, 8))).isAir(), "a crater where it hit");
-            float level = Contamination.of(helper.getLevel()).levelAt(helper.getLevel(), centre);
-            helper.assertTrue(level > 0.9f, "full contamination at ground zero: " + level);
-            Contamination.Zone zone = zoneAt(helper, centre);
-            helper.assertTrue(Math.abs(zone.radius() - 220 * 0.04f) < 0.01f && zone.duration() == 48_000, "220 blocks for two days: " + zone);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            float rate = RadiationSources.of(helper.getLevel()).rateAt(helper.getLevel(), centre);
+            helper.assertTrue(rate > 0.9f * Charges.falloutPeak(ChargeKind.BOOSTED_FISSION_WARHEAD), "full fallout at ground zero: " + rate);
+            RadiationSource zone = sourceAt(helper, centre);
+            helper.assertTrue(Math.abs(zone.radius() - 220 * 0.04f) < 0.01f && lasts(zone, 48_000), "220 blocks for two days: " + zone);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 
@@ -215,9 +221,9 @@ final class NuclearTests {
             helper.assertBlockPresent(Blocks.AIR, new BlockPos(6, 1, 8));
             helper.assertBlockPresent(Blocks.AIR, new BlockPos(10, 2, 9));
             helper.assertBlockPresent(Blocks.OAK_LOG, new BlockPos(10, 1, 9));
-            Contamination.Zone zone = zoneAt(helper, centre);
-            helper.assertTrue(zone.duration() == 6_000, "its fallout lasts a quarter of a day: " + zone);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            RadiationSource zone = sourceAt(helper, centre);
+            helper.assertTrue(lasts(zone, 6_000), "its fallout lasts a quarter of a day: " + zone);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
             sheltered.discard();
         });
     }
@@ -235,10 +241,10 @@ final class NuclearTests {
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(at)).isAir(), "the warhead is gone");
-            Contamination.Zone zone = zoneAt(helper, centre);
-            helper.assertTrue(Math.abs(zone.strength() - 0.8f) < 0.01f && zone.duration() == 120_000 && Math.abs(zone.radius() - 4.5f) < 0.01f,
-                    "a dirty warhead's waste (90 blocks, 0.8, five days), not a fizzle's: " + zone);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            RadiationSource zone = sourceAt(helper, centre);
+            helper.assertTrue(zone.peak() == Charges.falloutPeak(ChargeKind.DIRTY_WARHEAD) && lasts(zone, 120_000)
+                    && Math.abs(zone.radius() - 4.5f) < 0.01f, "a dirty warhead's waste (90 blocks, 20 000 RAD/h, five days), not a fizzle's: " + zone);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 
@@ -263,18 +269,18 @@ final class NuclearTests {
         helper.succeed();
     }
 
-    /** The contaminated zones clients are sent (to draw their fallout) come through the wire as they were sent. */
-    private static void zonesPayload(GameTestHelper helper) {
-        var zones = java.util.List.of(new Contamination.Zone(new Vec3(1.5, 64, -2.25), 180, 1f, 1234L, 48_000),
-                new Contamination.Zone(new Vec3(-300, 70.5, 9), 90, 0.8f, 99L, 120_000));
+    /** The radiation sources clients are sent (to draw their fallout) come through the wire as they were sent. */
+    private static void sourcesPayload(GameTestHelper helper) {
+        var sources = java.util.List.of(new RadiationSource(new Vec3(1.5, 64, -2.25), 180, 60_000, 3_824, 1234L),
+                new RadiationSource(new Vec3(-300, 70.5, 9), 90, 20_000, 10_940, 99L));
         var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), helper.getLevel().registryAccess());
-        dev.groundzero.content.nuclear.ContaminationPayloads.Zones.CODEC.encode(buf, new dev.groundzero.content.nuclear.ContaminationPayloads.Zones(zones));
-        var back = dev.groundzero.content.nuclear.ContaminationPayloads.Zones.CODEC.decode(buf);
-        helper.assertTrue(back.zones().equals(zones) && buf.readableBytes() == 0, "the zones survive the trip: " + back.zones());
+        RadiationSources.Sync.CODEC.encode(buf, new RadiationSources.Sync(sources));
+        var back = RadiationSources.Sync.CODEC.decode(buf);
+        helper.assertTrue(back.sources().equals(sources) && buf.readableBytes() == 0, "the sources survive the trip: " + back.sources());
         helper.succeed();
     }
 
-    /** Set off where it stands, a nuclear warhead only fizzles: a small blast and weaker contamination. */
+    /** Set off where it stands, a nuclear warhead only fizzles: a small blast and weaker fallout. */
     private static void fizzles(GameTestHelper helper) {
         floor(helper);
         BlockPos at = new BlockPos(8, 1, 8);
@@ -283,11 +289,11 @@ final class NuclearTests {
         Charges.caughtInBlast(helper.getLevel(), helper.absolutePos(at), helper.getLevel().getBlockState(helper.absolutePos(at)));
         helper.succeedWhen(() -> {
             helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(at)).isAir(), "the warhead is gone");
-            float level = Contamination.of(helper.getLevel()).levelAt(helper.getLevel(), centre);
-            helper.assertTrue(level > 0.3f && level <= Charges.FIZZLE_STRENGTH + 0.01f, "a fizzle's contamination: " + level);
+            float rate = RadiationSources.of(helper.getLevel()).rateAt(helper.getLevel(), centre);
+            helper.assertTrue(rate > 0.75f * Charges.FIZZLE_PEAK && rate <= Charges.FIZZLE_PEAK + 1, "a fizzle's fallout: " + rate);
             // A fission warhead's real blast (crater 40, 12 at this test scale) would have taken the floor 6 blocks off.
             helper.assertTrue(!helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(14, 0, 8))).isAir(), "no nuclear crater");
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 }

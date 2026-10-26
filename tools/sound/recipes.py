@@ -18,6 +18,7 @@ import blasts as BL  # noqa: E402
 import launches as LA  # noqa: E402
 import ordnance as ORD  # noqa: E402
 import machines as MA  # noqa: E402
+import gear as GE  # noqa: E402
 
 
 # --- Geiger counter ---------------------------------------------------------------------------------------------------
@@ -982,7 +983,7 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
 RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
-           MA.machine_set]
+           MA.machine_set, GE.gear_set]
 
 
 def build_sounds() -> list[Path]:

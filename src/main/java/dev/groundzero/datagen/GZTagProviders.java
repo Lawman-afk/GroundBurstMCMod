@@ -161,6 +161,22 @@ public final class GZTagProviders {
             tag(Tags.BlockItems.BUDDING_BLOCKS.block()).add(GZResources.BUDDING_VOIDSTONE.block().key());
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
             tag(Tags.BlockItems.CLUSTERS.block()).add(GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
+
+            // Radiation shielding (DESIGN.md §21.8): lead stops half of it in a fifth of a block, dense blocks in half one.
+            tag(dev.groundzero.content.radiation.GZRadiation.SHIELD_LEAD).add(GZResources.LEAD_BLOCK.block().key(),
+                    GZResources.RAW_LEAD_BLOCK.block().key(), GZMultiblocks.LEAD_LINED_CASING.block().key());
+            tag(dev.groundzero.content.radiation.GZRadiation.SHIELD_DENSE).add(vanilla(net.minecraft.world.level.block.Blocks.OBSIDIAN),
+                    vanilla(net.minecraft.world.level.block.Blocks.CRYING_OBSIDIAN), vanilla(net.minecraft.world.level.block.Blocks.REINFORCED_DEEPSLATE),
+                    vanilla(net.minecraft.world.level.block.Blocks.IRON_BLOCK), vanilla(net.minecraft.world.level.block.Blocks.GOLD_BLOCK),
+                    vanilla(net.minecraft.world.level.block.Blocks.NETHERITE_BLOCK), vanilla(net.minecraft.world.level.block.Blocks.ANCIENT_DEBRIS),
+                    GZResources.TUNGSTEN_BLOCK.block().key(), GZResources.URANIUM_BLOCK.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.REINFORCED_CONCRETE.block().key(),
+                    dev.groundzero.content.launch.GZLaunch.HAZARD_CONCRETE.block().key())
+                    .addTag(Tags.BlockItems.CONCRETES.block());
+        }
+
+        private static net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block> vanilla(net.minecraft.world.level.block.Block block) {
+            return block.builtInRegistryHolder().key();
         }
 
         private void storage(WithItem<Block> block, String material, TagKey<Block> tier) {

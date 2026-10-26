@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Corium (DESIGN.md §7, meltdown): the molten remains of a melted-down reactor core. It glows, smokes, burns whatever
  * stands on it, sets flammable things next to it alight, and over about ten minutes cools into Cooled Corium. Both are
- * {@code groundzero:radioactive} (the radiation field of Phase 12 will make them emit).
+ * radioactive (DESIGN.md §21.8, the {@code groundzero:radioactivity} data map): 2 000 RAD/h a block away fresh, 300 cooled.
  */
 public class CoriumBlock extends Block {
     /** Chance a random tick cools it (random ticks come about every minute per block at the default rate). */

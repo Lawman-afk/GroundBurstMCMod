@@ -310,6 +310,12 @@
     ],
     "subtitle": "subtitles.groundzero.emp.zap"
   },
+  "geiger.alarm": {
+    "sounds": [
+      "groundzero:geiger/alarm"
+    ],
+    "subtitle": "subtitles.groundzero.geiger.alarm"
+  },
   "geiger.click": {
     "sounds": [
       "groundzero:geiger/click1",
@@ -318,6 +324,15 @@
       "groundzero:geiger/click4"
     ],
     "subtitle": "subtitles.groundzero.geiger.click"
+  },
+  "geiger.switch": {
+    "sounds": [
+      {
+        "attenuation_distance": 8,
+        "name": "groundzero:geiger/switch"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.geiger.switch"
   },
   "grenade.pin": {
     "sounds": [
@@ -333,6 +348,24 @@
       }
     ],
     "subtitle": "subtitles.groundzero.launch.siren"
+  },
+  "lead_container.close": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:gear/lead_container_close"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.lead_container.close"
+  },
+  "lead_container.open": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:gear/lead_container_open"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.lead_container.open"
   },
   "machine.arc_furnace": {
     "sounds": [
@@ -507,6 +540,15 @@
       "groundzero:machine/water_pump"
     ],
     "subtitle": "subtitles.groundzero.machine.water_pump"
+  },
+  "medical.injector": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundzero:gear/injector"
+      }
+    ],
+    "subtitle": "subtitles.groundzero.medical.injector"
   },
   "mine.click": {
     "sounds": [

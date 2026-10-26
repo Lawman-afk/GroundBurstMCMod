@@ -133,6 +133,10 @@ public final class FxPhotographer {
                 new Scene("effects", "effects", 16, 22, List.of(8, 30, 70, 140)),
                 new Scene("frozen", "frozen", 6, 18, List.of(10, 60)),
                 new Scene("gas_wall", "gas_wall", 9, 20, List.of(60, 140)),
+                // Slice 12a: the Geiger Counter in hand in a field of 2,000 RAD/h (its meter, the dose, the model in hand),
+                // and the Lead Container's screen.
+                new Scene("geiger", "geiger", 4, 15, List.of(40, 80)),
+                new Scene("lead_ui", "lead_ui", 4, 15, List.of(30)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
@@ -223,6 +227,46 @@ public final class FxPhotographer {
             }
             level.addFreshEntity(stand);
         }
+    }
+
+    /**
+     * The Geiger Counter held in a field of 2,000 RAD/h with a dose of 250 rad taken (slice 12a): its meter and the dose
+     * in the HUD, the counter's model in hand, the badge, the Lead Container and the medicine in the hotbar, uranium in view.
+     */
+    private static void geiger(ServerLevel level, int x, int ground) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.SURVIVAL);                                     // the creative are immune to radiation
+        var inventory = player.getInventory();
+        inventory.clearContent();
+        inventory.setSelectedSlot(0);
+        inventory.setItem(0, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.GEIGER_COUNTER.get()));
+        inventory.setItem(1, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER.get()));
+        inventory.setItem(2, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.RAD_AWAY.get(), 4));
+        inventory.setItem(3, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.POTASSIUM_IODIDE.get(), 8));
+        inventory.setItem(4, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.ANTI_RAD_INJECTOR.get(), 2));
+        inventory.setItem(8, new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.DOSIMETER_BADGE.get()));
+        dev.groundzero.content.radiation.Radiation.setDose(player, 250);
+        dev.groundzero.content.radiation.RadiationSources.of(level).add(new dev.groundzero.content.radiation.RadiationSource(
+                player.position(), 12, 2_000, 1_000_000, level.getGameTime()));
+        for (int dz = -1; dz <= 1; dz++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x - 1, ground, dz),
+                    dev.groundzero.content.resource.GZResources.URANIUM_ORE.block().get().defaultBlockState(), 2);
+        }
+    }
+
+    /** The Lead Container's screen (slice 12a), with plutonium, a spent fuel rod and nuclear waste inside. */
+    private static void leadUi(ServerLevel level) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.CREATIVE);                                     // spectators open no menus
+        var lead = new net.minecraft.world.item.ItemStack(dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER.get());
+        lead.set(net.minecraft.core.component.DataComponents.CONTAINER, net.minecraft.world.item.component.ItemContainerContents.fromItems(List.of(
+                new net.minecraft.world.item.ItemStack(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_INGOT.get(), 16),
+                new net.minecraft.world.item.ItemStack(dev.groundzero.content.nuclear.GZNuclear.SPENT_FUEL_ROD.get()),
+                new net.minecraft.world.item.ItemStack(dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE.get(), 32))));
+        player.getInventory().setSelectedSlot(0);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, lead);
+        player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new dev.groundzero.content.radiation.LeadContainerMenu(id, inv,
+                net.minecraft.world.InteractionHand.MAIN_HAND), lead.getHoverName()), buf -> buf.writeEnum(net.minecraft.world.InteractionHand.MAIN_HAND));
     }
 
     /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
@@ -1108,6 +1152,14 @@ public final class FxPhotographer {
                     grenades(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("geiger")) {
+                    geiger(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("lead_ui")) {
+                    leadUi(level);
+                    return;
+                }
                 if (s.profile().equals("scud_storm")) {
                     scudStormSite(level, x, ground);
                     return;
@@ -1307,8 +1359,8 @@ public final class FxPhotographer {
                     return;
                 }
                 if (s.profile().equals("fallout")) {
-                    dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(
-                            new Vec3(x + 0.5, ground, 0.5), 180, 1f, level.getGameTime(), 48_000));
+                    dev.groundzero.content.radiation.RadiationSources.of(level).add(dev.groundzero.content.radiation.RadiationSource.lasting(
+                            new Vec3(x + 0.5, ground, 0.5), 180, 60_000, 48_000, level.getGameTime(), 1));
                     return;
                 }
                 // These two through the warhead's own path: the neutrons wither the plants, the waste goes up as dust.
@@ -1329,6 +1381,10 @@ public final class FxPhotographer {
             step = 0;
             clock = 0;
             return;
+        }
+        if (scene.name().equals("geiger") && step >= 0 && clock == 60) {
+            // The second shot with the meter in the top left: the counter's model in hand shows.
+            dev.groundzero.config.GZClientConfig.GEIGER_CORNER.set(dev.groundzero.config.GZClientConfig.HudCorner.TOP_LEFT);
         }
         if (scene.name().equals("charge_ui") && step >= 0 && step < 3 && clock == scene.moments().get(step) - 5 && UI_CHARGES[step] != null) {
             dev.groundzero.content.ordnance.charge.ChargeBlock.screenHook.accept(UI_CHARGES[step]);   // safe, armed, counting
@@ -1606,6 +1662,9 @@ public final class FxPhotographer {
             step++;
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
+            if (scene.name().equals("geiger")) {
+                dev.groundzero.config.GZClientConfig.GEIGER_CORNER.set(dev.groundzero.config.GZClientConfig.HudCorner.BOTTOM_RIGHT);
+            }
             scene = null;
             var f = flightShown;
             if (f != null) {

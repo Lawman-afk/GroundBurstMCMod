@@ -226,6 +226,7 @@ public class GZRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(GZParts.EMPTY_CANISTER), has(GZParts.EMPTY_CANISTER))
                 .save(output);
         suits();
+        radiation();
         grenades();
     }
 
@@ -742,6 +743,43 @@ public class GZRecipeProvider extends RecipeProvider {
                 .requires(GZParts.STEEL_PLATE).requires(GZTags.commonItem("dusts/saltpeter")).requires(GZTags.commonItem("dusts/saltpeter"))
                 .requires(Items.CHARCOAL)
                 .unlockedBy(getHasName(GZParts.STEEL_PLATE), has(GZParts.STEEL_PLATE)).save(output);
+    }
+
+    /**
+     * Radiation's instruments and medicine (DESIGN.md §21.8, §26.8): the Geiger Counter (a steel case, its dial's glass, the
+     * probe's wire, a circuit and a battery), the Dosimeter Badge, the Lead Container (lead round a chest), Rad-Away (a
+     * plastic bag of water, sugar and charcoal), Potassium Iodide (iodine from kelp, potassium from saltpeter) and the
+     * Anti-Rad Injector (Rad-Away and iodide in a steel pen with its needle).
+     */
+    private void radiation() {
+        var geiger = dev.groundzero.content.radiation.RadiationItems.GEIGER_COUNTER;
+        shaped(RecipeCategory.TOOLS, geiger, 1)
+                .define('S', GZParts.STEEL_PLATE).define('G', Items.GLASS_PANE).define('W', GZParts.COPPER_WIRE)
+                .define('C', GZTags.BASIC_CIRCUITS).define('B', GZParts.BATTERY)
+                .pattern("SGS").pattern("WCW").pattern("SBS")
+                .unlockedBy(getHasName(GZParts.BATTERY), has(GZParts.BATTERY)).save(output);
+        var badge = dev.groundzero.content.radiation.RadiationItems.DOSIMETER_BADGE;
+        shapeless(RecipeCategory.TOOLS, badge, 1)
+                .requires(Items.PAPER).requires(Items.GLASS_PANE).requires(Items.IRON_NUGGET)
+                .unlockedBy(getHasName(Items.PAPER), has(Items.PAPER)).save(output);
+        var lead = dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER;
+        shaped(RecipeCategory.TOOLS, lead, 1)
+                .define('L', GZParts.LEAD_PLATE).define('C', Tags.BlockItems.CHESTS_WOODEN.item())
+                .pattern("LLL").pattern("LCL").pattern(" L ")
+                .unlockedBy(getHasName(GZParts.LEAD_PLATE), has(GZParts.LEAD_PLATE)).save(output);
+        var plastic = dev.groundzero.content.chem.GZChemicals.PLASTIC_SHEET;
+        var radAway = dev.groundzero.content.radiation.RadiationItems.RAD_AWAY;
+        shapeless(RecipeCategory.FOOD, radAway, 2)
+                .requires(plastic).requires(Items.WATER_BUCKET).requires(Items.SUGAR).requires(Items.CHARCOAL).requires(Items.CHARCOAL)
+                .unlockedBy(getHasName(plastic), has(plastic)).save(output);
+        var iodide = dev.groundzero.content.radiation.RadiationItems.POTASSIUM_IODIDE;
+        shapeless(RecipeCategory.FOOD, iodide, 4)
+                .requires(Items.PAPER).requires(Items.DRIED_KELP).requires(Items.DRIED_KELP).requires(GZTags.commonItem("dusts/saltpeter"))
+                .unlockedBy(getHasName(GZResources.SALTPETER_DUST), has(GZResources.SALTPETER_DUST)).save(output);
+        var injector = dev.groundzero.content.radiation.RadiationItems.ANTI_RAD_INJECTOR;
+        shapeless(RecipeCategory.FOOD, injector, 1)
+                .requires(radAway).requires(iodide).requires(iodide).requires(GZParts.STEEL_PLATE).requires(Items.IRON_NUGGET)
+                .unlockedBy(getHasName(radAway), has(radAway)).save(output);
     }
 
     /**

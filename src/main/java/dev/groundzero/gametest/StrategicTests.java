@@ -14,7 +14,8 @@ import dev.groundzero.content.launch.LaunchComplexBlockEntity;
 import dev.groundzero.content.launch.LaunchSiloBlockEntity;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
-import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.radiation.RadiationSource;
+import dev.groundzero.content.radiation.RadiationSources;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.charge.ChargeKind;
 import dev.groundzero.content.ordnance.charge.Charges;
@@ -226,10 +227,9 @@ final class StrategicTests {
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(dug(helper), "a crater where it hit");
-            var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
-            helper.assertTrue(zone.isPresent() && Math.abs(zone.get().radius() - 360 * 0.02f) < 0.01f && zone.get().duration() == 72_000,
-                    "360 blocks for three days: " + zone);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            RadiationSource zone = NuclearTests.sourceAt(helper, centre);
+            helper.assertTrue(Math.abs(zone.radius() - 360 * 0.02f) < 0.01f && NuclearTests.lasts(zone, 72_000), "360 blocks for three days: " + zone);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 
@@ -261,10 +261,9 @@ final class StrategicTests {
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
             helper.assertTrue(dug(helper), "a crater where it hit");
-            var zone = Contamination.of(helper.getLevel()).zones().stream().filter(z -> z.center().distanceTo(centre) < 1).findFirst();
-            helper.assertTrue(zone.isPresent() && Math.abs(zone.get().radius() - 600 * 0.02f) < 0.01f && zone.get().duration() == 72_000,
-                    "600 blocks for three days: " + zone);
-            Contamination.of(helper.getLevel()).removeNear(centre, 2);
+            RadiationSource zone = NuclearTests.sourceAt(helper, centre);
+            helper.assertTrue(Math.abs(zone.radius() - 600 * 0.02f) < 0.01f && NuclearTests.lasts(zone, 72_000), "600 blocks for three days: " + zone);
+            RadiationSources.of(helper.getLevel()).removeNear(centre, 2);
         });
     }
 
@@ -281,18 +280,18 @@ final class StrategicTests {
         Charges.bombScale = 0.005f;
         Charges.impact(helper.getLevel(), ChargeKind.COBALT_WARHEAD, helper.absolutePos(at), null);
         Charges.bombScale = scale;
-        List<Contamination.Zone> plume = Contamination.of(helper.getLevel()).zones().stream()
+        List<RadiationSource> plume = RadiationSources.of(helper.getLevel()).sources().stream()
                 .filter(z -> z.start() == now && z.center().distanceTo(centre) < 6)
                 .sorted(Comparator.comparingDouble(z -> z.center().distanceTo(centre))).toList();
-        for (Contamination.Zone z : plume) {
-            Contamination.of(helper.getLevel()).removeNear(z.center(), 0.01);       // gone again before it can sicken anything
+        for (RadiationSource z : plume) {
+            RadiationSources.of(helper.getLevel()).removeNear(z.center(), 0.01);    // gone again before it can sicken anything
         }
-        helper.assertTrue(plume.size() == 1 + Charges.COBALT_PLUME, "five zones: " + plume);
+        helper.assertTrue(plume.size() == 1 + Charges.COBALT_PLUME, "five sources: " + plume);
         for (int i = 0; i < plume.size(); i++) {
-            Contamination.Zone z = plume.get(i);
+            RadiationSource z = plume.get(i);
             helper.assertTrue(Math.abs(z.center().distanceTo(centre) - Charges.COBALT_STEP * 0.005 * i) < 0.01, "evenly downwind: " + z);
-            helper.assertTrue(z.duration() == 720_000, "a month: " + z);
-            helper.assertTrue(i == 0 || z.strength() < plume.get(i - 1).strength(), "weaker downwind: " + plume);
+            helper.assertTrue(NuclearTests.lasts(z, 720_000), "a month: " + z);
+            helper.assertTrue(i == 0 || z.peak() < plume.get(i - 1).peak(), "weaker downwind: " + plume);
         }
         helper.succeed();
     }

@@ -10,7 +10,10 @@ import java.util.WeakHashMap;
 import org.jspecify.annotations.Nullable;
 
 import dev.groundzero.blast.Blasts;
+import dev.groundzero.config.GZServerConfig;
 import dev.groundzero.content.ordnance.GZOrdnance;
+import dev.groundzero.content.radiation.RadiationSource;
+import dev.groundzero.content.radiation.RadiationSources;
 import net.minecraft.world.item.ItemStack;
 import dev.groundzero.content.ordnance.ThrownExplosive;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -317,7 +320,11 @@ public final class Charges {
         dev.groundzero.content.ordnance.ToxinSpreads.start(level, c, Math.max(2, SCUD_SPREAD * scale), Math.max(2, SCUD_CLOUD * scale));
     }
 
-    /** A radiological warhead's contamination: radius (blocks), how long it lasts (ticks) and its strength (DESIGN.md §15). */
+    /**
+     * A radiological warhead's fallout (DESIGN.md §15, §21.8): the radiation source it leaves, its radius (blocks), how
+     * long until its centre falls under {@link RadiationSource#SAFE} RAD/h (ticks) and the dose rate at its centre when
+     * fresh (RAD/h).
+     */
     public static float contaminationRadius(ChargeKind kind) {
         return switch (kind) {
             case FISSION_WARHEAD -> 180;
@@ -342,57 +349,67 @@ public final class Charges {
         };
     }
 
-    public static float contaminationStrength(ChargeKind kind) {
-        return kind == ChargeKind.DIRTY_WARHEAD ? 0.8f : 1f;
+    public static float falloutPeak(ChargeKind kind) {
+        return switch (kind) {
+            case THERMONUCLEAR_WARHEAD, TSAR_WARHEAD -> 80_000;
+            case NEUTRON_WARHEAD -> 30_000;                 // induced activity only: its burst is a dose of its own
+            case DIRTY_WARHEAD -> 20_000;
+            case COBALT_WARHEAD -> 40_000;
+            default -> 60_000;                              // tactical, fission, boosted fission, the Nuclear Missile
+        };
+    }
+
+    /** A radiological warhead's radiation source at {@code at}, its radius times {@code scale} and its peak times {@code share}. */
+    public static void fallout(ServerLevel level, ChargeKind kind, Vec3 at, float scale, float share) {
+        RadiationSources.of(level).add(RadiationSource.lasting(at, Math.max(4, contaminationRadius(kind) * scale),
+                falloutPeak(kind) * share, contaminationTicks(kind), level.getGameTime(), GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
     }
 
     /** A dirty warhead: a small HE blast and a cloud of nuclear waste dust settling round it. */
     private static void dirty(ServerLevel level, Vec3 c, @Nullable Entity by, float scale) {
         ChargeKind kind = ChargeKind.DIRTY_WARHEAD;
         Blasts.detonate(level, c, Blasts.profile(kind.id), by, scale);
-        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(c,
-                Math.max(4, contaminationRadius(kind) * scale), contaminationStrength(kind), level.getGameTime(), contaminationTicks(kind)));
+        fallout(level, kind, c, scale, 1);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, c.x, c.y + 1, c.z, 120, 3, 1.5, 3, 0.08);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.ASH, c.x, c.y + 2, c.z, 400, 8, 3, 8, 0.02);
     }
 
     /**
-     * The cobalt warhead's plume (a stand-in until Phase 12's drifting fallout): {@link #COBALT_PLUME} more zones strung
-     * out downwind, {@link #COBALT_STEP} blocks apart, each a little smaller and weaker than the last, all lasting the
-     * month. The wind is one direction drawn for the blast.
+     * The cobalt warhead's plume (a stand-in until slice 12b's drifting fallout): {@link #COBALT_PLUME} more sources
+     * strung out downwind, {@link #COBALT_STEP} blocks apart, each a little smaller and weaker than the last, all lasting
+     * the month. The wind is one direction drawn for the blast.
      */
     public static final int COBALT_PLUME = 4;
     public static final float COBALT_STEP = 200;
 
-    private static void cobaltPlume(ServerLevel level, Vec3 at, float strength) {
+    private static void cobaltPlume(ServerLevel level, Vec3 at, float share) {
         ChargeKind kind = ChargeKind.COBALT_WARHEAD;
         double a = level.getRandom().nextDouble() * Math.PI * 2;
         double dx = Math.cos(a), dz = Math.sin(a);
         for (int i = 1; i <= COBALT_PLUME; i++) {
             double d = COBALT_STEP * i * bombScale;
             float radius = Math.max(4, (contaminationRadius(kind) - 20 * i) * bombScale);
-            dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(
-                    at.add(dx * d, 0, dz * d), radius, strength * (1 - 0.15f * i), level.getGameTime(), contaminationTicks(kind)));
+            RadiationSources.of(level).add(RadiationSource.lasting(at.add(dx * d, 0, dz * d), radius, falloutPeak(kind) * share * (1 - 0.15f * i),
+                    contaminationTicks(kind), level.getGameTime(), GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
         }
     }
 
-    /** How far downwind the cobalt warhead's fallout reaches (from the burst to the far edge of its last zone). */
+    /** How far downwind the cobalt warhead's fallout reaches (from the burst to the far edge of its last source). */
     public static int cobaltReach() {
         return (int) (COBALT_STEP * COBALT_PLUME + contaminationRadius(ChargeKind.COBALT_WARHEAD) - 20 * COBALT_PLUME);
     }
 
-    /** A fizzle's patch of contamination: radius, starting strength and life. */
-    public static final float FIZZLE_RADIUS = 16, FIZZLE_STRENGTH = 0.6f;
+    /** A fizzle's patch of fallout: radius, its centre's dose rate when fresh (RAD/h), and how long until it is safe. */
+    public static final float FIZZLE_RADIUS = 16, FIZZLE_PEAK = 20_000;
     public static final int FIZZLE_TICKS = 12_000;
 
     /**
-     * A nuclear warhead delivered by a missile: its full yield, and contamination round where it went off (an airburst,
-     * from a barometric fuze, leaves half as much: the fireball does not touch the ground).
+     * A nuclear warhead delivered by a missile: its full yield, and fallout round where it went off (an airburst, from a
+     * barometric fuze, leaves half as much: the fireball does not touch the ground).
      */
     public static void nuclear(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by, boolean airburst) {
         Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
-        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
-                Math.max(4, contaminationRadius(kind) * bombScale), airburst ? 0.5f : 1f, level.getGameTime(), contaminationTicks(kind)));
+        fallout(level, kind, at, bombScale, airburst ? 0.5f : 1f);
         if (kind == ChargeKind.COBALT_WARHEAD) {
             cobaltPlume(level, at, airburst ? 0.5f : 1f);
         }
@@ -404,8 +421,8 @@ public final class Charges {
     /** A nuclear warhead set off any other way: its lenses go off unevenly, the core breaks up and scatters. */
     private static void fizzle(ServerLevel level, Vec3 at, @Nullable Entity by, float scale) {
         Blasts.detonate(level, at, Blasts.profile("nuclear_fizzle"), by, scale);
-        dev.groundzero.content.nuclear.Contamination.of(level).add(new dev.groundzero.content.nuclear.Contamination.Zone(at,
-                Math.max(2, FIZZLE_RADIUS * scale), FIZZLE_STRENGTH, level.getGameTime(), FIZZLE_TICKS));
+        RadiationSources.of(level).add(RadiationSource.lasting(at, Math.max(2, FIZZLE_RADIUS * scale), FIZZLE_PEAK, FIZZLE_TICKS,
+                level.getGameTime(), GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
     }
 
     private static void schedule(ServerLevel level, Pending p) {

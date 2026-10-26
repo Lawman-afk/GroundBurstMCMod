@@ -36,5 +36,16 @@ public final class GZDataComponents {
             COMPONENTS.registerComponentType("fuel_burnup", b -> b.persistent(dev.groundzero.content.nuclear.FuelBurnup.CODEC)
                     .networkSynchronized(dev.groundzero.content.nuclear.FuelBurnup.STREAM_CODEC));
 
+    /** A Geiger Counter's alarm threshold, as an index into its settings (DESIGN.md §21.8; 0: off). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> GEIGER_ALARM = COMPONENTS.registerComponentType("geiger_alarm",
+            b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    /**
+     * Until when (game time) a powered item lies dead after an EMP (DESIGN.md §21.4): set while its holder stands in a
+     * field, so it comes back 10 s after they leave.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Long>> EMP_UNTIL = COMPONENTS.registerComponentType("emp_until",
+            b -> b.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
+
     private GZDataComponents() {}
 }

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_rad_away": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundzero:rad_away"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundzero:anti_rad_injector"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_rad_away"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundzero:anti_rad_injector"
+    ]
+  }
+}

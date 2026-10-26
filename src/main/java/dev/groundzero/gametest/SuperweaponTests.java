@@ -10,7 +10,7 @@ import dev.groundzero.content.launch.LaunchSite;
 import dev.groundzero.content.launch.Launches;
 import dev.groundzero.content.machine.MachineBlock;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
-import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.radiation.RadiationSources;
 import dev.groundzero.content.ordnance.GZOrdnance;
 import dev.groundzero.content.ordnance.ToxinSpreads;
 import dev.groundzero.content.ordnance.charge.ChargeKind;
@@ -211,9 +211,9 @@ final class SuperweaponTests {
         Charges.impact(level, ChargeKind.NUCLEAR_MISSILE_WARHEAD, at, null);
         Charges.bombScale = scale;
         helper.succeedWhen(() -> {
-            float c = Contamination.of(level).levelAt(level, centre);
-            helper.assertTrue(c > 0.9f, "full contamination where it came down: " + c);
-            Contamination.of(level).removeNear(centre, 2);
+            float c = RadiationSources.of(level).rateAt(level, centre);
+            helper.assertTrue(c > 0.9f * Charges.falloutPeak(ChargeKind.NUCLEAR_MISSILE_WARHEAD), "full fallout where it came down: " + c);
+            RadiationSources.of(level).removeNear(centre, 2);
         });
     }
 

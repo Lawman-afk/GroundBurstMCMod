@@ -1,0 +1,64 @@
+{
+  "values": {
+    "groundzero:cooled_corium": {
+      "rate": 30.0
+    },
+    "groundzero:corium": {
+      "rate": 200.0
+    },
+    "groundzero:deepslate_uranium_ore": {
+      "rate": 0.05
+    },
+    "groundzero:depleted_uranium_dust": {
+      "rate": 0.02
+    },
+    "groundzero:depleted_uranium_ingot": {
+      "rate": 0.03
+    },
+    "groundzero:enriched_uranium_ingot": {
+      "rate": 0.4
+    },
+    "groundzero:enriched_uranium_nugget": {
+      "rate": 0.05
+    },
+    "groundzero:irradiated_du_target_rod": {
+      "rate": 25.0
+    },
+    "groundzero:irradiated_li6_target_rod": {
+      "rate": 8.0
+    },
+    "groundzero:nuclear_waste": {
+      "rate": 20.0
+    },
+    "groundzero:plutonium_ingot": {
+      "rate": 12.0
+    },
+    "groundzero:plutonium_nugget": {
+      "rate": 1.5
+    },
+    "groundzero:raw_uranium": {
+      "rate": 0.05
+    },
+    "groundzero:raw_uranium_block": {
+      "rate": 0.5
+    },
+    "groundzero:spent_fuel_rod": {
+      "rate": 60.0
+    },
+    "groundzero:uranium_block": {
+      "rate": 0.8
+    },
+    "groundzero:uranium_dust": {
+      "rate": 0.08
+    },
+    "groundzero:uranium_fuel_rod": {
+      "rate": 1.5
+    },
+    "groundzero:uranium_ingot": {
+      "rate": 0.08
+    },
+    "groundzero:uranium_ore": {
+      "rate": 0.05
+    }
+  }
+}

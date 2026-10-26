@@ -193,6 +193,19 @@ public final class GZSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CHEMICAL_PLANT =
             register("machine.chemical_plant", "Chemical Plant churns", List.of("machine/chemical_plant"), false, 20);
 
+    // Radiation instruments and medicine (DESIGN.md §21.8): the Geiger Counter's alarm and its switch, the Lead
+    // Container's lid, the Anti-Rad Injector.
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEIGER_ALARM =
+            register("geiger.alarm", "Geiger counter alarm beeps", List.of("geiger/alarm"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEIGER_SWITCH =
+            register("geiger.switch", "Geiger counter switches", List.of("geiger/switch"), false, 8);
+    public static final DeferredHolder<SoundEvent, SoundEvent> LEAD_CONTAINER_OPEN =
+            register("lead_container.open", "Lead container opens", List.of("gear/lead_container_open"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> LEAD_CONTAINER_CLOSE =
+            register("lead_container.close", "Lead container closes", List.of("gear/lead_container_close"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MEDICAL_INJECTOR =
+            register("medical.injector", "Injector hisses", List.of("gear/injector"), false, 12);
+
     private GZSounds() {}
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name, String subtitle, List<String> files,

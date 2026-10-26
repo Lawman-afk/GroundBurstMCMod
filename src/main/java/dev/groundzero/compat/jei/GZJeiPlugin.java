@@ -119,6 +119,12 @@ public final class GZJeiPlugin implements IModPlugin {
         info(registration, dev.groundzero.content.launch.GZLaunch.INFO_CRUISE_LAUNCHER, dev.groundzero.content.launch.GZLaunch.CRUISE_CONTROLLER.item().get(),
                 dev.groundzero.content.launch.GZLaunch.LAUNCH_BOX.item().get(), dev.groundzero.content.launch.GZLaunch.CRUISE_SPAWNER.get());
         info(registration, dev.groundzero.content.launch.GZLaunch.INFO_CRUISE_ENGINE, dev.groundzero.content.assembly.GZAssembly.CRUISE_ENGINE.get());
+        // Radiation's instruments and medicine (slice 12a, DESIGN.md §21.8).
+        info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_GEIGER, dev.groundzero.content.radiation.RadiationItems.GEIGER_COUNTER.get());
+        info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_DOSIMETER, dev.groundzero.content.radiation.RadiationItems.DOSIMETER_BADGE.get());
+        info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_LEAD_CONTAINER, dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER.get());
+        info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_MEDICINE, dev.groundzero.content.radiation.RadiationItems.RAD_AWAY.get(),
+                dev.groundzero.content.radiation.RadiationItems.POTASSIUM_IODIDE.get(), dev.groundzero.content.radiation.RadiationItems.ANTI_RAD_INJECTOR.get());
         registration.addIngredientInfo(List.of(GZParts.PLATE_DIE.get(), GZParts.ROD_DIE.get(), GZParts.WIRE_DIE.get(), GZParts.CANISTER_DIE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_DIE));

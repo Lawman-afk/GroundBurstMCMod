@@ -2504,6 +2504,91 @@ Protection values are for the full set; pieces contribute helmet 20%, chest 35%,
   grey-brown grass and foliage tint, dead-olive water, brown-orange fog, falling-ash ambient particles, no passive
   mob spawns. Burnt trees remain as charred trunks. Craters can flood into "crater lakes".
 
+### 21.8 Phase 12 plan (2026-10-27)
+The user asked for the features that are not weapons before any new bomb content: the aftermath first (this phase),
+then world structures and loot (Phase 15). Built in slices:
+- **12a Radiation and its instruments**: dose from sources, radioactive blocks and carried items, through shielding;
+  sickness from the dose taken (§21.2), recovery, and medicine (Rad-Away, Potassium Iodide, Anti-Rad Injector) so it
+  has a cure from the start; the Geiger Counter, Dosimeter Badge and Lead Container.
+- **12b Fallout and scorched ground**: one wind per dimension; fallout plumes drifting downwind, laying radiation and
+  Fallout Ash, ash falling round players under them; the terrain blocks of §21.7 and the nuclear terrain table; grass
+  and crops dying in strong fields (§21.2); the cobalt plume (now a string of zones).
+- **12c Protective gear and contamination**: Gas Mask and filters, Flash Goggles, Advanced CBRN Suit; contaminated
+  players and items that keep emitting, and the Decontamination Shower washing them.
+- **12d EMP everywhere** (§21.4): every machine, launcher, radar, superweapon, missile, fuze, powered item, and vanilla
+  redstone.
+- **12e The wasteland**: the biome painted over the scorch radius, the toxic and frozen ground, crater lakes.
+
+**12a's radiation model** (it replaces §21.1's per-chunk cells):
+- **Sources.** Each nuclear burst, fizzle, dirty blast and meltdown leaves an analytic source in the level's saved data:
+  centre, radius, peak dose rate, half-life. Dose rate there = peak x (1 - d/r)^2 x 1/2^(age / half-life), halved for an
+  airburst; a source ends when its peak falls under 0.5 RAD/h. Exact at any distance, nothing to write into unloaded
+  chunks, cheap to read; 12b's plumes are sources too. Peaks and half-lives (the server's decay multiplier divides the
+  half-life):
+
+  | Source | Peak (RAD/h) | Half-life | Lethal (1 000 rad) at the centre |
+  |---|---|---|---|
+  | Tactical, fission, boosted fission, the Nuclear Missile | 60 000 | 8 000 ticks (6.7 min) | 1 min fresh |
+  | Thermonuclear, Tsar | 80 000 | 12 000 ticks (10 min) | 45 s fresh |
+  | Neutron (induced activity only; the burst is a dose of its own) | 30 000 | 1 000 ticks | 2 min fresh |
+  | Dirty | 20 000 | 20 000 ticks | 3 min fresh |
+  | Cobalt (cobalt-60) | 40 000 | 120 000 ticks (5 days) | 1.5 min fresh |
+  | Fizzle | 20 000 | 2 000 ticks | 3 min fresh |
+  | Reactor meltdown (r 48) | 40 000 | 4 000 ticks | 1.5 min fresh |
+
+- **Emitters.** Blocks and items carry a radioactivity (`groundzero:radioactivity` data maps: RAD/h at one block for a
+  block, per item for an item); the `groundzero:radioactive` tags list the same things. Blocks are read within 6 blocks
+  of a body (a chunk section whose palette holds none is skipped), at full value within a block and by the inverse
+  square beyond, shielded along the line between. Carried items count in full, armour and off hand included, unless
+  they are in a Lead Container. Mobs feel sources only.
+- **Shielding.** Half-value layers (the thickness that stops half) by block class, from tags: lead 0.2 blocks; dense
+  (obsidian, concrete, Reinforced and Hazard Concrete, metal blocks) 0.5; any other full solid block 1; liquids 1.5;
+  wood 2; glass 4; anything not a full block nothing. A source's field reaches a body by six axis rays of 8 blocks from
+  its eyes (scaled so open ground reads 1): a one-block stone hut halves it, a buried bunker stops it.
+- **Units.** Dose rate in RAD/h of real time; dose in rad, added once a second (rate / 3 600). A suit multiplies what
+  comes from outside (sources, blocks) by 1 - its protection; Potassium Iodide halves all of it.
+- **Sickness** from the dose (§21.2): I from 100 rad (nausea now and then, hunger x1.5), II from 200 (weakness, mining
+  fatigue, hunger x2), III from 400 (a heart of damage every 5 s, slowness, no natural regeneration), IV from 600
+  (wither bursts, the edge of sight blurring), lethal from 1 000 (a heart a second). The dose falls 1 rad a minute under
+  0.5 RAD/h; death clears it. Undead, creative and spectator players are immune.
+- **Geiger Counter.** Carried in either hand: clicks at a random (Poisson) rate rising with the dose rate, and a meter
+  in the HUD corner (§24): an analog needle on a log scale (0.1 to 10 000 RAD/h) and a digital readout; in the hotbar
+  only the digital readout. An alarm sounds above a threshold set by sneak-using it (off, 1, 10, 100, 1 000 RAD/h).
+  Runs on its own charge (20 000 FE, 5 FE a second while on; Battery Charger), and dies in an EMP field.
+- **Dosimeter Badge.** Anywhere in the inventory: the dose taken, as a film patch that darkens from white through
+  yellow, orange and red to black, in its tooltip and under the Geiger readout.
+- **Lead Container.** Nine slots for radioactive items only; what is in it does not count.
+- **Medicine.** Rad-Away (an IV bag: -150 rad over 30 s), Potassium Iodide (tablets: half the uptake for 10 min),
+  Anti-Rad Injector (-400 rad at once, weakness for 60 s). The shower no longer washes off sickness (a dose taken cannot
+  be washed off; it washes contamination in 12c).
+
+**As built (slice 12a, 2026-10-27)** (`content/radiation`, `client/radiation`):
+- The plan's peaks hold; each source's half-life is set so its centre falls under 10 RAD/h when the stand-in zone it
+  replaces would have ended (`RadiationSource.lasting`): fission 3 824 ticks (deadly for about 20 minutes, under
+  10 RAD/h after two days), tactical 1 912, thermonuclear and Tsar 5 551, neutron 519, dirty 10 940, cobalt 60 150, the
+  fizzle 1 094, the meltdown 2 005. The stats' "Fallout Lasts" is that time, unchanged. The cobalt plume's string of
+  zones are sources too until 12b.
+- Radioactivity (RAD/h): uranium ore 0.5 a block away, raw uranium block 5, uranium block 8, corium 2 000, cooled
+  corium 300; carried, per item: raw uranium 0.05, uranium dust and ingot 0.08, enriched nugget 0.05, enriched ingot 0.4,
+  depleted uranium 0.02 to 0.03, fuel rod 1.5, spent fuel rod 60, irradiated DU target 25, irradiated Li-6 target 8,
+  plutonium nugget 1.5, ingot 12, nuclear waste 20, corium 200, cooled corium 30 (`GZRadiationData`). Bundles and
+  shulker boxes are looked inside; a Lead Container is not.
+- The neutron burst's 0-1 dose is now rad (x 4 000: its sick line, 0.03, is 120 rad); its lethal line still kills at
+  once. Sickness is one effect, Radiation Sickness I-IV, kept up each second by the dose, which also gives the stage's
+  vanilla effects; no natural regeneration at III and worse (heals of a heart or less are refused).
+- The dose is a data attachment (`groundzero:radiation`) synced to its player only; the Geiger Counter and the HUD read
+  it. Clicks: a Poisson process at 0.25 + 12 x rate^0.75 a second, saturating at 60, up to three a tick. The meter: a
+  yellow instrument face, a cream dial (green, yellow, orange and red bands by decade, ticks at 1, 2 and 5, labels
+  outside the ticks) over an LCD; the needle eases toward the reading (0.35 s) and trembles a little above 1 RAD/h. In
+  the inventory the counter is a sprite; anywhere else a model (a yellow case, the meter standing proud of it, the
+  handle, the probe clipped along its side on its cable), chosen by the display context, as vanilla's spyglass.
+- Sounds (`tools/sound/gear.py`): the alarm synthesized (two beeps of a 3.1 kHz tone and its odd harmonics: a square
+  wave drawn sample by sample had folded its harmonics back down as stray tones); the switch, the lid and the injector
+  from recordings already in the ledger. In the Sound Lab as "Radiation gear".
+- Recipes as §26.8 (Rad-Away, Potassium Iodide and the injector changed there first). Field Manual: Radiation, Geiger
+  Counter and Dosimeter, Lead Container and Radiation medicine entries; the reactor-safety, hazmat, shower and fallout
+  pages rewritten for the dose. JEI info pages. GameTests: `RadiationTests` (8).
+
 ---
 
 ## 22. World structures and loot
@@ -2951,7 +3036,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Advanced CBRN Suit | lead-lined piece + steel plates + advanced circuit (+ battery for chest, visor glass for helmet) |
 | Geiger Counter | steel plate, glass pane, copper wire, basic circuit, battery |
 | Dosimeter Badge | paper, glass pane, iron nugget |
-| Rad-Away / KI tablets / Anti-Rad injector | glass bottle + water + 2 charcoal + sugar / paper + dried kelp + sulfur dust / glass bottle + Rad-Away + advanced circuit |
+| Rad-Away ×2 / KI tablets ×4 / Anti-Rad injector | plastic sheet + water bucket + 2 charcoal + sugar / paper + 2 dried kelp + saltpeter dust (iodine from kelp, potassium from saltpeter) / Rad-Away + 2 KI tablets + steel plate + iron nugget (changed in slice 12a: an IV bag is plastic; the injector is a steel pen and its needle) |
 | Lead Container | 6 lead plate, chest |
 | Arming Key / Remote Detonator / Laser Designator / Binoculars / Uplink Remote | iron + key shape + gold nugget / antenna + basic circuit + battery + button / sensor array + redstone torch + military circuit + battery + glass / 2 spyglass + basic circuit + steel plate / antenna + military circuit + sensor array + battery |
 | Holo-Projector | glass, diamond, advanced circuit, battery |
@@ -3175,6 +3260,8 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | The falling bomb's whistle stays the synthesized original (a recording of falling bombs carries other bombs' whistles that no filter removes); the EMP is the arc alone, without a synthesized whine (the user's asks). |
 | 2026-10-27 | Machines remade from real recordings (§13.1; `machines.py`, CC0): a steady machine's loop is 4 s of a recording (2 s would let a real recording's repeat show); a machine timed to its animation keeps its 2 s cycle with real events at its moments; a loop's seam is closed before its events are added (`machines.Cycle`), and it is levelled as it plays, repeated, to the old loudness. Where nothing real has the sound (the centrifuge's rotor, the fusion and accelerator cores, the diesel's knock) the old synthesized sound stays with recordings under it; the Exotic Matter Fabricator and the Singularity Reactor stay synthesized. |
 | 2026-10-27 | Machines round 2 (the user's ratings; §13.1): a loop is checked across its seam for loudness, not only for a sample step (round 1's steady loops dipped there: a cut's default fade reached the seam); a steady loop's cuts are unfaded where it reads them and its length is fitted so its end leads on like its start, crossfaded on a curve that holds the level. The Ore Crusher and the RTG stay synthesized at the user's word; where the user preferred the old sound (the Canning Machine, the Particle Accelerator) it is the base with recordings under it; the Battery Charger is kept calm and 5 dB quieter (comfort over realism, the user's call). |
+| 2026-10-27 | Phase 12 plan (the user: the features that are not weapons, "the Extra features", before any new bomb content): the aftermath in slices 12a to 12e (§21.8), then Phase 15's structures and loot. Radiation is analytic sources plus radioactive blocks and items rather than §21.1's per-chunk cells (exact at any distance, nothing to write into unloaded chunks, cheap to read); medicine comes with 12a so sickness has a cure from the start; the shower stops washing off sickness (a dose cannot be washed; it washes contamination in 12c). |
+| 2026-10-27 | Slice 12a: a source's half-life is set so it falls under 10 RAD/h when the zone it replaces ended (the stats keep their figures); the dose is a synced data attachment; the neutron burst gives rad (x 4 000); Potassium Iodide from kelp and saltpeter, Rad-Away in a plastic bag, the injector a steel pen (§26.8 changed); the Geiger Counter is a sprite in the inventory and a model elsewhere. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

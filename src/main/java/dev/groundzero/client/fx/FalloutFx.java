@@ -8,8 +8,8 @@ import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import dev.groundzero.content.nuclear.Contamination;
-import dev.groundzero.content.nuclear.ContaminationPayloads;
+import dev.groundzero.content.radiation.RadiationSource;
+import dev.groundzero.content.radiation.RadiationSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -17,15 +17,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Fallout over the contaminated zones (DESIGN.md §15.1; a stand-in until Phase 12's fallout plumes, after the in-game
- * look at the nukes): a broken layer of dark grey and sickly green cloud 50 to 80 blocks over each zone, drifting with
- * its own wind and thinning as the zone fades, and, inside a zone, a green cast to the sky, the fog and the clouds,
- * stronger toward its middle. The server sends every zone in the level; each zone's clouds are laid out from a seed and
- * moved by the level's clock, so every player sees the same sky.
+ * Fallout over the radiation sources (DESIGN.md §15.1, §21.8; until slice 12b's plumes, after the in-game look at the
+ * nukes): a broken layer of dark grey and sickly green cloud 50 to 80 blocks over each source, drifting with its own
+ * wind and thinning as the source decays, and, inside one, a green cast to the sky, the fog and the clouds, stronger
+ * toward its middle. The server sends every source in the level; each one's clouds are laid out from a seed and moved
+ * by the level's clock, so every player sees the same sky.
  */
 final class FalloutFx {
-    /** The zones in {@link #zonesLevel} (the server sends the new level's on a dimension change). */
-    private static List<Contamination.Zone> zones = List.of();
+    /** The sources in {@link #zonesLevel} (the server sends the new level's on a dimension change). */
+    private static List<RadiationSource> zones = List.of();
     private static ClientLevel zonesLevel;
     /** Cloud albedos: dark grey, grey, olive, sickly green. */
     private static final int[] COLOURS = {0x55585A, 0x6E716E, 0x5F7A2E, 0x7A9C3A};
@@ -41,8 +41,8 @@ final class FalloutFx {
     private FalloutFx() {}
 
     static void register() {
-        ContaminationPayloads.zonesHook = z -> {
-            zones = z.zones();
+        RadiationSources.Sync.hook = z -> {
+            zones = z.sources();
             zonesLevel = Minecraft.getInstance().level;
         };
     }
@@ -52,7 +52,7 @@ final class FalloutFx {
         zonesLevel = null;
     }
 
-    private static List<Contamination.Zone> current(ClientLevel level) {
+    private static List<RadiationSource> current(ClientLevel level) {
         if (zonesLevel == null && level != null && !zones.isEmpty()) {
             zonesLevel = level;                            // they came before the level did (logging in)
         }
@@ -67,7 +67,7 @@ final class FalloutFx {
     static float tint(ClientLevel level, Vec3 pos) {
         float most = 0;
         long now = level.getGameTime();
-        for (Contamination.Zone z : current(level)) {
+        for (RadiationSource z : current(level)) {
             most = Math.max(most, z.levelAt(now, pos.distanceTo(z.center())));
         }
         return most <= 0 ? 0 : TINT * (float) Math.sqrt(Math.min(1, most));
@@ -75,7 +75,7 @@ final class FalloutFx {
 
     /** Draws every zone's cloud layer, back to front. */
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, ClientLevel level, Vec3 camera, Quaternionf orientation, float partial) {
-        List<Contamination.Zone> list = current(level);
+        List<RadiationSource> list = current(level);
         if (list.isEmpty()) {
             return;
         }
@@ -87,9 +87,8 @@ final class FalloutFx {
         double time = now + partial;
         float quality = Math.max(0.5f, Math.min(1.2f, Spectacle.quality()));
         List<float[]> quads = new ArrayList<>();
-        for (Contamination.Zone z : list) {
-            double age = (now - z.start()) / (double) Math.max(1, z.duration());
-            float life = (float) Math.sqrt(Math.max(0, z.strength() * (1 - age)));
+        for (RadiationSource z : list) {
+            float life = (float) Math.sqrt(z.strength(now));
             if (life < 0.02f) {
                 continue;
             }

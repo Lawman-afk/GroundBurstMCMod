@@ -48,6 +48,7 @@ public class GroundZeroClient {
         dev.groundzero.client.screen.ChargeScreens.register();
         dev.groundzero.client.screen.LaunchComputerScreen.register();
         dev.groundzero.client.screen.RadarArrayScreen.register();
+        dev.groundzero.client.radiation.RadiationClient.register(modBus);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {

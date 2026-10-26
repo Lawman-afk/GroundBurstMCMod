@@ -1,7 +1,7 @@
 {
   "title": "Decontamination Shower",
   "icon": "groundzero:decontamination_shower",
-  "order": 0,
+  "order": 4,
   "items": [
     "groundzero:decontamination_shower"
   ],
@@ -9,7 +9,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:decontamination_shower",
-      "text": "A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither, nausea and radiation sickness."
+      "text": "A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. A dose of [radiation](safety/radiation) once taken can't be washed off."
     },
     {
       "type": "crafting",

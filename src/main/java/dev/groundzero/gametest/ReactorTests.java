@@ -11,7 +11,8 @@ import dev.groundzero.content.machine.ParticleAcceleratorBlockEntity;
 import dev.groundzero.content.multiblock.GZMultiblocks;
 import dev.groundzero.content.multiblock.MultiblockDefinition;
 import dev.groundzero.content.gear.GZArmor;
-import dev.groundzero.content.nuclear.Contamination;
+import dev.groundzero.content.radiation.RadiationSource;
+import dev.groundzero.content.radiation.RadiationSources;
 import dev.groundzero.content.nuclear.GZEffects;
 import dev.groundzero.content.nuclear.GZNuclear;
 import dev.groundzero.content.power.RtgBlockEntity;
@@ -361,8 +362,8 @@ final class ReactorTests {
                     }
                 }
                 helper.assertTrue(corium > 0, "corium is left");
-                helper.assertTrue(Contamination.of(level).levelAt(level, net.minecraft.world.phys.Vec3.atCenterOf(ctrl)) > 0.5f,
-                        "the land round it is contaminated");
+                float rate = RadiationSources.of(level).rateAt(level, net.minecraft.world.phys.Vec3.atCenterOf(ctrl));
+                helper.assertTrue(rate > 0.5f * FissionReactorBlockEntity.CONTAMINATION_PEAK, "the land round it is irradiated: " + rate);
             });
         });
     }
@@ -386,17 +387,21 @@ final class ReactorTests {
         });
     }
 
-    /** A contaminated zone gives a pig radiation sickness, strongest near the centre; a zombie is immune. */
+    /**
+     * A strong radiation source gives a pig near its centre a dose that makes it badly sick within a second (450 rad: stage
+     * III); a zombie beside it is immune.
+     */
     private static void contamination(GameTestHelper helper) {
         var level = helper.getLevel();
         net.minecraft.world.phys.Vec3 centre = helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 2, 8));
-        Contamination.of(level).add(new Contamination.Zone(centre, 10, 1f, level.getGameTime(), 200));
+        RadiationSources.of(level).add(new RadiationSource(centre, 10, 2_000_000, 200, level.getGameTime()));
         var pig = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new BlockPos(8, 2, 9));
         var zombie = helper.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new BlockPos(9, 2, 8));
         helper.succeedWhen(() -> {
             var sick = pig.getEffect(GZEffects.RADIATION_SICKNESS);
             helper.assertTrue(sick != null && sick.getAmplifier() >= 2, "the pig is badly sick near the centre");
             helper.assertTrue(!zombie.hasEffect(GZEffects.RADIATION_SICKNESS), "the undead are immune");
+            RadiationSources.of(level).removeNear(centre, 1);
         });
     }
 

@@ -1103,7 +1103,7 @@ A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) lik
 All three go off with a blinding flash, a fireball and a mushroom cloud, and burn the ground round the crater to scorched earth.
 """),
     text("""
-**Neutron Warhead** (about 1 kiloton): slim and silver, built to kill rather than to wreck. Its blast digs a crater only 10 blocks round, but it lets out a flood of **neutrons** that kills every living thing out to **180 blocks**, unless enough lies in between: every block between the burst and a body takes its share. Two blocks of concrete, lead or obsidian (or five of stone or earth, or four of water) keep the neutrons from killing even beside the burst, and four of concrete or lead keep out the sickness too; farther out, less does. A [hazmat suit](safety/hazmat_suits) helps only a little, as neutrons go through cloth. Whoever they do not kill falls ill with **Radiation Sickness**. Undead are not harmed.
+**Neutron Warhead** (about 1 kiloton): slim and silver, built to kill rather than to wreck. Its blast digs a crater only 10 blocks round, but it lets out a flood of **neutrons** that kills every living thing out to **180 blocks**, unless enough lies in between: every block between the burst and a body takes its share. Two blocks of concrete, lead or obsidian (or five of stone or earth, or four of water) keep the neutrons from killing even beside the burst, and four of concrete or lead keep out the sickness too; farther out, less does. A [hazmat suit](safety/hazmat_suits) helps only a little, as neutrons go through cloth. Whoever they do not kill takes a heavy dose of [radiation](safety/radiation) and falls ill with **Radiation Sickness**. Undead are not harmed.
 
 Plants in the open die out to **120 blocks** (under a roof they are spared): leaves fall; crops, grass and flowers wither; saplings die; grass turns to bare earth. Buildings are hardly touched. Its core is a **Neutron Core**: a Tactical Fission Core with two tritium canisters, in a tungsten carbide cage that lets the neutrons out instead of holding them in.
 
@@ -1120,7 +1120,7 @@ Plants in the open die out to **120 blocks** (under a roof they are spared): lea
 So much ground goes that the crater keeps forming for a minute or two after the shock wave has passed, out of sight under the dust. Built whole at the [Strategic Assembly Hall](ordnance/strategic_assembly), a Tertiary Stage in place of the jacket and a Twin Boosted Core in place of the Boosted Fission Core. Its mushroom cloud stands until the crater is finished, then lasts two and a half minutes more.
 """),
     text("""
-**Fallout.** A nuclear blast leaves the ground round it **contaminated**, weakest at the edge and fading as it ages: 90 blocks round for a day after a tactical warhead, 180 blocks round for two days after a fission warhead, 220 for two days after a boosted fission warhead, and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it falls ill with **Radiation Sickness**, as round a [melted-down reactor](safety/reactor_safety); a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
+**Fallout.** A nuclear blast leaves the ground round it [radioactive](safety/radiation), strongest at ground zero (60,000 RAD/h: deadly in a minute) and falling off to nothing at its edge, and fading as it ages: 90 blocks round, safe again after a day, after a tactical warhead; 180 blocks round for two days after a fission warhead; 220 for two days after a boosted fission warhead; and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it takes a dose and falls ill with **Radiation Sickness**; a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
 
 **Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion. A dirty warhead is not nuclear, and does not fizzle.
 """),
@@ -1252,9 +1252,89 @@ chapter("safety", "Safety", "decontamination_shower", """
 Hazards the mod adds, and how to deal with them.
 """)
 
+entry("safety/radiation", "Radiation", "geiger_counter", [], [
+    text("""
+Radiation can't be seen or felt, only measured: carry a [Geiger Counter](safety/geiger_counter). Its strength where you stand is the **dose rate**, in **RAD/h**; what it does to you adds up as your **dose**, in **rad** (a [Dosimeter Badge](safety/geiger_counter) keeps count). An hour at 100 RAD/h is 100 rad.
+"""),
+    text("""
+**Where it comes from.**
+
+- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute.
+- **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.
+- **What you carry.** Plutonium, spent fuel rods, irradiated targets, nuclear waste and corium dose you from your own pockets. Keep them in a [Lead Container](safety/lead_container).
+"""),
+    table([
+        ["1 RAD/h", "100 hours"],
+        ["10 RAD/h", "10 hours"],
+        ["100 RAD/h", "an hour"],
+        ["1,000 RAD/h", "6 minutes"],
+        ["10,000 RAD/h", "36 seconds"],
+    ], "Until sickness", """
+Real time until the first 100 rad, at each dose rate.
+"""),
+    table([
+        ["100 rad", "Sickness I"],
+        ["200 rad", "Sickness II"],
+        ["400 rad", "Sickness III"],
+        ["600 rad", "Sickness IV"],
+        ["1,000 rad", "lethal"],
+    ], "Radiation Sickness", """
+I: nausea now and then, hunger. II: weakness, slow mining, more hunger. III: a heart of damage every 5 s, slowness, no natural healing. IV: wither, the edge of sight going dark. Lethal: a quick death.
+"""),
+    text("""
+**Shelter.** Blocks stop radiation: a block of stone stops half of it, a block of concrete or obsidian three quarters, a block of lead nearly all; earth, wood and water less, glass very little. A one-block stone hut halves what reaches you; a bunker under the ground stops it. A [hazmat suit](safety/hazmat_suits) stops its share of what comes from outside, not of what you carry.
+
+**Getting better.** Out of radiation your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune.
+"""),
+    links(["safety/geiger_counter", "safety/lead_container", "safety/radiation_medicine", "safety/hazmat_suits", "safety/reactor_safety"]),
+])
+
+entry("safety/geiger_counter", "Geiger Counter and Dosimeter", "geiger_counter", ["geiger_counter", "dosimeter_badge"], [
+    spot("geiger_counter", """
+A civil-defence survey meter. Hold it in either hand: it **clicks** at random, faster the stronger the radiation where you stand (a few clicks a second near uranium ore, a roar in a crater), and its **meter** shows in a corner of the screen: a needle on a scale from 0.1 to 10,000 RAD/h and the reading. Anywhere in your hotbar it still clicks, and shows the reading alone.
+"""),
+    text("""
+**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 10.
+
+**Power.** It runs on its own charge, 20,000 FE, using 5 FE a second while it is on (an hour on a full charge). Charge it in a [Battery Charger](power/batteries). An EMP knocks it out until 10 seconds after you leave the field.
+"""),
+    spot("dosimeter_badge", """
+A film badge: carry it anywhere in your inventory. Its film darkens with the dose you take (white, yellow, orange, red, black), its tooltip gives the dose in rad and the sickness it brings, and the dose shows under the Geiger reading.
+"""),
+    craft("geiger_counter"),
+    craft("dosimeter_badge"),
+    links(["safety/radiation", "safety/radiation_medicine"]),
+])
+
+entry("safety/lead_container", "Lead Container", "lead_container", ["lead_container"], [
+    spot("lead_container", """
+A thick lead flask with nine places, for radioactive items only. Nothing inside it reaches you, wherever it is in your inventory. Use it to open it.
+
+Carried loose, a stack of plutonium ingots doses you at over 700 RAD/h and a stack of nuclear waste at over 1,200: sick within minutes. A bundle or a shulker box stops nothing.
+"""),
+    craft("lead_container"),
+    links(["safety/radiation"]),
+])
+
+entry("safety/radiation_medicine", "Radiation medicine", "rad_away", ["rad_away", "potassium_iodide", "anti_rad_injector"], [
+    spot("potassium_iodide", """
+Take before going in: for 10 minutes you take up only **half** the dose. Iodine from dried kelp, potassium from saltpeter.
+"""),
+    spot("rad_away", """
+An IV bag: draws **150 rad** out of you over 30 seconds.
+"""),
+    spot("anti_rad_injector", """
+For emergencies: **400 rad** off at once, but you are weak for a minute after.
+"""),
+    craft("potassium_iodide"),
+    craft("rad_away"),
+    craft("anti_rad_injector"),
+    links(["safety/radiation", "safety/geiger_counter"]),
+])
+
 entry("safety/decontamination_shower", "Decontamination Shower", "decontamination_shower", ["decontamination_shower"], [
     spot("decontamination_shower", """
-A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither, nausea and radiation sickness.
+A walk-in booth: pipe water in, power it, step inside. It sprays whoever stands in it (20 FE and 10 mB of water a tick), putting out fire and washing off poison, wither and nausea. A dose of [radiation](safety/radiation) once taken can't be washed off.
 """),
     craft("decontamination_shower"),
 ])
@@ -1279,25 +1359,27 @@ Keep the [Fission Reactor](nuclear/fission_reactor) below 900 C: keep coolant fl
     text("""
 **Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.
 
-**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is contaminated for a day.
+**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is radioactive for a day.
 """),
     table([
         ["Critical from", "900 C"],
         ["Meltdown at", "1,400 C"],
         ["Warning time", "15 to 45 s"],
         ["  with coolant", "the longer"],
-        ["Contaminated", "48 blocks, 1 day"],
+        ["Radiation", "48 blocks"],
+        ["  at the core", "40,000 RAD/h"],
+        ["  safe again", "after a day"],
     ], "Meltdowns"),
     spot("corium", """
 Molten core. It burns anything that stands on it and sets fire to what is next to it, and cools into cooled corium over about ten minutes. Both are radioactive; mine them with an iron pickaxe or better.
 """),
     text("""
-**Contamination.** Anything alive in the contaminated land falls ill with **Radiation Sickness**, worse the nearer the crater: hunger, slowness and damage that ordinary armour does not stop, from half a heart every two seconds at level I to four hearts a second at level IV. A [hazmat suit](safety/hazmat_suits) stops most of it. It wears off a few seconds after you leave, and the [Decontamination Shower](safety/decontamination_shower) washes it off at once. The undead are immune.
+**Radiation.** The land round a meltdown is [radioactive](safety/radiation): 40,000 RAD/h at the core when fresh, falling off to nothing 48 blocks out, and halving every couple of minutes. Anything alive in it takes a dose, and the dose brings **Radiation Sickness**. Corium is deadly up close. A [hazmat suit](safety/hazmat_suits) stops most of what comes from outside; check with a [Geiger Counter](safety/geiger_counter) before going in.
 """),
     spot("nuclear_waste", """
 What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item.
 """),
-    links(["safety/hazmat_suits", "safety/decontamination_shower"]),
+    links(["safety/radiation", "safety/hazmat_suits", "safety/geiger_counter"]),
 ])
 
 entry("safety/hazmat_suits", "Hazmat suits", "hazmat_hood", [
@@ -1323,7 +1405,7 @@ A full set gives the whole figure; each piece its share. Neither is much use as 
 Both suits are also sealed against chemicals: poison gas, toxin sludge and toxic liquids. Each piece keeps out the same share as above (the hood a fifth, and so on), and a full set of either keeps out all of it. See [Chemical grenades](ordnance/chemical). The figures for each piece are on its tooltip.
 """),
     text("""
-In the contaminated land round a [meltdown](safety/reactor_safety), a full Hazmat Suit keeps Radiation Sickness to its second level even at the crater, and the lead-lined suit to the first. Wash it off afterwards in a [Decontamination Shower](safety/decontamination_shower).
+Against [radiation](safety/radiation), a suit stops its share of what comes from outside (craters, meltdowns, radioactive blocks), not of what you carry: keep that in a [Lead Container](safety/lead_container).
 
 The hood needs plastic sheet, a glass pane for the visor and charcoal for the filter; the lead-lined suit is a Hazmat Suit piece with four lead plates round it.
 """),
@@ -1332,7 +1414,7 @@ The hood needs plastic sheet, a glass pane for the visor and charcoal for the fi
     craft("hazmat_trousers"),
     craft("hazmat_boots"),
     craft("lead_lined_hazmat_coat"),
-    links(["safety/reactor_safety", "safety/decontamination_shower"]),
+    links(["safety/radiation", "safety/reactor_safety", "safety/decontamination_shower"]),
 ])
 
 
