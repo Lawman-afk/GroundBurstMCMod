@@ -1289,8 +1289,8 @@ As built (2026-10-21):
 
 ## 13. Sound system
 
-- Every sound is synthesised by `tools/sound` (layered noise, filtered sweeps, convolution reverb, saturation), is
-  **mono**, and has a subtitle.
+- Every sound is made by `tools/sound`: synthesised (layered noise, filtered sweeps, convolution reverb, saturation) or,
+  since the remaster (§13.1), from real recordings; each is **mono** and has a subtitle.
 - **Distance-delayed sound:** clients compute `delay = distance / 17.15` ticks (343 m/s, 1 block = 1 m) and schedule
   the boom; the flash arrives first. As built (5b): bands are measured in the blast's reach (its damage radius, at
   least 8): near under 1.5 reaches, mid under 4, far under 12, very far under 40, silent beyond; volume 1.0 / 0.95 /
@@ -1316,6 +1316,38 @@ Sound list (each with its own synthesis recipe):
 (crusher, arc furnace, press, chemical plant, centrifuge, separator, synthesizer, condenser, fabricator, exotic
 fabricator, accelerator, reactor hum, generators), machine start/stop/jam, UI (`ui.click`, `ui.teletype`,
 `ui.confirm`, `ui.error`), gun sounds per weapon (§20), `decon.shower`, `hazmat.breath` (loop while masked).
+
+### 13.1 The sound remaster: real recordings (2026-10-27)
+The user asked for every sound to be more realistic, without recording or buying any, and chose the hybrid: free real
+recordings wherever reality has the sound, physics for what recordings cannot give, synthesis only for what nothing real
+sounds like. Blasts first; then launches and ordnance, then machines.
+- **Sources.** Freesound recordings under CC0 or CC BY 4.0 only (no non-commercial licences: CurseForge pays its
+  authors), US-government video (public domain; some extracted on Freesound already), NASA audio later for launches.
+  Every recording is in `tools/sound/sources/ledger.json` (author, title, page, licence, what it is used for); the raw
+  files stay out of git (`sources/raw/`), and `sources/fetch.py` downloads them again (Freesound's public HQ previews,
+  Vorbis about 192 kbps: no account needed). `sources/credits.py` writes `assets/groundzero/sounds/CREDITS.txt` from the
+  recordings the recipes actually cut from; the mod's metadata points at it.
+- **Reading a recording without hearing it**: `tools/sound/survey.py` prints a recording's length,
+  peak, clipped share and its loudest bangs (time, level, rise), and draws its waveform over a spectrogram with a time
+  scale; `key@from-to` zooms in. Cuts are chosen from those sheets.
+- **Processing** (`tools/sound/sources.py`): cuts cleaned of their background by spectral subtraction against a quiet
+  stretch of the same recording (a camcorder's hiss, wind, a truck idling), faded on raised-cosine curves; varispeed (a
+  recording played slower is a bigger event: lower and longer); air absorption over distance, frequency by frequency
+  (ISO 9613-1, 15 °C, 70 % humidity: at 1 km, 4 dB at 1 kHz, 27 dB at 4 kHz, 95 dB at 8 kHz); the soft ground's dip in
+  the low mids far off; the blast wave's pressure pulse (Friedlander) for the punch close up that a microphone loses;
+  tails that darken as they die; convolution; layering by loudness.
+- **The blasts, round 1** (`tools/sound/blasts.py`). The four bands are, in metres, roughly: small 6 / 20 / 55 / 175,
+  medium 15 / 50 / 140 / 440, large 45 / 150 / 420 / 1300, nuclear 150 / 500 / 1400 / 4400, Tsar 500 / 1700 / 4800 /
+  15000 (from the blasts' damage radii and ClientBlasts' bands). Each band uses recordings whose own distance suits it:
+  small, an oxyhydrogen detonation, a firecracker and a firework shell, debris of rock and gravel, a small charge heard
+  500 m off through a forest; medium, 4 kg of TNT (landmine clearance), a factory demolished across a car park, a mortar
+  on its range; large, a water tower demolished 90 m from the microphones with the city's echoes, a power-station chimney
+  and its fall; nuclear and Tsar, the TNT and the water tower slowed to under half speed, close lightning's crackle, a
+  building's collapse, then thunder slowed and carried kilometres. Debris lands 1 to 5 s after the bang, as debris
+  thrown that high does. The old synthesized recipes stay in recipes.py to compare.
+- **The Sound Lab** (a review web page): every sound before and
+  remade, side by side with waveforms, a realism rating (1 to 5), which is better, and a note. Ratings are kept in the
+  page's database (`verdicts/<set>.<band>@r<round>`); they are read to plan the next round. The user's ears decide.
 
 ---
 
@@ -3027,6 +3059,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | Superweapons (§19.5; the user asked for the GLA's and China's two from C&C Generals, each taking its own ammunition, made at a C&C-themed factory, one per faction by the user's choice): the SCUD Storm (nine Toxin SCUDs) and the Nuclear Missile (China's above-ground coffin), charging on power (5:00 / 6:00) and fired from a Launch Computer (both are LaunchSites); their ammunition built by the Arms Dealer and the War Factory. A toxin SCUD's strike spreads a toxin cloud and glowing anthrax residue 16 blocks round (the "toxic waste spread on the ground"); the nuke falls between the fission and boosted warheads with a 200-block radiation field. Everyone in the dimension hears when one is built, ready or launched. |
 | 2026-10-23 | Superweapons after the user's first look (§19.5): the SCUD Storm's pad grows to 15 x 15 so a ring of scrap (the game's) fits round its tank with the SCUDs moved out; the nuke's blast down a fifth (radii and damage x0.8, "20 kt"), the Toxin SCUD's blast and toxin up a third (x1.33: residue 21 blocks, cloud 16); "power" taken as Minecraft's explosion power, the blast's size and damage (the radiation field stays 200 blocks). Round sections in the big structures sink every other plank 0.15 px, not 0.06 (they are seen from further off). |
 | 2026-10-24 | Slice 9c (the user chose the cruise launcher alone, no erector Launch Pad: the Launch Silo does that job; and a motor that makes a cruise missile): any Light or Medium missile built with a Cruise Engine (1,500 blocks) is a cruise missile, each warhead its own winged airframe; it flies a plan fixed at launch (out of its box at 45 degrees on its booster, a level turn, 40 blocks over the ground as surveyed at launch, a pop-up and a dive), and only the Cruise Missile Launcher (two boxes, 60k FE a missile) fires it; the vertical launchers refuse it. Its boxes' covers are frangible (a hinged door would swing above the clear space) and its wings stay stowed until it is clear of its box (they are wider than the box). §17.11. |
+| 2026-10-27 | Sound remaster (the user chose the hybrid; §13.1): sounds are made from free real recordings (CC0 or CC BY 4.0 only, no non-commercial licences) wherever reality has them, with physics for what recordings cannot give (air absorption by ISO 9613-1, the blast wave's pulse, slowing for size) and synthesis only where nothing real sounds alike; blasts first. Raw recordings stay out of git (a ledger fetches them again); the mod ships a credits file. The user listens and rates on the Sound Lab page, whose ratings plan the next round. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

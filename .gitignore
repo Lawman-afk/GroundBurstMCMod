@@ -41,3 +41,6 @@ __pycache__/
 *.pyc
 tools/out/
 tools/.venv/
+
+### Sound sources (downloaded by tools/sound/sources/fetch.py) ###
+tools/sound/sources/raw/

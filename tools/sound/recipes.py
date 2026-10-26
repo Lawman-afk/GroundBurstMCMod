@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gz import paths  # noqa: E402
 import synth as S  # noqa: E402
+import blasts as BL  # noqa: E402
 
 
 # --- Geiger counter ---------------------------------------------------------------------------------------------------
@@ -967,7 +968,9 @@ def cruise_sounds() -> dict[str, np.ndarray]:
     return out
 
 
-RECIPES = [geiger_clicks, nuke_set, tsar_set, blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
+# (The blasts are made from recordings now, blasts.py; nuke_set, tsar_set and blast_sets above are the synthesized ones they
+# replaced, kept to compare.)
+RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds]
 
 

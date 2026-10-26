@@ -1,0 +1,236 @@
+{
+  "about": "Recordings the mod's sounds are made from (tools/sound). Raw files live in tools/sound/sources/raw/ (not in git; tools/sound/sources/fetch.py downloads them). Freesound's public HQ previews (OGG) are used, not the originals.",
+  "sources": [
+    {
+      "key": "tnt_landmines",
+      "site": "freesound",
+      "id": 165808,
+      "title": "Explosion with debris - authentic. 4kg TNT",
+      "author": "sidohzen",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/sidohzen/sounds/165808/",
+      "file": "https://cdn.freesound.org/previews/165/165808_2872744-hq.ogg",
+      "used_for": "landmine clearance in Cambodia, 4 kg TNT, camcorder mic: medium/large near blast and its debris"
+    },
+    {
+      "key": "watertower_demolition",
+      "site": "freesound",
+      "id": 866989,
+      "title": "EXPLReal_Centennial Mills Watertower Demolition_Tim Kahn_MKH8020st",
+      "author": "tim.kahn",
+      "license": "CC-BY-4.0",
+      "page": "https://freesound.org/people/tim.kahn/sounds/866989/",
+      "file": "https://cdn.freesound.org/previews/866/866989_7037-hq.ogg",
+      "used_for": "water-tower demolition from 300 ft, MKH8020 pair: large near/mid with city echoes"
+    },
+    {
+      "key": "building_implosion",
+      "site": "freesound",
+      "id": 98852,
+      "title": "BurlingtonIndustriesImplosion.wav",
+      "author": "the_toilet_guy",
+      "license": "CC-BY-4.0",
+      "page": "https://freesound.org/people/the_toilet_guy/sounds/98852/",
+      "file": "https://cdn.freesound.org/previews/98/98852_1661348-hq.ogg",
+      "used_for": "six-storey building implosion: the collapse's rumble for large and nuclear"
+    },
+    {
+      "key": "chimney_demolition",
+      "site": "freesound",
+      "id": 768370,
+      "title": "2024-11-16 0750 field recording czestochowa zawodzie power plant chimney detonation explosion zoom h4npro",
+      "author": "julujanus",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/julujanus/sounds/768370/",
+      "file": "https://cdn.freesound.org/previews/768/768370_8058339-hq.ogg",
+      "used_for": "power-plant chimney demolition: large mid"
+    },
+    {
+      "key": "orchard_demolition",
+      "site": "freesound",
+      "id": 196633,
+      "title": "Orchard Flats Demolition explosion sounds field-recording",
+      "author": "Sonic-ranger",
+      "license": "CC-BY-4.0",
+      "page": "https://freesound.org/people/Sonic-ranger/sounds/196633/",
+      "file": "https://cdn.freesound.org/previews/196/196633_2147148-hq.ogg",
+      "used_for": "flats demolition: medium/large mid"
+    },
+    {
+      "key": "factory_demolition",
+      "site": "freesound",
+      "id": 125937,
+      "title": "merrimack-st-demolition.aif",
+      "author": "alienistcog",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/alienistcog/sounds/125937/",
+      "file": "https://cdn.freesound.org/previews/125/125937_296888-hq.ogg",
+      "used_for": "factory demolition heard across a car park: medium mid/far"
+    },
+    {
+      "key": "debris_explosion_long",
+      "site": "freesound",
+      "id": 438528,
+      "title": "G33-22-Falling Debris and Explosion.wav",
+      "author": "craigsmith",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/craigsmith/sounds/438528/",
+      "file": "https://cdn.freesound.org/previews/438/438528_2524442-hq.ogg",
+      "used_for": "explosion, falling debris and collapse: debris tails"
+    },
+    {
+      "key": "explosion_debris",
+      "site": "freesound",
+      "id": 483278,
+      "title": "R09-50-Explosion with Debris.wav",
+      "author": "craigsmith",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/craigsmith/sounds/483278/",
+      "file": "https://cdn.freesound.org/previews/483/483278_2524442-hq.ogg",
+      "used_for": "muffled explosion with clattering debris: medium near"
+    },
+    {
+      "key": "firework_shell",
+      "site": "freesound",
+      "id": 336011,
+      "title": "Sharp Explosion 4 (of 5)",
+      "author": "Rudmer_Rotteveel",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/Rudmer_Rotteveel/sounds/336011/",
+      "file": "https://cdn.freesound.org/previews/336/336011_4921277-hq.ogg",
+      "used_for": "a firework shell bursting: small near crack"
+    },
+    {
+      "key": "firecracker_street",
+      "site": "freesound",
+      "id": 609588,
+      "title": "Firecracker Explosion",
+      "author": "unfa",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/unfa/sounds/609588/",
+      "file": "https://cdn.freesound.org/previews/609/609588_1038806-hq.ogg",
+      "used_for": "a firecracker in a city street: small near, street echo"
+    },
+    {
+      "key": "oxyhydrogen_1l",
+      "site": "freesound",
+      "id": 734099,
+      "title": "1 Liter Stoichiometric Oxyhydrogen Detonation (Tampere, Mustavuori)",
+      "author": "modusmogulus",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/modusmogulus/sounds/734099/",
+      "file": "https://cdn.freesound.org/previews/734/734099_15956618-hq.ogg",
+      "used_for": "1 L oxyhydrogen detonation: small near"
+    },
+    {
+      "key": "detonation_500m_forest",
+      "site": "freesound",
+      "id": 734093,
+      "title": "Gunshot 500m Pine Forest High Quality",
+      "author": "modusmogulus",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/modusmogulus/sounds/734093/",
+      "file": "https://cdn.freesound.org/previews/734/734093_15956618-hq.ogg",
+      "used_for": "a 250 ml oxyhydrogen detonation heard 500 m off in a pine forest: small/medium far"
+    },
+    {
+      "key": "artillery_k55",
+      "site": "freesound",
+      "id": 184365,
+      "title": "K-55 Artillery.flac",
+      "author": "qubodup",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/qubodup/sounds/184365/",
+      "file": "https://cdn.freesound.org/previews/184/184365_71257-hq.ogg",
+      "used_for": "K-55 artillery, from a US government video: medium/large far"
+    },
+    {
+      "key": "artillery_army",
+      "site": "freesound",
+      "id": 239137,
+      "title": "Artillery Gunfire",
+      "author": "qubodup",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/qubodup/sounds/239137/",
+      "file": "https://cdn.freesound.org/previews/239/239137_71257-hq.ogg",
+      "used_for": "artillery firing, from a US Army video: medium far"
+    },
+    {
+      "key": "mortar_line",
+      "site": "freesound",
+      "id": 240567,
+      "title": "mortar line.wav",
+      "author": "greenbastardd",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/greenbastardd/sounds/240567/",
+      "file": "https://cdn.freesound.org/previews/240/240567_2357050-hq.ogg",
+      "used_for": "five mortars firing on an exercise: mid/far booms"
+    },
+    {
+      "key": "lightning_close_a",
+      "site": "freesound",
+      "id": 434359,
+      "title": "Close lightning strike 2018 07 07",
+      "author": "csengeri",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/csengeri/sounds/434359/",
+      "file": "https://cdn.freesound.org/previews/434/434359_197070-hq.ogg",
+      "used_for": "a very close lightning strike: nuclear/Tsar rolling rumble"
+    },
+    {
+      "key": "thunder_close_neumann",
+      "site": "freesound",
+      "id": 191992,
+      "title": "thunder.mp3",
+      "author": "pyer75",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/pyer75/sounds/191992/",
+      "file": "https://cdn.freesound.org/previews/191/191992_1973779-hq.ogg",
+      "used_for": "a close thunderbolt, ORTF Neumann KM184: nuclear rumble"
+    },
+    {
+      "key": "lightning_close_b",
+      "site": "freesound",
+      "id": 267551,
+      "title": "Thunder2",
+      "author": "Yoyodaman234",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/Yoyodaman234/sounds/267551/",
+      "file": "https://cdn.freesound.org/previews/267/267551_2792951-hq.ogg",
+      "used_for": "a close, intense lightning strike: nuclear/Tsar very far"
+    },
+    {
+      "key": "gravel_debris",
+      "site": "freesound",
+      "id": 569745,
+      "title": "Gravel Stone Dirt Debris Falling Small 1 12",
+      "author": "Sheyvan",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/Sheyvan/sounds/569745/",
+      "file": "https://cdn.freesound.org/previews/569/569745_3248005-hq.ogg",
+      "used_for": "gravel, stone and dirt falling, MKH416: small debris"
+    },
+    {
+      "key": "stones_falling",
+      "site": "freesound",
+      "id": 550342,
+      "title": "Foley_Stones_Falls_Debris_Stereo_DR05.wav",
+      "author": "Nox_Sound",
+      "license": "CC0-1.0",
+      "page": "https://freesound.org/people/Nox_Sound/sounds/550342/",
+      "file": "https://cdn.freesound.org/previews/550/550342_9250976-hq.ogg",
+      "used_for": "stones falling: heavy debris"
+    },
+    {
+      "key": "rocks_falling",
+      "site": "freesound",
+      "id": 539178,
+      "title": "FX - Rock / stone falling debris",
+      "author": "bolkmar",
+      "license": "CC-BY-4.0",
+      "page": "https://freesound.org/people/bolkmar/sounds/539178/",
+      "file": "https://cdn.freesound.org/previews/539/539178_2927958-hq.ogg",
+      "used_for": "rocks falling on ground: single rocks"
+    }
+  ]
+}
