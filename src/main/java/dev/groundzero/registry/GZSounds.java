@@ -29,48 +29,48 @@ public final class GZSounds {
 
     // Nuclear detonation as heard at increasing distances; the distance-delayed sound system picks the band.
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_NEAR =
-            register("blast.nuke.near", "Nuclear detonation", blastVariants("blast/nuke_near"), true, 512);
+            register("blast.nuke.near", "Nuclear detonation", List.of("blast/nuke_near"), true, 512);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_MID =
-            register("blast.nuke.mid", "Nuclear detonation rumbles", blastVariants("blast/nuke_mid"), true, 1024);
+            register("blast.nuke.mid", "Nuclear detonation rumbles", List.of("blast/nuke_mid"), true, 1024);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_FAR =
-            register("blast.nuke.far", "Distant nuclear detonation", blastVariants("blast/nuke_far"), true, 2048);
+            register("blast.nuke.far", "Distant nuclear detonation", List.of("blast/nuke_far"), true, 2048);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_NUKE_VERY_FAR =
-            register("blast.nuke.very_far", "Far-off rumble", blastVariants("blast/nuke_very_far"), true, 4096);
+            register("blast.nuke.very_far", "Far-off rumble", List.of("blast/nuke_very_far"), true, 4096);
     // The Tsar's own, heavier and longer (slice 8d).
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_NEAR =
-            register("blast.tsar.near", "Thermonuclear detonation", blastVariants("blast/tsar_near"), true, 768);
+            register("blast.tsar.near", "Thermonuclear detonation", List.of("blast/tsar_near"), true, 768);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_MID =
-            register("blast.tsar.mid", "Thermonuclear detonation thunders", blastVariants("blast/tsar_mid"), true, 1536);
+            register("blast.tsar.mid", "Thermonuclear detonation thunders", List.of("blast/tsar_mid"), true, 1536);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_FAR =
-            register("blast.tsar.far", "Distant thermonuclear detonation", blastVariants("blast/tsar_far"), true, 3072);
+            register("blast.tsar.far", "Distant thermonuclear detonation", List.of("blast/tsar_far"), true, 3072);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_TSAR_VERY_FAR =
-            register("blast.tsar.very_far", "Far-off thunder", blastVariants("blast/tsar_very_far"), true, 6144);
+            register("blast.tsar.very_far", "Far-off thunder", List.of("blast/tsar_very_far"), true, 6144);
 
     // Conventional explosions by size, heard near / mid / far / very far (the distance-delayed sound system picks one).
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_SMALL_NEAR =
-            register("blast.small.near", "Small explosion", blastVariants("blast/small_near"), true, 256);
+            register("blast.small.near", "Small explosion", List.of("blast/small_near"), true, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_SMALL_MID =
-            register("blast.small.mid", "Explosion echoes", blastVariants("blast/small_mid"), true, 512);
+            register("blast.small.mid", "Explosion echoes", List.of("blast/small_mid"), true, 512);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_SMALL_FAR =
-            register("blast.small.far", "Distant explosion", blastVariants("blast/small_far"), true, 1024);
+            register("blast.small.far", "Distant explosion", List.of("blast/small_far"), true, 1024);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_SMALL_VERY_FAR =
-            register("blast.small.very_far", "Faint distant boom", blastVariants("blast/small_very_far"), true, 2048);
+            register("blast.small.very_far", "Faint distant boom", List.of("blast/small_very_far"), true, 2048);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_MEDIUM_NEAR =
-            register("blast.medium.near", "Explosion", blastVariants("blast/medium_near"), true, 256);
+            register("blast.medium.near", "Explosion", List.of("blast/medium_near"), true, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_MEDIUM_MID =
-            register("blast.medium.mid", "Explosion rumbles", blastVariants("blast/medium_mid"), true, 512);
+            register("blast.medium.mid", "Explosion rumbles", List.of("blast/medium_mid"), true, 512);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_MEDIUM_FAR =
-            register("blast.medium.far", "Distant explosion", blastVariants("blast/medium_far"), true, 1024);
+            register("blast.medium.far", "Distant explosion", List.of("blast/medium_far"), true, 1024);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_MEDIUM_VERY_FAR =
-            register("blast.medium.very_far", "Far-off rumble", blastVariants("blast/medium_very_far"), true, 2048);
+            register("blast.medium.very_far", "Far-off rumble", List.of("blast/medium_very_far"), true, 2048);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_NEAR =
-            register("blast.large.near", "Huge explosion", blastVariants("blast/large_near"), true, 256);
+            register("blast.large.near", "Huge explosion", List.of("blast/large_near"), true, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_MID =
-            register("blast.large.mid", "Huge explosion rumbles", blastVariants("blast/large_mid"), true, 512);
+            register("blast.large.mid", "Huge explosion rumbles", List.of("blast/large_mid"), true, 512);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_FAR =
-            register("blast.large.far", "Distant huge explosion", blastVariants("blast/large_far"), true, 1024);
+            register("blast.large.far", "Distant huge explosion", List.of("blast/large_far"), true, 1024);
     public static final DeferredHolder<SoundEvent, SoundEvent> BLAST_LARGE_VERY_FAR =
-            register("blast.large.very_far", "Far-off rumble", blastVariants("blast/large_very_far"), true, 2048);
+            register("blast.large.very_far", "Far-off rumble", List.of("blast/large_very_far"), true, 2048);
 
     // Machine work loops (2 s, seamless); played by the client while a machine's ACTIVE state is set.
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_COMBUSTION_GENERATOR =
@@ -205,14 +205,6 @@ public final class GZSounds {
 
     private static List<String> variants(String base, int count) {
         return IntStream.rangeClosed(1, count).mapToObj(i -> base + i).toList();
-    }
-
-    /**
-     * A blast sound's files: the one rated in the Sound Lab and its two variants, {@code _2} and {@code _3}
-     * (tools/sound/blasts.py, Vary): the game picks one at random each time, so blasts in a row differ.
-     */
-    private static List<String> blastVariants(String base) {
-        return List.of(base, base + "_2", base + "_3");
     }
 
     /** A blast sound by set (small, medium, large, nuke, tsar) and distance band (0 near, 1 mid, 2 far, 3 very far). */
