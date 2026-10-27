@@ -210,7 +210,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
             for (LaunchSite s : Launches.silosNear(level, this.worldPosition)) {
                 BlockPos t = s.target();
                 silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.readiness().ordinal(), s.countdown(), s.armed(), t != null,
-                        t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), s.range(), s.siteKind().ordinal()));
+                        t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), s.range(), s.siteKind().ordinal(), s.strike(level)));
             }
         }
         List<LaunchPayloads.Contact> contacts = new ArrayList<>();

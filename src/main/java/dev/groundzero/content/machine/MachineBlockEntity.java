@@ -160,6 +160,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return false;
     }
 
+    /**
+     * Whether the screen holds this slot's item fast ({@code menu}'s synced data, on either side): nothing taken out or
+     * put in, a launcher's missiles while it counts down and fires.
+     */
+    public boolean slotLocked(int slot, MachineMenu menu) {
+        return false;
+    }
+
     /** One server tick of work. Returns whether the machine is actively working (drives ACTIVE, sound, animation). */
     protected abstract boolean tickMachine(ServerLevel level);
 

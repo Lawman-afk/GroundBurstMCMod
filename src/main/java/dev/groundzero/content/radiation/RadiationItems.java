@@ -64,10 +64,10 @@ public final class RadiationItems {
             "Carried anywhere in your inventory, the Dosimeter Badge keeps the dose you have taken: its film darkens from white "
                     + "through yellow, orange and red to black, and the dose shows in rad under the Geiger reading. Sickness starts "
                     + "at 100 rad and grows worse at 200, 400 and 600; 1,000 rad is lethal. The dose falls by itself, 1 rad a minute, "
-                    + "once you are out of radiation; Rad-Away and the Anti-Rad Injector take it down faster.");
+                    + "below 10 RAD/h; Rad-Away and the Anti-Rad Injector take it down faster, and the film clears with it.");
     public static final String INFO_LEAD_CONTAINER = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".info.lead_container",
-            "Radioactive items you carry dose you as surely as a crater does: plutonium, spent fuel rods, nuclear waste, corium. "
-                    + "Nothing inside a Lead Container reaches you. It holds nine stacks of radioactive items and nothing else; "
+            "Radioactive items you carry dose you as surely as a crater does: a stack of uranium ingots brings sickness within "
+                    + "half an hour, a spent fuel rod within three minutes. Nothing inside a Lead Container reaches you. It holds nine stacks of radioactive items and nothing else; "
                     + "use it to open it.");
     public static final String INFO_MEDICINE = dev.groundzero.registry.GZLang.add(dev.groundzero.GroundZero.MODID + ".info.radiation_medicine",
             "Potassium Iodide halves the dose you take for 10 minutes: take it before going in. Rad-Away draws 150 rad out over "

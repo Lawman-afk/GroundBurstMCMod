@@ -408,8 +408,8 @@ def hud() -> None:
 
     # The Lead Container: a lead-lined well of nine places between two trefoils, over the inventory.
     t = Tex(256, 256)
-    GUI.window(t)
-    gx, gy = 61, 18
+    GUI.window(t, H=173, inv_y=91)                                 # 7 taller than a chest's: the well clears the header
+    gx, gy = 61, 23
     t.rect(gx - 4, gy - 3, 62, 60, LEAD[1])
     t.outline(gx - 4, gy - 3, 62, 60, LEAD[0])
     t.hline(gx - 3, gy - 2, 60, LEAD[3])
@@ -418,15 +418,15 @@ def hud() -> None:
     for row in range(3):
         for col in range(3):
             GUI.slot(t, gx + col * 18, gy + row * 18)
-    for cx in (30.5, 146.5):
-        t.disc(cx, 46.5, 13.0, BLK[1])
-        t.disc(cx, 46.5, 12.0, Y[4])
-        t.trefoil(cx, 46.5, 10.0, BLK[1])
+    for cx in (30.5, 146.5):                                        # level with the well's middle
+        t.disc(cx, gy + 26.5, 13.0, BLK[1])
+        t.disc(cx, gy + 26.5, 12.0, Y[4])
+        t.trefoil(cx, gy + 26.5, 10.0, BLK[1])
     for row in range(3):                                            # the player's inventory and hotbar
         for col in range(9):
-            GUI.slot(t, 7 + col * 18, 83 + row * 18)
+            GUI.slot(t, 7 + col * 18, 90 + row * 18)
     for col in range(9):
-        GUI.slot(t, 7 + col * 18, 141)
+        GUI.slot(t, 7 + col * 18, 148)
     t.save(paths.TEXTURES / "gui" / "lead_container.png")
 
 

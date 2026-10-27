@@ -20,6 +20,7 @@ import dev.groundzero.GroundZero;
 import dev.groundzero.content.launch.LaunchComputerBlock;
 import dev.groundzero.content.launch.LaunchPayloads;
 import dev.groundzero.content.launch.LaunchSiloBlockEntity;
+import dev.groundzero.content.launch.LaunchSite;
 import dev.groundzero.content.launch.MissileEntity;
 import dev.groundzero.content.launch.TerrainSurvey;
 import dev.groundzero.registry.GZLang;
@@ -398,6 +399,16 @@ public class LaunchComputerScreen extends Screen {
         Phosphor.line(g, ex0, ez1, ex1, ez1, DIM, 3);
         Phosphor.line(g, ex0, ez0, ex0, ez1, DIM, 3);
         Phosphor.line(g, ex1, ez0, ex1, ez1, DIM, 3);
+        // Each armed (or launching) silo's strike round its target, the picked silo's over the rest.
+        for (int pass = 0; pass < 2; pass++) {
+            for (LaunchPayloads.Silo silo : s.silos()) {
+                boolean picked = silo.pos().equals(this.selected);
+                if ((pass == 1) == picked && silo.hasTarget() && silo.strike().reach() > 0
+                        && (silo.armed() || silo.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal())) {
+                    drawStrike(g, silo, picked, x0, y0, x1, y1);
+                }
+            }
+        }
         // The computer, each silo and its target (the picked silo's bright; armed silos joined to theirs by a red line).
         int cx = screenX(this.pos.getX() + 0.5), cz = screenY(this.pos.getZ() + 0.5);
         g.fill(cx - 2, cz - 2, cx + 3, cz + 3, WHITE);
@@ -428,6 +439,27 @@ public class LaunchComputerScreen extends Screen {
         }
         Phosphor.scanlines(g, x0, y0, x1, y1);
         g.disableScissor();
+    }
+
+    /**
+     * A strike round its target: filled where its warhead kills, a ring at the farthest it harms anything, and dashed, the
+     * farthest it may harm given how far from the target it can come down (an ellipse along the flight; a superweapon's
+     * spread is a circle). The picked silo's bright, the others' dark.
+     */
+    private void drawStrike(GuiGraphicsExtractor g, LaunchPayloads.Silo silo, boolean picked, int x0, int y0, int x1, int y1) {
+        LaunchSite.Strike k = silo.strike();
+        double scale = zoom();
+        int tx = screenX(silo.targetX() + 0.5), tz = screenY(silo.targetZ() + 0.5);
+        int lethal = (int) Math.round(k.lethal() / scale), reach = (int) Math.round(k.reach() / scale);
+        if (lethal > 0) {
+            Phosphor.disc(g, tx, tz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
+        }
+        Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
+        if (k.along() / scale >= 1.5) {
+            double dx = silo.targetX() - silo.pos().getX(), dz = silo.targetZ() - silo.pos().getZ(), d = Math.sqrt(dx * dx + dz * dz);
+            Phosphor.ellipse(g, tx, tz, (k.along() + k.reach()) / scale, (k.across() + k.reach()) / scale,
+                    d > 1e-6 ? dx / d : 1, d > 1e-6 ? dz / d : 0, picked ? 0xCCFF4A3A : 0x997A2418, 3);
+        }
     }
 
     /**

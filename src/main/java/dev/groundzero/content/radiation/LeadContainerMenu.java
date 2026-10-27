@@ -20,7 +20,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
  */
 public class LeadContainerMenu extends AbstractContainerMenu {
     /** Where the grid (under the window's header strip) and the inventory lie in the screen. */
-    public static final int GRID_X = 62, GRID_Y = 19, INVENTORY_X = 8, INVENTORY_Y = 84;
+    public static final int GRID_X = 62, GRID_Y = 24, INVENTORY_X = 8, INVENTORY_Y = 91;
 
     private final InteractionHand hand;
     private final ItemStack stack;

@@ -903,18 +903,23 @@ final class ManualPages {
     }
 
     /** The chapters on the home spread. */
+    /** A page of the contents: the chapters it has room for, the first page under the heading ({@link #chapterLists}). */
     static final class ChapterList extends Page {
-        static final int ROW = 20;
+        static final int ROW = 20, HEADING = 16;
         final List<Manual.Chapter> chapters;
+        final boolean heading;
 
-        ChapterList(List<Manual.Chapter> chapters) {
+        ChapterList(List<Manual.Chapter> chapters, boolean heading) {
             this.chapters = chapters;
+            this.heading = heading;
         }
 
         @Override
         void draw(Ctx c, int x, int y) {
-            centered(c.g(), c.font(), Component.translatable(ManualStrings.CONTENTS).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
-            int yy = y + 16;
+            if (this.heading) {
+                centered(c.g(), c.font(), Component.translatable(ManualStrings.CONTENTS).withStyle(s -> s.withBold(true)), x + W / 2, y, ManualText.INK);
+            }
+            int yy = y + (this.heading ? HEADING : 0);
             for (Manual.Chapter ch : this.chapters) {
                 boolean hover = c.over(x, yy, W, ROW - 1);
                 if (hover) {
@@ -936,7 +941,7 @@ final class ManualPages {
 
         @Override
         boolean click(Ctx c, int x, int y, double mx, double my) {
-            int top = y + 16;
+            int top = y + (this.heading ? HEADING : 0);
             if (mx < x || mx >= x + W || my < top) {
                 return false;
             }
@@ -1165,6 +1170,20 @@ final class ManualPages {
     }
 
     /** Splits a list of entries into list pages, the first with a heading. */
+    /** The contents over as many pages as the chapters need (nine do not fit on one), the heading on the first. */
+    static List<Page> chapterLists(List<Manual.Chapter> chapters) {
+        List<Page> out = new ArrayList<>();
+        int i = 0;
+        boolean first = true;
+        while (i < chapters.size() || first) {
+            int n = Math.max(1, (H - (first ? ChapterList.HEADING : 0)) / ChapterList.ROW);
+            out.add(new ChapterList(chapters.subList(i, Math.min(chapters.size(), i + n)), first));
+            i += n;
+            first = false;
+        }
+        return out;
+    }
+
     static List<Page> entryLists(@Nullable String heading, List<Manual.Entry> entries, int firstRoom) {
         List<Page> out = new ArrayList<>();
         int i = 0;

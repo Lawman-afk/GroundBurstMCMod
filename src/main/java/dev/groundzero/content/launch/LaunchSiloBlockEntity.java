@@ -227,6 +227,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return true;
     }
 
+    @Override
+    public Strike strike(ServerLevel level) {
+        var spec = missile();
+        return spec == null ? Strike.NONE : Strike.of(level, spec, this.worldPosition, this.target);
+    }
+
     /** Fires if armed: the countdown to launch at its target. */
     @Override
     public boolean launchArmed(ServerLevel level, @Nullable Entity by) {
@@ -412,6 +418,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     protected int extraDataCount() {
         return 3;
+    }
+
+    /** The missile cannot be taken out (or swapped) once its countdown has begun. */
+    @Override
+    public boolean slotLocked(int slot, MachineMenu menu) {
+        return slot == SLOT_MISSILE && menu.extra(DATA_READINESS) == Readiness.COUNTING.ordinal();
     }
 
     @Override

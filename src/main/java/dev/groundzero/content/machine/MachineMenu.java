@@ -213,7 +213,17 @@ public class MachineMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return (isActive() || this.menu.machine().slotTakesHidden(getContainerSlot())) && this.container.canPlaceItem(getContainerSlot(), stack);
+            return (isActive() || this.menu.machine().slotTakesHidden(getContainerSlot())) && !locked()
+                    && this.container.canPlaceItem(getContainerSlot(), stack);
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return !locked() && super.mayPickup(player);
+        }
+
+        private boolean locked() {
+            return this.menu.machine().slotLocked(getContainerSlot(), this.menu);
         }
 
         @Override

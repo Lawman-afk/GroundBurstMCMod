@@ -29,6 +29,7 @@ final class LaunchTests {
         GZGameTests.test("silo_will_not_launch_unready", GZGameTests.FLOOR_16, 20, LaunchTests::unready);
         GZGameTests.test("computer_aims_and_arms_each_silo", GZGameTests.FLOOR_16, 20, LaunchTests::perSilo);
         GZGameTests.test("armed_silo_disarms_when_unready", GZGameTests.FLOOR_16, 20, LaunchTests::disarms);
+        GZGameTests.test("counting_silo_locks_its_missile", GZGameTests.FLOOR_16, 20, LaunchTests::lockedMissile);
         GZGameTests.test("halted_silo_refuses_and_scrubs_its_countdown", GZGameTests.FLOOR_16, 20, LaunchTests::halted);
         GZGameTests.test("emp_silo_refuses_to_arm", GZGameTests.FLOOR_16, 20, LaunchTests::empRefuses);
         GZGameTests.testOpenSky("missile_flies_on_over_unloaded_ground", GZGameTests.FLOOR_16, 400, LaunchTests::longFlight);
@@ -208,12 +209,25 @@ final class LaunchTests {
             helper.assertTrue(c.setTarget(level, b.getBlockPos(), tb.getX(), tb.getZ()), "aim B");
             helper.assertTrue(a.target().getX() == ta.getX() && b.target().getX() == tb.getX(), "each silo keeps its own target");
             helper.assertTrue(c.arm(level, a.getBlockPos(), true) && a.armed() && !b.armed(), "only A armed");
-            helper.assertTrue(c.launchArmed(level, null) == 1, "LAUNCH fires the one armed silo");
+            // At least one: a computer fires every armed silo within reach, and a neighbouring test's may be armed too.
+            helper.assertTrue(c.launchArmed(level, null) >= 1, "LAUNCH fires the armed silo");
             helper.assertTrue(a.countdown() > 0 && b.countdown() < 0, "A counts down, B waits");
             helper.assertTrue(!a.armed(), "launching clears the arming");
             helper.assertTrue(!a.setTarget(1, 1), "no re-aiming during the countdown");
             helper.succeed();
         });
+    }
+
+    /** From the countdown on, a silo's missile cannot be taken out of its screen or swapped; before it, it can. */
+    private static void lockedMissile(GameTestHelper helper) {
+        LaunchSiloBlockEntity s = formedSilo(helper);
+        load(s);
+        var player = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var slot = s.createMenu(0, player.getInventory(), player).getSlot(LaunchSiloBlockEntity.SLOT_MISSILE);
+        helper.assertTrue(slot.mayPickup(player), "a waiting missile can be taken out");
+        helper.assertTrue(s.launch(helper.getLevel(), helper.absolutePos(new BlockPos(14, 1, 14)), null), "it counts down");
+        helper.assertTrue(!slot.mayPickup(player) && !slot.mayPlace(missile()), "a counting one cannot, nor be swapped");
+        helper.succeed();
     }
 
     /** An armed silo whose missile is taken out makes itself safe. */

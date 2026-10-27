@@ -125,7 +125,7 @@ public final class FxPhotographer {
                 new Scene("warheads", "warheads", 9, 25, List.of(10, 40)),
                 new Scene("napalm", "napalm", 10, 30, List.of(8, 40)),
                 new Scene("launch", "launch", 26, -14, List.of(20, 120, 240, 275, 300)),
-                new Scene("launch_ui", "launch", 9, 0, List.of(22, 300, 340)),
+                new Scene("launch_ui", "launch", 9, 0, List.of(22, 100, 300, 340)),
                 new Scene("silo_ui", "launch", 5, 0, List.of(30)),
                 new Scene("launch_dive", "launch_dive", 50, -20, List.of(285, 295, 302, 308)),
                 new Scene("radar", "radar", 22, -16, List.of(20, 60)),
@@ -649,6 +649,10 @@ public final class FxPhotographer {
                 }
                 if (i >= 3) {                                  // two aimed elsewhere
                     silo.setTarget(x - 150 + 60 * i, -200 + 40 * i);
+                }
+                if (i == 0) {                                  // one armed beside the main silo's aim: its strike drawn dark
+                    silo.setTarget(x + 40, 45);
+                    silo.arm(true);
                 }
                 if (i == 3) {                                  // one held stopped by redstone (wants a signal, has none)
                     silo.cycleRedstoneMode();
@@ -1381,6 +1385,11 @@ public final class FxPhotographer {
             step = 0;
             clock = 0;
             return;
+        }
+        if (scene.name().equals("geiger") && step >= 0 && clock == 50) {
+            // An Anti-Rad Injector between the shots: the second shows the badge's film cleared and the dose near nothing.
+            server.execute(() -> dev.groundzero.content.radiation.Radiation.addDose(server.getPlayerList().getPlayers().getFirst(),
+                    -dev.groundzero.content.radiation.AntiRadInjectorItem.DOSE));
         }
         if (scene.name().equals("geiger") && step >= 0 && clock == 60) {
             // The second shot with the meter in the top left: the counter's model in hand shows.

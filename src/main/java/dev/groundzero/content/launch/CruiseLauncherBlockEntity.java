@@ -160,6 +160,18 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     }
 
     @Override
+    public Strike strike(ServerLevel level) {
+        Strike out = Strike.NONE;
+        for (int slot : new int[] {SLOT_A, SLOT_B}) {
+            MissileSpec spec = missile(slot);
+            if (spec != null) {
+                out = out.max(Strike.of(level, spec, this.worldPosition, this.target));
+            }
+        }
+        return out;
+    }
+
+    @Override
     public int countdown() {
         return this.phase == Phase.COUNTDOWN ? Math.max(0, COUNTDOWN - this.phaseTicks) : this.phase == Phase.IDLE ? -1 : 0;
     }
@@ -492,6 +504,12 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     @Override
     protected int extraDataCount() {
         return 5;
+    }
+
+    /** Neither missile can be taken out (or swapped) from the countdown until both have flown. */
+    @Override
+    public boolean slotLocked(int slot, MachineMenu menu) {
+        return menu.extra(DATA_READINESS) == Readiness.COUNTING.ordinal();
     }
 
     @Override

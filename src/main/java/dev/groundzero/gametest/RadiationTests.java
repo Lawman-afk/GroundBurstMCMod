@@ -103,10 +103,11 @@ final class RadiationTests {
         helper.setBlock(new BlockPos(4, 1, 4), GZResources.URANIUM_BLOCK.block().get());
         Vec3 eye = helper.absoluteVec(new Vec3(6.5, 1.5, 4.5));
         float rate = Emitters.blocks(level, eye);
-        helper.assertTrue(Math.abs(rate - 2) < 0.1, "8 RAD/h a block away is 2 two blocks away: " + rate);
+        float strength = Emitters.radioactivity(GZResources.URANIUM_BLOCK.block().get().defaultBlockState());
+        helper.assertTrue(strength > 0 && Math.abs(rate - strength / 4) < 0.05 * strength, strength + " RAD/h a block away is a quarter of it two away: " + rate);
         helper.setBlock(new BlockPos(5, 1, 4), GZResources.LEAD_BLOCK.block().get());
         float shielded = Emitters.blocks(level, eye);
-        helper.assertTrue(shielded < 0.1, "behind lead: " + shielded);
+        helper.assertTrue(shielded < rate * 0.05, "behind lead: " + shielded);
         float far = Emitters.blocks(level, helper.absoluteVec(new Vec3(4.5, 1.5, 12.5)));
         helper.assertTrue(far == 0, "beyond its reach: " + far);
         helper.succeed();
@@ -117,7 +118,8 @@ final class RadiationTests {
         var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
         player.getInventory().setItem(0, new ItemStack(GZNuclear.PLUTONIUM_INGOT.get(), 10));
         float loose = Emitters.carried(player);
-        helper.assertTrue(Math.abs(loose - 120) < 0.01, "ten plutonium ingots: " + loose);
+        float each = Emitters.radioactivity(GZNuclear.PLUTONIUM_INGOT.get());
+        helper.assertTrue(each >= 100 && Math.abs(loose - 10 * each) < 0.01, "ten plutonium ingots: " + loose);
         ItemStack container = new ItemStack(RadiationItems.LEAD_CONTAINER.get());
         container.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(new ItemStack(GZNuclear.PLUTONIUM_INGOT.get(), 10))));
         player.getInventory().setItem(0, container);
@@ -184,13 +186,13 @@ final class RadiationTests {
         helper.succeed();
     }
 
-    /** A new counter is charged with its alarm at 10 RAD/h; held, it counts; flat or knocked out by an EMP, it does not. */
+    /** A new counter is charged with its alarm at 100 RAD/h; held, it counts; flat or knocked out by an EMP, it does not. */
     private static void geiger(GameTestHelper helper) {
         var level = helper.getLevel();
         var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
         ItemStack counter = new ItemStack(RadiationItems.GEIGER_COUNTER.get());
         helper.assertTrue(GeigerCounterItem.stored(counter) == GeigerCounterItem.CAPACITY, "new counters come charged");
-        helper.assertTrue(GeigerCounterItem.alarm(counter) == 10, "their alarm at 10 RAD/h");
+        helper.assertTrue(GeigerCounterItem.alarm(counter) == 100, "their alarm at 100 RAD/h");
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, counter);
         helper.assertTrue(GeigerCounterItem.carried(player) == GeigerCounterItem.Carried.HELD, "held, it shows its meter");
         counter.set(GZDataComponents.EMP_UNTIL.get(), level.getGameTime() + 100);

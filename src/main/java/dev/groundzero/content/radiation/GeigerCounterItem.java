@@ -35,9 +35,9 @@ import net.minecraft.world.level.Level;
  */
 public class GeigerCounterItem extends Item {
     public static final int CAPACITY = 20_000, TRANSFER = 500, PER_SECOND = 5;
-    /** The alarm's thresholds, RAD/h (index 0: off). New counters are set to 10. */
+    /** The alarm's thresholds, RAD/h (index 0: off). New counters are set to 100 (sickness within the hour). */
     public static final float[] ALARMS = {0, 1, 10, 100, 1_000};
-    public static final int DEFAULT_ALARM = 2;
+    public static final int DEFAULT_ALARM = 3;
     /** How long after leaving an EMP field it stays dead, ticks. */
     public static final int EMP_TICKS = 200;
 

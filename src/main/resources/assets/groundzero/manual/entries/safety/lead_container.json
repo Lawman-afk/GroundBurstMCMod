@@ -9,7 +9,7 @@
     {
       "type": "spotlight",
       "item": "groundzero:lead_container",
-      "text": "A thick lead flask with nine places, for radioactive items only. Nothing inside it reaches you, wherever it is in your inventory. Use it to open it.\n\nCarried loose, a stack of plutonium ingots doses you at over 700 RAD/h and a stack of nuclear waste at over 1,200: sick within minutes. A bundle or a shulker box stops nothing."
+      "text": "A thick lead flask with nine places, for radioactive items only. Nothing inside it reaches you, wherever it is in your inventory. Use it to open it.\n\nCarried loose, a stack of uranium ingots doses you at 256 RAD/h (sick within half an hour), a spent fuel rod at 2,000 (sick in three minutes) and a stack of nuclear waste at 32,000 (dead in two). A bundle or a shulker box stops nothing."
     },
     {
       "type": "crafting",

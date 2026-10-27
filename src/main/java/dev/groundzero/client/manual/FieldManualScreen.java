@@ -106,7 +106,7 @@ public class FieldManualScreen extends Screen {
             case HOME -> {
                 out.add(new HomePage());
                 if (this.query.isBlank()) {
-                    out.add(new ManualPages.ChapterList(Manual.chapters()));
+                    out.addAll(ManualPages.chapterLists(Manual.chapters()));
                 } else {
                     out.addAll(ManualPages.entryLists(Component.translatable(ManualStrings.RESULTS).getString(), search(this.query), ManualPages.H));
                 }

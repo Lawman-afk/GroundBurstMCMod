@@ -173,7 +173,7 @@ public final class LaunchPayloads {
      * whether it is armed, and its target if it has one.
      */
     public record Silo(BlockPos pos, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ, int range,
-            int kind) {
+            int kind, LaunchSite.Strike strike) {
         public static final StreamCodec<FriendlyByteBuf, Silo> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
             buf.writeVarInt(s.readiness());
@@ -184,8 +184,13 @@ public final class LaunchPayloads {
             buf.writeVarInt(s.targetZ());
             buf.writeVarInt(s.range());
             buf.writeVarInt(s.kind());
+            buf.writeFloat(s.strike().lethal());
+            buf.writeFloat(s.strike().reach());
+            buf.writeFloat(s.strike().along());
+            buf.writeFloat(s.strike().across());
         }, buf -> new Silo(buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
-                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt()));
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat())));
     }
 
     /**

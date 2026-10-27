@@ -35,7 +35,7 @@ public final class ManualPhotographer {
         String only = System.getProperty("groundzero.manualShots.entry", "");
         if (!only.isEmpty()) {
             for (int spread = 0; spread < 8; spread++) {
-                SHOTS.add(new Shot(only, spread, null));
+                SHOTS.add(new Shot(only.equals("home") ? null : only, spread, null));     // "home": the contents' spreads
             }
             NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> tick());
             return;

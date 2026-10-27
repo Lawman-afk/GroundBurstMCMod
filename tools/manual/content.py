@@ -1031,6 +1031,8 @@ The silo takes one Light, Medium or Heavy missile, built at its [missile assembl
 
 **Launching.** Load the silo with a missile (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target within its missile's range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
 
+**Strike circles.** Each armed silo's strike shows round its target, the picked silo's bright and the rest dark: shaded where its warhead kills, a ring at the farthest it harms anything, and a dashed ring further out for how far off it may come down (long or short along its flight more than to either side; a superweapon's missiles anywhere round the target). From the countdown on, the missile is locked in its launcher.
+
 The silo sounds its siren and counts down for 10 seconds while the gantry arm swings clear. The missile burns on the pad for 2 seconds, then climbs, arcs over and dives on the target from high above, screaming down for its last few seconds. The further the target, the higher the arc: a missile sent 1000 blocks arrives about 20 seconds after lift-off. It flies on whether or not anyone is near the ground below, loading the chunks ahead of it, so the target need not be loaded.
 
 Whatever it hits on the way sets off the warhead there, so keep the sky above the silo clear.
@@ -1261,7 +1263,7 @@ Radiation can't be seen or felt, only measured: carry a [Geiger Counter](safety/
 
 - **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute.
 - **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.
-- **What you carry.** Plutonium, spent fuel rods, irradiated targets, nuclear waste and corium dose you from your own pockets. Keep them in a [Lead Container](safety/lead_container).
+- **What you carry.** Uranium, plutonium, fuel rods (spent ones above all), irradiated targets, nuclear waste and corium dose you from your own pockets: a stack of uranium ingots brings sickness within half an hour, a spent fuel rod within three minutes. Keep them in a [Lead Container](safety/lead_container).
 """),
     table([
         ["1 RAD/h", "100 hours"],
@@ -1284,7 +1286,7 @@ I: nausea now and then, hunger. II: weakness, slow mining, more hunger. III: a h
     text("""
 **Shelter.** Blocks stop radiation: a block of stone stops half of it, a block of concrete or obsidian three quarters, a block of lead nearly all; earth, wood and water less, glass very little. A one-block stone hut halves what reaches you; a bunker under the ground stops it. A [hazmat suit](safety/hazmat_suits) stops its share of what comes from outside, not of what you carry.
 
-**Getting better.** Out of radiation your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune.
+**Getting better.** Below 10 RAD/h your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune.
 """),
     links(["safety/geiger_counter", "safety/lead_container", "safety/radiation_medicine", "safety/hazmat_suits", "safety/reactor_safety"]),
 ])
@@ -1294,12 +1296,12 @@ entry("safety/geiger_counter", "Geiger Counter and Dosimeter", "geiger_counter",
 A civil-defence survey meter. Hold it in either hand: it **clicks** at random, faster the stronger the radiation where you stand (a few clicks a second near uranium ore, a roar in a crater), and its **meter** shows in a corner of the screen: a needle on a scale from 0.1 to 10,000 RAD/h and the reading. Anywhere in your hotbar it still clicks, and shows the reading alone.
 """),
     text("""
-**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 10.
+**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 100: sickness within the hour.
 
 **Power.** It runs on its own charge, 20,000 FE, using 5 FE a second while it is on (an hour on a full charge). Charge it in a [Battery Charger](power/batteries). An EMP knocks it out until 10 seconds after you leave the field.
 """),
     spot("dosimeter_badge", """
-A film badge: carry it anywhere in your inventory. Its film darkens with the dose you take (white, yellow, orange, red, black), its tooltip gives the dose in rad and the sickness it brings, and the dose shows under the Geiger reading.
+A film badge: carry it anywhere in your inventory. Its film shows the dose you hold now: white under 100 rad, then yellow, orange, red and black as each stage of sickness begins, and clearer again as the dose falls (by itself or with [medicine](safety/radiation_medicine)). Its tooltip gives the dose to the rad and the sickness it brings, and the dose shows under the Geiger reading.
 """),
     craft("geiger_counter"),
     craft("dosimeter_badge"),
@@ -1310,7 +1312,7 @@ entry("safety/lead_container", "Lead Container", "lead_container", ["lead_contai
     spot("lead_container", """
 A thick lead flask with nine places, for radioactive items only. Nothing inside it reaches you, wherever it is in your inventory. Use it to open it.
 
-Carried loose, a stack of plutonium ingots doses you at over 700 RAD/h and a stack of nuclear waste at over 1,200: sick within minutes. A bundle or a shulker box stops nothing.
+Carried loose, a stack of uranium ingots doses you at 256 RAD/h (sick within half an hour), a spent fuel rod at 2,000 (sick in three minutes) and a stack of nuclear waste at 32,000 (dead in two). A bundle or a shulker box stops nothing.
 """),
     craft("lead_container"),
     links(["safety/radiation"]),

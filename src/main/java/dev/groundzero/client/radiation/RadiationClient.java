@@ -60,7 +60,7 @@ public final class RadiationClient {
     /** The dial's scale: log10 of its ends, RAD/h. */
     static final float LOG_MIN = -1, LOG_MAX = 4;
     /** Clicks a second with nothing about (background), at most (above which a tube saturates), and the response. */
-    static final double BACKGROUND = 0.25, MAX_CLICKS = 60, GAIN = 12, CURVE = 0.75;
+    static final double BACKGROUND = 0.25, MAX_CLICKS = 60, GAIN = 4, CURVE = 0.55;
     static final int MARGIN = 4;
     static final int LCD = 0xFF9CFF7A, LCD_ALARM = 0xFFFF6A4A, LCD_DIM = 0xFF2C4A26;
 

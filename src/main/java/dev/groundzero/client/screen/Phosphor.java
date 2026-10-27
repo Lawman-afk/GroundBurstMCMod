@@ -27,6 +27,39 @@ public final class Phosphor {
         }
     }
 
+    /**
+     * An ellipse round (cx, cy) as single pixels: semi-axis {@code a} along the unit direction (ux, uy), {@code b} across
+     * it; dashed every {@code dash} pixels if dash > 0.
+     */
+    public static void ellipse(GuiGraphicsExtractor g, int cx, int cy, double a, double b, double ux, double uy, int color, int dash) {
+        int steps = Math.max(24, (int) ((a + b) * Math.PI * 1.5));
+        int lastX = Integer.MIN_VALUE, lastY = Integer.MIN_VALUE, n = 0;
+        for (int i = 0; i < steps; i++) {
+            double t = i * 2 * Math.PI / steps, p = Math.cos(t) * a, q = Math.sin(t) * b;
+            int x = cx + (int) Math.round(ux * p - uy * q), y = cy + (int) Math.round(uy * p + ux * q);
+            if (x == lastX && y == lastY) {
+                continue;
+            }
+            lastX = x;
+            lastY = y;
+            if (dash > 0 && (n++ / dash) % 2 == 1) {
+                continue;
+            }
+            g.fill(x, y, x + 1, y + 1, color);
+        }
+    }
+
+    /** A filled disc kept to a rectangle (a strike far bigger than the map draws only the rows it shows). */
+    public static void disc(GuiGraphicsExtractor g, int cx, int cy, int r, int color, int x0, int y0, int x1, int y1) {
+        for (int dy = Math.max(-r, y0 - cy); dy <= Math.min(r, y1 - 1 - cy); dy++) {
+            int half = (int) Math.sqrt((double) r * r - (double) dy * dy);
+            int from = Math.max(x0, cx - half), to = Math.min(x1, cx + half + 1);
+            if (from < to) {
+                g.fill(from, cy + dy, to, cy + dy + 1, color);
+            }
+        }
+    }
+
     /** A line of single pixels; dashed every {@code dash} pixels if dash > 0. */
     public static void line(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, int color, int dash) {
         int n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));

@@ -439,10 +439,11 @@ def servo() -> None:
 DIE_STEEL = fixed("die_steel", "#101318", "#1f242b", "#2f363f", "#434c57", "#5e6874", "#86919c", "#c4ccd4")
 
 
-# Die block geometry (true 2:1 isometric): a square block A x A, H tall, its top face a diamond centred in the sprite
-# with a pixel to spare on every side for the outline. Screen x = OX + u - v, y = OY + (u + v) / 2 - z.
+# Die block geometry (true 2:1 isometric): a square block A x A, H tall, its top face a diamond; the block sits low in
+# the sprite (as an item rests in its slot) with a pixel to spare round it for the outline.
+# Screen x = OX + u - v, y = OY + (u + v) / 2 - z.
 DIE_A, DIE_H = 6.5, 3.6
-DIE_OX, DIE_OY = 8.0, 4.8
+DIE_OX, DIE_OY = 8.0, 6.8
 
 
 def _die_region(px: float, py: float) -> tuple[str, float, float]:

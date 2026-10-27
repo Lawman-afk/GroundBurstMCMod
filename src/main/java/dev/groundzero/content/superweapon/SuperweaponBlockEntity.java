@@ -202,6 +202,16 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         return loaded() == 0 ? Readiness.NO_MISSILE : Readiness.READY;
     }
 
+    /** Each of its missiles' warhead, coming down anywhere within its spread of the target. */
+    @Override
+    public Strike strike(ServerLevel level) {
+        if (loaded() == 0) {
+            return Strike.NONE;
+        }
+        var area = dev.groundzero.content.assembly.AssemblyStats.area(warhead(), level.registryAccess());
+        return new Strike(area.lethal(), area.reach(), spread(), spread());
+    }
+
     /** Counting down: ticks until its first missile lights; charging: until it is charged; otherwise -1. */
     @Override
     public int countdown() {
@@ -555,6 +565,12 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     @Override
     protected int extraDataCount() {
         return 5;
+    }
+
+    /** Its missiles cannot be taken out (or more put in) from the strike's countdown until the last has flown. */
+    @Override
+    public boolean slotLocked(int slot, MachineMenu menu) {
+        return menu.extra(DATA_READINESS) == Readiness.COUNTING.ordinal();
     }
 
     @Override

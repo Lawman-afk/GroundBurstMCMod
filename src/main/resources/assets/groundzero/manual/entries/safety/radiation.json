@@ -10,7 +10,7 @@
     },
     {
       "type": "text",
-      "text": "**Where it comes from.**\n\n- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute.\n- **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.\n- **What you carry.** Plutonium, spent fuel rods, irradiated targets, nuclear waste and corium dose you from your own pockets. Keep them in a [Lead Container](safety/lead_container)."
+      "text": "**Where it comes from.**\n\n- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute.\n- **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.\n- **What you carry.** Uranium, plutonium, fuel rods (spent ones above all), irradiated targets, nuclear waste and corium dose you from your own pockets: a stack of uranium ingots brings sickness within half an hour, a spent fuel rod within three minutes. Keep them in a [Lead Container](safety/lead_container)."
     },
     {
       "type": "table",
@@ -68,7 +68,7 @@
     },
     {
       "type": "text",
-      "text": "**Shelter.** Blocks stop radiation: a block of stone stops half of it, a block of concrete or obsidian three quarters, a block of lead nearly all; earth, wood and water less, glass very little. A one-block stone hut halves what reaches you; a bunker under the ground stops it. A [hazmat suit](safety/hazmat_suits) stops its share of what comes from outside, not of what you carry.\n\n**Getting better.** Out of radiation your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune."
+      "text": "**Shelter.** Blocks stop radiation: a block of stone stops half of it, a block of concrete or obsidian three quarters, a block of lead nearly all; earth, wood and water less, glass very little. A one-block stone hut halves what reaches you; a bunker under the ground stops it. A [hazmat suit](safety/hazmat_suits) stops its share of what comes from outside, not of what you carry.\n\n**Getting better.** Below 10 RAD/h your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune."
     },
     {
       "type": "links",

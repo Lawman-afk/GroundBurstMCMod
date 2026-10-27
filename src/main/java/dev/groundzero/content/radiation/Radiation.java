@@ -29,11 +29,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * eyes are: the sources' field through the cover round them ({@link Shielding#ambient}), radioactive blocks near them
  * ({@link Emitters#blocks}) (both less what a suit stops), and what they carry; Potassium Iodide halves the lot. The
  * dose grows by rate / 3600 a second, falls {@link #RECOVERY} a second while the rate is under
- * {@link RadiationSource#END}, and {@link #RAD_AWAY_PER_SECOND} faster under Rad-Away. Mobs inside a source are
+ * {@link RadiationSource#SAFE} (a uranium ore or two in a pocket does not stop the body mending), and
+ * {@link #RAD_AWAY_PER_SECOND} faster under Rad-Away. Mobs inside a source are
  * measured too, by the field alone. The dose brings Radiation Sickness by stage ({@link #sicken}).
  */
 public final class Radiation {
-    /** Dose given back a second while the dose rate is near nothing: 1 rad a minute. */
+    /** Dose given back a second while the dose rate is safe (under {@link RadiationSource#SAFE}): 1 rad a minute. */
     public static final float RECOVERY = 1f / 60;
     /** What Rad-Away takes off a second while it works: 150 rad over its 30 s. */
     public static final float RAD_AWAY_PER_SECOND = 5;
@@ -130,7 +131,7 @@ public final class Radiation {
     /** One second at {@code rate}: the dose taken, given back and pulled out by Rad-Away, and the sickness it brings. */
     public static void step(LivingEntity body, RadiationState s, float rate) {
         float dose = s.dose() + rate / 3600f;
-        if (rate < RadiationSource.END) {
+        if (rate < RadiationSource.SAFE) {
             dose -= RECOVERY;
         }
         if (body.hasEffect(GZEffects.RAD_AWAY)) {

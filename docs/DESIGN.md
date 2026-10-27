@@ -2568,16 +2568,20 @@ then world structures and loot (Phase 15). Built in slices:
   10 RAD/h after two days), tactical 1 912, thermonuclear and Tsar 5 551, neutron 519, dirty 10 940, cobalt 60 150, the
   fizzle 1 094, the meltdown 2 005. The stats' "Fallout Lasts" is that time, unchanged. The cobalt plume's string of
   zones are sources too until 12b.
-- Radioactivity (RAD/h): uranium ore 0.5 a block away, raw uranium block 5, uranium block 8, corium 2 000, cooled
-  corium 300; carried, per item: raw uranium 0.05, uranium dust and ingot 0.08, enriched nugget 0.05, enriched ingot 0.4,
-  depleted uranium 0.02 to 0.03, fuel rod 1.5, spent fuel rod 60, irradiated DU target 25, irradiated Li-6 target 8,
-  plutonium nugget 1.5, ingot 12, nuclear waste 20, corium 200, cooled corium 30 (`GZRadiationData`). Bundles and
-  shulker boxes are looked inside; a Lead Container is not.
+- Radioactivity (RAD/h), set for play after the user found carried items did nothing (2026-10-27; first set near
+  real figures, a stack of uranium ingots gave 5 rad an hour): uranium ore 4 a block away, raw uranium block 30,
+  uranium block 50, corium 20 000, cooled corium 3 000; carried, per item: uranium ore 2, raw uranium 3, uranium dust and
+  ingot 4, raw uranium block 27, uranium block 36, enriched nugget 3, enriched ingot 25, depleted uranium 1.5 to 2, fuel
+  rod 60, spent fuel rod 2 000, irradiated DU target 800, irradiated Li-6 target 250, plutonium nugget 25, ingot 220,
+  nuclear waste 500, corium 5 000, cooled corium 800 (`GZRadiationData`). So a stack of uranium ingots brings sickness
+  in about 23 minutes, a spent fuel rod in 3, a stack of waste kills in 2. Bundles and shulker boxes are looked inside;
+  a Lead Container is not. The body mends (1 rad a minute) below 10 RAD/h (was 0.5: a uranium ore in a pocket stopped
+  it); a new counter's alarm is at 100 RAD/h (was 10, which any uranium carried would set off).
 - The neutron burst's 0-1 dose is now rad (x 4 000: its sick line, 0.03, is 120 rad); its lethal line still kills at
   once. Sickness is one effect, Radiation Sickness I-IV, kept up each second by the dose, which also gives the stage's
   vanilla effects; no natural regeneration at III and worse (heals of a heart or less are refused).
 - The dose is a data attachment (`groundzero:radiation`) synced to its player only; the Geiger Counter and the HUD read
-  it. Clicks: a Poisson process at 0.25 + 12 x rate^0.75 a second, saturating at 60, up to three a tick. The meter: a
+  it. Clicks: a Poisson process at 0.25 + 4 x rate^0.55 a second (was 12 x rate^0.75, which saturated at 6 RAD/h), saturating at 60 (about 140 RAD/h), up to three a tick. The meter: a
   yellow instrument face, a cream dial (green, yellow, orange and red bands by decade, ticks at 1, 2 and 5, labels
   outside the ticks) over an LCD; the needle eases toward the reading (0.35 s) and trembles a little above 1 RAD/h. In
   the inventory the counter is a sprite; anywhere else a model (a yellow case, the meter standing proud of it, the
@@ -3262,6 +3266,9 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Machines round 2 (the user's ratings; §13.1): a loop is checked across its seam for loudness, not only for a sample step (round 1's steady loops dipped there: a cut's default fade reached the seam); a steady loop's cuts are unfaded where it reads them and its length is fitted so its end leads on like its start, crossfaded on a curve that holds the level. The Ore Crusher and the RTG stay synthesized at the user's word; where the user preferred the old sound (the Canning Machine, the Particle Accelerator) it is the base with recordings under it; the Battery Charger is kept calm and 5 dB quieter (comfort over realism, the user's call). |
 | 2026-10-27 | Phase 12 plan (the user: the features that are not weapons, "the Extra features", before any new bomb content): the aftermath in slices 12a to 12e (§21.8), then Phase 15's structures and loot. Radiation is analytic sources plus radioactive blocks and items rather than §21.1's per-chunk cells (exact at any distance, nothing to write into unloaded chunks, cheap to read); medicine comes with 12a so sickness has a cure from the start; the shower stops washing off sickness (a dose cannot be washed; it washes contamination in 12c). |
 | 2026-10-27 | Slice 12a: a source's half-life is set so it falls under 10 RAD/h when the zone it replaces ended (the stats keep their figures); the dose is a synced data attachment; the neutron burst gives rad (x 4 000); Potassium Iodide from kelp and saltpeter, Rad-Away in a plastic bag, the injector a steel pen (§26.8 changed); the Geiger Counter is a sprite in the inventory and a model elsewhere. |
+| 2026-10-27 | After the user's look at 12a: radioactive items and blocks set for play (a stack of uranium ingots sickens in about 23 minutes, a spent fuel rod in 3: §21.8); recovery below 10 RAD/h; the Geiger alarm at 100 and its clicks spread to about 140 RAD/h. The Dosimeter Badge shows the dose held now, so medicine clears its film (it had seemed not to only because no dose reached its first line, 100 rad); no second dosimeter. |
+| 2026-10-27 | Launchers hold their missiles from the countdown until the last has flown (the screen's slots refuse taking and placing; automation never could take them). The Launch Computer draws each armed or launching silo's strike round its target: shaded where its warhead kills, a ring at the farthest it harms, a dashed ring for how far off it may land (an ellipse along the flight; a superweapon's spread a circle); the picked silo's bright, the rest dark. The warhead's figures come from its blast profile and effects (`AssemblyStats.area`). |
+| 2026-10-27 | The Field Manual's contents run on over as many pages as the chapters need (nine did not fit on one); the Lead Container's window is 7 px taller so its well clears the title strip. The press dies sit 2 px lower in their sprites. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

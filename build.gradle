@@ -64,7 +64,7 @@ neoForge {
         manualShots {
             client()
             systemProperty 'groundzero.manualShots', 'true'
-            // -PmanualEntry=ordnance/assembly shoots just that entry's spreads (the first eight).
+            // -PmanualEntry=ordnance/assembly shoots just that entry's spreads (the first eight); -PmanualEntry=home the contents.
             systemProperty 'groundzero.manualShots.entry', (project.findProperty('manualEntry') ?: '').toString()
         }
 

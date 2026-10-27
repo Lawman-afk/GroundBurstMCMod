@@ -89,8 +89,11 @@ public final class AssemblyStats {
     /** What a warhead does beyond its blast (all as a missile delivers it: cluster types burst in the air). */
     private static final Map<ChargeKind, Component> EFFECTS = new EnumMap<>(ChargeKind.class);
 
+    /** Airburst submunitions land within about this many blocks of the burst. */
+    static final int SPREAD = 20;
+
     static {
-        int spread = 20;                                   // airburst submunitions land within about 20 blocks of the burst
+        int spread = SPREAD;
         effect(ChargeKind.THERMOBARIC_WARHEAD, "thermobaric", "A fuel-air blast, deadlier indoors");
         effect(ChargeKind.CLUSTER_WARHEAD, "cluster", "%s bomblets over a %s-block radius", Charges.CLUSTER_BOMBLETS + 8, spread);
         effect(ChargeKind.GAS_WARHEAD, "gas", "%s poison gas canisters over a %s-block radius", Charges.CLUSTER_CANISTERS, spread);
@@ -149,7 +152,59 @@ public final class AssemblyStats {
     }
 
     private static Optional<BlastProfile> profile(RegistryAccess registries, ChargeKind kind) {
-        return registries.lookupOrThrow(BlastProfile.REGISTRY).getOptional(Blasts.profile(kind.id));
+        return profile(registries, kind.id);
+    }
+
+    private static Optional<BlastProfile> profile(RegistryAccess registries, String id) {
+        return registries.lookupOrThrow(BlastProfile.REGISTRY).getOptional(Blasts.profile(id));
+    }
+
+    /**
+     * How far round where it comes down a charge does harm, blocks (the strike circles on the Launch Computer's map):
+     * inside {@code lethal} an exposed body dies; {@code reach} is the farthest it hurts, wrecks or burns anything. A type
+     * that scatters bomblets or canisters covers the ground they land on and what each does round it.
+     */
+    public record Area(float lethal, float reach) {
+        public static final Area NONE = new Area(0, 0);
+    }
+
+    /** The {@link Area} of the charge a stack is (none for anything else). */
+    public static Area area(ItemStack charge, RegistryAccess registries) {
+        return charge.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c ? area(c.kind, registries) : Area.NONE;
+    }
+
+    public static Area area(ChargeKind kind, RegistryAccess registries) {
+        if (clusterType(kind)) {
+            float each = switch (kind) {
+                case CLUSTER_WARHEAD -> profile(registries, "cluster_bomblet").map(BlastProfile::damage).orElse(4f);
+                case CRYO_WARHEAD -> dev.groundzero.content.ordnance.ThrownExplosive.CRYO_RADIUS;
+                case EMP_WARHEAD -> dev.groundzero.content.ordnance.ThrownExplosive.EMP_RADIUS;
+                default -> dev.groundzero.content.ordnance.ThrownExplosive.SMOKE_RADIUS;     // gas and smoke clouds
+            };
+            boolean kills = kind == ChargeKind.CLUSTER_WARHEAD || kind == ChargeKind.GAS_WARHEAD;
+            return new Area(kills ? SPREAD : 0, SPREAD + each);
+        }
+        float lethal = 0, reach = 0;
+        Optional<BlastProfile> found = profile(registries, kind);
+        if (found.isPresent()) {
+            BlastProfile p = found.get();
+            lethal = p.lethal();
+            reach = Math.max(p.damage(), Math.max(p.structural(), p.fire()));
+        }
+        float effect = switch (kind) {
+            case THERMOBARIC_WARHEAD -> Charges.THERMOBARIC_REACH;
+            case NAPALM_WARHEAD -> Charges.NAPALM_RADIUS;
+            case TOXIC_WASTE_WARHEAD -> Charges.TOXIC_WASTE_RADIUS;
+            case CHEMICAL_WARHEAD -> Charges.CHEMICAL_RADIUS;
+            case SCUD_STORM_WARHEAD -> Charges.SCUD_SPREAD;
+            case DIRTY_WARHEAD -> Charges.contaminationRadius(kind);              // its waste is its point
+            case NEUTRON_WARHEAD -> dev.groundzero.content.nuclear.NeutronBurst.WITHER_RADIUS;
+            default -> 0;
+        };
+        if (kind == ChargeKind.NEUTRON_WARHEAD) {
+            lethal = Math.max(lethal, dev.groundzero.content.nuclear.NeutronBurst.LETHAL_RADIUS);
+        }
+        return new Area(lethal, Math.max(Math.max(reach, effect), lethal));
     }
 
     /** A warhead's stats: its class, blast, what else it does, its fuze. Empty if the stack is not a warhead. */

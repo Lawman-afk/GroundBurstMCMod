@@ -14,12 +14,12 @@
     },
     {
       "type": "text",
-      "text": "**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 10.\n\n**Power.** It runs on its own charge, 20,000 FE, using 5 FE a second while it is on (an hour on a full charge). Charge it in a [Battery Charger](power/batteries). An EMP knocks it out until 10 seconds after you leave the field."
+      "text": "**Alarm.** Sneak and use it to set its alarm: it beeps and its reading turns red above 1, 10, 100 or 1,000 RAD/h (or never). New counters are set to 100: sickness within the hour.\n\n**Power.** It runs on its own charge, 20,000 FE, using 5 FE a second while it is on (an hour on a full charge). Charge it in a [Battery Charger](power/batteries). An EMP knocks it out until 10 seconds after you leave the field."
     },
     {
       "type": "spotlight",
       "item": "groundzero:dosimeter_badge",
-      "text": "A film badge: carry it anywhere in your inventory. Its film darkens with the dose you take (white, yellow, orange, red, black), its tooltip gives the dose in rad and the sickness it brings, and the dose shows under the Geiger reading."
+      "text": "A film badge: carry it anywhere in your inventory. Its film shows the dose you hold now: white under 100 rad, then yellow, orange, red and black as each stage of sickness begins, and clearer again as the dose falls (by itself or with [medicine](safety/radiation_medicine)). Its tooltip gives the dose to the rad and the sickness it brings, and the dose shows under the Geiger reading."
     },
     {
       "type": "crafting",
