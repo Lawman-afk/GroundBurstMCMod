@@ -4,7 +4,7 @@ Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `block
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
 **Current phase:** Phase 12 (aftermath) started 2026-10-27, slice 12a built (the user's call: the features that are not weapons before any new bomb content; DESIGN §21.8). Earlier: Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
-**Last updated:** 2026-10-27 (slice 12e, the wasteland, and Phase 15, the world's old sites and their loot: built while the user was away; 275/275 GameTests; 12c and 12d still to come)
+**Last updated:** 2026-10-27 (the sites and the wasteland checked on generated worlds with the new world survey, `runWorldSurvey`: placement, frequencies and terrain fit reworked, the wasteland and crater lakes fixed for blasts with nobody near; 276/276 GameTests. Before that: slice 12e and Phase 15, built while the user was away; 12c and 12d still to come)
 
 ---
 
@@ -27,7 +27,7 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 12 | Aftermath: radiation, fallout, EMP fields, terrain, wasteland, gear, medical | **in progress** (plan: DESIGN §21.8; 12a radiation and instruments, 12b fallout and ground, 12e the wasteland built, need the user's in-game look; 12c gear and contamination, 12d EMP to come) |
 | 13 | Guns | todo |
 | 14 | Superweapons + Zero Hour doctrine modules | **in progress** (2026-10-23: the SCUD Storm and the Nuclear Missile with their factories, the Arms Dealer and the War Factory; the toxin strike) — needs the user's in-game look; Particle Uplink Cannon and doctrine modules todo |
-| 15 | World structures & loot | **built** 2026-10-27 (DESIGN §22.1: seven sites, nine loot tables; no lore notes or blueprints at the user's word) — needs the user's in-game look |
+| 15 | World structures & loot | **built** 2026-10-27 (DESIGN §22.1: seven sites, nine loot tables; no lore notes or blueprints at the user's word); checked on generated worlds the same day (frequency, terrain fit) — needs the user's in-game look |
 | 16 | Field Manual & JEI | in progress (Field Manual built early, 2026-10-20; JEI categories exist since Phase 4) |
 | 17 | Polish pass (every model, texture, sound, effect) + performance pass | sounds started early (2026-10-27, DESIGN §13.1): the remaster from real recordings, blasts done (rounds 1 to 3 from the user's ratings, every sound rated 4 or 5; no variants, the user's call); launches, ordnance and the bombs' effects done (27 sounds from recordings over three rounds; every one at 4 or 5 or the original the user chose); machines remade from recordings (24 sounds: every loop but the exotic machines', the ore crusher's and the RTG's, which the user kept; the bench's clank, the reactor's alarm, the Geiger clicks); round 2 from the user's ratings (the steady loops' seams mended, five reworked) — awaiting its ratings |
 
@@ -268,7 +268,7 @@ and contamination · 12d EMP everywhere · 12e the wasteland.
 | Gas mask, filters, flash goggles, Advanced CBRN Suit (hazmat and lead-lined built in 5d) | 12c | todo |
 | Contamination of players and items, decon shower washing it | 12c | todo |
 | EMP field system (machines, items, missiles, fuzes, vanilla redstone) | 12d | todo |
-| Wasteland biome painting, toxic and frozen terrain, crater lakes | 12e | done — needs in-game look |
+| Wasteland biome painting, toxic and frozen terrain, crater lakes | 12e | done; checked on a generated world (a blast with nobody near, one close by) — needs in-game look |
 
 ## Phase 13 — Guns
 | Item | Status |
@@ -300,6 +300,7 @@ and contamination · 12d EMP everywhere · 12e the wasteland.
 | Waste Storage Cave | done — needs in-game look |
 | Exotic Research Station (End) | done — needs in-game look |
 | Loot tables, damaged warheads (blueprints dropped, lore notes not wanted: the user) | done — needs in-game look |
+| Checked on generated worlds (world survey: a census beside vanilla's, visits measured and photographed) | done 2026-10-27: placement rules, spacings and slopes set from it, village exclusion zones |
 
 ## Phase 16 — Guide & recipe viewer
 | Item | Status |

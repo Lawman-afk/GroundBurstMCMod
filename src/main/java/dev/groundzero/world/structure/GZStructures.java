@@ -64,7 +64,7 @@ public final class GZStructures {
         var templates = level.getStructureTemplateManager();
         java.util.List<SitePiece> pieces = new java.util.ArrayList<>();
         for (SiteStructure.Part part : site.variants().get(variant).parts()) {
-            pieces.add(new SitePiece(templates, part, origin.offset(part.offset()), net.minecraft.world.level.block.Rotation.NONE));
+            pieces.add(new SitePiece(templates, part, origin.offset(part.offset()), net.minecraft.world.level.block.Rotation.NONE, origin.getY()));
         }
         net.minecraft.world.level.levelgen.structure.BoundingBox all = net.minecraft.world.level.levelgen.structure.BoundingBox
                 .encapsulatingBoxes(pieces.stream().map(SitePiece::getBoundingBox).toList()).orElseThrow();
@@ -101,5 +101,6 @@ public final class GZStructures {
     public static void register(IEventBus modBus) {
         TYPES.register(modBus);
         PIECES.register(modBus);
+        WorldSurvey.register();
     }
 }

@@ -2685,7 +2685,10 @@ then world structures and loot (Phase 15). Built in slices:
 
 **12e as built (2026-10-27; the user: 12e and Phase 15 while away, nothing asked):**
 - **The Nuclear Wasteland** (`groundzero:nuclear_wasteland`, datagen): never generated, painted. When a nuclear blast's
-  job reaches its release (its chunks still held), `Wasteland.afterBlast` queues two jobs a share a tick: the biome
+  job reaches its release, `Wasteland.afterBlast` queues two jobs a share a tick, each loading the chunks it works in a
+  batch at a time and letting them go (only chunks the blast saw, so none is generated anew; the blast holds only the band
+  round its front, so with nobody near, as for a missile fired at a far target, the first check on a generated world
+  found 59% of the wasteland painted and no lake; tickets a stopped server leaves are dropped when the world loads): the biome
   painted over max(scorch, 1.5 craters), from 24 blocks under each chunk's lowest ground up (deep caves keep theirs),
   48 chunks a tick, resent to clients (`convertBiomes`, on by default); and the crater lake. The biome: grey-brown grass
   #8A8264 and foliage #7E7656, dead-olive water #5E6B3E (fog #343C22), a dusty sky #9C9384, brown-orange fog #9A7B5E,
@@ -2699,7 +2702,14 @@ then world structures and loot (Phase 15). Built in slices:
   a biome with rain, the floor under the sea level) to a block under the sea level; never higher than a block under the
   rim's lowest point, and a column fills only inside the crest on its own ray and both beside it. A crater too big
   fills only to a pond in its deepest part (300,000 blocks of water at most: a fission crater full, a thermonuclear
-  one's bottom). Still water placed without block updates, 6,000 blocks a tick. Not where water boils (the Nether).
+  one's bottom). Planned from grids of every column's top, ground and water read first: the lake is the basin joined
+  to the crater's middle under the level (so it fills each dip to its shore and stops at the rim), and the level is the
+  highest whose basin stays inside 1.8 craters (a gap in the rim the rays missed lowers it) and holds no more than the
+  pond (found by halving). Still water placed without block updates, 6,000 blocks a tick. Not where water boils (the
+  Nether). Checked on a generated world (the world survey, §22.1): a tactical warhead with nobody near and one close by
+  both painted all of their scorch and nothing past it; the inland crater filled to y 55 (93,000 blocks, a river past
+  its rim lower than the rays thought), the coastal one to the sea's level (203,000), both still after their edges were
+  stirred.
   The GameTest server skips both jobs (the tests run them themselves).
 - **Frozen ground** (`Frost.freeze`, so every cryo burst): stone and grass open to the air rime to Frosted Stone and
   Frosted Grass Block (surely near the middle, 60% at the edge), small plants freeze to Frozen Plants (a tall plant's
@@ -2755,19 +2765,24 @@ bulkheads; salt creep closing rooms) and Lake Chagan.
   `PieceBeardifierModifier`: a hardstand `beard_thin`, the rooms under it `encapsulate`, so a silo's shaft runs down
   from a pad that sits on the land), integrity (a `BlockRotProcessor`) and weathering (`Weathering`: rule processors,
   a share of stone bricks cracked and mossed, glass broken out, bars rusted through, torches and lanterns gone, planks
-  rotted, concrete stained; `abandoned`, `end`, `none`). Variants by weight. Placement: `surface` (flat enough between
-  the footprint's corners and middle, never on water), `buried` (`depth` under the ground), `floating` (over the End's
-  islands or the void beside them). Data markers (`stand:hazmat`, `stand:lead`, `stand:bare`) become armour stands in
+  rotted, concrete stained; `abandoned`, `end`, `none`). Variants by weight. Placement (set by the checks on generated
+  worlds below): `surface` (the land under the parts that meet it, read on a 5x5 grid of columns, rising and falling no
+  more than `max_slope`; dry everywhere over the whole footprint; on average no lower than the sea's level, or water
+  pools on it), `buried` (`depth` under the lowest of that land, under dry land only), `floating` (10 to 20 blocks over
+  one of the End's outer islands, never the bare void). Data markers (`stand:hazmat`, `stand:lead`, `stand:bare`) become armour stands in
   suits. Chests carry their loot table in the template (the game seeds them).
-  A tall part underground closes rock round itself only up to 13 blocks under its top (encapsulation reaches about 12
-  blocks past its box, and would heap ground over the hardstand above it).
+  Every part knows the site's ground. A part on the surface meets the land there (its ground-level delta), not at its
+  bottom, so a test site's crater or a crashed missile's furrow lies in level land, not in a pit dug to its floor, and
+  is filled under where it overhangs the land (dirt, or the ground's own block, as vanilla's desert temples and igloos).
+  A part underground closes rock round itself only up to 13 blocks under the ground (encapsulation reaches about 12
+  blocks past its box: it heaped a wooded mound over a bunker's blockhouse).
   The structure itself says `beard_thin`: vanilla's beardifier skips a structure whose own adaptation is none before it
   asks its pieces.
 - **Templates by script** (`tools/structure/sites.py`, helpers in `build.py`, previews `tools/preview/site_view.py`:
   isometric, coloured from each block's own texture, cut away), checked that every block exists (26.3 renamed
   `chain` to `iron_chain`); structure, structure-set and biome-tag JSON written beside them.
 - **The sites** (spacing/separation in chunks):
-  - *Abandoned Missile Silo* (48/18; taiga, plains, snowy plains, desert, savanna, meadow), three variants: intact
+  - *Abandoned Missile Silo* (48/18, max slope 12; taiga, plains, snowy plains, desert, savanna, meadow), three variants: intact
     (3), flooded (2: water to the cableways, the shaft higher, glow lichen), collapsed (2: the door fallen in, rubble in
     the upper shaft and the cableway, the missile toppled). A gravel hardstand, the closure door's two steel leaves on
     rails, vents, the portal blockhouse, an antenna, floodlights, the guard shack, a chain-link fence fallen in places;
@@ -2776,32 +2791,59 @@ bulkheads; salt creep closing rooms) and Lake Chagan.
     the cableway (a steel tube, cable tray, lamps) to the blast lock (two blast doors) under the portal's ladder, on to
     the launch control centre (corners cut): consoles, the two key panels far apart, the status board, the commander's
     desk; above, bunks, lockers, a galley; the escape tube filled with gravel.
-  - *Command Bunker* (52/20; hills, forests, taiga, meadow, plains): the blockhouse whose doorway turns twice, sandbags,
+  - *Command Bunker* (52/20, max slope 8; hills, forests, taiga, meadow, plains): the blockhouse whose doorway turns twice, sandbags,
     two air stacks, the radio mast; a ladder well to the blast doors, decontamination (showers, suits on stands),
     the corridor, the situation room (a continent in concrete on the wall with its strike marks, the plotting table),
     bunks with the gravel-filled escape tube, the radio room, the armoury, the plant room (filter banks, the diesel's
     block, the intake).
-  - *Radar Outpost* (44/16; hills, meadows, plateaus, wooded badlands, snowy plains, plains): a three-module building
+  - *Radar Outpost* (44/16, max slope 12; hills, meadows, plateaus, wooded badlands, snowy plains, plains): a three-module building
     train (white, a corridor through it), the radome on the radar module (random panels, a stretch fallen in, the
     antenna inside), quarters and the garage, masts; the long-range dish toppled beside its lattice stump; the
     watchtower; the fence.
-  - *Test Site* (56/22; desert, badlands), two parts: ground zero (the crater 2 deep, trinitite and glassed sand in the
+  - *Test Site* (32/12 as the desert pyramids, max slope 12; desert, badlands), two parts: ground zero (the crater 2 deep, trinitite and glassed sand in the
     middle, irradiated soil in its ring, all radioactive as built; the four footings with twisted steel, the obelisk,
     a broken fence ring, Jumbo rusting on its side with one end blown off, two instrument towers, a charred Doom Town
     house, bleachers) and the observation bunker 30 blocks south (concrete banked with sand, the slit facing ground zero,
     the instruments, a periscope).
-  - *Crashed Missile* (38/14; most lands): a furrow ploughed in and deepening to the impact crater, earth thrown up
+  - *Crashed Missile* (38/14, max slope 5; most lands): a furrow ploughed in and deepening to the impact crater, earth thrown up
     either side, scorched; the warhead split at the bottom with its uranium core bare (50 RAD/h a block off) and the
     ground round it irradiated, the body lying in the furrow with its stage band and the guidance bay's chest, the tail
     with its engine bells thrown aside, debris all along.
-  - *Waste Storage* (44/16; anywhere in the overworld, 42 under the ground): drifts mined from banded salt (calcite,
+  - *Waste Storage* (44/16, at 35% of its places; anywhere in the overworld under dry land, 42 under the ground): drifts mined from banded salt (calcite,
     diorite, white terracotta), rails and roof bolts; rooms of Waste Drums three high in rows with white sacks on top,
     one room sealed by a bulkhead, one caved in on its drums; decontamination (showers, two hazmat suits and a
     lead-lined one on stands), the lead-lined hot cell (a reactor-glass window, the manipulator, a chest), the shaft's
     cage sealed by a concrete plug.
-  - *Exotic Research Station* (30/12; the End's outer islands): a deck on an inverted cone of end stone, hazard bands at
+  - *Exotic Research Station* (64/24; over the End's outer islands): a deck on an inverted cone of end stone, hazard bands at
     its edge, a dome of reactor glass over a broken containment ring and a scorched pit, exotic crystals grown through
     the floor, two laboratories, the antenna with its dish bent over, debris drifting off.
+  The five on the surface keep 6 chunks from where a village could stand (vanilla's exclusion zone, as its pillager
+  outposts keep from villages).
+- **Checked on generated worlds** (2026-10-27, the user's request; `gradlew runWorldSurvey`, `WorldSurvey`): a census of
+  every place each site's set offers within 10 km of the spawn (20 x 20 km, seed "groundzero"), what becomes of each
+  (a site, or the biome, water, the slope, the void), vanilla's sets counted the same way; then the nearest of each kind
+  (each silo variant) and the one on the most uneven land generated in full, measured (a part's bottom left hanging,
+  water in it, the steps where the land meets it, caves and water at the rock round a part underground, other
+  structures in its box) and photographed from two sides, above, the ground and through the rock; then the two
+  blasts (§21.7). The first census found the Waste Storage at every place it could stand (855, under the sea too), the
+  research station every 200 blocks in the End (half of them over the void) and the Test Site at 4 in 419 km²; the
+  first visits a silo's pad on a riverbank, a test site ringed by a lake, the bunker's blockhouse buried in a mound,
+  test sites and crashed missiles sunk in pits, a pillager outpost against a silo. As built:
+
+  | Site | Sites in 419 km² | Per 100 km² | Typical distance to the nearest | Vanilla alike |
+  |---|---|---|---|---|
+  | Abandoned Missile Silo | 34 | 8.1 | 1.7 km | pillager outposts 9.1 |
+  | Command Bunker | 57 | 13.6 | 1.3 km | igloos 15.5 |
+  | Radar Outpost | 37 | 8.8 | 1.8 km | pillager outposts |
+  | Test Site | 7 | 1.7 | 4.1 km | desert pyramids 1.9 |
+  | Crashed Missile | 87 | 20.7 | 1.1 km | |
+  | Waste Storage | 109 | 26 | 1.1 km | (hidden; trial chambers 329) |
+  | Exotic Research Station (End) | 180 | 43 | 0.7 km | end cities 87 |
+
+  On the land they stand on: no part of a pad left hanging (bar the silo door's leaves over its shaft), no water on any,
+  the land round each within a block or two of its ground (the steepest silo on a terrace cut into a savanna hill); the
+  rooms underground closed in (under 1% of their shell open to caves, but where a mineshaft runs past). `/locate` agrees
+  with the census for every site (in the End, as vanilla's search does, it may give a farther one first).
 - **Loot** (`GZChestLoot`, nine tables): the silo's control centre (circuits, now and then guidance units and hardened
   electronics; dosimeters and medicine; paper, wire, food) and its shaft (the **Damaged Warhead** three times in five,
   steel, propellant, a motor); the bunker's armoury (grenades, dynamite, C4, mines, a detonator; worn hazmat pieces) and
@@ -3478,6 +3520,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | After the user's look at the 12b fixes: vanilla's own textures where the user asks for them, over the paint-everything rule (the Dead Grass Block vanilla's grass through the dead tint again; Irradiated Soil vanilla's dirt with our stain and glow laid over it, fitted to it); an item sprite keeps its outline inside its 16 px and sits on its centre; armour icons take vanilla's four silhouettes so each reads as the piece it is (the hazmat sets redrawn). |
 | 2026-10-27 | Slice 12e (the user: 12e and Phase 15 while away, questions noted for later): the wasteland is a biome painted after a nuclear blast over its scorched ground (never generated); a crater floods only if water could get in (water beside it, or groundwater in a wet land below the sea level), under the rim's lowest point, a giant crater only to a pond; every cryo burst leaves frozen ground and crystals that thaw where snow would not lie; thick anthrax sours soil, which is spent in a day. Frosted stone and toxic soil are vanilla's blocks with our layers, as the user likes. |
 | 2026-10-27 | Phase 15 (the user: everything but the lore notes, no blueprints): one site structure type whose parts each meet the ground their own way (NeoForge's per-piece terrain adaptation) instead of jigsaw pools (a deep shaft under a pad could not be fitted with one adaptation); templates by script with their wear designed and a little more weathering as they are placed; seven sites researched from real places; loot of parts, medicine, gear and salvage (the Damaged Warhead, leached in the Chemical Plant); the Waste Drum. |
+| 2026-10-27 | The sites and the wasteland checked on generated worlds (the user's request) with a dev run, the world survey (`runWorldSurvey`: a census over 20 x 20 km beside vanilla's sets, visits measured and photographed, two nuclear blasts). From it: a surface site reads its land on a 5x5 grid over the parts that meet it, must be dry all over and no lower than the sea's level; each part knows the site's ground (a sunk part meets the land at its rim; rock round rooms underground stops 13 under the ground; a pad is filled under where it overhangs); the surface sites keep 6 chunks from villages; spacings and slopes set so each is about as common as its vanilla likeness (the Test Site 32/12 as the desert pyramids; the Waste Storage at 35% of its places, under dry land; the research station 64/24, over islands only). The wasteland's jobs load their own chunks (a far blast painted 59% and made no lake before), and a crater lake is the basin joined to its middle, so it fills each dip and stops at the rim. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

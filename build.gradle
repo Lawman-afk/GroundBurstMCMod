@@ -90,6 +90,19 @@ neoForge {
             }
         }
 
+        // Makes a normal world and checks the old sites and the wasteland on it: a census of every site within 10 km of
+        // the spawn (and vanilla's for comparison), visits with pictures, two nuclear blasts (one with nobody near);
+        // writes run/survey/ and run/screenshots/survey_*.png, then quits (see WorldSurvey).
+        // -Psurvey=census,visits,blast (default all); -PsurveySeed=<seed>.
+        worldSurvey {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundzero.worldSurvey', (project.findProperty('survey') ?: 'all').toString()
+            if (project.findProperty('surveySeed') != null) {
+                systemProperty 'groundzero.worldSurvey.seed', project.findProperty('surveySeed').toString()
+            }
+        }
+
         server {
             server()
             programArgument '--nogui'

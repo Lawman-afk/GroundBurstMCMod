@@ -901,8 +901,10 @@ final class BlastJob implements Blast {
             }
         }
         if (this.table.nuclear()) {
-            // The wasteland over its scorched ground, and a lake in its crater if the land would fill it (its chunks still held).
-            dev.groundzero.content.fallout.Wasteland.afterBlast(this.level, this.center, this.profile, this.terrain);
+            // The wasteland over its scorched ground, and a lake in its crater if the land would fill it (in the chunks it
+            // saw: it let most of them go as its front passed, and the wasteland's work loads them again).
+            dev.groundzero.content.fallout.Wasteland.afterBlast(this.level, this.center, this.profile, this.terrain,
+                    this.chunks == null ? null : this.chunks.seen());
         }
         this.phase = Phase.RELEASE;
     }

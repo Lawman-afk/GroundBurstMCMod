@@ -45,6 +45,7 @@ public class GroundZeroClient {
         dev.groundzero.client.fx.Spectacle.register(modBus);
         dev.groundzero.client.fx.FxPhotographer.register();
         dev.groundzero.client.fx.BlastBenchClient.register();
+        dev.groundzero.client.fx.WorldSurveyClient.register();
         dev.groundzero.client.screen.ChargeScreens.register();
         dev.groundzero.client.screen.LaunchComputerScreen.register();
         dev.groundzero.client.screen.RadarArrayScreen.register();

@@ -97,6 +97,11 @@ public final class Spectacle {
         });
     }
 
+    /** Every effect gone at once (the world survey's pictures of a crater, taken once its blast is over). */
+    public static void clearAll() {
+        clear();
+    }
+
     private static void clear() {
         EffectFx.clear();
         BLASTS.clear();

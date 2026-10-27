@@ -997,33 +997,38 @@ def part(template: str, offset: tuple[int, int, int], terrain: str = "none", int
             "weathering": weathering}
 
 
-#: The structures: (biome tag values, generation step, placement, spacing, separation, salt, extra, variants).
+#: The structures: (biome tag values, generation step, placement, spacing, separation, salt, extra, variants). The
+#: spacings and max_slope (the most the land may rise and fall over the parts on the surface, read on a 5x5 grid) were
+#: set from the world survey's census (`gradlew runWorldSurvey -Psurvey=census`, DESIGN.md §22.1): each site about as
+#: common as the vanilla structure it is most like. apart_from_villages: no closer than this many chunks to where a
+#: village could stand (vanilla's exclusion zone, as its pillager outposts keep), since the census found a few sites in
+#: or against villages.
 STRUCTURES = {
     "abandoned_silo": dict(
         biomes=["#minecraft:is_taiga", "minecraft:plains", "minecraft:sunflower_plains", "minecraft:snowy_plains", "minecraft:desert",
                 "minecraft:savanna", "minecraft:meadow"],
-        step="surface_structures", placement="surface", spacing=48, separation=18, salt=1_946_311, max_slope=6,
+        step="surface_structures", placement="surface", spacing=48, separation=18, salt=1_946_311, max_slope=12, apart_from_villages=6,
         variants=[(3, "intact"), (2, "flooded"), (2, "collapsed")]),
     "command_bunker": dict(
         biomes=["#minecraft:is_hill", "#minecraft:is_forest", "#minecraft:is_taiga", "minecraft:meadow", "minecraft:plains"],
-        step="surface_structures", placement="surface", spacing=52, separation=20, salt=1_957_101, max_slope=7),
+        step="surface_structures", placement="surface", spacing=52, separation=20, salt=1_957_101, max_slope=8, apart_from_villages=6),
     "radar_outpost": dict(
         biomes=["#minecraft:is_hill", "minecraft:meadow", "minecraft:savanna_plateau", "minecraft:wooded_badlands",
                 "minecraft:snowy_plains", "minecraft:plains", "minecraft:windswept_savanna"],
-        step="surface_structures", placement="surface", spacing=44, separation=16, salt=1_954_820, max_slope=6),
+        step="surface_structures", placement="surface", spacing=44, separation=16, salt=1_954_820, max_slope=12, apart_from_villages=6),
     "test_site": dict(
         biomes=["minecraft:desert", "#minecraft:is_badlands"],
-        step="surface_structures", placement="surface", spacing=56, separation=22, salt=1_945_716, max_slope=5),
+        step="surface_structures", placement="surface", spacing=32, separation=12, salt=1_945_716, max_slope=12, apart_from_villages=6),
     "crashed_missile": dict(
         biomes=["minecraft:plains", "minecraft:sunflower_plains", "#minecraft:is_forest", "#minecraft:is_taiga", "#minecraft:is_savanna",
                 "minecraft:desert", "#minecraft:is_badlands", "minecraft:snowy_plains", "minecraft:meadow"],
-        step="surface_structures", placement="surface", spacing=38, separation=14, salt=1_980_919, max_slope=5),
+        step="surface_structures", placement="surface", spacing=38, separation=14, salt=1_980_919, max_slope=5, apart_from_villages=6),
     "waste_storage": dict(
         biomes=["#minecraft:is_overworld"],
-        step="underground_structures", placement="buried", spacing=44, separation=16, salt=1_999_326, depth=42),
+        step="underground_structures", placement="buried", spacing=44, separation=16, salt=1_999_326, depth=42, frequency=0.35),
     "exotic_research_station": dict(
         biomes=["minecraft:end_highlands", "minecraft:end_midlands", "minecraft:end_barrens", "minecraft:small_end_islands"],
-        step="surface_structures", placement="floating", spacing=30, separation=12, salt=1_983_055),
+        step="surface_structures", placement="floating", spacing=64, separation=24, salt=1_983_055),
 }
 
 
@@ -1086,6 +1091,10 @@ def main() -> None:
         path.write_text(json.dumps(structure, indent=2) + "\n", encoding="utf-8")
         sset = {"placement": {"type": "minecraft:random_spread", "salt": s["salt"], "separation": s["separation"], "spacing": s["spacing"]},
                 "structures": [{"structure": f"groundzero:{name}", "weight": 1}]}
+        if "frequency" in s:
+            sset["placement"]["frequency"] = s["frequency"]       # a share of the places it could stand
+        if "apart_from_villages" in s:
+            sset["placement"]["exclusion_zone"] = {"chunk_count": s["apart_from_villages"], "other_set": "minecraft:villages"}
         path = DATA / "worldgen" / "structure_set" / f"{name}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(sset, indent=2) + "\n", encoding="utf-8")

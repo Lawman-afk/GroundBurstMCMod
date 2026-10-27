@@ -150,6 +150,6 @@ public final class GZFallout {
         Withering.register();
         Wind.register();
         Plumes.register();
-        Wasteland.register();
+        Wasteland.register(modBus);
     }
 }

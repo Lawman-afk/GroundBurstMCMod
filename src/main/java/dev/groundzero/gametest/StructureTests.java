@@ -44,6 +44,7 @@ final class StructureTests {
         GZGameTests.test("site_structures_and_sets_registered", GZGameTests.FLOOR_16, 20, StructureTests::registered);
         GZGameTests.test("site_loot_tables_roll", GZGameTests.FLOOR_16, 20, StructureTests::loot);
         GZGameTests.test("site_piece_sets_loot_and_stands", GZGameTests.FLOOR_16, 20, StructureTests::piece);
+        GZGameTests.test("site_parts_meet_the_ground_their_way", GZGameTests.FLOOR_16, 20, StructureTests::ground);
     }
 
     private static void templates(GameTestHelper helper) {
@@ -85,11 +86,32 @@ final class StructureTests {
         helper.succeed();
     }
 
+    /**
+     * How the ground meets a site's parts (found on a generated world by the world survey): a part sunk below the site's
+     * ground (a crater, a furrow) has the land smoothed to its rim, not its bottom; rock closed round a part underground
+     * stops 13 blocks under the ground, so it is never heaped over the site; a part deep down keeps all of its own.
+     */
+    private static void ground(GameTestHelper helper) {
+        var templates = helper.getLevel().getStructureTemplateManager();
+        BlockPos origin = new BlockPos(0, 70, 0);
+        var sunk = new SiteStructure.Part(GroundZero.id("site/test_room"), new BlockPos(0, -3, 0), TerrainAdjustment.BEARD_THIN, 1f, Weathering.NONE);
+        SitePiece crater = new SitePiece(templates, sunk, origin.offset(sunk.offset()), Rotation.NONE, origin.getY());
+        helper.assertTrue(crater.getGroundLevelDelta() == 3, "a sunk part meets the ground at its rim (" + crater.getGroundLevelDelta() + ")");
+        var under = new SiteStructure.Part(GroundZero.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.ENCAPSULATE, 1f, Weathering.NONE);
+        SitePiece rooms = new SitePiece(templates, under, origin.offset(under.offset()), Rotation.NONE, origin.getY());
+        helper.assertTrue(rooms.getBeardifierBox().maxY() <= origin.getY() - 13 || rooms.getBeardifierBox().maxY() == rooms.getBoundingBox().minY(),
+                "rock round rooms just under the ground stops short of it (" + rooms.getBeardifierBox() + ")");
+        var deep = new SiteStructure.Part(GroundZero.id("site/test_room"), new BlockPos(0, -40, 0), TerrainAdjustment.ENCAPSULATE, 1f, Weathering.NONE);
+        SitePiece store = new SitePiece(templates, deep, origin.offset(deep.offset()), Rotation.NONE, origin.getY());
+        helper.assertTrue(store.getBeardifierBox().equals(store.getBoundingBox()), "rooms deep down are closed in all round");
+        helper.succeed();
+    }
+
     private static void piece(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos corner = helper.absolutePos(new BlockPos(5, 1, 5));
         var part = new SiteStructure.Part(GroundZero.id("site/test_room"), BlockPos.ZERO, TerrainAdjustment.NONE, 1f, Weathering.NONE);
-        SitePiece p = new SitePiece(level.getStructureTemplateManager(), part, corner, Rotation.NONE);
+        SitePiece p = new SitePiece(level.getStructureTemplateManager(), part, corner, Rotation.NONE, corner.getY());
         BoundingBox box = p.getBoundingBox();
         p.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(), box,
                 ChunkPos.containing(corner), corner);

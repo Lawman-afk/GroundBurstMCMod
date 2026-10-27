@@ -116,6 +116,11 @@ final class BlastChunks {
         return ready;
     }
 
+    /** The chunks it has seen loaded: every one in its reach that exists (with chunk generation off, no others). */
+    it.unimi.dsi.fastutil.longs.LongSet seen() {
+        return new LongOpenHashSet(this.measured);
+    }
+
     /** How many chunks it keeps loaded now. */
     int forcedCount() {
         return this.forced.size();
