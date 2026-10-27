@@ -80,11 +80,45 @@ public final class GZFallout {
             WitheredCropsBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).noCollision().instabreak().randomTicks().sound(SoundType.CROP)
                     .pushReaction(PushReaction.POPPED).ignitedByLava());
 
+    // --- frozen ground (slice 12e) ------------------------------------------------------------------------------------------
+    /** Stone a cryo burst froze: rimed white; it thaws back to stone where snow would not lie. */
+    public static final WithItem<FrostedBlock> FROSTED_STONE = GZBlocks.register("frosted_stone", "Frosted Stone", GZTab.AFTERMATH,
+            p -> new FrostedBlock(p, () -> Blocks.STONE), p -> p.mapColor(MapColor.ICE).strength(1.5f, 6f).requiresCorrectToolForDrops()
+                    .randomTicks().friction(0.9f).sound(SoundType.STONE).instrument(NoteBlockInstrument.BASEDRUM));
+    /** Grass a cryo burst froze: icy, crunching underfoot; it thaws back to grass where snow would not lie. */
+    public static final WithItem<FrostedBlock> FROSTED_GRASS_BLOCK = GZBlocks.register("frosted_grass_block", "Frosted Grass Block",
+            GZTab.AFTERMATH, p -> new FrostedBlock(p, () -> Blocks.GRASS_BLOCK), p -> p.mapColor(MapColor.ICE).strength(0.6f).randomTicks()
+                    .sound(SoundType.POWDER_SNOW));
+    /** A plant frozen solid: it melts away once warm. */
+    public static final WithItem<FrozenPlantBlock> FROZEN_PLANT = GZBlocks.register("frozen_plant", "Frozen Plant", GZTab.AFTERMATH,
+            FrozenPlantBlock::new, p -> p.mapColor(MapColor.ICE).noCollision().instabreak().randomTicks().sound(SoundType.GLASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.POPPED));
+    /** Ice crystals grown round a cryo burst's middle: they glow faintly and melt where it is warm. */
+    public static final WithItem<CryoCrystalBlock> CRYO_CRYSTAL = GZBlocks.register("cryo_crystal", "Cryo Crystal", GZTab.AFTERMATH,
+            CryoCrystalBlock::new, p -> p.mapColor(MapColor.ICE).strength(0.5f).noOcclusion().sound(SoundType.AMETHYST_CLUSTER)
+                    .lightLevel(s -> 4).friction(0.98f).pushReaction(PushReaction.POPPED));
+
+    // --- toxic ground (slice 12e) -------------------------------------------------------------------------------------------
+    /** Earth soaked in anthrax: it kills what grows on it, breathes a thin haze, and is spent in about a day. */
+    public static final WithItem<ToxicSoilBlock> TOXIC_SOIL = GZBlocks.register("toxic_soil", "Toxic Soil", GZTab.AFTERMATH,
+            ToxicSoilBlock::new, p -> p.mapColor(MapColor.COLOR_LIGHT_GREEN).strength(0.6f).randomTicks().sound(SoundType.GRAVEL));
+
     /** Recipe-viewer info pages. */
     public static final String INFO_FALLOUT_ASH = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.fallout_ash",
             "A nuclear burst on the ground, a dirty warhead or a reactor meltdown sends a plume of debris off on the wind: it lays "
                     + "radiation along its path and Fallout Ash on the ground, a layer at a time. The ash is weakly radioactive; "
                     + "shovel it away (it drops nothing), or leave it to weather into plain Ash over a couple of hours.");
+    public static final String INFO_FROZEN = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.frozen_ground",
+            "A cryo burst freezes the ground it reaches: rime on stone and grass, plants frozen solid, and ice crystals grown "
+                    + "round its middle. Where snow would not lie it thaws again over the next quarter of an hour or so; in cold "
+                    + "places it stays. Frozen plants and crystals melt away (silk touch keeps a crystal).");
+    public static final String INFO_TOXIC_SOIL = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.toxic_soil",
+            "Where a heavy anthrax cloud lies on the ground, or a toxin SCUD's residue settles, the soil turns. Toxic Soil kills "
+                    + "what grows on it, breathes a thin anthrax haze now and then, and is spent (coarse dirt) after about a day.");
+    public static final String INFO_WASTELAND = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.wasteland",
+            "A nuclear blast leaves a wasteland over its scorched ground: the Nuclear Wasteland biome, grey-brown, its water a "
+                    + "dead olive, ash drifting down and no animals. A crater fills with water where the land would flood it: "
+                    + "next to the sea, a lake or a river, or deep below sea level where the ground is wet.");
     public static final String INFO_SCORCHED = dev.groundzero.registry.GZLang.add(GroundZero.MODID + ".info.scorched_ground",
             "What a nuclear blast leaves of the land: the fireball burns earth, stone, sand and wood to scorched and glassed "
                     + "ground and charred trunks, leaves ash where the fires burned, and melts the crater's wall to slag, trinitite "
@@ -105,7 +139,8 @@ public final class GZFallout {
     /** Every ground block, in the order the creative tab lists them. */
     public static List<WithItem<? extends Block>> blocks() {
         return List.of(TRINITITE, GLASSED_SAND, SLAG, SCORCHED_EARTH, SCORCHED_STONE, IRRADIATED_SOIL, ASH, FALLOUT_ASH,
-                CHARRED_LOG, CHARRED_WOOD, CHARRED_PLANKS, DEAD_GRASS_BLOCK, DEAD_LEAVES, WITHERED_CROPS);
+                CHARRED_LOG, CHARRED_WOOD, CHARRED_PLANKS, DEAD_GRASS_BLOCK, DEAD_LEAVES, WITHERED_CROPS, TOXIC_SOIL, FROSTED_STONE,
+                FROSTED_GRASS_BLOCK, FROZEN_PLANT, CRYO_CRYSTAL);
     }
 
     public static void init() {}
@@ -115,5 +150,6 @@ public final class GZFallout {
         Withering.register();
         Wind.register();
         Plumes.register();
+        Wasteland.register();
     }
 }

@@ -900,6 +900,10 @@ final class BlastJob implements Blast {
                 this.level.updateNeighborsAt(p, Blocks.AIR);
             }
         }
+        if (this.table.nuclear()) {
+            // The wasteland over its scorched ground, and a lake in its crater if the land would fill it (its chunks still held).
+            dev.groundzero.content.fallout.Wasteland.afterBlast(this.level, this.center, this.profile, this.terrain);
+        }
         this.phase = Phase.RELEASE;
     }
 

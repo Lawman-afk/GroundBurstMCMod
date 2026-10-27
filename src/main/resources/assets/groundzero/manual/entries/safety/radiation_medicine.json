@@ -1,7 +1,7 @@
 {
   "title": "Radiation medicine",
   "icon": "groundzero:rad_away",
-  "order": 5,
+  "order": 7,
   "items": [
     "groundzero:rad_away",
     "groundzero:potassium_iodide",

@@ -4,6 +4,8 @@
     "groundzero:irradiated_soil",
     "groundzero:ash",
     "groundzero:fallout_ash",
-    "groundzero:dead_grass_block"
+    "groundzero:dead_grass_block",
+    "groundzero:frosted_grass_block",
+    "groundzero:toxic_soil"
   ]
 }

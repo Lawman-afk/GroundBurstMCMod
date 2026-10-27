@@ -1,0 +1,38 @@
+{
+  "type": "groundzero:site",
+  "biomes": "#groundzero:has_structure/command_bunker",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "variants": [
+    {
+      "weight": 1,
+      "parts": [
+        {
+          "template": "groundzero:site/bunker_surface",
+          "offset": [
+            -16,
+            0,
+            -15
+          ],
+          "terrain": "beard_thin",
+          "integrity": 1.0,
+          "weathering": "abandoned"
+        },
+        {
+          "template": "groundzero:site/bunker_below",
+          "offset": [
+            -16,
+            -15,
+            -15
+          ],
+          "terrain": "encapsulate",
+          "integrity": 1.0,
+          "weathering": "abandoned"
+        }
+      ]
+    }
+  ],
+  "placement": "surface",
+  "terrain_adaptation": "beard_thin",
+  "max_slope": 7
+}

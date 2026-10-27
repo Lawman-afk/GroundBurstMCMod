@@ -26,6 +26,9 @@
     },
     "groundzero:uranium_ore": {
       "rate": 4.0
+    },
+    "groundzero:waste_drum": {
+      "rate": 8.0
     }
   }
 }

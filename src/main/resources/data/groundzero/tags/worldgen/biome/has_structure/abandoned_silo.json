@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#minecraft:is_taiga",
+    "minecraft:plains",
+    "minecraft:sunflower_plains",
+    "minecraft:snowy_plains",
+    "minecraft:desert",
+    "minecraft:savanna",
+    "minecraft:meadow"
+  ]
+}

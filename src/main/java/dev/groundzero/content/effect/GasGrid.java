@@ -37,6 +37,9 @@ public final class GasGrid {
     public static final int STEP = 5, DOSE = 10, SYNC = 10;
     /** Concentration at which a dose is at full strength; below VISIBLE nothing is drawn, below GONE it is dropped. */
     public static final float FULL = 0.3f, VISIBLE = 0.04f, GONE = 0.01f;
+    /** How often (steps) a thick anthrax cloud sours the soil under it, and the chance each block of it does then. */
+    static final int SOUR_EVERY = 4;
+    static final float SOUR_CHANCE = 0.02f;
     /** Share of a block's gas that moves on each step; the share that goes up; how hard the wind pushes. */
     private static final float SPREAD = 0.5f, RISE = 0.05f, WIND = 0.6f;
     /** Blocks of gas a level may hold; past this it decays faster. Blocks of it sent to each player at most. */
@@ -48,6 +51,8 @@ public final class GasGrid {
 
     private Long2ObjectOpenHashMap<float[]> cells = new Long2ObjectOpenHashMap<>();
     private double windAngle;
+    /** Steps run (for the soil, every few). */
+    private int steps;
     private final Set<UUID> sentTo = new HashSet<>();
     private AABB bounds = new AABB(0, 0, 0, 0, 0, 0);
 
@@ -224,6 +229,31 @@ public final class GasGrid {
         }
         this.cells = next;
         this.bounds = next.isEmpty() ? new AABB(0, 0, 0, 0, 0, 0) : new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        if (++this.steps % SOUR_EVERY == 0) {
+            sour(level);
+        }
+    }
+
+    /**
+     * Anthrax lying thick on soil sours it (slice 12e): now and then a block of gas at full strength or more, resting on
+     * soil, turns that soil to {@link dev.groundzero.content.fallout.ToxicSoilBlock toxic soil} (and kills what grows
+     * in it), so a cloud leaves patches of it as it settles.
+     */
+    private void sour(ServerLevel level) {
+        int anthrax = GasAgent.ANTHRAX.ordinal(), scud = GasAgent.SCUD_TOXIN.ordinal();
+        var random = level.getRandom();
+        BlockPos.MutableBlockPos below = new BlockPos.MutableBlockPos();
+        for (Long2ObjectMap.Entry<float[]> e : this.cells.long2ObjectEntrySet()) {
+            float[] v = e.getValue();
+            if (v[anthrax] + v[scud] < FULL || random.nextFloat() >= SOUR_CHANCE) {
+                continue;
+            }
+            long key = e.getLongKey();
+            below.set(BlockPos.getX(key), BlockPos.getY(key) - 1, BlockPos.getZ(key));
+            if (level.isLoaded(below)) {
+                dev.groundzero.content.fallout.ToxicSoilBlock.taint(level, below);
+            }
+        }
     }
 
     private static void add(Long2ObjectOpenHashMap<float[]> map, long key, int agent, float amount) {

@@ -911,6 +911,11 @@ public class GZRecipeProvider extends RecipeProvider {
         chem("lithium6_dust", List.of(in(tag(GZTags.commonItem("dusts/lithium")), 2), in(Ingredient.of(GZChemicals.MERCURY_FLASK), 1)), List.of(),
                 List.of(out(GZChemicals.LITHIUM6_DUST, 1), new ProcessingRecipe.Output(new ItemStackTemplate(GZChemicals.MERCURY_FLASK.get(), 1), 0.9f)),
                 null, 300, fe);
+        // Phase 15: a damaged warhead found in an old silo or a crashed missile, its core leached out with acid.
+        chem("salvaged_warhead", List.of(in(Ingredient.of(dev.groundzero.content.salvage.GZSalvage.DAMAGED_WARHEAD), 1)), List.of(fluid(GZFluids.SULFURIC_ACID, 1_000)),
+                List.of(out(dev.groundzero.content.nuclear.GZNuclear.ENRICHED_URANIUM_NUGGET, 4),
+                        new ProcessingRecipe.Output(new ItemStackTemplate(dev.groundzero.content.nuclear.GZNuclear.PLUTONIUM_NUGGET.get(), 2), 0.5f),
+                        out(GZParts.STEEL_PLATE, 2)), null, 400, fe);
         Ingredient canister = Ingredient.of(GZParts.EMPTY_CANISTER);
         // Mercury flask from cinnabar: Arc Furnace (roasting).
         machine(ProcessingKind.ARC_SMELTING, "arc_smelting/mercury_flask", List.of(in(tag(GZTags.commonItem("dusts/cinnabar")), 4), in(canister, 1)), null,

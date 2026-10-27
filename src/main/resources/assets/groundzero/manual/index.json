@@ -75,6 +75,8 @@
     "safety/radiation",
     "safety/fallout",
     "safety/scorched_ground",
+    "safety/wasteland",
+    "safety/old_sites",
     "safety/geiger_counter",
     "safety/lead_container",
     "safety/radiation_medicine",

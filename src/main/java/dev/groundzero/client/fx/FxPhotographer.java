@@ -140,6 +140,19 @@ public final class FxPhotographer {
                 // After the user's look at 12b: the redrawn icons in real slots (the suits on vanilla's armour shapes, the
                 // instruments and medicine re-centred, the soil and the dead grass), JEI showing the hazmat sets.
                 new Scene("gear_icons", "gear_icons", 4, 15, List.of(30)),
+                // Phase 15: the world's old sites, placed as generation would place them; the ones underground cut open
+                // along their middle (in a block of stone: the flat test world is too thin for them), the rest from the air.
+                new Scene("site_silo", "site:abandoned_silo:0:cut", 40, 4, List.of(90)),
+                new Scene("site_silo_flooded", "site:abandoned_silo:1:cut", 40, 4, List.of(90)),
+                new Scene("site_silo_collapsed", "site:abandoned_silo:2:cut", 40, 4, List.of(90)),
+                new Scene("site_bunker", "site:command_bunker:0:cut", 40, 4, List.of(90)),
+                new Scene("site_waste", "site:waste_storage:0:cut", 40, 4, List.of(90)),
+                new Scene("site_radar_aerial", "site:radar_outpost:0:air", 34, 36, List.of(90)),
+                new Scene("site_test_aerial", "site:test_site:0:air", 44, 38, List.of(90)),
+                new Scene("site_crashed_aerial", "site:crashed_missile:0:air", 30, 40, List.of(90)),
+                new Scene("site_station_aerial", "site:exotic_research_station:0:air", 34, 22, List.of(90)),
+                // Slice 12e: the wasteland painted round the camera, a crater lake, frozen ground, toxic soil.
+                new Scene("wasteland_aerial", "wasteland", 26, 30, List.of(90)),
                 new Scene("aftermath", "aftermath", 6, 22, List.of(40, 200)),
                 // Slice 12b: a tactical warhead's crater and scorched ground from above, once its cloud has gone.
                 new Scene("crater_tactical_aerial", "tactical_nuclear_warhead", 80, 40, List.of(2400)),
@@ -349,6 +362,83 @@ public final class FxPhotographer {
             inventory.setItem(9 + k, stack.apply(dev.groundzero.content.gear.GZArmor.HAZMAT_SET.get(k).get(), 1));
             inventory.setItem(18 + k, stack.apply(dev.groundzero.content.gear.GZArmor.LEAD_HAZMAT_SET.get(k).get(), 1));
         }
+    }
+
+    /**
+     * A site (profile {@code site:<structure>:<variant>:<cut|air>}): placed as generation would; cut open (a site
+     * underground, raised into a block of stone, cleared north of its origin, the camera to the north looking south at
+     * the cut), or on the ground seen from the air.
+     */
+    private static void site(ServerLevel level, int x, int ground, String profile) {
+        String[] p = profile.split(":");
+        boolean cut = p[3].equals("cut");
+        var origin = new net.minecraft.core.BlockPos(x, cut ? ground + 46 : ground - 1, 0);
+        if (p[1].equals("exotic_research_station")) {
+            origin = origin.above(12);
+        }
+        dev.groundzero.world.structure.GZStructures.preview(level, p[1], Integer.parseInt(p[2]), origin, cut, cut ? 0 : null);
+        if (cut) {
+            ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+            double along = p[1].equals("abandoned_silo") ? 22 : 2;
+            double back = p[1].equals("abandoned_silo") ? 58 : 42;
+            player.teleportTo(level, x + along + 0.5, origin.getY() - (p[1].equals("abandoned_silo") ? 16 : 6), -back, java.util.Set.of(), 0, 6, true);
+        }
+    }
+
+    /**
+     * The wasteland (slice 12e): the biome painted over the scene, dead grass, a crater flooded beside a pool, a patch
+     * frozen by a cryo burst and a patch of toxic soil.
+     */
+    private static void wasteland(ServerLevel level, int x, int ground) {
+        var dead = dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get().defaultBlockState();
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        int top = ground + 5;
+        for (int dx = -2; dx <= 34; dx++) {
+            for (int dz = -16; dz <= 16; dz++) {
+                for (int y = ground; y < top; y++) {
+                    level.setBlock(new net.minecraft.core.BlockPos(x + dx, y, dz), stone, 2);
+                }
+                level.setBlock(new net.minecraft.core.BlockPos(x + dx, top, dz), dead, 2);
+            }
+        }
+        // A crater dug into it, a pool on its rim, flooded.
+        int cx = x + 12;
+        for (int dx = -7; dx <= 7; dx++) {
+            for (int dz = -7; dz <= 7; dz++) {
+                double d = Math.hypot(dx, dz);
+                int depth = (int) Math.round(4 * (1 - d * d / 49));
+                for (int k = 0; k < depth; k++) {
+                    level.setBlock(new net.minecraft.core.BlockPos(cx + dx, top - k, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                }
+                if (depth > 0) {
+                    level.setBlock(new net.minecraft.core.BlockPos(cx + dx, top - depth, dz),
+                            dev.groundzero.content.fallout.GZFallout.SCORCHED_EARTH.block().get().defaultBlockState(), 2);
+                }
+            }
+        }
+        level.setBlock(new net.minecraft.core.BlockPos(cx + 10, top, 0), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 2);
+        dev.groundzero.content.fallout.Wasteland.floodNow(level, new Vec3(cx + 0.5, top, 0.5), 7);
+        // A frozen patch (stone and grass, plants on it) and a toxic one.
+        for (int dx = 22; dx <= 30; dx++) {
+            for (int dz = -12; dz <= -4; dz++) {
+                var at = new net.minecraft.core.BlockPos(x + dx, top, dz);
+                level.setBlock(at, ((dx + dz) & 1) == 0 ? stone : net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                if (((dx * 3 + dz) % 4) == 0) {
+                    level.setBlock(at.above(), net.minecraft.world.level.block.Blocks.SHORT_GRASS.defaultBlockState(), 2);
+                }
+            }
+        }
+        dev.groundzero.content.effect.Frost.freeze(level, new Vec3(x + 26.5, top + 1, -8.5), 5, 100, null);
+        for (int dx = 22; dx <= 30; dx++) {
+            for (int dz = 4; dz <= 12; dz++) {
+                var at = new net.minecraft.core.BlockPos(x + dx, top, dz);
+                level.setBlock(at, net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                if (Math.hypot(dx - 26, dz - 8) < 4) {
+                    dev.groundzero.content.fallout.ToxicSoilBlock.taint(level, at);
+                }
+            }
+        }
+        dev.groundzero.content.fallout.Wasteland.paintNow(level, new Vec3(x + 10, top, 0), 60);
     }
 
     /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
@@ -1248,6 +1338,14 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("gear_icons")) {
                     gearIcons(level);
+                    return;
+                }
+                if (s.profile().startsWith("site:")) {
+                    site(level, x, ground, s.profile());
+                    return;
+                }
+                if (s.profile().equals("wasteland")) {
+                    wasteland(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("aftermath")) {

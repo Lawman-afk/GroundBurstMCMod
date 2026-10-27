@@ -118,6 +118,9 @@
     "groundzero:trinitite",
     "groundzero:glassed_sand",
     "groundzero:slag",
-    "groundzero:scorched_stone"
+    "groundzero:scorched_stone",
+    "groundzero:frosted_stone",
+    "groundzero:cryo_crystal",
+    "groundzero:waste_drum"
   ]
 }

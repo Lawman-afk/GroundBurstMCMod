@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 1946311,
+    "separation": 18,
+    "spacing": 48
+  },
+  "structures": [
+    {
+      "structure": "groundzero:abandoned_silo",
+      "weight": 1
+    }
+  ]
+}

@@ -1330,6 +1330,47 @@ A trunk burnt black. Four Charred Planks from a log, or smelt it for charcoal. C
     links(["safety/fallout", "safety/radiation", "ordnance/nuclear"]),
 ])
 
+entry("safety/wasteland", "The wasteland", "frosted_stone",
+      ["toxic_soil", "frosted_stone", "frosted_grass_block", "frozen_plant", "cryo_crystal"], [
+    text("""
+**The Nuclear Wasteland.** Once a nuclear blast has dug its crater, the land it scorched turns to wasteland: grey-brown grass and leaves, water a dead olive, a dusty sky and brown fog, ash drifting down and no animals; only the dead walk there. It stays wasteland when the radiation has gone (the server can turn this off).
+
+**Crater lakes.** A crater fills with still water where the land would flood it: next to the sea, a lake or a river (to that water's level), or deep below sea level where the ground is wet (groundwater; never in deserts, badlands or savanna). The water stays a block under the rim's lowest point; a giant crater fills only to a pond in its deepest part. It is as radioactive as the crater.
+"""),
+    spot("frosted_stone", """
+**Frozen ground.** A cryo burst rimes the stone and grass it reaches, freezes small plants solid and grows **Cryo Crystals** round its middle. Where snow would not lie it all thaws again within a quarter of an hour or so; in cold places it stays. Frozen plants and crystals melt away; silk touch keeps a crystal.
+"""),
+    spot("toxic_soil", """
+**Toxic Soil.** Where a heavy anthrax cloud lies on the ground, or a toxin SCUD's residue settles, the soil turns. It kills what grows on it, breathes a thin anthrax haze now and then (a gas mask or a hazmat suit keeps it out), and is spent, coarse dirt, after about a day.
+"""),
+    links(["safety/scorched_ground", "safety/fallout", "ordnance/nuclear"]),
+])
+
+entry("safety/old_sites", "Old sites", "waste_drum", ["damaged_warhead", "waste_drum"], [
+    text("""
+The Cold War left its sites across the world, long abandoned. Each has its own loot; a few have their own dangers.
+
+**Abandoned Missile Silo** (plains, taiga, desert, savanna): a fenced hardstand with a closure door on rails and a concrete portal. Its ladder goes down to a blast lock; one cableway runs to the silo, where the missile still stands among its work platforms (or the shaft has flooded, or the door has fallen in), the other to the two-floor launch control centre. The foot of the shaft is where the warhead fell.
+
+**Command Bunker** (hills, forests, taiga): a blockhouse whose doorway turns twice to break a blast, a ladder down to blast doors, decontamination showers with suits still on their stands, the situation room's wall map, the radio room, the armoury, bunks, and the plant room's filters and generator. Its escape tube is full of gravel.
+
+**Radar Outpost** (hills, plateaus): a radome on a train of linked buildings, the long-range dish toppled off its pedestal, a watchtower.
+"""),
+    text("""
+**Test Site** (deserts, badlands): ground zero's shallow crater, its sand fused to trinitite and glass, still weakly radioactive; the shot tower's four footings and an obelisk; a great steel vessel on its side; instrument towers; a blasted house; and, to the south, the observation bunker banked with sand.
+
+**Crashed Missile** (most lands): a furrow ploughed into the ground, the missile in pieces along it, its warhead split open in the crater at the end: the core lies bare. Do not stand by it long.
+
+**Waste Storage** (deep underground): rooms mined from salt, drums of nuclear waste three high under their sacks, one room sealed off, one caved in; decontamination by the shaft, and a lead-lined hot cell. The drums are radioactive.
+
+**Exotic Research Station** (the End's outer islands): a deck on a floating rock, its dome over a broken containment ring, exotic crystals grown through the floor.
+"""),
+    spot("damaged_warhead", """
+A broken nuclear warhead, from a silo's shaft or a crashed missile. It is radioactive: keep it in a [Lead Container](safety/lead_container). A [Chemical Plant](processing/chemical_plant) leaches its core out with sulfuric acid: enriched uranium, often plutonium, and steel.
+"""),
+    links(["safety/radiation", "safety/wasteland", "processing/chemical_plant"]),
+])
+
 entry("safety/geiger_counter", "Geiger Counter and Dosimeter", "geiger_counter", ["geiger_counter", "dosimeter_badge"], [
     spot("geiger_counter", """
 A civil-defence survey meter. Hold it in either hand: it **clicks** at random, faster the stronger the radiation where you stand (a few clicks a second near uranium ore, a roar in a crater), and its **meter** shows in a corner of the screen: a needle on a scale from 0.1 to 10,000 RAD/h and the reading. Anywhere in your hotbar it still clicks, and shows the reading alone.

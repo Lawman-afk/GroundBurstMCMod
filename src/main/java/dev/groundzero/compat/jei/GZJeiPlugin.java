@@ -125,8 +125,15 @@ public final class GZJeiPlugin implements IModPlugin {
         info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_LEAD_CONTAINER, dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER.get());
         info(registration, dev.groundzero.content.fallout.GZFallout.INFO_FALLOUT_ASH, dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH.item().get(),
                 dev.groundzero.content.fallout.GZFallout.ASH.item().get());
+        info(registration, dev.groundzero.content.fallout.GZFallout.INFO_FROZEN, dev.groundzero.content.fallout.GZFallout.FROSTED_STONE.item().get(), dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK.item().get(),
+                dev.groundzero.content.fallout.GZFallout.FROZEN_PLANT.item().get(), dev.groundzero.content.fallout.GZFallout.CRYO_CRYSTAL.item().get());
+        info(registration, dev.groundzero.content.fallout.GZFallout.INFO_TOXIC_SOIL, dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL.item().get());
+        info(registration, dev.groundzero.content.salvage.GZSalvage.INFO_SALVAGE, dev.groundzero.content.salvage.GZSalvage.DAMAGED_WARHEAD.get());
+        info(registration, dev.groundzero.content.salvage.GZSalvage.INFO_WASTE_DRUM, dev.groundzero.content.salvage.GZSalvage.WASTE_DRUM.item().get());
+        info(registration, dev.groundzero.content.fallout.GZFallout.INFO_WASTELAND, dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.item().get(), dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL.item().get());
         info(registration, dev.groundzero.content.fallout.GZFallout.INFO_SCORCHED, dev.groundzero.content.fallout.GZFallout.blocks().stream()
-                .filter(b -> b != dev.groundzero.content.fallout.GZFallout.ASH && b != dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH)
+                .filter(b -> b != dev.groundzero.content.fallout.GZFallout.ASH && b != dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH && b != dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL && b != dev.groundzero.content.fallout.GZFallout.FROSTED_STONE
+                        && b != dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK && b != dev.groundzero.content.fallout.GZFallout.FROZEN_PLANT && b != dev.groundzero.content.fallout.GZFallout.CRYO_CRYSTAL)
                 .map(b -> (net.minecraft.world.item.Item) b.item().get()).toArray(net.minecraft.world.item.Item[]::new));
         info(registration, dev.groundzero.content.radiation.RadiationItems.INFO_MEDICINE, dev.groundzero.content.radiation.RadiationItems.RAD_AWAY.get(),
                 dev.groundzero.content.radiation.RadiationItems.POTASSIUM_IODIDE.get(), dev.groundzero.content.radiation.RadiationItems.ANTI_RAD_INJECTOR.get());

@@ -171,7 +171,13 @@ public final class GZTagProviders {
                     dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.block().key());
             tag(BlockTags.MINEABLE_WITH_HOE).add(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().key());
             tag(BlockTags.PLANKS).add(dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.block().key());
-            tag(BlockTags.GRASS_BLOCKS).add(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().key());
+            tag(BlockTags.GRASS_BLOCKS).add(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().key(), dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK.block().key());
+            // Slice 12e: frozen and toxic ground.
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.fallout.GZFallout.FROSTED_STONE.block().key(), dev.groundzero.content.fallout.GZFallout.CRYO_CRYSTAL.block().key());
+            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK.block().key(), dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL.block().key());
+            tag(BlockTags.DIRT).add(dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.salvage.GZSalvage.WASTE_DRUM.block().key());
+            tag(BlockTags.NEEDS_STONE_TOOL).add(dev.groundzero.content.salvage.GZSalvage.WASTE_DRUM.block().key());
 
             // Radiation shielding (DESIGN.md §21.8): lead stops half of it in a fifth of a block, dense blocks in half one.
             tag(dev.groundzero.content.radiation.GZRadiation.SHIELD_LEAD).add(GZResources.LEAD_BLOCK.block().key(),

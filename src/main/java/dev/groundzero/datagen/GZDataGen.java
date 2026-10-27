@@ -32,6 +32,7 @@ public final class GZDataGen {
         GZWorldgenData.gather(event);
         GZBlastData.gather(event);
         event.lootTable(new LootTableProvider.SubProviderEntry(GZBlockLoot::new, LootContextParamSets.BLOCK));
+        event.lootTable(new LootTableProvider.SubProviderEntry(GZChestLoot::new, LootContextParamSets.CHEST));
         event.recipe(GZRecipeProvider::new);
     }
 }

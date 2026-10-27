@@ -90,6 +90,8 @@ public final class GZGameTests {
         CruiseTests.register();
         RadiationTests.register();
         FalloutTests.register();
+        WastelandTests.register();
+        StructureTests.register();
         ManualContentTests.register();
     }
 

@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 1980919,
+    "separation": 14,
+    "spacing": 38
+  },
+  "structures": [
+    {
+      "structure": "groundzero:crashed_missile",
+      "weight": 1
+    }
+  ]
+}

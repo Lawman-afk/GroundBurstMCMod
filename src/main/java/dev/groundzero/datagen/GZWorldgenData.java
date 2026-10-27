@@ -102,7 +102,44 @@ public final class GZWorldgenData {
 
         event.add(Registries.FEATURE, GZWorldgenData::features)
                 .add(Registries.PLACED_FEATURE, GZWorldgenData::placed)
+                .add(Registries.BIOME, GZWorldgenData::biomes)
                 .add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, GZWorldgenData::biomeModifiers);
+    }
+
+    /**
+     * The Nuclear Wasteland (DESIGN.md §21.7, slice 12e): never generated, only painted over a nuclear blast's scorched
+     * ground ({@code Wasteland}). Grey-brown grass and leaves, dead-olive water, a dusty sky and brown-orange fog, ash
+     * drifting down; silence instead of music; monsters (husks and parched among them) but no animals.
+     */
+    private static void biomes(BootstrapContext<Biome> context) {
+        net.minecraft.world.level.biome.MobSpawnSettings.Builder mobs = new net.minecraft.world.level.biome.MobSpawnSettings.Builder();
+        net.minecraft.data.worldgen.BiomeDefaultFeatures.caveSpawns(mobs);
+        net.minecraft.data.worldgen.BiomeDefaultFeatures.monsters(mobs, 60, 10, 0, 70, false);
+        mobs.addSpawn(net.minecraft.world.entity.EntityTypes.HUSK, 60, 4, 4);
+        mobs.addSpawn(net.minecraft.world.entity.EntityTypes.PARCHED, 30, 2, 4);
+        var generation = new net.minecraft.world.level.biome.BiomeGenerationSettings.Builder(
+                context.lookup(Registries.PLACED_FEATURE), context.lookup(Registries.CARVER));
+        Biome wasteland = new Biome.BiomeBuilder()
+                .hasPrecipitation(true)
+                .temperature(0.9f)
+                .downfall(0.2f)
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.SKY_COLOR, net.minecraft.util.ARGB.vector3fFromRGB24(0x9C9384))
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.FOG_COLOR, net.minecraft.util.ARGB.vector3fFromRGB24(0x9A7B5E))
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.WATER_FOG_COLOR, net.minecraft.util.ARGB.vector3fFromRGB24(0x343C22))
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.AMBIENT_PARTICLES,
+                        net.minecraft.world.attribute.AmbientParticle.of(dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH_PARTICLE.get(), 0.006f))
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.BACKGROUND_MUSIC, net.minecraft.world.attribute.BackgroundMusic.EMPTY)
+                .setAttribute(net.minecraft.world.attribute.EnvironmentAttributes.MUSIC_VOLUME, 0f)
+                .specialEffects(new net.minecraft.world.level.biome.BiomeSpecialEffects.Builder()
+                        .waterColor(0x5E6B3E)
+                        .grassColorOverride(0x8A8264)
+                        .foliageColorOverride(0x7E7656)
+                        .dryFoliageColorOverride(0x8C7E5C)
+                        .build())
+                .mobSpawnSettings(mobs.build())
+                .generationSettings(generation.build())
+                .build();
+        context.register(dev.groundzero.content.fallout.Wasteland.BIOME, wasteland);
     }
 
     private static void features(BootstrapContext<Feature> context) {

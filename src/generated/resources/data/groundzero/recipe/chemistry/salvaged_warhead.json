@@ -1,0 +1,38 @@
+{
+  "type": "groundzero:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundzero:damaged_warhead"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 4,
+        "id": "groundzero:enriched_uranium_nugget"
+      }
+    },
+    {
+      "chance": 0.5,
+      "item": {
+        "count": 2,
+        "id": "groundzero:plutonium_nugget"
+      }
+    },
+    {
+      "item": {
+        "count": 2,
+        "id": "groundzero:steel_plate"
+      }
+    }
+  ],
+  "time": 400
+}

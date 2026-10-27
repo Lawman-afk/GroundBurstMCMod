@@ -26,6 +26,11 @@ sheen on char, rust and the glow, which are drawn over it as the library's weath
 - Dead Grass Block: vanilla's grass block through a dead tint (the tint source is in the client, `FalloutClient`; the
   item's tint is the same colour), as first built: the user liked it better than the repaint.
 - Dead Leaves, Withered Crops: brown curled leaves with gaps, dead stalks with drooping heads.
+- Slice 12e, on vanilla's own blocks the way the user likes them: Frosted Stone (vanilla's stone, hoarfrost feathered
+  over it in drifts fitted to its texture), Frosted Grass Block (vanilla's grass through a pale icy tint), Frozen Plant
+  (vanilla's short grass through an icy tint), Toxic Soil (vanilla's dirt, stained sickly yellow-green and bruise
+  purple with spore specks, fitted to it). Cryo Crystal is ours: a cluster of pale blue ice needles, each lit down one
+  side, a cold glint at the tips.
 
     tools/.venv/Scripts/python.exe tools/assets/aftermath.py
 """
@@ -65,6 +70,15 @@ GLOW = ((128, 214, 74, 255), (184, 248, 116, 255))
 STAIN = ((48, 52, 30), (62, 70, 38), (80, 90, 48), (100, 110, 60), (122, 132, 74))
 #: The Dead Grass Block's tint (the client's, FalloutClient.DEAD_GRASS: dry and straw-grey).
 DEAD_GRASS = 0xFF9C8F62
+#: Frost on grass and a frozen plant (the client's FalloutClient.FROSTED_GRASS and FROZEN_PLANT).
+FROSTED_GRASS, FROZEN_PLANT_TINT = 0xFFB4D0D6, 0xFFA8CFE2
+#: Hoarfrost, darkest to brightest: blue-grey shade, pale ice, white.
+RIME = ((150, 176, 190), (186, 208, 220), (214, 230, 238), (238, 246, 250))
+#: Anthrax's stain on soil: sickly yellow-greens and a bruised purple-brown, by brightness (darkest first).
+TOXIC = ((56, 54, 30), (80, 80, 40), (106, 104, 52), (132, 128, 68))
+BRUISE = ((44, 30, 40), (66, 46, 58))
+#: Cryo crystal: deep ice blue to white.
+ICE = ((40, 92, 128), (70, 138, 176), (112, 184, 214), (160, 218, 236), (214, 242, 250), (248, 254, 255))
 HOT = (196, 206, 120, 255)
 
 
@@ -302,6 +316,87 @@ def irradiated_soil() -> tuple[np.ndarray, np.ndarray]:
     return stain, glint
 
 
+def vanilla(name: str) -> np.ndarray:
+    """A vanilla block texture as int RGBA (read from the decompiled client's assets to fit our layers; never shipped)."""
+    path = paths.VANILLA_ASSETS / "textures" / "block" / f"{name}.png"
+    if not path.exists():
+        raise SystemExit(f"{path} is missing: build the mod once (Gradle unpacks vanilla's assets there)")
+    return np.array(Image.open(path).convert("RGBA")).astype(np.int32)
+
+
+def rime_over_stone() -> np.ndarray:
+    """Hoarfrost over vanilla's stone: feathery drifts (noise, thresholded) covering about two fifths of the face, thicker
+    where the stone is lighter (its raised parts); in each drift the lit top-left texels whitest, its feathered edge
+    the blue-grey shade. A layer: clear where the stone shows."""
+    stone = vanilla("stone")
+    lum = luma(stone[..., :3].astype(np.float32))
+    f = M.tile_face()
+    field = M.noise(f, 2.2, 151, 2) + 0.12 * (lum - lum.mean()) / (lum.std() + 1e-6) + 0.3 * (M.white(f.X, f.Y, f.Z, 152) - 0.5)
+    cover = field > np.quantile(field, 0.7)
+    out = np.zeros((N, N, 4), dtype=np.uint8)
+    lit, shade = edges(np.where(cover, 0, -1))
+    for y in range(N):
+        for x in range(N):
+            if not cover[y, x]:
+                continue
+            k = 2 if lum[y, x] > lum.mean() else 1
+            if lit[y, x]:
+                k = 3
+            elif shade[y, x]:
+                k = 0
+            out[y, x] = (*RIME[k], 255)
+    return out
+
+
+def toxic_stain() -> np.ndarray:
+    """Anthrax's stain over vanilla's dirt: blotches of sickly yellow-green (each texel to the green of its own
+    brightness, so the dirt's clods still show), a few bruise-purple seeps in its darkest gaps, and pale spore specks.
+    A layer: clear where the dirt shows."""
+    dirt = vanilla("dirt")
+    rgb = dirt[..., :3]
+    grey = np.abs(rgb[..., 0] - rgb[..., 2]) < 10
+    lum = luma(rgb.astype(np.float32))
+    f = M.tile_face()
+    field = M.noise(f, 3, 161, 2) + 0.25 * (M.white(f.X, f.Y, f.Z, 162) - 0.5)
+    blot = (field > np.quantile(field, 0.66)) & ~grey
+    out = np.zeros((N, N, 4), dtype=np.uint8)
+    levels = luma(np.array(TOXIC, dtype=np.float32))
+    for y in range(N):
+        for x in range(N):
+            if blot[y, x]:
+                out[y, x] = (*TOXIC[int(np.argmin(np.abs(levels - (lum[y, x] - 4))))], 255)
+    dark = (~grey) & (lum <= np.sort(lum[~grey])[int(0.15 * np.count_nonzero(~grey))])
+    rng = np.random.default_rng(163)
+    ys, xs = np.nonzero(dark)
+    for i, k in enumerate(rng.choice(len(xs), size=min(9, len(xs)), replace=False)):
+        out[ys[k], xs[k]] = (*BRUISE[i % 2], 255)
+    for x, y in ((3, 4), (11, 2), (6, 12), (13, 10)):        # spores, few and far apart
+        out[y, x] = (196, 214, 120, 255)
+    return out
+
+
+def cryo_crystal() -> np.ndarray:
+    """A cluster of ice needles from a common foot (a cross plane): five blades of differing height and lean, each lit
+    down its left side and shaded down its right, its tip a cold white glint; clear between them."""
+    img = np.zeros((N, N, 4), dtype=np.uint8)
+    blades = [(7.5, 14, 1.6, 0.0), (4.5, 10, 1.2, -0.28), (10.5, 11, 1.3, 0.3), (2.5, 6, 0.9, -0.45), (13.0, 7, 0.9, 0.5)]
+    for foot, height, width, lean in blades:
+        for i in range(int(height)):
+            y = N - 1 - i
+            t = i / height
+            cx = foot + lean * i
+            half = max(0.5, width * (1 - t * 0.85))
+            for x in range(N):
+                d = (x + 0.5 - cx) / half
+                if abs(d) > 1:
+                    continue
+                k = 4 if d < -0.35 else (1 if d > 0.4 else 2 + (i % 3 == 0))
+                if i >= height - 2:
+                    k = 5 if i == int(height) - 1 else 4
+                img[y, x] = (*ICE[k], 255)
+    return img
+
+
 def ash() -> np.ndarray:
     idx = paint(ASH_RAMP, 5, 71, extra=relief(72, 4, 0.11), rough=True, mottle=0.03, grain=0.04, dither=0.7)
     for x, y in sites(73, 4):                          # charcoal crumbs, each with its little shadow
@@ -518,6 +613,44 @@ def glowing_soil() -> None:
     item_def("irradiated_soil", block_id("irradiated_soil"))
 
 
+def overlaid(name: str, base: str, layers: list[tuple[str, int]], particle: str | None = None) -> None:
+    """A block drawn as vanilla's {base} with our layers over it, each drawn after the one under it in the same place
+    (as the ores' glints): (texture, light emission)."""
+    elements, textures = [], {"particle": particle or base, "base": base}
+    for i, (tex, light) in enumerate([("#base", 0)] + [(f"#layer{j}", li) for j, (_, li) in enumerate(layers)]):
+        el = {"from": [0, 0, 0], "to": [16, 16, 16], "faces": {d: {"uv": [0, 0, 16, 16], "texture": tex, "cullface": d} for d in DIRS}}
+        if light:
+            el["light_emission"] = light
+        elements.append(el)
+    for j, (tex, _) in enumerate(layers):
+        textures[f"layer{j}"] = block_id(tex)
+    write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+                                                          "textures": textures, "elements": elements})
+    simple_state(name)
+    item_def(name, block_id(name))
+
+
+def frozen_ground() -> None:
+    """Slice 12e's frozen ground and toxic soil: models, states and items (their textures saved in main)."""
+    overlaid("frosted_stone", "minecraft:block/stone", [("frosted_stone_rime", 0)])
+    overlaid("toxic_soil", "minecraft:block/dirt", [("toxic_soil_stain", 0)])
+    write_json(paths.MODELS / "block" / "frosted_grass_block.json", {"parent": "minecraft:block/grass_block"})
+    simple_state("frosted_grass_block")
+    item_def("frosted_grass_block", block_id("frosted_grass_block"), FROSTED_GRASS)
+    write_json(paths.MODELS / "block" / "frozen_plant.json", {"parent": "minecraft:block/tinted_cross", "render_type": "minecraft:cutout",
+                                                               "textures": {"cross": "minecraft:block/short_grass"}})
+    simple_state("frozen_plant")
+    write_json(paths.MODELS / "item" / "frozen_plant.json", {"parent": "minecraft:item/generated", "textures": {"layer0": "minecraft:block/short_grass"}})
+    item_def("frozen_plant", "groundzero:item/frozen_plant", FROZEN_PLANT_TINT)
+    write_json(paths.MODELS / "block" / "cryo_crystal.json", {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout",
+                                                               "textures": {"cross": block_id("cryo_crystal")}})
+    rot = {"down": {"x": 180}, "east": {"x": 90, "y": 90}, "north": {"x": 90}, "south": {"x": 90, "y": 180}, "up": {}, "west": {"x": 90, "y": 270}}
+    write_json(paths.ASSETS / "blockstates" / "cryo_crystal.json", {"variants": {
+        f"facing={face}": {"model": block_id("cryo_crystal"), **r} for face, r in rot.items()}})
+    write_json(paths.MODELS / "item" / "cryo_crystal.json", {"parent": "minecraft:item/generated", "textures": {"layer0": block_id("cryo_crystal")}})
+    item_def("cryo_crystal", "groundzero:item/cryo_crystal")
+
+
 def pillar(name: str, side: str, end: str) -> None:
     write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_column",
                                                          "textures": {"end": block_id(end), "side": block_id(side)}})
@@ -597,6 +730,10 @@ def main() -> None:
     layers("ash")
     layers("fallout_ash")
     dead_plants()
+    save_block("frosted_stone_rime", rime_over_stone())
+    save_block("toxic_soil_stain", toxic_stain())
+    save_block("cryo_crystal", cryo_crystal())
+    frozen_ground()
     for i in range(len(FLAKES)):
         flake(i).save(paths.TEXTURES / "particle" / f"fallout_ash_{i}.png")
     write_json(paths.ASSETS / "particles" / "fallout_ash.json", {"textures": [f"groundzero:fallout_ash_{i}" for i in range(len(FLAKES))]})

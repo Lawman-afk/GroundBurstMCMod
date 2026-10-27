@@ -1,7 +1,7 @@
 {
   "title": "Geiger Counter and Dosimeter",
   "icon": "groundzero:geiger_counter",
-  "order": 3,
+  "order": 5,
   "items": [
     "groundzero:geiger_counter",
     "groundzero:dosimeter_badge"

@@ -22,8 +22,9 @@ class Template:
         self._palette: list[tuple] = []
         self._palette_index: dict[tuple, int] = {}
         self._blocks: dict[tuple[int, int, int], int] = {}
+        self._nbt: dict[tuple[int, int, int], dict] = {}
 
-    def set(self, x: int, y: int, z: int, name: str, props: dict[str, str] | None = None) -> None:
+    def set(self, x: int, y: int, z: int, name: str, props: dict[str, str] | None = None, nbt: dict | None = None) -> None:
         sx, sy, sz = self.size
         if not (0 <= x < sx and 0 <= y < sy and 0 <= z < sz):
             raise ValueError(f"({x},{y},{z}) outside template of size {self.size}")
@@ -34,6 +35,29 @@ class Template:
             self._palette.append(key)
             self._palette_index[key] = index
         self._blocks[(x, y, z)] = index
+        if nbt is not None:
+            self._nbt[(x, y, z)] = nbt
+        else:
+            self._nbt.pop((x, y, z), None)
+
+    def get(self, x: int, y: int, z: int) -> tuple[str, dict[str, str]] | None:
+        """The block set at a position (name, properties), or None."""
+        i = self._blocks.get((x, y, z))
+        if i is None:
+            return None
+        name, props = self._palette[i]
+        return name, dict(props)
+
+    def remove(self, x: int, y: int, z: int) -> None:
+        """Unsets a position (left untouched when placed)."""
+        self._blocks.pop((x, y, z), None)
+        self._nbt.pop((x, y, z), None)
+
+    def blocks(self):
+        """Every set position with its block: ((x, y, z), name, props)."""
+        for pos, i in self._blocks.items():
+            name, props = self._palette[i]
+            yield pos, name, dict(props)
 
     def fill(self, x0: int, y0: int, z0: int, x1: int, y1: int, z1: int, name: str, props: dict[str, str] | None = None) -> None:
         for x in range(min(x0, x1), max(x0, x1) + 1):
@@ -49,10 +73,12 @@ class Template:
             if props:
                 entry["properties"] = dict(props)
             palette.append(entry)
-        blocks = [
-            {"pos": [Int(x), Int(y), Int(z)], "state": Int(state)}
-            for (x, y, z), state in sorted(self._blocks.items(), key=lambda kv: (kv[0][1], kv[0][2], kv[0][0]))
-        ]
+        blocks = []
+        for (x, y, z), state in sorted(self._blocks.items(), key=lambda kv: (kv[0][1], kv[0][2], kv[0][0])):
+            entry = {"pos": [Int(x), Int(y), Int(z)], "state": Int(state)}
+            if (x, y, z) in self._nbt:
+                entry["nbt"] = self._nbt[(x, y, z)]
+            blocks.append(entry)
         return {
             "DataVersion": Int(DATA_VERSION),
             "size": [Int(v) for v in self.size],

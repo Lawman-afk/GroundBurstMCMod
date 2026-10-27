@@ -1,7 +1,7 @@
 {
   "title": "Lead Container",
   "icon": "groundzero:lead_container",
-  "order": 4,
+  "order": 6,
   "items": [
     "groundzero:lead_container"
   ],

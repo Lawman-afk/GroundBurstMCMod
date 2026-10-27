@@ -1,0 +1,33 @@
+{
+  "title": "Old sites",
+  "icon": "groundzero:waste_drum",
+  "order": 4,
+  "items": [
+    "groundzero:damaged_warhead",
+    "groundzero:waste_drum"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The Cold War left its sites across the world, long abandoned. Each has its own loot; a few have their own dangers.\n\n**Abandoned Missile Silo** (plains, taiga, desert, savanna): a fenced hardstand with a closure door on rails and a concrete portal. Its ladder goes down to a blast lock; one cableway runs to the silo, where the missile still stands among its work platforms (or the shaft has flooded, or the door has fallen in), the other to the two-floor launch control centre. The foot of the shaft is where the warhead fell.\n\n**Command Bunker** (hills, forests, taiga): a blockhouse whose doorway turns twice to break a blast, a ladder down to blast doors, decontamination showers with suits still on their stands, the situation room's wall map, the radio room, the armoury, bunks, and the plant room's filters and generator. Its escape tube is full of gravel.\n\n**Radar Outpost** (hills, plateaus): a radome on a train of linked buildings, the long-range dish toppled off its pedestal, a watchtower."
+    },
+    {
+      "type": "text",
+      "text": "**Test Site** (deserts, badlands): ground zero's shallow crater, its sand fused to trinitite and glass, still weakly radioactive; the shot tower's four footings and an obelisk; a great steel vessel on its side; instrument towers; a blasted house; and, to the south, the observation bunker banked with sand.\n\n**Crashed Missile** (most lands): a furrow ploughed into the ground, the missile in pieces along it, its warhead split open in the crater at the end: the core lies bare. Do not stand by it long.\n\n**Waste Storage** (deep underground): rooms mined from salt, drums of nuclear waste three high under their sacks, one room sealed off, one caved in; decontamination by the shaft, and a lead-lined hot cell. The drums are radioactive.\n\n**Exotic Research Station** (the End's outer islands): a deck on a floating rock, its dome over a broken containment ring, exotic crystals grown through the floor."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundzero:damaged_warhead",
+      "text": "A broken nuclear warhead, from a silo's shaft or a crashed missile. It is radioactive: keep it in a [Lead Container](safety/lead_container). A [Chemical Plant](processing/chemical_plant) leaches its core out with sulfuric acid: enriched uranium, often plutonium, and steel."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/radiation",
+        "safety/wasteland",
+        "processing/chemical_plant"
+      ],
+      "text": ""
+    }
+  ]
+}

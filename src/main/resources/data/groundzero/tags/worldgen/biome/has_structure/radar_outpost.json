@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#minecraft:is_hill",
+    "minecraft:meadow",
+    "minecraft:savanna_plateau",
+    "minecraft:wooded_badlands",
+    "minecraft:snowy_plains",
+    "minecraft:plains",
+    "minecraft:windswept_savanna"
+  ]
+}

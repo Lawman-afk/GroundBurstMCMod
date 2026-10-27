@@ -159,6 +159,16 @@ public class GZBlockLoot extends BlockLootSubProvider {
         add(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(),
                 net.minecraft.world.item.Items.DIRT));
         add(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().get(), createShearsOrSilkTouchOnlyDrop(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().get()));
+        // Slice 12e: frozen ground gives what it was (cobblestone, dirt) but to silk touch; frozen plants nothing; crystals
+        // only to silk touch; toxic soil coarse dirt.
+        add(dev.groundzero.content.fallout.GZFallout.FROSTED_STONE.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.fallout.GZFallout.FROSTED_STONE.block().get(), net.minecraft.world.item.Items.COBBLESTONE));
+        add(dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.fallout.GZFallout.FROSTED_GRASS_BLOCK.block().get(), net.minecraft.world.item.Items.DIRT));
+        add(dev.groundzero.content.fallout.GZFallout.FROZEN_PLANT.block().get(), noDrop());
+        // Phase 15: a waste drum broken open gives its waste (silk touch: the drum).
+        add(dev.groundzero.content.salvage.GZSalvage.WASTE_DRUM.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.salvage.GZSalvage.WASTE_DRUM.block().get(),
+                dev.groundzero.content.nuclear.GZNuclear.NUCLEAR_WASTE.get(), net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.between(1, 3)));
+        add(dev.groundzero.content.fallout.GZFallout.CRYO_CRYSTAL.block().get(), createSilkTouchOnlyTable(dev.groundzero.content.fallout.GZFallout.CRYO_CRYSTAL.block().get()));
+        add(dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.fallout.GZFallout.TOXIC_SOIL.block().get(), net.minecraft.world.item.Items.COARSE_DIRT));
         add(GZResources.SMALL_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.SMALL_EXOTIC_BUD.block().get()));
         add(GZResources.LARGE_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.LARGE_EXOTIC_BUD.block().get()));
         Block cluster = GZResources.EXOTIC_CRYSTAL_CLUSTER.block().get();

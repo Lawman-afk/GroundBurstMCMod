@@ -107,6 +107,10 @@ public final class ToxinSpreads {
                     BlockState here = level.getBlockState(pos);
                     if ((here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty() && !here.is(GZOrdnance.ANTHRAX_RESIDUE.get()))
                             && residue.canSurvive(level, pos)) {
+                        // The ground under it soaks the toxin up (slice 12e): toxic soil, surely near the middle.
+                        if (random.nextFloat() < 0.8f - 0.5f * edge) {
+                            dev.groundzero.content.fallout.ToxicSoilBlock.taint(level, pos.below());
+                        }
                         level.setBlockAndUpdate(pos, residue);
                     }
                 }

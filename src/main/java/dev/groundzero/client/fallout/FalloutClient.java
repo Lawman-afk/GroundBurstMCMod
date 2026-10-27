@@ -26,12 +26,14 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The aftermath on the client (DESIGN.md §21.8, slice 12b): the dead tint that turns vanilla's grass block into the Dead
- * Grass Block; the wind and the plumes the server tells it of; and the ash falling round the player under a plume,
+ * Grass Block (and, since 12e, the frost on the Frosted Grass Block and a Frozen Plant); the wind and the plumes the server tells it of; and the ash falling round the player under a plume,
  * drifting with the wind.
  */
 public final class FalloutClient {
     /** The dead grass's colour: dry and straw-grey; in the world a quarter of the biome's own grass colour shows through. */
     public static final int DEAD_GRASS = 0xFF9C8F62;
+    /** Frost on grass and on a frozen plant (slice 12e): pale and icy. */
+    public static final int FROSTED_GRASS = 0xFFB4D0D6, FROZEN_PLANT = 0xFFA8CFE2;
     static final float BIOME_SHARE = 0.25f;
     /** Flakes a tick round a player at a plume's heart, at full strength (fewer toward its edge and as it weakens). */
     static final float FLAKES = 14;
@@ -47,8 +49,11 @@ public final class FalloutClient {
     private FalloutClient() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> event.register(
-                List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), GZFallout.DEAD_GRASS_BLOCK.block().get()));
+        modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {
+            event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), GZFallout.DEAD_GRASS_BLOCK.block().get());
+            event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), GZFallout.FROSTED_GRASS_BLOCK.block().get());
+            event.register(List.of(net.minecraft.client.color.block.BlockTintSources.constant(FROZEN_PLANT)), GZFallout.FROZEN_PLANT.block().get());
+        });
         modBus.addListener((RegisterParticleProvidersEvent event) ->
                 event.registerSpriteSet(GZFallout.FALLOUT_ASH_PARTICLE.get(), AshFlakeParticle.Provider::new));
         Wind.Sync.hook = s -> {
