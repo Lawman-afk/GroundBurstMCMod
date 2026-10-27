@@ -137,6 +137,9 @@ public final class FxPhotographer {
                 // and the Lead Container's screen.
                 new Scene("geiger", "geiger", 4, 15, List.of(40, 80)),
                 new Scene("lead_ui", "lead_ui", 4, 15, List.of(30)),
+                // After the user's look at 12b: the redrawn icons in real slots (the suits on vanilla's armour shapes, the
+                // instruments and medicine re-centred, the soil and the dead grass), JEI showing the hazmat sets.
+                new Scene("gear_icons", "gear_icons", 4, 15, List.of(30)),
                 new Scene("aftermath", "aftermath", 6, 22, List.of(40, 200)),
                 // Slice 12b: a tactical warhead's crater and scorched ground from above, once its cloud has gone.
                 new Scene("crater_tactical_aerial", "tactical_nuclear_warhead", 80, 40, List.of(2400)),
@@ -316,6 +319,36 @@ public final class FxPhotographer {
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, lead);
         player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new dev.groundzero.content.radiation.LeadContainerMenu(id, inv,
                 net.minecraft.world.InteractionHand.MAIN_HAND), lead.getHoverName()), buf -> buf.writeEnum(net.minecraft.world.InteractionHand.MAIN_HAND));
+    }
+
+    /**
+     * The protective gear and the radiation kit in the player's inventory (the plain hazmat suit worn, the lead-lined one
+     * in the pack), the soil and the dead grass beside them; the screen opens in {@link #tick}.
+     */
+    private static void gearIcons(ServerLevel level) {
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.SURVIVAL);                                     // spectators open no menus
+        var inventory = player.getInventory();
+        inventory.clearContent();
+        inventory.setSelectedSlot(0);
+        java.util.function.BiFunction<net.minecraft.world.level.ItemLike, Integer, net.minecraft.world.item.ItemStack> stack =
+                net.minecraft.world.item.ItemStack::new;
+        var r = List.of(dev.groundzero.content.radiation.RadiationItems.GEIGER_COUNTER.get(), dev.groundzero.content.radiation.RadiationItems.LEAD_CONTAINER.get(),
+                dev.groundzero.content.radiation.RadiationItems.RAD_AWAY.get(), dev.groundzero.content.radiation.RadiationItems.POTASSIUM_IODIDE.get(),
+                dev.groundzero.content.radiation.RadiationItems.ANTI_RAD_INJECTOR.get(), dev.groundzero.content.radiation.RadiationItems.DOSIMETER_BADGE.get());
+        for (int i = 0; i < r.size(); i++) {
+            inventory.setItem(i, stack.apply(r.get(i), 1));
+        }
+        inventory.setItem(6, stack.apply(dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL.block().get(), 16));
+        inventory.setItem(7, stack.apply(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(), 16));
+        net.minecraft.world.entity.EquipmentSlot[] slots = {net.minecraft.world.entity.EquipmentSlot.HEAD,
+                net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS,
+                net.minecraft.world.entity.EquipmentSlot.FEET};
+        for (int k = 0; k < 4; k++) {
+            player.setItemSlot(slots[k], stack.apply(dev.groundzero.content.gear.GZArmor.HAZMAT_SET.get(k).get(), 1));
+            inventory.setItem(9 + k, stack.apply(dev.groundzero.content.gear.GZArmor.HAZMAT_SET.get(k).get(), 1));
+            inventory.setItem(18 + k, stack.apply(dev.groundzero.content.gear.GZArmor.LEAD_HAZMAT_SET.get(k).get(), 1));
+        }
     }
 
     /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
@@ -1213,6 +1246,10 @@ public final class FxPhotographer {
                     leadUi(level);
                     return;
                 }
+                if (s.profile().equals("gear_icons")) {
+                    gearIcons(level);
+                    return;
+                }
                 if (s.profile().equals("aftermath")) {
                     aftermath(level, x, ground);
                     return;
@@ -1450,6 +1487,10 @@ public final class FxPhotographer {
                 dev.groundzero.content.radiation.RadiationSources.of(level).add(new dev.groundzero.content.radiation.RadiationSource(over, 60, 20_000,
                         2_000, level.getGameTime()));
             });
+        }
+        if (scene.name().equals("gear_icons") && step >= 0 && clock == 14) {
+            mc.gui.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            jeiFilter.accept("hazmat");
         }
         if (scene.name().equals("geiger") && step >= 0 && clock == 50) {
             // An Anti-Rad Injector between the shots: the second shows the badge's film cleared and the dose near nothing.

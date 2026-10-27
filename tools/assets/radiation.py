@@ -7,7 +7,7 @@
 - Dosimeter Badge: a film badge on a spring clip; its film shows the dose taken (six sprites, white through yellow,
   orange and red to black, chosen by the client's `groundzero:dose` property).
 - Lead Container: a squat lead flask, its lid bolted down, a trefoil placard on its side.
-- Rad-Away: an IV bag of orange fluid on its hanger tab, its line hanging below.
+- Rad-Away: an IV bag of orange fluid on its hanger tab, its port at its foot.
 - Potassium Iodide Tablets: a blister card of white tablets under a purple band.
 - Anti-Rad Injector: an autoinjector pen held like a tool: a green safety cap, a yellow band, an orange tip.
 - Effect icons for Rad-Away and Potassium Iodide.
@@ -64,32 +64,33 @@ def outline(t: Tex, c=OUTLINE) -> None:
 
 # --- sprites -------------------------------------------------------------------------------------------------------------------
 def geiger_sprite() -> Tex:
-    """The inventory icon: the yellow case seen from the front and a little above, its handle, the dial, the probe."""
+    """The inventory icon: the yellow case seen from the front and a little above, its handle, the dial, the probe (a
+    pixel in from the right edge, so its outline shows)."""
     t = Tex(16, 16)
-    t.rect(5, 2, 6, 1, RUB[3])                                     # the grip
-    t.hline(6, 2, 4, RUB[4])
-    t.px(5, 3, RUB[2])
-    t.px(10, 3, RUB[2])                                            # its posts
-    t.rect(2, 4, 11, 1, Y[5])                                      # the case's top, lit
-    t.rect(2, 5, 11, 8, Y[3])                                      # its front
-    t.vline(2, 5, 8, Y[4])
-    t.hline(2, 12, 11, Y[2])
-    t.vline(13, 5, 7, Y[1])                                        # its right side, in shade
-    t.px(13, 4, Y[3])
-    t.rect(3, 6, 7, 5, STEEL[2])                                   # the meter's bezel
-    t.rect(4, 7, 5, 3, CREAM[5])                                   # the dial
-    t.hline(4, 7, 5, CREAM[6])
-    t.px(8, 7, P.WARNING_RED[4])                                   # the red band
-    t.px(5, 9, BLK[1])
-    t.px(6, 8, BLK[1])                                             # the needle
-    t.px(7, 7, BLK[2])
-    t.px(11, 10, BLK[2])                                           # the knob
-    t.px(11, 9, STEEL[4])
-    t.rect(3, 11, 5, 1, Y[2])                                      # a stencilled plate
-    t.vline(14, 6, 7, STEEL[4])                                    # the probe
-    t.vline(15, 7, 5, STEEL[2])
-    t.px(14, 13, BLK[2])                                           # its window end
-    t.px(14, 5, RUB[3])                                            # its cable
+    t.rect(4, 2, 6, 1, RUB[3])                                     # the grip
+    t.hline(5, 2, 4, RUB[4])
+    t.px(4, 3, RUB[2])
+    t.px(9, 3, RUB[2])                                             # its posts
+    t.rect(1, 4, 11, 1, Y[5])                                      # the case's top, lit
+    t.rect(1, 5, 11, 8, Y[3])                                      # its front
+    t.vline(1, 5, 8, Y[4])
+    t.hline(1, 12, 11, Y[2])
+    t.vline(12, 5, 7, Y[1])                                        # its right side, in shade
+    t.px(12, 4, Y[3])
+    t.rect(2, 6, 7, 5, STEEL[2])                                   # the meter's bezel
+    t.rect(3, 7, 5, 3, CREAM[5])                                   # the dial
+    t.hline(3, 7, 5, CREAM[6])
+    t.px(7, 7, P.WARNING_RED[4])                                   # the red band
+    t.px(4, 9, BLK[1])
+    t.px(5, 8, BLK[1])                                             # the needle
+    t.px(6, 7, BLK[2])
+    t.px(10, 10, BLK[2])                                           # the knob
+    t.px(10, 9, STEEL[4])
+    t.rect(2, 11, 5, 1, Y[2])                                      # a stencilled plate
+    t.vline(13, 6, 7, STEEL[4])                                    # the probe
+    t.vline(14, 7, 5, STEEL[2])
+    t.px(13, 13, BLK[2])                                           # its window end
+    t.px(13, 5, RUB[3])                                            # its cable
     outline(t)
     return t
 
@@ -126,20 +127,21 @@ def dosimeter_sprite(stage: int) -> Tex:
 
 
 def lead_container_sprite() -> Tex:
-    """A squat lead flask: shaded round, its lid's rim and bolts, a carrying lug, a trefoil placard."""
+    """A squat lead flask: shaded round, its lid's rim and bolts, a carrying lug, a trefoil placard; all of it on one
+    centre column (x 8: odd widths), so the placard and its trefoil sit in the middle of the flask."""
     t = Tex(16, 16)
-    shades = [LEAD[4], LEAD[4], LEAD[3], LEAD[3], LEAD[3], LEAD[2], LEAD[2], LEAD[2], LEAD[1], LEAD[1]]
-    for i, x in enumerate(range(3, 13)):
+    shades = [LEAD[4], LEAD[4], LEAD[3], LEAD[3], LEAD[3], LEAD[3], LEAD[2], LEAD[2], LEAD[2], LEAD[1], LEAD[1]]
+    for i, x in enumerate(range(3, 14)):
         t.vline(x, 6, 8, shades[i])                                # the body, lit from the left
-    t.hline(3, 13, 10, LEAD[1])
-    t.rect(2, 4, 12, 2, LEAD[2])                                   # the lid's rim
-    t.hline(2, 4, 12, LEAD[4])
-    for x in (3, 7, 11):
-        t.px(x + 1, 5, LEAD[5])                                    # its bolts
-    t.rect(6, 2, 4, 2, LEAD[2])                                    # the lug
-    t.px(7, 2, (0, 0, 0, 0))
-    t.px(8, 2, (0, 0, 0, 0))
-    t.hline(6, 2, 1, LEAD[4])
+    t.hline(3, 13, 11, LEAD[1])
+    t.rect(2, 4, 13, 2, LEAD[2])                                   # the lid's rim
+    t.hline(2, 4, 13, LEAD[4])
+    for x in (4, 8, 12):
+        t.px(x, 5, LEAD[5])                                        # its bolts
+    t.hline(7, 2, 3, LEAD[3])                                      # the lug: a bar on two posts
+    t.px(7, 2, LEAD[4])
+    t.px(7, 3, LEAD[2])
+    t.px(9, 3, LEAD[1])
     t.rect(5, 7, 7, 7, Y[4])                                       # the placard
     t.outline(5, 7, 7, 7, Y[2])
     for dx, dy in TREFOIL5:
@@ -149,24 +151,24 @@ def lead_container_sprite() -> Tex:
 
 
 def rad_away_sprite() -> Tex:
-    """An IV bag: its hanger tab, clear plastic round orange fluid, a white label, the line hanging below."""
+    """An IV bag: its hanger tab, clear plastic round orange fluid, a white label, the port at its foot (no line: the
+    whole bag and its outline fit inside the sprite)."""
     t = Tex(16, 16)
     clear = (198, 214, 220, 255)
     clear_dark = (132, 150, 158, 255)
-    t.rect(6, 0, 4, 2, clear_dark)                                 # the hanger tab
-    t.px(7, 1, (0, 0, 0, 0))
-    t.px(8, 1, (0, 0, 0, 0))
-    t.rect(3, 2, 10, 10, clear)                                    # the bag
-    t.vline(12, 3, 9, clear_dark)
-    t.rect(4, 4, 8, 7, ORANGE[4])                                  # the fluid
-    t.vline(4, 4, 7, ORANGE[5])
-    t.vline(11, 4, 7, ORANGE[2])
-    t.hline(4, 4, 8, ORANGE[6])
-    t.rect(5, 6, 6, 3, (236, 236, 228, 255))                       # the label
-    t.hline(5, 7, 6, ORANGE[3])
-    t.px(5, 3, (255, 255, 255, 255))                               # a gleam
-    t.rect(7, 12, 2, 1, clear_dark)                                # the port
-    t.vline(7, 13, 3, clear)                                       # the line
+    t.rect(6, 1, 4, 2, clear_dark)                                 # the hanger tab
+    t.px(7, 2, (0, 0, 0, 0))
+    t.px(8, 2, (0, 0, 0, 0))
+    t.rect(3, 3, 10, 10, clear)                                    # the bag
+    t.vline(12, 4, 9, clear_dark)
+    t.rect(4, 5, 8, 7, ORANGE[4])                                  # the fluid
+    t.vline(4, 5, 7, ORANGE[5])
+    t.vline(11, 5, 7, ORANGE[2])
+    t.hline(4, 5, 8, ORANGE[6])
+    t.rect(5, 7, 6, 3, (236, 236, 228, 255))                       # the label
+    t.hline(5, 8, 6, ORANGE[3])
+    t.px(5, 4, (255, 255, 255, 255))                               # a gleam
+    t.rect(7, 13, 2, 1, clear_dark)                                # the port
     outline(t)
     return t
 
@@ -207,7 +209,7 @@ def injector_sprite() -> Tex:
         t.px(x + 1, y, c)
         t.px(x + 1, y + 1, d)
         t.px(x, y + 1, d)
-    t.px(2, 13, STEEL[5])                                          # the needle's shroud
+    t.px(2, 14, STEEL[5])                                          # the needle's shroud, on the pen's axis
     outline(t)
     return t
 

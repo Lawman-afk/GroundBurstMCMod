@@ -1,6 +1,12 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "groundzero:block/dead_grass_block"
+    "model": "groundzero:block/dead_grass_block",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -6516894
+      }
+    ]
   }
 }

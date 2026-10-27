@@ -2,8 +2,9 @@
   "parent": "minecraft:block/block",
   "render_type": "minecraft:cutout",
   "textures": {
-    "particle": "groundzero:block/irradiated_soil",
-    "all": "groundzero:block/irradiated_soil",
+    "particle": "minecraft:block/dirt",
+    "dirt": "minecraft:block/dirt",
+    "stain": "groundzero:block/irradiated_soil_stain",
     "glint": "groundzero:block/irradiated_soil_glint"
   },
   "elements": [
@@ -26,7 +27,7 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
           "cullface": "down"
         },
         "up": {
@@ -36,7 +37,7 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
           "cullface": "up"
         },
         "north": {
@@ -46,7 +47,7 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
           "cullface": "north"
         },
         "south": {
@@ -56,7 +57,7 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
           "cullface": "south"
         },
         "west": {
@@ -66,7 +67,7 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
           "cullface": "west"
         },
         "east": {
@@ -76,7 +77,81 @@
             16,
             16
           ],
-          "texture": "#all",
+          "texture": "#dirt",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
+          "cullface": "down"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
+          "cullface": "up"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#stain",
           "cullface": "east"
         }
       }

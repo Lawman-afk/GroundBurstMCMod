@@ -641,6 +641,13 @@ it off, and then the reactor SCRAMs at 900 °C.
   92%; armour 2/4/3/1, knockback resistance 0.05, 5% slower as a full set; a hazmat piece inside four lead plates).
   Pieces carry the set's protection in shares hood 20%, coat 35%, trousers 30%, boots 15%. At the crater centre a full
   hazmat suit keeps the sickness to II, the lead-lined suit to I.
+  Icons redrawn 2026-10-27 (the user: they did not look like armour) on vanilla's four armour silhouettes, studied
+  from the 26.3 iron, gold, chainmail, netherite and turtle icons (never copied): the helmet a dome over the dark of its
+  face, the chestplate a body under two shoulder lobes with a V at the neck, the leggings a waistband over two legs, the
+  boots two boots side on with the toes out; light from the top left and an outline lit above and left, dark below and
+  right. In those shapes the hood's dome over a wide visor with its filter under the chin, the coat's zip under a storm
+  flap with a waist seam and a trefoil patch, the trousers' knee tape and taped cuffs, black overboots under taped
+  cuffs; the lead-lined set adds riveted plates (crown, breastplate, thighs, toe caps). `tools/assets/suits.py`.
 
 ---
 
@@ -2666,6 +2673,14 @@ then world structures and loot (Phase 15). Built in slices:
   column for any no ray came to (`sweepFloor`; one now and then had survived the first fix). A big crater's streaks are eased (from all
   of them at a 40-block crater to 0.7 at 200 blocks: `BlastJob.streaks`), so its fingers and spikes stop reading as
   spines at a thermonuclear size; the crater preview mirrors it. GameTests `crater_leaves_no_lone_blocks_standing_1..3`.
+- After the user's look at those fixes (2026-10-27): the Dead Grass Block is vanilla's grass block through the dead
+  tint again (the user liked it better than the repaint; the leaves and crops keep theirs), and Irradiated Soil is
+  vanilla's dirt with the irradiation laid over it, as the user asked: an olive stain round six glowing specks set in
+  the dirt's darkest gaps, two layers drawn over `minecraft:block/dirt` (the ores' way), fitted to vanilla's dirt read
+  from the decompiled client and never shipped. Item sprites fixed: the Geiger Counter a pixel left (its probe's outline
+  had fallen off the edge), Rad-Away without its line (bag, tab and port inside the sprite with their outline), the
+  Lead Container on one centre column (its trefoil placard was half a pixel right), the injector's needle on the pen's
+  axis. The hazmat icons redrawn on vanilla's armour silhouettes (§21.5's note under "Hazmat suits").
 
 ---
 
@@ -3345,6 +3360,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | The Field Manual's contents run on over as many pages as the chapters need (nine did not fit on one); the Lead Container's window is 7 px taller so its well clears the title strip. The press dies sit 2 px lower in their sprites. |
 | 2026-10-27 | Slice 12b: one wind per dimension; a ground burst's (and a dirty blast's, a meltdown's) debris goes off as a plume that lays sources and Fallout Ash as the wind carries it (no plume from an airburst or the neutron warhead); the cobalt plume is one of them; 14 ground blocks (§21.7's nuclear ones) in a tab of their own, the dead plants drawn as vanilla's through dead tints; the nuclear terrain table and the crater's lining; plants die at 1 000 RAD/h; dead grass grows back once safe. |
 | 2026-10-27 | After the user's look at 12b: the aftermath blocks repainted to the texture remaster (designed pieces with bevelled light on their ramps, not noise with dots), the dead plants painted as our own instead of vanilla's through dead tints; a plume's ash waits until a crater is dug; lone blocks inside a crater cleared; big craters' streaks eased (0.7 of them at 200 blocks). |
+| 2026-10-27 | After the user's look at the 12b fixes: vanilla's own textures where the user asks for them, over the paint-everything rule (the Dead Grass Block vanilla's grass through the dead tint again; Irradiated Soil vanilla's dirt with our stain and glow laid over it, fitted to it); an item sprite keeps its outline inside its 16 px and sits on its centre; armour icons take vanilla's four silhouettes so each reads as the piece it is (the hazmat sets redrawn). |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

@@ -15,13 +15,17 @@ sheen on char, rust and the glow, which are drawn over it as the library's weath
 - Slag: dark lumps full of vesicles, rust running down from a few.
 - Scorched Earth: a burnt crust dried into plates, deep cracks with ash in them, bits of charcoal.
 - Scorched Stone: grey stone sooted in patches, fissured where the heat cracked it, a flake spalled clean.
-- Irradiated Soil: clods of olive-brown earth, sickly green specks glowing in the gaps (an emissive layer, as the ores').
+- Irradiated Soil: vanilla's own dirt, at the user's request, with the irradiation laid over it: sickly green specks
+  glowing in its darkest gaps (an emissive layer, as the ores'), the earth round them stained olive shade for shade.
+  The two layers are fitted to vanilla's dirt, read from the decompiled client's assets (`paths.VANILLA_ASSETS`, built
+  by Gradle); only our layers ship.
 - Ash and Fallout Ash: powder lying in soft drifts (shaded as relief), charcoal crumbs; fallout greyer, gritty, with a
   few hot specks.
 - Charred Log, Wood and Planks: wood burnt to blocks of char with deep cracks and a dull silver sheen on their lit edges;
   the log's end in charred rings with radial checks; the planks four boards, each crazed along its length.
-- Dead Grass Block, Dead Leaves, Withered Crops: dry straw-grey grass over dry earth, brown curled leaves with gaps, dead
-  stalks with drooping heads.
+- Dead Grass Block: vanilla's grass block through a dead tint (the tint source is in the client, `FalloutClient`; the
+  item's tint is the same colour), as first built: the user liked it better than the repaint.
+- Dead Leaves, Withered Crops: brown curled leaves with gaps, dead stalks with drooping heads.
 
     tools/.venv/Scripts/python.exe tools/assets/aftermath.py
 """
@@ -33,6 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
+from PIL import Image  # noqa: E402
 
 from gz import materials as M  # noqa: E402
 from gz import paths  # noqa: E402
@@ -50,13 +55,16 @@ GLASSED_SAND_RAMP = M.ramp("#6b5e44", "#827351", "#998960", "#ae9d6f", "#c2b081"
 SLAG_RAMP = M.ramp("#0f0e0f", "#181617", "#221f20", "#2d2928", "#393432", "#46403c", "#554d47", "#655b53")
 SOIL_RAMP = M.ramp("#110d0a", "#1b1510", "#251d16", "#30261c", "#3c3023", "#4a3b2c", "#584736", "#675441")
 STONE_RAMP = M.ramp("#242424", "#2f2f2e", "#3b3a39", "#474645", "#545351", "#615f5d", "#6e6c69", "#7c7975")
-EARTH_RAMP = M.ramp("#291f16", "#34281c", "#413122", "#4e3b29", "#5b4530", "#685038", "#765c41", "#84694c")
 CHAR_RAMP = M.ramp("#0a0908", "#12100e", "#1b1714", "#241f1b", "#2e2722", "#39302a", "#453a33", "#524640")
-DRY_GRASS_RAMP = M.ramp("#3a3426", "#4a432f", "#5b5338", "#6d6443", "#80764f", "#93895d", "#a69b6c", "#b8ad7d")
 DEAD_LEAF_RAMP = M.ramp("#2a2016", "#3a2c1d", "#4c3a25", "#5f4a2e", "#735a38", "#876b44", "#9a7d52")
 STRAW_RAMP = M.ramp("#352e22", "#4a402e", "#5f533b", "#756749", "#8a7b58", "#9f8f68", "#b2a278")
 SHEEN = (98, 94, 90, 255)              # the dull silver of char's lit edges
 GLOW = ((128, 214, 74, 255), (184, 248, 116, 255))
+#: The stain round a glowing speck: muted olive shades a dirt shade goes to, by brightness (darkest first; each a little
+#: darker than the dirt it stains, so the stain reads as soured earth, not as green bits).
+STAIN = ((48, 52, 30), (62, 70, 38), (80, 90, 48), (100, 110, 60), (122, 132, 74))
+#: The Dead Grass Block's tint (the client's, FalloutClient.DEAD_GRASS: dry and straw-grey).
+DEAD_GRASS = 0xFF9C8F62
 HOT = (196, 206, 120, 255)
 
 
@@ -256,24 +264,42 @@ def scorched_stone() -> np.ndarray:
     return image(STONE_RAMP, idx)
 
 
+def luma(rgb: np.ndarray) -> np.ndarray:
+    return rgb[..., 0] * 0.299 + rgb[..., 1] * 0.587 + rgb[..., 2] * 0.114
+
+
 def irradiated_soil() -> tuple[np.ndarray, np.ndarray]:
-    d0, d1, owner, vx, vy = cells(61, 14)
-    gap = (d1 - d0) < 0.8
-    t = tones(62, 14, -0.1, 0.1)
-    idx = paint(EARTH_RAMP, 3, 61, extra=lambda f: t[owner] + dome(vx, vy, 0.1), rough=True, mottle=0.05, grain=0.06, dither=0.85)
-    lit, shade = edges(np.where(gap, -1, owner))
-    idx[lit] += 1
-    idx[shade] -= 1
-    idx[gap] = 0
-    img = image(EARTH_RAMP, idx)
+    """The two layers laid over vanilla's dirt: the stain (round each speck, the earth gone olive, each texel to the
+    olive of its own brightness, so the dirt's relief stays) and the glint (the specks, glowing in the darkest gaps,
+    far enough apart round the wrapping tile that no two clump)."""
+    path = paths.VANILLA_ASSETS / "textures" / "block" / "dirt.png"
+    if not path.exists():
+        raise SystemExit(f"{path} is missing: build the mod once (Gradle unpacks vanilla's assets there)")
+    dirt = np.array(Image.open(path).convert("RGBA")).astype(np.int32)
+    rgb = dirt[..., :3]
+    grey = np.abs(rgb[..., 0] - rgb[..., 2]) < 10                  # the pebbles: left as they are
+    lum = luma(rgb.astype(np.float32))
+    gaps = (~grey) & (lum <= np.sort(lum[~grey])[int(0.12 * np.count_nonzero(~grey))])
+    rng = np.random.default_rng(64)
+    specks: list[tuple[int, int]] = []
+    for k in rng.permutation(np.count_nonzero(gaps)):
+        y, x = np.argwhere(gaps)[k]
+        if all(min(abs(x - sx), N - abs(x - sx)) ** 2 + min(abs(y - sy), N - abs(y - sy)) ** 2 >= 13 for sx, sy in specks):
+            specks.append((int(x), int(y)))
+        if len(specks) == 6:
+            break
+    stain = np.zeros((N, N, 4), dtype=np.uint8)
     glint = np.zeros((N, N, 4), dtype=np.uint8)
-    ys, xs = np.nonzero(gap)
-    rng = np.random.default_rng(63)
-    for i, k in enumerate(rng.choice(len(xs), size=7, replace=False)):     # specks glowing in the gaps
-        c = GLOW[1] if i % 3 == 0 else GLOW[0]
-        img[ys[k], xs[k]] = c
-        glint[ys[k], xs[k]] = c
-    return img, glint
+    levels = luma(np.array(STAIN, dtype=np.float32))
+    for i, (x, y) in enumerate(specks):
+        glint[y, x] = GLOW[1] if i % 3 == 0 else GLOW[0]
+        for dx, dy in ((1, 0), (0, 1), (-1, 0), (0, -1))[: 2 + i % 2]:
+            nx, ny = (x + dx) % N, (y + dy) % N
+            if grey[ny, nx] or (nx, ny) in specks:
+                continue
+            olive = STAIN[int(np.argmin(np.abs(levels - (lum[ny, nx] - 8))))]
+            stain[ny, nx] = (*olive, 255)
+    return stain, glint
 
 
 def ash() -> np.ndarray:
@@ -391,45 +417,6 @@ def charred_planks() -> np.ndarray:
 
 
 # --- dead plants ---------------------------------------------------------------------------------------------------------------------
-def dry_earth(seed: int) -> np.ndarray:
-    """Dry earth in clods (shade indices): the dead grass block's sides and bottom."""
-    d0, d1, owner, vx, vy = cells(seed, 14)
-    gap = (d1 - d0) < 0.7
-    t = tones(seed + 1, 14, -0.08, 0.08)
-    idx = paint(EARTH_RAMP, 4, seed, extra=lambda f: t[owner] + dome(vx, vy, 0.08), rough=True, mottle=0.05, grain=0.06, dither=0.85)
-    lit, shade = edges(np.where(gap, -1, owner))
-    idx[lit] += 1
-    idx[shade] -= 1
-    idx[gap] = 1
-    return idx
-
-
-def dead_grass_top() -> np.ndarray:
-    idx = paint(DRY_GRASS_RAMP, 4, 111, rough=True, mottle=0.06, grain=0.05, dither=0.8)
-    for x, y in sites(112, 26):                        # blades: a lit tip, a shaded foot
-        at(idx, x, y, min(7, int(idx[y % N, x % N]) + 2))
-        at(idx, x, y + 1, max(0, int(idx[(y + 1) % N, x % N]) - 1))
-    img = image(DRY_GRASS_RAMP, idx)
-    earth = image(EARTH_RAMP, dry_earth(113))
-    for x, y in sites(114, 7):                         # bare earth between the tufts
-        img[y % N, x % N] = earth[y % N, x % N]
-    return img
-
-
-def dead_grass_side() -> np.ndarray:
-    idx = dry_earth(121)
-    img = image(EARTH_RAMP, idx)
-    grass = image(DRY_GRASS_RAMP, paint(DRY_GRASS_RAMP, 4, 122, rough=True, mottle=0.05, grain=0.05))
-    rng = np.random.default_rng(123)
-    for x in range(N):                                 # the turf's fringe over the earth, ragged, its tip lit
-        depth = 2 + int(rng.integers(0, 3))
-        img[:depth, x] = grass[:depth, x]
-        img[0, x] = colour(DRY_GRASS_RAMP, 6)
-        img[depth - 1, x] = colour(DRY_GRASS_RAMP, 2)
-        img[depth, x] = colour(EARTH_RAMP, max(0, int(idx[depth, x]) - 2))
-    return img
-
-
 def dead_leaves() -> np.ndarray:
     f = M.tile_face()
     cover = M.noise(f, 5, 131, 2) + 0.25 * (M.white(f.X, f.Y, f.Z, 132) - 0.5) > 0.44
@@ -506,21 +493,26 @@ def simple_state(name: str, model: str | None = None) -> None:
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": model or block_id(name)}}})
 
 
-def item_def(name: str, model: str) -> None:
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": model}})
+def item_def(name: str, model: str, tint: int | None = None) -> None:
+    m = {"type": "minecraft:model", "model": model}
+    if tint is not None:
+        m["tints"] = [{"type": "minecraft:constant", "value": tint - (1 << 32) if tint >= 1 << 31 else tint}]
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": m})
 
 
 def glowing_soil() -> None:
-    """Irradiated Soil: the earth, and its specks again on an emissive layer over it (as the ores' glints)."""
+    """Irradiated Soil: vanilla's dirt, the stain over it, and the specks on an emissive layer over that (as the ores'
+    glints: each layer drawn after the one under it, in the same place)."""
     elements = []
-    for tex, light in (("#all", 0), ("#glint", 10)):
+    for tex, light in (("#dirt", 0), ("#stain", 0), ("#glint", 10)):
         el = {"from": [0, 0, 0], "to": [16, 16, 16], "faces": {d: {"uv": [0, 0, 16, 16], "texture": tex, "cullface": d} for d in DIRS}}
         if light:
             el["light_emission"] = light
         elements.append(el)
     write_json(paths.MODELS / "block" / "irradiated_soil.json", {
         "parent": "minecraft:block/block", "render_type": "minecraft:cutout",
-        "textures": {"particle": block_id("irradiated_soil"), "all": block_id("irradiated_soil"), "glint": block_id("irradiated_soil_glint")},
+        "textures": {"particle": "minecraft:block/dirt", "dirt": "minecraft:block/dirt", "stain": block_id("irradiated_soil_stain"),
+                     "glint": block_id("irradiated_soil_glint")},
         "elements": elements})
     simple_state("irradiated_soil")
     item_def("irradiated_soil", block_id("irradiated_soil"))
@@ -561,10 +553,9 @@ def layers(name: str) -> None:
 
 
 def dead_plants() -> None:
-    write_json(paths.MODELS / "block" / "dead_grass_block.json", {"parent": "minecraft:block/cube_bottom_top", "textures": {
-        "top": block_id("dead_grass_block_top"), "side": block_id("dead_grass_block_side"), "bottom": block_id("dry_earth")}})
+    write_json(paths.MODELS / "block" / "dead_grass_block.json", {"parent": "minecraft:block/grass_block"})
     simple_state("dead_grass_block")
-    item_def("dead_grass_block", block_id("dead_grass_block"))
+    item_def("dead_grass_block", block_id("dead_grass_block"), DEAD_GRASS)
     cube_all("dead_leaves", cutout=True)
     planes = []
     for axis, pos, (a, b) in (("x", 4, ("west", "east")), ("x", 12, ("west", "east")), ("z", 4, ("north", "south")), ("z", 12, ("north", "south"))):
@@ -588,17 +579,14 @@ def main() -> None:
     save_block("slag", slag())
     save_block("scorched_earth", scorched_earth())
     save_block("scorched_stone", scorched_stone())
-    soil, glint = irradiated_soil()
-    save_block("irradiated_soil", soil)
+    stain, glint = irradiated_soil()
+    save_block("irradiated_soil_stain", stain)
     save_block("irradiated_soil_glint", glint)
     save_block("ash", ash())
     save_block("fallout_ash", fallout_ash())
     save_block("charred_log", charred_log_side())
     save_block("charred_log_top", charred_log_top())
     save_block("charred_planks", charred_planks())
-    save_block("dead_grass_block_top", dead_grass_top())
-    save_block("dead_grass_block_side", dead_grass_side())
-    save_block("dry_earth", image(EARTH_RAMP, dry_earth(141)))
     save_block("dead_leaves", dead_leaves())
     save_block("withered_crops", withered_crops())
     for name in ("trinitite", "glassed_sand", "slag", "scorched_earth", "scorched_stone", "charred_planks"):

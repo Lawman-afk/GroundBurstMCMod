@@ -22,7 +22,6 @@ from gz import palette as P  # noqa: E402
 from gz import paths  # noqa: E402
 from gz.model import write_json  # noqa: E402
 from gz.palette import fixed  # noqa: E402
-from gz.sprite import outline  # noqa: E402
 from gz.tex import Tex  # noqa: E402
 
 YELLOW = fixed("hazmat_yellow", "#3a2c06", "#6e5410", "#b08a14", "#e2b41e", "#f4cc34", "#fadc68", "#fff0a8")
@@ -180,57 +179,204 @@ def worn(ramp, lead: bool) -> tuple[Tex, Tex]:
 
 
 # --- item icons -------------------------------------------------------------------------------------------------------
+# On vanilla's four armour silhouettes, so each reads at a glance as the piece it is (the user found the first icons
+# did not look like armour). What vanilla's icons share (studied from the 26.3 iron, gold, chainmail, netherite and
+# turtle sets, never copied): the helmet a dome about 10 px wide over the dark of its face; the chestplate a body under
+# two shoulder lobes, a V cut at the neck, tapering to a rounded hem; the leggings a waistband over two legs with a gap
+# between; the boots two boots side on, toes turned out; light from the top left; an outline lit above and left of the
+# shape and dark below and right of it. The hazmat pieces in those shapes: the hood's dome over a wide visor, its filter
+# under the chin between the hood's drapes; the coat zipped down the middle under a storm flap, a waist seam, a trefoil
+# patch on the chest; the trousers with an elastic waist, reflective tape at the knees and taped cuffs; black rubber
+# overboots under the suit's taped cuffs, grey treads. The lead-lined suit has riveted lead plates over them: a crown
+# plate, a breastplate (over the zip and the patch), thigh plates and toe caps.
+#
+# Keys: '.' clear; 'S' the suit's plastic, 'c' a fold or seam in it; 'V' the visor's glass, 'g' and 'v' its glints;
+# 'R' black rubber; 'F' a filter's or a tread's grey steel, 'f' the filter's face; 'Z' the zip; 'k' and 'y' the patch,
+# black and its yellow trefoil; 'T' reflective tape; 'K' black tape; in the lead plates, 'P' a plate and 'Q' a rivet.
 ICONS = {
     "hood": [
-        "................", "................", ".....######.....", "....########....", "...##########...", "...#oooooooo#...",
-        "...#oooooooo#...", "...##########...", "...###mm#####...", "...#c#mm##c#....", "....########....", ".....######.....",
-        "................", "................", "................", "................"],
+        "................",
+        "................",
+        "................",
+        ".....SSSSSS.....",
+        "....SSSSSSSS....",
+        "...SSVVVVVVSS...",
+        "...SVgvVVVVVS...",
+        "...SVvVVVVVVS...",
+        "...SSVVVVVVSS...",
+        "...SSSRFFRSSS...",
+        "...SS.RffR.SS...",
+        "...SS..FF..SS...",
+        "................",
+        "................",
+        "................",
+        "................"],
     "coat": [
-        "................", "................", "..###......###..", ".#####.##.#####.", ".##############.", ".##############.",
-        ".##.###z####.##.", ".gg.###z####.gg.", ".gg.###z####.gg.", "....###z####....", "....###z####....", "....bbbbbbbb....",
-        "....########....", "................", "................", "................"],
+        "................",
+        "................",
+        "................",
+        "..SSS......SSS..",
+        "..SSSS....SSSS..",
+        "..SSSSS..SSSSS..",
+        "..SSSSSZcSSSSS..",
+        "...SSSSZcSSSS...",
+        "....SSSZckkkS...",
+        "....SSSZckykS...",
+        "....SSSZckkkS...",
+        "....cccZcccc....",
+        "....SSSZcSSS....",
+        ".....SSZcSS.....",
+        "................",
+        "................"],
     "trousers": [
-        "................", "................", "...bbbbbbbbbb...", "...##########...", "...##########...", "...####..####...",
-        "...###....###...", "...###....###...", "...ttt....ttt...", "...###....###...", "...###....###...", "...###....###...",
-        "...###....###...", "................", "................", "................"],
+        "................",
+        "................",
+        "................",
+        "...SSSSSSSSSS...",
+        "...SSSSSSSSSS...",
+        "...cccccccccc...",
+        "...SSSS..SSSS...",
+        "...SSS....SSS...",
+        "...SSS....SSS...",
+        "...TTT....TTT...",
+        "...SSS....SSS...",
+        "...SSS....SSS...",
+        "...KKK....KKK...",
+        "................",
+        "................",
+        "................"],
     "boots": [
-        "................", "................", "................", "................", "................", "...rrr....rrr...",
-        "...rrr....rrr...", "...rrr....rrr...", "...rrr....rrr...", "...rrrr...rrrr..", "..rrrrr..rrrrr..", "..sssss..sssss..",
-        "................", "................", "................", "................"],
+        "................",
+        "................",
+        "................",
+        "...SSS....SSS...",
+        "...KKK....KKK...",
+        "...RRR....RRR...",
+        "...RRR....RRR...",
+        "...RRR....RRR...",
+        "...RRR....RRR...",
+        "..RRRR....RRRR..",
+        ".RRRRR....RRRRR.",
+        ".FFFFF....FFFFF.",
+        "................",
+        "................",
+        "................",
+        "................"],
 }
+#: The lead-lined suit's plates, laid over the icons above (rows not given are clear).
+LEAD_PLATES = {
+    "hood": [
+        "................",
+        "................",
+        "................",
+        ".....PPPPPP.....",
+        "....PQPPPPQP...."],
+    "coat": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        ".....QPPPPQ.....",
+        ".....PPPPPP.....",
+        ".....PPPPPP.....",
+        ".....QPPPPQ....."],
+    "trousers": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "...PPP....PPP...",
+        "...PQP....PQP..."],
+    "boots": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "..PP........PP..",
+        ".PPP........PPP."],
+}
+#: Which surface each key belongs to: a surface's edges are lit or shaded where it meets another (or the outside).
+SURFACE = {"S": "suit", "c": "suit", "Z": "suit", "T": "suit", "K": "suit", "k": "patch", "y": "patch", "P": "lead", "Q": "lead",
+           "V": "glass", "g": "glass", "v": "glass", "R": "rubber", "F": "steel", "f": "steel"}
+#: How far the light runs across a whole icon, in shades, from its top left to its bottom right.
+SLOPE = {"suit": 1.0, "lead": 1.0, "glass": 0.8, "rubber": 0.8, "steel": 0.5}
+
+
+def _grid(rows: list[str]) -> dict[tuple[int, int], str]:
+    return {(x, y): ch for y, row in enumerate(rows) for x, ch in enumerate(row) if ch != "."}
 
 
 def icon(kind: str, ramp, lead: bool) -> Tex:
-    t = Tex(16, 16)
-    pts = set()
-    for y, row in enumerate(ICONS[kind]):
-        for x, ch in enumerate(row):
-            if ch == ".":
-                continue
-            pts.add((x, y))
-            col = {"#": ramp.base, "o": GLASS.base, "m": RUBBER.shadow, "c": FILTER.light, "g": RUBBER.base, "z": FILTER.light,
-                   "b": RUBBER.base, "t": P.WHITE_CERAMIC.light, "r": RUBBER.base, "s": RUBBER.outline}[ch]
-            t.px(x, y, col)
-    # Light from the top left: a highlight on the first suit pixel of each row, shade on the last.
-    for y in range(16):
-        xs = [x for x in range(16) if (x, y) in pts]
-        if xs and ICONS[kind][y][xs[0]] == "#":
-            t.px(xs[0], y, ramp.highlight)
-        if xs and ICONS[kind][y][xs[-1]] == "#":
-            t.px(xs[-1], y, ramp.shadow)
-    if kind == "hood":
-        t.px(5, 5, GLASS.shine)
-        t.px(6, 6, GLASS.highlight)
-    if kind == "boots":
-        t.px(3, 5, RUBBER.light)
-        t.px(10, 5, RUBBER.light)
+    g = _grid(ICONS[kind])
     if lead:
-        plates = {"hood": [(6, 2), (7, 2), (8, 2), (9, 2), (5, 3), (10, 3)], "coat": [(5, 4), (6, 4), (9, 4), (10, 4), (5, 5), (10, 5)],
-                  "trousers": [(3, 9), (4, 9), (11, 9), (12, 9), (3, 10), (12, 10)], "boots": [(3, 9), (4, 9), (10, 9), (11, 9)]}
-        for p in plates[kind]:
-            t.px(*p, LEAD.base)
-        t.px(*plates[kind][0], LEAD.highlight)
-    outline(t, pts, (ramp.outline if not lead else ORANGE.outline))
+        for p, ch in _grid(LEAD_PLATES[kind]).items():
+            if p in g:
+                g[p] = ch                                  # a plate over the suit (and over the zip and the patch)
+    xs, ys = [p[0] for p in g], [p[1] for p in g]
+    cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    span = max(max(xs) - min(xs), max(ys) - min(ys)) + 1
+
+    def tone(p, base: int, top: int = 2, left: int = 1, down: int = -1, right: int = -1) -> int:
+        """A shade on a ramp: the surface's base, lit along its top and left edges, shaded along its bottom and right
+        ones, a little lighter toward the icon's top left."""
+        x, y = p
+        own = SURFACE[g[p]]
+        k = base
+        for (dx, dy), step in (((0, -1), top), ((-1, 0), left), ((0, 1), down), ((1, 0), right)):
+            if SURFACE.get(g.get((x + dx, y + dy), "."), None) != own:
+                k += step
+        return k + round(SLOPE[own] * ((cx - x) + (cy - y)) / span)
+
+    t = Tex(16, 16)
+    for p, ch in g.items():
+        if ch in "Sc":
+            t.px(*p, ramp[max(1, min(6, tone(p, 3) - (ch == "c")))])
+        elif ch == "P":
+            t.px(*p, LEAD[max(1, min(5, tone(p, 3)))])
+        elif ch == "Q":
+            t.px(*p, LEAD.shine)
+        elif ch == "V":
+            t.px(*p, GLASS[max(1, min(4, tone(p, 2, top=1, left=0, down=0)))])
+        elif ch in "gv":
+            t.px(*p, GLASS.shine if ch == "g" else GLASS.highlight)
+        elif ch == "R":
+            t.px(*p, RUBBER[max(1, min(6, tone(p, 3)))])
+        elif ch == "F":
+            t.px(*p, FILTER[max(1, min(6, tone(p, 3)))])
+        elif ch == "f":
+            t.px(*p, FILTER.deep)
+        elif ch == "Z":
+            t.px(*p, FILTER.highlight if p[1] % 2 == 0 else FILTER.light)     # the zip's teeth
+        elif ch == "k":
+            t.px(*p, P.HAZARD_BLACK.deep)
+        elif ch == "y":
+            t.px(*p, P.HAZARD_YELLOW.highlight)
+        elif ch == "T":
+            t.px(*p, P.WHITE_CERAMIC[max(2, min(6, tone(p, 4, top=1, down=0)))])
+        elif ch == "K":
+            t.px(*p, RUBBER[max(0, min(4, tone(p, 2, top=1)))])
+    # The outline: lit above and left of the shape, dark below and right of it; rubber's own near-black round the boots.
+    for y in range(16):
+        for x in range(16):
+            near = [g[q] for q in ((x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)) if q in g]
+            if (x, y) in g or not near:
+                continue
+            dark = (x - 1, y) in g or (x, y - 1) in g
+            if all(SURFACE[ch] in ("rubber", "steel") for ch in near):
+                t.px(x, y, RUBBER.outline)
+            else:
+                t.px(x, y, ramp.outline if dark else ramp.deep)
     return t
 
 
