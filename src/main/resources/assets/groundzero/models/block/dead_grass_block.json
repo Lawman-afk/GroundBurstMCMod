@@ -1,3 +1,8 @@
 {
-  "parent": "minecraft:block/grass_block"
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "groundzero:block/dead_grass_block_top",
+    "side": "groundzero:block/dead_grass_block_side",
+    "bottom": "groundzero:block/dry_earth"
+  }
 }

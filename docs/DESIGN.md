@@ -2610,7 +2610,7 @@ then world structures and loot (Phase 15). Built in slices:
   the burst, fewer downwind); weakly radioactive (1 RAD/h a block away); shovelled away it drops nothing; it weathers
   into plain Ash over a couple of hours (random ticks). Players under a plume see ash falling round them, drifting with
   the wind (a particle of our own).
-- **Ground blocks** (§21.7, the nuclear ones; toxic and frozen ground are 12e's): Trinitite, Glassed Sand, Slag,
+- **Ground blocks** (§21.7, the nuclear ones; toxic and frozen ground are 12e's; as built, all painted by us, see below): Trinitite, Glassed Sand, Slag,
   Scorched Earth, Scorched Stone, Irradiated Soil (faint glow, radioactive), Ash and Fallout Ash layers, Charred Log,
   Wood and Planks, Dead Grass Block, Dead Leaves, Withered Crops. Natural matter painted on material tiles (new ramps:
   ash, fallout, trinitite, char, slag, glassed sand, scorched soil and stone); Dead Grass, Dead Leaves and Withered
@@ -2654,6 +2654,18 @@ then world structures and loot (Phase 15). Built in slices:
   beside the next item's picture).
   GameTests: `FalloutTests` (7, one a real tactical blast on sand); the cobalt test now checks its plume; the neutron
   test its dead blocks.
+- After the user's look (2026-10-27): the blocks repainted to the texture remaster (§4.3): each a designed surface on
+  its ramp, not noise with dots: pieces from a wrapping cell network, each with its own tone and rounded light, lit on
+  their top-left edges and shaded on their bottom-right, dark seams between (glass nodules, glaze plates over grit, slag
+  lumps with vesicles and rust runs, a burnt crust in plates with ash in its cracks, soil clods with the glow in their
+  gaps, charred blocks with a dull sheen, long charred boards), ash in soft drifts shaded as relief. The dead plants are
+  painted as our own (dry grass over dry earth, brown leaves with gaps, dead stalks), the dead tints dropped.
+- A plume's ash no longer settles where a blast's crater is still being dug (`BlastManager.forming`): it had been left
+  hanging in the air when the ground under it went. The crater's clean-up takes away a block standing alone inside the
+  crater (nothing solid beside it or over it) and the thin pillar under it, and then sweeps the crater's floor column by
+  column for any no ray came to (`sweepFloor`; one now and then had survived the first fix). A big crater's streaks are eased (from all
+  of them at a 40-block crater to 0.7 at 200 blocks: `BlastJob.streaks`), so its fingers and spikes stop reading as
+  spines at a thermonuclear size; the crater preview mirrors it. GameTests `crater_leaves_no_lone_blocks_standing_1..3`.
 
 ---
 
@@ -3332,6 +3344,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | Launchers hold their missiles from the countdown until the last has flown (the screen's slots refuse taking and placing; automation never could take them). The Launch Computer draws each armed or launching silo's strike round its target: shaded where its warhead kills, a ring at the farthest it harms, a dashed ring for how far off it may land (an ellipse along the flight; a superweapon's spread a circle); the picked silo's bright, the rest dark. The warhead's figures come from its blast profile and effects (`AssemblyStats.area`). |
 | 2026-10-27 | The Field Manual's contents run on over as many pages as the chapters need (nine did not fit on one); the Lead Container's window is 7 px taller so its well clears the title strip. The press dies sit 2 px lower in their sprites. |
 | 2026-10-27 | Slice 12b: one wind per dimension; a ground burst's (and a dirty blast's, a meltdown's) debris goes off as a plume that lays sources and Fallout Ash as the wind carries it (no plume from an airburst or the neutron warhead); the cobalt plume is one of them; 14 ground blocks (§21.7's nuclear ones) in a tab of their own, the dead plants drawn as vanilla's through dead tints; the nuclear terrain table and the crater's lining; plants die at 1 000 RAD/h; dead grass grows back once safe. |
+| 2026-10-27 | After the user's look at 12b: the aftermath blocks repainted to the texture remaster (designed pieces with bevelled light on their ramps, not noise with dots), the dead plants painted as our own instead of vanilla's through dead tints; a plume's ash waits until a crater is dug; lone blocks inside a crater cleared; big craters' streaks eased (0.7 of them at 200 blocks). |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

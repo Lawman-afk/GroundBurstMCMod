@@ -87,6 +87,24 @@ public final class BlastManager extends SavedData {
         return this.running.size() + this.queued.size();
     }
 
+    /**
+     * Whether (x, z) lies within the terrain work of a blast running or waiting here: its crater may still be dug out
+     * under it (a plume's ash must not settle there yet, or it is left in the air).
+     */
+    public boolean forming(double x, double z) {
+        for (BlastJob job : this.running) {
+            if (job.covers(x, z)) {
+                return true;
+            }
+        }
+        for (BlastJob job : this.queued) {
+            if (job.covers(x, z)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** The blasts running now. */
     List<? extends Blast> running() {
         return List.copyOf(this.running);

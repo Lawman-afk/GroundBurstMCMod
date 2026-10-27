@@ -140,6 +140,8 @@ public final class FxPhotographer {
                 new Scene("aftermath", "aftermath", 6, 22, List.of(40, 200)),
                 // Slice 12b: a tactical warhead's crater and scorched ground from above, once its cloud has gone.
                 new Scene("crater_tactical_aerial", "tactical_nuclear_warhead", 80, 40, List.of(2400)),
+                // A thermonuclear crater from above once its cloud has gone: its streaks eased for its size, no lone blocks.
+                new Scene("crater_thermo_aerial", "thermonuclear_warhead", 260, 45, List.of(3600)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),

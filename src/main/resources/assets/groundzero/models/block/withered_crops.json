@@ -3,7 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "particle": "#crop",
-    "crop": "minecraft:block/wheat_stage7"
+    "crop": "groundzero:block/withered_crops"
   },
   "elements": [
     {
@@ -26,8 +26,7 @@
             16,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         },
         "east": {
           "uv": [
@@ -36,8 +35,7 @@
             0,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         }
       }
     },
@@ -61,8 +59,7 @@
             0,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         },
         "east": {
           "uv": [
@@ -71,8 +68,7 @@
             16,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         }
       }
     },
@@ -96,8 +92,7 @@
             16,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         },
         "south": {
           "uv": [
@@ -106,8 +101,7 @@
             0,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         }
       }
     },
@@ -131,8 +125,7 @@
             0,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         },
         "south": {
           "uv": [
@@ -141,8 +134,7 @@
             16,
             16
           ],
-          "texture": "#crop",
-          "tintindex": 0
+          "texture": "#crop"
         }
       }
     }

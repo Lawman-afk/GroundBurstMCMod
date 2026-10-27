@@ -38,6 +38,11 @@ final class FalloutTests {
         GZGameTests.testOpenSky("strong_fields_wither_plants", GZGameTests.FLOOR_16, 20, FalloutTests::wither);
         GZGameTests.test("dead_grass_under_cover_turns_to_dirt", GZGameTests.FLOOR_16, 20, FalloutTests::covered);
         GZGameTests.testOpenSky("nuclear_blast_glasses_the_sand_round_it", GZGameTests.FLOOR_16, 200, FalloutTests::glassed);
+        // Three craters (each blast has a seed of its own): a lone block survived now and then before the floor sweep.
+        for (int k = 1; k <= 3; k++) {
+            int shift = k - 2;                             // (each its own function: the registry takes a function once)
+            GZGameTests.testOpenSky("crater_leaves_no_lone_blocks_standing_" + k, GZGameTests.FLOOR_16, 200, h -> noLoneBlocks(h, shift));
+        }
     }
 
     private static void floor(GameTestHelper helper) {
@@ -195,6 +200,47 @@ final class FalloutTests {
             helper.assertTrue(trinitite > 0, "trinitite in its wall (" + glassed + " glassed, " + trinitite + " trinitite, " + sand + " sand)");
             RadiationSources.of(level).removeNear(centre, 2);
             Plumes.of(level).removeNear(centre, 2);
+        });
+    }
+
+    /**
+     * A tactical warhead at a seventh of its size in solid stone: well inside its crater no full block is left standing
+     * alone (nothing solid beside it or over it), where a ray that ran out short, or none came, would have left one.
+     */
+    private static void noLoneBlocks(GameTestHelper helper, int shift) {
+        for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 4, 15)) {
+            helper.setBlock(p, Blocks.STONE);
+        }
+        var level = helper.getLevel();
+        BlockPos burst = helper.absolutePos(new BlockPos(8 + shift, 5, 8));
+        float scale = dev.groundzero.content.ordnance.charge.Charges.bombScale;
+        dev.groundzero.content.ordnance.charge.Charges.bombScale = 0.14f;
+        dev.groundzero.content.ordnance.charge.Charges.impact(level, dev.groundzero.content.ordnance.charge.ChargeKind.TACTICAL_NUCLEAR_WARHEAD,
+                burst, null);
+        dev.groundzero.content.ordnance.charge.Charges.bombScale = scale;
+        Vec3 centre = Vec3.atCenterOf(burst);
+        helper.runAfterDelay(100, () -> {                                   // long after so small a blast has finished
+            int lone = 0;
+            StringBuilder which = new StringBuilder();
+            for (BlockPos p : BlockPos.betweenClosed(2, 1, 2, 13, 5, 13)) {
+                BlockPos abs = helper.absolutePos(p);
+                if (Math.hypot(abs.getX() + 0.5 - centre.x, abs.getZ() + 0.5 - centre.z) > 4
+                        || !helper.getBlockState(p).isCollisionShapeFullBlock(level, abs)) {
+                    continue;                              // the bowl (its ragged rim takes ejecta); full blocks (not fire or ash)
+                }
+                boolean alone = true;
+                for (Direction d : Direction.values()) {
+                    alone &= d == Direction.DOWN || !level.getBlockState(abs.relative(d)).isSolid();
+                }
+                if (alone) {
+                    lone++;
+                    which.append(' ').append(helper.getBlockState(p).getBlock().getDescriptionId()).append('@').append(p.toShortString());
+                }
+            }
+            RadiationSources.of(level).removeNear(centre, 2);
+            Plumes.of(level).removeNear(centre, 2);
+            helper.assertTrue(lone == 0, "no lone block in the crater: " + lone + which);
+            helper.succeed();
         });
     }
 

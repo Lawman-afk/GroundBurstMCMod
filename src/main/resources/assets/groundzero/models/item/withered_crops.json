@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:block/wheat_stage7"
+    "layer0": "groundzero:block/withered_crops"
   }
 }

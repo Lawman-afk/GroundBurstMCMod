@@ -101,7 +101,14 @@ class Field:
         return x / np.linalg.norm(x, axis=1)[:, None]
 
 
+def eased_streaks(crater: float, streaks: float) -> float:
+    """As BlastJob.streaks: a big crater's streaks eased off, from all of them at 40 blocks to 0.7 at 200 and over."""
+    big = min(1.0, max(0.0, (crater - 40) / 160))
+    return streaks * (1 - 0.3 * big)
+
+
 def run(crater: float, structural: float, scorch: float, depth: float, lobes: float, streaks: float, seed: int, ejecta: float = 0.0):
+    streaks = eased_streaks(crater, streaks)
     f = Field()
     fc, uu, vv = [], [], []
     for face in range(6):

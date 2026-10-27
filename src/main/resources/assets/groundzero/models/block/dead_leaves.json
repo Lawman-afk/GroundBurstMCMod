@@ -1,7 +1,7 @@
 {
-  "parent": "minecraft:block/leaves",
-  "render_type": "minecraft:cutout",
+  "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "minecraft:block/oak_leaves"
-  }
+    "all": "groundzero:block/dead_leaves"
+  },
+  "render_type": "minecraft:cutout"
 }

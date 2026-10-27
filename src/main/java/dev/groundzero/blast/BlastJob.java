@@ -21,6 +21,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -92,6 +93,10 @@ final class BlastJob implements Blast {
     static final int FLOATER = 4;
     /** Nuclear blasts (slice 12b): the share of the fire band's flames that are ash instead (the fire is long out). */
     static final float ASH_SHARE = 0.4f;
+    /** A big crater's streaks, as a share of its profile's (see {@link #streaks}). */
+    static final float BIG_STREAKS = 0.7f;
+    /** How far down a lone pillar in the crater the clean-up takes it, blocks. */
+    static final int LONE_DEPTH = 6;
     /** Nuclear blasts: how far out (crater radii) the crater's wall is lined, and the share of it that is. */
     static final float LINING_REACH = 1.3f, LINING_SHARE = 0.75f;
 
@@ -143,6 +148,8 @@ final class BlastJob implements Blast {
     private final it.unimi.dsi.fastutil.longs.LongArrayList rubbleAt = new it.unimi.dsi.fastutil.longs.LongArrayList();
     private final List<BlockState> rubbleState = new java.util.ArrayList<>();
     private int placed;
+    /** The crater floor's sweep: the next column (an index into the square round the burst). */
+    private int floorCursor;
     /** How many floating blocks the clean-up took away (for GameTests). */
     int floatersRemoved;
     private final IntOpenHashSet hit = new IntOpenHashSet();
@@ -170,7 +177,7 @@ final class BlastJob implements Blast {
         this.chunks = profile.isInstant() ? null
                 : new BlastChunks(level, id, center, workRadius(profile), GZServerConfig.GENERATE_CHUNKS.get(), this::raiseCeiling);
         this.streakSeed = StreakNoise.seed(seed);
-        float streaks = profile.streaks();
+        float streaks = streaks(profile);
         int noiseSeed = this.streakSeed;
         this.grain = streaks > 0 ? (dx, dy, dz) -> StreakNoise.factor(dx, dy, dz, noiseSeed, streaks) : (dx, dy, dz) -> 1;
         this.horizon = new float[Math.clamp((int) Math.ceil(2 * Math.PI * profile.groundRadius()), 720, 8192)];
@@ -182,6 +189,23 @@ final class BlastJob implements Blast {
             float down = Math.max(0, -dy);
             return base * (1 - (1 - profile.craterDepth()) * down) * lobes.at(dx, dy, dz);
         }, this.grain);
+    }
+
+    /**
+     * How strongly the streaks mark this blast's crater and spokes: the profile's, eased off for big craters (at a
+     * thermonuclear warhead's size its finest fingers and spikes are several blocks across and read as spines, not as a
+     * ragged rim): from 1 at a 40-block crater to {@link #BIG_STREAKS} at 200 blocks and over.
+     */
+    static float streaks(BlastProfile p) {
+        float big = Math.clamp((p.crater() - 40) / 160, 0, 1);
+        return p.streaks() * (1 - (1 - BIG_STREAKS) * big);
+    }
+
+    /** Whether (x, z) lies within its terrain work, across the ground. */
+    boolean covers(double x, double z) {
+        double dx = x - this.center.x, dz = z - this.center.z;
+        float r = this.profile.terrainRadius() + 2;
+        return dx * dx + dz * dz <= r * r;
     }
 
     /** A blast resumed from its saved state. */
@@ -351,7 +375,8 @@ final class BlastJob implements Blast {
             this.rays = new RayField();                    // free the ray arrays
             this.cleanCursor = this.visited.long2ObjectEntrySet().fastIterator();
         }
-        if (this.phase == Phase.CLEAN && clean(instant ? Long.MAX_VALUE : deadline) && placeDeferred(instant ? Long.MAX_VALUE : deadline)) {
+        if (this.phase == Phase.CLEAN && clean(instant ? Long.MAX_VALUE : deadline) && sweepFloor(instant ? Long.MAX_VALUE : deadline)
+                && placeDeferred(instant ? Long.MAX_VALUE : deadline)) {
             this.phase = Phase.RIM;
             this.rimCursor = this.rim.iterator();
         }
@@ -524,7 +549,8 @@ final class BlastJob implements Blast {
             return;
         }
         float spoke = StreakNoise.at((float) Math.cos(az), 0, (float) Math.sin(az), this.streakSeed);
-        float edge = p.streaks() > 0 ? 0.72f + 0.6f * spoke * (1 + p.streaks()) : 1;
+        float streaks = streaks(p);
+        float edge = streaks > 0 ? 0.72f + 0.6f * spoke * (1 + streaks) : 1;
         BlockPos above = this.pos.above();
         // Water (and lava, kelp, anything holding fluid) is a surface to the burst but not ground: rubble sinks through
         // it and nothing catches fire on it.
@@ -662,6 +688,9 @@ final class BlastJob implements Blast {
                             wall = true;
                         }
                     }
+                    if (wall && pillar(x, y, z)) {
+                        continue;                          // a lone block (or a thin pillar) standing in the crater: gone
+                    }
                     if (wall && this.table.nuclear()) {
                         line(x, y, z);
                     }
@@ -670,6 +699,79 @@ final class BlastJob implements Blast {
             }
         }
         this.cleanCursor = null;
+        return true;
+    }
+
+    /**
+     * A block left standing alone inside the crater (nothing solid beside it or over it: a ray that ran out short left it,
+     * a spike in the floor) goes, and so does what was under it while that stands alone too, down a thin pillar to the
+     * floor. True if it went. Only within the crater's mean radius (its fingers past the rim are meant to be ragged).
+     */
+    private boolean pillar(int x, int y, int z) {
+        double dx = x + 0.5 - this.center.x, dz = z + 0.5 - this.center.z;
+        float r = this.profile.crater();
+        if (dx * dx + dz * dz > r * r) {
+            return false;
+        }
+        boolean gone = false;
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, y, z);
+        for (int depth = 0; depth < LONE_DEPTH; depth++) {
+            if (!this.level.isLoaded(at) || !solid(at) || !alone(at)) {
+                break;
+            }
+            this.pos.set(at);
+            BlockState s = this.level.getBlockState(at);
+            if (isProtected() || s.getDestroySpeed(this.level, at) < 0 || s.hasBlockEntity()) {
+                break;
+            }
+            write(at, AIR);
+            markDestroyed(at.getX(), at.getY(), at.getZ());
+            gone |= depth == 0;
+            at.move(Direction.DOWN);
+        }
+        return gone;
+    }
+
+    /**
+     * After the clean-up, the crater's floor swept column by column within its mean radius: a top block standing alone
+     * (nothing solid beside it or over it) goes, and the thin pillar under it, as {@link #pillar} does for the blocks
+     * the rays left (this finds those no ray came to). True when done.
+     */
+    private boolean sweepFloor(long deadline) {
+        int r = (int) Math.ceil(this.profile.crater());
+        int side = 2 * r + 1, total = side * side;
+        int cx = Mth.floor(this.center.x), cz = Mth.floor(this.center.z);
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        while (this.floorCursor < total) {
+            if ((this.floorCursor & 63) == 0 && System.nanoTime() > deadline) {
+                return false;
+            }
+            int i = this.floorCursor++;
+            int dx = i % side - r, dz = i / side - r;
+            if (dx * dx + dz * dz > r * r || !this.level.isLoaded(at.set(cx + dx, Mth.floor(this.center.y), cz + dz))) {
+                continue;
+            }
+            at.setY(this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, cx + dx, cz + dz) - 1);
+            for (int depth = 0; depth < LONE_DEPTH && solid(at) && alone(at); depth++) {
+                this.pos.set(at);
+                BlockState s = this.level.getBlockState(at);
+                if (isProtected() || s.getDestroySpeed(this.level, at) < 0 || s.hasBlockEntity()) {
+                    break;
+                }
+                write(at, AIR);
+                at.move(Direction.DOWN);
+            }
+        }
+        return true;
+    }
+
+    /** Nothing solid on any side of it or over it. */
+    private boolean alone(BlockPos at) {
+        for (Direction d : Direction.values()) {
+            if (d != Direction.DOWN && solid(at.relative(d))) {
+                return false;
+            }
+        }
         return true;
     }
 

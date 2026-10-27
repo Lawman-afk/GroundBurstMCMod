@@ -1,39 +1,27 @@
 package dev.groundzero.client.fallout;
 
 import java.util.List;
-import java.util.function.ToIntBiFunction;
 
 import dev.groundzero.content.fallout.GZFallout;
 import dev.groundzero.content.fallout.Plumes;
 import dev.groundzero.content.fallout.Wind;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
- * The aftermath on the client (DESIGN.md §21.8, slice 12b): the dead tints that turn vanilla's grass, leaves and wheat
- * into Dead Grass, Dead Leaves and Withered Crops; the wind and the plumes the server tells it of; and the ash falling
- * round the player under a plume, drifting with the wind.
+ * The aftermath on the client (DESIGN.md §21.8, slice 12b): the wind and the plumes the server tells it of, and the ash
+ * falling round the player under a plume, drifting with the wind.
  */
 public final class FalloutClient {
-    /** Dead colours: dry, brown and grey; in the world a quarter of the biome's own colour shows through. */
-    public static final int DEAD_GRASS = 0xFF9C8F62, DEAD_LEAVES = 0xFF7F6744, WITHERED = 0xFF7D7466;
-    static final float BIOME_SHARE = 0.25f;
     /** Flakes a tick round a player at a plume's heart, at full strength (fewer toward its edge and as it weakens). */
     static final float FLAKES = 14;
     /** How much of the wind's speed the flakes take (it blows slower near the ground). */
@@ -48,11 +36,6 @@ public final class FalloutClient {
     private FalloutClient() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {
-            event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor, true)), GZFallout.DEAD_GRASS_BLOCK.block().get());
-            event.register(List.of(dead(DEAD_LEAVES, BiomeColors::getAverageFoliageColor, false)), GZFallout.DEAD_LEAVES.block().get());
-            event.register(List.of(BlockTintSources.constant(WITHERED)), GZFallout.WITHERED_CROPS.block().get());
-        });
         modBus.addListener((RegisterParticleProvidersEvent event) ->
                 event.registerSpriteSet(GZFallout.FALLOUT_ASH_PARTICLE.get(), AshFlakeParticle.Provider::new));
         Wind.Sync.hook = s -> {
@@ -117,27 +100,4 @@ public final class FalloutClient {
         }
     }
 
-    /**
-     * A dead tint: {@code colour}, with {@link #BIOME_SHARE} of the biome's own in the world (so dead ground still
-     * varies a little as live ground does). {@code untintedParticles}: break particles keep their texture's colour (the
-     * grass block's particle is plain dirt).
-     */
-    static BlockTintSource dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome, boolean untintedParticles) {
-        return new BlockTintSource() {
-            @Override
-            public int color(BlockState state) {
-                return colour;
-            }
-
-            @Override
-            public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-                return ARGB.srgbLerp(BIOME_SHARE, colour, 0xFF000000 | biome.applyAsInt(level, pos));
-            }
-
-            @Override
-            public int colorAsTerrainParticle(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-                return untintedParticles ? -1 : colorInWorld(state, level, pos);
-            }
-        };
-    }
 }
