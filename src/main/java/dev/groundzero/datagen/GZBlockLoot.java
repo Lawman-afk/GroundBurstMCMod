@@ -145,6 +145,20 @@ public class GZBlockLoot extends BlockLootSubProvider {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         add(GZResources.BUDDING_VOIDSTONE.block().get(), noDrop());
+        // The aftermath (slice 12b): the ground drops itself; ash is dust; dead grass gives dirt, dead leaves only to
+        // shears or silk touch, withered crops nothing.
+        for (var b : java.util.List.of(dev.groundzero.content.fallout.GZFallout.TRINITITE, dev.groundzero.content.fallout.GZFallout.GLASSED_SAND, dev.groundzero.content.fallout.GZFallout.SLAG, dev.groundzero.content.fallout.GZFallout.SCORCHED_EARTH, dev.groundzero.content.fallout.GZFallout.SCORCHED_STONE,
+                dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL, dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS)) {
+            dropSelf(b.block().get());
+        }
+        dropSelf(dev.groundzero.content.fallout.GZFallout.CHARRED_LOG.block().get());
+        dropSelf(dev.groundzero.content.fallout.GZFallout.CHARRED_WOOD.block().get());
+        add(dev.groundzero.content.fallout.GZFallout.ASH.block().get(), noDrop());
+        add(dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH.block().get(), noDrop());
+        add(dev.groundzero.content.fallout.GZFallout.WITHERED_CROPS.block().get(), noDrop());
+        add(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(), createSingleItemTableWithSilkTouch(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(),
+                net.minecraft.world.item.Items.DIRT));
+        add(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().get(), createShearsOrSilkTouchOnlyDrop(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().get()));
         add(GZResources.SMALL_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.SMALL_EXOTIC_BUD.block().get()));
         add(GZResources.LARGE_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GZResources.LARGE_EXOTIC_BUD.block().get()));
         Block cluster = GZResources.EXOTIC_CRYSTAL_CLUSTER.block().get();

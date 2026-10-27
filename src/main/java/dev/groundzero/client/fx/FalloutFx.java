@@ -17,9 +17,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Fallout over the radiation sources (DESIGN.md §15.1, §21.8; until slice 12b's plumes, after the in-game look at the
- * nukes): a broken layer of dark grey and sickly green cloud 50 to 80 blocks over each source, drifting with its own
- * wind and thinning as the source decays, and, inside one, a green cast to the sky, the fog and the clouds, stronger
+ * Fallout over the radiation sources (DESIGN.md §15.1, §21.8, after the in-game look at the nukes): a broken layer of
+ * dark grey and sickly green cloud 50 to 80 blocks over each source (a plume lays a string of them downwind, slice 12b),
+ * drifting with the level's wind and thinning as the source decays, and, inside one, a green cast to the sky, the fog and the clouds, stronger
  * toward its middle. The server sends every source in the level; each one's clouds are laid out from a seed and moved
  * by the level's clock, so every player sees the same sky.
  */
@@ -29,8 +29,8 @@ final class FalloutFx {
     private static ClientLevel zonesLevel;
     /** Cloud albedos: dark grey, grey, olive, sickly green. */
     private static final int[] COLOURS = {0x55585A, 0x6E716E, 0x5F7A2E, 0x7A9C3A};
-    /** Blocks a tick the layer drifts. */
-    private static final double WIND = 0.03;
+    /** The share of the wind's carry the layer drifts by (the puffs wrap round inside their zone, so slower reads calmer). */
+    private static final double DRIFT = 0.4;
     /** How high the layer's base and how deep it is, over the zone's centre. */
     private static final double BASE = 50, DEPTH = 30;
     /** How far the sky turns toward fallout green at a zone's middle while it is fresh. */
@@ -86,6 +86,7 @@ final class FalloutFx {
         long now = level.getGameTime();
         double time = now + partial;
         float quality = Math.max(0.5f, Math.min(1.2f, Spectacle.quality()));
+        double driftX = dev.groundzero.client.fallout.FalloutClient.driftX(partial), driftZ = dev.groundzero.client.fallout.FalloutClient.driftZ(partial);
         List<float[]> quads = new ArrayList<>();
         for (RadiationSource z : list) {
             float life = (float) Math.sqrt(z.strength(now));
@@ -98,8 +99,7 @@ final class FalloutFx {
             // the puff, the more of its edge that cut takes, leaving hard outlines.
             int n = (int) (Math.max(24, Math.min(300, r * r / 170)) * quality);
             RandomSource random = RandomSource.create(Double.doubleToLongBits(z.center().x) * 31 + Double.doubleToLongBits(z.center().z) ^ z.start());
-            float windAngle = random.nextFloat() * 6.283f;
-            double wx = Math.cos(windAngle) * WIND, wz = Math.sin(windAngle) * WIND;
+            random.nextFloat();                                    // (it drew its own wind before slice 12b: the same puffs as then)
             float size0 = (float) (22 + Math.min(14, r / 12));
             for (int i = 0; i < n; i++) {
                 // Every puff draws the same numbers each frame (its place is its seed's), whether it is drawn or not.
@@ -111,9 +111,10 @@ final class FalloutFx {
                 float bright = 0.88f + 0.24f * random.nextFloat();
                 float rot = (random.nextFloat() - 0.5f) * 0.3f;         // nearly level: the stretch stays a layer
                 float phase = random.nextFloat() * 6.283f;
-                // Drifting with the wind, wrapping round inside the square round the zone; it fades out toward the zone's
-                // edge, so a puff leaving one side and coming back in on the other is never seen to jump.
-                double px = wrap(ox + wx * time, r), pz = wrap(oz + wz * time, r);
+                // Drifting with the wind (slice 12b: the level's own, as this client has felt it), wrapping round inside the
+                // square round the zone; it fades out toward the zone's edge, so a puff leaving one side and coming back in
+                // on the other is never seen to jump.
+                double px = wrap(ox + driftX * DRIFT, r), pz = wrap(oz + driftZ * DRIFT, r);
                 double d = Math.sqrt(px * px + pz * pz) / r;
                 if (d >= 1) {
                     continue;

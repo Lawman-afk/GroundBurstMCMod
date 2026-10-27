@@ -73,6 +73,8 @@
     "superweapons/arms_dealer",
     "superweapons/war_factory",
     "safety/radiation",
+    "safety/fallout",
+    "safety/scorched_ground",
     "safety/geiger_counter",
     "safety/lead_container",
     "safety/radiation_medicine",

@@ -90,6 +90,10 @@ final class BlastJob implements Blast {
     private static final int RELEASE_PER_TICK = 64;
     /** The biggest cluster of blocks the clean-up removes when nothing holds it up. */
     static final int FLOATER = 4;
+    /** Nuclear blasts (slice 12b): the share of the fire band's flames that are ash instead (the fire is long out). */
+    static final float ASH_SHARE = 0.4f;
+    /** Nuclear blasts: how far out (crater radii) the crater's wall is lined, and the share of it that is. */
+    static final float LINING_REACH = 1.3f, LINING_SHARE = 0.75f;
 
     /** FRONT: the fronts run; CLEAN: floaters and the rim; RIM: its neighbour updates; RELEASE: its chunks let go, a few a tick. */
     enum Phase { FRONT, CLEAN, RIM, RELEASE, DONE }
@@ -535,7 +539,13 @@ final class BlastJob implements Blast {
             }
         }
         if (!wet && dist <= p.fire() && this.random.nextFloat() < 0.6f * (1 - dist / Math.max(1, p.fire()))) {
-            this.fires.add(above.asLong());                // put down after the front, if its ground is still there
+            if (this.table.nuclear() && this.random.nextFloat() < ASH_SHARE) {
+                // What the firestorm left: a layer or two of ash, put down after the front like rubble.
+                this.rubbleAt.add(above.asLong());
+                this.rubbleState.add(dev.groundzero.content.fallout.GZFallout.ASH.block().get().layers(1 + this.random.nextInt(2)));
+            } else {
+                this.fires.add(above.asLong());            // put down after the front, if its ground is still there
+            }
         }
         if (!wet && p.ejecta() > 0 && dist >= p.crater() * 0.8f && dist <= p.crater() * 1.9f) {
             float t = Math.max(0, (dist - p.crater()) / (0.9f * p.crater()));
@@ -558,7 +568,7 @@ final class BlastJob implements Blast {
         if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.BlockItems.GRAVELS.block()) || state.is(Tags.BlockItems.COBBLESTONES.block())) {
             return 0;
         }
-        if (state.is(BlockTags.DIRT)) {
+        if (state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS)) {          // (26.3 took grass blocks out of the dirt tag)
             return 2;
         }
         if (state.is(BlockTags.SAND)) {
@@ -644,11 +654,16 @@ final class BlastJob implements Blast {
                     int b = (w << 6) | Long.numberOfTrailingZeros(survivors);
                     survivors &= survivors - 1;
                     int x = sx + (b & 15), y = sy + (b >> 8), z = sz + ((b >> 4) & 15);
+                    boolean wall = false;
                     for (Direction d : Direction.values()) {
                         int nx = x + d.getStepX(), ny = y + d.getStepY(), nz = z + d.getStepZ();
                         if (isDestroyed(nx, ny, nz)) {
                             this.rim.add(BlockPos.asLong(nx, ny, nz));
+                            wall = true;
                         }
+                    }
+                    if (wall && this.table.nuclear()) {
+                        line(x, y, z);
                     }
                     dropIfFloating(x, y, z);
                 }
@@ -656,6 +671,26 @@ final class BlastJob implements Blast {
         }
         this.cleanCursor = null;
         return true;
+    }
+
+    /**
+     * A nuclear crater's wall (a block left standing next to the hole, within {@link #LINING_REACH} crater radii of the
+     * burst): most of it melts or fuses ({@link TerrainTable#lining}).
+     */
+    private void line(int x, int y, int z) {
+        double dx = x + 0.5 - this.center.x, dy = y + 0.5 - this.center.y, dz = z + 0.5 - this.center.z;
+        float reach = this.profile.crater() * LINING_REACH;
+        if (dx * dx + dy * dy + dz * dz > reach * reach || this.random.nextFloat() > LINING_SHARE) {
+            return;
+        }
+        this.pos.set(x, y, z);
+        if (isProtected() || !this.level.isLoaded(this.pos)) {
+            return;
+        }
+        BlockState lined = this.table.lining(this.level.getBlockState(this.pos));
+        if (lined != null) {
+            write(this.pos, lined);
+        }
     }
 
     /** Solid for the clean-up: anything but air and liquids (a plant counts: it goes with its block). */

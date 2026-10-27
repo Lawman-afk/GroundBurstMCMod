@@ -10,7 +10,8 @@ public enum GZTab {
     NUCLEAR("nuclear", "Ground Zero: Nuclear & Special"),
     MISSILES("missiles", "Ground Zero: Missiles & Defence"),
     GEAR("gear", "Ground Zero: Guns & Gear"),
-    SUPERWEAPONS("superweapons", "Ground Zero: Superweapons");
+    SUPERWEAPONS("superweapons", "Ground Zero: Superweapons"),
+    AFTERMATH("aftermath", "Ground Zero: Aftermath");
 
     private final String id;
     private final String translationKey;

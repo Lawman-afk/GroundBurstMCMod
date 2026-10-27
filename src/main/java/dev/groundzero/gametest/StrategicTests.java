@@ -41,7 +41,7 @@ final class StrategicTests {
         GZGameTests.test("strategic_hall_needs_its_structure_and_parts", GZGameTests.FLOOR_16, 20, StrategicTests::needsParts);
         GZGameTests.test("intercontinental_missile_needs_a_heavy_launcher", GZGameTests.FLOOR_16, 20, StrategicTests::complexOnly);
         GZGameTests.test("thermonuclear_warhead_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, StrategicTests::thermonuclear);
-        GZGameTests.test("cobalt_warhead_leaves_a_plume_downwind", GZGameTests.FLOOR_16, 40, StrategicTests::cobaltPlume);
+        GZGameTests.test("cobalt_warhead_starts_its_plume", GZGameTests.FLOOR_16, 40, StrategicTests::cobaltPlume);
         GZGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GZGameTests.FLOOR_16, 40, StrategicTests::tsar);
         GZGameTests.test("tsar_goes_off_from_a_missile", GZGameTests.FLOOR_16, 200, StrategicTests::tsarBlast);
     }
@@ -268,31 +268,29 @@ final class StrategicTests {
     }
 
     /**
-     * Delivered (at a two-hundredth of its size, so its plume stays in this test's plot), the cobalt warhead leaves its
-     * zone and four more strung out downwind, evenly spaced, each weaker than the last, all lasting a month.
+     * Delivered (at a two-hundredth of its size), the cobalt warhead leaves its month-long zone and starts its plume at
+     * the burst (slice 12b: the debris cloud carried downwind): the cobalt reach, the burst's own half-life.
      */
     private static void cobaltPlume(GameTestHelper helper) {
         floor(helper);
+        var level = helper.getLevel();
         BlockPos at = new BlockPos(8, 1, 8);
         Vec3 centre = Vec3.atCenterOf(helper.absolutePos(at));
-        long now = helper.getLevel().getGameTime();
+        long now = level.getGameTime();
         float scale = Charges.bombScale;
         Charges.bombScale = 0.005f;
-        Charges.impact(helper.getLevel(), ChargeKind.COBALT_WARHEAD, helper.absolutePos(at), null);
+        Charges.impact(level, ChargeKind.COBALT_WARHEAD, helper.absolutePos(at), null);
         Charges.bombScale = scale;
-        List<RadiationSource> plume = RadiationSources.of(helper.getLevel()).sources().stream()
-                .filter(z -> z.start() == now && z.center().distanceTo(centre) < 6)
-                .sorted(Comparator.comparingDouble(z -> z.center().distanceTo(centre))).toList();
-        for (RadiationSource z : plume) {
-            RadiationSources.of(helper.getLevel()).removeNear(z.center(), 0.01);    // gone again before it can sicken anything
-        }
-        helper.assertTrue(plume.size() == 1 + Charges.COBALT_PLUME, "five sources: " + plume);
-        for (int i = 0; i < plume.size(); i++) {
-            RadiationSource z = plume.get(i);
-            helper.assertTrue(Math.abs(z.center().distanceTo(centre) - Charges.COBALT_STEP * 0.005 * i) < 0.01, "evenly downwind: " + z);
-            helper.assertTrue(NuclearTests.lasts(z, 720_000), "a month: " + z);
-            helper.assertTrue(i == 0 || z.peak() < plume.get(i - 1).peak(), "weaker downwind: " + plume);
-        }
+        RadiationSource zone = RadiationSources.of(level).sources().stream()
+                .filter(z -> z.start() == now && z.center().distanceTo(centre) < 1).findFirst().orElse(null);
+        var plume = dev.groundzero.content.fallout.Plumes.of(level).plumes().stream()
+                .filter(p -> Math.hypot(p.x() - centre.x, p.z() - centre.z) < 1).findFirst().orElse(null);
+        RadiationSources.of(level).removeNear(centre, 1);                // gone again before it can sicken anything
+        dev.groundzero.content.fallout.Plumes.of(level).removeNear(centre, 1);
+        helper.assertTrue(zone != null && NuclearTests.lasts(zone, 720_000), "its zone lasts a month: " + zone);
+        helper.assertTrue(plume != null, "a plume at the burst");
+        helper.assertTrue(Math.abs(plume.reach() - Charges.COBALT_REACH * 0.005f) < 0.01, "the cobalt reach: " + plume);
+        helper.assertTrue(plume.halfLife() == zone.halfLife(), "the burst's own half-life: " + plume + " " + zone);
         helper.succeed();
     }
 }

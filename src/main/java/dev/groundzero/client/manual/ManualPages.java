@@ -963,10 +963,14 @@ final class ManualPages {
         pages.add(first);
         for (Manual.PageSpec spec : mergeMachines(entry.pages())) {
             boolean opening = first.parts.isEmpty();
-            for (GraphicPage graphic : graphics(font, spec, opening ? entry.title() : null)) {
-                put(pages, graphic);
+            List<@Nullable FormattedCharSequence> text = ManualText.lines(font, spec.text(), W);
+            List<GraphicPage> graphics = graphics(font, spec, opening ? entry.title() : null);
+            for (int g = 0; g < graphics.size(); g++) {
+                // The last picture keeps the start of its text with it (a picture whose words began the next page, beside
+                // the next picture, read as that one's).
+                put(pages, graphics.get(g), g == graphics.size() - 1 ? firstParagraph(text) : 0);
             }
-            flow(pages, ManualText.lines(font, spec.text(), W));
+            flow(pages, text);
             if (spec instanceof Manual.StructureSpec s) {
                 MultiblockDefinition def = GZMultiblocks.byId(s.structure());
                 if (def != null) {
@@ -981,12 +985,33 @@ final class ManualPages {
 
     /** Places a picture or recipe on the current page, or on a new one when it does not fit. */
     private static void put(List<FlowPage> pages, GraphicPage graphic) {
+        put(pages, graphic, 0);
+    }
+
+    /** As {@link #put(List, GraphicPage)}, with room kept under it for {@code keep} more (its text's first paragraph). */
+    private static void put(List<FlowPage> pages, GraphicPage graphic, int keep) {
         FlowPage page = pages.get(pages.size() - 1);
-        if (graphic.graphic > page.room() && !page.parts.isEmpty()) {
+        int need = graphic.graphic + (graphic.graphic + keep <= H ? keep : 0);
+        if (need > page.room() && !page.parts.isEmpty()) {
             page = new FlowPage();
             pages.add(page);
         }
         page.add(graphic, List.of(), graphic.graphic);
+    }
+
+    /** The height of a text's first paragraph (its lines up to the first gap marker). */
+    private static int firstParagraph(List<@Nullable FormattedCharSequence> lines) {
+        int n = 0;
+        for (FormattedCharSequence line : lines) {
+            if (line == null) {
+                if (n > 0) {
+                    break;
+                }
+                continue;
+            }
+            n++;
+        }
+        return n * LINE;
     }
 
     /** Flows text lines into the room left on the current page and on as many new pages as they need. */

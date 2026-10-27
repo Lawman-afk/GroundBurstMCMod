@@ -1122,7 +1122,9 @@ Plants in the open die out to **120 blocks** (under a roof they are spared): lea
 So much ground goes that the crater keeps forming for a minute or two after the shock wave has passed, out of sight under the dust. Built whole at the [Strategic Assembly Hall](ordnance/strategic_assembly), a Tertiary Stage in place of the jacket and a Twin Boosted Core in place of the Boosted Fission Core. Its mushroom cloud stands until the crater is finished, then lasts two and a half minutes more.
 """),
     text("""
-**Fallout.** A nuclear blast leaves the ground round it [radioactive](safety/radiation), strongest at ground zero (60,000 RAD/h: deadly in a minute) and falling off to nothing at its edge, and fading as it ages: 90 blocks round, safe again after a day, after a tactical warhead; 180 blocks round for two days after a fission warhead; 220 for two days after a boosted fission warhead; and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it takes a dose and falls ill with **Radiation Sickness**; a [hazmat suit](safety/hazmat_suits) stops most of it. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, and it leaves half the fallout.
+**Fallout.** A nuclear blast leaves the ground round it [radioactive](safety/radiation), strongest at ground zero (60,000 RAD/h: deadly in a minute) and falling off to nothing at its edge, and fading as it ages: 90 blocks round, safe again after a day, after a tactical warhead; 180 blocks round for two days after a fission warhead; 220 for two days after a boosted fission warhead; and 140 for only a quarter of a day after a neutron warhead (its neutrons leave little behind). Anything alive in it takes a dose and falls ill with **Radiation Sickness**; a [hazmat suit](safety/hazmat_suits) stops most of it. A burst on the ground also sends its debris cloud off downwind: a [fallout plume](safety/fallout) that lays fallout and ash along its path for hundreds of blocks. A barometric fuze bursts the warhead in the air over the target: the fireball does not touch the ground, so it leaves half the fallout and no plume.
+
+**The ground.** The fireball burns the land it sees to [scorched ground](safety/scorched_ground): scorched earth and stone, glassed sand, charred trees, ash where the fires burned; the crater's wall melts to slag and trinitite.
 
 **Fizzles.** A nuclear warhead only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its explosive lenses go off unevenly and the core breaks up: a small blast and a patch of contamination 16 blocks round, and no nuclear explosion. A dirty warhead is not nuclear, and does not fizzle.
 """),
@@ -1261,7 +1263,7 @@ Radiation can't be seen or felt, only measured: carry a [Geiger Counter](safety/
     text("""
 **Where it comes from.**
 
-- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute.
+- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute. Its [fallout plume](safety/fallout) carries more of it downwind.
 - **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.
 - **What you carry.** Uranium, plutonium, fuel rods (spent ones above all), irradiated targets, nuclear waste and corium dose you from your own pockets: a stack of uranium ingots brings sickness within half an hour, a spent fuel rod within three minutes. Keep them in a [Lead Container](safety/lead_container).
 """),
@@ -1289,6 +1291,43 @@ I: nausea now and then, hunger. II: weakness, slow mining, more hunger. III: a h
 **Getting better.** Below 10 RAD/h your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune.
 """),
     links(["safety/geiger_counter", "safety/lead_container", "safety/radiation_medicine", "safety/hazmat_suits", "safety/reactor_safety"]),
+])
+
+entry("safety/fallout", "Fallout", "fallout_ash", ["fallout_ash", "ash"], [
+    text("""
+A nuclear burst on the ground, a dirty warhead and a reactor meltdown each send a **plume** of radioactive debris off on the **wind**. It drifts at the wind's speed, spreading as it goes, and lays [radiation](safety/radiation) along its path: strongest near the blast, weaker and shorter-lived downwind, out to 250 blocks after a tactical warhead, 600 after a fission warhead, 900 after a thermonuclear one and 1,400 after the Tsar; a cobalt warhead's carries its month-long fallout 1,020 blocks. An airburst sends none.
+"""),
+    text("""
+**The wind** is the same everywhere in a dimension. It wanders: every few minutes it swings round, up to about a right angle, and changes speed: 1 to 3.5 blocks a second in fair weather, 2.5 to 5 in rain, 4 to 8 in a thunderstorm. The fallout clouds overhead drift with it.
+
+**Under a plume** ash falls round you, drifting with the wind, and **Fallout Ash** settles on the ground in layers, as snow does. Get under cover: a roof keeps the ash off and the walls stop some of the radiation. A [Geiger Counter](safety/geiger_counter) shows where the plume went.
+"""),
+    spot("fallout_ash", """
+Weakly radioactive: a carpet of it reads about 10 RAD/h. Shovel it away (it is dust: nothing drops). Left alone it weathers into plain **Ash** over a couple of hours.
+"""),
+    links(["safety/radiation", "safety/scorched_ground", "ordnance/nuclear", "safety/reactor_safety"]),
+])
+
+entry("safety/scorched_ground", "Scorched ground", "trinitite",
+      ["trinitite", "glassed_sand", "slag", "scorched_earth", "scorched_stone", "irradiated_soil", "charred_log", "charred_wood",
+       "charred_planks", "dead_grass_block", "dead_leaves", "withered_crops"], [
+    text("""
+What a nuclear blast leaves of the land round it. The fireball burns what it sees out to its scorch band: earth to **Scorched Earth**, stone to **Scorched Stone**, sand and sandstone to **Glassed Sand**, trees to charred trunks; where the firestorm raged, a layer or two of **Ash**. The crater's own wall melts: rock to **Slag**, sand and sandstone to **Trinitite**, earth to **Irradiated Soil**.
+"""),
+    spot("trinitite", """
+Sand fused to green glass by the fireball, laced with its fission products: weakly radioactive.
+"""),
+    spot("irradiated_soil", """
+Earth full of fallout. It glows faintly, and it is radioactive: dig it out before you build on it.
+"""),
+    spot("charred_log", """
+A trunk burnt black. Four Charred Planks from a log, or smelt it for charcoal. Charred planks are planks: sticks, crafting tables, anything.
+"""),
+    text("""
+**Dead plants.** Strong radiation, 1,000 RAD/h or more, kills plants from the top down: leaves die on the branch and drop away in an hour or two, crops wither, grass and flowers go and the grass block dies. A roof spares what is under it. A neutron warhead's burst kills them out to 120 blocks. **Dead Grass** grows back once its ground is safe again, under 10 RAD/h in daylight.
+"""),
+    craft("charred_planks"),
+    links(["safety/fallout", "safety/radiation", "ordnance/nuclear"]),
 ])
 
 entry("safety/geiger_counter", "Geiger Counter and Dosimeter", "geiger_counter", ["geiger_counter", "dosimeter_badge"], [

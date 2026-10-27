@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GZNetwork {
-    public static final String PROTOCOL_VERSION = "12";
+    public static final String PROTOCOL_VERSION = "13";
 
     private GZNetwork() {}
 
@@ -58,6 +58,10 @@ public final class GZNetwork {
         registrar.playToClient(dev.groundzero.content.radiation.RadiationSources.Sync.TYPE,
                 dev.groundzero.content.radiation.RadiationSources.Sync.CODEC,
                 (payload, context) -> dev.groundzero.content.radiation.RadiationSources.Sync.hook.accept(payload));
+        registrar.playToClient(dev.groundzero.content.fallout.Wind.Sync.TYPE, dev.groundzero.content.fallout.Wind.Sync.CODEC,
+                (payload, context) -> dev.groundzero.content.fallout.Wind.Sync.hook.accept(payload));
+        registrar.playToClient(dev.groundzero.content.fallout.Plumes.Sync.TYPE, dev.groundzero.content.fallout.Plumes.Sync.CODEC,
+                (payload, context) -> dev.groundzero.content.fallout.Plumes.Sync.hook.accept(payload));
         registrar.playToServer(dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.TYPE,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency.CODEC,
                 dev.groundzero.content.ordnance.charge.ChargePayloads.DetonatorFrequency::handle);

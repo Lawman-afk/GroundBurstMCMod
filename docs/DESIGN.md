@@ -2593,6 +2593,68 @@ then world structures and loot (Phase 15). Built in slices:
   Counter and Dosimeter, Lead Container and Radiation medicine entries; the reactor-safety, hazmat, shower and fallout
   pages rewritten for the dose. JEI info pages. GameTests: `RadiationTests` (8).
 
+**12b's plan (2026-10-27)** (`content/fallout`):
+- **Wind.** One per dimension (saved data), synced to its players: a heading (radians, 0 = south, as the radar's) and a
+  speed. Each second it eases toward a target (a degree a second, 0.05 blocks/s a second); every 3 to 8 minutes it picks
+  a new one, the heading turned up to about 40 degrees (never more than 90), the speed 1 to 3.5 blocks/s in clear
+  weather, 2.5 to 5 in rain, 4 to 8 in a thunderstorm.
+- **Plumes.** A nuclear ground burst (not an airburst: its fireball does not touch the ground), a dirty blast and a
+  meltdown send the debris cloud downwind: a plume (saved data, synced) that moves with the wind each second, spreads
+  as it goes (radius from half the burst's fallout radius, growing by half again over its reach) and lays its fallout:
+  a radiation source each time it has moved 0.6 of its radius (peak half the burst's at first, falling as
+  (1 - d/reach)^1.5; the burst's own half-life, so the weaker ones fade first) and Fallout Ash in loaded chunks under it.
+  Reach: tactical 250 blocks, fission, boosted fission and the Nuclear Missile 600, thermonuclear 900, Tsar 1 400, dirty
+  150, meltdown 400; cobalt's is its plume of old (1 100 blocks, its sources lasting the month). The neutron warhead and
+  fizzles leave none.
+- **Fallout Ash** settles in layers like snow (up to 8) on whatever is under a plume (a few dozen layers a second near
+  the burst, fewer downwind); weakly radioactive (1 RAD/h a block away); shovelled away it drops nothing; it weathers
+  into plain Ash over a couple of hours (random ticks). Players under a plume see ash falling round them, drifting with
+  the wind (a particle of our own).
+- **Ground blocks** (§21.7, the nuclear ones; toxic and frozen ground are 12e's): Trinitite, Glassed Sand, Slag,
+  Scorched Earth, Scorched Stone, Irradiated Soil (faint glow, radioactive), Ash and Fallout Ash layers, Charred Log,
+  Wood and Planks, Dead Grass Block, Dead Leaves, Withered Crops. Natural matter painted on material tiles (new ramps:
+  ash, fallout, trinitite, char, slag, glassed sand, scorched soil and stone); Dead Grass, Dead Leaves and Withered
+  Crops are vanilla's own grass, leaves and wheat drawn through a dead tint (a tint source of ours, drifting a little
+  with the biome's colour), so nothing of vanilla's is copied and they follow resource packs.
+- **The nuclear terrain table:** in the scorch band grass, dirt, podzol and mycelium become Scorched Earth; stone,
+  cobblestone, andesite, diorite, granite and tuff Scorched Stone; sand Glassed Sand; logs and wood charred (their axis
+  kept), planks Charred Planks; leaves and plants burn away, crops wither; snow goes, ice melts. In the fire band a
+  scorched column may get a layer or two of Ash. The crater is lined: what stands round its rim turns (most of it) to
+  Slag where it was rock, Trinitite where it was sand and Irradiated Soil where it was earth.
+- **Plants die in strong fields** (§21.2): once a second, columns at random where a source gives 1 000 RAD/h or more
+  (in loaded chunks, about one a second per 64 square blocks): from the top down, leaves die (Dead Leaves, which drop
+  away over time), crops wither, grass, flowers and ferns go, saplings become dead bushes, and grass blocks die; a roof
+  or a trunk spares what is under it. The neutron burst withers to the same blocks. Dead grass grows back once its
+  ground is safe again (under 10 RAD/h, in daylight), now and then on a random tick.
+- Recipes: a Charred Log or Wood makes 4 Charred Planks (planks for anything: tagged so) and smelts to charcoal.
+
+**As built (slice 12b, 2026-10-27)** (`content/fallout`, `client/fallout`):
+- As planned, with these choices made on the way. A plume's sources take the burst's own half-life (the weaker ones
+  downwind fade first); its first source is half the burst's peak. Ash a second at a plume's start: tactical 15, fission,
+  boosted and the Nuclear Missile 40, thermonuclear 70, Tsar 120, cobalt 60, dirty 20, meltdown 25. On the GameTest
+  server plumes stay where they start and nothing withers on its own (tests run side by side: a plume would drift onto
+  its neighbours' plots); tests move their own (`Plumes.step`) and wither their own columns.
+- The nuclear table (`TerrainTable`): 40% of the fire band's flames are a layer or two of Ash instead (put down after
+  the front like rubble); the crater's wall is lined out to 1.3 crater radii, three quarters of it. 26.3 took the grass
+  blocks out of the dirt tag (`#minecraft:grass_blocks` now): the table, the crater's rubble and the withered crops'
+  ground count both; Dead Grass is a grass block. Sandstone glasses and fuses as sand does (a desert is sandstone a few
+  blocks down, and the screenshot world's flat desert is sandstone on top: its first crater showed no change at all);
+  all the overworld's stone (deepslate too) scorches. In this profile's spokes about a third of the scorch band is
+  scorched (the rest lies past the streaks' edge), as before.
+- The fallout clouds overhead drift with the level's wind as the client has felt it (they had drifted each with a wind
+  of its own). Falling ash: up to 7 flakes a tick round a player at a plume's heart, fewer to its edge and as it weakens,
+  spawned upwind and above, only under open sky; a particle of our own (`AshFlakeParticle`) carried by the wind,
+  fluttering, settling.
+- Art (`tools/assets/aftermath.py`), reviewed on tile sheets and the preview renderer: Glassed Sand's crazing thinned
+  (it first read as paving), Scorched Stone's soot worked into the material's value (it first read as camouflage), the
+  charred bark's blocks and the log's end rings redrawn. A creative tab of their own, Ground Zero: Aftermath.
+- Field Manual: Fallout and Scorched ground (Safety), the nuclear page's fallout paragraph; JEI info for both groups.
+  The manual's layout now keeps a picture with the start of its text: a picture moves to a new page if its first
+  paragraph would not fit under it (on every entry with several pictures, an item's words had begun the next page,
+  beside the next item's picture).
+  GameTests: `FalloutTests` (7, one a real tactical blast on sand); the cobalt test now checks its plume; the neutron
+  test its dead blocks.
+
 ---
 
 ## 22. World structures and loot
@@ -3269,6 +3331,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-27 | After the user's look at 12a: radioactive items and blocks set for play (a stack of uranium ingots sickens in about 23 minutes, a spent fuel rod in 3: §21.8); recovery below 10 RAD/h; the Geiger alarm at 100 and its clicks spread to about 140 RAD/h. The Dosimeter Badge shows the dose held now, so medicine clears its film (it had seemed not to only because no dose reached its first line, 100 rad); no second dosimeter. |
 | 2026-10-27 | Launchers hold their missiles from the countdown until the last has flown (the screen's slots refuse taking and placing; automation never could take them). The Launch Computer draws each armed or launching silo's strike round its target: shaded where its warhead kills, a ring at the farthest it harms, a dashed ring for how far off it may land (an ellipse along the flight; a superweapon's spread a circle); the picked silo's bright, the rest dark. The warhead's figures come from its blast profile and effects (`AssemblyStats.area`). |
 | 2026-10-27 | The Field Manual's contents run on over as many pages as the chapters need (nine did not fit on one); the Lead Container's window is 7 px taller so its well clears the title strip. The press dies sit 2 px lower in their sprites. |
+| 2026-10-27 | Slice 12b: one wind per dimension; a ground burst's (and a dirty blast's, a meltdown's) debris goes off as a plume that lays sources and Fallout Ash as the wind carries it (no plume from an airburst or the neutron warhead); the cobalt plume is one of them; 14 ground blocks (§21.7's nuclear ones) in a tab of their own, the dead plants drawn as vanilla's through dead tints; the nuclear terrain table and the crater's lining; plants die at 1 000 RAD/h; dead grass grows back once safe. |
 | 2026-10-23 | The Singularity Reactor's ceiling cut from 25 000 to 10 000 FE/t (the user's request): it eats at most 20 items a second (one a tick) instead of 50; 10 000 FE an item, upkeep and reserve unchanged. |
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |

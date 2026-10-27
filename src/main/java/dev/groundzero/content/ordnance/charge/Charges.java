@@ -370,33 +370,56 @@ public final class Charges {
         ChargeKind kind = ChargeKind.DIRTY_WARHEAD;
         Blasts.detonate(level, c, Blasts.profile(kind.id), by, scale);
         fallout(level, kind, c, scale, 1);
+        plume(level, kind, c, scale);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, c.x, c.y + 1, c.z, 120, 3, 1.5, 3, 0.08);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.ASH, c.x, c.y + 2, c.z, 400, 8, 3, 8, 0.02);
     }
 
     /**
-     * The cobalt warhead's plume (a stand-in until slice 12b's drifting fallout): {@link #COBALT_PLUME} more sources
-     * strung out downwind, {@link #COBALT_STEP} blocks apart, each a little smaller and weaker than the last, all lasting
-     * the month. The wind is one direction drawn for the blast.
+     * How far a ground burst's fallout plume is carried downwind before it is spent (DESIGN.md §21.8, slice 12b), blocks
+     * at full size; 0: it leaves none (the neutron warhead's neutrons leave little to carry).
      */
-    public static final int COBALT_PLUME = 4;
-    public static final float COBALT_STEP = 200;
+    public static float plumeReach(ChargeKind kind) {
+        return switch (kind) {
+            case TACTICAL_NUCLEAR_WARHEAD -> 250;
+            case FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NUCLEAR_MISSILE_WARHEAD -> 600;
+            case THERMONUCLEAR_WARHEAD -> 900;
+            case TSAR_WARHEAD -> 1_400;
+            case COBALT_WARHEAD -> COBALT_REACH;
+            case DIRTY_WARHEAD -> 150;
+            default -> 0;
+        };
+    }
 
-    private static void cobaltPlume(ServerLevel level, Vec3 at, float share) {
-        ChargeKind kind = ChargeKind.COBALT_WARHEAD;
-        double a = level.getRandom().nextDouble() * Math.PI * 2;
-        double dx = Math.cos(a), dz = Math.sin(a);
-        for (int i = 1; i <= COBALT_PLUME; i++) {
-            double d = COBALT_STEP * i * bombScale;
-            float radius = Math.max(4, (contaminationRadius(kind) - 20 * i) * bombScale);
-            RadiationSources.of(level).add(RadiationSource.lasting(at.add(dx * d, 0, dz * d), radius, falloutPeak(kind) * share * (1 - 0.15f * i),
-                    contaminationTicks(kind), level.getGameTime(), GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
+    /** Fallout Ash layers a burst's plume lets fall a second at first. */
+    static float plumeAsh(ChargeKind kind) {
+        return switch (kind) {
+            case TACTICAL_NUCLEAR_WARHEAD -> 15;
+            case THERMONUCLEAR_WARHEAD -> 70;
+            case TSAR_WARHEAD -> 120;
+            case COBALT_WARHEAD -> 60;
+            case DIRTY_WARHEAD -> 20;
+            default -> 40;
+        };
+    }
+
+    /**
+     * A ground burst's fallout plume: the debris cloud carried off downwind, half the burst's own radius and peak at
+     * first, its sources lasting as the burst's do ({@link dev.groundzero.content.fallout.Plumes}).
+     */
+    public static void plume(ServerLevel level, ChargeKind kind, Vec3 at, float scale) {
+        float reach = plumeReach(kind);
+        if (reach > 0) {
+            dev.groundzero.content.fallout.Plumes.start(level, at, Math.max(4, contaminationRadius(kind) * 0.5f * scale), falloutPeak(kind) * 0.5f,
+                    dev.groundzero.content.fallout.Plumes.halfLife(falloutPeak(kind), contaminationTicks(kind)), reach * scale, plumeAsh(kind));
         }
     }
 
-    /** How far downwind the cobalt warhead's fallout reaches (from the burst to the far edge of its last source). */
+    /** How far downwind the cobalt warhead's plume carries its month-long fallout, blocks. */
+    public static final int COBALT_REACH = 1_020;
+
     public static int cobaltReach() {
-        return (int) (COBALT_STEP * COBALT_PLUME + contaminationRadius(ChargeKind.COBALT_WARHEAD) - 20 * COBALT_PLUME);
+        return COBALT_REACH;
     }
 
     /** A fizzle's patch of fallout: radius, its centre's dose rate when fresh (RAD/h), and how long until it is safe. */
@@ -410,8 +433,8 @@ public final class Charges {
     public static void nuclear(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by, boolean airburst) {
         Blasts.detonate(level, at, Blasts.profile(kind.id), by, bombScale);
         fallout(level, kind, at, bombScale, airburst ? 0.5f : 1f);
-        if (kind == ChargeKind.COBALT_WARHEAD) {
-            cobaltPlume(level, at, airburst ? 0.5f : 1f);
+        if (!airburst) {
+            plume(level, kind, at, bombScale);             // an airburst's fireball never touches the ground: no plume
         }
         if (kind == ChargeKind.NEUTRON_WARHEAD) {
             dev.groundzero.content.nuclear.NeutronBurst.burst(level, at, by, bombScale);

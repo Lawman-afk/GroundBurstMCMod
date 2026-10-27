@@ -31,8 +31,8 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  * living thing out to {@link #LETHAL_RADIUS}, weakened by what lies between: each block on the line from the burst to a
  * body takes its share (thick walls of water, lead, concrete or obsidian stop most of it, so a deep enough bunker
  * survives; a hazmat suit counts for only {@link #SUIT_SHARE} of its protection, as neutrons go through cloth and thin
- * lead). Plants out to {@link #WITHER_RADIUS} die: leaves fall, crops, grass and
- * flowers wither, grass turns to bare earth. Buildings are barely touched. The withering runs over a few ticks.
+ * lead). Plants out to {@link #WITHER_RADIUS} die as in a strong radiation field (slice 12b): leaves die on the branch,
+ * crops wither, grass and flowers go, grass blocks die. Buildings are barely touched. The withering runs over a few ticks.
  */
 public final class NeutronBurst {
     public static final float LETHAL_RADIUS = 180, WITHER_RADIUS = 120;
@@ -145,36 +145,9 @@ public final class NeutronBurst {
         }
     }
 
-    /** One column: from the top down, leaves fall and plants wither, then grass under them turns to bare earth. */
+    /** One column, from the top down, as a strong radiation field withers it (dead leaves, withered crops, dead grass). */
     private static void wither(ServerLevel level, int x, int z) {
-        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, level.getMinY(), z);
-        if (!level.isLoaded(at)) {
-            return;
-        }
-        int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
-        for (int y = top; y > top - 32 && y >= level.getMinY(); y--) {
-            at.setY(y);
-            BlockState s = level.getBlockState(at);
-            if (s.isAir()) {
-                continue;
-            }
-            if (s.is(BlockTags.LEAVES) || s.is(BlockTags.CROPS) || s.is(Blocks.VINE) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS)
-                    || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN) || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(BlockTags.SMALL_FLOWERS)
-                    || s.is(BlockTags.FLOWERS) || s.is(Blocks.MOSS_CARPET)) {
-                level.setBlock(at, Blocks.AIR.defaultBlockState(), WRITE);
-                continue;
-            }
-            if (s.is(BlockTags.SAPLINGS)) {
-                level.setBlock(at, Blocks.DEAD_BUSH.defaultBlockState(), WRITE);
-                continue;
-            }
-            if (s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.MYCELIUM) || s.is(Blocks.PODZOL) || s.is(Blocks.MOSS_BLOCK)) {
-                level.setBlock(at, Blocks.COARSE_DIRT.defaultBlockState(), WRITE);
-            } else if (s.is(Blocks.FARMLAND)) {
-                level.setBlock(at, Blocks.DIRT.defaultBlockState(), WRITE);
-            }
-            return;                                        // ground, a trunk, a roof: what is under it is spared
-        }
+        dev.groundzero.content.fallout.Withering.wither(level, x, z, WRITE);
     }
 
     /** For GameTests: whether withering is still going on in this level. */

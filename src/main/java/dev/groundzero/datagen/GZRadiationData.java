@@ -31,6 +31,9 @@ public final class GZRadiationData extends DataMapProvider {
         block(blocks, GZResources.DEEPSLATE_URANIUM_ORE.block().key(), 4f);
         block(blocks, GZResources.RAW_URANIUM_BLOCK.block().key(), 30f);
         block(blocks, GZResources.URANIUM_BLOCK.block().key(), 50f);
+        block(blocks, dev.groundzero.content.fallout.GZFallout.TRINITITE.block().key(), 3f);       // glass fused round a crater, laced with fission products
+        block(blocks, dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL.block().key(), 6f);
+        block(blocks, dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH.block().key(), 1f);      // a carpet of it reads about 10 RAD/h
         block(blocks, GZNuclear.CORIUM.block().key(), 20_000f);           // fresh from the core, still glowing
         block(blocks, GZNuclear.COOLED_CORIUM.block().key(), 3_000f);
 
@@ -53,6 +56,8 @@ public final class GZRadiationData extends DataMapProvider {
         item(items, GZNuclear.PLUTONIUM_NUGGET.key(), 25f);
         item(items, GZNuclear.PLUTONIUM_INGOT.key(), 220f);
         item(items, GZNuclear.NUCLEAR_WASTE.key(), 500f);
+        item(items, dev.groundzero.content.fallout.GZFallout.TRINITITE.item().key(), 1f);
+        item(items, dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL.item().key(), 2f);
         item(items, GZNuclear.CORIUM.item().key(), 5_000f);
         item(items, GZNuclear.COOLED_CORIUM.item().key(), 800f);
     }

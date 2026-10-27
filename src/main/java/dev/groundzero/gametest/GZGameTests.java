@@ -89,6 +89,7 @@ public final class GZGameTests {
         SuperweaponTests.register();
         CruiseTests.register();
         RadiationTests.register();
+        FalloutTests.register();
         ManualContentTests.register();
     }
 

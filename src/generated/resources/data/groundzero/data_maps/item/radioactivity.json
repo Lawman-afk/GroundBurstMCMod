@@ -27,6 +27,9 @@
     "groundzero:irradiated_li6_target_rod": {
       "rate": 250.0
     },
+    "groundzero:irradiated_soil": {
+      "rate": 2.0
+    },
     "groundzero:nuclear_waste": {
       "rate": 500.0
     },
@@ -44,6 +47,9 @@
     },
     "groundzero:spent_fuel_rod": {
       "rate": 2000.0
+    },
+    "groundzero:trinitite": {
+      "rate": 1.0
     },
     "groundzero:uranium_block": {
       "rate": 36.0

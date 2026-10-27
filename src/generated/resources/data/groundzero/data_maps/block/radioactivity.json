@@ -9,8 +9,17 @@
     "groundzero:deepslate_uranium_ore": {
       "rate": 4.0
     },
+    "groundzero:fallout_ash": {
+      "rate": 1.0
+    },
+    "groundzero:irradiated_soil": {
+      "rate": 6.0
+    },
     "groundzero:raw_uranium_block": {
       "rate": 30.0
+    },
+    "groundzero:trinitite": {
+      "rate": 3.0
     },
     "groundzero:uranium_block": {
       "rate": 50.0

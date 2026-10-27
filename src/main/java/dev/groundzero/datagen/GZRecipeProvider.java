@@ -227,6 +227,7 @@ public class GZRecipeProvider extends RecipeProvider {
                 .save(output);
         suits();
         radiation();
+        aftermath();
         grenades();
     }
 
@@ -780,6 +781,23 @@ public class GZRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.FOOD, injector, 1)
                 .requires(radAway).requires(iodide).requires(iodide).requires(GZParts.STEEL_PLATE).requires(Items.IRON_NUGGET)
                 .unlockedBy(getHasName(radAway), has(radAway)).save(output);
+    }
+
+    /** The aftermath (slice 12b): charred wood makes planks, burns to charcoal, and logs square into wood. */
+    private void aftermath() {
+        var log = dev.groundzero.content.fallout.GZFallout.CHARRED_LOG.item();
+        var wood = dev.groundzero.content.fallout.GZFallout.CHARRED_WOOD.item();
+        var planks = dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.item();
+        shapeless(RecipeCategory.BUILDING_BLOCKS, planks, 4).requires(log)
+                .unlockedBy(getHasName(log), has(log)).save(output, id("charred_planks_from_log"));
+        shapeless(RecipeCategory.BUILDING_BLOCKS, planks, 4).requires(wood)
+                .unlockedBy(getHasName(wood), has(wood)).save(output, id("charred_planks_from_wood"));
+        shaped(RecipeCategory.BUILDING_BLOCKS, wood, 3).define('L', log).pattern("LL").pattern("LL")
+                .unlockedBy(getHasName(log), has(log)).save(output);
+        for (var burnt : java.util.List.of(log, wood)) {
+            SimpleCookingRecipeBuilder.generic(Ingredient.of(burnt), RecipeCategory.MISC, CookingBookCategory.MISC, Items.CHARCOAL, 0.15f, 200,
+                    SmeltingRecipe::new).unlockedBy(getHasName(burnt), has(burnt)).save(output, id("charcoal_from_" + getItemName(burnt)));
+        }
     }
 
     /**

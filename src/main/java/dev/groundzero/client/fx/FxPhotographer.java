@@ -137,6 +137,9 @@ public final class FxPhotographer {
                 // and the Lead Container's screen.
                 new Scene("geiger", "geiger", 4, 15, List.of(40, 80)),
                 new Scene("lead_ui", "lead_ui", 4, 15, List.of(30)),
+                new Scene("aftermath", "aftermath", 6, 22, List.of(40, 200)),
+                // Slice 12b: a tactical warhead's crater and scorched ground from above, once its cloud has gone.
+                new Scene("crater_tactical_aerial", "tactical_nuclear_warhead", 80, 40, List.of(2400)),
                 new Scene("radar_ui", "radar", 6, 0, List.of(60, 130)),
                 new Scene("assembly", "assembly", 5, 18, List.of(10, 30, 50)),
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
@@ -251,6 +254,50 @@ public final class FxPhotographer {
         for (int dz = -1; dz <= 1; dz++) {
             level.setBlock(new net.minecraft.core.BlockPos(x - 1, ground, dz),
                     dev.groundzero.content.resource.GZResources.URANIUM_ORE.block().get().defaultBlockState(), 2);
+        }
+    }
+
+    /**
+     * Slice 12b's ground in front of the camera on dead grass: the glassed, molten and burnt blocks in a row, ash one to
+     * eight layers deep and fallout ash behind them, a charred trunk and a dead tree, withered wheat on farmland.
+     */
+    private static void aftermath(ServerLevel level, int x, int ground) {
+        var f = dev.groundzero.content.fallout.GZFallout.class;
+        java.util.function.Function<dev.groundzero.registry.GZBlocks.WithItem<? extends net.minecraft.world.level.block.Block>, net.minecraft.world.level.block.state.BlockState> d =
+                b -> b.block().get().defaultBlockState();
+        for (int dx = -2; dx <= 12; dx++) {
+            for (int dz = -9; dz <= 9; dz++) {
+                level.setBlock(new net.minecraft.core.BlockPos(x + dx, ground - 1, dz), d.apply(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK), 2);
+            }
+        }
+        var row = List.of(dev.groundzero.content.fallout.GZFallout.TRINITITE, dev.groundzero.content.fallout.GZFallout.GLASSED_SAND,
+                dev.groundzero.content.fallout.GZFallout.SLAG, dev.groundzero.content.fallout.GZFallout.SCORCHED_EARTH,
+                dev.groundzero.content.fallout.GZFallout.SCORCHED_STONE, dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL,
+                dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS, dev.groundzero.content.fallout.GZFallout.CHARRED_WOOD);
+        for (int i = 0; i < row.size(); i++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 3, ground, -7 + 2 * i), d.apply(row.get(i)), 2);
+        }
+        for (int n = 1; n <= 8; n++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 6, ground, -9 + n), dev.groundzero.content.fallout.GZFallout.ASH.block().get().layers(n), 2);
+            level.setBlock(new net.minecraft.core.BlockPos(x + 6, ground, n), dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH.block().get().layers(n), 2);
+        }
+        for (int dz = -3; dz <= 3; dz++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 1, ground - 1, dz), net.minecraft.world.level.block.Blocks.FARMLAND.defaultBlockState(), 2);
+            level.setBlock(new net.minecraft.core.BlockPos(x + 1, ground, dz), d.apply(dev.groundzero.content.fallout.GZFallout.WITHERED_CROPS), 2);
+        }
+        for (int y = 0; y < 5; y++) {
+            level.setBlock(new net.minecraft.core.BlockPos(x + 10, ground + y, -5), d.apply(dev.groundzero.content.fallout.GZFallout.CHARRED_LOG), 2);
+            level.setBlock(new net.minecraft.core.BlockPos(x + 10, ground + y, 5), net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState(), 2);
+        }
+        for (int dy = 3; dy <= 5; dy++) {
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    var at = new net.minecraft.core.BlockPos(x + 10 + dx, ground + dy, 5 + dz);
+                    if ((dx != 0 || dz != 0 || dy == 5) && Math.abs(dx) + Math.abs(dz) <= (dy == 5 ? 1 : 3)) {
+                        level.setBlock(at, d.apply(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES), 2);
+                    }
+                }
+            }
         }
     }
 
@@ -1164,6 +1211,10 @@ public final class FxPhotographer {
                     leadUi(level);
                     return;
                 }
+                if (s.profile().equals("aftermath")) {
+                    aftermath(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("scud_storm")) {
                     scudStormSite(level, x, ground);
                     return;
@@ -1385,6 +1436,18 @@ public final class FxPhotographer {
             step = 0;
             clock = 0;
             return;
+        }
+        if (scene.name().equals("aftermath") && step >= 0 && clock == 60) {
+            // Slice 12b: a plume over the camera in a light wind, ash settling and falling, its cloud overhead.
+            int sx = site * 1200;
+            server.execute(() -> {
+                ServerLevel level = server.overworld();
+                dev.groundzero.content.fallout.Wind.of(level).hold((float) Math.PI / 2, 0.6f);
+                Vec3 over = new Vec3(sx, level.getHeight(Heightmap.Types.MOTION_BLOCKING, sx, 0), 0);
+                dev.groundzero.content.fallout.Plumes.start(level, over, 30, 20_000, 2_000, 300, 120);
+                dev.groundzero.content.radiation.RadiationSources.of(level).add(new dev.groundzero.content.radiation.RadiationSource(over, 60, 20_000,
+                        2_000, level.getGameTime()));
+            });
         }
         if (scene.name().equals("geiger") && step >= 0 && clock == 50) {
             // An Anti-Rad Injector between the shots: the second shows the badge's film cleared and the dose near nothing.

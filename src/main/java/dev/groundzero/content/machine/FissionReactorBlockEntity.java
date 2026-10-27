@@ -110,6 +110,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     public static final float CONTAMINATION_RADIUS = 48;
     public static final int CONTAMINATION_TICKS = 24_000;
     public static final float CONTAMINATION_PEAK = 40_000;
+    /** How far the meltdown's smoke carries its fallout downwind, blocks (slice 12b). */
+    public static final float MELTDOWN_PLUME_REACH = 400;
     /** Buffers per fuel channel and their floors; the tank stops short of what a GUI sync slot can carry. */
     public static final int ENERGY_PER_CHANNEL = 12_500, MIN_ENERGY = 50_000, COOLANT_PER_CHANNEL = 2_000, MIN_COOLANT = 4_000,
             COOLANT_MAX = 32_000;
@@ -736,6 +738,9 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         dev.groundzero.content.radiation.RadiationSources.of(level).add(dev.groundzero.content.radiation.RadiationSource.lasting(centre,
                 CONTAMINATION_RADIUS, CONTAMINATION_PEAK, CONTAMINATION_TICKS, level.getGameTime(),
                 dev.groundzero.config.GZServerConfig.RADIATION_DECAY_MULTIPLIER.get()));
+        // The burning core's smoke carries its fallout off downwind (slice 12b).
+        dev.groundzero.content.fallout.Plumes.start(level, centre, CONTAMINATION_RADIUS * 0.5f, CONTAMINATION_PEAK * 0.5f,
+                dev.groundzero.content.fallout.Plumes.halfLife(CONTAMINATION_PEAK, CONTAMINATION_TICKS), MELTDOWN_PLUME_REACH, 25);
     }
 
     /** Pushes power out of the Energy Port. */

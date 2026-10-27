@@ -1,7 +1,7 @@
 {
   "title": "Reactor safety",
   "icon": "groundzero:lead_lined_casing",
-  "order": 6,
+  "order": 8,
   "items": [
     "groundzero:nuclear_waste",
     "groundzero:corium",

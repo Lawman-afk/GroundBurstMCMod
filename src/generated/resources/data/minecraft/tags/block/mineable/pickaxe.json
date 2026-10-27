@@ -114,6 +114,10 @@
     "groundzero:fuel_channel",
     "groundzero:magnet_segment",
     "groundzero:accelerator_injector",
-    "groundzero:accelerator_target_chamber"
+    "groundzero:accelerator_target_chamber",
+    "groundzero:trinitite",
+    "groundzero:glassed_sand",
+    "groundzero:slag",
+    "groundzero:scorched_stone"
   ]
 }

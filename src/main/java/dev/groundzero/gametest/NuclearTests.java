@@ -192,7 +192,7 @@ final class NuclearTests {
 
     /**
      * A neutron warhead (at a twenty-fifth of its size): its neutrons kill a pig in the open, but a pig as far away behind
-     * two blocks of obsidian lives; grass withers to bare earth and leaves fall, but a log stands.
+     * two blocks of obsidian lives; the grass block dies, the grass on it goes, leaves die on the branch, but a log stands.
      */
     private static void neutron(GameTestHelper helper) {
         floor(helper);
@@ -217,9 +217,9 @@ final class NuclearTests {
             helper.assertTrue(!open.isAlive(), "the pig in the open is dead");
             helper.assertTrue(sheltered.isAlive(), "the pig behind obsidian lives: " + sheltered.getHealth());
             helper.assertTrue(sheltered.hasEffect(GZEffects.RADIATION_SICKNESS), "but it is radiation-sick");
-            helper.assertBlockPresent(Blocks.COARSE_DIRT, new BlockPos(6, 0, 8));
+            helper.assertBlockPresent(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().get(), new BlockPos(6, 0, 8));
             helper.assertBlockPresent(Blocks.AIR, new BlockPos(6, 1, 8));
-            helper.assertBlockPresent(Blocks.AIR, new BlockPos(10, 2, 9));
+            helper.assertBlockPresent(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().get(), new BlockPos(10, 2, 9));
             helper.assertBlockPresent(Blocks.OAK_LOG, new BlockPos(10, 1, 9));
             RadiationSource zone = sourceAt(helper, centre);
             helper.assertTrue(lasts(zone, 6_000), "its fallout lasts a quarter of a day: " + zone);

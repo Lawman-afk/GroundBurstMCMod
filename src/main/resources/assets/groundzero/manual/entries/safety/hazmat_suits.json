@@ -1,7 +1,7 @@
 {
   "title": "Hazmat suits",
   "icon": "groundzero:hazmat_hood",
-  "order": 7,
+  "order": 9,
   "items": [
     "groundzero:hazmat_hood",
     "groundzero:hazmat_coat",

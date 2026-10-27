@@ -162,6 +162,17 @@ public final class GZTagProviders {
             tag(Tags.BlockItems.BUDS.block()).add(GZResources.SMALL_EXOTIC_BUD.block().key(), GZResources.LARGE_EXOTIC_BUD.block().key());
             tag(Tags.BlockItems.CLUSTERS.block()).add(GZResources.EXOTIC_CRYSTAL_CLUSTER.block().key());
 
+            // The aftermath (slice 12b): the tools that break it; charred planks are planks; dead grass is a grass block.
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundzero.content.fallout.GZFallout.TRINITITE.block().key(), dev.groundzero.content.fallout.GZFallout.GLASSED_SAND.block().key(),
+                    dev.groundzero.content.fallout.GZFallout.SLAG.block().key(), dev.groundzero.content.fallout.GZFallout.SCORCHED_STONE.block().key());
+            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.groundzero.content.fallout.GZFallout.SCORCHED_EARTH.block().key(), dev.groundzero.content.fallout.GZFallout.IRRADIATED_SOIL.block().key(),
+                    dev.groundzero.content.fallout.GZFallout.ASH.block().key(), dev.groundzero.content.fallout.GZFallout.FALLOUT_ASH.block().key(), dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().key());
+            tag(BlockTags.MINEABLE_WITH_AXE).add(dev.groundzero.content.fallout.GZFallout.CHARRED_LOG.block().key(), dev.groundzero.content.fallout.GZFallout.CHARRED_WOOD.block().key(),
+                    dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.block().key());
+            tag(BlockTags.MINEABLE_WITH_HOE).add(dev.groundzero.content.fallout.GZFallout.DEAD_LEAVES.block().key());
+            tag(BlockTags.PLANKS).add(dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.block().key());
+            tag(BlockTags.GRASS_BLOCKS).add(dev.groundzero.content.fallout.GZFallout.DEAD_GRASS_BLOCK.block().key());
+
             // Radiation shielding (DESIGN.md §21.8): lead stops half of it in a fifth of a block, dense blocks in half one.
             tag(dev.groundzero.content.radiation.GZRadiation.SHIELD_LEAD).add(GZResources.LEAD_BLOCK.block().key(),
                     GZResources.RAW_LEAD_BLOCK.block().key(), GZMultiblocks.LEAD_LINED_CASING.block().key());
@@ -210,6 +221,7 @@ public final class GZTagProviders {
                     tag(Tags.Items.ARMORS_HUMANOID).add(piece.key());
                 }
             }
+            tag(net.minecraft.tags.ItemTags.PLANKS).add(dev.groundzero.content.fallout.GZFallout.CHARRED_PLANKS.item().key());
             item("raw_materials/uranium", GZResources.RAW_URANIUM, Tags.Items.RAW_MATERIALS);
             item("raw_materials/lithium", GZResources.RAW_LITHIUM, Tags.Items.RAW_MATERIALS);
             item("raw_materials/tungsten", GZResources.RAW_TUNGSTEN, Tags.Items.RAW_MATERIALS);
