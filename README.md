@@ -1,9 +1,19 @@
-# Ground Burst
+<p align="center">
+  <img src="docs/branding/logo.png" width="160" alt="The Ground Burst logo: a DF-5 missile on a dusk sky">
+</p>
 
-**Assemble it. Launch it. Watch the horizon.**
+<h1 align="center">Ground Burst</h1>
 
-A Minecraft mod for NeoForge 26.3. Mine, refine and assemble your own arsenal, from grenades and mines to missiles and
-the Tsar Bomba, then watch real craters, mushroom clouds and radioactive fallout reshape the world.
+<p align="center">
+  <b>Assemble it. Launch it. Watch the horizon.</b><br>
+  A Minecraft mod for NeoForge 26.3 ·
+  <a href="https://www.curseforge.com/minecraft/mc-mods/ground-burst">Download on CurseForge</a>
+</p>
+
+Mine, refine and assemble your own arsenal, from grenades and mines to missiles and the Tsar Bomba, then watch real
+craters, mushroom clouds and radioactive fallout reshape the world.
+
+![The Tsar Bomba's mushroom cloud rising over green hills](docs/screenshots/tsar_bomba.jpg)
 
 ## What's in it
 
@@ -16,14 +26,49 @@ the Tsar Bomba, then watch real craters, mushroom clouds and radioactive fallout
 - **Industry and power:** new ores, processing machines on FE power, and multiblock fission, fusion and singularity
   reactors.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm and the Nuclear Missile Silo.
-- **Abandoned Cold War sites** to find, with loot.
+- **Seven abandoned Cold War sites** to explore, with loot:
+  - a Titan II missile silo, sometimes flooded or caved in;
+  - a command bunker under an earth berm;
+  - a radar outpost on high ground;
+  - a nuclear test site in the desert, with its shot tower, Doom Town and an earlier test's crater;
+  - a crashed missile at the end of its furrow, beside the recovery team's abandoned camp;
+  - a waste repository deep in a bed of salt;
+  - a research station floating over the End's islands, blown open from within.
+- **Construction blocks** for building your own: chain-link fencing, barbed wire, corrugated steel, steel panels,
+  grating, I-beams, lattice frames, radome panels, floodlights, sandbags and warning signs. Plus two showpieces: a
+  Large Silo Door whose leaves slide apart on a redstone signal, and a Search Radar that turns.
 - **The Field Manual**, an in-game guide to all of it.
+
+What changed in each version is in the [changelog](CHANGELOG.md).
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile lifting off from its launch silo in a cloud of exhaust"><br>Lift-off from a Launch Silo</td>
+    <td><img src="docs/screenshots/scud_strike.jpg" width="380" alt="A SCUD strike throwing up fire, smoke and blocks of sand"><br>The SCUD Storm strikes</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/missiles.jpg" width="380" alt="Seven nuclear missiles standing in a row on sand"><br>The nuclear missiles, from tactical to Tsar</td>
+    <td><img src="docs/screenshots/crater.jpg" width="380" alt="Smoke rising from a fresh crater ringed with fires"><br>A tactical nuclear warhead's crater</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/radar_outpost.jpg" width="380" alt="A radar outpost on a green hill above the sea"><br>A Radar Outpost</td>
+    <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station among chorus plants on an End island"><br>The Exotic Research Station</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/silo_cutaway.jpg" width="380" alt="A cut-away view of an abandoned silo with its missile in the shaft"><br>An abandoned silo, cut away</td>
+    <td><img src="docs/screenshots/field_manual.jpg" width="380" alt="The Field Manual open at its contents page"><br>The Field Manual</td>
+  </tr>
+</table>
 
 ## Requirements
 
 - Minecraft 26.3 with NeoForge 26.3.0.92 or newer
 - [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib) 5.5.7 or newer (required)
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional)
+
+Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
 ## Making add-ons
 

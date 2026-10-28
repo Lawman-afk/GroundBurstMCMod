@@ -16,7 +16,8 @@ sourceSets.main.resources {
     srcDir('src/generated/resources')
 
     exclude("**/*.bbmodel")
-    exclude("src/generated/**/.cache")
+    // The data generators' cache (patterns are relative to each resource folder).
+    exclude("**/.cache", "**/.cache/**")
 }
 
 repositories {
