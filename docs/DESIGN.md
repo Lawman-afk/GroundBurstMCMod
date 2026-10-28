@@ -18,6 +18,7 @@
 | Java package | `dev.groundzero` |
 | Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`) |
 | Tagline | "Assemble it. Launch it. Watch the horizon." |
+| Licence | **MIT** (2026-10-28, the user: others should be able to make add-ons); `LICENSE` at the root, in the jar as `LICENSE_groundzero`. The sound recordings it is made from keep their own (CC0 1.0, CC BY 4.0: `assets/groundzero/sounds/CREDITS.txt`) |
 
 **Design pillars**
 1. **The spectacle matches the destruction.** Every visual is driven by the same numbers as the damage. The fireball,
@@ -3361,6 +3362,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-28 | The mod is MIT-licensed, no longer All Rights Reserved (the user: others should be able to make add-ons). MIT over LGPL-3.0: the commonest licence of add-on-friendly mods (Create, Mekanism), the simplest for add-on makers and modpacks; it lets anyone reuse the code and art with the notice kept. The Freesound recordings keep their own licences (noted in `LICENSE`). On CurseForge: the MIT License, and distribution to third-party apps allowed. |
 | 2026-10-19 | NeoForge pinned to 26.3.0.92 to match the test instance; Java 25; MDG 2.0.148; Gradle 9.2.1. |
 | 2026-10-19 | Build uses CurseForge's bundled JDK 25 via `JAVA_HOME`; Gradle auto-provisions a JDK 21 for NeoForm tooling. |
 | 2026-10-19 | `deployToInstance` runs after every `build`, deletes every older `groundzero-*.jar` in the instance `mods` folder, copies the new jar; path overridable with `-Pdeploy_instance_dir`. |

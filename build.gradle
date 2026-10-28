@@ -47,6 +47,14 @@ base {
     archivesName = mod_id
 }
 
+// The licence travels in the jar (MIT asks for its notice in every copy; it also points to the sound credits).
+tasks.named('jar', Jar) {
+    def licenceName = "LICENSE_${project.property('mod_id')}"
+    from('LICENSE') {
+        rename { licenceName }
+    }
+}
+
 // Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
