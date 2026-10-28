@@ -43,7 +43,7 @@
 | Mappings | Official Mojang names (`Identifier`, not `ResourceLocation`) | MDK sources |
 | Local JDK | CurseForge's bundled Microsoft OpenJDK **25.0.1** (`%USERPROFILE%\curseforge\minecraft\Install\runtime\java-runtime-epsilon\...`) used via `JAVA_HOME` for Gradle. The system `java` on PATH is 1.8 and cannot run Gradle 9. | local check |
 | Python | 3.14.6 with Pillow 13 and numpy 2.5 (asset pipeline) | local check |
-| Test instance | the CurseForge test instance — MC 26.3, NeoForge 26.3.0.92, 8 GB allocated, `mods/` empty | local check |
+| Test instance | a CurseForge instance (MC 26.3, NeoForge 26.3.0.92, 8 GB allocated); its folder is `deploy_instance_dir` in the user's own `~/.gradle/gradle.properties` | local check |
 
 ### 2.1 Important API facts for the 26.x line (from the NeoForge migration primers)
 These replace what older (1.20/1.21) knowledge would assume. Re-verify against the decompiled sources in

@@ -191,7 +191,8 @@ idea {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Deployment: every `build` ends with the fresh jar in the CurseForge test instance.
+// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder `deploy_instance_dir`
+// names (set in your own ~/.gradle/gradle.properties); without one the jar just stays in build/libs.
 // ---------------------------------------------------------------------------------------------
 
 abstract class DeployToInstance extends DefaultTask {
@@ -279,11 +280,10 @@ dependencies {
 
 var instanceDir = providers.gradleProperty('deploy_instance_dir')
         .filter { !it.isBlank() }
-        .orElse(providers.environmentVariable('USERPROFILE').map { "${it}/curseforge/minecraft/Instances/Mod Testing" })
 
 var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     group = 'deployment'
-    description = 'Copies the built mod jar into the CurseForge test instance, replacing older builds.'
+    description = 'Copies the built mod jar into the CurseForge test instance (deploy_instance_dir), replacing older builds.'
     jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
