@@ -18,6 +18,7 @@
 | Java package | `dev.groundzero` |
 | Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`) |
 | Tagline | "Assemble it. Launch it. Watch the horizon." |
+| Source | https://github.com/Lawman-afk/Ground-Zero-MCMod (public since 2026-10-28; author Lawman-afk) |
 | Licence | **MIT** (2026-10-28, the user: others should be able to make add-ons); `LICENSE` at the root, in the jar as `LICENSE_groundzero`. The sound recordings it is made from keep their own (CC0 1.0, CC BY 4.0: `assets/groundzero/sounds/CREDITS.txt`) |
 
 **Design pillars**
