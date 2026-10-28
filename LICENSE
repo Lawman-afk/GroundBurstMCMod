@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party material
-
-Some of the mod's sounds are made from recordings by other people, shared on
-Freesound under CC0 1.0 or CC BY 4.0. Those recordings keep their own licences.
-Each one is listed with its author, title, source and licence in
-assets/groundzero/sounds/CREDITS.txt (in this repository:
-src/main/resources/assets/groundzero/sounds/CREDITS.txt).

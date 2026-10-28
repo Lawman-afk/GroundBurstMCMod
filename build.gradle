@@ -204,6 +204,10 @@ abstract class DeployToInstance extends DefaultTask {
     @Input
     abstract Property<String> getModId()
 
+    /** Whether an instance folder was named outright (deploy_instance_dir): then a missing one is an error. */
+    @Input
+    abstract Property<Boolean> getRequired()
+
     /** Required mods (e.g. GeckoLib) to install if the instance has no copy of them yet. */
     @InputFiles
     abstract ConfigurableFileCollection getDependencyJars()
@@ -213,10 +217,16 @@ abstract class DeployToInstance extends DefaultTask {
 
     @TaskAction
     void deploy() {
-        File dir = modsDir.get().asFile
-        if (!dir.parentFile.isDirectory()) {
-            throw new GradleException("CurseForge instance not found at ${dir.parentFile}. " +
-                    "Set deploy_instance_dir in gradle.properties or pass -Pdeploy_instance_dir=<path>.")
+        File dir = modsDir.isPresent() ? modsDir.get().asFile : null
+        if (dir == null || !dir.parentFile.isDirectory()) {
+            String where = dir == null ? "(no default folder on this system)" : "${dir.parentFile}"
+            if (required.get()) {
+                throw new GradleException("CurseForge instance not found at ${where}. " +
+                        "Set deploy_instance_dir in gradle.properties or pass -Pdeploy_instance_dir=<path>.")
+            }
+            // Anyone else building the mod has no test instance: the jar stays in build/libs.
+            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir to deploy it).")
+            return
         }
         dir.mkdirs()
 
@@ -277,6 +287,7 @@ var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
+    required = providers.gradleProperty('deploy_instance_dir').map { !it.isBlank() }.orElse(false)
     dependencyJars.from(configurations.deployDependencies)
     outputs.upToDateWhen { false }
 }
