@@ -10,13 +10,13 @@
         {
           "template": "groundburst:site/research_station",
           "offset": [
-            -15,
-            -9,
-            -15
+            -22,
+            -12,
+            -22
           ],
           "terrain": "none",
           "integrity": 1.0,
-          "weathering": "end"
+          "weathering": "none"
         }
       ]
     }

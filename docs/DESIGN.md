@@ -2969,6 +2969,25 @@ they stand in rock):
   winch), its rope cordon (stakes and rope, a radiation sign on every third post), and its abandoned camp (a floodlight
   behind sandbags turned on the crater, the decontamination point with a hazmat suit left on its stand, crates under a
   tarp).
+- *Waste Storage* (`site_waste.py`, after WIPP; one block of salt 44 x 9 x 40, buried): the salt bedded (white halite,
+  a pink-brown clay seam, greyer beds, lenses of purer salt), not speckled; the main drift from the waste shaft's station
+  (the hoist cage at the shaft's foot, the shaft sealed above by a concrete plug), its milled floor worn darker along
+  the wheel tracks, roof bolts in a grid (buttons on the roof), strip lights along one rib, the cable and a water line
+  along the other. North of it a full room closed by a bulkhead (steel frame, mesh, the ventilation curtain, signs),
+  the working room (drums stacked to the roof under magnesium-oxide sacks at the back, the next row half laid, the
+  forklift with a drum on its forks, a pallet of sacks), a newly mined room standing empty, a room whose roof fell in
+  on its drums; south of it the decontamination room, the lead-walled hot cell behind its reactor-glass window and
+  manipulator arms, the control room (air monitors, the logbook's lectern, the supervisor's desk, oxygen bottles), and
+  a full room the salt is squeezing shut (its floor heaved and roof sagged over the last rows).
+- *Exotic Research Station* (`site_station.py`, one template 44 x 30 x 44 hung over an End island): a teardrop of end
+  stone, its point down, lumpy with knobs, veined with voidstone, obsidian at its tip, budding voidstone in its sides
+  with crystals growing out sideways, chorus on its rim; an octagonal concrete deck edged in hazard stripes and railed,
+  torn away on its east side; the containment hall, a steel drum under a white radome (the kit's, smoothed), blown open
+  east where the containment failed, crystals erupting through, inside the broken containment ring of casings and
+  copper coils round a scorched pit full of crystals, floodlights turned on it; the laboratory and the crew's module
+  (steel, windows in rows, solar panels and railings on their roofs) joined to the hall by covered ways; the Search
+  Radar, stopped, on a lattice tower at the deck's corner, its reflector out over the void (the station's mark from
+  afar); a cargo corner; the failure's debris hanging in the void east of it.
 - Every iron door has a button on each side of it (the kit's `iron_door`; `Kit.finish` puts them once the walls stand,
   in a passage one wide on the passage's wall): players could not open the old sites' iron doors.
 - `SitePiece` fills under what stands on layer 1 where the land has fallen away, but never where the template leaves
@@ -3475,6 +3494,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-29 | The Waste Storage and the Exotic Research Station rebuilt (§22.2), the last of the seven: the waste store after WIPP's own layout (a drift with disposal rooms off it, drums packed to the roof under sacks, bulkheads, salt creep), no longer rails and rubble; the station a round hall under a radome blown open by its containment failure, its silhouette the Search Radar on a tower, not a dish of blocks. Every site now lives in its own module built with the kit; the old site code is gone. |
 | 2026-10-29 | The Crashed Missile rebuilt round a new prop, the Missile Wreck (§22.2): the user chose a model wreck over a missile of blocks, as the rules ask curves of the model (a plus of blocks read as a white log). The site is the wreck at the head of its furrow, the crater with the bare core, and the recovery team's gantry, cordon and camp, the gantry its mark from afar. |
 | 2026-10-29 | The Test Site, the Abandoned Silo and the Command Bunker rebuilt (§22.2). The silo's shaft is round, squared only at its head under the door, as the Titan II's; the bunker is an earth-bermed portal with a blast-deflector wall before its first blast door and a twelve-step stair down, not a ladder well (the Diefenbunker's and Kelvedon Hatch's long entrances). Every iron door in a site has a button each side: the old sites' could not be opened. |
 | 2026-10-29 | The world sites are rebuilt from scratch (the user's review: poor building, a radar base's bars and mast a block off the ground): researched building rules (silhouette first, small palettes with gradients, depth, curves as models, wear that follows cause), a craftable Construction set of cosmetic blocks (they drop themselves, so no free iron), a Large Silo Door (redstone, for show) and a Search Radar (turns on redstone), the Test Site an old crater and a readied shot tower without Jumbo (all four the user's choices); the beardifier's ground is the first air, so a site's ground-level delta is one more (§22.2). |

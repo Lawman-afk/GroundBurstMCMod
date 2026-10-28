@@ -10,13 +10,13 @@
         {
           "template": "groundburst:site/waste_storage",
           "offset": [
-            -19,
+            -22,
             0,
-            -16
+            -19
           ],
           "terrain": "encapsulate",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     }
