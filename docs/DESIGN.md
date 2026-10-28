@@ -2993,6 +2993,18 @@ they stand in rock):
 - `SitePiece` fills under what stands on layer 1 where the land has fallen away, but never where the template leaves
   layer 0 as air on purpose: it had plugged the silo's shaft under its door with dirt, and the bunker's stair head.
 
+**Checked on generated worlds** (2026-10-29, `runWorldSurvey`, the recorded seed): every rebuilt site visited where it
+generates (the silo's three variants, the bunker in a forest and a dark forest, the outposts, the test sites, a crashed
+missile in a forest, a waste store under dripstone caves, a station over the End): no part left hanging over its ground
+beyond 0.4% of its columns, no water in any (the flooded silo's own, still), the parts underground closed in rock (at
+most 3.3% of their shell open, to caves). Trees root in a forest's sites after they are placed (vanilla's features come
+later); a crashed missile's ground under and round its wreck, its crater and its burned ring is gravel, packed mud and
+scorched earth, which no tree roots in (vanilla's `substrate_overworld`), so none grows through the model. The bigger
+rebuilt sites failed the land's checks more often, so four spacings were closed up to keep each as common as the census
+set it (spacing/separation in chunks; per 100 km², the vanilla match in brackets): the Radar Outpost 36/13, 9.06
+(pillager outposts 9.06); the Test Site 24/9, 2.15 (desert pyramids 1.91); the Command Bunker 38/15, 15.0 (igloos 15.5);
+the Crashed Missile 27/10, 21.5 (20.7 before). The silo (8.8), the waste store (24.8) and the station (42.9) kept theirs.
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -3494,6 +3506,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-29 | The rebuilt sites checked on generated worlds (§22.2): they fit their land; their bigger footprints made four rarer, so their spacings close up to the frequencies the census set (radar outpost 36/13, test site 24/9, bunker 38/15, crashed missile 27/10). A crashed missile's ground round its wreck is of blocks no tree roots in, so the forest cannot grow through the model. |
 | 2026-10-29 | The Waste Storage and the Exotic Research Station rebuilt (§22.2), the last of the seven: the waste store after WIPP's own layout (a drift with disposal rooms off it, drums packed to the roof under sacks, bulkheads, salt creep), no longer rails and rubble; the station a round hall under a radome blown open by its containment failure, its silhouette the Search Radar on a tower, not a dish of blocks. Every site now lives in its own module built with the kit; the old site code is gone. |
 | 2026-10-29 | The Crashed Missile rebuilt round a new prop, the Missile Wreck (§22.2): the user chose a model wreck over a missile of blocks, as the rules ask curves of the model (a plus of blocks read as a white log). The site is the wreck at the head of its furrow, the crater with the bare core, and the recovery team's gantry, cordon and camp, the gantry its mark from afar. |
 | 2026-10-29 | The Test Site, the Abandoned Silo and the Command Bunker rebuilt (§22.2). The silo's shaft is round, squared only at its head under the door, as the Titan II's; the bunker is an earth-bermed portal with a blast-deflector wall before its first blast door and a twelve-step stair down, not a ladder well (the Diefenbunker's and Kelvedon Hatch's long entrances). Every iron door in a site has a button each side: the old sites' could not be opened. |

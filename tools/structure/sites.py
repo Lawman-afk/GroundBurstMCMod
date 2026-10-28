@@ -76,7 +76,8 @@ def part(template: str, offset: tuple[int, int, int], terrain: str = "none", int
 #: set from the world survey's census (`gradlew runWorldSurvey -Psurvey=census`, DESIGN.md §22.1): each site about as
 #: common as the vanilla structure it is most like. apart_from_villages: no closer than this many chunks to where a
 #: village could stand (vanilla's exclusion zone, as its pillager outposts keep), since the census found a few sites in
-#: or against villages.
+#: or against villages. The rebuilt sites (§22.2) are bigger and failed the land's checks more often: the radar outpost's,
+#: test site's, bunker's and crashed missile's spacings were closed up to keep each as common as the census set it.
 STRUCTURES = {
     "abandoned_silo": dict(
         biomes=["#minecraft:is_taiga", "minecraft:plains", "minecraft:sunflower_plains", "minecraft:snowy_plains", "minecraft:desert",
@@ -85,18 +86,18 @@ STRUCTURES = {
         variants=[(3, "intact"), (2, "flooded"), (2, "collapsed")]),
     "command_bunker": dict(
         biomes=["#minecraft:is_hill", "#minecraft:is_forest", "#minecraft:is_taiga", "minecraft:meadow", "minecraft:plains"],
-        step="surface_structures", placement="surface", spacing=52, separation=20, salt=1_957_101, max_slope=8, apart_from_villages=6),
+        step="surface_structures", placement="surface", spacing=38, separation=15, salt=1_957_101, max_slope=8, apart_from_villages=6),
     "radar_outpost": dict(
         biomes=["#minecraft:is_hill", "minecraft:meadow", "minecraft:savanna_plateau", "minecraft:wooded_badlands",
                 "minecraft:snowy_plains", "minecraft:plains", "minecraft:windswept_savanna"],
-        step="surface_structures", placement="surface", spacing=44, separation=16, salt=1_954_820, max_slope=12, apart_from_villages=6),
+        step="surface_structures", placement="surface", spacing=36, separation=13, salt=1_954_820, max_slope=12, apart_from_villages=6),
     "test_site": dict(
         biomes=["minecraft:desert", "#minecraft:is_badlands"],
-        step="surface_structures", placement="surface", spacing=32, separation=12, salt=1_945_716, max_slope=12, apart_from_villages=6),
+        step="surface_structures", placement="surface", spacing=24, separation=9, salt=1_945_716, max_slope=12, apart_from_villages=6),
     "crashed_missile": dict(
         biomes=["minecraft:plains", "minecraft:sunflower_plains", "#minecraft:is_forest", "#minecraft:is_taiga", "#minecraft:is_savanna",
                 "minecraft:desert", "#minecraft:is_badlands", "minecraft:snowy_plains", "minecraft:meadow"],
-        step="surface_structures", placement="surface", spacing=38, separation=14, salt=1_980_919, max_slope=5, apart_from_villages=6),
+        step="surface_structures", placement="surface", spacing=27, separation=10, salt=1_980_919, max_slope=5, apart_from_villages=6),
     "waste_storage": dict(
         biomes=["#minecraft:is_overworld"],
         step="underground_structures", placement="buried", spacing=44, separation=16, salt=1_999_326, depth=42, frequency=0.35),

@@ -33,6 +33,14 @@ def crashed_missile() -> Kit:
     k = Kit(*SIZE, seed=8_100)
     furrow(k)
     crater(k)
+    for x in range(WX - 1, WX + 2):
+        for z in range(WZ - 1, WZ + 2):
+            k.set(x, G, z, "packed_mud" if k.n(x, 7, z, 1.5, 37) > 0.4 else "gravel")    # under the tail
+    for lx, lz, r in LOOSE:
+        for x in range(int(lx - r), int(lx + r) + 1):
+            for z in range(int(lz - r), int(lz + r) + 1):
+                if math.hypot(x + 0.5 - lx, z + 0.5 - lz) < r and k.name(x, G, z) is None:
+                    k.set(x, G, z, "packed_mud")
     k.set(WX, G + 1, WZ, gb("missile_wreck"), {"facing": N})
     gantry(k)
     scorch(k)
@@ -106,8 +114,10 @@ def furrow(k: Kit) -> None:
                     k.set(x, y, z, AIR)
                 if t > 0.62 and v > 0.58:
                     floor = "grass_block"
-                else:
+                elif t > 0.55:
                     floor = "coarse_dirt" if v > 0.6 else "gravel" if v < 0.28 else "rooted_dirt" if v > 0.48 else "dirt"
+                else:
+                    floor = "packed_mud" if v > 0.45 else "gravel"     # no tree roots where the wreck lies
                 k.set(x, G - depth, z, SCORCHED if t < 0.18 and v > 0.35 else floor)
             elif d <= half + 1.6 and t < 0.85 and not _loose(x, z):
                 # The earth thrown out to the sides: torn turf and soil lying flat, the grass back through it in places.
@@ -130,7 +140,7 @@ def crater(k: Kit) -> None:
                 depth = 2 if r < 1.6 else max(1, min(2, round(2.2 * (1 - (r / CRATER_R) ** 2) + (v - 0.5) * 0.6)))
                 for y in range(G - depth + 1, G + 3):
                     k.set(x, y, z, AIR)
-                k.set(x, G - depth, z, SCORCHED if v > 0.35 else "coarse_dirt")
+                k.set(x, G - depth, z, SCORCHED if v > 0.35 else "packed_mud")
                 floor_y[(x, z)] = G - depth
                 if k.n(x, 5, z, 1.5, 43) > 0.55:
                     k.set(x, G - depth + 1, z, ASH, {"layers": 1 + int(k.n(x, 6, z, 1.2, 45) * 3)})
@@ -138,7 +148,7 @@ def crater(k: Kit) -> None:
                 if z + 0.5 > cz + 0.8 and abs(x + 0.5 - 13.3) < 2.4:
                     continue                                       # where the body came in: no rim
                 if k.name(x, G + 1, z) is None and k.name(x, G, z) != AIR:
-                    k.set(x, G + 1, z, "coarse_dirt" if v > 0.62 else "rooted_dirt" if v > 0.5 else "grass_block")
+                    k.set(x, G + 1, z, "packed_mud" if v > 0.62 else "gravel" if v > 0.5 else "coarse_dirt")
     # The core, bare, the soil round it irradiated; the bay's spilled kit (the site's loot).
     core = (12, G - 2, 13)
     for dx in (-1, 0, 1):
@@ -177,15 +187,16 @@ def scorch(k: Kit) -> None:
             r = math.hypot(x + 0.5 - cx, z + 0.5 - (cz + 1.5))
             reach = 5.5 + (k.n(x, 0, z, 3.0, 51) - 0.5) * 3.0
             if r > reach:
+                # Just outside it, on the land itself, the brush killed and left standing.
+                if r < reach + 1.6 and k.name(x, G + 1, z) is None and k.n(x, 4, z, 1.4, 57) > 0.7:
+                    k.set(x, G + 1, z, "dead_bush")
                 continue
             v = k.n(x, 1, z, 2.0, 53)
-            k.set(x, G, z, SCORCHED if v > 0.58 or r < reach * 0.45 else "coarse_dirt" if v > 0.3 else "dirt")
+            k.set(x, G, z, SCORCHED if v > 0.58 or r < reach * 0.45 else "packed_mud" if v > 0.3 else "gravel")
             if k.name(x, G + 1, z) is None:
                 w = k.n(x, 2, z, 1.4, 55)
                 if w > 0.72:
                     k.set(x, G + 1, z, ASH, {"layers": 1 + int(w * 2)})
-                elif w < 0.14 and r > 3 and k.name(x, G, z) in ("minecraft:coarse_dirt", "minecraft:dirt"):
-                    k.set(x, G + 1, z, "dead_bush")
 
 
 def cordon(k: Kit) -> None:
