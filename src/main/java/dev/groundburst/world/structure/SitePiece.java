@@ -100,6 +100,14 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
         BoundingBox b = this.boundingBox;
         int bottom = b.minY();
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        // Where the template itself leaves layer 0 open (air there, not left unset): a hole on purpose, as a shaft's
+        // mouth under its door or a stair's head, never to be filled.
+        java.util.Set<Long> holes = new java.util.HashSet<>();
+        for (var info : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.AIR)) {
+            if (info.pos().getY() == bottom) {
+                holes.add(BlockPos.asLong(info.pos().getX(), 0, info.pos().getZ()));
+            }
+        }
         for (int x = Math.max(b.minX(), chunk.minX()); x <= Math.min(b.maxX(), chunk.maxX()); x++) {
             for (int z = Math.max(b.minZ(), chunk.minZ()); z <= Math.min(b.maxZ(), chunk.maxZ()); z++) {
                 // What must stand on something: the part's bottom layer, or (for a part at the site's ground, whose
@@ -107,7 +115,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
                 // land has fallen away: a fence, a pole, a pier on bare ground (DESIGN.md §22.2).
                 int base = bottom;
                 if (open(level.getBlockState(at.set(x, bottom, z)))) {
-                    if (bottom != this.ground || open(level.getBlockState(at.set(x, bottom + 1, z)))) {
+                    if (bottom != this.ground || open(level.getBlockState(at.set(x, bottom + 1, z))) || holes.contains(BlockPos.asLong(x, 0, z))) {
                         continue;
                     }
                     base = bottom + 1;

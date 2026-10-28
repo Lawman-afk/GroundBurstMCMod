@@ -2951,6 +2951,8 @@ they stand in rock):
   room, the mess and its galley, the escape tube filled with gravel at its top.
 - Every iron door has a button on each side of it (the kit's `iron_door`; `Kit.finish` puts them once the walls stand,
   in a passage one wide on the passage's wall): players could not open the old sites' iron doors.
+- `SitePiece` fills under what stands on layer 1 where the land has fallen away, but never where the template leaves
+  layer 0 as air on purpose: it had plugged the silo's shaft under its door with dirt, and the bunker's stair head.
 
 ---
 
