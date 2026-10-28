@@ -10,9 +10,9 @@
         {
           "template": "groundburst:site/crashed_missile",
           "offset": [
-            -19,
-            -5,
-            -8
+            -15,
+            -4,
+            -20
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,

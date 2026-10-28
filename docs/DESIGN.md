@@ -2911,6 +2911,16 @@ concrete (radome panels), sand and string (sandbags); the rusted ones from eight
 - *Search Radar*: a wide curved reflector on a turning head over a pedestal (the AN/FPS-20 of the Cold War stations),
   turning while it has a redstone signal; the sites' ones are stopped, or toppled and broken.
 
+**The Missile Wreck** (the user's choice over a missile of blocks, 2026-10-29): a prop drawn by its block entity
+(GeckoLib, `tools/assets/missile_wreck.py`), a two-stage missile in the test ranges' white and black roll pattern
+broken in three: the tail with its engine bell and fins on the block (propped on two fins, the third bent, the fourth
+torn off and lying apart), the body torn at both ends and buckled, the nose with its guidance bay (a red band, a
+trefoil) and charred re-entry cone driven in nose first; the interstage ring, a curl of skin and the cable bundle strewn
+between. The skin is a true sixteen-sided tube a pixel thick, one plank a facet, so a torn end shows its wall, a ragged
+edge (each facet torn to its own length) and the dark inside with the tank dome behind. It runs some eight blocks on
+from its block toward its facing, the nose a few blocks down; only the tail's block is solid. In the Construction tab,
+drops itself, no recipe (as the radar's wreck).
+
 **The sites, from scratch** (in this order): the Radar Outpost (a lattice tower with a radome, the search radar on its
 own tower, a building train on piers, a tropospheric-scatter billboard, power poles, the fence); the Test Site (the user's
 choice: a glassed crater from an earlier shot and a lattice shot tower readied for the next, cabled to instrument
@@ -2949,6 +2959,16 @@ they stand in rock):
   the dormitory (bunks two high, steel lockers), the washroom, the situation room two storeys tall (a continent on its
   south wall with the strikes marked, the plotting table, the gallery of consoles looking down on both), the records
   room, the mess and its galley, the escape tube filled with gravel at its top.
+- *Crashed Missile* (`site_crashed.py`, one template with its grade four layers up so the furrow and crater are dug
+  below it; the origin the wreck's block): the Missile Wreck at the head of its furrow, which shallows back south twenty
+  blocks to where the missile first struck (churned earth, thrown turf lying flat beside it, the grass back over its far
+  end); the crater where the nose went in, a low ragged rim round it but where the body came in, its floor scorched and
+  dusted with fallout ash; the warhead's uranium core bare in the floor beside the nose, the soil round it irradiated;
+  the guidance bay's spill (the site's chest) on the floor; burned ground, ash and dead bushes round it; the recovery
+  team's lifting gantry over the crater (two lattice legs, an I-beam, the chain hoist hanging over the nose, the hand
+  winch), its rope cordon (stakes and rope, a radiation sign on every third post), and its abandoned camp (a floodlight
+  behind sandbags turned on the crater, the decontamination point with a hazmat suit left on its stand, crates under a
+  tarp).
 - Every iron door has a button on each side of it (the kit's `iron_door`; `Kit.finish` puts them once the walls stand,
   in a passage one wide on the passage's wall): players could not open the old sites' iron doors.
 - `SitePiece` fills under what stands on layer 1 where the land has fallen away, but never where the template leaves
@@ -3455,6 +3475,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-29 | The Crashed Missile rebuilt round a new prop, the Missile Wreck (§22.2): the user chose a model wreck over a missile of blocks, as the rules ask curves of the model (a plus of blocks read as a white log). The site is the wreck at the head of its furrow, the crater with the bare core, and the recovery team's gantry, cordon and camp, the gantry its mark from afar. |
 | 2026-10-29 | The Test Site, the Abandoned Silo and the Command Bunker rebuilt (§22.2). The silo's shaft is round, squared only at its head under the door, as the Titan II's; the bunker is an earth-bermed portal with a blast-deflector wall before its first blast door and a twelve-step stair down, not a ladder well (the Diefenbunker's and Kelvedon Hatch's long entrances). Every iron door in a site has a button each side: the old sites' could not be opened. |
 | 2026-10-29 | The world sites are rebuilt from scratch (the user's review: poor building, a radar base's bars and mast a block off the ground): researched building rules (silhouette first, small palettes with gradients, depth, curves as models, wear that follows cause), a craftable Construction set of cosmetic blocks (they drop themselves, so no free iron), a Large Silo Door (redstone, for show) and a Search Radar (turns on redstone), the Test Site an old crater and a readied shot tower without Jumbo (all four the user's choices); the beardifier's ground is the first air, so a site's ground-level delta is one more (§22.2). |
 | 2026-10-28 | The mod is MIT-licensed, no longer All Rights Reserved (the user: others should be able to make add-ons). MIT over LGPL-3.0: the commonest licence of add-on-friendly mods (Create, Mekanism), the simplest for add-on makers and modpacks; it lets anyone reuse the code and art with the notice kept. The Freesound recordings keep their own licences (noted in `README.md`; `LICENSE` is the plain MIT text, so GitHub reads it as MIT). On CurseForge: the MIT License, and distribution to third-party apps allowed. For publishing the source: a `README.md`, and `gradlew build` skips the deploy where there is no test instance (anyone else's machine) instead of failing. |

@@ -86,7 +86,7 @@ public final class ManualPhotographer {
                 var settings = new net.minecraft.world.level.LevelSettings("Manual shots", net.minecraft.world.level.GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                String folder = net.minecraft.util.FileUtil.findAvailableName(mc.getLevelSource().getBaseDir(), "manual_shots", "");
+                String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "manual_shots");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings,
                         net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
                         net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());

@@ -108,6 +108,16 @@ public final class GBConstruction {
                     (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), pos, state),
                     SEARCH_RADAR_WRECK.block().get()));
 
+    // --- the missile wreck ---------------------------------------------------------------------------------------------------------
+    /** A missile broken in three where it came down, as the Crashed Missile sites have it; its model runs some eight blocks on
+     *  from the block toward its facing (DESIGN.md §22.2). */
+    public static final WithItem<MissileWreckBlock> MISSILE_WRECK = GBBlocks.register("missile_wreck", "Missile Wreck", TAB,
+            p -> new MissileWreckBlock(p, () -> GBConstruction.MISSILE_WRECK_ENTITY.get()),
+            p -> metal(p, MapColor.SNOW).strength(4f, 8f).noOcclusion());
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<PropBlockEntity>> MISSILE_WRECK_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("missile_wreck", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new PropBlockEntity(GBConstruction.MISSILE_WRECK_ENTITY.get(), pos, state), MISSILE_WRECK.block().get()));
+
     // --- the silo door ------------------------------------------------------------------------------------------------------------
     /** Two leaves over a 7x7 opening that slide apart onto rails on a redstone signal; for show (DESIGN.md §22.2). */
     public static final WithItem<SiloDoorBlock> LARGE_SILO_DOOR = GBBlocks.register("large_silo_door", "Large Silo Door", TAB,
@@ -130,7 +140,7 @@ public final class GBConstruction {
             CORRUGATED_STEEL_STAIRS, CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL, RUSTED_CORRUGATED_STEEL_STAIRS,
             RUSTED_CORRUGATED_STEEL_SLAB, STEEL_PANEL, RUSTED_STEEL_PANEL, STEEL_GRATING, STEEL_GRATING_SLAB, I_BEAM, LATTICE_FRAME,
             RADOME_PANEL, RADOME_PANEL_STAIRS, RADOME_PANEL_SLAB, FLOODLIGHT, SANDBAGS, SANDBAG_SLAB, RADIATION_SIGN, HIGH_VOLTAGE_SIGN,
-            KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK);
+            KEEP_OUT_SIGN, TOXIC_SIGN, SEARCH_RADAR, SEARCH_RADAR_WRECK, MISSILE_WRECK);
     /** The slabs (they drop two when doubled). */
     public static final List<WithItem<SlabBlock>> SLABS = List.of(CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL_SLAB, STEEL_GRATING_SLAB,
             RADOME_PANEL_SLAB, SANDBAG_SLAB);

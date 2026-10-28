@@ -32,6 +32,7 @@ import site_radar  # noqa: E402
 import site_test  # noqa: E402
 import site_silo  # noqa: E402
 import site_bunker  # noqa: E402
+import site_crashed  # noqa: E402
 from gb import paths  # noqa: E402
 
 DATA = paths.DATA
@@ -76,73 +77,6 @@ def dish(b: Build, cx: float, cy: float, cz: float, r: float, tilt: float, yaw: 
             y1, w1 = v * ct - w * st, v * st + w * ct
             x2, z2 = u * cy_ - w1 * sy, u * sy + w1 * cy_
             b.set(round(cx + x2 - 0.5), round(cy + y1 - 0.5), round(cz + z2 - 0.5), rim if rho > r - 0.8 else block)
-
-
-# 5. The crashed missile: an impact furrow, the missile in three pieces, its warhead broken and leaking.
-# =====================================================================================================================
-def lying_body(b: Build, x0: int, x1: int, y: int, z: int, block: str, band: int | None = None, broken: float = 0.0) -> None:
-    for x in range(x0, x1 + 1):
-        for dy, dz in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)):
-            if b.rng.random() >= broken:
-                b.set(x, y + dy, z + dz, "black_concrete" if band is not None and x == band else block)
-
-
-def crashed_missile() -> Build:
-    b = Build(38, 11, 17, seed=61)
-    G = 5
-    zc = 8
-    # The furrow: ploughed in from the west, deepening to the impact at the east end; earth thrown up either side.
-    for x in range(2, 34):
-        t = (x - 2) / 31
-        depth = round(3.2 * t ** 1.4)
-        half = 1.5 + 1.8 * t
-        for z in range(17):
-            dz = abs(z + 0.5 - zc - 0.5)
-            if dz <= half:
-                floor = G - max(0, depth - (1 if dz > half - 1 else 0))
-                for y in range(floor + 1, G + 1):
-                    b.set(x, y, z, AIR)
-                b.set(x, floor, z, b.rng.choice(("coarse_dirt", "dirt", "gravel", "groundburst:scorched_earth" if t > 0.7 else "dirt")))
-            elif dz <= half + 2.2:
-                h = round(1.6 * t * (1 - (dz - half) / 2.2) + 0.3)
-                for y in range(G + 1, G + 1 + h):
-                    b.set(x, y, z, b.rng.choice(("dirt", "coarse_dirt", "gravel")))
-    # The impact crater at the east end, scorched, ash in it.
-    for x in range(29, 37):
-        for z in range(3, 14):
-            d = math.hypot(x + 0.5 - 33, z + 0.5 - zc - 0.5)
-            if d < 4.5:
-                fl = G - 4 + round(d * 0.6)
-                for y in range(fl + 1, G + 2):
-                    b.set(x, y, z, AIR)
-                b.set(x, fl, z, b.rng.choice(("groundburst:scorched_earth", "groundburst:scorched_earth", "coarse_dirt",
-                                              "groundburst:irradiated_soil")))
-                if b.rng.random() < 0.3:
-                    b.set(x, fl + 1, z, "groundburst:fallout_ash", {"layers": str(b.rng.randint(1, 3))})
-    # The warhead section at the crater's bottom, split open: its dirty payload spilled (a uranium core block, the
-    # ground round it irradiated).
-    b.fill(32, G - 3, zc - 1, 34, G - 1, zc + 1, CONC_DARK)
-    b.clear(33, G - 2, zc, 34, G - 1, zc + 1)
-    b.set(33, G - 3, zc, "groundburst:uranium_block")
-    b.set(34, G - 3, zc + 1, "groundburst:irradiated_soil")
-    b.set(32, G - 2, zc + 2, "groundburst:irradiated_soil")
-    # The middle of the body lying in the furrow, its stage band; the tail with its engine bells, thrown aside.
-    lying_body(b, 17, 28, G - 1, zc, CONC_WHITE, band=22, broken=0.08)
-    b.clear(26, G, zc - 1, 28, G, zc + 1)                                 # torn open at the front
-    b.chest(27, G - 1, zc, "west", "crashed_missile")
-    lying_body(b, 7, 13, G + 1, zc + 3, CONC_WHITE, band=9, broken=0.1)
-    b.set(6, G + 1, zc + 3, "cauldron")
-    b.set(6, G + 1, zc + 2, "cauldron")
-    b.swap((5, G, 0, 30, G + 3, 16), CONC_WHITE, lambda: b.rng.choice(("light_gray_concrete", "white_terracotta")), 0.15)
-    b.stains((5, G, 0, 30, G + 3, 16), [CONC_WHITE], RUST + ("gray_concrete",), 0.05, run=2)
-    # Debris along the furrow.
-    for _ in range(26):
-        x, z = b.rng.randint(4, 33), b.rng.randint(1, 15)
-        for y in range(G + 3, 0, -1):
-            if b.solid(x, y - 1, z) and b.name(x, y, z) in (None, AIR):
-                b.set(x, y, z, b.rng.choice(("iron_bars", "iron_chain", CONC_WHITE, "iron_block", "glass_pane", "groundburst:steel_plating")))
-                break
-    return b
 
 
 # =====================================================================================================================
@@ -331,7 +265,7 @@ TEMPLATES = {
     "bunker_surface": site_bunker.bunker_surface, "bunker_below": site_bunker.bunker_below,
     "radar_outpost": site_radar.radar_outpost,
     "test_site_tower": site_test.test_site_tower, "test_site_zero": site_test.test_site_zero,
-    "crashed_missile": crashed_missile,
+    "crashed_missile": site_crashed.crashed_missile,
     "waste_storage": waste_storage,
     "research_station": research_station,
 }
@@ -396,7 +330,9 @@ def site_variants(name: str) -> list[dict]:
         return [{"weight": 1, "parts": [part("test_site_tower", (-24, 0, -24), "beard_thin", weathering="none"),
                                         part("test_site_zero", (28, -site_test.GRADE, -20), "beard_thin", weathering="none")]}]
     if name == "crashed_missile":
-        return [{"weight": 1, "parts": [part("crashed_missile", (-19, -5, -8), "beard_thin", weathering="none")]}]
+        # The origin is the wreck's block on the land; the furrow and crater are dug below the template's grade.
+        return [{"weight": 1, "parts": [part("crashed_missile", (-site_crashed.WX, -site_crashed.G, -site_crashed.WZ), "beard_thin",
+                                             weathering="none")]}]
     if name == "waste_storage":
         return [{"weight": 1, "parts": [part("waste_storage", (-19, 0, -16), "encapsulate")]}]
     if name == "exotic_research_station":

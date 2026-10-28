@@ -87,16 +87,7 @@ public final class SitePhotographer {
                 var settings = new net.minecraft.world.level.LevelSettings("Site shots", GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                // The last run's world goes first (each run makes its own from scratch; they would pile up).
-                var saves = mc.getLevelSource().getBaseDir();
-                try (var old = java.nio.file.Files.list(saves)) {
-                    for (var dir : old.filter(p -> p.getFileName().toString().startsWith("site_shots")).toList()) {
-                        try (var walk = java.nio.file.Files.walk(dir)) {
-                            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
-                        }
-                    }
-                }
-                String folder = net.minecraft.util.FileUtil.findAvailableName(saves, "site_shots", "");
+                String folder = DevWorlds.fresh(mc, "site_shots");
                 // Flat, and no structures: no village beside a site in its pictures.
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
                         SitePhotographer::deepFlat, mc.gui.screen());

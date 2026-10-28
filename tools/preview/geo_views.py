@@ -90,6 +90,11 @@ PRESETS = {
             ("dish side", 10, 270, (0, 76, 8), 60, None),
             ("dish back", 25, 20, (0, 76, 12), 60, None),
         ]),
+    "missile_wreck": dict(
+        shots=[("iso front", 30, 225, None, None, None), ("iso back", 30, 45, None, None, None),
+               ("low east", 8, 110, None, None, None), ("from above", 80, 180, None, None, None),
+               ("tail", 25, 200, (0, 12, 0), 60, None), ("tail's torn end", 15, 120, (-12, 12, -14), 36, None),
+               ("body's torn ends", 20, 250, (-30, -6, -30), 80, None), ("nose", 20, 150, (-30, -20, -92), 60, None)]),
     "missile_silo": dict(
         keep_one=("nose_",), hide=("strategic", "icbm"), anim="preview_doors",
         shots=WHOLE + [

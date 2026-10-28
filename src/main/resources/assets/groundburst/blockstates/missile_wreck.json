@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/missile_wreck"
+    },
+    "facing=east": {
+      "model": "groundburst:block/missile_wreck"
+    },
+    "facing=south": {
+      "model": "groundburst:block/missile_wreck"
+    },
+    "facing=west": {
+      "model": "groundburst:block/missile_wreck"
+    }
+  }
+}

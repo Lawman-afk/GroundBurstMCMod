@@ -1266,7 +1266,7 @@ public final class FxPhotographer {
                 var settings = new net.minecraft.world.level.LevelSettings("Fx shots", GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                String folder = net.minecraft.util.FileUtil.findAvailableName(mc.getLevelSource().getBaseDir(), "fx_shots", "");
+                String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "fx_shots");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings,
                         net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.TEST_OPTIONS,
                         net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());

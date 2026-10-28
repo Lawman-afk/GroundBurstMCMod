@@ -44,7 +44,7 @@ public final class BlastBenchClient {
                 var settings = new net.minecraft.world.level.LevelSettings("Blast bench", GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                String folder = net.minecraft.util.FileUtil.findAvailableName(mc.getLevelSource().getBaseDir(), "blast_bench", "");
+                String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "blast_bench");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(seed, true, false),
                         net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.gui.screen());
             } catch (java.io.IOException e) {

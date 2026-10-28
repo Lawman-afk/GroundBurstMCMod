@@ -47,7 +47,7 @@ public final class WorldSurveyClient {
                 var settings = new net.minecraft.world.level.LevelSettings("World survey", GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                String folder = net.minecraft.util.FileUtil.findAvailableName(mc.getLevelSource().getBaseDir(), "world_survey", "");
+                String folder = dev.groundburst.client.fx.DevWorlds.fresh(mc, "world_survey");
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(seed, true, false),
                         net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.gui.screen());
             } catch (java.io.IOException e) {
