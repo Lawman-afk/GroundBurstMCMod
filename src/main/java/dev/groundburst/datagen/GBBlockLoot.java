@@ -151,6 +151,17 @@ public class GBBlockLoot extends BlockLootSubProvider {
                 dev.groundburst.content.fallout.GBFallout.IRRADIATED_SOIL, dev.groundburst.content.fallout.GBFallout.CHARRED_PLANKS)) {
             dropSelf(b.block().get());
         }
+        // The silo doors: only the middle drops the door (breaking any block takes the whole).
+        for (var d : dev.groundburst.content.construction.GBConstruction.DOORS) {
+            var door = d.block().get();
+            add(door, net.minecraft.world.level.storage.loot.LootTable.lootTable().withPool(applyExplosionCondition(door,
+                    net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                            .setRolls(net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.exactly(1))
+                            .add(net.minecraft.world.level.storage.loot.entries.LootItem.lootTableItem(door).when(
+                                    net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, door,
+                                            net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                    .hasProperty(dev.groundburst.content.construction.SiloDoorBlock.CENTER, true)))))));
+        }
         // The Construction set: each drops itself (a doubled slab two).
         for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
             if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {

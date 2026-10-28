@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:large_silo_door",
+    "minecraft:water_bucket"
+  ],
+  "result": {
+    "id": "groundburst:rusted_large_silo_door"
+  }
+}

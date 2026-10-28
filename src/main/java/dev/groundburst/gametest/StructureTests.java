@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
 final class StructureTests {
     static final List<String> TEMPLATES = List.of("silo_surface_intact", "silo_surface_flooded", "silo_surface_collapsed",
             "silo_below_intact", "silo_below_flooded", "silo_below_collapsed", "bunker_surface", "bunker_below", "radar_outpost",
-            "test_site_zero", "test_site_bunker", "crashed_missile", "waste_storage", "research_station");
+            "test_site_tower", "test_site_zero", "crashed_missile", "waste_storage", "research_station");
     static final List<String> LOOT = List.of("silo_control", "silo_shaft", "bunker_armory", "bunker_stores", "radar_outpost", "test_site",
             "crashed_missile", "waste_storage", "research_station");
 

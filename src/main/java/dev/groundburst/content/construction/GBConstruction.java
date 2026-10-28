@@ -108,6 +108,23 @@ public final class GBConstruction {
                     (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), pos, state),
                     SEARCH_RADAR_WRECK.block().get()));
 
+    // --- the silo door ------------------------------------------------------------------------------------------------------------
+    /** Two leaves over a 7x7 opening that slide apart onto rails on a redstone signal; for show (DESIGN.md §22.2). */
+    public static final WithItem<SiloDoorBlock> LARGE_SILO_DOOR = GBBlocks.register("large_silo_door", "Large Silo Door", TAB,
+            p -> new SiloDoorBlock(p, () -> GBConstruction.LARGE_SILO_DOOR_ENTITY.get()), GBConstruction::door);
+    /** The same door left to rust, as the world's old silos have it (stuck where it stopped there). */
+    public static final WithItem<SiloDoorBlock> RUSTED_LARGE_SILO_DOOR = GBBlocks.register("rusted_large_silo_door", "Rusted Large Silo Door",
+            TAB, p -> new SiloDoorBlock(p, () -> GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get()), GBConstruction::door);
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> LARGE_SILO_DOOR_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("large_silo_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new SiloDoorBlockEntity(GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), pos, state), LARGE_SILO_DOOR.block().get()));
+    public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> RUSTED_LARGE_SILO_DOOR_ENTITY =
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("rusted_large_silo_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+                    (pos, state) -> new SiloDoorBlockEntity(GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), pos, state),
+                    RUSTED_LARGE_SILO_DOOR.block().get()));
+    /** The doors (their loot is the middle's alone). */
+    public static final List<WithItem<SiloDoorBlock>> DOORS = List.of(LARGE_SILO_DOOR, RUSTED_LARGE_SILO_DOOR);
+
     /** Every block of the set, in the creative tab's order. */
     public static final List<WithItem<? extends Block>> ALL = List.of(CHAIN_LINK_FENCE, BARBED_WIRE, CORRUGATED_STEEL,
             CORRUGATED_STEEL_STAIRS, CORRUGATED_STEEL_SLAB, RUSTED_CORRUGATED_STEEL, RUSTED_CORRUGATED_STEEL_STAIRS,
@@ -127,6 +144,10 @@ public final class GBConstruction {
 
     private static Properties metal(Properties p, MapColor colour) {
         return p.mapColor(colour).strength(4f, 6f).requiresCorrectToolForDrops().sound(SoundType.METAL);
+    }
+
+    private static Properties door(Properties p) {
+        return metal(p, MapColor.METAL).strength(6f, 24f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE);
     }
 
     private static Properties seeThrough(Properties p) {

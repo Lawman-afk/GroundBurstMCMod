@@ -10,24 +10,24 @@
         {
           "template": "groundburst:site/silo_surface_intact",
           "offset": [
-            -7,
+            -20,
             0,
-            -10
+            -18
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         },
         {
           "template": "groundburst:site/silo_below_intact",
           "offset": [
-            -7,
-            -36,
-            -7
+            -20,
+            -34,
+            -18
           ],
           "terrain": "encapsulate",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     },
@@ -37,24 +37,24 @@
         {
           "template": "groundburst:site/silo_surface_flooded",
           "offset": [
-            -7,
+            -20,
             0,
-            -10
+            -18
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         },
         {
           "template": "groundburst:site/silo_below_flooded",
           "offset": [
-            -7,
-            -36,
-            -7
+            -20,
+            -34,
+            -18
           ],
           "terrain": "encapsulate",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     },
@@ -64,24 +64,24 @@
         {
           "template": "groundburst:site/silo_surface_collapsed",
           "offset": [
-            -7,
+            -20,
             0,
-            -10
+            -18
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         },
         {
           "template": "groundburst:site/silo_below_collapsed",
           "offset": [
-            -7,
-            -36,
-            -7
+            -20,
+            -34,
+            -18
           ],
           "terrain": "encapsulate",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     }

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_dense_steel_plate": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:dense_steel_plate"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:large_silo_door"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_dense_steel_plate"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:large_silo_door"
+    ]
+  }
+}

@@ -56,11 +56,17 @@ class Build:
         return got[0] if got else None
 
     def solid(self, x: int, y: int, z: int) -> bool:
+        """Whether the block there is a whole one to build against (not a pane, plant, fitting or thin post). Matched on
+        the end of the name for panes and grass, so a steel panel and a grass block count as whole."""
         n = self.name(x, y, z)
-        return n is not None and n != AIR and not any(k in n for k in ("water", "torch", "lantern", "carpet", "button", "rail",
-                                                                         "iron_chain", "bars", "pane", "fence", "ladder", "cobweb",
-                                                                         "_wall", "lever", "flower", "grass", "fern", "bush",
-                                                                         "trapdoor", "door", "sign", "candle", "structure_block"))
+        if n is None or n == AIR:
+            return False
+        path = n.split(":", 1)[-1]
+        if path.endswith("pane") or path.endswith("grass"):
+            return False
+        return not any(k in path for k in ("water", "torch", "lantern", "carpet", "button", "rail", "iron_chain", "bars",
+                                           "fence", "ladder", "cobweb", "_wall", "lever", "flower", "fern", "bush",
+                                           "trapdoor", "door", "sign", "candle", "structure_block"))
 
     def unset(self, x: int, y: int, z: int) -> None:
         if self.inside(x, y, z):

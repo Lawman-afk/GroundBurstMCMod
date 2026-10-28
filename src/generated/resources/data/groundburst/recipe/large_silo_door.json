@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:reinforced_concrete",
+    "D": "groundburst:dense_steel_plate",
+    "P": "minecraft:piston"
+  },
+  "pattern": [
+    "DDD",
+    "CPC",
+    "DDD"
+  ],
+  "result": {
+    "id": "groundburst:large_silo_door"
+  }
+}

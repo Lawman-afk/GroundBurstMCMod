@@ -1297,7 +1297,7 @@ public final class FxPhotographer {
             server.execute(() -> {
                 ServerLevel level = server.overworld();
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "time set " + s.time());
-                server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "gamerule doDaylightCycle false");
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "gamerule advance_time false");
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 player.setGameMode(GameType.SPECTATOR);
                 level.getChunk(x >> 4, 0);

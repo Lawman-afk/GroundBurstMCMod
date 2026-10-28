@@ -138,19 +138,41 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
         if (!marker.startsWith("stand:") || !box.isInside(at)) {
             return;
         }
+        // stand:<kind>[:<facing>]: the way it faces in the template (south unless said), turned with the site.
+        String[] parts = marker.split(":");
+        String kind = parts[1];
+        float facing = parts.length > 2 ? switch (parts[2]) {
+            case "west" -> 90;
+            case "north" -> 180;
+            case "east" -> 270;
+            default -> 0;
+        } : 0;
         ArmorStand stand = new ArmorStand(level.getLevel(), at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
-        stand.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, yaw(this.placeSettings.getRotation()), 0);
-        var set = switch (marker) {
-            case "stand:hazmat" -> GBArmor.HAZMAT_SET;
-            case "stand:lead" -> GBArmor.LEAD_HAZMAT_SET;
+        stand.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, yaw(this.placeSettings.getRotation()) + facing, 0);
+        var set = switch (kind) {
+            case "hazmat" -> GBArmor.HAZMAT_SET;
+            case "lead" -> GBArmor.LEAD_HAZMAT_SET;
             default -> null;
         };
+        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
         if (set != null) {
-            EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
             for (int k = 0; k < 4; k++) {
                 if (random.nextFloat() < 0.85f) {                 // a piece or two gone now and then
                     stand.setItemSlot(slots[k], new ItemStack(set.get(k).get()));
                 }
+            }
+        }
+        if (kind.equals("civilian")) {
+            // A test town's mannequin (Doom Town): arms on, dressed in the colours of the clothes of its day.
+            stand.setShowArms(true);
+            int[] cloth = {0x6B4F3A, 0x4E5D6C, 0x2F3A56, 0xB8A27A, 0x7A2E2A, 0x5C6B4A, 0x8A8F96};
+            net.minecraft.world.item.Item[] wear = {null, net.minecraft.world.item.Items.LEATHER_CHESTPLATE,
+                    net.minecraft.world.item.Items.LEATHER_LEGGINGS, net.minecraft.world.item.Items.LEATHER_BOOTS};
+            for (int k = 1; k < 4; k++) {
+                ItemStack piece = new ItemStack(wear[k]);
+                piece.set(net.minecraft.core.component.DataComponents.DYED_COLOR,
+                        new net.minecraft.world.item.component.DyedItemColor(cloth[random.nextInt(cloth.length)]));
+                stand.setItemSlot(slots[k], piece);
             }
         }
         level.addFreshEntity(stand);

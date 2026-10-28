@@ -69,6 +69,7 @@ public final class GBTagProviders {
                 boolean sand = b == dev.groundburst.content.construction.GBConstruction.SANDBAGS || b == dev.groundburst.content.construction.GBConstruction.SANDBAG_SLAB;
                 tag(sand ? BlockTags.MINEABLE_WITH_SHOVEL : BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
             }
+            dev.groundburst.content.construction.GBConstruction.DOORS.forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             dev.groundburst.content.construction.GBConstruction.STAIRS.forEach(b -> tag(BlockTags.STAIRS).add(b.block().key()));
             dev.groundburst.content.construction.GBConstruction.SLABS.forEach(b -> tag(BlockTags.SLABS).add(b.block().key()));
             for (Ore ore : GBResources.ores()) {

@@ -8,26 +8,26 @@
       "weight": 1,
       "parts": [
         {
-          "template": "groundburst:site/test_site_zero",
+          "template": "groundburst:site/test_site_tower",
           "offset": [
-            -18,
-            -3,
-            -18
+            -24,
+            0,
+            -24
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
           "weathering": "none"
         },
         {
-          "template": "groundburst:site/test_site_bunker",
+          "template": "groundburst:site/test_site_zero",
           "offset": [
-            -6,
-            -1,
-            30
+            28,
+            -3,
+            -20
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     }

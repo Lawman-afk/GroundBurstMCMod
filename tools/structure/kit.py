@@ -19,6 +19,8 @@ from build import AIR, OPPOSITE, STEP, Build, gb, mc
 
 N, E, S, W = "north", "east", "south", "west"
 DIR4 = (N, E, S, W)
+FACING_OF = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
+BUTTON = "polished_blackstone_button"
 
 # The Construction set's blocks.
 CHAIN_LINK = gb("chain_link_fence")
@@ -83,6 +85,41 @@ class Kit(Build):
     def __init__(self, sx: int, sy: int, sz: int, seed: int = 0):
         super().__init__(sx, sy, sz, seed)
         self.seed = seed
+        self._iron_doors: list[tuple[int, int, int, str]] = []
+        #: Underground: what is left unset is rock, not air (so nothing is put there).
+        self.buried = False
+
+    # --- doors ----------------------------------------------------------------------------------------------------------------------
+    def iron_door(self, x: int, y: int, z: int, facing: str, hinge: str = "left", open_: bool = False) -> None:
+        """An iron door, which only a signal opens: `finish` puts a button on the wall beside it on both sides."""
+        self.door(x, y, z, facing, "iron_door", hinge, open_)
+        self._iron_doors.append((x, y, z, facing))
+
+    def finish(self) -> None:
+        """What waits for the walls to be built: a button by each iron door on each side of it, at shoulder height on the
+        wall beside the door; where the door opens into a passage one wide, on the passage's wall just in front of it."""
+        for x, y, z, facing in self._iron_doors:
+            fx, fz = STEP[facing]
+            sides = ((fz, fx), (-fz, -fx))                          # along the wall, either way
+            for face, (dx, dz) in ((facing, (fx, fz)), (OPPOSITE[facing], (-fx, -fz))):
+                placed = False
+                for sx, sz in sides:
+                    wx, wz = x + sx, z + sz
+                    if self.solid(wx, y + 1, wz) and self._free(wx + dx, y + 1, wz + dz):
+                        self.set(wx + dx, y + 1, wz + dz, BUTTON, {"face": "wall", "facing": face, "powered": False})
+                        placed = True
+                        break
+                ax, az = x + dx, z + dz
+                if placed or not self._free(ax, y + 1, az):
+                    continue
+                for sx, sz in sides:
+                    if self.solid(ax + sx, y + 1, az + sz):
+                        self.set(ax, y + 1, az, BUTTON, {"face": "wall", "facing": FACING_OF[(-sx, -sz)], "powered": False})
+                        break
+
+    def _free(self, x: int, y: int, z: int) -> bool:
+        there = self.name(x, y, z)
+        return there == AIR or (there is None and not self.buried)
 
     def n(self, x: float, y: float, z: float, scale: float, salt: int = 0) -> float:
         return fbm(x, y, z, scale, self.seed + salt)

@@ -838,6 +838,14 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('P', plate).define('S', rod).define('R', Items.REDSTONE).define('L', dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item())
                 .pattern("PPP").pattern("SRS").pattern(" L ")
                 .unlockedBy(getHasName(dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item()), has(dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item())).save(output);
+        var concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.item();
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item(), 1)
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('C', concrete).define('P', Items.PISTON)
+                .pattern("DDD").pattern("CPC").pattern("DDD")
+                .unlockedBy(getHasName(GBParts.DENSE_STEEL_PLATE), has(GBParts.DENSE_STEEL_PLATE)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR.item(), 1)
+                .requires(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item()).requires(Items.WATER_BUCKET)
+                .unlockedBy(getHasName(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item()), has(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR.item())).save(output);
         sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
         sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
         sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));

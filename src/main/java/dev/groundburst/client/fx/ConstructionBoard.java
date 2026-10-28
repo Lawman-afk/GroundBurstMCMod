@@ -122,7 +122,11 @@ final class ConstructionBoard {
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH).setValue(dev.groundburst.content.construction.SearchRadarBlock.ACTIVE, true), 2);
         level.setBlock(new BlockPos(x + 9, y, z + 22), GBConstruction.SEARCH_RADAR_WRECK.block().get().defaultBlockState()
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH), 2);
-        BoundingBox box = new BoundingBox(x - 17, o.getY(), z - 13, x + 24, y + 12, z + 28);
+        // Three silo doors in a row west of the board: shut, opening on a redstone block, and rusted stuck part-open.
+        door(level, new BlockPos(x - 34, y, z - 12), GBConstruction.LARGE_SILO_DOOR.block().get(), false, -1);
+        door(level, new BlockPos(x - 34, y, z), GBConstruction.LARGE_SILO_DOOR.block().get(), true, -1);
+        door(level, new BlockPos(x - 34, y, z + 12), GBConstruction.RUSTED_LARGE_SILO_DOOR.block().get(), false, 70);
+        BoundingBox box = new BoundingBox(x - 43, o.getY(), z - 16, x + 24, y + 12, z + 28);
         // Fencing and stairs join their neighbours from the blocks round them: set each again once all are down.
         for (BlockPos p : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
             BlockState s = level.getBlockState(p);
@@ -131,6 +135,20 @@ final class ConstructionBoard {
             }
         }
         return box;
+    }
+
+    /** A silo door laid as its item lays it (facing north), powered by a redstone block at its east end if asked, or
+     * left stuck {@code stuck} ticks open. */
+    private static void door(ServerLevel level, BlockPos at, Block block, boolean powered, int stuck) {
+        BlockState state = block.defaultBlockState();
+        level.setBlock(at, state, 3);
+        block.setPlacedBy(level, at, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+        if (powered) {
+            level.setBlock(at.east(8), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+        }
+        if (stuck >= 0 && level.getBlockEntity(at) instanceof dev.groundburst.content.construction.SiloDoorBlockEntity d) {
+            d.setStuck(stuck);
+        }
     }
 
     private static void fill(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1, BlockState state) {

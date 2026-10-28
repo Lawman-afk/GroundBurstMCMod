@@ -115,7 +115,7 @@ public final class BlastBench {
     private static void start(MinecraftServer server, ServerLevel level, ServerPlayer player) {
         var source = server.createCommandSourceStack().withSuppressedOutput();
         server.getCommands().performPrefixedCommand(source, "time set noon");
-        server.getCommands().performPrefixedCommand(source, "gamerule doDaylightCycle false");
+        server.getCommands().performPrefixedCommand(source, "gamerule advance_time false");
         player.setGameMode(GameType.SPECTATOR);
         BlockPos spawn = level.getRespawnData().pos();
         burst = new Vec3(spawn.getX() + 0.5, 0, spawn.getZ() + 0.5);

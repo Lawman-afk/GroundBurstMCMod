@@ -87,10 +87,19 @@ public final class SitePhotographer {
                 var settings = new net.minecraft.world.level.LevelSettings("Site shots", GameType.CREATIVE,
                         net.minecraft.world.level.LevelSettings.DifficultySettings.DEFAULT, true,
                         net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
-                String folder = net.minecraft.util.FileUtil.findAvailableName(mc.getLevelSource().getBaseDir(), "site_shots", "");
+                // The last run's world goes first (each run makes its own from scratch; they would pile up).
+                var saves = mc.getLevelSource().getBaseDir();
+                try (var old = java.nio.file.Files.list(saves)) {
+                    for (var dir : old.filter(p -> p.getFileName().toString().startsWith("site_shots")).toList()) {
+                        try (var walk = java.nio.file.Files.walk(dir)) {
+                            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+                        }
+                    }
+                }
+                String folder = net.minecraft.util.FileUtil.findAvailableName(saves, "site_shots", "");
                 // Flat, and no structures: no village beside a site in its pictures.
                 mc.createWorldOpenFlows().createFreshLevel(folder, settings, new net.minecraft.world.level.levelgen.WorldOptions(0L, false, false),
-                        net.minecraft.world.level.levelgen.presets.WorldPresets::createTestWorldDimensions, mc.gui.screen());
+                        SitePhotographer::deepFlat, mc.gui.screen());
             } catch (java.io.IOException e) {
                 GroundBurst.LOGGER.error("Site shots: could not make a world", e);
             }
@@ -156,6 +165,25 @@ public final class SitePhotographer {
         }
     }
 
+    /**
+     * A flat world deep enough for what the sites have underground (a silo's shaft, a bunker's stair, the waste store):
+     * bedrock, seventy layers of stone, dirt and grass, the land's top at y 10.
+     */
+    private static net.minecraft.world.level.levelgen.WorldDimensions deepFlat(net.minecraft.core.HolderLookup.Provider registries) {
+        var biomes = registries.lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var flat = net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings.getDefault(biomes,
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE_SET),
+                        registries.lookupOrThrow(net.minecraft.core.registries.Registries.PLACED_FEATURE))
+                .withBiomeAndLayers(List.of(
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, net.minecraft.world.level.block.Blocks.BEDROCK),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(70, net.minecraft.world.level.block.Blocks.STONE),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(3, net.minecraft.world.level.block.Blocks.DIRT),
+                        new net.minecraft.world.level.levelgen.flat.FlatLayerInfo(1, net.minecraft.world.level.block.Blocks.GRASS_BLOCK)),
+                        java.util.Optional.empty(), biomes.getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS));
+        return net.minecraft.world.level.levelgen.presets.WorldPresets.createTestWorldDimensions(registries)
+                .replaceOverworldGenerator(registries, new net.minecraft.world.level.levelgen.FlatLevelSource(flat));
+    }
+
     /** On the server: the site on the grass at {@code x}, and its pictures queued. */
     private static void place(ServerLevel level, String name, int x) {
         try {
@@ -175,17 +203,32 @@ public final class SitePhotographer {
                 }
             }
             int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0) - 1;     // the land's top block, as generation reads it
-            // The land the site stands on where it generates: sand for the test site, grass elsewhere (the flat world is sand).
+            // The land the site stands on where it generates: sand for the test site, grass elsewhere.
             var land = (name.equals("test_site") ? net.minecraft.world.level.block.Blocks.SAND
                     : net.minecraft.world.level.block.Blocks.GRASS_BLOCK).defaultBlockState();
             for (BlockPos p : BlockPos.betweenClosed(x - 96, top, -96, x + 96, top, 96)) {
                 level.setBlock(p, land, 2);
             }
-            // The biome too, so the grass is the colour it is where the site generates (the flat world is a desert).
+            // The biome too, so the grass and water are the colour they are where the site generates.
             commands.performPrefixedCommand(source, "gamerule max_block_modifications 4000000");
             commands.performPrefixedCommand(source, "fillbiome " + (x - 96) + " " + (top - 8) + " -96 " + (x + 96) + " " + (top + 64)
                     + " 96 minecraft:" + (name.equals("test_site") ? "desert" : "plains"));
             BlockPos origin = new BlockPos(x, top, 0);
+            if (name.contains(":cut")) {
+                // <site>:cut:<dz>: what is underground, raised into a block of stone (the flat world is too thin for it)
+                // and cut away north of the plane dz from its origin; seen from the north, at the cut.
+                String[] p = name.split(":");
+                int dz = p.length > 2 ? Integer.parseInt(p[2]) : 0;
+                origin = origin.above(44);
+                BoundingBox box = GBStructures.preview(level, p[0], variant, origin, true, origin.getZ() + dz);
+                double cx = (box.minX() + box.maxX() + 1) / 2.0;
+                double cy = (box.minY() + origin.getY()) / 2.0;
+                int cut = origin.getZ() + dz;
+                String base = "site_" + p[0] + "_" + variant + "_cut" + dz;
+                SHOTS.add(new Shot(base + ".png", new Vec3(cx, cy, cut - 46), 0, 0, BlockPos.containing(cx, cy, cut + 6)));
+                SHOTS.add(new Shot(base + "_close.png", new Vec3(cx + 8, cy + 4, cut - 26), 0, 8, BlockPos.containing(cx, cy, cut + 6)));
+                return;
+            }
             if (name.equals("exotic_research_station")) {
                 origin = origin.above(14);                 // it floats over an island in the End
             }

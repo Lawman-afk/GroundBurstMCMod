@@ -2919,6 +2919,39 @@ and Titan II launch sites: a raised gravel platform, the Large Silo Door, floodl
 antenna, chain-link and barbed wire); the Command Bunker, the Crashed Missile, the Waste Storage and the Exotic Research
 Station after them.
 
+**As built so far** (each photographed in game on flat land from seven sides, `gradlew runSiteShots -Psite=<site>`, the
+parts underground cut open, `-Psite=<site>:cut:<dz>`; the photographer's flat world is seventy layers of stone deep so
+they stand in rock):
+- *Radar Outpost* (`site_radar.py`): the concrete radar tower and its radome, the search radar's lattice tower with the
+  wreck beside it, three modules on piers, the scatter billboard, poles and wires, the fence and gate.
+- *Test Site* (`site_test.py`, two parts): the shot tower (a lattice tower on splayed legs, the cab with the device on
+  its chains, the hoist, guys), instrument masts turned on it, the control bunker under its sand bank (the periscope, the
+  door down a cut in the bank), Doom Town (a two-storey house and a bungalow, mannequins in clothes, a picket fence with
+  gaps); 48 blocks east the earlier shot's crater (rings of trinitite, glassed sand, irradiated soil and scorched earth;
+  the old footings, the obelisk, the fence ring with radiation signs, a charred house, the bleachers).
+- *Abandoned Silo* (`site_silo.py`, three variants): above, a gravel hardstand going back to grass, the Rusted Large
+  Silo Door on its rails (stuck an inch ajar; half open over black water; gone into the shaft, its rails torn), the two
+  vents, the portal blockhouse over the ladder down, the support building, the antenna, floodlight poles at the door's
+  ends, the fence, gate and guard shack; below, the shaft round (seven across, squared to the door's opening at its
+  head, as the Titan II's round silo under its square door), a work platform folded out round the missile at its stage
+  joint and a ledge lower down, cable runs, lamps, the ladder; the Titan II (white, grimed in calcite, the dark band, the
+  re-entry vehicle a cone of stairs under its spike; broken at the joint when collapsed); the cableway, the blast lock,
+  the control centre two storeys high; flooded to the cableway's floor in one variant.
+- *Command Bunker* (`site_bunker.py`, after the Diefenbunker and Kelvedon Hatch): above, an earth berm (a dome whose
+  contours wander, shrubs on its lower slopes) with the concrete portal in its south face, wing walls holding the bank,
+  hazard stripes round the opening and floodlights over it; inside, a vestibule whose deflector wall stands square
+  before the first blast door; the guyed radio mast and its tuning hut, a wire antenna between two poles, the intake and
+  exhaust vents (louvres under mushroom caps), the generator's stack and its day tank, the escape hatch (a copper lid on
+  gravel), the helipad, the guard's hut and sandbags inside the gate, gravel tracks worn between them all; below, twelve
+  steps down under a stepped ceiling to the second blast door and the decontamination room (white tile, showers over
+  drains, suits on stands), the main corridor (a green dado, chamfered ribs, a copper pipe and a cable on its ceiling),
+  the radio room, the armoury's cage, the plant room (generator, fuel tank, filter bank under the ducts, switchboard),
+  the dormitory (bunks two high, steel lockers), the washroom, the situation room two storeys tall (a continent on its
+  south wall with the strikes marked, the plotting table, the gallery of consoles looking down on both), the records
+  room, the mess and its galley, the escape tube filled with gravel at its top.
+- Every iron door has a button on each side of it (the kit's `iron_door`; `Kit.finish` puts them once the walls stand,
+  in a passage one wide on the passage's wall): players could not open the old sites' iron doors.
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -3420,6 +3453,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-29 | The Test Site, the Abandoned Silo and the Command Bunker rebuilt (§22.2). The silo's shaft is round, squared only at its head under the door, as the Titan II's; the bunker is an earth-bermed portal with a blast-deflector wall before its first blast door and a twelve-step stair down, not a ladder well (the Diefenbunker's and Kelvedon Hatch's long entrances). Every iron door in a site has a button each side: the old sites' could not be opened. |
 | 2026-10-29 | The world sites are rebuilt from scratch (the user's review: poor building, a radar base's bars and mast a block off the ground): researched building rules (silhouette first, small palettes with gradients, depth, curves as models, wear that follows cause), a craftable Construction set of cosmetic blocks (they drop themselves, so no free iron), a Large Silo Door (redstone, for show) and a Search Radar (turns on redstone), the Test Site an old crater and a readied shot tower without Jumbo (all four the user's choices); the beardifier's ground is the first air, so a site's ground-level delta is one more (§22.2). |
 | 2026-10-28 | The mod is MIT-licensed, no longer All Rights Reserved (the user: others should be able to make add-ons). MIT over LGPL-3.0: the commonest licence of add-on-friendly mods (Create, Mekanism), the simplest for add-on makers and modpacks; it lets anyone reuse the code and art with the notice kept. The Freesound recordings keep their own licences (noted in `README.md`; `LICENSE` is the plain MIT text, so GitHub reads it as MIT). On CurseForge: the MIT License, and distribution to third-party apps allowed. For publishing the source: a `README.md`, and `gradlew build` skips the deploy where there is no test instance (anyone else's machine) instead of failing. |
 | 2026-10-28 | Renamed **Ground Burst** (`groundburst`), from Ground Zero (`groundzero`): on CurseForge "ground zero" finds 46 projects, among them a Ground Zero modpack with a dozen "GroundZero's ..." mods of its own and another nuke mod. The user chose it from a shortlist, each checked on CurseForge and Modrinth (no project of that name, its URL free on both): Hypocenter, Launch Codes, Groundburst, Kiloton. A ground burst is a blast at ground level; the name is spelt as two words like Ground Zero was (the user's own spelling, on GitHub), the main classes `GroundBurst` and `GroundBurstClient`. Everything follows the name: the mod id and namespace, `dev.groundburst`, the class prefix `GB` (was `GZ`), `tools/gb` (was `tools/gz`), the Field Manual GB-1, the jar and the repository (Ground-Burst-MCMod). The phrase "ground zero" (a blast's centre) stays where the text means that. Worlds made with the old id lose the mod's blocks and items. The blast bench and the world survey keep the default seed every recorded run used. |

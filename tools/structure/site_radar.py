@@ -88,7 +88,7 @@ def radar_tower(k: Kit) -> None:
     k.set(cx - 1, 1, z1, HAZARD), k.set(cx + 1, 1, z1, HAZARD)
     k.set(cx - 1, 2, z1, HAZARD), k.set(cx + 1, 2, z1, HAZARD), k.set(cx, 3, z1, HAZARD)
     k.set(cx - 1, 3, z1, HAZARD), k.set(cx + 1, 3, z1, HAZARD)
-    k.door(cx, 1, z1, S, "iron_door")
+    k.iron_door(cx, 1, z1, S)
     k.set(cx, 3, z1 + 1, FLOODLIGHT, {"facing": S})
     k.set(cx + 2, 2, z1 + 1, gb("keep_out_sign"), {"facing": S})
     # Inside: a ladder up the north-west corner through every floor to the deck hatch.
@@ -183,7 +183,7 @@ def module_train(k: Kit) -> None:
         k.clear(xa, FLOOR + 1, MZ0 + 3, xb, FLOOR + 2, MZ0 + 5)
     # The way in: the west end's door up two steps.
     x0 = MODULES[0][0]
-    k.door(x0, FLOOR + 1, MZ0 + 4, W, "iron_door")
+    k.iron_door(x0, FLOOR + 1, MZ0 + 4, W)
     k.set(x0 - 1, FLOOR, MZ0 + 4, "smooth_stone_slab", {"type": "top", "waterlogged": False})
     k.set(x0 - 2, 1, MZ0 + 4, "stone_brick_stairs", {"facing": E, "half": "bottom", "shape": "straight", "waterlogged": False})
     k.footing(x0 - 2, MZ0 + 4, "gravel")
@@ -298,7 +298,7 @@ def perimeter(k: Kit) -> None:
     k.clear(hx0 + 1, 1, hz0 + 1, hx1 - 1, 3, hz1 - 1)
     k.fill(hx0 - 1, 4, hz0 - 1, hx1 + 1, 4, hz1 + 1, CORRUGATED_SLAB, {"type": "bottom", "waterlogged": False})
     k.set(hx0, 2, hz0 + 2, "glass_pane")
-    k.door(hx0 + 1, 1, hz0, N, "iron_door")
+    k.iron_door(hx0 + 1, 1, hz0, N)
     k.set(hx1 - 1, 1, hz1 - 1, "spruce_stairs", {"facing": N, "half": "bottom", "shape": "straight", "waterlogged": False})
 
 

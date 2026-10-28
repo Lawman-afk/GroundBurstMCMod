@@ -128,6 +128,11 @@ public class GroundBurstClient {
         event.registerBlockEntityRenderer(dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(), 11, 15));
         // The Search Radar's reflector reaches six blocks out and up from its bearing.
+        // The Large Silo Door: its rails reach eight blocks either side of its middle.
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), 1, 8));
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), 1, 8));
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(), 6, 6));
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(),

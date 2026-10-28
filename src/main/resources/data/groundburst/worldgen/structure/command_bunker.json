@@ -10,24 +10,24 @@
         {
           "template": "groundburst:site/bunker_surface",
           "offset": [
-            -16,
+            -22,
             0,
-            -15
+            -22
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         },
         {
           "template": "groundburst:site/bunker_below",
           "offset": [
-            -16,
-            -15,
-            -15
+            -22,
+            -12,
+            -22
           ],
           "terrain": "encapsulate",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     }

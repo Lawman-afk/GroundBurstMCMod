@@ -69,9 +69,11 @@ public final class GBStructures {
         net.minecraft.world.level.levelgen.structure.BoundingBox all = net.minecraft.world.level.levelgen.structure.BoundingBox
                 .encapsulatingBoxes(pieces.stream().map(SitePiece::getBoundingBox).toList()).orElseThrow();
         var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        // A cut is made by never placing what lies north of it (clearing it afterwards would leave the light there stale).
+        int fromZ = cutZ == null ? Integer.MIN_VALUE : cutZ;
         if (ground) {
-            for (var p : net.minecraft.core.BlockPos.betweenClosed(all.minX() - 3, all.minY() - 3, all.minZ() - 3, all.maxX() + 3,
-                    origin.getY() - 1, all.maxZ() + 3)) {
+            for (var p : net.minecraft.core.BlockPos.betweenClosed(all.minX() - 3, all.minY() - 3, Math.max(all.minZ() - 3, fromZ),
+                    all.maxX() + 3, origin.getY() - 1, all.maxZ() + 3)) {
                 level.setBlock(p, stone, 2);
             }
         }
@@ -80,8 +82,11 @@ public final class GBStructures {
             var box = piece.getBoundingBox();
             for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) {
                 for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) {
-                    var chunkBox = new net.minecraft.world.level.levelgen.structure.BoundingBox(cx << 4, box.minY(), cz << 4, (cx << 4) + 15,
-                            box.maxY(), (cz << 4) + 15);
+                    if ((cz << 4) + 15 < fromZ) {
+                        continue;
+                    }
+                    var chunkBox = new net.minecraft.world.level.levelgen.structure.BoundingBox(cx << 4, box.minY(),
+                            Math.max(cz << 4, fromZ), (cx << 4) + 15, box.maxY(), (cz << 4) + 15);
                     piece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), random, chunkBox,
                             new net.minecraft.world.level.ChunkPos(cx, cz), origin);
                 }

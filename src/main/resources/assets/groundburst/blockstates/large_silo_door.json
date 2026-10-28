@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "groundburst:block/large_silo_door"
+      }
+    }
+  ]
+}

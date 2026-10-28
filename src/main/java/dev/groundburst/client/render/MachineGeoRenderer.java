@@ -316,6 +316,15 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
     }
 
+    /**
+     * How far off it is drawn: vanilla's 64 blocks for a machine of one block, further the further its model reaches
+     * (a Search Radar's reflector, a silo door's rails: a landmark of a site should not pop in at 64 blocks).
+     */
+    @Override
+    public int getViewDistance() {
+        return Math.min(192, 64 + 16 * this.reach);
+    }
+
     @Override
     public AABB getRenderBoundingBox(T blockEntity) {
         // Structures may also reach below the controller (the accelerator ring's plinth, a block; the silo's shaft).
