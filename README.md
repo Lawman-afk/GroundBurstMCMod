@@ -1,4 +1,4 @@
-# Ground Zero
+# Ground Burst
 
 **Assemble it. Launch it. Watch the horizon.**
 
