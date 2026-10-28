@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/central_solenoid"
+    },
+    "formed=true": {
+      "model": "groundburst:block/central_solenoid_formed"
+    }
+  }
+}

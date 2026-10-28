@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:rdx_crystals"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:plastic_sheet"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:slime_balls"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:plastic_explosive"
+      }
+    }
+  ],
+  "time": 200
+}

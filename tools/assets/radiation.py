@@ -5,7 +5,7 @@
   its face (a cream dial, the needle, the red band), a selector knob, and the probe (a chrome tube with its end window)
   clipped along its side on a black cable. Painted with the material library.
 - Dosimeter Badge: a film badge on a spring clip; its film shows the dose taken (six sprites, white through yellow,
-  orange and red to black, chosen by the client's `groundzero:dose` property).
+  orange and red to black, chosen by the client's `groundburst:dose` property).
 - Lead Container: a squat lead flask, its lid bolted down, a trefoil placard on its side.
 - Rad-Away: an IV bag of orange fluid on its hanger tab, its port at its foot.
 - Potassium Iodide Tablets: a blister card of white tablets under a purple band.
@@ -26,12 +26,12 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import machine_kit as K  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import gui as GUI  # noqa: E402
 import resources as R  # noqa: E402
@@ -437,28 +437,28 @@ def item_defs() -> None:
     # The Geiger Counter: the sprite in the inventory, the model everywhere else.
     write_json(paths.ASSETS / "items" / "geiger_counter.json", {"model": {
         "type": "minecraft:select", "property": "minecraft:display_context",
-        "cases": [{"when": "gui", "model": {"type": "minecraft:model", "model": "groundzero:item/geiger_counter"}}],
-        "fallback": {"type": "minecraft:model", "model": "groundzero:item/geiger_counter_in_hand"}}})
+        "cases": [{"when": "gui", "model": {"type": "minecraft:model", "model": "groundburst:item/geiger_counter"}}],
+        "fallback": {"type": "minecraft:model", "model": "groundburst:item/geiger_counter_in_hand"}}})
     # The Dosimeter Badge: its film by the dose its holder has taken.
     thresholds = [100, 200, 400, 600, 1000]
     write_json(paths.ASSETS / "items" / "dosimeter_badge.json", {"model": {
-        "type": "minecraft:range_dispatch", "property": "groundzero:dose",
-        "entries": [{"threshold": v, "model": {"type": "minecraft:model", "model": f"groundzero:item/dosimeter_badge_{i + 1}"}}
+        "type": "minecraft:range_dispatch", "property": "groundburst:dose",
+        "entries": [{"threshold": v, "model": {"type": "minecraft:model", "model": f"groundburst:item/dosimeter_badge_{i + 1}"}}
                     for i, v in enumerate(thresholds)],
-        "fallback": {"type": "minecraft:model", "model": "groundzero:item/dosimeter_badge_0"}}})
+        "fallback": {"type": "minecraft:model", "model": "groundburst:item/dosimeter_badge_0"}}})
 
 
 def main() -> None:
     sprite = geiger_sprite()
     sprite.save(paths.TEXTURES / "item" / "geiger_counter.png")
     write_json(paths.MODELS / "item" / "geiger_counter.json",
-               {"parent": "minecraft:item/generated", "textures": {"layer0": "groundzero:item/geiger_counter"}})
+               {"parent": "minecraft:item/generated", "textures": {"layer0": "groundburst:item/geiger_counter"}})
     geiger_model()
     for stage in range(6):
         name = f"dosimeter_badge_{stage}"
         dosimeter_sprite(stage).save(paths.TEXTURES / "item" / f"{name}.png")
         write_json(paths.MODELS / "item" / f"{name}.json",
-                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundzero:item/{name}"}})
+                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundburst:item/{name}"}})
     R.save_item("lead_container", lead_container_sprite())
     R.save_item("rad_away", rad_away_sprite())
     R.save_item("potassium_iodide", potassium_iodide_sprite())

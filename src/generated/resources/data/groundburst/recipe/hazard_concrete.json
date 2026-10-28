@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundburst:reinforced_concrete",
+    "groundburst:reinforced_concrete",
+    "groundburst:reinforced_concrete",
+    "groundburst:reinforced_concrete",
+    "#c:dyes/yellow",
+    "#c:dyes/black"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:hazard_concrete"
+  }
+}

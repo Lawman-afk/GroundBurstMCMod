@@ -1,0 +1,28 @@
+{
+  "title": "Diesel Generator",
+  "icon": "groundburst:diesel_generator",
+  "order": 2,
+  "items": [
+    "groundburst:diesel_generator"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:diesel_generator",
+      "text": "A twin-cylinder engine for **180 FE a tick**. Pipe liquid fuel into it or pour a canister in: synthetic fuel gives 90 FE per mB and liquid rocket fuel 140; other mods' diesel works too."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:diesel_generator",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "processing/chemical_plant",
+        "processing/fluids"
+      ],
+      "text": ""
+    }
+  ]
+}

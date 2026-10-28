@@ -21,11 +21,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import structures as ST  # noqa: E402
 
@@ -141,7 +141,7 @@ def hall() -> None:
 
 
 def paint_hall(g: GeoModel, tex: Tex, columns, girders, rails, cradles) -> None:
-    """The hall's surfaces, in model space (tools/gz/materials.py): a sealed concrete floor cut into slabs at the column
+    """The hall's surfaces, in model space (tools/gb/materials.py): a sealed concrete floor cut into slabs at the column
     lines, worn yellow bay lines and hazard bands all round it; grey steel columns, yellow crane girders bolted along their sides,
     rails polished where the wheels run; dark cradles with yellow cheeks and rubber saddles."""
     S = M.Surfacer(g, seed=43)

@@ -28,10 +28,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "particle_accelerator"
 CTRL_COL = 4
@@ -202,7 +202,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The accelerator's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): a dark steel
+    """The accelerator's surfaces, in model space (tools/gb/materials.py; the remaster after slice 9b): a dark steel
     plinth plated in block-long sections, a tread-plate top and a hazard band; a polished beam pipe; red dipoles and
     bending magnets, yellow quadrupoles, copper coils wound in turns; the special cells' cabinets and sockets; the
     glowing source, window and bunch as they were."""

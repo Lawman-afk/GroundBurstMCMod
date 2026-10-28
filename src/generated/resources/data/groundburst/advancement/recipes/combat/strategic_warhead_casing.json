@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_heavy_warhead_casing": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:heavy_warhead_casing"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:strategic_warhead_casing"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_heavy_warhead_casing"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:strategic_warhead_casing"
+    ]
+  }
+}

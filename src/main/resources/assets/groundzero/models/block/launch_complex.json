@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "groundzero:block/launch_complex_front",
-    "side": "groundzero:block/launch_complex_side",
-    "top": "groundzero:block/launch_complex_top"
-  }
-}

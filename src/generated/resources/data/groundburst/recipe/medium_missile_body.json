@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundburst:medium_missile_body"
+  }
+}

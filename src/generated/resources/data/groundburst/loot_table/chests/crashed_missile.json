@@ -1,0 +1,113 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:damaged_warhead",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:empty"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:inertial_guidance_unit",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:gps_guidance_unit",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:hardened_electronics",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:military_circuit",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:solid_rocket_motor_i",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 4,
+              "min": 1
+            }
+          },
+          "name": "groundburst:solid_propellant",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 6,
+              "min": 2
+            }
+          },
+          "name": "groundburst:steel_plate",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:dense_steel_plate",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:servo",
+          "weight": 8
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 3,
+        "min": 1
+      }
+    }
+  ],
+  "random_sequence": "groundburst:chests/crashed_missile"
+}

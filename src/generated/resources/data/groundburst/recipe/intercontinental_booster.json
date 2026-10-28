@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:liquid_fuel_stage",
+    "groundburst:liquid_fuel_stage",
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:tungsten_carbide_ingot",
+    "groundburst:military_circuit"
+  ],
+  "result": {
+    "id": "groundburst:intercontinental_booster"
+  }
+}

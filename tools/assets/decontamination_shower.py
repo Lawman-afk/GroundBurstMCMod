@@ -15,12 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "decontamination_shower"
 PANEL = fixed("panel_white", "#5a6268", "#7c858c", "#a2aab0", "#c4cacd", "#dadfe1", "#eaedee", "#f8f9f9")
@@ -70,7 +70,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The shower's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel grate floor with
+    """The shower's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a steel grate floor with
     a drain and a hazard front; white tiles inside, NATO-green panels outside with a hazard placard, hazard-striped
     front edges; a steel canopy with an extractor vent; a blue riser, a green valve box, a red handle, yellow nozzles,
     the falling spray."""

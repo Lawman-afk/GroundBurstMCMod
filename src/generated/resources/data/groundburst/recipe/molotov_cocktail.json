@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:synthetic_fuel_canister",
+    "minecraft:glass_bottle",
+    "minecraft:glass_bottle",
+    "minecraft:string",
+    "minecraft:string"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:molotov_cocktail"
+  }
+}

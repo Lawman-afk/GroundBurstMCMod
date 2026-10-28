@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "groundburst:industrial_press",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "groundburst:industrial_press"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundburst:blocks/industrial_press"
+}

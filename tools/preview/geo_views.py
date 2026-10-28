@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
 import render as R  # noqa: E402
 
@@ -122,7 +122,7 @@ def main() -> None:
     ap.add_argument("--cell", type=int, default=400)
     args = ap.parse_args()
     preset = PRESETS.get(args.model, DEFAULT)
-    mid = f"groundzero:block/{args.model}"
+    mid = f"groundburst:block/{args.model}"
     hidden = hidden_bones(args.model, preset.get("keep_one", ()), preset.get("hide", ()))
     anim = GP.load_animation(mid, preset["anim"]) if preset.get("anim") else None
     light = np.array([0.4, 0.8, 0.45])

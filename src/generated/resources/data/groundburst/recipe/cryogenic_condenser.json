@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "#c:circuits/advanced",
+    "F": "groundburst:machine_frame",
+    "M": "groundburst:electric_motor",
+    "P": "#c:plates/copper",
+    "V": "groundburst:pressure_vessel"
+  },
+  "pattern": [
+    "PMP",
+    "PFP",
+    "AV "
+  ],
+  "result": {
+    "id": "groundburst:cryogenic_condenser"
+  }
+}

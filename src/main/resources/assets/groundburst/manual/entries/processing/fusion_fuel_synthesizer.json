@@ -1,0 +1,26 @@
+{
+  "title": "Fusion Fuel Synthesizer",
+  "icon": "groundburst:fusion_fuel_synthesizer",
+  "order": 12,
+  "items": [
+    "groundburst:fusion_fuel_synthesizer",
+    "groundburst:lithium_deuteride_pellet"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:fusion_fuel_synthesizer",
+      "text": "Presses lithium-6 dust and deuterium gas into **lithium deuteride pellets**, the fuel of thermonuclear weapons and, later, fusion reactors. Draws 120 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fusion_fuel_synthesizer",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "fusion_synthesis",
+      "text": ""
+    }
+  ]
+}

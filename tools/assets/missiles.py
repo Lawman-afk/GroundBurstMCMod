@@ -10,7 +10,7 @@ Built in the world's pixels: the axis at x = z = 8, the tail at y = 0. Written a
 model, which the game draws four times over in the world (in flight, on a launcher, on an assembler), so a texel is a
 world pixel there. One model per missile serves everywhere; variants share its texture: with spent stages gone
 (_s1, _s2), each spent stage falling (_stage1, _stage2) and each assembly section (_part1...). The table the game reads
-(assets/groundzero/missiles.json) gives each missile's class, length, stages, engines, sections and radius by height.
+(assets/groundburst/missiles.json) gives each missile's class, length, stages, engines, sections and radius by height.
 
 Each missile follows its warhead's character and a real family (the research, DESIGN.md §10.4): the Army's olive-drab
 tactical missiles, an ATACMS-like dispenser carrier, Luna-M spin verniers, a Scud's riveted aft skirt and exhaust vanes,
@@ -33,12 +33,12 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import warheads as W  # noqa: E402
 
@@ -354,7 +354,7 @@ def save(rk: Rocket, livery: Livery) -> dict:
     rk.m.save(t)
     path = rk.m.model_path()
     data = json.loads(path.read_text(encoding="utf-8"))
-    data["textures"]["w"] = f"groundzero:block/{rk.warhead}"
+    data["textures"]["w"] = f"groundburst:block/{rk.warhead}"
     data["elements"] += head_elements(rk)
     write_json(path, data)
     variants(rk, data)
@@ -1507,7 +1507,7 @@ def item_definition(table: dict) -> None:
     folder = paths.MODELS / "item" / "missile"
 
     def model(name):
-        return {"type": "minecraft:model", "model": f"groundzero:item/{name}"}
+        return {"type": "minecraft:model", "model": f"groundburst:item/{name}"}
     cases = []
     for n in table:
         cases.append({"when": [n] + [f"{pre}{n}" for pre in ("strategic_", "icbm_", "flight_", "flight_strategic_", "flight_icbm_")],

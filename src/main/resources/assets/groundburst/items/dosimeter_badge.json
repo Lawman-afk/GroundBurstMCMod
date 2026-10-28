@@ -1,0 +1,47 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "groundburst:dose",
+    "entries": [
+      {
+        "threshold": 100,
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/dosimeter_badge_1"
+        }
+      },
+      {
+        "threshold": 200,
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/dosimeter_badge_2"
+        }
+      },
+      {
+        "threshold": 400,
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/dosimeter_badge_3"
+        }
+      },
+      {
+        "threshold": 600,
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/dosimeter_badge_4"
+        }
+      },
+      {
+        "threshold": 1000,
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/dosimeter_badge_5"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "groundburst:item/dosimeter_badge_0"
+    }
+  }
+}

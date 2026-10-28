@@ -18,7 +18,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as G  # noqa: E402
 
 

@@ -1,6 +1,0 @@
-{
-  "type": "neoforge:add_features",
-  "biomes": "#c:is_desert",
-  "features": "groundzero:ore_saltpeter_sandstone",
-  "step": "underground_ores"
-}

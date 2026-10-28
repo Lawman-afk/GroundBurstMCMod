@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "#c:ingots/copper",
+    "G": "#c:nuggets/gold",
+    "P": "minecraft:paper",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "CRC",
+    "RPG"
+  ],
+  "result": {
+    "id": "groundburst:handmade_circuit_board"
+  }
+}

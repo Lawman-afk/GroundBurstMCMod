@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "groundburst:item/nuclear_missile_silo_spawner"
+  }
+}

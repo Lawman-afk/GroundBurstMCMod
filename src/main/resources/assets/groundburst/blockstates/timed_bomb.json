@@ -1,0 +1,46 @@
+{
+  "variants": {
+    "armed=false,facing=north": {
+      "model": "groundburst:block/timed_bomb"
+    },
+    "armed=true,facing=north": {
+      "model": "groundburst:block/timed_bomb_armed"
+    },
+    "armed=false,facing=east": {
+      "model": "groundburst:block/timed_bomb",
+      "y": 90
+    },
+    "armed=true,facing=east": {
+      "model": "groundburst:block/timed_bomb_armed",
+      "y": 90
+    },
+    "armed=false,facing=south": {
+      "model": "groundburst:block/timed_bomb",
+      "y": 180
+    },
+    "armed=true,facing=south": {
+      "model": "groundburst:block/timed_bomb_armed",
+      "y": 180
+    },
+    "armed=false,facing=west": {
+      "model": "groundburst:block/timed_bomb",
+      "y": 270
+    },
+    "armed=true,facing=west": {
+      "model": "groundburst:block/timed_bomb_armed",
+      "y": 270
+    },
+    "armed=false,facing=up": {
+      "model": "groundburst:block/timed_bomb"
+    },
+    "armed=true,facing=up": {
+      "model": "groundburst:block/timed_bomb_armed"
+    },
+    "armed=false,facing=down": {
+      "model": "groundburst:block/timed_bomb"
+    },
+    "armed=true,facing=down": {
+      "model": "groundburst:block/timed_bomb_armed"
+    }
+  }
+}

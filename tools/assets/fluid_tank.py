@@ -18,12 +18,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import atlas as A  # noqa: E402
-from gz import machine_kit as K  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import atlas as A  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "fluid_tank"
 S, G = P.STEEL, P.GUNMETAL
@@ -32,7 +32,7 @@ OPP = {"north": "south", "south": "north", "east": "west", "west": "east", "up":
 
 
 def textures(name: str = NAME, frame_ramp=S, cap_ramp=G, rivet=None, hatch=None) -> None:
-    """The frame, glass and cap textures, painted with the material library (tools/gz/atlas.py; the remaster after the
+    """The frame, glass and cap textures, painted with the material library (tools/gb/atlas.py; the remaster after the
     Fission Reactor rework): brushed frame bars and corner blocks, see-through glass, a riveted cap plate round an
     inspection hatch."""
     rivet, hatch = rivet or S, hatch or cap_ramp
@@ -102,14 +102,14 @@ def corner_box(v: str, ns: str, we: str) -> tuple[list[float], list[float]]:
 
 
 def models() -> None:
-    tex = {"frame": f"groundzero:block/{NAME}_frame", "glass": f"groundzero:block/{NAME}_glass",
-           "cap": f"groundzero:block/{NAME}_cap", "particle": f"groundzero:block/{NAME}_frame"}
+    tex = {"frame": f"groundburst:block/{NAME}_frame", "glass": f"groundburst:block/{NAME}_glass",
+           "cap": f"groundburst:block/{NAME}_cap", "particle": f"groundburst:block/{NAME}_frame"}
     multipart = []
     item_elements = []
 
     def model(name: str, elements: list, render: str) -> str:
         write_json(paths.MODELS / "block" / f"{NAME}_{name}.json", {"textures": tex, "render_type": render, "elements": elements})
-        return f"groundzero:block/{NAME}_{name}"
+        return f"groundburst:block/{NAME}_{name}"
 
     for d, (frm, to) in PLANES.items():
         kind = "cap" if d in ("up", "down") else "glass"
@@ -141,7 +141,7 @@ def models() -> None:
     write_json(paths.ASSETS / "blockstates" / f"{NAME}.json", {"multipart": multipart})
     write_json(paths.MODELS / "item" / f"{NAME}.json", {"parent": "minecraft:block/block", "textures": tex,
                                                         "render_type": "minecraft:translucent", "elements": item_elements})
-    write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{NAME}"}})
+    write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{NAME}"}})
     creative_models(item_elements)
 
 
@@ -149,17 +149,17 @@ def creative_models(elements: list) -> None:
     """The creative tank never joins, so its block is the whole single-block element set: the glass in one translucent
     model, frame and caps in one cutout model, both always applied."""
     name = f"creative_{NAME}"
-    tex = {"frame": f"groundzero:block/{name}_frame", "glass": f"groundzero:block/{NAME}_glass",
-           "cap": f"groundzero:block/{name}_cap", "particle": f"groundzero:block/{name}_frame"}
+    tex = {"frame": f"groundburst:block/{name}_frame", "glass": f"groundburst:block/{NAME}_glass",
+           "cap": f"groundburst:block/{name}_cap", "particle": f"groundburst:block/{name}_frame"}
     glass = [e for e in elements if any(f["texture"] == "#glass" for f in e["faces"].values())]
     solid = [e for e in elements if e not in glass]
     write_json(paths.MODELS / "block" / f"{name}_glass.json", {"textures": tex, "render_type": "minecraft:translucent", "elements": glass})
     write_json(paths.MODELS / "block" / f"{name}_frame.json", {"textures": tex, "render_type": "minecraft:cutout", "elements": solid})
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"multipart": [
-        {"apply": {"model": f"groundzero:block/{name}_frame"}}, {"apply": {"model": f"groundzero:block/{name}_glass"}}]})
+        {"apply": {"model": f"groundburst:block/{name}_frame"}}, {"apply": {"model": f"groundburst:block/{name}_glass"}}]})
     write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:block/block", "textures": tex,
                                                        "render_type": "minecraft:translucent", "elements": elements})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{name}"}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{name}"}})
 
 
 if __name__ == "__main__":

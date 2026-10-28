@@ -1,7 +1,7 @@
 """Field Manual (DESIGN.md §24.2): the book's GUI texture and its item sprite.
 
 textures/gui/manual/book.png (512 x 512), positions mirrored in FieldManualScreen / ManualPages:
-  (0, 0)     320 x 200  the open book: olive binding, two cream pages, typed header "FM GZ-1", red RESTRICTED stamp
+  (0, 0)     320 x 200  the open book: olive binding, two cream pages, typed header "FM GB-1", red RESTRICTED stamp
   (0, 208)   18 x 10    next-page arrow (hover at +18)       (36, 208) previous-page arrow (hover at +18)
   (72, 208)  11 x 11    contents (hover at +12)              (96, 208) back (hover at +12)
   (120, 208) 18 x 18    item slot, printed on the page       (140, 208) 36 x 36 spotlight frame
@@ -20,10 +20,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import resources as R  # noqa: E402
 
 PAPER = fixed("manual_paper", "#8f8566", "#b3a684", "#cfc3a2", "#e2d7b9", "#ece3c9", "#f4ecd8", "#fbf6ea")
@@ -89,7 +89,7 @@ def book(t: Tex) -> None:
     t.vline(159, 6, 186, PAPER[1])
     t.vline(160, 6, 186, PAPER[2])
     # Typed header and the RESTRICTED stamp; a ruled line under each header and above the page numbers.
-    t.text(44, 10, "FM GZ-1", FADED)                                           # clear of the contents and back icons
+    t.text(44, 10, "FM GB-1", FADED)                                           # clear of the contents and back icons
     sw = Tex.text_width("RESTRICTED")
     sx = 160 + 150 - 14 - sw - 4
     t.outline(sx - 3, 8, sw + 6, 9, STAMP)

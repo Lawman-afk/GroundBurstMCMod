@@ -1,0 +1,92 @@
+{
+  "title": "Singularity Reactor",
+  "icon": "groundburst:singularity_reactor",
+  "order": 6,
+  "items": [
+    "groundburst:singularity_reactor",
+    "groundburst:singularity_reactor_spawner",
+    "groundburst:containment_emitter",
+    "groundburst:core_cradle"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundburst:textures/gui/manual/plates/singularity_reactor.png",
+      "width": 240,
+      "height": 240,
+      "text": "The formed Singularity Reactor, holding a seed."
+    },
+    {
+      "type": "text",
+      "text": "A 5x5x5 cage that holds a **singularity seed** and makes power by **eating items**: any item at all. Feed it fast enough and it makes up to **10,000 FE a tick**.\n\nA machine casing floor with the controller in the middle of the front, an **Item Port** on the left and the **Energy Port** on the right; steel plating posts at the corners; reactor glass walls with a **containment emitter** in the middle of each wall and of the roof; and the **core cradle** floating in the centre of the empty chamber."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:singularity_reactor",
+      "text": "The chamber inside must be empty but for the cradle. Any floor block may be swapped for an extra Item Port."
+    },
+    {
+      "type": "text",
+      "text": "**The output rule.** Every item it eats is worth **10,000 FE**, and it eats at most **20 items a second**. So the power is set by how fast you feed it:\n\n- 5 items a second: 2,500 FE a tick.\n- 10 items a second: 5,000 FE a tick.\n- 20 items a second: the full 10,000 FE a tick.\n\nHolding the cage costs **1,000 FE a tick**, the worth of 2 items a second, so a trickle of items does not even pay for itself. Run it from automatic farms: cobblestone generators, tree farms, quarries."
+    },
+    {
+      "type": "text",
+      "text": "**The seed.** Put a singularity seed in the controller, where it stays, like a battery in the charger, and charge the cage with **500,000 FE** through the Energy Port. The cage then engages and holds the seed in the cradle. Take the seed out to shut the reactor down safely.\n\n**Feeding.** Items go into its four feed slots through Item Ports. A hopper moves only 2.5 items a second; an [item pipe](processing/item_pipes) up to 128. **Swap more floor blocks for Item Ports** (do it before engaging) to feed it from several pipes. The reactor keeps a 500,000 FE reserve for the cage and only pushes out power above it.\n\n**Collapse.** If the cage runs out of power, or any part of the structure is broken while it holds the seed, **the singularity collapses and the seed is destroyed**."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Per item eaten",
+          "10,000 FE"
+        ],
+        [
+          "Most it eats",
+          "20 items/s"
+        ],
+        [
+          "Full output",
+          "10,000 FE/t"
+        ],
+        [
+          "Cage upkeep",
+          "1,000 FE/t"
+        ],
+        [
+          "To engage",
+          "500,000 FE"
+        ],
+        [
+          "Reserve kept",
+          "500,000 FE"
+        ]
+      ],
+      "text": "",
+      "title": "The rules"
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:singularity_reactor",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "exotic_fabricating",
+      "text": "",
+      "item": "groundburst:containment_emitter"
+    },
+    {
+      "type": "machine",
+      "kind": "exotic_fabricating",
+      "text": "",
+      "item": "groundburst:core_cradle"
+    },
+    {
+      "type": "links",
+      "entries": [
+        "processing/exotic_matter_fabricator"
+      ],
+      "text": ""
+    }
+  ]
+}

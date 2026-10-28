@@ -1,0 +1,49 @@
+{
+  "title": "Industrial Press",
+  "icon": "groundburst:industrial_press",
+  "order": 2,
+  "items": [
+    "groundburst:industrial_press",
+    "groundburst:plate_die",
+    "groundburst:rod_die",
+    "groundburst:wire_die",
+    "groundburst:canister_die"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:industrial_press",
+      "text": "Presses ingots into parts. The **die** in its die slot picks what it makes; dies are never used up. Draws 40 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:industrial_press",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:plate_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:rod_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:wire_die",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:canister_die",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "pressing",
+      "text": ""
+    }
+  ]
+}

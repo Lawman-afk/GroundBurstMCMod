@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:heavy_he_charge",
+    "groundburst:heavy_he_charge",
+    "groundburst:heavy_he_charge",
+    "groundburst:heavy_he_charge",
+    "groundburst:thermobaric_slurry_canister",
+    "groundburst:thermobaric_slurry_canister",
+    "groundburst:military_circuit"
+  ],
+  "result": {
+    "id": "groundburst:massive_ordnance_charge"
+  }
+}

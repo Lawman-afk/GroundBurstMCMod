@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
 import render as R  # noqa: E402
 
@@ -76,7 +76,7 @@ def missile_quads(warhead: str, bone: dict, matrix: np.ndarray, lying: bool, tur
     pivot = np.array([-bone["pivot"][0], bone["pivot"][1], bone["pivot"][2]], dtype=float)
     rot = (_rx(math.radians(-90)) if lying else np.eye(3)) @ _ry(math.radians(turn))
     out: list[R.Quad] = []
-    model = R.load_model(f"groundzero:item/missile/{warhead}")
+    model = R.load_model(f"groundburst:item/missile/{warhead}")
     for q in R.build_quads(model):
         local = 4.0 * (q.pos - np.array([8.0, shape["tail"], 8.0]))
         p = (rot @ local.T).T + pivot
@@ -162,7 +162,7 @@ def main() -> None:
     ap.add_argument("--only", type=int, default=None, help="draw only this missile and its marker (to check one bearing)")
     args = ap.parse_args()
     preset = PRESETS[args.model]
-    mid = f"groundzero:block/{args.model}"
+    mid = f"groundburst:block/{args.model}"
     geo = json.loads((paths.GEO / "block" / f"{args.model}.geo.json").read_text(encoding="utf-8"))["minecraft:geometry"][0]
     bones = {b["name"]: b for b in geo["bones"]}
     anim = GP.load_animation(mid, preset["anim"]) if args.time > 0 else None

@@ -1,0 +1,10 @@
+{
+  "values": [
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:uranium_block",
+    "groundburst:raw_uranium_block",
+    "groundburst:corium",
+    "groundburst:cooled_corium"
+  ]
+}

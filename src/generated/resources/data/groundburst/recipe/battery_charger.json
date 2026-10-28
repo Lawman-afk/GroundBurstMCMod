@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "#groundburst:basic_circuits",
+    "C": "groundburst:capacitor",
+    "F": "groundburst:machine_frame"
+  },
+  "pattern": [
+    "CBC",
+    " F "
+  ],
+  "result": {
+    "id": "groundburst:battery_charger"
+  }
+}

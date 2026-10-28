@@ -62,13 +62,13 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import charges as C  # noqa: E402
 import grenades as G  # noqa: E402
 
@@ -974,7 +974,7 @@ def napalm_fire() -> None:
     """Vanilla's fire, on our block (cut out, as vanilla draws fire)."""
     for k in (0, 1):
         write_json(paths.MODELS / "block" / f"napalm_fire_floor{k}.json", {"parent": f"minecraft:block/fire_floor{k}", "render_type": "minecraft:cutout"})
-    variants = {f"age={a}": [{"model": f"groundzero:block/napalm_fire_floor{k}"} for k in (0, 1)] for a in range(4)}
+    variants = {f"age={a}": [{"model": f"groundburst:block/napalm_fire_floor{k}"} for k in (0, 1)] for a in range(4)}
     write_json(paths.ASSETS / "blockstates" / "napalm_fire.json", {"variants": variants})
 
 
@@ -983,9 +983,9 @@ def blockstates() -> None:
         v = {}
         for facing, rot in C.HORIZONTAL.items():
             for armed in (False, True):
-                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/{name}{'_armed' if armed else ''}", **rot}
+                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundburst:block/{name}{'_armed' if armed else ''}", **rot}
         write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": v})
-        write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+        write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
 
 
 def check_caps(name: str, step: float = 0.05, tol: float = 0.03) -> float:

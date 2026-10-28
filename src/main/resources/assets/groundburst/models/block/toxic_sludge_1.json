@@ -1,0 +1,78 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "sludge": "groundburst:block/toxic_sludge_1",
+    "particle": "groundburst:block/toxic_sludge_1"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sludge"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sludge",
+          "cullface": "down"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#sludge"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#sludge"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#sludge"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#sludge"
+        }
+      }
+    }
+  ]
+}

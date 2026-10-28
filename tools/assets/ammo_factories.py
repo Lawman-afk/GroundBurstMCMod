@@ -29,11 +29,11 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import nuclear_silo as NS  # noqa: E402
@@ -210,7 +210,7 @@ def arms_dealer() -> None:
 
 
 def paint_arms_dealer(g: GeoModel, p: SS.Parts) -> tuple[Tex, Tex]:
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     k = K.Kit(g, {}, seed=811, ao_reach=3.0, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=True)
     S = k.S
@@ -430,7 +430,7 @@ def pagoda(g: GeoModel, name: str, r0: float, r1: float, y0: float, y1: float, c
 
 
 def paint_war_factory(g: GeoModel, p: SS.Parts) -> tuple[Tex, Tex]:
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     k = K.Kit(g, {}, seed=853, ao_reach=3.0, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=True)
     S = k.S

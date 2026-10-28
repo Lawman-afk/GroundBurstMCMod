@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/circuit_fabricator"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/circuit_fabricator"
+    }
+  }
+}

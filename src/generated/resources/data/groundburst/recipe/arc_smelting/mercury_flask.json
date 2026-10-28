@@ -1,0 +1,22 @@
+{
+  "type": "groundburst:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "#c:dusts/cinnabar"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:empty_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:mercury_flask"
+      }
+    }
+  ],
+  "time": 300
+}

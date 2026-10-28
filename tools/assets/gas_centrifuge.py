@@ -15,12 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "gas_centrifuge"
 ALU = fixed("aluminium", "#2e343a", "#4a525a", "#6c757e", "#8f989f", "#b0b8be", "#cdd3d7", "#e8ecee")
@@ -89,7 +89,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The centrifuge's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a NATO-green drive
+    """The centrifuge's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a NATO-green drive
     with louvred sides and a nameplate on the plinth; a brushed aluminium casing in sections with steel end rings and a
     hazard band lined up across the cascade, its slit dark onto the rotor; gunmetal caps and collar; steel pipes with
     brass flanges and a red valve; the rotor's balance marks."""

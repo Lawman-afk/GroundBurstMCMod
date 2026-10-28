@@ -1,7 +1,7 @@
 """Close-ups of part of a model: a height band seen from a few angles, large, so details (fins, joints, a nozzle)
 can be judged. Several models side by side compare them at one scale.
 
-    tools\\.venv\\Scripts\\python.exe tools\\preview\\closeup.py groundzero:item/missile/he_warhead --y0 -16 --y1 -10
+    tools\\.venv\\Scripts\\python.exe tools\\preview\\closeup.py groundburst:item/missile/he_warhead --y0 -16 --y1 -10
         [--px 40] [--views front,iso,low,back] [--out path]
 
 Heights are the model JSON's (an item model's pixels). Writes tools/out/previews/closeup.png unless --out says.
@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import render as R  # noqa: E402
 
 VIEWS = {"front": (8, 180), "back": (8, 0), "iso": (25, 210), "iso_back": (25, 30), "low": (-30, 200), "east": (5, -90),

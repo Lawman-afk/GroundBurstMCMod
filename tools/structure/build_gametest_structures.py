@@ -1,4 +1,4 @@
-"""Generates the structure templates used by GameTests (data/groundzero/structure/gametest/)."""
+"""Generates the structure templates used by GameTests (data/groundburst/structure/gametest/)."""
 from __future__ import annotations
 
 import sys
@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from template import Template  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "src" / "main" / "resources" / "data" / "groundzero" / "structure" / "gametest"
+OUT = ROOT / "src" / "main" / "resources" / "data" / "groundburst" / "structure" / "gametest"
 
 
 def floor(size: int, height: int) -> Template:

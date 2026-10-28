@@ -1,0 +1,19 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": "groundburst:plate_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/lead"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:lead_plate"
+      }
+    }
+  ],
+  "time": 100
+}

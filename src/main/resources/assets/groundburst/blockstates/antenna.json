@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/antenna"
+    },
+    "formed=true": {
+      "model": "groundburst:block/antenna_formed"
+    }
+  }
+}

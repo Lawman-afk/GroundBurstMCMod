@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "groundzero:block/arms_dealer_front",
-    "side": "groundzero:block/arms_dealer_side",
-    "top": "groundzero:block/arms_dealer_top"
-  }
-}

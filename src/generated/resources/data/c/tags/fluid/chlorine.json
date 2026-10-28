@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:chlorine",
-    "groundzero:flowing_chlorine"
+    "groundburst:chlorine",
+    "groundburst:flowing_chlorine"
   ]
 }

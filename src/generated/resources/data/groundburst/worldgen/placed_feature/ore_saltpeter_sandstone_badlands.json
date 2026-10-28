@@ -1,0 +1,31 @@
+{
+  "feature": "groundburst:ore_saltpeter_sandstone_badlands",
+  "placement": [
+    {
+      "type": "groundburst:config_toggle",
+      "toggle": "saltpeter"
+    },
+    {
+      "type": "minecraft:count",
+      "count": 6
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "max_inclusive": {
+          "absolute": 100
+        },
+        "min_inclusive": {
+          "absolute": 40
+        }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

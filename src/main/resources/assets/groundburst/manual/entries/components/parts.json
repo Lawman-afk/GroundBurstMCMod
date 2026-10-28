@@ -1,0 +1,62 @@
+{
+  "title": "Machine parts",
+  "icon": "groundburst:machine_frame",
+  "order": 1,
+  "items": [
+    "groundburst:machine_frame",
+    "groundburst:electric_motor",
+    "groundburst:servo",
+    "groundburst:heating_element",
+    "groundburst:pressure_vessel",
+    "groundburst:capacitor",
+    "groundburst:crt_display",
+    "groundburst:superconducting_coil"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Most machines start from a **Machine Frame**. Motors, servos, heating elements and pressure vessels go into the machines that need them; the CRT display into structure controllers."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:machine_frame",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:electric_motor",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:servo",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:heating_element",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:pressure_vessel",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:capacitor",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:crt_display",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:superconducting_coil"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:block/vacuum_vessel_casing"
+  }
+}

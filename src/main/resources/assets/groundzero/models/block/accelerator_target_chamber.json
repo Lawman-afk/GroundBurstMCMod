@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "groundzero:block/accelerator_target_chamber"
-  }
-}

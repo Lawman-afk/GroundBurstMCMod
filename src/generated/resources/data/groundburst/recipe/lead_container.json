@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "#c:chests/wooden",
+    "L": "groundburst:lead_plate"
+  },
+  "pattern": [
+    "LLL",
+    "LCL",
+    " L "
+  ],
+  "result": {
+    "id": "groundburst:lead_container"
+  }
+}

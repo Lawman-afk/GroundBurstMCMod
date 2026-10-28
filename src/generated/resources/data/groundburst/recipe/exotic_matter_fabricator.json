@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:superconducting_coil",
+    "E": "minecraft:ender_eye",
+    "F": "groundburst:machine_frame",
+    "M": "groundburst:military_circuit",
+    "T": "#c:plates/tungsten"
+  },
+  "pattern": [
+    "CEC",
+    "TFT",
+    "CMC"
+  ],
+  "result": {
+    "id": "groundburst:exotic_matter_fabricator"
+  }
+}

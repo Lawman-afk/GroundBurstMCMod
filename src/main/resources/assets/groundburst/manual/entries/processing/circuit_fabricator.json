@@ -1,0 +1,25 @@
+{
+  "title": "Circuit Fabricator",
+  "icon": "groundburst:circuit_fabricator",
+  "order": 10,
+  "items": [
+    "groundburst:circuit_fabricator"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:circuit_fabricator",
+      "text": "Makes every circuit, from basic to quantum, plus sensor arrays and superconducting coils. Coils need liquid nitrogen in its coolant tank. Draws 40 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:circuit_fabricator",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": ""
+    }
+  ]
+}

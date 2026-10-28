@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/battery_charger"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/battery_charger"
+    }
+  }
+}

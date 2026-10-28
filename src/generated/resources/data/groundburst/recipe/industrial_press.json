@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "minecraft:anvil",
+    "I": "#c:ingots/iron",
+    "P": "minecraft:piston",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "IAI",
+    "PRP",
+    "I I"
+  ],
+  "result": {
+    "id": "groundburst:industrial_press"
+  }
+}

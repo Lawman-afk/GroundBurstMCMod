@@ -16,10 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 CRUST = fixed("corium_crust", "#100c0b", "#1c1513", "#2a201c", "#3a2c26", "#4c3a31", "#614a3e", "#7a5e4c")
 MELT = fixed("corium_melt", "#4a0c04", "#7a1606", "#b02a08", "#e0500c", "#ff8418", "#ffbc40", "#fff0a0")
@@ -114,9 +114,9 @@ def block(name: str, tex: Tex, animated: bool = False) -> None:
     if animated:
         Path(str(path) + ".mcmeta").write_text(json.dumps({"animation": {"frametime": 6, "interpolate": True}}, indent=2) + "\n",
                                                encoding="utf-8")
-    write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundzero:block/{name}"}})
-    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundburst:block/{name}"}})
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundburst:block/{name}"}}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
     print(path)
 
 

@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/superconducting_capacitor_bank",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

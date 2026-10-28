@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "groundburst:superconducting_coil",
+    "D": "groundburst:dense_steel_plate",
+    "N": "groundburst:neodymium_magnet",
+    "T": "#c:plates/tungsten"
+  },
+  "pattern": [
+    "DCD",
+    "TNT",
+    "DCD"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:toroidal_field_coil"
+  }
+}

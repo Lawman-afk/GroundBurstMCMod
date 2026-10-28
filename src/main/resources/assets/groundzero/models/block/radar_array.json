@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "groundzero:block/radar_array_front",
-    "side": "groundzero:block/radar_array_side",
-    "top": "groundzero:block/radar_array_top"
-  }
-}

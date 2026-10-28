@@ -1,6 +1,6 @@
 """Sound recipes. Each recipe returns {relative_path: samples}; build_sounds() writes them as OGG.
 
-Paths are relative to assets/groundzero/sounds/ (e.g. "blast/nuke_near" -> sounds/blast/nuke_near.ogg).
+Paths are relative to assets/groundburst/sounds/ (e.g. "blast/nuke_near" -> sounds/blast/nuke_near.ogg).
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import synth as S  # noqa: E402
 import blasts as BL  # noqa: E402
 import launches as LA  # noqa: E402

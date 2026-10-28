@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:radiation",
-    "groundzero:toxin"
+    "groundburst:radiation",
+    "groundburst:toxin"
   ]
 }

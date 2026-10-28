@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "minecraft:bucket",
+    "F": "groundburst:machine_frame",
+    "M": "groundburst:electric_motor",
+    "P": "groundburst:fluid_pipe",
+    "V": "groundburst:pressure_vessel"
+  },
+  "pattern": [
+    " M ",
+    "PFP",
+    "VBV"
+  ],
+  "result": {
+    "id": "groundburst:water_pump"
+  }
+}

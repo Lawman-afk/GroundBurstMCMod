@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/ore_crusher"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/ore_crusher"
+    }
+  }
+}

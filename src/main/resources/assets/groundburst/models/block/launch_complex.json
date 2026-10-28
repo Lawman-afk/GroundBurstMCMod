@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundburst:block/launch_complex_front",
+    "side": "groundburst:block/launch_complex_side",
+    "top": "groundburst:block/launch_complex_top"
+  }
+}

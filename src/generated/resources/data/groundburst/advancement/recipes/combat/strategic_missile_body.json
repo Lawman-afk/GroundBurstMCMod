@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_heavy_missile_body": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:heavy_missile_body"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:strategic_missile_body"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_heavy_missile_body"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:strategic_missile_body"
+    ]
+  }
+}

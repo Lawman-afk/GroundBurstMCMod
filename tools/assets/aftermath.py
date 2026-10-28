@@ -2,7 +2,7 @@
 radiation field kills, and the ash a fallout plume lays.
 
 Painted to the texture remaster's rules (DESIGN.md §4.3, the user's request after the first look at them): each block a
-designed surface, not noise with dots. The material library's tiles (`gz/materials.py`: world-space noise that wraps
+designed surface, not noise with dots. The material library's tiles (`gb/materials.py`: world-space noise that wraps
 every block, a short hue-shifted ramp per material, scattered dithering for rough matter) give the base; over it, in the
 same wrapping space, the block's own structure: pieces (a cell network that wraps) each with its tone and its rounded
 light, lit on their top-left edges and shaded on their bottom-right ones, dark seams between, and the small things that
@@ -44,10 +44,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 DIRS = ("down", "up", "north", "south", "west", "east")
 N = 16
@@ -572,7 +572,7 @@ def flake(i: int) -> Tex:
 
 # --- models ---------------------------------------------------------------------------------------------------------------------------
 def block_id(name: str) -> str:
-    return f"groundzero:block/{name}"
+    return f"groundburst:block/{name}"
 
 
 def cube_all(name: str, cutout: bool = False) -> None:
@@ -641,14 +641,14 @@ def frozen_ground() -> None:
                                                                "textures": {"cross": "minecraft:block/short_grass"}})
     simple_state("frozen_plant")
     write_json(paths.MODELS / "item" / "frozen_plant.json", {"parent": "minecraft:item/generated", "textures": {"layer0": "minecraft:block/short_grass"}})
-    item_def("frozen_plant", "groundzero:item/frozen_plant", FROZEN_PLANT_TINT)
+    item_def("frozen_plant", "groundburst:item/frozen_plant", FROZEN_PLANT_TINT)
     write_json(paths.MODELS / "block" / "cryo_crystal.json", {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout",
                                                                "textures": {"cross": block_id("cryo_crystal")}})
     rot = {"down": {"x": 180}, "east": {"x": 90, "y": 90}, "north": {"x": 90}, "south": {"x": 90, "y": 180}, "up": {}, "west": {"x": 90, "y": 270}}
     write_json(paths.ASSETS / "blockstates" / "cryo_crystal.json", {"variants": {
         f"facing={face}": {"model": block_id("cryo_crystal"), **r} for face, r in rot.items()}})
     write_json(paths.MODELS / "item" / "cryo_crystal.json", {"parent": "minecraft:item/generated", "textures": {"layer0": block_id("cryo_crystal")}})
-    item_def("cryo_crystal", "groundzero:item/cryo_crystal")
+    item_def("cryo_crystal", "groundburst:item/cryo_crystal")
 
 
 def pillar(name: str, side: str, end: str) -> None:
@@ -703,7 +703,7 @@ def dead_plants() -> None:
         "textures": {"particle": "#crop", "crop": block_id("withered_crops")}, "elements": planes})
     simple_state("withered_crops")
     write_json(paths.MODELS / "item" / "withered_crops.json", {"parent": "minecraft:item/generated", "textures": {"layer0": block_id("withered_crops")}})
-    item_def("withered_crops", "groundzero:item/withered_crops")
+    item_def("withered_crops", "groundburst:item/withered_crops")
 
 
 def main() -> None:
@@ -736,7 +736,7 @@ def main() -> None:
     frozen_ground()
     for i in range(len(FLAKES)):
         flake(i).save(paths.TEXTURES / "particle" / f"fallout_ash_{i}.png")
-    write_json(paths.ASSETS / "particles" / "fallout_ash.json", {"textures": [f"groundzero:fallout_ash_{i}" for i in range(len(FLAKES))]})
+    write_json(paths.ASSETS / "particles" / "fallout_ash.json", {"textures": [f"groundburst:fallout_ash_{i}" for i in range(len(FLAKES))]})
     print("aftermath assets written")
 
 

@@ -15,11 +15,11 @@ from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import paths  # noqa: E402
-from gz import vanilla as V  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import RGBA, fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import paths  # noqa: E402
+from gb import vanilla as V  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import RGBA, fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 DIRS = ("north", "south", "east", "west", "up", "down")
 
@@ -176,11 +176,11 @@ def _ore(name: str, host: dict[str, str], paint: Callable[[Tex], None], glint: T
     glint_id = None
     if glint is not None:
         glint.save(paths.TEXTURES / "block" / "ore" / f"{name}_glint.png")
-        glint_id = f"groundzero:block/ore/{name}_glint"
-    return write_json(paths.MODELS / "block" / f"{name}.json", ore_model(name, host, f"groundzero:block/ore/{name}", glint_id))
+        glint_id = f"groundburst:block/ore/{name}_glint"
+    return write_json(paths.MODELS / "block" / f"{name}.json", ore_model(name, host, f"groundburst:block/ore/{name}", glint_id))
 
 
-# --- vanilla-style overlays: small lit mineral clusters (see gz/vanilla.py) -------------------------------------------
+# --- vanilla-style overlays: small lit mineral clusters (see gb/vanilla.py) -------------------------------------------
 
 def _clusters(ramp, stamps, seed, rim=None, accent=None):
     return V.ore_overlay(ramp, stamps, seed, rim=rim, accent=accent)
@@ -249,7 +249,7 @@ def review_sheet(names: list[str], out_name: str, cell: int = 200) -> Path:
     d = ImageDraw.Draw(sheet)
     light = np.array([0.4, 0.8, 0.45]); light /= np.linalg.norm(light)
     for i, n in enumerate(names):
-        model = R.load_model(f"groundzero:block/{n}")
+        model = R.load_model(f"groundburst:block/{n}")
         quads = R.build_quads(model)
         c, e = R.model_bounds(quads)
         x0, y0 = (i % cols) * cell * 2, (i // cols) * (cell + 16)

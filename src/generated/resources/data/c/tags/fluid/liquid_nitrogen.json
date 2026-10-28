@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:liquid_nitrogen",
-    "groundzero:flowing_liquid_nitrogen"
+    "groundburst:liquid_nitrogen",
+    "groundburst:flowing_liquid_nitrogen"
   ]
 }

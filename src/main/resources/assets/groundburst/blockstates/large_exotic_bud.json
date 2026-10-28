@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "groundburst:block/large_exotic_bud"
+    },
+    "facing=down": {
+      "model": "groundburst:block/large_exotic_bud",
+      "x": 180
+    },
+    "facing=north": {
+      "model": "groundburst:block/large_exotic_bud",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/large_exotic_bud",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east": {
+      "model": "groundburst:block/large_exotic_bud",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west": {
+      "model": "groundburst:block/large_exotic_bud",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

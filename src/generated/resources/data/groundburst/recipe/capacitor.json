@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": "#c:plates/copper",
+    "S": "groundburst:plastic_sheet",
+    "W": "#c:wires/gold"
+  },
+  "pattern": [
+    "PSP",
+    " W "
+  ],
+  "result": {
+    "id": "groundburst:capacitor"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "title": "Dusts and ingots",
+  "icon": "groundburst:iron_dust",
+  "order": 1,
+  "items": [
+    "groundburst:iron_dust",
+    "groundburst:copper_dust",
+    "groundburst:gold_dust",
+    "groundburst:lead_dust",
+    "groundburst:lead_ingot",
+    "groundburst:uranium_dust",
+    "groundburst:uranium_ingot",
+    "groundburst:lithium_dust",
+    "groundburst:rare_earth_dust",
+    "groundburst:tungsten_dust",
+    "groundburst:cobalt_dust",
+    "groundburst:cobalt_ingot",
+    "groundburst:cinnabar_dust"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Crushing a raw ore gives **two dusts**, so crushing before smelting doubles your metal. Dusts smelt in a furnace like raw ore; tungsten and cobalt need the heat of an [Arc Furnace](processing/arc_furnace).\n\nLead, uranium and tungsten also come as storage blocks."
+    },
+    {
+      "type": "machine",
+      "kind": "crushing",
+      "text": "",
+      "item": "groundburst:lead_dust"
+    },
+    {
+      "type": "smelting",
+      "item": "groundburst:lead_ingot",
+      "text": ""
+    },
+    {
+      "type": "smelting",
+      "item": "groundburst:uranium_ingot",
+      "text": ""
+    }
+  ]
+}

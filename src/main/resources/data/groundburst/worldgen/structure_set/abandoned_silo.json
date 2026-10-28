@@ -1,0 +1,18 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 1946311,
+    "separation": 18,
+    "spacing": 48,
+    "exclusion_zone": {
+      "chunk_count": 6,
+      "other_set": "minecraft:villages"
+    }
+  },
+  "structures": [
+    {
+      "structure": "groundburst:abandoned_silo",
+      "weight": 1
+    }
+  ]
+}

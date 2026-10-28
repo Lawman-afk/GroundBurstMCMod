@@ -18,13 +18,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "assembly_bench"
 X0, X1 = -24, 8          # the side half (west) then the main half: 32 px across
@@ -111,7 +111,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The bench's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel tread-plate top
+    """The bench's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a steel tread-plate top
     with a hazard edge on the working side, on gunmetal legs, shelf and uprights; a yellow gantry beam rated 2T with a
     green hoist, a chain and a yellow hook block; an olive drawer cabinet; rubber saddles and red vice jaws; the olive
     warhead on the cradle; a tan pegboard with its tools; a work lamp; the blueprint."""
@@ -210,18 +210,18 @@ WIDE_DISPLAY = {
 
 def glue() -> None:
     """Block model (particle only), blockstate over facing x active x part, the GeckoLib item definition."""
-    write_json(paths.MODELS / "block" / f"{NAME}.json", {"textures": {"particle": "groundzero:block/machine_particle"}})
+    write_json(paths.MODELS / "block" / f"{NAME}.json", {"textures": {"particle": "groundburst:block/machine_particle"}})
     variants = {}
     for facing in ("north", "east", "south", "west"):
         for active in ("false", "true"):
             for part in ("main", "side"):
-                variants[f"active={active},facing={facing},part={part}"] = {"model": f"groundzero:block/{NAME}"}
+                variants[f"active={active},facing={facing},part={part}"] = {"model": f"groundburst:block/{NAME}"}
     write_json(paths.ASSETS / "blockstates" / f"{NAME}.json", {"variants": variants})
     write_json(paths.MODELS / "item" / f"{NAME}.json", {"parent": "minecraft:block/block",
-                                                        "textures": {"particle": "groundzero:block/machine_particle"},
+                                                        "textures": {"particle": "groundburst:block/machine_particle"},
                                                         "display": WIDE_DISPLAY})
     write_json(paths.ASSETS / "items" / f"{NAME}.json",
-               {"model": {"type": "minecraft:special", "base": f"groundzero:item/{NAME}", "model": {"type": "geckolib:geckolib"}}})
+               {"model": {"type": "minecraft:special", "base": f"groundburst:item/{NAME}", "model": {"type": "geckolib:geckolib"}}})
 
 
 if __name__ == "__main__":

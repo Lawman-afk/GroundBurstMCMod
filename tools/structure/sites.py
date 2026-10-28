@@ -14,7 +14,7 @@ under magnesium-oxide sacks, mined from salt, closed off with bulkheads; a hot c
 
     tools/.venv/Scripts/python.exe tools/structure/sites.py
 
-Writes data/groundzero/structure/site/*.nbt, worldgen/structure/*.json, worldgen/structure_set/*.json and
+Writes data/groundburst/structure/site/*.nbt, worldgen/structure/*.json, worldgen/structure_set/*.json and
 tags/worldgen/biome/has_structure/*.json under src/main/resources.
 """
 from __future__ import annotations
@@ -27,13 +27,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from build import AIR, STEP, Build, gz, mc  # noqa: E402
-from gz import paths  # noqa: E402
+from build import AIR, STEP, Build, gb, mc  # noqa: E402
+from gb import paths  # noqa: E402
 
 DATA = paths.DATA
 CONC, CONC_DARK, CONC_WHITE = "light_gray_concrete", "gray_concrete", "white_concrete"
-RC, HAZ, STEEL, CASING = gz("reinforced_concrete"), gz("hazard_concrete"), gz("steel_plating"), gz("machine_casing")
-LEAD, GLASS_R = gz("lead_block"), gz("reactor_glass")
+RC, HAZ, STEEL, CASING = gb("reinforced_concrete"), gb("hazard_concrete"), gb("steel_plating"), gb("machine_casing")
+LEAD, GLASS_R = gb("lead_block"), gb("reactor_glass")
 RUST = ("brown_terracotta", "terracotta", "orange_terracotta")
 DIRT_STAIN = ("light_gray_terracotta", "gray_concrete_powder")
 
@@ -121,7 +121,7 @@ def silo_below(variant: str) -> Build:
         b.clear(x0, TUNNEL_Y + 1, 6, x1, TUNNEL_Y + 3, 8)
         b.fill(x0, TUNNEL_Y, 6, x1, TUNNEL_Y, 8, "iron_block")
         for x in range(x0, x1 + 1):
-            b.set(x, TUNNEL_Y + 3, 6, gz("insulated_cable"))
+            b.set(x, TUNNEL_Y + 3, 6, gb("insulated_cable"))
             if (x - x0) % 6 == 3:
                 b.lantern(x, TUNNEL_Y + 3, 7)
     tube(12, LOCK[0] - 1)
@@ -623,13 +623,13 @@ def test_site_zero() -> Build:
                 b.set(x, y, z, AIR)
             k = b.rng.random()
             if d < 5:
-                top = "groundzero:trinitite" if k < 0.65 else "groundzero:glassed_sand"
+                top = "groundburst:trinitite" if k < 0.65 else "groundburst:glassed_sand"
             elif d < 10:
-                top = "groundzero:glassed_sand" if k < 0.55 else ("groundzero:trinitite" if k < 0.75 else "sand")
+                top = "groundburst:glassed_sand" if k < 0.55 else ("groundburst:trinitite" if k < 0.75 else "sand")
             elif d < 14:
-                top = "groundzero:irradiated_soil" if k < 0.35 else ("sand" if k < 0.8 else "groundzero:scorched_earth")
+                top = "groundburst:irradiated_soil" if k < 0.35 else ("sand" if k < 0.8 else "groundburst:scorched_earth")
             else:
-                top = "sand" if k < 0.85 else "groundzero:irradiated_soil"
+                top = "sand" if k < 0.85 else "groundburst:irradiated_soil"
             b.set(x, G - depth, z, top)
             b.set(x, G - depth - 1, z, "sandstone" if k < 0.5 else "sand")
     # The shot tower's four concrete footings, twisted steel sticking out of them.
@@ -677,22 +677,22 @@ def test_site_zero() -> Build:
         b.set(tx, G + 11, tz, "lightning_rod", {"facing": "up", "powered": "false", "waterlogged": "false"})
     # Doom Town: a frame house half blown away (charred), and bleachers facing ground zero.
     hx, hz = 26, 26
-    b.fill(hx, G, hz, hx + 6, G, hz + 5, "groundzero:charred_planks")
+    b.fill(hx, G, hz, hx + 6, G, hz + 5, "groundburst:charred_planks")
     for y in range(G + 1, G + 5):
         for x in range(hx, hx + 7):
             for z in range(hz, hz + 6):
                 edge = x in (hx, hx + 6) or z in (hz, hz + 5)
                 blown = x + y < hx + G + 5 or z < hz + 2 and y > G + 2
                 if edge and not blown and b.rng.random() < 0.85:
-                    b.set(x, y, z, "groundzero:charred_planks" if (x + z) % 4 else "groundzero:charred_log")
+                    b.set(x, y, z, "groundburst:charred_planks" if (x + z) % 4 else "groundburst:charred_log")
     for x in (hx + 6,):
         for z in range(hz, hz + 6):
-            b.set(x, G + 5, z, "groundzero:charred_planks")
+            b.set(x, G + 5, z, "groundburst:charred_planks")
     for row in range(4):
         for x in range(22, 31):
             if b.rng.random() < 0.9:
                 b.stairs(x, G + 1 + row // 2 * 0 + (row // 2), 3 + row, "spruce_stairs", "north")
-    b.rubble((0, G + 1, 0, 36, G + 1, 36), 0.004, ("groundzero:charred_planks", "iron_bars", "dead_bush"))
+    b.rubble((0, G + 1, 0, 36, G + 1, 36), 0.004, ("groundburst:charred_planks", "iron_bars", "dead_bush"))
     return b
 
 
@@ -757,7 +757,7 @@ def crashed_missile() -> Build:
                 floor = G - max(0, depth - (1 if dz > half - 1 else 0))
                 for y in range(floor + 1, G + 1):
                     b.set(x, y, z, AIR)
-                b.set(x, floor, z, b.rng.choice(("coarse_dirt", "dirt", "gravel", "groundzero:scorched_earth" if t > 0.7 else "dirt")))
+                b.set(x, floor, z, b.rng.choice(("coarse_dirt", "dirt", "gravel", "groundburst:scorched_earth" if t > 0.7 else "dirt")))
             elif dz <= half + 2.2:
                 h = round(1.6 * t * (1 - (dz - half) / 2.2) + 0.3)
                 for y in range(G + 1, G + 1 + h):
@@ -770,17 +770,17 @@ def crashed_missile() -> Build:
                 fl = G - 4 + round(d * 0.6)
                 for y in range(fl + 1, G + 2):
                     b.set(x, y, z, AIR)
-                b.set(x, fl, z, b.rng.choice(("groundzero:scorched_earth", "groundzero:scorched_earth", "coarse_dirt",
-                                              "groundzero:irradiated_soil")))
+                b.set(x, fl, z, b.rng.choice(("groundburst:scorched_earth", "groundburst:scorched_earth", "coarse_dirt",
+                                              "groundburst:irradiated_soil")))
                 if b.rng.random() < 0.3:
-                    b.set(x, fl + 1, z, "groundzero:fallout_ash", {"layers": str(b.rng.randint(1, 3))})
+                    b.set(x, fl + 1, z, "groundburst:fallout_ash", {"layers": str(b.rng.randint(1, 3))})
     # The warhead section at the crater's bottom, split open: its dirty payload spilled (a uranium core block, the
     # ground round it irradiated).
     b.fill(32, G - 3, zc - 1, 34, G - 1, zc + 1, CONC_DARK)
     b.clear(33, G - 2, zc, 34, G - 1, zc + 1)
-    b.set(33, G - 3, zc, "groundzero:uranium_block")
-    b.set(34, G - 3, zc + 1, "groundzero:irradiated_soil")
-    b.set(32, G - 2, zc + 2, "groundzero:irradiated_soil")
+    b.set(33, G - 3, zc, "groundburst:uranium_block")
+    b.set(34, G - 3, zc + 1, "groundburst:irradiated_soil")
+    b.set(32, G - 2, zc + 2, "groundburst:irradiated_soil")
     # The middle of the body lying in the furrow, its stage band; the tail with its engine bells, thrown aside.
     lying_body(b, 17, 28, G - 1, zc, CONC_WHITE, band=22, broken=0.08)
     b.clear(26, G, zc - 1, 28, G, zc + 1)                                 # torn open at the front
@@ -795,7 +795,7 @@ def crashed_missile() -> Build:
         x, z = b.rng.randint(4, 33), b.rng.randint(1, 15)
         for y in range(G + 3, 0, -1):
             if b.solid(x, y - 1, z) and b.name(x, y, z) in (None, AIR):
-                b.set(x, y, z, b.rng.choice(("iron_bars", "iron_chain", CONC_WHITE, "iron_block", "glass_pane", "groundzero:steel_plating")))
+                b.set(x, y, z, b.rng.choice(("iron_bars", "iron_chain", CONC_WHITE, "iron_block", "glass_pane", "groundburst:steel_plating")))
                 break
     return b
 
@@ -839,8 +839,8 @@ def waste_storage() -> Build:
                     continue                                 # an aisle between rows of seven-packs
                 for y in range(F + 1, F + 4):
                     if b.rng.random() > gaps:
-                        b.set(x, y, z, gz("waste_drum"))
-                if b.name(x, F + 3, z) == gz("waste_drum") and b.rng.random() < 0.8:
+                        b.set(x, y, z, gb("waste_drum"))
+                if b.name(x, F + 3, z) == gb("waste_drum") and b.rng.random() < 0.8:
                     b.set(x, F + 4, z, "white_carpet")
     drums(2, 8, 2, 11)
     drums(12, 18, 2, 9)
@@ -856,7 +856,7 @@ def waste_storage() -> Build:
                 if b.rng.random() < 0.55 + 0.1 * (y - F):
                     b.set(x, y, z, b.rng.choice(SALT + ("gravel",)))
                 elif y == F + 1 and b.rng.random() < 0.3:
-                    b.set(x, y, z, gz("waste_drum"))
+                    b.set(x, y, z, gb("waste_drum"))
     # Decontamination at the west end of the south side: a shower, lockers, suits on stands, the waste store's chest.
     b.fill(2, F, 20, 8, F, 30, CONC)
     b.walls(2, F + 1, 20, 8, C - 1, 30, CONC)
@@ -890,7 +890,7 @@ def waste_storage() -> Build:
     b.clear(17, F + 1, 25, 17, F + 2, 25)
     b.door(17, F + 1, 25, "east", "iron_door")
     b.chest(14, F + 1, 27, "east", "waste_storage")
-    b.set(16, F + 1, 22, gz("waste_drum"))
+    b.set(16, F + 1, 22, gb("waste_drum"))
     # The shaft at the west end: the cage at its foot, sealed above by a concrete plug.
     b.clear(0, F + 1, 14, 3, C + 1, 18)
     b.fill(0, C + 1, 14, 3, 8, 18, RC)
@@ -918,7 +918,7 @@ def research_station() -> Build:
             for z in range(31):
                 d = math.hypot(x + 0.5 - c, z + 0.5 - c)
                 if d <= r - b.rng.random() * 1.6:
-                    b.set(x, y, z, "end_stone" if b.rng.random() < 0.9 else gz("voidstone"))
+                    b.set(x, y, z, "end_stone" if b.rng.random() < 0.9 else gb("voidstone"))
     # The deck: an octagon of steel plating over reinforced concrete, hazard bands at its edge.
     for x in range(31):
         for z in range(31):
@@ -939,14 +939,14 @@ def research_station() -> Build:
     for x in range(11, 20):
         for z in range(11, 20):
             if math.hypot(x + 0.5 - c, z + 0.5 - c) < 3:
-                b.set(x, D, z, b.rng.choice(("obsidian", "crying_obsidian", gz("voidstone"), "black_concrete")))
+                b.set(x, D, z, b.rng.choice(("obsidian", "crying_obsidian", gb("voidstone"), "black_concrete")))
     # Exotic crystals grown through the floor round the pit.
     for _ in range(14):
         a, d = b.rng.random() * 2 * math.pi, 2 + b.rng.random() * 6
         x, z = round(c + d * math.cos(a) - 0.5), round(c + d * math.sin(a) - 0.5)
         if b.name(x, D + 1, z) in (None, AIR):
-            b.set(x, D, z, gz("voidstone"))
-            b.set(x, D + 1, z, gz(b.rng.choice(("exotic_crystal_cluster", "large_exotic_bud", "small_exotic_bud"))), {"facing": "up", "waterlogged": "false"})
+            b.set(x, D, z, gb("voidstone"))
+            b.set(x, D + 1, z, gb(b.rng.choice(("exotic_crystal_cluster", "large_exotic_bud", "small_exotic_bud"))), {"facing": "up", "waterlogged": "false"})
     # Two laboratories on the deck, benches and chests inside.
     for x0, z0 in ((2, 12), (24, 12)):
         b.room(x0, D, z0, x0 + 4, D + 4, z0 + 6, "white_concrete", floor=STEEL, roof=STEEL)
@@ -963,7 +963,7 @@ def research_station() -> Build:
     for cx_, cy_, cz_ in ((3, 14, 3), (28, 6, 4), (5, 4, 27), (27, 17, 22)):
         for _ in range(5):
             b.set(cx_ + b.rng.randint(-1, 1), cy_ + b.rng.randint(-1, 1), cz_ + b.rng.randint(-1, 1),
-                  b.rng.choice(("end_stone", STEEL, CONC_WHITE, gz("voidstone"))))
+                  b.rng.choice(("end_stone", STEEL, CONC_WHITE, gb("voidstone"))))
     return b
 
 
@@ -993,7 +993,7 @@ TEMPLATES = {
 
 
 def part(template: str, offset: tuple[int, int, int], terrain: str = "none", integrity: float = 1.0, weathering: str = "abandoned") -> dict:
-    return {"template": f"groundzero:site/{template}", "offset": list(offset), "terrain": terrain, "integrity": integrity,
+    return {"template": f"groundburst:site/{template}", "offset": list(offset), "terrain": terrain, "integrity": integrity,
             "weathering": weathering}
 
 
@@ -1076,7 +1076,7 @@ def main() -> None:
         b.save(out / f"{name}.nbt")
         print("template", name)
     for name, s in STRUCTURES.items():
-        structure = {"type": "groundzero:site", "biomes": f"#groundzero:has_structure/{name}", "spawn_overrides": {}, "step": s["step"],
+        structure = {"type": "groundburst:site", "biomes": f"#groundburst:has_structure/{name}", "spawn_overrides": {}, "step": s["step"],
                      "variants": site_variants(name), "placement": s["placement"]}
         if s["placement"] != "floating":
             # Not "none": the beardifier skips a structure whose own adaptation is none before it asks the pieces for
@@ -1090,7 +1090,7 @@ def main() -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(structure, indent=2) + "\n", encoding="utf-8")
         sset = {"placement": {"type": "minecraft:random_spread", "salt": s["salt"], "separation": s["separation"], "spacing": s["spacing"]},
-                "structures": [{"structure": f"groundzero:{name}", "weight": 1}]}
+                "structures": [{"structure": f"groundburst:{name}", "weight": 1}]}
         if "frequency" in s:
             sset["placement"]["frequency"] = s["frequency"]       # a share of the places it could stand
         if "apart_from_villages" in s:

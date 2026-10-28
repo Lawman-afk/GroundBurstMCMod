@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_gantry_frame": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:gantry_frame"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:gantry_arm"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_gantry_frame"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:gantry_arm"
+    ]
+  }
+}

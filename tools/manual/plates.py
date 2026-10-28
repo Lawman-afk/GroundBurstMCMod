@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "assets"))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
 import render as R  # noqa: E402
 import content  # noqa: E402
@@ -30,7 +30,7 @@ import content  # noqa: E402
 HIDDEN = {"singularity_reactor": ("hatch_", "disk0", "disk1")}
 
 
-# Structures built of ordinary blocks: the example pattern as GZMultiblocks has it (layers bottom-up, rows front first,
+# Structures built of ordinary blocks: the example pattern as GBMultiblocks has it (layers bottom-up, rows front first,
 # the front facing north), a block model for each legend character, which of them are full opaque blocks (faces against
 # them are hidden), and the box of cells the coolant fills (it is drawn glowing, as while the reactor runs).
 REACTOR = [
@@ -67,7 +67,7 @@ def block_structure_quads(name: str) -> list:
     opaque, glass = [], []
     for (x, y, z), key in cells.items():
         if key not in models:
-            models[key] = R.build_quads(R.load_model(f"groundzero:block/{legend[key]}"))
+            models[key] = R.build_quads(R.load_model(f"groundburst:block/{legend[key]}"))
         for q in models[key]:
             n = np.round(q.normal).astype(int)
             axis = int(np.argmax(np.abs(n)))
@@ -103,7 +103,7 @@ def formed_reactor_quads() -> tuple[list, list, list]:
     import fission_formed as F
     layers, _legend, _solid, (lo, hi, fill) = BLOCK_PLATES["fission_reactor"]
     opaque, panes = F.compose(layers, rod_out=0.7)
-    channel = R.build_quads(R.load_model("groundzero:block/fuel_channel_lit"))
+    channel = R.build_quads(R.load_model("groundburst:block/fuel_channel_lit"))
     for y, layer in enumerate(layers):
         for z, row in enumerate(layer):
             for x, key in enumerate(row):
@@ -124,7 +124,7 @@ def plate(name: str, w: int, h: int) -> Path:
         rot = R.view_matrix(30, 225)
         glass.sort(key=lambda q: float((rot @ (q.pos.mean(axis=0) - center))[2]))   # far panes first
         return _render(name, opaque + water + glass, w, h, center, extent)
-    quads = GP.geo_quads(f"groundzero:block/{name}", hidden=HIDDEN.get(name, ()))
+    quads = GP.geo_quads(f"groundburst:block/{name}", hidden=HIDDEN.get(name, ()))
     center, extent = R.model_bounds(quads)
     return _render(name, quads, w, h, center, extent)
 

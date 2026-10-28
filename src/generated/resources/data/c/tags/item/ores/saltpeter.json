@@ -1,7 +1,7 @@
 {
   "values": [
-    "groundzero:saltpeter_ore",
-    "groundzero:deepslate_saltpeter_ore",
-    "groundzero:sandstone_saltpeter_ore"
+    "groundburst:saltpeter_ore",
+    "groundburst:deepslate_saltpeter_ore",
+    "groundburst:sandstone_saltpeter_ore"
   ]
 }

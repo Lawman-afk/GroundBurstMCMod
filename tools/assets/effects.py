@@ -12,8 +12,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import paths  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 ICE = [(16, 60, 92), (34, 98, 140), (70, 146, 196), (118, 190, 232), (170, 222, 248), (214, 242, 255), (245, 252, 255)]
 

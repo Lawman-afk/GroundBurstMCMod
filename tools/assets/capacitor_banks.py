@@ -18,12 +18,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import Ramp  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import Ramp  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 BAR_COLORS = [P.WARNING_RED, P.WARNING_RED, P.NUCLEAR_AMBER, P.NUCLEAR_AMBER, P.HAZARD_YELLOW, P.INDICATOR_GREEN, P.INDICATOR_GREEN, P.INDICATOR_GREEN]
 CANS = [(-3.6, -3.6), (3.6, -3.6), (-3.6, 3.6), (3.6, 3.6)]
@@ -92,7 +92,7 @@ def build(tier: Tier) -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, tier: Tier) -> None:
-    """A bank's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): its tier's cabinet paint in
+    """A bank's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): its tier's cabinet paint in
     a bolted panel with louvred heat sinks, trim of its tier's metal round the deck; the capacitor cans with a rating
     band, brass terminals and copper bus bars; the front's gauge window, charge bars, red output post and lamp."""
     k = K.Kit(g, parts, seed=333)

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "groundburst:item/lead_lined_hazmat_hood"
+  }
+}

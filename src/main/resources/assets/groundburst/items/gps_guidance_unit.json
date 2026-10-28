@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:item/gps_guidance_unit"
+  }
+}

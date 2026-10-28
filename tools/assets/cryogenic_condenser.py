@@ -14,12 +14,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "cryogenic_condenser"
 INSUL = fixed("insulation", "#3c464e", "#5c6a74", "#86949e", "#aeb9c0", "#cdd6db", "#e4eaed", "#f6f9fa")
@@ -79,7 +79,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The condenser's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): white-wrapped
+    """The condenser's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): white-wrapped
     insulated columns in courses with steel hoops at their ends and a decal; steel caps; copper coils under frost; a
     gunmetal louvred vent; a green compressor with its fan; the glowing sight window."""
     k = K.Kit(g, parts, seed=325)

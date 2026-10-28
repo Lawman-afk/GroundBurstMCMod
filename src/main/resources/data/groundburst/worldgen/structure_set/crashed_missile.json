@@ -1,0 +1,18 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 1980919,
+    "separation": 14,
+    "spacing": 38,
+    "exclusion_zone": {
+      "chunk_count": 6,
+      "other_set": "minecraft:villages"
+    }
+  },
+  "structures": [
+    {
+      "structure": "groundburst:crashed_missile",
+      "weight": 1
+    }
+  ]
+}

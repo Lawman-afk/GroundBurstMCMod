@@ -1,0 +1,38 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:damaged_warhead"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 4,
+        "id": "groundburst:enriched_uranium_nugget"
+      }
+    },
+    {
+      "chance": 0.5,
+      "item": {
+        "count": 2,
+        "id": "groundburst:plutonium_nugget"
+      }
+    },
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:steel_plate"
+      }
+    }
+  ],
+  "time": 400
+}

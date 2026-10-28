@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:liquid_rocket_fuel",
-    "groundzero:flowing_liquid_rocket_fuel"
+    "groundburst:liquid_rocket_fuel",
+    "groundburst:flowing_liquid_rocket_fuel"
   ]
 }

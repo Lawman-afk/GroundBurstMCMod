@@ -6,7 +6,7 @@ and wear: cracks, moss, rust stains, cobwebs, rubble, broken glass. Wear is draw
 site designed, not noise), and `SitePiece` weathers it a little more as it is placed, so no two look the same.
 
 Coordinates are the template's own: x east, y up, z south, (0, 0, 0) its corner. Blocks are vanilla names unless they
-have a namespace ("groundzero:..."). Neighbour shapes (fences, panes, bars, walls, cables) are worked out by the game
+have a namespace ("groundburst:..."). Neighbour shapes (fences, panes, bars, walls, cables) are worked out by the game
 when the template is placed: they need no connection properties here.
 """
 from __future__ import annotations
@@ -28,8 +28,8 @@ def mc(name: str) -> str:
     return name if ":" in name else "minecraft:" + name
 
 
-def gz(name: str) -> str:
-    return "groundzero:" + name
+def gb(name: str) -> str:
+    return "groundburst:" + name
 
 
 class Build:
@@ -110,10 +110,10 @@ class Build:
         props = {"facing": facing, "waterlogged": "false"}
         if block in ("chest", "trapped_chest"):
             props["type"] = "single"
-        self.set(x, y, z, block, props, nbt={"LootTable": loot if ":" in loot else "groundzero:chests/" + loot})
+        self.set(x, y, z, block, props, nbt={"LootTable": loot if ":" in loot else "groundburst:chests/" + loot})
 
     def barrel(self, x: int, y: int, z: int, facing: str = "up", loot: str | None = None) -> None:
-        nbt = {"LootTable": loot if ":" in loot else "groundzero:chests/" + loot} if loot else None
+        nbt = {"LootTable": loot if ":" in loot else "groundburst:chests/" + loot} if loot else None
         self.set(x, y, z, "barrel", {"facing": facing, "open": "false"}, nbt=nbt)
 
     def marker(self, x: int, y: int, z: int, meta: str) -> None:

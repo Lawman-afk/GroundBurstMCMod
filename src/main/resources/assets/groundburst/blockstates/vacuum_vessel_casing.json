@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/vacuum_vessel_casing"
+    },
+    "formed=true": {
+      "model": "groundburst:block/vacuum_vessel_casing_formed"
+    }
+  }
+}

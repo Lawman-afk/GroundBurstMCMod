@@ -1,0 +1,25 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:water"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:dried_kelp"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:salt"
+      }
+    }
+  ],
+  "time": 200
+}

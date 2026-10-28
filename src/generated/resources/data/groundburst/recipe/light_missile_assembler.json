@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:basic_circuit",
+    "groundburst:basic_circuit",
+    "groundburst:servo",
+    "groundburst:servo",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundburst:light_missile_assembler"
+  }
+}

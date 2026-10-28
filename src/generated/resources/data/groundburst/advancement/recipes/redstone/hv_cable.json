@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_insulated_cable": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:insulated_cable"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:hv_cable"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_insulated_cable"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:hv_cable"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:lithium_deuteride_pellet",
+    "groundburst:lithium_deuteride_pellet",
+    "groundburst:lithium_deuteride_pellet",
+    "groundburst:lithium_deuteride_pellet",
+    "groundburst:depleted_uranium_ingot",
+    "groundburst:depleted_uranium_ingot",
+    "groundburst:plutonium_nugget",
+    "groundburst:lead_plate",
+    "groundburst:plastic_sheet"
+  ],
+  "result": {
+    "id": "groundburst:fusion_secondary"
+  }
+}

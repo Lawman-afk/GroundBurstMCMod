@@ -1,0 +1,18 @@
+{
+  "type": "groundburst:accelerating",
+  "energy_per_tick": 2000,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:containment_cell"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:antimatter_cell"
+      }
+    }
+  ],
+  "time": 3600
+}

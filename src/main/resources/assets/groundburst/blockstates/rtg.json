@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/rtg"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/rtg"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:dyes/yellow"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:crane_rail"
+  }
+}

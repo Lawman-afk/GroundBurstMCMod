@@ -1,21 +1,21 @@
 {
   "values": [
-    "groundzero:uranium_ore",
-    "groundzero:deepslate_uranium_ore",
-    "groundzero:tungsten_ore",
-    "groundzero:deepslate_tungsten_ore",
-    "groundzero:rare_earth_ore",
-    "groundzero:deepslate_rare_earth_ore",
-    "groundzero:uranium_block",
-    "groundzero:tungsten_block",
-    "groundzero:raw_uranium_block",
-    "groundzero:raw_tungsten_block",
-    "groundzero:raw_rare_earth_block",
-    "groundzero:corium",
-    "groundzero:cooled_corium",
-    "groundzero:voidstone",
-    "groundzero:reinforced_concrete",
-    "groundzero:hazard_concrete",
-    "groundzero:silo_hatch"
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:tungsten_ore",
+    "groundburst:deepslate_tungsten_ore",
+    "groundburst:rare_earth_ore",
+    "groundburst:deepslate_rare_earth_ore",
+    "groundburst:uranium_block",
+    "groundburst:tungsten_block",
+    "groundburst:raw_uranium_block",
+    "groundburst:raw_tungsten_block",
+    "groundburst:raw_rare_earth_block",
+    "groundburst:corium",
+    "groundburst:cooled_corium",
+    "groundburst:voidstone",
+    "groundburst:reinforced_concrete",
+    "groundburst:hazard_concrete",
+    "groundburst:silo_hatch"
   ]
 }

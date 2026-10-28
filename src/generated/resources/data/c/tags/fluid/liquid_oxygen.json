@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:liquid_oxygen",
-    "groundzero:flowing_liquid_oxygen"
+    "groundburst:liquid_oxygen",
+    "groundburst:flowing_liquid_oxygen"
   ]
 }

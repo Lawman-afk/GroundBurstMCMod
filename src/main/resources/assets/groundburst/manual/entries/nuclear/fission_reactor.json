@@ -1,0 +1,96 @@
+{
+  "title": "Fission Reactor",
+  "icon": "groundburst:fission_reactor",
+  "order": 2,
+  "items": [
+    "groundburst:fission_reactor",
+    "groundburst:fission_reactor_spawner",
+    "groundburst:lead_lined_casing",
+    "groundburst:fuel_channel"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundburst:textures/gui/manual/plates/fission_reactor.png",
+      "width": 240,
+      "height": 260,
+      "text": "A formed 4x4x4 Fission Reactor with eight channels."
+    },
+    {
+      "type": "text",
+      "text": "Build it **any size** from 3x3x3 to 6x6x6: a hollow box of **lead-lined casing** with **Fuel Channels** in its core. Every channel holds **one uranium fuel rod**, wherever it stands, so a bigger core holds more: up to 64 in a 4x4x4 core. Leave the rest of the core empty, for the coolant. Withdraw the control rods and every rod gives **75 FE a tick**: 600 from the example's eight, **4,800 from sixty-four**.\n\n- **Corners and edges:** lead-lined casing.\n- **Walls:** casing or **reactor glass**, with **one Item Port, one Fluid Port and one Energy Port** among them, anywhere in the walls, roof or floor.\n- **The controller:** in a wall, or in the bottom edge of its wall.\n\nCoolant goes into the **Fluid Port**, rods into the **Item Port** (spent rods and irradiated targets come out of it too) and power out of the **Energy Port**. Once formed, the walls become one vessel: a plinth, windows onto the core, a head with a control-rod drive over every column of channels (their rods rise as you withdraw the control rods), the ports' housings and the console where the controller stands."
+    },
+    {
+      "type": "text",
+      "text": "**The plan.** Right-click the controller (or hold a Holo-Projector) to see its plan as ghost blocks: one reactor of the size set on its screen, 4x4x4 at first, with casing on the edges, glass in the side walls, the three ports and channels filling the core. Sneak-right-click to open the screen and change the size with the **PLAN** buttons. The ghosts are only a suggestion: casing instead of glass, a port in another wall or water left in the core are all fine. Only a block that cannot stand where it is gets a red outline."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:fission_reactor",
+      "text": "The example: 4x4x4 with a 2x2x2 core of eight channels. The controller at the front of the bottom layer, the Fluid Port low in a side wall, the Energy Port low in the back wall and the Item Port in the roof."
+    },
+    {
+      "type": "text",
+      "text": "**The core map.** The controller's screen shows the core a layer at a time from above, the controller's wall at the bottom: pick the layer with the numbered tabs beside it. There is a rod slot on each channel, coolant between them. Shift-click fills every channel at once. Every loaded rod burns at the same time. Each lasts about **2 hours 40 minutes** at full power, a little more or less (no two alike), and the bar under it shows the fuel left; a used-up rod comes out as a spent fuel rod.\n\n**Heat.** The further the rods are out, the more power and the more heat. Heat goes by how full the core is, so a big reactor runs as hot as a small one loaded alike. With coolant flowing the core settles at a temperature that rises with power; without coolant it climbs fast. Past **900 C** the core goes **critical**: press the red **SCRAM** button (every rod drops in) or it melts down. See [Reactor safety](safety/reactor_safety).\n\n- **Water:** safe up to about 70% rods out; further than that and the core climbs past 900 C. About 1.6 mB a tick a rod.\n- **Heavy water:** keeps the core well below 900 C even at full power, and lasts five times longer. Make it in the [Chemical Plant](processing/chemical_plant) from deuterium and liquid oxygen.\n\nWater left in the core between the channels makes it heat up and cool down more slowly: as much water as fuel halves the rate, twice as much makes it a third. The energy buffer and the coolant tank grow with the number of channels."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "A rod",
+          "75 FE/t"
+        ],
+        [
+          "Sixty-four rods",
+          "4,800 FE/t"
+        ],
+        [
+          "A rod lasts",
+          "about 192,000 ticks"
+        ],
+        [
+          "Target rod",
+          "6,000 ticks at 1,200 FE/t"
+        ],
+        [
+          "Critical at",
+          "900 C"
+        ],
+        [
+          "Water",
+          "1.5625 mB/t a rod"
+        ],
+        [
+          "Heavy water",
+          "0.3125 mB/t a rod"
+        ]
+      ],
+      "text": "",
+      "title": "At full power"
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fission_reactor",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fuel_channel",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:lead_lined_casing",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "nuclear/fuel",
+        "nuclear/reprocessing",
+        "safety/reactor_safety"
+      ],
+      "text": ""
+    }
+  ]
+}

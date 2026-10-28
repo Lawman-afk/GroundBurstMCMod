@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:basic_circuit",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:dusts/redstone",
+    "minecraft:stone_button"
+  ],
+  "result": {
+    "id": "groundburst:remote_detonator"
+  }
+}

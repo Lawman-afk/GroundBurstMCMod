@@ -1,20 +1,20 @@
 {
   "values": [
-    "groundzero:uranium_ore",
-    "groundzero:deepslate_uranium_ore",
-    "groundzero:lithium_ore",
-    "groundzero:deepslate_lithium_ore",
-    "groundzero:sulfur_ore",
-    "groundzero:deepslate_sulfur_ore",
-    "groundzero:nether_sulfur_ore",
-    "groundzero:saltpeter_ore",
-    "groundzero:deepslate_saltpeter_ore",
-    "groundzero:sandstone_saltpeter_ore",
-    "groundzero:tungsten_ore",
-    "groundzero:deepslate_tungsten_ore",
-    "groundzero:lead_ore",
-    "groundzero:deepslate_lead_ore",
-    "groundzero:rare_earth_ore",
-    "groundzero:deepslate_rare_earth_ore"
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:lithium_ore",
+    "groundburst:deepslate_lithium_ore",
+    "groundburst:sulfur_ore",
+    "groundburst:deepslate_sulfur_ore",
+    "groundburst:nether_sulfur_ore",
+    "groundburst:saltpeter_ore",
+    "groundburst:deepslate_saltpeter_ore",
+    "groundburst:sandstone_saltpeter_ore",
+    "groundburst:tungsten_ore",
+    "groundburst:deepslate_tungsten_ore",
+    "groundburst:lead_ore",
+    "groundburst:deepslate_lead_ore",
+    "groundburst:rare_earth_ore",
+    "groundburst:deepslate_rare_earth_ore"
   ]
 }

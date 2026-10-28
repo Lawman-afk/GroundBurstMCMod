@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/combustion_generator"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/combustion_generator"
+    }
+  }
+}

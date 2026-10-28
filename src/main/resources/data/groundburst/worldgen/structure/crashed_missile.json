@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:site",
+  "biomes": "#groundburst:has_structure/crashed_missile",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "variants": [
+    {
+      "weight": 1,
+      "parts": [
+        {
+          "template": "groundburst:site/crashed_missile",
+          "offset": [
+            -19,
+            -5,
+            -8
+          ],
+          "terrain": "beard_thin",
+          "integrity": 1.0,
+          "weathering": "none"
+        }
+      ]
+    }
+  ],
+  "placement": "surface",
+  "terrain_adaptation": "beard_thin",
+  "max_slope": 5
+}

@@ -1,0 +1,98 @@
+{
+  "title": "Ores",
+  "icon": "groundburst:uranium_ore",
+  "order": 0,
+  "items": [
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:raw_uranium",
+    "groundburst:lead_ore",
+    "groundburst:deepslate_lead_ore",
+    "groundburst:raw_lead",
+    "groundburst:lithium_ore",
+    "groundburst:deepslate_lithium_ore",
+    "groundburst:raw_lithium",
+    "groundburst:rare_earth_ore",
+    "groundburst:deepslate_rare_earth_ore",
+    "groundburst:raw_rare_earth",
+    "groundburst:tungsten_ore",
+    "groundburst:deepslate_tungsten_ore",
+    "groundburst:raw_tungsten",
+    "groundburst:sulfur_ore",
+    "groundburst:deepslate_sulfur_ore",
+    "groundburst:nether_sulfur_ore",
+    "groundburst:saltpeter_ore",
+    "groundburst:deepslate_saltpeter_ore",
+    "groundburst:sandstone_saltpeter_ore"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Seven new ores generate in new chunks. Each has a deepslate form; sulfur also grows in the Nether and saltpeter in desert and badlands sandstone. Tungsten is the rarest; lithium and rare earths are richer in the mountains, uranium in the badlands."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Uranium",
+          "y -48 to 24"
+        ],
+        [
+          "  also",
+          "badlands"
+        ],
+        [
+          "Lead",
+          "y -32 to 48"
+        ],
+        [
+          "Lithium",
+          "y -16 to 64"
+        ],
+        [
+          "  also",
+          "mountains"
+        ],
+        [
+          "Rare earth",
+          "y -32 to 48"
+        ],
+        [
+          "  also",
+          "mountains"
+        ],
+        [
+          "Tungsten",
+          "y -80 to 0"
+        ],
+        [
+          "Sulfur",
+          "y -64 to 16"
+        ],
+        [
+          "  also",
+          "the Nether"
+        ],
+        [
+          "Saltpeter",
+          "y 0 to 80"
+        ],
+        [
+          "  also",
+          "deserts"
+        ]
+      ],
+      "text": "",
+      "title": "Where they are"
+    },
+    {
+      "type": "text",
+      "text": "Uranium, lead, lithium, rare earths and tungsten drop **raw ores**: crush them in an [Ore Crusher](processing/ore_crusher) for two dusts each. Sulfur and saltpeter drop their dusts directly.\n\nVanilla's cinnabar gives cinnabar dust, the source of mercury. Each ore can be turned off in the server config."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:raw_uranium",
+      "text": "Uranium is mildly radioactive. Handle it sensibly; the manual will say more once radiation arrives."
+    }
+  ]
+}

@@ -4,7 +4,7 @@ Converts a .geo.json (+ optional .animation.json at a given time) into world-spa
 GeckoLib 5.5.7 (GeometryCube.bake, VertexSet quads, GeometryQuadUvs, RenderUtil.prepMatrixForBone), then reuses the
 block-model rasteriser.
 
-    tools\\.venv\\Scripts\\python.exe tools\\preview\\geo_preview.py groundzero:block/ore_crusher --anim working
+    tools\\.venv\\Scripts\\python.exe tools\\preview\\geo_preview.py groundburst:block/ore_crusher --anim working
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import render as R  # noqa: E402
 
 

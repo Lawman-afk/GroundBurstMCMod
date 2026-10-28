@@ -17,14 +17,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402,F401
 
-from gz import atlas as A  # noqa: E402
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import atlas as A  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 GECKO_MACHINES = ["combustion_generator", "ore_crusher", "electrolytic_separator", "water_pump", "circuit_fabricator",
                   "fusion_fuel_synthesizer", "canning_machine", "diesel_generator", "rtg", "battery_charger", "capacitor_bank",
@@ -38,7 +38,7 @@ TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser",
 def machine_particle() -> None:
     """Shared break-particle texture: a patch of the machines' olive paint in its bolted steel frame (the material
     library, as the machines' own finish)."""
-    from gz import panels as PN
+    from gb import panels as PN
     img = PN.face(K.OLIVE, style="raised", seed=5)
     M.to_tex(img).save(paths.TEXTURES / "block" / "machine_particle.png")
 
@@ -56,23 +56,23 @@ TALL_DISPLAY = {
 
 
 def gecko_machine(name: str, tall: bool = False) -> None:
-    particle = {"textures": {"particle": "groundzero:block/machine_particle"}}
+    particle = {"textures": {"particle": "groundburst:block/machine_particle"}}
     write_json(paths.MODELS / "block" / f"{name}.json", particle)
     variants = {}
     for facing in ("north", "east", "south", "west"):
         for active in ("false", "true"):
             if tall:
                 for half in ("lower", "upper"):
-                    variants[f"active={active},facing={facing},half={half}"] = {"model": f"groundzero:block/{name}"}
+                    variants[f"active={active},facing={facing},half={half}"] = {"model": f"groundburst:block/{name}"}
             else:
-                variants[f"active={active},facing={facing}"] = {"model": f"groundzero:block/{name}"}
+                variants[f"active={active},facing={facing}"] = {"model": f"groundburst:block/{name}"}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
-    item_model = {"parent": "minecraft:block/block", "textures": {"particle": "groundzero:block/machine_particle"}}
+    item_model = {"parent": "minecraft:block/block", "textures": {"particle": "groundburst:block/machine_particle"}}
     if tall:
         item_model["display"] = TALL_DISPLAY
     write_json(paths.MODELS / "item" / f"{name}.json", item_model)
     write_json(paths.ASSETS / "items" / f"{name}.json",
-               {"model": {"type": "minecraft:special", "base": f"groundzero:item/{name}", "model": {"type": "geckolib:geckolib"}}})
+               {"model": {"type": "minecraft:special", "base": f"groundburst:item/{name}", "model": {"type": "geckolib:geckolib"}}})
 
 
 # --- cables -------------------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ HV_ORANGE = fixed("hv_orange", "#3a1404", "#6a2608", "#a03c0c", "#d05812", "#ec7
 
 
 def cable_texture(tier: str) -> Tex:
-    """The tier's 16x16 sheet, painted with the material library (tools/gz/atlas.py; the remaster after the Fission
+    """The tier's 16x16 sheet, painted with the material library (tools/gb/atlas.py; the remaster after the Fission
     Reactor rework): each region filled from its material, round cables shaded across their width, details on top."""
     t = Tex(16, 16)
     side, core, end = (0, 0, 4, 6), (6, 0, 11, 5), (12, 0, 16, 4)
@@ -144,7 +144,7 @@ def _faces(sides: dict[str, list[float]], end: list[float] | None, end_dirs: tup
 
 
 def cable_models(tier: str) -> None:
-    tex = {"cable": f"groundzero:block/{tier}", "particle": f"groundzero:block/{tier}"}
+    tex = {"cable": f"groundburst:block/{tier}", "particle": f"groundburst:block/{tier}"}
     arm_side = [0, 0, 4, 6]
     core_uv = [6, 0, 11, 5]
     end_uv = [12, 0, 16, 4]
@@ -179,13 +179,13 @@ def cable_models(tier: str) -> None:
                "fixed": {"rotation": [0, 90, 0], "scale": [0.8, 0.8, 0.8]}}
     write_json(paths.MODELS / "item" / f"{tier}.json",
                {"parent": "minecraft:block/block", "textures": tex, "elements": inv, "display": display})
-    write_json(paths.ASSETS / "items" / f"{tier}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{tier}"}})
+    write_json(paths.ASSETS / "items" / f"{tier}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{tier}"}})
 
     rot = {"up": {}, "down": {"x": 180}, "north": {"x": 90}, "east": {"x": 90, "y": 90},
            "south": {"x": 90, "y": 180}, "west": {"x": 90, "y": 270}}
-    multipart = [{"apply": {"model": f"groundzero:block/{tier}_core"}}]
+    multipart = [{"apply": {"model": f"groundburst:block/{tier}_core"}}]
     for d, r in rot.items():
-        multipart.append({"when": {d: "connected"}, "apply": {"model": f"groundzero:block/{tier}_arm", **r}})
+        multipart.append({"when": {d: "connected"}, "apply": {"model": f"groundburst:block/{tier}_arm", **r}})
     write_json(paths.ASSETS / "blockstates" / f"{tier}.json", {"multipart": multipart})
 
 

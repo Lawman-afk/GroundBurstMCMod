@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "minecraft:anvil",
+    "C": "groundburst:basic_circuit",
+    "P": "#c:plates/steel",
+    "S": "groundburst:servo",
+    "T": "minecraft:chest",
+    "W": "minecraft:crafting_table"
+  },
+  "pattern": [
+    "PPP",
+    "SWA",
+    "CTC"
+  ],
+  "result": {
+    "id": "groundburst:assembly_bench"
+  }
+}

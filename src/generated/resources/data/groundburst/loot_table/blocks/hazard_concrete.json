@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:hazard_concrete"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundburst:blocks/hazard_concrete"
+}

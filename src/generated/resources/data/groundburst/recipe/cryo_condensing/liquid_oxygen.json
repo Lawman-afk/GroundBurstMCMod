@@ -1,0 +1,12 @@
+{
+  "type": "groundburst:cryo_condensing",
+  "catalyst": "groundburst:oxygen_membrane",
+  "energy_per_tick": 100,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:liquid_oxygen"
+    }
+  ],
+  "time": 300
+}

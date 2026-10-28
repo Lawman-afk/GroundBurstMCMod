@@ -1,7 +1,7 @@
 {
   "values": [
-    "groundzero:charred_log",
-    "groundzero:charred_wood",
-    "groundzero:charred_planks"
+    "groundburst:charred_log",
+    "groundburst:charred_wood",
+    "groundburst:charred_planks"
   ]
 }

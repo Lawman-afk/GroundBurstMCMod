@@ -1,0 +1,152 @@
+{
+  "title": "Thrown explosives",
+  "icon": "groundburst:frag_grenade",
+  "order": 0,
+  "items": [
+    "groundburst:dynamite",
+    "groundburst:frag_grenade",
+    "groundburst:sticky_grenade",
+    "groundburst:incendiary_grenade",
+    "groundburst:smoke_grenade",
+    "groundburst:molotov_cocktail",
+    "groundburst:cryo_grenade",
+    "groundburst:emp_grenade"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Right-click to throw. Most bounce and roll before they go off, so bank them off walls and down slopes; their fuse starts the moment they leave your hand."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Dynamite",
+          "3 s"
+        ],
+        [
+          "Frag",
+          "4 s"
+        ],
+        [
+          "Sticky",
+          "4 s"
+        ],
+        [
+          "Incendiary",
+          "on impact"
+        ],
+        [
+          "Smoke",
+          "2 s, 30 s"
+        ],
+        [
+          "Poison gas",
+          "2 s, 25 s"
+        ],
+        [
+          "Toxin",
+          "on impact"
+        ],
+        [
+          "Molotov",
+          "on impact"
+        ],
+        [
+          "Cryo",
+          "3 s"
+        ],
+        [
+          "EMP",
+          "3 s"
+        ]
+      ],
+      "text": "",
+      "title": "Fuses"
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:dynamite",
+      "text": "The first explosive you can make: a bundle of sticks with a sputtering fuse. A small, sharp blast."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:frag_grenade",
+      "text": "A small blast and **24 shrapnel fragments** that fly out in every direction, 6 damage each to whatever they hit. Keep behind cover, yourself included."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:sticky_grenade",
+      "text": "Sticks to the first thing it hits, wall or creature, and goes off where it stuck. A frag grenade with a slime ball."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:incendiary_grenade",
+      "text": "Bursts on impact into a carpet of fire 4 blocks across; everything caught in it burns for 8 seconds."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:molotov_cocktail",
+      "text": "A bottle of fuel with a burning rag. It shatters where it lands into a pool of fire 3 blocks across, with no blast at all, so it will not dig into what it hits."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:smoke_grenade",
+      "text": "Pours out a dense cloud for 30 seconds. Mobs inside it, or chasing something inside it, lose their target, and anyone standing in it is hard to spot: mobs notice you there only from a tenth of their usual range."
+    },
+    {
+      "type": "text",
+      "text": "For poison gas and toxin grenades see [Chemical grenades](ordnance/chemical)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:dynamite",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:frag_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:sticky_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:incendiary_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:smoke_grenade",
+      "text": ""
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:cryo_grenade",
+      "text": "A canister of liquid nitrogen. It bursts in a blast of cold **5 blocks** round: water freezes to ice, lava to obsidian, fires go out and frost settles on the ground. Everything alive in it is **frozen solid** for 10 seconds: it cannot move or jump. A frozen mob of 40 health or less hit hard (6 damage or more) **shatters**. Bosses are not frozen."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:emp_grenade",
+      "text": "An electromagnetic pulse **12 blocks** round that lasts **20 seconds**. Every machine in it loses half its stored power as the pulse hits, then sits dead until the field passes, when it reboots: Launch Silos cannot launch, Launch Computers and Radar Arrays go dark. Armed charges with an electronic fuze (remote, timer, laser) are made safe; landmines and bouncing mines are pressure plates and stay live. A missile flying through the field has an even chance of a dead fuze."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:molotov_cocktail",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:cryo_grenade",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:emp_grenade",
+      "text": ""
+    }
+  ]
+}

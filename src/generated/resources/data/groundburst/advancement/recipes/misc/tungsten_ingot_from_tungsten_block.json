@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_storage_blocks_tungsten": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:storage_blocks/tungsten"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:tungsten_ingot_from_tungsten_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_storage_blocks_tungsten"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:tungsten_ingot_from_tungsten_block"
+    ]
+  }
+}

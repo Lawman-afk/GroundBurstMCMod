@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "groundburst:battery",
+    "C": "#groundburst:basic_circuits",
+    "G": "minecraft:glass_pane",
+    "S": "groundburst:steel_plate",
+    "W": "groundburst:copper_wire"
+  },
+  "pattern": [
+    "SGS",
+    "WCW",
+    "SBS"
+  ],
+  "result": {
+    "id": "groundburst:geiger_counter"
+  }
+}

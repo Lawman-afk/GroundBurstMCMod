@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundburst:item/decontamination_shower",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

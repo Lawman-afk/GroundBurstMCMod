@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:thermobaric_slurry",
-    "groundzero:flowing_thermobaric_slurry"
+    "groundburst:thermobaric_slurry",
+    "groundburst:flowing_thermobaric_slurry"
   ]
 }

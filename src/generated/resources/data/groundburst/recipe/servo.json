@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:electric_motor",
+    "#c:rods/steel",
+    "#groundburst:basic_circuits"
+  ],
+  "result": {
+    "id": "groundburst:servo"
+  }
+}

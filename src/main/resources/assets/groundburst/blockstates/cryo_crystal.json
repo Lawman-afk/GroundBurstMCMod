@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "groundburst:block/cryo_crystal",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "groundburst:block/cryo_crystal",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "groundburst:block/cryo_crystal",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/cryo_crystal",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "groundburst:block/cryo_crystal"
+    },
+    "facing=west": {
+      "model": "groundburst:block/cryo_crystal",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

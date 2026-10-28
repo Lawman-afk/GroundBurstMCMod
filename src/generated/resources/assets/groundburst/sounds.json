@@ -1,0 +1,697 @@
+{
+  "assembly.clank": {
+    "sounds": [
+      "groundburst:machine/assembly_clank"
+    ],
+    "subtitle": "subtitles.groundburst.assembly.clank"
+  },
+  "blast.large.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundburst:blast/large_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.large.far"
+  },
+  "blast.large.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundburst:blast/large_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.large.mid"
+  },
+  "blast.large.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:blast/large_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.large.near"
+  },
+  "blast.large.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundburst:blast/large_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.large.very_far"
+  },
+  "blast.medium.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundburst:blast/medium_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.medium.far"
+  },
+  "blast.medium.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundburst:blast/medium_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.medium.mid"
+  },
+  "blast.medium.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:blast/medium_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.medium.near"
+  },
+  "blast.medium.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundburst:blast/medium_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.medium.very_far"
+  },
+  "blast.nuke.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundburst:blast/nuke_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.nuke.far"
+  },
+  "blast.nuke.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundburst:blast/nuke_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.nuke.mid"
+  },
+  "blast.nuke.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundburst:blast/nuke_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.nuke.near"
+  },
+  "blast.nuke.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 4096,
+        "name": "groundburst:blast/nuke_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.nuke.very_far"
+  },
+  "blast.small.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 1024,
+        "name": "groundburst:blast/small_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.small.far"
+  },
+  "blast.small.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 512,
+        "name": "groundburst:blast/small_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.small.mid"
+  },
+  "blast.small.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:blast/small_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.small.near"
+  },
+  "blast.small.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 2048,
+        "name": "groundburst:blast/small_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.small.very_far"
+  },
+  "blast.tsar.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 3072,
+        "name": "groundburst:blast/tsar_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.tsar.far"
+  },
+  "blast.tsar.mid": {
+    "sounds": [
+      {
+        "attenuation_distance": 1536,
+        "name": "groundburst:blast/tsar_mid",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.tsar.mid"
+  },
+  "blast.tsar.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 768,
+        "name": "groundburst:blast/tsar_near",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.tsar.near"
+  },
+  "blast.tsar.very_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 6144,
+        "name": "groundburst:blast/tsar_very_far",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.blast.tsar.very_far"
+  },
+  "bomb.beep": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:ordnance/bomb_beep"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.bomb.beep"
+  },
+  "bomb.drill": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:ordnance/bomb_drill"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.bomb.drill"
+  },
+  "bomb.fuel_disperse": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:ordnance/fuel_disperse"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.bomb.fuel_disperse"
+  },
+  "bomb.whistle": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:ordnance/bomb_whistle"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.bomb.whistle"
+  },
+  "charge.arm": {
+    "sounds": [
+      "groundburst:ordnance/charge_arm"
+    ],
+    "subtitle": "subtitles.groundburst.charge.arm"
+  },
+  "charge.disarm": {
+    "sounds": [
+      "groundburst:ordnance/charge_disarm"
+    ],
+    "subtitle": "subtitles.groundburst.charge.disarm"
+  },
+  "cruise.elevate": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:launch/cruise_elevate"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cruise.elevate"
+  },
+  "cruise.engine": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:launch/cruise_engine_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cruise.engine"
+  },
+  "cruise.launch": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundburst:launch/cruise_launch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cruise.launch"
+  },
+  "cryo.burst": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:effect/cryo_burst"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cryo.burst"
+  },
+  "detonator.click": {
+    "sounds": [
+      "groundburst:ordnance/detonator_click"
+    ],
+    "subtitle": "subtitles.groundburst.detonator.click"
+  },
+  "dynamite.light": {
+    "sounds": [
+      "groundburst:ordnance/dynamite_light"
+    ],
+    "subtitle": "subtitles.groundburst.dynamite.light"
+  },
+  "emp.zap": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:effect/emp_zap"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.emp.zap"
+  },
+  "geiger.alarm": {
+    "sounds": [
+      "groundburst:geiger/alarm"
+    ],
+    "subtitle": "subtitles.groundburst.geiger.alarm"
+  },
+  "geiger.click": {
+    "sounds": [
+      "groundburst:geiger/click1",
+      "groundburst:geiger/click2",
+      "groundburst:geiger/click3",
+      "groundburst:geiger/click4"
+    ],
+    "subtitle": "subtitles.groundburst.geiger.click"
+  },
+  "geiger.switch": {
+    "sounds": [
+      {
+        "attenuation_distance": 8,
+        "name": "groundburst:geiger/switch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.geiger.switch"
+  },
+  "grenade.pin": {
+    "sounds": [
+      "groundburst:ordnance/grenade_pin"
+    ],
+    "subtitle": "subtitles.groundburst.grenade.pin"
+  },
+  "launch.siren": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:launch/siren"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.launch.siren"
+  },
+  "lead_container.close": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:gear/lead_container_close"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.lead_container.close"
+  },
+  "lead_container.open": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:gear/lead_container_open"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.lead_container.open"
+  },
+  "machine.arc_furnace": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/arc_furnace"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.arc_furnace"
+  },
+  "machine.assembly_bench": {
+    "sounds": [
+      "groundburst:machine/assembly_bench"
+    ],
+    "subtitle": "subtitles.groundburst.machine.assembly_bench"
+  },
+  "machine.battery_charger": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "groundburst:machine/battery_charger"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.battery_charger"
+  },
+  "machine.canning_machine": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:machine/canning_machine"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.canning_machine"
+  },
+  "machine.chemical_plant": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/chemical_plant"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.chemical_plant"
+  },
+  "machine.circuit_fabricator": {
+    "sounds": [
+      "groundburst:machine/circuit_fabricator"
+    ],
+    "subtitle": "subtitles.groundburst.machine.circuit_fabricator"
+  },
+  "machine.combustion_generator": {
+    "sounds": [
+      "groundburst:machine/combustion_generator"
+    ],
+    "subtitle": "subtitles.groundburst.machine.combustion_generator"
+  },
+  "machine.cryogenic_condenser": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/cryogenic_condenser"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.cryogenic_condenser"
+  },
+  "machine.decontamination_shower": {
+    "sounds": [
+      "groundburst:machine/decontamination_shower"
+    ],
+    "subtitle": "subtitles.groundburst.machine.decontamination_shower"
+  },
+  "machine.diesel_generator": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/diesel_generator"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.diesel_generator"
+  },
+  "machine.electrolytic_separator": {
+    "sounds": [
+      "groundburst:machine/electrolytic_separator"
+    ],
+    "subtitle": "subtitles.groundburst.machine.electrolytic_separator"
+  },
+  "machine.exotic_matter_fabricator": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:machine/exotic_matter_fabricator"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.exotic_matter_fabricator"
+  },
+  "machine.fission_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:machine/fission_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.fission_reactor"
+  },
+  "machine.fusion_fuel_synthesizer": {
+    "sounds": [
+      "groundburst:machine/fusion_fuel_synthesizer"
+    ],
+    "subtitle": "subtitles.groundburst.machine.fusion_fuel_synthesizer"
+  },
+  "machine.fusion_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:machine/fusion_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.fusion_reactor"
+  },
+  "machine.gas_centrifuge": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/gas_centrifuge"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.gas_centrifuge"
+  },
+  "machine.industrial_press": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/industrial_press"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.industrial_press"
+  },
+  "machine.ore_crusher": {
+    "sounds": [
+      "groundburst:machine/ore_crusher"
+    ],
+    "subtitle": "subtitles.groundburst.machine.ore_crusher"
+  },
+  "machine.particle_accelerator": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:machine/particle_accelerator"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.particle_accelerator"
+  },
+  "machine.rtg": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "groundburst:machine/rtg"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.rtg"
+  },
+  "machine.singularity_reactor": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:machine/singularity_reactor"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.singularity_reactor"
+  },
+  "machine.water_pump": {
+    "sounds": [
+      "groundburst:machine/water_pump"
+    ],
+    "subtitle": "subtitles.groundburst.machine.water_pump"
+  },
+  "medical.injector": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:gear/injector"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.medical.injector"
+  },
+  "mine.click": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:ordnance/mine_click"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.mine.click"
+  },
+  "mine.pop": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:ordnance/mine_pop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.mine.pop"
+  },
+  "missile.engine": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:launch/missile_engine_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.missile.engine"
+  },
+  "missile.launch": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:launch/missile_launch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.missile.launch"
+  },
+  "missile.reentry": {
+    "sounds": [
+      {
+        "attenuation_distance": 192,
+        "name": "groundburst:launch/reentry_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.missile.reentry"
+  },
+  "missile.staging": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:launch/stage_separation"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.missile.staging"
+  },
+  "nuclear_missile.erect": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundburst:superweapon/nuclear_erect"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.nuclear_missile.erect"
+  },
+  "reactor.alarm": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:reactor/alarm"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.reactor.alarm"
+  },
+  "reactor.singularity_collapse": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:reactor/singularity_collapse"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.reactor.singularity_collapse"
+  },
+  "scud_storm.erect": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:superweapon/scud_erect"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.scud_storm.erect"
+  },
+  "silo.doors": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:launch/silo_doors"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.silo.doors"
+  },
+  "smoke.hiss": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:ordnance/smoke_hiss"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.smoke.hiss"
+  },
+  "sticky.stick": {
+    "sounds": [
+      "groundburst:ordnance/sticky_stick"
+    ],
+    "subtitle": "subtitles.groundburst.sticky.stick"
+  },
+  "superweapon.ready": {
+    "sounds": [
+      "groundburst:superweapon/ready"
+    ],
+    "subtitle": "subtitles.groundburst.superweapon.ready"
+  },
+  "superweapon.warning": {
+    "sounds": [
+      "groundburst:superweapon/warning"
+    ],
+    "subtitle": "subtitles.groundburst.superweapon.warning"
+  },
+  "thermite.burn": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:ordnance/thermite_burn"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.thermite.burn"
+  },
+  "wire.snip": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:ordnance/wire_snip"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.wire.snip"
+  }
+}

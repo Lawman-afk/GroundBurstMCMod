@@ -14,8 +14,8 @@ from __future__ import annotations
 import math
 import random
 
-from gz.palette import fixed
-from gz.tex import Tex
+from gb.palette import fixed
+from gb.tex import Tex
 
 SPODUMENE = fixed("spodumene", "#4a2a3e", "#7a4a66", "#a77394", "#c99ab7", "#e2bfd4", "#f2dce8", "#fff4fa")
 SULFUR = fixed("sulfur", "#5a3a08", "#8a6410", "#c2971a", "#e3c22c", "#f2db4c", "#f9ec8a", "#fffbd0")

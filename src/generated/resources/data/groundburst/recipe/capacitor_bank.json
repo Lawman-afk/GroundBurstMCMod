@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:capacitor",
+    "F": "groundburst:machine_frame"
+  },
+  "pattern": [
+    "C C",
+    " F ",
+    "C C"
+  ],
+  "result": {
+    "id": "groundburst:capacitor_bank"
+  }
+}

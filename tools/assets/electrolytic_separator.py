@@ -15,12 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "electrolytic_separator"
 WATER = fixed("cell_water", "#0c2448", "#14366a", "#1e4c8e", "#2c66b0", "#4282cc", "#6aa4e0", "#a8d0f4")
@@ -84,7 +84,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The separator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): the plinth; a glass
+    """The separator's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): the plinth; a glass
     cell on steel posts under an olive lid, rubber glands round a copper and a steel electrode, bubbles in the water;
     two green gas bottles banded white (oxygen) and blue (hydrogen) with brass valves; steel pipes; a gunmetal panel."""
     k = K.Kit(g, parts, seed=305)

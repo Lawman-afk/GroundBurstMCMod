@@ -18,11 +18,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 YELLOW = fixed("hazmat_yellow", "#3a2c06", "#6e5410", "#b08a14", "#e2b41e", "#f4cc34", "#fadc68", "#fff0a8")
 ORANGE = fixed("hazmat_orange", "#3a1606", "#6e2a0c", "#a84412", "#d8601a", "#ec7a2c", "#f69a58", "#ffc49a")
@@ -386,13 +386,13 @@ def main() -> None:
         upper.save(paths.TEXTURES / "entity" / "equipment" / "humanoid" / f"{asset}.png")
         lower.save(paths.TEXTURES / "entity" / "equipment" / "humanoid_leggings" / f"{asset}.png")
         write_json(paths.ASSETS / "equipment" / f"{asset}.json", {"layers": {
-            "humanoid": [{"texture": f"groundzero:{asset}"}],
-            "humanoid_leggings": [{"texture": f"groundzero:{asset}"}]}})
+            "humanoid": [{"texture": f"groundburst:{asset}"}],
+            "humanoid_leggings": [{"texture": f"groundburst:{asset}"}]}})
         for kind in ICONS:
             name = f"{asset}_{kind}"
             icon(kind, ramp, lead).save(paths.TEXTURES / "item" / f"{name}.png")
-            write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundzero:item/{name}"}})
-            write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{name}"}})
+            write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundburst:item/{name}"}})
+            write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{name}"}})
         print(asset)
 
 

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "minecraft:paper",
+    "minecraft:glass_pane",
+    "minecraft:iron_nugget"
+  ],
+  "result": {
+    "id": "groundburst:dosimeter_badge"
+  }
+}

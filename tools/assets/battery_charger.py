@@ -13,11 +13,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "battery_charger"
 TOP = 6.5
@@ -66,7 +66,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The charger's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a gunmetal bench with
+    """The charger's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a gunmetal bench with
     louvred sides on the plinth, a steel top with a rubber pad and yellow clamps; the cell in the battery item's colours
     (olive, steel ends, a yellow band) with copper caps; black contacts and sockets; rubber cables; green LEDs."""
     k = K.Kit(g, parts, seed=319)

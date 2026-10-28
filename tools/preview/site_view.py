@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tools" / "structure"))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 VANILLA = paths.VANILLA_ASSETS / "textures" / "block"
 OURS = paths.TEXTURES / "block"
@@ -50,7 +50,7 @@ def colour(name: str):
     ns, _, n = name.partition(":")
     if n in FIXED:
         return FIXED[n]
-    folder = OURS if ns == "groundzero" else VANILLA
+    folder = OURS if ns == "groundburst" else VANILLA
     candidates = [n, n + "_side", n + "_top", n + "_front", n.replace("bricks", "brick")]
     base = n
     for s in STRIP:
@@ -69,7 +69,7 @@ def colour(name: str):
             keep = a[a[:, 3] > 20]
             if len(keep):
                 return tuple(int(v) for v in keep[:, :3].mean(axis=0))
-    return (150, 140, 160) if ns == "groundzero" else (128, 128, 128)
+    return (150, 140, 160) if ns == "groundburst" else (128, 128, 128)
 
 
 def render(blocks: dict, size: tuple, scale: int = 6, cut_y: int | None = None, cut_z: int | None = None) -> Image.Image:

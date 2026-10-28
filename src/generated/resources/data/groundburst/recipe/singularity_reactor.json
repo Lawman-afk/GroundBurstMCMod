@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:quantum_circuit",
+    "groundburst:crt_display",
+    "groundburst:crt_display",
+    "groundburst:stabilised_exotic_matter"
+  ],
+  "result": {
+    "id": "groundburst:singularity_reactor"
+  }
+}

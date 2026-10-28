@@ -1,0 +1,65 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "groundburst:block/hv_cable_core"
+      }
+    },
+    {
+      "when": {
+        "up": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm"
+      }
+    },
+    {
+      "when": {
+        "down": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "north": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "east": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "connected"
+      },
+      "apply": {
+        "model": "groundburst:block/hv_cable_arm",
+        "x": 90,
+        "y": 270
+      }
+    }
+  ]
+}

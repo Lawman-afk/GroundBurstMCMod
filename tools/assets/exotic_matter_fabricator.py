@@ -17,12 +17,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "exotic_matter_fabricator"
 C = 18.0                        # cage centre height
@@ -112,7 +112,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The fabricator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a black field
+    """The fabricator's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a black field
     housing with copper windings through its vents, concentric field plates on top, a violet warning placard and a
     readout; steel emitters with glowing violet lenses; gunmetal posts banded yellow; a black canopy with brass
     insulator caps; copper ring windings in steel clamps, their field lines glowing; the shard and its sparks."""

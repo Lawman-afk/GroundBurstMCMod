@@ -1,0 +1,52 @@
+{
+  "title": "Chemical Plant",
+  "icon": "groundburst:chemical_plant",
+  "order": 9,
+  "items": [
+    "groundburst:chemical_plant",
+    "groundburst:chemical_plant_spawner",
+    "groundburst:sulfuric_acid_canister",
+    "groundburst:nitric_acid_canister",
+    "groundburst:synthetic_fuel_canister",
+    "groundburst:liquid_rocket_fuel_canister",
+    "groundburst:thermobaric_slurry_canister",
+    "groundburst:napalm_canister",
+    "groundburst:plastic_sheet",
+    "groundburst:rdx_crystals",
+    "groundburst:plastic_explosive",
+    "groundburst:solid_propellant",
+    "groundburst:yellowcake",
+    "groundburst:uf6_canister",
+    "groundburst:heavy_water_canister",
+    "groundburst:lithium6_dust",
+    "groundburst:mercury_flask"
+  ],
+  "pages": [
+    {
+      "type": "image",
+      "image": "groundburst:textures/gui/manual/plates/chemical_plant.png",
+      "width": 240,
+      "height": 220,
+      "text": "The formed Chemical Plant."
+    },
+    {
+      "type": "text",
+      "text": "A 2x2x2 structure for every chemical in the mod: acids, fuels, explosive fillers, uranium compounds and heavy water. Each recipe is one step; the plant draws 60 FE a tick.\n\nIt takes items through its **Item Port**, fluids through its **Fluid Port** (water into its water tank, chemicals into its two input tanks; the product drains out the same way) and power through its **Energy Port**. You can also pour canisters and buckets into any part."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:chemical_plant",
+      "text": "Controller at the front left, the Energy Port beside it, the Fluid Port behind it, the Item Port in the far corner, four Reactor Glass on top."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:chemical_plant",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": ""
+    }
+  ]
+}

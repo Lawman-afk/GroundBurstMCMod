@@ -1,0 +1,26 @@
+{
+  "type": "groundburst:exotic_fabricating",
+  "energy_per_tick": 400,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:containment_cell"
+    },
+    {
+      "count": 2,
+      "ingredient": "groundburst:superconducting_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:military_circuit"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:containment_emitter"
+      }
+    }
+  ],
+  "time": 400
+}

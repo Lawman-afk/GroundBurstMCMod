@@ -1,0 +1,24 @@
+{
+  "type": "groundburst:canning",
+  "energy_per_tick": 20,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:thermobaric_slurry"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:thermobaric_slurry_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:empty_canister"
+      }
+    }
+  ],
+  "time": 40
+}

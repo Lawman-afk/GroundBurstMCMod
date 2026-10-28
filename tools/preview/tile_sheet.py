@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 SCALE = 6
 

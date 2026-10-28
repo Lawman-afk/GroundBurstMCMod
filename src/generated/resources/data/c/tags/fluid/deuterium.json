@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:deuterium",
-    "groundzero:flowing_deuterium"
+    "groundburst:deuterium",
+    "groundburst:flowing_deuterium"
   ]
 }

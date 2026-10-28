@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundburst:gantry_frame",
+    "groundburst:gantry_frame",
+    "groundburst:servo",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundburst:gantry_arm"
+  }
+}

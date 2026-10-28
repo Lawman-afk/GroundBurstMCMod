@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:site",
+  "biomes": "#groundburst:has_structure/radar_outpost",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "variants": [
+    {
+      "weight": 1,
+      "parts": [
+        {
+          "template": "groundburst:site/radar_outpost",
+          "offset": [
+            -17,
+            0,
+            -15
+          ],
+          "terrain": "beard_thin",
+          "integrity": 1.0,
+          "weathering": "abandoned"
+        }
+      ]
+    }
+  ],
+  "placement": "surface",
+  "terrain_adaptation": "beard_thin",
+  "max_slope": 12
+}

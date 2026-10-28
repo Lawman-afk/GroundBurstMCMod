@@ -1,0 +1,58 @@
+{
+  "title": "Scorched ground",
+  "icon": "groundburst:trinitite",
+  "order": 2,
+  "items": [
+    "groundburst:trinitite",
+    "groundburst:glassed_sand",
+    "groundburst:slag",
+    "groundburst:scorched_earth",
+    "groundburst:scorched_stone",
+    "groundburst:irradiated_soil",
+    "groundburst:charred_log",
+    "groundburst:charred_wood",
+    "groundburst:charred_planks",
+    "groundburst:dead_grass_block",
+    "groundburst:dead_leaves",
+    "groundburst:withered_crops"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "What a nuclear blast leaves of the land round it. The fireball burns what it sees out to its scorch band: earth to **Scorched Earth**, stone to **Scorched Stone**, sand and sandstone to **Glassed Sand**, trees to charred trunks; where the firestorm raged, a layer or two of **Ash**. The crater's own wall melts: rock to **Slag**, sand and sandstone to **Trinitite**, earth to **Irradiated Soil**."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:trinitite",
+      "text": "Sand fused to green glass by the fireball, laced with its fission products: weakly radioactive."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:irradiated_soil",
+      "text": "Earth full of fallout. It glows faintly, and it is radioactive: dig it out before you build on it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:charred_log",
+      "text": "A trunk burnt black. Four Charred Planks from a log, or smelt it for charcoal. Charred planks are planks: sticks, crafting tables, anything."
+    },
+    {
+      "type": "text",
+      "text": "**Dead plants.** Strong radiation, 1,000 RAD/h or more, kills plants from the top down: leaves die on the branch and drop away in an hour or two, crops wither, grass and flowers go and the grass block dies. A roof spares what is under it. A neutron warhead's burst kills them out to 120 blocks. **Dead Grass** grows back once its ground is safe again, under 10 RAD/h in daylight."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:charred_planks",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/fallout",
+        "safety/radiation",
+        "ordnance/nuclear"
+      ],
+      "text": ""
+    }
+  ]
+}

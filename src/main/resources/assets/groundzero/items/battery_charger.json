@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/battery_charger",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

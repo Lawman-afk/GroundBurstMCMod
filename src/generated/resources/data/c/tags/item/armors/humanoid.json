@@ -1,12 +1,12 @@
 {
   "values": [
-    "groundzero:hazmat_hood",
-    "groundzero:hazmat_coat",
-    "groundzero:hazmat_trousers",
-    "groundzero:hazmat_boots",
-    "groundzero:lead_lined_hazmat_hood",
-    "groundzero:lead_lined_hazmat_coat",
-    "groundzero:lead_lined_hazmat_trousers",
-    "groundzero:lead_lined_hazmat_boots"
+    "groundburst:hazmat_hood",
+    "groundburst:hazmat_coat",
+    "groundburst:hazmat_trousers",
+    "groundburst:hazmat_boots",
+    "groundburst:lead_lined_hazmat_hood",
+    "groundburst:lead_lined_hazmat_coat",
+    "groundburst:lead_lined_hazmat_trousers",
+    "groundburst:lead_lined_hazmat_boots"
   ]
 }

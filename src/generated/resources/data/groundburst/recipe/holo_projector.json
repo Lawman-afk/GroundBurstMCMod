@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "#c:circuits/advanced",
+    "B": "groundburst:battery",
+    "D": "#c:gems/diamond",
+    "G": "#c:glass_panes/colorless"
+  },
+  "pattern": [
+    "GDG",
+    " A ",
+    " B "
+  ],
+  "result": {
+    "id": "groundburst:holo_projector"
+  }
+}

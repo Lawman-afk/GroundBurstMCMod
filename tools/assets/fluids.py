@@ -19,8 +19,8 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
 
 FRAMES = 32
 OUT = paths.TEXTURES / "block" / "fluid"
@@ -106,7 +106,7 @@ def write_textures() -> list[Path]:
     return written
 
 
-# (name, look, is_gas) — mirrors GZFluids.
+# (name, look, is_gas) — mirrors GBFluids.
 FLUIDS = [
     ("sulfuric_acid", "liquid", False), ("nitric_acid", "liquid", False), ("synthetic_fuel", "liquid", False),
     ("liquid_rocket_fuel", "liquid", False), ("thermobaric_slurry", "thick", False), ("napalm", "thick", False),
@@ -152,10 +152,10 @@ def gas_cloud_models(name: str) -> None:
         faces["down"] = {"uv": [0, 0, 16, 16], "texture": "#gas", "tintindex": 0}
         write_json(paths.MODELS / "block" / f"{name}_{v}.json", {
             "render_type": "minecraft:translucent",
-            "textures": {"gas": "groundzero:block/fluid/gas_still", "particle": "groundzero:block/fluid/gas_still"},
+            "textures": {"gas": "groundburst:block/fluid/gas_still", "particle": "groundburst:block/fluid/gas_still"},
             "elements": [{"from": [0, y0, 0], "to": [16, 16, 16], "shade": False, "faces": faces}],
         })
-        variants[f"volume={v}"] = {"model": f"groundzero:block/{name}_{v}"}
+        variants[f"volume={v}"] = {"model": f"groundburst:block/{name}_{v}"}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
 
 
@@ -166,19 +166,19 @@ def write_blocks_and_buckets() -> None:
             gas_cloud_models(name)
         else:
             # Liquid blocks are drawn by the fluid renderer; the block model only names the particle texture.
-            write_json(paths.MODELS / "block" / f"{name}.json", {"textures": {"particle": f"groundzero:block/fluid/{look}_still"}})
-            write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
+            write_json(paths.MODELS / "block" / f"{name}.json", {"textures": {"particle": f"groundburst:block/fluid/{look}_still"}})
+            write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundburst:block/{name}"}}})
         # Buckets: vanilla's bucket with the fluid's own tinted texture showing through its opening; gas buckets are
         # flipped upside down (NeoForge flips any lighter-than-air fluid's container).
         write_json(paths.ASSETS / "items" / f"{name}_bucket.json", {"model": {
             "type": "neoforge:fluid_container",
-            "fluid": f"groundzero:{name}",
+            "fluid": f"groundburst:{name}",
             "flip_gas": True,
-            "textures": {"base": "minecraft:item/bucket", "fluid": "groundzero:item/mask/bucket_fluid"},
+            "textures": {"base": "minecraft:item/bucket", "fluid": "groundburst:item/mask/bucket_fluid"},
         }})
 
 
-# Tints for the review sheet (mirrors GZFluids colours).
+# Tints for the review sheet (mirrors GBFluids colours).
 TINTS = {
     "sulfuric_acid": 0xD8CE4A, "nitric_acid": 0xE8A050, "synthetic_fuel": 0x7A5420, "liquid_rocket_fuel": 0xD04838,
     "thermobaric_slurry": 0x8C949C, "napalm": 0xE2742A, "liquid_oxygen": 0x9CC4FF, "liquid_nitrogen": 0xD8E8F2,

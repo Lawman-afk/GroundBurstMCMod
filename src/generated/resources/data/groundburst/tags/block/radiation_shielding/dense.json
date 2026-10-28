@@ -1,0 +1,16 @@
+{
+  "values": [
+    "minecraft:obsidian",
+    "minecraft:crying_obsidian",
+    "minecraft:reinforced_deepslate",
+    "minecraft:iron_block",
+    "minecraft:gold_block",
+    "minecraft:netherite_block",
+    "minecraft:ancient_debris",
+    "groundburst:tungsten_block",
+    "groundburst:uranium_block",
+    "groundburst:reinforced_concrete",
+    "groundburst:hazard_concrete",
+    "#c:concretes"
+  ]
+}

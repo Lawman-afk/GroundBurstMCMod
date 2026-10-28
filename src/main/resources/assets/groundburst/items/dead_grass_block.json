@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:block/dead_grass_block",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -6516894
+      }
+    ]
+  }
+}

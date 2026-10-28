@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:lead_ore",
-    "groundzero:deepslate_lead_ore"
+    "groundburst:lead_ore",
+    "groundburst:deepslate_lead_ore"
   ]
 }

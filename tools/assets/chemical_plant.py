@@ -21,11 +21,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "chemical_plant"
 ACID = fixed("acid", "#1c3208", "#2c4c0c", "#3e6a12", "#56901a", "#74b428", "#9cd44a", "#d0f090")
@@ -150,7 +150,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, parts: dict) -> None:
-    """The plant's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): stainless tanks and
+    """The plant's surfaces, in model space (tools/gb/materials.py; the remaster after slice 9b): stainless tanks and
     silos welded in courses, their window slots left open over the real fluid; a dark steel skid with a tread-plate
     deck and a hazard-striped front; galvanised pipework with red hand-wheels; an olive cabinet; the ports' housings."""
     S = M.Surfacer(g, seed=113)

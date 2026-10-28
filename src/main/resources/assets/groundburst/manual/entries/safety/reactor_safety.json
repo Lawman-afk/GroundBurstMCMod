@@ -1,0 +1,78 @@
+{
+  "title": "Reactor safety",
+  "icon": "groundburst:lead_lined_casing",
+  "order": 10,
+  "items": [
+    "groundburst:nuclear_waste",
+    "groundburst:corium",
+    "groundburst:cooled_corium"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Keep the [Fission Reactor](nuclear/fission_reactor) below 900 C: keep coolant flowing and watch the heat gauge; with plain water, stay at or below about 70% rods out. The red button is the **SCRAM**: every control rod drops in and the reactor stays down until you withdraw them."
+    },
+    {
+      "type": "text",
+      "text": "**Meltdowns.** Nothing SCRAMs the reactor for you (a server can turn meltdowns off; then it SCRAMs itself at 900 C). Past **900 C** with the rods out the core goes **critical**: it keeps heating even with coolant flowing, a klaxon wails, a red warning flashes on the screen of everyone nearby and steam vents from the top.\n\n**Press SCRAM** (or push every rod in) and it cools down. Leave it, and at **1,400 C** it melts down: the reactor and its fuel are destroyed in a dirty blast, molten corium pools in the crater and is thrown round it, and the land round it is radioactive for a day."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Critical from",
+          "900 C"
+        ],
+        [
+          "Meltdown at",
+          "1,400 C"
+        ],
+        [
+          "Warning time",
+          "15 to 45 s"
+        ],
+        [
+          "  with coolant",
+          "the longer"
+        ],
+        [
+          "Radiation",
+          "48 blocks"
+        ],
+        [
+          "  at the core",
+          "40,000 RAD/h"
+        ],
+        [
+          "  safe again",
+          "after a day"
+        ]
+      ],
+      "text": "",
+      "title": "Meltdowns"
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:corium",
+      "text": "Molten core. It burns anything that stands on it and sets fire to what is next to it, and cools into cooled corium over about ten minutes. Both are radioactive; mine them with an iron pickaxe or better."
+    },
+    {
+      "type": "text",
+      "text": "**Radiation.** The land round a meltdown is [radioactive](safety/radiation): 40,000 RAD/h at the core when fresh, falling off to nothing 48 blocks out, and halving every couple of minutes. Anything alive in it takes a dose, and the dose brings **Radiation Sickness**. Corium is deadly up close. A [hazmat suit](safety/hazmat_suits) stops most of what comes from outside; check with a [Geiger Counter](safety/geiger_counter) before going in."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:nuclear_waste",
+      "text": "What reprocessing leaves behind. It does not burn, not even in lava; store it somewhere safe. A dropped stack still disappears in time like any other item."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/radiation",
+        "safety/hazmat_suits",
+        "safety/geiger_counter"
+      ],
+      "text": ""
+    }
+  ]
+}

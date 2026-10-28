@@ -15,10 +15,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import palette as P  # noqa: E402
-from gz.model import BlockModel, Box  # noqa: E402
-from gz.shapes import Disc, band_tone, cylinder_z  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.model import BlockModel, Box  # noqa: E402
+from gb.shapes import Disc, band_tone, cylinder_z  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "fission_bomb"
 CX, CY = 8.0, 9.0          # bomb axis

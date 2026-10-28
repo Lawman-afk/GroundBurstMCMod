@@ -1,0 +1,349 @@
+{
+  "render_type": "minecraft:cutout",
+  "texture_size": [
+    64,
+    16
+  ],
+  "textures": {
+    "0": "groundburst:item/hardened_electronics",
+    "particle": "groundburst:item/hardened_electronics"
+  },
+  "elements": [
+    {
+      "name": "box",
+      "from": [
+        4.0,
+        1.0,
+        5.0
+      ],
+      "to": [
+        12.0,
+        6.0,
+        11.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.5,
+            0.0,
+            6.5,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6.75,
+            0.0,
+            8.75,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            13.0,
+            0.0,
+            14.5,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            7.0,
+            1.5,
+            12.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            0.0,
+            2.0,
+            6.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            2.25,
+            0.0,
+            4.25,
+            6.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "lid",
+      "from": [
+        4.5,
+        6.0,
+        5.5
+      ],
+      "to": [
+        11.5,
+        6.6,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.75,
+            7.0,
+            3.5,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            3.75,
+            7.0,
+            5.5,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            5.75,
+            7.0,
+            7.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            7.25,
+            7.0,
+            8.5,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            9.0,
+            0.0,
+            10.75,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            11.0,
+            0.0,
+            12.75,
+            5.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "cable",
+      "from": [
+        12.0,
+        2.0,
+        7.5
+      ],
+      "to": [
+        13.6,
+        3.0,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.75,
+            7.0,
+            9.25,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            9.5,
+            7.0,
+            10.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            11.75,
+            7.0,
+            12.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            10.25,
+            7.0,
+            10.75,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            11.0,
+            7.0,
+            11.5,
+            8.0
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        45,
+        0
+      ],
+      "translation": [
+        -0.769,
+        4.851,
+        0
+      ],
+      "scale": [
+        1.3598,
+        1.3598,
+        1.3598
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.44,
+        2.31,
+        0.0
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.72,
+        3.78,
+        0.0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -0.44,
+        4.81,
+        1.5
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -25,
+        0
+      ],
+      "translation": [
+        1.18,
+        5.18,
+        0.0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        155,
+        0
+      ],
+      "translation": [
+        1.18,
+        5.18,
+        0.0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -0.44,
+        4.81,
+        1.5
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.64,
+        9.36,
+        0.0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
+  }
+}

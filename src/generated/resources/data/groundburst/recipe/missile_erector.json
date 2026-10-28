@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:pressure_vessel",
+    "groundburst:pressure_vessel",
+    "groundburst:electric_motor",
+    "groundburst:electric_motor",
+    "#c:dyes/green"
+  ],
+  "result": {
+    "id": "groundburst:missile_erector"
+  }
+}

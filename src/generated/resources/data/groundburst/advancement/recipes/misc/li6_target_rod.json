@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_lithium6_dust": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:lithium6_dust"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:li6_target_rod"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_lithium6_dust"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:li6_target_rod"
+    ]
+  }
+}

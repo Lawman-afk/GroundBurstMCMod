@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:plastic_explosive",
+    "minecraft:iron_nugget",
+    "minecraft:iron_nugget",
+    "minecraft:iron_nugget",
+    "minecraft:iron_nugget",
+    "#c:plates/steel",
+    "groundburst:basic_circuit"
+  ],
+  "result": {
+    "id": "groundburst:claymore"
+  }
+}

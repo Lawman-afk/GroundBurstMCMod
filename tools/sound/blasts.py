@@ -314,7 +314,7 @@ if __name__ == "__main__":
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from gz import paths  # noqa: E402
+    from gb import paths  # noqa: E402
     for rel, x in blast_sets().items():
         p = S.save_ogg(x, paths.SOUNDS / f"{rel}.ogg")
         print(f"{rel}: {len(x) / S.SR:.1f} s, peak {20 * np.log10(np.max(np.abs(x)) + 1e-12):.1f} dB, rms {R.rms_db(x):.1f} dB")

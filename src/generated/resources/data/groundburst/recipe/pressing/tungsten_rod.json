@@ -1,0 +1,19 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": "groundburst:rod_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/tungsten"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:tungsten_rod"
+      }
+    }
+  ],
+  "time": 160
+}

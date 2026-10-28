@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "minecraft:glass"
+  ],
+  "result": {
+    "id": "groundburst:empty_gas_canister"
+  }
+}

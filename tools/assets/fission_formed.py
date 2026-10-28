@@ -35,12 +35,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.model import BlockModel  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.model import BlockModel  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 #: The vessel's materials: even weathering (no grime, streaks or skylight falloff gathering at each cell's foot), so the
 #: cells read as one surface; each tone sits right on a shade of its ramp (with the face's own lift: a roof's +0.1), so
@@ -69,7 +69,7 @@ PERIOD = 16
 
 def _model(name: str, size: int = 64) -> BlockModel:
     m = BlockModel(f"fission_{name}", tex_size=(size, size), kind="block")
-    m.particle = "groundzero:block/lead_lined_casing"
+    m.particle = "groundburst:block/lead_lined_casing"
     return m
 
 
@@ -556,7 +556,7 @@ def compose(layers: list[list[str]], rod_out: float = 0.7):
     opaque, panes = [], []
     for name, turns, (x, y, z), flip in pieces(layers):
         if name not in cache:
-            cache[name] = R.build_quads(R.load_model(f"groundzero:block/fission_{name}"))
+            cache[name] = R.build_quads(R.load_model(f"groundburst:block/fission_{name}"))
         lift = (rod_out - 1) * 8 if name == "drive_rod" else 0
         for q in cache[name]:
             pos, normal = place(q.pos, q.normal, turns, flip)
@@ -565,7 +565,7 @@ def compose(layers: list[list[str]], rod_out: float = 0.7):
     return opaque, panes
 
 
-#: The example reactor (GZMultiblocks' pattern): 4 x 4 x 4 outside, a 2 x 2 x 2 core of channels.
+#: The example reactor (GBMultiblocks' pattern): 4 x 4 x 4 outside, a 2 x 2 x 2 core of channels.
 EXAMPLE = [
     ["LXLL", "LLLL", "LLLL", "LLLL"],
     ["LGGL", "GCCG", "WCCG", "LEGL"],
@@ -590,7 +590,7 @@ def review(layouts=(EXAMPLE, EXAMPLE_BIG), out_name: str = "fission_formed_revie
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
     import render as R
     from PIL import Image, ImageDraw
-    from gz import paths
+    from gb import paths
     light = np.array([0.4, 0.8, 0.45])
     light /= np.linalg.norm(light)
     sheet = Image.new("RGBA", (len(views) * cell, len(layouts) * (cell + 18)), (28, 30, 34, 255))
@@ -621,7 +621,7 @@ def check_joins(layers) -> list[str]:
     """Every section of a formed reactor in one model, checked for faces that would flicker (two pointing the same way on
     one plane, as model.py checks a model): the joins between sections must have none."""
     import json
-    from gz import paths
+    from gb import paths
     joined = BlockModel("fission_joins")
     n = 0
     for name, turns, (x, y, z), flip in pieces(layers):

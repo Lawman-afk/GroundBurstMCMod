@@ -27,13 +27,13 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import structures as ST  # noqa: E402
@@ -45,7 +45,7 @@ NO_DOWN = SIDES + ("up",)
 F = "frame"
 DECK_Y = 14
 
-# --- the layout (ScudStormBlockEntity and GZSuperweapons have the same figures) -----------------------------------------------
+# --- the layout (ScudStormBlockEntity and GBSuperweapons have the same figures) -----------------------------------------------
 #: The pad: 15 x 15 cells, the controller's cell at the front middle; its middle seven cells back. (13 x 13 until the
 #: scrap round the tank pushed the SCUDs out: their noses would have run off the pad.)
 PAD = (-120.0, 120.0, -8.0, 232.0)
@@ -419,7 +419,7 @@ def build() -> tuple[GeoModel, Parts]:
 
 # --- painting -----------------------------------------------------------------------------------------------------------------
 def _kit(g: GeoModel):
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     k = K.Kit(g, {}, seed=419, ao_reach=3.0, turned=True)
     W.round_faces(k.S, ROUND, top=True, bottom=False, foot=True)
     return k
@@ -765,7 +765,7 @@ def spawner_plan(t: Tex) -> None:
 def ammo() -> None:
     """The Toxin SCUD item: the SCUD's own missile model (tools/assets/missiles.py)."""
     write_json(paths.ASSETS / "items" / "toxin_scud.json",
-               {"model": {"type": "minecraft:model", "model": "groundzero:item/missile/scud_storm_warhead"}})
+               {"model": {"type": "minecraft:model", "model": "groundburst:item/missile/scud_storm_warhead"}})
 
 
 #: The anthrax residue's glow, darkest to brightest (brighter and yellower than the toxin grenade's sludge).
@@ -826,13 +826,13 @@ def residue() -> None:
         side = {"uv": [0, 0, 16, 1], "texture": "#residue"}
         write_json(paths.MODELS / "block" / f"{name}.json", {
             "render_type": "minecraft:cutout",
-            "textures": {"residue": f"groundzero:block/{name}", "particle": f"groundzero:block/{name}"},
+            "textures": {"residue": f"groundburst:block/{name}", "particle": f"groundburst:block/{name}"},
             "elements": [{"from": [0, 0, 0], "to": [16, 1, 16], "faces": {
                 "up": {"uv": [0, 0, 16, 16], "texture": "#residue"},
                 "down": {"uv": [0, 0, 16, 16], "texture": "#residue", "cullface": "down"},
                 "north": side, "south": side, "east": side, "west": side}}],
         })
-        variants[f"age={age}"] = [{"model": f"groundzero:block/{name}", "y": r} for r in (0, 90, 180, 270)]
+        variants[f"age={age}"] = [{"model": f"groundburst:block/{name}", "y": r} for r in (0, 90, 180, 270)]
     write_json(paths.ASSETS / "blockstates" / "anthrax_residue.json", {"variants": variants})
 
 

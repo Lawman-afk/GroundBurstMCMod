@@ -1,0 +1,127 @@
+package dev.groundburst.client.fx;
+
+import java.util.function.Function;
+
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+
+import dev.groundburst.GroundBurst;
+import com.mojang.blaze3d.vertex.PoseStack;
+
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+
+/**
+ * The Spectacle's render types, both the vanilla emissive entity shader (texture times vertex colour, no lighting at
+ * all), both sides drawn, not writing depth, so a camera inside a fireball or shell still sees it:
+ * <ul>
+ * <li><b>glow</b>: blended additively like lightning. The fireball's core, hot puffs, sparks and the shock shell, so
+ * overlapping layers brighten toward white instead of hiding one another. Its OIT set is the entity one with the
+ * shader's additive switch, as vanilla does for lightning.</li>
+ * <li><b>fire</b>: blended over what is behind (like vanilla "eyes", but two-sided). The fireball's body, which must stay
+ * orange against a bright sky, where additive light would wash out to white, and every smoke and dust puff (lit on the
+ * CPU, {@link FxLight}).</li>
+ * <li><b>cloud</b>: as fire, but with our own fragment shader ({@code shaders/core/fx_cloud.fsh}) that hazes toward the
+ * fog colour instead of fading into the render-distance fog, and fades out at the clouds' range like vanilla clouds: a
+ * mushroom cloud stands over the horizon far beyond the loaded terrain. It cuts out its faint fringe and writes depth
+ * (drawn back to front), so vanilla's clouds, drawn after it, do not show through it.</li>
+ * </ul>
+ * All of them are submitted with {@link #submit}, to be drawn after the translucent terrain as vanilla's own translucent
+ * particles are: blended custom geometry is otherwise drawn before it, and water behind any smoke then failed the depth
+ * test against the cloud pipeline's depth and was not drawn at all (after the in-game look: "smoke makes all water
+ * transparent").
+ */
+final class FxRenderTypes {
+    static final RenderPipeline GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+            .withLocation(GroundBurst.id("pipeline/glow"))
+            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+            .withCull(false)
+            .build();
+    static final OitPipelineSet OIT_GLOW = OitPipelineSet.builder(GroundBurst.id("glow"),
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE"))
+            .build();
+
+    static final RenderPipeline FIRE_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+            .withLocation(GroundBurst.id("pipeline/fire"))
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+            .withCull(false)
+            .build();
+    static final OitPipelineSet OIT_FIRE = OitPipelineSet.builder(GroundBurst.id("fire"),
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false)).build();
+
+    private static final Identifier CLOUD_SHADER = GroundBurst.id("core/fx_cloud");
+    static final RenderPipeline CLOUD_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
+            .withLocation(GroundBurst.id("pipeline/cloud"))
+            .withFragmentShader(CLOUD_SHADER)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+            .withCull(false)
+            .build();
+    static final OitPipelineSet OIT_CLOUD = OitPipelineSet.builder(GroundBurst.id("cloud"),
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER).withCull(false))
+            .build();
+
+    private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_cloud",
+            RenderSetup.builder(CLOUD_PIPELINE).setOitPipelines(OIT_CLOUD).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+    private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_fire",
+            RenderSetup.builder(FIRE_PIPELINE).setOitPipelines(OIT_FIRE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+    private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
+            RenderSetup.builder(GLOW_PIPELINE).setOitPipelines(OIT_GLOW).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
+
+    private FxRenderTypes() {}
+
+    static void register(IEventBus modBus) {
+        modBus.addListener((RegisterRenderPipelinesEvent event) -> {
+            event.registerPipeline(GLOW_PIPELINE);
+            event.registerOitPipelineSet(OIT_GLOW);
+            event.registerPipeline(FIRE_PIPELINE);
+            event.registerOitPipelineSet(OIT_FIRE);
+            event.registerPipeline(CLOUD_PIPELINE);
+            event.registerOitPipelineSet(OIT_CLOUD);
+        });
+    }
+
+    /**
+     * Submits effect geometry to be drawn after the translucent terrain (water), where vanilla draws its translucent
+     * particles; with improved transparency that is the same OIT pass as any other translucent geometry.
+     */
+    static void submit(SubmitNodeCollector collector, PoseStack poseStack, RenderType type, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+        SubmitNodeCollection collection = collector instanceof SubmitNodeStorage storage ? storage.order(0)
+                : collector instanceof SubmitNodeCollection c ? c : null;
+        if (collection == null) {
+            collector.submitCustomGeometry(poseStack, type, renderer);
+            return;
+        }
+        collection.afterTerrain.submit(new CustomFeatureRenderer.Submit(poseStack.last().copy(), type, renderer));
+    }
+
+    /** Blended, unlit, two-sided, with this texture. */
+    static RenderType fire(Identifier texture) {
+        return FIRE.apply(texture);
+    }
+
+    /** Blended, unlit, two-sided, seen far beyond the render distance, with this texture. */
+    static RenderType cloud(Identifier texture) {
+        return CLOUD.apply(texture);
+    }
+
+    /** Additive, unlit, two-sided, with this texture. */
+    static RenderType glow(Identifier texture) {
+        return GLOW.apply(texture);
+    }
+}

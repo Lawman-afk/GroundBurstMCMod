@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:sulfuric_acid",
-    "groundzero:flowing_sulfuric_acid"
+    "groundburst:sulfuric_acid",
+    "groundburst:flowing_sulfuric_acid"
   ]
 }

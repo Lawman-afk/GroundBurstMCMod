@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "groundburst:item/irradiated_li6_target_rod"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:spent_fuel_rod"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:uranium_dust"
+      }
+    },
+    {
+      "item": {
+        "id": "groundburst:nuclear_waste"
+      }
+    }
+  ],
+  "time": 400
+}

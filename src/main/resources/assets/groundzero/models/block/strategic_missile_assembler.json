@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "groundzero:block/strategic_missile_assembler_front",
-    "side": "groundzero:block/strategic_missile_assembler_side",
-    "top": "groundzero:block/strategic_missile_assembler_top"
-  }
-}

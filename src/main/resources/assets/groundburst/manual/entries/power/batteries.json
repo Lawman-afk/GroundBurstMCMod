@@ -1,0 +1,31 @@
+{
+  "title": "Batteries",
+  "icon": "groundburst:battery",
+  "order": 5,
+  "items": [
+    "groundburst:battery",
+    "groundburst:battery_charger"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:battery",
+      "text": "Holds 50,000 FE. Portable gear (Geiger counters, guns) will run on it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:battery_charger",
+      "text": "Charges a battery, or any other mod's chargeable item, at up to 512 FE a tick and moves it to the output slot when full."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:battery",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:battery_charger",
+      "text": ""
+    }
+  ]
+}

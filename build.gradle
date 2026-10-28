@@ -71,9 +71,9 @@ neoForge {
         // run/screenshots/manual_<n>.png and quits (see ManualPhotographer).
         manualShots {
             client()
-            systemProperty 'groundzero.manualShots', 'true'
+            systemProperty 'groundburst.manualShots', 'true'
             // -PmanualEntry=ordnance/assembly shoots just that entry's spreads (the first eight); -PmanualEntry=home the contents.
-            systemProperty 'groundzero.manualShots.entry', (project.findProperty('manualEntry') ?: '').toString()
+            systemProperty 'groundburst.manualShots.entry', (project.findProperty('manualEntry') ?: '').toString()
         }
 
         // Makes a flat world, sets off each test blast profile in turn and screenshots the effects at set moments into
@@ -81,9 +81,9 @@ neoForge {
         // (scenes whose names start with it); -PfxOnly=a,b several.
         fxShots {
             client()
-            systemProperty 'groundzero.fxShots', 'true'
+            systemProperty 'groundburst.fxShots', 'true'
             programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundzero.fxShots.only', (project.findProperty('fxOnly') ?: '').toString()
+            systemProperty 'groundburst.fxShots.only', (project.findProperty('fxOnly') ?: '').toString()
         }
 
         // Makes a normal world, generates the ground round its spawn, sets a blast off there with the player watching
@@ -92,9 +92,9 @@ neoForge {
         blastBench {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundzero.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
+            systemProperty 'groundburst.blastBench', (project.findProperty('bench') ?: 'tsar_warhead').toString()
             if (project.findProperty('benchSeed') != null) {
-                systemProperty 'groundzero.blastBench.seed', project.findProperty('benchSeed').toString()
+                systemProperty 'groundburst.blastBench.seed', project.findProperty('benchSeed').toString()
             }
         }
 
@@ -105,9 +105,9 @@ neoForge {
         worldSurvey {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
-            systemProperty 'groundzero.worldSurvey', (project.findProperty('survey') ?: 'all').toString()
+            systemProperty 'groundburst.worldSurvey', (project.findProperty('survey') ?: 'all').toString()
             if (project.findProperty('surveySeed') != null) {
-                systemProperty 'groundzero.worldSurvey.seed', project.findProperty('surveySeed').toString()
+                systemProperty 'groundburst.worldSurvey.seed', project.findProperty('surveySeed').toString()
             }
         }
 

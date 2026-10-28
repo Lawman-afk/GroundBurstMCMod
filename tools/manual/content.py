@@ -1,4 +1,4 @@
-"""Field Manual content (DESIGN.md §24.2): writes assets/groundzero/manual/chapters/*.json and entries/<chapter>/*.json.
+"""Field Manual content (DESIGN.md §24.2): writes assets/groundburst/manual/chapters/*.json and entries/<chapter>/*.json.
 
 Text markup: paragraphs split by a blank line; **bold**, *italic*; lines starting "- " are bullets; [label](chapter/entry)
 links to an entry. Page types: text, spotlight, crafting, smelting, machine, structure, image, table, links (see
@@ -17,13 +17,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 ROOT = paths.ASSETS / "manual"
-G = "groundzero:"
+G = "groundburst:"
 
 
-def gz(name: str) -> str:
+def gb(name: str) -> str:
     return name if ":" in name else G + name
 
 
@@ -33,35 +33,35 @@ def text(t: str) -> dict:
 
 
 def spot(item: str, t: str = "", title: str | None = None) -> dict:
-    p = {"type": "spotlight", "item": gz(item), "text": t.strip()}
+    p = {"type": "spotlight", "item": gb(item), "text": t.strip()}
     if title:
         p["title"] = title
     return p
 
 
 def craft(item: str, t: str = "") -> dict:
-    return {"type": "crafting", "item": gz(item), "text": t.strip()}
+    return {"type": "crafting", "item": gb(item), "text": t.strip()}
 
 
 def smelt(item: str, t: str = "") -> dict:
-    return {"type": "smelting", "item": gz(item), "text": t.strip()}
+    return {"type": "smelting", "item": gb(item), "text": t.strip()}
 
 
 def machine(kind: str, t: str = "", item: str | None = None, fluid: str | None = None) -> dict:
     p = {"type": "machine", "kind": kind, "text": t.strip()}
     if item:
-        p["item"] = gz(item)
+        p["item"] = gb(item)
     if fluid:
-        p["fluid"] = gz(fluid)
+        p["fluid"] = gb(fluid)
     return p
 
 
 def structure(sid: str, t: str = "") -> dict:
-    return {"type": "structure", "structure": gz(sid), "text": t.strip()}
+    return {"type": "structure", "structure": gb(sid), "text": t.strip()}
 
 
 def image(name: str, w: int, h: int, t: str = "") -> dict:
-    return {"type": "image", "image": f"groundzero:textures/gui/manual/plates/{name}.png", "width": w, "height": h, "text": t.strip()}
+    return {"type": "image", "image": f"groundburst:textures/gui/manual/plates/{name}.png", "width": w, "height": h, "text": t.strip()}
 
 
 def table(rows: list[list[str]], title: str | None = None, t: str = "") -> dict:
@@ -83,13 +83,13 @@ ENTRIES: list[dict] = []
 
 
 def chapter(cid: str, title: str, icon: str, intro: str) -> None:
-    CHAPTERS.append({"id": cid, "title": title, "icon": gz(icon), "order": len(CHAPTERS), "text": intro.strip()})
+    CHAPTERS.append({"id": cid, "title": title, "icon": gb(icon), "order": len(CHAPTERS), "text": intro.strip()})
 
 
 def entry(eid: str, title: str, icon: str, items: list[str], pages: list[dict]) -> None:
     chap = eid.split("/")[0]
     order = sum(1 for e in ENTRIES if e["id"].startswith(chap + "/"))
-    ENTRIES.append({"id": eid, "title": title, "icon": gz(icon), "order": order, "items": [gz(i) for i in items], "pages": pages})
+    ENTRIES.append({"id": eid, "title": title, "icon": gb(icon), "order": order, "items": [gb(i) for i in items], "pages": pages})
 
 
 # Plates rendered by tools/manual/plates.py (width x height in pixels).
@@ -104,7 +104,7 @@ def plate(name: str, t: str = "") -> dict:
 
 # =========================================================================================================================
 chapter("getting_started", "Getting Started", "field_manual", """
-This manual covers everything Ground Zero adds, from the first ore to the reactors that power the late game.
+This manual covers everything Ground Burst adds, from the first ore to the reactors that power the late game.
 
 Start with [First steps](getting_started/first_steps). Each chapter lists its entries; a red dot marks one you have not read yet.
 """)
@@ -131,7 +131,7 @@ Every new player is handed one on their first join. Right-click to open it; it r
 
 entry("getting_started/first_steps", "First steps", "iron_dust", [], [
     text("""
-Ground Zero is a long climb from hand tools to superweapons. Everything runs on **power** (FE), made by generators and carried by cables.
+Ground Burst is a long climb from hand tools to superweapons. Everything runs on **power** (FE), made by generators and carried by cables.
 
 - Mine the new ores: uranium, lead, lithium, rare earths, saltpeter, sulfur and tungsten. See [Ores](resources/ores).
 - Build a [Combustion Generator](power/combustion_generator) and some [Copper Cable](power/cables).

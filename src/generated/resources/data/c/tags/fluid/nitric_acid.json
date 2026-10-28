@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:nitric_acid",
-    "groundzero:flowing_nitric_acid"
+    "groundburst:nitric_acid",
+    "groundburst:flowing_nitric_acid"
   ]
 }

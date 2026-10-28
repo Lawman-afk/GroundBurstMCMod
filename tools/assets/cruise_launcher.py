@@ -30,11 +30,11 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import scud_storm as SS  # noqa: E402
@@ -46,7 +46,7 @@ F = "frame"
 B = "boxes"
 DECK_Y = 14.0
 
-# --- the layout (CruiseLauncherBlockEntity and GZLaunch have the same figures) ----------------------------------------------
+# --- the layout (CruiseLauncherBlockEntity and GBLaunch have the same figures) ----------------------------------------------
 #: The deck: the 2 x 6 cells, x -8..24, z -8..88.
 DECK = (-8.0, 24.0, -8.0, 88.0)
 #: The hinge (up from the deck's foot, back from the controller's cell's middle), each box's axis above the hinge line,
@@ -288,7 +288,7 @@ def build() -> tuple[GeoModel, Parts]:
 
 # --- painting -----------------------------------------------------------------------------------------------------------------
 def _kit(g: GeoModel):
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     k = K.Kit(g, {}, seed=523, ao_reach=3.0, turned=True)
     W.round_faces(k.S, ROUND, top=True, bottom=True, foot=False)
     return k

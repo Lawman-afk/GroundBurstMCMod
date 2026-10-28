@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:lithium_ore",
-    "groundzero:deepslate_lithium_ore"
+    "groundburst:lithium_ore",
+    "groundburst:deepslate_lithium_ore"
   ]
 }

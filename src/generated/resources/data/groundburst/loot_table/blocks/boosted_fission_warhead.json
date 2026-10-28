@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "modifier": {
+    "type": "minecraft:copy_components",
+    "include": [
+      "groundburst:fuze"
+    ],
+    "source": "block_entity"
+  },
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:boosted_fission_warhead"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundburst:blocks/boosted_fission_warhead"
+}

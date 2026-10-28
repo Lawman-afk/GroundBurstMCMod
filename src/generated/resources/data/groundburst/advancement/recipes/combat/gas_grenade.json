@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_chlorine_canister": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:chlorine_canister"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:gas_grenade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_chlorine_canister"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:gas_grenade"
+    ]
+  }
+}

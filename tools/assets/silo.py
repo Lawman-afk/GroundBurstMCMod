@@ -26,12 +26,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import structures as ST  # noqa: E402
@@ -74,9 +74,9 @@ def hazard_concrete() -> Tex:
 def concrete_block(name: str, tex: Tex) -> None:
     """A plain cube (not a structure part: it is never hidden)."""
     tex.save(paths.TEXTURES / "block" / f"{name}.png")
-    write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundzero:block/{name}"}})
-    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundburst:block/{name}"}})
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundburst:block/{name}"}}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
 
 
 # --- the Silo Hatch (one item, a 3x3 lid) ----------------------------------------------------------------------------------
@@ -116,14 +116,14 @@ def hatch_block(particle: str) -> BlockModel:
 def silo_hatch() -> None:
     icon = hatch_icon()
     icon.save(paths.TEXTURES / "block" / "silo_hatch_icon.png")
-    hatch_block("groundzero:block/silo_hatch_icon")
-    write_json(paths.MODELS / "block" / "silo_hatch_formed.json", ST.particle_model("groundzero:block/silo_hatch_icon"))
+    hatch_block("groundburst:block/silo_hatch_icon")
+    write_json(paths.MODELS / "block" / "silo_hatch_formed.json", ST.particle_model("groundburst:block/silo_hatch_icon"))
     write_json(paths.ASSETS / "blockstates" / "silo_hatch.json", {"variants": {
-        "formed=false,part=center": {"model": "groundzero:block/silo_hatch"},
-        "formed=false,part=edge": {"model": "groundzero:block/silo_hatch_formed"},
-        "formed=true": {"model": "groundzero:block/silo_hatch_formed"},
+        "formed=false,part=center": {"model": "groundburst:block/silo_hatch"},
+        "formed=false,part=edge": {"model": "groundburst:block/silo_hatch_formed"},
+        "formed=true": {"model": "groundburst:block/silo_hatch_formed"},
     }})
-    write_json(paths.ASSETS / "items" / "silo_hatch.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/silo_hatch"}})
+    write_json(paths.ASSETS / "items" / "silo_hatch.json", {"model": {"type": "minecraft:model", "model": "groundburst:block/silo_hatch"}})
 
 
 def silo_placard(t: Tex) -> None:
@@ -286,7 +286,7 @@ def formed() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h, CLEAR)
 
-    # --- paint: materials in model space (tools/gz/materials.py, the remaster after 9b) ---
+    # --- paint: materials in model space (tools/gb/materials.py, the remaster after 9b) ---
     S = M.Surfacer(g, seed=31)
     # The collar: one cast slab round the opening, a band of worn hazard paint round its outer edge.
     collar_names = [n for n, _, _ in collar]

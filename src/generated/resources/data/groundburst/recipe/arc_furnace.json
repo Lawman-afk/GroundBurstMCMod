@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "#c:storage_blocks/iron",
+    "C": "#c:ingots/copper",
+    "F": "minecraft:blast_furnace",
+    "K": "minecraft:cauldron",
+    "R": "#c:storage_blocks/redstone"
+  },
+  "pattern": [
+    "BKB",
+    "CFC",
+    "BRB"
+  ],
+  "result": {
+    "id": "groundburst:arc_furnace"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "formed=false,part=center": {
+      "model": "groundburst:block/large_radar_dish"
+    },
+    "formed=false,part=edge": {
+      "model": "groundburst:block/large_radar_dish_formed"
+    },
+    "formed=true": {
+      "model": "groundburst:block/large_radar_dish_formed"
+    }
+  }
+}

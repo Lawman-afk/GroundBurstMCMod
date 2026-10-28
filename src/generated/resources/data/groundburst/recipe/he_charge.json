@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:rdx_crystals",
+    "groundburst:rdx_crystals",
+    "groundburst:rdx_crystals",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundburst:he_charge"
+  }
+}

@@ -25,11 +25,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "fusion_reactor"
 CLEAR = (0, 0, 0, 0)
@@ -210,7 +210,7 @@ def plinth_paint(S: M.Surfacer, tex: Tex, names) -> None:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, lamps) -> None:
-    """The reactor's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): the plinth as the
+    """The reactor's surfaces, in model space (tools/gb/materials.py; the remaster after slice 9b): the plinth as the
     accelerator's; a polished vacuum vessel in panels with its viewports open onto the plasma; coil cases of dark steel
     with their copper windings showing; the copper solenoid clamped in steel; the cabinet and the ports' sockets; the
     plasma and its streak as they were."""

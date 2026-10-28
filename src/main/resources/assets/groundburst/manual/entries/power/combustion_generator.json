@@ -1,0 +1,28 @@
+{
+  "title": "Combustion Generator",
+  "icon": "groundburst:combustion_generator",
+  "order": 0,
+  "items": [
+    "groundburst:combustion_generator"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:combustion_generator",
+      "text": "Burns anything a furnace burns for **60 FE a tick** and pushes the power into cables and machines beside it. It stops burning while its store is full, so no fuel is wasted."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:combustion_generator",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "power/cables",
+        "power/diesel_generator"
+      ],
+      "text": ""
+    }
+  ]
+}

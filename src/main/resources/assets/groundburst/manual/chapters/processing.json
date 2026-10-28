@@ -1,0 +1,6 @@
+{
+  "title": "Processing",
+  "icon": "groundburst:ore_crusher",
+  "order": 3,
+  "text": "The machines that turn raw materials into parts, fluids and chemicals. Each entry shows the machine's recipes as the game has them."
+}

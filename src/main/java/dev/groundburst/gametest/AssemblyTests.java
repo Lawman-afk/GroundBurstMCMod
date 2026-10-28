@@ -1,0 +1,210 @@
+package dev.groundburst.gametest;
+
+import dev.groundburst.content.assembly.AssemblyBenchBlockEntity;
+import dev.groundburst.content.assembly.Fuze;
+import dev.groundburst.content.assembly.FuzeSettings;
+import dev.groundburst.content.assembly.GBAssembly;
+import dev.groundburst.content.assembly.WarheadAssembly;
+import dev.groundburst.content.machine.MachineBlock;
+import dev.groundburst.content.machine.WideMachineBlock;
+import dev.groundburst.content.ordnance.GBOrdnance;
+import dev.groundburst.content.ordnance.charge.ChargeBlock;
+import dev.groundburst.content.ordnance.charge.ChargeBlockEntity;
+import dev.groundburst.content.ordnance.charge.Charges;
+import dev.groundburst.registry.GBDataComponents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+
+/** Phase 7 slice 7a (DESIGN.md §9-10): the Ordnance Assembly Bench and warhead fuzes. */
+final class AssemblyTests {
+    private AssemblyTests() {}
+
+    static void register() {
+        GBGameTests.test("bench_assembles_a_warhead_with_its_fuze", GBGameTests.FLOOR_16, 200, AssemblyTests::assembles);
+        GBGameTests.test("bench_refuses_a_casing_of_the_wrong_class", GBGameTests.FLOOR_16, 20, AssemblyTests::wrongClass);
+        GBGameTests.test("bench_waits_without_power", GBGameTests.FLOOR_16, 40, AssemblyTests::noPower);
+        GBGameTests.test("bench_takes_a_warhead_apart", GBGameTests.FLOOR_16, 20, AssemblyTests::takesApart);
+        GBGameTests.test("bench_is_two_blocks_wide", GBGameTests.FLOOR_16, 20, AssemblyTests::wide);
+        GBGameTests.test("warhead_keeps_its_fuze_when_picked_up", GBGameTests.FLOOR_16, 20, AssemblyTests::keepsFuze);
+        GBGameTests.test("placed_warhead_ignores_detonators", GBGameTests.FLOOR_16, 20, AssemblyTests::placedIgnoresDetonator);
+        GBGameTests.test("bench_sets_the_fuze_setting", GBGameTests.FLOOR_16, 200, AssemblyTests::fuzeSetting);
+        GBGameTests.test("bench_halves_have_their_own_sides", GBGameTests.FLOOR_16, 20, AssemblyTests::halfSides);
+        GBGameTests.testOpenSky("barometric_fuze_bursts_high_over_the_target", GBGameTests.FLOOR_16, 400, AssemblyTests::barometric);
+    }
+
+    private static ItemStack fuzed(Fuze fuze, int value) {
+        ItemStack w = new ItemStack(GBOrdnance.HE_WARHEAD.item().get());
+        w.set(GBDataComponents.FUZE.get(), FuzeSettings.of(fuze, value));
+        return w;
+    }
+
+    /** A missile whose warhead has a barometric fuze at 20 bursts about 20 blocks over its target, not on the ground. */
+    private static void barometric(GameTestHelper helper) {
+        floor(helper);
+        Vec3 pad = helper.absoluteVec(new Vec3(8, 2, 8)), target = pad.add(14, 0, 0);
+        var f = dev.groundburst.content.launch.Flights.launch(helper.getLevel(), pad, target, fuzed(Fuze.BAROMETRIC, 20), null);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!dev.groundburst.content.launch.Flights.of(helper.getLevel()).all().contains(f), "it burst");
+            double over = f.position().y - target.y;
+            // It bursts high (20 up), never on the ground; other plots' blocks in its path may set it off a little higher.
+            helper.assertTrue(over > 12, "well above the ground: " + over);
+        });
+    }
+
+    private static void floor(GameTestHelper helper) {
+        Charges.bombScale = 0.3f;
+        for (BlockPos p : BlockPos.betweenClosed(1, 1, 1, 15, 1, 15)) {
+            helper.setBlock(p, Blocks.STONE);
+        }
+    }
+
+    /** Both halves of a bench facing north (its side half to the west), its block entity. */
+    private static AssemblyBenchBlockEntity bench(GameTestHelper helper, BlockPos rel) {
+        Block block = GBAssembly.ASSEMBLY_BENCH.block().get();
+        helper.setBlock(rel, block.defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        helper.setBlock(rel.west(), block.defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH)
+                .setValue(WideMachineBlock.PART, WideMachineBlock.Part.SIDE));
+        return (AssemblyBenchBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
+    }
+
+    private static void load(AssemblyBenchBlockEntity b, ItemStack core, ItemStack casing, ItemStack fuze) {
+        b.inventory().setItem(AssemblyBenchBlockEntity.SLOT_CORE, core);
+        b.inventory().setItem(AssemblyBenchBlockEntity.SLOT_CASING, casing);
+        b.inventory().setItem(AssemblyBenchBlockEntity.SLOT_FUZE, fuze);
+    }
+
+    /** An HE charge, a light casing and a remote fuze make an HE warhead carrying a remote fuze; the parts are used. */
+    private static void assembles(GameTestHelper helper) {
+        floor(helper);
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        b.energy().generate(AssemblyBenchBlockEntity.CAPACITY);
+        load(b, new ItemStack(GBAssembly.HE_CHARGE.get()), new ItemStack(GBAssembly.LIGHT_CASING.get()), new ItemStack(GBAssembly.IMPACT_FUZE.get()));
+        helper.assertTrue(b.problem() == WarheadAssembly.Problem.NONE, "the parts fit: " + b.problem());
+        helper.assertTrue(b.startAssembly(), "assembly starts");
+        helper.succeedWhen(() -> {
+            ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
+            helper.assertTrue(out.is(GBOrdnance.HE_WARHEAD.item().get()), "an HE warhead");
+            helper.assertTrue(out.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT).fuze() == Fuze.IMPACT, "with an impact fuze");
+            helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CORE).isEmpty()
+                    && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CASING).isEmpty()
+                    && b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_FUZE).isEmpty(), "the parts are used");
+        });
+    }
+
+    /** A medium core in a light casing will not go together. */
+    private static void wrongClass(GameTestHelper helper) {
+        floor(helper);
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        b.energy().generate(AssemblyBenchBlockEntity.CAPACITY);
+        load(b, new ItemStack(GBAssembly.HEAVY_HE_CHARGE.get()), new ItemStack(GBAssembly.LIGHT_CASING.get()), new ItemStack(GBAssembly.IMPACT_FUZE.get()));
+        helper.assertTrue(b.problem() == WarheadAssembly.Problem.WRONG_CASING, "wrong casing: " + b.problem());
+        helper.assertTrue(!b.startAssembly(), "it will not start");
+        helper.succeed();
+    }
+
+    /** With no power the job waits (no progress, status says so). */
+    private static void noPower(GameTestHelper helper) {
+        floor(helper);
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        load(b, new ItemStack(GBAssembly.HE_CHARGE.get()), new ItemStack(GBAssembly.LIGHT_CASING.get()), new ItemStack(GBAssembly.IMPACT_FUZE.get()));
+        helper.assertTrue(b.startAssembly(), "assembly starts");
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(b.progress() == 0 && b.assembling(), "no progress without power");
+            helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD).isEmpty(), "no warhead");
+            helper.succeed();
+        });
+    }
+
+    /** A warhead in the output slot comes apart into its core, a casing of its class and its fuze. */
+    private static void takesApart(GameTestHelper helper) {
+        floor(helper);
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        ItemStack warhead = new ItemStack(GBOrdnance.GAS_WARHEAD.item().get());
+        warhead.set(GBDataComponents.FUZE.get(), FuzeSettings.fresh(Fuze.BAROMETRIC));
+        b.inventory().setItem(AssemblyBenchBlockEntity.SLOT_WARHEAD, warhead);
+        helper.assertTrue(b.takeApart(), "taken apart");
+        helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CORE).is(GBAssembly.GAS_DISPENSER.get()), "the core");
+        helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_CASING).is(GBAssembly.MEDIUM_CASING.get()), "a medium casing");
+        helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_FUZE).is(GBAssembly.BAROMETRIC_FUZE.get()), "its fuze");
+        helper.assertTrue(b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD).isEmpty(), "the warhead is gone");
+        helper.succeed();
+    }
+
+    /** Breaking either half removes both; the side half reaches the main half's block entity. */
+    private static void wide(GameTestHelper helper) {
+        floor(helper);
+        BlockPos main = new BlockPos(8, 2, 8);
+        bench(helper, main);
+        helper.assertTrue(WideMachineBlock.base(helper.absolutePos(main.west()), helper.getLevel().getBlockState(helper.absolutePos(main.west())))
+                .equals(helper.absolutePos(main)), "the side half points at the main half");
+        helper.getLevel().destroyBlock(helper.absolutePos(main.west()), false);
+        helper.succeedWhen(() -> helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(main)).isAir(), "both halves gone"));
+    }
+
+    /** A placed warhead's fuze goes back into its item (what it drops or is picked as). */
+    private static void keepsFuze(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 2, 8);
+        helper.setBlock(at, GBOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
+        ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
+        be.setFuze(FuzeSettings.of(Fuze.BAROMETRIC, 42));
+        FuzeSettings kept = be.collectComponents().get(GBDataComponents.FUZE.get());
+        helper.assertTrue(kept != null && kept.fuze() == Fuze.BAROMETRIC && kept.value() == 42, "the item keeps a barometric fuze at 42: " + kept);
+        helper.succeed();
+    }
+
+    /** A placed warhead does not answer a detonator, whatever its fuze: fuzes act only in a missile. */
+    private static void placedIgnoresDetonator(GameTestHelper helper) {
+        floor(helper);
+        BlockPos at = new BlockPos(8, 2, 8);
+        helper.setBlock(at, GBOrdnance.HE_WARHEAD.block().get().defaultBlockState().setValue(ChargeBlock.FACING, Direction.NORTH));
+        ChargeBlockEntity be = ChargeBlock.at(helper.getLevel(), helper.absolutePos(at));
+        be.setFuze(FuzeSettings.of(Fuze.BAROMETRIC, 40));
+        helper.assertTrue(!be.hearsDetonator(), "it does not listen");
+        helper.assertTrue(Charges.remote(helper.getLevel(), helper.absoluteVec(new Vec3(8, 3, 8)), 0, null, 12) == 0, "nothing heard it");
+        helper.succeed();
+    }
+
+    /** The setting typed on the bench goes with the fuze into the warhead (and comes back out when it is taken apart). */
+    private static void fuzeSetting(GameTestHelper helper) {
+        floor(helper);
+        AssemblyBenchBlockEntity b = bench(helper, new BlockPos(8, 2, 8));
+        b.energy().generate(AssemblyBenchBlockEntity.CAPACITY);
+        load(b, new ItemStack(GBAssembly.HE_CHARGE.get()), new ItemStack(GBAssembly.LIGHT_CASING.get()), new ItemStack(GBAssembly.BAROMETRIC_FUZE.get()));
+        b.setFuzeValue(500);
+        helper.assertTrue(b.fuzeValue() == 200, "kept within the fuze's range: " + b.fuzeValue());
+        b.setFuzeValue(75);
+        helper.assertTrue(b.startAssembly(), "assembly starts");
+        helper.succeedWhen(() -> {
+            ItemStack out = b.inventory().getItem(AssemblyBenchBlockEntity.SLOT_WARHEAD);
+            FuzeSettings f = out.get(GBDataComponents.FUZE.get());
+            helper.assertTrue(f != null && f.fuze() == Fuze.BAROMETRIC && f.value() == 75, "a barometric fuze at 75: " + f);
+        });
+    }
+
+    /** Each half of the bench answers pipes through its own faces; the faces where the halves meet expose nothing. */
+    private static void halfSides(GameTestHelper helper) {
+        floor(helper);
+        BlockPos main = new BlockPos(8, 2, 8);
+        AssemblyBenchBlockEntity b = bench(helper, main);
+        var level = helper.getLevel();
+        BlockPos m = helper.absolutePos(main), s = helper.absolutePos(main.west());
+        var cap = net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK;
+        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null && level.getCapability(cap, s, Direction.DOWN) != null,
+                "both bottoms take items to begin with");
+        // The side half's bottom set to None: only that bottom closes.
+        b.changeSides(true, c -> c.cycleItems(dev.groundburst.content.machine.SideConfig.Face.BOTTOM, true, b.allowedItemModes()));
+        helper.assertTrue(b.sides(true).items(dev.groundburst.content.machine.SideConfig.Face.BOTTOM)
+                == dev.groundburst.content.machine.SideConfig.ItemMode.NONE, "the side half's bottom is None");
+        helper.assertTrue(level.getCapability(cap, s, Direction.DOWN) == null, "the side half's bottom is closed");
+        helper.assertTrue(level.getCapability(cap, m, Direction.DOWN) != null, "the main half's bottom is still open");
+        helper.assertTrue(level.getCapability(cap, m, Direction.WEST) == null && level.getCapability(cap, s, Direction.EAST) == null,
+                "the faces between the halves expose nothing");
+        helper.succeed();
+    }
+}

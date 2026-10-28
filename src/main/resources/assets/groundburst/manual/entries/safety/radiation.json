@@ -1,0 +1,85 @@
+{
+  "title": "Radiation",
+  "icon": "groundburst:geiger_counter",
+  "order": 0,
+  "items": [],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Radiation can't be seen or felt, only measured: carry a [Geiger Counter](safety/geiger_counter). Its strength where you stand is the **dose rate**, in **RAD/h**; what it does to you adds up as your **dose**, in **rad** (a [Dosimeter Badge](safety/geiger_counter) keeps count). An hour at 100 RAD/h is 100 rad."
+    },
+    {
+      "type": "text",
+      "text": "**Where it comes from.**\n\n- **Craters and meltdowns.** A nuclear blast leaves the land round it radioactive, strongest at ground zero and falling off to nothing at its edge, and fading as it ages: it halves every few minutes at first (cobalt lingers for weeks). A fission warhead's crater starts at 60,000 RAD/h: deadly in a minute. Its [fallout plume](safety/fallout) carries more of it downwind.\n- **Radioactive blocks.** Uranium ore (faintly: a Geiger counter finds it), uranium and raw uranium blocks, corium (deadly). You feel them within 6 blocks, less the farther you are and through whatever lies between.\n- **What you carry.** Uranium, plutonium, fuel rods (spent ones above all), irradiated targets, nuclear waste and corium dose you from your own pockets: a stack of uranium ingots brings sickness within half an hour, a spent fuel rod within three minutes. Keep them in a [Lead Container](safety/lead_container)."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "1 RAD/h",
+          "100 hours"
+        ],
+        [
+          "10 RAD/h",
+          "10 hours"
+        ],
+        [
+          "100 RAD/h",
+          "an hour"
+        ],
+        [
+          "1,000 RAD/h",
+          "6 minutes"
+        ],
+        [
+          "10,000 RAD/h",
+          "36 seconds"
+        ]
+      ],
+      "text": "Real time until the first 100 rad, at each dose rate.",
+      "title": "Until sickness"
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "100 rad",
+          "Sickness I"
+        ],
+        [
+          "200 rad",
+          "Sickness II"
+        ],
+        [
+          "400 rad",
+          "Sickness III"
+        ],
+        [
+          "600 rad",
+          "Sickness IV"
+        ],
+        [
+          "1,000 rad",
+          "lethal"
+        ]
+      ],
+      "text": "I: nausea now and then, hunger. II: weakness, slow mining, more hunger. III: a heart of damage every 5 s, slowness, no natural healing. IV: wither, the edge of sight going dark. Lethal: a quick death.",
+      "title": "Radiation Sickness"
+    },
+    {
+      "type": "text",
+      "text": "**Shelter.** Blocks stop radiation: a block of stone stops half of it, a block of concrete or obsidian three quarters, a block of lead nearly all; earth, wood and water less, glass very little. A one-block stone hut halves what reaches you; a bunker under the ground stops it. A [hazmat suit](safety/hazmat_suits) stops its share of what comes from outside, not of what you carry.\n\n**Getting better.** Below 10 RAD/h your dose falls by itself, 1 rad a minute. [Medicine](safety/radiation_medicine) is faster. Death clears it. The undead are immune."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/geiger_counter",
+        "safety/lead_container",
+        "safety/radiation_medicine",
+        "safety/hazmat_suits",
+        "safety/reactor_safety"
+      ],
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "title": "Radiation medicine",
+  "icon": "groundburst:rad_away",
+  "order": 7,
+  "items": [
+    "groundburst:rad_away",
+    "groundburst:potassium_iodide",
+    "groundburst:anti_rad_injector"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:potassium_iodide",
+      "text": "Take before going in: for 10 minutes you take up only **half** the dose. Iodine from dried kelp, potassium from saltpeter."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:rad_away",
+      "text": "An IV bag: draws **150 rad** out of you over 30 seconds."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:anti_rad_injector",
+      "text": "For emergencies: **400 rad** off at once, but you are weak for a minute after."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:potassium_iodide",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:rad_away",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:anti_rad_injector",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/radiation",
+        "safety/geiger_counter"
+      ],
+      "text": ""
+    }
+  ]
+}

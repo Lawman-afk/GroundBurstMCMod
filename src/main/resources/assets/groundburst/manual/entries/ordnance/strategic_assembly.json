@@ -1,0 +1,65 @@
+{
+  "title": "Strategic Assembly Hall",
+  "icon": "groundburst:strategic_assembly_hall",
+  "order": 12,
+  "items": [
+    "groundburst:strategic_assembly_hall",
+    "groundburst:strategic_assembly_hall_spawner",
+    "groundburst:crane_rail",
+    "groundburst:fusion_secondary",
+    "groundburst:cobalt_jacket",
+    "groundburst:intercontinental_booster",
+    "groundburst:tertiary_stage",
+    "groundburst:twin_boosted_core"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Strategic Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile**, ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section. Each of its three warheads has an intercontinental missile of its own: a white three-stage one for the thermonuclear warhead, a dark blue one for the cobalt, and the Tsar's clustered giant.\n\nFit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port."
+    },
+    {
+      "type": "text",
+      "text": "An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, from a Launch Complex or a Missile Silo. Its warhead goes off where it lands. What its three warheads do is under [Nuclear warheads](ordnance/nuclear)."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:strategic_assembly_hall",
+      "text": "A 7 by 13 floor of Launch Pads: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Gantry Frame columns four high stand at the four corners and halfway along each long side, and a Crane Rail runs the length of each long side on top of them. Keep the hall between them clear, five wide and five high: the missile and the crane need the room."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:strategic_assembly_hall",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:crane_rail",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fusion_secondary",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:cobalt_jacket",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:intercontinental_booster",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:tertiary_stage",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:twin_boosted_core",
+      "text": ""
+    }
+  ]
+}

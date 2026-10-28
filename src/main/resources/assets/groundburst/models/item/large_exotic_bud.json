@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "groundburst:block/large_exotic_bud"
+  }
+}

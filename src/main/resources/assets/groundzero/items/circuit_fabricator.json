@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/circuit_fabricator",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

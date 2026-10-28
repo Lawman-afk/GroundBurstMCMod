@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_dusts_gold": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:dusts/gold"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:gold_ingot_from_blasting_gold_dust"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_dusts_gold"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:gold_ingot_from_blasting_gold_dust"
+    ]
+  }
+}

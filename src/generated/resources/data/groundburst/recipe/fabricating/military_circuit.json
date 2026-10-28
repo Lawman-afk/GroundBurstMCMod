@@ -1,0 +1,30 @@
+{
+  "type": "groundburst:fabricating",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "#c:circuits/advanced"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:tungsten_filament"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:gems/diamond"
+    },
+    {
+      "count": 2,
+      "ingredient": "#c:dusts/rare_earth"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:military_circuit"
+      }
+    }
+  ],
+  "time": 400
+}

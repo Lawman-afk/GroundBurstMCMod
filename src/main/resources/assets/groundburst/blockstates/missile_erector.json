@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/missile_erector"
+    },
+    "formed=true": {
+      "model": "groundburst:block/missile_erector_formed"
+    }
+  }
+}

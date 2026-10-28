@@ -22,11 +22,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 OLIVE = P.OLIVE
 STEEL = P.STEEL
@@ -234,7 +234,7 @@ def stencil(t: Tex, decal: str, x: int, y: int, w: int, colour) -> None:
     """A stencil across the front of a prism can. Seen from the front, the can is the side box's 3 px face with one
     column of the core's 5 px face either side of it, so the decal (centred in 5 columns) is split between them: its
     middle three columns on the side box, its outer two on the core."""
-    from gz.tex import DECALS
+    from gb.tex import DECALS
     rows = (decal if "|" in decal else DECALS[decal]).split("|")      # a decal name, or a pattern of its own
     pad = (5 - len(rows[0])) // 2
     rows = ["." * pad + r + "." * (5 - len(r) - pad) for r in rows]
@@ -394,13 +394,13 @@ def toxic_sludge() -> None:
         side = {"uv": [0, 0, 16, 1], "texture": "#sludge"}
         write_json(paths.MODELS / "block" / f"{name}.json", {
             "render_type": "minecraft:cutout",
-            "textures": {"sludge": f"groundzero:block/{name}", "particle": f"groundzero:block/{name}"},
+            "textures": {"sludge": f"groundburst:block/{name}", "particle": f"groundburst:block/{name}"},
             "elements": [{"from": [0, 0, 0], "to": [16, 1, 16], "faces": {
                 "up": {"uv": [0, 0, 16, 16], "texture": "#sludge"},
                 "down": {"uv": [0, 0, 16, 16], "texture": "#sludge", "cullface": "down"},
                 "north": side, "south": side, "east": side, "west": side}}],
         })
-        variants[f"age={age}"] = [{"model": f"groundzero:block/{name}", "y": r} for r in (0, 90, 180, 270)]   # turned at random
+        variants[f"age={age}"] = [{"model": f"groundburst:block/{name}", "y": r} for r in (0, 90, 180, 270)]   # turned at random
     write_json(paths.ASSETS / "blockstates" / "toxic_sludge.json", {"variants": variants})
 
 
@@ -430,7 +430,7 @@ def emp_grenade() -> None:
 
 def item_defs(names: list[str]) -> None:
     for n in names:
-        write_json(paths.ASSETS / "items" / f"{n}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{n}"}})
+        write_json(paths.ASSETS / "items" / f"{n}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{n}"}})
 
 
 def main() -> None:

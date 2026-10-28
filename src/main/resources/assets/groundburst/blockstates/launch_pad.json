@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/launch_pad"
+    },
+    "formed=true": {
+      "model": "groundburst:block/launch_pad_formed"
+    }
+  }
+}

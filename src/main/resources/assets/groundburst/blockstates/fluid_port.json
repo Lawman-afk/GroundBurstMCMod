@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/fluid_port"
+    },
+    "formed=true": {
+      "model": "groundburst:block/fluid_port_formed"
+    }
+  }
+}

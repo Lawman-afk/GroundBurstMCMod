@@ -14,10 +14,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.sprite import outline  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.sprite import outline  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import parts as PT  # noqa: E402
 import resources as R  # noqa: E402
 

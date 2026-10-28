@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/diesel_generator",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

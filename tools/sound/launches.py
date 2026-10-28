@@ -218,7 +218,7 @@ if __name__ == "__main__":
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from gz import paths  # noqa: E402
+    from gb import paths  # noqa: E402
     for rel, x in launch_set().items():
         S.save_ogg(x, paths.SOUNDS / f"{rel}.ogg")
         print(f"{rel}: {len(x) / S.SR:.2f} s")

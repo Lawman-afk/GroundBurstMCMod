@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw
 from scipy import signal
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RAW = HERE / "sources" / "raw"

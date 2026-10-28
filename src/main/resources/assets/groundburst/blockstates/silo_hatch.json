@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "formed=false,part=center": {
+      "model": "groundburst:block/silo_hatch"
+    },
+    "formed=false,part=edge": {
+      "model": "groundburst:block/silo_hatch_formed"
+    },
+    "formed=true": {
+      "model": "groundburst:block/silo_hatch_formed"
+    }
+  }
+}

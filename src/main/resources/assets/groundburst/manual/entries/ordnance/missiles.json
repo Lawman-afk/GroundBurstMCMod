@@ -1,0 +1,97 @@
+{
+  "title": "Missiles",
+  "icon": "groundburst:missile",
+  "order": 4,
+  "items": [
+    "groundburst:missile",
+    "groundburst:tactical_missile_body",
+    "groundburst:medium_missile_body",
+    "groundburst:heavy_missile_body",
+    "groundburst:strategic_missile_body",
+    "groundburst:solid_rocket_motor_i",
+    "groundburst:solid_rocket_motor_ii",
+    "groundburst:liquid_fuel_stage",
+    "groundburst:cruise_engine",
+    "groundburst:inertial_guidance_unit",
+    "groundburst:gps_guidance_unit",
+    "groundburst:hardened_electronics"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: the warhead is its nose, and the body under it is cut to the warhead's own girth and painted to match all the way down, with its own fins, bands and markings. A missile is put together at the [missile assembler](ordnance/missile_assemblers) of its warhead's class: the warhead, the class's **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. **Take Apart** gives every part back."
+    },
+    {
+      "type": "text",
+      "text": "**Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [Strategic Assembly Hall](ordnance/strategic_assembly) builds whole.\n\n**Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies)."
+    },
+    {
+      "type": "text",
+      "text": "**Cruise missiles.** A **Cruise Engine** (Tactical and Medium bodies, 1500 blocks) is a small jet with its own launch booster. A missile built with one is a **cruise missile**: the same warhead on its own winged body, painted as that warhead's missile (an HE Cruise Missile, a Cryo Cruise Missile...). It does not arc through the sky: its booster lights it out of its box and falls away, its wings unfold, and its jet carries it **40 blocks over the ground** all the way, climbing early for a hill and easing down after it, at 32 blocks a second. 50 blocks short of the target it pops up and dives on it. Anything standing taller than its cruise height in its way stops it there. Only the [Cruise Missile Launcher](ordnance/cruise_launcher) fires it, and no other launcher will take one."
+    },
+    {
+      "type": "text",
+      "text": "**Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks.\n\n**Hardened Electronics** keep a missile live through an EMP: without them, a missile that flies through an EMP field has an even chance of coming down a dud."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:missile",
+      "text": "Its tooltip lists its warhead and fuze, its range and its guidance; its name is its own (an HE Missile, a Thermobaric Missile, a Fission Missile...)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:tactical_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:medium_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:heavy_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:strategic_missile_body",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:solid_rocket_motor_i",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:solid_rocket_motor_ii",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:liquid_fuel_stage",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:cruise_engine",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:inertial_guidance_unit",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:gps_guidance_unit",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:hardened_electronics",
+      "text": ""
+    }
+  ]
+}

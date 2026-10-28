@@ -1,0 +1,58 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false": {
+      "model": "groundburst:block/missile_silo"
+    },
+    "active=false,facing=north,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=true,facing=north,formed=false": {
+      "model": "groundburst:block/missile_silo"
+    },
+    "active=true,facing=north,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=false,facing=east,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=true,facing=east,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=false,facing=south,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=true,facing=south,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=false,facing=west,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    },
+    "active=true,facing=west,formed=false": {
+      "model": "groundburst:block/missile_silo",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true": {
+      "model": "groundburst:block/missile_silo_formed"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundburst:block/war_factory_front",
+    "side": "groundburst:block/war_factory_side",
+    "top": "groundburst:block/war_factory_top"
+  }
+}

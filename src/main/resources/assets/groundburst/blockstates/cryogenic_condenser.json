@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "active=false,facing=north,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=north,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=north,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=north,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=east,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=east,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=east,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=east,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=south,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=south,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=south,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=south,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=west,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=false,facing=west,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=west,half=lower": {
+      "model": "groundburst:block/cryogenic_condenser"
+    },
+    "active=true,facing=west,half=upper": {
+      "model": "groundburst:block/cryogenic_condenser"
+    }
+  }
+}

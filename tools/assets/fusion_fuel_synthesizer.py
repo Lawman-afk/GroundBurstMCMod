@@ -16,12 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "fusion_fuel_synthesizer"
 FROST = fixed("frost", "#5c7a8c", "#86a6b8", "#aecbd8", "#cfe4ec", "#e4f2f7", "#f2f9fc", "#ffffff")
@@ -97,7 +97,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The synthesizer's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a white pressure
+    """The synthesizer's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a white pressure
     chamber with an amber class band and bolted steel flanges; steel posts; a hazard-striped crosshead driving the red
     cylinder's steel ram; the frosted window onto the glowing pellet; an olive cabinet; a deuterium bottle; brass dials."""
     k = K.Kit(g, parts, seed=311)

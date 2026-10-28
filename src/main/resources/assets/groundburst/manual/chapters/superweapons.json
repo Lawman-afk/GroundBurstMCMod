@@ -1,0 +1,6 @@
+{
+  "title": "Superweapons",
+  "icon": "groundburst:scud_storm",
+  "order": 7,
+  "text": "The two great superweapons of the old wars: the GLA's **SCUD Storm** and China's **Nuclear Missile**. Each is a structure of its own, takes only its own ammunition (built at a factory of its own faction, the **Arms Dealer** or the **War Factory**), charges for minutes on power and is fired from a [Launch Computer](ordnance/launch_site). When one is built, readied or launched, everyone in the dimension hears the warning."
+}

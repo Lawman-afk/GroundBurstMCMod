@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/cryogenic_condenser",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

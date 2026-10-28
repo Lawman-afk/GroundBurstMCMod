@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:fission_core",
+    "groundburst:tritium_canister",
+    "groundburst:deuterium_canister",
+    "groundburst:military_circuit"
+  ],
+  "result": {
+    "id": "groundburst:boosted_fission_core"
+  }
+}

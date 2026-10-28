@@ -1,7 +1,7 @@
 {
   "values": [
-    "groundzero:sulfur_ore",
-    "groundzero:deepslate_sulfur_ore",
-    "groundzero:nether_sulfur_ore"
+    "groundburst:sulfur_ore",
+    "groundburst:deepslate_sulfur_ore",
+    "groundburst:nether_sulfur_ore"
   ]
 }

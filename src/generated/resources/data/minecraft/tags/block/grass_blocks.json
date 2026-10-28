@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:dead_grass_block",
-    "groundzero:frosted_grass_block"
+    "groundburst:dead_grass_block",
+    "groundburst:frosted_grass_block"
   ]
 }

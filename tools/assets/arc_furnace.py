@@ -15,12 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "arc_furnace"
 GRAPHITE = fixed("graphite", "#101114", "#1c1e23", "#2c2f36", "#3e424b", "#555a65", "#737986", "#a4abb8")
@@ -113,7 +113,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The furnace's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): a steel crucible in
+    """The furnace's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): a steel crucible in
     welded plates, scorched at its foot, with gunmetal hoops; a roof lined with refractory brick round the throat; the
     white-hot melt and the inspection port's glow; a yellow mast and carriage, gunmetal arms and clamps; graphite
     electrodes in sections, their tips hot; a green transformer with white ceramic bushings and rubber cables."""

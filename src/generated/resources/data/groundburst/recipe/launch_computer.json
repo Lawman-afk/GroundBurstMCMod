@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:crt_display",
+    "groundburst:crt_display",
+    "groundburst:advanced_circuit",
+    "groundburst:sensor_array",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundburst:launch_computer"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "F": "groundburst:machine_frame",
+    "G": "groundburst:combustion_generator",
+    "M": "groundburst:electric_motor",
+    "V": "groundburst:pressure_vessel"
+  },
+  "pattern": [
+    "MV",
+    "GF"
+  ],
+  "result": {
+    "id": "groundburst:diesel_generator"
+  }
+}

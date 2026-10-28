@@ -1,0 +1,36 @@
+{
+  "title": "Uranium enrichment",
+  "icon": "groundburst:enriched_uranium_ingot",
+  "order": 0,
+  "items": [
+    "groundburst:yellowcake",
+    "groundburst:uf6_canister",
+    "groundburst:enriched_uranium_nugget",
+    "groundburst:enriched_uranium_ingot",
+    "groundburst:depleted_uranium_dust",
+    "groundburst:depleted_uranium_ingot"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "- Uranium dust and sulfuric acid make **yellowcake** in the [Chemical Plant](processing/chemical_plant).\n- Yellowcake becomes **uranium hexafluoride** gas, also in the plant.\n- A [Gas Centrifuge](processing/gas_centrifuge) (best in a cascade) turns the gas into **enriched uranium nuggets** and depleted uranium dust.\n\nEnriched uranium goes into fuel rods and RTG slugs; depleted uranium into target rods and armour-piercing ammunition later on."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "item": "groundburst:yellowcake"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:uranium_hexafluoride"
+    },
+    {
+      "type": "machine",
+      "kind": "centrifuging",
+      "text": ""
+    }
+  ]
+}

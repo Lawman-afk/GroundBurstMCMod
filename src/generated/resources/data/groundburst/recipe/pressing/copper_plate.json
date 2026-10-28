@@ -1,0 +1,19 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": "groundburst:plate_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/copper"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:copper_plate"
+      }
+    }
+  ],
+  "time": 100
+}

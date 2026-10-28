@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/rtg",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

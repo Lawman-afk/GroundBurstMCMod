@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:blasting",
-  "cookingtime": 100,
-  "experience": 0.3,
-  "ingredient": "#c:dusts/uranium",
-  "result": {
-    "id": "groundzero:uranium_ingot"
-  }
-}

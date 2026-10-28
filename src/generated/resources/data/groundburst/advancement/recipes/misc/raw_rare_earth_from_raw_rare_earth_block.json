@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_storage_blocks_raw_rare_earth": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:storage_blocks/raw_rare_earth"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:raw_rare_earth_from_raw_rare_earth_block"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_storage_blocks_raw_rare_earth"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:raw_rare_earth_from_raw_rare_earth_block"
+    ]
+  }
+}

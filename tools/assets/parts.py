@@ -13,11 +13,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.sprite import iso_bar, outline  # noqa: E402
-from gz.tex import Tex  # noqa: E402
-from gz import vanilla as V  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.sprite import iso_bar, outline  # noqa: E402
+from gb.tex import Tex  # noqa: E402
+from gb import vanilla as V  # noqa: E402
 import resources as R  # noqa: E402
 
 STEEL = fixed("steel_metal", "#14181e", "#252b33", "#39414b", "#525c68", "#717c89", "#98a3ae", "#d2dae2")

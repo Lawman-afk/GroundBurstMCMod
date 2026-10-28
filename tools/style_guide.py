@@ -11,8 +11,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
 
 OUT = paths.ROOT / "docs" / "style"
 
@@ -46,7 +46,7 @@ def copy_previews(names: list[str]) -> list[Path]:
 
 if __name__ == "__main__":
     print(palettes())
-    for p in copy_previews(["groundzero_block_uranium_ore.png", "groundzero_block_deepslate_uranium_ore.png",
-                            "groundzero_block_fission_bomb.png", "groundzero_block_ore_crusher_working.png",
+    for p in copy_previews(["groundburst_block_uranium_ore.png", "groundburst_block_deepslate_uranium_ore.png",
+                            "groundburst_block_fission_bomb.png", "groundburst_block_ore_crusher_working.png",
                             "sound_review.png"]):
         print(p)

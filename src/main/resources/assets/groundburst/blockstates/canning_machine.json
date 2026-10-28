@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/canning_machine"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/canning_machine"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 """Phase 4 slice 5 nuclear and exotic materials (DESIGN.md §6, §26.3): Gas Centrifuge, Fusion Fuel Synthesizer and
 Exotic Matter Fabricator products. Item sprites plus their model / item-definition JSON.
 
-Ingots and dusts use the shared vanilla-style silhouettes (gz.vanilla); enriched uranium is a brighter, greener
+Ingots and dusts use the shared vanilla-style silhouettes (gb.vanilla); enriched uranium is a brighter, greener
 metal than natural uranium and depleted uranium a dense dark grey, so the three read apart at a glance.
 """
 from __future__ import annotations
@@ -12,11 +12,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz import vanilla as V  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.sprite import faceted_blob, outline  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import vanilla as V  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.sprite import faceted_blob, outline  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import parts as PT  # noqa: E402
 import resources as R  # noqa: E402
 
@@ -190,7 +190,7 @@ ROD_ROWS = [
 def fuel_rod(name: str, band, cap, cladding=None, glow=None) -> None:
     """Fuel and target rods share one drawing; the pellet bands and the end cap say which is which. Irradiated
     rods carry a few bright specks of glow on the cladding."""
-    from gz.sprite import outline as _outline  # noqa: PLC0415
+    from gb.sprite import outline as _outline  # noqa: PLC0415
     clad = cladding or ZIRC
     t = Tex(16, 16)
     pts = set()

@@ -1,7 +1,7 @@
 """Software preview renderer for block/item model JSON (and, via geo.py, GeckoLib models).
 
 Renders a model from several angles into a labelled contact sheet so models can be reviewed as images:
-    tools\\.venv\\Scripts\\python.exe tools\\preview\\render.py groundzero:block/fission_bomb
+    tools\\.venv\\Scripts\\python.exe tools\\preview\\render.py groundburst:block/fission_bomb
     tools\\.venv\\Scripts\\python.exe tools\\preview\\render.py path\\to\\model.json --out sheet.png
 
 Matches vanilla where it matters for judging a model: face/UV orientation, element rotations (single-axis or
@@ -21,7 +21,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 SHADE = {"up": 1.0, "down": 0.5, "north": 0.8, "south": 0.8, "east": 0.6, "west": 0.6}
 NORMALS = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}
@@ -378,7 +378,7 @@ def contact_sheet(src: str | Path, out: Path | None = None, cell: int = 320, tit
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("model", nargs="+", help="model id (groundzero:block/x) or path to a model JSON")
+    ap.add_argument("model", nargs="+", help="model id (groundburst:block/x) or path to a model JSON")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--cell", type=int, default=320)
     args = ap.parse_args()

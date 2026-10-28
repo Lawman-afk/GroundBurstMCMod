@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "groundburst:block/charred_log_top",
+    "side": "groundburst:block/charred_log"
+  }
+}

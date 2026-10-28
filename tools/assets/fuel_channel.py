@@ -17,12 +17,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 ZIRCALOY = fixed("zircaloy", "#262b28", "#38403b", "#4d5650", "#646d66", "#7e877e", "#9da59b", "#c3cabf")
 POSTS = (("post_nw", 2, 2), ("post_ne", 12, 2), ("post_sw", 2, 12), ("post_se", 12, 12))

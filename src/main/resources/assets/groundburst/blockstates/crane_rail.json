@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/crane_rail"
+    },
+    "formed=true": {
+      "model": "groundburst:block/crane_rail_formed"
+    }
+  }
+}

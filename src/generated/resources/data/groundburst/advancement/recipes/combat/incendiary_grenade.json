@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_napalm_canister": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:napalm_canister"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:incendiary_grenade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_napalm_canister"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:incendiary_grenade"
+    ]
+  }
+}

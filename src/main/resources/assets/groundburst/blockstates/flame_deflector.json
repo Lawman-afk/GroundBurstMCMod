@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/flame_deflector"
+    },
+    "formed=true": {
+      "model": "groundburst:block/flame_deflector_formed"
+    }
+  }
+}

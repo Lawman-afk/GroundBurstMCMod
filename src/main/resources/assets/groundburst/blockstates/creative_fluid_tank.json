@@ -1,0 +1,14 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "groundburst:block/creative_fluid_tank_frame"
+      }
+    },
+    {
+      "apply": {
+        "model": "groundburst:block/creative_fluid_tank_glass"
+      }
+    }
+  ]
+}

@@ -18,10 +18,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz.model import BlockModel  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.model import BlockModel  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import launch as L  # noqa: E402
 
@@ -155,7 +155,7 @@ def cruise_engine() -> None:
     import numpy as np  # noqa: PLC0415
     import missiles as MS  # noqa: PLC0415
     import warheads as W  # noqa: PLC0415
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     m = BlockModel("cruise_engine", tex_size=(64, 64), kind="item", render_type="minecraft:cutout")
     m.open_ok = set()
     groups: dict[str, list[str]] = {}

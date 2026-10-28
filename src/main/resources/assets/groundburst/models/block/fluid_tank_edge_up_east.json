@@ -1,0 +1,61 @@
+{
+  "textures": {
+    "frame": "groundburst:block/fluid_tank_frame",
+    "glass": "groundburst:block/fluid_tank_glass",
+    "cap": "groundburst:block/fluid_tank_cap",
+    "particle": "groundburst:block/fluid_tank_frame"
+  },
+  "render_type": "minecraft:cutout",
+  "elements": [
+    {
+      "from": [
+        14,
+        14,
+        2
+      ],
+      "to": [
+        16,
+        16,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": "#frame"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": "#frame"
+        }
+      }
+    }
+  ]
+}

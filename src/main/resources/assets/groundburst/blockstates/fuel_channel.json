@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "groundburst:block/fuel_channel"
+    },
+    "lit=true": {
+      "model": "groundburst:block/fuel_channel_lit"
+    }
+  }
+}

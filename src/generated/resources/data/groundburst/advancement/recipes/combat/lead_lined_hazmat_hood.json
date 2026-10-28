@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_hazmat_hood": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:hazmat_hood"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:lead_lined_hazmat_hood"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_hazmat_hood"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:lead_lined_hazmat_hood"
+    ]
+  }
+}

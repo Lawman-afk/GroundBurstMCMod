@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:lead_lined_casing",
+    "groundburst:military_circuit",
+    "groundburst:military_circuit",
+    "groundburst:military_circuit",
+    "groundburst:crt_display",
+    "groundburst:sensor_array",
+    "#c:dyes/red",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundburst:nuclear_missile_silo"
+  }
+}

@@ -1,0 +1,64 @@
+package dev.groundburst.content.ordnance;
+
+/**
+ * The thrown explosives (DESIGN.md §14): how each flies, what sets it off and what it does.
+ *
+ * @param id        item and blast profile id ({@code groundburst:<id>})
+ * @param fuse      ticks from the throw to going off (-1: on impact)
+ * @param behaviour what it does when it hits something
+ * @param speed     throw speed, blocks a tick
+ */
+public enum GrenadeType {
+    /** Bundled sticks with a sputtering fuse: 3 s, bounces. */
+    DYNAMITE("dynamite", 60, Behaviour.BOUNCE, 0.9f),
+    /** Pineapple frag: 4 s, bounces, throws 24 shrapnel fragments. */
+    FRAG("frag_grenade", 80, Behaviour.BOUNCE, 1.1f),
+    /** Sticks to the first thing it hits, block or creature: 4 s. */
+    STICKY("sticky_grenade", 80, Behaviour.STICK, 1.0f),
+    /** Bursts on impact into a carpet of fire. */
+    INCENDIARY("incendiary_grenade", -1, Behaviour.IMPACT, 1.1f),
+    /** Pops after 2 s and pours out a dense cloud for 30 s that blinds mobs. */
+    SMOKE("smoke_grenade", 40, Behaviour.BOUNCE, 1.1f),
+    /** Like the smoke grenade, but the cloud is chlorine: 25 s of poison gas that also blinds. */
+    POISON_GAS("gas_grenade", 40, Behaviour.BOUNCE, 1.1f),
+    /** A glass vial that shatters on impact and splashes toxin over the ground round it. */
+    TOXIN("toxin_grenade", -1, Behaviour.IMPACT, 1.1f),
+    /** A bottle of fuel with a burning rag: shatters on impact into fire, with no blast. */
+    MOLOTOV("molotov_cocktail", -1, Behaviour.IMPACT, 1.0f),
+    /** The bouncing mine's canister, popped up out of the ground: bursts at about waist height into 30 fragments. */
+    BOUNCING_MINE("bouncing_mine", 7, Behaviour.BOUNCE, 0f),
+    /** A cluster bomb's bomblet: goes off where it lands (a dud lies there as a live landmine). */
+    BOMBLET("cluster_bomblet", -1, Behaviour.IMPACT, 1.0f),
+    /** 3 s, bounces, then a burst of cold 5 blocks round: water to ice, fire out, everything in it frozen solid for 10 s. */
+    CRYO("cryo_grenade", 60, Behaviour.BOUNCE, 1.1f),
+    /** 3 s, bounces, then an EMP field 12 blocks round for 20 s: machines shut down, electronic fuzes go safe. */
+    EMP("emp_grenade", 60, Behaviour.BOUNCE, 1.1f);
+
+    public enum Behaviour { BOUNCE, STICK, IMPACT }
+
+    public final String id;
+    public final int fuse;
+    public final Behaviour behaviour;
+    public final float speed;
+
+    GrenadeType(String id, int fuse, Behaviour behaviour, float speed) {
+        this.id = id;
+        this.fuse = fuse;
+        this.behaviour = behaviour;
+        this.speed = speed;
+    }
+
+    /** Lit before it is thrown (a fuse or a rag), rather than having a pin pulled. */
+    public boolean lit() {
+        return this == DYNAMITE || this == MOLOTOV;
+    }
+
+    /** How long it pours out its cloud once it pops (0: it makes no cloud). */
+    public int cloudTicks() {
+        return switch (this) {
+            case SMOKE -> 600;
+            case POISON_GAS -> 500;
+            default -> 0;
+        };
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "H": "groundburst:hazmat_trousers",
+    "L": "groundburst:lead_plate"
+  },
+  "pattern": [
+    " L ",
+    "LHL",
+    " L "
+  ],
+  "result": {
+    "id": "groundburst:lead_lined_hazmat_trousers"
+  }
+}

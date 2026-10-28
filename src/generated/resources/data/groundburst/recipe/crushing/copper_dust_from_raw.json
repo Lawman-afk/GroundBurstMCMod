@@ -1,0 +1,25 @@
+{
+  "type": "groundburst:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:raw_materials/copper"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:copper_dust"
+      }
+    },
+    {
+      "chance": 0.15,
+      "item": {
+        "id": "groundburst:cobalt_dust"
+      }
+    }
+  ],
+  "time": 200
+}

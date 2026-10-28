@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:hazmat_hood",
-    "groundzero:lead_lined_hazmat_hood"
+    "groundburst:hazmat_hood",
+    "groundburst:lead_lined_hazmat_hood"
   ]
 }

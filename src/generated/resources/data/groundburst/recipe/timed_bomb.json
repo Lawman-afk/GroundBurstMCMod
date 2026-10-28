@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:dynamite",
+    "groundburst:dynamite",
+    "groundburst:dynamite",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "minecraft:clock",
+    "groundburst:basic_circuit"
+  ],
+  "result": {
+    "id": "groundburst:timed_bomb"
+  }
+}

@@ -18,13 +18,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import atlas as A  # noqa: E402
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import atlas as A  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 # id -> (tube ramp, fittings ramp, bolt colour)
 TIERS = {
@@ -55,7 +55,7 @@ def _metal_or_paint(ramp):
 
 
 def texture(NAME: str, S, G, BOLT) -> Tex:
-    """The tier's 16x16 sheet, painted with the material library (tools/gz/atlas.py; the remaster after the Fission
+    """The tier's 16x16 sheet, painted with the material library (tools/gb/atlas.py; the remaster after the Fission
     Reactor rework): a round tube, a bevelled junction box with corner bolts and a raised boss, the flange with its
     bolts round the bore, the hazard-striped pull collar."""
     t = Tex(16, 16)
@@ -116,7 +116,7 @@ def face(uv, rotation: int = 0, cull: str | None = None) -> dict:
 
 
 def models(NAME: str) -> None:
-    tex = {"pipe": f"groundzero:block/{NAME}", "particle": f"groundzero:block/{NAME}"}
+    tex = {"pipe": f"groundburst:block/{NAME}", "particle": f"groundburst:block/{NAME}"}
     core = {"from": [4.5, 4.5, 4.5], "to": [11.5, 11.5, 11.5],
             "faces": {d: face(CORE) for d in ("north", "south", "east", "west", "up", "down")}}
     write_json(paths.MODELS / "block" / f"{NAME}_core.json", {"textures": tex, "elements": [core]})
@@ -135,10 +135,10 @@ def models(NAME: str) -> None:
 
     rot = {"up": {}, "down": {"x": 180}, "north": {"x": 90}, "east": {"x": 90, "y": 90},
            "south": {"x": 90, "y": 180}, "west": {"x": 90, "y": 270}}
-    multipart = [{"apply": {"model": f"groundzero:block/{NAME}_core"}}]
+    multipart = [{"apply": {"model": f"groundburst:block/{NAME}_core"}}]
     for d, r in rot.items():
-        multipart.append({"when": {d: "normal|pull"}, "apply": {"model": f"groundzero:block/{NAME}_arm", **r}})
-        multipart.append({"when": {d: "pull"}, "apply": {"model": f"groundzero:block/{NAME}_pull", **r}})
+        multipart.append({"when": {d: "normal|pull"}, "apply": {"model": f"groundburst:block/{NAME}_arm", **r}})
+        multipart.append({"when": {d: "pull"}, "apply": {"model": f"groundburst:block/{NAME}_pull", **r}})
     write_json(paths.ASSETS / "blockstates" / f"{NAME}.json", {"multipart": multipart})
 
     # Inventory: a straight east-west run through the junction box, flanged at both ends.
@@ -154,7 +154,7 @@ def models(NAME: str) -> None:
     display = {"gui": {"rotation": [30, 225, 0], "scale": [0.95, 0.95, 0.95]},
                "fixed": {"rotation": [0, 90, 0], "scale": [0.8, 0.8, 0.8]}}
     write_json(paths.MODELS / "item" / f"{NAME}.json", {"parent": "minecraft:block/block", "textures": tex, "elements": elements, "display": display})
-    write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{NAME}"}})
+    write_json(paths.ASSETS / "items" / f"{NAME}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{NAME}"}})
 
 
 if __name__ == "__main__":

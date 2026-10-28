@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:item/inertial_guidance_unit"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:cobblestone",
+    "M": "minecraft:mossy_cobblestone",
+    "S": "minecraft:stone_bricks"
+  },
+  "pattern": [
+    "CSC",
+    "SMS",
+    "CSC"
+  ],
+  "result": {
+    "count": 8,
+    "id": "groundburst:fieldstone_wall"
+  }
+}

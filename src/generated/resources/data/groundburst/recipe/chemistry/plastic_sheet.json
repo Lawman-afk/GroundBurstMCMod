@@ -1,0 +1,25 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:synthetic_fuel"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 4,
+        "id": "groundburst:plastic_sheet"
+      }
+    }
+  ],
+  "time": 200
+}

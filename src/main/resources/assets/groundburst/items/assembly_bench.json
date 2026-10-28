@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundburst:item/assembly_bench",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

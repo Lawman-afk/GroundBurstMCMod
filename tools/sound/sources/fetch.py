@@ -20,7 +20,7 @@ def main() -> None:
         out = RAW / (s["key"] + Path(s["file"]).suffix)
         if out.exists():
             continue
-        req = urllib.request.Request(s["file"], headers={"User-Agent": "Mozilla/5.0 (Ground Zero sound tools)"})
+        req = urllib.request.Request(s["file"], headers={"User-Agent": "Mozilla/5.0 (Ground Burst sound tools)"})
         with urllib.request.urlopen(req, timeout=60) as r:
             out.write_bytes(r.read())
         print(f"{out.name}: {out.stat().st_size / 1e6:.2f} MB ({s['license']}, {s['author']})")

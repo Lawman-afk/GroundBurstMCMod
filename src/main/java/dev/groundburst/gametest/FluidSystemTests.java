@@ -1,0 +1,198 @@
+package dev.groundburst.gametest;
+
+import dev.groundburst.content.chem.GBChemicals;
+import dev.groundburst.content.fluid.ChemFluid;
+import dev.groundburst.content.fluid.GBFluids;
+import dev.groundburst.content.machine.ChemicalPlantBlockEntity;
+import dev.groundburst.content.machine.CryogenicCondenserBlockEntity;
+import dev.groundburst.content.machine.ElectrolyticSeparatorBlockEntity;
+import dev.groundburst.content.machine.GBMachines;
+import dev.groundburst.content.machine.SideConfig;
+import dev.groundburst.content.machine.TallMachineBlock;
+import dev.groundburst.content.multiblock.GBMultiblocks;
+import dev.groundburst.content.part.GBParts;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+
+/**
+ * Chemical fluids: pipes, fluid auto-eject, multi-tank recipes, dumping, canisters and buckets, liquids in the world.
+ */
+final class FluidSystemTests {
+    private FluidSystemTests() {}
+
+    static void register() {
+        GBGameTests.test("pipe_carries_fluid", GBGameTests.FLOOR_16, 20, FluidSystemTests::pipe);
+        GBGameTests.test("pipe_run_limited_by_weakest_tier", GBGameTests.FLOOR_16, 20, FluidSystemTests::pipeTiers);
+        GBGameTests.test("condenser_ejects_into_plant", GBGameTests.FLOOR_16, 400, FluidSystemTests::ejectIntoPlant);
+        GBGameTests.test("plant_two_fluid_recipe", GBGameTests.FLOOR_16, 400, FluidSystemTests::rocketFuel);
+        GBGameTests.test("plant_dump", GBGameTests.FLOOR_16, 40, FluidSystemTests::dump);
+        GBGameTests.test("canister_and_bucket_containers", GBGameTests.FLOOR_16, 20, FluidSystemTests::containers);
+        GBGameTests.test("liquid_in_world", GBGameTests.FLOOR_16, 20, FluidSystemTests::world);
+        GBGameTests.test("plant_connects_only_through_ports", GBGameTests.FLOOR_16, 20, FluidSystemTests::coveredFaces);
+    }
+
+    private static ChemicalPlantBlockEntity plant(GameTestHelper helper, BlockPos rel) {
+        BlockPos controller = helper.absolutePos(rel);
+        helper.assertTrue(GBMultiblocks.CHEMICAL_PLANT_SPAWNER.get().spawn(helper.getLevel(), controller, Direction.NORTH), "plant spawns");
+        return (ChemicalPlantBlockEntity) helper.getLevel().getBlockEntity(controller);
+    }
+
+    private static void insert(ChemicalPlantBlockEntity plant, ChemFluid fluid, int amount) {
+        try (var tx = Transaction.openRoot()) {
+            int in = plant.fluidHandler().insert(FluidResource.of(fluid.source().get()), amount, tx);
+            if (in != amount) {
+                throw new IllegalStateException("plant took " + in + " of " + amount + " mB " + fluid.name());
+            }
+            tx.commit();
+        }
+    }
+
+    /** Water poured into the far end of a pipe run arrives in the separator at the other end. */
+    private static void pipe(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(3, 1, 3), GBMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        ElectrolyticSeparatorBlockEntity sep = helper.getBlockEntity(new BlockPos(3, 1, 3), ElectrolyticSeparatorBlockEntity.class);
+        for (int x = 4; x <= 7; x++) {
+            helper.setBlock(new BlockPos(x, 1, 3), GBFluids.FLUID_PIPE.block().get());
+        }
+        var level = helper.getLevel();
+        var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(7, 1, 3)), Direction.EAST);
+        helper.assertTrue(end != null, "a pipe takes fluid");
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 500, tx) == 500, "the pipe passes 500 mB on");
+            helper.assertTrue(end.extract(FluidResource.of(Fluids.WATER), 100, tx) == 0, "pipes hold nothing to drain");
+            tx.commit();
+        }
+        helper.assertTrue(sep.tank(0).amount() == 500, "water reaches the separator, has " + sep.tank(0).amount());
+        helper.succeed();
+    }
+
+    /** A steel run with one copper pipe in it carries only copper's 150 mB a tick; pressurized alone carries 2400. */
+    private static void pipeTiers(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(3, 1, 3), GBMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        helper.setBlock(new BlockPos(4, 1, 3), GBFluids.FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(5, 1, 3), GBFluids.COPPER_FLUID_PIPE.block().get());
+        helper.setBlock(new BlockPos(6, 1, 3), GBFluids.FLUID_PIPE.block().get());
+        var level = helper.getLevel();
+        var end = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(6, 1, 3)), Direction.EAST);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(end.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 150, "a copper pipe in the run caps it at 150 mB/t");
+            tx.commit();
+        }
+        helper.setBlock(new BlockPos(3, 1, 8), GBMachines.ELECTROLYTIC_SEPARATOR.block().get());
+        helper.setBlock(new BlockPos(4, 1, 8), GBFluids.PRESSURIZED_FLUID_PIPE.block().get());
+        var fast = level.getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(new BlockPos(4, 1, 8)), Direction.EAST);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(fast.insert(FluidResource.of(Fluids.WATER), 5_000, tx) == 2_400, "pressurized carries 2400 mB/t");
+            tx.commit();
+        }
+        helper.succeed();
+    }
+
+    /** A condenser with auto-eject pours its liquid oxygen down a pipe into the plant's chemical input tank. */
+    private static void ejectIntoPlant(GameTestHelper helper) {
+        ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(8, 1, 8));
+        // Controller faces north, so the Fluid Port is behind it at (8, 1, 9) with its west face open: pipe from x=5 to
+        // x=7 along z=9, condenser at x=4.
+        for (int x = 5; x <= 7; x++) {
+            helper.setBlock(new BlockPos(x, 1, 9), GBFluids.FLUID_PIPE.block().get());
+        }
+        BlockPos condPos = new BlockPos(4, 1, 9);
+        TallMachineBlock block = GBMachines.CRYOGENIC_CONDENSER.block().get();
+        helper.setBlock(condPos, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(condPos), block.defaultBlockState(), null, ItemStack.EMPTY);
+        CryogenicCondenserBlockEntity cond = helper.getBlockEntity(condPos, CryogenicCondenserBlockEntity.class);
+        cond.energy().generate(50_000);
+        cond.inventory().setItem(0, new ItemStack(GBParts.OXYGEN_MEMBRANE.get()));
+        cond.changeSides(SideConfig::toggleAutoEject);
+        helper.succeedWhen(() -> helper.assertTrue(plant.tanks().stream()
+                        .anyMatch(t -> t.isInput() && t.fluid().getFluid() == GBFluids.LIQUID_OXYGEN.source().get() && t.amount() >= 1_000),
+                "liquid oxygen should reach a plant input tank"));
+    }
+
+    /** Liquid rocket fuel takes two chemical fluids at once, each from its own input tank. */
+    private static void rocketFuel(GameTestHelper helper) {
+        ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(4, 1, 4));
+        plant.energy().generate(50_000);
+        insert(plant, GBFluids.SYNTHETIC_FUEL, 1_000);
+        insert(plant, GBFluids.LIQUID_OXYGEN, 1_000);
+        helper.assertTrue(plant.tank(1).fluid().getFluid() != plant.tank(2).fluid().getFluid(), "the two fluids go into different tanks");
+        helper.succeedWhen(() -> helper.assertTrue(plant.tank(ChemicalPlantBlockEntity.TANK_PRODUCT).amount() == 1_000
+                        && plant.tank(ChemicalPlantBlockEntity.TANK_PRODUCT).fluid().getFluid() == GBFluids.LIQUID_ROCKET_FUEL.source().get(),
+                "expected 1000 mB of rocket fuel"));
+    }
+
+    private static void dump(GameTestHelper helper) {
+        ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(4, 1, 4));
+        insert(plant, GBFluids.NITRIC_ACID, 3_000);
+        try (var tx = Transaction.openRoot()) {
+            plant.tank(0).insert(0, FluidResource.of(Fluids.WATER), 5_000, tx);
+            tx.commit();
+        }
+        plant.dumpTank(1);
+        plant.dumpTank(0);
+        helper.assertTrue(plant.tank(1).isEmpty(), "a chemical tank dumps");
+        helper.assertTrue(plant.tank(0).amount() == 5_000, "the water tank cannot be dumped");
+        helper.succeed();
+    }
+
+    /** Canisters and our buckets fill and pour like vanilla buckets. */
+    private static void containers(GameTestHelper helper) {
+        ItemStack canister = new ItemStack(GBChemicals.SULFURIC_ACID_CANISTER.get());
+        var handler = ItemAccess.forStack(canister).getCapability(Capabilities.Fluid.ITEM);
+        helper.assertTrue(handler != null && handler.getAmountAsLong(0) == 1_000
+                && handler.getResource(0).getFluid() == GBFluids.SULFURIC_ACID.source().get(), "a filled canister holds 1000 mB of its fluid");
+        ItemStack empty = new ItemStack(GBChemicals.EMPTY_GAS_CANISTER.get());
+        var gas = ItemAccess.forStack(empty).getCapability(Capabilities.Fluid.ITEM);
+        try (var tx = Transaction.openRoot()) {
+            helper.assertTrue(gas.insert(FluidResource.of(GBFluids.SULFURIC_ACID.source().get()), 1_000, tx) == 0, "gas canisters refuse liquids");
+        }
+        ItemStack bucket = new ItemStack(GBFluids.NAPALM.bucket().get());
+        var b = ItemAccess.forStack(bucket).getCapability(Capabilities.Fluid.ITEM);
+        helper.assertTrue(b != null && b.getResource(0).getFluid() == GBFluids.NAPALM.source().get(), "the napalm bucket holds napalm");
+        var gasBucket = ItemAccess.forStack(new ItemStack(GBFluids.DEUTERIUM.bucket().get())).getCapability(Capabilities.Fluid.ITEM);
+        helper.assertTrue(gasBucket != null && gasBucket.getResource(0).getFluid() == GBFluids.DEUTERIUM.source().get(), "a gas bucket holds its gas");
+        helper.assertTrue(new ItemStack(Items.BUCKET).getCapability(Capabilities.Fluid.ITEM, ItemAccess.forStack(new ItemStack(Items.BUCKET))) != null,
+                "vanilla buckets still work");
+        helper.succeed();
+    }
+
+    /** The plant's controller exposes nothing on any face; power goes in through the Energy Port beside it. */
+    private static void coveredFaces(GameTestHelper helper) {
+        ChemicalPlantBlockEntity plant = plant(helper, new BlockPos(4, 1, 4));
+        var level = helper.getLevel();
+        BlockPos c = plant.controllerPos();
+        for (Direction d : Direction.values()) {
+            helper.assertTrue(level.getCapability(Capabilities.Energy.BLOCK, c, d) == null
+                    && level.getCapability(Capabilities.Fluid.BLOCK, c, d) == null
+                    && level.getCapability(Capabilities.Item.BLOCK, c, d) == null, "the controller exposes nothing on " + d);
+        }
+        BlockPos port = c.east();                            // facing north, the Energy Port is to the controller's right
+        var energy = level.getCapability(Capabilities.Energy.BLOCK, port, Direction.EAST);
+        helper.assertTrue(energy != null, "the Energy Port takes power");
+        int in;
+        try (var tx = Transaction.openRoot()) {
+            in = energy.insert(200, tx);
+            tx.commit();
+        }
+        helper.assertTrue(in > 0 && plant.energy().stored() == in, "the power reaches the controller, " + in + " in, have " + plant.energy().stored());
+        helper.succeed();
+    }
+
+    /** Liquids can be placed and flow; a source block is our fluid. */
+    private static void world(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(6, 2, 6);
+        helper.setBlock(pos, GBFluids.LIQUID_NITROGEN.block().get().defaultBlockState());
+        helper.assertTrue(helper.getLevel().getFluidState(helper.absolutePos(pos)).getType() == GBFluids.LIQUID_NITROGEN.source().get(),
+                "the block is a liquid nitrogen source");
+        helper.succeedWhen(() -> helper.assertTrue(helper.getLevel().getFluidState(helper.absolutePos(pos.east())).getType()
+                == GBFluids.LIQUID_NITROGEN.flowing().get(), "it flows sideways"));
+    }
+}

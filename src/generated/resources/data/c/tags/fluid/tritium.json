@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:tritium",
-    "groundzero:flowing_tritium"
+    "groundburst:tritium",
+    "groundburst:flowing_tritium"
   ]
 }

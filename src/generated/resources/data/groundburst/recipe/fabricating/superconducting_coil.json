@@ -1,0 +1,32 @@
+{
+  "type": "groundburst:fabricating",
+  "energy_per_tick": 40,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:liquid_nitrogen"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "groundburst:tungsten_filament"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/rare_earth"
+    },
+    {
+      "count": 2,
+      "ingredient": "#c:wires/gold"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:superconducting_coil"
+      }
+    }
+  ],
+  "time": 400
+}

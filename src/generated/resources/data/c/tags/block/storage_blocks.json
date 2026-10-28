@@ -1,12 +1,12 @@
 {
   "values": [
-    "groundzero:uranium_block",
-    "groundzero:lead_block",
-    "groundzero:tungsten_block",
-    "groundzero:raw_uranium_block",
-    "groundzero:raw_lithium_block",
-    "groundzero:raw_tungsten_block",
-    "groundzero:raw_lead_block",
-    "groundzero:raw_rare_earth_block"
+    "groundburst:uranium_block",
+    "groundburst:lead_block",
+    "groundburst:tungsten_block",
+    "groundburst:raw_uranium_block",
+    "groundburst:raw_lithium_block",
+    "groundburst:raw_tungsten_block",
+    "groundburst:raw_lead_block",
+    "groundburst:raw_rare_earth_block"
   ]
 }

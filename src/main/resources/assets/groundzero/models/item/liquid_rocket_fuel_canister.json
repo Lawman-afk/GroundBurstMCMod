@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "groundzero:item/liquid_rocket_fuel_canister"
-  }
-}

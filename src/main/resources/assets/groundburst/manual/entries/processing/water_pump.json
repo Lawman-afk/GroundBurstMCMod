@@ -1,0 +1,20 @@
+{
+  "title": "Water Pump",
+  "icon": "groundburst:water_pump",
+  "order": 5,
+  "items": [
+    "groundburst:water_pump"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:water_pump",
+      "text": "Place it on a water source block and power it (20 FE a tick): it draws 50 mB of water a tick without ever using the source up, and pushes it out of its two side outlets."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:water_pump",
+      "text": ""
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 {
   "values": [
-    "groundzero:deuterium",
-    "groundzero:flowing_deuterium",
-    "groundzero:tritium",
-    "groundzero:flowing_tritium",
-    "groundzero:uranium_hexafluoride",
-    "groundzero:flowing_uranium_hexafluoride",
-    "groundzero:chlorine",
-    "groundzero:flowing_chlorine"
+    "groundburst:deuterium",
+    "groundburst:flowing_deuterium",
+    "groundburst:tritium",
+    "groundburst:flowing_tritium",
+    "groundburst:uranium_hexafluoride",
+    "groundburst:flowing_uranium_hexafluoride",
+    "groundburst:chlorine",
+    "groundburst:flowing_chlorine"
   ]
 }

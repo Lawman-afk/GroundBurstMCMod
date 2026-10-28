@@ -15,11 +15,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import machine_kit as K  # noqa: E402
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import machine_kit as K  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "combustion_generator"
 
@@ -87,7 +87,7 @@ def build() -> tuple[GeoModel, Tex, Tex]:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
-    """The generator's surfaces, in model space (tools/gz/machine_kit.py; the machines' remaster): an olive engine block
+    """The generator's surfaces, in model space (tools/gb/machine_kit.py; the machines' remaster): an olive engine block
     in bolted panels on the plinth, the firebox opening sooted inside, a cast-iron door frame and grille, a brass gauge
     and handle, a gunmetal lid and hatch, a sooty exhaust stack, a dark flywheel, copper terminals."""
     k = K.Kit(g, parts, seed=301)

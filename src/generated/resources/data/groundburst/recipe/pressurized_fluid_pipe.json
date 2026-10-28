@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "P": "groundburst:fluid_pipe",
+    "S": "groundburst:plastic_sheet",
+    "T": "#c:plates/tungsten"
+  },
+  "pattern": [
+    "TPT",
+    "PSP",
+    "TPT"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:pressurized_fluid_pipe"
+  }
+}

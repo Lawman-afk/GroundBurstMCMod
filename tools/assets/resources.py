@@ -13,15 +13,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as MT  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz import paths  # noqa: E402
-from gz import vanilla as V  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.sprite import faceted_blob, iso_bar, outline, powder_pile  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as MT  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb import paths  # noqa: E402
+from gb import vanilla as V  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.sprite import faceted_blob, iso_bar, outline, powder_pile  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import minerals as M  # noqa: E402
 import ores as O  # noqa: E402
 
@@ -37,8 +37,8 @@ BLOCKS: list[str] = []
 
 def save_item(name: str, t: Tex) -> None:
     t.save(paths.TEXTURES / "item" / f"{name}.png")
-    write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundzero:item/{name}"}})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{name}"}})
+    write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundburst:item/{name}"}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{name}"}})
     ITEMS.append(name)
 
 
@@ -46,13 +46,13 @@ def simple_block(name: str, model: dict | None = None) -> None:
     """Blockstate with one variant + item definition pointing at the block model."""
     if model is not None:
         write_json(paths.MODELS / "block" / f"{name}.json", model)
-    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundzero:block/{name}"}}})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"groundburst:block/{name}"}}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
     BLOCKS.append(name)
 
 
 def cube_all(name: str, tex_name: str | None = None) -> dict:
-    return {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundzero:block/{tex_name or name}"}}
+    return {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundburst:block/{tex_name or name}"}}
 
 
 # --- raw chunks --------------------------------------------------------------------------------------------------------
@@ -318,17 +318,17 @@ def build_exotic() -> None:
         simple_block(name, cube_all(name))
     for stage, name in enumerate(("small_exotic_bud", "large_exotic_bud", "exotic_crystal_cluster")):
         crystal_sprite(stage).save(paths.TEXTURES / "block" / f"{name}.png")
-        model = {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout", "textures": {"cross": f"groundzero:block/{name}"}}
+        model = {"parent": "minecraft:block/cross", "render_type": "minecraft:cutout", "textures": {"cross": f"groundburst:block/{name}"}}
         write_json(paths.MODELS / "block" / f"{name}.json", model)
         variants = {}
         rot = {"up": {}, "down": {"x": 180}, "north": {"x": 90}, "south": {"x": 90, "y": 180},
                "east": {"x": 90, "y": 90}, "west": {"x": 90, "y": 270}}
         for facing, r in rot.items():
-            variants[f"facing={facing}"] = {"model": f"groundzero:block/{name}", **r}
+            variants[f"facing={facing}"] = {"model": f"groundburst:block/{name}", **r}
         write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
         # Item uses the flat sprite, like vanilla amethyst buds.
-        write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundzero:block/{name}"}})
-        write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:item/{name}"}})
+        write_json(paths.MODELS / "item" / f"{name}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"groundburst:block/{name}"}})
+        write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:item/{name}"}})
         BLOCKS.append(name)
 
 

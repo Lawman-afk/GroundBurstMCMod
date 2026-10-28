@@ -1,0 +1,167 @@
+package dev.groundburst.content.power;
+
+import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.util.GeckoLibUtil;
+
+import dev.groundburst.GroundBurst;
+import dev.groundburst.content.machine.AnimatedMachine;
+import dev.groundburst.content.machine.MachineBlockEntity;
+import dev.groundburst.content.machine.MachineLayouts;
+import dev.groundburst.content.machine.MachineMenu;
+import dev.groundburst.content.machine.MachineStatus;
+import dev.groundburst.registry.GBBlockEntities;
+import dev.groundburst.registry.GBLang;
+import dev.groundburst.registry.GBMenus;
+import dev.groundburst.registry.GBSounds;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+
+/**
+ * Battery Charger (DESIGN.md §8): charges whatever sits in its cradle (any item with the FE item capability, so other
+ * mods' batteries and tools too) from the power its cables bring in, then moves the full item to the output slot.
+ * Slots: 0 charging, 1 charged.
+ */
+public class BatteryChargerBlockEntity extends MachineBlockEntity implements AnimatedMachine {
+    public static final int RATE = 512;
+    public static final int CAPACITY = 10_000;
+    /** The charging lights stay on this long after the last transfer, so an uneven supply does not blink them. */
+    private static final int RUN_ON = 20;
+    /** Sync slots shaped like a processing machine's (progress, max) so the GUI arrow fills with the item's charge. */
+    public static final int DATA_ITEM_PERCENT = 0, DATA_HUNDRED = 1;
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private int itemPercent = -1;
+    private long lastCharge = Long.MIN_VALUE / 2;
+    private boolean showsBattery;
+
+    public BatteryChargerBlockEntity(BlockPos pos, BlockState state) {
+        super(GBBlockEntities.BATTERY_CHARGER.get(), pos, state, CAPACITY, RATE, 0, 2, new int[] {0}, new int[] {1});
+    }
+
+    private static @Nullable EnergyHandler energyOf(ItemAccess access) {
+        return access.getCapability(Capabilities.Energy.ITEM);
+    }
+
+    @Override
+    protected boolean isItemValid(int slot, ItemStack stack) {
+        return slot == 0 && energyOf(ItemAccess.forStack(stack.copy())) != null;
+    }
+
+    @Override
+    protected boolean tickMachine(ServerLevel level) {
+        ItemStack stack = this.inventory.getItem(0);
+        if (stack.isEmpty()) {
+            this.itemPercent = -1;
+            this.status = MachineStatus.IDLE;
+            return false;
+        }
+        EnergyHandler item = energyOf(ItemAccess.forHandlerIndex(this.inventory, 0));
+        if (item == null) {
+            this.status = MachineStatus.NO_RECIPE;
+            return false;
+        }
+        long cap = item.getCapacityAsLong();
+        this.itemPercent = cap <= 0 ? 0 : (int) (item.getAmountAsLong() * 100 / cap);
+        if (item.getAmountAsLong() >= cap) {
+            // Full: move it on so the next item can charge (if the output is free).
+            if (this.inventory.getItem(1).isEmpty()) {
+                this.inventory.setItem(1, stack.copy());
+                this.inventory.setItem(0, ItemStack.EMPTY);
+            }
+            this.status = this.inventory.getItem(1).isEmpty() ? MachineStatus.IDLE : MachineStatus.OUTPUT_FULL;
+            return false;
+        }
+        int offer = Math.min(RATE, this.energy.stored());
+        if (offer <= 0) {
+            this.status = MachineStatus.NO_POWER;
+            return false;
+        }
+        try (Transaction tx = Transaction.openRoot()) {
+            int accepted = item.insert(offer, tx);
+            if (accepted > 0) {
+                tx.commit();
+                this.energy.consume(accepted);
+                this.lastCharge = level.getGameTime();
+            }
+            this.status = accepted > 0 ? MachineStatus.RUNNING : MachineStatus.NO_RECIPE;
+        }
+        return level.getGameTime() - this.lastCharge < RUN_ON;
+    }
+
+    // --- the model shows a battery only while one is in the charger -------------------------------------------------
+    @Override
+    protected void onSlotChanged(int slot) {
+        super.onSlotChanged(slot);
+        boolean loaded = !this.inventory.getItem(0).isEmpty() || !this.inventory.getItem(1).isEmpty();
+        if (loaded != this.showsBattery && this.level != null && !this.level.isClientSide()) {
+            this.showsBattery = loaded;
+            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        return saveCustomOnly(registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /** The charge LEDs only chase while charging; the battery in the cradle only shows while one is loaded. */
+    @Override
+    public java.util.Set<String> hiddenBones() {
+        boolean active = getBlockState().hasProperty(dev.groundburst.content.machine.MachineBlock.ACTIVE)
+                && getBlockState().getValue(dev.groundburst.content.machine.MachineBlock.ACTIVE);
+        boolean loaded = !this.inventory.getItem(0).isEmpty() || !this.inventory.getItem(1).isEmpty();
+        java.util.Set<String> hidden = new java.util.HashSet<>();
+        if (!active) {
+            hidden.addAll(java.util.List.of("led0", "led1", "led2", "led3", "led4"));
+        }
+        if (!loaded) {
+            hidden.add("battery");
+        }
+        return hidden;
+    }
+
+    @Override
+    protected int extraDataCount() {
+        return 2;
+    }
+
+    @Override
+    protected int getExtraData(int index) {
+        return index == DATA_ITEM_PERCENT ? this.itemPercent : index == DATA_HUNDRED ? 100 : 0;
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new MachineMenu(GBMenus.BATTERY_CHARGER.get(), containerId, inventory, this, MachineLayouts.BATTERY_CHARGER, this.data);
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
+
+    @Override
+    public SoundEvent loopSound() {
+        return GBSounds.MACHINE_BATTERY_CHARGER.get();
+    }
+}

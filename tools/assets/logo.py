@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "preview"))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import render as R  # noqa: E402
 
 SIZE = 400
@@ -41,8 +41,8 @@ class Subject:
 
 
 SUBJECTS = {
-    "missile": Subject("groundzero:item/missile/nuclear_missile_warhead", 12, 210, -45, 0.08, "dusk"),
-    "tsar": Subject("groundzero:block/tsar_warhead", 22, 215, -32, 0.07, "day"),
+    "missile": Subject("groundburst:item/missile/nuclear_missile_warhead", 12, 210, -45, 0.08, "dusk"),
+    "tsar": Subject("groundburst:block/tsar_warhead", 22, 215, -32, 0.07, "day"),
 }
 
 

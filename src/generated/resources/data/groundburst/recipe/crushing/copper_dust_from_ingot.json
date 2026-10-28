@@ -1,0 +1,18 @@
+{
+  "type": "groundburst:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/copper"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:copper_dust"
+      }
+    }
+  ],
+  "time": 100
+}

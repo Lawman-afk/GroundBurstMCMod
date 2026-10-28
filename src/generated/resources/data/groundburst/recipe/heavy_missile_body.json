@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:dense_steel_plate",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "#c:rods/steel",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "id": "groundburst:heavy_missile_body"
+  }
+}

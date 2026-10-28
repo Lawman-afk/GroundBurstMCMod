@@ -1,0 +1,19 @@
+{
+  "type": "groundburst:pressing",
+  "catalyst": "groundburst:plate_die",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "#c:plates/steel"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:dense_steel_plate"
+      }
+    }
+  ],
+  "time": 200
+}

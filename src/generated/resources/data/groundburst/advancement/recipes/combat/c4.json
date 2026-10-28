@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plastic_explosive": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:plastic_explosive"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:c4"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_plastic_explosive"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:c4"
+    ]
+  }
+}

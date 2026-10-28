@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/water_pump"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/water_pump"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/toroidal_field_coil"
+    },
+    "formed=true": {
+      "model": "groundburst:block/toroidal_field_coil_formed"
+    }
+  }
+}

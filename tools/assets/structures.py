@@ -2,7 +2,7 @@
 definitions. Every part block has a `formed` property; formed variants use a particle-only model because the
 controller draws the whole structure.
 
-Faces are painted with the material library (tools/gz/panels.py, DESIGN.md §4.3; the remaster after slice 9b): a
+Faces are painted with the material library (tools/gb/panels.py, DESIGN.md §4.3; the remaster after slice 9b): a
 brushed steel frame, bevelled and bolted, round painted or metal panels; the designs as they were.
 """
 from __future__ import annotations
@@ -14,13 +14,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 STEEL = P.STEEL
 OLIVE = P.OLIVE
@@ -346,18 +346,18 @@ def particle_model(tex: str) -> dict:
 
 def part_block(name: str, tex: Tex, translucent: bool = False, cutout: bool = False) -> None:
     tex.save(paths.TEXTURES / "block" / f"{name}.png")
-    model = {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundzero:block/{name}"}}
+    model = {"parent": "minecraft:block/cube_all", "textures": {"all": f"groundburst:block/{name}"}}
     if translucent:
         model["render_type"] = "minecraft:translucent"
     elif cutout:
         model["render_type"] = "minecraft:cutout"
     write_json(paths.MODELS / "block" / f"{name}.json", model)
-    write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundzero:block/{name}"))
+    write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundburst:block/{name}"))
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {
-        "formed=false": {"model": f"groundzero:block/{name}"},
-        "formed=true": {"model": f"groundzero:block/{name}_formed"},
+        "formed=false": {"model": f"groundburst:block/{name}"},
+        "formed=true": {"model": f"groundburst:block/{name}_formed"},
     }})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
 
 
 def controller(name: str, front: Tex, top: Tex, side: Tex, hides: bool = True) -> None:
@@ -368,11 +368,11 @@ def controller(name: str, front: Tex, top: Tex, side: Tex, hides: bool = True) -
     side.save(paths.TEXTURES / "block" / f"{name}_side.png")
     write_json(paths.MODELS / "block" / f"{name}.json", {
         "parent": "minecraft:block/orientable",
-        "textures": {"front": f"groundzero:block/{name}_front", "side": f"groundzero:block/{name}_side",
-                     "top": f"groundzero:block/{name}_top"}})
-    formed_model = f"groundzero:block/{name}_formed" if hides else f"groundzero:block/{name}"
+        "textures": {"front": f"groundburst:block/{name}_front", "side": f"groundburst:block/{name}_side",
+                     "top": f"groundburst:block/{name}_top"}})
+    formed_model = f"groundburst:block/{name}_formed" if hides else f"groundburst:block/{name}"
     if hides:
-        write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundzero:block/{name}_side"))
+        write_json(paths.MODELS / "block" / f"{name}_formed.json", particle_model(f"groundburst:block/{name}_side"))
     else:
         (paths.MODELS / "block" / f"{name}_formed.json").unlink(missing_ok=True)
     variants = {}
@@ -380,10 +380,10 @@ def controller(name: str, front: Tex, top: Tex, side: Tex, hides: bool = True) -
     for facing, y in rot.items():
         for active in ("false", "true"):
             turn = {"y": y} if y else {}
-            variants[f"active={active},facing={facing},formed=false"] = {"model": f"groundzero:block/{name}", **turn}
+            variants[f"active={active},facing={facing},formed=false"] = {"model": f"groundburst:block/{name}", **turn}
             variants[f"active={active},facing={facing},formed=true"] = {"model": formed_model, **({} if hides else turn)}
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
 
 
 if __name__ == "__main__":

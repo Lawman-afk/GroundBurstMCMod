@@ -1,0 +1,34 @@
+{
+  "values": {
+    "groundburst:cooled_corium": {
+      "rate": 3000.0
+    },
+    "groundburst:corium": {
+      "rate": 20000.0
+    },
+    "groundburst:deepslate_uranium_ore": {
+      "rate": 4.0
+    },
+    "groundburst:fallout_ash": {
+      "rate": 1.0
+    },
+    "groundburst:irradiated_soil": {
+      "rate": 6.0
+    },
+    "groundburst:raw_uranium_block": {
+      "rate": 30.0
+    },
+    "groundburst:trinitite": {
+      "rate": 3.0
+    },
+    "groundburst:uranium_block": {
+      "rate": 50.0
+    },
+    "groundburst:uranium_ore": {
+      "rate": 4.0
+    },
+    "groundburst:waste_drum": {
+      "rate": 8.0
+    }
+  }
+}

@@ -5,7 +5,7 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
-credits="Sounds made in part from field recordings on Freesound (CC0 and CC BY 4.0); see assets/groundzero/sounds/CREDITS.txt"
+credits="Sounds made in part from field recordings on Freesound (CC0 and CC BY 4.0); see assets/groundburst/sounds/CREDITS.txt"
 description='''
 ${mod_description}
 '''

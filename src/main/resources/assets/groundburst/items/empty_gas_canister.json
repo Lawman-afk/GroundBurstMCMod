@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:item/empty_gas_canister"
+  }
+}

@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:smelting",
-  "cookingtime": 200,
-  "experience": 0.15,
-  "ingredient": "groundzero:charred_log",
-  "result": {
-    "id": "minecraft:charcoal"
-  }
-}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_liquid_nitrogen_canister": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:liquid_nitrogen_canister"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:cryo_grenade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_liquid_nitrogen_canister"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:cryo_grenade"
+    ]
+  }
+}

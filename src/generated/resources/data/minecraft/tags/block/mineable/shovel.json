@@ -1,11 +1,11 @@
 {
   "values": [
-    "groundzero:scorched_earth",
-    "groundzero:irradiated_soil",
-    "groundzero:ash",
-    "groundzero:fallout_ash",
-    "groundzero:dead_grass_block",
-    "groundzero:frosted_grass_block",
-    "groundzero:toxic_soil"
+    "groundburst:scorched_earth",
+    "groundburst:irradiated_soil",
+    "groundburst:ash",
+    "groundburst:fallout_ash",
+    "groundburst:dead_grass_block",
+    "groundburst:frosted_grass_block",
+    "groundburst:toxic_soil"
   ]
 }

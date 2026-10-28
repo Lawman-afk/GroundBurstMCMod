@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:lead_plate",
+    "groundburst:lead_plate",
+    "groundburst:advanced_circuit",
+    "groundburst:copper_wire"
+  ],
+  "result": {
+    "id": "groundburst:hardened_electronics"
+  }
+}

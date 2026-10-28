@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "volume=1": {
+      "model": "groundburst:block/uranium_hexafluoride_1"
+    },
+    "volume=2": {
+      "model": "groundburst:block/uranium_hexafluoride_2"
+    },
+    "volume=3": {
+      "model": "groundburst:block/uranium_hexafluoride_3"
+    },
+    "volume=4": {
+      "model": "groundburst:block/uranium_hexafluoride_4"
+    },
+    "volume=5": {
+      "model": "groundburst:block/uranium_hexafluoride_5"
+    },
+    "volume=6": {
+      "model": "groundburst:block/uranium_hexafluoride_6"
+    },
+    "volume=7": {
+      "model": "groundburst:block/uranium_hexafluoride_7"
+    },
+    "volume=8": {
+      "model": "groundburst:block/uranium_hexafluoride_8"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundburst:item/diesel_generator",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:block/toroidal_field_coil"
+  }
+}

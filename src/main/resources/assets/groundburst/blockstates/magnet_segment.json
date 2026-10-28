@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/magnet_segment"
+    },
+    "formed=true": {
+      "model": "groundburst:block/magnet_segment_formed"
+    }
+  }
+}

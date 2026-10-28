@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#c:storage_blocks/raw_rare_earth"
+  ],
+  "result": {
+    "count": 9,
+    "id": "groundburst:raw_rare_earth"
+  }
+}

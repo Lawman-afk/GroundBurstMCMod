@@ -1,0 +1,25 @@
+{
+  "type": "groundburst:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:raw_materials/iron"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:iron_dust"
+      }
+    },
+    {
+      "chance": 0.1,
+      "item": {
+        "id": "groundburst:cobalt_dust"
+      }
+    }
+  ],
+  "time": 200
+}

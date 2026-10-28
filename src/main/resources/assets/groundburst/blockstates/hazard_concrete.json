@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/hazard_concrete"
+    },
+    "formed=true": {
+      "model": "groundburst:block/hazard_concrete_formed"
+    }
+  }
+}

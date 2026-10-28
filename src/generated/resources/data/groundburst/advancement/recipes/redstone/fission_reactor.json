@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_military_circuit": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:military_circuit"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:fission_reactor"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_military_circuit"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:fission_reactor"
+    ]
+  }
+}

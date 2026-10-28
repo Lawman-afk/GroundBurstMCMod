@@ -1,0 +1,28 @@
+{
+  "title": "Exotic Matter Fabricator",
+  "icon": "groundburst:exotic_matter_fabricator",
+  "order": 13,
+  "items": [
+    "groundburst:exotic_matter_fabricator",
+    "groundburst:stabilised_exotic_matter",
+    "groundburst:containment_cell",
+    "groundburst:singularity_seed"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:exotic_matter_fabricator",
+      "text": "Holds exotic matter in a spinning magnetic cage to make stabilised exotic matter, containment cells and singularity seeds.\n\nIt draws **400 FE a tick**, more than copper cable carries: feed it with insulated or high-voltage [cable](power/cables)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:exotic_matter_fabricator",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "exotic_fabricating",
+      "text": ""
+    }
+  ]
+}

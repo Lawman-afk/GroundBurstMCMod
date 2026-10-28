@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/assembly_bench",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

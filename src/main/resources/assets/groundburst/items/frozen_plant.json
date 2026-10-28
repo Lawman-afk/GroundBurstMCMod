@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:item/frozen_plant",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -5713950
+      }
+    ]
+  }
+}

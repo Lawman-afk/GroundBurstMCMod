@@ -1,0 +1,225 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:hazmat_hood",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:hazmat_coat",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:hazmat_trousers",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:hazmat_boots",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:lead_lined_hazmat_hood",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:lead_lined_hazmat_coat",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:lead_lined_hazmat_trousers",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_damage",
+            "damage": {
+              "type": "minecraft:uniform",
+              "max": 0.75,
+              "min": 0.25
+            }
+          },
+          "name": "groundburst:lead_lined_hazmat_boots",
+          "weight": 2
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 3,
+        "min": 1
+      }
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 5,
+              "min": 2
+            }
+          },
+          "name": "groundburst:lead_plate",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 8,
+              "min": 2
+            }
+          },
+          "name": "groundburst:lead_ingot",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 4,
+              "min": 1
+            }
+          },
+          "name": "groundburst:nuclear_waste",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 3,
+              "min": 1
+            }
+          },
+          "name": "groundburst:rad_away",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 4,
+              "min": 1
+            }
+          },
+          "name": "groundburst:potassium_iodide",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:anti_rad_injector",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:dosimeter_badge",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:geiger_counter",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:lead_container",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:spent_fuel_rod"
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 4,
+        "min": 2
+      }
+    }
+  ],
+  "random_sequence": "groundburst:chests/waste_storage"
+}

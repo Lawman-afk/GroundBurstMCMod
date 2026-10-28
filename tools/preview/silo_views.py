@@ -14,11 +14,11 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
 import render as R  # noqa: E402
 
-MODEL = "groundzero:block/missile_silo"
+MODEL = "groundburst:block/missile_silo"
 NOSES_BUT = lambda keep: tuple(n for n in ("nose_", "snose_") if n != keep)  # noqa: E731
 
 

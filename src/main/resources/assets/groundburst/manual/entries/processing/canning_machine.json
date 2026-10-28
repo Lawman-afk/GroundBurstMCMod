@@ -1,0 +1,42 @@
+{
+  "title": "Canning Machine",
+  "icon": "groundburst:canning_machine",
+  "order": 8,
+  "items": [
+    "groundburst:canning_machine"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:canning_machine",
+      "text": "Fills and empties canisters, 1,000 mB at a time. Put an **empty canister** (liquids) or **gas canister** (gases) in and it fills from the **supply tank** on the left; put a filled canister in and it is poured into the **catch tank** on the right. Draws 20 FE a tick."
+    },
+    {
+      "type": "text",
+      "text": "Pipes and buckets fill the supply tank; pipes, buckets and auto-eject drain the catch tank. It works for every fluid that has a canister, so a line of them can bottle a [Chemical Plant](processing/chemical_plant)'s output for later use."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:canning_machine",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "canning",
+      "text": "",
+      "item": "groundburst:sulfuric_acid_canister"
+    },
+    {
+      "type": "machine",
+      "kind": "canning",
+      "text": "",
+      "item": "groundburst:deuterium_canister"
+    },
+    {
+      "type": "machine",
+      "kind": "canning",
+      "text": "",
+      "fluid": "groundburst:sulfuric_acid"
+    }
+  ]
+}

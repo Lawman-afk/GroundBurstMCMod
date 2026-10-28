@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:plastic_sheet",
+    "minecraft:water_bucket",
+    "minecraft:sugar",
+    "minecraft:charcoal",
+    "minecraft:charcoal"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:rad_away"
+  }
+}

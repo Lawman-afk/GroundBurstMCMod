@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:solid_propellant",
+    "groundburst:solid_propellant",
+    "groundburst:solid_propellant",
+    "groundburst:solid_propellant",
+    "groundburst:solid_propellant",
+    "groundburst:solid_propellant",
+    "#c:plates/steel",
+    "#c:plates/steel",
+    "groundburst:tungsten_plate"
+  ],
+  "result": {
+    "id": "groundburst:solid_rocket_motor_ii"
+  }
+}

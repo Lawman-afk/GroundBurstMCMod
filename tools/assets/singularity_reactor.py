@@ -22,11 +22,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 NAME = "singularity_reactor"
 CLEAR = (0, 0, 0, 0)
@@ -190,7 +190,7 @@ def _ramp(r) -> np.ndarray:
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict, lamps) -> None:
-    """The reactor's surfaces, in model space (tools/gz/materials.py; the remaster after slice 9b): olive deck plates on
+    """The reactor's surfaces, in model space (tools/gb/materials.py; the remaster after slice 9b): olive deck plates on
     the floor and roof slabs, their sides dark steel banded in hazard paint, a hazard ring round the chamber's footprint;
     steel posts and glazing bars; black emitter housings rimmed in brass, brass gimbal rings; the glass, lenses, beams,
     core and disks as they were."""

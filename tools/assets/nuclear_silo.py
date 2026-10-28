@@ -28,13 +28,13 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import panels as PN  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import panels as PN  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import scud_storm as SS  # noqa: E402
@@ -45,7 +45,7 @@ SIDES, ALL, NO_DOWN = SS.SIDES, SS.ALL, SS.NO_DOWN
 F = "frame"
 DECK_Y = 14
 
-# --- the layout (NuclearMissileBlockEntity and GZSuperweapons have the same figures) -------------------------------------------
+# --- the layout (NuclearMissileBlockEntity and GBSuperweapons have the same figures) -------------------------------------------
 #: The hall: x -40..40 (walls a cell thick), z -8..232; inside x -24..24, z 8..216. Its walls two cells high.
 HALL_X, HALL_Z0, HALL_Z1, WALL_TOP = 40.0, -8.0, 232.0, 32.0
 #: The roof: eaves 2 px out from the walls, its ridge over the middle; four sections along the hall.
@@ -334,7 +334,7 @@ def build() -> tuple[GeoModel, SS.Parts]:
 
 # --- painting -----------------------------------------------------------------------------------------------------------------
 def paint_model(g: GeoModel, p: SS.Parts) -> tuple[Tex, Tex]:
-    from gz import machine_kit as K  # noqa: PLC0415
+    from gb import machine_kit as K  # noqa: PLC0415
     k = K.Kit(g, {}, seed=733, ao_reach=3.0, turned=True)
     W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=True)
     S = k.S
@@ -597,7 +597,7 @@ def spawner_plan(t: Tex) -> None:
 def ammo() -> None:
     """The Nuclear Missile item: the missile's own model (tools/assets/missiles.py)."""
     write_json(paths.ASSETS / "items" / "nuclear_missile.json",
-               {"model": {"type": "minecraft:model", "model": "groundzero:item/missile/nuclear_missile_warhead"}})
+               {"model": {"type": "minecraft:model", "model": "groundburst:item/missile/nuclear_missile_warhead"}})
 
 
 def main() -> None:

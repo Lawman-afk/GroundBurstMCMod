@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/gantry_frame"
+    },
+    "formed=true": {
+      "model": "groundburst:block/gantry_frame_formed"
+    }
+  }
+}

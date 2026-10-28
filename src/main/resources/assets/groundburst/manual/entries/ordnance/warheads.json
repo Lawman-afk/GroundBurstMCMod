@@ -1,0 +1,91 @@
+{
+  "title": "Warheads",
+  "icon": "groundburst:he_warhead",
+  "order": 6,
+  "items": [
+    "groundburst:he_warhead",
+    "groundburst:heavy_warhead",
+    "groundburst:thermobaric_warhead",
+    "groundburst:cluster_warhead",
+    "groundburst:bunker_buster_warhead",
+    "groundburst:napalm_warhead",
+    "groundburst:massive_warhead",
+    "groundburst:gas_warhead",
+    "groundburst:smoke_warhead",
+    "groundburst:cryo_warhead",
+    "groundburst:emp_warhead",
+    "groundburst:toxic_waste_warhead",
+    "groundburst:chemical_warhead"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Warheads are what a [missile](ordnance/missiles) carries: each has a missile of its own, built at the [missile assembler](ordnance/missile_assemblers) of its class, its nose the warhead itself. Each goes off as described below where the missile comes down.\n\nWarheads are not crafted: each is put together at an [Ordnance Assembly Bench](ordnance/assembly) from a payload core, a casing and a **fuze**. The fuze decides where the missile's warhead goes off: where it hits, or in the air over its target.\n\nPlaced on their own, warheads stand nose up on their mounting rings, waiting to be fitted to a missile; with nothing under them they fall. A placed warhead cannot be armed and nothing sets it off, except another explosion."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:he_warhead",
+      "text": "The general-purpose warhead, olive with a yellow band: a crater about 6 blocks across."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:heavy_warhead",
+      "text": "The same, a size up: a crater about 12 blocks across."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:thermobaric_warhead",
+      "text": "Throws out a cloud of fuel, then lights it a moment later. A shallow crater, but the burning overpressure reaches 24 blocks, and anything with no open sky above it (indoors, in a cave) is hurt far worse."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:cluster_warhead",
+      "text": "Delivered by a missile, it bursts **30 blocks over its target** and rains **32 bomblets** that land within about 20 blocks of that point; set off on the ground, it throws 24 of them up and out to about 18 blocks. Each bomblet goes off where it lands with a blast of its own. One in twenty is a dud that lies where it fell as a live landmine."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:bunker_buster_warhead",
+      "text": "A slim penetrator. Placed and set off, a 9-block crater where it stands; delivered by a missile, it bores a **3 by 3 shaft** up to 40 blocks down first (obsidian-hard blocks under its middle cost more; unbreakable ones stop it) and goes off at the bottom."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:napalm_warhead",
+      "text": "A small burst and a pool of **napalm** about 10 blocks round. Napalm burns for about 30 seconds whatever the weather, sets anything in it alight, and lights what burns beside it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:massive_warhead",
+      "text": "The biggest conventional warhead: a 28-block crater and deadly out to 40. Stand well clear."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:gas_warhead",
+      "text": "A cluster of **poison gas** canisters. Delivered by a missile, it bursts high over its target and drops 14 canisters across a wide area; each lands and pours out a cloud of chlorine like a [gas grenade](ordnance/chemical). Set off on the ground, it throws them out round itself."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:smoke_warhead",
+      "text": "The same with **smoke**: 14 smoke canisters over a wide area, a screen that hides whoever is in it."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:toxic_waste_warhead",
+      "text": "A small burst that splashes **toxic sludge** 10 blocks round: whatever is caught in it gets a heavy dose of toxin, and the sludge poisons anything that walks through it until it dries out."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:chemical_warhead",
+      "text": "A **chemical agent** (anthrax): it bursts into a thick pale green cloud 9 blocks round that behaves like [chlorine](ordnance/chemical): it spreads, sinks into low ground and drifts with the wind, but it is far harsher (**Poison IV**, a heart every half second where it is thick) and it hangs about for a minute and a half. A [hazmat suit](safety/hazmat_suits) keeps it out."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:cryo_warhead",
+      "text": "The same with **cryo** canisters: 14 of them over a wide area, each a burst of cold like a [cryo grenade](ordnance/thrown): water freezes, fires go out, and everything caught in one is frozen solid for 10 seconds (hit hard, a frozen mob shatters)."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:emp_warhead",
+      "text": "The same with **EMP** canisters: 14 EMP fields over a wide area, each like an [EMP grenade](ordnance/thrown)'s. Machines in them lose half their power and shut down for 20 seconds, armed charges with electronic fuzes go safe, and missiles flying through may be left duds."
+    }
+  ]
+}

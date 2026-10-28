@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "assets"))
 
-from gz import geo as G  # noqa: E402
+from gb import geo as G  # noqa: E402
 
 #: face: (axis, side): the face lies on the box's high (1) or low (0) side of that axis.
 LOCAL = {"east": (0, 1), "west": (0, 0), "up": (1, 1), "down": (1, 0), "south": (2, 1), "north": (2, 0)}

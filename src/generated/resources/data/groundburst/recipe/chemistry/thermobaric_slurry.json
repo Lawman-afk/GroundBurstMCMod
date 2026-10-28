@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:thermobaric_slurry"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:synthetic_fuel"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:rdx_crystals"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/iron"
+    }
+  ],
+  "time": 300
+}

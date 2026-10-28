@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:plutonium_ingot",
+    "groundburst:he_charge",
+    "groundburst:he_charge",
+    "groundburst:he_charge",
+    "groundburst:depleted_uranium_ingot",
+    "groundburst:lead_plate",
+    "groundburst:military_circuit"
+  ],
+  "result": {
+    "id": "groundburst:fission_core"
+  }
+}

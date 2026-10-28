@@ -1,0 +1,37 @@
+{
+  "title": "Cryogenic Condenser",
+  "icon": "groundburst:cryogenic_condenser",
+  "order": 4,
+  "items": [
+    "groundburst:cryogenic_condenser",
+    "groundburst:oxygen_membrane",
+    "groundburst:nitrogen_membrane"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:cryogenic_condenser",
+      "text": "Liquefies gases out of the air. The **membrane** in its slot picks the gas: liquid oxygen or liquid nitrogen. Membranes are never used up. Draws 100 FE a tick.\n\nCryogenic liquids freeze anything standing in them."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:cryogenic_condenser",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:oxygen_membrane",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:nitrogen_membrane",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "cryo_condensing",
+      "text": ""
+    }
+  ]
+}

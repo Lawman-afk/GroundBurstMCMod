@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "groundburst:advanced_capacitor_bank",
+    "C": "groundburst:superconducting_coil",
+    "M": "groundburst:military_circuit"
+  },
+  "pattern": [
+    "C C",
+    " B ",
+    "CMC"
+  ],
+  "result": {
+    "id": "groundburst:superconducting_capacitor_bank"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Electrolytic Separator",
+  "icon": "groundburst:electrolytic_separator",
+  "order": 3,
+  "items": [
+    "groundburst:electrolytic_separator"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:electrolytic_separator",
+      "text": "Splits deuterium gas out of water. Pipe water into its water tank (a [Water Pump](processing/water_pump) is easiest) and draw the gas off with a pipe or a gas canister. Draws 60 FE a tick."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:electrolytic_separator",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "electrolysis",
+      "text": ""
+    }
+  ]
+}

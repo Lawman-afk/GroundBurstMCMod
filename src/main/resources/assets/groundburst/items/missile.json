@@ -1,0 +1,1945 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "cases": [
+      {
+        "when": [
+          "he_warhead",
+          "strategic_he_warhead",
+          "icbm_he_warhead",
+          "flight_he_warhead",
+          "flight_strategic_he_warhead",
+          "flight_icbm_he_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead",
+          "strategic_napalm_warhead",
+          "icbm_napalm_warhead",
+          "flight_napalm_warhead",
+          "flight_strategic_napalm_warhead",
+          "flight_icbm_napalm_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead",
+          "strategic_chemical_warhead",
+          "icbm_chemical_warhead",
+          "flight_chemical_warhead",
+          "flight_strategic_chemical_warhead",
+          "flight_icbm_chemical_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead",
+          "strategic_toxic_waste_warhead",
+          "icbm_toxic_waste_warhead",
+          "flight_toxic_waste_warhead",
+          "flight_strategic_toxic_waste_warhead",
+          "flight_icbm_toxic_waste_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead",
+          "strategic_dirty_warhead",
+          "icbm_dirty_warhead",
+          "flight_dirty_warhead",
+          "flight_strategic_dirty_warhead",
+          "flight_icbm_dirty_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead",
+          "strategic_heavy_warhead",
+          "icbm_heavy_warhead",
+          "flight_heavy_warhead",
+          "flight_strategic_heavy_warhead",
+          "flight_icbm_heavy_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead",
+          "strategic_cluster_warhead",
+          "icbm_cluster_warhead",
+          "flight_cluster_warhead",
+          "flight_strategic_cluster_warhead",
+          "flight_icbm_cluster_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead",
+          "strategic_gas_warhead",
+          "icbm_gas_warhead",
+          "flight_gas_warhead",
+          "flight_strategic_gas_warhead",
+          "flight_icbm_gas_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead",
+          "strategic_smoke_warhead",
+          "icbm_smoke_warhead",
+          "flight_smoke_warhead",
+          "flight_strategic_smoke_warhead",
+          "flight_icbm_smoke_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead",
+          "strategic_cryo_warhead",
+          "icbm_cryo_warhead",
+          "flight_cryo_warhead",
+          "flight_strategic_cryo_warhead",
+          "flight_icbm_cryo_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead",
+          "strategic_thermobaric_warhead",
+          "icbm_thermobaric_warhead",
+          "flight_thermobaric_warhead",
+          "flight_strategic_thermobaric_warhead",
+          "flight_icbm_thermobaric_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermobaric_warhead"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermobaric_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermobaric_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "thermobaric_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermobaric_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead",
+          "strategic_bunker_buster_warhead",
+          "icbm_bunker_buster_warhead",
+          "flight_bunker_buster_warhead",
+          "flight_strategic_bunker_buster_warhead",
+          "flight_icbm_bunker_buster_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/bunker_buster_warhead"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/bunker_buster_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/bunker_buster_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "bunker_buster_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/bunker_buster_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead",
+          "strategic_emp_warhead",
+          "icbm_emp_warhead",
+          "flight_emp_warhead",
+          "flight_strategic_emp_warhead",
+          "flight_icbm_emp_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/emp_warhead"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/emp_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/emp_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "emp_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/emp_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead",
+          "strategic_massive_warhead",
+          "icbm_massive_warhead",
+          "flight_massive_warhead",
+          "flight_strategic_massive_warhead",
+          "flight_icbm_massive_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/massive_warhead"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/massive_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/massive_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "massive_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/massive_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead",
+          "strategic_tactical_nuclear_warhead",
+          "icbm_tactical_nuclear_warhead",
+          "flight_tactical_nuclear_warhead",
+          "flight_strategic_tactical_nuclear_warhead",
+          "flight_icbm_tactical_nuclear_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_s1",
+          "strategic_tactical_nuclear_warhead_s1",
+          "icbm_tactical_nuclear_warhead_s1",
+          "flight_strategic_tactical_nuclear_warhead_s1",
+          "flight_icbm_tactical_nuclear_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "tactical_nuclear_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tactical_nuclear_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead",
+          "strategic_fission_warhead",
+          "icbm_fission_warhead",
+          "flight_fission_warhead",
+          "flight_strategic_fission_warhead",
+          "flight_icbm_fission_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_s1",
+          "strategic_fission_warhead_s1",
+          "icbm_fission_warhead_s1",
+          "flight_strategic_fission_warhead_s1",
+          "flight_icbm_fission_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "fission_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/fission_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead",
+          "strategic_boosted_fission_warhead",
+          "icbm_boosted_fission_warhead",
+          "flight_boosted_fission_warhead",
+          "flight_strategic_boosted_fission_warhead",
+          "flight_icbm_boosted_fission_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_s1",
+          "strategic_boosted_fission_warhead_s1",
+          "icbm_boosted_fission_warhead_s1",
+          "flight_strategic_boosted_fission_warhead_s1",
+          "flight_icbm_boosted_fission_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "boosted_fission_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/boosted_fission_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead",
+          "strategic_neutron_warhead",
+          "icbm_neutron_warhead",
+          "flight_neutron_warhead",
+          "flight_strategic_neutron_warhead",
+          "flight_icbm_neutron_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_s1",
+          "strategic_neutron_warhead_s1",
+          "icbm_neutron_warhead_s1",
+          "flight_strategic_neutron_warhead_s1",
+          "flight_icbm_neutron_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "neutron_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/neutron_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead",
+          "strategic_thermonuclear_warhead",
+          "icbm_thermonuclear_warhead",
+          "flight_thermonuclear_warhead",
+          "flight_strategic_thermonuclear_warhead",
+          "flight_icbm_thermonuclear_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_s1",
+          "strategic_thermonuclear_warhead_s1",
+          "icbm_thermonuclear_warhead_s1",
+          "flight_strategic_thermonuclear_warhead_s1",
+          "flight_icbm_thermonuclear_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_s2",
+          "strategic_thermonuclear_warhead_s2",
+          "icbm_thermonuclear_warhead_s2",
+          "flight_strategic_thermonuclear_warhead_s2",
+          "flight_icbm_thermonuclear_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "thermonuclear_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/thermonuclear_warhead_stage2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead",
+          "strategic_cobalt_warhead",
+          "icbm_cobalt_warhead",
+          "flight_cobalt_warhead",
+          "flight_strategic_cobalt_warhead",
+          "flight_icbm_cobalt_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_s1",
+          "strategic_cobalt_warhead_s1",
+          "icbm_cobalt_warhead_s1",
+          "flight_strategic_cobalt_warhead_s1",
+          "flight_icbm_cobalt_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_s2",
+          "strategic_cobalt_warhead_s2",
+          "icbm_cobalt_warhead_s2",
+          "flight_strategic_cobalt_warhead_s2",
+          "flight_icbm_cobalt_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "cobalt_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cobalt_warhead_stage2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead",
+          "strategic_tsar_warhead",
+          "icbm_tsar_warhead",
+          "flight_tsar_warhead",
+          "flight_strategic_tsar_warhead",
+          "flight_icbm_tsar_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_s1",
+          "strategic_tsar_warhead_s1",
+          "icbm_tsar_warhead_s1",
+          "flight_strategic_tsar_warhead_s1",
+          "flight_icbm_tsar_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_s2",
+          "strategic_tsar_warhead_s2",
+          "icbm_tsar_warhead_s2",
+          "flight_strategic_tsar_warhead_s2",
+          "flight_icbm_tsar_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "tsar_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/tsar_warhead_stage2"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead",
+          "strategic_scud_storm_warhead",
+          "icbm_scud_storm_warhead",
+          "flight_scud_storm_warhead",
+          "flight_strategic_scud_storm_warhead",
+          "flight_icbm_scud_storm_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/scud_storm_warhead"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/scud_storm_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/scud_storm_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "scud_storm_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/scud_storm_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead",
+          "strategic_nuclear_missile_warhead",
+          "icbm_nuclear_missile_warhead",
+          "flight_nuclear_missile_warhead",
+          "flight_strategic_nuclear_missile_warhead",
+          "flight_icbm_nuclear_missile_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_s1",
+          "strategic_nuclear_missile_warhead_s1",
+          "icbm_nuclear_missile_warhead_s1",
+          "flight_strategic_nuclear_missile_warhead_s1",
+          "flight_icbm_nuclear_missile_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "nuclear_missile_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/nuclear_missile_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise",
+          "strategic_he_warhead_cruise",
+          "icbm_he_warhead_cruise",
+          "flight_he_warhead_cruise",
+          "flight_strategic_he_warhead_cruise",
+          "flight_icbm_he_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_s1",
+          "strategic_he_warhead_cruise_s1",
+          "icbm_he_warhead_cruise_s1",
+          "flight_strategic_he_warhead_cruise_s1",
+          "flight_icbm_he_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "he_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/he_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise",
+          "strategic_napalm_warhead_cruise",
+          "icbm_napalm_warhead_cruise",
+          "flight_napalm_warhead_cruise",
+          "flight_strategic_napalm_warhead_cruise",
+          "flight_icbm_napalm_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_s1",
+          "strategic_napalm_warhead_cruise_s1",
+          "icbm_napalm_warhead_cruise_s1",
+          "flight_strategic_napalm_warhead_cruise_s1",
+          "flight_icbm_napalm_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "napalm_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/napalm_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise",
+          "strategic_chemical_warhead_cruise",
+          "icbm_chemical_warhead_cruise",
+          "flight_chemical_warhead_cruise",
+          "flight_strategic_chemical_warhead_cruise",
+          "flight_icbm_chemical_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_s1",
+          "strategic_chemical_warhead_cruise_s1",
+          "icbm_chemical_warhead_cruise_s1",
+          "flight_strategic_chemical_warhead_cruise_s1",
+          "flight_icbm_chemical_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "chemical_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/chemical_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise",
+          "strategic_toxic_waste_warhead_cruise",
+          "icbm_toxic_waste_warhead_cruise",
+          "flight_toxic_waste_warhead_cruise",
+          "flight_strategic_toxic_waste_warhead_cruise",
+          "flight_icbm_toxic_waste_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_s1",
+          "strategic_toxic_waste_warhead_cruise_s1",
+          "icbm_toxic_waste_warhead_cruise_s1",
+          "flight_strategic_toxic_waste_warhead_cruise_s1",
+          "flight_icbm_toxic_waste_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "toxic_waste_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/toxic_waste_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise",
+          "strategic_dirty_warhead_cruise",
+          "icbm_dirty_warhead_cruise",
+          "flight_dirty_warhead_cruise",
+          "flight_strategic_dirty_warhead_cruise",
+          "flight_icbm_dirty_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_s1",
+          "strategic_dirty_warhead_cruise_s1",
+          "icbm_dirty_warhead_cruise_s1",
+          "flight_strategic_dirty_warhead_cruise_s1",
+          "flight_icbm_dirty_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "dirty_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/dirty_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise",
+          "strategic_heavy_warhead_cruise",
+          "icbm_heavy_warhead_cruise",
+          "flight_heavy_warhead_cruise",
+          "flight_strategic_heavy_warhead_cruise",
+          "flight_icbm_heavy_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_s1",
+          "strategic_heavy_warhead_cruise_s1",
+          "icbm_heavy_warhead_cruise_s1",
+          "flight_strategic_heavy_warhead_cruise_s1",
+          "flight_icbm_heavy_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "heavy_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise",
+          "strategic_cluster_warhead_cruise",
+          "icbm_cluster_warhead_cruise",
+          "flight_cluster_warhead_cruise",
+          "flight_strategic_cluster_warhead_cruise",
+          "flight_icbm_cluster_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_s1",
+          "strategic_cluster_warhead_cruise_s1",
+          "icbm_cluster_warhead_cruise_s1",
+          "flight_strategic_cluster_warhead_cruise_s1",
+          "flight_icbm_cluster_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "cluster_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cluster_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise",
+          "strategic_gas_warhead_cruise",
+          "icbm_gas_warhead_cruise",
+          "flight_gas_warhead_cruise",
+          "flight_strategic_gas_warhead_cruise",
+          "flight_icbm_gas_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_s1",
+          "strategic_gas_warhead_cruise_s1",
+          "icbm_gas_warhead_cruise_s1",
+          "flight_strategic_gas_warhead_cruise_s1",
+          "flight_icbm_gas_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "gas_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/gas_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise",
+          "strategic_smoke_warhead_cruise",
+          "icbm_smoke_warhead_cruise",
+          "flight_smoke_warhead_cruise",
+          "flight_strategic_smoke_warhead_cruise",
+          "flight_icbm_smoke_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_s1",
+          "strategic_smoke_warhead_cruise_s1",
+          "icbm_smoke_warhead_cruise_s1",
+          "flight_strategic_smoke_warhead_cruise_s1",
+          "flight_icbm_smoke_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "smoke_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/smoke_warhead_cruise_stage1"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise",
+          "strategic_cryo_warhead_cruise",
+          "icbm_cryo_warhead_cruise",
+          "flight_cryo_warhead_cruise",
+          "flight_strategic_cryo_warhead_cruise",
+          "flight_icbm_cryo_warhead_cruise"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_folded"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_folded"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_part1"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_part2"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_part3"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_s1",
+          "strategic_cryo_warhead_cruise_s1",
+          "icbm_cryo_warhead_cruise_s1",
+          "flight_strategic_cryo_warhead_cruise_s1",
+          "flight_icbm_cryo_warhead_cruise_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_s1"
+        }
+      },
+      {
+        "when": [
+          "cryo_warhead_cruise_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryo_warhead_cruise_stage1"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "groundburst:item/missile"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "groundburst:block/frosted_grass_block",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -4927274
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Cruise Missile Launcher",
+  "icon": "groundburst:cruise_launcher",
+  "order": 10,
+  "items": [
+    "groundburst:cruise_launcher",
+    "groundburst:launch_box",
+    "groundburst:cruise_launcher_spawner"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Cruise Missile Launcher** fires [cruise missiles](ordnance/missiles), and only those: two armored boxes side by side on a concrete deck, hinged at the back, a missile in each. A [Launch Computer](ordnance/launch_site) aims, arms and fires it like any launcher, and its **LAUNCH** fires it with the rest.\n\nLoad a cruise missile into each box (right-click the controller) and power it: each missile takes 60,000 FE (it holds 150,000). Its range is the shorter of its two missiles'."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:cruise_launcher",
+      "text": "A 2 by 6 deck of Launch Pads, the controller and an Energy Port side by side in its front row (the port on your left as you face the controller), and two Launch Boxes side by side on top of its back row: the boxes' hinged ends. Keep the space over the deck clear where the boxes lie and swing up: two blocks over all of it, and higher toward its front, up to five blocks over its second and third rows."
+    },
+    {
+      "type": "text",
+      "text": "**Firing.** The siren sounds and the count runs 10 seconds while the beacon on the boxes turns and the rams raise them to 45 degrees. Then the first missile goes: its booster lights in its box, bursting the box's front cover, blasts smoke out of the box's back over the deck, and drives it out along the launcher's front. The second follows 3 seconds later, at the same target (each with its own guidance's scatter). A few seconds after the last, the boxes come down again, fresh covers in their mouths.\n\nOut of its box, each climbs on its booster, drops it, unfolds its wings and turns toward the target low over the ground. An EMP, a redstone signal or a broken structure stops a launch; whatever has not gone stays loaded."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:cruise_launcher",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:launch_box",
+      "text": ""
+    }
+  ]
+}

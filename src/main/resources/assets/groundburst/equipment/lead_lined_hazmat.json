@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "groundburst:lead_lined_hazmat"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "groundburst:lead_lined_hazmat"
+      }
+    ]
+  }
+}

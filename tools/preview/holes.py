@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 FACES = ("north", "south", "east", "west", "up", "down")
 PLANE = 0.3          # thinner than this along an axis = a deliberate one-sided plane (glass, backing), not a solid

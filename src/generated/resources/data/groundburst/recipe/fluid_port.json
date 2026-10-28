@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "minecraft:bucket"
+  ],
+  "result": {
+    "id": "groundburst:fluid_port"
+  }
+}

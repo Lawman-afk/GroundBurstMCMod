@@ -1,0 +1,24 @@
+{
+  "type": "groundburst:fusion_synthesis",
+  "energy_per_tick": 120,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:deuterium"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/lithium_6"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:lithium_deuteride_pellet"
+      }
+    }
+  ],
+  "time": 300
+}

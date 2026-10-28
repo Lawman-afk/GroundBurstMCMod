@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "assets"))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import geo_preview as GP  # noqa: E402
 import render as R  # noqa: E402
 import assemblers as A  # noqa: E402
@@ -59,7 +59,7 @@ def missile_quads(warhead: str, laid: int, pivot: np.ndarray, lying: bool, turn:
     rot = (_rx(math.radians(-90)) if lying else np.eye(3)) @ _ry(math.radians(turn))
     out: list[R.Quad] = []
     for k in range(1, laid + 1):
-        model = R.load_model(f"groundzero:item/missile/{warhead}_part{k}")
+        model = R.load_model(f"groundburst:item/missile/{warhead}_part{k}")
         for q in R.build_quads(model):
             m = 4.0 * (q.pos - np.array([8.0, shape["tail"], 8.0]))           # the item drawn four times over, tail at 0
             p = (rot @ m.T).T + pivot
@@ -77,7 +77,7 @@ def main() -> None:
     ap.add_argument("--time", type=float, default=None)
     ap.add_argument("--cell", type=int, default=420)
     args = ap.parse_args()
-    mid = f"groundzero:block/{args.model}"
+    mid = f"groundburst:block/{args.model}"
     geo = json.loads((paths.GEO / "block" / f"{args.model}.geo.json").read_text(encoding="utf-8"))["minecraft:geometry"][0]
     bone = next(b for b in geo["bones"] if b["name"] == "missile")
     pivot = np.array([-bone["pivot"][0], bone["pivot"][1], bone["pivot"][2]], dtype=float)

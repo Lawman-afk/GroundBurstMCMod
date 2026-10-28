@@ -1,0 +1,54 @@
+{
+  "title": "Circuits",
+  "icon": "groundburst:basic_circuit",
+  "order": 0,
+  "items": [
+    "groundburst:handmade_circuit_board",
+    "groundburst:basic_circuit",
+    "groundburst:advanced_circuit",
+    "groundburst:military_circuit",
+    "groundburst:quantum_circuit",
+    "groundburst:sensor_array"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Four tiers, each built on the one below in the [Circuit Fabricator](processing/circuit_fabricator). Early on a **handmade circuit board**, crafted by hand, counts as a basic circuit."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:handmade_circuit_board",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:quantum_circuit"
+    },
+    {
+      "type": "machine",
+      "kind": "fabricating",
+      "text": "",
+      "item": "groundburst:sensor_array"
+    }
+  ]
+}

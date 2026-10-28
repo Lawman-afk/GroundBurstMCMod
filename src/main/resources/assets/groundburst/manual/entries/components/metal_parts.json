@@ -1,0 +1,28 @@
+{
+  "title": "Plates, rods and wire",
+  "icon": "groundburst:steel_plate",
+  "order": 2,
+  "items": [
+    "groundburst:steel_plate",
+    "groundburst:dense_steel_plate",
+    "groundburst:copper_plate",
+    "groundburst:lead_plate",
+    "groundburst:tungsten_plate",
+    "groundburst:steel_rod",
+    "groundburst:tungsten_rod",
+    "groundburst:copper_wire",
+    "groundburst:gold_wire",
+    "groundburst:tungsten_filament"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The [Industrial Press](processing/industrial_press) turns ingots into plates, rods and wire with the matching die. Dense steel plate is pressed from four steel plates; tungsten filament from tungsten ingots with the wire die."
+    },
+    {
+      "type": "machine",
+      "kind": "pressing",
+      "text": ""
+    }
+  ]
+}

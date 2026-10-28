@@ -1,10 +1,10 @@
-# Ground Zero — Progress
+# Ground Burst — Progress
 
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
 **Current phase:** Phase 12 (aftermath) started 2026-10-27, slice 12a built (the user's call: the features that are not weapons before any new bomb content; DESIGN §21.8). Earlier: Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
-**Last updated:** 2026-10-28 (the CurseForge page's logo: the DF-5 that the Nuclear Missile Silo fires, rendered from its in-game model by `tools/assets/logo.py`; the mod is now MIT-licensed so others can make add-ons; the CurseForge page's summary and description written). Before that, 2026-10-27 (the sites and the wasteland checked on generated worlds with the new world survey, `runWorldSurvey`: placement, frequencies and terrain fit reworked, the wasteland and crater lakes fixed for blasts with nobody near; 276/276 GameTests. Before that: slice 12e and Phase 15, built while the user was away; 12c and 12d still to come)
+**Last updated:** 2026-10-28 (the mod renamed **Ground Burst**, from Ground Zero, which clashed with a modpack and its mods in CurseForge's search: DESIGN §30; the CurseForge page's logo: the DF-5 that the Nuclear Missile Silo fires, rendered from its in-game model by `tools/assets/logo.py`; the mod is now MIT-licensed so others can make add-ons; the CurseForge page's summary and description written). Before that, 2026-10-27 (the sites and the wasteland checked on generated worlds with the new world survey, `runWorldSurvey`: placement, frequencies and terrain fit reworked, the wasteland and crater lakes fixed for blasts with nobody near; 276/276 GameTests. Before that: slice 12e and Phase 15, built while the user was away; 12c and 12d still to come)
 
 ---
 
@@ -55,32 +55,32 @@ checklist for the user.
 | `deployToInstance` task (runs after `build`, removes old jars, copies new) | done (verified: jar landed in instance `mods/`) |
 | `runClient` works in dev | done (reached title screen with the mod loaded) |
 | git repository + first commit | done |
-| Registry framework: `GZBlocks` / `GZItems` helpers that record English name + creative tab at registration (`GZLang`) | done |
+| Registry framework: `GBBlocks` / `GBItems` helpers that record English name + creative tab at registration (`GBLang`) | done |
 | Further registers (BEs, entities, menus, sounds, particles, data components, attachments, recipes, datapack registries) | added with the first feature that needs each (no empty registers) |
 | Configs: server (`SYNCED`, blast/radiation/terrain/missiles/EMP/reactor/singularity/superweapon limits) and client (fx, HUD) | done (values are read by their systems as those phases land) |
 | Common config | moved to Phase 3 (first option: ore toggles) |
 | Creative tabs (7, chained after Combat; hidden until they contain items; icon = first item) | done |
-| Networking base (`GZNetwork` registrar + type helper; client handlers via `RegisterClientPayloadHandlersEvent`) | done (first payloads in Phase 4/5) |
-| Datagen harness (`runData` → `src/generated/resources`; en_us generated from `GZLang`) | done (verified) |
+| Networking base (`GBNetwork` registrar + type helper; client handlers via `RegisterClientPayloadHandlersEvent`) | done (first payloads in Phase 4/5) |
+| Datagen harness (`runData` → `src/generated/resources`; en_us generated from `GBLang`) | done (verified) |
 | GameTest harness (TEST_FUNCTION registry + `RegisterGameTestsEvent`; NBT test structures from `tools/structure`) | done (3/3 pass: harness floor, names & tabs, vanilla) |
 | Smoke test: build + deploy + dev client to title screen | done |
-| Final mod name/ID applied | done (Ground Zero / `groundzero` confirmed) |
+| Final mod name/ID applied | done (Ground Burst / `groundburst`; renamed from Ground Zero / `groundzero` on 2026-10-28) |
 
 ## Phase 2 — Asset pipeline
 | Item | Status |
 |---|---|
 | Project Python venv (`tools/.venv`, `tools/requirements.txt`) | done |
-| `tools/gz/palette.py` material ramps (OKLCH, hue-shifted) | done |
-| `tools/gz/tex.py` pixel-art primitives (bevels, rivets, seams, stripes, decals, stencil font, trefoil/placards, seeded wear, glow layers) | done |
-| `tools/gz/model.py` block/item model DSL (auto UV layout, face painting, display fitting) | done |
-| `tools/gz/shapes.py` stepped cylinders with baked curvature lighting | done |
-| `tools/gz/geo.py` GeckoLib geo + animation export (conventions verified against GeckoLib 5.5.7 source) | done (GeckoLib loads it: "Loaded 1 models and 1 animations") |
+| `tools/gb/palette.py` material ramps (OKLCH, hue-shifted) | done |
+| `tools/gb/tex.py` pixel-art primitives (bevels, rivets, seams, stripes, decals, stencil font, trefoil/placards, seeded wear, glow layers) | done |
+| `tools/gb/model.py` block/item model DSL (auto UV layout, face painting, display fitting) | done |
+| `tools/gb/shapes.py` stepped cylinders with baked curvature lighting | done |
+| `tools/gb/geo.py` GeckoLib geo + animation export (conventions verified against GeckoLib 5.5.7 source) | done (GeckoLib loads it: "Loaded 1 models and 1 animations") |
 | `tools/preview/render.py` block-model renderer + contact sheets + true-size inventory icon | done |
 | `tools/preview/geo_preview.py` GeckoLib renderer + animation frames | done |
 | `tools/sound/synth.py`, `recipes.py`, `review.py` (synthesis, OGG, distance variants, spectrogram review) | done |
 | `tools/structure/nbt.py` NBT writer + `template.py` structure templates | done (used for GameTest structures) |
 | GeckoLib dependency + auto-install into the test instance | done |
-| `GZSounds` registry + `sounds.json` datagen with subtitles | done |
+| `GBSounds` registry + `sounds.json` datagen with subtitles | done |
 | GUI texture toolkit (panels, CRT, gauges, buttons, bars) | moved to Phase 4 (built with the first machine GUI) |
 | Style guide (`docs/style/`: palette swatches + pilot previews) | done |
 | Pilot: uranium ore (stone + deepslate, 3-layer with glints) | previewed → revised ×3 → approved for pipeline; final pass with all ores in Phase 3 |
@@ -91,7 +91,7 @@ checklist for the user.
 ## Phase 3 — Resources & world generation
 | Item | Status |
 |---|---|
-| Common config (`LOCAL`): per-resource worldgen toggles via `groundzero:config_toggle` placement filter | done |
+| Common config (`LOCAL`): per-resource worldgen toggles via `groundburst:config_toggle` placement filter | done |
 | 16 ore blocks: uranium, lithium, sulfur (+nether), saltpeter (+sandstone), tungsten, lead, rare earth — stone & deepslate | needs in-game test (art approved; GameTests pass) |
 | Raw items, ingots (U, Pb, W), sulfur/saltpeter dust, exotic shard | needs in-game test |
 | Storage blocks (U, Pb, W) + raw-ore blocks (5) | needs in-game test |
@@ -99,7 +99,7 @@ checklist for the user.
 | Ore features + placements + biome modifiers (incl. badlands/mountain/desert extras, Nether sulfur) | done (GameTests: features place ore; modifiers applied) |
 | End void geodes (outer islands, anchored in end stone) | needs in-game test |
 | Loot tables (Fortune, Silk Touch, explosion decay), smelting/blasting, storage recipes, black-powder gunpowder | done (drop GameTest passes) |
-| Tags: tool tiers, `c:` ores/raw/ingots/dusts/gems/storage, `groundzero:radioactive` | done |
+| Tags: tool tiers, `c:` ores/raw/ingots/dusts/gems/storage, `groundburst:radioactive` | done |
 | Vanilla sulfur / cinnabar crushing | done in Phase 4 (Ore Crusher recipes) |
 | Radiation strength data map for the radioactive tag | Phase 12 |
 | Textures for all of the above (reviewed via `tools/out/previews/ores_review.png`, `items_review.png`, `blocks_review.png`) | done |
@@ -143,7 +143,7 @@ checklist for the user.
 | Parts: steel/cobalt/carbide ingots, 5 plates, rods, wire, filament, canister, magnet, handmade circuit board, machine frame, motor, pressure vessel, heating element, servo, 4 dies | done (sprites in `tools/assets/parts.py`, crafting recipes, `c:` tags) |
 | Recipe catalysts (non-consumed ingredient slot, e.g. press dies) | done; the press shows the loaded die on its model |
 | JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — confirmed in game by the user |
-| Vanilla-style ores / raw items / ingots / dusts (`tools/gz/vanilla.py`) | done (user-approved; ingot edge tweak pending a final look) |
+| Vanilla-style ores / raw items / ingots / dusts (`tools/gb/vanilla.py`) | done (user-approved; ingot edge tweak pending a final look) |
 | Z-fighting checkers (`zfight.py` on export, `zfight3d.py` on rendered quads + animation frames) and 1-texel UV gutters with edge bleed | done — 0 issues; confirmed flicker-free in game |
 | Machine recipes (custom recipe types + datagen) | todo |
 | Models/animations/GUIs/sounds for every machine (reviewed) | todo |
@@ -155,7 +155,7 @@ checklist for the user.
 | Adaptive shell ray field | done (5a: cube-sphere rays splitting at 0.7 blocks, energy/shielding, lobes, crater depth, pressure bands; streak grain for starburst craters with spiky floors) |
 | Section writer, relight batching, packets | done (5a: flagged Level.setBlock writes, rim neighbour updates; 5b: blast start/front/end packets) |
 | Budget scheduler (ms + block budgets, fair sharing) | done (5a) |
-| Entity damage/exposure/knockback/fire | done (5a: groundzero:blast damage type) |
+| Entity damage/exposure/knockback/fire | done (5a: groundburst:blast damage type) |
 | Chunk tickets, SavedData persistence, resume | done (5b: ticket band, no generation unless allowed, blasts.dat, resume) |
 | Instant mode for small blasts | done (5a) |
 | Server config limits | done (5a: destroy switch, multiplier, max radius, budgets, concurrency, protected spawn/dimensions) |

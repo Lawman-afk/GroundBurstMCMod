@@ -1,0 +1,66 @@
+{
+  "title": "Multiblocks",
+  "icon": "groundburst:holo_projector",
+  "order": 4,
+  "items": [
+    "groundburst:holo_projector",
+    "groundburst:machine_casing",
+    "groundburst:reactor_glass",
+    "groundburst:item_port",
+    "groundburst:fluid_port",
+    "groundburst:energy_port"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The largest machines are **structures**: a controller block surrounded by parts in a set pattern. When the last block is in place the structure *forms* and becomes one machine with its own model.\n\nRight-click an unfinished controller to see a ghost of every missing block, layer by layer; or hold a [Holo-Projector](getting_started/multiblocks). Breaking any part un-forms it again.\n\nA structure connects to the outside world only through its **ports**:\n\n- **Item Port**: items in and products out (pipes, hoppers, conveyors).\n- **Fluid Port**: fills input tanks and drains product tanks.\n- **Energy Port**: power in, or out for a reactor.\n\nThe controller itself has no faces to connect to and no side tab."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:holo_projector",
+      "text": "Hold it near an unfinished structure to project the blocks still missing; use it to step through the layers one at a time."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:holo_projector",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:item_port",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fluid_port",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:energy_port",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:machine_casing",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:reactor_glass",
+      "text": ""
+    },
+    {
+      "type": "links",
+      "entries": [
+        "processing/chemical_plant",
+        "nuclear/fission_reactor",
+        "nuclear/particle_accelerator",
+        "nuclear/fusion_reactor",
+        "nuclear/singularity_reactor"
+      ],
+      "text": "",
+      "title": "Structures"
+    }
+  ]
+}

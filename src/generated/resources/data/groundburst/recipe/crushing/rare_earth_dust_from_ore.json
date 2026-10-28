@@ -1,0 +1,25 @@
+{
+  "type": "groundburst:crushing",
+  "energy_per_tick": 20,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#c:ores/rare_earth"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:rare_earth_dust"
+      }
+    },
+    {
+      "chance": 0.05,
+      "item": {
+        "id": "groundburst:uranium_dust"
+      }
+    }
+  ],
+  "time": 240
+}

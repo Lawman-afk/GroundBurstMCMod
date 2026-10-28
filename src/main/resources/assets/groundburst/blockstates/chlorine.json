@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "volume=1": {
+      "model": "groundburst:block/chlorine_1"
+    },
+    "volume=2": {
+      "model": "groundburst:block/chlorine_2"
+    },
+    "volume=3": {
+      "model": "groundburst:block/chlorine_3"
+    },
+    "volume=4": {
+      "model": "groundburst:block/chlorine_4"
+    },
+    "volume=5": {
+      "model": "groundburst:block/chlorine_5"
+    },
+    "volume=6": {
+      "model": "groundburst:block/chlorine_6"
+    },
+    "volume=7": {
+      "model": "groundburst:block/chlorine_7"
+    },
+    "volume=8": {
+      "model": "groundburst:block/chlorine_8"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "armed=false,facing=up": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=up": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    },
+    "armed=false,facing=down": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=down": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    },
+    "armed=false,facing=north": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=north": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    },
+    "armed=false,facing=south": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=south": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    },
+    "armed=false,facing=east": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=east": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    },
+    "armed=false,facing=west": {
+      "model": "groundburst:block/bouncing_mine"
+    },
+    "armed=true,facing=west": {
+      "model": "groundburst:block/bouncing_mine_armed"
+    }
+  }
+}

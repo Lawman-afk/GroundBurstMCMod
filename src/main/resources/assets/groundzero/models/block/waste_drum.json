@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "top": "groundzero:block/waste_drum_top",
-    "bottom": "groundzero:block/waste_drum_top",
-    "side": "groundzero:block/waste_drum_side"
-  }
-}

@@ -1,0 +1,37 @@
+{
+  "title": "The wasteland",
+  "icon": "groundburst:frosted_stone",
+  "order": 3,
+  "items": [
+    "groundburst:toxic_soil",
+    "groundburst:frosted_stone",
+    "groundburst:frosted_grass_block",
+    "groundburst:frozen_plant",
+    "groundburst:cryo_crystal"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "**The Nuclear Wasteland.** Once a nuclear blast has dug its crater, the land it scorched turns to wasteland: grey-brown grass and leaves, water a dead olive, a dusty sky and brown fog, ash drifting down and no animals; only the dead walk there. It stays wasteland when the radiation has gone (the server can turn this off).\n\n**Crater lakes.** A crater fills with still water where the land would flood it: next to the sea, a lake or a river (to that water's level), or deep below sea level where the ground is wet (groundwater; never in deserts, badlands or savanna). The water stays a block under the rim's lowest point; a giant crater fills only to a pond in its deepest part. It is as radioactive as the crater."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:frosted_stone",
+      "text": "**Frozen ground.** A cryo burst rimes the stone and grass it reaches, freezes small plants solid and grows **Cryo Crystals** round its middle. Where snow would not lie it all thaws again within a quarter of an hour or so; in cold places it stays. Frozen plants and crystals melt away; silk touch keeps a crystal."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:toxic_soil",
+      "text": "**Toxic Soil.** Where a heavy anthrax cloud lies on the ground, or a toxin SCUD's residue settles, the soil turns. It kills what grows on it, breathes a thin anthrax haze now and then (a gas mask or a hazmat suit keeps it out), and is spent, coarse dirt, after about a day."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/scorched_ground",
+        "safety/fallout",
+        "ordnance/nuclear"
+      ],
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:damaged_warhead",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 2
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 5,
+              "min": 2
+            }
+          },
+          "name": "groundburst:steel_plate",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:dense_steel_plate",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 4,
+              "min": 1
+            }
+          },
+          "name": "groundburst:solid_propellant",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:solid_rocket_motor_i",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "groundburst:servo",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:military_circuit",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:inertial_guidance_unit",
+          "weight": 3
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 3,
+        "min": 1
+      }
+    }
+  ],
+  "random_sequence": "groundburst:chests/silo_shaft"
+}

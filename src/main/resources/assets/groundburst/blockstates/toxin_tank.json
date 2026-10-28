@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/toxin_tank"
+    },
+    "formed=true": {
+      "model": "groundburst:block/toxin_tank_formed"
+    }
+  }
+}

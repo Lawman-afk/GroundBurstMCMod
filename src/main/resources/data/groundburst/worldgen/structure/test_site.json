@@ -1,0 +1,38 @@
+{
+  "type": "groundburst:site",
+  "biomes": "#groundburst:has_structure/test_site",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "variants": [
+    {
+      "weight": 1,
+      "parts": [
+        {
+          "template": "groundburst:site/test_site_zero",
+          "offset": [
+            -18,
+            -3,
+            -18
+          ],
+          "terrain": "beard_thin",
+          "integrity": 1.0,
+          "weathering": "none"
+        },
+        {
+          "template": "groundburst:site/test_site_bunker",
+          "offset": [
+            -6,
+            -1,
+            30
+          ],
+          "terrain": "beard_thin",
+          "integrity": 1.0,
+          "weathering": "abandoned"
+        }
+      ]
+    }
+  ],
+  "placement": "surface",
+  "terrain_adaptation": "beard_thin",
+  "max_slope": 12
+}

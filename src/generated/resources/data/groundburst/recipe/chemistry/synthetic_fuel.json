@@ -1,0 +1,23 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:synthetic_fuel"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:water"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "time": 240
+}

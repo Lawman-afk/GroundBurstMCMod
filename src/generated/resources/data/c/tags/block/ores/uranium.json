@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:uranium_ore",
-    "groundzero:deepslate_uranium_ore"
+    "groundburst:uranium_ore",
+    "groundburst:deepslate_uranium_ore"
   ]
 }

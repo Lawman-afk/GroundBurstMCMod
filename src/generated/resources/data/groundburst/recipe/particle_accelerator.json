@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:quantum_circuit",
+    "groundburst:crt_display"
+  ],
+  "result": {
+    "id": "groundburst:particle_accelerator"
+  }
+}

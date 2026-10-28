@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/reactor_glass"
+    },
+    "formed=true": {
+      "model": "groundburst:block/reactor_glass_formed"
+    }
+  }
+}

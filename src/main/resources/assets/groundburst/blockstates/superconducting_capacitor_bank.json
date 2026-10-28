@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/superconducting_capacitor_bank"
+    }
+  }
+}

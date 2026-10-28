@@ -1,0 +1,35 @@
+{
+  "title": "Steel and refractory metals",
+  "icon": "groundburst:steel_ingot",
+  "order": 2,
+  "items": [
+    "groundburst:steel_ingot",
+    "groundburst:tungsten_ingot",
+    "groundburst:tungsten_carbide_ingot",
+    "groundburst:neodymium_magnet"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "**Steel** is the backbone of every machine. An [Arc Furnace](processing/arc_furnace) makes it from iron (ingot or dust) and coal.\n\n**Tungsten** only melts in the arc furnace too. With more coal it becomes **tungsten carbide**, the hardest material you will make.\n\nRare-earth dust and iron fuse into **neodymium magnets** for motors and generators."
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:steel_ingot"
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:neodymium_magnet"
+    }
+  ]
+}

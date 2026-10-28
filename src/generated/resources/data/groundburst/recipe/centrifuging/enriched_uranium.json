@@ -1,0 +1,24 @@
+{
+  "type": "groundburst:centrifuging",
+  "energy_per_tick": 50,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:uranium_hexafluoride"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:enriched_uranium_nugget"
+      }
+    },
+    {
+      "item": {
+        "id": "groundburst:depleted_uranium_dust"
+      }
+    }
+  ],
+  "time": 600
+}

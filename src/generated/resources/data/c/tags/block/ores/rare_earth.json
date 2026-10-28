@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:rare_earth_ore",
-    "groundzero:deepslate_rare_earth_ore"
+    "groundburst:rare_earth_ore",
+    "groundburst:deepslate_rare_earth_ore"
   ]
 }

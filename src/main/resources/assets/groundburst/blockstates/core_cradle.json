@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/core_cradle"
+    },
+    "formed=true": {
+      "model": "groundburst:block/core_cradle_formed"
+    }
+  }
+}

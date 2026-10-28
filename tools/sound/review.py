@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 from scipy import signal
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 
 W, WAVE_H, SPEC_H = 1000, 90, 180
 

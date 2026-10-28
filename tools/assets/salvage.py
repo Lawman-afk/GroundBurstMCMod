@@ -3,7 +3,7 @@
 - Waste Drum: a 55-gallon steel drum in yellow paint seen side on (a full block, so a stack of them reads as a stack),
   shaded round as a cylinder (lit left of middle, dark at its sides), two rolling hoops standing proud, a radiation
   label (black trefoil on yellow-white), the paint chipped on the hoops and rust run down from them; its lid with the
-  rim, two bungs and scuffs. Painted with the material library (`tools/gz/materials.py`).
+  rim, two bungs and scuffs. Painted with the material library (`tools/gb/materials.py`).
 - Damaged Warhead: a re-entry vehicle's cone, dark ablative shell scorched and split along its side, the trefoil band
   burnt half away, its core glinting through the split.
 
@@ -18,12 +18,12 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import write_json  # noqa: E402
-from gz.sprite import outline  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import write_json  # noqa: E402
+from gb.sprite import outline  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 
 N = 16
 DRUM_YELLOW = M.ramp("#4a3606", "#6e510c", "#946d12", "#b8891a", "#d6a426", "#e8bb3e", "#f2cf62", "#f8e08e")
@@ -125,13 +125,13 @@ def main() -> None:
     M.to_tex(drum_side()).save(paths.TEXTURES / "block" / "waste_drum_side.png")
     M.to_tex(drum_top()).save(paths.TEXTURES / "block" / "waste_drum_top.png")
     write_json(paths.MODELS / "block" / "waste_drum.json", {"parent": "minecraft:block/cube_bottom_top", "textures": {
-        "top": "groundzero:block/waste_drum_top", "bottom": "groundzero:block/waste_drum_top", "side": "groundzero:block/waste_drum_side"}})
-    write_json(paths.ASSETS / "blockstates" / "waste_drum.json", {"variants": {"": {"model": "groundzero:block/waste_drum"}}})
-    write_json(paths.ASSETS / "items" / "waste_drum.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/waste_drum"}})
+        "top": "groundburst:block/waste_drum_top", "bottom": "groundburst:block/waste_drum_top", "side": "groundburst:block/waste_drum_side"}})
+    write_json(paths.ASSETS / "blockstates" / "waste_drum.json", {"variants": {"": {"model": "groundburst:block/waste_drum"}}})
+    write_json(paths.ASSETS / "items" / "waste_drum.json", {"model": {"type": "minecraft:model", "model": "groundburst:block/waste_drum"}})
     damaged_warhead().save(paths.TEXTURES / "item" / "damaged_warhead.png")
     write_json(paths.MODELS / "item" / "damaged_warhead.json", {"parent": "minecraft:item/generated",
-                                                                "textures": {"layer0": "groundzero:item/damaged_warhead"}})
-    write_json(paths.ASSETS / "items" / "damaged_warhead.json", {"model": {"type": "minecraft:model", "model": "groundzero:item/damaged_warhead"}})
+                                                                "textures": {"layer0": "groundburst:item/damaged_warhead"}})
+    write_json(paths.ASSETS / "items" / "damaged_warhead.json", {"model": {"type": "minecraft:model", "model": "groundburst:item/damaged_warhead"}})
     print("salvage assets written")
 
 

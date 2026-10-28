@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:crt_display",
+    "groundburst:advanced_circuit",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundburst:launch_silo"
+  }
+}

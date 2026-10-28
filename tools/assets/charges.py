@@ -26,11 +26,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.palette import fixed  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.palette import fixed  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import resources as R  # noqa: E402
 
@@ -329,40 +329,40 @@ def blockstates() -> None:
     for facing, rot in FACINGS.items():
         for armed in (False, True):
             for n in range(1, 5):
-                v[f"armed={str(armed).lower()},candles={n},facing={facing}"] = {"model": f"groundzero:block/c4_{n}{'_armed' if armed else ''}", **rot}
+                v[f"armed={str(armed).lower()},candles={n},facing={facing}"] = {"model": f"groundburst:block/c4_{n}{'_armed' if armed else ''}", **rot}
     write_json(paths.ASSETS / "blockstates" / "c4.json", {"variants": v})
     v = {}
     for facing, rot in FACINGS.items():
         for armed in (False, True):
-            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/breaching_charge{'_armed' if armed else ''}", **rot}
+            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundburst:block/breaching_charge{'_armed' if armed else ''}", **rot}
     write_json(paths.ASSETS / "blockstates" / "breaching_charge.json", {"variants": v})
     v = {}
     for facing, rot in FACINGS.items():
         for armed in (False, True):
             for lit in (False, True):
                 model = "thermite_charge_lit" if lit else f"thermite_charge{'_armed' if armed else ''}"
-                v[f"armed={str(armed).lower()},facing={facing},lit={str(lit).lower()}"] = {"model": f"groundzero:block/{model}", **rot}
+                v[f"armed={str(armed).lower()},facing={facing},lit={str(lit).lower()}"] = {"model": f"groundburst:block/{model}", **rot}
     write_json(paths.ASSETS / "blockstates" / "thermite_charge.json", {"variants": v})
     v = {}
     for facing, rot in HORIZONTAL.items():
         for armed in (False, True):
-            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/timed_bomb{'_armed' if armed else ''}", **rot}
+            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundburst:block/timed_bomb{'_armed' if armed else ''}", **rot}
     write_json(paths.ASSETS / "blockstates" / "timed_bomb.json", {"variants": v})
     for name in ("landmine", "bouncing_mine"):
         v = {}
         for facing in FACINGS:
             for armed in (False, True):
-                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/{name}{'_armed' if armed else ''}"}
+                v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundburst:block/{name}{'_armed' if armed else ''}"}
         write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": v})
     v = {}
     for facing, rot in HORIZONTAL.items():
         for armed in (False, True):
-            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundzero:block/claymore{'_armed' if armed else ''}", **rot}
+            v[f"armed={str(armed).lower()},facing={facing}"] = {"model": f"groundburst:block/claymore{'_armed' if armed else ''}", **rot}
     write_json(paths.ASSETS / "blockstates" / "claymore.json", {"variants": v})
     for item, model in (("c4", "c4_1"), ("breaching_charge", "breaching_charge"), ("thermite_charge", "thermite_charge"),
                         ("timed_bomb", "timed_bomb"), ("landmine", "landmine"), ("bouncing_mine", "bouncing_mine"),
                         ("claymore", "claymore")):
-        write_json(paths.ASSETS / "items" / f"{item}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{model}"}})
+        write_json(paths.ASSETS / "items" / f"{item}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{model}"}})
 
 
 # --- item sprites ----------------------------------------------------------------------------------------------------------

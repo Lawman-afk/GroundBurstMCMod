@@ -1,0 +1,28 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "#c:dusts/lithium"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:mercury_flask"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:lithium6_dust"
+      }
+    },
+    {
+      "chance": 0.9,
+      "item": {
+        "id": "groundburst:mercury_flask"
+      }
+    }
+  ],
+  "time": 300
+}

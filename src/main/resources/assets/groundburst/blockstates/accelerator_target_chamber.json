@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/accelerator_target_chamber"
+    },
+    "formed=true": {
+      "model": "groundburst:block/accelerator_target_chamber_formed"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "#c:circuits/advanced",
+    "B": "groundburst:capacitor_bank",
+    "W": "#c:wires/gold"
+  },
+  "pattern": [
+    "W W",
+    " B ",
+    "WAW"
+  ],
+  "result": {
+    "id": "groundburst:advanced_capacitor_bank"
+  }
+}

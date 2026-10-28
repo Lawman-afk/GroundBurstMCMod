@@ -1,0 +1,22 @@
+{
+  "type": "groundburst:exotic_fabricating",
+  "energy_per_tick": 400,
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "#c:gems/exotic_matter"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:neodymium_magnet"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:stabilised_exotic_matter"
+      }
+    }
+  ],
+  "time": 600
+}

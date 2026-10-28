@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "modifier": {
+    "type": "minecraft:copy_components",
+    "include": [
+      "groundburst:fuze"
+    ],
+    "source": "block_entity"
+  },
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:toxic_waste_warhead"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundburst:blocks/toxic_waste_warhead"
+}

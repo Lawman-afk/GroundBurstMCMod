@@ -28,12 +28,12 @@ import math  # noqa: E402
 
 import numpy as np  # noqa: E402
 
-from gz import materials as M  # noqa: E402
-from gz import palette as P  # noqa: E402
-from gz import paths  # noqa: E402
-from gz.geo import Animation, GeoModel, save_animations  # noqa: E402
-from gz.model import BlockModel, write_json  # noqa: E402
-from gz.tex import Tex  # noqa: E402
+from gb import materials as M  # noqa: E402
+from gb import palette as P  # noqa: E402
+from gb import paths  # noqa: E402
+from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
+from gb.model import BlockModel, write_json  # noqa: E402
+from gb.tex import Tex  # noqa: E402
 import grenades as G  # noqa: E402
 import structures as ST  # noqa: E402
 import warheads as W  # noqa: E402
@@ -171,13 +171,13 @@ def shaped_part(name: str, build, icon: Tex) -> None:
     face used as its particle: break particles, and the Holo-Projector draws ghost blocks as cubes of it (the packed
     model texture would look like noise there)."""
     icon.save(paths.TEXTURES / "block" / f"{name}_icon.png")
-    m = build(f"groundzero:block/{name}_icon")
-    write_json(paths.MODELS / "block" / f"{name}_formed.json", ST.particle_model(f"groundzero:block/{name}_icon"))
+    m = build(f"groundburst:block/{name}_icon")
+    write_json(paths.MODELS / "block" / f"{name}_formed.json", ST.particle_model(f"groundburst:block/{name}_icon"))
     write_json(paths.ASSETS / "blockstates" / f"{name}.json", {"variants": {
-        "formed=false": {"model": f"groundzero:block/{name}"},
-        "formed=true": {"model": f"groundzero:block/{name}_formed"},
+        "formed=false": {"model": f"groundburst:block/{name}"},
+        "formed=true": {"model": f"groundburst:block/{name}_formed"},
     }})
-    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundzero:block/{name}"}})
+    write_json(paths.ASSETS / "items" / f"{name}.json", {"model": {"type": "minecraft:model", "model": f"groundburst:block/{name}"}})
 
 
 def radar_dish_icon() -> Tex:
@@ -307,14 +307,14 @@ def large_dish_block(particle: str) -> BlockModel:
 def large_dish() -> None:
     icon = large_dish_icon()
     icon.save(paths.TEXTURES / "block" / "large_radar_dish_icon.png")
-    large_dish_block("groundzero:block/large_radar_dish_icon")
-    write_json(paths.MODELS / "block" / "large_radar_dish_formed.json", ST.particle_model("groundzero:block/large_radar_dish_icon"))
+    large_dish_block("groundburst:block/large_radar_dish_icon")
+    write_json(paths.MODELS / "block" / "large_radar_dish_formed.json", ST.particle_model("groundburst:block/large_radar_dish_icon"))
     write_json(paths.ASSETS / "blockstates" / "large_radar_dish.json", {"variants": {
-        "formed=false,part=center": {"model": "groundzero:block/large_radar_dish"},
-        "formed=false,part=edge": {"model": "groundzero:block/large_radar_dish_formed"},
-        "formed=true": {"model": "groundzero:block/large_radar_dish_formed"},
+        "formed=false,part=center": {"model": "groundburst:block/large_radar_dish"},
+        "formed=false,part=edge": {"model": "groundburst:block/large_radar_dish_formed"},
+        "formed=true": {"model": "groundburst:block/large_radar_dish_formed"},
     }})
-    write_json(paths.ASSETS / "items" / "large_radar_dish.json", {"model": {"type": "minecraft:model", "model": "groundzero:block/large_radar_dish"}})
+    write_json(paths.ASSETS / "items" / "large_radar_dish.json", {"model": {"type": "minecraft:model", "model": "groundburst:block/large_radar_dish"}})
 
 
 def missile_bone(g: GeoModel, parent: str, tail_y: float, cz: float) -> None:
@@ -666,7 +666,7 @@ def radar_array() -> None:
     print(save_animations("radar_array", [spin]))
 
 
-# --- surfaces (the remaster after slice 9b: tools/gz/materials.py, DESIGN.md §4.3) --------------------------------------
+# --- surfaces (the remaster after slice 9b: tools/gb/materials.py, DESIGN.md §4.3) --------------------------------------
 GANTRY_RAMP = M.ramp("#2a0904", "#3a0e06", "#64180a", "#8e2410", "#b83418", "#d4502a", "#e67a52", "#f4ac8c", "#fbd2bd")
 SIDES = ("north", "south", "east", "west")
 

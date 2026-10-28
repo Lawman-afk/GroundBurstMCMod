@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "#groundburst:basic_circuits",
+    "I": "minecraft:iron_bars",
+    "M": "groundburst:electric_motor",
+    "P": "#c:plates/steel",
+    "W": "minecraft:water_bucket"
+  },
+  "pattern": [
+    "PPP",
+    "IWI",
+    "BM "
+  ],
+  "result": {
+    "id": "groundburst:decontamination_shower"
+  }
+}

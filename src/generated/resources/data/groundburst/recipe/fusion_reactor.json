@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:military_circuit",
+    "groundburst:crt_display",
+    "groundburst:crt_display",
+    "groundburst:pressure_vessel"
+  ],
+  "result": {
+    "id": "groundburst:fusion_reactor"
+  }
+}

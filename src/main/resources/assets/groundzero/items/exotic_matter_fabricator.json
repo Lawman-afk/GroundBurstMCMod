@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundzero:item/exotic_matter_fabricator",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

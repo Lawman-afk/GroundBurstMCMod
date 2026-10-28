@@ -1,0 +1,31 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:toxin"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:chlorine"
+    },
+    {
+      "amount": 500,
+      "ingredient": "#c:sulfuric_acid"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:spider_eye"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:poisonous_potato"
+    }
+  ],
+  "time": 300
+}

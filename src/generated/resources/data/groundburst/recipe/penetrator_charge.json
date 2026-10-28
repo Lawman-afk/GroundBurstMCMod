@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:he_charge",
+    "groundburst:tungsten_rod",
+    "groundburst:tungsten_rod",
+    "groundburst:tungsten_carbide_ingot",
+    "groundburst:tungsten_carbide_ingot",
+    "groundburst:advanced_circuit"
+  ],
+  "result": {
+    "id": "groundburst:penetrator_charge"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "values": [
-    "groundzero:synthetic_fuel",
-    "groundzero:flowing_synthetic_fuel"
+    "groundburst:synthetic_fuel",
+    "groundburst:flowing_synthetic_fuel"
   ]
 }

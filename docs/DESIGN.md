@@ -1,4 +1,4 @@
-# Ground Zero — Design Document
+# Ground Burst — Design Document
 
 > Status: **v1 — decisions D1–D6 resolved by the user** (session 1, 2026-10-19).
 > This is the single source of truth for what the mod contains. Every item, block, weapon, component, recipe,
@@ -13,13 +13,13 @@
 
 | | |
 |---|---|
-| Name | **Ground Zero** (confirmed by the user) |
-| Mod ID | `groundzero` |
-| Java package | `dev.groundzero` |
-| Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`) |
+| Name | **Ground Burst** (the user's choice, 2026-10-28; Ground Zero before that, see §30) |
+| Mod ID | `groundburst` |
+| Java package | `dev.groundburst` |
+| Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`); at the rename, *Hypocenter*, *Launch Codes* and *Kiloton* |
 | Tagline | "Assemble it. Launch it. Watch the horizon." |
-| Source | https://github.com/Lawman-afk/Ground-Zero-MCMod (public since 2026-10-28; author Lawman-afk) |
-| Licence | **MIT** (2026-10-28, the user: others should be able to make add-ons); `LICENSE` at the root, in the jar as `LICENSE_groundzero`. The sound recordings it is made from keep their own (CC0 1.0, CC BY 4.0: `assets/groundzero/sounds/CREDITS.txt`) |
+| Source | https://github.com/Lawman-afk/Ground-Burst-MCMod (public since 2026-10-28; author Lawman-afk) |
+| Licence | **MIT** (2026-10-28, the user: others should be able to make add-ons); `LICENSE` at the root, in the jar as `LICENSE_groundburst`. The sound recordings it is made from keep their own (CC0 1.0, CC BY 4.0: `assets/groundburst/sounds/CREDITS.txt`) |
 
 **Design pillars**
 1. **The spectacle matches the destruction.** Every visual is driven by the same numbers as the damage. The fireball,
@@ -77,7 +77,7 @@ These replace what older (1.20/1.21) knowledge would assume. Re-verify against t
 
 Learned while building (verified against the 26.3.0.92 sources):
 - **Config types** are `LOCAL`, `CLIENT`, `SYNCED`, `STARTUP` (no more COMMON/SERVER). Server-authoritative settings
-  use `SYNCED` → file `groundzero-synced.toml`; client settings → `groundzero-client.toml`.
+  use `SYNCED` → file `groundburst-synced.toml`; client settings → `groundburst-client.toml`.
 - `Holder#getKey()` is deprecated for removal; use `key()` / `keyOrNull()`.
 - **Transfer API:** energy is `Capabilities.Energy.BLOCK` → `EnergyHandler` (`transfer.energy`, `SimpleEnergyHandler`);
   items and fluids are `ResourceHandler<ItemResource>` / `ResourceHandler<FluidResource>` with transactions
@@ -109,8 +109,8 @@ Learned while building (verified against the 26.3.0.92 sources):
 ## 3. Architecture
 
 ```
-dev.groundzero
-├── GroundZero / GroundZeroClient       entry points
+dev.groundburst
+├── GroundBurst / GroundBurstClient       entry points
 ├── registry/      blocks, items, block entities, entities, menus, sounds, particles, data components,
 │                  attachments, recipe types/serializers, creative tabs, datapack registries
 ├── config/        server (safety limits), common, client (visual quality) ModConfigSpecs
@@ -141,7 +141,7 @@ dev.groundzero
 └── gametest/      GameTests
 ```
 
-**Data-driven where it pays off.** Blast behaviour is a datapack registry `groundzero:blast_profile` (zones, speeds,
+**Data-driven where it pays off.** Blast behaviour is a datapack registry `groundburst:blast_profile` (zones, speeds,
 terrain conversion table, visual preset, sound set). Weapons reference a profile id. This lets us (and pack makers)
 tune radii without code, and keeps the visual and damage numbers in one place.
 
@@ -181,11 +181,11 @@ Run everything with the project venv: `tools\.venv\Scripts\python.exe` (numpy, P
 
 | Tool | Purpose |
 |---|---|
-| `tools/gz/palette.py` | OKLCH-generated 7-step ramps (`outline, deep, shadow, base, light, highlight, shine`) with hue shifting: shadows toward purple-blue (via red for warm hues, so yellows never turn green), highlights toward yellow. Hand-picked ramps for hazard colours. Swatches: `docs/style/palettes.png`. |
-| `tools/gz/tex.py` | `Tex` canvas + primitives: bevelled panels, rivets, seams, vents, grilles, hazard stripes, 3×5 stencil font, decals, trefoil, placards, seeded wear (corner-biased edge chips, scratches, drips, sparse speckle). |
-| `tools/gz/model.py` | Block/item model DSL: boxes → automatic shelf-packed per-face texture layout (texture height shrinks to fit) → paint each face as seen from outside → block JSON with `display` transforms. `fit_display()` fits oversized models into every slot (GUI fitted by projected silhouette). Supports XYZ/axis element rotation and `light_emission` (both verified in 26.3). |
-| `tools/gz/shapes.py` | Pixel-stepped cylinders and lathe profiles from non-overlapping row bands; `band_tone()` bakes smooth curvature lighting so round bodies don't look ribbed (those boxes use `shade:false`). |
-| `tools/gz/geo.py` | GeckoLib model + animation DSL authored in the same world orientation and paint conventions, exported to Bedrock geometry the way GeckoLib 5.5.7 reads it (X negated, up/down UVs rotated 180°, rotation X/Y negated). Files go to `assets/groundzero/geckolib/models/` and `geckolib/animations/`; glow layers as `<texture>_glowmask.png`. |
+| `tools/gb/palette.py` | OKLCH-generated 7-step ramps (`outline, deep, shadow, base, light, highlight, shine`) with hue shifting: shadows toward purple-blue (via red for warm hues, so yellows never turn green), highlights toward yellow. Hand-picked ramps for hazard colours. Swatches: `docs/style/palettes.png`. |
+| `tools/gb/tex.py` | `Tex` canvas + primitives: bevelled panels, rivets, seams, vents, grilles, hazard stripes, 3×5 stencil font, decals, trefoil, placards, seeded wear (corner-biased edge chips, scratches, drips, sparse speckle). |
+| `tools/gb/model.py` | Block/item model DSL: boxes → automatic shelf-packed per-face texture layout (texture height shrinks to fit) → paint each face as seen from outside → block JSON with `display` transforms. `fit_display()` fits oversized models into every slot (GUI fitted by projected silhouette). Supports XYZ/axis element rotation and `light_emission` (both verified in 26.3). |
+| `tools/gb/shapes.py` | Pixel-stepped cylinders and lathe profiles from non-overlapping row bands; `band_tone()` bakes smooth curvature lighting so round bodies don't look ribbed (those boxes use `shade:false`). |
+| `tools/gb/geo.py` | GeckoLib model + animation DSL authored in the same world orientation and paint conventions, exported to Bedrock geometry the way GeckoLib 5.5.7 reads it (X negated, up/down UVs rotated 180°, rotation X/Y negated). Files go to `assets/groundburst/geckolib/models/` and `geckolib/animations/`; glow layers as `<texture>_glowmask.png`. |
 | `tools/preview/render.py` | Numpy rasteriser replicating vanilla face/UV orientation, element rotations, directional shade, cutout, light emission; renders 8 views + true-size inventory icon into a contact sheet. |
 | `tools/preview/geo_preview.py` | Same for GeckoLib models, following GeckoLib's baking maths; renders animation frames. |
 | `tools/sound/synth.py`, `recipes.py`, `review.py` | Synthesis toolkit (noise colours, sweeps, grains, filters incl. time-varying low-pass, saturation, convolution reverb, echo, limiter, distance re-rendering) → mono 44.1 kHz OGG Vorbis; recipes per sound; review renders waveform + log spectrogram with peak/RMS/clipping readout. |
@@ -202,7 +202,7 @@ Each asset gets a "review" status in PROGRESS.md: *drafted → previewed → rev
 The user asked for the recent structures (the Strategic Assembly Hall, both silos, the Radar Array, the Launch Computer
 and the Launch Complex) to look better, above all their metal and concrete, either by researching how or by finding
 something else to do it; they took the research. The structures had the right shapes but flat fills per box: one shade
-a face, a speckle on concrete. They are now painted by a material library, `tools/gz/materials.py`, the way a texture
+a face, a speckle on concrete. They are now painted by a material library, `tools/gb/materials.py`, the way a texture
 artist would paint them, over the model's geometry rather than box by box.
 
 **What the research said** (the Faithful packs' write-up of Jappa's vanilla rules, pixel-art practice for metal, and
@@ -301,7 +301,7 @@ weathering references):
 
 **Third pass (2026-10-23, the user's request: every other machine and block; warheads and the rest of the ordnance
 next, items after that):**
-- *The machines' kit* (`tools/gz/machine_kit.py`): one set of materials for every machine (olive machine paint, NATO
+- *The machines' kit* (`tools/gb/machine_kit.py`): one set of materials for every machine (olive machine paint, NATO
   green, gunmetal fittings, dark steel, bare and stainless steel, galvanised, copper, brass, rubber, white ceramic,
   yellow, orange, red and black paint, hazard paint, graphite, refractory brick) and the details they share: the
   plinth (dark steel, a hazard band on its front, a tread-plate top), bolted panel seams, louvres, ribs and fins, soot
@@ -311,7 +311,7 @@ next, items after that):**
   Electrolytic Separator, Water Pump, Circuit Fabricator, Gas Centrifuge, Fusion Fuel Synthesizer, Exotic Matter
   Fabricator, Cryogenic Condenser, Canning Machine, Battery Charger, Decontamination Shower, the four Capacitor
   Banks (each in its tier's finish) and the Ordnance Assembly Bench; the machines' break particle.
-- *Small packed sheets* (`tools/gz/atlas.py`): the cables, fluid and item pipes and the fluid tanks' frame and caps,
+- *Small packed sheets* (`tools/gb/atlas.py`): the cables, fluid and item pipes and the fluid tanks' frame and caps,
   their regions filled from material tiles, round cables and tubes shaded across their width, details drawn on as
   pixel art.
 - *Storage blocks*: the uranium block (a billet in a hazard frame, its trefoil), lead shielding bricks and the
@@ -384,12 +384,12 @@ Launch Silo, the Launch Complex and the Missile Silo, and lying on the Strategic
   (scale set by eye). A missile drawn stretched along its length (a Light or a Heavy body) does not stretch its
   warhead: it takes the body's scale across as its own. The warhead's markings face the launcher's front.
 - *Data:* `tools/assets/launch.py` measures each warhead's model (`warheads.mount`: its mounting ring, its reach, its
-  height) and writes `assets/groundzero/missile_warheads.json` (for each airframe its body's top; for each warhead it
+  height) and writes `assets/groundburst/missile_warheads.json` (for each airframe its body's top; for each warhead it
   may carry, the scale): `WarheadMounts` reads it with the client's resources.
 - *Drawing:* `WarheadNose` draws the warhead's block model (unarmed; armed, its lamp lit, while a launcher counts
   down) at the body's top. Items: each missile's item model is a composite of its airframe (`missile_airframe`,
   `strategic_missile_airframe`, `icbm_missile_airframe` and their flight models and spent-stage variants) and a
-  `groundzero:warhead` special model (`WarheadSpecialRenderer`, naming the warhead and the airframe), so the missile in
+  `groundburst:warhead` special model (`WarheadSpecialRenderer`, naming the warhead and the airframe), so the missile in
   flight, drawn from its item model, carries it too. Launchers and the hall: their GeckoLib models have an empty
   bone at the warhead's foot (`warhead`, `swarhead`, `iwarhead`) and the block entity says what to draw there
   (`WarheadCarrier`); `MachineGeoRenderer`'s warhead layer draws it. The per-warhead painted noses, their item models
@@ -599,7 +599,7 @@ missed the formed model, and found the preview confusing "with the many possibil
 - **Rods**: 75 FE/t each × rods withdrawn: 600 from the example's eight, 4 800 from 64, still below the Fusion Reactor.
   A rod lasts 192 000 ticks of full power on average (the energy a rod always gave: 300 FE/t for 48 000 before), its
   own lifetime drawn when it first burns, up to 15% either side; every loaded rod burns at once. The rod carries its
-  burnup (`groundzero:fuel_burnup`: used, life), shown as a bar under it and in its tooltip. A used-up rod becomes a
+  burnup (`groundburst:fuel_burnup`: used, life), shown as a bar under it and in its tooltip. A used-up rod becomes a
   spent rod in its channel and moves to the spent slot when there is room.
 - **Heat** goes by how full the core is (loaded rods / channels × rods out), so the rules of §7 hold at any size. Water
   left in the core slows it: every rate divided by min(3, 1 + water cells / channels) (a core packed with channels 1, as
@@ -623,7 +623,7 @@ it off, and then the reactor SCRAMs at 900 °C.
   40-47 s with water (an earlier version let water hold a critical core at ~1 295 °C forever; fixed). A klaxon (`reactor.alarm`, two alternating tones) sounds
   every 2 s, everyone within 64 blocks gets a red warning with the temperature, steam (and, past 1 150 °C, smoke)
   vents from the top. Status lamp: CORE CRITICAL. SCRAM, or every rod in, ends it.
-- **Meltdown at 1 400 °C.** The structure and its fuel are removed; the blast profile `groundzero:reactor_meltdown`
+- **Meltdown at 1 400 °C.** The structure and its fuel are removed; the blast profile `groundburst:reactor_meltdown`
   goes off at the core (core 5, crater 16, structural 28, scorch 30, fire 24, lethal 16, damage 36; enlarged after the
   user's look; not instant; sound large; visual `meltdown`: a dirty fireball and a heavy smoke plume, no mushroom
   cloud). When the blast has finished, **Corium** pours into the crater under the core (a disc of radius 3.2 on the
@@ -635,7 +635,7 @@ it off, and then the reactor SCRAMs at 900 °C.
   with the level (`contamination.dat`). Every second, living things inside (not undead, armour stands, creative or
   spectator players) get **Radiation Sickness** for 5 s at amplifier `min(3, floor(4 x s))`, s = strength x
   (1 - d/r) x (1 - suit protection), the strength fading linearly over the day. Radiation Sickness (made harsher after
-  the user's look): damage `groundzero:radiation` (bypasses armour, no knockback) of 0.5 / 1.5 / 4 / 8 per second at
+  the user's look): damage `groundburst:radiation` (bypasses armour, no knockback) of 0.5 / 1.5 / 4 / 8 per second at
   I-IV, hunger drain growing per level, 5% slower per level. The Decontamination Shower washes it off. Phase 12
   replaces the zone with the field and drives the same effect from dose.
 - **Hazmat suits** (§21.5, built now): Hazmat Suit (yellow plastic, filter hood; 75% radiation protection as a full
@@ -805,7 +805,7 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   slots empty). The readout names the result or, in red, what is wrong. GeckoLib model: bench, hoist beam with trolley,
   chain and hook, cradle with clamp jaws, tool pegboard, work lamp, blueprint sheet; a warhead lies in the cradle while
   one is made or waits; "working" animation timed with its sound (chain, clank, ratchet, impact wrench).
-- **Fuzes** (`Fuze`, the `groundzero:fuze` item component): only **Impact** and **Barometric** (after the in-game
+- **Fuzes** (`Fuze`, the `groundburst:fuze` item component): only **Impact** and **Barometric** (after the in-game
   look: timed, proximity and remote fuzes did nothing a missile needs). A missile always sets its warhead off where it
   comes down; a barometric fuze changes the flight to burst the warhead its set height (10-200 blocks, typed on the
   bench) over the target. Cluster-type dispensers on an impact fuze still open 30 blocks up. A **placed warhead** has
@@ -836,7 +836,7 @@ Missile = Warhead (payload + fuze) + Body + Guidance + Propulsion (+ module). Bo
   target; in game an unguided missile hit too close for the inertial unit to matter.)
 - **Hardened Electronics** (the one module so far): an EMP field never makes the missile a dud (without it, an even
   chance).
-- The **Missile** item (`groundzero:missile` component, `MissileSpec`) stacks to 1, is named by its body ("Heavy
+- The **Missile** item (`groundburst:missile` component, `MissileSpec`) stacks to 1, is named by its body ("Heavy
   Missile") and lists warhead, fuze, range, guidance and hardening; it carries its warhead's model (§4.5). It replaces
   the Basic Missile and the silo's warhead slot: the **Launch Silo takes one missile**, and its range is the missile's.
   The Launch Computer shows each silo's range and will not arm a silo whose target is beyond it.
@@ -905,7 +905,7 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
 - *One model used everywhere* (the inventory, hands, the screens' preview, the launchers, in flight), with variants
   that share its texture: with spent stages gone (`_s1`, `_s2`), each spent stage falling (`_stage1`, `_stage2`) and
   each assembly section (`_part1`...). Picked by custom model data (the warhead's id and the variant). A table written
-  with them (`assets/groundzero/missiles.json`: tail, length, stage and section bounds, radius by height) tells the
+  with them (`assets/groundburst/missiles.json`: tail, length, stage and section bounds, radius by height) tells the
   client where things are: the launchers' arms, the exhaust, the nose's re-entry glow, the spent stages' middles.
 - *The Tsar* loses its tail fins and parachute pack (odd on a missile): a re-entry body with a flared skirt.
 
@@ -929,7 +929,7 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
   under the block atlas so one item model mixes it with the warhead's texture). Variants share the texture: `_partK`
   (assembly sections, three for S-XL, four for the hall's), `_sK` (in flight, spent stages gone), `_stageK` (a spent
   stage falling). Picked by custom model data: the warhead's id (and the old `strategic_`, `icbm_`, `flight_` prefixes,
-  so missiles from older worlds still draw). `assets/groundzero/missiles.json` (read by `MissileShapes` on the client)
+  so missiles from older worlds still draw). `assets/groundburst/missiles.json` (read by `MissileShapes` on the client)
   holds each one's class, tail, length, the warhead's foot, stage tops, engine heights, section tops and radius by
   height. JEI tells missiles apart by warhead and lists every one; each missile item is named by its warhead.
 - *Drawn by the machines* (`MissileCarrier`, `MachineGeoRenderer`'s missile layer): the launchers' and the hall's models
@@ -942,7 +942,7 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
   telescope (a galvanised inner beam in the painted sleeve, so nothing stretches) in to its skin there. They stay set
   for the last missile loaded (`gripsFor`, saved), so at lift-off they swing clear where they held it. The complex's
   five clamp variants are gone.
-- *The assemblers* (`content/assembler`: `AssemblerClass`, `MissileAssemblerBlockEntity`, `GZAssemblers`; models
+- *The assemblers* (`content/assembler`: `AssemblerClass`, `MissileAssemblerBlockEntity`, `GBAssemblers`; models
   `tools/assets/assemblers.py`): slots warhead, body, motor, guidance, module, output; the warhead and body slots take
   only the class's own, the motor slot only motors that fit; the readout names a warhead of another class and the
   assembler it belongs to. Three sections (motor and fins or first stage, body or second stage, warhead), each set down
@@ -970,7 +970,7 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
   model with a missile on it as the game does (sections, cradle seating, standing or lying).
 ---
 
-## 11. Explosion engine (`dev.groundzero.blast`)
+## 11. Explosion engine (`dev.groundburst.blast`)
 
 ### 11.1 Blast profiles
 Each weapon references a datapack-registry **BlastProfile**:
@@ -1024,14 +1024,14 @@ visual, sound  ids of the client visual preset and sound set
 ### 11.4 Entities
 When the front passes an entity it takes `f(distance) × exposure` damage, where exposure is the fraction of 4 rays
 from the burst point to its bounding box not blocked by solid blocks. Knockback is radial. Exposed entities inside the
-fire radius ignite. Items and XP orbs in the crater are deleted. Custom damage types (`groundzero:blast`,
-`groundzero:nuclear_flash`, `groundzero:radiation`, `groundzero:toxin`, `groundzero:erasure`, ...) with death
+fire radius ignite. Items and XP orbs in the crater are deleted. Custom damage types (`groundburst:blast`,
+`groundburst:nuclear_flash`, `groundburst:radiation`, `groundburst:toxin`, `groundburst:erasure`, ...) with death
 messages.
 
 ### 11.4a As built (slice 5a)
-- Profiles are a synced datapack registry `groundzero:blast_profile` (fields as §11.1 plus `lethal_damage`,
+- Profiles are a synced datapack registry `groundburst:blast_profile` (fields as §11.1 plus `lethal_damage`,
   `edge_damage`, `knockback`, `lobes`, `crater_depth`, optional `instant`); `test/*` profiles exist for the
-  `/groundzero blast <profile> [pos]` command (permission level 2) and the GameTests. Weapons get their own profiles.
+  `/groundburst blast <profile> [pos]` command (permission level 2) and the GameTests. Weapons get their own profiles.
 - Ray energy: a ray starts with `crater x cost(stone)` x direction factor (straight down x `crater_depth`) x lobe noise
   (seeded sum of 4 sines over the sphere). Entering a block costs `0.3 + resistance^0.75` (stone 4.1, dirt 0.9, obsidian
   ~204); air 0.05, liquids 0.6 (vaporised). Inside `core` everything breakable goes free. Bedrock-like blocks and the
@@ -1049,7 +1049,7 @@ messages.
   generated) stop there.
 - Entities: lethal zone `lethal_damage x exposure`, then `edge_damage` falling linearly to 0 at `damage`; knockback
   radial with the same falloff; fire inside `fire`; items and XP inside the crater are deleted. Damage type
-  `groundzero:blast` (tagged `is_explosion`).
+  `groundburst:blast` (tagged `is_explosion`).
 - Profile JSON groups the entity numbers under `entities` (`lethal`, `damage`, `lethal_damage`, `edge_damage`,
   `knockback`) and adds optional `sound` (small / medium / large / nuke) and `visual`, both chosen by crater size when
   left out.
@@ -1057,11 +1057,11 @@ messages.
 
 ### 11.4b As built (slice 5b)
 - Chunks: a non-instant blast force-loads (non-ticking) the chunk columns from 16 blocks behind to 32 ahead of its
-  front, through the `groundzero:blast` ticket controller owned by the blast's UUID, and releases them behind it. With
+  front, through the `groundburst:blast` ticket controller owned by the blast's UUID, and releases them behind it. With
   `generateChunks` off, unloaded chunks are only loaded if the disk says they are fully generated (read in the
   background; the front waits for the answer). Leftover tickets are dropped on world load. The ray ceiling rises as
   far chunks load.
-- Saving: the level's blasts are its saved data `data/groundzero/blasts.dat` (codec: id, profile id and the scaled
+- Saving: the level's blasts are its saved data `data/groundburst/blasts.dat` (codec: id, profile id and the scaled
   profile, centre, seed, terrain flags, front radius, age, phase, the live rays packed at 18 bytes each, 22 since §11.4c, the crater rim,
   start tick). They resume on load, queued in order.
 - Client sync: `blast_start` (sound set, visual, centre, crater, reach, outer radius, front speed, seed, start tick),
@@ -1100,16 +1100,16 @@ plus cross-section), tuned there, then ported with the same formulas.
   pass's horizon is not saved: after a restart it starts empty.
 
 ### 11.5 Chunks, persistence, absence
-- A `TicketController` (`groundzero:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
+- A `TicketController` (`groundburst:blast`) force-loads the chunks in the active band `[r-16, r+32]` and releases
   them behind the front. Ungenerated chunks are not generated (configurable). The band runs only as far as the terrain
   work (crater, the bands beyond it, the ground pass); entity zones past that reach the entities already loaded
   (slice 8d: loading the Tsar's outer 220 blocks of chunks in a few ticks stalled the server). A finished blast lets
   its chunks go 64 a tick.
 - Jobs live in a per-level `SavedData` (`BlastManager`); ray fields are stored compactly in
-  `data/groundzero/blasts/<id>.bin`. On world load, jobs resume and clients re-sync their visuals.
+  `data/groundburst/blasts/<id>.bin`. On world load, jobs resume and clients re-sync their visuals.
 - Jobs never depend on a player being nearby; they finish while the server runs.
 
-### 11.6 Server config (`groundzero-synced.toml`), with dramatic defaults
+### 11.6 Server config (`groundburst-synced.toml`), with dramatic defaults
 | Key | Default | Meaning |
 |---|---|---|
 | `blast.destroyBlocks` | true | master switch for terrain damage |
@@ -1129,7 +1129,7 @@ plus cross-section), tuned there, then ported with the same formulas.
 | `singularity.maxBlocksRipped` | 20 000 | |
 | `superweapons.announce`, `superweapons.maxRange`, `superweapons.chargeTimeMultiplier` | true, 4 096, 1.0 | |
 
-Client config (`groundzero-client.toml`): `fx.quality` (low/medium/high/ultra, default high), `fx.flashStrength`
+Client config (`groundburst-client.toml`): `fx.quality` (low/medium/high/ultra, default high), `fx.flashStrength`
 (1.0), `fx.cameraShake` (1.0), `fx.farClouds` (true), `hud.geigerCorner` (bottom right).
 
 ### 11.7 As built: the blast bench and the engine at the Tsar's size (slice 8d, 2026-10-22)
@@ -1188,7 +1188,7 @@ server front slows under load, the shockwave visual slows with it.
 Client config: `fx.quality` (low/medium/high/ultra), `fx.flashStrength`, `fx.cameraShake`, `fx.farClouds`.
 
 ### 12.1 As built (slice 5c)
-Package `dev.groundzero.client.fx`. `ClientBlasts` passes start / front / end to `Spectacle`, which keeps a `BlastFx`
+Package `dev.groundburst.client.fx`. `ClientBlasts` passes start / front / end to `Spectacle`, which keeps a `BlastFx`
 per blast, one shared `Puffs` system and one `Debris` system, timed by its own client tick clock (it stops while the
 game is paused). Visual presets (`FxPreset`) are named by the profile's `visual` (default: by crater size): small,
 medium, large, nuke; sizes are multiples of the crater radius, counts are scaled by `fx.quality` (0.35 / 0.6 / 1 / 1.6).
@@ -1334,7 +1334,7 @@ sounds like. Blasts first; then launches and ordnance, then machines.
   authors), US-government video (public domain; some extracted on Freesound already), NASA audio later for launches.
   Every recording is in `tools/sound/sources/ledger.json` (author, title, page, licence, what it is used for); the raw
   files stay out of git (`sources/raw/`), and `sources/fetch.py` downloads them again (Freesound's public HQ previews,
-  Vorbis about 192 kbps: no account needed). `sources/credits.py` writes `assets/groundzero/sounds/CREDITS.txt` from the
+  Vorbis about 192 kbps: no account needed). `sources/credits.py` writes `assets/groundburst/sounds/CREDITS.txt` from the
   recordings the recipes actually cut from; the mod's metadata points at it.
 - **Reading a recording without hearing it**: `tools/sound/survey.py` prints a recording's length,
   peak, clipped share and its loudest bangs (time, level, rise), and draws its waveform over a spectrogram with a time
@@ -1497,13 +1497,13 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 | **Chemical Bomb** | bomb / warhead (S) | 3 | toxin cloud r 24, 120 s (α/β/γ strength) | green bomb with biohazard decal |
 
 ### 14.1 As built: thrown explosives (Phase 6 slice 6a)
-- One entity, `groundzero:thrown_explosive` (`ThrownExplosive`), for every thrown kind (`GrenadeType`), told apart
+- One entity, `groundburst:thrown_explosive` (`ThrownExplosive`), for every thrown kind (`GrenadeType`), told apart
   by the item it carries. Own flight: gravity 0.045 a tick, drag 0.985 (0.8 in water), hit-tested along each step.
   On a hit it **bounces** (speed into the surface x 0.35 comes back out, speed along it x 0.7; at rest below 0.063
   blocks a tick on a floor), **sticks** (to the block face, or riding a creature at its offset), or **goes off**
   (impact). The fuse counts from the throw. Thrown at 0.9-1.1 blocks a tick, 0.5 s cooldown, stacks of 16.
 - Dynamite (3 s, bounce; crater 2.5), Frag Grenade (4 s, bounce; crater 2, weak, plus 24 `Shrapnel` projectiles on a
-  Fibonacci sphere flattened 30% toward the horizontal, 1.8-2.4 blocks a tick, 6 damage `groundzero:shrapnel`
+  Fibonacci sphere flattened 30% toward the horizontal, 1.8-2.4 blocks a tick, 6 damage `groundburst:shrapnel`
   (a projectile damage type), life 14 ticks, never saved), Sticky Grenade (4 s, stick; crater 3), Incendiary Grenade
   (impact; crater 1 plus fire on 85% of the floor within 4 blocks, found by searching down from the burst so a roof
   does not count, and everything alive there burning 8 s), Smoke Grenade (2 s, bounce; then smokes 30 s: the cloud
@@ -1525,8 +1525,8 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 - Chemicals: **Salt** (Chemical Plant: 4 dried kelp + 1 000 mB water -> 2), **Chlorine** gas (2 salt + 1 000 mB water;
   yellow-green, toxic, its own gas canister), **Toxin** (a made-up glowing green liquid: 1 000 mB chlorine + 500 mB
   sulfuric acid + 2 spider eyes + a poisonous potato; thick, toxic, canister and bucket).
-- `Toxins.expose(level, entity, damage, poisonTicks, amplifier)`: damage `groundzero:toxin` (bypasses armour, no
-  knockback) plus Poison, both cut by `GZArmor.chemicalProtection` (each suit piece's share: hood 20%, coat 35%,
+- `Toxins.expose(level, entity, damage, poisonTicks, amplifier)`: damage `groundburst:toxin` (bypasses armour, no
+  knockback) plus Poison, both cut by `GBArmor.chemicalProtection` (each suit piece's share: hood 20%, coat 35%,
   trousers 30%, boots 15%; a full set of either suit keeps out all of it). Used by the gas grenade, toxin sludge, toxic
   liquids (Toxin) and toxic gas clouds (chlorine, UF6). Suit tooltips give radiation and chemical figures.
 - **Poison Gas Grenade** (2 s, bounce): the smoke grenade's cloud in chlorine for 25 s, lower and yellow-green; every
@@ -1547,7 +1547,7 @@ Radii in blocks. "Blast" = crater/destruction radius. All have impact/redstone b
 
 ### 14.3 As built: placed charges and fuzes (Phase 6 slice 6b)
 - One block class (`ChargeBlock`, with `C4` and `Thermite` subclasses for their extra properties) and one block entity
-  (`ChargeBlockEntity`, `groundzero:charge`) for every placed charge (`ChargeKind`). `FACING` points out of the face
+  (`ChargeBlockEntity`, `groundburst:charge`) for every placed charge (`ChargeKind`). `FACING` points out of the face
   it is stuck to (the timed bomb stands on the floor and faces its front); `ARMED` picks the model whose red lamp
   blinks (a two-frame animated texture, the lamp element emitting light 15). Shapes are the floor shape turned the way
   the blockstate turns the model. A charge pops off if what it is stuck to goes (a burning thermite pot stays).
@@ -1766,7 +1766,7 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
 ### 16.2 Singularity Bomb
 - Opens a black hole that **grows** over 20 s to an event horizon of r 10, then **collapses** with a burst (blast 16).
 - Pull radius 48 for entities and items (inverse-square force; entities that cross the horizon die,
-  `groundzero:spaghettified`).
+  `groundburst:spaghettified`).
 - **Block ripping** within r 32: blocks are removed progressively (weakest/closest first, capped by
   `singularity.maxBlocksRipped`) and shown as client-side debris entities **torn from the ground, spiralling inward**
   on an accelerating orbit and vanishing at the horizon. Bedrock and unbreakables stay.
@@ -1778,7 +1778,7 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
 ### 16.3 Antimatter Bomb
 - Blinding white flash; a white sphere expands to **r 48** over 1.5 s and **erases a perfect sphere** — no rubble,
   no drops, no fire, ignores blast resistance (except bedrock / unbreakables, configurable). Edges are clean.
-- Entities inside are erased (`groundzero:annihilated`); gamma burst damages exposed entities to r 64 (lethal) and 96.
+- Entities inside are erased (`groundburst:annihilated`); gamma burst damages exposed entities to r 64 (lethal) and 96.
 - Minimal radiation (none lingering). Air glows faint violet for 10 s; low reverse-whoosh sound.
 - Look: white ceramic capsule with glowing violet magnetic confinement rings, no fins, warning chevrons.
 
@@ -1951,7 +1951,7 @@ are delivered.
 The user's rule after 8a: the Strategic missile is the peak of what fits in a missile; anything bigger gets its own
 fabricator, a multiblock that assembles the full weapon all at once, to be placed on the Launch Complex. The user chose
 the long horizontal hall (over an upright assembly tower).
-- **Structure** (`GZStrategic.HALL`): a 7x13 floor of Launch Pads (controller front middle; Energy Port back middle, an
+- **Structure** (`GBStrategic.HALL`): a 7x13 floor of Launch Pads (controller front middle; Energy Port back middle, an
   Item Port two columns west of it), six Gantry Frame columns four high (corners and halfway along each long side), a
   new **Crane Rail** block the length of each long side on top; the hall between them (5 wide, rows 0-12, layers 1-5)
   must be clear. Formed, the controller's GeckoLib model (`tools/assets/strategic.py`) draws it: a concrete floor with
@@ -2053,7 +2053,7 @@ and laser guidance), MIRVs, and placed missile detonation (§17.1).
   parts (delayed by distance). The server no longer plays the engine every 2 s.
 
 ### 17.10 As built: the Missile Silo (Phase 9 slice 9b, 2026-10-22)
-- **Structure** (`GZLaunch.MISSILE_SILO`), dug into the ground, 5×5 and 14 layers: a floor of **Reinforced Concrete**
+- **Structure** (`GBLaunch.MISSILE_SILO`), dug into the ground, 5×5 and 14 layers: a floor of **Reinforced Concrete**
   with the Flame Deflector in its middle; twelve rings of Reinforced Concrete round a 3×3 shaft that must be clear;
   the top layer, level with the ground, a ring of **Hazard Concrete** round a **Silo Hatch** over the shaft, the
   controller in the middle of the ring's front and an Energy Port in the middle of its back. Reinforced Concrete is not
@@ -2443,7 +2443,7 @@ disabled by EMP.
   much longer), widening, depositing radiation and **fallout ash layers** under its path, with ash particles drifting
   down visibly to players under it.
 - **Wind:** one wind vector per dimension that slowly wanders (shared with gas clouds, mushroom-cloud drift, smoke).
-- **Radioactive blocks & items** (`groundzero:radioactive` tag with emission values): uranium ore (weak), uranium /
+- **Radioactive blocks & items** (`groundburst:radioactive` tag with emission values): uranium ore (weak), uranium /
   plutonium blocks, trinitite, fallout ash, irradiated soil, nuclear waste. Items in inventories emit too (carrying
   plutonium is a bad idea without lead-lined containers — a **Lead Container** item stores radioactive items safely).
 - Dose rate at an entity = ambient cell level + nearby radioactive blocks (sampled once per second, r 6) + inventory,
@@ -2458,7 +2458,7 @@ disabled by EMP.
 | 200–400 | Sickness II | weakness, mining fatigue, hunger ×2 |
 | 400–600 | Sickness III | 1 damage / 5 s, slowness, no natural regeneration |
 | 600–1 000 | Sickness IV | wither bursts, blurred vision overlay |
-| 1 000+ | Lethal | rapid death (`groundzero:radiation`) |
+| 1 000+ | Lethal | rapid death (`groundburst:radiation`) |
 
 Dose slowly recovers (−1 rad/min) when the dose rate is near zero. Animals and most mobs take radiation damage;
 undead are immune; grass and crops die in strong fields.
@@ -2509,7 +2509,7 @@ Protection values are for the full set; pieces contribute helmet 20%, chest 35%,
   dirt → coarse/scorched, stone → scorched stone, logs → charred logs, planks → charred planks, leaves → air,
   flowers/grass → air or dead bush, snow/ice → air/water, water in core → steam (air); structural: glass → air,
   leaves stripped, doors/trapdoors → air, wool/carpet → fire, crops → withered.
-- **Wasteland biome** (`groundzero:nuclear_wasteland`): painted over the scorch radius of nuclear blasts (config);
+- **Wasteland biome** (`groundburst:nuclear_wasteland`): painted over the scorch radius of nuclear blasts (config);
   grey-brown grass and foliage tint, dead-olive water, brown-orange fog, falling-ash ambient particles, no passive
   mob spawns. Burnt trees remain as charred trunks. Craters can flood into "crater lakes".
 
@@ -2545,8 +2545,8 @@ then world structures and loot (Phase 15). Built in slices:
   | Fizzle | 20 000 | 2 000 ticks | 3 min fresh |
   | Reactor meltdown (r 48) | 40 000 | 4 000 ticks | 1.5 min fresh |
 
-- **Emitters.** Blocks and items carry a radioactivity (`groundzero:radioactivity` data maps: RAD/h at one block for a
-  block, per item for an item); the `groundzero:radioactive` tags list the same things. Blocks are read within 6 blocks
+- **Emitters.** Blocks and items carry a radioactivity (`groundburst:radioactivity` data maps: RAD/h at one block for a
+  block, per item for an item); the `groundburst:radioactive` tags list the same things. Blocks are read within 6 blocks
   of a body (a chunk section whose palette holds none is skipped), at full value within a block and by the inverse
   square beyond, shielded along the line between. Carried items count in full, armour and off hand included, unless
   they are in a Lead Container. Mobs feel sources only.
@@ -2582,14 +2582,14 @@ then world structures and loot (Phase 15). Built in slices:
   uranium block 50, corium 20 000, cooled corium 3 000; carried, per item: uranium ore 2, raw uranium 3, uranium dust and
   ingot 4, raw uranium block 27, uranium block 36, enriched nugget 3, enriched ingot 25, depleted uranium 1.5 to 2, fuel
   rod 60, spent fuel rod 2 000, irradiated DU target 800, irradiated Li-6 target 250, plutonium nugget 25, ingot 220,
-  nuclear waste 500, corium 5 000, cooled corium 800 (`GZRadiationData`). So a stack of uranium ingots brings sickness
+  nuclear waste 500, corium 5 000, cooled corium 800 (`GBRadiationData`). So a stack of uranium ingots brings sickness
   in about 23 minutes, a spent fuel rod in 3, a stack of waste kills in 2. Bundles and shulker boxes are looked inside;
   a Lead Container is not. The body mends (1 rad a minute) below 10 RAD/h (was 0.5: a uranium ore in a pocket stopped
   it); a new counter's alarm is at 100 RAD/h (was 10, which any uranium carried would set off).
 - The neutron burst's 0-1 dose is now rad (x 4 000: its sick line, 0.03, is 120 rad); its lethal line still kills at
   once. Sickness is one effect, Radiation Sickness I-IV, kept up each second by the dose, which also gives the stage's
   vanilla effects; no natural regeneration at III and worse (heals of a heart or less are refused).
-- The dose is a data attachment (`groundzero:radiation`) synced to its player only; the Geiger Counter and the HUD read
+- The dose is a data attachment (`groundburst:radiation`) synced to its player only; the Geiger Counter and the HUD read
   it. Clicks: a Poisson process at 0.25 + 4 x rate^0.55 a second (was 12 x rate^0.75, which saturated at 6 RAD/h), saturating at 60 (about 140 RAD/h), up to three a tick. The meter: a
   yellow instrument face, a cream dial (green, yellow, orange and red bands by decade, ticks at 1, 2 and 5, labels
   outside the ticks) over an LCD; the needle eases toward the reading (0.35 s) and trembles a little above 1 RAD/h. In
@@ -2656,7 +2656,7 @@ then world structures and loot (Phase 15). Built in slices:
   fluttering, settling.
 - Art (`tools/assets/aftermath.py`), reviewed on tile sheets and the preview renderer: Glassed Sand's crazing thinned
   (it first read as paving), Scorched Stone's soot worked into the material's value (it first read as camouflage), the
-  charred bark's blocks and the log's end rings redrawn. A creative tab of their own, Ground Zero: Aftermath.
+  charred bark's blocks and the log's end rings redrawn. A creative tab of their own, Ground Burst: Aftermath.
 - Field Manual: Fallout and Scorched ground (Safety), the nuclear page's fallout paragraph; JEI info for both groups.
   The manual's layout now keeps a picture with the start of its text: a picture moves to a new page if its first
   paragraph would not fit under it (on every entry with several pictures, an item's words had begun the next page,
@@ -2686,7 +2686,7 @@ then world structures and loot (Phase 15). Built in slices:
 
 
 **12e as built (2026-10-27; the user: 12e and Phase 15 while away, nothing asked):**
-- **The Nuclear Wasteland** (`groundzero:nuclear_wasteland`, datagen): never generated, painted. When a nuclear blast's
+- **The Nuclear Wasteland** (`groundburst:nuclear_wasteland`, datagen): never generated, painted. When a nuclear blast's
   job reaches its release, `Wasteland.afterBlast` queues two jobs a share a tick, each loading the chunks it works in a
   batch at a time and letting them go (only chunks the blast saw, so none is generated anew; the blast holds only the band
   round its front, so with nobody near, as for a missile fired at a far target, the first check on a generated world
@@ -2744,7 +2744,7 @@ then world structures and loot (Phase 15). Built in slices:
 
 Loot: **blueprints** (halve assembly time, show lore; never strictly required), rare components (military
 circuits, guidance units, propellant), **damaged warheads** (salvage in the Chemical Plant → U-235/Pu nuggets),
-**lore notes** (an original Cold-War-flavoured story told across ~20 documents: the "Ground Zero" programme, test
+**lore notes** (an original Cold-War-flavoured story told across ~20 documents: the "Ground Burst" programme, test
 logs, last transmissions), Geiger counters, hazmat pieces, ammo. Structures are authored as layouts in
 `tools/structure` → NBT templates → jigsaw structures. Every variant must look great: weathering, rust, cracked
 concrete, overgrowth, lighting, set dressing.
@@ -2762,7 +2762,7 @@ the four concrete piers of the shot tower, the obelisk, Jumbo, instrument bunker
 seven rooms mined from salt, drums three high topped with magnesium-oxide sacks, filled from the back, closed with
 bulkheads; salt creep closing rooms) and Lake Chagan.
 
-- **One structure type, `groundzero:site`** (`SiteStructure`, `SitePiece`): a site is one or more templates about an
+- **One structure type, `groundburst:site`** (`SiteStructure`, `SitePiece`): a site is one or more templates about an
   origin on the ground, turned as one; each part has its own offset, terrain adaptation (NeoForge's
   `PieceBeardifierModifier`: a hardstand `beard_thin`, the rooms under it `encapsulate`, so a silo's shaft runs down
   from a pad that sits on the land), integrity (a `BlockRotProcessor`) and weathering (`Weathering`: rule processors,
@@ -2822,7 +2822,7 @@ bulkheads; salt creep closing rooms) and Lake Chagan.
   The five on the surface keep 6 chunks from where a village could stand (vanilla's exclusion zone, as its pillager
   outposts keep from villages).
 - **Checked on generated worlds** (2026-10-27, the user's request; `gradlew runWorldSurvey`, `WorldSurvey`): a census of
-  every place each site's set offers within 10 km of the spawn (20 x 20 km, seed "groundzero"), what becomes of each
+  every place each site's set offers within 10 km of the spawn (20 x 20 km, seed "groundburst"), what becomes of each
   (a site, or the biome, water, the slope, the void), vanilla's sets counted the same way; then the nearest of each kind
   (each silo variant) and the one on the most uneven land generated in full, measured (a part's bottom left hanging,
   water in it, the steps where the land meets it, caves and water at the rock round a part underground, other
@@ -2846,7 +2846,7 @@ bulkheads; salt creep closing rooms) and Lake Chagan.
   the land round each within a block or two of its ground (the steepest silo on a terrace cut into a savanna hill); the
   rooms underground closed in (under 1% of their shell open to caves, but where a mineshaft runs past). `/locate` agrees
   with the census for every site (in the End, as vanilla's search does, it may give a farther one first).
-- **Loot** (`GZChestLoot`, nine tables): the silo's control centre (circuits, now and then guidance units and hardened
+- **Loot** (`GBChestLoot`, nine tables): the silo's control centre (circuits, now and then guidance units and hardened
   electronics; dosimeters and medicine; paper, wire, food) and its shaft (the **Damaged Warhead** three times in five,
   steel, propellant, a motor); the bunker's armoury (grenades, dynamite, C4, mines, a detonator; worn hazmat pieces) and
   stores (food, medicine, instruments, batteries); the radar outpost (circuits, a sensor array, wire, motors, servos);
@@ -3045,7 +3045,7 @@ between entries and "related" lists; read/unread markers; search (GuideME: full 
 tooltip to its page (GuideME: hold G). Ponder adds animated scenes; heavy, and not needed for a reference book.
 
 **Ours, slice "Field Manual" (built 2026-10-20):**
-- Item **"Field Manual GZ-1"** (olive hardcover, stencilled trefoil), crafted from a book and gunpowder, given once on
+- Item **"Field Manual GB-1"** (olive hardcover, stencilled trefoil), crafted from a book and gunpowder, given once on
   first join (server config, default on).
 - Two-page spread GUI in a field-manual style: cream pages in an olive binding, typed text, red "RESTRICTED" stamp on
   the header. Home spread: title, search box, chapter list. Chapter spread: entry list with icons and an unread dot.
@@ -3058,10 +3058,10 @@ tooltip to its page (GuideME: hold G). Ponder adds animated scenes; heavy, and n
   with counts), **image** (a plate rendered by our preview tool, e.g. a formed structure, with a caption), **table**
   (rows of label/value), **links** (related entries).
 - Search: entry titles, the items an entry covers and its text. Bookmarks: up to six tabs on the book's edge.
-  Read entries and bookmarks are kept per player on the client (`config/groundzero-manual.json`).
+  Read entries and bookmarks are kept per player on the client (`config/groundburst-manual.json`).
 - Tooltip jump: items with an entry show "Press [H]: Field Manual"; pressing the key (rebindable) over the item opens
   that entry, in any screen and inside the manual itself (clicking an item in a recipe does the same).
-- Content is data-driven JSON under `assets/groundzero/manual/` (chapters and entries), generated from
+- Content is data-driven JSON under `assets/groundburst/manual/` (chapters and entries), generated from
   `tools/manual/content.py`; a GameTest checks every item, recipe and structure the content names exists.
 - Chapters follow the build: Getting Started, Resources, Power, Processing, Components, Nuclear, Safety now; Ordnance,
   Special Weapons, Launching, Air Defence, Superweapons, Guns arrive with their phases.
@@ -3073,7 +3073,7 @@ Custom categories for every machine, the assembly bench (component combinations 
 info pages, salvage, decontamination, and ore/resource info pages.
 
 As built (2026-10-23, after 9b, the user's request): the ingredient list carries one **intercontinental missile per
-whole weapon** (`GZJeiPlugin.registerExtraIngredients`, the Strategic Assembly category's outputs, with GPS guidance),
+whole weapon** (`GBJeiPlugin.registerExtraIngredients`, the Strategic Assembly category's outputs, with GPS guidance),
 each its own subtype by its warhead (`registerItemSubtypes`; every other missile stays one entry) and named by it
 ("Intercontinental Missile (Tsar Mega-bomb)"), so R on one shows how the hall builds it. The whole weapons' warhead
 blocks, which have no recipe of their own, are taken out of the list (`removeIngredientsAtRuntime`).
@@ -3351,7 +3351,7 @@ TIER 5  EXOTIC       the End: void geodes → exotic shards → Exotic Matter Fa
 ## 29. Decisions made by the user
 | # | Decision | Outcome (2026-10-19) |
 |---|---|---|
-| D1 | Mod name and ID | **Ground Zero** (`groundzero`) |
+| D1 | Mod name and ID | **Ground Zero** (`groundzero`); renamed **Ground Burst** (`groundburst`) on 2026-10-28 (§30) |
 | D2 | Power system | **NeoForge Energy (FE)** with generators, cables and capacitor banks; low power pauses superweapon charge |
 | D3 | Guide book | **Native Field Manual** (no Modonomicon) |
 | D4 | GeckoLib as the one hard dependency | **Yes** (default kept; no objection) |
@@ -3364,9 +3364,10 @@ No open decisions right now. New ones get added here as they come up.
 | Date | Decision |
 |---|---|
 | 2026-10-28 | The mod is MIT-licensed, no longer All Rights Reserved (the user: others should be able to make add-ons). MIT over LGPL-3.0: the commonest licence of add-on-friendly mods (Create, Mekanism), the simplest for add-on makers and modpacks; it lets anyone reuse the code and art with the notice kept. The Freesound recordings keep their own licences (noted in `README.md`; `LICENSE` is the plain MIT text, so GitHub reads it as MIT). On CurseForge: the MIT License, and distribution to third-party apps allowed. For publishing the source: a `README.md`, and `gradlew build` skips the deploy where there is no test instance (anyone else's machine) instead of failing. |
+| 2026-10-28 | Renamed **Ground Burst** (`groundburst`), from Ground Zero (`groundzero`): on CurseForge "ground zero" finds 46 projects, among them a Ground Zero modpack with a dozen "GroundZero's ..." mods of its own and another nuke mod. The user chose it from a shortlist, each checked on CurseForge and Modrinth (no project of that name, its URL free on both): Hypocenter, Launch Codes, Groundburst, Kiloton. A ground burst is a blast at ground level; the name is spelt as two words like Ground Zero was (the user's own spelling, on GitHub), the main classes `GroundBurst` and `GroundBurstClient`. Everything follows the name: the mod id and namespace, `dev.groundburst`, the class prefix `GB` (was `GZ`), `tools/gb` (was `tools/gz`), the Field Manual GB-1, the jar and the repository (Ground-Burst-MCMod). The phrase "ground zero" (a blast's centre) stays where the text means that. Worlds made with the old id lose the mod's blocks and items. The blast bench and the world survey keep the default seed every recorded run used. |
 | 2026-10-19 | NeoForge pinned to 26.3.0.92 to match the test instance; Java 25; MDG 2.0.148; Gradle 9.2.1. |
 | 2026-10-19 | Build uses CurseForge's bundled JDK 25 via `JAVA_HOME`; Gradle auto-provisions a JDK 21 for NeoForm tooling. |
-| 2026-10-19 | `deployToInstance` runs after every `build`, deletes every older `groundzero-*.jar` in the instance `mods` folder, copies the new jar; path overridable with `-Pdeploy_instance_dir`. |
+| 2026-10-19 | `deployToInstance` runs after every `build`, deletes every older `groundburst-*.jar` in the instance `mods` folder, copies the new jar; path overridable with `-Pdeploy_instance_dir`. |
 | 2026-10-19 | Sulfur integrates with vanilla 26.2 Sulfur Caves (crush vanilla sulfur); mercury for Li-6 comes from vanilla cinnabar. |
 | 2026-10-19 | Lead added as a resource (shielding); cobalt is a crushing byproduct rather than a new ore. |
 | 2026-10-19 | Bombs are blocks per payload type (distinct models); missiles are one entity type composed from body/warhead/propulsion parts so each combination is recognisable. |
@@ -3414,7 +3415,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-20 | Fluid pipes have three tiers like cables (copper / steel / pressurized: 150 / 600 / 2,400 mB/t, set against Mekanism and Pipez tiers and our 5-20 mB/t machines and 50 mB/t pumps); the steel tier keeps the id `fluid_pipe` so pipes already placed stay. |
 | 2026-10-20 | Slice 5 machines take their gases and coolant as fluids from tanks, like the Chemical Plant: the Gas Centrifuge pipes in UF₆, the Fusion Fuel Synthesizer deuterium, and the Circuit Fabricator has a coolant tank whose liquid nitrogen superconducting coils use (1 000 mB each). |
 | 2026-10-20 | Centrifuge cascade: centrifuges joined flange to flange form a cascade: a straight line along a centrifuge's left-right (flange) axis of centrifuges facing the same or the opposite way (a neighbour turned a quarter breaks it, so crossing lines never share centrifuges); each runs +15% per other centrifuge in its line, counting up to 8 (+105%). Counted once a second. The bonus speeds progress; energy per tick is unchanged, so a cascade also costs less energy per run. The model's header flanges sit at the block edges so a line visibly joins up. |
-| 2026-10-20 | Circuits use the common Mekanism-style tags c:circuits/basic and c:circuits/advanced (the mod's basic/advanced circuits are in them); groundzero:basic_circuits = Handmade Circuit Board + c:circuits/basic. Military and quantum circuits are this mod's own items. New common tags: c:nuggets/enriched_uranium, c:ingots/enriched_uranium, c:dusts/depleted_uranium, c:ingots/depleted_uranium, c:dusts/lithium_6. |
+| 2026-10-20 | Circuits use the common Mekanism-style tags c:circuits/basic and c:circuits/advanced (the mod's basic/advanced circuits are in them); groundburst:basic_circuits = Handmade Circuit Board + c:circuits/basic. Military and quantum circuits are this mod's own items. New common tags: c:nuggets/enriched_uranium, c:ingots/enriched_uranium, c:dusts/depleted_uranium, c:ingots/depleted_uranium, c:dusts/lithium_6. |
 | 2026-10-20 | Interim recipes resolved: the Holo-Projector takes glass panes, a diamond, an advanced circuit and a battery (§26.8); the Cryogenic Condenser an advanced circuit (§26.4); the Electrolytic Separator keeps its basic circuit as designed. The Battery exists from slice 5 as a crafting part; charging comes with the Battery Charger (slice 6). |
 | 2026-10-20 | Insulated cable recipe added (6 copper cable + plastic sheet, §26.4) because the Exotic Matter Fabricator draws 400 FE/t and copper cable carries 256. The HV cable recipe still waits: §26.4 lists 10 ingredients (6 insulated + 3 filament + plastic), more than a crafting grid holds. |
 | 2026-10-20 | "Needs more fluid" also shows when a recipe's items are all loaded but its fluid tank is empty (it only showed for a partly filled tank). A fluid-only recipe counts once one of its fluids is in a tank. |
@@ -3528,7 +3529,7 @@ No open decisions right now. New ones get added here as they come up.
 | 2026-10-23 | After the walkable decks and the dish fixes, the user's request: the material library paints the missiles and every other multiblock, and every model from now on (DESIGN.md §4.3). Missiles get a clean factory finish and their own flight models four texels a pixel (as fine as on their launchers); edge lips are solid shade steps, chips scale with wear, grime goes by where a surface stops; the model tools check rotated bones for holes. |
 | 2026-10-23 | Formed multiblocks can be walked on where their model is a deck (the user's request): `PartCut` gains walkable shapes set per cell and layer (`layerCuts`), turned with the structure; the Launch Complex's deck, flame trench and deflector steps, and the Radar Array's deck with its railings, cabinet, power box and mast foot. The Missile Silo's corner conduits run up to the ground, and the Strategic Assembly Hall's hazard band runs round all four sides of its floor. |
 | 2026-10-23 | The Missile Silo's shaft lamps are removed (the user's request, after the even rows): the shaft is lit by daylight through the open doors. |
-| 2026-10-23 | Texture remaster (the user chose researching it over handing it to something else): the recent structures and their blocks are painted by a material library (`tools/gz/materials.py`, §4.3): world-space noise, wear only on real edges, baked contact shadows, short hue-shifted ramps, weathering, tileable block textures. The missiles' paint and the shared controller cabinets, casing and ports are unchanged. |
+| 2026-10-23 | Texture remaster (the user chose researching it over handing it to something else): the recent structures and their blocks are painted by a material library (`tools/gb/materials.py`, §4.3): world-space noise, wear only on real edges, baked contact shadows, short hue-shifted ramps, weathering, tileable block textures. The missiles' paint and the shared controller cabinets, casing and ports are unchanged. |
 | 2026-10-23 | After 9b, the user's requests: the Missile Silo's lamps are four rows of pairs, the same on every wall; it fires every missile, intercontinental ones too, so the Launch Complex is no longer the only intercontinental launcher. JEI lists one intercontinental missile per warhead (named by it, its recipe on R) and drops the whole weapons' warheads, which have no recipe of their own. The Tsar's primary is its own Twin Boosted Core (two Boosted Fission Cores fired together). A mushroom cloud stands until its crater is finished (the server's end of the blast, at most a quarter of an hour) and only then starts its 2.5-minute countdown. |
 | 2026-10-22 | Slice 9b, the Missile Silo (the user's go-ahead): it fires any missile but an intercontinental one, nuclear ones too (the design's class XL), so the Launch Complex is no longer the only nuclear launcher but stays the only one for intercontinental missiles (the 8c rule). Its doors slide apart on rails (they overhang the 5×5 a little when open), and the launch holds at T-1 until they are open; its missile climbs straight out of the shaft before turning; a DOORS button opens them at other times. Reinforced Concrete resists blasts like obsidian. |
 | 2026-10-22 | Phase 9 begins with missile flight (slice 9a, the roadmap's order: the user said "continue"): burn-out and coasting, spent stages dropping and tumbling down, re-entry heat, and a following engine sound with Doppler; the arc itself is unchanged. |

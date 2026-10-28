@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "assets"))
 
-from gz import geo as G  # noqa: E402
+from gb import geo as G  # noqa: E402
 
 
 def main() -> None:

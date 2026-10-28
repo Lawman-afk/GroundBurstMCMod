@@ -1,6 +1,6 @@
 """A family of block/item models side by side at one scale (so their sizes compare), from one angle, labelled.
 
-    tools\\.venv\\Scripts\\python.exe tools\\preview\\lineup.py groundzero:block/he_warhead groundzero:block/heavy_warhead ...
+    tools\\.venv\\Scripts\\python.exe tools\\preview\\lineup.py groundburst:block/he_warhead groundburst:block/heavy_warhead ...
         [--out path] [--px 18] [--pitch 25] [--yaw 210] [--cols 7]
 
 --px is screen pixels per model pixel (the same for every model, so a big warhead stands taller than a small one).
@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gz import paths  # noqa: E402
+from gb import paths  # noqa: E402
 import render as R  # noqa: E402
 
 

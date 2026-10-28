@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:wires/copper",
+    "#c:wires/copper",
+    "groundburst:basic_circuit"
+  ],
+  "result": {
+    "id": "groundburst:antenna"
+  }
+}

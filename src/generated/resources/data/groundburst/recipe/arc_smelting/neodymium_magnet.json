@@ -1,0 +1,22 @@
+{
+  "type": "groundburst:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "#c:dusts/rare_earth"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:dusts/iron"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:neodymium_magnet"
+      }
+    }
+  ],
+  "time": 240
+}

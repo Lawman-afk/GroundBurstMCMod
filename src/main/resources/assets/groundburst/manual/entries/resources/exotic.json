@@ -1,0 +1,24 @@
+{
+  "title": "Voidstone and exotic matter",
+  "icon": "groundburst:exotic_shard",
+  "order": 4,
+  "items": [
+    "groundburst:voidstone",
+    "groundburst:budding_voidstone",
+    "groundburst:small_exotic_bud",
+    "groundburst:large_exotic_bud",
+    "groundburst:exotic_crystal_cluster",
+    "groundburst:exotic_shard"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "In the End, hollow **void geodes** hang in the undersides and flanks of the outer islands. They are lined with voidstone, and some of it is **budding voidstone**, which slowly grows exotic crystals.\n\nBreak a fully grown cluster for **exotic matter shards**. They feed the [Exotic Matter Fabricator](processing/exotic_matter_fabricator), and through it the most powerful machines and weapons in the game.\n\nBudding voidstone drops nothing when broken, not even with Silk Touch: leave it where it is and harvest the crystals."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:exotic_shard",
+      "text": ""
+    }
+  ]
+}

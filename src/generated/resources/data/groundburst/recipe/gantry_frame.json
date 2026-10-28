@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:rods/steel",
+    "#c:plates/steel",
+    "#c:dyes/red"
+  ],
+  "result": {
+    "count": 4,
+    "id": "groundburst:gantry_frame"
+  }
+}

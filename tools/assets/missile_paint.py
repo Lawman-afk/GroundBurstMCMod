@@ -1,5 +1,5 @@
 """Missile liveries (the remaster after slice 9b; DESIGN.md §4.3): every missile painted with the material library
-(tools/gz/materials.py), its markings laid out in the missile's own item pixels, so a missile looks the same as an
+(tools/gb/materials.py), its markings laid out in the missile's own item pixels, so a missile looks the same as an
 item, in flight (its own finer flight model), standing on a launcher and lying on the Strategic Assembly Hall's
 cradles.
 
@@ -19,8 +19,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gz import materials as M
-from gz.tex import Tex
+from gb import materials as M
+from gb.tex import Tex
 import warheads as W
 
 
@@ -52,7 +52,7 @@ class Frame:
 
 
 def _ramp(r) -> np.ndarray:
-    """A palette ramp (gz.palette.Ramp) as a material ramp."""
+    """A palette ramp (gb.palette.Ramp) as a material ramp."""
     return np.array([s[:3] for s in r.shades], dtype=np.float32)
 
 

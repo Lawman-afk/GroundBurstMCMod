@@ -1,11 +1,11 @@
 {
   "values": [
-    "groundzero:deepslate_uranium_ore",
-    "groundzero:deepslate_lithium_ore",
-    "groundzero:deepslate_sulfur_ore",
-    "groundzero:deepslate_saltpeter_ore",
-    "groundzero:deepslate_tungsten_ore",
-    "groundzero:deepslate_lead_ore",
-    "groundzero:deepslate_rare_earth_ore"
+    "groundburst:deepslate_uranium_ore",
+    "groundburst:deepslate_lithium_ore",
+    "groundburst:deepslate_sulfur_ore",
+    "groundburst:deepslate_saltpeter_ore",
+    "groundburst:deepslate_tungsten_ore",
+    "groundburst:deepslate_lead_ore",
+    "groundburst:deepslate_rare_earth_ore"
   ]
 }

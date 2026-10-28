@@ -1,0 +1,29 @@
+{
+  "title": "Gas Centrifuge",
+  "icon": "groundburst:gas_centrifuge",
+  "order": 11,
+  "items": [
+    "groundburst:gas_centrifuge"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:gas_centrifuge",
+      "text": "Pipe uranium hexafluoride gas from the [Chemical Plant](processing/chemical_plant) in to get **enriched uranium nuggets** and depleted uranium dust. Draws 50 FE a tick."
+    },
+    {
+      "type": "text",
+      "text": "**Cascades:** centrifuges joined flange to flange, the pipe flanges on their sides meeting, run 15% faster for every other centrifuge in the line, counting up to 8 (more than twice as fast). The screen shows the cascade size."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:gas_centrifuge",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "centrifuging",
+      "text": ""
+    }
+  ]
+}

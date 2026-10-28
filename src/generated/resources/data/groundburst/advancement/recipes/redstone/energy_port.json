@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_machine_casing": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:machine_casing"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:energy_port"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_machine_casing"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:energy_port"
+    ]
+  }
+}

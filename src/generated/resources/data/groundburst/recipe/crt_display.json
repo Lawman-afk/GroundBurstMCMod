@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": "#groundburst:basic_circuits",
+    "G": "#c:glass_panes/colorless",
+    "L": "#c:dusts/glowstone",
+    "P": "#c:plates/steel",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    " G ",
+    "LBR",
+    " P "
+  ],
+  "result": {
+    "id": "groundburst:crt_display"
+  }
+}
