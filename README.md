@@ -66,5 +66,3 @@ Those recordings keep their own licences: each one is credited, with its author,
 - The superweapons are a homage to *Command & Conquer: Generals – Zero Hour*. Ground Zero is not affiliated with
   Electronic Arts.
 - The recordists credited in [`CREDITS.txt`](src/main/resources/assets/groundzero/sounds/CREDITS.txt).
-- The logo is a pixelated photograph of the Castle Romeo test (1954), taken by the United States Department of
-  Energy and in the public domain.
