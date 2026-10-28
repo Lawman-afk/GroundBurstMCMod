@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "front": "groundburst:block/high_voltage_sign",
+    "back": "groundburst:block/sign_back",
+    "particle": "groundburst:block/high_voltage_sign"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        15
+      ],
+      "to": [
+        14,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#back",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#back",
+          "uv": [
+            0,
+            2,
+            1,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#back",
+          "uv": [
+            15,
+            2,
+            16,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#back",
+          "uv": [
+            2,
+            15,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#back",
+          "uv": [
+            2,
+            0,
+            14,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

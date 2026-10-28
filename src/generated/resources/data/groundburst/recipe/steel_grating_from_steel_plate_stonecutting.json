@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "groundburst:steel_plate",
+  "result": {
+    "count": 4,
+    "id": "groundburst:steel_grating"
+  }
+}

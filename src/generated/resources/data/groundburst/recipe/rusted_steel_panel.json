@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": "groundburst:steel_panel",
+    "W": "minecraft:water_bucket"
+  },
+  "pattern": [
+    "###",
+    "#W#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "groundburst:rusted_steel_panel"
+  }
+}

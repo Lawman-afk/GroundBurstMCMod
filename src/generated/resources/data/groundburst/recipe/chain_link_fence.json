@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "R": "groundburst:steel_rod"
+  },
+  "pattern": [
+    "RRR",
+    "RRR"
+  ],
+  "result": {
+    "count": 16,
+    "id": "groundburst:chain_link_fence"
+  }
+}

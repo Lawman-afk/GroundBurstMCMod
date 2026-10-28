@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "groundburst:block/steel_grating",
+    "top": "groundburst:block/steel_grating",
+    "side": "groundburst:block/steel_grating"
+  },
+  "render_type": "minecraft:cutout"
+}

@@ -46,6 +46,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.FxPhotographer.register();
         dev.groundburst.client.fx.BlastBenchClient.register();
         dev.groundburst.client.fx.WorldSurveyClient.register();
+        dev.groundburst.client.fx.SitePhotographer.register();
         dev.groundburst.client.screen.ChargeScreens.register();
         dev.groundburst.client.screen.LaunchComputerScreen.register();
         dev.groundburst.client.screen.RadarArrayScreen.register();
@@ -126,6 +127,11 @@ public class GroundBurstClient {
         // The Nuclear Missile Silo: its hall 15 blocks back, its tower and raised missile 11 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(), 11, 15));
+        // The Search Radar's reflector reaches six blocks out and up from its bearing.
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_ENTITY.get(), 6, 6));
+        event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), 6, 6));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get(), 7, 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPUTER_ENTITY.get(),

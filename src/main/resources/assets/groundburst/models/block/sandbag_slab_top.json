@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "groundburst:block/sandbags",
+    "top": "groundburst:block/sandbags",
+    "side": "groundburst:block/sandbags"
+  }
+}

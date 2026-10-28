@@ -2862,6 +2862,63 @@ bulkheads; salt creep closing rooms) and Lake Chagan.
   table and turns its marker into a suited stand. FX scenes `site_*` (each site placed as generation would; the
   underground ones in stone, cut open) and `wasteland_aerial`.
 
+### 22.2 The rebuild (2026-10-29)
+The user's look at the sites: the building is poor (the radar base and the test site worst: Jumbo's rusted cylinder, a
+toppled dish that does not read as a dish), the radar base's iron bars and mast a block off the ground. Every site is
+rebuilt from scratch, after research on building in Minecraft, with new cosmetic blocks and two new multiblocks.
+
+**What was wrong.**
+- *A block off the ground* (every surface site): a site's ground is the land's top block, and its parts meet the land
+  there, but the beardifier takes `minY + groundLevelDelta` as the first block of *air* (vanilla's beard makes the
+  blocks below it solid and from it up air). The land was smoothed a block under each site: pads stood a block proud,
+  and fences, legs and masts standing on bare ground floated. The delta is one more.
+- *Noise for texture*: blocks mixed half and half at random (the test site's crater a speckle of five blocks).
+- *Round things in whole blocks at small scale* (the dish, the radome, Jumbo): blobs.
+- *Boxes with flat walls*, nothing tall or recognisable from afar.
+
+**How the sites are built now** (the research: Minecraft's own guide and builders' guides, the shipwreck guide on
+decay; sources in SESSION_LOG):
+- *Silhouette first*: each site has a landmark that reads from a distance (the radar base's tower and radome and its
+  search antenna, the test site's shot tower, the silo's doors between floodlight poles, the bunker's radio mast), and
+  real proportions: doors two high, storeys three or four, windows in rows.
+- *A palette of three to five blocks* per site with a role each (main, trim, accent); variety in gradients (dirtier
+  low, cleaner high), never an even random mix. Wear in patches that follow cause: moss low and on the shaded side,
+  rust streaks under metal, roofs and top courses fail first, debris under each hole, grass taking back the gravel.
+- *Depth in every wall*: pillars or frames every few blocks, windows set in with sills, parapets and overhangs.
+- *Curves as models*: a dish or any small round object is a block model or a multiblock, never a heap of blocks; a
+  radome is built at least 13 across from panels, smoothed with their stairs and slabs.
+- *On the land*: irregular edges to pads, tracks leading in, posts and legs down to the ground, the site's ground the
+  land's own top block.
+- *Reviewed in game*: each site photographed where it generates and on flat land at noon from several sides (the
+  `site_*` FX scenes and the world survey), not judged from the isometric preview alone.
+
+**The building set** (the user's choice: craftable, so players can build with it; each drops itself, so a site gives
+no free iron), in a creative tab of its own, Ground Burst: Construction:
+- Chain-link Fence (connects as iron bars do) and Barbed Wire (coils along a fence's top, or on the ground);
+- Corrugated Steel and Rusted Corrugated Steel, each with stairs and a slab (cladding and roofs);
+- Steel Panel and Rusted Steel Panel (riveted plates); Steel Grating and its slab (catwalks you see through);
+- I-Beam (a girder set on any axis) and Lattice Frame (an open braced cube: towers, masts, gantries);
+- Radome Panel with stairs and a slab;
+- Floodlight (a lamp head facing out from a wall or post), Sandbags and their slab, and warning signs (radiation,
+  high voltage, keep out, toxic).
+Made from steel plates and rods (the stonecutter cuts a plate into panels, sheeting, grating and fencing), white
+concrete (radome panels), sand and string (sandbags); the rusted ones from eight clean ones round a water bucket.
+
+**Two multiblocks.**
+- *Large Silo Door* (the user's idea): two leaves that slide apart on rails over a 7x7 opening, opened by a redstone
+  signal (the user's choice), with a hydraulic sound. Purely for show: no missile, nothing to fire. One item places the
+  door and its rails; the sites use it rusted and stuck part-open.
+- *Search Radar*: a wide curved reflector on a turning head over a pedestal (the AN/FPS-20 of the Cold War stations),
+  turning while it has a redstone signal; the sites' ones are stopped, or toppled and broken.
+
+**The sites, from scratch** (in this order): the Radar Outpost (a lattice tower with a radome, the search radar on its
+own tower, a building train on piers, a tropospheric-scatter billboard, power poles, the fence); the Test Site (the user's
+choice: a glassed crater from an earlier shot and a lattice shot tower readied for the next, cabled to instrument
+bunkers, a Doom Town street of houses with mannequins; Jumbo goes); the Abandoned Silo (the surface after the Minuteman
+and Titan II launch sites: a raised gravel platform, the Large Silo Door, floodlight poles, the support building, the
+antenna, chain-link and barbed wire); the Command Bunker, the Crashed Missile, the Waste Storage and the Exotic Research
+Station after them.
+
 ---
 
 ## 23. Multiblock framework and layouts
@@ -3363,6 +3420,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-29 | The world sites are rebuilt from scratch (the user's review: poor building, a radar base's bars and mast a block off the ground): researched building rules (silhouette first, small palettes with gradients, depth, curves as models, wear that follows cause), a craftable Construction set of cosmetic blocks (they drop themselves, so no free iron), a Large Silo Door (redstone, for show) and a Search Radar (turns on redstone), the Test Site an old crater and a readied shot tower without Jumbo (all four the user's choices); the beardifier's ground is the first air, so a site's ground-level delta is one more (§22.2). |
 | 2026-10-28 | The mod is MIT-licensed, no longer All Rights Reserved (the user: others should be able to make add-ons). MIT over LGPL-3.0: the commonest licence of add-on-friendly mods (Create, Mekanism), the simplest for add-on makers and modpacks; it lets anyone reuse the code and art with the notice kept. The Freesound recordings keep their own licences (noted in `README.md`; `LICENSE` is the plain MIT text, so GitHub reads it as MIT). On CurseForge: the MIT License, and distribution to third-party apps allowed. For publishing the source: a `README.md`, and `gradlew build` skips the deploy where there is no test instance (anyone else's machine) instead of failing. |
 | 2026-10-28 | Renamed **Ground Burst** (`groundburst`), from Ground Zero (`groundzero`): on CurseForge "ground zero" finds 46 projects, among them a Ground Zero modpack with a dozen "GroundZero's ..." mods of its own and another nuke mod. The user chose it from a shortlist, each checked on CurseForge and Modrinth (no project of that name, its URL free on both): Hypocenter, Launch Codes, Groundburst, Kiloton. A ground burst is a blast at ground level; the name is spelt as two words like Ground Zero was (the user's own spelling, on GitHub), the main classes `GroundBurst` and `GroundBurstClient`. Everything follows the name: the mod id and namespace, `dev.groundburst`, the class prefix `GB` (was `GZ`), `tools/gb` (was `tools/gz`), the Field Manual GB-1, the jar and the repository (Ground-Burst-MCMod). The phrase "ground zero" (a blast's centre) stays where the text means that. Worlds made with the old id lose the mod's blocks and items. The blast bench and the world survey keep the default seed every recorded run used. |
 | 2026-10-19 | NeoForge pinned to 26.3.0.92 to match the test instance; Java 25; MDG 2.0.148; Gradle 9.2.1. |

@@ -102,17 +102,26 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
         for (int x = Math.max(b.minX(), chunk.minX()); x <= Math.min(b.maxX(), chunk.maxX()); x++) {
             for (int z = Math.max(b.minZ(), chunk.minZ()); z <= Math.min(b.maxZ(), chunk.maxZ()); z++) {
-                BlockState base = level.getBlockState(at.set(x, bottom, z));
-                if (base.isAir() || !base.getFluidState().isEmpty() || !open(level.getBlockState(at.set(x, bottom - 1, z)))) {
+                // What must stand on something: the part's bottom layer, or (for a part at the site's ground, whose
+                // layer 0 is the land's own top) what stands on layer 1 where layer 0 was left to the land and the
+                // land has fallen away: a fence, a pole, a pier on bare ground (DESIGN.md §22.2).
+                int base = bottom;
+                if (open(level.getBlockState(at.set(x, bottom, z)))) {
+                    if (bottom != this.ground || open(level.getBlockState(at.set(x, bottom + 1, z)))) {
+                        continue;
+                    }
+                    base = bottom + 1;
+                }
+                if (!open(level.getBlockState(at.set(x, base - 1, z)))) {
                     continue;
                 }
-                int y = bottom - 1;
-                while (y > level.getMinY() + 1 && y > bottom - FOUNDATION && open(level.getBlockState(at.set(x, y, z)))) {
+                int y = base - 1;
+                while (y > level.getMinY() + 1 && y > base - FOUNDATION && open(level.getBlockState(at.set(x, y, z)))) {
                     y--;
                 }
                 BlockState ground = level.getBlockState(at.set(x, y, z));
                 BlockState fill = ground.is(net.minecraft.tags.BlockTags.DIRT) || !ground.isSolidRender() ? Blocks.DIRT.defaultBlockState() : ground;
-                for (int k = y + 1; k < bottom; k++) {
+                for (int k = y + 1; k < base; k++) {
                     level.setBlock(at.set(x, k, z), fill, 2);
                 }
             }
@@ -181,11 +190,13 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     /**
      * Where the ground meets a part on the surface, counted from its box's bottom: the site's ground, so a part that
      * reaches below it (a test site's crater, a crashed missile's furrow) has the land smoothed to its rim, not to the
-     * bottom of its pit.
+     * bottom of its pit. The site's ground is the land's top block (the template's grade layer takes its place), and the
+     * beardifier's is the first block of air above the land (its beard is solid below that height, air from it up):
+     * one more. Without it the land lay a block under every site, its pads a block proud and its fences floating.
      */
     @Override
     public int getGroundLevelDelta() {
-        return this.terrain == TerrainAdjustment.BEARD_THIN ? Math.max(0, this.ground - this.boundingBox.minY()) : 0;
+        return this.terrain == TerrainAdjustment.BEARD_THIN ? Math.max(0, this.ground + 1 - this.boundingBox.minY()) : 0;
     }
 
     /** The site's ground (the world survey). */

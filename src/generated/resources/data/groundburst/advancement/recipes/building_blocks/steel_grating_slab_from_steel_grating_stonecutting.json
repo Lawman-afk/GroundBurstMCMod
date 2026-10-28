@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_steel_grating": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:steel_grating"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:steel_grating_slab_from_steel_grating_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_steel_grating"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:steel_grating_slab_from_steel_grating_stonecutting"
+    ]
+  }
+}

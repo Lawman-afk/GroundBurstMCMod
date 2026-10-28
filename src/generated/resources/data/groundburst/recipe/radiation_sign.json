@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "#c:dyes/yellow",
+    "minecraft:black_dye"
+  ],
+  "result": {
+    "count": 3,
+    "id": "groundburst:radiation_sign"
+  }
+}

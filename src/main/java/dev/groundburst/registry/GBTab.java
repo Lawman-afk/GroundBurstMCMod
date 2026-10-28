@@ -11,6 +11,7 @@ public enum GBTab {
     MISSILES("missiles", "Ground Burst: Missiles & Defence"),
     GEAR("gear", "Ground Burst: Guns & Gear"),
     SUPERWEAPONS("superweapons", "Ground Burst: Superweapons"),
+    CONSTRUCTION("construction", "Ground Burst: Construction"),
     AFTERMATH("aftermath", "Ground Burst: Aftermath");
 
     private final String id;

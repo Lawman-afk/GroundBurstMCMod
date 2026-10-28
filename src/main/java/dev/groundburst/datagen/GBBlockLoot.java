@@ -151,6 +151,14 @@ public class GBBlockLoot extends BlockLootSubProvider {
                 dev.groundburst.content.fallout.GBFallout.IRRADIATED_SOIL, dev.groundburst.content.fallout.GBFallout.CHARRED_PLANKS)) {
             dropSelf(b.block().get());
         }
+        // The Construction set: each drops itself (a doubled slab two).
+        for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
+            if (b.block().get() instanceof net.minecraft.world.level.block.SlabBlock slab) {
+                add(slab, createSlabItemTable(slab));
+            } else {
+                dropSelf(b.block().get());
+            }
+        }
         dropSelf(dev.groundburst.content.fallout.GBFallout.CHARRED_LOG.block().get());
         dropSelf(dev.groundburst.content.fallout.GBFallout.CHARRED_WOOD.block().get());
         add(dev.groundburst.content.fallout.GBFallout.ASH.block().get(), noDrop());

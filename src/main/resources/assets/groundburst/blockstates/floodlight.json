@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/floodlight"
+    },
+    "facing=east": {
+      "model": "groundburst:block/floodlight",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/floodlight",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/floodlight",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "groundburst:block/floodlight",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "groundburst:block/floodlight",
+      "x": 90
+    }
+  }
+}

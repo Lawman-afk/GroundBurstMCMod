@@ -58,8 +58,8 @@ public final class GBStructures {
      * for previews and tests. {@code ground}: first fill stone round the parts that lie under the origin (a flat world is
      * too thin for them). {@code cutZ}: then clear everything north of that z, to show the rooms.
      */
-    public static void preview(net.minecraft.server.level.ServerLevel level, String name, int variant, net.minecraft.core.BlockPos origin,
-                               boolean ground, @org.jspecify.annotations.Nullable Integer cutZ) {
+    public static net.minecraft.world.level.levelgen.structure.BoundingBox preview(net.minecraft.server.level.ServerLevel level, String name,
+            int variant, net.minecraft.core.BlockPos origin, boolean ground, @org.jspecify.annotations.Nullable Integer cutZ) {
         SiteStructure site = (SiteStructure) level.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(structure(name));
         var templates = level.getStructureTemplateManager();
         java.util.List<SitePiece> pieces = new java.util.ArrayList<>();
@@ -96,6 +96,7 @@ public final class GBStructures {
                 }
             }
         }
+        return all;
     }
 
     public static void register(IEventBus modBus) {

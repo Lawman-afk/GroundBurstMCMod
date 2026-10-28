@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "L": "groundburst:lattice_frame",
+    "P": "groundburst:steel_plate",
+    "R": "minecraft:redstone",
+    "S": "groundburst:steel_rod"
+  },
+  "pattern": [
+    "PPP",
+    "SRS",
+    " L "
+  ],
+  "result": {
+    "id": "groundburst:search_radar"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/template_bars_side_alt",
+  "textures": {
+    "bars": "groundburst:block/chain_link_fence",
+    "edge": "groundburst:block/chain_link_fence_post",
+    "particle": "groundburst:block/chain_link_fence"
+  },
+  "render_type": "minecraft:cutout"
+}

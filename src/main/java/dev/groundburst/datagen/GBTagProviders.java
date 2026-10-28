@@ -64,6 +64,13 @@ public final class GBTagProviders {
 
         @Override
         protected void addTags(HolderLookup.Provider registries) {
+            // The Construction set: sandbags dug with a shovel, the rest with a pickaxe; stairs and slabs as vanilla's.
+            for (var b : dev.groundburst.content.construction.GBConstruction.ALL) {
+                boolean sand = b == dev.groundburst.content.construction.GBConstruction.SANDBAGS || b == dev.groundburst.content.construction.GBConstruction.SANDBAG_SLAB;
+                tag(sand ? BlockTags.MINEABLE_WITH_SHOVEL : BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
+            }
+            dev.groundburst.content.construction.GBConstruction.STAIRS.forEach(b -> tag(BlockTags.STAIRS).add(b.block().key()));
+            dev.groundburst.content.construction.GBConstruction.SLABS.forEach(b -> tag(BlockTags.SLABS).add(b.block().key()));
             for (Ore ore : GBResources.ores()) {
                 var key = ore.block().block().key();
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(key);

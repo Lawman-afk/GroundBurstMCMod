@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "groundburst:block/radome_panel_slab"
+    },
+    "type=double": {
+      "model": "groundburst:block/radome_panel"
+    },
+    "type=top": {
+      "model": "groundburst:block/radome_panel_slab_top"
+    }
+  }
+}

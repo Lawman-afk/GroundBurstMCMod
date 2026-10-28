@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "#c:dyes/yellow",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "count": 3,
+    "id": "groundburst:high_voltage_sign"
+  }
+}

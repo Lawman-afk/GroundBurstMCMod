@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from build import AIR, STEP, Build, gb, mc  # noqa: E402
+import site_radar  # noqa: E402
 from gb import paths  # noqa: E402
 
 DATA = paths.DATA
@@ -516,95 +517,6 @@ def dish(b: Build, cx: float, cy: float, cz: float, r: float, tilt: float, yaw: 
             b.set(round(cx + x2 - 0.5), round(cy + y1 - 0.5), round(cz + z2 - 0.5), rim if rho > r - 0.8 else block)
 
 
-def radar_outpost() -> Build:
-    b = Build(35, 21, 30, seed=41)
-    G = 0                                            # grade
-    # The building train: three linked modules along z 16..24, white-clad steel, a corridor through them.
-    mods = ((2, 11, 8), (12, 19, 4), (20, 26, 5))   # (x0, x1, height)
-    for x0, x1, h in mods:
-        b.room(x0, G, 16, x1, G + h, 24, CONC_WHITE, floor=CONC_DARK, roof=CONC)
-        b.fill(x0, G + 1, 16, x1, G + 1, 16, CONC)                          # a grey plinth course
-        b.fill(x0, G + 1, 24, x1, G + 1, 24, CONC)
-        for x in range(x0 + 2, x1 - 1, 3):
-            b.set(x, G + 2, 16, "glass_pane")
-            b.set(x, G + 2, 24, "glass_pane")
-    for x0, x1, h in mods:                                                 # the corridor through the train
-        b.clear(x0, G + 1, 19, x1, G + 3, 21)
-    for x in (2, 26):
-        b.fill(x, G + 1, 19, x, G + 3, 21, CONC_WHITE)
-    b.door(26, G + 1, 20, "east", "iron_door")
-    b.fill(2, G + 4, 17, 11, G + 4, 23, CONC_DARK)                         # the radar module's upper floor
-    b.clear(3, G + 5, 17, 10, G + 7, 23)
-    b.ladder(3, G + 1, G + 5, 22, "east")
-    b.set(3, G + 4, 22, AIR)
-    for x in range(4, 10):
-        b.set(x, G + 5, 17, CASING)
-        b.set(x, G + 6, 17, "black_stained_glass" if x % 2 else CASING)
-    b.chest(9, G + 5, 23, "north", "radar_outpost")
-    # The radome on the radar module's roof, a stretch fallen in, the antenna inside on its pedestal.
-    dome(b, 6.5, G + 9, 20.0, 5.6, CONC_WHITE, "white_stained_glass", broken=0.04, gap=(0.3, 1.4))
-    b.fill(5, G + 8, 19, 7, G + 9, 21, "iron_block")
-    dish(b, 6.5, G + 12, 20.0, 3.2, 1.2, 0.4, "iron_block", "light_gray_concrete")
-    # Quarters in the middle module: bunks, a table, a stove; the garage at the end with the generator.
-    for z in (17, 23):
-        b.bed(13, G + 1, z, "east", "gray")
-        b.bed(16, G + 1, z, "east", "blue")
-    b.set(18, G + 1, 17, "smoker", {"facing": "south", "lit": "false"})
-    b.chest(18, G + 1, 23, "north", "bunker_stores")
-    b.fill(21, G + 1, 17, 24, G + 2, 18, "iron_block")
-    b.fill(22, G + 3, 17, 23, G + 3, 18, "iron_bars")
-    b.barrel(25, G + 1, 23, "west", "radar_outpost")
-    b.barrel(24, G + 1, 23, "up")
-    for x0, x1, h in mods:
-        b.lamp((x0 + x1) // 2, G + h - 1, 20)
-    # Masts on the middle module's roof.
-    for x, z in ((13, 18), (18, 22)):
-        for y in range(G + 5, G + 11):
-            b.set(x, y, z, "iron_bars")
-        b.set(x, G + 11, z, "lightning_rod", {"facing": "up", "powered": "false", "waterlogged": "false"})
-    # The long-range dish, toppled from its pedestal: the lattice stump, the dish lying tilted on the ground.
-    for y in range(G + 1, G + 6):
-        for x, z in ((26, 5), (29, 5), (26, 8), (29, 8)):
-            if y < G + 4 or (x, z) != (29, 8):
-                b.set(x, y, z, "iron_bars")
-        if y % 2:
-            for x in range(26, 30):
-                b.set(x, y, 5, "iron_bars")
-    b.fill(26, G, 5, 29, G, 8, CONC)
-    dish(b, 15.0, G + 4.5, 7.0, 6.5, 1.05, -0.35, CONC_WHITE, "iron_block")
-    # The watchtower: spruce legs, a platform, a rail and a roof, a ladder up one leg.
-    for x, z in ((1, 1), (5, 1), (1, 5), (5, 5)):
-        b.fill(x, G + 1, z, x, G + 8, z, "spruce_log", {"axis": "y"})
-    b.fill(1, G + 8, 1, 5, G + 8, 5, "spruce_planks")
-    for x in range(1, 6):
-        for z in range(1, 6):
-            if x in (1, 5) or z in (1, 5):
-                b.set(x, G + 9, z, "spruce_fence")
-            b.slab(x, G + 11, z, "spruce_slab")
-    for x, z in ((1, 1), (5, 1), (1, 5), (5, 5)):
-        b.fill(x, G + 9, z, x, G + 10, z, "spruce_fence")
-    b.ladder(3, G + 1, G + 8, 6, "south")
-    b.set(3, G + 8, 6, "spruce_planks")
-    b.set(3, G + 8, 5, AIR)
-    # The fence round it, fallen in places; gravel tracks.
-    for x in range(0, 35):
-        for z in (0, 29):
-            if b.rng.random() < 0.7:
-                b.fill(x, G + 1, z, x, G + 2, z, "iron_bars")
-    for z in range(0, 30):
-        for x in (0, 34):
-            if b.rng.random() < 0.7:
-                b.fill(x, G + 1, z, x, G + 2, z, "iron_bars")
-    for x in range(8, 33):
-        for z in (12, 13):
-            if b.rng.random() < 0.85:
-                b.set(x, G, z, "gravel")
-    b.stains((0, 0, 0, 34, 20, 29), [CONC_WHITE], ("light_gray_concrete", "white_terracotta"), 0.04, run=3)
-    b.cobwebs((0, 0, 0, 34, 20, 29), 0.2)
-    return b
-
-
-# =====================================================================================================================
 # 4. The test site (Trinity, the Nevada Test Site): ground zero's glassed crater, Jumbo, the bunker 10,000 yards out.
 # =====================================================================================================================
 def test_site_zero() -> Build:
@@ -984,7 +896,7 @@ TEMPLATES = {
     "silo_below_intact": lambda: silo_below("intact"), "silo_below_flooded": lambda: silo_below("flooded"),
     "silo_below_collapsed": lambda: silo_below("collapsed"),
     "bunker_surface": bunker_surface, "bunker_below": bunker_below,
-    "radar_outpost": radar_outpost,
+    "radar_outpost": site_radar.radar_outpost,
     "test_site_zero": test_site_zero, "test_site_bunker": test_site_bunker,
     "crashed_missile": crashed_missile,
     "waste_storage": waste_storage,
@@ -1042,7 +954,7 @@ def site_variants(name: str) -> list[dict]:
         return [{"weight": 1, "parts": [part("bunker_surface", (-16, 0, -15), "beard_thin"),
                                         part("bunker_below", (-16, -15, -15), "encapsulate")]}]
     if name == "radar_outpost":
-        return [{"weight": 1, "parts": [part("radar_outpost", (-17, 0, -15), "beard_thin")]}]
+        return [{"weight": 1, "parts": [part("radar_outpost", (-23, 0, -22), "beard_thin", weathering="none")]}]
     if name == "test_site":
         return [{"weight": 1, "parts": [part("test_site_zero", (-18, -3, -18), "beard_thin", weathering="none"),
                                         part("test_site_bunker", (-6, -1, 30), "beard_thin")]}]

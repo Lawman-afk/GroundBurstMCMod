@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "groundburst:block/corrugated_steel_slab"
+    },
+    "type=double": {
+      "model": "groundburst:block/corrugated_steel"
+    },
+    "type=top": {
+      "model": "groundburst:block/corrugated_steel_slab_top"
+    }
+  }
+}

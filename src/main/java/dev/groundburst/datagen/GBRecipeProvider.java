@@ -228,6 +228,7 @@ public class GBRecipeProvider extends RecipeProvider {
         suits();
         radiation();
         aftermath();
+        construction();
         grenades();
     }
 
@@ -798,6 +799,79 @@ public class GBRecipeProvider extends RecipeProvider {
             SimpleCookingRecipeBuilder.generic(Ingredient.of(burnt), RecipeCategory.MISC, CookingBookCategory.MISC, Items.CHARCOAL, 0.15f, 200,
                     SmeltingRecipe::new).unlockedBy(getHasName(burnt), has(burnt)).save(output, id("charcoal_from_" + getItemName(burnt)));
         }
+    }
+
+    /**
+     * The Construction set (DESIGN.md §22.2): the stonecutter cuts a steel plate into sheeting, panels, grating, girders
+     * and lattice, a rod into barbed wire, white concrete into radome panels; six rods make sixteen lengths of chain-link
+     * as six iron make sixteen bars; eight round a water bucket rust; stairs and slabs as vanilla's, by hand or cut.
+     */
+    private void construction() {
+        var plate = GBParts.STEEL_PLATE;
+        var rod = GBParts.STEEL_ROD;
+        cut(plate, dev.groundburst.content.construction.GBConstruction.CORRUGATED_STEEL.item(), 4);
+        cut(plate, dev.groundburst.content.construction.GBConstruction.STEEL_PANEL.item(), 2);
+        cut(plate, dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.item(), 4);
+        cut(plate, dev.groundburst.content.construction.GBConstruction.I_BEAM.item(), 2);
+        cut(plate, dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item(), 2);
+        cut(rod, dev.groundburst.content.construction.GBConstruction.BARBED_WIRE.item(), 4);
+        cut(Items.CONCRETE.white(), dev.groundburst.content.construction.GBConstruction.RADOME_PANEL.item(), 1);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.CHAIN_LINK_FENCE.item(), 16)
+                .define('R', rod).pattern("RRR").pattern("RRR")
+                .unlockedBy(getHasName(rod), has(rod)).save(output);
+        rusted(dev.groundburst.content.construction.GBConstruction.CORRUGATED_STEEL.item(), dev.groundburst.content.construction.GBConstruction.RUSTED_CORRUGATED_STEEL.item());
+        rusted(dev.groundburst.content.construction.GBConstruction.STEEL_PANEL.item(), dev.groundburst.content.construction.GBConstruction.RUSTED_STEEL_PANEL.item());
+        stairsAndSlab(dev.groundburst.content.construction.GBConstruction.CORRUGATED_STEEL.item(), dev.groundburst.content.construction.GBConstruction.CORRUGATED_STEEL_STAIRS.item(), dev.groundburst.content.construction.GBConstruction.CORRUGATED_STEEL_SLAB.item());
+        stairsAndSlab(dev.groundburst.content.construction.GBConstruction.RUSTED_CORRUGATED_STEEL.item(), dev.groundburst.content.construction.GBConstruction.RUSTED_CORRUGATED_STEEL_STAIRS.item(),
+                dev.groundburst.content.construction.GBConstruction.RUSTED_CORRUGATED_STEEL_SLAB.item());
+        stairsAndSlab(dev.groundburst.content.construction.GBConstruction.RADOME_PANEL.item(), dev.groundburst.content.construction.GBConstruction.RADOME_PANEL_STAIRS.item(), dev.groundburst.content.construction.GBConstruction.RADOME_PANEL_SLAB.item());
+        stairsAndSlab(dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.item(), null, dev.groundburst.content.construction.GBConstruction.STEEL_GRATING_SLAB.item());
+        var sandbags = dev.groundburst.content.construction.GBConstruction.SANDBAGS.item();
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sandbags, 4).requires(Items.SAND, 4).requires(Items.STRING)
+                .unlockedBy("has_sand", has(Items.SAND)).save(output);
+        stairsAndSlab(sandbags, null, dev.groundburst.content.construction.GBConstruction.SANDBAG_SLAB.item());
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.FLOODLIGHT.item(), 2)
+                .define('P', plate).define('G', Items.GLOWSTONE).define('L', Items.GLASS_PANE)
+                .pattern(" P ").pattern("PGP").pattern(" L ")
+                .unlockedBy(getHasName(plate), has(plate)).save(output);
+        shaped(RecipeCategory.DECORATIONS, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR.item(), 1)
+                .define('P', plate).define('S', rod).define('R', Items.REDSTONE).define('L', dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item())
+                .pattern("PPP").pattern("SRS").pattern(" L ")
+                .unlockedBy(getHasName(dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item()), has(dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.item())).save(output);
+        sign(dev.groundburst.content.construction.GBConstruction.RADIATION_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.DYE.black()));
+        sign(dev.groundburst.content.construction.GBConstruction.HIGH_VOLTAGE_SIGN.item(), Tags.Items.DYES_YELLOW, Ingredient.of(Items.REDSTONE));
+        sign(dev.groundburst.content.construction.GBConstruction.KEEP_OUT_SIGN.item(), Tags.Items.DYES_RED, Ingredient.of(Items.DYE.white()));
+        sign(dev.groundburst.content.construction.GBConstruction.TOXIC_SIGN.item(), Tags.Items.DYES_ORANGE, Ingredient.of(Items.DYE.black()));
+    }
+
+    /** One item cut in the stonecutter into {@code count} of another. */
+    private void cut(net.minecraft.world.level.ItemLike from, net.minecraft.world.level.ItemLike to, int count) {
+        net.minecraft.data.recipes.SingleItemRecipeBuilder.stonecutting(Ingredient.of(from), RecipeCategory.BUILDING_BLOCKS, to, count)
+                .unlockedBy(getHasName(from), has(from)).save(output, id(getItemName(to) + "_from_" + getItemName(from) + "_stonecutting"));
+    }
+
+    /** Eight round a water bucket rust (the bucket comes back). */
+    private void rusted(net.minecraft.world.level.ItemLike clean, net.minecraft.world.level.ItemLike rusty) {
+        shaped(RecipeCategory.BUILDING_BLOCKS, rusty, 8).define('#', clean).define('W', Items.WATER_BUCKET)
+                .pattern("###").pattern("#W#").pattern("###")
+                .unlockedBy(getHasName(clean), has(clean)).save(output);
+    }
+
+    /** Stairs (six make four) and a slab (three make six) from a block, and both cut from it in the stonecutter. */
+    private void stairsAndSlab(net.minecraft.world.level.ItemLike block, net.minecraft.world.level.ItemLike stairs,
+                               net.minecraft.world.level.ItemLike slab) {
+        if (stairs != null) {
+            stairBuilder(stairs, Ingredient.of(block)).unlockedBy(getHasName(block), has(block)).save(output);
+            cut(block, stairs, 1);
+        }
+        slabBuilder(RecipeCategory.BUILDING_BLOCKS, slab, Ingredient.of(block)).unlockedBy(getHasName(block), has(block)).save(output);
+        cut(block, slab, 2);
+    }
+
+    /** A warning sign: a steel plate painted with a dye and the sign's mark, three to a plate. */
+    private void sign(net.minecraft.world.level.ItemLike sign, TagKey<net.minecraft.world.item.Item> paint, Ingredient mark) {
+        shapeless(RecipeCategory.DECORATIONS, sign, 3).requires(GBParts.STEEL_PLATE).requires(paint).requires(mark)
+                .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
     }
 
     /**

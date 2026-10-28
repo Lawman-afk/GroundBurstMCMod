@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sandbags": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:sandbags"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:sandbag_slab_from_sandbags_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_sandbags"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:sandbag_slab_from_sandbags_stonecutting"
+    ]
+  }
+}

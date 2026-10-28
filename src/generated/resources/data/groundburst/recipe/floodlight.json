@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": "minecraft:glowstone",
+    "L": "minecraft:glass_pane",
+    "P": "groundburst:steel_plate"
+  },
+  "pattern": [
+    " P ",
+    "PGP",
+    " L "
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:floodlight"
+  }
+}

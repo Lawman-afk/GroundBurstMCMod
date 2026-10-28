@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/template_bars_cap_alt",
+  "textures": {
+    "bars": "groundburst:block/barbed_wire",
+    "edge": "groundburst:block/barbed_wire",
+    "particle": "groundburst:block/barbed_wire"
+  },
+  "render_type": "minecraft:cutout"
+}

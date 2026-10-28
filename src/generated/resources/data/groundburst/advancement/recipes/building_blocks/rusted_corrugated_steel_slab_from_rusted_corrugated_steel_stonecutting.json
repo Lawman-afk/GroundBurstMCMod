@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_rusted_corrugated_steel": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:rusted_corrugated_steel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:rusted_corrugated_steel_slab_from_rusted_corrugated_steel_stonecutting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_rusted_corrugated_steel"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:rusted_corrugated_steel_slab_from_rusted_corrugated_steel_stonecutting"
+    ]
+  }
+}

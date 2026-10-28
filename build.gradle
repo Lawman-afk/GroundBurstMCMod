@@ -111,6 +111,16 @@ neoForge {
             }
         }
 
+        // Places each world site on flat grass as generation would, photographs it at noon from its corners, the ground
+        // and above into run/screenshots/site_<name>_<variant>_<view>.png, then quits (see SitePhotographer).
+        // -Psite=radar_outpost,test_site (default all); -PsiteVariant=<n> (default 0).
+        siteShots {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.siteShots', (project.findProperty('site') ?: 'all').toString()
+            systemProperty 'groundburst.siteShots.variant', (project.findProperty('siteVariant') ?: '0').toString()
+        }
+
         server {
             server()
             programArgument '--nogui'

@@ -96,7 +96,8 @@ final class StructureTests {
         BlockPos origin = new BlockPos(0, 70, 0);
         var sunk = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -3, 0), TerrainAdjustment.BEARD_THIN, 1f, Weathering.NONE);
         SitePiece crater = new SitePiece(templates, sunk, origin.offset(sunk.offset()), Rotation.NONE, origin.getY());
-        helper.assertTrue(crater.getGroundLevelDelta() == 3, "a sunk part meets the ground at its rim (" + crater.getGroundLevelDelta() + ")");
+        // Its rim is 3 up from its bottom; the beardifier wants the first air above the land, one more.
+        helper.assertTrue(crater.getGroundLevelDelta() == 4, "a sunk part meets the ground at its rim (" + crater.getGroundLevelDelta() + ")");
         var under = new SiteStructure.Part(GroundBurst.id("site/test_room"), new BlockPos(0, -6, 0), TerrainAdjustment.ENCAPSULATE, 1f, Weathering.NONE);
         SitePiece rooms = new SitePiece(templates, under, origin.offset(under.offset()), Rotation.NONE, origin.getY());
         helper.assertTrue(rooms.getBeardifierBox().maxY() <= origin.getY() - 13 || rooms.getBeardifierBox().maxY() == rooms.getBoundingBox().minY(),

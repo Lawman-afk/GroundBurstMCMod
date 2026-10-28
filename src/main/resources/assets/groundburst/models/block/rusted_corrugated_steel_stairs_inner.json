@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "groundburst:block/rusted_corrugated_steel",
+    "top": "groundburst:block/rusted_corrugated_steel",
+    "side": "groundburst:block/rusted_corrugated_steel"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "groundburst:block/steel_grating_slab"
+    },
+    "type=double": {
+      "model": "groundburst:block/steel_grating"
+    },
+    "type=top": {
+      "model": "groundburst:block/steel_grating_slab_top"
+    }
+  }
+}

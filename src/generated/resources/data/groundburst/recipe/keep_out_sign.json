@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "#c:dyes/red",
+    "minecraft:white_dye"
+  ],
+  "result": {
+    "count": 3,
+    "id": "groundburst:keep_out_sign"
+  }
+}

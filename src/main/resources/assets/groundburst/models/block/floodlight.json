@@ -1,0 +1,102 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "housing": "groundburst:block/floodlight",
+    "lens": "groundburst:block/floodlight_lens",
+    "particle": "groundburst:block/floodlight"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        3,
+        6
+      ],
+      "to": [
+        13,
+        13,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lens",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#housing"
+        },
+        "east": {
+          "texture": "#housing"
+        },
+        "west": {
+          "texture": "#housing"
+        },
+        "up": {
+          "texture": "#housing"
+        },
+        "down": {
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        3.5,
+        5.5
+      ],
+      "to": [
+        12.5,
+        12.5,
+        6
+      ],
+      "light_emission": 15,
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#lens",
+          "uv": [
+            3.5,
+            3.5,
+            12.5,
+            12.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        6,
+        13
+      ],
+      "to": [
+        10,
+        10,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#housing"
+        },
+        "west": {
+          "texture": "#housing"
+        },
+        "up": {
+          "texture": "#housing"
+        },
+        "down": {
+          "texture": "#housing"
+        },
+        "south": {
+          "texture": "#housing"
+        }
+      }
+    }
+  ]
+}

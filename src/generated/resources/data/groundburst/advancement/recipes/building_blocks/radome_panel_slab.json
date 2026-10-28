@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_radome_panel": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:radome_panel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:radome_panel_slab"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_radome_panel"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:radome_panel_slab"
+    ]
+  }
+}

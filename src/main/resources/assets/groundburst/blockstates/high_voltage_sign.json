@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/high_voltage_sign"
+    },
+    "facing=east": {
+      "model": "groundburst:block/high_voltage_sign",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "groundburst:block/high_voltage_sign",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "groundburst:block/high_voltage_sign",
+      "y": 270
+    }
+  }
+}

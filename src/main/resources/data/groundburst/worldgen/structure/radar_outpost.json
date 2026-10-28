@@ -10,13 +10,13 @@
         {
           "template": "groundburst:site/radar_outpost",
           "offset": [
-            -17,
+            -23,
             0,
-            -15
+            -22
           ],
           "terrain": "beard_thin",
           "integrity": 1.0,
-          "weathering": "abandoned"
+          "weathering": "none"
         }
       ]
     }

@@ -74,6 +74,7 @@ public class GroundBurst {
         dev.groundburst.content.radiation.GBRadiation.register(modBus);
         dev.groundburst.content.radiation.RadiationItems.register(modBus);
         dev.groundburst.content.fallout.GBFallout.register(modBus);
+        dev.groundburst.content.construction.GBConstruction.register();
         dev.groundburst.content.nuclear.NeutronBurst.register();
         dev.groundburst.content.nuclear.Meltdown.register();
         GBWorldgen.PLACEMENT_MODIFIERS.register(modBus);

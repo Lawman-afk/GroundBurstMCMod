@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,active=false": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=north,active=true": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=east,active=false": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=east,active=true": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=south,active=false": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=south,active=true": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=west,active=false": {
+      "model": "groundburst:block/search_radar"
+    },
+    "facing=west,active=true": {
+      "model": "groundburst:block/search_radar"
+    }
+  }
+}

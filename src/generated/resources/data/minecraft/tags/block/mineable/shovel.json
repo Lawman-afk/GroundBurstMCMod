@@ -1,5 +1,7 @@
 {
   "values": [
+    "groundburst:sandbags",
+    "groundburst:sandbag_slab",
     "groundburst:scorched_earth",
     "groundburst:irradiated_soil",
     "groundburst:ash",
