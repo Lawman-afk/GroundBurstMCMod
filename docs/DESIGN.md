@@ -1845,6 +1845,51 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
 - **Cluster versions** (after feedback): Cryo Cluster Warhead and EMP Cluster Warhead, 14 cryo or EMP grenades as
   canisters, air-burst over the target like the other cluster warheads.
 
+### 16.10 As built: the Antimatter Warhead (Phase 11, 2026-10-30)
+The user's choices for Phase 11: the Antimatter, Singularity and Storm Bombs this round (the orbital strike later), one
+at a time, each shown before the next; missile classes by strength: antimatter and singularity Strategic (XL, beside
+the nukes, over §9.2's M), the storm Heavy (L).
+- **Warhead and missile.** `ChargeKind.ANTIMATTER_WARHEAD` (added at the enum's end), an exotic kind:
+  `exotic()`, and `strategic()` (nuclear or exotic: only the Strategic body, which carries nothing else, so only a
+  Launch Complex or a Missile Silo fires it). Core: the **Antimatter Trap** (class XL: four Antimatter Cells, two
+  Superconducting Coils, a Quantum Circuit). The bench builds it in the Strategic Warhead Casing; the Strategic
+  Missile Assembler its **Antimatter Missile**. Stats: Erases 48, Gamma Kills 64, Gamma Injures 96; the Launch
+  Computer's strike circles the flash's 64 and 96.
+- **Full effect only on a missile's arrival** (`Charges.impact`/`burst` -> `Charges.exotic`), like a nuclear
+  warhead's yield. Set off any other way its trap is breached (`Antimatter.breach`): a sphere of 4 and a weak flash.
+- **The sphere** (`blast.Annihilations`, `AnnihilationJob`): grows to 48 (x the bomb scale) in 30 ticks on an ease-out
+  (`Annihilations.reach`, which the client draws by too). Blocks are erased a shell (one-block band of distance) at a
+  time from the middle out, each shell column by column (a column's two runs found by integer square roots), never
+  past the sphere's size at that moment; skipping air above the highest block seen; unbreakable blocks stay; written
+  with the blast engine's flags (no drops, no on-place, containers go whole). It draws on the blast engine's time
+  and block budget, ahead of the blasts (and always takes a sliver), and keeps chunks loaded as a blast does
+  (`BlastChunks`). Creatures inside are hurt by `groundburst:annihilated` (through armour, resistance, shields,
+  enchantments and the hurt cooldown; not a creative player's invulnerability); everything else in it is discarded
+  (missiles in flight aside); their drops are cleared until 25 ticks after its last kill (experience falls only when
+  a death is over). Last, the erased blocks on its surface tell their neighbours (sand falls, water runs in), and its
+  chunks are let go. Not saved.
+- **The gamma flash** (`Antimatter.gamma`), at the first instant, before anything is erased: a creature between the
+  sphere and 96 takes its distance's share (all within 64) times what gets through the blocks on the line (e^-sum:
+  0.8 a solid block, 0.35 a liquid, 1.6 concrete, lead or obsidian) times its suit (0.6 of its radiation protection
+  counts). A dose of 0.5 or more kills (`groundburst:gamma_flash`); less hurts (40 health a dose of 1) and gives rad
+  (800 a dose of 1). No fallout.
+- **Client** (`AnnihilationFx`, through the Spectacle): a white-out flash, stronger near, faced and in sight (a
+  quarter of it out of sight); an opaque white sphere (`textures/fx/annihilation.png`: white with faint lilac threads,
+  two bodies a hair apart), a violet rim glow (the sphere renderer's limb < 0: brightest at the edge) and a faint white
+  bloom; it fades in 20 ticks once the server has erased everything (`AnnihilationPayloads.End`); then a faint violet
+  glow drifts in the void for 10 s. The sound when it arrives (343 m/s): `antimatter.near` (a crack and thump, a
+  swelling rush and climbing glassy tone for 1.5 s, then the inrush: a boom, a hollow thump and a rolling rumble) or,
+  past 160 blocks, `antimatter.far`; the camera shaken as it arrives.
+- **Models** (material library): the warhead a white ceramic capsule on its mounting ring, three confinement rings
+  (a violet coil, its elements emitting light, between dark steel collars), a violet trefoil on yellow, a band of
+  hazard chevrons, a dark cap round a glowing port; the missile white and two-staged, small swept fins, violet bands,
+  three confinement rings of its own (so its outline is ringed: the neutron missile beside it is as slim and silver),
+  hazard chevrons under the warhead; the Antimatter Trap the capsule in small. Field Manual: "Exotic warheads".
+- GameTests (`ExoticTests`, at a tenth of the size): a missile's warhead erases stone, obsidian and a full chest within
+  the sphere, leaves bedrock and the stone past it, annihilates a pig inside, its flash kills a pig in the open past
+  the sphere, a pig behind two blocks of obsidian lives, nothing is left in the sphere; a placed one only breaches; it
+  needs the Strategic body.
+
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
 - **Kept as part of the conventional roster:** Thermite charge, Breaching charge, Smoke grenade (§14).
@@ -3506,6 +3551,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | Phase 11 begun with the user's choices: the Antimatter, Singularity and Storm Bombs this round (the orbital strike later), each shown before the next; classes by strength, antimatter and singularity Strategic (XL) and the storm Heavy (L), over §9.2's M. The Antimatter Warhead built (§16.10): like a nuclear warhead it rides only the Strategic body and goes off in full only on a missile's arrival (a breach of 4 otherwise); its sphere erases block by block, shell by shell, within the blast engine's budget, never ahead of the sphere players see; its gamma flash is shielded by what lies between. New models are painted with the material library (the Antimatter Trap too, though the cores before it are plainly shaded). |
 | 2026-10-30 | The public repository moved to a new one, github.com/Lawman-afk/GroundBurstMCMod (the user made it): the old repository's page kept a stale contributor entry from the history before its rewrite, though GitHub's own API and statistics counted only Lawman-afk; a new repository counts afresh, and lists Lawman-afk alone. The whole history moved, joined to the new repository's starting commit by a merge that keeps the project's files as they were. |
 | 2026-10-29 | Version 0.2.0 for the second CurseForge file (the rebuilt sites and the Construction set; the first file there, labelled 0.1.1, is the renamed 0.1.0). The README shows the mod: the logo, a link to the CurseForge page and a screenshot gallery (`docs/screenshots/`, JPEGs cut from the dev runs' shots; the Tsar's cloud cropped below a tutorial toast). `CHANGELOG.md` keeps each version's changes, written for players; its newest entry is the upload's changelog. The data generators' `.cache` no longer ships in the jar: the exclude named it from the project root, but resource patterns are relative to each resource folder. |
 | 2026-10-29 | The rebuilt sites checked on generated worlds (§22.2): they fit their land; their bigger footprints made four rarer, so their spacings close up to the frequencies the census set (radar outpost 36/13, test site 24/9, bunker 38/15, crashed missile 27/10). A crashed missile's ground round its wreck is of blocks no tree roots in, so the forest cannot grow through the model. |

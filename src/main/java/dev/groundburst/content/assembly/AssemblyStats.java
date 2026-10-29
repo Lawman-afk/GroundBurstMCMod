@@ -76,6 +76,10 @@ public final class AssemblyStats {
     /** The neutron warhead's burst, as rows (a note would run past the bottom of the panel at GUI scale 3). */
     static final String NEUTRONS = GBLang.add(P + "neutrons", "Neutrons Kill");
     static final String WITHERS = GBLang.add(P + "withers", "Plants Wither");
+    /** The antimatter warhead's sphere and gamma flash, as rows. */
+    static final String ERASES = GBLang.add(P + "erases", "Erases");
+    static final String GAMMA_KILLS = GBLang.add(P + "gamma_kills", "Gamma Kills");
+    static final String GAMMA_HURTS = GBLang.add(P + "gamma_hurts", "Gamma Injures");
     static final String V_DAYS = GBLang.add(P + "days", "%s days");
     static final String V_DAY = GBLang.add(P + "day", "1 day");
     static final String V_HOURS = GBLang.add(P + "hours", "%s hours");
@@ -108,6 +112,7 @@ public final class AssemblyStats {
         effect(ChargeKind.COBALT_WARHEAD, "cobalt", "Fallout drifts %s blocks downwind", Charges.cobaltReach());
         effect(ChargeKind.SCUD_STORM_WARHEAD, "scud_storm", "Toxin residue spreads %s blocks round, under a toxin cloud", (int) Charges.SCUD_SPREAD);
         effect(ChargeKind.NUCLEAR_MISSILE_WARHEAD, "nuclear_missile", "Fired only by a Nuclear Missile silo");
+        effect(ChargeKind.ANTIMATTER_WARHEAD, "antimatter", "A perfect sphere erased: no rubble, no drops, no fallout");
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -204,6 +209,9 @@ public final class AssemblyStats {
         if (kind == ChargeKind.NEUTRON_WARHEAD) {
             lethal = Math.max(lethal, dev.groundburst.content.nuclear.NeutronBurst.LETHAL_RADIUS);
         }
+        if (kind == ChargeKind.ANTIMATTER_WARHEAD) {     // its gamma flash, in the open
+            return new Area(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL, dev.groundburst.content.exotic.Antimatter.GAMMA_REACH);
+        }
         return new Area(lethal, Math.max(Math.max(reach, effect), lethal));
     }
 
@@ -246,6 +254,14 @@ public final class AssemblyStats {
                     String nuclear = nuclearYield(kind);
                     out.add(Stat.row(YIELD, nuclear != null ? Component.translatable(V_YIELD, nuclear) : tnt(p.crater())));
                 }
+            }
+        }
+        if (kind == ChargeKind.ANTIMATTER_WARHEAD) {       // its sphere and its gamma flash (walls stop the flash)
+            out.add(Stat.row(ERASES, blocks(dev.groundburst.content.exotic.Antimatter.RADIUS)));
+            out.add(Stat.row(GAMMA_KILLS, blocks(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL)));
+            if (full) {
+                out.add(Stat.row(GAMMA_HURTS, blocks(dev.groundburst.content.exotic.Antimatter.GAMMA_REACH)));
+                out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }
         if (kind == ChargeKind.NEUTRON_WARHEAD) {          // its neutron burst (how walls stop it is in the Field Manual)

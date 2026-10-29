@@ -11,6 +11,8 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
   cloudlets are drawn in one sorted batch.
 - ``textures/fx/fireball.png`` (128x128, tileable): boiling fire; bright veins on a darker body, alpha mostly high.
 - ``textures/fx/shock.png`` (64x64, tileable): faint streaky haze for the shock shell.
+- ``textures/fx/annihilation.png`` (128x128, tileable): the antimatter sphere's surface (DESIGN.md §16.3): opaque white
+  with faint lilac threads, so it hides the void being carved inside it.
 """
 from __future__ import annotations
 
@@ -135,6 +137,17 @@ def shock() -> Image.Image:
     return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
 
 
+def annihilation() -> Image.Image:
+    """Opaque white, threaded with faint lilac filaments (thin ridges of noise) and a soft lilac haze."""
+    size = 128
+    ridge = 1 - np.abs(spectral(size, 1.9, 31) - 0.5) * 2
+    haze = spectral(size, 2.5, 32)
+    lilac = np.clip(0.6 * ridge ** 7 + 0.3 * smoothstep(0.6, 0.95, haze), 0, 1)
+    rgb = np.stack([1 - 0.12 * lilac, 1 - 0.2 * lilac, np.ones_like(lilac)], -1)
+    alpha = np.ones((size, size, 1))
+    return Image.fromarray((np.concatenate([rgb, alpha], -1) * 255).astype(np.uint8), "RGBA")
+
+
 def cloudlet(seed: int) -> np.ndarray:
     """A big soft billow cluster: brighter where it is thick, no light direction, edges frayed by noise."""
     size = CELL
@@ -161,7 +174,7 @@ def cloudlet(seed: int) -> np.ndarray:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock())):
+    for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation())):
         path = OUT / f"{name}.png"
         image.save(path)
         print(path)

@@ -350,6 +350,12 @@ public class GBRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(dev.groundburst.content.assembly.GBAssembly.TACTICAL_FISSION_CORE),
                         has(dev.groundburst.content.assembly.GBAssembly.TACTICAL_FISSION_CORE))
                 .save(output);
+        // Phase 11 (DESIGN.md §16.3): antimatter in a Penning trap, its superconducting magnets and a quantum circuit to hold it.
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.ANTIMATTER_TRAP, 1)
+                .requires(dev.groundburst.content.nuclear.GBNuclear.ANTIMATTER_CELL, 4).requires(GBParts.SUPERCONDUCTING_COIL, 2)
+                .requires(GBParts.QUANTUM_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.ANTIMATTER_CELL), has(dev.groundburst.content.nuclear.GBNuclear.ANTIMATTER_CELL))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.DIRTY_PAYLOAD, 1)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)

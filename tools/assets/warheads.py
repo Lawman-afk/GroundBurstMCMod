@@ -38,6 +38,9 @@ for high explosive, light red for incendiary, dark green for a toxic chemical.
 - Cobalt Warhead: the same cone in blue-black, its cobalt jacket's plates banded cobalt blue.
 - Tsar Mega-bomb (built whole): a fat dark-green bomb on four tail fins round its parachute pack, a rounded nose,
   white stencils ("50" for its megatons), a trefoil, four cooling vents glowing orange low on its body.
+- Antimatter Warhead (Phase 11, DESIGN.md §16.3): a white ceramic capsule, no fins; three magnetic confinement rings,
+  each a violet coil glowing between dark steel collars; a violet trefoil on yellow, a band of hazard chevrons, a dark
+  cap round a glowing port on its dome.
 - Toxin SCUD Warhead (a superweapon's, DESIGN.md §19.5; built whole into its Toxin SCUD): the C&C Generals SCUD's
   toxin-green nose, a long ogive over a short green section, a black band and white stencils.
 - Nuclear Missile Warhead (China's superweapon, built whole into its Nuclear Missile): a DF-5's re-entry vehicle, a long
@@ -103,6 +106,8 @@ CHEM_GREEN = fixed("chem_green", "#0e1a0e", "#152816", "#1d3820", "#264a2a", "#3
 SMOKE_GREEN = fixed("smoke_green", "#2a3a1c", "#3c5228", "#506c36", "#668646", "#7ea05a", "#98b874", "#b8d29a")
 #: The GLA's toxin green (the SCUD's nose and fins, C&C Generals), and China's red.
 SCUD_GREEN = fixed("scud_green", "#0d1f07", "#15330b", "#1f4b11", "#2b6518", "#3a8222", "#4f9f30", "#71bc4c")
+#: The antimatter warhead's confinement glow.
+VIOLET = fixed("confinement_violet", "#16082c", "#2a0f52", "#45198a", "#6427c2", "#8a4ae8", "#b182ff", "#dcc8ff")
 PLA_RED = fixed("pla_red", "#2e0604", "#4c0a06", "#6e1009", "#92180c", "#b42412", "#d23c22", "#e8664a")
 GREEN = P.INDICATOR_GREEN
 WHITE = P.WHITE_CERAMIC
@@ -592,6 +597,8 @@ def build_all() -> list[str]:
     names += reentry("thermonuclear_warhead", ABLATIVE, DRAB, YELLOW, None)
     names += reentry("cobalt_warhead", BLUE_BLACK, BLUE_BLACK, COBALT, COBALT)
     names += tsar()
+    # --- exotic (Phase 11, DESIGN.md §16) ---
+    names += antimatter()
     # --- the superweapons' (DESIGN.md §19.5) ---
     names += scud_storm()
     names += nuclear_missile()
@@ -701,6 +708,51 @@ def toxic_waste() -> list[str]:
                                                       YELLOW[4]))
     look.on("body", lambda k, f, img: decal(f, img, TREFOIL, {"Y": YELLOW[4], "K": BLACK[1]}, 7.2))
     look.on("base", lambda k, f, img: bolts(f, img, 0.9))
+    return save(w, look)
+
+
+def antimatter() -> list[str]:
+    """The antimatter warhead (DESIGN.md §16.3): antimatter held in a Penning trap in a white ceramic capsule, no fins.
+    Three magnetic confinement rings stand round it, each a violet coil glowing between two dark steel collars (the
+    coils are lit: their elements emit light); a violet trefoil on a yellow square on its front between the first two
+    (the gamma flash), a band of yellow and black hazard chevrons under the third; its dome capped by a dark collar round
+    a glowing port."""
+    w = Build("antimatter_warhead")
+    r, hb, body_top = 4.4, 1.5, 15.4                        # (the body's top under the third ring's collar, not in its plane)
+    mounting_ring(w, r + 0.7, hb)
+    w.ring("body", r, hb, body_top, caps=("up",), top=False)
+    top = w.nose("nose", r, body_top, 4.6, "dome", 5)
+    top = tip(w, 1.7, top - 0.4, 0.8, "cap")                # (its planks' tops clear of the dome's last ring)
+    tip(w, 1.0, top, 0.45, "port")
+    for y in (2.0, 10.0, 15.0):
+        # The coil has no caps: they would lie in the collars' planes, and it never shows its ends.
+        w.ring("collar", r + 0.65, y, y + 0.5, caps=("up", "down"), top=True, bottom=True, foot=False)
+        w.ring("coil", r + 0.45, y + 0.5, y + 1.5, caps=(), top=False, bottom=False, foot=False)
+        w.ring("collar", r + 0.65, y + 1.5, y + 2.0, caps=("up", "down"), top=True, bottom=True, foot=False)
+    for n in w.groups["coil"] + w.groups["port"]:
+        w.m.get(n).light_emission = 15
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=ROUND)
+    look = Look(body=paint(WHITE, 0.62, 0.08), nose=paint(WHITE, 0.62, 0.08), base=BASE, collar=metal(GUNMETAL, 0.34),
+                coil=M.Material(ramp=ramp9(VIOLET), tone=0.66, **lit), cap=metal(GUNMETAL, 0.4),
+                port=M.Material(ramp=ramp9(VIOLET), tone=0.86, **lit), lug=LUG)
+
+    def windings(k, f, img):                                   # the coil's turns: every other texel round it a shade lighter
+        if f.d in SIDES:
+            col = np.floor((angle_of(f) + 360) % 360 / 360 * 32).astype(int)
+            M.lighten(img, col % 2 == 0, 1.14, 6)
+
+    def chevrons(k, f, img):                                   # hazard chevrons all round, under the third ring
+        if f.d not in SIDES:
+            return
+        col = np.floor((angle_of(f) + 360) % 360 / 360 * 28).astype(int)
+        row = np.floor(f.Y + 0.1).astype(int)
+        band = (row >= 12) & (row < 15)
+        img[band] = YELLOW[4]
+        img[band & (((col + row) % 4) < 2)] = BLACK[1]
+    look.on("coil", windings)
+    look.on("body", chevrons)
+    look.on("body", lambda k, f, img: decal(f, img, TREFOIL, {"Y": YELLOW[4], "K": VIOLET[2]}, 9.4))
+    look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
     return save(w, look)
 
 
@@ -922,7 +974,8 @@ NOSES = {"none": (STEEL, None, STEEL)}
 WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhead", "bunker_buster_warhead", "napalm_warhead",
             "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
             "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
-            "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead"]
+            "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead",
+            "antimatter_warhead"]
 
 
 def mount(name: str) -> tuple[float, float, float]:

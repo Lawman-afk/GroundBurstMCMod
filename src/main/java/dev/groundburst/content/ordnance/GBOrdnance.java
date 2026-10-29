@@ -133,12 +133,15 @@ public final class GBOrdnance {
             "scud_storm_warhead", "Toxin SCUD Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.SCUD_STORM_WARHEAD);
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> NUCLEAR_MISSILE_WARHEAD = bomb(
             "nuclear_missile_warhead", "Nuclear Missile Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.NUCLEAR_MISSILE_WARHEAD);
+    /** Phase 11 (DESIGN.md §16): the exotic warheads, class XL. */
+    public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> ANTIMATTER_WARHEAD = bomb(
+            "antimatter_warhead", "Antimatter Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.ANTIMATTER_WARHEAD);
     /** Every warhead, in the order the creative tab and the Field Manual show them. */
     public static final java.util.List<dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock>> WARHEADS =
             java.util.List.of(HE_WARHEAD, HEAVY_WARHEAD, THERMOBARIC_WARHEAD, CLUSTER_WARHEAD, BUNKER_BUSTER, NAPALM_WARHEAD, MASSIVE_WARHEAD,
                     GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD, CHEMICAL_WARHEAD, DIRTY_WARHEAD, TACTICAL_NUCLEAR_WARHEAD,
                     FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD, TSAR_WARHEAD,
-                    SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
+                    ANTIMATTER_WARHEAD, SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
     /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
@@ -158,7 +161,7 @@ public final class GBOrdnance {
                     CHEMICAL_WARHEAD.block().get(), TACTICAL_NUCLEAR_WARHEAD.block().get(), FISSION_WARHEAD.block().get(),
                     BOOSTED_FISSION_WARHEAD.block().get(), NEUTRON_WARHEAD.block().get(), DIRTY_WARHEAD.block().get(),
                     THERMONUCLEAR_WARHEAD.block().get(), COBALT_WARHEAD.block().get(), TSAR_WARHEAD.block().get(),
-                    SCUD_STORM_WARHEAD.block().get(), NUCLEAR_MISSILE_WARHEAD.block().get()));
+                    SCUD_STORM_WARHEAD.block().get(), NUCLEAR_MISSILE_WARHEAD.block().get(), ANTIMATTER_WARHEAD.block().get()));
     public static final DeferredItem<dev.groundburst.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GBItems.register("remote_detonator",
             "Remote Detonator", GBTab.ORDNANCE, dev.groundburst.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

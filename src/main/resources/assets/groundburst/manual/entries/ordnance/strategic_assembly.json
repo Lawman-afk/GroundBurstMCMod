@@ -1,7 +1,7 @@
 {
   "title": "Strategic Assembly Hall",
   "icon": "groundburst:strategic_assembly_hall",
-  "order": 12,
+  "order": 13,
   "items": [
     "groundburst:strategic_assembly_hall",
     "groundburst:strategic_assembly_hall_spawner",

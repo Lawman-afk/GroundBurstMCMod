@@ -205,6 +205,11 @@ public final class GBSounds {
             register("lead_container.close", "Lead container closes", List.of("gear/lead_container_close"), false, 12);
     public static final DeferredHolder<SoundEvent, SoundEvent> MEDICAL_INJECTOR =
             register("medical.injector", "Injector hisses", List.of("gear/injector"), false, 12);
+    // Exotic warheads (Phase 11, DESIGN.md §16): played by the client when the sound arrives (AnnihilationFx).
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANTIMATTER_NEAR =
+            register("antimatter.near", "Antimatter annihilates", List.of("exotic/antimatter_near"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANTIMATTER_FAR =
+            register("antimatter.far", "Distant annihilation", List.of("exotic/antimatter_far"), false, 64);
 
     private GBSounds() {}
 

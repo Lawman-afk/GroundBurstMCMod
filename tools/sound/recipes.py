@@ -529,6 +529,33 @@ def singularity_collapse() -> dict[str, np.ndarray]:
     return {"reactor/singularity_collapse": S.normalize(S.fade(x, 0.0, 0.3), -1)}
 
 
+def antimatter_sounds() -> dict[str, np.ndarray]:
+    """The antimatter warhead (DESIGN.md §16.3), as heard when its sound arrives. Near: the flash's bright electric
+    crack and a deep thump; an eerie rush swelling as the sphere grows (a reversed swell under a glassy tone climbing);
+    then the air rushing into the void: a short roar, a hollow implosion boom and a long rolling rumble. Far: the same
+    heard from a long way off, the crack lost, the boom and rumble low and rolling, echoing off the land."""
+    length = 5.0
+    n = int(length * S.SR)
+    grow = 1.5                                             # the sphere's growth (Annihilations.EXPAND, 30 ticks)
+    crack = S.highpass(S.white(0.4, 1601), 2500) * S.exp_decay(int(0.4 * S.SR), 0.012) * 1.2
+    snap = S.bandpass(S.grains(0.3, rate=900, grain_ms=1.5, seed=1602), 3000, 12000) * S.exp_decay(int(0.3 * S.SR), 0.035) * 0.8
+    thump = S.fade(S.saturate(S.sine_sweep(1.2, 90, 28, curve=2.5) * S.exp_decay(int(1.2 * S.SR), 0.35) * 1.4, 1.6), 0.0, 0.3)
+    m = int(grow * S.SR)
+    swell = S.bandpass(S.pink(grow, 1603), 300, 7000) * np.linspace(0, 1, m) ** 2.5 * 0.9
+    glass = (S.sine_sweep(grow, 330, 1320, curve=2.0) + 0.5 * S.sine_sweep(grow, 495, 1980, curve=2.0)) * np.linspace(0.2, 1, m) ** 2 * 0.12
+    rush = S.bandpass(S.white(1.0, 1605), 400, 3500) * S.breakpoints(int(1.0 * S.SR), [(0, 1.0), (0.6, 0.2), (1.0, 0)]) * 0.5
+    boom = S.fade(S.saturate(S.sine_sweep(2.5, 70, 20, curve=1.8) * S.exp_decay(int(2.5 * S.SR), 0.9) * 1.8, 1.9), 0.0, 0.6)
+    hollow = S.resonator(S.lowpass(S.white(1.5, 1604), 600) * S.exp_decay(int(1.5 * S.SR), 0.2), 95, q=6) * 1.5
+    rumble = S.sweep_lowpass(S.brown(3.4, 1606), 1200, 90) * S.breakpoints(int(3.4 * S.SR), [(0, 0), (0.05, 1.0), (1.4, 0.45), (3.4, 0)])
+    x = S.mix((S.place(crack, 0, length), 1.0), (S.place(snap, 0, length), 1.0), (S.place(thump, 0, length), 1.0),
+              (S.place(swell + glass, 0.05, length), 1.0), (S.place(rush, grow - 0.1, length), 1.0),
+              (S.place(boom, grow, length), 1.0), (S.place(hollow, grow, length), 1.0), (S.place(rumble, grow + 0.05, length), 0.8))
+    near = S.reverb(x, seconds=2.4, damping_hz=2600, mix=0.28, seed=1607)[:n]
+    far = S.distant(x, "far")[: int(6.5 * S.SR)]
+    return {"exotic/antimatter_near": S.normalize(S.fade(near, 0.0, 0.5), -1),
+            "exotic/antimatter_far": S.normalize(S.fade(far, 0.0, 0.8), -2)}
+
+
 def reactor_alarm() -> dict[str, np.ndarray]:
     """The Fission Reactor's critical klaxon (played every 2 s while the core is critical): two harsh alternating tones,
     low then high, twice, with a buzzy edge from odd harmonics and a hall echo, so it carries and is unmistakable."""
@@ -981,7 +1008,7 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # (So are the machines, the reactor's alarm and the Geiger counter's clicks, machines.py; the Exotic Matter Fabricator, the
 # Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
-RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, reactor_alarm, ordnance_sounds, launch_sounds,
+RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
            MA.machine_set, GE.gear_set]
 

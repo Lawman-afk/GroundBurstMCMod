@@ -98,7 +98,15 @@ public enum ChargeKind {
      * China's Nuclear Missile's warhead: a nuclear blast between the fission and the boosted fission warheads', and the
      * game's radiation field round it (contamination 200 blocks round for two days).
      */
-    NUCLEAR_MISSILE_WARHEAD("nuclear_missile_warhead", 10, true);
+    NUCLEAR_MISSILE_WARHEAD("nuclear_missile_warhead", 10, true),
+    // Exotic warheads (Phase 11, DESIGN.md §16): class XL like the nuclear ones, on the Strategic missile only, and their
+    // full effect only on a missile's arrival; set off any other way their containment fails and lets out a little.
+    // (Added at the end so no kind before them changes its place.)
+    /**
+     * An antimatter trap (DESIGN.md §16.3): a white sphere erases everything within 48 blocks, no rubble, no drops, no
+     * fire, whatever its blast resistance; its gamma flash kills anything in the open out to 64 and hurts it to 96.
+     */
+    ANTIMATTER_WARHEAD("antimatter_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -142,6 +150,19 @@ public enum ChargeKind {
                  TSAR_WARHEAD, NUCLEAR_MISSILE_WARHEAD -> true;
             default -> false;
         };
+    }
+
+    /**
+     * An exotic warhead (Phase 11): antimatter. Like a nuclear one it rides only the Strategic missile and goes off in
+     * full only on a missile's arrival; set off any other way its containment fails ({@code Antimatter.breach}).
+     */
+    public boolean exotic() {
+        return this == ANTIMATTER_WARHEAD;
+    }
+
+    /** It rides only the Strategic missile body, which carries nothing else: the nuclear warheads and the exotic ones. */
+    public boolean strategic() {
+        return nuclear() || exotic();
     }
 
     /**

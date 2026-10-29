@@ -78,6 +78,23 @@ public final class BlastManager extends SavedData {
         nanosUsed = 0;
     }
 
+    /** What is left of this server tick's time budget, ns (the annihilations draw on it too: {@link Annihilations}). */
+    static long nanosLeft() {
+        return nanosLeft;
+    }
+
+    /** What is left of this server tick's block-change budget. */
+    static int blocksLeft() {
+        return blocksLeft;
+    }
+
+    /** Takes what an annihilation used off this server tick's budget. */
+    static void spend(long nanos, int blocks) {
+        nanosLeft -= nanos;
+        nanosUsed += nanos;
+        blocksLeft -= blocks;
+    }
+
     static void forget(ServerLevel level) {
         BY_LEVEL.remove(level);
     }

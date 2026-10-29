@@ -204,6 +204,11 @@ public final class FxPhotographer {
                 new Scene("scud_storm_aerial", "scud_storm", 34, 34, List.of(20, 90, 240, 290)),
                 new Scene("scud_strike", "scud_strike", 26, 14, List.of(27, 36, 46, 60, 90, 160, 400)),
                 new Scene("scud_strike_aerial", "scud_strike", 22, 40, List.of(46, 90, 400)),
+                // Phase 11: an antimatter warhead arriving on top of a mesa of layered rock (ANTIMATTER_MESA high, the flat
+                // world being too shallow for its sphere): the flash, the white sphere growing and fading, then the void,
+                // from the plain to the west (a semicircle bitten clean out of the cliff) and from above (the bowl).
+                new Scene("antimatter", "antimatter_warhead", 130, -14, List.of(1, 6, 14, 30, 60, 90, 160, 300)),
+                new Scene("antimatter_aerial", "antimatter_warhead", 120, 32, List.of(40, 90, 260)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
@@ -442,6 +447,34 @@ public final class FxPhotographer {
     }
 
     /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
+    /** The antimatter scene's mesa: its height, and how far it runs west of the burst (the rest of it east). */
+    private static final int ANTIMATTER_MESA = 50, MESA_WEST = 20, MESA_EAST = 70, MESA_HALF = 70;
+
+    /**
+     * A mesa of layered rock for the antimatter warhead to land on: bands of stone, andesite, tuff and granite under
+     * dirt and grass, so the sphere's cut shows clean through the layers. Its west face stands {@link #MESA_WEST} blocks
+     * short of the burst, inside the sphere, so the sphere bites a semicircle out of it.
+     */
+    private static void antimatterMesa(ServerLevel level, int x, int ground) {
+        var layers = new net.minecraft.world.level.block.state.BlockState[] {
+                net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), net.minecraft.world.level.block.Blocks.ANDESITE.defaultBlockState(),
+                net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), net.minecraft.world.level.block.Blocks.TUFF.defaultBlockState(),
+                net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), net.minecraft.world.level.block.Blocks.GRANITE.defaultBlockState()};
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        var grass = net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState();
+        net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = -MESA_WEST; dx <= MESA_EAST; dx++) {
+            for (int z = -MESA_HALF; z <= MESA_HALF; z++) {
+                level.getChunk((x + dx) >> 4, z >> 4);
+                for (int dy = 0; dy < ANTIMATTER_MESA; dy++) {
+                    int below = ANTIMATTER_MESA - 1 - dy;
+                    var state = below == 0 ? grass : below < 4 ? dirt : layers[(dy / 7) % layers.length];
+                    level.setBlock(p.set(x + dx, ground + dy, z), state, 2);
+                }
+            }
+        }
+    }
+
     private static void grenades(ServerLevel level, int x, int ground) {
         ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
         player.setGameMode(GameType.CREATIVE);
@@ -1306,6 +1339,12 @@ public final class FxPhotographer {
                 if (s.profile().startsWith("factory_")) {
                     lift = 7;                                  // over the factories' walls, into their yards
                 }
+                if (s.profile().equals("antimatter_warhead")) {
+                    antimatterMesa(level, x, ground);          // built now, so the client has it long before the burst
+                    if (s.name().endsWith("_aerial")) {
+                        lift += ANTIMATTER_MESA;               // over the mesa it lands on
+                    }
+                }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
@@ -1553,6 +1592,11 @@ public final class FxPhotographer {
                 if (s.profile().equals("fallout")) {
                     dev.groundburst.content.radiation.RadiationSources.of(level).add(dev.groundburst.content.radiation.RadiationSource.lasting(
                             new Vec3(x + 0.5, ground, 0.5), 180, 60_000, 48_000, level.getGameTime(), 1));
+                    return;
+                }
+                if (s.profile().equals("antimatter_warhead")) {      // on the mesa's top (ground is its top now)
+                    dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.ANTIMATTER_WARHEAD,
+                            net.minecraft.core.BlockPos.containing(at), null);
                     return;
                 }
                 // These two through the warhead's own path: the neutrons wither the plants, the waste goes up as dust.

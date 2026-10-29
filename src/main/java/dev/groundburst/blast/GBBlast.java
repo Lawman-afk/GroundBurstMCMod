@@ -35,15 +35,19 @@ public final class GBBlast {
         modBus.addListener((NewDatapackRegistryEvent event) -> event.worldRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast", "%1$s was blown to pieces");
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast.player", "%1$s was blown to pieces by %2$s");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated", "%1$s was annihilated");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated.player", "%1$s was annihilated by %2$s's antimatter");
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) -> BlastManager.resetBudget());
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
+                Annihilations.tick(level);                  // short-lived: ahead of the blasts in the budget
                 BlastManager.of(level).tick();
             }
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 BlastManager.forget(level);
+                Annihilations.forget(level);
             }
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
@@ -53,11 +57,13 @@ public final class GBBlast {
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
                 BlastManager.of(player.level()).syncTo(player);
+                Annihilations.syncTo(player);
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
                 BlastManager.of(player.level()).syncTo(player);
+                Annihilations.syncTo(player);
             }
         });
     }

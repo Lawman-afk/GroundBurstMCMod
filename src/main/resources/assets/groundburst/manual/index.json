@@ -64,6 +64,7 @@
     "ordnance/missile_silo",
     "ordnance/cruise_launcher",
     "ordnance/nuclear",
+    "ordnance/exotic",
     "ordnance/strategic_assembly",
     "ordnance/radar_array",
     "ordnance/chemical",

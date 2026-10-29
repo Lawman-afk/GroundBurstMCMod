@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:antimatter_cell",
+    "groundburst:antimatter_cell",
+    "groundburst:antimatter_cell",
+    "groundburst:antimatter_cell",
+    "groundburst:superconducting_coil",
+    "groundburst:superconducting_coil",
+    "groundburst:quantum_circuit"
+  ],
+  "result": {
+    "id": "groundburst:antimatter_trap"
+  }
+}

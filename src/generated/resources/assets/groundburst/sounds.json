@@ -1,4 +1,22 @@
 {
+  "antimatter.far": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:exotic/antimatter_far"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.antimatter.far"
+  },
+  "antimatter.near": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:exotic/antimatter_near"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.antimatter.near"
+  },
   "assembly.clank": {
     "sounds": [
       "groundburst:machine/assembly_clank"

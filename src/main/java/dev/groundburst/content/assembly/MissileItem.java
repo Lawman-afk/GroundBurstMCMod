@@ -25,6 +25,7 @@ public class MissileItem extends Item {
     private static final String T_GUIDANCE = GBLang.add(GroundBurst.MODID + ".missile.tip.guidance", "Guidance: %s");
     private static final String T_HARDENED = GBLang.add(GroundBurst.MODID + ".missile.tip.hardened", "Hardened against EMP");
     private static final String T_NUCLEAR = GBLang.add(GroundBurst.MODID + ".missile.tip.nuclear", "Nuclear: fires from a Launch Complex or a Missile Silo");
+    private static final String T_EXOTIC = GBLang.add(GroundBurst.MODID + ".missile.tip.exotic", "Exotic: fires from a Launch Complex or a Missile Silo");
     private static final String T_CRUISE = GBLang.add(GroundBurst.MODID + ".missile.tip.cruise",
             "Cruise missile: flies low over the ground; fires from a Cruise Missile Launcher");
     static final String T_NAMED = GBLang.add(GroundBurst.MODID + ".missile.named", "%s Missile");
@@ -76,6 +77,7 @@ public class MissileItem extends Item {
         name("thermonuclear_warhead", "Thermonuclear ICBM");
         name("cobalt_warhead", "Cobalt ICBM");
         name("tsar_warhead", "Tsar ICBM");
+        name("antimatter_warhead", "Antimatter Missile");
         cruise("he_warhead", "HE Cruise Missile");
         cruise("napalm_warhead", "Napalm Cruise Missile");
         cruise("chemical_warhead", "Chemical Cruise Missile");
@@ -124,6 +126,8 @@ public class MissileItem extends Item {
         }
         if (s.nuclear()) {
             tooltip.accept(Component.translatable(T_NUCLEAR).withStyle(ChatFormatting.YELLOW));
+        } else if (s.exotic()) {
+            tooltip.accept(Component.translatable(T_EXOTIC).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         if (s.cruise()) {
             tooltip.accept(Component.translatable(T_CRUISE).withStyle(ChatFormatting.AQUA));

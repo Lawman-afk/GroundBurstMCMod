@@ -65,7 +65,7 @@ public final class Spectacle {
     private static final Vector3fc FALLOUT_SKY = new Vector3f(0.66f, 0.86f, 0.36f);
 
     private static final Int2ObjectOpenHashMap<BlastFx> BLASTS = new Int2ObjectOpenHashMap<>();
-    private static final Puffs PUFFS = new Puffs();
+    static final Puffs PUFFS = new Puffs();
     private static final Debris DEBRIS = new Debris();
     /** Client ticks the world has run (not counting pauses): the clock every effect is timed by. */
     static long ticks;
@@ -80,6 +80,7 @@ public final class Spectacle {
         dev.groundburst.content.launch.MissileEntity.exhaustHook = Spectacle::missileExhaust;
         EffectFx.register();
         FalloutFx.register();
+        AnnihilationFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundBurst.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -104,6 +105,7 @@ public final class Spectacle {
 
     private static void clear() {
         EffectFx.clear();
+        AnnihilationFx.clear();
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
@@ -123,7 +125,7 @@ public final class Spectacle {
         };
     }
 
-    private static double now() {
+    static double now() {
         Minecraft mc = Minecraft.getInstance();
         return ticks + (mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
@@ -727,6 +729,7 @@ public final class Spectacle {
                 it.remove();
             }
         }
+        AnnihilationFx.tick(mc.level, PUFFS, ticks, q, eye);
         PUFFS.tick(ticks);
         DEBRIS.tick(mc.level);
         SpentStages.tick(mc.level, PUFFS, ticks, q);
@@ -743,7 +746,8 @@ public final class Spectacle {
         for (BlastFx fx : BLASTS.values()) {
             sum += fx.flashAt(fx.age(now));
         }
-        return Math.min(0.92f, sum);
+        sum += AnnihilationFx.flash(now);
+        return Math.min(0.96f, sum);
     }
 
     // --- camera, fog and sky ------------------------------------------------------------------------------------------------
@@ -848,7 +852,8 @@ public final class Spectacle {
     private static void submit(SubmitCustomGeometryEvent event) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level))) {
+        if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level)
+                && AnnihilationFx.isEmpty())) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -869,6 +874,7 @@ public final class Spectacle {
             FxRenderTypes.submit(collector, poseStack, FxRenderTypes.fire(FIREBALL), (pose, buffer) -> spheres(buffer, pose, fire));
             FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
         }
+        AnnihilationFx.submit(collector, poseStack, camera.pos, now);
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {
@@ -893,7 +899,7 @@ public final class Spectacle {
      * One sphere to draw: centre (camera-relative), radius, colour, alpha, how lumpy, the noise time, texture scroll, and
      * whether its edges fade (limb darkening).
      */
-    private static float[] sphere(Vec3 c, Vec3 camera, float radius, int color, float alpha, float boil, float time, float scroll, float limb, int seed) {
+    static float[] sphere(Vec3 c, Vec3 camera, float radius, int color, float alpha, float boil, float time, float scroll, float limb, int seed) {
         return new float[] {(float) (c.x - camera.x), (float) (c.y - camera.y), (float) (c.z - camera.z), radius, Float.intBitsToFloat(color),
                 alpha, boil, time, scroll, limb, seed};
     }
@@ -925,7 +931,7 @@ public final class Spectacle {
         out.add(sphere(fx.start.center(), camera, r, 0xF4F0EA, alpha, 0.03f, (float) t * 0.02f, (float) t * 0.004f, 1.4f, fx.noiseSeed + 7));
     }
 
-    private static void spheres(VertexConsumer b, PoseStack.Pose pose, List<float[]> spheres) {
+    static void spheres(VertexConsumer b, PoseStack.Pose pose, List<float[]> spheres) {
         float[] px = new float[(LAT + 1) * (LON + 1)], py = new float[px.length], pz = new float[px.length];
         int[] col = new int[px.length];
         for (float[] s : spheres) {
@@ -944,9 +950,10 @@ public final class Spectacle {
                     pz[k] = cz + dz * rr;
                     // Limb: how squarely this point faces the camera (the camera is at the origin).
                     float facing = Math.abs(dx * -cx + dy * -cy + dz * -cz) / cl;
-                    float edge = (float) Math.pow(facing, 0.5 * limb);
+                    // limb > 0: darkened, fading limb (fire); 0: even all over; < 0: a rim glow, brightest at the edge.
+                    float edge = limb >= 0 ? (float) Math.pow(facing, 0.5 * limb) : (float) Math.pow(1 - facing, -0.5 * limb);
                     int a = (int) (Math.max(0, Math.min(1, alpha * (0.25f + 0.75f * edge))) * 255);
-                    int shade = Puffs.lerpRgb(color & 0xFFFFFF, 0x401008, (1 - facing) * 0.45f * limb);
+                    int shade = limb > 0 ? Puffs.lerpRgb(color & 0xFFFFFF, 0x401008, (1 - facing) * 0.45f * limb) : color & 0xFFFFFF;
                     col[k] = a << 24 | shade;
                 }
             }

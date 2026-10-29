@@ -25,8 +25,8 @@ public final class MissileAssembly {
         NO_BODY("Fit a missile body"),
         NO_MOTOR("Fit a rocket motor"),
         WARHEAD_TOO_BIG("A class %s warhead needs a bigger body"),
-        NUCLEAR_NEEDS_STRATEGIC("A nuclear warhead needs a Strategic body"),
-        STRATEGIC_NUCLEAR_ONLY("A Strategic body carries nuclear warheads only"),
+        NUCLEAR_NEEDS_STRATEGIC("A nuclear or exotic warhead needs a Strategic body"),
+        STRATEGIC_NUCLEAR_ONLY("A Strategic body carries only nuclear and exotic warheads"),
         WHOLE_WEAPON("Built whole at a Strategic Assembly Hall"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
         OUTPUT_FULL("Take the finished missile out first"),
@@ -66,21 +66,21 @@ public final class MissileAssembly {
     }
 
     /**
-     * Whether a body takes a warhead: a nuclear warhead only a Strategic body (and that body nothing else); any other a
-     * body of its class or bigger.
+     * Whether a body takes a warhead: a nuclear or exotic warhead only a Strategic body (and that body nothing else); any
+     * other a body of its class or bigger.
      */
     public static Problem fit(ItemStack warhead, SizeClass body) {
         var kind = AssemblyStats.kindOf(warhead);
         if (kind != null && kind.wholeWeapon()) {
             return Problem.WHOLE_WEAPON;                   // a thermonuclear warhead is only ever built into its missile
         }
-        boolean nuclear = kind != null && kind.nuclear();
-        if (nuclear != (body == SizeClass.XL)) {
-            return nuclear ? Problem.NUCLEAR_NEEDS_STRATEGIC : Problem.STRATEGIC_NUCLEAR_ONLY;
+        boolean strategic = kind != null && kind.strategic();
+        if (strategic != (body == SizeClass.XL)) {
+            return strategic ? Problem.NUCLEAR_NEEDS_STRATEGIC : Problem.STRATEGIC_NUCLEAR_ONLY;
         }
         SizeClass size = warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi
                 && bi.getBlock() instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c ? WarheadAssembly.sizeOf(c) : null;
-        return !nuclear && size != null && size.ordinal() > body.ordinal() ? Problem.WARHEAD_TOO_BIG : Problem.NONE;
+        return !strategic && size != null && size.ordinal() > body.ordinal() ? Problem.WARHEAD_TOO_BIG : Problem.NONE;
     }
 
     /**

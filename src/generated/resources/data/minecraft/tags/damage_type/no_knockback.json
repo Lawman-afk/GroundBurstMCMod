@@ -1,6 +1,8 @@
 {
   "values": [
     "groundburst:radiation",
-    "groundburst:toxin"
+    "groundburst:toxin",
+    "groundburst:annihilated",
+    "groundburst:gamma_flash"
   ]
 }

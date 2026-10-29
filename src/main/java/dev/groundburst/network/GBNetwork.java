@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "13";
+    public static final String PROTOCOL_VERSION = "14";
 
     private GBNetwork() {}
 
@@ -26,6 +26,11 @@ public final class GBNetwork {
         registrar.playToClient(dev.groundburst.blast.BlastPayloads.Start.TYPE, dev.groundburst.blast.BlastPayloads.Start.CODEC);
         registrar.playToClient(dev.groundburst.blast.BlastPayloads.Front.TYPE, dev.groundburst.blast.BlastPayloads.Front.CODEC);
         registrar.playToClient(dev.groundburst.blast.BlastPayloads.End.TYPE, dev.groundburst.blast.BlastPayloads.End.CODEC);
+        // Annihilations (DESIGN.md §16.3): an antimatter warhead's sphere, drawn on the client by AnnihilationFx.
+        registrar.playToClient(dev.groundburst.blast.AnnihilationPayloads.Start.TYPE, dev.groundburst.blast.AnnihilationPayloads.Start.CODEC,
+                (payload, context) -> dev.groundburst.blast.AnnihilationPayloads.startHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.AnnihilationPayloads.End.TYPE, dev.groundburst.blast.AnnihilationPayloads.End.CODEC,
+                (payload, context) -> dev.groundburst.blast.AnnihilationPayloads.endHook.accept(payload));
         // Placed charges (DESIGN.md §9.4): the fuze settings and defuse screens, and the Remote Detonator's frequency.
         registrar.playToServer(dev.groundburst.content.ordnance.charge.ChargePayloads.Settings.TYPE,
                 dev.groundburst.content.ordnance.charge.ChargePayloads.Settings.CODEC, dev.groundburst.content.ordnance.charge.ChargePayloads.Settings::handle);

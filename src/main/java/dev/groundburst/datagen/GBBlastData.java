@@ -167,6 +167,9 @@ public final class GBBlastData {
         ctx.register(dev.groundburst.content.nuclear.GBEffects.RADIATION_DAMAGE,
                 new DamageType(GroundBurst.MODID + ".radiation", DamageScaling.NEVER, 0f));
         ctx.register(dev.groundburst.content.ordnance.GBOrdnance.TOXIN_DAMAGE, new DamageType(GroundBurst.MODID + ".toxin", DamageScaling.NEVER, 0f));
+        // Phase 11 (DESIGN.md §16.3): the antimatter warhead's sphere and its gamma flash.
+        ctx.register(dev.groundburst.blast.Annihilations.ANNIHILATED, new DamageType(GroundBurst.MODID + ".annihilated", DamageScaling.NEVER, 0f));
+        ctx.register(dev.groundburst.content.exotic.Antimatter.GAMMA_FLASH, new DamageType(GroundBurst.MODID + ".gamma_flash", DamageScaling.NEVER, 0f));
     }
 
     /** {@code groundburst:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -184,6 +187,18 @@ public final class GBBlastData {
                     dev.groundburst.content.ordnance.GBOrdnance.TOXIN_DAMAGE);
             tag(DamageTypeTags.NO_KNOCKBACK).add(dev.groundburst.content.nuclear.GBEffects.RADIATION_DAMAGE,
                     dev.groundburst.content.ordnance.GBOrdnance.TOXIN_DAMAGE);
+            // Annihilation: nothing stops it but a creative player's invulnerability; a gamma flash goes through armour.
+            var annihilated = dev.groundburst.blast.Annihilations.ANNIHILATED;
+            var gamma = dev.groundburst.content.exotic.Antimatter.GAMMA_FLASH;
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(annihilated, gamma);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(annihilated, gamma);
+            tag(DamageTypeTags.BYPASSES_SHIELD).add(annihilated, gamma);
+            tag(DamageTypeTags.BYPASSES_EFFECTS).add(annihilated);
+            tag(DamageTypeTags.BYPASSES_RESISTANCE).add(annihilated);
+            tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).add(annihilated);
+            tag(DamageTypeTags.BYPASSES_COOLDOWN).add(annihilated);
+            tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(annihilated, gamma);
+            tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(annihilated);
         }
     }
 }

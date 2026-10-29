@@ -255,6 +255,8 @@ public final class Charges {
             case SCUD_STORM_WARHEAD -> scud(level, c, by, bombScale);
             // A dirty warhead is only HE and waste: it goes off however it is set off.
             case DIRTY_WARHEAD -> dirty(level, c, by, bombScale);
+            // An antimatter warhead set off anywhere but on a missile's arrival: its trap breached, a little let out.
+            case ANTIMATTER_WARHEAD -> dev.groundburst.content.exotic.Antimatter.breach(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
             case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
         }
@@ -267,6 +269,8 @@ public final class Charges {
     public static void burst(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
         if (kind.nuclear()) {
             nuclear(level, kind, at, by, true);
+        } else if (kind.exotic()) {
+            exotic(level, kind, at, by);
         } else if (kind.airburst()) {
             airburst(level, kind, at, by);
         } else {
@@ -281,6 +285,8 @@ public final class Charges {
     public static void impact(ServerLevel level, ChargeKind kind, BlockPos pos, @Nullable Entity by) {
         if (kind.nuclear()) {
             nuclear(level, kind, Vec3.atCenterOf(pos), by, false);
+        } else if (kind.exotic()) {
+            exotic(level, kind, Vec3.atCenterOf(pos), by);
         } else if (kind == ChargeKind.BUNKER_BUSTER) {
             penetrate(level, pos, by);
         } else {
@@ -438,6 +444,13 @@ public final class Charges {
         }
         if (kind == ChargeKind.NEUTRON_WARHEAD) {
             dev.groundburst.content.nuclear.NeutronBurst.burst(level, at, by, bombScale);
+        }
+    }
+
+    /** An exotic warhead delivered by a missile (Phase 11, DESIGN.md §16): its full effect where it arrives. */
+    public static void exotic(ServerLevel level, ChargeKind kind, Vec3 at, @Nullable Entity by) {
+        if (kind == ChargeKind.ANTIMATTER_WARHEAD) {
+            dev.groundburst.content.exotic.Antimatter.burst(level, at, by, bombScale);
         }
     }
 

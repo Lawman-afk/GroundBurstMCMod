@@ -54,6 +54,10 @@ public final class GBAssembly {
             () -> GBOrdnance.BOOSTED_FISSION_WARHEAD.block().get(), SizeClass.XL);
     public static final DeferredItem<ComponentItems.PayloadCore> NEUTRON_CORE = core("neutron_core", "Neutron Core",
             () -> GBOrdnance.NEUTRON_WARHEAD.block().get(), SizeClass.XL);
+    // Exotic cores (Phase 11, DESIGN.md §16) are class XL too: the Strategic Warhead Casing and the Strategic missile.
+    /** Antimatter held in a Penning trap: four antimatter cells, superconducting coils, a quantum circuit. */
+    public static final DeferredItem<ComponentItems.PayloadCore> ANTIMATTER_TRAP = core("antimatter_trap", "Antimatter Trap",
+            () -> GBOrdnance.ANTIMATTER_WARHEAD.block().get(), SizeClass.XL);
     /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */
     public static final DeferredItem<ComponentItems.PayloadCore> DIRTY_PAYLOAD = core("dirty_payload", "Dirty Payload",
             () -> GBOrdnance.DIRTY_WARHEAD.block().get(), SizeClass.S);

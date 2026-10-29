@@ -12,6 +12,9 @@ Payload cores:
 - Gas / Smoke / Cryo / EMP Canister Dispensers: four canisters (the grenades' cans) strapped on a plate.
 - Toxic Waste Tank: a dark drum with a glowing green band, a hazard-striped rim and a spout.
 - Chemical Agent Canister: a pale grey pressure bottle with two green bands and a brass valve.
+- Antimatter Trap (Phase 11): a short white ceramic canister on a dark base, two violet coils glowing between dark collars
+  (its superconducting magnets), a dark cap round a glowing port: the Antimatter Warhead in small. Painted with the
+  material library, as every new model is (the cores before it are plainly shaded).
 Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
 Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Barometric (vent ports and a brass
 pressure ring).
@@ -331,6 +334,61 @@ def neutron_core() -> None:
     G.finish(m, t)
 
 
+def antimatter_trap() -> None:
+    """Antimatter in a Penning trap: the warhead's capsule in small, its round parts true 16-sided prisms of planks
+    (warheads.section) painted with the material library; the coils and the port emit light."""
+    import numpy as np
+    import warheads as W
+    from gb import machine_kit as K
+    from gb import materials as M
+    m = model("antimatter_trap")
+    m.open_ok = set()
+    groups: dict[str, list[str]] = {}
+    lips: dict[str, tuple[bool, bool, bool]] = {}
+
+    def sec(group, r, y0, y1, caps, top=True, bottom=False, foot=False):
+        names = W.section(m, f"{group}{len(groups.get(group, []))}", r, y0, y1, W.sides_for(r), caps=caps)
+        groups.setdefault(group, []).extend(names)
+        for n in names:
+            lips[n] = (top, bottom, foot)
+    sec("base", 4.2, 0.0, 1.2, ("up", "down"), bottom=True)
+    sec("body", 3.2, 1.2, 9.5, ("up",), top=False, foot=True)
+    for y in (2.6, 6.2):
+        sec("collar", 3.85, y, y + 0.5, ("up", "down"), bottom=True)
+        sec("coil", 3.65, y + 0.5, y + 1.5, (), top=False)
+        sec("collar", 3.85, y + 1.5, y + 2.0, ("up", "down"), bottom=True)
+    sec("cap", 2.3, 9.5, 10.3, ("up",))
+    sec("port", 1.2, 10.3, 10.8, ("up",))
+    for n in groups["coil"] + groups["port"]:
+        m.get(n).light_emission = 15
+    while True:
+        try:
+            m.layout()
+            break
+        except ValueError:
+            m.tex_w *= 2
+            m.tex_h = m.tex_w
+    t = Tex(m.tex_w, m.tex_h)
+    k = K.Kit(m, {}, seed=611, ao_reach=1.5, turned=True)
+    for n, (top, bottom, foot) in lips.items():
+        W.round_faces(k.S, [n], top, bottom, foot)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    k.paint(t, groups["base"], W.BASE)
+    k.paint(t, groups["body"], W.paint(W.WHITE, 0.62, 0.08))
+    k.paint(t, groups["collar"], W.metal(W.GUNMETAL, 0.34))
+    k.paint(t, groups["coil"], M.Material(ramp=W.ramp9(W.VIOLET), tone=0.66, **lit))
+    k.paint(t, groups["cap"], W.metal(W.GUNMETAL, 0.4))
+    k.paint(t, groups["port"], M.Material(ramp=W.ramp9(W.VIOLET), tone=0.86, **lit))
+
+    def windings(f, img):                                      # the coils' turns, as the warhead's
+        if f.d in W.SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 24).astype(int)
+            M.lighten(img, col % 2 == 0, 1.14, 6)
+    k.overlay(t, groups["coil"], windings)
+    k.overlay(t, groups["body"], lambda f, img: W.decal(f, img, ["YKY", "KYK", "YKY"], {"Y": W.YELLOW[4], "K": W.VIOLET[2]}, 5.6))
+    G.finish(m, t)
+
+
 def dirty_payload() -> None:
     """A rusty drum of nuclear waste with a trefoil band, an olive HE brick taped to its side."""
     m = model("dirty_payload")
@@ -614,7 +672,8 @@ def barometric_fuze() -> None:
 
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
-         "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"]
+         "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload",
+         "antimatter_trap"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"]
@@ -639,6 +698,7 @@ def main() -> None:
     boosted_fission_core()
     neutron_core()
     dirty_payload()
+    antimatter_trap()
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)

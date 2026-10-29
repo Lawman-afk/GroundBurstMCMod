@@ -1133,6 +1133,62 @@ def neutron() -> dict:
     return save(rk, lv)
 
 
+def antimatter() -> dict:
+    """The antimatter warhead's missile (Phase 11, DESIGN.md §16.3): an experimental round, clean white as a test
+    missile is: a stout first stage on four small swept fins, a black interstage, a slimmer second stage the width of
+    the warhead's collars, a violet band at the foot of each stage, three confinement rings like the warhead's (a violet
+    coil glowing between dark collars: one on the first stage, two on the second), a band of yellow and black hazard
+    chevrons under the warhead and grey stencils; the capsule on top."""
+    rk = Rocket("antimatter_warhead", "XL")
+    R1, R2 = 5.8, 5.0
+    rk.bell("bell", 3.4, 2.3, 0.0, 3)
+    rk.ring("skirt", R1 + 0.3, 3.0, 12.0, caps=("up", "down"), top=True, bottom=True)
+    rk.fins("fin", R1 + 0.3, 3.0, 11.0, 4.0, 4.5, thick=0.8)
+    rk.closure("aft", R1 + 0.3, 3.0)
+    rk.tube("stage1", R1, 12.0, 62.0)
+    rk.taper("inter", R1 - 0.1, R2 + 0.35, 62.0, 3)
+    rk.bell("bell2", 3.0, 2.0, 61.0, 3)
+    rk.tube("stage2", R2, 65.0, 110.0)
+    rk.joint("joint", R2 + 0.3, 110.0)
+    rk.tube("guidance", R2, 111.0, 115.0, on_joint=True)
+    for y, R in ((36.0, R1), (80.0, R2), (94.0, R2)):
+        # The coil has no caps: they would lie in the collars' planes, and it never shows its ends.
+        rk.ring("collar", R + 0.6, y, y + 0.5, caps=("up", "down"), top=True, bottom=True)
+        rk.ring("coil", R + 0.4, y + 0.5, y + 1.5, caps=(), top=False, bottom=False)
+        rk.ring("collar", R + 0.6, y + 1.5, y + 2.0, caps=("up", "down"), top=True, bottom=True)
+    for n in rk.groups["coil"]:
+        rk.m.get(n).light_emission = 15
+    rk.mount(115.0)
+    rk.parts, rk.stages, rk.engines = [62.0, 115.0, rk.tip], [62.0, rk.tip], [0.0, 61.0]
+    white = W.paint(W.WHITE, 0.66, 0.1)
+    lv = Livery(body=white, stage1=white, stage2=white, guidance=white, skirt=W.metal(W.GUNMETAL, 0.42), fin=paint(W.WHITE, 0.6),
+                inter=W.metal(W.BLACK, 0.42), joint=RING, bell=NOZZLE, bell2=NOZZLE, collar=W.metal(W.GUNMETAL, 0.34),
+                coil=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.66, mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0,
+                                ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND))
+    violet = W.paint(W.VIOLET, 0.6, 0.15)
+
+    def windings(k, f, img):                                   # the coils' turns, as the warhead's
+        if f.d in SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 36).astype(int)
+            M.lighten(img, col % 2 == 0, 1.14, 6)
+    lv.on("coil", windings)
+    lv.on("stage1", band(13, 15, violet)).on("stage2", band(66, 68, violet))
+
+    def chevrons(k, f, img):                                   # hazard chevrons round the top of the second stage
+        if f.d not in SIDES:
+            return
+        col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 32).astype(int)
+        row = np.floor(f.Y + 0.1).astype(int)
+        on = (row >= 104) & (row < 107)
+        img[on] = W.YELLOW[4]
+        img[on & (((col + row) % 4) < 2)] = W.BLACK[1]
+    lv.on("stage2", chevrons)
+    lv.on("stage1", stencil((48.0, 47.0, 45.0), W.BLACK[3], 6, "xx.xxx.x"))
+    lv.on("stage2", stencil((90.0, 89.0), W.BLACK[3], 5, "x.xx.x"))
+    lv.on("joint", rivets(110.0)).on("bell", soot).on("bell2", soot)
+    return save(rk, lv)
+
+
 # --- Intercontinental (XXL, the hall): three stages ---------------------------------------------------------------------------
 
 def thermonuclear() -> dict:
@@ -1479,7 +1535,7 @@ BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chem
             "cryo_warhead": cryo, "thermobaric_warhead": thermobaric, "bunker_buster_warhead": bunker_buster, "emp_warhead": emp,
             "massive_warhead": massive, "tactical_nuclear_warhead": tactical, "fission_warhead": fission,
             "boosted_fission_warhead": boosted, "neutron_warhead": neutron, "thermonuclear_warhead": thermonuclear,
-            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
+            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "antimatter_warhead": antimatter, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
             # The cruise missiles (slice 9c): each Light and Medium warhead's, its look "<warhead>_cruise".
             "he_warhead_cruise": _he_cruise, "napalm_warhead_cruise": _napalm_cruise, "chemical_warhead_cruise": _chemical_cruise,
             "toxic_waste_warhead_cruise": _toxic_waste_cruise, "dirty_warhead_cruise": _dirty_cruise,

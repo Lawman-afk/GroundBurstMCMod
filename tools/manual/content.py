@@ -852,7 +852,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
-entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [
+entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
 The **Ordnance Assembly Bench** puts warheads together; a [missile assembler](ordnance/missile_assemblers) of the warhead's class then builds it into its [missile](ordnance/missiles). The bench is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick. Pipes and hoppers feed its part slots and take from its output.
 
@@ -1133,6 +1133,20 @@ So much ground goes that the crater keeps forming for a minute or two after the 
     craft("boosted_fission_core"),
     craft("neutron_core"),
     craft("dirty_payload"),
+])
+
+entry("ordnance/exotic", "Exotic warheads", "antimatter_warhead", ["antimatter_warhead", "antimatter_trap"], [
+    text("""
+An exotic warhead holds something stranger than a nuclear core. It is put together at the [Assembly Bench](ordnance/assembly) like any other, from its core, a **Strategic Warhead Casing** (exotic warheads are class XL, as nuclear ones are) and a fuze, built into its two-stage **Strategic** [missile](ordnance/missiles) at the [Strategic Missile Assembler](ordnance/missile_assemblers), and fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo).
+
+**Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **48 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater.
+"""),
+    text("""
+**The gamma flash.** The first instant sends out a flash of gamma rays that kills anything in the open out to **64 blocks** and hurts it out to **96**. Blocks in between stop it: one block of stone keeps it from killing even close by, though it still burns; two of stone, or one of concrete, lead or obsidian, cut it to a fifth; behind two of concrete it is hardly felt. A full [hazmat suit's](safety/hazmat_suits) lead keeps its wearer alive in the open, just. Whoever it does not kill takes a dose of [radiation](safety/radiation). It leaves no fallout behind.
+
+**Breaches.** Like a nuclear warhead, it only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its trap fails unevenly and only a little of the antimatter meets the casing: a sphere 4 blocks round, and a weak flash.
+"""),
+    craft("antimatter_trap"),
 ])
 
 entry("ordnance/strategic_assembly", "Strategic Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "strategic_assembly_hall_spawner", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"], [

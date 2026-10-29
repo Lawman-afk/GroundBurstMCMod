@@ -1,7 +1,7 @@
 {
   "title": "Chemical grenades",
   "icon": "groundburst:gas_grenade",
-  "order": 14,
+  "order": 15,
   "items": [
     "groundburst:gas_grenade",
     "groundburst:toxin_grenade",

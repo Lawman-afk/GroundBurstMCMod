@@ -1,0 +1,24 @@
+{
+  "title": "Exotic warheads",
+  "icon": "groundburst:antimatter_warhead",
+  "order": 12,
+  "items": [
+    "groundburst:antimatter_warhead",
+    "groundburst:antimatter_trap"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "An exotic warhead holds something stranger than a nuclear core. It is put together at the [Assembly Bench](ordnance/assembly) like any other, from its core, a **Strategic Warhead Casing** (exotic warheads are class XL, as nuclear ones are) and a fuze, built into its two-stage **Strategic** [missile](ordnance/missiles) at the [Strategic Missile Assembler](ordnance/missile_assemblers), and fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo).\n\n**Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **48 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater."
+    },
+    {
+      "type": "text",
+      "text": "**The gamma flash.** The first instant sends out a flash of gamma rays that kills anything in the open out to **64 blocks** and hurts it out to **96**. Blocks in between stop it: one block of stone keeps it from killing even close by, though it still burns; two of stone, or one of concrete, lead or obsidian, cut it to a fifth; behind two of concrete it is hardly felt. A full [hazmat suit's](safety/hazmat_suits) lead keeps its wearer alive in the open, just. Whoever it does not kill takes a dose of [radiation](safety/radiation). It leaves no fallout behind.\n\n**Breaches.** Like a nuclear warhead, it only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its trap fails unevenly and only a little of the antimatter meets the casing: a sphere 4 blocks round, and a weak flash."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:antimatter_trap",
+      "text": ""
+    }
+  ]
+}

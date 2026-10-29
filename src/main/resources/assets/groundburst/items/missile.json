@@ -1114,6 +1114,69 @@
       },
       {
         "when": [
+          "antimatter_warhead",
+          "strategic_antimatter_warhead",
+          "icbm_antimatter_warhead",
+          "flight_antimatter_warhead",
+          "flight_strategic_antimatter_warhead",
+          "flight_icbm_antimatter_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_s1",
+          "strategic_antimatter_warhead_s1",
+          "icbm_antimatter_warhead_s1",
+          "flight_strategic_antimatter_warhead_s1",
+          "flight_icbm_antimatter_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_stage1"
+        }
+      },
+      {
+        "when": [
           "scud_storm_warhead",
           "strategic_scud_storm_warhead",
           "icbm_scud_storm_warhead",
