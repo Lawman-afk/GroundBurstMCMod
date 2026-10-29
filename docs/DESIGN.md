@@ -18,7 +18,7 @@
 | Java package | `dev.groundburst` |
 | Alternatives considered | *Critical Mass* (`criticalmass`), *Doomsday Arsenal* (`doomsday`); at the rename, *Hypocenter*, *Launch Codes* and *Kiloton* |
 | Tagline | "Assemble it. Launch it. Watch the horizon." |
-| Source | https://github.com/Lawman-afk/Ground-Burst-MCMod (public since 2026-10-28; author Lawman-afk) |
+| Source | https://github.com/Lawman-afk/GroundBurstMCMod (public since 2026-10-28, in this repository since 2026-10-30; author Lawman-afk) |
 | Licence | **MIT** (2026-10-28, the user: others should be able to make add-ons); `LICENSE` at the root, in the jar as `LICENSE_groundburst`. The sound recordings it is made from keep their own (CC0 1.0, CC BY 4.0: `assets/groundburst/sounds/CREDITS.txt`) |
 
 **Design pillars**
@@ -3506,6 +3506,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The public repository moved to a new one, github.com/Lawman-afk/GroundBurstMCMod (the user made it): the old repository's page kept a stale contributor entry from the history before its rewrite, though GitHub's own API and statistics counted only Lawman-afk; a new repository counts afresh, and lists Lawman-afk alone. The whole history moved, joined to the new repository's starting commit by a merge that keeps the project's files as they were. |
 | 2026-10-29 | Version 0.2.0 for the second CurseForge file (the rebuilt sites and the Construction set; the first file there, labelled 0.1.1, is the renamed 0.1.0). The README shows the mod: the logo, a link to the CurseForge page and a screenshot gallery (`docs/screenshots/`, JPEGs cut from the dev runs' shots; the Tsar's cloud cropped below a tutorial toast). `CHANGELOG.md` keeps each version's changes, written for players; its newest entry is the upload's changelog. The data generators' `.cache` no longer ships in the jar: the exclude named it from the project root, but resource patterns are relative to each resource folder. |
 | 2026-10-29 | The rebuilt sites checked on generated worlds (§22.2): they fit their land; their bigger footprints made four rarer, so their spacings close up to the frequencies the census set (radar outpost 36/13, test site 24/9, bunker 38/15, crashed missile 27/10). A crashed missile's ground round its wreck is of blocks no tree roots in, so the forest cannot grow through the model. |
 | 2026-10-29 | The Waste Storage and the Exotic Research Station rebuilt (§22.2), the last of the seven: the waste store after WIPP's own layout (a drift with disposal rooms off it, drums packed to the roof under sacks, bulkheads, salt creep), no longer rails and rubble; the station a round hall under a radome blown open by its containment failure, its silhouette the Search Radar on a tower, not a dish of blocks. Every site now lives in its own module built with the kit; the old site code is gone. |
