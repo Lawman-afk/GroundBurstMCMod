@@ -15,6 +15,8 @@ Payload cores:
 - Antimatter Trap (Phase 11): a short white ceramic canister on a dark base, two violet coils glowing between dark collars
   (its superconducting magnets), a dark cap round a glowing port: the Antimatter Warhead in small. Painted with the
   material library, as every new model is (the cores before it are plainly shaded).
+- Singularity Core (Phase 11): a small black sphere, its violet core glowing through a slit, in a cage of two hoops (a
+  steel one standing, a brass one round its waist) on a dark base: the Singularity Warhead in small. Material library.
 Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
 Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Barometric (vent ports and a brass
 pressure ring).
@@ -389,6 +391,78 @@ def antimatter_trap() -> None:
     G.finish(m, t)
 
 
+def singularity_core() -> None:
+    """A singularity seed in its containment: the warhead's gyroscope in small, a black sphere in bands from a true
+    circle's profile with a lit violet slit above its waist, in two hoops of turned planks (warheads.hoop's way)."""
+    import math
+    import numpy as np
+    import warheads as W
+    from gb import machine_kit as K
+    from gb import materials as M
+    m = model("singularity_core")
+    m.open_ok = set()
+    groups: dict[str, list[str]] = {}
+    lips: dict[str, tuple[bool, bool, bool]] = {}
+
+    def add(group, names, top=True, bottom=False):
+        groups.setdefault(group, []).extend(names)
+        for n in names:
+            lips[n] = (top, bottom, False)
+    add("base", W.section(m, "base0_", 3.6, 0.0, 1.0, W.sides_for(3.6), caps=("up", "down"), stagger="full"), True, True)
+    cy, R = 5.8, 3.2
+    bands = [(2.8, 3.4), (3.4, 4.1), (4.1, 4.8), (4.8, 5.6), (5.6, 6.4), ("slit", 6.4, 7.0), (7.0, 7.6), (7.6, 8.3), (8.3, 8.8)]
+    radii = [2.55 if b[0] == "slit" else round(math.sqrt(max(0.3, R * R - (cy - (b[0] + b[1]) / 2) ** 2)), 3) for b in bands]
+    for i, band in enumerate(bands):
+        if band[0] == "slit":
+            add("slit", W.section(m, f"slit{i}_", radii[i], band[1], band[2], W.sides_for(radii[i]), caps=()), False)
+            continue
+        below = radii[i - 1] if i > 0 else 0.0
+        above = radii[i + 1] if i + 1 < len(radii) else 0.0
+        caps = tuple(c for c, on in (("up", radii[i] > above), ("down", radii[i] > below)) if on)
+        stagger = "full" if len(caps) == 2 else "base" if caps == ("down",) and W.sides_for(radii[i]) == 16 else None
+        add("body", W.section(m, f"band{i}_", radii[i], band[0], band[1], W.sides_for(radii[i]), caps=caps, stagger=stagger),
+            "up" in caps, "down" in caps)
+    for group, R2, axis in (("steel", 4.4, "x"), ("brass", 3.75, "y")):
+        chord = 2 * R2 * math.tan(math.pi / 12) + 0.04
+        names = []
+        for i in range(12):
+            h = 0.35 - (0.03 if i % 2 else 0.0)
+            if axis == "y":
+                frm, to = (8 + R2 - 0.25, cy - h, 8 - chord / 2), (8 + R2 + 0.25, cy + h, 8 + chord / 2)
+            else:
+                frm, to = (8 - h, cy + R2 - 0.25, 8 - chord / 2), (8 + h, cy + R2 + 0.25, 8 + chord / 2)
+            m.box(f"{group}{i}", frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": 30.0 * i})
+            names.append(f"{group}{i}")
+        groups[group] = names
+    for n in groups["slit"]:
+        m.get(n).light_emission = 15
+    while True:
+        try:
+            m.layout()
+            break
+        except ValueError:
+            m.tex_w *= 2
+            m.tex_h = m.tex_w
+    t = Tex(m.tex_w, m.tex_h)
+    k = K.Kit(m, {}, seed=613, ao_reach=1.5, turned=True)
+    for n, (top, bottom, foot) in lips.items():
+        W.round_faces(k.S, [n], top, bottom, foot)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    k.paint(t, groups["base"], W.BASE)
+    k.paint(t, groups["body"], M.Material(ramp=W.ramp9(W.VOID), tone=0.42, mottle=0.03, grain=0.02, dither=0.35, edge_light=0.08,
+                                          edge_dark=0.05, ao=0.3, grime=0.0, dust=0.0, facing=W.ROUND))
+    k.paint(t, groups["slit"], M.Material(ramp=W.ramp9(W.VIOLET), tone=0.72, **lit))
+    k.paint(t, groups["steel"], W.metal(W.STEEL, 0.6))
+    k.paint(t, groups["brass"], W.BRASS)
+
+    def swirl(f, img):                                         # the core turning in the slit
+        if f.d in W.SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 20).astype(int)
+            M.darken(img, col % 3 == 0, 0.72)
+    k.overlay(t, groups["slit"], swirl)
+    G.finish(m, t)
+
+
 def dirty_payload() -> None:
     """A rusty drum of nuclear waste with a trefoil band, an olive HE brick taped to its side."""
     m = model("dirty_payload")
@@ -673,7 +747,7 @@ def barometric_fuze() -> None:
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload",
-         "antimatter_trap"]
+         "antimatter_trap", "singularity_core"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"]
@@ -699,6 +773,7 @@ def main() -> None:
     neutron_core()
     dirty_payload()
     antimatter_trap()
+    singularity_core()
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)

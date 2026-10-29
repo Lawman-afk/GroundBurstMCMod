@@ -81,6 +81,10 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.empty()), "he"));
         ctx.register(Blasts.profile("heavy_warhead"), visual(profile(5, 12, 20, 16, 0, 14, 28, 3, 0.75f, 0.15f, 0.3f, 0.5f, 80, 25, 3.0f,
                 TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
+        // A singularity's collapse (DESIGN.md §16.2): everything it held let go at once. A clean round crater 16 blocks
+        // round, no fire and no scorching; its look and sound the heavy warhead's (its own flash is the client's).
+        ctx.register(Blasts.profile(dev.groundburst.blast.Singularities.COLLAPSE_PROFILE), visual(profile(6, 16, 26, 0, 0, 18, 34, 3, 0.75f, 0.08f,
+                0.15f, 0.45f, 100, 30, 4.0f, TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
         ctx.register(Blasts.profile("thermobaric_warhead"), visual(profile(3, 12, 24, 20, 16, 24, 40, 3, 0.45f, 0.1f, 0.2f, 0.3f, 70, 30, 3.5f,
                 TerrainTable.CONVENTIONAL, Optional.empty()), "thermobaric"));
         ctx.register(Blasts.profile("cluster_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,
@@ -170,6 +174,7 @@ public final class GBBlastData {
         // Phase 11 (DESIGN.md §16.3): the antimatter warhead's sphere and its gamma flash.
         ctx.register(dev.groundburst.blast.Annihilations.ANNIHILATED, new DamageType(GroundBurst.MODID + ".annihilated", DamageScaling.NEVER, 0f));
         ctx.register(dev.groundburst.content.exotic.Antimatter.GAMMA_FLASH, new DamageType(GroundBurst.MODID + ".gamma_flash", DamageScaling.NEVER, 0f));
+        ctx.register(dev.groundburst.blast.Singularities.SPAGHETTIFIED, new DamageType(GroundBurst.MODID + ".spaghettified", DamageScaling.NEVER, 0f));
     }
 
     /** {@code groundburst:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -190,15 +195,16 @@ public final class GBBlastData {
             // Annihilation: nothing stops it but a creative player's invulnerability; a gamma flash goes through armour.
             var annihilated = dev.groundburst.blast.Annihilations.ANNIHILATED;
             var gamma = dev.groundburst.content.exotic.Antimatter.GAMMA_FLASH;
-            tag(DamageTypeTags.BYPASSES_ARMOR).add(annihilated, gamma);
-            tag(DamageTypeTags.NO_KNOCKBACK).add(annihilated, gamma);
-            tag(DamageTypeTags.BYPASSES_SHIELD).add(annihilated, gamma);
-            tag(DamageTypeTags.BYPASSES_EFFECTS).add(annihilated);
-            tag(DamageTypeTags.BYPASSES_RESISTANCE).add(annihilated);
-            tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).add(annihilated);
-            tag(DamageTypeTags.BYPASSES_COOLDOWN).add(annihilated);
-            tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(annihilated, gamma);
-            tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(annihilated);
+            var spaghettified = dev.groundburst.blast.Singularities.SPAGHETTIFIED;    // the horizon: as sure as annihilation
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(annihilated, gamma, spaghettified);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(annihilated, gamma, spaghettified);
+            tag(DamageTypeTags.BYPASSES_SHIELD).add(annihilated, gamma, spaghettified);
+            tag(DamageTypeTags.BYPASSES_EFFECTS).add(annihilated, spaghettified);
+            tag(DamageTypeTags.BYPASSES_RESISTANCE).add(annihilated, spaghettified);
+            tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).add(annihilated, spaghettified);
+            tag(DamageTypeTags.BYPASSES_COOLDOWN).add(annihilated, spaghettified);
+            tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(annihilated, gamma, spaghettified);
+            tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(annihilated, spaghettified);
         }
     }
 }

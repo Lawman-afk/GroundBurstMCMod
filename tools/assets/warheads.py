@@ -41,6 +41,9 @@ for high explosive, light red for incendiary, dark green for a toxic chemical.
 - Antimatter Warhead (Phase 11, DESIGN.md §16.3): a white ceramic capsule, no fins; three magnetic confinement rings,
   each a violet coil glowing between dark steel collars; a violet trefoil on yellow, a band of hazard chevrons, a dark
   cap round a glowing port on its dome.
+- Singularity Warhead (Phase 11, DESIGN.md §16.2): a matte-black sphere held in a gyroscope of three hoops (dark steel
+  outermost, bright steel, brass innermost, pinned together where they cross), its violet core glowing through a slit
+  round its equator, on a cradle on its mounting ring.
 - Toxin SCUD Warhead (a superweapon's, DESIGN.md §19.5; built whole into its Toxin SCUD): the C&C Generals SCUD's
   toxin-green nose, a long ogive over a short green section, a black band and white stencils.
 - Nuclear Missile Warhead (China's superweapon, built whole into its Nuclear Missile): a DF-5's re-entry vehicle, a long
@@ -107,6 +110,8 @@ SMOKE_GREEN = fixed("smoke_green", "#2a3a1c", "#3c5228", "#506c36", "#668646", "
 #: The GLA's toxin green (the SCUD's nose and fins, C&C Generals), and China's red.
 SCUD_GREEN = fixed("scud_green", "#0d1f07", "#15330b", "#1f4b11", "#2b6518", "#3a8222", "#4f9f30", "#71bc4c")
 #: The antimatter warhead's confinement glow.
+#: The singularity's matte black, a hint of blue-violet in its lights.
+VOID = fixed("void_black", "#040407", "#08080d", "#0d0d14", "#13131c", "#1a1a26", "#232333", "#2e2e42")
 VIOLET = fixed("confinement_violet", "#16082c", "#2a0f52", "#45198a", "#6427c2", "#8a4ae8", "#b182ff", "#dcc8ff")
 PLA_RED = fixed("pla_red", "#2e0604", "#4c0a06", "#6e1009", "#92180c", "#b42412", "#d23c22", "#e8664a")
 GREEN = P.INDICATOR_GREEN
@@ -599,6 +604,7 @@ def build_all() -> list[str]:
     names += tsar()
     # --- exotic (Phase 11, DESIGN.md §16) ---
     names += antimatter()
+    names += singularity()
     # --- the superweapons' (DESIGN.md §19.5) ---
     names += scud_storm()
     names += nuclear_missile()
@@ -752,6 +758,94 @@ def antimatter() -> list[str]:
     look.on("coil", windings)
     look.on("body", chevrons)
     look.on("body", lambda k, f, img: decal(f, img, TREFOIL, {"Y": YELLOW[4], "K": VIOLET[2]}, 9.4))
+    look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
+    return save(w, look)
+
+
+def hoop(w: Build, group: str, R: float, cy: float, axis: str, thick: float = 0.6, width: float = 0.8, n: int = 16) -> list[str]:
+    """A thin hoop of radius R round the point (8, cy, 8), in the plane square to {axis}: {n} planks laid tangent to it,
+    each turned about the axis to its place (26.x elements turn by any angle), a hair longer than its share so they
+    meet. About y it lies flat; about x it stands across the warhead's front and back; about z, from side to side. Every
+    other plank is a hair narrower, so where neighbours overlap at a joint their flat faces are not in one plane."""
+    chord = 2 * R * math.tan(math.pi / n) + 0.04
+    t = thick / 2
+    names = []
+    for i in range(n):
+        a = 360.0 * i / n
+        h = width / 2 - (0.04 if i % 2 else 0.0)
+        if axis == "y":
+            frm, to = (8 + R - t, cy - h, 8 - chord / 2), (8 + R + t, cy + h, 8 + chord / 2)
+        elif axis == "x":
+            frm, to = (8 - h, cy + R - t, 8 - chord / 2), (8 + h, cy + R + t, 8 + chord / 2)
+        else:
+            frm, to = (8 - chord / 2, cy + R - t, 8 - h), (8 + chord / 2, cy + R + t, 8 + h)
+        names.append(w.box(group, frm, to, rotation={"origin": (8, cy, 8), "axis": axis, "angle": a}))
+    return names
+
+
+def singularity() -> list[str]:
+    """The singularity warhead (DESIGN.md §16.2): a singularity seed held in a matte-black sphere, its violet core
+    glowing through a slit round its equator (the slit's ring emits light), hung in a gyroscope of three hoops (dark
+    steel outermost and standing front to back on its cradle, bright steel across it, brass flat round the sphere's
+    waist), pinned together in brass where they cross. Its sphere is rings from a true circle's profile: below its
+    waist each wider than the last (their undersides show), above it narrowing (their tops show)."""
+    w = Build("singularity_warhead")
+    hb, cy, R = 1.5, 9.0, 5.0
+    mounting_ring(w, 5.3, hb)
+    w.box("cradle", (7.1, hb, 7.1), (8.9, 2.4, 8.9))
+    # The sphere in bands, each as wide as a true sphere at its middle; a band shows its underside where it is wider than
+    # the one below and its top where it is wider than the one above (else it reaches into its wider neighbour, unseen).
+    # The slit (lit) is a narrower band just above the brass hoop, so the hoop does not hide it.
+    bands = [(3.9, 4.4), (4.4, 5.0), (5.0, 5.7), (5.7, 6.4), (6.4, 7.1), (7.1, 7.8), (7.8, 8.4), (8.4, 9.6), ("slit", 9.6, 10.4),
+             (10.4, 11.1), (11.1, 11.8), (11.8, 12.5), (12.5, 13.2), (13.2, 13.7), (13.7, 14.0)]
+    radii = []
+    for band in bands:
+        if band[0] == "slit":
+            radii.append(4.6)
+        else:
+            y0, y1 = band
+            radii.append(round(math.sqrt(max(0.3, R * R - (cy - (y0 + y1) / 2) ** 2)), 3))
+    for i, band in enumerate(bands):
+        if band[0] == "slit":
+            w.ring("slit", radii[i], band[1], band[2], caps=(), top=False, bottom=False, foot=False)
+            continue
+        y0, y1 = band
+        below = radii[i - 1] if i > 0 else 0.0
+        above = radii[i + 1] if i + 1 < len(radii) else 0.0
+        caps = tuple(c for c, on in (("up", radii[i] > above), ("down", radii[i] > below)) if on)
+        stagger = "full" if len(caps) == 2 else "base" if caps == ("down",) and sides_for(radii[i]) == 16 else None
+        w.add("body", section(w.m, f"band{i}_", radii[i], y0, y1, sides_for(radii[i]), caps=caps, stagger=stagger),
+              top="up" in caps, bottom="down" in caps, foot=False)
+    w.last_r = radii[-1]
+    tip(w, 0.9, 14.0, 0.45, "pole")
+    hoop(w, "outer", 7.2, cy, "x")
+    hoop(w, "middle", 6.4, cy, "z")
+    hoop(w, "inner", 5.7, cy, "y")
+    for n in w.groups["slit"]:
+        w.m.get(n).light_emission = 15
+    # The pins where the hoops cross: outer to middle above and below, middle to inner at the sides, inner to the
+    # sphere at the front and back.
+    for sy in (1, -1):
+        a, b = sorted((cy + sy * 6.7, cy + sy * 6.9))
+        w.box("pin", (7.65, a, 7.65), (8.35, b, 8.35))
+    for sx in (1, -1):
+        a, b = sorted((8 + sx * 6.0, 8 + sx * 6.1))
+        w.box("pin", (a, cy - 0.35, 7.65), (b, cy + 0.35, 8.35))
+    for sz in (1, -1):
+        a, b = sorted((8 + sz * 4.9, 8 + sz * 5.4))
+        w.box("pin", (7.65, cy - 0.35, a), (8.35, cy + 0.35, b))
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=ROUND)
+    look = Look(body=M.Material(ramp=ramp9(VOID), tone=0.42, mottle=0.03, grain=0.02, dither=0.35, edge_light=0.08, edge_dark=0.05,
+                                ao=0.3, grime=0.0, dust=0.0, facing=ROUND),
+                slit=M.Material(ramp=ramp9(VIOLET), tone=0.7, **lit), base=BASE, cradle=metal(GUNMETAL, 0.42),
+                outer=metal(GUNMETAL, 0.4), middle=metal(STEEL, 0.62), inner=BRASS, pin=metal(P.BRASS, 0.62), pole=metal(GUNMETAL, 0.38),
+                lug=LUG)
+
+    def swirl(k, f, img):                                      # the core turning in the slit: darker eddies round it
+        if f.d in SIDES:
+            col = np.floor((angle_of(f) + 360) % 360 / 360 * 30).astype(int)
+            M.darken(img, col % 3 == 0, 0.72)
+    look.on("slit", swirl)
     look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
     return save(w, look)
 
@@ -975,7 +1069,7 @@ WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhe
             "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
             "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
             "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead",
-            "antimatter_warhead"]
+            "antimatter_warhead", "singularity_warhead"]
 
 
 def mount(name: str) -> tuple[float, float, float]:

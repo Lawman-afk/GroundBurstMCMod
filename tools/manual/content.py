@@ -852,7 +852,7 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
-entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [
+entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "singularity_core", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
 The **Ordnance Assembly Bench** puts warheads together; a [missile assembler](ordnance/missile_assemblers) of the warhead's class then builds it into its [missile](ordnance/missiles). The bench is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick. Pipes and hoppers feed its part slots and take from its output.
 
@@ -1135,7 +1135,7 @@ So much ground goes that the crater keeps forming for a minute or two after the 
     craft("dirty_payload"),
 ])
 
-entry("ordnance/exotic", "Exotic warheads", "antimatter_warhead", ["antimatter_warhead", "antimatter_trap"], [
+entry("ordnance/exotic", "Exotic warheads", "antimatter_warhead", ["antimatter_warhead", "antimatter_trap", "singularity_warhead", "singularity_core"], [
     text("""
 An exotic warhead holds something stranger than a nuclear core. It is put together at the [Assembly Bench](ordnance/assembly) like any other, from its core, a **Strategic Warhead Casing** (exotic warheads are class XL, as nuclear ones are) and a fuze, built into its two-stage **Strategic** [missile](ordnance/missiles) at the [Strategic Missile Assembler](ordnance/missile_assemblers), and fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo).
 
@@ -1147,6 +1147,19 @@ An exotic warhead holds something stranger than a nuclear core. It is put togeth
 **Breaches.** Like a nuclear warhead, it only goes off properly when its missile brings it down. Set off any other way (dropped, shot, caught in another blast) its trap fails unevenly and only a little of the antimatter meets the casing: a sphere 4 blocks round, and a weak flash.
 """),
     craft("antimatter_trap"),
+    text("""
+**Singularity Warhead**: a matte-black sphere hung in a gyroscope of three hoops, its violet core glowing through a slit. Its core is a **Singularity Core**: a [singularity seed](processing/exotic_matter_fabricator) held by four containment cells round a quantum circuit. When its missile brings it down the field is let go, and a black hole opens. It grows for **20 seconds** to an event horizon **10 blocks** round, ringed by a glowing disc and two jets.
+
+Everything within **48 blocks** is drawn in, harder the nearer it is and the bigger the hole has grown, and anything that reaches the horizon is gone. Run, and early: near the end nothing on foot outruns it from within about 15 blocks.
+"""),
+    text("""
+**Tearing.** Out to **32 blocks** it tears the ground loose from the surface inward, the weakest blocks first: leaves and plants, then earth, sand and water, then stone. Obsidian and the like hold unless the horizon itself reaches them, and bedrock always stays. The torn blocks spiral into its disc, and nothing is dropped.
+
+**Collapse.** At 20 seconds it collapses: a blast that digs a crater 16 blocks round.
+
+**Breaches.** Set off any other way, its cells fail one by one: a small black hole that lives three seconds.
+"""),
+    craft("singularity_core"),
 ])
 
 entry("ordnance/strategic_assembly", "Strategic Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "strategic_assembly_hall_spawner", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"], [

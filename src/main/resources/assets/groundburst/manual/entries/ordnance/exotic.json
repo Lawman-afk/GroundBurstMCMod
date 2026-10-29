@@ -4,7 +4,9 @@
   "order": 12,
   "items": [
     "groundburst:antimatter_warhead",
-    "groundburst:antimatter_trap"
+    "groundburst:antimatter_trap",
+    "groundburst:singularity_warhead",
+    "groundburst:singularity_core"
   ],
   "pages": [
     {
@@ -18,6 +20,19 @@
     {
       "type": "crafting",
       "item": "groundburst:antimatter_trap",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "text": "**Singularity Warhead**: a matte-black sphere hung in a gyroscope of three hoops, its violet core glowing through a slit. Its core is a **Singularity Core**: a [singularity seed](processing/exotic_matter_fabricator) held by four containment cells round a quantum circuit. When its missile brings it down the field is let go, and a black hole opens. It grows for **20 seconds** to an event horizon **10 blocks** round, ringed by a glowing disc and two jets.\n\nEverything within **48 blocks** is drawn in, harder the nearer it is and the bigger the hole has grown, and anything that reaches the horizon is gone. Run, and early: near the end nothing on foot outruns it from within about 15 blocks."
+    },
+    {
+      "type": "text",
+      "text": "**Tearing.** Out to **32 blocks** it tears the ground loose from the surface inward, the weakest blocks first: leaves and plants, then earth, sand and water, then stone. Obsidian and the like hold unless the horizon itself reaches them, and bedrock always stays. The torn blocks spiral into its disc, and nothing is dropped.\n\n**Collapse.** At 20 seconds it collapses: a blast that digs a crater 16 blocks round.\n\n**Breaches.** Set off any other way, its cells fail one by one: a small black hole that lives three seconds."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:singularity_core",
       "text": ""
     }
   ]

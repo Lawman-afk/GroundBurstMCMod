@@ -209,6 +209,9 @@ public final class FxPhotographer {
                 // from the plain to the west (a semicircle bitten clean out of the cliff) and from above (the bowl).
                 new Scene("antimatter", "antimatter_warhead", 130, -14, List.of(1, 6, 14, 30, 60, 90, 160, 300)),
                 new Scene("antimatter_aerial", "antimatter_warhead", 120, 32, List.of(40, 90, 260)),
+                // A singularity on the same mesa: growing for 20 s, tearing the rock loose round it, collapsing at 400.
+                new Scene("singularity", "singularity_warhead", 75, 4, List.of(20, 100, 200, 300, 380, 403, 420, 520)),
+                new Scene("singularity_aerial", "singularity_warhead", 100, 30, List.of(150, 300, 395, 600)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
@@ -1339,10 +1342,12 @@ public final class FxPhotographer {
                 if (s.profile().startsWith("factory_")) {
                     lift = 7;                                  // over the factories' walls, into their yards
                 }
-                if (s.profile().equals("antimatter_warhead")) {
+                if (s.profile().equals("antimatter_warhead") || s.profile().equals("singularity_warhead")) {
                     antimatterMesa(level, x, ground);          // built now, so the client has it long before the burst
                     if (s.name().endsWith("_aerial")) {
                         lift += ANTIMATTER_MESA;               // over the mesa it lands on
+                    } else if (s.profile().equals("singularity_warhead")) {
+                        lift = ANTIMATTER_MESA + 6;            // level with the mesa's top, to see the hole on it
                     }
                 }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
@@ -1594,9 +1599,10 @@ public final class FxPhotographer {
                             new Vec3(x + 0.5, ground, 0.5), 180, 60_000, 48_000, level.getGameTime(), 1));
                     return;
                 }
-                if (s.profile().equals("antimatter_warhead")) {      // on the mesa's top (ground is its top now)
-                    dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.ANTIMATTER_WARHEAD,
-                            net.minecraft.core.BlockPos.containing(at), null);
+                if (s.profile().equals("antimatter_warhead") || s.profile().equals("singularity_warhead")) {   // on the mesa's top
+                    dev.groundburst.content.ordnance.charge.Charges.impact(level, s.profile().equals("antimatter_warhead")
+                            ? dev.groundburst.content.ordnance.charge.ChargeKind.ANTIMATTER_WARHEAD
+                            : dev.groundburst.content.ordnance.charge.ChargeKind.SINGULARITY_WARHEAD, net.minecraft.core.BlockPos.containing(at), null);
                     return;
                 }
                 // These two through the warhead's own path: the neutrons wither the plants, the waste goes up as dust.

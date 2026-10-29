@@ -23,6 +23,7 @@
     "groundburst:neutron_core",
     "groundburst:dirty_payload",
     "groundburst:antimatter_trap",
+    "groundburst:singularity_core",
     "groundburst:light_warhead_casing",
     "groundburst:medium_warhead_casing",
     "groundburst:heavy_warhead_casing",

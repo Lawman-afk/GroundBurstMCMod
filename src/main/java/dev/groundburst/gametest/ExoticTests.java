@@ -30,6 +30,8 @@ final class ExoticTests {
         GBGameTests.test("antimatter_missile_erases_a_sphere", GBGameTests.FLOOR_16, 200, ExoticTests::antimatter);
         GBGameTests.test("placed_antimatter_warhead_breaches", GBGameTests.FLOOR_16, 120, ExoticTests::breach);
         GBGameTests.test("strategic_body_carries_antimatter", GBGameTests.FLOOR_16, 20, ExoticTests::strategic);
+        GBGameTests.test("singularity_swallows_tears_and_collapses", GBGameTests.FLOOR_16, 200, ExoticTests::singularity);
+        GBGameTests.test("placed_singularity_warhead_breaches", GBGameTests.FLOOR_16, 160, ExoticTests::singularityBreach);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -108,21 +110,73 @@ final class ExoticTests {
         });
     }
 
-    /** The antimatter warhead rides only the Strategic body, which a Launch Complex or a Missile Silo fires. */
+    /** The exotic warheads ride only the Strategic body, which a Launch Complex or a Missile Silo fires. */
     private static void strategic(GameTestHelper helper) {
-        ItemStack antimatter = new ItemStack(GBOrdnance.ANTIMATTER_WARHEAD.item().get());
         ItemStack heavy = new ItemStack(GBAssembly.HEAVY_BODY.get());
         ItemStack body = new ItemStack(GBAssembly.STRATEGIC_BODY.get());
         ItemStack liquid = new ItemStack(GBAssembly.LIQUID_FUEL_STAGE.get());
-        helper.assertTrue(MissileAssembly.check(antimatter, heavy, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NUCLEAR_NEEDS_STRATEGIC,
-                "an antimatter warhead needs a Strategic body");
-        helper.assertTrue(MissileAssembly.check(antimatter, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NONE,
-                "and fits one");
-        MissileSpec spec = dev.groundburst.content.assembly.MissileItem.spec(MissileAssembly.missile(new MissileSpec(antimatter, SizeClass.XL, MissileParts.Motor.LIQUID,
-                MissileParts.Guidance.GPS, false)));
-        helper.assertTrue(spec != null && spec.exotic() && spec.needsComplex(), "fires from a Launch Complex or a Missile Silo: " + spec);
-        helper.assertTrue(dev.groundburst.content.assembly.WarheadAssembly.sizeOf(GBOrdnance.ANTIMATTER_WARHEAD.block().get()) == SizeClass.XL,
-                "class XL");
+        for (var warhead : java.util.List.of(GBOrdnance.ANTIMATTER_WARHEAD, GBOrdnance.SINGULARITY_WARHEAD)) {
+            ItemStack exotic = new ItemStack(warhead.item().get());
+            String name = warhead.block().get().kind.id;
+            helper.assertTrue(MissileAssembly.check(exotic, heavy, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NUCLEAR_NEEDS_STRATEGIC,
+                    name + " needs a Strategic body");
+            helper.assertTrue(MissileAssembly.check(exotic, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.NONE, name + " fits one");
+            MissileSpec spec = dev.groundburst.content.assembly.MissileItem.spec(MissileAssembly.missile(new MissileSpec(exotic, SizeClass.XL,
+                    MissileParts.Motor.LIQUID, MissileParts.Guidance.GPS, false)));
+            helper.assertTrue(spec != null && spec.exotic() && spec.needsComplex(), name + " fires from a Launch Complex or a Missile Silo: " + spec);
+            helper.assertTrue(dev.groundburst.content.assembly.WarheadAssembly.sizeOf(warhead.block().get()) == SizeClass.XL, name + " is class XL");
+        }
         helper.succeed();
+    }
+
+    /**
+     * A missile's singularity warhead arriving at (8, 3, 8), growing for 60 ticks at a tenth of its size (horizon 1,
+     * pull 4.8, tearing to 3.2): a pig standing beside it (on bedrock, which it never tears) is swallowed; a pig at the
+     * edge of its pull lives through it all; stone beside it and dirt 2 off are torn loose, obsidian 2 off holds,
+     * bedrock beside it stays, stone 4 off is past its reach; then it collapses.
+     */
+    private static void singularity(GameTestHelper helper) {
+        floor(helper);
+        dev.groundburst.blast.Singularities.growOverride = 60;
+        BlockPos centre = new BlockPos(8, 3, 8);
+        helper.setBlock(new BlockPos(9, 2, 8), Blocks.BEDROCK);               // the near pig's footing
+        helper.setBlock(new BlockPos(7, 3, 8), Blocks.STONE);                 // 1 off: torn loose
+        helper.setBlock(new BlockPos(8, 3, 10), Blocks.DIRT);                 // 2 off: torn loose
+        helper.setBlock(new BlockPos(8, 3, 6), Blocks.OBSIDIAN);              // 2 off: holds
+        helper.setBlock(new BlockPos(8, 4, 8), Blocks.BEDROCK);               // 1 off: never torn
+        helper.setBlock(new BlockPos(12, 3, 8), Blocks.STONE);                // 4 off: past its reach
+        Pig near = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(9, 3, 8));         // 1 from the middle
+        Pig far = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 12));         // 4.5 off, at its pull's edge
+        Charges.impact(helper.getLevel(), ChargeKind.SINGULARITY_WARHEAD, helper.absolutePos(centre), null);
+        helper.runAfterDelay(20, () -> helper.assertTrue(dev.groundburst.blast.Singularities.runningIn(helper.getLevel()), "it is open"));
+        // Just before it collapses (its blast's core breaks anything, obsidian too): what its pull tore and what held.
+        helper.runAfterDelay(56, () -> {
+            helper.assertTrue(isAirRel(helper, 7, 3, 8), "stone beside it torn loose");
+            helper.assertTrue(isAirRel(helper, 8, 3, 10), "dirt 2 off torn loose");
+            helper.assertTrue(helper.getBlockState(new BlockPos(8, 3, 6)).is(Blocks.OBSIDIAN), "obsidian 2 off holds");
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!dev.groundburst.blast.Singularities.runningIn(helper.getLevel()), "it has collapsed");
+            helper.assertTrue(!near.isAlive(), "the pig beside it is swallowed");
+            helper.assertTrue(far.isAlive(), "the pig at the edge of its pull lives: " + far.getHealth());
+            helper.assertTrue(helper.getBlockState(new BlockPos(8, 4, 8)).is(Blocks.BEDROCK), "bedrock stays");
+            helper.assertTrue(helper.getBlockState(new BlockPos(12, 3, 8)).is(Blocks.STONE), "stone past its reach stays");
+        });
+    }
+
+    /** A placed singularity warhead set off (caught in a blast): its cells breached, a small one for three seconds. */
+    private static void singularityBreach(GameTestHelper helper) {
+        floor(helper);
+        dev.groundburst.blast.Singularities.growOverride = 0;
+        BlockPos at = new BlockPos(8, 1, 8);
+        helper.setBlock(at, GBOrdnance.SINGULARITY_WARHEAD.block().get().defaultBlockState());
+        helper.setBlock(new BlockPos(12, 1, 8), Blocks.STONE);
+        Charges.caughtInBlast(helper.getLevel(), helper.absolutePos(at), helper.getLevel().getBlockState(helper.absolutePos(at)));
+        helper.runAfterDelay(20, () -> helper.assertTrue(dev.groundburst.blast.Singularities.runningIn(helper.getLevel()), "a small one opens"));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!dev.groundburst.blast.Singularities.runningIn(helper.getLevel()), "and collapses");
+            helper.assertTrue(isAirRel(helper, 8, 1, 8), "the warhead is gone");
+            helper.assertTrue(helper.getBlockState(new BlockPos(12, 1, 8)).is(Blocks.STONE), "stone 4 off untouched");
+        });
     }
 }

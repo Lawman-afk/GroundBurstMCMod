@@ -667,6 +667,32 @@
     ],
     "subtitle": "subtitles.groundburst.silo.doors"
   },
+  "singularity.drone": {
+    "sounds": [
+      {
+        "attenuation_distance": 80,
+        "name": "groundburst:exotic/singularity_drone"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.singularity.drone"
+  },
+  "singularity.tear": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:exotic/singularity_tear1"
+      },
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:exotic/singularity_tear2"
+      },
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:exotic/singularity_tear3"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.singularity.tear"
+  },
   "smoke.hiss": {
     "sounds": [
       {

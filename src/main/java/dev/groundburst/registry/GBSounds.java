@@ -210,6 +210,11 @@ public final class GBSounds {
             register("antimatter.near", "Antimatter annihilates", List.of("exotic/antimatter_near"), false, 64);
     public static final DeferredHolder<SoundEvent, SoundEvent> ANTIMATTER_FAR =
             register("antimatter.far", "Distant annihilation", List.of("exotic/antimatter_far"), false, 64);
+    /** The singularity's drone (looped while it grows, pitched up as it does) and the ground tearing loose round it. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_DRONE =
+            register("singularity.drone", "Singularity drones", List.of("exotic/singularity_drone"), false, 80);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_TEAR =
+            register("singularity.tear", "Ground tears loose", variants("exotic/singularity_tear", 3), false, 48);
 
     private GBSounds() {}
 

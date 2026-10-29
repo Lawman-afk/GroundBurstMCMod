@@ -356,6 +356,12 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.QUANTUM_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.ANTIMATTER_CELL), has(dev.groundburst.content.nuclear.GBNuclear.ANTIMATTER_CELL))
                 .save(output);
+        // A singularity seed held by four containment cells round a quantum circuit's field (DESIGN.md §16.2).
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.SINGULARITY_CORE, 1)
+                .requires(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED).requires(dev.groundburst.content.nuclear.GBNuclear.CONTAINMENT_CELL, 4)
+                .requires(GBParts.QUANTUM_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED), has(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.DIRTY_PAYLOAD, 1)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)

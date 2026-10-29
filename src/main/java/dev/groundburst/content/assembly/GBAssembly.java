@@ -58,6 +58,9 @@ public final class GBAssembly {
     /** Antimatter held in a Penning trap: four antimatter cells, superconducting coils, a quantum circuit. */
     public static final DeferredItem<ComponentItems.PayloadCore> ANTIMATTER_TRAP = core("antimatter_trap", "Antimatter Trap",
             () -> GBOrdnance.ANTIMATTER_WARHEAD.block().get(), SizeClass.XL);
+    /** A singularity seed held in four containment cells round a quantum circuit's field. */
+    public static final DeferredItem<ComponentItems.PayloadCore> SINGULARITY_CORE = core("singularity_core", "Singularity Core",
+            () -> GBOrdnance.SINGULARITY_WARHEAD.block().get(), SizeClass.XL);
     /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */
     public static final DeferredItem<ComponentItems.PayloadCore> DIRTY_PAYLOAD = core("dirty_payload", "Dirty Payload",
             () -> GBOrdnance.DIRTY_WARHEAD.block().get(), SizeClass.S);

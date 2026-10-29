@@ -1890,6 +1890,52 @@ the nukes, over §9.2's M), the storm Heavy (L).
   the sphere, a pig behind two blocks of obsidian lives, nothing is left in the sphere; a placed one only breaches; it
   needs the Strategic body.
 
+### 16.11 As built: the Singularity Warhead (Phase 11, 2026-10-30)
+- **Warhead and missile.** `ChargeKind.SINGULARITY_WARHEAD`, exotic and class XL like the antimatter warhead (only the
+  Strategic body; full effect only on a missile's arrival). Core: the **Singularity Core** (a singularity seed, four
+  containment cells, a quantum circuit). Its **Singularity Missile**. Stats: Event Horizon 10, Pulls In 48, Tears Loose
+  32, Collapses After 20 s; strike circles 19 (nothing gets away from within) and 48. Set off any other way its cells
+  fail one by one (`Singularity.breach`): a singularity 0.15 the size (horizon at least 0.6, pull 3, tear 1.5) living
+  3 s.
+- **The black hole** (`blast.Singularities`, `SingularityJob`), u its age over its 400 ticks: horizon
+  10 (0.08 + 0.92 u^0.75) (the client draws by it); strength 0.6 + 5.4 u^1.5; tear reach 32 u^0.7 (all times the bomb
+  scale).
+  - *Pull*: everything within 48 is drawn toward it at min(0.6, k strength / d^2) blocks a tick each tick
+    (k = 5.76 (pull/48)^3) plus a third of that round it (the disc's spin), `Singularities.pullOn`. The server pulls
+    everything but players; each player's own client pulls its player by the same reckoning (a client moves its own
+    player: motion set from the server every tick would fight its movement). At the horizon a creature is hurt by
+    `groundburst:spaghettified` (as sure as annihilation), anything else discarded; missiles in flight and creative or
+    spectating players are left alone.
+  - *Tearing*: the sphere out to the tear reach swept shell by shell, column by column, from the middle out and round
+    again (a pass a tick at most), within the blast budget and 900 blocks a tick. A block goes inside the horizon
+    (unbreakable ones never), or outside it where it lies open (air or a fluid beside it) once the pull on it,
+    strength (8 (rip/32) / d)^1.5, beats its hold (hardness + 0.3; a fluid 0.5): plants, then earth, sand and water,
+    then stone; obsidian holds. Written with neighbour updates (sand falls in, water runs in, torn in their turn), no
+    drops, containers' contents gone; 80 000 blocks at most at full size. The first 96 torn a tick are told to the
+    players within 256 for the debris. Chunks within its reach stay loaded (`BlastChunks`, a front standing at the
+    middle).
+  - *Collapse*: at 400 ticks the client is told and a blast `singularity_collapse` goes off (core 6, crater 16,
+    structural 26, no scorch or fire, lethal 18, damage 34; the heavy warhead's look and sound), times the bomb scale.
+- **Client** (`SingularityFx`): the horizon a black sphere written to depth (the cloud type), so the disc and jets
+  behind it are hidden; a thin photon ring; an accretion disc tilted 18 degrees (four rings of quads,
+  `fx/accretion.png`: streaks drawn round it, bright within and fading out; white-lilac at its inner edge cooling to
+  violet; turning faster nearer the hole); two flickering jets along its axis; the torn blocks as debris orbiting it
+  (`Debris`' orbit mode: an inverse-square pull, drawn to the disc's plane, a decaying orbit, gone at the horizon); the
+  sky and fog drained toward a dark violet grey near it; a looped drone (`singularity.drone`) pitched up from 0.55 to
+  1.35 as it grows and the ground tearing now and then (`singularity.tear`, three); at the collapse the horizon
+  shrinking to nothing in 6 ticks, a flash, a bright shell spreading, the Singularity Reactor's collapse heard when its
+  sound arrives, the camera shaken.
+- **Models** (material library): the warhead a matte-black sphere in bands from a true circle's profile (each band
+  capped only where it shows: below where it is wider than the band under it, above where wider than the one over it),
+  a lit violet slit with darker eddies just above its brass hoop, three hoops of turned planks (`warheads.hoop`; every
+  other plank a hair narrower, so their joints share no plane) pinned in brass, on a cradle; the missile finless and
+  matte black, four verniers, brass rings round its second stage, a lit violet slit near the top of each stage; the
+  Singularity Core the warhead in small. (The flicker checks cannot turn elements about x or z: they report the
+  standing hoops' planks as if unturned; with those left out they find nothing.)
+- GameTests (`ExoticTests`, a tenth of the size growing 60 ticks): a pig beside it is swallowed, a pig at its pull's
+  edge lives; stone beside it and dirt 2 off are torn loose before it collapses while obsidian 2 off holds; bedrock
+  stays, stone past its reach stays; it collapses; a placed one opens a small one that collapses.
+
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
 - **Kept as part of the conventional roster:** Thermite charge, Breaching charge, Smoke grenade (§14).
@@ -3551,6 +3597,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The Singularity Warhead built (§16.11): its pull and tearing grow with it, tearing exposed blocks the weakest first by hardness against an inverse-power pull (not a straight erasure), with neighbour updates so sand and water follow; its collapse is an ordinary blast profile. The black hole is drawn as a depth-writing black sphere so what is behind it is hidden; gravitational lensing (a screen-space post effect) is left out for now, the photon ring, the disc and the drained sky standing in for it. |
 | 2026-10-30 | Phase 11 begun with the user's choices: the Antimatter, Singularity and Storm Bombs this round (the orbital strike later), each shown before the next; classes by strength, antimatter and singularity Strategic (XL) and the storm Heavy (L), over §9.2's M. The Antimatter Warhead built (§16.10): like a nuclear warhead it rides only the Strategic body and goes off in full only on a missile's arrival (a breach of 4 otherwise); its sphere erases block by block, shell by shell, within the blast engine's budget, never ahead of the sphere players see; its gamma flash is shielded by what lies between. New models are painted with the material library (the Antimatter Trap too, though the cores before it are plainly shaded). |
 | 2026-10-30 | The public repository moved to a new one, github.com/Lawman-afk/GroundBurstMCMod (the user made it): the old repository's page kept a stale contributor entry from the history before its rewrite, though GitHub's own API and statistics counted only Lawman-afk; a new repository counts afresh, and lists Lawman-afk alone. The whole history moved, joined to the new repository's starting commit by a merge that keeps the project's files as they were. |
 | 2026-10-29 | Version 0.2.0 for the second CurseForge file (the rebuilt sites and the Construction set; the first file there, labelled 0.1.1, is the renamed 0.1.0). The README shows the mod: the logo, a link to the CurseForge page and a screenshot gallery (`docs/screenshots/`, JPEGs cut from the dev runs' shots; the Tsar's cloud cropped below a tutorial toast). `CHANGELOG.md` keeps each version's changes, written for players; its newest entry is the upload's changelog. The data generators' `.cache` no longer ships in the jar: the exclude named it from the project root, but resource patterns are relative to each resource folder. |

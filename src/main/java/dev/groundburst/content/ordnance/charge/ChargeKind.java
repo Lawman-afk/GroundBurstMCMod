@@ -106,7 +106,12 @@ public enum ChargeKind {
      * An antimatter trap (DESIGN.md §16.3): a white sphere erases everything within 48 blocks, no rubble, no drops, no
      * fire, whatever its blast resistance; its gamma flash kills anything in the open out to 64 and hurts it to 96.
      */
-    ANTIMATTER_WARHEAD("antimatter_warhead", 10, true);
+    ANTIMATTER_WARHEAD("antimatter_warhead", 10, true),
+    /**
+     * A singularity core (DESIGN.md §16.2): a black hole that grows for 20 s to an event horizon of 10 blocks, drawing in
+     * everything within 48 and tearing the ground loose out to 32, then collapses in a blast (crater 16).
+     */
+    SINGULARITY_WARHEAD("singularity_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -153,11 +158,11 @@ public enum ChargeKind {
     }
 
     /**
-     * An exotic warhead (Phase 11): antimatter. Like a nuclear one it rides only the Strategic missile and goes off in
-     * full only on a missile's arrival; set off any other way its containment fails ({@code Antimatter.breach}).
+     * An exotic warhead (Phase 11): antimatter or a singularity. Like a nuclear one it rides only the Strategic missile
+     * and goes off in full only on a missile's arrival; set off any other way its containment fails (a breach).
      */
     public boolean exotic() {
-        return this == ANTIMATTER_WARHEAD;
+        return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD;
     }
 
     /** It rides only the Strategic missile body, which carries nothing else: the nuclear warheads and the exotic ones. */

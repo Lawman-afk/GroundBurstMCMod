@@ -1177,6 +1177,69 @@
       },
       {
         "when": [
+          "singularity_warhead",
+          "strategic_singularity_warhead",
+          "icbm_singularity_warhead",
+          "flight_singularity_warhead",
+          "flight_strategic_singularity_warhead",
+          "flight_icbm_singularity_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_s1",
+          "strategic_singularity_warhead_s1",
+          "icbm_singularity_warhead_s1",
+          "flight_strategic_singularity_warhead_s1",
+          "flight_icbm_singularity_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_stage1"
+        }
+      },
+      {
+        "when": [
           "scud_storm_warhead",
           "strategic_scud_storm_warhead",
           "icbm_scud_storm_warhead",

@@ -66,7 +66,7 @@ public final class Spectacle {
 
     private static final Int2ObjectOpenHashMap<BlastFx> BLASTS = new Int2ObjectOpenHashMap<>();
     static final Puffs PUFFS = new Puffs();
-    private static final Debris DEBRIS = new Debris();
+    static final Debris DEBRIS = new Debris();
     /** Client ticks the world has run (not counting pauses): the clock every effect is timed by. */
     static long ticks;
     private static float trauma;
@@ -81,6 +81,7 @@ public final class Spectacle {
         EffectFx.register();
         FalloutFx.register();
         AnnihilationFx.register();
+        SingularityFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundBurst.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -106,6 +107,7 @@ public final class Spectacle {
     private static void clear() {
         EffectFx.clear();
         AnnihilationFx.clear();
+        SingularityFx.clear();
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
@@ -730,6 +732,7 @@ public final class Spectacle {
             }
         }
         AnnihilationFx.tick(mc.level, PUFFS, ticks, q, eye);
+        SingularityFx.tick(mc.level, ticks, eye);
         PUFFS.tick(ticks);
         DEBRIS.tick(mc.level);
         SpentStages.tick(mc.level, PUFFS, ticks, q);
@@ -747,6 +750,7 @@ public final class Spectacle {
             sum += fx.flashAt(fx.age(now));
         }
         sum += AnnihilationFx.flash(now);
+        sum += SingularityFx.flash(now);
         return Math.min(0.96f, sum);
     }
 
@@ -798,6 +802,14 @@ public final class Spectacle {
                 clamp(b + (FALLOUT_SKY.z() * k - b) * amount));
     }
 
+    /** {@code color} drained toward a dark violet grey near a singularity (its pull on the light round it). */
+    private static Vector3f voided(float r, float g, float b, float amount) {
+        float lum = 0.3f * r + 0.59f * g + 0.11f * b;
+        float k = 1 - 0.45f * amount;
+        return new Vector3f(clamp((r + (lum * 0.86f - r) * amount) * k), clamp((g + (lum * 0.8f - g) * amount) * k),
+                clamp((b + (lum * 1.02f - b) * amount) * k));
+    }
+
     /** How far the sky turns fallout green where the camera is. */
     private static float falloutTint() {
         Minecraft mc = Minecraft.getInstance();
@@ -809,6 +821,13 @@ public final class Spectacle {
     }
 
     private static void fogColor(ViewportEvent.ComputeFogColor event) {
+        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (v > 0) {
+            Vector3f c = voided(event.getRed(), event.getGreen(), event.getBlue(), v);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
         float a = skyTint();
         if (a > 0) {
             Vector3f c = smoky(event.getRed(), event.getGreen(), event.getBlue(), a);
@@ -827,6 +846,10 @@ public final class Spectacle {
 
     private static void extract(ExtractLevelRenderStateEvent event) {
         var sky = event.getRenderState().skyRenderState;
+        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (v > 0 && sky.skyColor != null) {
+            sky.skyColor = voided(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), v);
+        }
         float a = skyTint();
         if (a > 0) {
             if (sky.skyColor != null) {
@@ -853,7 +876,7 @@ public final class Spectacle {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level)
-                && AnnihilationFx.isEmpty())) {
+                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty())) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -875,6 +898,7 @@ public final class Spectacle {
             FxRenderTypes.submit(collector, poseStack, FxRenderTypes.glow(FIREBALL), (pose, buffer) -> spheres(buffer, pose, cores));
         }
         AnnihilationFx.submit(collector, poseStack, camera.pos, now);
+        SingularityFx.submit(collector, poseStack, camera.pos, now);
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {

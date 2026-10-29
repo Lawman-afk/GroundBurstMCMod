@@ -26,7 +26,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Chunks of the blocks a blast tore out (DESIGN.md §12): small spinning cubes wearing a corner of the real block's
  * texture, thrown on ballistic arcs. They bounce off the ground and walls, come to rest, lie there a few seconds and
- * shrink away. Purely visual: the server never knows about them.
+ * shrink away. Purely visual: the server never knows about them. A chunk a singularity tore loose (DESIGN.md §16.2)
+ * orbits instead: drawn toward the hole on a decaying spiral that settles into its disc's plane, through anything in
+ * its way, until it crosses the event horizon and is gone.
  */
 final class Debris {
     static final int MAX = 1200;
@@ -47,6 +49,10 @@ final class Debris {
         float angle, prevAngle, spin;
         int age, still;
         boolean resting;
+        /** Orbiting a singularity: its middle, its disc's normal, how hard it pulls, and its horizon now (null: thrown). */
+        double ox, oy, oz, nx, ny, nz, pullK;
+        java.util.function.DoubleSupplier horizon;
+        boolean swallowed;
 
         Chunk(BlockState state, int tint, RandomSource r, double x, double y, double z, double vx, double vy, double vz, float size) {
             this.state = state;
@@ -76,7 +82,20 @@ final class Debris {
         }
 
         boolean dead() {
-            return this.still > REST + SHRINK || this.age > 600;
+            return this.swallowed || this.still > REST + SHRINK || this.age > 600;
+        }
+
+        /** Sets it orbiting a singularity at (ox, oy, oz) whose disc has normal (nx, ny, nz). */
+        Chunk orbit(double ox, double oy, double oz, double nx, double ny, double nz, double pullK, java.util.function.DoubleSupplier horizon) {
+            this.ox = ox;
+            this.oy = oy;
+            this.oz = oz;
+            this.nx = nx;
+            this.ny = ny;
+            this.nz = nz;
+            this.pullK = pullK;
+            this.horizon = horizon;
+            return this;
         }
     }
 
@@ -110,6 +129,10 @@ final class Debris {
             c.pz = c.z;
             c.prevAngle = c.angle;
             c.age++;
+            if (c.horizon != null) {
+                spiral(c);
+                continue;
+            }
             if (c.resting) {
                 c.still++;
                 continue;
@@ -151,6 +174,32 @@ final class Debris {
             c.angle += c.spin;
         }
         this.chunks.removeIf(Chunk::dead);
+    }
+
+    /**
+     * A chunk orbiting a singularity: pulled in (inverse square), drawn toward its disc's plane, its orbit decaying, so
+     * it spirals in ever faster; gone once it crosses the horizon (or the hole has gone).
+     */
+    private static void spiral(Chunk c) {
+        double dx = c.x - c.ox, dy = c.y - c.oy, dz = c.z - c.oz;
+        double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double h = c.horizon.getAsDouble();
+        if (h <= 0 || d <= h) {
+            c.swallowed = true;
+            return;
+        }
+        double a = Math.min(0.9, c.pullK / (d * d));
+        double off = dx * c.nx + dy * c.ny + dz * c.nz;               // out of the disc's plane
+        c.vx += -dx / d * a - off * c.nx * 0.03;
+        c.vy += -dy / d * a - off * c.ny * 0.03;
+        c.vz += -dz / d * a - off * c.nz * 0.03;
+        c.vx *= 0.985;
+        c.vy *= 0.985;
+        c.vz *= 0.985;
+        c.x += c.vx;
+        c.y += c.vy;
+        c.z += c.vz;
+        c.angle += c.spin;
     }
 
     /** The top of the solid surface at or below (x, y, z), or minus infinity if (x, y, z) is in the open. */

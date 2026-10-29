@@ -1189,6 +1189,43 @@ def antimatter() -> dict:
     return save(rk, lv)
 
 
+def singularity() -> dict:
+    """The singularity warhead's missile (Phase 11, DESIGN.md §16.2): matte black and finless, steered by four verniers
+    round its first stage's foot; three brass rings round its second stage, as round the warhead's sphere; a violet slit
+    glowing near the top of each stage (its elements emit light), white stencils; the gyroscope on top."""
+    rk = Rocket("singularity_warhead", "XL")
+    R1, R2 = 6.2, 5.4
+    rk.bell("bell", 3.6, 2.4, 0.0, 3)
+    rk.ring("skirt", R1 + 0.3, 3.0, 10.0, caps=("up", "down"), top=True, bottom=True)
+    rk.closure("aft", R1 + 0.3, 3.0)
+    rk.verniers("vern", R1 + 0.3, 5.0)
+    rk.tube("stage1", R1, 10.0, 62.0)
+    rk.taper("inter", R1 - 0.1, R2 + 0.35, 62.0, 3)
+    rk.bell("bell2", 3.0, 2.0, 61.0, 3)
+    rk.tube("stage2", R2, 65.0, 108.0)
+    rk.joint("joint", R2 + 0.3, 108.0)
+    rk.tube("guidance", R2, 109.0, 113.0, on_joint=True)
+    for y in (76.0, 86.0, 96.0):
+        rk.ring("brass", R2 + 0.5, y, y + 0.8, caps=("up", "down"), top=True, bottom=True)
+    rk.ring("slit", R1 + 0.15, 55.0, 56.0, caps=("up", "down"), top=True, bottom=True)
+    rk.ring("slit", R2 + 0.15, 102.0, 103.0, caps=("up", "down"), top=True, bottom=True)
+    for n in rk.groups["slit"]:
+        rk.m.get(n).light_emission = 15
+    rk.mount(113.0)
+    rk.parts, rk.stages, rk.engines = [62.0, 113.0, rk.tip], [62.0, rk.tip], [0.0, 61.0]
+    black = paint(W.VOID, 0.45, mottle=0.03)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    lv = Livery(body=black, stage1=black, stage2=black, guidance=black, skirt=W.metal(W.GUNMETAL, 0.4), vern=W.metal(W.GUNMETAL, 0.38),
+                inter=W.metal(W.BLACK, 0.4), joint=RING, bell=NOZZLE, bell2=NOZZLE, brass=W.BRASS,
+                slit=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.7, **lit))
+    violet = W.paint(W.VIOLET, 0.55, 0.12)
+    lv.on("stage1", band(12, 13, violet)).on("stage2", band(66, 67, violet))
+    lv.on("stage1", stencil((46.0, 45.0, 43.0), W.WHITE[5], 6, "xx.xxx.x"))
+    lv.on("stage2", stencil((92.0, 91.0), W.WHITE[5], 5, "x.xx.x"))
+    lv.on("joint", rivets(108.0)).on("bell", soot).on("bell2", soot)
+    return save(rk, lv)
+
+
 # --- Intercontinental (XXL, the hall): three stages ---------------------------------------------------------------------------
 
 def thermonuclear() -> dict:
@@ -1535,7 +1572,8 @@ BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chem
             "cryo_warhead": cryo, "thermobaric_warhead": thermobaric, "bunker_buster_warhead": bunker_buster, "emp_warhead": emp,
             "massive_warhead": massive, "tactical_nuclear_warhead": tactical, "fission_warhead": fission,
             "boosted_fission_warhead": boosted, "neutron_warhead": neutron, "thermonuclear_warhead": thermonuclear,
-            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "antimatter_warhead": antimatter, "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
+            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "antimatter_warhead": antimatter, "singularity_warhead": singularity,
+            "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
             # The cruise missiles (slice 9c): each Light and Medium warhead's, its look "<warhead>_cruise".
             "he_warhead_cruise": _he_cruise, "napalm_warhead_cruise": _napalm_cruise, "chemical_warhead_cruise": _chemical_cruise,
             "toxic_waste_warhead_cruise": _toxic_waste_cruise, "dirty_warhead_cruise": _dirty_cruise,

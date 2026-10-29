@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_singularity_seed": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:singularity_seed"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:singularity_core"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_singularity_seed"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:singularity_core"
+    ]
+  }
+}

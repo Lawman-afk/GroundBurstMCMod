@@ -13,6 +13,9 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
 - ``textures/fx/shock.png`` (64x64, tileable): faint streaky haze for the shock shell.
 - ``textures/fx/annihilation.png`` (128x128, tileable): the antimatter sphere's surface (DESIGN.md §16.3): opaque white
   with faint lilac threads, so it hides the void being carved inside it.
+- ``textures/fx/accretion.png`` (256x64, tileable along u): a singularity's accretion disc (DESIGN.md §16.2), u round
+  the disc and v from its inner edge out: streaks of hot gas drawn out round it, brightest within, fading to nothing at
+  its rim (tinted violet by vertex colour in game).
 """
 from __future__ import annotations
 
@@ -148,6 +151,21 @@ def annihilation() -> Image.Image:
     return Image.fromarray((np.concatenate([rgb, alpha], -1) * 255).astype(np.uint8), "RGBA")
 
 
+def accretion() -> Image.Image:
+    """Streaks drawn out round the disc (noise stretched along u), clumps of brighter gas, bright toward the inner edge
+    and fading out to the rim."""
+    w, h = 256, 64
+    streak = spectral(256, 1.8, 41, aniso=(0.12, 1.0))[:h, :]
+    clump = spectral(256, 2.2, 42, aniso=(0.35, 1.0))[:h, :]
+    v = (np.arange(h) + 0.5)[:, None] / h
+    radial = np.clip(1 - v, 0, 1) ** 1.6
+    bright = np.clip(0.35 + 0.55 * streak ** 1.4 + 0.3 * smoothstep(0.55, 0.9, clump), 0, 1)
+    alpha = np.clip(radial * (0.45 + 0.75 * bright) + 0.25 * radial ** 6, 0, 1)
+    shade = np.clip(0.7 + 0.3 * bright, 0, 1)
+    rgb = np.stack([shade, shade, shade], -1)
+    return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
 def cloudlet(seed: int) -> np.ndarray:
     """A big soft billow cluster: brighter where it is thick, no light direction, edges frayed by noise."""
     size = CELL
@@ -174,7 +192,8 @@ def cloudlet(seed: int) -> np.ndarray:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation())):
+    for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation()),
+                        ("accretion", accretion())):
         path = OUT / f"{name}.png"
         image.save(path)
         print(path)

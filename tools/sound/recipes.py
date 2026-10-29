@@ -556,6 +556,34 @@ def antimatter_sounds() -> dict[str, np.ndarray]:
             "exotic/antimatter_far": S.normalize(S.fade(far, 0.0, 0.8), -2)}
 
 
+def singularity_sounds() -> dict[str, np.ndarray]:
+    """The singularity warhead (DESIGN.md §16.2). Its drone, a 4 s loop the game pitches up from 0.55 to 1.35 as it
+    grows: a deep beating sub-bass, a dark rush of air drawn in, a low rumble of the ground giving way and a faint
+    glassy shimmer bent downward. Three tears of the ground ripping loose: a crunching crack, a thud and a short rush as
+    it is flung away, each its own."""
+    out = {}
+    length = 4.0
+    total = 0.25 + length + 0.3
+    t = S.t_axis(total)
+    sub = (np.sin(2 * np.pi * 36 * t) + 0.7 * np.sin(2 * np.pi * 37.5 * t) + 0.35 * np.sin(2 * np.pi * 72 * t)) * 0.4
+    rush = S.bandpass(S.pink(total, 1701), 120, 1400) * (0.55 + 0.45 * np.sin(2 * np.pi * 0.5 * t) ** 2) * 0.35
+    rumble = S.lowpass(S.brown(total, 1702), 160) * 0.5
+    glass = sum(np.sin(2 * np.pi * f * t - 2.5 * np.sin(2 * np.pi * r * t)) * a for f, r, a in ((660, 0.25, 0.025), (990, 0.5, 0.018)))
+    drone = S.mix((sub, 1.0), (rush, 1.0), (rumble, 1.0), (glass, 1.0))
+    out["exotic/singularity_drone"] = S.normalize(S.seamless_loop(S.saturate(drone, 1.3), length, 0.3, 0.25), -4)
+    for k in range(3):
+        n = 0.9
+        m = int(n * S.SR)
+        seed = 1710 + 10 * k
+        crack = S.bandpass(S.grains(n, rate=260 + 60 * k, grain_ms=2.5, seed=seed), 600, 6000) * S.exp_decay(m, 0.06 + 0.02 * k) * 1.4
+        snap = S.highpass(S.white(n, seed + 1), 2000) * S.exp_decay(m, 0.012) * 0.8
+        thud = S.lowpass(S.white(n, seed + 2), 180) * S.exp_decay(m, 0.09) * 3.0
+        whoosh = S.bandpass(S.white(n, seed + 3), 300, 2500) * S.breakpoints(m, [(0, 0), (0.08, 0.6), (0.5, 0.15), (0.9, 0)]) * 0.5
+        x = S.saturate(crack + snap + thud + whoosh, 1.6)
+        out[f"exotic/singularity_tear{k + 1}"] = S.normalize(S.fade(S.reverb(x, seconds=0.8, mix=0.18, seed=seed + 4)[:m], 0.0, 0.15), -2)
+    return out
+
+
 def reactor_alarm() -> dict[str, np.ndarray]:
     """The Fission Reactor's critical klaxon (played every 2 s while the core is critical): two harsh alternating tones,
     low then high, twice, with a buzzy edge from odd harmonics and a hall echo, so it carries and is unmistakable."""
@@ -1008,7 +1036,7 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # (So are the machines, the reactor's alarm and the Geiger counter's clicks, machines.py; the Exotic Matter Fabricator, the
 # Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
-RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
+RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
            MA.machine_set, GE.gear_set]
 

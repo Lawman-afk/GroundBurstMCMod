@@ -80,6 +80,11 @@ public final class AssemblyStats {
     static final String ERASES = GBLang.add(P + "erases", "Erases");
     static final String GAMMA_KILLS = GBLang.add(P + "gamma_kills", "Gamma Kills");
     static final String GAMMA_HURTS = GBLang.add(P + "gamma_hurts", "Gamma Injures");
+    /** The singularity warhead's black hole, as rows. */
+    static final String HORIZON = GBLang.add(P + "horizon", "Event Horizon");
+    static final String PULLS = GBLang.add(P + "pulls", "Pulls In");
+    static final String TEARS = GBLang.add(P + "tears", "Tears Loose");
+    static final String COLLAPSES = GBLang.add(P + "collapses", "Collapses After");
     static final String V_DAYS = GBLang.add(P + "days", "%s days");
     static final String V_DAY = GBLang.add(P + "day", "1 day");
     static final String V_HOURS = GBLang.add(P + "hours", "%s hours");
@@ -113,6 +118,7 @@ public final class AssemblyStats {
         effect(ChargeKind.SCUD_STORM_WARHEAD, "scud_storm", "Toxin residue spreads %s blocks round, under a toxin cloud", (int) Charges.SCUD_SPREAD);
         effect(ChargeKind.NUCLEAR_MISSILE_WARHEAD, "nuclear_missile", "Fired only by a Nuclear Missile silo");
         effect(ChargeKind.ANTIMATTER_WARHEAD, "antimatter", "A perfect sphere erased: no rubble, no drops, no fallout");
+        effect(ChargeKind.SINGULARITY_WARHEAD, "singularity", "A black hole: it grows, swallows, then collapses in a blast");
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -209,6 +215,9 @@ public final class AssemblyStats {
         if (kind == ChargeKind.NEUTRON_WARHEAD) {
             lethal = Math.max(lethal, dev.groundburst.content.nuclear.NeutronBurst.LETHAL_RADIUS);
         }
+        if (kind == ChargeKind.SINGULARITY_WARHEAD) {    // nothing escapes from well inside its pull
+            return new Area(dev.groundburst.blast.Singularities.PULL * 0.4f, dev.groundburst.blast.Singularities.PULL);
+        }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {     // its gamma flash, in the open
             return new Area(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL, dev.groundburst.content.exotic.Antimatter.GAMMA_REACH);
         }
@@ -254,6 +263,15 @@ public final class AssemblyStats {
                     String nuclear = nuclearYield(kind);
                     out.add(Stat.row(YIELD, nuclear != null ? Component.translatable(V_YIELD, nuclear) : tnt(p.crater())));
                 }
+            }
+        }
+        if (kind == ChargeKind.SINGULARITY_WARHEAD) {      // its black hole (its collapse's blast is under its profile)
+            out.add(Stat.row(HORIZON, blocks(dev.groundburst.blast.Singularities.HORIZON)));
+            out.add(Stat.row(PULLS, blocks(dev.groundburst.blast.Singularities.PULL)));
+            if (full) {
+                out.add(Stat.row(TEARS, blocks(dev.groundburst.blast.Singularities.RIP)));
+                out.add(Stat.row(COLLAPSES, Component.translatable(V_SECONDS, dev.groundburst.blast.Singularities.GROW / 20)));
+                out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {       // its sphere and its gamma flash (walls stop the flash)
