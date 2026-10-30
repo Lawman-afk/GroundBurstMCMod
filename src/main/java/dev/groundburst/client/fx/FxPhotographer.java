@@ -167,6 +167,8 @@ public final class FxPhotographer {
                 new Scene("assembly_ui", "assembly", 4, 0, List.of(30, 40)),
                 new Scene("assembly_jei", "assembly", 4, 0, List.of(25)),
                 new Scene("tall_ui", "tall", 4, 0, List.of(30)),
+                // The Upgrades tab (DESIGN.md §7.3): a crusher at work with a quantum speed chip, its tab open.
+                new Scene("upgrade_ui", "upgrade", 4, 0, List.of(30)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
                 new Scene("assemblers_aerial", "assemblers", 34, 28, List.of(60, 160, 260, 700)),
@@ -1508,6 +1510,19 @@ public final class FxPhotographer {
                     assemblySite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("upgrade")) {
+                    var crusher = dev.groundburst.content.machine.GBMachines.ORE_CRUSHER.block().get();
+                    pressAt = new net.minecraft.core.BlockPos(x, ground, 0);
+                    var state = crusher.defaultBlockState().setValue(dev.groundburst.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST);
+                    level.setBlockAndUpdate(pressAt, state);
+                    if (level.getBlockEntity(pressAt) instanceof dev.groundburst.content.machine.MachineBlockEntity be) {
+                        be.energy().generate(40_000);
+                        be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.RAW_IRON, 24));
+                        be.upgrades().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.machine.GBUpgrades.chip(
+                                dev.groundburst.content.machine.UpgradeChipItem.Kind.SPEED, dev.groundburst.content.machine.UpgradeChipItem.Tier.QUANTUM).get()));
+                    }
+                    return;
+                }
                 if (s.profile().equals("tall")) {
                     var press = dev.groundburst.content.machine.GBMachines.INDUSTRIAL_PRESS.block().get();
                     pressAt = new net.minecraft.core.BlockPos(x, ground, 0);
@@ -1826,6 +1841,17 @@ public final class FxPhotographer {
             });
         }
         // A tall machine's screen with its side tab open (each half's faces).
+        if (scene.name().equals("upgrade_ui") && step >= 0 && clock == 12 && pressAt != null) {
+            var crusher = pressAt;
+            dev.groundburst.content.machine.MachineMenu.upgradeTabOpen = true;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(crusher) instanceof dev.groundburst.content.machine.MachineBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);
+                    player.openMenu(be, crusher);
+                }
+            });
+        }
         if (scene.name().equals("tall_ui") && step >= 0 && clock == 12 && pressAt != null) {
             var press = pressAt;
             server.execute(() -> {

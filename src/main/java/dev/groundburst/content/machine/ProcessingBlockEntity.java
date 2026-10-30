@@ -60,6 +60,12 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         this.outputCount = outputCount;
     }
 
+    /** Every processing machine takes an upgrade chip (DESIGN.md §7.3). */
+    @Override
+    public boolean acceptsUpgrades() {
+        return true;
+    }
+
     /** Recipe progress per tick (1 = the recipe's own time); energy is still drawn once per tick. */
     protected float speedMultiplier() {
         return 1f;
@@ -198,15 +204,16 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
             this.status = MachineStatus.OUTPUT_FULL;
             return false;
         }
-        if (!this.energy.consume(recipe.energyPerTick())) {
+        if (!this.energy.consume(workEnergy(recipe.energyPerTick()))) {
             this.status = MachineStatus.NO_POWER;
             return false;
         }
         this.status = MachineStatus.RUNNING;
         this.maxProgress = recipe.time();
-        // Faster machines (a centrifuge cascade) bank the fraction of a step they gain each tick.
+        // Faster machines (a centrifuge cascade, an upgrade chip) bank the fraction of a step they gain each tick; a chip
+        // draws power as much faster as it works (workEnergy), so a job costs the same.
         this.progress++;
-        this.speedCarry += speedMultiplier() - 1f;
+        this.speedCarry += speedMultiplier() * workSpeed() - 1f;
         while (this.speedCarry >= 1f) {
             this.progress++;
             this.speedCarry -= 1f;

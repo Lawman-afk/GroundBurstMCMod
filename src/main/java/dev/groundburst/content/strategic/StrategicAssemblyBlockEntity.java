@@ -75,7 +75,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     private static final String T_READY = GBLang.add(GroundBurst.MODID + ".strategic.ready", "Range %s, %s: press Assemble");
     private static final String T_WORKING = GBLang.add(GroundBurst.MODID + ".strategic.working", "Assembling: %s%%");
     private static final String T_DONE = GBLang.add(GroundBurst.MODID + ".strategic.done", "Finished: %s");
-    private static final String T_NO_POWER = GBLang.add(GroundBurst.MODID + ".strategic.no_power", "Needs power: 250 FE a tick");
+    private static final String T_NO_POWER = GBLang.add(GroundBurst.MODID + ".strategic.no_power", "Needs power: %s FE a tick");
     private static final String T_IDLE = GBLang.add(GroundBurst.MODID + ".strategic.idle", "Needs a primary and a booster");
     private static final String T_APART = GBLang.add(GroundBurst.MODID + ".strategic.apart", "Clear the part slots to take it apart");
 
@@ -184,6 +184,12 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         }
     }
 
+    /** It takes an upgrade chip (DESIGN.md §7.3). */
+    @Override
+    public boolean acceptsUpgrades() {
+        return true;
+    }
+
     // --- working ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
@@ -206,13 +212,14 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             syncModel();
             return false;
         }
-        if (this.energy.stored() < ENERGY_PER_TICK) {
+        int cost = workEnergy(ENERGY_PER_TICK);          // an upgrade chip's draw (DESIGN.md §7.3)
+        if (this.energy.stored() < cost) {
             this.status = MachineStatus.NO_POWER;
             return false;
         }
-        this.energy.consume(ENERGY_PER_TICK);
+        this.energy.consume(cost);
         this.status = MachineStatus.RUNNING;
-        this.progress++;
+        this.progress += workSteps();
         if (this.progress >= this.total) {
             finish();
             this.progress = this.total = 0;
@@ -322,7 +329,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
                 : !out.isEmpty() ? Component.translatable(T_DONE, out.getHoverName()) : Component.translatable(T_IDLE);
         Component second;
         if (total > 0) {
-            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER).withStyle(ChatFormatting.RED)
+            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(ENERGY_PER_TICK)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else if (problem == StrategicAssembly.Problem.NONE) {
             MissileParts.Guidance g = slot(SLOT_GUIDANCE).getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;

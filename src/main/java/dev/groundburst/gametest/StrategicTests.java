@@ -45,6 +45,32 @@ final class StrategicTests {
         GBGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GBGameTests.FLOOR_16, 40, StrategicTests::tsar);
         GBGameTests.test("tsar_goes_off_from_a_missile", GBGameTests.FLOOR_16, 200, StrategicTests::tsarBlast);
         GBGameTests.test("icbm_hall_builds_an_antimatter_icbm_and_takes_it_apart", GBGameTests.FLOOR_16, 40, StrategicTests::exotic);
+        GBGameTests.test("icbm_hall_works_faster_with_a_speed_chip", GBGameTests.FLOOR_16, 80, StrategicTests::speedChip);
+    }
+
+    /**
+     * A quantum speed chip in the hall (DESIGN.md §7.3): 40% more work a tick, each tick drawing 40% more power (350 FE
+     * for its 250), so a job costs the same.
+     */
+    private static void speedChip(GameTestHelper helper) {
+        // Its own floor, leaving Charges.bombScale alone: no blast here, and tests running beside it may have one.
+        for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
+            helper.setBlock(p, Blocks.STONE);
+        }
+        StrategicAssemblyBlockEntity hall = hall(helper, true);
+        parts(hall.inventory(), false);
+        hall.upgrades().setItem(0, new ItemStack(dev.groundburst.content.machine.GBUpgrades.chip(
+                dev.groundburst.content.machine.UpgradeChipItem.Kind.SPEED, dev.groundburst.content.machine.UpgradeChipItem.Tier.QUANTUM).get()));
+        hall.energy().generate(StrategicAssemblyBlockEntity.CAPACITY);
+        int full = hall.energy().stored();
+        helper.assertTrue(hall.startAssembly(), "it starts");
+        helper.runAfterDelay(40, () -> {
+            int used = full - hall.energy().stored();
+            helper.assertTrue(used > 0 && used % 350 == 0, "350 FE a tick: " + used);
+            int ticks = used / 350;
+            helper.assertTrue(Math.abs(hall.progress() - 1.4 * ticks) <= 1, "1.4 ticks' work a tick: " + hall.progress() + " in " + ticks);
+            helper.succeed();
+        });
     }
 
     private static void floor(GameTestHelper helper) {

@@ -184,6 +184,12 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
         }
     }
 
+    /** It takes an upgrade chip (DESIGN.md §7.3). */
+    @Override
+    public boolean acceptsUpgrades() {
+        return true;
+    }
+
     // --- working ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
@@ -211,13 +217,14 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
             syncModel();
             return false;
         }
-        if (this.energy.stored() < this.kind.energyPerTick) {
+        int cost = workEnergy(this.kind.energyPerTick);          // an upgrade chip's draw (DESIGN.md §7.3)
+        if (this.energy.stored() < cost) {
             this.status = MachineStatus.NO_POWER;
             return false;
         }
-        this.energy.consume(this.kind.energyPerTick);
+        this.energy.consume(cost);
         this.status = MachineStatus.RUNNING;
-        this.progress++;
+        this.progress += workSteps();
         if (this.progress >= this.total) {
             for (int i = 0; i < this.kind.inputs.size(); i++) {
                 slot(i).shrink(this.kind.inputs.get(i).count());
@@ -295,7 +302,7 @@ public class AmmoFactoryBlockEntity extends MachineBlockEntity implements Animat
         if (menu.status() == MachineStatus.INCOMPLETE) {
             second = Component.translatable(T_INCOMPLETE).withStyle(ChatFormatting.RED);
         } else if (total > 0) {
-            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, this.kind.energyPerTick).withStyle(ChatFormatting.RED)
+            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(this.kind.energyPerTick)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else {
             Input in = missing();

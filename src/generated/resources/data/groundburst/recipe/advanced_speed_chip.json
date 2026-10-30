@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:advanced_circuit",
+    "minecraft:redstone",
+    "minecraft:redstone",
+    "#c:wires/gold"
+  ],
+  "result": {
+    "id": "groundburst:advanced_speed_chip"
+  }
+}

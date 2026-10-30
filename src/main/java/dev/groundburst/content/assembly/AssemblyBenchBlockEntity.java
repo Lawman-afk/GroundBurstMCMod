@@ -54,7 +54,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     private static final String T_READY = GBLang.add(GroundBurst.MODID + ".assembly.ready", "%s, %s fuze: press Assemble");
     private static final String T_WORKING = GBLang.add(GroundBurst.MODID + ".assembly.working", "Assembling: %s%%");
     private static final String T_DONE = GBLang.add(GroundBurst.MODID + ".assembly.done", "Finished: %s");
-    private static final String T_NO_POWER = GBLang.add(GroundBurst.MODID + ".assembly.no_power", "Needs power: 10 FE a tick");
+    private static final String T_NO_POWER = GBLang.add(GroundBurst.MODID + ".assembly.no_power", "Needs power: %s FE a tick");
     private static final String T_IDLE = GBLang.add(GroundBurst.MODID + ".assembly.idle", "Core, casing and fuze make a warhead");
     private static final String T_APART = GBLang.add(GroundBurst.MODID + ".assembly.apart", "Clear the three part slots to take it apart");
 
@@ -177,6 +177,12 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         }
     }
 
+    /** It takes an upgrade chip (DESIGN.md §7.3). */
+    @Override
+    public boolean acceptsUpgrades() {
+        return true;
+    }
+
     // --- working ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
@@ -193,13 +199,14 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             setChanged();
             return false;
         }
-        if (this.energy.stored() < ENERGY_PER_TICK) {
+        int cost = workEnergy(ENERGY_PER_TICK);          // an upgrade chip's draw (DESIGN.md §7.3)
+        if (this.energy.stored() < cost) {
             this.status = MachineStatus.NO_POWER;
             return false;
         }
-        this.energy.consume(ENERGY_PER_TICK);
+        this.energy.consume(cost);
         this.status = MachineStatus.RUNNING;
-        this.progress++;
+        this.progress += workSteps();
         if (this.progress >= this.total) {
             finish();
             this.progress = this.total = 0;
@@ -265,7 +272,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
                 : Component.translatable(T_IDLE);
         Component second;
         if (total > 0) {
-            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER).withStyle(ChatFormatting.RED)
+            second = menu.status() == MachineStatus.NO_POWER ? Component.translatable(T_NO_POWER, workEnergy(ENERGY_PER_TICK)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else if (problem == WarheadAssembly.Problem.NONE && core.getItem() instanceof ComponentItems.PayloadCore c
                 && fuze.getItem() instanceof ComponentItems.FuzeItem f) {

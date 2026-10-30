@@ -121,6 +121,31 @@ public class GBRecipeProvider extends RecipeProvider {
         slice6();
         slice7();
         slice8();
+        upgradeChips();
+    }
+
+    /**
+     * The upgrade chips (DESIGN.md §7.3): on each circuit tier, a speed chip (the circuit, redstone and gold wire), an
+     * efficiency chip (the circuit, a capacitor and copper wire), and two balanced chips from one of each.
+     */
+    private void upgradeChips() {
+        List<net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item>> circuits = List.of(GBParts.BASIC_CIRCUIT,
+                GBParts.ADVANCED_CIRCUIT, GBParts.MILITARY_CIRCUIT, GBParts.QUANTUM_CIRCUIT);
+        for (var tier : dev.groundburst.content.machine.UpgradeChipItem.Tier.values()) {
+            var circuit = circuits.get(tier.ordinal());
+            var speed = dev.groundburst.content.machine.GBUpgrades.chip(dev.groundburst.content.machine.UpgradeChipItem.Kind.SPEED, tier);
+            var efficiency = dev.groundburst.content.machine.GBUpgrades.chip(dev.groundburst.content.machine.UpgradeChipItem.Kind.EFFICIENCY, tier);
+            var balanced = dev.groundburst.content.machine.GBUpgrades.chip(dev.groundburst.content.machine.UpgradeChipItem.Kind.BALANCED, tier);
+            shapeless(RecipeCategory.MISC, speed.get(), 1)
+                    .requires(circuit).requires(Items.REDSTONE).requires(Items.REDSTONE).requires(GBTags.commonItem("wires/gold"))
+                    .unlockedBy(getHasName(circuit), has(circuit)).save(output);
+            shapeless(RecipeCategory.MISC, efficiency.get(), 1)
+                    .requires(circuit).requires(GBParts.CAPACITOR).requires(GBTags.commonItem("wires/copper")).requires(GBTags.commonItem("wires/copper"))
+                    .unlockedBy(getHasName(circuit), has(circuit)).save(output);
+            shapeless(RecipeCategory.MISC, balanced.get(), 2)
+                    .requires(speed).requires(efficiency)
+                    .unlockedBy(getHasName(speed), has(speed)).save(output);
+        }
     }
 
     /** DESIGN.md §26.1: vanilla-only recipes that get the player into the power + machine loop. */

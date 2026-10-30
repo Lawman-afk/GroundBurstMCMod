@@ -614,6 +614,38 @@ missed the formed model, and found the preview confusing "with the many possibil
   withdraw / insert / SCRAM buttons beside the map; the spent slot and the breeding (two targets over their outputs) in
   a right-hand column; the CRT shows output, core temperature, size and rods loaded (unformed: the plan).
 
+### 7.3 Upgrade chips (2026-10-30, the user's request)
+The user: upgrades for all the assemblers, and the machines too, an Upgrade Chip slotted in a tab like the config tab;
+speed, power efficiency, or half of each; the speed chip draws power faster but no more in all; one level a circuit
+tier, basic to quantum, 10% a level (the mix 5% and 5%), 40% at quantum.
+- **Items** (`UpgradeChipItem`, `GBUpgrades`): `<tier>_<kind>_chip` for kinds speed, efficiency, balanced and tiers
+  basic, advanced, military, quantum (twelve; stack to 16). `speedBonus()` 0.1 a level (balanced 0.05),
+  `efficiency()` 0.1 a level (balanced 0.05). Recipes (shapeless): speed = the tier's circuit, two redstone, gold wire;
+  efficiency = the circuit, a capacitor, two copper wire; two balanced = a speed and an efficiency chip of the tier.
+  Sprites (`tools/assets/upgrade_chips.py`, the circuits' pixel style): a card on a gold edge connector in the tier's
+  board colour with one to four pips (gold; quantum's violet), a label plate in amber with a double chevron (speed),
+  green with a bolt (efficiency) or half of each (balanced). JEI info; Field Manual "Upgrade chips" (Processing).
+- **Machines** (`MachineBlockEntity`): `acceptsUpgrades()` (the processing machines, the Assembly Bench, the four
+  missile assemblers, the ICBM Assembly Hall and the ammunition factories; generators, reactors and launchers do not);
+  one chip in its own one-slot inventory (`upgrade`, saved as "upgrade", dropped when broken, never automated).
+  `workSpeed()` = 1 + speed bonus; `workEnergyFactor()` = speed x (1 - efficiency); `workEnergy(base)` rounds base x
+  factor (at least 1); `workSteps()` banks the extra share of a step. The processing machines fold the speed into
+  their existing carry (with a centrifuge cascade's) and draw `workEnergy` a tick; each assembler draws `workEnergy`
+  and adds `workSteps()` a tick. So a speed chip finishes 1/1.4 the time on the same FE a job (it must be fed 1.4
+  times as fast), an efficiency chip takes the same time on 0.6 the FE, a quantum balanced one 1/1.2 the time on 0.8.
+  The "needs power" lines say the chip's draw.
+- **The Upgrades tab** (`UpgradeTab`, `textures/gui/machine/upgrades.png` from `gui.py`): the config tab's mirror on
+  the window's left edge (the config tab keeps the right). Collapsed, a tab with a chip glyph (the fitted chip drawn
+  over it); expanded, a 112x62 panel: its header, the slot, and three lines (speed, power a job, power a tick). The
+  slot is a real menu slot (`MachineMenu.UPGRADE_SLOT_X/Y` = -101, 27, after the player's inventory so no slot moves),
+  shown only while the tab is open (`MachineMenu.upgradeTabOpen`, the client's); shift-clicking a chip from the
+  inventory fits it (never into the machine's own slots). JEI is told the tab's area.
+- GameTests (`UpgradeTests`, `StrategicTests`): three crushers on raw iron (200 ticks at 20 FE): a quantum speed chip
+  5/7 the time on the same FE, a quantum efficiency chip the same time on 60%; the slot takes one chip and nothing
+  else, shift-clicked in from the hotbar, the chip dropped with the machine; the hall with a quantum speed chip does
+  1.4 ticks' work a tick on 350 FE. (Delayed blasts now keep the bomb scale they were set off at, `Charges.scaled`:
+  the new tests had shifted the batches, and a thermobaric cloud and a missile's warhead in one took another test's.)
+
 ### 7.1 Fission Reactor meltdown (as built, Phase 5)
 A game abstraction of a reactor accident, on by default (the user's call); the server config `reactor.meltdowns` turns
 it off, and then the reactor SCRAMs at 900 °C.
@@ -3684,6 +3716,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | Upgrade chips (the user's request, §7.3): speed, efficiency and balanced chips on the four circuit tiers, 10% a level (balanced 5% and 5%), one per processing machine or assembler in an Upgrades tab on the screen's left edge (the config tab's mirror); a speed chip draws power as much faster as it works, so a job costs the same. |
 | 2026-10-30 | The user's second look at the exotic weapons: no exotic bombs (their cores are ICBM cores only the hall takes; the warheads are whole weapons, out of JEI and the creative tab), and the singularity ends in a two-second implosion instead of a blast: its pull at up to seven times, its horizon shrinking to a point, shells rushing inward, the disc winding in, a last flash and a thud (§16.13). |
 | 2026-10-30 | After the user's look at the exotic warheads: the Strategic Assembly Hall is the **ICBM Assembly Hall** (names only; the ids stay, so worlds keep their halls), and the exotic weapons are built whole there as ICBMs from their cores alone and a booster (no missile assembler takes them; the bench still makes their bombs, which only breach) (§16.12). |
 | 2026-10-30 | Both exotic warheads were far too weak (the user): the antimatter sphere 67 (+40%, its flash with it); the singularity lives a minute and feeds, its size all from one reach, `26 sqrt(u) + 0.56 cbrt(eaten)`, about 74 on open ground (stone to 67, the antimatter's sphere), more in a mountain or the sea, at most 110; a tidal pull (d^6) gives its hole a sharp edge, and clients are told the reach as it grows (§16.12). |

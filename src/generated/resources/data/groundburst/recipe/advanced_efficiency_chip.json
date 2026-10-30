@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:advanced_circuit",
+    "groundburst:capacitor",
+    "#c:wires/copper",
+    "#c:wires/copper"
+  ],
+  "result": {
+    "id": "groundburst:advanced_efficiency_chip"
+  }
+}

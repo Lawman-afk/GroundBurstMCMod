@@ -69,6 +69,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected MachineStatus status = MachineStatus.IDLE;
     /** Knocked out by an EMP field (it lost half its energy as the field hit; it reboots when the field ends). */
     private boolean emped;
+    /**
+     * Its upgrade chip (DESIGN.md §7.3), in the Upgrades tab of machines that take one ({@link #acceptsUpgrades}): one
+     * chip, never touched by automation.
+     */
+    protected final MachineInventory upgrade = new MachineInventory(1, (slot, stack) -> stack.getItem() instanceof UpgradeChipItem,
+            slot -> setChanged(), slot -> 1);
+    /** The share of a work step a speed chip has banked toward the next whole one. */
+    private float stepCarry;
 
     protected final ContainerData data = new ContainerData() {
         @Override
@@ -254,6 +262,57 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     protected int getExtraData(int index) {
         return 0;
+    }
+
+    // --- upgrade chips (DESIGN.md §7.3) ----------------------------------------------------------------------------------
+    /** Whether it has an Upgrades tab: machines that work at jobs (the processing machines, the assemblers). */
+    public boolean acceptsUpgrades() {
+        return false;
+    }
+
+    /** Its upgrade slot (one chip). */
+    public MachineInventory upgrades() {
+        return this.upgrade;
+    }
+
+    /** The chip it has fitted (null: none, or it takes none). */
+    public @org.jspecify.annotations.Nullable UpgradeChipItem chip() {
+        return acceptsUpgrades() && this.upgrade.getItem(0).getItem() instanceof UpgradeChipItem chip ? chip : null;
+    }
+
+    /** How fast it works: 1, and more with a speed or balanced chip (1.4 with a quantum speed chip). */
+    public float workSpeed() {
+        UpgradeChipItem chip = chip();
+        return chip == null ? 1 : 1 + chip.speedBonus();
+    }
+
+    /**
+     * How much power a tick it draws for its work, as a share of its own: as much more as it works faster (the same per
+     * job), and less with an efficiency or balanced chip.
+     */
+    public float workEnergyFactor() {
+        UpgradeChipItem chip = chip();
+        return chip == null ? 1 : (1 + chip.speedBonus()) * (1 - chip.efficiency());
+    }
+
+    /** The FE a tick of its work takes with its chip, normally {@code base} (at least 1 if it took any). */
+    public int workEnergy(int base) {
+        return base <= 0 ? 0 : Math.max(1, Math.round(base * workEnergyFactor()));
+    }
+
+    /** Steps of work this tick: one, and with a speed chip the extra share banked until it makes another whole step. */
+    protected int workSteps() {
+        float speed = workSpeed();
+        if (speed <= 1) {
+            return 1;
+        }
+        this.stepCarry += speed - 1;
+        int steps = 1;
+        while (this.stepCarry >= 1) {
+            steps++;
+            this.stepCarry -= 1;
+        }
+        return steps;
     }
 
     // --- ticking ----------------------------------------------------------------------------------------------------------
@@ -608,6 +667,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         super.saveAdditional(output);
         this.energy.serialize(output.child("energy"));
         this.inventory.serialize(output.child("items"));
+        if (acceptsUpgrades()) {
+            this.upgrade.serialize(output.child("upgrade"));
+        }
         output.putInt("redstone", this.redstoneMode.ordinal());
         this.sides.save(output.child("sides"));
         this.sideHalf.save(output.child("sides_side_half"));
@@ -621,6 +683,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         super.loadAdditional(input);
         this.energy.deserialize(input.childOrEmpty("energy"));
         this.inventory.deserialize(input.childOrEmpty("items"));
+        this.upgrade.deserialize(input.childOrEmpty("upgrade"));
         this.redstoneMode = RedstoneMode.byId(input.getIntOr("redstone", 0));
         this.sides.load(input.childOrEmpty("sides"));
         this.sides.restrict(allowedItemModes());
@@ -635,6 +698,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level != null) {
             Containers.dropContents(this.level, pos, this.inventory);
+            Containers.dropContents(this.level, pos, this.upgrade);
         }
     }
 }

@@ -1172,8 +1172,61 @@ def page_tabs_texture() -> Path:
     return t.save(paths.TEXTURES / "gui" / "machine" / "page_tabs.png")
 
 
+# --- Upgrades tab (DESIGN.md §7.3; every machine and assembler that takes a chip) -------------------------------------------
+# Layout constants mirrored in UpgradeTab (the menu's slot: MachineMenu.UPGRADE_SLOT_X/Y).
+UPG_TAB = (0, 0, 24, 26)          # collapsed tab, on the window's left edge
+UPG_PANEL = (0, 32, 112, 62)      # expanded panel: header, the slot, three lines of what the chip does
+UPG_SLOT = (8, 22)                # the slot frame within the panel
+
+
+def tab_panel_left(t: Tex, x: int, y: int, w: int, h: int) -> None:
+    """A tab panel growing out of the GUI's left edge (the side tab mirrored): flat right side, bevelled left side."""
+    t.rect(x, y, w, h, PANEL.base)
+    t.hline(x + 2, y, w - 2, PANEL.outline)
+    t.hline(x + 2, y + h - 1, w - 2, PANEL.outline)
+    t.vline(x, y + 2, h - 4, PANEL.outline)
+    t.px(x + 1, y + 1, PANEL.outline)
+    t.px(x + 1, y + h - 2, PANEL.outline)
+    for px_, py_ in ((0, 0), (0, 1), (1, 0), (0, h - 1), (0, h - 2), (1, h - 1)):
+        t.px(x + px_, y + py_, (0, 0, 0, 0))
+    t.hline(x + 2, y + 1, w - 2, PANEL.highlight)
+    t.vline(x + 1, y + 2, h - 4, PANEL.light)
+    t.hline(x + 2, y + h - 2, w - 2, PANEL.deep)
+    t.rivet(x + 3, y + 3, PANEL)
+    t.rivet(x + 3, y + h - 5, PANEL)
+
+
+def chip_glyph(t: Tex, x: int, y: int) -> None:
+    """An 11x11 integrated circuit: a dark package with a lit top edge, a gold die, four pins a side."""
+    t.rect(x + 1, y + 1, 9, 9, P.BLACK_PAINT.base)
+    t.hline(x + 1, y + 1, 9, P.BLACK_PAINT.highlight)
+    t.hline(x + 1, y + 9, 9, P.BLACK_PAINT.shadow)
+    t.rect(x + 3, y + 3, 5, 5, P.BRASS.base)
+    t.hline(x + 3, y + 3, 5, P.BRASS.light)
+    t.px(x + 2, y + 2, P.BLACK_PAINT.light)                    # pin-1 dot
+    for k in (2, 4, 6, 8):
+        t.px(x + k, y, P.STEEL.highlight)
+        t.px(x + k, y + 10, P.STEEL.shadow)
+        t.px(x, y + k, P.STEEL.highlight)
+        t.px(x + 10, y + k, P.STEEL.base)
+
+
+def upgrades_texture() -> Path:
+    t = Tex(256, 256)
+    tab_panel_left(t, *UPG_TAB)
+    chip_glyph(t, UPG_TAB[0] + 7, UPG_TAB[1] + 7)
+    tab_panel_left(t, *UPG_PANEL)
+    px_, py_ = UPG_PANEL[0], UPG_PANEL[1]
+    chip_glyph(t, px_ + 7, py_ + 4)
+    t.hline(px_ + 5, py_ + 17, UPG_PANEL[2] - 8, PANEL.shadow)
+    t.hline(px_ + 5, py_ + 18, UPG_PANEL[2] - 8, PANEL.light)
+    slot(t, px_ + UPG_SLOT[0], py_ + UPG_SLOT[1])
+    return t.save(paths.TEXTURES / "gui" / "machine" / "upgrades.png")
+
+
 if __name__ == "__main__":
     print(side_config_texture())
+    print(upgrades_texture())
     for n, spec in LAYOUTS.items():
         print(build(n, spec))
     print(write_java())

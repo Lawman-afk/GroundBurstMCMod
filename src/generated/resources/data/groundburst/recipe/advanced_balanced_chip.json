@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:advanced_speed_chip",
+    "groundburst:advanced_efficiency_chip"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:advanced_balanced_chip"
+  }
+}

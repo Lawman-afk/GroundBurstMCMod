@@ -38,6 +38,7 @@ public class GroundBurst {
         GBResources.init();
         GBMachines.init();
         GBParts.init();
+        dev.groundburst.content.machine.GBUpgrades.init();
         GBChemicals.init();
         dev.groundburst.content.nuclear.GBNuclear.init();
         dev.groundburst.content.gear.GBArmor.init();

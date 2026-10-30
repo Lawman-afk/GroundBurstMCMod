@@ -42,11 +42,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private final MachineLayout layout;
     /** Null for structures that connect only through their ports. */
     private final @Nullable SideConfigTab sideTab;
+    /** The Upgrades tab (DESIGN.md §7.3); null for machines that take no chip. */
+    private final @Nullable UpgradeTab upgradeTab;
 
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, menu.layout().width(), menu.layout().height());
         this.layout = menu.layout();
         this.sideTab = menu.machine().hasSideConfig() ? new SideConfigTab(menu) : null;
+        this.upgradeTab = menu.machine().acceptsUpgrades() ? new UpgradeTab(menu) : null;
         this.titleLabelX = this.layout.titleX();
         this.titleLabelY = this.layout.titleY();
     }
@@ -57,6 +60,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         int x = this.leftPos;
         int y = this.topPos;
         g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x, y, 0, 0, this.imageWidth, this.imageHeight, pageLayout().textureWidth(), 256);
+        if (this.upgradeTab != null) {
+            this.upgradeTab.renderBackground(g, x, y);         // under the slots: its chip is drawn in its slot
+        }
 
         // Energy gauge: fill bottom-up.
         MachineLayout.Rect e = this.layout.energy();
@@ -249,12 +255,20 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     public List<Rect2i> extraAreas() {
-        return this.sideTab == null ? List.of() : List.of(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
+        List<Rect2i> areas = new java.util.ArrayList<>();
+        if (this.sideTab != null) {
+            areas.add(this.sideTab.area(this.leftPos, this.topPos, this.imageWidth));
+        }
+        if (this.upgradeTab != null) {
+            areas.add(this.upgradeTab.area(this.leftPos, this.topPos));
+        }
+        return areas;
     }
 
     @Override
     protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
-        return super.hasClickedOutside(mx, my, xo, yo) && (this.sideTab == null || !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my));
+        return super.hasClickedOutside(mx, my, xo, yo) && (this.sideTab == null || !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my))
+                && (this.upgradeTab == null || !this.upgradeTab.contains(mx, my, xo, yo));
     }
 
     @Override
@@ -262,6 +276,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         super.extractRenderState(g, mouseX, mouseY, partial);
         if (this.sideTab != null) {
             this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
+        }
+        if (this.upgradeTab != null) {
+            this.upgradeTab.renderForeground(g, this.font, this.leftPos, this.topPos, mouseX, mouseY);
         }
         int mx = mouseX - this.leftPos;
         int my = mouseY - this.topPos;
@@ -304,6 +321,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (this.sideTab != null && this.sideTab.click(event.x(), event.y(), event.button(), this.leftPos, this.topPos, this.imageWidth)) {
+            return true;
+        }
+        if (this.upgradeTab != null && this.upgradeTab.click(event.x(), event.y(), this.leftPos, this.topPos)) {
             return true;
         }
         int mx = (int) event.x() - this.leftPos;

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "groundburst:quantum_circuit",
+    "minecraft:redstone",
+    "minecraft:redstone",
+    "#c:wires/gold"
+  ],
+  "result": {
+    "id": "groundburst:quantum_speed_chip"
+  }
+}

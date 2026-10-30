@@ -42,6 +42,7 @@
     "processing/gas_centrifuge",
     "processing/fusion_fuel_synthesizer",
     "processing/exotic_matter_fabricator",
+    "processing/upgrade_chips",
     "components/circuits",
     "components/parts",
     "components/metal_parts",

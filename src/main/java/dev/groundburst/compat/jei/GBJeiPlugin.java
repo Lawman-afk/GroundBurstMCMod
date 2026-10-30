@@ -113,6 +113,9 @@ public final class GBJeiPlugin implements IModPlugin {
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_NUCLEAR_MISSILE, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.FIELDSTONE_WALL.item().get(),
                 dev.groundburst.content.superweapon.GBSuperweapons.MISSILE_ERECTOR.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_SPAWNER.get(), dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ROUND.get());
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_TOXIN, dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_SCUD.get());
+        // The upgrade chips (DESIGN.md §7.3): where they go and what they do.
+        info(registration, dev.groundburst.content.machine.GBUpgrades.INFO, dev.groundburst.content.machine.GBUpgrades.CHIPS.stream()
+                .map(c -> (net.minecraft.world.level.ItemLike) c.get()).toArray(net.minecraft.world.level.ItemLike[]::new));
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_ARMS_DEALER, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_SPAWNER.get());
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_WAR_FACTORY, dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_SPAWNER.get());
         // The Cruise Missile Launcher and the motor that makes a cruise missile (slice 9c, DESIGN.md §17.11).

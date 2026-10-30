@@ -15,6 +15,12 @@ Exotic weapons, and a clearer name for the hall that builds them.
   pulling harder than ever as it shrinks to a point and vanishes.
 - Both fire only from a Launch Complex or a Missile Silo. They are only ever built whole: there are no exotic bombs.
 
+### Upgrade chips
+- **Speed**, **Efficiency** and **Balanced** chips on each circuit tier, basic to quantum: 10% a tier, so 40% at
+  quantum (a balanced chip half of each). Every processing machine and assembler has an **Upgrades** tab on the left of
+  its screen that holds one. A speed chip makes it work faster and draw power as much faster, so a job costs the same;
+  an efficiency chip makes it use less power.
+
 ### Changes
 - The **Strategic Assembly Hall** is now the **ICBM Assembly Hall**, so it is no longer confused with the Strategic
   Missile Assembler. Halls already built keep working. It builds the exotic ICBMs from their cores and an

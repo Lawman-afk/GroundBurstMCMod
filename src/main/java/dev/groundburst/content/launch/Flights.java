@@ -423,6 +423,8 @@ public final class Flights extends SavedData {
         int age;
         final ItemStack warhead;
         final @Nullable UUID owner;
+        /** The bomb scale it was launched at (GameTests' shrunken blasts; 1 in play, and after a reload). */
+        final float scale = dev.groundburst.content.ordnance.charge.Charges.bombScale;
         private final LongOpenHashSet tickets = new LongOpenHashSet();
         private Vec3 pos;
         private float yaw, tilt;
@@ -474,7 +476,7 @@ public final class Flights extends SavedData {
                 return false;
             }
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
-            Charges.burst(level, bomb.kind, at, by);
+            Charges.scaled(this.scale, () -> Charges.burst(level, bomb.kind, at, by));
             finish(level);
             return true;
         }
@@ -736,7 +738,7 @@ public final class Flights extends SavedData {
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
                 level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
             } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
-                Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by);
+                Charges.scaled(this.scale, () -> Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by));
             }
             finish(level);
         }

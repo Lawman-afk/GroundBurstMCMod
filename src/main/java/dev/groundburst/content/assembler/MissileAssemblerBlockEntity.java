@@ -198,6 +198,12 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         }
     }
 
+    /** It takes an upgrade chip (DESIGN.md §7.3). */
+    @Override
+    public boolean acceptsUpgrades() {
+        return true;
+    }
+
     // --- working ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
@@ -220,13 +226,14 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
             syncModel();
             return false;
         }
-        if (this.energy.stored() < this.kind.energyPerTick) {
+        int cost = workEnergy(this.kind.energyPerTick);          // an upgrade chip's draw (DESIGN.md §7.3)
+        if (this.energy.stored() < cost) {
             this.status = MachineStatus.NO_POWER;
             return false;
         }
-        this.energy.consume(this.kind.energyPerTick);
+        this.energy.consume(cost);
         this.status = MachineStatus.RUNNING;
-        this.progress++;
+        this.progress += workSteps();
         if (this.progress >= this.total) {
             finish();
             this.progress = this.total = 0;
@@ -333,7 +340,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         Component second;
         if (total > 0) {
             second = menu.status() == MachineStatus.NO_POWER
-                    ? Component.translatable(T_NO_POWER, this.kind.energyPerTick).withStyle(ChatFormatting.RED)
+                    ? Component.translatable(T_NO_POWER, workEnergy(this.kind.energyPerTick)).withStyle(ChatFormatting.RED)
                     : Component.translatable(T_WORKING, menu.extra(DATA_PROGRESS) * 100 / total);
         } else if (problem == MissileAssembly.Problem.NONE && slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem m) {
             MissileParts.Guidance g = slot(SLOT_GUIDANCE).getItem() instanceof MissileParts.GuidanceItem gi ? gi.guidance : MissileParts.Guidance.UNGUIDED;

@@ -526,6 +526,29 @@ It draws **400 FE a tick**, more than copper cable carries: feed it with insulat
     machine("exotic_fabricating"),
 ])
 
+entry("processing/upgrade_chips", "Upgrade chips", "quantum_speed_chip", ['basic_speed_chip', 'advanced_speed_chip', 'military_speed_chip', 'quantum_speed_chip', 'basic_efficiency_chip', 'advanced_efficiency_chip', 'military_efficiency_chip', 'quantum_efficiency_chip', 'basic_balanced_chip', 'advanced_balanced_chip', 'military_balanced_chip', 'quantum_balanced_chip'], [
+    text("""
+An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly) and the superweapons' ammunition factories. Generators, reactors and launchers take none.
+
+Open the machine's screen and click the **Upgrades** tab on its left edge (the config tab's twin): it holds one chip, and says what it does. Shift-clicking a chip from your inventory fits it there. Breaking the machine drops the chip with everything else.
+"""),
+    text("""
+**Speed chips** make it work faster, and it draws power as much faster: a job costs the same power, but it has to be fed faster (a speed chip on a machine at the edge of its cable's capacity will starve). **Efficiency chips** make it use less power, at the same speed. **Balanced chips** do half of each.
+
+Each is built on a circuit, and each tier gives **10% a level**:
+
+- **Basic**: 10% (a balanced chip 5% and 5%)
+- **Advanced**: 20% (10% and 10%)
+- **Military**: 30% (15% and 15%)
+- **Quantum**: 40% (20% and 20%)
+
+A quantum speed chip makes a crusher's 10 seconds of work take 7; a quantum efficiency chip makes it take 60% of the power. The board's colour and the pips along its top say the tier, as on the circuits; the plate says the kind: amber chevrons for speed, a green bolt for efficiency, half of each for balanced.
+"""),
+    craft("basic_speed_chip"),
+    craft("basic_efficiency_chip"),
+    craft("basic_balanced_chip", "Two balanced chips from a speed chip and an efficiency chip of the same tier."),
+])
+
 # =========================================================================================================================
 chapter("components", "Components", "basic_circuit", """
 The parts machines, weapons and structures are built from.

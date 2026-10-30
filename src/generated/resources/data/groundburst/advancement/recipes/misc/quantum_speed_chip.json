@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_quantum_circuit": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:quantum_circuit"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:quantum_speed_chip"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_quantum_circuit"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:quantum_speed_chip"
+    ]
+  }
+}

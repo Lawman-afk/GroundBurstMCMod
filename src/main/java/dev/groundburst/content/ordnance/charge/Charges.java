@@ -57,7 +57,11 @@ public final class Charges {
      * {@code stage} of a bomb already going off, the next step (the thermobaric bomb igniting its cloud, the bunker
      * buster boring on with {@code count} blocks of depth left).
      */
-    private record Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at, int stage) {
+    private record Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at, int stage, float scale) {
+        Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at, int stage) {
+            this(kind, pos, facing, count, owner, at, stage, bombScale);       // the scale it was set off at (GameTests)
+        }
+
         Pending(ChargeKind kind, BlockPos pos, Direction facing, int count, @Nullable UUID owner, long at) {
             this(kind, pos, facing, count, owner, at, FIRE);
         }
@@ -74,6 +78,21 @@ public final class Charges {
     public static float bombScale = 1f;
 
     private Charges() {}
+
+    /**
+     * Runs {@code action} with the bomb scale at {@code scale}: a blast that comes later than it was set off (a
+     * thermobaric cloud lit, a missile arriving) keeps the scale it was set off at, so GameTests running side by side,
+     * each with its own scale, do not change each other's. Always 1 in play.
+     */
+    public static void scaled(float scale, Runnable action) {
+        float saved = bombScale;
+        bombScale = scale;
+        try {
+            action.run();
+        } finally {
+            bombScale = saved;
+        }
+    }
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
@@ -172,11 +191,13 @@ public final class Charges {
         });
         for (Pending p : due) {
             Entity by = p.owner() == null ? null : level.getEntity(p.owner());
-            switch (p.stage()) {
-                case IGNITE -> thermobaricIgnite(level, p.pos(), by);
-                case BORE -> bore(level, p, by);
-                default -> fire(level, p.kind(), p.pos(), p.facing(), p.count(), by);
-            }
+            scaled(p.scale(), () -> {
+                switch (p.stage()) {
+                    case IGNITE -> thermobaricIgnite(level, p.pos(), by);
+                    case BORE -> bore(level, p, by);
+                    default -> fire(level, p.kind(), p.pos(), p.facing(), p.count(), by);
+                }
+            });
         }
     }
 
