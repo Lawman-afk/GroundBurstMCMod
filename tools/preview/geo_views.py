@@ -34,6 +34,18 @@ DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left
                       ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
 
 PRESETS = {
+    "special_weapons_assembler": dict(
+        anim="working",
+        shots=WHOLE + [
+            ("front: desk, cask, first ring", 30, 215, (0, 28, 30), 90, None),
+            ("the rings from the bay", 12, 190, (0, 40, 96), 120, None),
+            ("a ring, close", 20, 225, (0, 40, 48), 56, 0.5),
+            ("back: ports and conduits", 40, 30, (-6, 18, 186), 90, None),
+            ("detail: plinth and lamps", 25, 205, (0, 22, 42), 34, None),
+            ("detail: rotor nodes", 10, 180, (0, 40, 44), 40, 1.0),
+            ("detail: cradle", 30, 240, (-12, 24, 164), 34, None),
+            ("detail: cask", 30, 225, (-31, 22, 11), 26, None),
+        ]),
     "strategic_assembly_hall": dict(
         keep_one=("nose_",), anim="working",
         shots=WHOLE + [

@@ -22,7 +22,7 @@ public final class ComponentItems {
     static final String T_BENCH = GBLang.add(GroundBurst.MODID + ".component.bench", "Fitted at an Ordnance Assembly Bench");
     /** An ICBM core (Phase 11): the hall builds it whole into its ICBM, with a booster. */
     static final String T_ICBM_CORE = GBLang.add(GroundBurst.MODID + ".component.icbm_core", "ICBM core: the heart of the %s");
-    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".component.icbm_hall", "Fitted at an ICBM Assembly Hall, with a booster");
+    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".component.icbm_hall", "Fitted at a Special Weapons Assembler, with a booster");
     static final String[] T_FUZE_WHAT = {
             GBLang.add(GroundBurst.MODID + ".component.fuze.impact", "The missile's warhead goes off where it hits"),
             GBLang.add(GroundBurst.MODID + ".component.fuze.barometric", "The warhead bursts in the air, a set height over the target (10-200 blocks)")};

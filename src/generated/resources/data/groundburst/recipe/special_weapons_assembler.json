@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:lead_lined_casing",
+    "groundburst:quantum_circuit",
+    "groundburst:quantum_circuit",
+    "groundburst:containment_emitter",
+    "groundburst:superconducting_coil",
+    "groundburst:superconducting_coil",
+    "groundburst:sensor_array",
+    "groundburst:tungsten_plate",
+    "groundburst:crt_display"
+  ],
+  "result": {
+    "id": "groundburst:special_weapons_assembler"
+  }
+}

@@ -114,6 +114,9 @@ public final class GBAssemblers {
     public static final DeferredItem<StructureSpawnerItem> HALL_SPAWNER = GBItems.register("strategic_assembly_hall_spawner",
             "Structure Spawner: ICBM Assembly Hall", GBTab.MISSILES, p -> new StructureSpawnerItem(p, () -> GBStrategic.HALL),
             p -> p.stacksTo(1).rarity(Rarity.EPIC));
+    public static final DeferredItem<StructureSpawnerItem> SPECIAL_SPAWNER = GBItems.register("special_weapons_assembler_spawner",
+            "Structure Spawner: Special Weapons Assembler", GBTab.MISSILES, p -> new StructureSpawnerItem(p, () -> GBStrategic.SPECIAL),
+            p -> p.stacksTo(1).rarity(Rarity.EPIC));
 
     private GBAssemblers() {}
 

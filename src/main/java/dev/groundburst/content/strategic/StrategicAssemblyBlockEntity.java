@@ -62,7 +62,10 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     public static final int ENERGY_PER_TICK = 250, CAPACITY = 400_000;
     /** The missile's sections as the crane lays them: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
-    /** Which warhead the cradles show: none yet, a thermonuclear warhead, a cobalt one, the Tsar, the exotic ones. */
+    /**
+     * Which warhead the cradles show: none yet, a thermonuclear warhead, a cobalt one, the Tsar; the exotic ones only for a
+     * missile built here before they had their own assembler (one left in its output).
+     */
     public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2, LOOK_TSAR = 3, LOOK_ANTIMATTER = 4, LOOK_SINGULARITY = 5, LOOK_STORM = 6;
     private static final int RECHECK_INTERVAL = 40;
 
@@ -70,9 +73,6 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     private static final String T_THERMONUCLEAR = GBLang.add(GroundBurst.MODID + ".strategic.thermonuclear", "Thermonuclear ICBM");
     private static final String T_COBALT = GBLang.add(GroundBurst.MODID + ".strategic.cobalt", "Cobalt ICBM");
     private static final String T_TSAR = GBLang.add(GroundBurst.MODID + ".strategic.tsar", "Tsar ICBM");
-    private static final String T_ANTIMATTER = GBLang.add(GroundBurst.MODID + ".strategic.antimatter", "Antimatter ICBM");
-    private static final String T_SINGULARITY = GBLang.add(GroundBurst.MODID + ".strategic.singularity", "Singularity ICBM");
-    private static final String T_STORM = GBLang.add(GroundBurst.MODID + ".strategic.storm", "Storm ICBM");
     private static final String T_READY = GBLang.add(GroundBurst.MODID + ".strategic.ready", "Range %s, %s: press Assemble");
     private static final String T_WORKING = GBLang.add(GroundBurst.MODID + ".strategic.working", "Assembling: %s%%");
     private static final String T_DONE = GBLang.add(GroundBurst.MODID + ".strategic.done", "Finished: %s");
@@ -100,7 +100,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             case SLOT_BOOSTER -> stack.is(GBStrategic.INTERCONTINENTAL_BOOSTER.get());
             case SLOT_GUIDANCE -> stack.getItem() instanceof MissileParts.GuidanceItem;
             case SLOT_MODULE -> stack.getItem() instanceof MissileParts.HardenedModule;
-            case SLOT_OUTPUT -> stack.getItem() instanceof MissileItem && MissileItem.spec(stack) != null && MissileItem.spec(stack).intercontinental();
+            case SLOT_OUTPUT -> stack.getItem() instanceof MissileItem && MissileItem.spec(stack) != null && MissileItem.spec(stack).intercontinental()
+                    && !MissileItem.spec(stack).exotic();
             default -> false;
         };
     }
@@ -151,7 +152,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             return false;
         }
         this.progress = 0;
-        this.total = StrategicAssembly.ticks(slot(SLOT_PRIMARY), slot(SLOT_JACKET));
+        this.total = StrategicAssembly.ticks(slot(SLOT_JACKET));
         setChanged();
         syncModel();
         return true;
@@ -239,7 +240,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     private void finish() {
-        ItemStack out = StrategicAssembly.assemble(slot(SLOT_PRIMARY), slot(SLOT_JACKET), slot(SLOT_GUIDANCE), slot(SLOT_MODULE));
+        ItemStack out = StrategicAssembly.assemble(slot(SLOT_JACKET), slot(SLOT_GUIDANCE), slot(SLOT_MODULE));
         for (int i = SLOT_PRIMARY; i <= SLOT_MODULE; i++) {
             slot(i).shrink(1);
         }
@@ -255,7 +256,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         var out = MissileItem.spec(slot(SLOT_OUTPUT));
         if (assembling()) {
             laid = sectionsFor(this.progress);
-            look = lookOf(StrategicAssembly.warhead(slot(SLOT_PRIMARY), slot(SLOT_JACKET)).kind);
+            look = lookOf(StrategicAssembly.warhead(slot(SLOT_JACKET)).kind);
         } else if (out != null && out.intercontinental()) {
             laid = SECTIONS;
             look = lookOf(AssemblyStats.kindOf(out.warhead()));
@@ -321,12 +322,9 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         ItemStack primary = slot(SLOT_PRIMARY), out = slot(SLOT_OUTPUT);
         boolean parts = !primary.isEmpty() || !slot(SLOT_SECONDARY).isEmpty() || !slot(SLOT_BOOSTER).isEmpty();
         Component first = parts || total > 0 ? Component.translatable(T_MAKES,
-                Component.translatable(switch (lookOf(StrategicAssembly.warhead(primary, slot(SLOT_JACKET)).kind)) {
+                Component.translatable(switch (lookOf(StrategicAssembly.warhead(slot(SLOT_JACKET)).kind)) {
                     case LOOK_COBALT -> T_COBALT;
                     case LOOK_TSAR -> T_TSAR;
-                    case LOOK_ANTIMATTER -> T_ANTIMATTER;
-                    case LOOK_SINGULARITY -> T_SINGULARITY;
-                    case LOOK_STORM -> T_STORM;
                     default -> T_THERMONUCLEAR;
                 }))
                 : !out.isEmpty() ? Component.translatable(T_DONE, out.getHoverName()) : Component.translatable(T_IDLE);

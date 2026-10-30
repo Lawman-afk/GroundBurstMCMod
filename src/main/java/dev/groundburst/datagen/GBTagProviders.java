@@ -139,6 +139,7 @@ public final class GBTagProviders {
                     dev.groundburst.content.launch.GBLaunch.RADAR_CONTROLLER.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().key(),
+                    dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.LARGE_RADAR_DISH.block().key(),
                     dev.groundburst.content.launch.GBLaunch.MISSILE_SILO_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.block().key(),

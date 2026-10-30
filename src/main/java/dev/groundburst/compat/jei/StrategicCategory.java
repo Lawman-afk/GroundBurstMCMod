@@ -23,12 +23,11 @@ import net.minecraft.world.item.ItemStack;
  * JEI category for the ICBM Assembly Hall (DESIGN.md §15.2): a Boosted Fission Core, a Fusion Secondary and an
  * Intercontinental Booster (with the guidance and Hardened Electronics optional) make an intercontinental missile with
  * a Thermonuclear Warhead; a Cobalt-59 Jacket as well makes it a Cobalt Warhead, a Tertiary Stage (with a Twin Boosted
- * Core for the primary) the Tsar Mega-bomb. An Antimatter Trap or a Singularity Core and the booster alone make an
- * exotic one.
- * Laid out like the hall's screen.
+ * Core for the primary) the Tsar Mega-bomb. (The exotic weapons are the Special Weapons Assembler's:
+ * {@link SpecialWeaponsCategory}.) Laid out like the hall's screen.
  */
 final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.Recipe> {
-    enum Weapon { THERMONUCLEAR, COBALT, TSAR, ANTIMATTER, SINGULARITY, STORM }
+    enum Weapon { THERMONUCLEAR, COBALT, TSAR }
 
     /** One weapon the hall builds. */
     record Recipe(Weapon weapon) {
@@ -43,16 +42,7 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
 
         /** What goes in the primary slot for it. */
         ItemStack primary() {
-            return switch (this.weapon) {
-                case ANTIMATTER -> StrategicAssembly.exoticCores().get(0);
-                case SINGULARITY -> StrategicAssembly.exoticCores().get(1);
-                case STORM -> StrategicAssembly.exoticCores().get(2);
-                default -> StrategicAssembly.primaryFor(option());
-            };
-        }
-
-        boolean exotic() {
-            return this.weapon == Weapon.ANTIMATTER || this.weapon == Weapon.SINGULARITY || this.weapon == Weapon.STORM;
+            return StrategicAssembly.primaryFor(option());
         }
     }
 
@@ -70,16 +60,14 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
 
     /** The missile a recipe makes (with GPS guidance): also listed in JEI, one per warhead, for its recipe. */
     static ItemStack output(Recipe recipe) {
-        return StrategicAssembly.assemble(recipe.primary(), recipe.option(), new ItemStack(GBAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY);
+        return StrategicAssembly.assemble(recipe.option(), new ItemStack(GBAssembly.GPS_GUIDANCE.get()), ItemStack.EMPTY);
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
         ItemStack option = recipe.option();
         builder.addInputSlot(1, 1).setStandardSlotBackground().add(recipe.primary());
-        if (!recipe.exotic()) {
-            builder.addInputSlot(19, 1).setStandardSlotBackground().add(GBStrategic.FUSION_SECONDARY.get());
-        }
+        builder.addInputSlot(19, 1).setStandardSlotBackground().add(GBStrategic.FUSION_SECONDARY.get());
         if (!option.isEmpty()) {
             builder.addInputSlot(37, 1).setStandardSlotBackground().add(option);
         }
@@ -94,7 +82,7 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
 
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addAnimatedRecipeArrowWidget(StrategicAssembly.ticks(recipe.primary(), recipe.option())).setPosition(63, 11);
+        builder.addAnimatedRecipeArrowWidget(StrategicAssembly.ticks(recipe.option())).setPosition(63, 11);
         Component info = Component.translatable(StrategicAssembly.JEI_INFO, MissileParts.Motor.ICBM.range, StrategicAssemblyBlockEntity.ENERGY_PER_TICK);
         builder.addText(info, WIDTH, 10).setPosition(0, HEIGHT - 10).setColor(0xFF606060);
     }

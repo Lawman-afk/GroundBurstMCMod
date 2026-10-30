@@ -44,7 +44,6 @@ final class StrategicTests {
         GBGameTests.test("cobalt_warhead_starts_its_plume", GBGameTests.FLOOR_16, 40, StrategicTests::cobaltPlume);
         GBGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GBGameTests.FLOOR_16, 40, StrategicTests::tsar);
         GBGameTests.test("tsar_goes_off_from_a_missile", GBGameTests.FLOOR_16, 200, StrategicTests::tsarBlast);
-        GBGameTests.test("icbm_hall_builds_an_antimatter_icbm_and_takes_it_apart", GBGameTests.FLOOR_16, 40, StrategicTests::exotic);
         GBGameTests.test("icbm_hall_works_faster_with_a_speed_chip", GBGameTests.FLOOR_16, 80, StrategicTests::speedChip);
     }
 
@@ -204,41 +203,6 @@ final class StrategicTests {
             helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_JACKET).is(GBStrategic.TERTIARY_STAGE.get())
                     && inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GBStrategic.TWIN_BOOSTED_CORE.get())
                     && inv.getItem(StrategicAssemblyBlockEntity.SLOT_BOOSTER).is(GBStrategic.INTERCONTINENTAL_BOOSTER.get()), "every part back");
-        });
-    }
-
-    /**
-     * An Antimatter Trap in the primary slot and a booster make an Antimatter ICBM (a secondary with it makes the hall
-     * refuse): a minute and a half's work, its own model on the cradles; TAKE APART gives the trap and the booster back.
-     */
-    private static void exotic(GameTestHelper helper) {
-        floor(helper);
-        StrategicAssemblyBlockEntity hall = hall(helper, true);
-        Container inv = hall.inventory();
-        ItemStack trap = new ItemStack(GBAssembly.ANTIMATTER_TRAP.get());
-        helper.assertTrue(inv.canPlaceItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY, trap), "the primary slot takes an Antimatter Trap");
-        inv.setItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY, trap);
-        inv.setItem(StrategicAssemblyBlockEntity.SLOT_SECONDARY, new ItemStack(GBStrategic.FUSION_SECONDARY.get()));
-        inv.setItem(StrategicAssemblyBlockEntity.SLOT_BOOSTER, new ItemStack(GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
-        helper.assertTrue(hall.problem() == StrategicAssembly.Problem.EXOTIC_ALONE, "no secondary with it: " + hall.problem());
-        inv.setItem(StrategicAssemblyBlockEntity.SLOT_SECONDARY, ItemStack.EMPTY);
-        helper.assertTrue(hall.problem() == StrategicAssembly.Problem.NONE, "ready: " + hall.problem());
-        helper.assertTrue(StrategicAssembly.ticks(trap, ItemStack.EMPTY) == StrategicAssembly.EXOTIC_TICKS, "a minute and a half");
-        hall.energy().generate(StrategicAssemblyBlockEntity.CAPACITY);
-        helper.assertTrue(hall.startAssembly(), "it starts");
-        hall.skipToEndForTest();
-        helper.succeedWhen(() -> {
-            ItemStack out = inv.getItem(StrategicAssemblyBlockEntity.SLOT_OUTPUT);
-            MissileSpec spec = MissileItem.spec(out);
-            helper.assertTrue(spec != null && spec.intercontinental() && spec.exotic() && spec.needsComplex()
-                    && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.ANTIMATTER_WARHEAD, "an Antimatter ICBM: " + spec);
-            var shown = hall.shownMissile();
-            helper.assertTrue(hall.laid() == StrategicAssemblyBlockEntity.SECTIONS && shown != null
-                    && shown.looks().getLast().equals("antimatter_warhead_part4"), "on the cradles: " + shown);
-            helper.assertTrue(hall.takeApart(), "taken apart");
-            helper.assertTrue(inv.getItem(StrategicAssemblyBlockEntity.SLOT_PRIMARY).is(GBAssembly.ANTIMATTER_TRAP.get())
-                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_SECONDARY).isEmpty()
-                    && inv.getItem(StrategicAssemblyBlockEntity.SLOT_BOOSTER).is(GBStrategic.INTERCONTINENTAL_BOOSTER.get()), "the trap and the booster back");
         });
     }
 

@@ -61,6 +61,7 @@ public class GroundBurstClient {
         event.register(GBMenus.CRUISE_LAUNCHER.get(), MachineScreen::new);
         event.register(GBMenus.ASSEMBLY_BENCH.get(), dev.groundburst.client.screen.AssemblyBenchScreen::new);
         event.register(GBMenus.STRATEGIC_ASSEMBLY.get(), dev.groundburst.client.screen.StrategicAssemblyScreen::new);
+        event.register(GBMenus.SPECIAL_WEAPONS.get(), dev.groundburst.client.screen.SpecialWeaponsScreen::new);
         event.register(GBMenus.MISSILE_ASSEMBLER.get(), dev.groundburst.client.screen.MissileAssemblerScreen::new);
         event.register(GBMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GBMenus.ARC_FURNACE.get(), MachineScreen::new);
@@ -98,6 +99,9 @@ public class GroundBurstClient {
         // The hall: 13 blocks deep behind its controller, its crane 6 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.strategic.GBStrategic.HALL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.strategic.GBStrategic.HALL_ENTITY.get(), 7, 13));
+        // The Special Weapons Assembler: as deep, its rings 4 up.
+        event.registerBlockEntityRenderer(dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(), 5, 13));
         // The missile assemblers (DESIGN.md §10.4): each drawn as far as its structure reaches, up and out.
         event.registerBlockEntityRenderer(dev.groundburst.content.assembler.GBAssemblers.LIGHT_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.assembler.GBAssemblers.LIGHT_ENTITY.get(), 4, 6));

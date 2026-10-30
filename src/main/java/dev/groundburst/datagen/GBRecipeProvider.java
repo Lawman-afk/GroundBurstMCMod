@@ -387,9 +387,10 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.QUANTUM_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED), has(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED))
                 .save(output);
-        // A Tesla storm generator (DESIGN.md §16.14): capacitor banks, two superconducting coils, a military circuit to fire them.
+        // A Tesla storm generator (DESIGN.md §16.14): capacitor banks, two superconducting coils, a quantum circuit to fire them
+        // (after the user's look: a military circuit at first).
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.STORM_CORE, 1)
-                .requires(GBParts.CAPACITOR, 4).requires(GBParts.SUPERCONDUCTING_COIL, 2).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBParts.CAPACITOR, 4).requires(GBParts.SUPERCONDUCTING_COIL, 2).requires(GBParts.QUANTUM_CIRCUIT)
                 .requires(GBTags.commonItem("plates/copper")).requires(GBTags.commonItem("plates/copper"))
                 .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL))
                 .save(output);
@@ -665,6 +666,13 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.SUPERCONDUCTING_COIL)
                 .requires(GBParts.SENSOR_ARRAY).requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.CRT_DISPLAY)
                 .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL)).save(output);
+        // The Special Weapons Assembler (DESIGN.md §16.15), a rung over the hall: two quantum circuits and a containment
+        // emitter to hold an exotic core's field while it is built in.
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item(), 1)
+                .requires(GBMultiblocks.LEAD_LINED_CASING.item()).requires(GBParts.QUANTUM_CIRCUIT).requires(GBParts.QUANTUM_CIRCUIT)
+                .requires(GBMultiblocks.CONTAINMENT_EMITTER.item()).requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.SUPERCONDUCTING_COIL)
+                .requires(GBParts.SENSOR_ARRAY).requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.CRT_DISPLAY)
+                .unlockedBy(getHasName(GBParts.QUANTUM_CIRCUIT), has(GBParts.QUANTUM_CIRCUIT)).save(output);
         shapeless(RecipeCategory.COMBAT, s.secondary, 1)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundburst.content.nuclear.GBNuclear.LITHIUM_DEUTERIDE_PELLET)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.LITHIUM_DEUTERIDE_PELLET).requires(dev.groundburst.content.nuclear.GBNuclear.LITHIUM_DEUTERIDE_PELLET)

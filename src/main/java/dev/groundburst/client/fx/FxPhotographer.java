@@ -76,11 +76,16 @@ public final class FxPhotographer {
                 // Slice 8d: the hall building a Tsar (a minute and a half), the complex carrying one, and the Tsar itself.
                 new Scene("hall_tsar_aerial", "hall_tsar", 26, 24, List.of(60, 1000, 1850)),
                 new Scene("hall_tsar_ui", "hall_tsar", 4, 0, List.of(30)),
-                // Phase 11, after the user's look: the exotic ICBMs built whole at the hall from their cores alone.
-                new Scene("hall_antimatter_aerial", "hall_antimatter", 26, 24, List.of(60, 900, 1850)),
-                new Scene("hall_antimatter_ui", "hall_antimatter", 4, 0, List.of(30)),
-                new Scene("hall_singularity_aerial", "hall_singularity", 26, 24, List.of(1850)),
-                new Scene("hall_storm_aerial", "hall_storm", 26, 24, List.of(1850)),
+                // Phase 11, after the user's second look (DESIGN.md §16.15): the exotic ICBMs built whole at the Special
+                // Weapons Assembler from their cores, the missile laid through its turning containment rings.
+                new Scene("special_aerial", "special_antimatter", 26, 24, List.of(60, 500, 1000, 1850)),
+                new Scene("special_close", "special_antimatter", 13, 14, List.of(700)),
+                new Scene("special_low", "special_antimatter", 11, -4, List.of(1300)),
+                new Scene("special_night", "special_antimatter", 16, 18, List.of(1300), "midnight"),
+                new Scene("special_ui", "special_antimatter", 4, 0, List.of(30)),
+                new Scene("special_jei", "special_antimatter", 4, 0, List.of(25)),
+                new Scene("special_singularity_aerial", "special_singularity", 26, 24, List.of(1850)),
+                new Scene("special_storm_aerial", "special_storm", 26, 24, List.of(1850)),
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
@@ -223,6 +228,8 @@ public final class FxPhotographer {
                 // overhead, bolts and their chains, rain), and from the air outside it (the whole deck turning).
                 new Scene("storm", "storm_warhead", 110, -4, List.of(60, 200, 400, 700, 1000, 1400, 1750)),
                 new Scene("storm_aerial", "storm_warhead", 330, 22, List.of(500, 1000)),
+                // After the user's look: each strike explodes where it lands; from above, the craters it leaves.
+                new Scene("storm_craters", "storm_warhead", 80, 48, List.of(1300)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
@@ -670,29 +677,39 @@ public final class FxPhotographer {
         hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
-    /** As {@link #hallSite(ServerLevel, int, int)}, with {@code option} in the jacket slot (a Tertiary Stage: a Tsar). */
-    private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option) {
-        hallSite(level, x, ground, option, net.minecraft.world.item.ItemStack.EMPTY);
+    /**
+     * The Special Weapons Assembler where the hall would stand (controller facing north, the bay running south from it),
+     * powered and given {@code core}, a booster and GPS, and set to work.
+     */
+    private static void specialSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack core) {
+        hallAt = new net.minecraft.core.BlockPos(x, ground, -6);
+        formed(level, hallAt, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().get(),
+                dev.groundburst.content.strategic.GBStrategic.SPECIAL, net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(hallAt) instanceof dev.groundburst.content.strategic.SpecialWeaponsBlockEntity special) {
+            special.revalidate();
+            var inv = special.inventory();
+            inv.setItem(dev.groundburst.content.strategic.SpecialWeaponsBlockEntity.SLOT_CORE, core.copy());
+            inv.setItem(dev.groundburst.content.strategic.SpecialWeaponsBlockEntity.SLOT_BOOSTER,
+                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
+            inv.setItem(dev.groundburst.content.strategic.SpecialWeaponsBlockEntity.SLOT_GUIDANCE,
+                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.GPS_GUIDANCE.get()));
+            special.energy().generate(dev.groundburst.content.strategic.SpecialWeaponsBlockEntity.CAPACITY);
+            special.startAssembly();
+        }
     }
 
-    /**
-     * As {@link #hallSite(ServerLevel, int, int, net.minecraft.world.item.ItemStack)}; with an exotic core for
-     * {@code exotic}, that alone in the primary slot (no secondary), building its ICBM.
-     */
-    private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option,
-            net.minecraft.world.item.ItemStack exotic) {
+    /** As {@link #hallSite(ServerLevel, int, int)}, with {@code option} in the jacket slot (a Tertiary Stage: a Tsar). */
+    private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option) {
         hallAt = new net.minecraft.core.BlockPos(x, ground, -6);
         formed(level, hallAt, dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().get(), dev.groundburst.content.strategic.GBStrategic.HALL,
                 net.minecraft.core.Direction.NORTH);
         if (level.getBlockEntity(hallAt) instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity hall) {
             hall.revalidate();
             var inv = hall.inventory();
-            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_PRIMARY, !exotic.isEmpty() ? exotic.copy()
-                    : dev.groundburst.content.strategic.StrategicAssembly.primaryFor(option));             // a Tsar's twin core
-            if (exotic.isEmpty()) {
-                inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_SECONDARY,
-                        new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.FUSION_SECONDARY.get()));
-            }
+            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_PRIMARY,
+                    dev.groundburst.content.strategic.StrategicAssembly.primaryFor(option));             // a Tsar's twin core
+            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_SECONDARY,
+                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.FUSION_SECONDARY.get()));
             inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_BOOSTER,
                     new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
             inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_GUIDANCE,
@@ -1025,6 +1042,8 @@ public final class FxPhotographer {
     public static Runnable showAssemblyRecipes = () -> {};
     /** Set by the JEI plugin when JEI is running: opens the ICBM Assembly Hall's recipes (the "hall_jei" scene). */
     public static Runnable showHallRecipes = () -> {};
+    /** Set by the JEI plugin: opens the Special Weapons Assembler's recipes (the "special_jei" scene). */
+    public static Runnable showSpecialRecipes = () -> {};
     /** Set by the JEI plugin: filters its list by some text (the "icbm_jei" scene). */
     public static java.util.function.Consumer<String> jeiFilter = s -> {};
     /** Set by the JEI plugin: shows the recipes that make a stack, as R on it in the list does. */
@@ -1525,6 +1544,10 @@ public final class FxPhotographer {
                         be.inventory().setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.RAW_IRON, 24));
                         be.upgrades().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.machine.GBUpgrades.chip(
                                 dev.groundburst.content.machine.UpgradeChipItem.Kind.SPEED, dev.groundburst.content.machine.UpgradeChipItem.Tier.QUANTUM).get()));
+                        be.upgrades().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundburst.content.machine.GBUpgrades.chip(
+                                dev.groundburst.content.machine.UpgradeChipItem.Kind.EFFICIENCY, dev.groundburst.content.machine.UpgradeChipItem.Tier.MILITARY).get()));
+                        be.upgrades().setItem(2, new net.minecraft.world.item.ItemStack(dev.groundburst.content.machine.GBUpgrades.chip(
+                                dev.groundburst.content.machine.UpgradeChipItem.Kind.BALANCED, dev.groundburst.content.machine.UpgradeChipItem.Tier.ADVANCED).get()));
                     }
                     return;
                 }
@@ -1608,10 +1631,10 @@ public final class FxPhotographer {
                     hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
-                if (s.profile().equals("hall_antimatter") || s.profile().equals("hall_singularity") || s.profile().equals("hall_storm")) {
-                    var cores = dev.groundburst.content.strategic.StrategicAssembly.exoticCores();
-                    int core = s.profile().equals("hall_antimatter") ? 0 : s.profile().equals("hall_singularity") ? 1 : 2;
-                    hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY, cores.get(core));
+                if (s.profile().equals("special_antimatter") || s.profile().equals("special_singularity") || s.profile().equals("special_storm")) {
+                    var cores = dev.groundburst.content.strategic.SpecialWeapons.cores();
+                    int core = s.profile().equals("special_antimatter") ? 0 : s.profile().equals("special_singularity") ? 1 : 2;
+                    specialSite(level, x, ground, cores.get(core));
                     return;
                 }
                 if (s.profile().equals("storm_warhead")) {
@@ -1854,11 +1877,13 @@ public final class FxPhotographer {
                     dev.groundburst.content.assembly.SizeClass.M, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
                     dev.groundburst.content.assembly.MissileParts.Guidance.UNGUIDED, false)));
         }
-        if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui") || scene.name().equals("hall_antimatter_ui"))
+        if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui") || scene.name().equals("special_ui"))
                 && step >= 0 && clock == 12 && hallAt != null) {
             var hall = hallAt;
             server.execute(() -> {
-                if (server.overworld().getBlockEntity(hall) instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity be) {
+                if (server.overworld().getBlockEntity(hall) instanceof dev.groundburst.content.machine.MachineBlockEntity be
+                        && (be instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity
+                        || be instanceof dev.groundburst.content.strategic.SpecialWeaponsBlockEntity)) {
                     var player = server.getPlayerList().getPlayers().getFirst();
                     player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
                     player.openMenu(be, hall);
@@ -1899,6 +1924,9 @@ public final class FxPhotographer {
         }
         if (scene.name().equals("hall_jei") && step >= 0 && clock == 12) {
             showHallRecipes.run();
+        }
+        if (scene.name().equals("special_jei") && step >= 0 && clock == 12) {
+            showSpecialRecipes.run();
         }
         if (scene.name().equals("icbm_jei") && step >= 0 && clock == 10) {
             server.execute(() -> server.getPlayerList().getPlayers().getFirst().setGameMode(GameType.CREATIVE));

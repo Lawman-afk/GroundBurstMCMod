@@ -1,0 +1,29 @@
+{
+  "title": "Special Weapons Assembler",
+  "icon": "groundburst:special_weapons_assembler",
+  "order": 14,
+  "items": [
+    "groundburst:special_weapons_assembler",
+    "groundburst:special_weapons_assembler_spawner"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Special Weapons Assembler** builds the [exotic weapons](ordnance/exotic) whole: an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, each from its core and an **Intercontinental Booster**. A [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires them like any other intercontinental missile, **3,000 blocks**.\n\nIt is a containment bay: three magnetic **containment rings** stand across it, and the missile is laid on its cradles through them, section by section, the warhead last. While it works the rings' rotors turn and their fields glow violet round the missile."
+    },
+    {
+      "type": "text",
+      "text": "Fit an **Antimatter Trap**, a **Singularity Core** or a **Storm Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port, and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers.\n\nThe cores themselves are crafted: see [Exotic warheads](ordnance/exotic)."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:special_weapons_assembler",
+      "text": "A 7 by 13 floor of Launch Pads, as the ICBM Assembly Hall's: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Across it, on the fourth, seventh and tenth rows from the front, stand three containment rings: each a square of eight Toroidal Field Coils, three wide and three high, round the middle of its row, its middle left empty. Keep the bay clear five wide and three high: the missile and its cradles need the room."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:special_weapons_assembler",
+      "text": ""
+    }
+  ]
+}

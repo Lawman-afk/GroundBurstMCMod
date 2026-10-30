@@ -25,16 +25,29 @@ final class StormTests {
         GBGameTests.test("storm_strike_chains_through_creatures", GBGameTests.FLOOR_16, 60, StormTests::chain);
         GBGameTests.testOpenSky("storm_strikes_only_within_its_region", GBGameTests.FLOOR_16, 240, StormTests::region);
         GBGameTests.testOpenSky("lightning_rod_takes_the_storms_strikes", GBGameTests.FLOOR_16, 240, StormTests::rod);
+        GBGameTests.test("storm_strike_blasts_a_crater", GBGameTests.FLOOR_16, 60, StormTests::crater);
     }
 
     private static Vec3 storm(GameTestHelper helper, int life, double rate) {
+        return storm(helper, life, rate, false);
+    }
+
+    /** A storm over the plot's middle (its grass laid first); {@code quiet}: its strikes without their blasts. */
+    private static Vec3 storm(GameTestHelper helper, int life, double rate, boolean quiet) {
         for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
             helper.setBlock(p, Blocks.GRASS_BLOCK);
         }
         Storms.lifeOverride = life;
         Storms.rateOverride = rate;
+        Storms.quietOverride = quiet;
         BlockPos eye = new BlockPos(8, 1, 8);
-        Charges.scaled(SCALE, () -> Charges.impact(helper.getLevel(), ChargeKind.STORM_WARHEAD, helper.absolutePos(eye), null));
+        try {
+            Charges.scaled(SCALE, () -> Charges.impact(helper.getLevel(), ChargeKind.STORM_WARHEAD, helper.absolutePos(eye), null));
+        } finally {
+            Storms.lifeOverride = 0;                         // read as it starts: the next storm is its own again
+            Storms.rateOverride = 0;
+            Storms.quietOverride = false;
+        }
         return Vec3.atCenterOf(helper.absolutePos(eye));
     }
 
@@ -60,11 +73,12 @@ final class StormTests {
     }
 
     /**
-     * A storm over (8, 1, 8), 6 blocks round, striking 5 times a second at full strength: it strikes many times,
-     * scorching grass within its region, never the corners of the plot (11 off); then it dies away.
+     * A storm over (8, 1, 8), 6 blocks round, striking 5 times a second at full strength (without its strikes' blasts,
+     * which would throw the plot about): it strikes many times, scorching grass within its region, never the corners of the
+     * plot (11 off); then it dies away.
      */
     private static void region(GameTestHelper helper) {
-        Vec3 eye = storm(helper, 200, 5);
+        Vec3 eye = storm(helper, 200, 5, true);
         int[] most = {0};
         helper.onEachTick(() -> most[0] = Math.max(most[0], Storms.strikesAt(helper.getLevel(), eye)));
         helper.runAfterDelay(190, () -> {
@@ -81,6 +95,27 @@ final class StormTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(most[0] >= 10, "not done striking");
             helper.assertTrue(!Storms.ragingAt(helper.getLevel(), eye), "it has died away");
+        });
+    }
+
+    /**
+     * A bolt into open ground explodes where it comes down: a small crater (the grass at its foot and round it blown
+     * away), nothing at the plot's corners.
+     */
+    private static void crater(GameTestHelper helper) {
+        Vec3 eye = storm(helper, 100, 0.001);
+        Storms.strikeForTest(helper.getLevel(), eye, helper.absolutePos(new BlockPos(8, 1, 8)));
+        helper.runAfterDelay(10, () -> {
+            int blown = 0;
+            for (BlockPos p : BlockPos.betweenClosed(6, 0, 6, 10, 0, 10)) {
+                blown += helper.getBlockState(p).isAir() ? 1 : 0;
+            }
+            helper.assertTrue(helper.getBlockState(new BlockPos(8, 0, 8)).isAir(), "the ground at its foot blown away");
+            helper.assertTrue(blown >= 5, "a crater round it: " + blown + " of 25 blown away");
+            for (BlockPos p : new BlockPos[] {new BlockPos(0, 0, 0), new BlockPos(15, 0, 0), new BlockPos(0, 0, 15), new BlockPos(15, 0, 15)}) {
+                helper.assertTrue(helper.getBlockState(p).is(Blocks.GRASS_BLOCK), "a small crater, not the plot: " + p);
+            }
+            helper.succeed();
         });
     }
 

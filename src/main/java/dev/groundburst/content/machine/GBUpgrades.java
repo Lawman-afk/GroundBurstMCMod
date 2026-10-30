@@ -14,10 +14,10 @@ import net.neoforged.neoforge.registries.DeferredItem;
 public final class GBUpgrades {
     /** JEI's page for the chips. */
     public static final String INFO = dev.groundburst.registry.GBLang.add(dev.groundburst.GroundBurst.MODID + ".jei.info.upgrade_chips",
-            "Upgrade chips go in the Upgrades tab on the left of a processing machine's or an assembler's screen, one chip each. "
-                    + "A speed chip makes it work faster, drawing power as much faster (the same per job, so feed it power faster); an "
-                    + "efficiency chip makes it use less power; a balanced chip does half of each. Each circuit tier gives 10%% a level: "
-                    + "40%% at quantum (a balanced chip 20%% and 20%%). Two balanced chips are made from a speed and an efficiency chip.");
+            "Upgrade chips go in the Upgrades tab on the left of a processing machine's or an assembler's screen: three slots, "
+                    + "and the chips in them add up. A speed chip makes it work 10%% faster a circuit tier (40%% at quantum); an "
+                    + "efficiency chip makes it use 5%% less power a tier (20%% at quantum); a balanced chip does half of each. Two "
+                    + "balanced chips are made from a speed and an efficiency chip.");
 
     /** Every chip, kind by kind, each kind's tiers in order (speed basic to quantum, then efficiency, then balanced). */
     public static final List<DeferredItem<UpgradeChipItem>> CHIPS = new ArrayList<>();

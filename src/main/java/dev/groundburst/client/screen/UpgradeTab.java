@@ -1,7 +1,7 @@
 package dev.groundburst.client.screen;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import dev.groundburst.GroundBurst;
@@ -21,27 +21,25 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The Upgrades tab on the left edge of a machine's or an assembler's screen (DESIGN.md §7.3), the side-configuration
- * tab's mirror. Collapsed it is a small tab showing the fitted chip (or a chip glyph); expanded it holds the upgrade
- * slot (a real slot of the menu: {@link MachineMenu#UPGRADE_SLOT_X}) and says what the chip does: how much faster, how
- * much less power a job, and what it draws a tick.
+ * tab's mirror. Collapsed it is a small tab showing the first fitted chip (or a chip glyph); expanded it holds the three
+ * upgrade slots (real slots of the menu: {@link MachineMenu#UPGRADE_SLOT_X}) and says what the chips do together: how
+ * much faster, how much more efficient (after the user's look: no lines on the power drawn a tick or a job).
  */
 final class UpgradeTab {
     private static final Identifier TEXTURE = GroundBurst.id("textures/gui/machine/upgrades.png");
     // Sprite positions, mirrored from tools/assets/gui.py (upgrades_texture).
-    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 112, PANEL_H = 62;
-    /** The panel's slot frame, from its corner (the item sits a pixel in: the menu's slot). */
+    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 112, PANEL_H = 64;
+    /** The panel's first slot frame, from its corner (the item sits a pixel in: the menu's slot); the others beside it. */
     private static final int SLOT_X = 8, SLOT_Y = 22;
+    /** Where its two lines start, under the slots. */
+    private static final int LINES_X = 8, LINES_Y = 44;
     private static final int TEXT = 0xFFE6E2D2, TEXT_DIM = 0xFF9AA0A8, GOLD = 0xFFFFC04A, GREEN = 0xFF7CE08A;
 
     static final String T_TAB = GBLang.add(GroundBurst.MODID + ".upgrade.tab", "Upgrades");
-    static final String T_NONE = GBLang.add(GroundBurst.MODID + ".upgrade.none", "No chip fitted");
-    static final String T_NONE_HINT = GBLang.add(GroundBurst.MODID + ".upgrade.none_hint", "Speed, efficiency or");
-    static final String T_NONE_HINT2 = GBLang.add(GroundBurst.MODID + ".upgrade.none_hint2", "balanced chips");
     static final String T_SPEED = GBLang.add(GroundBurst.MODID + ".upgrade.tab_speed", "Speed: +%s%%");
     static final String T_SPEED_SAME = GBLang.add(GroundBurst.MODID + ".upgrade.tab_speed_same", "Speed: normal");
-    static final String T_JOB = GBLang.add(GroundBurst.MODID + ".upgrade.tab_job", "Power a job: -%s%%");
-    static final String T_JOB_SAME = GBLang.add(GroundBurst.MODID + ".upgrade.tab_job_same", "Power a job: same");
-    static final String T_TICK = GBLang.add(GroundBurst.MODID + ".upgrade.tab_tick", "Power a tick: x%s");
+    static final String T_EFFICIENCY = GBLang.add(GroundBurst.MODID + ".upgrade.tab_efficiency", "Efficiency: +%s%%");
+    static final String T_EFFICIENCY_SAME = GBLang.add(GroundBurst.MODID + ".upgrade.tab_efficiency_same", "Efficiency: normal");
 
     private final MachineMenu menu;
 
@@ -68,36 +66,36 @@ final class UpgradeTab {
         }
     }
 
-    /** Its words, the fitted chip on the closed tab, and its tooltip: drawn over the window. */
+    /** Its words, the first fitted chip on the closed tab, and its tooltip: drawn over the window. */
     void renderForeground(GuiGraphicsExtractor g, Font font, int left, int top, int mouseX, int mouseY) {
         Rect2i a = area(left, top);
         int x = a.getX(), y = a.getY();
-        ItemStack fitted = this.menu.machine().upgrades().getItem(0);
+        var slots = this.menu.machine().upgrades();
+        List<ItemStack> fitted = new ArrayList<>();
+        for (int i = 0; i < slots.getContainerSize(); i++) {
+            if (!slots.getItem(i).isEmpty()) {
+                fitted.add(slots.getItem(i));
+            }
+        }
         if (!open()) {
             if (!fitted.isEmpty()) {
-                g.item(fitted, x + 4, y + 5);
+                g.item(fitted.getFirst(), x + 4, y + 5);
             }
             if (a.contains(mouseX, mouseY)) {
-                g.setTooltipForNextFrame(font, fitted.isEmpty() ? List.of(Component.translatable(T_TAB))
-                        : List.of(Component.translatable(T_TAB), fitted.getHoverName().copy().withColor(TEXT_DIM)), Optional.empty(), mouseX, mouseY);
+                List<Component> lines = new ArrayList<>();
+                lines.add(Component.translatable(T_TAB));
+                fitted.forEach(chip -> lines.add(chip.getHoverName().copy().withColor(TEXT_DIM)));
+                g.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY);
             }
             return;
         }
         small(g, font, Component.translatable(T_TAB), x + 21, y + 7, TEXT);
-        int tx = x + 31, ty = y + 23;
-        if (!(fitted.getItem() instanceof UpgradeChipItem chip)) {
-            small(g, font, Component.translatable(T_NONE), tx, ty, TEXT);
-            small(g, font, Component.translatable(T_NONE_HINT), tx, ty + 9, TEXT_DIM);
-            small(g, font, Component.translatable(T_NONE_HINT2), tx, ty + 17, TEXT_DIM);
-            return;
-        }
-        float speed = chip.speedBonus(), saving = chip.efficiency();
-        float perTick = (1 + speed) * (1 - saving);
-        small(g, font, speed > 0 ? Component.translatable(T_SPEED, Math.round(speed * 100)) : Component.translatable(T_SPEED_SAME),
+        float speed = this.menu.machine().speedBonus(), saving = this.menu.machine().efficiency();
+        int tx = x + LINES_X, ty = y + LINES_Y;
+        small(g, font, speed > 0 ? Component.translatable(T_SPEED, UpgradeChipItem.percent(speed)) : Component.translatable(T_SPEED_SAME),
                 tx, ty, speed > 0 ? GOLD : TEXT_DIM);
-        small(g, font, saving > 0 ? Component.translatable(T_JOB, Math.round(saving * 100)) : Component.translatable(T_JOB_SAME),
-                tx, ty + 9, saving > 0 ? GREEN : TEXT_DIM);
-        small(g, font, Component.translatable(T_TICK, String.format(Locale.ROOT, "%.2f", perTick)), tx, ty + 18, TEXT_DIM);
+        small(g, font, saving > 0 ? Component.translatable(T_EFFICIENCY, UpgradeChipItem.percent(saving))
+                : Component.translatable(T_EFFICIENCY_SAME), tx, ty + 9, saving > 0 ? GREEN : TEXT_DIM);
     }
 
     /** Handles a click; returns true if the tab consumed it (a click on its slot is left to the menu). */
@@ -112,8 +110,8 @@ final class UpgradeTab {
             sound();
             return true;
         }
-        if (inside(mx, my, x + SLOT_X, y + SLOT_Y, 18, 18)) {
-            return false;                                  // the slot: the menu's to handle
+        if (inside(mx, my, x + SLOT_X, y + SLOT_Y, MachineMenu.UPGRADE_SLOT_STEP * this.menu.machine().upgrades().getContainerSize(), 18)) {
+            return false;                                  // the slots: the menu's to handle
         }
         if (inside(mx, my, x, y, PANEL_W, 18)) {           // the header collapses it
             MachineMenu.upgradeTabOpen = false;

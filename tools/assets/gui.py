@@ -307,6 +307,24 @@ LAYOUTS = {
         "readout": (34, 64, 134, 24),
         "inventory": (8, 128),
     },
+    # Special Weapons Assembler (Phase 11, DESIGN.md §16.15): the hall's layout with the exotic core alone over the
+    # missile's parts (booster, optional guidance and module), the arrow, the finished missile; the readout, the
+    # Assemble / Take Apart buttons (drawn by the screen) and the redstone button; the bench's right-hand column.
+    "special_weapons": {
+        "title": (8, 6),
+        "size": (288, 210),
+        "inventory_width": 178,
+        "preview": (183, 22, 94, 66),
+        "stats": (183, 94, 94, 108),
+        "slots": [("core", 48, 22), ("booster", 30, 42), ("guidance", 48, 42), ("module", 66, 42), ("out_big", 124, 31)],
+        "energy": (8, 20, 14, 46),
+        "progress": (90, 32, 24, 17),
+        "flame": None,
+        "status": (272, 5, 8, 8),
+        "redstone": (151, 94, 18, 18),
+        "readout": (34, 64, 134, 24),
+        "inventory": (8, 128),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),
@@ -1175,8 +1193,9 @@ def page_tabs_texture() -> Path:
 # --- Upgrades tab (DESIGN.md §7.3; every machine and assembler that takes a chip) -------------------------------------------
 # Layout constants mirrored in UpgradeTab (the menu's slot: MachineMenu.UPGRADE_SLOT_X/Y).
 UPG_TAB = (0, 0, 24, 26)          # collapsed tab, on the window's left edge
-UPG_PANEL = (0, 32, 112, 62)      # expanded panel: header, the slot, three lines of what the chip does
-UPG_SLOT = (8, 22)                # the slot frame within the panel
+UPG_PANEL = (0, 32, 112, 64)      # expanded panel: header, three slots in a row, two lines of what the chips do
+UPG_SLOT = (8, 22)                # the first slot frame within the panel; the other two follow it 18 apart
+UPG_SLOTS = 3
 
 
 def tab_panel_left(t: Tex, x: int, y: int, w: int, h: int) -> None:
@@ -1220,7 +1239,8 @@ def upgrades_texture() -> Path:
     chip_glyph(t, px_ + 7, py_ + 4)
     t.hline(px_ + 5, py_ + 17, UPG_PANEL[2] - 8, PANEL.shadow)
     t.hline(px_ + 5, py_ + 18, UPG_PANEL[2] - 8, PANEL.light)
-    slot(t, px_ + UPG_SLOT[0], py_ + UPG_SLOT[1])
+    for i in range(UPG_SLOTS):
+        slot(t, px_ + UPG_SLOT[0] + 18 * i, py_ + UPG_SLOT[1])
     return t.save(paths.TEXTURES / "gui" / "machine" / "upgrades.png")
 
 

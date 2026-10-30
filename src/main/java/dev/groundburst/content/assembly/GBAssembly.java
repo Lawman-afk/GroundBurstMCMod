@@ -54,15 +54,15 @@ public final class GBAssembly {
             () -> GBOrdnance.BOOSTED_FISSION_WARHEAD.block().get(), SizeClass.XL);
     public static final DeferredItem<ComponentItems.PayloadCore> NEUTRON_CORE = core("neutron_core", "Neutron Core",
             () -> GBOrdnance.NEUTRON_WARHEAD.block().get(), SizeClass.XL);
-    // The exotic weapons' cores (Phase 11, DESIGN.md §16.12): ICBM cores, not bench payload cores; only the ICBM
-    // Assembly Hall takes them, building each whole into its ICBM.
+    // The exotic weapons' cores (Phase 11, DESIGN.md §16.12): ICBM cores, not bench payload cores; only the Special
+    // Weapons Assembler takes them (DESIGN.md §16.15), building each whole into its ICBM.
     /** Antimatter held in a Penning trap: four antimatter cells, superconducting coils, a quantum circuit. */
     public static final DeferredItem<ComponentItems.IcbmCore> ANTIMATTER_TRAP = icbmCore("antimatter_trap", "Antimatter Trap",
             () -> GBOrdnance.ANTIMATTER_WARHEAD.block().get());
     /** A singularity seed held in four containment cells round a quantum circuit's field. */
     public static final DeferredItem<ComponentItems.IcbmCore> SINGULARITY_CORE = icbmCore("singularity_core", "Singularity Core",
             () -> GBOrdnance.SINGULARITY_WARHEAD.block().get());
-    /** A Tesla storm generator: capacitor banks, superconducting coils, a military circuit to fire them (DESIGN.md §16.14). */
+    /** A Tesla storm generator: capacitor banks, superconducting coils, a quantum circuit to fire them (DESIGN.md §16.14). */
     public static final DeferredItem<ComponentItems.IcbmCore> STORM_CORE = icbmCore("storm_core", "Storm Core",
             () -> GBOrdnance.STORM_WARHEAD.block().get());
     /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */

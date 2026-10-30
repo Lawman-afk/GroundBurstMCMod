@@ -29,10 +29,10 @@ public class MachineMenu extends AbstractContainerMenu {
     public static final int BUTTON_SIDE_HALF = 100;
 
     /**
-     * Where the upgrade slot sits, from the screen's corner: in the Upgrades tab on the window's left edge (DESIGN.md
-     * §7.3; the client's {@code UpgradeTab} draws round it).
+     * Where the first upgrade slot sits, from the screen's corner: in the Upgrades tab on the window's left edge, the
+     * other two beside it (DESIGN.md §7.3; the client's {@code UpgradeTab} draws round them).
      */
-    public static final int UPGRADE_SLOT_X = -101, UPGRADE_SLOT_Y = 27;
+    public static final int UPGRADE_SLOT_X = -101, UPGRADE_SLOT_Y = 27, UPGRADE_SLOT_STEP = 18;
     /** Whether the client's Upgrades tab is open (its slot is only shown then); set by the screen. */
     public static boolean upgradeTabOpen;
 
@@ -40,7 +40,7 @@ public class MachineMenu extends AbstractContainerMenu {
     private final MachineLayout layout;
     private final ContainerData data;
     private final int machineSlots;
-    /** The upgrade slot's index in the menu (after the player's inventory), or -1 for a machine that takes no chip. */
+    /** The first upgrade slot's index in the menu (after the player's inventory), or -1 for a machine that takes no chip. */
     private final int upgradeSlot;
 
     public MachineMenu(MenuType<?> type, int containerId, Inventory playerInventory, MachineBlockEntity machine, MachineLayout layout, ContainerData data) {
@@ -64,16 +64,23 @@ public class MachineMenu extends AbstractContainerMenu {
         }
         if (machine.acceptsUpgrades()) {
             this.upgradeSlot = this.slots.size();
-            addSlot(new UpgradeSlot(machine.upgrades(), UPGRADE_SLOT_X, UPGRADE_SLOT_Y));
+            for (int i = 0; i < machine.upgrades().getContainerSize(); i++) {
+                addSlot(new UpgradeSlot(machine.upgrades(), i, UPGRADE_SLOT_X + i * UPGRADE_SLOT_STEP, UPGRADE_SLOT_Y));
+            }
         } else {
             this.upgradeSlot = -1;
         }
         addDataSlots(data);
     }
 
-    /** The upgrade slot's index in the menu, or -1. */
+    /** The first upgrade slot's index in the menu, or -1. */
     public int upgradeSlot() {
         return this.upgradeSlot;
+    }
+
+    /** Whether a menu index is one of the upgrade slots. */
+    private boolean isUpgradeSlot(int index) {
+        return this.upgradeSlot >= 0 && index >= this.upgradeSlot && index < this.upgradeSlot + this.machine.upgrades().getContainerSize();
     }
 
     /** Client-side constructor: the block entity is found from the position sent by the server. */
@@ -190,13 +197,13 @@ public class MachineMenu extends AbstractContainerMenu {
         ItemStack original = stack.copy();
         int playerStart = this.machineSlots;
         int playerEnd = this.machineSlots + 36;
-        if (index < this.machineSlots || index == this.upgradeSlot) {
+        if (index < this.machineSlots || isUpgradeSlot(index)) {
             if (!moveItemStackTo(stack, playerStart, playerEnd, true)) {
                 return ItemStack.EMPTY;
             }
         } else if (this.upgradeSlot >= 0 && stack.getItem() instanceof UpgradeChipItem) {
-            // A chip goes to the upgrade slot (if it is free), never into the machine's own slots.
-            if (!moveItemStackTo(stack, this.upgradeSlot, this.upgradeSlot + 1, false)) {
+            // A chip goes to the first free upgrade slot (one a shift-click), never into the machine's own slots.
+            if (!moveItemStackTo(stack, this.upgradeSlot, this.upgradeSlot + this.machine.upgrades().getContainerSize(), false)) {
                 return ItemStack.EMPTY;
             }
         } else if (!moveItemStackTo(stack, 0, this.machineSlots, false)) {
@@ -223,10 +230,10 @@ public class MachineMenu extends AbstractContainerMenu {
         return this.machine.slotShown(slot, this);
     }
 
-    /** The upgrade chip's slot: one chip, shown only while the Upgrades tab is open on the client. */
+    /** An upgrade chip's slot: one chip, shown only while the Upgrades tab is open on the client. */
     private static class UpgradeSlot extends Slot {
-        UpgradeSlot(Container container, int x, int y) {
-            super(container, 0, x, y);
+        UpgradeSlot(Container container, int index, int x, int y) {
+            super(container, index, x, y);
         }
 
         @Override

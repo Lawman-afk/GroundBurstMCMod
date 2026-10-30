@@ -69,11 +69,13 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected MachineStatus status = MachineStatus.IDLE;
     /** Knocked out by an EMP field (it lost half its energy as the field hit; it reboots when the field ends). */
     private boolean emped;
+    /** How many upgrade chips a machine takes (DESIGN.md §7.3). */
+    public static final int UPGRADE_SLOTS = 3;
     /**
-     * Its upgrade chip (DESIGN.md §7.3), in the Upgrades tab of machines that take one ({@link #acceptsUpgrades}): one
-     * chip, never touched by automation.
+     * Its upgrade chips (DESIGN.md §7.3), in the Upgrades tab of machines that take them ({@link #acceptsUpgrades}):
+     * three slots of one chip each, never touched by automation.
      */
-    protected final MachineInventory upgrade = new MachineInventory(1, (slot, stack) -> stack.getItem() instanceof UpgradeChipItem,
+    protected final MachineInventory upgrade = new MachineInventory(UPGRADE_SLOTS, (slot, stack) -> stack.getItem() instanceof UpgradeChipItem,
             slot -> setChanged(), slot -> 1);
     /** The share of a work step a speed chip has banked toward the next whole one. */
     private float stepCarry;
@@ -270,29 +272,56 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return false;
     }
 
-    /** Its upgrade slot (one chip). */
+    /** Its upgrade slots (three, a chip each). */
     public MachineInventory upgrades() {
         return this.upgrade;
     }
 
-    /** The chip it has fitted (null: none, or it takes none). */
-    public @org.jspecify.annotations.Nullable UpgradeChipItem chip() {
-        return acceptsUpgrades() && this.upgrade.getItem(0).getItem() instanceof UpgradeChipItem chip ? chip : null;
+    /** The chips it has fitted (none if it takes none). */
+    public java.util.List<UpgradeChipItem> chips() {
+        java.util.List<UpgradeChipItem> chips = new java.util.ArrayList<>(UPGRADE_SLOTS);
+        if (acceptsUpgrades()) {
+            for (int i = 0; i < this.upgrade.getContainerSize(); i++) {
+                if (this.upgrade.getItem(i).getItem() instanceof UpgradeChipItem chip) {
+                    chips.add(chip);
+                }
+            }
+        }
+        return chips;
     }
 
-    /** How fast it works: 1, and more with a speed or balanced chip (1.4 with a quantum speed chip). */
+    /** How much faster its chips make it work, all together (0.4: 40% faster). */
+    public float speedBonus() {
+        float bonus = 0;
+        for (UpgradeChipItem chip : chips()) {
+            bonus += chip.speedBonus();
+        }
+        return bonus;
+    }
+
+    /** How much less power its chips make it use, all together (0.2: 20% less; never more than {@link #MOST_SAVED}). */
+    public float efficiency() {
+        float saving = 0;
+        for (UpgradeChipItem chip : chips()) {
+            saving += chip.efficiency();
+        }
+        return Math.min(MOST_SAVED, saving);
+    }
+
+    /** The most power chips can save (three quantum efficiency chips save 60%). */
+    public static final float MOST_SAVED = 0.9f;
+
+    /** How fast it works: 1, and more with speed or balanced chips (1.4 with a quantum speed chip, 2.2 with three). */
     public float workSpeed() {
-        UpgradeChipItem chip = chip();
-        return chip == null ? 1 : 1 + chip.speedBonus();
+        return 1 + speedBonus();
     }
 
     /**
      * How much power a tick it draws for its work, as a share of its own: as much more as it works faster (the same per
-     * job), and less with an efficiency or balanced chip.
+     * job), and less with efficiency or balanced chips.
      */
     public float workEnergyFactor() {
-        UpgradeChipItem chip = chip();
-        return chip == null ? 1 : (1 + chip.speedBonus()) * (1 - chip.efficiency());
+        return workSpeed() * (1 - efficiency());
     }
 
     /** The FE a tick of its work takes with its chip, normally {@code base} (at least 1 if it took any). */

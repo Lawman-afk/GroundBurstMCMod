@@ -198,6 +198,7 @@ public final class GBMultiblocks {
         return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR,
                 dev.groundburst.content.launch.GBLaunch.SILO, dev.groundburst.content.launch.GBLaunch.COMPLEX, dev.groundburst.content.launch.GBLaunch.COMPUTER,
                 dev.groundburst.content.launch.GBLaunch.RADAR, dev.groundburst.content.strategic.GBStrategic.HALL,
+                dev.groundburst.content.strategic.GBStrategic.SPECIAL,
                 dev.groundburst.content.launch.GBLaunch.MISSILE_SILO, dev.groundburst.content.launch.GBLaunch.CRUISE_LAUNCHER,
                 dev.groundburst.content.assembler.GBAssemblers.LIGHT,
                 dev.groundburst.content.assembler.GBAssemblers.MEDIUM, dev.groundburst.content.assembler.GBAssemblers.HEAVY,

@@ -71,6 +71,11 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("timed_bomb"), profile(3.5f, 9, 13, 10, 0, 9, 20, 4, 0.75f, 0.12f, 0.3f, 0.4f, 60, 18, 2.5f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // A storm's lightning strike (DESIGN.md §16.14, after the user's look: an explosive impact, not too strong, a small
+        // crater): a landmine's blast a little wider and gentler on creatures (the bolt has hurt them already), fires round
+        // its rim.
+        ctx.register(Blasts.profile("storm_strike"), profile(1, 3, 4.5f, 4, 3, 1, 3.5f, 4, 0.7f, 0.1f, 0.3f, 0.3f, 6, 4, 1.2f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         // Mines (slice 6c): the bouncing mine bursts in the air (a small crater, fragments do the work).
         ctx.register(Blasts.profile("landmine"), profile(1, 2.5f, 4, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 9, 1.4f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

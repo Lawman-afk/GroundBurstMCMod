@@ -37,6 +37,11 @@ public final class Storms {
     public static final int EMP_TICKS = 100;
     /** How far a lightning rod draws a strike to itself (it takes it safely, and gives a redstone pulse). */
     public static final int ROD_REACH = 32;
+    /**
+     * Each strike's own blast where it comes down (after the user's look: lightning with an explosive impact, not too
+     * strong, a small crater): {@code storm_strike}, a landmine's crater a little wider, its fires round the rim.
+     */
+    public static final net.minecraft.resources.ResourceKey<BlastProfile> STRIKE_BLAST = Blasts.profile("storm_strike");
     /** How high over where it struck its cloud deck hangs (at bomb scale 1). */
     public static final float CLOUD_HEIGHT = 60;
     /** The most its wind pushes a thing, blocks a tick each tick (at its eyewall, at full strength). */
@@ -44,9 +49,13 @@ public final class Storms {
     /** Where its winds blow hardest, as a share of its radius (the eyewall: calm in the eye, dying away to its edge). */
     static final double EYEWALL = 0.4;
 
-    /** For GameTests: ticks a storm lasts (0: its own), and strikes a second at full strength (0: its own rate). */
+    /**
+     * For GameTests: ticks a storm lasts (0: its own), strikes a second at full strength (0: its own rate), and whether
+     * its strikes come down without their blasts (so a test can count them on its grass). Read as a storm starts.
+     */
     public static int lifeOverride = 0;
     public static double rateOverride = 0;
+    public static boolean quietOverride = false;
 
     private static final Map<ServerLevel, List<StormJob>> RUNNING = new WeakHashMap<>();
     private static final AtomicInteger NET_IDS = new AtomicInteger();
@@ -78,10 +87,10 @@ public final class Storms {
         return new Vec3((tx - 0.25 * from.x / d) * a, 0, (tz - 0.25 * from.z / d) * a);
     }
 
-    /** Strikes a second at {@code intensity} over a region of {@code radius}. */
-    static double strikeRate(float radius, float intensity) {
-        if (rateOverride > 0) {
-            return rateOverride * intensity;
+    /** Strikes a second at {@code intensity} over a region of {@code radius} ({@code override}: a GameTest's own rate, or 0). */
+    static double strikeRate(float radius, float intensity, double override) {
+        if (override > 0) {
+            return override * intensity;
         }
         double area = Math.pow(radius / RADIUS, 2);
         return Math.max(0.5, STRIKES * area) * intensity;
@@ -89,7 +98,8 @@ public final class Storms {
 
     /** A storm gathers over {@code at}: a region of {@code radius} for {@code life} ticks. */
     public static void start(ServerLevel level, Vec3 at, float radius, int life, @Nullable Entity by) {
-        StormJob job = new StormJob(NET_IDS.incrementAndGet(), level, at, radius, lifeOverride > 0 ? lifeOverride : life, by);
+        StormJob job = new StormJob(NET_IDS.incrementAndGet(), level, at, radius, lifeOverride > 0 ? lifeOverride : life, by, !quietOverride,
+                rateOverride);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);
         PacketDistributor.sendToPlayersInDimension(level, job.startPayload());
     }
@@ -132,6 +142,14 @@ public final class Storms {
         List<StormJob> jobs = RUNNING.get(level);
         if (jobs != null) {
             jobs.stream().filter(j -> j.center.distanceTo(at) < 1).findFirst().ifPresent(j -> j.strikeForTest(target));
+        }
+    }
+
+    /** For GameTests: the storm at {@code at} strikes the ground at {@code spot} (the air over its surface) now. */
+    public static void strikeForTest(ServerLevel level, Vec3 at, net.minecraft.core.BlockPos spot) {
+        List<StormJob> jobs = RUNNING.get(level);
+        if (jobs != null) {
+            jobs.stream().filter(j -> j.center.distanceTo(at) < 1).findFirst().ifPresent(j -> j.strikeForTest(spot));
         }
     }
 

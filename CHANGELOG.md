@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-Exotic weapons, and a clearer name for the hall that builds them.
+Exotic weapons and their own assembler, upgrade chips for the machines, and a clearer name for the ICBM hall.
 
 ### New weapons
 - **Antimatter ICBM**: an Antimatter Trap built into an intercontinental missile. Where it lands, a white sphere 67
@@ -15,21 +15,22 @@ Exotic weapons, and a clearer name for the hall that builds them.
   pulling harder than ever as it shrinks to a point and vanishes.
 - **Storm ICBM**: a Storm Core built into an intercontinental missile. Where it lands a supercell gathers over a whole
   region, 160 blocks round, for a minute and a half: lightning comes down six times a second on whatever stands in the
-  open or stands tallest, chaining from creature to creature, starting fires, scorching the ground and knocking out
-  machines, while the wind drives everything round its eye. A lightning rod inside the storm draws its strikes.
-- All three fire only from a Launch Complex or a Missile Silo. They are only ever built whole: there are no exotic
-  bombs.
+  open or stands tallest, chaining from creature to creature. Every strike explodes where it lands, leaving a small
+  crater with fires round it, and knocks out machines nearby, while the wind drives everything round its eye. A
+  lightning rod inside the storm draws its strikes safely.
+- All three are built at the new **Special Weapons Assembler**, a bay with three glowing containment rings that turn
+  round the missile as it is put together. They fire like any other intercontinental missile, from a Launch Complex or
+  a Missile Silo. They are only ever built whole: there are no exotic bombs.
 
 ### Upgrade chips
-- **Speed**, **Efficiency** and **Balanced** chips on each circuit tier, basic to quantum: 10% a tier, so 40% at
-  quantum (a balanced chip half of each). Every processing machine and assembler has an **Upgrades** tab on the left of
-  its screen that holds one. A speed chip makes it work faster and draw power as much faster, so a job costs the same;
-  an efficiency chip makes it use less power.
+- **Speed**, **Efficiency** and **Balanced** chips on each circuit tier, basic to quantum. A speed chip makes a
+  machine 10% faster a tier (40% at quantum), an efficiency chip makes it use 5% less power a tier (20% at quantum), and
+  a balanced chip does half of each. Every processing machine and assembler has an **Upgrades** tab on the left of its
+  screen with three slots, and the chips in them add up.
 
 ### Changes
 - The **Strategic Assembly Hall** is now the **ICBM Assembly Hall**, so it is no longer confused with the Strategic
-  Missile Assembler. Halls already built keep working. It builds the exotic ICBMs from their cores and an
-  Intercontinental Booster.
+  Missile Assembler. Halls already built keep working. It builds the thermonuclear, cobalt and Tsar ICBMs.
 - The **Large Silo Door** has a sound of its own that lasts as long as its doors take to open or close.
 
 ## 0.2.0 — 2026-10-29

@@ -528,21 +528,21 @@ It draws **400 FE a tick**, more than copper cable carries: feed it with insulat
 
 entry("processing/upgrade_chips", "Upgrade chips", "quantum_speed_chip", ['basic_speed_chip', 'advanced_speed_chip', 'military_speed_chip', 'quantum_speed_chip', 'basic_efficiency_chip', 'advanced_efficiency_chip', 'military_efficiency_chip', 'quantum_efficiency_chip', 'basic_balanced_chip', 'advanced_balanced_chip', 'military_balanced_chip', 'quantum_balanced_chip'], [
     text("""
-An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly) and the superweapons' ammunition factories. Generators, reactors and launchers take none.
+An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly), the [Special Weapons Assembler](ordnance/special_weapons) and the superweapons' ammunition factories. Generators, reactors and launchers take none.
 
-Open the machine's screen and click the **Upgrades** tab on its left edge (the config tab's twin): it holds one chip, and says what it does. Shift-clicking a chip from your inventory fits it there. Breaking the machine drops the chip with everything else.
+Open the machine's screen and click the **Upgrades** tab on its left edge (the config tab's twin): it holds **three chips**, and says what they do together. Shift-clicking a chip from your inventory fits it in the first free slot. Breaking the machine drops the chips with everything else.
 """),
     text("""
-**Speed chips** make it work faster, and it draws power as much faster: a job costs the same power, but it has to be fed faster (a speed chip on a machine at the edge of its cable's capacity will starve). **Efficiency chips** make it use less power, at the same speed. **Balanced chips** do half of each.
+**Speed chips** make it work faster: a job costs the same power, but it has to be fed faster (a speed chip on a machine at the edge of its cable's capacity will starve). **Efficiency chips** make it use less power, at the same speed. **Balanced chips** do half of each. The chips in the three slots add up.
 
-Each is built on a circuit, and each tier gives **10% a level**:
+Each is built on a circuit, and each tier gives more (speed, then efficiency):
 
-- **Basic**: 10% (a balanced chip 5% and 5%)
-- **Advanced**: 20% (10% and 10%)
-- **Military**: 30% (15% and 15%)
-- **Quantum**: 40% (20% and 20%)
+- **Basic**: 10%, 5% (a balanced chip 5% and 2.5%)
+- **Advanced**: 20%, 10% (10% and 5%)
+- **Military**: 30%, 15% (15% and 7.5%)
+- **Quantum**: 40%, 20% (20% and 10%)
 
-A quantum speed chip makes a crusher's 10 seconds of work take 7; a quantum efficiency chip makes it take 60% of the power. The board's colour and the pips along its top say the tier, as on the circuits; the plate says the kind: amber chevrons for speed, a green bolt for efficiency, half of each for balanced.
+A quantum speed chip makes a crusher's 10 seconds of work take 7, and three of them under 5; a quantum efficiency chip makes it take 80% of the power, and three 40%. The board's colour and the pips along its top say the tier, as on the circuits; the plate says the kind: amber chevrons for speed, a green bolt for efficiency, half of each for balanced.
 """),
     craft("basic_speed_chip"),
     craft("basic_efficiency_chip"),
@@ -938,7 +938,7 @@ entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_
 Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: the warhead is its nose, and the body under it is cut to the warhead's own girth and painted to match all the way down, with its own fins, bands and markings. A missile is put together at the [missile assembler](ordnance/missile_assemblers) of its warhead's class: the warhead, the class's **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. **Take Apart** gives every part back.
 """),
     text("""
-**Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [ICBM Assembly Hall](ordnance/strategic_assembly) builds whole.
+**Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [ICBM Assembly Hall](ordnance/strategic_assembly) builds whole, and the exotic ones of the [Special Weapons Assembler](ordnance/special_weapons).
 
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
 """),
@@ -980,7 +980,7 @@ A **missile assembler** builds [missiles](ordnance/missiles): one for each class
     structure("heavy_missile_assembler", "The Heavy Missile Assembler: a 5 by 9 deck, its two outer columns Crane Rail (the gantry crane's track) and the rest Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The crane stands parked over the back row: a Gantry Frame leg four high on each rail and a row of Crane Rail across the top. Everything over the deck in front of it must be clear, for the crane to run and the missile to lie."),
     structure("strategic_missile_assembler", "The Strategic Missile Assembler, an integration tower: a 5 by 5 deck of Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. A Gantry Frame column eleven high stands on each corner; on top, a Crane Rail girder runs down each side and another across the middle, the hoist's beam. The middle three by three must be clear: the missile stands there on its stand, stacked stage on stage, and work platforms fold down round it."),
     text("""
-**Crafting, a ladder.** Each assembler's controller takes better parts than the last: the Light's servos and basic circuits, the Medium's electric motors and an advanced circuit, the Heavy's pressure vessels (its hydraulics), tungsten and a military circuit, the Strategic's lead-lined casing, two military circuits and a sensor array. At the top, the [ICBM Assembly Hall](ordnance/strategic_assembly) takes superconducting coils and three military circuits.
+**Crafting, a ladder.** Each assembler's controller takes better parts than the last: the Light's servos and basic circuits, the Medium's electric motors and an advanced circuit, the Heavy's pressure vessels (its hydraulics), tungsten and a military circuit, the Strategic's lead-lined casing, two military circuits and a sensor array. At the top, the [ICBM Assembly Hall](ordnance/strategic_assembly) takes superconducting coils and three military circuits, and the [Special Weapons Assembler](ordnance/special_weapons) two quantum circuits and a containment emitter.
 """),
     craft("light_missile_assembler"),
     craft("medium_missile_assembler"),
@@ -1161,7 +1161,7 @@ So much ground goes that the crater keeps forming for a minute or two after the 
 entry("ordnance/exotic", "Exotic warheads", "antimatter_warhead", ["antimatter_warhead", "antimatter_trap", "singularity_warhead", "singularity_core",
                                                                      "storm_warhead", "storm_core"], [
     text("""
-An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [ICBM Assembly Hall](ordnance/strategic_assembly), which builds it whole with an **Intercontinental Booster** (no secondary, no jacket): an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.
+An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [Special Weapons Assembler](ordnance/special_weapons), which builds it whole with an **Intercontinental Booster**: an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, fired like any other intercontinental missile from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.
 
 **Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **67 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater.
 """),
@@ -1183,12 +1183,12 @@ On open ground it eats its way out to about **74 blocks** by the end of its minu
 """),
     craft("singularity_core"),
     text("""
-**Storm Warhead**: a Tesla storm generator, squat and caged: a copper-wound drum, four capacitor tubes glowing blue round it and a Tesla coil's ring on top. Its core is a **Storm Core**: capacitor banks, two superconducting coils and a military circuit to fire them. Where its missile comes down it seeds a **supercell over a whole region**: **160 blocks round** for **a minute and a half**. A wide dark cloud deck gathers over it in fifteen seconds and turns slowly round the eye, its wall cloud hanging low in the middle; the sky darkens, rain drives down and the wind howls.
+**Storm Warhead**: a Tesla storm generator, squat and caged: a copper-wound drum, four capacitor tubes glowing blue round it and a Tesla coil's ring on top. Its core is a **Storm Core**: capacitor banks, two superconducting coils and a quantum circuit to fire them. Where its missile comes down it seeds a **supercell over a whole region**: **160 blocks round** for **a minute and a half**. A wide dark cloud deck gathers over it in fifteen seconds and turns slowly round the eye, its wall cloud hanging low in the middle; the sky darkens, rain drives down and the wind howls.
 
-**Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. It burns grass to dirt, fuses sand to glass, burns leaves away, may start a fire, and **knocks out every machine** within 4 blocks for five seconds. Thunder cracks close by and rolls on from far off.
+**Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. Every strike **explodes** where it comes down, blowing out a small crater about three blocks round with fires round its rim; it burns grass to dirt and fuses sand to glass round it, burns leaves away, and **knocks out every machine** within 4 blocks for five seconds. Thunder cracks close by and rolls on from far off.
 """),
     text("""
-**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely, giving a redstone pulse each time.
+**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater), giving a redstone pulse each time.
 
 **The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it.
 """),
@@ -1197,9 +1197,9 @@ On open ground it eats its way out to about **74 blocks** by the end of its minu
 
 entry("ordnance/strategic_assembly", "ICBM Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "strategic_assembly_hall_spawner", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"], [
     text("""
-The **ICBM Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead or an exotic core, so the hall puts the warhead and its missile together at once: an **intercontinental missile** (an ICBM), ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section. Each of its six warheads has an ICBM of its own: a drab three-stage one for the thermonuclear warhead, a dark blue one for the cobalt, the Tsar's clustered giant, a white experimental round ringed with violet coils for antimatter, a black one banded with brass for the singularity, and a slate blue one wound with copper for the storm. (Not to be confused with the [Strategic Missile Assembler](ordnance/missile_assemblers), which builds the two-stage Strategic missiles for the fission warheads.)
+The **ICBM Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile** (an ICBM), ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section. Each of its three warheads has an ICBM of its own: a drab three-stage one for the thermonuclear warhead, a dark blue one for the cobalt and the Tsar's clustered giant. The exotic weapons have an assembler of their own, the [Special Weapons Assembler](ordnance/special_weapons). (Not to be confused with the [Strategic Missile Assembler](ordnance/missile_assemblers), which builds the two-stage Strategic missiles for the fission warheads.)
 
-Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. An **Antimatter Trap**, a **Singularity Core** or a **Storm Core** in the primary slot is a warhead in itself: with just an Intercontinental Booster it makes an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM** ([Exotic warheads](ordnance/exotic)); leave the secondary and jacket slots empty. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar and the exotic ones. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
+Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
 """),
     text("""
 An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, from a Launch Complex or a Missile Silo. Its warhead goes off where it lands. What its warheads do is under [Nuclear warheads](ordnance/nuclear) and [Exotic warheads](ordnance/exotic).
@@ -1212,6 +1212,21 @@ An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer
     craft("intercontinental_booster"),
     craft("tertiary_stage"),
     craft("twin_boosted_core"),
+])
+
+entry("ordnance/special_weapons", "Special Weapons Assembler", "special_weapons_assembler", ["special_weapons_assembler", "special_weapons_assembler_spawner"], [
+    text("""
+The **Special Weapons Assembler** builds the [exotic weapons](ordnance/exotic) whole: an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, each from its core and an **Intercontinental Booster**. A [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires them like any other intercontinental missile, **3,000 blocks**.
+
+It is a containment bay: three magnetic **containment rings** stand across it, and the missile is laid on its cradles through them, section by section, the warhead last. While it works the rings' rotors turn and their fields glow violet round the missile.
+"""),
+    text("""
+Fit an **Antimatter Trap**, a **Singularity Core** or a **Storm Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port, and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers.
+
+The cores themselves are crafted: see [Exotic warheads](ordnance/exotic).
+"""),
+    structure("special_weapons_assembler", "A 7 by 13 floor of Launch Pads, as the ICBM Assembly Hall's: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Across it, on the fourth, seventh and tenth rows from the front, stand three containment rings: each a square of eight Toroidal Field Coils, three wide and three high, round the middle of its row, its middle left empty. Keep the bay clear five wide and three high: the missile and its cradles need the room."),
+    craft("special_weapons_assembler"),
 ])
 
 entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "large_radar_dish"], [

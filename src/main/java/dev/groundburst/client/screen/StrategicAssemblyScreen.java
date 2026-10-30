@@ -86,8 +86,7 @@ public class StrategicAssemblyScreen extends MachineScreen {
         var problem = StrategicAssembly.check(slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY), slot(StrategicAssemblyBlockEntity.SLOT_SECONDARY),
                 slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_BOOSTER), ItemStack.EMPTY);
         boolean parts = problem == StrategicAssembly.Problem.NONE;
-        return parts ? StrategicAssembly.assemble(slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY), slot(StrategicAssemblyBlockEntity.SLOT_JACKET),
-                slot(StrategicAssemblyBlockEntity.SLOT_GUIDANCE),
+        return parts ? StrategicAssembly.assemble(slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_GUIDANCE),
                 slot(StrategicAssemblyBlockEntity.SLOT_MODULE)) : slot(StrategicAssemblyBlockEntity.SLOT_OUTPUT);
     }
 

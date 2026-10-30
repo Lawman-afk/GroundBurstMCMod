@@ -86,6 +86,7 @@ public final class GBJeiPlugin implements IModPlugin {
     public void registerExtraIngredients(mezz.jei.api.registration.IExtraIngredientRegistration registration) {
         registration.addExtraItemStacks(MissileCategory.recipes().stream().map(MissileCategory::output).toList());
         registration.addExtraItemStacks(StrategicCategory.recipes().stream().map(StrategicCategory::output).toList());
+        registration.addExtraItemStacks(SpecialWeaponsCategory.recipes().stream().map(SpecialWeaponsCategory::output).toList());
     }
 
     @Override
@@ -95,6 +96,7 @@ public final class GBJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new AssemblyCategory(gui));
         registration.addRecipeCategories(new MissileCategory(gui));
         registration.addRecipeCategories(new StrategicCategory(gui));
+        registration.addRecipeCategories(new SpecialWeaponsCategory(gui));
         registration.addRecipeCategories(new AmmoFactoryCategory(gui));
     }
 
@@ -106,6 +108,7 @@ public final class GBJeiPlugin implements IModPlugin {
         registration.addRecipes(AssemblyCategory.TYPE, AssemblyCategory.recipes());
         registration.addRecipes(MissileCategory.TYPE, MissileCategory.recipes());
         registration.addRecipes(StrategicCategory.TYPE, StrategicCategory.recipes());
+        registration.addRecipes(SpecialWeaponsCategory.TYPE, SpecialWeaponsCategory.recipes());
         registration.addRecipes(AmmoFactoryCategory.TYPE, AmmoFactoryCategory.recipes());
         // The superweapons (DESIGN.md §19.5): how each is built and works.
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_SCUD_STORM, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.ADOBE_WALL.item().get(),
@@ -217,6 +220,7 @@ public final class GBJeiPlugin implements IModPlugin {
                         .map(w -> new net.minecraft.world.item.ItemStack(w.item().get())).toList());
         dev.groundburst.client.fx.FxPhotographer.showAssemblyRecipes = () -> runtime.getRecipesGui().showTypes(List.of(AssemblyCategory.TYPE, MissileCategory.TYPE));
         dev.groundburst.client.fx.FxPhotographer.showHallRecipes = () -> runtime.getRecipesGui().showTypes(List.of(StrategicCategory.TYPE));
+        dev.groundburst.client.fx.FxPhotographer.showSpecialRecipes = () -> runtime.getRecipesGui().showTypes(List.of(SpecialWeaponsCategory.TYPE));
         dev.groundburst.client.fx.FxPhotographer.jeiFilter = text -> runtime.getIngredientFilter().setFilterText(text);
         dev.groundburst.client.fx.FxPhotographer.jeiRecipesFor = stack -> runtime.getRecipesGui().show(runtime.getJeiHelpers().getFocusFactory()
                 .createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT, mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack));
@@ -230,6 +234,7 @@ public final class GBJeiPlugin implements IModPlugin {
             registration.addCraftingStation(MissileCategory.TYPE, dev.groundburst.content.assembler.GBAssemblers.controller(c).item().get());
         }
         registration.addCraftingStation(StrategicCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.item().get());
+        registration.addCraftingStation(SpecialWeaponsCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item().get());
         registration.addCraftingStation(AmmoFactoryCategory.TYPE, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item().get(),
                 dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER.item().get());
     }
@@ -256,6 +261,9 @@ public final class GBJeiPlugin implements IModPlugin {
                 }
                 if (p != null && screen.getMenu().machine() instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity) {
                     return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), StrategicCategory.TYPE));
+                }
+                if (p != null && screen.getMenu().machine() instanceof dev.groundburst.content.strategic.SpecialWeaponsBlockEntity) {
+                    return List.of(IGuiClickableArea.createBasic(p.x(), p.y(), p.w(), p.h(), SpecialWeaponsCategory.TYPE));
                 }
                 ProcessingKind kind = kindOf(screen.getMenu().machine());
                 if (p == null || kind == null) {

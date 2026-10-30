@@ -25,7 +25,8 @@ import net.neoforged.neoforge.registries.DeferredItem;
 /**
  * Whole weapons (DESIGN.md §15.2, Phase 8 slice 8c): the ICBM Assembly Hall, a long crane hall that builds a
  * thermonuclear or cobalt warhead into an intercontinental missile all at once, for the Launch Complex; and the parts
- * only it uses.
+ * only it uses. And (DESIGN.md §16.15) the Special Weapons Assembler, a containment bay that builds the exotic weapons'
+ * intercontinental missiles from their cores.
  */
 public final class GBStrategic {
     /** The hall's two long girders: its travelling crane runs along them. */
@@ -38,6 +39,14 @@ public final class GBStrategic {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StrategicAssemblyBlockEntity>> HALL_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("strategic_assembly_hall", () -> new BlockEntityType<>(StrategicAssemblyBlockEntity::new,
                     HALL_CONTROLLER.block().get()));
+    /** The Special Weapons Assembler (DESIGN.md §16.15): the exotic weapons' own assembler, a containment bay. */
+    public static final WithItem<MultiblockControllerBlock> SPECIAL_CONTROLLER = GBBlocks.register("special_weapons_assembler",
+            "Special Weapons Assembler", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.SPECIAL_ENTITY),
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpecialWeaponsBlockEntity>> SPECIAL_ENTITY =
+            GBBlockEntities.BLOCK_ENTITIES.register("special_weapons_assembler", () -> new BlockEntityType<>(SpecialWeaponsBlockEntity::new,
+                    SPECIAL_CONTROLLER.block().get()));
 
     // --- the parts only the hall uses ---
     public static final DeferredItem<StrategicPart> FUSION_SECONDARY = part("fusion_secondary", "Fusion Secondary",
@@ -64,11 +73,38 @@ public final class GBStrategic {
                     'R', Entry.of(() -> CRANE_RAIL.block().get()), 'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
                     'I', Entry.of(GBMultiblocks.ITEM_PORT.block()), MultiblockDefinition.CONTROLLER, Entry.of(() -> HALL_CONTROLLER.block().get())));
 
+    /** The rows (from the front) the Special Weapons Assembler's containment rings stand across. */
+    public static final int[] RING_ROWS = {3, 6, 9};
+    /**
+     * The Special Weapons Assembler (DESIGN.md §16.15): a 7x13 floor of Launch Pad as the hall's (the controller at the
+     * front middle; an Energy Port at the back middle, an Item Port two to its left) and three containment rings across
+     * it, at the fourth, seventh and tenth rows: each a square of eight Toroidal Field Coils three blocks wide and high
+     * round the missile's bay, its middle kept clear. Between the rings the bay is kept clear five wide and three high for
+     * the missile on its cradles.
+     */
+    public static final MultiblockDefinition SPECIAL = new MultiblockDefinition(GroundBurst.id("special_weapons_assembler"), specialLayers(),
+            Map.of('P', Entry.of(() -> GBLaunch.LAUNCH_PAD.block().get()), 'T', Entry.of(() -> GBMultiblocks.TOROIDAL_FIELD_COIL.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()), 'I', Entry.of(GBMultiblocks.ITEM_PORT.block()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> SPECIAL_CONTROLLER.block().get())));
     private GBStrategic() {}
 
     /** Loads the registrations. */
     public static void init() {
         StrategicAssembly.Problem.values();
+        SpecialWeapons.Problem.values();
+    }
+
+    private static String[][] specialLayers() {
+        String[][] layers = new String[4][13];
+        for (int row = 0; row < 13; row++) {
+            layers[0][row] = row == 0 ? "PPPXPPP" : row == 12 ? "PIPEPPP" : "PPPPPPP";
+            final int at = row;
+            boolean ring = java.util.Arrays.stream(RING_ROWS).anyMatch(r -> r == at);
+            layers[1][row] = ring ? " .TTT. " : " ..... ";
+            layers[2][row] = ring ? " .T.T. " : " ..... ";
+            layers[3][row] = ring ? " .TTT. " : " ..... ";
+        }
+        return layers;
     }
 
     private static String[][] hallLayers() {

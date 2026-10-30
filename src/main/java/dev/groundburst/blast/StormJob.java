@@ -40,8 +40,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * the tallest of a few spots, the rest anywhere; a lightning rod near where it would land draws it to itself. A strike
  * hurts whatever stands at its foot (vanilla lightning's own effects too: a creeper charged, a pig turned), then
  * chains on through the nearest creatures, each jump weaker; it scorches the ground (grass burnt to dirt, sand fused to
- * glass, leaves burnt away), may start a fire where fire may spread, and knocks out machines round it (an EMP field).
- * Clients are told of each strike, for the bolt, its chain and its thunder.</li>
+ * glass, leaves burnt away), may start a fire where fire may spread, and knocks out machines round it (an EMP field);
+ * then it explodes where it came down ({@link Storms#STRIKE_BLAST}: a small crater, fires round its rim). Clients are
+ * told of each strike, for the bolt, its chain and its thunder.</li>
  * </ul>
  * Strikes only come down where the world is loaded. Not saved.
  */
@@ -55,13 +56,17 @@ final class StormJob {
     final double cloudY;
     final long startTick;
     final @Nullable UUID by;
+    /** Whether its strikes explode where they come down (always, but in a GameTest that counts them on its grass). */
+    final boolean blasts;
+    /** Strikes a second at full strength set by a GameTest (0: its own rate, by its size). */
+    private final double rateOverride;
     private final RandomSource random = RandomSource.create();
     private double strikeCarry;
     private int strikes;
     /** Creatures standing in the open within it, refreshed every second (what a third of its strikes aim at). */
     private List<LivingEntity> exposed = List.of();
 
-    StormJob(int netId, ServerLevel level, Vec3 center, float radius, int life, @Nullable Entity by) {
+    StormJob(int netId, ServerLevel level, Vec3 center, float radius, int life, @Nullable Entity by, boolean blasts, double rateOverride) {
         this.netId = netId;
         this.level = level;
         this.center = center;
@@ -70,6 +75,8 @@ final class StormJob {
         this.cloudY = Math.min(level.getMaxY() - 6, center.y + Storms.CLOUD_HEIGHT * Math.max(0.3, this.radius / Storms.RADIUS));
         this.startTick = level.getGameTime();
         this.by = by == null ? null : by.getUUID();
+        this.blasts = blasts;
+        this.rateOverride = rateOverride;
     }
 
     int age() {
@@ -98,7 +105,7 @@ final class StormJob {
         if (age % 20 == 0) {
             this.exposed = exposed();
         }
-        this.strikeCarry += Storms.strikeRate(this.radius, k) / 20;
+        this.strikeCarry += Storms.strikeRate(this.radius, k, this.rateOverride) / 20;
         while (this.strikeCarry >= 1) {
             this.strikeCarry -= 1;
             strike();
@@ -182,6 +189,11 @@ final class StormJob {
         hit(target.blockPosition(), target);
     }
 
+    /** For GameTests: a bolt into the ground at {@code spot} (the air over its surface), now. */
+    void strikeForTest(BlockPos spot) {
+        hit(spot, null);
+    }
+
     /** The surface (the air over the highest solid block) at a random spot in the region, or null where it is not loaded. */
     private @Nullable BlockPos randomColumn() {
         double a = this.random.nextDouble() * 2 * Math.PI, r = this.radius * Math.sqrt(this.random.nextDouble());
@@ -253,6 +265,9 @@ final class StormJob {
         }
         scorch(at);
         dev.groundburst.content.effect.EmpFields.add(this.level, foot, Storms.EMP_RADIUS, Storms.EMP_TICKS, source);
+        if (this.blasts) {
+            Blasts.detonate(this.level, foot, Storms.STRIKE_BLAST, source);      // its explosive impact: a small crater
+        }
         this.strikes++;
         tell(foot, chain);
     }

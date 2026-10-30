@@ -645,6 +645,16 @@ tier, basic to quantum, 10% a level (the mix 5% and 5%), 40% at quantum.
   else, shift-clicked in from the hotbar, the chip dropped with the machine; the hall with a quantum speed chip does
   1.4 ticks' work a tick on 350 FE. (Delayed blasts now keep the bomb scale they were set off at, `Charges.scaled`:
   the new tests had shifted the batches, and a thermobaric cloud and a missile's warhead in one took another test's.)
+- **After the user's look** (the same day): **three slots**, not one (`MachineBlockEntity.UPGRADE_SLOTS`; the menu's
+  three `UpgradeSlot`s from `UPGRADE_SLOT_X/Y`, 18 apart; a shift-click fits a chip into the first free one, a stack
+  filling them in turn), their chips adding up (`speedBonus()`, `efficiency()`, the saving capped at `MOST_SAVED` 0.9);
+  the **efficiency halved**, 0.05 a level (a balanced chip 0.025), so three quantum efficiency chips save 60% and no
+  mix can run a machine free; the tab's panel 112x64, the three slots in a row and two lines under them, speed and
+  efficiency, each "normal" when nothing raises it (the lines on the power drawn a tick and a job dropped, and the speed
+  chip's tooltip note: the user); a share shown to a tenth where it has one (`UpgradeChipItem.percent`: a balanced
+  chip's 7.5). A saved machine's one chip stays in the first slot. GameTests: three quantum speed chips 120% faster on
+  the same power a job, a quantum efficiency chip 20% less; four chips shift-clicked in, three fitted, one left over;
+  three military balanced chips 45% faster on 22.5% less.
 
 ### 7.1 Fission Reactor meltdown (as built, Phase 5)
 A game abstraction of a reactor accident, on by default (the user's call); the server config `reactor.meltdowns` turns
@@ -2097,6 +2107,49 @@ affect a whole region (over §16.1's 48 blocks for 45 s).
   off; a storm striking 5 a second strikes many times and scorches grass in its region but never the plot's corners,
   then dies away; a lightning rod in it takes every strike (the grass untouched). (Rods outside a storm are not
   counted: a neighbouring test's rod drew another's strikes.)
+- **After the user's look** (the same day): the Storm Core takes a **quantum circuit**, not a military one; and every
+  strike **explodes** where it comes down (`Storms.STRIKE_BLAST`, profile `storm_strike`: a landmine's blast a little
+  wider, crater 3, structural 4.5, scorch 4, fires round its rim to 3, gentle on creatures the bolt has hurt already: 6
+  within a block, then 4 falling to nothing at 3.5), after its chain, its scorch and its EMP field; a strike a
+  lightning rod takes has none. It is not scaled with the storm (lightning is lightning). GameTests: a bolt into open
+  ground leaves a small crater and nothing at the plot's corners; the region test's storm strikes without its blasts
+  (`Storms.quietOverride`), so its grass can be counted. The GameTest overrides are read as a storm starts (the strike
+  rate kept by the job) and set back after it.
+
+### 16.15 The Special Weapons Assembler (Phase 11, 2026-10-30)
+The user, after the Storm Warhead: a special weapons assembler for the special weapons, their missiles fired like the
+other ICBMs. So the exotic weapons leave the ICBM Assembly Hall (§16.12), which builds the fusion weapons only again.
+- **Recipes** (`SpecialWeapons`): an exotic core (`ComponentItems.IcbmCore`: the Antimatter Trap, the Singularity
+  Core, the Storm Core) and an Intercontinental Booster, a guidance unit and Hardened Electronics optional, make that
+  weapon's intercontinental missile (`SizeClass.XXL`, `Motor.ICBM`), fired from a Launch Complex or a Missile Silo as
+  before; a minute and a half (`TICKS` 1800) at 320 FE a tick (it holds 600,000); TAKE APART gives the parts back.
+  Problems: not formed, no core, no booster, output full. The hall's primary slot takes no exotic core, its output no
+  exotic missile, and it takes none apart (`StrategicAssembly.takeApart`: nothing for one); a missile left in a hall's
+  output from before keeps its look there. The cores' tooltip names the new assembler.
+- **Structure** (`GBStrategic.SPECIAL`): the hall's 7x13 floor of Launch Pad (the controller front middle, the Energy
+  Port back middle, the Item Port two to its left) and three containment rings across it on the fourth, seventh and
+  tenth rows (`RING_ROWS`): each a square of eight Toroidal Field Coils (the fusion reactor's) three wide and three high
+  round the bay's middle, its middle kept clear; elsewhere the bay kept clear five wide and three high. Four high in
+  all. A Structure Spawner for creative. The controller: a lead-lined casing, two quantum circuits, a containment
+  emitter, two superconducting coils, a sensor array, a tungsten plate and a CRT display (a rung over the hall's).
+- **Block entity** (`SpecialWeaponsBlockEntity`, menu `special_weapons_assembler`, `SpecialWeaponsScreen`): the hall's
+  in all but its parts: slots core, booster, guidance, module, output; the missile laid on its cradles four sections
+  as the work goes on, the warhead last (`MissileCarrier.lying`; the saddles' tops at 28.5 under 20 and 64 px up the
+  missile, so its axis lies at the rings' middle, 40); upgrade chips; the particle accelerator's thrum. Its screen is
+  the hall's layout with the core alone over the booster, guidance and module (`gui.py` "special_weapons"), the
+  bench's column on the right. JEI: "Special Weapons Assembly", three recipes (the hall's category back to its three).
+- **Model** (`tools/assets/special_weapons.py`, material library): a sealed grey floor in plates, violet bay lines,
+  hazard bands round its edge and a violet keep-out band round each ring's plinth; each ring a dark violet housing of
+  sixteen planks (radii 19 to 24) on a gunmetal plinth striped in hazard paint, a steel lip and rivets round its faces;
+  inside it a copper-wound rotor (15 to 18.9) whose inner face is a violet emitter strip with four bright nodes
+  (glow); the two cradles; steel conduits from the back up each side and across to each plinth; the hall's desk with a
+  violet screen; a lead cask for the cores with a trefoil. Working, the rotors turn once in 4 s (the middle one the
+  other way) and the fields light: a thin violet membrane in each ring round the missile (bone "field", glow only,
+  hidden while idle). Every other plank is sunk 0.06 px at its faces, so neighbours never fight where they overlap.
+- Field Manual: "Special Weapons Assembler" (Ordnance, after the hall's) with its structure page; the hall's, the
+  exotic warheads', the missiles' and the upgrade chips' pages changed to match. GameTests (`SpecialWeaponsTests`): it
+  builds a hardened Antimatter ICBM and takes it apart; it needs its structure and its own parts; the hall refuses the
+  cores and their missiles.
 
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
@@ -3761,6 +3814,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The user's third look at Phase 11: upgrade chips in **three slots**, their effects adding up, efficiency halved (5% a tier, so no mix runs a machine free), the tab's lines on the power drawn dropped (§7.3); the Storm Core takes a quantum circuit, and every storm strike **explodes** into a small crater (§16.14); the exotic weapons get their own **Special Weapons Assembler**, a containment bay of three rings, and the ICBM Assembly Hall builds the fusion weapons only (§16.15). |
+| 2026-10-30 | A ready-to-paste CurseForge description, `docs/CURSEFORGE.md`: the README for CurseForge's Markdown mode (images by full link, no HTML table, a getting-started section, the sound credits in a spoiler). |
 | 2026-10-30 | The Storm Warhead built (§16.14): an ICBM at the hall like the other exotic ones, its storm a supercell over a region 160 round for 90 s (the user: scale it to a region): lightning at 6 a second aimed at what stands in the open and what stands tallest, chaining through creatures, scorching, setting fires and knocking out machines; a wind round its eye; lightning rods inside it take its strikes. |
 | 2026-10-30 | Upgrade chips (the user's request, §7.3): speed, efficiency and balanced chips on the four circuit tiers, 10% a level (balanced 5% and 5%), one per processing machine or assembler in an Upgrades tab on the screen's left edge (the config tab's mirror); a speed chip draws power as much faster as it works, so a job costs the same. |
 | 2026-10-30 | The user's second look at the exotic weapons: no exotic bombs (their cores are ICBM cores only the hall takes; the warheads are whole weapons, out of JEI and the creative tab), and the singularity ends in a two-second implosion instead of a blast: its pull at up to seven times, its horizon shrinking to a point, shells rushing inward, the disc winding in, a last flash and a thud (§16.13). |
