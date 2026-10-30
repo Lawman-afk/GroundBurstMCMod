@@ -4,6 +4,8 @@
 
 **Assemble it. Launch it. Watch the horizon.**
 
+[![Join the Ground Burst Discord](https://img.shields.io/badge/Discord-Join_the_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/UZd6Sk5mzB)
+
 Mine, refine and assemble your own arsenal, from grenades and mines to missiles and the Tsar Bomba, then watch real
 craters, mushroom clouds and radioactive fallout reshape the world.
 
@@ -84,7 +86,8 @@ Install it on the server and on every player's game: it adds blocks and items, s
 ## Links
 
 - Source code: [GitHub](https://github.com/Lawman-afk/GroundBurstMCMod)
-- Found a bug? Report it on the **Issues** tab.
+- Found a bug? Report it on the **Issues** tab, or in the Discord.
+- Questions, ideas and feedback: [join the Ground Burst Discord](https://discord.gg/UZd6Sk5mzB).
 - What changed in each version: the **Changelog** of each file, or the
   [full changelog](https://github.com/Lawman-afk/GroundBurstMCMod/blob/main/CHANGELOG.md).
 

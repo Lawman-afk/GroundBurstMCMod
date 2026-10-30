@@ -10,6 +10,10 @@
   <a href="https://www.curseforge.com/minecraft/mc-mods/ground-burst">Download on CurseForge</a>
 </p>
 
+<p align="center">
+  <a href="https://discord.gg/UZd6Sk5mzB"><img src="https://img.shields.io/badge/Discord-Join_the_server-5865F2?logo=discord&logoColor=white" alt="Join the Ground Burst Discord"></a>
+</p>
+
 Mine, refine and assemble your own arsenal, from grenades and mines to missiles and the Tsar Bomba, then watch real
 craters, mushroom clouds and radioactive fallout reshape the world.
 
