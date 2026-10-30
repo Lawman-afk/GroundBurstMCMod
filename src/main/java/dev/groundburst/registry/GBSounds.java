@@ -218,6 +218,9 @@ public final class GBSounds {
             register("singularity.drone", "Singularity drones", List.of("exotic/singularity_drone"), false, 80);
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_TEAR =
             register("singularity.tear", "Ground tears loose", variants("exotic/singularity_tear", 3), false, 48);
+    /** The singularity's end (DESIGN.md §16.12): an inrush, then the thud as its horizon closes. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_IMPLODE =
+            register("singularity.implode", "Singularity implodes", List.of("exotic/singularity_implode"), false, 160);
 
     private GBSounds() {}
 

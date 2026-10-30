@@ -26,8 +26,8 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * One singularity (DESIGN.md §16.2): a black hole that opens, feeds on what it reaches and grows by it, then collapses
- * in a blast. Its size is its reach ({@link Singularities#reach}: its opening over its life and the cube root of what it
+ * One singularity (DESIGN.md §16.2, §16.12): a black hole that opens, feeds on what it reaches and grows by it, then
+ * implodes: no blast, only its pull at its strongest as its horizon shrinks to a point ({@link Singularities#IMPLODE}). Its size is its reach ({@link Singularities#reach}: its opening over its life and the cube root of what it
  * has swallowed), and everything follows from it: its event horizon, how far and how hard it pulls, how far it tears
  * blocks loose. While it lives:
  * <ul>
@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * reach is kept loaded. Clients are told how far it reaches as it grows. Not saved.
  */
 final class SingularityJob {
-    enum Phase { GROW, RELEASE, DONE }
+    enum Phase { GROW, IMPLODE, RELEASE, DONE }
 
     /** Blocks torn a tick at most (so it eats, not erases), and how many of them clients are told of. */
     private static final int TEAR_PER_TICK = 1500, TOLD_PER_TICK = 120;
@@ -127,20 +127,27 @@ final class SingularityJob {
     /** Works within {@code deadline} and {@code blockBudget}; returns the blocks it changed. */
     int step(long deadline, int blockBudget) {
         int changed = 0;
+        int age = age();
+        if (this.phase == Phase.GROW && age >= this.life) {
+            // Its life over, it implodes: clients are told, to draw it (no blast: what is left is the hole it ate).
+            this.phase = Phase.IMPLODE;
+            PacketDistributor.sendToPlayersInDimension(this.level, new SingularityPayloads.Collapse(this.netId, this.reach));
+        }
         if (this.phase == Phase.GROW) {
-            int age = age();
-            if (age >= this.life) {
-                collapse();
+            this.reach = Singularities.reach(this.seed, this.feed, this.mass, age, this.life, this.max);
+            float h = Singularities.horizon(this.reach);
+            drawIn(h, 1);
+            double sweep = SWEEP_SHARE * this.reach;
+            if (this.chunks.prepare((int) Math.ceil(sweep), true)) {
+                changed = tear(h, sweep, deadline, Math.min(blockBudget, TEAR_PER_TICK));
+            }
+            tell(age);
+        } else if (this.phase == Phase.IMPLODE) {
+            double u = (age - this.life) / (double) Singularities.IMPLODE;
+            if (u >= 1) {
                 this.phase = Phase.RELEASE;
             } else {
-                this.reach = Singularities.reach(this.seed, this.feed, this.mass, age, this.life, this.max);
-                float h = Singularities.horizon(this.reach);
-                drawIn(h);
-                double sweep = SWEEP_SHARE * this.reach;
-                if (this.chunks.prepare((int) Math.ceil(sweep), true)) {
-                    changed = tear(h, sweep, deadline, Math.min(blockBudget, TEAR_PER_TICK));
-                }
-                tell(age);
+                drawIn(Singularities.implodeHorizon(this.reach, u), Singularities.implodePull(u));
             }
         }
         if (this.phase == Phase.RELEASE && this.chunks.release(16)) {
@@ -149,9 +156,9 @@ final class SingularityJob {
         return changed;
     }
 
-    /** Everything within its pull drawn in; what reaches the horizon gone, and fed to it. */
-    private void drawIn(float h) {
-        double gm = Singularities.gm(this.reach);
+    /** Everything within its pull drawn in ({@code boost} times as hard); what reaches the horizon gone, and fed to it. */
+    private void drawIn(float h, double boost) {
+        double gm = Singularities.gm(this.reach) * boost;
         float pull = Singularities.pullRadius(this.reach);
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
         DamageSource damage = this.level.damageSources().source(Singularities.SPAGHETTIFIED, null, source);
@@ -341,10 +348,4 @@ final class SingularityJob {
         this.toldStates.clear();
     }
 
-    /** Its life over: it collapses in a blast of its own (as big as it has grown), and clients see it go. */
-    private void collapse() {
-        Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        PacketDistributor.sendToPlayersInDimension(this.level, new SingularityPayloads.Collapse(this.netId, this.reach));
-        Blasts.detonate(this.level, this.center, Blasts.profile(Singularities.COLLAPSE_PROFILE), source, this.reach / Singularities.COLLAPSE_REACH);
-    }
 }

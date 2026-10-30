@@ -11,10 +11,9 @@ Exotic weapons, and a clearer name for the hall that builds them.
   stop it.
 - **Singularity ICBM**: a Singularity Core built into an intercontinental missile. A black hole opens where it lands
   and lives for a minute, pulling everything in and tearing the ground loose. It grows by what it eats: on open ground
-  it digs a hole about 67 blocks round in rock; in a mountainside or the sea it grows bigger still. Then it collapses
-  in a blast as big as it has grown.
-- Both fire only from a Launch Complex or a Missile Silo. The Assembly Bench can still make a bomb of either core, but
-  set off by anything but its missile's arrival its containment fails, with only a small effect.
+  it digs a hole about 67 blocks round in rock; in a mountainside or the sea it grows bigger still. Then it implodes,
+  pulling harder than ever as it shrinks to a point and vanishes.
+- Both fire only from a Launch Complex or a Missile Silo. They are only ever built whole: there are no exotic bombs.
 
 ### Changes
 - The **Strategic Assembly Hall** is now the **ICBM Assembly Hall**, so it is no longer confused with the Strategic

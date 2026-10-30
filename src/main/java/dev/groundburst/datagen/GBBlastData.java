@@ -81,10 +81,6 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.empty()), "he"));
         ctx.register(Blasts.profile("heavy_warhead"), visual(profile(5, 12, 20, 16, 0, 14, 28, 3, 0.75f, 0.15f, 0.3f, 0.5f, 80, 25, 3.0f,
                 TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
-        // A singularity's collapse (DESIGN.md §16.2): everything it held let go at once. A clean round crater 16 blocks
-        // round, no fire and no scorching; its look and sound the heavy warhead's (its own flash is the client's).
-        ctx.register(Blasts.profile(dev.groundburst.blast.Singularities.COLLAPSE_PROFILE), visual(profile(6, 16, 26, 0, 0, 18, 34, 3, 0.75f, 0.08f,
-                0.15f, 0.45f, 100, 30, 4.0f, TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
         ctx.register(Blasts.profile("thermobaric_warhead"), visual(profile(3, 12, 24, 20, 16, 24, 40, 3, 0.45f, 0.1f, 0.2f, 0.3f, 70, 30, 3.5f,
                 TerrainTable.CONVENTIONAL, Optional.empty()), "thermobaric"));
         ctx.register(Blasts.profile("cluster_warhead"), profile(0, 1.5f, 3, 2, 0, 2, 5, 4, 0.5f, 0, 0.1f, 0.1f, 15, 6, 1.0f,

@@ -1081,6 +1081,41 @@ def large_silo_door_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def singularity_implosion() -> dict[str, np.ndarray]:
+    """The singularity warhead's end (DESIGN.md §16.12): it implodes over two seconds, then is gone. An inrush building
+    the whole time (air and dust drawn in, brightening as it comes), a sub tone climbing as the hole spins up and a
+    glassy shimmer bending upward; at two seconds the horizon closes: everything cut off at once, a deep falling thud, a
+    pop and a ring, and the reverb's tail."""
+    out = {}
+    n = 2.9
+    close_at = 2.0
+    t = S.t_axis(n)
+    N = len(t)
+    pre = np.clip(t / close_at, 0, 1)
+    before = np.where(t < close_at, 1.0, 0.0)
+    build = (np.exp(3.2 * pre) - 1) / (np.exp(3.2) - 1) * before
+    rush_lo = S.bandpass(S.pink(n, 1801), 150, 900)
+    rush_hi = S.bandpass(S.pink(n, 1802), 900, 5000)
+    rush = (rush_lo * (1 - 0.6 * pre) + rush_hi * (0.2 + 0.8 * pre ** 2)) * build
+    f = 34 + 40 * pre ** 2
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    sub = (np.sin(phase) + 0.4 * np.sin(2 * phase)) * build ** 0.6 * before
+    fg = 500 + 1300 * pre ** 2
+    shimmer = np.sin(2 * np.pi * np.cumsum(fg) / S.SR) * 0.05 * build
+    rest = n - close_at
+    m = int(rest * S.SR)
+    tt = np.arange(m) / S.SR
+    drop = np.sin(2 * np.pi * np.cumsum(55 - 25 * np.clip(tt / 0.4, 0, 1)) / S.SR) * np.exp(-tt / 0.35) * 1.6
+    thump = S.lowpass(S.white(rest, 1803), 140)[:m] * np.exp(-tt / 0.12) * 3.0
+    pop = S.highpass(S.white(rest, 1804), 3000)[:m] * np.exp(-tt / 0.01) * 0.7
+    ring = S.resonator(S.white(rest, 1805)[:m] * np.exp(-tt / 0.004), 230, q=35) * np.exp(-tt / 0.5) * 1.2
+    close = S.place(drop + thump + pop + ring, close_at, n)
+    x = rush * 2.5 + sub * 0.7 + shimmer + close
+    x = S.reverb(x, seconds=1.2, damping_hz=2500, mix=0.2, seed=1806)[:N]
+    out["exotic/singularity_implode"] = S.normalize(S.fade(S.saturate(x, 1.3), 0.0, 0.3), -1.5)
+    return out
+
+
 # (The blasts are made from recordings now, blasts.py. nuke_set, tsar_set and blast_sets above are the synthesized ones they
 # replaced, kept to compare; blast_source, nuke_source and tsar_source are still the bed of the large, nuclear and Tsar
 # blasts since round 2, the boom and roar the recordings lie on.)
@@ -1090,7 +1125,7 @@ def large_silo_door_sounds() -> dict[str, np.ndarray]:
 # (So are the machines, the reactor's alarm and the Geiger counter's clicks, machines.py; the Exotic Matter Fabricator, the
 # Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
-RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
+RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, singularity_implosion, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, large_silo_door_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
            MA.machine_set, GE.gear_set]
 

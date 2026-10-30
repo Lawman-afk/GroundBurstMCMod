@@ -26,8 +26,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * grows two ways: the hole opening by itself over its life (to {@link #SEED} blocks by the end, fed nothing), and by
  * what it has swallowed ({@link #FEED} times the cube root of the blocks' worth it has eaten), so a hole on open
  * ground grows to about {@link #TYPICAL_REACH}, one in a mountainside or the sea well past that, one in the open air
- * hardly at all. They run each tick ahead of the blasts, from the same budget; clients are told where each is, how far
- * it reaches as it grows, what it tears loose and when it collapses ({@link SingularityPayloads}).
+ * hardly at all. At the end of its life it implodes ({@link #IMPLODE}): no blast, its pull at its strongest as its
+ * horizon shrinks to a point. They run each tick ahead of the blasts, from the same budget; clients are told where each
+ * is, how far it reaches as it grows, what it tears loose and when it implodes ({@link SingularityPayloads}).
  */
 public final class Singularities {
     /** At bomb scale 1: the reach its opening alone gives it by the end of its life, and the most it can reach. */
@@ -48,9 +49,11 @@ public final class Singularities {
     static final double TIDE = 6;
     /** Nothing on foot outruns it from within this share of its reach, where its pull reaches the pull a sprint cannot beat. */
     static final double ESCAPE_SHARE = 0.45, ESCAPE_PULL = 0.12;
-    /** Its collapse's blast profile (crater 16 at scale 1), and the reach that gives that scale 1. */
-    public static final String COLLAPSE_PROFILE = "singularity_collapse";
-    static final float COLLAPSE_REACH = 32;
+    /**
+     * Ticks its collapse takes (after the user's look, DESIGN.md §16.12: an implosion, not a blast): it stops eating and
+     * pulls ever harder as its horizon shrinks to a point, then is gone.
+     */
+    public static final int IMPLODE = 40;
     /** {@code groundburst:spaghettified}: what the horizon does to a creature. */
     public static final ResourceKey<DamageType> SPAGHETTIFIED = ResourceKey.create(Registries.DAMAGE_TYPE, GroundBurst.id("spaghettified"));
     /** For GameTests: ticks a singularity lives (0: its own {@link #LIFE}, or a breach's). */
@@ -73,6 +76,17 @@ public final class Singularities {
     /** Its event horizon's radius at a reach: everything inside goes. */
     public static float horizon(float reach) {
         return HORIZON_SHARE * reach;
+    }
+
+    /** How much harder it pulls {@code u} of the way through its implosion (0 to 1): up to seven times. */
+    public static double implodePull(double u) {
+        return 1 + 6 * Math.max(0, Math.min(1, u));
+    }
+
+    /** Its horizon {@code u} of the way through its implosion: shrinking slowly, then all at once, to a point. */
+    public static float implodeHorizon(float reach, double u) {
+        double k = Math.max(0, Math.min(1, u));
+        return (float) (horizon(reach) * (1 - k * k * k));
     }
 
     /** How far out it pulls things in at a reach. */

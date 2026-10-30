@@ -685,6 +685,15 @@
     ],
     "subtitle": "subtitles.groundburst.singularity.drone"
   },
+  "singularity.implode": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:exotic/singularity_implode"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.singularity.implode"
+  },
   "singularity.tear": {
     "sounds": [
       {

@@ -84,7 +84,7 @@ public final class SingularityPayloads {
         }
     }
 
-    /** Singularity {@code id} has collapsed, reaching {@code reach} at the end (its blast is a blast of its own). */
+    /** Singularity {@code id} has begun to implode, reaching {@code reach} at the end of its life. */
     public record Collapse(int id, float reach) implements CustomPacketPayload {
         public static final Type<Collapse> TYPE = GBNetwork.type("singularity_collapse");
         public static final StreamCodec<RegistryFriendlyByteBuf, Collapse> CODEC = StreamCodec.of((buf, p) -> {

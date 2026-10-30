@@ -63,7 +63,7 @@ public final class StrategicAssembly {
 
     /** The exotic warhead a core in the primary slot is (an Antimatter Trap's, a Singularity Core's); null for any other. */
     public static @Nullable ChargeBlock exoticCore(ItemStack stack) {
-        return stack.getItem() instanceof ComponentItems.PayloadCore core && core.warhead().kind.exotic() ? core.warhead() : null;
+        return stack.getItem() instanceof ComponentItems.IcbmCore core ? core.warhead() : null;
     }
 
     /** The exotic cores, in the order JEI lists their missiles. */

@@ -213,9 +213,9 @@ public final class FxPhotographer {
                 // from the plain to the west (a semicircle bitten clean out of the cliff) and from above (the bowl).
                 new Scene("antimatter", "antimatter_warhead", 175, -12, List.of(1, 6, 14, 30, 60, 90, 160, 300)),
                 new Scene("antimatter_aerial", "antimatter_warhead", 165, 32, List.of(40, 90, 260)),
-                // A singularity on the same mesa: feeding on it for a minute and growing, collapsing at 1200.
-                new Scene("singularity", "singularity_warhead", 170, 4, List.of(40, 200, 400, 700, 1000, 1180, 1203, 1220, 1320)),
-                new Scene("singularity_aerial", "singularity_warhead", 170, 30, List.of(300, 700, 1190, 1400)),
+                // A singularity on the same mesa: feeding on it for a minute and growing, imploding from 1200 to 1240.
+                new Scene("singularity", "singularity_warhead", 170, 4, List.of(40, 200, 400, 700, 1000, 1190, 1212, 1226, 1236, 1241, 1300)),
+                new Scene("singularity_aerial", "singularity_warhead", 170, 30, List.of(300, 700, 1190, 1230, 1400)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),

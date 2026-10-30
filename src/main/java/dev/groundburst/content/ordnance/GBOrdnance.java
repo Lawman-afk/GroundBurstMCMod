@@ -138,6 +138,12 @@ public final class GBOrdnance {
             "antimatter_warhead", "Antimatter Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.ANTIMATTER_WARHEAD);
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> SINGULARITY_WARHEAD = bomb(
             "singularity_warhead", "Singularity Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.SINGULARITY_WARHEAD);
+    static {
+        // Phase 11 after the user's look (DESIGN.md §16.12): the exotic warheads live only inside their ICBMs.
+        GBItems.hide(ANTIMATTER_WARHEAD.item());
+        GBItems.hide(SINGULARITY_WARHEAD.item());
+    }
+
     /** Every warhead, in the order the creative tab and the Field Manual show them. */
     public static final java.util.List<dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock>> WARHEADS =
             java.util.List.of(HE_WARHEAD, HEAVY_WARHEAD, THERMOBARIC_WARHEAD, CLUSTER_WARHEAD, BUNKER_BUSTER, NAPALM_WARHEAD, MASSIVE_WARHEAD,

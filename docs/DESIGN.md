@@ -2002,6 +2002,25 @@ before its leaves did.
   hundredths of its size) feeds past three times its unfed reach and tears dirt 4 off; the antimatter tests at a scale
   that keeps their sphere 4.8.
 
+### 16.13 The user's second look: whole exotic weapons, the implosion (Phase 11, 2026-10-30)
+- **No exotic bombs.** The user: remove the special weapons' warheads and their recipes in the missile assembly. The
+  exotic warheads are whole weapons now (`ChargeKind.wholeWeapon()`), and their cores are **ICBM cores**
+  (`ComponentItems.IcbmCore`, not bench payload cores, so out of `GBAssembly.CORES`): the bench takes none, JEI's
+  warhead and missile assembly pages list none (no core, so no bench warhead, so no missile recipe), JEI hides the
+  warheads, and they are out of the creative tab (`GBItems.hide`); the hall alone builds them, into their ICBMs. The
+  cores' tooltip names their ICBM and the hall. The breach stays for a warhead placed some other way (a command).
+- **The implosion** (the user: no explosion at the end; a cool implosion and collapse with a matching look). At the end
+  of its life the singularity stops eating and implodes for `Singularities.IMPLODE` = 40 ticks: its pull on everything
+  `implodePull(u)` = 1 + 6u times as hard, its horizon `implodeHorizon` = horizon (1 - u^3) (slowly, then all at
+  once, to a point); then it is gone. No blast (the `singularity_collapse` profile is deleted): what is left is the hole
+  it ate. Clients (told at its start, `Collapse`): three bright shells rushing inward one after another onto the
+  shrinking horizon, the photon ring brightening, the disc wound in onto the horizon, hotter and spinning up to 26 times
+  as fast, the jets flaring to 1.8 times their length and falling back in, the debris pulled in as hard as the hole
+  pulls, the sky darkening further; as it closes a white point shrinking away, a softer flash and the ground shaking at
+  the thud. Each client pulls its own player by the same boost. The sound (`singularity.implode`,
+  `exotic/singularity_implode`, 2.9 s): an inrush building the whole time, brightening, over a sub tone climbing and a
+  glassy shimmer bending up; at 2 s (the horizon closing) all cut off, a deep falling thud, a pop and a ring.
+
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
 - **Kept as part of the conventional roster:** Thermite charge, Breaching charge, Smoke grenade (§14).
@@ -3665,6 +3684,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The user's second look at the exotic weapons: no exotic bombs (their cores are ICBM cores only the hall takes; the warheads are whole weapons, out of JEI and the creative tab), and the singularity ends in a two-second implosion instead of a blast: its pull at up to seven times, its horizon shrinking to a point, shells rushing inward, the disc winding in, a last flash and a thud (§16.13). |
 | 2026-10-30 | After the user's look at the exotic warheads: the Strategic Assembly Hall is the **ICBM Assembly Hall** (names only; the ids stay, so worlds keep their halls), and the exotic weapons are built whole there as ICBMs from their cores alone and a booster (no missile assembler takes them; the bench still makes their bombs, which only breach) (§16.12). |
 | 2026-10-30 | Both exotic warheads were far too weak (the user): the antimatter sphere 67 (+40%, its flash with it); the singularity lives a minute and feeds, its size all from one reach, `26 sqrt(u) + 0.56 cbrt(eaten)`, about 74 on open ground (stone to 67, the antimatter's sphere), more in a mountain or the sea, at most 110; a tidal pull (d^6) gives its hole a sharp edge, and clients are told the reach as it grows (§16.12). |
 | 2026-10-30 | The Large Silo Door has a sound of its own as long as its leaves take (8 s), following their speed; the Missile Silo keeps its four-second one (§16.12). |

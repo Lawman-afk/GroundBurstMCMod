@@ -20,9 +20,9 @@ public final class ComponentItems {
     static final String T_CASING = GBLang.add(GroundBurst.MODID + ".component.casing", "Warhead casing for class %s payloads");
     static final String T_FUZE = GBLang.add(GroundBurst.MODID + ".component.fuze", "Fuze");
     static final String T_BENCH = GBLang.add(GroundBurst.MODID + ".component.bench", "Fitted at an Ordnance Assembly Bench");
-    /** An exotic core's uses: the hall builds it whole into an ICBM (Phase 11); the bench's bomb only breaches. */
-    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".component.exotic_hall", "ICBM Assembly Hall, with a booster: a whole ICBM");
-    static final String T_BREACH = GBLang.add(GroundBurst.MODID + ".component.exotic_bomb", "Bench bomb: only breaches if set off");
+    /** An ICBM core (Phase 11): the hall builds it whole into its ICBM, with a booster. */
+    static final String T_ICBM_CORE = GBLang.add(GroundBurst.MODID + ".component.icbm_core", "ICBM core: the heart of the %s");
+    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".component.icbm_hall", "Fitted at an ICBM Assembly Hall, with a booster");
     static final String[] T_FUZE_WHAT = {
             GBLang.add(GroundBurst.MODID + ".component.fuze.impact", "The missile's warhead goes off where it hits"),
             GBLang.add(GroundBurst.MODID + ".component.fuze.barometric", "The warhead bursts in the air, a set height over the target (10-200 blocks)")};
@@ -55,10 +55,32 @@ public final class ComponentItems {
             tooltip.accept(grey(Component.translatable(T_CORE, warhead().getName())));
             tooltip.accept(grey(Component.translatable(this.sizeClass.label)));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
-            if (warhead().kind.exotic()) {
-                tooltip.accept(Component.translatable(T_HALL).withStyle(ChatFormatting.DARK_GRAY));
-                tooltip.accept(Component.translatable(T_BREACH).withStyle(ChatFormatting.DARK_GRAY));
-            }
+        }
+    }
+
+    /**
+     * An ICBM core (Phase 11, DESIGN.md §16.12): an exotic warhead's heart, which only the ICBM Assembly Hall takes,
+     * building it whole into its ICBM; no bench makes a warhead of it.
+     */
+    public static class IcbmCore extends Item {
+        private final Supplier<? extends ChargeBlock> warhead;
+
+        public IcbmCore(Properties properties, Supplier<? extends ChargeBlock> warhead) {
+            super(properties);
+            this.warhead = warhead;
+        }
+
+        /** The warhead its ICBM carries. */
+        public ChargeBlock warhead() {
+            return this.warhead.get();
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+            String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(warhead()).getPath();
+            tooltip.accept(grey(Component.translatable(T_ICBM_CORE, Component.translatable(GroundBurst.MODID + ".missile.name." + id))));
+            tooltip.accept(Component.translatable(T_HALL).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 

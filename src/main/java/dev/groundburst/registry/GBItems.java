@@ -71,6 +71,14 @@ public final class GBItems {
         TAB_OF.put(item, tab);
     }
 
+    /** Takes an item out of its creative tab (it stays registered): a part that lives only inside something else. */
+    public static void hide(DeferredItem<? extends Item> item) {
+        GBTab tab = TAB_OF.get(item);
+        if (tab != null) {
+            TAB_CONTENTS.getOrDefault(tab, new ArrayList<>()).remove(item);
+        }
+    }
+
     public static List<DeferredItem<? extends Item>> contents(GBTab tab) {
         return Collections.unmodifiableList(TAB_CONTENTS.getOrDefault(tab, List.of()));
     }

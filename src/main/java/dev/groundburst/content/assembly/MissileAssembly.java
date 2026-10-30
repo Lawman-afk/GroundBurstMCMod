@@ -28,7 +28,6 @@ public final class MissileAssembly {
         NUCLEAR_NEEDS_STRATEGIC("A nuclear warhead needs a Strategic body"),
         STRATEGIC_NUCLEAR_ONLY("A Strategic body carries only nuclear warheads"),
         WHOLE_WEAPON("Built whole at an ICBM Assembly Hall"),
-        EXOTIC_ICBM("Exotic: built whole at an ICBM Assembly Hall"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
         OUTPUT_FULL("Take the finished missile out first"),
         // The missile assemblers (DESIGN.md §10.4): each builds one class.
@@ -68,15 +67,12 @@ public final class MissileAssembly {
 
     /**
      * Whether a body takes a warhead: a nuclear warhead only a Strategic body (and that body nothing else); any other a
-     * body of its class or bigger. An exotic warhead takes none: it flies only as an ICBM, built at the hall from its core.
+     * body of its class or bigger. A whole weapon's warhead (a fusion or exotic one) takes none.
      */
     public static Problem fit(ItemStack warhead, SizeClass body) {
         var kind = AssemblyStats.kindOf(warhead);
         if (kind != null && kind.wholeWeapon()) {
-            return Problem.WHOLE_WEAPON;                   // a thermonuclear warhead is only ever built into its missile
-        }
-        if (kind != null && kind.exotic()) {
-            return Problem.EXOTIC_ICBM;
+            return Problem.WHOLE_WEAPON;                   // only ever built into its missile, at the ICBM Assembly Hall
         }
         boolean strategic = kind != null && kind.strategic();
         if (strategic != (body == SizeClass.XL)) {

@@ -12,8 +12,9 @@ import net.minecraft.world.phys.Vec3;
  * missile, the field is let go as it arrives: a black hole opens and lives for {@link Singularities#LIFE} ticks,
  * feeding on everything it reaches and growing by it (on open ground to a reach of about
  * {@link Singularities#TYPICAL_REACH} blocks; more in a mountainside or the sea, less in the open air), drawing everything
- * in and tearing the ground loose, then collapses in a blast as big as it has grown ({@link Singularities}). Set off any
- * other way its cells fail one by one: a small singularity that lives four seconds and cannot feed.
+ * in and tearing the ground loose, then implodes, its pull at its strongest as its horizon shrinks to a point
+ * ({@link Singularities}). Set off any other way (a warhead placed in creative) its cells fail one by one: a small
+ * singularity that lives four seconds and cannot feed.
  */
 public final class Singularity {
     /** A breached core's singularity: its reach (it does not feed) and the ticks it lives. */

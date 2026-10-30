@@ -50,8 +50,8 @@ final class Debris {
         int age, still;
         boolean resting;
         /** Orbiting a singularity: its middle, its disc's normal, how hard it pulls, and its horizon now (null: thrown). */
-        double ox, oy, oz, nx, ny, nz, pullK;
-        java.util.function.DoubleSupplier horizon;
+        double ox, oy, oz, nx, ny, nz;
+        java.util.function.DoubleSupplier pullK, horizon;
         boolean swallowed;
 
         Chunk(BlockState state, int tint, RandomSource r, double x, double y, double z, double vx, double vy, double vz, float size) {
@@ -86,7 +86,8 @@ final class Debris {
         }
 
         /** Sets it orbiting a singularity at (ox, oy, oz) whose disc has normal (nx, ny, nz). */
-        Chunk orbit(double ox, double oy, double oz, double nx, double ny, double nz, double pullK, java.util.function.DoubleSupplier horizon) {
+        Chunk orbit(double ox, double oy, double oz, double nx, double ny, double nz, java.util.function.DoubleSupplier pullK,
+                java.util.function.DoubleSupplier horizon) {
             this.ox = ox;
             this.oy = oy;
             this.oz = oz;
@@ -188,7 +189,7 @@ final class Debris {
             c.swallowed = true;
             return;
         }
-        double a = Math.min(0.9, c.pullK / (d * d));
+        double a = Math.min(0.9, c.pullK.getAsDouble() / (d * d));
         double off = dx * c.nx + dy * c.ny + dz * c.nz;               // out of the disc's plane
         c.vx += -dx / d * a - off * c.nx * 0.03;
         c.vy += -dy / d * a - off * c.ny * 0.03;

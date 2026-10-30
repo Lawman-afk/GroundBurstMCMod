@@ -158,9 +158,9 @@ public enum ChargeKind {
     }
 
     /**
-     * An exotic warhead (Phase 11): antimatter or a singularity. It flies only as an ICBM, built whole at the ICBM
-     * Assembly Hall from its core, and goes off in full only on a missile's arrival; set off any other way (the bench
-     * makes a bomb of it) its containment fails (a breach).
+     * An exotic warhead (Phase 11): antimatter or a singularity. Only ever built whole into its ICBM, at the ICBM
+     * Assembly Hall from its core (a whole weapon), and goes off in full only on a missile's arrival; set off any other
+     * way (a warhead placed in creative) its containment fails (a breach).
      */
     public boolean exotic() {
         return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD;
@@ -172,11 +172,11 @@ public enum ChargeKind {
     }
 
     /**
-     * A warhead only ever built whole into its missile: the ICBM Assembly Hall's fusion ones, and the
-     * superweapons' ammunition.
+     * A warhead only ever built whole into its missile: the ICBM Assembly Hall's (the fusion ones and the exotic ones),
+     * and the superweapons' ammunition.
      */
     public boolean wholeWeapon() {
-        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD || this == TSAR_WARHEAD || superweapon();
+        return this == THERMONUCLEAR_WARHEAD || this == COBALT_WARHEAD || this == TSAR_WARHEAD || exotic() || superweapon();
     }
 
     /** A superweapon's warhead (DESIGN.md §19.5): only its superweapon fires it. */

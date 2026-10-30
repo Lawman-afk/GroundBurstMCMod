@@ -119,15 +119,17 @@ final class ExoticTests {
     }
 
     /**
-     * The exotic warheads fly only as ICBMs: no missile assembler takes them (a Strategic body nor any other), and the ICBM
-     * Assembly Hall builds one whole from the core alone and a booster; taken apart it gives the core back. The bench's
-     * warhead (the bomb) stays class XL.
+     * The exotic warheads are whole weapons, only ever built into their ICBMs: the bench takes no exotic core and no
+     * missile assembler takes the warhead (it is no bench warhead at all); the ICBM Assembly Hall builds the ICBM whole
+     * from the core alone and a booster, and taken apart it gives the core back. JEI and the creative tab leave the
+     * warheads out.
      */
     private static void icbmOnly(GameTestHelper helper) {
-        ItemStack heavy = new ItemStack(GBAssembly.HEAVY_BODY.get());
         ItemStack body = new ItemStack(GBAssembly.STRATEGIC_BODY.get());
         ItemStack liquid = new ItemStack(GBAssembly.LIQUID_FUEL_STAGE.get());
         ItemStack booster = new ItemStack(dev.groundburst.content.strategic.GBStrategic.INTERCONTINENTAL_BOOSTER.get());
+        ItemStack casing = new ItemStack(dev.groundburst.content.assembly.WarheadAssembly.casing(SizeClass.XL));
+        ItemStack fuze = new ItemStack(GBAssembly.FUZES.getFirst().get());
         var cores = dev.groundburst.content.strategic.StrategicAssembly.exoticCores();
         var warheads = java.util.List.of(GBOrdnance.ANTIMATTER_WARHEAD, GBOrdnance.SINGULARITY_WARHEAD);
         for (int i = 0; i < warheads.size(); i++) {
@@ -135,12 +137,17 @@ final class ExoticTests {
             ItemStack exotic = new ItemStack(warhead.item().get());
             ItemStack core = cores.get(i);
             String name = warhead.block().get().kind.id;
-            helper.assertTrue(MissileAssembly.check(exotic, body, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.EXOTIC_ICBM,
-                    name + ": no Strategic body");
-            helper.assertTrue(MissileAssembly.check(exotic, heavy, liquid, ItemStack.EMPTY) == MissileAssembly.Problem.EXOTIC_ICBM,
-                    name + ": nor any other");
-            helper.assertTrue(MissileAssembly.check(exotic, body, liquid, ItemStack.EMPTY, SizeClass.XL) == MissileAssembly.Problem.EXOTIC_ICBM,
+            helper.assertTrue(warhead.block().get().kind.wholeWeapon(), name + " is a whole weapon");
+            helper.assertTrue(dev.groundburst.content.assembly.WarheadAssembly.check(core, casing, fuze, ItemStack.EMPTY)
+                    == dev.groundburst.content.assembly.WarheadAssembly.Problem.NO_CORE, name + ": the bench takes no exotic core");
+            helper.assertTrue(!dev.groundburst.content.assembly.WarheadAssembly.isWarhead(exotic), name + ": no bench warhead");
+            helper.assertTrue(MissileAssembly.check(exotic, body, liquid, ItemStack.EMPTY) != MissileAssembly.Problem.NONE,
+                    name + ": no Strategic body takes it");
+            helper.assertTrue(MissileAssembly.check(exotic, body, liquid, ItemStack.EMPTY, SizeClass.XL) != MissileAssembly.Problem.NONE,
                     name + ": the Strategic Missile Assembler refuses it");
+            helper.assertTrue(MissileAssembly.fit(exotic, SizeClass.XL) == MissileAssembly.Problem.WHOLE_WEAPON, name + ": built whole");
+            helper.assertTrue(!dev.groundburst.registry.GBItems.contents(dev.groundburst.registry.GBTab.ORDNANCE).contains(warhead.item()),
+                    name + ": out of the creative tab");
             helper.assertTrue(dev.groundburst.content.strategic.StrategicAssembly.check(core, ItemStack.EMPTY, ItemStack.EMPTY, booster, ItemStack.EMPTY)
                     == dev.groundburst.content.strategic.StrategicAssembly.Problem.NONE, name + ": the hall takes its core and a booster");
             ItemStack icbm = dev.groundburst.content.strategic.StrategicAssembly.assemble(core, ItemStack.EMPTY,
@@ -152,7 +159,6 @@ final class ExoticTests {
             var parts = dev.groundburst.content.strategic.StrategicAssembly.takeApart(icbm);
             helper.assertTrue(parts.size() == 6 && ItemStack.isSameItem(parts.get(0), core) && parts.get(1).isEmpty() && parts.get(2).isEmpty()
                     && ItemStack.isSameItem(parts.get(3), booster), name + ": taken apart, the core and the booster back: " + parts);
-            helper.assertTrue(dev.groundburst.content.assembly.WarheadAssembly.sizeOf(warhead.block().get()) == SizeClass.XL, name + " is class XL");
         }
         helper.succeed();
     }
