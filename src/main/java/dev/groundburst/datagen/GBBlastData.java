@@ -76,6 +76,12 @@ public final class GBBlastData {
         // its rim.
         ctx.register(Blasts.profile("storm_strike"), profile(1, 3, 4.5f, 4, 3, 1, 3.5f, 4, 0.7f, 0.1f, 0.3f, 0.3f, 6, 4, 1.2f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // Missile defence (DESIGN.md §18.2): an interceptor's burst in the air, and the bigger one of a missile it breaks up
+        // (its fuel and its casing: never its warhead). High up, they touch no ground.
+        ctx.register(Blasts.profile("interceptor_burst"), profile(0, 1, 0, 0, 0, 1.5f, 4, 4, 0.5f, 0, 0, 0, 6, 3, 0.8f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("interceptor_kill"), profile(0, 2.5f, 0, 0, 0, 2.5f, 6, 4, 0.5f, 0, 0.3f, 0, 10, 4, 1.2f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         // Mines (slice 6c): the bouncing mine bursts in the air (a small crater, fragments do the work).
         ctx.register(Blasts.profile("landmine"), profile(1, 2.5f, 4, 3, 0, 3, 7, 4, 0.7f, 0.1f, 0.3f, 0.3f, 30, 9, 1.4f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

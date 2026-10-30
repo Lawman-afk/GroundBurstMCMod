@@ -19,12 +19,15 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
-- **21 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex and
+- **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex and
   a cruise missile launcher. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
+- **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
+  that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
+- **Anti-missile defence:** an Interceptor Battery that shoots down incoming missiles, guided by a Radar Array.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
-- **Industry and power:** new ores, processing machines on FE power, and multiblock fission, fusion and singularity
-  reactors.
+- **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
+  multiblock fission, fusion and singularity reactors.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm and the Nuclear Missile Silo.
 - **Seven abandoned Cold War sites** to explore, with loot:
   - a Titan II missile silo, sometimes flooded or caved in;

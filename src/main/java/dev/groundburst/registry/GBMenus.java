@@ -55,6 +55,9 @@ public final class GBMenus {
     /** The ICBM Assembly Hall's controller screen (DESIGN.md §15.2). */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> STRATEGIC_ASSEMBLY = machine("strategic_assembly_hall",
             () -> MachineLayouts.STRATEGIC_ASSEMBLY);
+    /** The Interceptor Battery's screen (DESIGN.md §18.2). */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> INTERCEPTOR_BATTERY = machine("interceptor_battery",
+            () -> MachineLayouts.INTERCEPTOR_BATTERY);
     /** The Special Weapons Assembler's controller screen (DESIGN.md §16.15). */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> SPECIAL_WEAPONS = machine("special_weapons_assembler",
             () -> MachineLayouts.SPECIAL_WEAPONS);

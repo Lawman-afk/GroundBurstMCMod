@@ -163,6 +163,7 @@ public final class GBBlockEntities {
         tallMachine(event, GBMachines.EXOTIC_MATTER_FABRICATOR.block().get());
         tallMachine(event, GBMachines.DECONTAMINATION_SHOWER.block().get());
         tallMachine(event, dev.groundburst.content.assembly.GBAssembly.ASSEMBLY_BENCH.block().get());
+        tallMachine(event, dev.groundburst.content.defence.GBDefence.BATTERY.block().get());
         GBMachines.registerCableCapabilities(event);
         dev.groundburst.content.fluid.GBFluids.registerCapabilities(event);
         dev.groundburst.content.pipe.GBPipes.registerCapabilities(event);

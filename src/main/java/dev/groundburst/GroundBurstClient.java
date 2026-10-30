@@ -62,6 +62,7 @@ public class GroundBurstClient {
         event.register(GBMenus.ASSEMBLY_BENCH.get(), dev.groundburst.client.screen.AssemblyBenchScreen::new);
         event.register(GBMenus.STRATEGIC_ASSEMBLY.get(), dev.groundburst.client.screen.StrategicAssemblyScreen::new);
         event.register(GBMenus.SPECIAL_WEAPONS.get(), dev.groundburst.client.screen.SpecialWeaponsScreen::new);
+        event.register(GBMenus.INTERCEPTOR_BATTERY.get(), MachineScreen::new);
         event.register(GBMenus.MISSILE_ASSEMBLER.get(), dev.groundburst.client.screen.MissileAssemblerScreen::new);
         event.register(GBMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GBMenus.ARC_FURNACE.get(), MachineScreen::new);
@@ -94,11 +95,15 @@ public class GroundBurstClient {
         event.registerEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.SHRAPNEL.get(), dev.groundburst.client.fx.ShrapnelRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.CHARGE.get(), dev.groundburst.client.render.ChargeRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.launch.GBLaunch.MISSILE.get(), dev.groundburst.client.fx.MissileRenderer::new);
+        event.registerEntityRenderer(dev.groundburst.content.defence.GBDefence.INTERCEPTOR.get(), dev.groundburst.client.fx.InterceptorRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(), 14, 4));
         // The hall: 13 blocks deep behind its controller, its crane 6 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.strategic.GBStrategic.HALL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.strategic.GBStrategic.HALL_ENTITY.get(), 7, 13));
+        // The Interceptor Battery: two blocks tall, its turret on top.
+        event.registerBlockEntityRenderer(dev.groundburst.content.defence.GBDefence.BATTERY_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.defence.GBDefence.BATTERY_ENTITY.get(), 3));
         // The Special Weapons Assembler: as deep, its rings 4 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(), 5, 13));

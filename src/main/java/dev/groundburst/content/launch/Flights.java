@@ -400,6 +400,19 @@ public final class Flights extends SavedData {
         }
     }
 
+    /**
+     * Shot down by an interceptor (DESIGN.md §18.2): the flight ends where it is, its warhead never going off (the
+     * interceptor's side draws the break-up). False if it was no longer in the air.
+     */
+    public boolean shootDown(ServerLevel level, Flight f) {
+        if (!this.flights.remove(f)) {
+            return false;
+        }
+        f.finish(level);
+        setDirty();
+        return true;
+    }
+
     /** A server tick: every flight moves on (or hits). */
     void tick(ServerLevel level) {
         if (this.flights.isEmpty()) {
@@ -460,6 +473,26 @@ public final class Flights extends SavedData {
 
         public Vec3 target() {
             return this.target;
+        }
+
+        /** Its id (its entity's, and what interceptors sent after it know it by). */
+        public UUID id() {
+            return this.id;
+        }
+
+        /** Its body's size class (how hard it is to kill: DESIGN.md §18.2). */
+        public SizeClass body() {
+            return this.body;
+        }
+
+        /** The warhead it carries. */
+        public ItemStack warhead() {
+            return this.warhead;
+        }
+
+        /** Where it will be {@code ticks} from now, on its path (at its target once it would have come down). */
+        public Vec3 positionIn(int ticks) {
+            return at(Math.min(this.age + Math.max(0, ticks), ignition() + this.flightTicks));
         }
 
         /** Its warhead's fuze (an impact fuze if it carries none). */

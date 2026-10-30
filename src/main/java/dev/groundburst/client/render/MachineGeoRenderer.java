@@ -164,6 +164,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundburst_bone_offsets",
             new TypeToken<java.util.Map<String, float[]>>() {});
+    private static final DataTicket<java.util.Map<String, float[]>> BONE_ROTATIONS = DataTicket.create("groundburst_bone_rotations",
+            new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundburst_missile", new TypeToken<List<ShownMissile>>() {});
 
     @Override
@@ -172,6 +174,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         if (animatable instanceof AnimatedMachine machine) {
             ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
+            ((GeoRenderState) renderState).addGeckolibData(BONE_ROTATIONS, machine.boneRotations(partialTick));
             offsets = machine.boneOffsets(partialTick);
         }
         if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
@@ -237,6 +240,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         java.util.Map<String, float[]> offsets = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_OFFSETS);
         if (offsets != null) {
             offsets.forEach((bone, o) -> snapshots.ifPresent(bone, snapshot -> snapshot.setTranslation(o[0], o[1], o[2])));
+        }
+        java.util.Map<String, float[]> rotations = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_ROTATIONS);
+        if (rotations != null) {
+            rotations.forEach((bone, r) -> snapshots.ifPresent(bone, snapshot -> snapshot.setRotation(r[0], r[1], r[2])));
         }
         Set<String> hidden = (Set<String>) renderPassInfo.getGeckolibData(HIDDEN_BONES);
         if (hidden != null) {

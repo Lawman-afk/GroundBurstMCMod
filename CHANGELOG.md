@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-30
 
-Exotic weapons and their own assembler, upgrade chips for the machines, and a clearer name for the ICBM hall.
+Exotic weapons and their own assembler, an anti-missile defence, and upgrade chips for the machines.
 
 ### New weapons
 - **Antimatter ICBM**: an Antimatter Trap built into an intercontinental missile. Where it lands, a white sphere 67
@@ -23,6 +23,16 @@ Exotic weapons and their own assembler, upgrade chips for the machines, and a cl
   round the missile as it is put together. They fire like any other intercontinental missile, from a Launch Complex or
   a Missile Silo. They are only ever built whole: there are no exotic bombs.
 
+### Anti-missile defence
+- **Interceptor Battery**: a launcher turret on a two-block pedestal that shoots down missiles coming down near it.
+  Load it with **Interceptor Missiles**; its four cells fill from its store. It fires when an interceptor can meet the
+  missile in time: the turret swings round, the interceptor climbs out and curves over onto the missile, and they meet
+  in the sky. A missile shot down breaks up in the air and its warhead never goes off.
+- It reaches 256 blocks for missiles a working **Radar Array** is tracking, and 96 on its own seeker. Each interceptor
+  kills a small missile 80% of the time, less for bigger ones (40% for an intercontinental one), without radar, against
+  a missile coming back down hot, or against a superweapon's. Big missiles draw two interceptors.
+- Missiles flying out from near it, bound elsewhere, it lets go, so it never shoots down your own launches.
+
 ### Upgrade chips
 - **Speed**, **Efficiency** and **Balanced** chips on each circuit tier, basic to quantum. A speed chip makes a
   machine 10% faster a tier (40% at quantum), an efficiency chip makes it use 5% less power a tier (20% at quantum), and
@@ -34,7 +44,8 @@ Exotic weapons and their own assembler, upgrade chips for the machines, and a cl
   Missile Assembler. Halls already built keep working. It builds the thermonuclear, cobalt and Tsar ICBMs.
 - The **Large Silo Door** has a sound of its own that lasts as long as its doors take to open or close.
 - **Lattice Frames** and **Steel Grating** no longer hide each other like glass does: looking into a stack of them you
-  see its far side and its sides from inside, while the faces between them stay hidden.
+  see its far side and its sides from inside, while the faces between them stay hidden. The lattice frame is now framed
+  on all four edges of each face.
 
 ## 0.2.0 — 2026-10-29
 

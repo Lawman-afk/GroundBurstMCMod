@@ -666,6 +666,18 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.SUPERCONDUCTING_COIL)
                 .requires(GBParts.SENSOR_ARRAY).requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.CRT_DISPLAY)
                 .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL)).save(output);
+        // Missile defence (DESIGN.md §18.2): the Interceptor Battery, and its missiles two at a time (a tactical body, a
+        // motor, guidance, a sensor array for its seeker and proximity fuze, an HE charge for its warhead).
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.defence.GBDefence.BATTERY.item(), 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.SERVO).requires(GBParts.SERVO)
+                .requires(GBParts.STEEL_PLATE).requires(GBParts.STEEL_PLATE).requires(GBParts.STEEL_PLATE).requires(GBParts.STEEL_PLATE)
+                .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SENSOR_ARRAY)
+                .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get(), 2)
+                .requires(dev.groundburst.content.assembly.GBAssembly.TACTICAL_BODY.get()).requires(dev.groundburst.content.assembly.GBAssembly.SRM_I.get())
+                .requires(dev.groundburst.content.assembly.GBAssembly.INERTIAL_GUIDANCE.get()).requires(GBParts.SENSOR_ARRAY)
+                .requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE)
+                .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
         // The Special Weapons Assembler (DESIGN.md §16.15), a rung over the hall: two quantum circuits and a containment
         // emitter to hold an exotic core's field while it is built in.
         shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item(), 1)

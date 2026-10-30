@@ -69,6 +69,7 @@
     "ordnance/strategic_assembly",
     "ordnance/special_weapons",
     "ordnance/radar_array",
+    "ordnance/interceptor_battery",
     "ordnance/chemical",
     "superweapons/scud_storm",
     "superweapons/toxin",

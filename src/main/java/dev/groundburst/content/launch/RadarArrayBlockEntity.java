@@ -33,7 +33,8 @@ import com.geckolib.util.GeckoLibUtil;
  * The Radar Array (DESIGN.md §18.1, early): a deck, a mast and a big turning dish that tracks every missile in the air
  * within {@link #RANGE} blocks, whoever fired it, and calls the ones coming down within {@link #INCOMING_RADIUS} of it
  * incoming. Its screen is a sweeping radar scope; a comparator reads how many are incoming (up to 15). It is the
- * eyes the anti-missile defence (to come) will be fed from. Runs on 100 FE/t.
+ * anti-missile defence's eyes: an Interceptor Battery engages what it tracks at full reach (DESIGN.md §18.2). Runs on
+ * 100 FE/t.
  */
 public class RadarArrayBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, ScreenWatched {
     public static final int ENERGY_CAPACITY = 100_000, POWER_USE = 100, RANGE = 2048, INCOMING_RADIUS = 512;
@@ -134,6 +135,12 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
             this.powered = this.energy.consume(POWER_USE);
             this.status = this.powered ? MachineStatus.RUNNING : MachineStatus.NO_POWER;
         }
+        // The anti-missile defence's eyes (DESIGN.md §18.2): batteries engage what it tracks at their full reach.
+        if (this.powered) {
+            dev.groundburst.content.defence.Interception.radarWorking(level, this.worldPosition);
+        } else {
+            dev.groundburst.content.defence.Interception.radarStopped(level, this.worldPosition);
+        }
         if (level.getGameTime() % SCAN_INTERVAL == 0) {
             List<LaunchPayloads.Track> tracks = tracks(level);
             int in = (int) Math.min(15, tracks.stream().filter(LaunchPayloads.Track::incoming).count());
@@ -156,6 +163,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
     @Override
     protected void onEmp(ServerLevel level) {
         this.powered = false;
+        dev.groundburst.content.defence.Interception.radarStopped(level, this.worldPosition);
         if (level.getGameTime() % SCAN_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
                 if (level.getPlayerByUUID(id) instanceof ServerPlayer p) {

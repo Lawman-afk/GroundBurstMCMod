@@ -35,6 +35,14 @@ public interface AnimatedMachine extends GeoBlockEntity {
         return java.util.Map.of();
     }
 
+    /**
+     * Bones turned {x, y, z} radians right now, set over whatever the animation gives them (the Interceptor Battery's
+     * turret and launcher, aimed at a missile). Read on the client every frame.
+     */
+    default java.util.Map<String, float[]> boneRotations(float partialTick) {
+        return java.util.Map.of();
+    }
+
     /** Model bones not to draw right now (e.g. the dies a press is not holding). Read on the client. */
     default java.util.Set<String> hiddenBones() {
         return java.util.Set.of();

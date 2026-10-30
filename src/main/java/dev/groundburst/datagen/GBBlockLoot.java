@@ -142,7 +142,8 @@ public class GBBlockLoot extends BlockLootSubProvider {
             dropSelf(pipe.block().get());
         }
         for (var tall : java.util.List.of(GBMachines.ARC_FURNACE, GBMachines.INDUSTRIAL_PRESS, GBMachines.CRYOGENIC_CONDENSER,
-                GBMachines.GAS_CENTRIFUGE, GBMachines.EXOTIC_MATTER_FABRICATOR, GBMachines.DECONTAMINATION_SHOWER)) {
+                GBMachines.GAS_CENTRIFUGE, GBMachines.EXOTIC_MATTER_FABRICATOR, GBMachines.DECONTAMINATION_SHOWER,
+                dev.groundburst.content.defence.GBDefence.BATTERY)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         add(GBResources.BUDDING_VOIDSTONE.block().get(), noDrop());

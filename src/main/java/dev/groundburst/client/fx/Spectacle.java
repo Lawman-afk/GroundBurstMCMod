@@ -78,6 +78,7 @@ public final class Spectacle {
         FxRenderTypes.register(modBus);
         dev.groundburst.content.ordnance.ThrownExplosive.smokeHook = Spectacle::grenadeSmoke;
         dev.groundburst.content.launch.MissileEntity.exhaustHook = Spectacle::missileExhaust;
+        dev.groundburst.content.defence.InterceptorEntity.exhaustHook = Spectacle::interceptorExhaust;
         EffectFx.register();
         FalloutFx.register();
         AnnihilationFx.register();
@@ -234,6 +235,66 @@ public final class Spectacle {
      * minute; a flash and a ring of smoke where a spent stage parts (and the stage falling away: SpentStages); nothing
      * once its last engine burns out; coming back down, its nose glowing and a glowing trail behind it (slice 9a).
      */
+    /**
+     * An interceptor's motor (DESIGN.md §18.2): a small white-hot flame at its tail and a thin white trail laid all along
+     * its path, thinning out sooner than a missile's.
+     */
+    public static void interceptorExhaust(dev.groundburst.content.defence.InterceptorEntity e) {
+        var random = e.level().getRandom();
+        float q = quality();
+        double t = ticks;
+        double tilt = Math.toRadians(e.tilt(1)), yaw = Math.toRadians(e.getYRot());
+        net.minecraft.world.phys.Vec3 back = new net.minecraft.world.phys.Vec3(-Math.sin(tilt) * Math.sin(yaw), -Math.cos(tilt),
+                -Math.sin(tilt) * Math.cos(yaw));
+        double x = e.getX(), y = e.getY(), z = e.getZ();
+        for (int i = 0; i < 2; i++) {
+            Puffs.Puff f = new Puffs.Puff();
+            f.kind = Puffs.Kind.FIRE;
+            f.x = x + back.x * (0.2 + i * 0.5);
+            f.y = y + back.y * (0.2 + i * 0.5);
+            f.z = z + back.z * (0.2 + i * 0.5);
+            f.vx = (float) back.x * 0.25f;
+            f.vy = (float) back.y * 0.25f;
+            f.vz = (float) back.z * 0.25f;
+            f.drag = 0.2f;
+            f.birth = t;
+            f.life = 3 + random.nextInt(2);
+            f.size0 = 1.1f - i * 0.3f;
+            f.size1 = 0.4f;
+            f.color0 = 0xFFF8E0;
+            f.color1 = 0xFF9A40;
+            f.alpha = 0.95f;
+            f.variant = random.nextInt(4);
+            f.rot = random.nextFloat() * 6.283f;
+            PUFFS.add(f, 1);
+        }
+        double speed = Math.sqrt(e.distanceToSqr(e.xo, e.yo, e.zo));
+        int n = Math.max(1, (int) (speed * 1.0 * q));
+        for (int i = 0; i < n; i++) {
+            double k = i / (double) n;
+            Puffs.Puff p = new Puffs.Puff();
+            p.kind = Puffs.Kind.SMOKE;
+            p.x = x + back.x * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.25;
+            p.y = y + back.y * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.25;
+            p.z = z + back.z * (0.6 + speed * k) + (random.nextDouble() - 0.5) * 0.25;
+            p.vx = (float) (random.nextGaussian() * 0.015);
+            p.vz = (float) (random.nextGaussian() * 0.015);
+            p.drag = 0.03f;
+            p.rise = 0.003f;
+            p.birth = t - k;
+            p.life = 160 + random.nextInt(80);
+            p.size0 = 0.6f;
+            p.size1 = 2.6f + random.nextFloat() * 1.2f;
+            p.color0 = 0xF6F4F0;
+            p.color1 = 0xCFCBC6;
+            p.alpha = 0.65f;
+            p.variant = random.nextInt(8);
+            p.rot = random.nextFloat() * 6.283f;
+            p.spin = (random.nextFloat() - 0.5f) * 0.01f;
+            PUFFS.add(p, q);
+        }
+    }
+
     public static void missileExhaust(dev.groundburst.content.launch.MissileEntity missile) {
         var random = missile.level().getRandom();
         float q = quality();

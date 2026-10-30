@@ -528,7 +528,7 @@ It draws **400 FE a tick**, more than copper cable carries: feed it with insulat
 
 entry("processing/upgrade_chips", "Upgrade chips", "quantum_speed_chip", ['basic_speed_chip', 'advanced_speed_chip', 'military_speed_chip', 'quantum_speed_chip', 'basic_efficiency_chip', 'advanced_efficiency_chip', 'military_efficiency_chip', 'quantum_efficiency_chip', 'basic_balanced_chip', 'advanced_balanced_chip', 'military_balanced_chip', 'quantum_balanced_chip'], [
     text("""
-An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly), the [Special Weapons Assembler](ordnance/special_weapons) and the superweapons' ammunition factories. Generators, reactors and launchers take none.
+An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly), the [Special Weapons Assembler](ordnance/special_weapons) and the superweapons' ammunition factories, and so does the [Interceptor Battery](ordnance/interceptor_battery). Generators, reactors and launchers take none.
 
 Open the machine's screen and click the **Upgrades** tab on its left edge (the config tab's twin): it holds **three chips**, and says what they do together. Shift-clicking a chip from your inventory fits it in the first free slot. Breaking the machine drops the chips with everything else.
 """),
@@ -1233,7 +1233,7 @@ entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "lar
     text("""
 A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.
 
-A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. Anti-missile defences to shoot them down are still to come, and will take their tracks from it.
+A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery): a battery engages any missile a working array tracks at its full reach.
 """),
     structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a Large Radar Dish on top, its middle over the mast: formed, it turns."),
     spot("large_radar_dish", """
@@ -1241,6 +1241,21 @@ One item that places a whole 3 by 3 dish, face up, centred where you place it (t
 """),
     craft("radar_array"),
     craft("large_radar_dish"),
+])
+
+entry("ordnance/interceptor_battery", "Interceptor Battery", "interceptor_battery", ["interceptor_battery", "interceptor_missile"], [
+    text("""
+The **Interceptor Battery** is the anti-missile defence: a launcher turret on a two-block pedestal that shoots down missiles coming down near it. Load **Interceptor Missiles** into it, by hand or by pipe; its four cells fill from that store, one every three seconds, and you can see their white noses in the launcher's mouth.
+
+Powered (40 FE a tick, and 4,000 for each launch), it watches the sky. A missile bound for within **256 blocks** of it, if a working [Radar Array](ordnance/radar_array) tracks it, or **96** on the battery's own seeker, draws an interceptor the moment one can meet it in time: the turret swings round, the interceptor leaps out of its cell, climbs and curves over onto the point where it meets the missile. A class L or bigger missile draws two. Missiles flying out from near it, bound elsewhere, it lets go, so it will not shoot down your own.
+"""),
+    text("""
+**Kill chance.** An interceptor kills a small missile **80%** of the time, a medium one 72%, a heavy one 60%, a Strategic one 48% and an intercontinental one 40%. Without radar, only six tenths as often; against a missile coming back down hot from high up, 0.85 as often; against a superweapon's missile (a SCUD, China's Nuclear Missile), half as often. A missile shot down breaks up in the air: its warhead **never goes off**. A miss bursts harmlessly, and the battery fires again if there is still time.
+
+Its screen shows its cells, whether a radar is tracking for it, and its tally. It takes [upgrade chips](processing/upgrade_chips): speed loads its cells faster, efficiency spends less power. A redstone signal can stop it, as any machine.
+"""),
+    craft("interceptor_battery"),
+    craft("interceptor_missile"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",

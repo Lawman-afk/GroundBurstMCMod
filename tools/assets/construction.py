@@ -172,12 +172,13 @@ def barbed_wire() -> np.ndarray:
 
 
 def lattice() -> np.ndarray:
-    """A face of an open braced cube: corner posts two texels wide, a rail along the bottom, a cross brace; open between.
-    Stacked, the posts run on and each block's rail sits on the one below's top, so a tower reads as one."""
+    """A face of an open braced cube: corner posts two texels wide, a rail as wide along its top and its bottom (after the
+    user's look: framed on all four edges, not three), a cross brace; open between. Stacked or side by side, two
+    blocks' rails and posts meet as one bar twice as wide, so a tower's joints read evenly."""
     img = M.tile(M.galvanized(tone=0.55, mottle=0.04), seed=71)
     col, row = M.grid_xy()
     posts = (col <= 1) | (col >= N - 2)
-    rail = row >= N - 2
+    rail = (row >= N - 2) | (row <= 1)
     diag = (np.abs(col - row) <= 0) | (np.abs(col - (N - 1 - row)) <= 0)
     solid = posts | rail | (diag & (row >= 1) & (row <= N - 2))
     bevel_mask(img, solid)

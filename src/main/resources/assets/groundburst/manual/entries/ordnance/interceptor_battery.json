@@ -1,0 +1,29 @@
+{
+  "title": "Interceptor Battery",
+  "icon": "groundburst:interceptor_battery",
+  "order": 16,
+  "items": [
+    "groundburst:interceptor_battery",
+    "groundburst:interceptor_missile"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Interceptor Battery** is the anti-missile defence: a launcher turret on a two-block pedestal that shoots down missiles coming down near it. Load **Interceptor Missiles** into it, by hand or by pipe; its four cells fill from that store, one every three seconds, and you can see their white noses in the launcher's mouth.\n\nPowered (40 FE a tick, and 4,000 for each launch), it watches the sky. A missile bound for within **256 blocks** of it, if a working [Radar Array](ordnance/radar_array) tracks it, or **96** on the battery's own seeker, draws an interceptor the moment one can meet it in time: the turret swings round, the interceptor leaps out of its cell, climbs and curves over onto the point where it meets the missile. A class L or bigger missile draws two. Missiles flying out from near it, bound elsewhere, it lets go, so it will not shoot down your own."
+    },
+    {
+      "type": "text",
+      "text": "**Kill chance.** An interceptor kills a small missile **80%** of the time, a medium one 72%, a heavy one 60%, a Strategic one 48% and an intercontinental one 40%. Without radar, only six tenths as often; against a missile coming back down hot from high up, 0.85 as often; against a superweapon's missile (a SCUD, China's Nuclear Missile), half as often. A missile shot down breaks up in the air: its warhead **never goes off**. A miss bursts harmlessly, and the battery fires again if there is still time.\n\nIts screen shows its cells, whether a radar is tracking for it, and its tally. It takes [upgrade chips](processing/upgrade_chips): speed loads its cells faster, efficiency spends less power. A redstone signal can stop it, as any machine."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:interceptor_battery",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:interceptor_missile",
+      "text": ""
+    }
+  ]
+}

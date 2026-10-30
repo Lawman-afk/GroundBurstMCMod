@@ -48,6 +48,7 @@ public class GroundBurst {
         dev.groundburst.content.ordnance.GBOrdnance.init();
         dev.groundburst.content.ordnance.GBOrdnance.register();
         dev.groundburst.content.launch.GBLaunch.init();
+        dev.groundburst.content.defence.GBDefence.init();
         dev.groundburst.content.assembly.GBAssembly.init();
         dev.groundburst.content.strategic.GBStrategic.init();
         dev.groundburst.content.assembler.GBAssemblers.init();

@@ -177,6 +177,10 @@ public final class FxPhotographer {
                 new Scene("upgrade_ui", "upgrade", 4, 0, List.of(30)),
                 // After the user's look: a 3x3x3 cube of lattice and one of grating (a slab step beside it), looked into.
                 new Scene("see_through", "see_through", 9, 18, List.of(20)),
+                // Missile defence (DESIGN.md §18.2): a battery facing the camera, a missile coming at it from 300 blocks
+                // beyond; the turret swings up, an interceptor climbs out and meets it in the sky (the kill made certain).
+                new Scene("intercept", "intercept", 90, -12, List.of(120, 135, 148, 156, 162, 170)),
+                new Scene("intercept_close", "intercept_near", 9, 2, List.of(30, 112, 124)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -1538,6 +1542,27 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("assembly")) {
                     assemblySite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("intercept") || s.profile().equals("intercept_near")) {
+                    // The wide scene: the battery off to the right (south), a missile from 300 blocks to the left (north)
+                    // crossing the view, so the meeting is up in the sky across the frame. The near one: the battery in front.
+                    int bz = s.profile().equals("intercept") ? 40 : 0;
+                    var block = dev.groundburst.content.defence.GBDefence.BATTERY.block().get();
+                    var batteryAt = new net.minecraft.core.BlockPos(x, ground, bz);
+                    var state = block.defaultBlockState().setValue(dev.groundburst.content.machine.MachineBlock.FACING, net.minecraft.core.Direction.WEST);
+                    level.setBlockAndUpdate(batteryAt, state);
+                    block.setPlacedBy(level, batteryAt, state, null, net.minecraft.world.item.ItemStack.EMPTY);
+                    if (level.getBlockEntity(batteryAt) instanceof dev.groundburst.content.defence.InterceptorBatteryBlockEntity b) {
+                        b.energy().generate(dev.groundburst.content.defence.InterceptorBatteryBlockEntity.ENERGY_CAPACITY);
+                        b.fillForTest();
+                    }
+                    dev.groundburst.content.defence.Interception.killOverride = 1;
+                    Vec3 target = new Vec3(x + 6.5, ground, bz + 4.5);
+                    var spec = new dev.groundburst.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(
+                            dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()), dev.groundburst.content.assembly.SizeClass.M,
+                            dev.groundburst.content.assembly.MissileParts.Motor.SRM_II, dev.groundburst.content.assembly.MissileParts.Guidance.GPS, false);
+                    flightShown = dev.groundburst.content.launch.Flights.launch(level, target.add(0, 0, -300), target, spec, null);
                     return;
                 }
                 if (s.profile().equals("see_through")) {

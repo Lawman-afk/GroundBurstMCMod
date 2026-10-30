@@ -325,6 +325,19 @@ LAYOUTS = {
         "readout": (34, 64, 134, 24),
         "inventory": (8, 128),
     },
+    # Interceptor Battery (Phase 10, DESIGN.md §18.2): its store of interceptor missiles, and the readout: cells ready,
+    # radar or seeker, its tally.
+    "interceptor_battery": {
+        "title": (8, 6),
+        "slots": [("missile", 28, 35)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (52, 20, 116, 34),
+        "inventory": (8, 84),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),

@@ -59,8 +59,8 @@ public final class ComponentItems {
     }
 
     /**
-     * An ICBM core (Phase 11, DESIGN.md §16.12): an exotic warhead's heart, which only the ICBM Assembly Hall takes,
-     * building it whole into its ICBM; no bench makes a warhead of it.
+     * An ICBM core (Phase 11, DESIGN.md §16.12): an exotic warhead's heart, which only the Special Weapons Assembler
+     * takes (§16.15), building it whole into its ICBM; no bench makes a warhead of it.
      */
     public static class IcbmCore extends Item {
         private final Supplier<? extends ChargeBlock> warhead;

@@ -2514,6 +2514,47 @@ ground-launched Gryphon rode a truck.
 ### 18.3 Point-Defence Laser (tier 5)
 Rapid-tracking laser turret effective against rockets, cruise missiles and SCUDs at short range (64), visible beam.
 
+### 18.4 As built: the Interceptor Battery (Phase 10, 2026-10-30; the user's request)
+The anti-missile defence, as §18.2 has it with these choices:
+- **The battery** (`content/defence`: `GBDefence`, `InterceptorBatteryBlockEntity`): a two-block tall machine
+  (`TallMachineBlock`, GeckoLib), not a 2x2 base: a pedestal (plinth, NATO-green cabinet with louvres and status lamps,
+  a steel deck) and on it a turret (turntable, cheeks, an electronics box with a spinning search antenna) carrying a
+  launcher of four cells two by two with an electro-optical seeker on top. Its store (one slot, interceptor missiles,
+  pipes may fill it) loads the cells one every 60 ticks (`RELOAD`, faster with speed chips); each loaded cell shows its
+  interceptor's nose (`cell0`-`cell3`). 40 FE a tick while it watches, 4,000 a launch, holds 200,000. Redstone can stop
+  it; upgrade chips fit it; an EMP field blinds it.
+- **Engaging** (every 4 ticks): every missile in flight (`Flights`) past its pad and still up, whose target is within
+  its reach of the battery: 256 if a working Radar Array tracks the missile (`Interception.tracked`: an array that
+  tracked within the last 2 s and has the missile inside its 2,048-block box; arrays report themselves as they tick),
+  else 96 (its own seeker). Missiles bound elsewhere (one launched from beside it) are never threats. It fires while
+  fewer interceptors are on their way to that missile than its salvo (one; two for class L and up), if
+  `Interception.solve` finds a meeting: the earliest tick k of the missile's flight still to come with the missile
+  within reach of the launcher, at least 12 blocks above it, and reachable by then at 5 blocks a tick (its path 1.15
+  times the straight line). One a look, so a salvo ripples.
+- **Interceptors** (`Interceptors`, ticked after `Flights` each level tick, loaded or not; not saved): each flies a
+  quadratic curve from its cell up (to 0.45 of the distance, at most 60) and over onto the meeting point, arriving on
+  tick k. There its kill chance is rolled (`Interception.killChance`: 0.8 x class S 1, M 0.9, L 0.75, XL 0.6,
+  intercontinental 0.5 x 0.6 without radar x 0.85 re-entering hot x 0.5 a superweapon's): a kill ends the missile's
+  flight where it is (`Flights.shootDown`: no warhead, no impact) with a bigger burst (`interceptor_kill`, and a white
+  flash for a nuclear warhead); a miss (or its missile already gone) bursts alone (`interceptor_burst`). Both profiles
+  are air bursts that touch no ground. The battery is told (its tally). `InterceptorEntity` is only its picture where
+  its chunk is loaded (as missiles' are), drawn from the Interceptor Missile's item model at 2.5 times, a small flame
+  and a thin white trail behind it.
+- **Turret** (client): the block entity syncs its aim (world yaw, raise) and how long it holds it (the interceptor's
+  flight and a second, at least 3 s); `AnimatedMachine.boneRotations` (new, applied by `MachineGeoRenderer` over the
+  animation) swings the turret 12 degrees and raises the launcher 6 a tick toward it, and back to rest (its front,
+  raised 35) after.
+- **Screen**: the store, three readout lines (cells ready and stored; radar tracking or seeker only, with its reach;
+  threats, shot down, missed). Recipes: the battery from a machine casing, two servos, four steel plates, a military
+  circuit and a sensor array; two interceptor missiles from a tactical body, a Solid Rocket Motor I, an inertial
+  guidance unit, a sensor array (seeker and proximity fuze: there is no proximity fuze item) and an HE charge. JEI page;
+  Field Manual "Interceptor Battery" (Ordnance, after the Radar Array).
+- GameTests (`DefenceTests`): a missile from 180 blocks bound for 4 blocks from a battery is shot down before it lands
+  (kill chance forced to certain); a missile flying out from beside one is let go; the kill chances and salvos. (Test
+  batteries engage only their own test's missiles: one shot down the next plot's.) FX scenes `intercept` (a missile
+  crossing the view from the north, met in the sky) and `intercept_close`.
+- Not done: the Point-Defence Laser (§18.3), MIRVs, countermeasures, the Phased-Array module.
+
 ---
 
 ## 19. Command & Conquer: Generals superweapons
@@ -3225,7 +3266,9 @@ concrete (radome panels), sand and string (sandbags); the rusted ones from eight
   only where one of the three covers it whole (`SeeThrough`: a full block's face, a slab's half; a slab beside a full
   block leaves its half out and the block keeps its whole face, drawn both ways), so a 3x3x3 of lattice shows its
   outer frame from outside and its far sides from within, and no two faces of theirs lie in one plane facing one way.
-  GameTest `see_through_blocks_show_only_their_outside`; FX scenes `see_through` and `see_through_low`.
+  GameTest `see_through_blocks_show_only_their_outside`; FX scenes `see_through` and `see_through_low`. After the
+  user's next look the Lattice Frame's face is framed on all four edges (a top rail as wide as its bottom one), so side
+  by side or stacked its joints are bars twice as wide all round.
 
 **Two multiblocks.**
 - *Large Silo Door* (the user's idea): two leaves that slide apart on rails over a 7x7 opening, opened by a redstone
@@ -3830,6 +3873,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | Version **0.3.0** (the user's request: a jar to upload and a changelog since 0.2.0): the exotic weapons and their assembler, the Interceptor Battery, upgrade chips, the see-through lattice and grating; README and `docs/CURSEFORGE.md` updated (24 warheads). |
+| 2026-10-30 | The anti-missile defence (the user's request): the **Interceptor Battery** of §18.2 as a two-block tall machine with a four-cell turret, its interceptors flown like missiles (loaded or not) to a solved meeting point and their kill chance rolled there, 256 blocks where a Radar Array tracks the missile and 96 on its own seeker; it never engages missiles bound elsewhere (§18.4). The Lattice Frame framed on all four edges (§22.2). |
 | 2026-10-30 | The user's next look: the Upgrades tab only as wide as its words (82); the Storm ICBM's impact sends lightning up into the sky for five seconds, the storm's birth (§16.14); the Lattice Frame and Steel Grating draw their outer faces both ways and hide only what another of them covers, so you see a stack's far side through it (§22.2). |
 | 2026-10-30 | The user's third look at Phase 11: upgrade chips in **three slots**, their effects adding up, efficiency halved (5% a tier, so no mix runs a machine free), the tab's lines on the power drawn dropped (§7.3); the Storm Core takes a quantum circuit, and every storm strike **explodes** into a small crater (§16.14); the exotic weapons get their own **Special Weapons Assembler**, a containment bay of three rings, and the ICBM Assembly Hall builds the fusion weapons only (§16.15). |
 | 2026-10-30 | A ready-to-paste CurseForge description, `docs/CURSEFORGE.md`: the README for CurseForge's Markdown mode (images by full link, no HTML table, a getting-started section, the sound credits in a spoiler). |

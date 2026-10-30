@@ -305,11 +305,15 @@ public final class GBLaunch {
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(TICKETS));
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> Launches.clear());
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
+            Launches.clear();
+            dev.groundburst.content.defence.Interceptors.clear();
+        });
         // Missiles in the air move on every tick, loaded or not (Flights).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
                 Flights.of(level).tick(level);
+                dev.groundburst.content.defence.Interceptors.tick(level);   // after the missiles: they meet them where they are
                 TerrainSurvey.of(level).tick(level);
             }
         });

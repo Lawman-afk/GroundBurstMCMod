@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sensor_array": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:sensor_array"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:interceptor_battery"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_sensor_array"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:interceptor_battery"
+    ]
+  }
+}
