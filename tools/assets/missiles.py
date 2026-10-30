@@ -1133,99 +1133,6 @@ def neutron() -> dict:
     return save(rk, lv)
 
 
-def antimatter() -> dict:
-    """The antimatter warhead's missile (Phase 11, DESIGN.md §16.3): an experimental round, clean white as a test
-    missile is: a stout first stage on four small swept fins, a black interstage, a slimmer second stage the width of
-    the warhead's collars, a violet band at the foot of each stage, three confinement rings like the warhead's (a violet
-    coil glowing between dark collars: one on the first stage, two on the second), a band of yellow and black hazard
-    chevrons under the warhead and grey stencils; the capsule on top."""
-    rk = Rocket("antimatter_warhead", "XL")
-    R1, R2 = 5.8, 5.0
-    rk.bell("bell", 3.4, 2.3, 0.0, 3)
-    rk.ring("skirt", R1 + 0.3, 3.0, 12.0, caps=("up", "down"), top=True, bottom=True)
-    rk.fins("fin", R1 + 0.3, 3.0, 11.0, 4.0, 4.5, thick=0.8)
-    rk.closure("aft", R1 + 0.3, 3.0)
-    rk.tube("stage1", R1, 12.0, 62.0)
-    rk.taper("inter", R1 - 0.1, R2 + 0.35, 62.0, 3)
-    rk.bell("bell2", 3.0, 2.0, 61.0, 3)
-    rk.tube("stage2", R2, 65.0, 110.0)
-    rk.joint("joint", R2 + 0.3, 110.0)
-    rk.tube("guidance", R2, 111.0, 115.0, on_joint=True)
-    for y, R in ((36.0, R1), (80.0, R2), (94.0, R2)):
-        # The coil has no caps: they would lie in the collars' planes, and it never shows its ends.
-        rk.ring("collar", R + 0.6, y, y + 0.5, caps=("up", "down"), top=True, bottom=True)
-        rk.ring("coil", R + 0.4, y + 0.5, y + 1.5, caps=(), top=False, bottom=False)
-        rk.ring("collar", R + 0.6, y + 1.5, y + 2.0, caps=("up", "down"), top=True, bottom=True)
-    for n in rk.groups["coil"]:
-        rk.m.get(n).light_emission = 15
-    rk.mount(115.0)
-    rk.parts, rk.stages, rk.engines = [62.0, 115.0, rk.tip], [62.0, rk.tip], [0.0, 61.0]
-    white = W.paint(W.WHITE, 0.66, 0.1)
-    lv = Livery(body=white, stage1=white, stage2=white, guidance=white, skirt=W.metal(W.GUNMETAL, 0.42), fin=paint(W.WHITE, 0.6),
-                inter=W.metal(W.BLACK, 0.42), joint=RING, bell=NOZZLE, bell2=NOZZLE, collar=W.metal(W.GUNMETAL, 0.34),
-                coil=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.66, mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0,
-                                ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND))
-    violet = W.paint(W.VIOLET, 0.6, 0.15)
-
-    def windings(k, f, img):                                   # the coils' turns, as the warhead's
-        if f.d in SIDES:
-            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 36).astype(int)
-            M.lighten(img, col % 2 == 0, 1.14, 6)
-    lv.on("coil", windings)
-    lv.on("stage1", band(13, 15, violet)).on("stage2", band(66, 68, violet))
-
-    def chevrons(k, f, img):                                   # hazard chevrons round the top of the second stage
-        if f.d not in SIDES:
-            return
-        col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 32).astype(int)
-        row = np.floor(f.Y + 0.1).astype(int)
-        on = (row >= 104) & (row < 107)
-        img[on] = W.YELLOW[4]
-        img[on & (((col + row) % 4) < 2)] = W.BLACK[1]
-    lv.on("stage2", chevrons)
-    lv.on("stage1", stencil((48.0, 47.0, 45.0), W.BLACK[3], 6, "xx.xxx.x"))
-    lv.on("stage2", stencil((90.0, 89.0), W.BLACK[3], 5, "x.xx.x"))
-    lv.on("joint", rivets(110.0)).on("bell", soot).on("bell2", soot)
-    return save(rk, lv)
-
-
-def singularity() -> dict:
-    """The singularity warhead's missile (Phase 11, DESIGN.md §16.2): matte black and finless, steered by four verniers
-    round its first stage's foot; three brass rings round its second stage, as round the warhead's sphere; a violet slit
-    glowing near the top of each stage (its elements emit light), white stencils; the gyroscope on top."""
-    rk = Rocket("singularity_warhead", "XL")
-    R1, R2 = 6.2, 5.4
-    rk.bell("bell", 3.6, 2.4, 0.0, 3)
-    rk.ring("skirt", R1 + 0.3, 3.0, 10.0, caps=("up", "down"), top=True, bottom=True)
-    rk.closure("aft", R1 + 0.3, 3.0)
-    rk.verniers("vern", R1 + 0.3, 5.0)
-    rk.tube("stage1", R1, 10.0, 62.0)
-    rk.taper("inter", R1 - 0.1, R2 + 0.35, 62.0, 3)
-    rk.bell("bell2", 3.0, 2.0, 61.0, 3)
-    rk.tube("stage2", R2, 65.0, 108.0)
-    rk.joint("joint", R2 + 0.3, 108.0)
-    rk.tube("guidance", R2, 109.0, 113.0, on_joint=True)
-    for y in (76.0, 86.0, 96.0):
-        rk.ring("brass", R2 + 0.5, y, y + 0.8, caps=("up", "down"), top=True, bottom=True)
-    rk.ring("slit", R1 + 0.15, 55.0, 56.0, caps=("up", "down"), top=True, bottom=True)
-    rk.ring("slit", R2 + 0.15, 102.0, 103.0, caps=("up", "down"), top=True, bottom=True)
-    for n in rk.groups["slit"]:
-        rk.m.get(n).light_emission = 15
-    rk.mount(113.0)
-    rk.parts, rk.stages, rk.engines = [62.0, 113.0, rk.tip], [62.0, rk.tip], [0.0, 61.0]
-    black = paint(W.VOID, 0.45, mottle=0.03)
-    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
-    lv = Livery(body=black, stage1=black, stage2=black, guidance=black, skirt=W.metal(W.GUNMETAL, 0.4), vern=W.metal(W.GUNMETAL, 0.38),
-                inter=W.metal(W.BLACK, 0.4), joint=RING, bell=NOZZLE, bell2=NOZZLE, brass=W.BRASS,
-                slit=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.7, **lit))
-    violet = W.paint(W.VIOLET, 0.55, 0.12)
-    lv.on("stage1", band(12, 13, violet)).on("stage2", band(66, 67, violet))
-    lv.on("stage1", stencil((46.0, 45.0, 43.0), W.WHITE[5], 6, "xx.xxx.x"))
-    lv.on("stage2", stencil((92.0, 91.0), W.WHITE[5], 5, "x.xx.x"))
-    lv.on("joint", rivets(108.0)).on("bell", soot).on("bell2", soot)
-    return save(rk, lv)
-
-
 # --- Intercontinental (XXL, the hall): three stages ---------------------------------------------------------------------------
 
 def thermonuclear() -> dict:
@@ -1341,6 +1248,122 @@ def tsar() -> dict:
         a = math.radians(30 + 60 * i)
         lv.on(f"obell{i}", soot_at(8 + d * math.sin(a), 8 + d * math.cos(a)))
     lv.on("stage2", stencil((84.0, 83.0, 81.0), W.WHITE[5], 9, "xx.xxx.x"))
+    lv.on("bell", soot).on("bell2", soot).on("bell3", soot)
+    return save(rk, lv)
+
+
+def antimatter() -> dict:
+    """The antimatter warhead's missile (Phase 11, DESIGN.md §16.3), an intercontinental one the hall builds whole: an
+    experimental round, clean white as a test missile is. A stout first stage on four nozzles and four small swept fins,
+    black interstages, the second and third stages narrowing upward, a violet band at the foot of each stage and a
+    confinement ring like the warhead's on each (a violet coil glowing between dark collars), a raceway up the side, a
+    band of yellow and black hazard chevrons under the bus and grey stencils; the capsule on a slim bus on top."""
+    rk = Rocket("antimatter_warhead", "XXL", tex=512)
+    R1, R2, R3, RB = 11.0, 9.4, 7.8, 5.35
+    for dx, dz in ((-4, -4), (4, -4), (-4, 4), (4, 4)):
+        rk.bell("bell", 2.6, 1.8, 0.0, 3, cx=8 + dx, cz=8 + dz)
+    rk.ring("skirt", R1 + 0.4, 3.0, 12.0, caps=("up", "down"), top=True, bottom=True)
+    rk.fins("fin", R1 + 0.4, 3.0, 14.0, 5.0, 6.0, thick=1.0)
+    rk.closure("aft", R1 + 0.4, 3.0, inner=0.0)
+    rk.tube("stage1", R1, 12.0, 60.0)
+    rk.taper("inter1", R1 - 0.1, R2 + 0.35, 60.0, 4)
+    rk.bell("bell2", 4.0, 2.8, 59.0, 4)
+    rk.tube("stage2", R2, 64.0, 104.0)
+    rk.taper("inter2", R2 - 0.1, R3 + 0.35, 104.0, 3)
+    rk.bell("bell3", 3.4, 2.4, 103.0, 3)
+    rk.tube("stage3", R3, 107.0, 134.0)
+    rk.taper("bus", R3 - 0.1, RB - 0.05, 134.0, 4)
+    rk.tube("bus", RB - 0.25, 138.0, 144.0)
+    rk.on_side("raceway", 90, R1, 16.0, 59.0, 0.8, 1.6)
+    rk.on_side("raceway2", 90, R2, 65.0, 103.0, 0.7, 1.4)
+    for y, R in ((34.0, R1), (82.0, R2), (118.0, R3)):
+        # The coil has no caps: they would lie in the collars' planes, and it never shows its ends.
+        rk.ring("collar", R + 0.6, y, y + 0.5, caps=("up", "down"), top=True, bottom=True)
+        rk.ring("coil", R + 0.4, y + 0.5, y + 1.5, caps=(), top=False, bottom=False)
+        rk.ring("collar", R + 0.6, y + 1.5, y + 2.0, caps=("up", "down"), top=True, bottom=True)
+    for n in rk.groups["coil"]:
+        rk.m.get(n).light_emission = 15
+    rk.mount(144.0)
+    rk.parts, rk.stages, rk.engines = [60.0, 104.0, 144.0, rk.tip], [60.0, 104.0, rk.tip], [0.0, 59.0, 103.0]
+    white = W.paint(W.WHITE, 0.66, 0.1)
+    lv = Livery(body=white, stage1=white, stage2=white, stage3=white, skirt=W.metal(W.GUNMETAL, 0.42), fin=paint(W.WHITE, 0.6),
+                inter1=W.metal(W.BLACK, 0.42), inter2=W.metal(W.BLACK, 0.42), bus=W.metal(W.GUNMETAL, 0.45), bell=NOZZLE,
+                bell2=NOZZLE, bell3=NOZZLE, raceway=paint(W.WHITE, 0.58), raceway2=paint(W.WHITE, 0.58),
+                collar=W.metal(W.GUNMETAL, 0.34),
+                coil=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.66, mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0,
+                                ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND))
+    violet = W.paint(W.VIOLET, 0.6, 0.15)
+
+    def windings(k, f, img):                                   # the coils' turns, as the warhead's
+        if f.d in SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 48).astype(int)
+            M.lighten(img, col % 2 == 0, 1.14, 6)
+    lv.on("coil", windings)
+    lv.on("stage1", band(13, 15, violet)).on("stage2", band(65, 67, violet)).on("stage3", band(108, 109, violet))
+
+    def chevrons(k, f, img):                                   # hazard chevrons round the top of the third stage
+        if f.d not in SIDES:
+            return
+        col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 40).astype(int)
+        row = np.floor(f.Y + 0.1).astype(int)
+        on = (row >= 129) & (row < 132)
+        img[on] = W.YELLOW[4]
+        img[on & (((col + row) % 4) < 2)] = W.BLACK[1]
+    lv.on("stage3", chevrons)
+    lv.on("stage1", stencil((46.0, 45.0, 43.0), W.BLACK[3], 9, "xx.xxx.x"))
+    lv.on("stage2", stencil((94.0, 93.0), W.BLACK[3], 7, "x.xx.xx"))
+    lv.on("stage3", stencil((124.0,), W.BLACK[3], 6, "xx.xx"))
+    lv.on("bus", rivets(142.0)).on("skirt", rivets(5.5))
+    lv.on("bell", soot).on("bell2", soot).on("bell3", soot)
+    return save(rk, lv)
+
+
+def singularity() -> dict:
+    """The singularity warhead's missile (Phase 11, DESIGN.md §16.2), an intercontinental one the hall builds whole:
+    matte black and finless, steered by four verniers round its skirt over four nozzles, a raceway up its side; three brass rings round its
+    second stage and two round its third, as round the warhead's sphere; a violet slit glowing near the top of each
+    stage (its elements emit light), violet bands at their feet, white stencils; the gyroscope on a slim bus on top."""
+    rk = Rocket("singularity_warhead", "XXL", tex=512)
+    R1, R2, R3, RB = 11.6, 10.0, 8.4, 5.55
+    for dx, dz in ((-4.2, 0), (4.2, 0), (0, -4.2), (0, 4.2)):
+        rk.bell("bell", 2.8, 2.0, 0.0, 3, cx=8 + dx, cz=8 + dz)
+    rk.ring("skirt", R1 + 0.4, 3.0, 10.0, caps=("up", "down"), top=True, bottom=True)
+    rk.closure("aft", R1 + 0.4, 3.0, inner=0.0)
+    rk.verniers("vern", R1 + 0.4, 5.5, size=2.0)
+    rk.tube("stage1", R1, 10.0, 62.0)
+    rk.taper("inter1", R1 - 0.1, R2 + 0.35, 62.0, 4)
+    rk.bell("bell2", 4.2, 3.0, 61.0, 4)
+    rk.tube("stage2", R2, 66.0, 108.0)
+    rk.taper("inter2", R2 - 0.1, R3 + 0.35, 108.0, 3)
+    rk.bell("bell3", 3.4, 2.4, 107.0, 3)
+    rk.tube("stage3", R3, 111.0, 138.0)
+    rk.taper("bus", R3 - 0.1, RB - 0.05, 138.0, 4)
+    rk.tube("bus", RB - 0.25, 142.0, 148.0)
+    rk.on_side("raceway", 0, R1, 12.0, 61.0, 0.8, 1.6)
+    rk.on_side("raceway2", 0, R2, 67.0, 107.0, 0.7, 1.4)
+    for y in (78.0, 88.0, 98.0):
+        rk.ring("brass", R2 + 0.5, y, y + 0.8, caps=("up", "down"), top=True, bottom=True)
+    for y in (118.0, 126.0):
+        rk.ring("brass", R3 + 0.5, y, y + 0.8, caps=("up", "down"), top=True, bottom=True)
+    rk.ring("slit", R1 + 0.15, 55.0, 56.0, caps=("up", "down"), top=True, bottom=True)
+    rk.ring("slit", R2 + 0.15, 102.0, 103.0, caps=("up", "down"), top=True, bottom=True)
+    rk.ring("slit", R3 + 0.15, 133.0, 134.0, caps=("up", "down"), top=True, bottom=True)
+    for n in rk.groups["slit"]:
+        rk.m.get(n).light_emission = 15
+    rk.mount(148.0)
+    rk.parts, rk.stages, rk.engines = [62.0, 108.0, 148.0, rk.tip], [62.0, 108.0, rk.tip], [0.0, 61.0, 107.0]
+    black = paint(W.VOID, 0.45, mottle=0.03)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    lv = Livery(body=black, stage1=black, stage2=black, stage3=black, skirt=W.metal(W.GUNMETAL, 0.4), vern=W.metal(W.GUNMETAL, 0.38),
+                inter1=W.metal(W.BLACK, 0.4), inter2=W.metal(W.BLACK, 0.4), bus=W.metal(W.GUNMETAL, 0.42), bell=NOZZLE,
+                bell2=NOZZLE, bell3=NOZZLE, brass=W.BRASS, slit=M.Material(ramp=W.ramp9(W.VIOLET), tone=0.7, **lit),
+                raceway=paint(W.VOID, 0.52, mottle=0.03), raceway2=paint(W.VOID, 0.52, mottle=0.03))
+    violet = W.paint(W.VIOLET, 0.55, 0.12)
+    lv.on("stage1", band(12, 13, violet)).on("stage2", band(67, 68, violet)).on("stage3", band(112, 113, violet))
+    lv.on("stage1", stencil((46.0, 45.0, 43.0), W.WHITE[5], 9, "xx.xxx.x"))
+    lv.on("stage2", stencil((94.0, 93.0), W.WHITE[5], 7, "x.xx.xx"))
+    lv.on("stage3", stencil((124.0,), W.WHITE[5], 6, "xx.xx"))
+    lv.on("bus", rivets(146.0)).on("skirt", rivets(4.5))
     lv.on("bell", soot).on("bell2", soot).on("bell3", soot)
     return save(rk, lv)
 

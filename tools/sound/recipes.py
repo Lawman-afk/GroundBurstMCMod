@@ -1027,6 +1027,60 @@ def cruise_sounds() -> dict[str, np.ndarray]:
     return out
 
 
+def large_silo_door_sounds() -> dict[str, np.ndarray]:
+    """The Large Silo Door (DESIGN.md §22.2): its leaves take eight seconds end to end, easing off and in (a smoothstep,
+    SiloDoorBlockEntity.TRAVEL), so its sound runs as long. The bolts drawing back, the drive spinning up as the leaves
+    gather speed, the rollers' rumble and a click at each rail joint following their speed, the motor winding down as
+    they ease in, and a heavy seat and the bolts shooting home as they come to rest."""
+    out = {}
+    travel = 8.0
+    n = travel + 0.9
+    t = S.t_axis(n)
+    N = len(t)
+    u = np.clip(t / travel, 0, 1)
+    speed = 6 * u * (1 - u) / 1.5                                   # the leaves' speed, 1 at its height (mid-travel)
+
+    def clack(at: float, seed: int, gain: float = 1.0) -> np.ndarray:
+        """A heavy bolt: a ringing metal clack over a dull thud."""
+        burst = S.white(0.4, seed) * S.exp_decay(int(0.4 * S.SR), 0.006)
+        ring = S.resonator(burst, 560, q=25) * 1.6 + S.resonator(burst, 1220, q=30) * 0.9
+        thud = S.lowpass(S.white(0.4, seed + 1), 130) * S.exp_decay(int(0.4 * S.SR), 0.05) * 2.5
+        return S.place((ring + thud) * gain, at, n)
+
+    # The drive: a motor's whine climbing with the leaves' speed, under load; it spins up before they move much and
+    # winds down as they ease in.
+    load = np.clip(speed * 1.15, 0, 1)
+    motor = np.maximum(load, S.breakpoints(N, [(0, 0), (0.3, 0), (0.9, 0.55), (travel - 0.6, 0.55), (travel, 0.0), (n, 0)]) * (u < 0.5))
+    f = 58 + 38 * load
+    phase = 2 * np.pi * np.cumsum(f) / S.SR
+    whine = S.bandpass(np.sin(phase) * 0.6 + np.sin(2 * phase) * 0.35 + np.sin(3 * phase) * 0.25 + np.sin(5 * phase) * 0.12, 50, 900)
+    drive = S.breakpoints(N, [(0, 0), (0.25, 0), (0.6, 1), (travel - 0.4, 1), (travel + 0.1, 0), (n, 0)])
+    whine *= (0.3 + 0.7 * motor) * drive
+    # The rollers' rumble and the leaves' scrape, with their speed.
+    roll = S.lowpass(S.brown(n, 750), 240) * (0.7 + 0.3 * np.sin(2 * np.pi * 5.5 * t))
+    scrape = S.bandpass(S.white(n, 751), 800, 2800) * (0.4 + S.lowpass(np.abs(S.grains(n, rate=26, grain_ms=30, seed=752)), 20) * 6) * 0.16
+    moving = np.clip(speed, 0, 1) ** 0.7
+    body = whine * 0.7 + (roll + scrape) * moving
+    # A click at each rail joint the leaves pass (a joint every half block of their three and a half), as loud as they go.
+    clicks = np.zeros(N)
+    travelled = u * u * (3 - 2 * u)
+    joints = 7
+    for k in range(1, joints):
+        at = float(t[np.searchsorted(travelled, k / joints)])
+        v = float(6 * (at / travel) * (1 - at / travel) / 1.5)
+        clicks += clack(at, 760 + k, 0.15 + 0.3 * v)
+    # Unlatching at the start; the leaves seating (slowly: a heavy thump, not a bang) and the bolts shooting home.
+    latches = clack(0.02, 770, 3.0) + clack(0.24, 772, 2.6)
+    hit = S.white(1.0, 780) * S.exp_decay(int(1.0 * S.SR), 0.02)
+    seat = (S.lowpass(S.white(1.0, 781), 110) * S.exp_decay(int(1.0 * S.SR), 0.12) * 4.0
+            + S.resonator(hit, 180, q=30) * S.exp_decay(int(1.0 * S.SR), 0.4) * 1.2
+            + S.resonator(hit, 410, q=40) * S.exp_decay(int(1.0 * S.SR), 0.25) * 0.6)
+    end = S.place(seat * 1.8, travel - 0.05, n) + clack(travel + 0.12, 782, 2.4) + clack(travel + 0.3, 784, 2.0)
+    mixed = S.reverb(body + clicks + latches + end, seconds=1.0, damping_hz=2400, mix=0.22, seed=790)[:N]
+    out["construction/large_silo_door"] = S.normalize(S.fade(S.saturate(mixed, 1.15), 0.0, 0.3), -2)
+    return out
+
+
 # (The blasts are made from recordings now, blasts.py. nuke_set, tsar_set and blast_sets above are the synthesized ones they
 # replaced, kept to compare; blast_source, nuke_source and tsar_source are still the bed of the large, nuclear and Tsar
 # blasts since round 2, the boom and roar the recordings lie on.)
@@ -1037,7 +1091,7 @@ def cruise_sounds() -> dict[str, np.ndarray]:
 # Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
 RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
-           effect_sounds, assembly_sounds, silo_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
+           effect_sounds, assembly_sounds, silo_sounds, large_silo_door_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
            MA.machine_set, GE.gear_set]
 
 

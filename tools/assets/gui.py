@@ -287,7 +287,7 @@ LAYOUTS = {
         "readout": (34, 50, 134, 24),
         "inventory": (8, 128),
     },
-    # Strategic Assembly Hall (Phase 8 slice 8c): the warhead's parts (primary, secondary, an optional cobalt jacket) over
+    # ICBM Assembly Hall (Phase 8 slice 8c): the warhead's parts (primary, secondary, an optional cobalt jacket) over
     # the missile's (booster, optional guidance and module), the arrow, the finished missile; the readout under them,
     # then the Assemble / Take Apart buttons (drawn by the screen) with the redstone button beside them. The bench's
     # right-hand column, its preview a little shorter and its stats screen taller (a whole weapon's list is long).
@@ -607,7 +607,7 @@ MODULE_GHOST = ["................", "................", "....########....", "...
                 "................"]
 
 
-# The Strategic Assembly Hall: a fusion secondary (a capsule round its spark-plug rod), a cobalt jacket (a sleeve of
+# The ICBM Assembly Hall: a fusion secondary (a capsule round its spark-plug rod), a cobalt jacket (a sleeve of
 # plates), an intercontinental booster (three stages narrowing upward on their nozzles).
 SECONDARY_GHOST = ["................", "......####......", ".....#....#.....", "....#......#....", "....#..##..#....",
                    "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....", "....#.#++#.#....",

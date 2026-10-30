@@ -9,38 +9,49 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * What clients are told about a singularity (DESIGN.md §16.2): where it is and how it grows, the blocks it tears loose
- * (their places and states, for the debris that spirals in), and its collapse. Drawn on the client by
- * {@code SingularityFx}, which sets the hooks.
+ * What clients are told about a singularity (DESIGN.md §16.2): where it is and how long it lives, how far it reaches as
+ * it grows (everything else about its size follows from that: {@link Singularities}), the blocks it tears loose (their
+ * places and states, for the debris that spirals in), and its collapse. Drawn on the client by {@code SingularityFx},
+ * which sets the hooks.
  */
 public final class SingularityPayloads {
     public static Consumer<Start> startHook = p -> {};
+    public static Consumer<Grow> growHook = p -> {};
     public static Consumer<Torn> tornHook = p -> {};
     public static Consumer<Collapse> collapseHook = p -> {};
 
     private SingularityPayloads() {}
 
-    /**
-     * Singularity {@code id} opened {@code age} ticks ago at {@code center}: its event horizon grows to {@code horizon}
-     * over {@code grow} ticks, it pulls things in from {@code pull} and tears blocks loose out to {@code rip}.
-     */
-    public record Start(int id, Vec3 center, float horizon, float pull, float rip, int grow, int age) implements CustomPacketPayload {
+    /** Singularity {@code id} opened {@code age} ticks ago at {@code center}, reaching {@code reach} now; it lives {@code life} ticks. */
+    public record Start(int id, Vec3 center, float reach, int life, int age) implements CustomPacketPayload {
         public static final Type<Start> TYPE = GBNetwork.type("singularity_start");
         public static final StreamCodec<RegistryFriendlyByteBuf, Start> CODEC = StreamCodec.of((buf, p) -> {
             buf.writeVarInt(p.id);
             buf.writeDouble(p.center.x);
             buf.writeDouble(p.center.y);
             buf.writeDouble(p.center.z);
-            buf.writeFloat(p.horizon);
-            buf.writeFloat(p.pull);
-            buf.writeFloat(p.rip);
-            buf.writeVarInt(p.grow);
+            buf.writeFloat(p.reach);
+            buf.writeVarInt(p.life);
             buf.writeVarInt(p.age);
-        }, buf -> new Start(buf.readVarInt(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readFloat(), buf.readFloat(),
-                buf.readFloat(), buf.readVarInt(), buf.readVarInt()));
+        }, buf -> new Start(buf.readVarInt(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readFloat(), buf.readVarInt(),
+                buf.readVarInt()));
 
         @Override
         public Type<Start> type() {
+            return TYPE;
+        }
+    }
+
+    /** Singularity {@code id} has grown to reach {@code reach} (sent every few ticks while it grows). */
+    public record Grow(int id, float reach) implements CustomPacketPayload {
+        public static final Type<Grow> TYPE = GBNetwork.type("singularity_grow");
+        public static final StreamCodec<RegistryFriendlyByteBuf, Grow> CODEC = StreamCodec.of((buf, p) -> {
+            buf.writeVarInt(p.id);
+            buf.writeFloat(p.reach);
+        }, buf -> new Grow(buf.readVarInt(), buf.readFloat()));
+
+        @Override
+        public Type<Grow> type() {
             return TYPE;
         }
     }
@@ -73,11 +84,13 @@ public final class SingularityPayloads {
         }
     }
 
-    /** Singularity {@code id} has collapsed (its blast is a blast of its own). */
-    public record Collapse(int id) implements CustomPacketPayload {
+    /** Singularity {@code id} has collapsed, reaching {@code reach} at the end (its blast is a blast of its own). */
+    public record Collapse(int id, float reach) implements CustomPacketPayload {
         public static final Type<Collapse> TYPE = GBNetwork.type("singularity_collapse");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Collapse> CODEC = StreamCodec.of((buf, p) -> buf.writeVarInt(p.id),
-                buf -> new Collapse(buf.readVarInt()));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Collapse> CODEC = StreamCodec.of((buf, p) -> {
+            buf.writeVarInt(p.id);
+            buf.writeFloat(p.reach);
+        }, buf -> new Collapse(buf.readVarInt(), buf.readFloat()));
 
         @Override
         public Type<Collapse> type() {

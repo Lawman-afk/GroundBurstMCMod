@@ -585,7 +585,7 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBMultiblocks.LEAD_LINED_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SENSOR_ARRAY)
                 .requires(GBParts.ELECTRIC_MOTOR).requires(GBParts.ELECTRIC_MOTOR).requires(GBParts.PRESSURE_VESSEL).requires(sw.fieldstone)
                 .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
-        // Whole weapons (slice 8c, DESIGN.md §15.2): the Strategic Assembly Hall, its rails, and the parts only it uses.
+        // Whole weapons (slice 8c, DESIGN.md §15.2): the ICBM Assembly Hall, its rails, and the parts only it uses.
         var s = new Object() {
             final net.minecraft.world.level.ItemLike rail = dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.item();
             final net.minecraft.world.level.ItemLike hall = dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.item();

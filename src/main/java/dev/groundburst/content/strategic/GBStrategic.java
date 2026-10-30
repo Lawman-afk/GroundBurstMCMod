@@ -23,7 +23,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
- * Whole weapons (DESIGN.md §15.2, Phase 8 slice 8c): the Strategic Assembly Hall, a long crane hall that builds a
+ * Whole weapons (DESIGN.md §15.2, Phase 8 slice 8c): the ICBM Assembly Hall, a long crane hall that builds a
  * thermonuclear or cobalt warhead into an intercontinental missile all at once, for the Launch Complex; and the parts
  * only it uses.
  */
@@ -33,7 +33,7 @@ public final class GBStrategic {
             MultiblockPartBlock::new, p -> p.mapColor(MapColor.COLOR_YELLOW).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.IMMOVEABLE).noOcclusion());
     public static final WithItem<MultiblockControllerBlock> HALL_CONTROLLER = GBBlocks.register("strategic_assembly_hall",
-            "Strategic Assembly Hall", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.HALL_ENTITY),
+            "ICBM Assembly Hall", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.HALL_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StrategicAssemblyBlockEntity>> HALL_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("strategic_assembly_hall", () -> new BlockEntityType<>(StrategicAssemblyBlockEntity::new,
@@ -54,7 +54,7 @@ public final class GBStrategic {
             "The Tsar's primary: two boosted fission cores fired together");
 
     /**
-     * The Strategic Assembly Hall: a 7x13 floor of Launch Pad (the controller at the front middle; an Energy Port at the
+     * The ICBM Assembly Hall: a 7x13 floor of Launch Pad (the controller at the front middle; an Energy Port at the
      * back middle, an Item Port two to its left), six Gantry Frame columns four high at the corners and halfway along each
      * long side, and a Crane Rail the length of each long side on top of them; between them the hall kept clear for the
      * missile on its cradles and the crane.

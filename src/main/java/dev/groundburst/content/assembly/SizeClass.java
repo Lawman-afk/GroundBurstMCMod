@@ -6,7 +6,7 @@ import dev.groundburst.registry.GBLang;
 /**
  * A payload's size class (DESIGN.md §9.1): S tactical, M medium, L heavy; XL strategic (Phase 8: the Strategic
  * Missile Body, the one that carries nuclear warheads); XXL intercontinental (slice 8c: no body or casing of its own,
- * only the whole weapons the Strategic Assembly Hall builds). A payload core only goes into a casing of its own class.
+ * only the whole weapons the ICBM Assembly Hall builds). A payload core only goes into a casing of its own class.
  */
 public enum SizeClass {
     S("Light"), M("Medium"), L("Heavy"), XL("Strategic"), XXL("Intercontinental");

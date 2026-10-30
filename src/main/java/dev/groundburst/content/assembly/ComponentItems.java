@@ -20,6 +20,9 @@ public final class ComponentItems {
     static final String T_CASING = GBLang.add(GroundBurst.MODID + ".component.casing", "Warhead casing for class %s payloads");
     static final String T_FUZE = GBLang.add(GroundBurst.MODID + ".component.fuze", "Fuze");
     static final String T_BENCH = GBLang.add(GroundBurst.MODID + ".component.bench", "Fitted at an Ordnance Assembly Bench");
+    /** An exotic core's uses: the hall builds it whole into an ICBM (Phase 11); the bench's bomb only breaches. */
+    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".component.exotic_hall", "ICBM Assembly Hall, with a booster: a whole ICBM");
+    static final String T_BREACH = GBLang.add(GroundBurst.MODID + ".component.exotic_bomb", "Bench bomb: only breaches if set off");
     static final String[] T_FUZE_WHAT = {
             GBLang.add(GroundBurst.MODID + ".component.fuze.impact", "The missile's warhead goes off where it hits"),
             GBLang.add(GroundBurst.MODID + ".component.fuze.barometric", "The warhead bursts in the air, a set height over the target (10-200 blocks)")};
@@ -52,6 +55,10 @@ public final class ComponentItems {
             tooltip.accept(grey(Component.translatable(T_CORE, warhead().getName())));
             tooltip.accept(grey(Component.translatable(this.sizeClass.label)));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
+            if (warhead().kind.exotic()) {
+                tooltip.accept(Component.translatable(T_HALL).withStyle(ChatFormatting.DARK_GRAY));
+                tooltip.accept(Component.translatable(T_BREACH).withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
     }
 

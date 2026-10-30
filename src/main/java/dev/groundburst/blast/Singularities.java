@@ -21,23 +21,40 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The singularities open in each level (DESIGN.md §16.2; the singularity warhead's, {@code Singularity}): each a black
- * hole growing, drawing everything in and tearing the ground loose, then collapsing ({@link SingularityJob}). They run
- * each tick ahead of the blasts, from the same budget; clients are told where each is, what it tears loose and when it
- * collapses ({@link SingularityPayloads}).
+ * hole that feeds and grows, drawing everything in and tearing the ground loose, then collapses ({@link SingularityJob}).
+ * Everything about its size follows from one number, its <em>reach</em>: how far out it tears earth loose. The reach
+ * grows two ways: the hole opening by itself over its life (to {@link #SEED} blocks by the end, fed nothing), and by
+ * what it has swallowed ({@link #FEED} times the cube root of the blocks' worth it has eaten), so a hole on open
+ * ground grows to about {@link #TYPICAL_REACH}, one in a mountainside or the sea well past that, one in the open air
+ * hardly at all. They run each tick ahead of the blasts, from the same budget; clients are told where each is, how far
+ * it reaches as it grows, what it tears loose and when it collapses ({@link SingularityPayloads}).
  */
 public final class Singularities {
-    /** At full size (times the bomb scale): its event horizon, how far it pulls, how far it tears blocks loose. */
-    public static final float HORIZON = 10, PULL = 48, RIP = 32;
-    /** Ticks it grows before it collapses (20 s). */
-    public static final int GROW = 400;
-    /** The most blocks a full-size one tears loose. */
-    static final int MAX_TORN = 80_000;
-    /** Its collapse's blast profile (crater 16 at full size). */
+    /** At bomb scale 1: the reach its opening alone gives it by the end of its life, and the most it can reach. */
+    public static final float SEED = 26, MAX_REACH = 110;
+    /** What its swallowing adds to its reach: this times the cube root of the blocks' worth it has eaten. */
+    public static final float FEED = 0.56f;
+    /** Its reach, at bomb scale 1, fed by open ground to the end (the figures the screens and the manual give). */
+    public static final float TYPICAL_REACH = 74;
+    /** Its event horizon (everything inside goes) and how far it pulls things in, as shares of its reach. */
+    public static final float HORIZON_SHARE = 0.3f, PULL_SHARE = 1.5f;
+    /** Ticks it lives before it collapses (a minute). */
+    public static final int LIFE = 1200;
+    /**
+     * How steeply its pull on a block falls with distance (a tidal pull): a block at distance d is torn loose once
+     * (reach / d)^TIDE beats its hold, so earth (hold 0.8) goes a little past the reach, stone (1.8) to nine tenths of it,
+     * obsidian (50) only to half.
+     */
+    static final double TIDE = 6;
+    /** Nothing on foot outruns it from within this share of its reach, where its pull reaches the pull a sprint cannot beat. */
+    static final double ESCAPE_SHARE = 0.45, ESCAPE_PULL = 0.12;
+    /** Its collapse's blast profile (crater 16 at scale 1), and the reach that gives that scale 1. */
     public static final String COLLAPSE_PROFILE = "singularity_collapse";
+    static final float COLLAPSE_REACH = 32;
     /** {@code groundburst:spaghettified}: what the horizon does to a creature. */
     public static final ResourceKey<DamageType> SPAGHETTIFIED = ResourceKey.create(Registries.DAMAGE_TYPE, GroundBurst.id("spaghettified"));
-    /** For GameTests: ticks a singularity grows (0: its own {@link #GROW}, or a breach's). */
-    public static int growOverride = 0;
+    /** For GameTests: ticks a singularity lives (0: its own {@link #LIFE}, or a breach's). */
+    public static int lifeOverride = 0;
 
     private static final Map<ServerLevel, List<SingularityJob>> RUNNING = new WeakHashMap<>();
     private static final AtomicInteger NET_IDS = new AtomicInteger();
@@ -45,44 +62,67 @@ public final class Singularities {
     private Singularities() {}
 
     /**
-     * The event horizon's radius {@code age} ticks into its {@code grow}: a pinpoint at first, growing fast and then
-     * steadily to {@code horizon} (the server swallows by it and the client draws it by it).
+     * Its reach {@code age} ticks into a life of {@code life}, having swallowed {@code mass} blocks' worth: its opening
+     * ({@code seed} by the end, quickly at first) and what it has eaten ({@code feed} times the cube root), at most {@code max}.
      */
-    public static float horizon(float horizon, double age, int grow) {
-        double u = Math.max(0, Math.min(1, age / Math.max(1, grow)));
-        return (float) (horizon * (0.08 + 0.92 * Math.pow(u, 0.75)));
+    public static float reach(float seed, float feed, double mass, double age, int life, float max) {
+        double u = Math.max(0, Math.min(1, age / Math.max(1, life)));
+        return (float) Math.min(max, seed * Math.sqrt(u) + feed * Math.cbrt(Math.max(0, mass)));
     }
 
-    /** How hard it pulls {@code u} of the way through its growth: weak as it opens, ten times as hard at the end. */
-    public static double strength(double u) {
-        return 0.6 + 5.4 * Math.pow(Math.max(0, Math.min(1, u)), 1.5);
+    /** Its event horizon's radius at a reach: everything inside goes. */
+    public static float horizon(float reach) {
+        return HORIZON_SHARE * reach;
+    }
+
+    /** How far out it pulls things in at a reach. */
+    public static float pullRadius(float reach) {
+        return PULL_SHARE * reach + 2;
+    }
+
+    /** Its pull's strength at a reach: the pull at distance d is this over d squared (blocks a tick, each tick). */
+    public static double gm(float reach) {
+        double escape = ESCAPE_SHARE * reach;
+        return ESCAPE_PULL * escape * escape;
+    }
+
+    /** The farthest a block of this hold is torn loose from it at a reach (the tidal pull beating the hold). */
+    static double tearsTo(float reach, double hold) {
+        return reach * Math.pow(Math.max(hold, 1e-3), -1 / TIDE);
+    }
+
+    /** How far it tears stone loose at a reach: the hole it digs in rock. */
+    public static float stoneReach(float reach) {
+        return (float) tearsTo(reach, 1.8);
     }
 
     /**
-     * The pull on something {@code to} from it (the vector to the hole's middle) of a singularity pulling from
-     * {@code pull} blocks at {@code strength}: an inverse-square pull toward it, at most 0.6 blocks a tick each tick, and a
-     * third of that round it (the way its disc turns). The server pulls everything but players by it; each player's own
-     * client pulls its player by it (a client moves its own player), so the two agree.
+     * The pull on something {@code to} from it (the vector to the hole's middle) of a singularity of pull strength
+     * {@code gm}: an inverse-square pull toward it, at most 0.6 blocks a tick each tick, and a third of that round it
+     * (the way its disc turns). The server pulls everything but players by it; each player's own client pulls its player
+     * by it (a client moves its own player), so the two agree.
      */
-    public static Vec3 pullOn(Vec3 to, float pull, double strength) {
+    public static Vec3 pullOn(Vec3 to, double gm) {
         double d = to.length();
         if (d < 1e-3) {
             return Vec3.ZERO;
         }
-        double k = 5.76 * Math.pow(pull / PULL, 3);
-        double a = Math.min(0.6, k * strength / (d * d));
+        double a = Math.min(0.6, gm / (d * d));
         Vec3 in = to.scale(1 / d);
         Vec3 swirl = new Vec3(-in.z, 0, in.x);
         double sl = swirl.length();
         return in.scale(a).add(sl > 1e-4 ? swirl.scale(0.35 * a / sl) : Vec3.ZERO);
     }
 
-    /** A singularity opens at the block at {@code at}. */
-    public static void start(ServerLevel level, Vec3 at, float horizon, float pull, float rip, int grow, float scale, @Nullable Entity by) {
-        int ticks = growOverride > 0 ? growOverride : grow;
-        SingularityJob job = new SingularityJob(NET_IDS.incrementAndGet(), level, BlockPos.containing(at), horizon, pull, rip, ticks, scale, by);
+    /**
+     * A singularity opens at the block at {@code at}: opening to {@code seed} over {@code life} ticks, growing by
+     * {@code feed} times the cube root of what it eats, at most to {@code max}.
+     */
+    public static void start(ServerLevel level, Vec3 at, float seed, float feed, float max, int life, @Nullable Entity by) {
+        int ticks = lifeOverride > 0 ? lifeOverride : life;
+        SingularityJob job = new SingularityJob(NET_IDS.incrementAndGet(), level, BlockPos.containing(at), seed, feed, max, ticks, by);
         RUNNING.computeIfAbsent(level, l -> new ArrayList<>()).add(job);
-        PacketDistributor.sendToPlayersInDimension(level, new SingularityPayloads.Start(job.netId, job.center, horizon, pull, rip, job.grow, 0));
+        PacketDistributor.sendToPlayersInDimension(level, new SingularityPayloads.Start(job.netId, job.center, job.reach(), job.life, 0));
     }
 
     /** Once a level tick, before the blasts: every singularity in it works within its share of the budget. */
@@ -112,8 +152,7 @@ public final class Singularities {
         }
         for (SingularityJob job : jobs) {
             if (job.phase() == SingularityJob.Phase.GROW) {
-                PacketDistributor.sendToPlayer(player, new SingularityPayloads.Start(job.netId, job.center, job.horizon, job.pull, job.rip,
-                        job.grow, job.age()));
+                PacketDistributor.sendToPlayer(player, new SingularityPayloads.Start(job.netId, job.center, job.reach(), job.life, job.age()));
             }
         }
     }
@@ -132,5 +171,12 @@ public final class Singularities {
     public static int tornIn(ServerLevel level) {
         List<SingularityJob> jobs = RUNNING.get(level);
         return jobs == null ? 0 : jobs.stream().mapToInt(SingularityJob::torn).sum();
+    }
+
+    /** For GameTests: the reach of the singularity still growing at {@code at} (within a block of its middle; 0: none). */
+    public static float reachAt(ServerLevel level, Vec3 at) {
+        List<SingularityJob> jobs = RUNNING.get(level);
+        return jobs == null ? 0 : (float) jobs.stream().filter(j -> j.phase() == SingularityJob.Phase.GROW && j.center.distanceTo(at) < 1)
+                .mapToDouble(SingularityJob::reach).max().orElse(0);
     }
 }

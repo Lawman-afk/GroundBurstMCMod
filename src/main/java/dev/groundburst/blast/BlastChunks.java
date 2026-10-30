@@ -66,6 +66,14 @@ final class BlastChunks {
      * touches is loaded or known not to exist.
      */
     boolean prepare(int r) {
+        return prepare(r, false);
+    }
+
+    /**
+     * As {@link #prepare(int)}; with {@code disk}, everything inside the band is kept too (a singularity works all
+     * through its sphere, not at a front), and it can run once every chunk within {@code r} is settled.
+     */
+    boolean prepare(int r, boolean disk) {
         int reach = (int) Math.ceil(Math.min(this.outer, r + AHEAD)) + 16;
         int cx0 = ((int) Math.floor(this.center.x) - reach) >> 4, cx1 = ((int) Math.floor(this.center.x) + reach) >> 4;
         int cz0 = ((int) Math.floor(this.center.z) - reach) >> 4, cz1 = ((int) Math.floor(this.center.z) + reach) >> 4;
@@ -74,7 +82,7 @@ final class BlastChunks {
         for (int cx = cx0; cx <= cx1; cx++) {
             for (int cz = cz0; cz <= cz1; cz++) {
                 double[] d = range(cx, cz);
-                if (d[0] > this.outer || d[1] < r - BEHIND || d[0] > r + AHEAD) {
+                if (d[0] > this.outer || !disk && d[1] < r - BEHIND || d[0] > r + AHEAD) {
                     continue;
                 }
                 long key = ChunkPos.pack(cx, cz);
@@ -95,7 +103,7 @@ final class BlastChunks {
                             });
                 }
                 // The shell at r needs its chunks settled: loaded, or known to be missing.
-                if (d[0] <= r + 1 && d[1] >= r - 1 && !loaded && k != Known.MISSING) {
+                if (d[0] <= r + 1 && (disk || d[1] >= r - 1) && !loaded && k != Known.MISSING) {
                     ready = false;
                 }
             }

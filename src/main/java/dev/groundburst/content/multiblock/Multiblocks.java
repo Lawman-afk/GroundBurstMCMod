@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 /**
  * Finds the controllers a block change may affect. Part blocks carry no block entity, so a change near a structure
  * asks every controller within one chunk whether the position is one of its cells. Structures reach at most 16 blocks
- * from their controller (the Strategic Assembly Hall 12), so one chunk of margin always reaches it.
+ * from their controller (the ICBM Assembly Hall 12), so one chunk of margin always reaches it.
  */
 public final class Multiblocks {
     private Multiblocks() {}

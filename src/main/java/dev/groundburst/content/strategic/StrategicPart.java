@@ -11,9 +11,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 
-/** A part only the Strategic Assembly Hall uses (DESIGN.md §15.2): what it is for, and where it goes. */
+/** A part only the ICBM Assembly Hall uses (DESIGN.md §15.2): what it is for, and where it goes. */
 public class StrategicPart extends Item {
-    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".strategic.hall_part", "Fitted at a Strategic Assembly Hall");
+    static final String T_HALL = GBLang.add(GroundBurst.MODID + ".strategic.hall_part", "Fitted at an ICBM Assembly Hall");
 
     private final String tip;
 

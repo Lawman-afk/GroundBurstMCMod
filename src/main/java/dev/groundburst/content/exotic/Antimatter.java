@@ -32,9 +32,9 @@ import net.neoforged.neoforge.common.Tags;
  */
 public final class Antimatter {
     /** The sphere it erases; its gamma flash's lethal and farthest reach (blocks, before the bomb scale). */
-    public static final float RADIUS = 48, GAMMA_LETHAL = 64, GAMMA_REACH = 96;
+    public static final float RADIUS = 67, GAMMA_LETHAL = 90, GAMMA_REACH = 134;
     /** A breached trap's sphere. */
-    public static final float BREACH_RADIUS = 4;
+    public static final float BREACH_RADIUS = 5.5f;
     /** {@code groundburst:gamma_flash}: the flash's damage (it goes through armour, not through walls). */
     public static final ResourceKey<DamageType> GAMMA_FLASH = ResourceKey.create(Registries.DAMAGE_TYPE, GroundBurst.id("gamma_flash"));
     /** A dose (0 to 1, see {@link #gamma}) at or over this kills. */

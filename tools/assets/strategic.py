@@ -1,4 +1,4 @@
-"""Whole weapons (DESIGN.md §15.2, Phase 8 slice 8c): the Strategic Assembly Hall.
+"""Whole weapons (DESIGN.md §15.2, Phase 8 slice 8c): the ICBM Assembly Hall.
 
 - Crane Rail (part block): a yellow box girder with a steel rail along its top and hazard-striped ends.
 - Controller (block): the machine cabinet, its placard a missile under a crane hook.

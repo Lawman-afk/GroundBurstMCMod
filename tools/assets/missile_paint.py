@@ -1,6 +1,6 @@
 """Missile liveries (the remaster after slice 9b; DESIGN.md §4.3): every missile painted with the material library
 (tools/gb/materials.py), its markings laid out in the missile's own item pixels, so a missile looks the same as an
-item, in flight (its own finer flight model), standing on a launcher and lying on the Strategic Assembly Hall's
+item, in flight (its own finer flight model), standing on a launcher and lying on the ICBM Assembly Hall's
 cradles.
 
     S = M.Surfacer(model)                       # after model.layout()

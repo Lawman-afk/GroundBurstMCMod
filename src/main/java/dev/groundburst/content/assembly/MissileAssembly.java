@@ -25,9 +25,10 @@ public final class MissileAssembly {
         NO_BODY("Fit a missile body"),
         NO_MOTOR("Fit a rocket motor"),
         WARHEAD_TOO_BIG("A class %s warhead needs a bigger body"),
-        NUCLEAR_NEEDS_STRATEGIC("A nuclear or exotic warhead needs a Strategic body"),
-        STRATEGIC_NUCLEAR_ONLY("A Strategic body carries only nuclear and exotic warheads"),
-        WHOLE_WEAPON("Built whole at a Strategic Assembly Hall"),
+        NUCLEAR_NEEDS_STRATEGIC("A nuclear warhead needs a Strategic body"),
+        STRATEGIC_NUCLEAR_ONLY("A Strategic body carries only nuclear warheads"),
+        WHOLE_WEAPON("Built whole at an ICBM Assembly Hall"),
+        EXOTIC_ICBM("Exotic: built whole at an ICBM Assembly Hall"),
         MOTOR_DOES_NOT_FIT("This motor fits %s"),
         OUTPUT_FULL("Take the finished missile out first"),
         // The missile assemblers (DESIGN.md §10.4): each builds one class.
@@ -66,13 +67,16 @@ public final class MissileAssembly {
     }
 
     /**
-     * Whether a body takes a warhead: a nuclear or exotic warhead only a Strategic body (and that body nothing else); any
-     * other a body of its class or bigger.
+     * Whether a body takes a warhead: a nuclear warhead only a Strategic body (and that body nothing else); any other a
+     * body of its class or bigger. An exotic warhead takes none: it flies only as an ICBM, built at the hall from its core.
      */
     public static Problem fit(ItemStack warhead, SizeClass body) {
         var kind = AssemblyStats.kindOf(warhead);
         if (kind != null && kind.wholeWeapon()) {
             return Problem.WHOLE_WEAPON;                   // a thermonuclear warhead is only ever built into its missile
+        }
+        if (kind != null && kind.exotic()) {
+            return Problem.EXOTIC_ICBM;
         }
         boolean strategic = kind != null && kind.strategic();
         if (strategic != (body == SizeClass.XL)) {
@@ -146,7 +150,7 @@ public final class MissileAssembly {
 
     /**
      * A missile's parts: its warhead, body and motor, then its guidance unit and module if it has them. None for an
-     * intercontinental missile: only the Strategic Assembly Hall takes those apart.
+     * intercontinental missile: only the ICBM Assembly Hall takes those apart.
      */
     public static List<ItemStack> takeApart(ItemStack missile) {
         MissileSpec s = MissileItem.spec(missile);

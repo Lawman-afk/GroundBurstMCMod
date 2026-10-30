@@ -85,6 +85,7 @@ public final class AssemblyStats {
     static final String PULLS = GBLang.add(P + "pulls", "Pulls In");
     static final String TEARS = GBLang.add(P + "tears", "Tears Loose");
     static final String COLLAPSES = GBLang.add(P + "collapses", "Collapses After");
+    static final String NOTE_FEEDS = GBLang.add(P + "feeds", "Grows with what it eats: these on open ground");
     static final String V_DAYS = GBLang.add(P + "days", "%s days");
     static final String V_DAY = GBLang.add(P + "day", "1 day");
     static final String V_HOURS = GBLang.add(P + "hours", "%s hours");
@@ -129,7 +130,7 @@ public final class AssemblyStats {
 
     /** The warhead kind a stack is (null: not a warhead). */
     public static @Nullable ChargeKind kindOf(ItemStack stack) {
-        // A warhead: one the bench assembles from a core, or one the Strategic Assembly Hall builds whole (no core).
+        // A warhead: one the bench assembles from a core, or one the ICBM Assembly Hall builds whole (no core).
         return stack.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c && (WarheadAssembly.coreOf(c) != null || c.kind.wholeWeapon())
                 ? c.kind : null;
     }
@@ -216,7 +217,8 @@ public final class AssemblyStats {
             lethal = Math.max(lethal, dev.groundburst.content.nuclear.NeutronBurst.LETHAL_RADIUS);
         }
         if (kind == ChargeKind.SINGULARITY_WARHEAD) {    // nothing escapes from well inside its pull
-            return new Area(dev.groundburst.blast.Singularities.PULL * 0.4f, dev.groundburst.blast.Singularities.PULL);
+            float hole = dev.groundburst.blast.Singularities.TYPICAL_REACH;
+            return new Area(dev.groundburst.blast.Singularities.stoneReach(hole), dev.groundburst.blast.Singularities.pullRadius(hole));
         }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {     // its gamma flash, in the open
             return new Area(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL, dev.groundburst.content.exotic.Antimatter.GAMMA_REACH);
@@ -266,11 +268,13 @@ public final class AssemblyStats {
             }
         }
         if (kind == ChargeKind.SINGULARITY_WARHEAD) {      // its black hole (its collapse's blast is under its profile)
-            out.add(Stat.row(HORIZON, blocks(dev.groundburst.blast.Singularities.HORIZON)));
-            out.add(Stat.row(PULLS, blocks(dev.groundburst.blast.Singularities.PULL)));
+            float reach = dev.groundburst.blast.Singularities.TYPICAL_REACH;
+            out.add(Stat.row(HORIZON, blocks(dev.groundburst.blast.Singularities.horizon(reach))));
+            out.add(Stat.row(PULLS, blocks(dev.groundburst.blast.Singularities.pullRadius(reach))));
             if (full) {
-                out.add(Stat.row(TEARS, blocks(dev.groundburst.blast.Singularities.RIP)));
-                out.add(Stat.row(COLLAPSES, Component.translatable(V_SECONDS, dev.groundburst.blast.Singularities.GROW / 20)));
+                out.add(Stat.row(TEARS, blocks(dev.groundburst.blast.Singularities.stoneReach(reach))));
+                out.add(Stat.row(COLLAPSES, Component.translatable(V_SECONDS, dev.groundburst.blast.Singularities.LIFE / 20)));
+                out.add(Stat.note(Component.translatable(NOTE_FEEDS)));
                 out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }

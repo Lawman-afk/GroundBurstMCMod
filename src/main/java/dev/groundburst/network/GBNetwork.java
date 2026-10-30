@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "15";
+    public static final String PROTOCOL_VERSION = "16";
 
     private GBNetwork() {}
 
@@ -34,6 +34,8 @@ public final class GBNetwork {
         // Singularities (DESIGN.md §16.2): a singularity warhead's black hole, drawn on the client by SingularityFx.
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Start.TYPE, dev.groundburst.blast.SingularityPayloads.Start.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.startHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Grow.TYPE, dev.groundburst.blast.SingularityPayloads.Grow.CODEC,
+                (payload, context) -> dev.groundburst.blast.SingularityPayloads.growHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Torn.TYPE, dev.groundburst.blast.SingularityPayloads.Torn.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.tornHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Collapse.TYPE, dev.groundburst.blast.SingularityPayloads.Collapse.CODEC,

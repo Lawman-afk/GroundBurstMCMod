@@ -29,7 +29,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 /**
  * The Large Silo Door's middle (DESIGN.md §22.2): it moves the leaves toward open while the door has a redstone signal
  * and toward shut while it has none, a tick at a time ({@link #TRAVEL} ticks end to end, as the Titan II's door took
- * seventeen to twenty seconds, quickened), with the silo doors' grinding sound as it starts; sets its blocks' gap as
+ * seventeen to twenty seconds, quickened), with its own grinding sound as long as that as it starts; sets its blocks' gap as
  * the leaves pass each block; and tells the client where the leaves started from and when, so it draws them sliding
  * smoothly. A door the world's old sites left {@code stuck} stays where it rusted, whatever the signal.
  */
@@ -62,7 +62,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
             this.from = this.position;
             this.since = level.getGameTime();
             this.wanted = powered;
-            level.playSound(null, this.worldPosition, GBSounds.SILO_DOORS.get(), SoundSource.BLOCKS, 3f, powered ? 1f : 0.94f);
+            // Its own sound, as long as the leaves take end to end; at one pitch both ways, so the leaves seat as it ends.
+            level.playSound(null, this.worldPosition, GBSounds.LARGE_SILO_DOOR.get(), SoundSource.BLOCKS, 3f, 1f);
             setChanged();
             sync();
         }

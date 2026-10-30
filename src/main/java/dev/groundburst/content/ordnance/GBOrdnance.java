@@ -118,7 +118,7 @@ public final class GBOrdnance {
             "boosted_fission_warhead", "Boosted Fission Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.BOOSTED_FISSION_WARHEAD);
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> NEUTRON_WARHEAD = bomb(
             "neutron_warhead", "Neutron Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.NEUTRON_WARHEAD);
-    /** Slice 8c: only ever built whole into an intercontinental missile (the Strategic Assembly Hall). */
+    /** Slice 8c: only ever built whole into an intercontinental missile (the ICBM Assembly Hall). */
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> THERMONUCLEAR_WARHEAD = bomb(
             "thermonuclear_warhead", "Thermonuclear Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.THERMONUCLEAR_WARHEAD);
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> COBALT_WARHEAD = bomb(

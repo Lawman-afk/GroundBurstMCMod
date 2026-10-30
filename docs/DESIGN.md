@@ -1846,6 +1846,8 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
   canisters, air-burst over the target like the other cluster warheads.
 
 ### 16.10 As built: the Antimatter Warhead (Phase 11, 2026-10-30)
+(Since the user's look, §16.12: built whole at the ICBM Assembly Hall as an ICBM, its sphere 67 and its flash 90 and
+134. What follows is as first built.)
 The user's choices for Phase 11: the Antimatter, Singularity and Storm Bombs this round (the orbital strike later), one
 at a time, each shown before the next; missile classes by strength: antimatter and singularity Strategic (XL, beside
 the nukes, over §9.2's M), the storm Heavy (L).
@@ -1891,6 +1893,8 @@ the nukes, over §9.2's M), the storm Heavy (L).
   needs the Strategic body.
 
 ### 16.11 As built: the Singularity Warhead (Phase 11, 2026-10-30)
+(Since the user's look, §16.12: built whole at the ICBM Assembly Hall as an ICBM; it lives a minute and grows by what
+it eats, its size all from one reach. What follows is as first built.)
 - **Warhead and missile.** `ChargeKind.SINGULARITY_WARHEAD`, exotic and class XL like the antimatter warhead (only the
   Strategic body; full effect only on a missile's arrival). Core: the **Singularity Core** (a singularity seed, four
   containment cells, a quantum circuit). Its **Singularity Missile**. Stats: Event Horizon 10, Pulls In 48, Tears Loose
@@ -1935,6 +1939,68 @@ the nukes, over §9.2's M), the storm Heavy (L).
 - GameTests (`ExoticTests`, a tenth of the size growing 60 ticks): a pig beside it is swallowed, a pig at its pull's
   edge lives; stone beside it and dirt 2 off are torn loose before it collapses while obsidian 2 off holds; bedrock
   stays, stone past its reach stays; it collapses; a placed one opens a small one that collapses.
+
+### 16.12 After the user's look: the ICBM Assembly Hall, bigger exotic weapons (Phase 11, 2026-10-30)
+The user's review after the antimatter and singularity warheads: the Strategic Assembly Hall and the Strategic Missile
+Assembler, two machines with like names, confused; the special weapons should be made in the hall; both were far too
+weak (the antimatter 30-50% bigger; the singularity tiny: it should last much longer and grow with what it eats,
+reaching the antimatter's new size on average and more when well fed); the Large Silo Door's sound stopped long
+before its leaves did.
+- **The ICBM Assembly Hall.** The hall's names (block, structure spawner, JEI's "ICBM Assembly", its parts' tooltips,
+  its problem lines, the Field Manual) say ICBM Assembly Hall; its ids (`strategic_assembly_hall`, the menu, the
+  classes) stay, so worlds keep their halls. Its screen names its missiles "... ICBM", as the item list does. The
+  manual tells it apart from the Strategic Missile Assembler.
+- **Exotic weapons are ICBMs, built whole at the hall.** An exotic core (Antimatter Trap, Singularity Core) in the
+  primary slot is a warhead by itself: with an Intercontinental Booster (no secondary, no jacket, else
+  `Problem.EXOTIC_ALONE`) it makes an **Antimatter ICBM** or a **Singularity ICBM** (XXL, the ICBM motor, 3,000
+  blocks) in a minute and a half (`StrategicAssembly.EXOTIC_TICKS`); TAKE APART gives the core and the booster back.
+  No missile assembler takes an exotic warhead (`MissileAssembly.Problem.EXOTIC_ICBM`). `wholeWeapon()` stays the
+  fusion warheads' and the superweapons': JEI hides those warheads, and the bench still makes the exotic bomb (core
+  and Strategic casing, class XL), which only breaches. The cores' tooltip says both. JEI lists the two new recipes;
+  the cradles show both (`LOOK_ANTIMATTER`, `LOOK_SINGULARITY`).
+- **Their missiles rebuilt intercontinental** (`missiles.py`, material library): three stages and the four sections
+  the crane lays (stage tops 60/104 and 62/108, the bus to 144 and 148). The antimatter ICBM white on four nozzles and
+  four small swept fins, black interstages, a violet band at each stage's foot, a confinement ring (a lit coil between
+  collars) on each stage, raceways, hazard chevrons under the bus; the singularity ICBM matte black and finless on
+  four nozzles, four verniers, a raceway, three brass rings round the second stage and two round the third, a lit
+  violet slit near the top of each stage.
+- **Antimatter 40% bigger:** the sphere 67 (was 48), the flash lethal to 90 and hurting to 134 (were 64 and 96), a
+  breach 5.5 (was 4).
+- **The singularity feeds** (`Singularities`, `SingularityJob`, rewritten). Its size is one number, its **reach**:
+  `SEED sqrt(u) + FEED cbrt(m)`, u its age over its life and m the blocks' worth it has swallowed, at most `MAX_REACH`
+  (SEED 26 and MAX 110 times the bomb scale; FEED 0.56 needs none, as the reach settles where the mass it holds
+  gives it). It lives **1200 ticks** (was 400). Everything follows the reach: the horizon 0.3 of it; the pull out to
+  1.5 of it + 2, of strength gm = 0.12 (0.45 reach)^2, so nothing on foot outruns it from within 0.45 of its reach
+  (`pullOn(to, gm)`: min(0.6, gm / d^2) inward and a third of that round); the collapse blast at reach / 32 (crater
+  16 at scale 1). On open ground what it eats settles the reach at about SEED / (1 - 1.159 FEED) = 74 (half a sphere
+  of stone out to 0.906 of it; a simulation of its minute: 30 at 10 s, 43 at 20, 52 at 30, 64 at 45, 74 at 60); in a
+  mountainside (three quarters solid) about 92, buried in rock about 94, held back by its eating rate (1500 blocks a
+  tick) more than by its cap; in the open air 26. The screens give the open-ground figures (horizon 22,
+  pull 113, tears stone to 67, a minute) and a note that it grows with what it eats.
+  - *Tearing*, a tidal pull: a block at distance d goes once hold * d^6 <= reach^6 (hold: hardness + 0.3, a fluid
+    0.5), so earth goes to 1.04 of the reach (the sweep's edge), stone to 0.906, deepslate 0.82, obsidian 0.52: the
+    hole's edge is sharp. Within the horizon everything breakable goes; outside it only open blocks (checked after the
+    cheaper pull test). Torn blocks feed it (a full block 1, a fluid its amount / 8, anything else 0.25), and so do
+    swallowed things (a creature its bulk, at least 1; a falling block 1; anything else 0.2). Up to 1500 blocks a tick
+    (was 900); the first 120 told to players within 256. Each pass starts two shells inside the nearest breakable block
+    the last found (every 12th from the middle), so the eaten hollow is not swept again; columns share their chunk
+    lookups. Every chunk within its reach stays loaded (`BlastChunks.prepare(r, disk)`).
+  - *Clients* are told its reach every 4 ticks (`SingularityPayloads.Grow`; Start carries its reach and life,
+    Collapse its last reach; protocol 16) and ease it in; the horizon, the disc (out to 0.7-0.95 of the reach), the
+    jets (to 5 horizons), the debris (orbiting at 0.2 gm), the drone and the sky's tint follow it; each player's own
+    client pulls its player by the same gm.
+  - A breached one reaches 6, lives 80 ticks and does not feed.
+- **The Large Silo Door's sound**: its own (`silo.large_door`, `construction/large_silo_door`, 8.9 s): the bolts
+  drawing back, the drive spinning up and its whine climbing with the leaves' smoothstep speed, the rollers' rumble and
+  a click at each rail joint (one each half block of their travel) as loud as they go, the motor winding down as they
+  ease in, a heavy seat at 8 s and the bolts shooting home; at one pitch both ways, so it ends as they seat. The
+  Missile Silo keeps its four-second doors.
+- GameTests: the bench's missile line and the Strategic Missile Assembler refuse exotic warheads, the hall builds
+  their ICBMs from the cores and takes them apart to them; the hall builds an Antimatter ICBM (refusing a secondary
+  with it) and takes it apart; a singularity over bedrock tears what is set round it (stone beside it, dirt 2 off; not
+  obsidian 2 off nor stone 4 off) and swallows a pig beside it but not one 5.4 off; a singularity buried in dirt (six
+  hundredths of its size) feeds past three times its unfed reach and tears dirt 4 off; the antimatter tests at a scale
+  that keeps their sphere 4.8.
 
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
@@ -2039,6 +2105,7 @@ are delivered.
   when formed). The full platforms, guidance and multi-stage bodies remain Phase 9.
 
 ### 15.2 As built: the Strategic Assembly Hall and whole weapons (slice 8c, 2026-10-22)
+(Named the ICBM Assembly Hall since Phase 11, when it took the exotic ICBMs too: §16.12.)
 The user's rule after 8a: the Strategic missile is the peak of what fits in a missile; anything bigger gets its own
 fabricator, a multiblock that assembles the full weapon all at once, to be placed on the Launch Complex. The user chose
 the long horizontal hall (over an upright assembly tower).
@@ -2997,7 +3064,8 @@ concrete (radome panels), sand and string (sandbags); the rusted ones from eight
 
 **Two multiblocks.**
 - *Large Silo Door* (the user's idea): two leaves that slide apart on rails over a 7x7 opening, opened by a redstone
-  signal (the user's choice), with a hydraulic sound. Purely for show: no missile, nothing to fire. One item places the
+  signal (the user's choice), with a hydraulic sound (its own since Phase 11, as long as the leaves take: §16.12).
+  Purely for show: no missile, nothing to fire. One item places the
   door and its rails; the sites use it rusted and stuck part-open.
 - *Search Radar*: a wide curved reflector on a turning head over a pedestal (the AN/FPS-20 of the Cold War stations),
   turning while it has a redstone signal; the sites' ones are stopped, or toppled and broken.
@@ -3597,6 +3665,9 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | After the user's look at the exotic warheads: the Strategic Assembly Hall is the **ICBM Assembly Hall** (names only; the ids stay, so worlds keep their halls), and the exotic weapons are built whole there as ICBMs from their cores alone and a booster (no missile assembler takes them; the bench still makes their bombs, which only breach) (§16.12). |
+| 2026-10-30 | Both exotic warheads were far too weak (the user): the antimatter sphere 67 (+40%, its flash with it); the singularity lives a minute and feeds, its size all from one reach, `26 sqrt(u) + 0.56 cbrt(eaten)`, about 74 on open ground (stone to 67, the antimatter's sphere), more in a mountain or the sea, at most 110; a tidal pull (d^6) gives its hole a sharp edge, and clients are told the reach as it grows (§16.12). |
+| 2026-10-30 | The Large Silo Door has a sound of its own as long as its leaves take (8 s), following their speed; the Missile Silo keeps its four-second one (§16.12). |
 | 2026-10-30 | The Singularity Warhead built (§16.11): its pull and tearing grow with it, tearing exposed blocks the weakest first by hardness against an inverse-power pull (not a straight erasure), with neighbour updates so sand and water follow; its collapse is an ordinary blast profile. The black hole is drawn as a depth-writing black sphere so what is behind it is hidden; gravitational lensing (a screen-space post effect) is left out for now, the photon ring, the disc and the drained sky standing in for it. |
 | 2026-10-30 | Phase 11 begun with the user's choices: the Antimatter, Singularity and Storm Bombs this round (the orbital strike later), each shown before the next; classes by strength, antimatter and singularity Strategic (XL) and the storm Heavy (L), over §9.2's M. The Antimatter Warhead built (§16.10): like a nuclear warhead it rides only the Strategic body and goes off in full only on a missile's arrival (a breach of 4 otherwise); its sphere erases block by block, shell by shell, within the blast engine's budget, never ahead of the sphere players see; its gamma flash is shielded by what lies between. New models are painted with the material library (the Antimatter Trap too, though the cores before it are plainly shaded). |
 | 2026-10-30 | The public repository moved to a new one, github.com/Lawman-afk/GroundBurstMCMod (the user made it): the old repository's page kept a stale contributor entry from the history before its rewrite, though GitHub's own API and statistics counted only Lawman-afk; a new repository counts afresh, and lists Lawman-afk alone. The whole history moved, joined to the new repository's starting commit by a merge that keeps the project's files as they were. |

@@ -1,4 +1,4 @@
-"""The missile assemblers (DESIGN.md §10.4): one multiblock per class of missile below the Strategic Assembly Hall's.
+"""The missile assemblers (DESIGN.md §10.4): one multiblock per class of missile below the ICBM Assembly Hall's.
 
 Each formed model is drawn by its controller (GeckoLib); the missile it builds is not part of it: the game draws the
 warhead's own missile (tools/assets/missiles.py) section by section at the model's "missile" bone, lying on the cradles

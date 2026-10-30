@@ -667,6 +667,15 @@
     ],
     "subtitle": "subtitles.groundburst.silo.doors"
   },
+  "silo.large_door": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:construction/large_silo_door"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.silo.large_door"
+  },
   "singularity.drone": {
     "sounds": [
       {

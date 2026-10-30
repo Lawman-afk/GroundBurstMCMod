@@ -31,7 +31,7 @@ public final class MissileParts {
          * has no item: GBAssembly.MOTORS is indexed by ordinal.)
          */
         CRUISE("cruise_engine", 1500, SizeClass.S, SizeClass.M),
-        /** The Intercontinental Booster: only ever in a whole weapon from the Strategic Assembly Hall (no bench motor). */
+        /** The Intercontinental Booster: only ever in a whole weapon from the ICBM Assembly Hall (no bench motor). */
         ICBM("intercontinental_booster", 3000, SizeClass.XXL, SizeClass.XXL);
 
         public final String id;

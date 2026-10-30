@@ -3,7 +3,7 @@ package dev.groundburst.content.assembler;
 import dev.groundburst.content.assembly.SizeClass;
 
 /**
- * The four missile assemblers (DESIGN.md §10.4), one for each class of missile below the Strategic Assembly Hall's:
+ * The four missile assemblers (DESIGN.md §10.4), one for each class of missile below the ICBM Assembly Hall's:
  * which warheads each takes, how long it works and how much power it draws, and how its model shows the missile.
  */
 public enum AssemblerClass {

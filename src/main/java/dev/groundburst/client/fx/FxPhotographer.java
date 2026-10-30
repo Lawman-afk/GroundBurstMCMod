@@ -62,7 +62,7 @@ public final class FxPhotographer {
                 new Scene("nuke_tactical_aerial", "tactical_nuclear_warhead", 170, 24, List.of(300, 1200, 2400)),
                 // A contaminated zone 180 blocks round: its fallout clouds from outside, then the green sky from inside.
                 new Scene("fallout", "fallout", 260, -14, List.of(60, 400)),
-                // Slice 8c: the Strategic Assembly Hall at work (the crane laying the missile section by section), its
+                // Slice 8c: the ICBM Assembly Hall at work (the crane laying the missile section by section), its
                 // screen, the Launch Complex with an intercontinental missile, the H-bomb, and the cobalt warhead's plume.
                 new Scene("hall_aerial", "hall", 26, 24, List.of(60, 300, 700, 1000, 1260)),
                 new Scene("hall_ui", "hall", 4, 0, List.of(30)),
@@ -76,6 +76,10 @@ public final class FxPhotographer {
                 // Slice 8d: the hall building a Tsar (a minute and a half), the complex carrying one, and the Tsar itself.
                 new Scene("hall_tsar_aerial", "hall_tsar", 26, 24, List.of(60, 1000, 1850)),
                 new Scene("hall_tsar_ui", "hall_tsar", 4, 0, List.of(30)),
+                // Phase 11, after the user's look: the exotic ICBMs built whole at the hall from their cores alone.
+                new Scene("hall_antimatter_aerial", "hall_antimatter", 26, 24, List.of(60, 900, 1850)),
+                new Scene("hall_antimatter_ui", "hall_antimatter", 4, 0, List.of(30)),
+                new Scene("hall_singularity_aerial", "hall_singularity", 26, 24, List.of(1850)),
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
@@ -207,11 +211,11 @@ public final class FxPhotographer {
                 // Phase 11: an antimatter warhead arriving on top of a mesa of layered rock (ANTIMATTER_MESA high, the flat
                 // world being too shallow for its sphere): the flash, the white sphere growing and fading, then the void,
                 // from the plain to the west (a semicircle bitten clean out of the cliff) and from above (the bowl).
-                new Scene("antimatter", "antimatter_warhead", 130, -14, List.of(1, 6, 14, 30, 60, 90, 160, 300)),
-                new Scene("antimatter_aerial", "antimatter_warhead", 120, 32, List.of(40, 90, 260)),
-                // A singularity on the same mesa: growing for 20 s, tearing the rock loose round it, collapsing at 400.
-                new Scene("singularity", "singularity_warhead", 75, 4, List.of(20, 100, 200, 300, 380, 403, 420, 520)),
-                new Scene("singularity_aerial", "singularity_warhead", 100, 30, List.of(150, 300, 395, 600)),
+                new Scene("antimatter", "antimatter_warhead", 175, -12, List.of(1, 6, 14, 30, 60, 90, 160, 300)),
+                new Scene("antimatter_aerial", "antimatter_warhead", 165, 32, List.of(40, 90, 260)),
+                // A singularity on the same mesa: feeding on it for a minute and growing, collapsing at 1200.
+                new Scene("singularity", "singularity_warhead", 170, 4, List.of(40, 200, 400, 700, 1000, 1180, 1203, 1220, 1320)),
+                new Scene("singularity_aerial", "singularity_warhead", 170, 30, List.of(300, 700, 1190, 1400)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
@@ -451,7 +455,7 @@ public final class FxPhotographer {
 
     /** Thrown explosives in front of the camera: one of each, in flight, landing, smoking and going off. */
     /** The antimatter scene's mesa: its height, and how far it runs west of the burst (the rest of it east). */
-    private static final int ANTIMATTER_MESA = 50, MESA_WEST = 20, MESA_EAST = 70, MESA_HALF = 70;
+    private static final int ANTIMATTER_MESA = 50, MESA_WEST = 28, MESA_EAST = 90, MESA_HALF = 90;
 
     /**
      * A mesa of layered rock for the antimatter warhead to land on: bands of stone, andesite, tuff and granite under
@@ -616,7 +620,7 @@ public final class FxPhotographer {
      * A formed, powered Launch Complex with a Strategic tactical-nuke missile, aimed 400 blocks off and armed, and a Launch
      * Computer beside it (the "complex" scene launches at clock 25: 15 s of countdown, then ignition).
      */
-    /** Where the hall scenes put the Strategic Assembly Hall's controller. */
+    /** Where the hall scenes put the ICBM Assembly Hall's controller. */
     private static net.minecraft.core.BlockPos hallAt;
     private static net.minecraft.core.BlockPos assemblerAt;
 
@@ -652,7 +656,7 @@ public final class FxPhotographer {
     }
 
     /**
-     * The Strategic Assembly Hall, its length across the camera's view (controller facing north, the hall running
+     * The ICBM Assembly Hall, its length across the camera's view (controller facing north, the hall running
      * south from it), powered and given a thermonuclear missile's parts with GPS, and set to work.
      */
     private static void hallSite(ServerLevel level, int x, int ground) {
@@ -661,16 +665,27 @@ public final class FxPhotographer {
 
     /** As {@link #hallSite(ServerLevel, int, int)}, with {@code option} in the jacket slot (a Tertiary Stage: a Tsar). */
     private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option) {
+        hallSite(level, x, ground, option, net.minecraft.world.item.ItemStack.EMPTY);
+    }
+
+    /**
+     * As {@link #hallSite(ServerLevel, int, int, net.minecraft.world.item.ItemStack)}; with an exotic core for
+     * {@code exotic}, that alone in the primary slot (no secondary), building its ICBM.
+     */
+    private static void hallSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack option,
+            net.minecraft.world.item.ItemStack exotic) {
         hallAt = new net.minecraft.core.BlockPos(x, ground, -6);
         formed(level, hallAt, dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().get(), dev.groundburst.content.strategic.GBStrategic.HALL,
                 net.minecraft.core.Direction.NORTH);
         if (level.getBlockEntity(hallAt) instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity hall) {
             hall.revalidate();
             var inv = hall.inventory();
-            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_PRIMARY,
-                    dev.groundburst.content.strategic.StrategicAssembly.primaryFor(option));                // a Tsar's twin core
-            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_SECONDARY,
-                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.FUSION_SECONDARY.get()));
+            inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_PRIMARY, !exotic.isEmpty() ? exotic.copy()
+                    : dev.groundburst.content.strategic.StrategicAssembly.primaryFor(option));             // a Tsar's twin core
+            if (exotic.isEmpty()) {
+                inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_SECONDARY,
+                        new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.FUSION_SECONDARY.get()));
+            }
             inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_BOOSTER,
                     new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
             inv.setItem(dev.groundburst.content.strategic.StrategicAssemblyBlockEntity.SLOT_GUIDANCE,
@@ -1001,7 +1016,7 @@ public final class FxPhotographer {
     private static net.minecraft.core.BlockPos benchAt, pressAt;
     /** Set by the JEI plugin when JEI is running: opens its Assembly Bench recipes (the "assembly_jei" scene). */
     public static Runnable showAssemblyRecipes = () -> {};
-    /** Set by the JEI plugin when JEI is running: opens the Strategic Assembly Hall's recipes (the "hall_jei" scene). */
+    /** Set by the JEI plugin when JEI is running: opens the ICBM Assembly Hall's recipes (the "hall_jei" scene). */
     public static Runnable showHallRecipes = () -> {};
     /** Set by the JEI plugin: filters its list by some text (the "icbm_jei" scene). */
     public static java.util.function.Consumer<String> jeiFilter = s -> {};
@@ -1573,6 +1588,11 @@ public final class FxPhotographer {
                     hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
+                if (s.profile().equals("hall_antimatter") || s.profile().equals("hall_singularity")) {
+                    var cores = dev.groundburst.content.strategic.StrategicAssembly.exoticCores();
+                    hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY, cores.get(s.profile().equals("hall_antimatter") ? 0 : 1));
+                    return;
+                }
                 if (s.profile().equals("cobalt_plume")) {
                     dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.COBALT_WARHEAD,
                             net.minecraft.core.BlockPos.containing(at), null);
@@ -1794,7 +1814,8 @@ public final class FxPhotographer {
                     dev.groundburst.content.assembly.SizeClass.M, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
                     dev.groundburst.content.assembly.MissileParts.Guidance.UNGUIDED, false)));
         }
-        if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui")) && step >= 0 && clock == 12 && hallAt != null) {
+        if ((scene.name().equals("hall_ui") || scene.name().equals("hall_tsar_ui") || scene.name().equals("hall_antimatter_ui"))
+                && step >= 0 && clock == 12 && hallAt != null) {
             var hall = hallAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(hall) instanceof dev.groundburst.content.strategic.StrategicAssemblyBlockEntity be) {

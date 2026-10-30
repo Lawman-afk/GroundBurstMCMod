@@ -73,7 +73,7 @@ public enum ChargeKind {
     DIRTY_WARHEAD("dirty_warhead", 10, true),
     /**
      * A 1.2 Mt two-stage thermonuclear warhead (slice 8c): crater 150, deadly to 260, contamination 360 blocks round for
-     * three days. Only ever built whole, into an intercontinental missile, at the Strategic Assembly Hall.
+     * three days. Only ever built whole, into an intercontinental missile, at the ICBM Assembly Hall.
      */
     THERMONUCLEAR_WARHEAD("thermonuclear_warhead", 10, true),
     /**
@@ -158,20 +158,21 @@ public enum ChargeKind {
     }
 
     /**
-     * An exotic warhead (Phase 11): antimatter or a singularity. Like a nuclear one it rides only the Strategic missile
-     * and goes off in full only on a missile's arrival; set off any other way its containment fails (a breach).
+     * An exotic warhead (Phase 11): antimatter or a singularity. It flies only as an ICBM, built whole at the ICBM
+     * Assembly Hall from its core, and goes off in full only on a missile's arrival; set off any other way (the bench
+     * makes a bomb of it) its containment fails (a breach).
      */
     public boolean exotic() {
         return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD;
     }
 
-    /** It rides only the Strategic missile body, which carries nothing else: the nuclear warheads and the exotic ones. */
+    /** Only a Launch Complex or a Missile Silo fires it: the nuclear warheads (on the Strategic body) and the exotic ones. */
     public boolean strategic() {
         return nuclear() || exotic();
     }
 
     /**
-     * A warhead only ever built whole into its missile: the Strategic Assembly Hall's intercontinental ones, and the
+     * A warhead only ever built whole into its missile: the ICBM Assembly Hall's fusion ones, and the
      * superweapons' ammunition.
      */
     public boolean wholeWeapon() {

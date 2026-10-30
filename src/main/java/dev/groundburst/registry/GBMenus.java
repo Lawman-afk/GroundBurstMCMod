@@ -52,7 +52,7 @@ public final class GBMenus {
     /** The Cruise Missile Launcher's (DESIGN.md §17.11): its two boxes' missiles. */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRUISE_LAUNCHER = machine("cruise_launcher", () -> MachineLayouts.CRUISE_LAUNCHER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ASSEMBLY_BENCH = machine("assembly_bench", () -> MachineLayouts.ASSEMBLY_BENCH);
-    /** The Strategic Assembly Hall's controller screen (DESIGN.md §15.2). */
+    /** The ICBM Assembly Hall's controller screen (DESIGN.md §15.2). */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> STRATEGIC_ASSEMBLY = machine("strategic_assembly_hall",
             () -> MachineLayouts.STRATEGIC_ASSEMBLY);
     /** The four missile assemblers' controller screen (DESIGN.md §10.4), shared: titled with the controller's name. */

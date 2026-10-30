@@ -1155,6 +1155,15 @@
       },
       {
         "when": [
+          "antimatter_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_part4"
+        }
+      },
+      {
+        "when": [
           "antimatter_warhead_s1",
           "strategic_antimatter_warhead_s1",
           "icbm_antimatter_warhead_s1",
@@ -1168,11 +1177,33 @@
       },
       {
         "when": [
+          "antimatter_warhead_s2",
+          "strategic_antimatter_warhead_s2",
+          "icbm_antimatter_warhead_s2",
+          "flight_strategic_antimatter_warhead_s2",
+          "flight_icbm_antimatter_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_s2"
+        }
+      },
+      {
+        "when": [
           "antimatter_warhead_stage1"
         ],
         "model": {
           "type": "minecraft:model",
           "model": "groundburst:item/missile/antimatter_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "antimatter_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/antimatter_warhead_stage2"
         }
       },
       {
@@ -1218,6 +1249,15 @@
       },
       {
         "when": [
+          "singularity_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_part4"
+        }
+      },
+      {
+        "when": [
           "singularity_warhead_s1",
           "strategic_singularity_warhead_s1",
           "icbm_singularity_warhead_s1",
@@ -1231,11 +1271,33 @@
       },
       {
         "when": [
+          "singularity_warhead_s2",
+          "strategic_singularity_warhead_s2",
+          "icbm_singularity_warhead_s2",
+          "flight_strategic_singularity_warhead_s2",
+          "flight_icbm_singularity_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_s2"
+        }
+      },
+      {
+        "when": [
           "singularity_warhead_stage1"
         ],
         "model": {
           "type": "minecraft:model",
           "model": "groundburst:item/missile/singularity_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "singularity_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/singularity_warhead_stage2"
         }
       },
       {

@@ -54,7 +54,7 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return nuclear() || exotic();
     }
 
-    /** A whole weapon from the Strategic Assembly Hall (an intercontinental missile). */
+    /** A whole weapon from the ICBM Assembly Hall (an intercontinental missile). */
     public boolean intercontinental() {
         return this.body == SizeClass.XXL;
     }

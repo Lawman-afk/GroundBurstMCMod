@@ -33,7 +33,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A singularity as the client sees it (DESIGN.md §16.2; the server's side is {@link Singularities}):
  * <ul>
- * <li>its event horizon, a perfectly black sphere growing as the server's does, ringed by a thin bright photon ring;</li>
+ * <li>its event horizon, a perfectly black sphere growing as the server says it has (by what it has eaten:
+ * {@link SingularityPayloads.Grow}, smoothed between), ringed by a thin bright photon ring;</li>
  * <li>its accretion disc, tilted a little so it shows from the side: hot white-lilac at its inner edge cooling to deep
  * violet, streaked and turning, faster nearer the hole;</li>
  * <li>two jets out along the disc's axis, flickering;</li>
@@ -47,6 +48,8 @@ public final class SingularityFx {
     static final Identifier DISC = GroundBurst.id("textures/fx/accretion.png");
     /** Ticks the horizon takes to shrink away, the collapse's shell to spread, and a hole is kept after it collapses. */
     private static final int SHRINK = 6, SHELL = 14, AFTER = 40;
+    /** Ticks a new reach from the server is eased in over (it is told every four). */
+    private static final double EASE = 4;
     private static final double SOUND_SPEED = 17.15, VIRTUAL_DISTANCE = 8;
     /** How steep the disc lies, degrees from flat. */
     private static final double TILT = 18;
@@ -57,6 +60,7 @@ public final class SingularityFx {
 
     public static void register() {
         SingularityPayloads.startHook = SingularityFx::start;
+        SingularityPayloads.growHook = SingularityFx::grow;
         SingularityPayloads.tornHook = SingularityFx::torn;
         SingularityPayloads.collapseHook = SingularityFx::collapse;
     }
@@ -71,10 +75,15 @@ public final class SingularityFx {
         float flash;
         double collapseHeard = Double.NaN;
         Drone drone;
+        /** Its reach as last drawn and as the server last said, and when it said so (eased between). */
+        float reachFrom, reachTo;
+        double reachAt;
 
         Hole(SingularityPayloads.Start start, double born) {
             this.start = start;
             this.born = born;
+            this.reachFrom = this.reachTo = start.reach();
+            this.reachAt = born + start.age();
             this.seed = start.id() * 7919;
             double yaw = (start.id() * 2.399963) % (2 * Math.PI), tilt = Math.toRadians(TILT);
             this.normal = new Vec3(Math.sin(tilt) * Math.cos(yaw), Math.cos(tilt), Math.sin(tilt) * Math.sin(yaw)).normalize();
@@ -90,19 +99,29 @@ public final class SingularityFx {
             return now - this.born;
         }
 
-        /** How far through its growth it is, 0 to 1 (held at the moment it collapsed). */
+        /** How far through its life it is, 0 to 1 (held at the moment it collapsed). */
         float growth(double now) {
             double age = Double.isNaN(this.collapsed) ? age(now) : this.collapsed - this.born;
-            return (float) Math.max(0, Math.min(1, age / Math.max(1, this.start.grow())));
+            return (float) Math.max(0, Math.min(1, age / Math.max(1, this.start.life())));
+        }
+
+        /** Its reach now: the server's last word, eased in. */
+        float reach(double now) {
+            double u = Math.max(0, Math.min(1, (now - this.reachAt) / EASE));
+            return (float) (this.reachFrom + (this.reachTo - this.reachFrom) * u);
+        }
+
+        /** The server says it reaches {@code reach} now. */
+        void grew(float reach, double now) {
+            this.reachFrom = reach(now);
+            this.reachTo = reach;
+            this.reachAt = now;
         }
 
         /** The event horizon's radius now: as the server's while it grows, shrinking to nothing as it collapses. */
         float horizon(double now) {
-            if (Double.isNaN(this.collapsed)) {
-                return Singularities.horizon(this.start.horizon(), age(now), this.start.grow());
-            }
-            float at = Singularities.horizon(this.start.horizon(), this.collapsed - this.born, this.start.grow());
-            return (float) (at * Math.max(0, 1 - (now - this.collapsed) / SHRINK));
+            float at = Singularities.horizon(reach(now));
+            return Double.isNaN(this.collapsed) ? at : (float) (at * Math.max(0, 1 - (now - this.collapsed) / SHRINK));
         }
 
         /** How strongly its disc and jets show: whole while it grows, gone as it collapses. */
@@ -114,9 +133,9 @@ public final class SingularityFx {
             return !Double.isNaN(this.collapsed) && now - this.collapsed > AFTER;
         }
 
-        /** The debris's pull (stronger for a bigger hole). */
-        double pullK() {
-            return 26 * Math.pow(this.start.pull() / Singularities.PULL, 3);
+        /** The debris's pull (stronger for a bigger hole): a share of its pull on creatures, so the debris spirals in slowly. */
+        double pullK(double now) {
+            return 0.2 * Singularities.gm(reach(now));
         }
     }
 
@@ -125,10 +144,22 @@ public final class SingularityFx {
         if (mc.level == null) {
             return;
         }
+        Hole old = ACTIVE.get(start.id());
+        if (old != null && old.drone != null) {
+            mc.getSoundManager().stop(old.drone);
+        }
         Hole hole = new Hole(start, Spectacle.now() - start.age());
         ACTIVE.put(start.id(), hole);
         hole.drone = new Drone(hole);
         mc.getSoundManager().play(hole.drone);
+    }
+
+    /** It has grown: its new reach, eased in. */
+    private static void grow(SingularityPayloads.Grow grow) {
+        Hole hole = ACTIVE.get(grow.id());
+        if (hole != null && Double.isNaN(hole.collapsed)) {
+            hole.grew(grow.reach(), Spectacle.now());
+        }
     }
 
     /** Blocks torn loose: each a chunk of itself, set orbiting; now and then the crunch of the ground tearing. */
@@ -141,6 +172,7 @@ public final class SingularityFx {
         Vec3 c = hole.center();
         Vec3 ear = mc.gameRenderer.mainCamera().position();
         float q = Spectacle.quality();
+        double k = hole.pullK(Spectacle.now());
         int sounds = 0;
         for (int i = 0; i < torn.positions().length; i++) {
             BlockPos at = BlockPos.of(torn.positions()[i]);
@@ -154,12 +186,12 @@ public final class SingularityFx {
             // Sent round the hole (a little short of an orbit, so it spirals in), and lifted a little off where it lay.
             Vec3 round = hole.normal.cross(r);
             round = round.lengthSqr() < 1e-6 ? hole.e1 : round.normalize();
-            Vec3 v = round.scale(Math.sqrt(hole.pullK() / d) * 0.75).add(hole.normal.scale(0.06));
+            Vec3 v = round.scale(Math.sqrt(k / d) * 0.75).add(hole.normal.scale(0.06));
             float size = 0.3f + RANDOM.nextFloat() * 0.35f;
             Debris.Chunk chunk = new Debris.Chunk(state, Debris.tint(state, mc.level, at), RANDOM, p.x, p.y, p.z, v.x, v.y, v.z, size)
-                    .orbit(c.x, c.y, c.z, hole.normal.x, hole.normal.y, hole.normal.z, hole.pullK(), () -> hole.horizon(Spectacle.now()));
+                    .orbit(c.x, c.y, c.z, hole.normal.x, hole.normal.y, hole.normal.z, k, () -> hole.horizon(Spectacle.now()));
             Spectacle.DEBRIS.add(chunk, q);
-            if (sounds < 2 && RANDOM.nextFloat() < 0.08f && ear.distanceTo(p) < 72) {
+            if (sounds < 2 && RANDOM.nextFloat() < 0.08f && ear.distanceTo(p) < 96) {
                 mc.getSoundManager().play(new SimpleSoundInstance(GBSounds.SINGULARITY_TEAR.get(), SoundSource.BLOCKS, 1.4f,
                         0.75f + RANDOM.nextFloat() * 0.5f, RANDOM, p.x, p.y, p.z));
                 sounds++;
@@ -174,13 +206,14 @@ public final class SingularityFx {
             return;
         }
         double now = Spectacle.now();
+        hole.grew(collapse.reach(), now - EASE);           // its last reach, at once
         hole.collapsed = now;
         Vec3 eye = mc.gameRenderer.mainCamera().position();
         Vec3 c = hole.center();
         double d = eye.distanceTo(c);
         boolean seen = mc.level.clip(new ClipContext(eye, c, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player)).getType() == HitResult.Type.MISS;
         float facing = 0.35f + 0.65f * (float) Math.max(0, mc.player.getViewVector(1).dot(c.subtract(eye).normalize()));
-        float near = (float) (1 / (1 + Math.pow(d / (hole.start.horizon() * 8 + 30), 2)));
+        float near = (float) (1 / (1 + Math.pow(d / (Singularities.horizon(collapse.reach()) * 8 + 30), 2)));
         hole.flash = 0.7f * GBClientConfig.FLASH_STRENGTH.get().floatValue() * near * facing * (seen ? 1 : 0.25f);
         hole.collapseHeard = now + d / SOUND_SPEED;
     }
@@ -217,7 +250,7 @@ public final class SingularityFx {
         double now = Spectacle.now();
         float most = 0;
         for (Hole h : ACTIVE.values()) {
-            double reach = h.start.pull() * 1.6;
+            double reach = Singularities.pullRadius(h.reach(now)) * 1.2;
             double d = camera.distanceTo(h.center());
             if (d < reach) {
                 most = Math.max(most, (float) ((1 - d / reach) * 0.7 * (0.3 + 0.7 * h.growth(now)) * h.presence(now)));
@@ -238,8 +271,9 @@ public final class SingularityFx {
             Hole h = it.next();
             if (player != null && Double.isNaN(h.collapsed) && !player.isCreative() && !player.isSpectator()) {
                 Vec3 to = h.center().subtract(player.getBoundingBox().getCenter());
-                if (to.length() <= h.start.pull()) {
-                    player.addDeltaMovement(Singularities.pullOn(to, h.start.pull(), Singularities.strength(h.growth(now))));
+                float reach = h.reach(now);
+                if (to.length() <= Singularities.pullRadius(reach)) {
+                    player.addDeltaMovement(Singularities.pullOn(to, Singularities.gm(reach)));
                 }
             }
             if (!Double.isNaN(h.collapseHeard) && now >= h.collapseHeard) {
@@ -279,7 +313,7 @@ public final class SingularityFx {
             if (!Double.isNaN(h.collapsed)) {
                 double u = (now - h.collapsed) / SHELL;
                 if (u >= 0 && u < 1) {
-                    float big = h.start.horizon();
+                    float big = Singularities.horizon(h.reachTo);
                     glows.add(Spectacle.sphere(c, camera, (float) (big * (0.6 + 3.4 * u)), 0xF2E6FF, (float) Math.pow(1 - u, 1.5), 0.02f,
                             (float) t * 0.05f, 0, -1.2f, h.seed + 2));
                 }
@@ -312,12 +346,14 @@ public final class SingularityFx {
     /** The accretion disc: four rings of quads round the hole in the disc's plane, hot within, fading out to its rim. */
     private static void disc(VertexConsumer b, PoseStack.Pose pose, Hole h, Vec3 camera, double now) {
         float r = h.horizon(now);
-        float grown = 0.35f + 0.65f * h.growth(now);
-        float inner = r * 1.3f, outer = r * (2.8f + 1.6f * grown);
+        float grown = h.growth(now);
+        // Out to most of its reach (where the ground is torn loose to spiral in), wider as it has fed longer; drawn in
+        // to the horizon as it collapses.
+        float presence = h.presence(now);
+        float inner = r * 1.3f, outer = Math.max(inner * 1.5f, h.reach(now) * (0.7f + 0.25f * grown) * presence + r * (1 - presence));
         float[] radii = {inner, inner + (outer - inner) * 0.12f, inner + (outer - inner) * 0.45f, inner + (outer - inner) * 0.8f, outer};
         int[] colors = {0xFFE6FF, 0xE09CFF, 0xA055FF, 0x6A2AD8, 0x3A1080};
         float[] alphas = {1f, 0.95f, 0.7f, 0.35f, 0f};
-        float presence = h.presence(now);
         int segments = 72;
         double t = h.age(now);
         Vec3 c = h.center().subtract(camera);
@@ -354,7 +390,7 @@ public final class SingularityFx {
         int segments = 16;
         for (int sign = -1; sign <= 1; sign += 2) {
             Vec3 axis = h.normal.scale(sign);
-            Vec3 base = c.add(axis.scale(r * 0.9)), tip = c.add(axis.scale(r * 6.5));
+            Vec3 base = c.add(axis.scale(r * 0.9)), tip = c.add(axis.scale(r * 5));
             float rb = r * 0.22f, rt = r * 0.04f;
             for (int j = 0; j < segments; j++) {
                 double a0 = 2 * Math.PI * j / segments, a1 = 2 * Math.PI * (j + 1) / segments;
@@ -410,7 +446,7 @@ public final class SingularityFx {
                 return;
             }
             float grown = this.hole.growth(now);
-            this.volume = Math.max(0.01f, 5f * this.fade * (0.45f + 0.55f * grown) * (float) Math.min(1, this.hole.start.pull() / 12));
+            this.volume = Math.max(0.01f, 6f * this.fade * (0.45f + 0.55f * grown) * (float) Math.min(1, Singularities.pullRadius(this.hole.reach(now)) / 12));
             this.pitch = 0.55f + 0.8f * grown;
         }
 

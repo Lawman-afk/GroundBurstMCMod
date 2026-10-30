@@ -176,6 +176,9 @@ public final class GBSounds {
     // Slice 9b: the Missile Silo's doors unlatching and grinding apart (or shut).
     public static final DeferredHolder<SoundEvent, SoundEvent> SILO_DOORS =
             register("silo.doors", "Silo doors grind", List.of("launch/silo_doors"), false, 64);
+    /** The Large Silo Door's leaves sliding open or shut: eight seconds, as long as they take (DESIGN.md §22.2). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> LARGE_SILO_DOOR =
+            register("silo.large_door", "Large silo door grinds", List.of("construction/large_silo_door"), false, 64);
     // Slice 9c (DESIGN.md §17.11): a cruise missile's box cover banging open and its booster's roar out of the box; its
     // jet's whine following it; the Cruise Missile Launcher's rams raising (or lowering) its boxes.
     public static final DeferredHolder<SoundEvent, SoundEvent> CRUISE_LAUNCH =

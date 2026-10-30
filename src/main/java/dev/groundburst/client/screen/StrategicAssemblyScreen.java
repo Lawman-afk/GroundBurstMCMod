@@ -19,14 +19,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The Strategic Assembly Hall's screen (DESIGN.md §15.2): the warhead's parts (primary, secondary and an optional
+ * The ICBM Assembly Hall's screen (DESIGN.md §15.2): the warhead's parts (primary, secondary and an optional
  * cobalt jacket) over the missile's (booster, and an optional guidance unit and module), the arrow and the finished
  * missile; the readout under them; ASSEMBLE (lit when the parts are there) and TAKE APART (lit when a finished missile
  * waits and the part slots are clear). On the right, the bench's column ({@link AssemblyColumn}): the missile the parts
  * make, or the one waiting, in 3D over its figures.
  */
 public class StrategicAssemblyScreen extends MachineScreen {
-    private static final String T_EMPTY = GBLang.add(GroundBurst.MODID + ".strategic.empty", "Fit a primary, a secondary and a booster to see the missile's figures");
+    private static final String T_EMPTY = GBLang.add(GroundBurst.MODID + ".strategic.empty", "Fit the parts to see the missile's figures");
     /** Where the buttons sit (gui.py's "strategic_assembly" layout leaves room for them). */
     public static final int BUTTONS_X = 31, BUTTONS_Y = 94, ASSEMBLE_W = 54, APART_W = 60, BUTTON_H = 18;
 
@@ -86,7 +86,8 @@ public class StrategicAssemblyScreen extends MachineScreen {
         var problem = StrategicAssembly.check(slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY), slot(StrategicAssemblyBlockEntity.SLOT_SECONDARY),
                 slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_BOOSTER), ItemStack.EMPTY);
         boolean parts = problem == StrategicAssembly.Problem.NONE;
-        return parts ? StrategicAssembly.assemble(slot(StrategicAssemblyBlockEntity.SLOT_JACKET), slot(StrategicAssemblyBlockEntity.SLOT_GUIDANCE),
+        return parts ? StrategicAssembly.assemble(slot(StrategicAssemblyBlockEntity.SLOT_PRIMARY), slot(StrategicAssemblyBlockEntity.SLOT_JACKET),
+                slot(StrategicAssemblyBlockEntity.SLOT_GUIDANCE),
                 slot(StrategicAssemblyBlockEntity.SLOT_MODULE)) : slot(StrategicAssemblyBlockEntity.SLOT_OUTPUT);
     }
 

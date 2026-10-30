@@ -71,7 +71,7 @@ public final class GBJeiPlugin implements IModPlugin {
     /**
      * Missiles are told apart by their looks (DESIGN.md §10.4, §17.11): each warhead has a missile of its own, and a
      * Light or Medium one a cruise missile too, each with its own recipe (the Missile Assembly category, or the
-     * Strategic Assembly category for the hall's).
+     * ICBM Assembly category for the hall's).
      */
     @Override
     public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {

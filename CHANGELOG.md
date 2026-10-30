@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+Exotic weapons, and a clearer name for the hall that builds them.
+
+### New weapons
+- **Antimatter ICBM**: an Antimatter Trap built into an intercontinental missile. Where it lands, a white sphere 67
+  blocks round erases everything in it (blast-proof blocks too; only bedrock stays), with nothing dropped and no
+  fallout. Its gamma flash kills anything in the open out to 90 blocks; walls of stone, concrete, lead or obsidian
+  stop it.
+- **Singularity ICBM**: a Singularity Core built into an intercontinental missile. A black hole opens where it lands
+  and lives for a minute, pulling everything in and tearing the ground loose. It grows by what it eats: on open ground
+  it digs a hole about 67 blocks round in rock; in a mountainside or the sea it grows bigger still. Then it collapses
+  in a blast as big as it has grown.
+- Both fire only from a Launch Complex or a Missile Silo. The Assembly Bench can still make a bomb of either core, but
+  set off by anything but its missile's arrival its containment fails, with only a small effect.
+
+### Changes
+- The **Strategic Assembly Hall** is now the **ICBM Assembly Hall**, so it is no longer confused with the Strategic
+  Missile Assembler. Halls already built keep working. It builds the exotic ICBMs from their cores and an
+  Intercontinental Booster.
+- The **Large Silo Door** has a sound of its own that lasts as long as its doors take to open or close.
+
 ## 0.2.0 — 2026-10-29
 
 The world's abandoned sites, rebuilt from scratch, and a set of blocks to build your own.

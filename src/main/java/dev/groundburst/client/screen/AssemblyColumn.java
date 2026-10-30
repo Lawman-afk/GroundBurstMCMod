@@ -19,7 +19,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The right-hand column of an assembly screen (the Ordnance Assembly Bench's, slice 7c; the Strategic Assembly Hall's,
+ * The right-hand column of an assembly screen (the Ordnance Assembly Bench's, slice 7c; the ICBM Assembly Hall's,
  * slice 8c): a 3D preview of what the parts make, turning by itself or dragged round, over a stats screen
  * ({@link AssemblyStats}). The preview and stats windows are drawn into the screen's texture by gui.py.
  */

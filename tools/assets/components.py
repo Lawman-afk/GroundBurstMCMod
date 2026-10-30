@@ -20,7 +20,7 @@ Payload cores:
 Casings: steel shells open at the top on a mounting ring, bigger by class, with yellow class bands (one Light, two Medium, three Heavy).
 Fuzes: a steel nose fuze each, told apart by the head: Impact (a red plunger), Barometric (vent ports and a brass
 pressure ring).
-Strategic Assembly Hall parts (slice 8c):
+ICBM Assembly Hall parts (slice 8c):
 - Fusion Secondary: a dark depleted-uranium capsule, a pale lithium-deuteride band showing round its middle, end caps,
   the plutonium spark plug's copper terminal standing out of the top.
 - Cobalt-59 Jacket: a sleeve of riveted cobalt-blue plates round an open middle.
