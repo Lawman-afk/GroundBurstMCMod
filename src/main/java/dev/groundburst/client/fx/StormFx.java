@@ -32,6 +32,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A storm as the client sees it (DESIGN.md §16.14; the server's side is {@link Storms}):
  * <ul>
+ * <li>its birth (after the user's look): for its first five seconds the warhead's banks discharge upward, bolts
+ * shooting from where it struck into the sky where its cloud deck will gather, their tops crawling out along the cloud
+ * base; a burst of four at once with a crack and a zap, then fewer and fewer;</li>
  * <li>its cloud deck, a wide disc of dark cloud over the region turning slowly round the eye (faster near it), its wall
  * cloud hanging lower in the middle;</li>
  * <li>its bolts ({@link StormPayloads.Strike}): a jagged channel from the cloud deck to where it struck, forking as it
@@ -54,6 +57,9 @@ public final class StormFx {
     private static final double NEAR = 64, FLASH_REACH = 96;
     /** Ticks a storm takes to clear away after it ends. */
     private static final int CLEAR = 40;
+    /** Ticks its birth lasts (its bolts going up), and the colours of its bolts: a strike's, and the bluer ones going up. */
+    private static final int BIRTH = 100;
+    private static final int STRIKE_COLOR = 0xDCE8FF, RISE_COLOR = 0xC4D2FF;
     private static final Int2ObjectOpenHashMap<Cell> ACTIVE = new Int2ObjectOpenHashMap<>();
     private static final List<Bolt> BOLTS = new ArrayList<>();
     private static final List<Thunder> THUNDER = new ArrayList<>();
@@ -76,10 +82,28 @@ public final class StormFx {
         Wind wind;
         /** The cloud deck's puffs: ring radius, starting angle, turn rate, height offset, size, sheet cell, darkness. */
         final List<float[]> deck = new ArrayList<>();
+        /**
+         * Its birth's bolts going up: when (ticks into its life), a seed for its shape, and what is heard of it (2: the
+         * warhead's own discharge, a crack and a zap; 1: thunder; 0: nothing); and the next still to come.
+         */
+        final List<double[]> birth = new ArrayList<>();
+        int birthNext;
 
         Cell(StormPayloads.Start start, double born) {
             this.start = start;
             this.born = born;
+            RandomSource b = RandomSource.create(start.id() * 104729L + 17);
+            for (int i = 0; i < 4; i++) {                      // the opening burst: four at once
+                this.birth.add(new double[] {i * 0.5, b.nextInt(), i == 0 ? 2 : 1});
+            }
+            for (int t = 2; t < BIRTH; t++) {                  // then fewer and fewer
+                if (b.nextDouble() < 0.35 * Math.pow(1 - t / (double) BIRTH, 2)) {
+                    this.birth.add(new double[] {t + b.nextDouble(), b.nextInt(), b.nextFloat() < 0.4f ? 1 : 0});
+                }
+            }
+            while (this.birthNext < this.birth.size() && this.birth.get(this.birthNext)[0] < start.age()) {
+                this.birthNext++;                              // a client told of it late sees none of what has passed
+            }
             RandomSource r = RandomSource.create(start.id() * 7919L);
             float radius = start.radius();
             float size = Math.max(5, radius * 0.17f);
@@ -127,11 +151,11 @@ public final class StormFx {
         }
     }
 
-    /** A bolt: its segments (x0, y0, z0, x1, y1, z1, width each), when it struck. */
-    private record Bolt(List<float[]> segments, double born) {}
+    /** A bolt: its segments (x0, y0, z0, x1, y1, z1, width each), when it struck, its colour. */
+    private record Bolt(List<float[]> segments, double born, int color) {}
 
-    /** Thunder on its way: when it is heard, from where, near or far. */
-    private record Thunder(double at, Vec3 from, boolean near) {}
+    /** Thunder on its way: when it is heard, from where, near or far, and whether a discharge's zap comes with it. */
+    private record Thunder(double at, Vec3 from, boolean near, boolean zap) {}
 
     private static void start(StormPayloads.Start start) {
         Minecraft mc = Minecraft.getInstance();
@@ -168,15 +192,15 @@ public final class StormFx {
         double drop = cell.start.cloudY() - foot.y;
         Vec3 top = new Vec3(foot.x + (r.nextDouble() - 0.5) * drop * 0.3, cell.start.cloudY(), foot.z + (r.nextDouble() - 0.5) * drop * 0.3);
         List<float[]> segments = new ArrayList<>();
-        channel(segments, top, foot, 0.34f, r, 2, 0.035);
+        channel(segments, top, foot, 0.34f, r, 2, 0.035, -1);
         double[] c = s.chain();
         for (int i = 0; i + 5 < c.length; i += 3) {
-            channel(segments, new Vec3(c[i], c[i + 1], c[i + 2]), new Vec3(c[i + 3], c[i + 4], c[i + 5]), 0.14f, r, 0, 0.08);
+            channel(segments, new Vec3(c[i], c[i + 1], c[i + 2]), new Vec3(c[i + 3], c[i + 4], c[i + 5]), 0.14f, r, 0, 0.08, -1);
         }
-        BOLTS.add(new Bolt(segments, now));
+        BOLTS.add(new Bolt(segments, now, STRIKE_COLOR));
         Vec3 eye = mc.gameRenderer.mainCamera().position();
         double d = eye.distanceTo(foot);
-        THUNDER.add(new Thunder(now + d / SOUND_SPEED, foot, d < NEAR));
+        THUNDER.add(new Thunder(now + d / SOUND_SPEED, foot, d < NEAR, false));
         if (d < 400) {
             mc.level.setSkyFlashTime(2);
         }
@@ -187,11 +211,46 @@ public final class StormFx {
     }
 
     /**
+     * The storm's birth: one of its bolts going up from where the warhead struck into the sky where the cloud deck
+     * gathers, forking upward as it goes, its top crawling out along the cloud base in two or three arms; heard as
+     * {@code event} says, the sky (and, near, the screen) lit up.
+     */
+    private static void rise(Cell cell, double[] event, double now, Minecraft mc, Vec3 eye) {
+        RandomSource r = RandomSource.create((long) event[1]);
+        Vec3 foot = cell.center().add(0, 0.3, 0);
+        double height = Math.max(8, cell.start.cloudY() - foot.y), spread = height * 0.35;
+        Vec3 top = new Vec3(foot.x + (r.nextDouble() - 0.5) * 2 * spread, cell.start.cloudY() + (r.nextDouble() - 0.3) * 4,
+                foot.z + (r.nextDouble() - 0.5) * 2 * spread);
+        boolean first = event[2] >= 2;
+        List<float[]> segments = new ArrayList<>();
+        channel(segments, foot, top, first ? 0.5f : 0.36f, r, 2, 0.04, 1);
+        double reach = Math.min(60, cell.start.radius() * 0.35);
+        for (int i = 2 + r.nextInt(2); i > 0; i--) {
+            double a = r.nextDouble() * 2 * Math.PI, len = reach * (0.4 + 0.6 * r.nextDouble());
+            channel(segments, top, top.add(Math.cos(a) * len, (r.nextDouble() - 0.5) * 3, Math.sin(a) * len), 0.2f, r, 1, 0.05, 0);
+        }
+        BOLTS.add(new Bolt(segments, now, RISE_COLOR));
+        double d = eye.distanceTo(foot);
+        if (event[2] >= 1) {
+            THUNDER.add(new Thunder(now + d / SOUND_SPEED, foot, d < NEAR, first));
+        }
+        if (d < 400 && mc.level != null) {
+            mc.level.setSkyFlashTime(2);
+        }
+        if (d < FLASH_REACH && mc.player != null) {
+            float facing = 0.35f + 0.65f * (float) Math.max(0, mc.player.getViewVector(1).dot(foot.subtract(eye).normalize()));
+            FLASHES.add(new float[] {(float) now, (first ? 0.4f : 0.2f) * GBClientConfig.FLASH_STRENGTH.get().floatValue()
+                    * (float) (1 - d / FLASH_REACH) * facing});
+        }
+    }
+
+    /**
      * A jagged channel from {@code a} to {@code b}: straight-line points thrown aside by up to {@code wander} of its
      * length mid-way (meeting its ends exactly), narrowing as it goes; now and then (while {@code depth} allows) a
-     * branch forking off to one side and down, ending in the air.
+     * branch forking off to one side, ending in the air: down for a bolt coming down ({@code rise} -1), up for one going
+     * up (1), level for one crawling along the cloud base (0).
      */
-    private static void channel(List<float[]> out, Vec3 a, Vec3 b, float width, RandomSource r, int depth, double wander) {
+    private static void channel(List<float[]> out, Vec3 a, Vec3 b, float width, RandomSource r, int depth, double wander, int rise) {
         double length = a.distanceTo(b);
         int n = Math.max(4, (int) (length / 2.2));
         Vec3 along = b.subtract(a);
@@ -203,8 +262,9 @@ public final class StormFx {
             out.add(new float[] {(float) prev.x, (float) prev.y, (float) prev.z, (float) p.x, (float) p.y, (float) p.z, width * (float) (1 - 0.35 * t)});
             if (depth > 0 && i < n - 1 && r.nextFloat() < 0.13f) {
                 double len = b.subtract(p).length() * (0.3 + 0.3 * r.nextDouble());
-                Vec3 dir = new Vec3((r.nextDouble() - 0.5) * 2, -0.6 - 0.6 * r.nextDouble(), (r.nextDouble() - 0.5) * 2).normalize().scale(len);
-                channel(out, p, p.add(dir), width * 0.45f, r, depth - 1, wander * 1.2);
+                double dy = rise == 0 ? (r.nextDouble() - 0.5) * 0.4 : rise * (0.6 + 0.6 * r.nextDouble());
+                Vec3 dir = new Vec3((r.nextDouble() - 0.5) * 2, dy, (r.nextDouble() - 0.5) * 2).normalize().scale(len);
+                channel(out, p, p.add(dir), width * 0.45f, r, depth - 1, wander * 1.2, rise);
             }
             prev = p;
         }
@@ -257,6 +317,9 @@ public final class StormFx {
         var player = mc.player;
         for (var it = ACTIVE.values().iterator(); it.hasNext(); ) {
             Cell c = it.next();
+            while (c.birthNext < c.birth.size() && c.birth.get(c.birthNext)[0] <= c.age(now)) {
+                rise(c, c.birth.get(c.birthNext++), now, mc, eye);
+            }
             if (player != null && !player.isCreative() && !player.isSpectator()) {
                 Vec3 push = Storms.windOn(player.position().subtract(c.center()), c.start.radius(), c.intensity(now));
                 if (push != Vec3.ZERO) {
@@ -274,6 +337,10 @@ public final class StormFx {
             }
             it.remove();
             double d = t.from().distanceTo(eye);
+            if (t.zap()) {                                       // the warhead's banks letting go
+                mc.getSoundManager().play(new SimpleSoundInstance(GBSounds.EMP_ZAP.get(), SoundSource.WEATHER, 4f, 0.7f, RANDOM,
+                        t.from().x, t.from().y, t.from().z));
+            }
             if (t.near()) {
                 mc.getSoundManager().play(new SimpleSoundInstance(GBSounds.STORM_THUNDER_NEAR.get(), SoundSource.WEATHER, 4f,
                         0.9f + RANDOM.nextFloat() * 0.2f, RANDOM, t.from().x, t.from().y, t.from().z));
@@ -314,7 +381,7 @@ public final class StormFx {
                 for (Bolt b : BOLTS) {
                     int tick = (int) Math.floor(now - b.born());
                     if (tick >= 0 && tick < FLICKER.length) {
-                        int color = color(0xDCE8FF, FLICKER[tick]);
+                        int color = color(b.color(), FLICKER[tick]);
                         for (float[] s : b.segments()) {
                             ribbon(buffer, pose, s, camera, color);
                         }

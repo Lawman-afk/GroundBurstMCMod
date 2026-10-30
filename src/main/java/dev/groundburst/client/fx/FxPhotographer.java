@@ -175,6 +175,9 @@ public final class FxPhotographer {
                 new Scene("tall_ui", "tall", 4, 0, List.of(30)),
                 // The Upgrades tab (DESIGN.md §7.3): a crusher at work with a quantum speed chip, its tab open.
                 new Scene("upgrade_ui", "upgrade", 4, 0, List.of(30)),
+                // After the user's look: a 3x3x3 cube of lattice and one of grating (a slab step beside it), looked into.
+                new Scene("see_through", "see_through", 9, 18, List.of(20)),
+                new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
                 new Scene("assemblers_aerial", "assemblers", 34, 28, List.of(60, 160, 260, 700)),
@@ -228,6 +231,9 @@ public final class FxPhotographer {
                 // overhead, bolts and their chains, rain), and from the air outside it (the whole deck turning).
                 new Scene("storm", "storm_warhead", 110, -4, List.of(60, 200, 400, 700, 1000, 1400, 1750)),
                 new Scene("storm_aerial", "storm_warhead", 330, 22, List.of(500, 1000)),
+                // After the user's look: the storm's birth, its bolts going up from where it struck into the sky.
+                new Scene("storm_birth", "storm_warhead", 110, -6, List.of(2, 8, 30, 70)),
+                new Scene("storm_birth_close", "storm_warhead", 45, -10, List.of(2, 20)),
                 // After the user's look: each strike explodes where it lands; from above, the craters it leaves.
                 new Scene("storm_craters", "storm_warhead", 80, 48, List.of(1300)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
@@ -1532,6 +1538,21 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("assembly")) {
                     assemblySite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("see_through")) {
+                    var lattice = dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.block().get().defaultBlockState();
+                    var grating = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.block().get().defaultBlockState();
+                    var slab = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING_SLAB.block().get().defaultBlockState();
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dy = 0; dy < 3; dy++) {
+                            for (int dz = -1; dz <= 1; dz++) {
+                                level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground + dy, dz - 3), lattice);
+                                level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground + dy, dz + 2), grating);
+                            }
+                        }
+                        level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground, 4), slab);
+                    }
                     return;
                 }
                 if (s.profile().equals("upgrade")) {

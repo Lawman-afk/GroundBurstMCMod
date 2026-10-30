@@ -1193,7 +1193,7 @@ def page_tabs_texture() -> Path:
 # --- Upgrades tab (DESIGN.md §7.3; every machine and assembler that takes a chip) -------------------------------------------
 # Layout constants mirrored in UpgradeTab (the menu's slot: MachineMenu.UPGRADE_SLOT_X/Y).
 UPG_TAB = (0, 0, 24, 26)          # collapsed tab, on the window's left edge
-UPG_PANEL = (0, 32, 112, 64)      # expanded panel: header, three slots in a row, two lines of what the chips do
+UPG_PANEL = (0, 32, 82, 64)       # expanded panel: header, three slots in a row, two lines (just wider than they are)
 UPG_SLOT = (8, 22)                # the first slot frame within the panel; the other two follow it 18 apart
 UPG_SLOTS = 3
 

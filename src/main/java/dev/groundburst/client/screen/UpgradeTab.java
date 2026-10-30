@@ -28,7 +28,8 @@ import net.minecraft.world.item.ItemStack;
 final class UpgradeTab {
     private static final Identifier TEXTURE = GroundBurst.id("textures/gui/machine/upgrades.png");
     // Sprite positions, mirrored from tools/assets/gui.py (upgrades_texture).
-    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 112, PANEL_H = 64;
+    /** (The panel just wider than its longest line, "Efficiency: normal": after the user's look, 112 was too wide.) */
+    private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 82, PANEL_H = 64;
     /** The panel's first slot frame, from its corner (the item sits a pixel in: the menu's slot); the others beside it. */
     private static final int SLOT_X = 8, SLOT_Y = 22;
     /** Where its two lines start, under the slots. */

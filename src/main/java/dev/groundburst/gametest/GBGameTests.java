@@ -96,6 +96,7 @@ public final class GBGameTests {
         FalloutTests.register();
         WastelandTests.register();
         StructureTests.register();
+        ConstructionTests.register();
         ManualContentTests.register();
     }
 

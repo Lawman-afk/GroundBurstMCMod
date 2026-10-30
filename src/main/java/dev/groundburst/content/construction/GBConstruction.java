@@ -52,19 +52,25 @@ public final class GBConstruction {
             Block::new, p -> metal(p, MapColor.COLOR_GRAY));
     public static final WithItem<Block> RUSTED_STEEL_PANEL = GBBlocks.register("rusted_steel_panel", "Rusted Steel Panel", TAB,
             Block::new, p -> metal(p, MapColor.TERRACOTTA_BROWN));
-    /** Open steel grid: catwalks and floors you see through. */
+    /**
+     * Open steel grid: catwalks and floors you see through. Grating next to grating (or lattice) shows only the outside,
+     * from both sides (SeeThrough).
+     */
     public static final WithItem<WaterloggedTransparentBlock> STEEL_GRATING = GBBlocks.register("steel_grating", "Steel Grating", TAB,
-            WaterloggedTransparentBlock::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
+            SeeThrough.Grating::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
     public static final WithItem<SlabBlock> STEEL_GRATING_SLAB = GBBlocks.register("steel_grating_slab", "Steel Grating Slab", TAB,
-            SlabBlock::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
+            SeeThrough.GratingSlab::new, p -> seeThrough(metal(p, MapColor.METAL)).sound(SoundType.COPPER_GRATE));
 
     // --- structure ------------------------------------------------------------------------------------------------------------
     /** A steel girder, set along any axis as a log is. */
     public static final WithItem<RotatedPillarBlock> I_BEAM = GBBlocks.register("i_beam", "I-Beam", TAB,
             RotatedPillarBlock::new, p -> metal(p, MapColor.COLOR_GRAY).noOcclusion());
-    /** An open braced steel cube: towers, masts and gantries. Lattice next to lattice shows only the outside. */
+    /**
+     * An open braced steel cube: towers, masts and gantries. Lattice next to lattice (or grating) shows only the outside,
+     * from both sides: looking into a stack you see its far side (SeeThrough).
+     */
     public static final WithItem<TransparentBlock> LATTICE_FRAME = GBBlocks.register("lattice_frame", "Lattice Frame", TAB,
-            TransparentBlock::new, p -> seeThrough(metal(p, MapColor.METAL)));
+            SeeThrough.Lattice::new, p -> seeThrough(metal(p, MapColor.METAL)));
 
     // --- radome ---------------------------------------------------------------------------------------------------------------
     /** White fibreglass panels for a radar's dome. */

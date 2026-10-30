@@ -32,7 +32,7 @@ public class MachineMenu extends AbstractContainerMenu {
      * Where the first upgrade slot sits, from the screen's corner: in the Upgrades tab on the window's left edge, the
      * other two beside it (DESIGN.md §7.3; the client's {@code UpgradeTab} draws round them).
      */
-    public static final int UPGRADE_SLOT_X = -101, UPGRADE_SLOT_Y = 27, UPGRADE_SLOT_STEP = 18;
+    public static final int UPGRADE_SLOT_X = -71, UPGRADE_SLOT_Y = 27, UPGRADE_SLOT_STEP = 18;
     /** Whether the client's Upgrades tab is open (its slot is only shown then); set by the screen. */
     public static boolean upgradeTabOpen;
 

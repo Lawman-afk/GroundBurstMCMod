@@ -649,7 +649,8 @@ tier, basic to quantum, 10% a level (the mix 5% and 5%), 40% at quantum.
   three `UpgradeSlot`s from `UPGRADE_SLOT_X/Y`, 18 apart; a shift-click fits a chip into the first free one, a stack
   filling them in turn), their chips adding up (`speedBonus()`, `efficiency()`, the saving capped at `MOST_SAVED` 0.9);
   the **efficiency halved**, 0.05 a level (a balanced chip 0.025), so three quantum efficiency chips save 60% and no
-  mix can run a machine free; the tab's panel 112x64, the three slots in a row and two lines under them, speed and
+  mix can run a machine free; the tab's panel 112x64 (then, after the user's next look, 82x64: just wider than its
+  longest line, "Efficiency: normal", the slots from -71), the three slots in a row and two lines under them, speed and
   efficiency, each "normal" when nothing raises it (the lines on the power drawn a tick and a job dropped, and the speed
   chip's tooltip note: the user); a share shown to a tenth where it has one (`UpgradeChipItem.percent`: a balanced
   chip's 7.5). A saved machine's one chip stays in the first slot. GameTests: three quantum speed chips 120% faster on
@@ -2115,6 +2116,13 @@ affect a whole region (over §16.1's 48 blocks for 45 s).
   ground leaves a small crater and nothing at the plot's corners; the region test's storm strikes without its blasts
   (`Storms.quietOverride`), so its grass can be counted. The GameTest overrides are read as a storm starts (the strike
   rate kept by the job) and set back after it.
+- **Its birth** (after the user's next look: lightning going up, creating the storm): for its first 5 s (`StormFx.BIRTH`
+  100 ticks) its clients draw bolts going up from where it struck into the sky where the cloud deck gathers, bluer
+  than its strikes, forking upward as they go, each top crawling out along the cloud base in two or three arms (up to
+  0.35 of its radius, at most 60); a burst of four in its first two ticks (the first heard as a crack and the EMP's
+  zap), then fewer and fewer (0.35 a tick falling as the square of what is left of the 100); a third or so with
+  thunder; the sky lit, and the screen when near. A client told of a storm late sees none of what has passed. Client
+  only (a schedule from the storm's id). FX scenes `storm_birth` and `storm_birth_close`.
 
 ### 16.15 The Special Weapons Assembler (Phase 11, 2026-10-30)
 The user, after the Storm Warhead: a special weapons assembler for the special weapons, their missiles fired like the
@@ -3210,6 +3218,14 @@ no free iron), in a creative tab of its own, Ground Burst: Construction:
   high voltage, keep out, toxic).
 Made from steel plates and rods (the stonecutter cuts a plate into panels, sheeting, grating and fencing), white
 concrete (radome panels), sand and string (sandbags); the rusted ones from eight clean ones round a water bucket.
+- **See-through blocks** (after the user's look, 2026-10-30): the Lattice Frame, the Steel Grating and its slab hid
+  the faces between them as glass does, so looking into a stack of them showed nothing of its far side. Their models
+  (`construction.two_sided`) now draw every outer face twice, outward and inward (a copy 0.01 px inside it, as vanilla's
+  scaffolding does, its texture mirrored so its bars stay put), each culled by its side; and they leave out a face
+  only where one of the three covers it whole (`SeeThrough`: a full block's face, a slab's half; a slab beside a full
+  block leaves its half out and the block keeps its whole face, drawn both ways), so a 3x3x3 of lattice shows its
+  outer frame from outside and its far sides from within, and no two faces of theirs lie in one plane facing one way.
+  GameTest `see_through_blocks_show_only_their_outside`; FX scenes `see_through` and `see_through_low`.
 
 **Two multiblocks.**
 - *Large Silo Door* (the user's idea): two leaves that slide apart on rails over a 7x7 opening, opened by a redstone
@@ -3814,6 +3830,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The user's next look: the Upgrades tab only as wide as its words (82); the Storm ICBM's impact sends lightning up into the sky for five seconds, the storm's birth (§16.14); the Lattice Frame and Steel Grating draw their outer faces both ways and hide only what another of them covers, so you see a stack's far side through it (§22.2). |
 | 2026-10-30 | The user's third look at Phase 11: upgrade chips in **three slots**, their effects adding up, efficiency halved (5% a tier, so no mix runs a machine free), the tab's lines on the power drawn dropped (§7.3); the Storm Core takes a quantum circuit, and every storm strike **explodes** into a small crater (§16.14); the exotic weapons get their own **Special Weapons Assembler**, a containment bay of three rings, and the ICBM Assembly Hall builds the fusion weapons only (§16.15). |
 | 2026-10-30 | A ready-to-paste CurseForge description, `docs/CURSEFORGE.md`: the README for CurseForge's Markdown mode (images by full link, no HTML table, a getting-started section, the sound credits in a spoiler). |
 | 2026-10-30 | The Storm Warhead built (§16.14): an ICBM at the hall like the other exotic ones, its storm a supercell over a region 160 round for 90 s (the user: scale it to a region): lightning at 6 a second aimed at what stands in the open and what stands tallest, chaining through creatures, scorching, setting fires and knocking out machines; a wind round its eye; lightning rods inside it take its strikes. |

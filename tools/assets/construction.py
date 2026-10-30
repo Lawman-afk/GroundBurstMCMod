@@ -479,11 +479,64 @@ def sign_model(name: str) -> None:
     item(name, bid(name))
 
 
+#: How far inside each outer face of a see-through block its inward copy lies (as vanilla's scaffolding has it).
+INSET = 0.01
+
+
+def two_sided(texture: str, y0: float = 0.0, y1: float = 16.0) -> dict:
+    """A see-through block's model (after the user's look: in a stack of lattice you saw only the near side): a box from
+    y0 to y1 whose every face is drawn outward and again inward, a copy {INSET} inside it with its texture mirrored so
+    its bars and holes stay where they are, so through the near side you see the far side and the sides from within.
+    A face on the cell's boundary is culled by that side (the Java SeeThrough rule leaves out the faces between two
+    of them, both copies); a slab's face across the middle of its cell is never culled."""
+    rows = [16 - y1, 16 - y0]                                       # the texture's rows for the box's height
+    top = "up" if y1 == 16 else None                                # the sides its top and bottom are culled by
+    bottom = "down" if y0 == 0 else None
+
+    def face(cull: str | None, uv: list | None = None) -> dict:
+        f = {"texture": "#all"}
+        if uv is not None:
+            f["uv"] = uv
+        if cull is not None:
+            f["cullface"] = cull
+        return f
+
+    outer = {"from": [0, y0, 0], "to": [16, y1, 16], "faces": {
+        "north": face("north"), "south": face("south"), "east": face("east"), "west": face("west"),
+        "up": face(top), "down": face(bottom)}}
+    mirrored = [16, rows[0], 0, rows[1]]                            # a side's copy, mirrored across
+    flipped = [0, 16, 16, 0]                                        # the top's and bottom's copies, flipped
+    inner = [                                                       # each copy faces in, culled by its outer face's side
+        {"from": [0, y0, 0], "to": [16, y1, INSET], "faces": {"south": face("north", mirrored)}},
+        {"from": [0, y0, 16 - INSET], "to": [16, y1, 16], "faces": {"north": face("south", mirrored)}},
+        {"from": [0, y0, 0], "to": [INSET, y1, 16], "faces": {"east": face("west", mirrored)}},
+        {"from": [16 - INSET, y0, 0], "to": [16, y1, 16], "faces": {"west": face("east", mirrored)}},
+        {"from": [0, y0, 0], "to": [16, y0 + INSET, 16], "faces": {"up": face(bottom, flipped)}},
+        {"from": [0, y1 - INSET, 0], "to": [16, y1, 16], "faces": {"down": face(top, flipped)}},
+    ]
+    return {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+            "textures": {"all": bid(texture), "particle": bid(texture)}, "elements": [outer] + inner}
+
+
+def see_through_cube(name: str) -> None:
+    model(name, two_sided(name))
+    state(name, {"variants": {"": {"model": bid(name)}}})
+    item(name, bid(name))
+
+
+def see_through_slab(name: str, texture: str, full: str) -> None:
+    """A see-through slab: two-sided bottom and top halves; its double the full block's model (vanilla's slab states)."""
+    model(name, two_sided(texture, 0, 8))
+    model(f"{name}_top", two_sided(texture, 8, 16))
+    data = renamed(vanilla_state("stone_brick_slab"), "stone_brick_slab", name)
+    data = json.loads(json.dumps(data).replace(f'"groundburst:block/{name}_double"', f'"{bid(full)}"')
+                      .replace('"minecraft:block/stone_bricks"', f'"{bid(full)}"'))
+    state(name, data)
+    item(name, bid(name))
+
+
 def lattice_model() -> None:
-    model("lattice_frame", {"parent": "minecraft:block/cube_all", "textures": {"all": bid("lattice_frame")},
-                            "render_type": "minecraft:cutout"})
-    state("lattice_frame", {"variants": {"": {"model": bid("lattice_frame")}}})
-    item("lattice_frame", bid("lattice_frame"))
+    see_through_cube("lattice_frame")
 
 
 def main() -> None:
@@ -511,14 +564,14 @@ def main() -> None:
 
     for name in ("corrugated_steel", "rusted_corrugated_steel", "steel_panel", "rusted_steel_panel", "radome_panel", "sandbags"):
         cube(name)
-    cube("steel_grating", cutout=True)
+    see_through_cube("steel_grating")
     for base in ("corrugated_steel", "rusted_corrugated_steel", "radome_panel"):
         stairs(f"{base}_stairs", base)
     slab("corrugated_steel_slab", "corrugated_steel", "corrugated_steel")
     slab("rusted_corrugated_steel_slab", "rusted_corrugated_steel", "rusted_corrugated_steel")
     slab("radome_panel_slab", "radome_panel", "radome_panel")
     slab("sandbag_slab", "sandbags", "sandbags")
-    slab("steel_grating_slab", "steel_grating", "steel_grating", cutout=True)
+    see_through_slab("steel_grating_slab", "steel_grating", "steel_grating")
     bars("chain_link_fence", "chain_link_fence", "chain_link_fence_post")
     bars("barbed_wire", "barbed_wire", "barbed_wire")
     i_beam()

@@ -15,7 +15,8 @@ Exotic weapons and their own assembler, upgrade chips for the machines, and a cl
   pulling harder than ever as it shrinks to a point and vanishes.
 - **Storm ICBM**: a Storm Core built into an intercontinental missile. Where it lands a supercell gathers over a whole
   region, 160 blocks round, for a minute and a half: lightning comes down six times a second on whatever stands in the
-  open or stands tallest, chaining from creature to creature. Every strike explodes where it lands, leaving a small
+  open or stands tallest, chaining from creature to creature. It is born in a burst of lightning shooting up from
+  where the missile lands into the sky where the clouds gather. Every strike explodes where it lands, leaving a small
   crater with fires round it, and knocks out machines nearby, while the wind drives everything round its eye. A
   lightning rod inside the storm draws its strikes safely.
 - All three are built at the new **Special Weapons Assembler**, a bay with three glowing containment rings that turn
@@ -32,6 +33,8 @@ Exotic weapons and their own assembler, upgrade chips for the machines, and a cl
 - The **Strategic Assembly Hall** is now the **ICBM Assembly Hall**, so it is no longer confused with the Strategic
   Missile Assembler. Halls already built keep working. It builds the thermonuclear, cobalt and Tsar ICBMs.
 - The **Large Silo Door** has a sound of its own that lasts as long as its doors take to open or close.
+- **Lattice Frames** and **Steel Grating** no longer hide each other like glass does: looking into a stack of them you
+  see its far side and its sides from inside, while the faces between them stay hidden.
 
 ## 0.2.0 — 2026-10-29
 
