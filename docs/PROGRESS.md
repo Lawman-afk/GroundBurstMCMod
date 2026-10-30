@@ -3,6 +3,8 @@
 Status keys: `todo` · `in progress` · `done` · `needs in-game test` · `blocked`
 Asset review keys (models/textures/sounds): `drafted → previewed → revised → approved`
 
+**The plan from here** (the user, 2026-10-31; DESIGN §30): the Launch Control Station (a network of launchers across the world), the Laser Designator, MIRVs, the Cryo Bomb, the Particle Uplink Cannon, contamination, more fallout and aftermath protection, artillery, war room displays, seismographs, the Dead Hand, underwater and naval weapons, the performance pass; handheld weapons on the special warheads being considered. Everything else not built is dropped.
+
 **Current phase:** Phase 12 (aftermath) started 2026-10-27, slice 12a built (the user's call: the features that are not weapons before any new bomb content; DESIGN §21.8). Earlier: Phase 4 in progress (power ladder agreed: DESIGN §7) — slices 1–7 built (slice 7: Fission Reactor, Particle Accelerator; slice 7 feedback passes and the accelerator redesign done; the Field Manual slice done (book, screen, 3D structure view, 7 chapters / 41 entries); Canning Machine and Creative Fluid Tank added; slice 8 built (Fusion Reactor, Singularity Reactor; reworked after feedback; item pipes and a performance pass; 7 chapters / 44 entries, 94/94 GameTests); Phase 4's power ladder is complete, awaiting the user's in-game check. Phase 5 started: slices 5a (server explosion engine) and 5b (chunk tickets, saving, client sync, distance-delayed sound) done, plus the crater character pass (streaks, ground pass, ejecta) slice 5c (Spectacle: flash, fireball, shock front, debris, smoke, shake, sky tint) and Spectacle v2 (mushroom cloud, cloud lighting, far clouds, dirt/fire jets), tuned after the in-game look, and the reactor meltdown (5d) with hazmat suits. Phase 6 started: slice 6a (thrown explosives) done, plus a feedback pass (bigger dynamite, smoke hides you, chemical grenades with chlorine, toxin and toxic sludge, a Molotov cocktail), slice 6b (placed charges and fuzes, with a feedback pass) and slice 6c (mines, with feedback passes) and slice 6d (bombs, with a feedback and a feel pass), plus a basic launch site ahead of Phase 9 (Launch Silo, Launch Computer with a terrain map, Basic Missile, warheads) and a Radar Array ahead of Phase 10, 183/183 GameTests (Phase 6 complete with slice 6e). Slices 1–6 built (slice 6: Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower; 63/63 GameTests); earlier: slices 1–5 built (slice 5: Circuit Fabricator, Gas Centrifuge with cascade, Fusion Fuel Synthesizer, Exotic Matter Fabricator; 57/57 GameTests). Awaits the user's in-game check of slices 4–5; next: slice 6 (Diesel Generator, RTG, Capacitor Banks, Battery Charger, Decontamination Shower).
 **Last updated:** 2026-10-31 (the base alarm system: ten devices on alarm channels, DESIGN §18.6; 308/308 GameTests. Before that, 2026-10-30: the Interceptor Complex, DESIGN §18.5; the Storm's strikes' EMP pulses 24 blocks round, §16.14; 301/301 GameTests. Before that: version 0.3.0; the Interceptor Battery, DESIGN §18.4; the lattice framed on all four edges; 296/296 GameTests. Before that: the user's next look: the Upgrades tab narrowed, the storm's birth of lightning going up, DESIGN §16.14; lattice and grating show a stack's far side, §22.2; 293/293 GameTests. Before that: the user's third look: upgrade chips in three slots, efficiency halved, DESIGN §7.3; storm strikes explode into small craters and the Storm Core takes a quantum circuit, §16.14; the Special Weapons Assembler, §16.15; a CurseForge description, `docs/CURSEFORGE.md`; 292/292 GameTests. Before that: the Storm Warhead, DESIGN §16.14; upgrade chips for the machines and assemblers, DESIGN §7.3; Phase 11 after the user's look: the ICBM Assembly Hall builds the exotic ICBMs, the antimatter 40% bigger, the singularity feeds and lives a minute, the Large Silo Door's own sound, DESIGN §16.12; before that the Antimatter and Singularity Warheads, §16.10-16.11; the Storm Bomb next). Earlier the same day (the public repository moved to github.com/Lawman-afk/GroundBurstMCMod: DESIGN §30). Before that, 2026-10-29 (version 0.2.0 built for CurseForge; the README given a screenshot gallery and a `CHANGELOG.md`: DESIGN §30). Earlier the same day (the world's sites being rebuilt from scratch after the user's review: the building researched, the Construction set of cosmetic blocks, the Search Radar and the Large Silo Door; all seven rebuilt, the Crashed Missile round a new Missile Wreck prop; every site's iron doors given buttons; DESIGN §22.2). Before that, 2026-10-28 (the mod renamed **Ground Burst**, from Ground Zero, which clashed with a modpack and its mods in CurseForge's search: DESIGN §30; the CurseForge page's logo: the DF-5 that the Nuclear Missile Silo fires, rendered from its in-game model by `tools/assets/logo.py`; the mod is now MIT-licensed so others can make add-ons; the CurseForge page's summary and description written). Before that, 2026-10-27 (the sites and the wasteland checked on generated worlds with the new world survey, `runWorldSurvey`: placement, frequencies and terrain fit reworked, the wasteland and crater lakes fixed for blasts with nobody near; 276/276 GameTests. Before that: slice 12e and Phase 15, built while the user was away; 12c and 12d still to come)
 
@@ -22,13 +24,14 @@ Asset review keys (models/textures/sounds): `drafted → previewed → revised �
 | 7 | Components & Assembly Bench | **done** (7a warheads, 7b missiles from parts, 7c preview and stats; 2026-10-23: one missile per warhead and four missile assemblers, the bench back to warheads) — needs the user's in-game look; Ammunition page with Phase 13, blueprints with Phase 15 |
 | 8 | Nuclear weapons | **in progress** (8a: Launch Complex, Strategic missile, Tactical Nuclear and Fission Warheads, fizzles; 8b: Boosted Fission, Neutron and Dirty Warheads; 8c: the Strategic Assembly Hall, intercontinental missiles with the Thermonuclear and Cobalt Warheads; 8d: the Tsar Mega-bomb, and the explosion engine benchmarked and reworked at its size; Phase 8 complete but for the in-game look) |
 | 9 | Launch platforms, missile flight, launch control, designators | **in progress** (basic launch site built early, 2026-10-21; 9a: missile flight: burn-out, staging, re-entry, engine sound; 9b: the Missile Silo; 9c: cruise missiles and the Cruise Missile Launcher) |
-| 10 | Radar & interceptors | in progress (2026-10-30: the Interceptor Battery, DESIGN §18.4; the Radar Array built early, §17.7; the Point-Defence Laser and the Phased-Array module still to come) |
+| 10 | Radar & interceptors | **done** (the Radar Array, §17.7; the Interceptor Battery and Complex, §18.4-18.5; the alarm system, §18.6; the Point-Defence Laser and the Phased-Array module dropped 2026-10-31) |
 | 11 | Special weapons (storm, singularity, antimatter, cryo, EMP, orbital, chemical, extras) | **in progress** (2026-10-30: the user chose antimatter, singularity and storm this round; the Antimatter and Singularity Warheads built, DESIGN §16.10-16.11; after the user's look they are ICBMs built at the renamed ICBM Assembly Hall, the antimatter 40% bigger and the singularity feeding for a minute, §16.12; after the second, no exotic bombs and the singularity ends in an implosion, §16.13; the Storm Warhead, a regional supercell, §16.14: this round's three done; after the third look the exotic weapons have their own Special Weapons Assembler, §16.15) |
 | 12 | Aftermath: radiation, fallout, EMP fields, terrain, wasteland, gear, medical | **in progress** (plan: DESIGN §21.8; 12a radiation and instruments, 12b fallout and ground, 12e the wasteland built, need the user's in-game look; 12c gear and contamination, 12d EMP to come) |
-| 13 | Guns | todo |
+| 13 | Handheld weapons on the special warheads (as Rival Rebels has them) | **being considered** (the user, 2026-10-31; the rest of the guns dropped) |
 | 14 | Superweapons + Zero Hour doctrine modules | **in progress** (2026-10-23: the SCUD Storm and the Nuclear Missile with their factories, the Arms Dealer and the War Factory; the toxin strike) — needs the user's in-game look; Particle Uplink Cannon and doctrine modules todo |
 | 15 | World structures & loot | **built** 2026-10-27 (DESIGN §22.1: seven sites, nine loot tables; no lore notes or blueprints at the user's word); checked on generated worlds the same day (frequency, terrain fit) — needs the user's in-game look |
 | 16 | Field Manual & JEI | in progress (Field Manual built early, 2026-10-20; JEI categories exist since Phase 4) |
+| 18 | New content (the user's plan, 2026-10-31): artillery, war room displays, seismographs, the Dead Hand, underwater and naval weapons | todo |
 | 17 | Polish pass (every model, texture, sound, effect) + performance pass | sounds started early (2026-10-27, DESIGN §13.1): the remaster from real recordings, blasts done (rounds 1 to 3 from the user's ratings, every sound rated 4 or 5; no variants, the user's call); launches, ordnance and the bombs' effects done (27 sounds from recordings over three rounds; every one at 4 or 5 or the original the user chose); machines remade from recordings (24 sounds: every loop but the exotic machines', the ore crusher's and the RTG's, which the user kept; the bench's clank, the reactor's alarm, the Geiger clicks); round 2 from the user's ratings (the steady loops' seams mended, five reworked) — awaiting its ratings |
 
 Each phase ends with: build green, deployed jar, PROGRESS/SESSION_LOG updated, git commit, and an in-game test
@@ -145,8 +148,8 @@ checklist for the user.
 | JEI integration (categories per machine, catalysts, clickable progress arrows, info pages, side-tab exclusion; recipes synced to clients) | done — confirmed in game by the user |
 | Vanilla-style ores / raw items / ingots / dusts (`tools/gb/vanilla.py`) | done (user-approved; ingot edge tweak pending a final look) |
 | Z-fighting checkers (`zfight.py` on export, `zfight3d.py` on rendered quads + animation frames) and 1-texel UV gutters with edge bleed | done — 0 issues; confirmed flicker-free in game |
-| Machine recipes (custom recipe types + datagen) | todo |
-| Models/animations/GUIs/sounds for every machine (reviewed) | todo |
+| Machine recipes (custom recipe types + datagen) | done (built with each machine; this row was never ticked) |
+| Models/animations/GUIs/sounds for every machine (reviewed) | done (with each machine; this row was never ticked) |
 
 ## Phase 5 — Explosion engine & spectacle
 | Item | Status |
@@ -160,9 +163,9 @@ checklist for the user.
 | Instant mode for small blasts | done (5a) |
 | Server config limits | done (5a: destroy switch, multiplier, max radius, budgets, concurrency, protected spawn/dimensions) |
 | Fission Reactor meltdown (blast + contamination when the core overheats with SCRAM off; server config toggle) | done (critical phase, klaxon, meltdown blast, corium, contaminated zones, Radiation Sickness; on by default; bigger blast, harsher sickness, hazmat suits) — needs in-game look |
-| Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | done (5c; heat haze deferred) — reviewed with runFxShots, needs in-game look |
+| Client fx: flash, fireball, shockwave ring, debris, smoke, camera shake, heat haze, sky/fog tint | done (5c; heat haze dropped 2026-10-31 (the user's plan)) — reviewed with runFxShots, needs in-game look |
 | Mushroom cloud (toroidal cap, stem, collar, Wilson shell), cloud lighting, far clouds, dirt/fire jets, flare | done (Spectacle v2) — reviewed with runFxShots, needs in-game look |
-| Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | partly (glow, fire and cloud pipelines with OIT sets; our own fx_cloud fragment shader; heat haze still to do) |
+| Custom RenderPipelines + shaders (GL + Vulkan, OIT variants) | partly (glow, fire and cloud pipelines with OIT sets; our own fx_cloud fragment shader; heat haze dropped 2026-10-31 (the user's plan)) |
 | Distance-delayed sound scheduler + virtual-distance big sounds | done (5b: small/medium/large/nuke sets, 4 bands each) — needs in-game listen |
 | Ground pass: line-of-sight scorch and fire in spokes, ejecta rubble | done (crater character pass; tuned with tools/preview/crater_preview.py) — needs in-game look |
 | GameTests: radius, shielding, budget, persistence | done (instant, shielding, multi-tick front, exposure, no spew, upward reach, save and resume, ragged rim, scorch shadow, ejecta, no rubble on water) |
@@ -212,7 +215,7 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Mushroom cloud system (toroidal vortex puffs, cooling glow, drift) | done in Phase 5 (Spectacle v2); used by the nuclear warheads; no wind drift: it stands over its crater (8b feedback) |
 | Wilson condensation ring, base surge | done in Phase 5 (5d: the condensation shell round the fireball for ~7 s; the base surge and, after 8b, the base ring) |
 | Fallout you can see (stand-in until Phase 12's plumes) | done: fallout clouds over each contaminated zone, green sky, fog and clouds inside one — needs in-game look |
-| Flash with line of sight + afterimage | line of sight done in 5c (a client ray to the burst, 25% if blocked); the afterimage todo |
+| Flash with line of sight + afterimage | line of sight done in 5c (a client ray to the burst, 25% if blocked); the afterimage dropped 2026-10-31 (the user's plan) |
 | Fizzle behaviour | done (8a): set off any way but by its missile, a nuclear warhead fizzles (the dirty warhead, not nuclear, always goes off) |
 | Nuke sound sets (near/mid/far/very far, tsar) | done: nuke (Phase 5), tsar (8d) |
 
@@ -222,16 +225,17 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Basic launch site: Launch Silo, Launch Computer (terrain map), Basic Missile, flight tracker, 6 building blocks (DESIGN §17.6) | done — needs in-game look |
 | Missile entity + composed renderer (body/warhead/propulsion parts) | missiles drawn by body and warhead (7b, 8a, 8c); 9a: drawn without their spent stages |
 | Flight model (boost, pitch-over, ballistic, re-entry, terminal; cruise) | 9a: burn-out and coasting, staging and re-entry on the fixed arc; 9c: cruise (out of its box on a booster that drops, a level turn, 40 blocks over the ground surveyed at launch, a pop-up and a dive; DESIGN §17.11) — needs in-game look |
-| MissileTracker (analytic high-altitude flight, re-materialisation, destination chunk loading) | todo |
+| MissileTracker (analytic high-altitude flight, re-materialisation, destination chunk loading) | flights already run in unloaded chunks; loading the target's chunks folded into the Launch Control Station (2026-10-31) |
 | Exhaust flame, smoke trail, stage separation, re-entry plasma | done (9a): flame and trail from the burning stage, stopping at burn-out; staging flash, smoke ring, bang and the spent stage tumbling down; re-entry sheath and fire streak; engine and re-entry sounds with Doppler — needs in-game look (heat haze still todo) |
 | Launch Pad multiblock + erector/clamp animations + GUI | not planned (the user, at 9c: the Launch Silo does this job) |
 | Launch Complex + gantry | done in Phase 8 (8a, DESIGN §17.8); 2026-10-23: walkable once formed (its deck, the flame trench under the missile and the deflector's steps; DESIGN §23.3) |
 | Missile Silo + hatch doors | done (9b, DESIGN §17.10): dug-in 5×5×14 shaft of Reinforced Concrete, Hazard Concrete ring, 3×3 Silo Hatch whose doors slide apart on rails, 20 s countdown holding until they are open, straight climb out of the shaft, vent and mouth exhaust, DOORS button, Hatch blocked; after 9b (the user's requests): fires every missile, intercontinental ones too, its shaft has no lamps and its corner conduits run up to the ground — needs in-game look |
 | Cruise Missile Launcher | done (9c, DESIGN §17.11): 2x6 deck with two Launch Boxes, armoured boxes raised to 45° by telescopic rams, frangible covers, two missiles 3 s apart, 60k FE each; the Cruise Engine (1,500 blocks) makes any Light or Medium missile a cruise missile with its own winged airframe (folded in its box); sounds, Field Manual entry, JEI info — needs in-game look |
-| Launch Control Station: map, pads, salvo, time-on-target | todo |
-| Laser Designator, Targeting Binoculars, Data Link Tool, Comms Relay | todo |
-| MIRV bus & re-entry vehicles | todo |
-| Placed (in-place) missile detonation | todo |
+| Launch Control Station: a network of your launchers across the whole world (map, pads, salvo, time-on-target) | todo (the user's plan) |
+| Laser Designator | todo (the user's plan) |
+| Targeting Binoculars, Data Link Tool, Comms Relay | dropped 2026-10-31 (the user's plan) |
+| MIRV bus & re-entry vehicles | todo (the user's plan) |
+| Placed (in-place) missile detonation | dropped 2026-10-31 (the user's plan) |
 
 ## Phase 10 — Air defence
 | Item | Status |
@@ -240,8 +244,8 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Interceptor Battery + interceptor missile + kill probability | done 2026-10-30 (DESIGN §18.4): a two-block tall four-cell turret, interceptors flown to a solved meeting point, kill chances by class, radar and re-entry; GameTests; photographed — needs the user's in-game look |
 | Interceptor Complex (multiblock: 2.5x reach, surer kills, volleys) | done 2026-10-30 (DESIGN §18.5): Launch Cells and Phased Array Panels, 24 cells, hatches that swing open; GameTests; photographed — needs the user's in-game look |
 | Base alarm system (receiver, panel, monitor, siren, klaxon, bell, beacon, emergency light, display, relay) | done 2026-10-31 (DESIGN §18.6): alarm channels; synthesized alarm tones; GameTests; photographed — needs the user's in-game look |
-| Phased-Array module | todo |
-| Point-Defence Laser | todo |
+| Phased-Array module | dropped 2026-10-31 (the user's plan) |
+| Point-Defence Laser | dropped 2026-10-31 (the user's plan) |
 
 ## Phase 11 — Special weapons
 | Item | Status |
@@ -249,10 +253,10 @@ Phase 7 bench) · 6e effect systems (gas grid, EMP fields, freezing) + toxin / E
 | Storm bomb (supercell, chain lightning) | done 2026-10-30 (the Storm Warhead, its core and ICBM; a supercell over a region 160 round for 90 s: lightning chaining through creatures, scorching, fires, machines knocked out, wind, rain; lightning rods take its strikes; DESIGN §16.14; after the user's look each strike explodes into a small crater) — needs the user's in-game look |
 | Singularity bomb (growth, block ripping, lensing, collapse) | done 2026-10-30 (the Singularity Warhead, its core and ICBM; it feeds and grows for a minute, to about 74 blocks' reach on open ground, more when well fed; pull, tearing, debris spiral, disc and jets, collapse; lensing left out, DESIGN §16.11-16.12) — needs the user's in-game look |
 | Antimatter bomb (perfect sphere erasure) | done 2026-10-30 (the Antimatter Warhead, its trap and ICBM; a 67-block sphere, gamma flash to 134, breach; DESIGN §16.10, §16.12) — needs the user's in-game look |
-| Cryo bomb (freeze, frozen mobs, shatter, crystal growth, mist) | todo |
-| EMP bomb | todo |
-| Satellite Uplink + Kinetic Strike Satellite + orbital rods | todo |
-| Gas grid simulation + toxin/anthrax agents | todo |
+| Cryo bomb (freeze, frozen mobs, shatter, crystal growth, mist) | todo (the user's plan) |
+| EMP bomb | dropped 2026-10-31 (the user's plan) (EMP fields come from the EMP grenade, the EMP warhead and the Storm) |
+| Satellite Uplink + Kinetic Strike Satellite + orbital rods | dropped 2026-10-31 (the user's plan) |
+| Gas grid simulation + toxin/anthrax agents | done earlier (the gas grid in 6e: chlorine; anthrax and the SCUD toxin with the SCUD Storm, Phase 14) |
 
 ## Phase 12 — Aftermath
 Slices (DESIGN §21.8, 2026-10-27): 12a radiation and instruments · 12b fallout and scorched ground · 12c protective gear
@@ -268,28 +272,30 @@ and contamination · 12d EMP everywhere · 12e the wasteland.
 | Rad-Away, KI tablets, Anti-Rad Injector | 12a | done — needs in-game look |
 | Fallout plumes + wind + ash particles | 12b | done — needs in-game look |
 | Scorched/irradiated terrain blocks, nuclear terrain table, plants dying in strong fields | 12b | done — needs in-game look |
-| Gas mask, filters, flash goggles, Advanced CBRN Suit (hazmat and lead-lined built in 5d) | 12c | todo |
-| Contamination of players and items, decon shower washing it | 12c | todo |
-| EMP field system (machines, items, missiles, fuzes, vanilla redstone) | 12d | todo |
+| Gas mask, filters, flash goggles, Advanced CBRN Suit (hazmat and lead-lined built in 5d) | 12c | todo (the user's plan: more fallout and aftermath protection) |
+| Contamination of players and items, decon shower washing it | 12c | todo (the user's plan) |
+| EMP field system (machines, items, missiles, fuzes, vanilla redstone) | 12d | machines, missiles, interceptors and fuzes done (EMP fields); items and vanilla redstone dropped 2026-10-31 (the user's plan) |
 | Wasteland biome painting, toxic and frozen terrain, crater lakes | 12e | done; checked on a generated world (a blast with nobody near, one close by) — needs in-game look |
 
-## Phase 13 — Guns
+## Phase 13 — Handheld weapons on the special warheads (being considered)
 | Item | Status |
 |---|---|
-| Gun framework (GeckoLib items, keybinds, ammo, energy cells, recoil, reload, ADS) | todo |
-| Hammerhead RL, Lancer GML, Tactical Nuke Launcher | todo |
-| Tesla Rifle, Singularity Cannon, Antimatter Rifle, Cryo Gun, Particle Beam Rifle | todo |
-| Flamethrower, Grenade Launcher, EMP Gun, Railgun | todo |
+| Gun framework (GeckoLib items, keybinds, ammo, energy cells, recoil, reload, ADS) | being considered (for these only) |
+| Tactical Nuke Launcher | being considered |
+| Hammerhead RL, Lancer GML | dropped 2026-10-31 (the user's plan) |
+| Tesla Rifle (the storm), Singularity Cannon, Antimatter Rifle, Cryo Gun | being considered |
+| Particle Beam Rifle | dropped 2026-10-31 (the user's plan) |
+| Flamethrower, Grenade Launcher, EMP Gun, Railgun | dropped 2026-10-31 (the user's plan) |
 
 ## Phase 14 — Superweapons
 | Item | Status |
 |---|---|
-| Superweapon base (charge, power, announcements, controller GUI, Launch Computer firing) | done 2026-10-23 — needs in-game test (doctrine + upgrade slots todo) |
-| Particle Uplink Cannon (structure, charge visuals, steerable beam, trench, remote) | todo |
+| Superweapon base (charge, power, announcements, controller GUI, Launch Computer firing) | done 2026-10-23 — needs in-game test (doctrine and upgrade slots dropped 2026-10-31 (the user's plan)) |
+| Particle Uplink Cannon (structure, charge visuals, steerable beam, trench, remote) | todo (the user's plan) |
 | Nuclear Missile Silo (C&C's coffin: roof opening, erector, DF-5, 200-block radiation field) | done 2026-10-23 — needs in-game test |
 | SCUD Storm (erectors raising nine SCUDs, the barrage, toxin cloud and anthrax residue) | done 2026-10-23 — needs in-game test |
 | Ammunition factories: Arms Dealer (Toxin SCUD), War Factory (Nuclear Missile) | done 2026-10-23 — needs in-game test |
-| Doctrine modules (10) + generic upgrades (4) | todo |
+| Doctrine modules (10) + generic upgrades (4) | dropped 2026-10-31 (the user's plan) |
 | Creative structure spawners | done for the four built |
 
 ## Phase 15 — Structures & loot
@@ -314,12 +320,21 @@ and contamination · 12d EMP everywhere · 12e the wasteland.
 | 3D multiblock viewer with layer slider | done (real block models in a GUI picture-in-picture; drag to turn, layer buttons, block list) |
 | JEI plugin + custom categories | categories built with their machines since Phase 4; 2026-10-23: one intercontinental missile per whole weapon in the list (R shows the hall's recipe), the whole weapons' bare warheads out of it |
 
+## Phase 18 — New content (the user's plan, 2026-10-31)
+| Item | Status |
+|---|---|
+| Artillery (guns and shells between the grenades and the missiles) | todo |
+| War room displays (every missile, impact and radar contact on a big screen) | todo |
+| Seismographs (every blast in the dimension: its size, distance and direction) | todo |
+| Dead Hand (automatic retaliation from linked launchers when a strike lands) | todo |
+| Underwater and naval weapons | todo |
+
 ## Phase 17 — Polish
 | Item | Status |
 |---|---|
 | Re-review every model/texture/sound/effect | 2026-10-23, the user's requests: every multiblock (the six recent ones, then the Chemical Plant, Fission, Fusion and Singularity Reactors and Particle Accelerator), their blocks, the shared controller faces, casing and ports, and every missile (with finer flight models) repainted with the material library after researching texture practice (DESIGN §4.3); the library is now the rule for every model; then (third pass) every single-block and two-block machine on a shared machine kit, the cables, pipes, fluid tanks and storage blocks; then (fourth pass, the model design researched, DESIGN §4.4) all 21 warheads and the cluster bomblet remodelled and repainted: true round sections of turned planks, noses on real profiles, a silhouette and details for each type, no flickering caps or tips; and every missile now carries its warhead's own model (DESIGN §4.5) — client-checked, needs the user's look; the other ordnance next, then items |
 | Performance pass (Tsar MSPT target < 50) | 8d: the blast bench (`runBlastBench`) and the engine reworked at the Tsar's size: p99 tick 27.7 ms, one tick over 50 ms (since spread) on the user's PC; a wider pass (fx, fallout, saving) still todo |
-| Balance pass | todo |
+| Balance pass | dropped 2026-10-31 (the user's plan) |
 
 ---
 

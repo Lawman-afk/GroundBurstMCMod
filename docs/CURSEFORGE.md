@@ -65,6 +65,22 @@ made.
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
+## Planned
+
+- A Launch Control Station: a network of your launchers across the whole world
+- A Laser Designator
+- MIRVs: several warheads on one missile
+- More special weapons, starting with a Cryo Bomb
+- The Particle Uplink Cannon from *Command & Conquer: Generals – Zero Hour*
+- Contamination that sticks to you and your gear, and more fallout and aftermath protection
+- Artillery
+- War room displays
+- Seismographs
+- A Dead Hand system
+- Underwater and naval weapons
+- A performance pass
+- Being considered: handheld weapons based on the special warheads
+
 ## Links
 
 - Source code: [GitHub](https://github.com/Lawman-afk/GroundBurstMCMod)
