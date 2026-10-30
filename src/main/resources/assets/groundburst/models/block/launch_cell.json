@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "groundburst:block/launch_cell_top",
+    "side": "groundburst:block/launch_cell_side",
+    "bottom": "groundburst:block/launch_cell_bottom"
+  }
+}

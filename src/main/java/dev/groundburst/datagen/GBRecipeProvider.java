@@ -678,6 +678,24 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(dev.groundburst.content.assembly.GBAssembly.INERTIAL_GUIDANCE.get()).requires(GBParts.SENSOR_ARRAY)
                 .requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE)
                 .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
+        // The Interceptor Complex (DESIGN.md §18.5): its controller a rung over the battery (two military circuits, a CRT
+        // display for its fire control); a Launch Cell from a machine frame boxed in steel with a servo for its hatches; a
+        // Phased Array Panel from a sensor array, an advanced circuit and steel plate.
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.item(), 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBParts.CRT_DISPLAY).requires(GBParts.SENSOR_ARRAY).requires(GBParts.SERVO)
+                .requires(GBParts.STEEL_PLATE).requires(GBParts.STEEL_PLATE)
+                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get()),
+                        has(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get())).save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('F', GBParts.MACHINE_FRAME).define('S', GBParts.SERVO)
+                .pattern("PSP").pattern("PFP").pattern("PPP")
+                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get()),
+                        has(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get())).save(output);
+        shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.defence.GBDefence.PHASED_ARRAY.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('A', GBParts.SENSOR_ARRAY).define('C', GBParts.ADVANCED_CIRCUIT)
+                .pattern("PAP").pattern("ACA").pattern("PAP")
+                .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
         // The Special Weapons Assembler (DESIGN.md §16.15), a rung over the hall: two quantum circuits and a containment
         // emitter to hold an exotic core's field while it is built in.
         shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item(), 1)

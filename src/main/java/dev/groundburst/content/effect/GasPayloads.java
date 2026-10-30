@@ -46,8 +46,11 @@ public final class GasPayloads {
         }
     }
 
-    /** An EMP field went up: where, how big, for how long (ticks). */
-    public record Emp(Vec3 centre, float radius, int ticks) implements CustomPacketPayload {
+    /**
+     * An EMP field went up: where, how big, for how long (ticks), and whether it is a storm strike's pulse (a ring of
+     * sparks running out along the ground) rather than a full EMP (a dome of light).
+     */
+    public record Emp(Vec3 centre, float radius, int ticks, boolean pulse) implements CustomPacketPayload {
         public static final Type<Emp> TYPE = GBNetwork.type("emp_field");
         public static final StreamCodec<RegistryFriendlyByteBuf, Emp> CODEC = StreamCodec.of((buf, e) -> {
             buf.writeDouble(e.centre().x);
@@ -55,7 +58,8 @@ public final class GasPayloads {
             buf.writeDouble(e.centre().z);
             buf.writeFloat(e.radius());
             buf.writeVarInt(e.ticks());
-        }, buf -> new Emp(new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readFloat(), buf.readVarInt()));
+            buf.writeBoolean(e.pulse());
+        }, buf -> new Emp(new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readFloat(), buf.readVarInt(), buf.readBoolean()));
 
         @Override
         public Type<Emp> type() {

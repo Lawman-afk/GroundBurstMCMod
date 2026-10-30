@@ -181,6 +181,14 @@ public final class FxPhotographer {
                 // beyond; the turret swings up, an interceptor climbs out and meets it in the sky (the kill made certain).
                 new Scene("intercept", "intercept", 90, -12, List.of(120, 135, 148, 156, 162, 170)),
                 new Scene("intercept_close", "intercept_near", 9, 2, List.of(30, 112, 124)),
+                // The Interceptor Complex (DESIGN.md §18.5): off to the right, a missile from 300 blocks to the left; its
+                // volley leaves the hatches two at a time and meets the missile in the sky; close up, the hatches swinging
+                // open; its screen. After the user's look at the defence: the Storm's strikes' EMP pulses close up.
+                new Scene("intercept_complex", "intercept_complex", 170, -16, List.of(40, 55, 70, 85, 100, 115, 130)),
+                new Scene("intercept_complex_aerial", "intercept_complex_near", 10, 24, List.of(46, 48, 52, 60)),
+                new Scene("intercept_complex_close", "intercept_complex_near", 17, 22, List.of(20, 40, 50, 60, 70, 80)),
+                new Scene("complex_ui", "intercept_complex_near", 4, 0, List.of(30)),
+                new Scene("storm_pulses", "storm_warhead", 40, 8, List.of(478, 480, 482, 485)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -1048,6 +1056,9 @@ public final class FxPhotographer {
     }
 
     private static net.minecraft.core.BlockPos benchAt, pressAt;
+    /** The storm_pulses scene: its storm's eye, and where it strikes in front of the camera (so a pulse's ring shows near). */
+    private static Vec3 stormCentre;
+    private static net.minecraft.core.BlockPos stormSpot;
     /** Set by the JEI plugin when JEI is running: opens its Assembly Bench recipes (the "assembly_jei" scene). */
     public static Runnable showAssemblyRecipes = () -> {};
     /** Set by the JEI plugin when JEI is running: opens the ICBM Assembly Hall's recipes (the "hall_jei" scene). */
@@ -1565,6 +1576,28 @@ public final class FxPhotographer {
                     flightShown = dev.groundburst.content.launch.Flights.launch(level, target.add(0, 0, -300), target, spec, null);
                     return;
                 }
+                if (s.profile().equals("intercept_complex") || s.profile().equals("intercept_complex_near")) {
+                    // As the battery's: the complex facing the camera, off to the right in the wide scene; a missile from
+                    // 300 blocks to the left, bound for just behind it.
+                    boolean wide = s.profile().equals("intercept_complex");
+                    var complexAt = new net.minecraft.core.BlockPos(x, ground, wide ? 100 : 0);
+                    formed(level, complexAt, dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.block().get(),
+                            dev.groundburst.content.defence.GBDefence.COMPLEX, net.minecraft.core.Direction.WEST);
+                    if (level.getBlockEntity(complexAt) instanceof dev.groundburst.content.defence.InterceptorComplexBlockEntity c) {
+                        c.revalidate();
+                        c.energy().generate(dev.groundburst.content.defence.InterceptorComplexBlockEntity.ENERGY_CAPACITY);
+                        c.fillForTest();
+                        c.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get(), 16));
+                    }
+                    pressAt = complexAt;
+                    dev.groundburst.content.defence.Interception.killOverride = 1;
+                    Vec3 target = new Vec3(x + 9.5, ground, complexAt.getZ() + 0.5);
+                    var spec = new dev.groundburst.content.assembly.MissileSpec(new net.minecraft.world.item.ItemStack(
+                            dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()), dev.groundburst.content.assembly.SizeClass.L,
+                            dev.groundburst.content.assembly.MissileParts.Motor.SRM_II, dev.groundburst.content.assembly.MissileParts.Guidance.GPS, false);
+                    flightShown = dev.groundburst.content.launch.Flights.launch(level, target.add(0, 0, -300), target, spec, null);
+                    return;
+                }
                 if (s.profile().equals("see_through")) {
                     var lattice = dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.block().get().defaultBlockState();
                     var grating = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.block().get().defaultBlockState();
@@ -1700,6 +1733,10 @@ public final class FxPhotographer {
                     }
                     dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.STORM_WARHEAD,
                             net.minecraft.core.BlockPos.containing(at), null);
+                    if (s.name().equals("storm_pulses")) {
+                        stormCentre = at;
+                        stormSpot = new net.minecraft.core.BlockPos(x - 26, ground, 0);
+                    }
                     return;
                 }
                 if (s.profile().equals("cobalt_plume")) {
@@ -1945,6 +1982,21 @@ public final class FxPhotographer {
                     var player = server.getPlayerList().getPlayers().getFirst();
                     player.setGameMode(GameType.CREATIVE);
                     player.openMenu(be, crusher);
+                }
+            });
+        }
+        if (scene.name().equals("storm_pulses") && step >= 0 && clock == 476 && stormCentre != null) {
+            var centre = stormCentre;
+            var spot = stormSpot;
+            server.execute(() -> dev.groundburst.blast.Storms.strikeForTest(server.overworld(), centre, spot));
+        }
+        if (scene.name().equals("complex_ui") && step >= 0 && clock == 12 && pressAt != null) {
+            var complex = pressAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(complex) instanceof dev.groundburst.content.machine.MachineBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);
+                    player.openMenu(be, complex);
                 }
             });
         }

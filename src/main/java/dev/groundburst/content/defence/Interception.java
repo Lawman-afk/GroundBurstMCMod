@@ -16,14 +16,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Missile defence's reckoning (DESIGN.md §18.2): which missiles a Radar Array is tracking, where an interceptor can meet
- * a missile in time, and how likely it is to kill it there.
+ * Missile defence's reckoning (DESIGN.md §18.2, §18.5): which missiles a Radar Array is tracking, where an interceptor
+ * can meet a missile in time, and how likely it is to kill it there; the Interceptor Battery's figures and the
+ * Interceptor Complex's (two and a half times the reach, surer interceptors, bigger volleys).
  */
 public final class Interception {
     /** An interceptor's speed (blocks a tick), and how much longer than the straight line its climbing path runs. */
     public static final double SPEED = 5.0, PATH_FACTOR = 1.15;
     /** How far a battery engages: a missile a Radar Array tracks, or one only its own seeker sees. */
     public static final double RADAR_RANGE = 256, SEEKER_RANGE = 96;
+    /** How far the Interceptor Complex engages (two and a half times a battery): a missile a Radar Array tracks, or one its own radar alone sees. */
+    public static final double COMPLEX_RADAR_RANGE = RADAR_RANGE * 2.5, COMPLEX_OWN_RANGE = SEEKER_RANGE * 2.5;
+    /** An interceptor's best chance of a kill: a battery's, and the complex's (its fire-control radar guides them all the way in). */
+    public static final double BATTERY_KILL = 0.8, COMPLEX_KILL = 0.95;
     /** Never meet a missile less than this high over the battery (a burst that low is no defence). */
     public static final double MIN_HEIGHT = 12;
     /** Ticks since a Radar Array last tracked for it still to count as tracking. */
@@ -82,24 +87,39 @@ public final class Interception {
     }
 
     /**
-     * The chance one interceptor kills the missile it meets: 0.8, times its class's factor, times 0.6 if no Radar Array
-     * tracks it (the battery's own seeker alone), times 0.85 if it is coming back down hot from high up, times 0.5 for a
-     * superweapon's missile (a SCUD, China's Nuclear Missile).
+     * The chance one of a battery's interceptors kills the missile it meets: 0.8, times its class's factor, times 0.6 if
+     * no Radar Array tracks it (the battery's own seeker alone), times 0.85 if it is coming back down hot from high up,
+     * times 0.5 for a superweapon's missile (a SCUD, China's Nuclear Missile).
      */
     public static double killChance(SizeClass body, boolean tracked, boolean reentering, boolean superweapon) {
-        return 0.8 * classFactor(body) * (tracked ? 1 : 0.6) * (reentering ? 0.85 : 1) * (superweapon ? 0.5 : 1);
+        return killChance(BATTERY_KILL, body, tracked, reentering, superweapon);
     }
 
-    /** The kill chance against a flight as it is now. */
+    /** As {@link #killChance(SizeClass, boolean, boolean, boolean)} from a best chance of {@code best}. */
+    public static double killChance(double best, SizeClass body, boolean tracked, boolean reentering, boolean superweapon) {
+        return best * classFactor(body) * (tracked ? 1 : 0.6) * (reentering ? 0.85 : 1) * (superweapon ? 0.5 : 1);
+    }
+
+    /** A battery's kill chance against a flight as it is now. */
     public static double killChance(Flights.Flight flight, boolean tracked) {
+        return killChance(BATTERY_KILL, flight, tracked);
+    }
+
+    /** The kill chance against a flight as it is now, from a best chance of {@code best}. */
+    public static double killChance(double best, Flights.Flight flight, boolean tracked) {
         ChargeKind kind = AssemblyStats.kindOf(flight.warhead());
         boolean superweapon = kind == ChargeKind.SCUD_STORM_WARHEAD || kind == ChargeKind.NUCLEAR_MISSILE_WARHEAD;
-        return killChance(flight.body(), tracked, flight.reentry() > 0.3f, superweapon);
+        return killChance(best, flight.body(), tracked, flight.reentry() > 0.3f, superweapon);
     }
 
-    /** How many interceptors a missile draws: one, or two at once for the big ones (class L and up). */
+    /** How many interceptors a battery sends at a missile: one, or two at once for the big ones (class L and up). */
     public static int salvo(SizeClass body) {
         return body.ordinal() >= SizeClass.L.ordinal() ? 2 : 1;
+    }
+
+    /** How many the Interceptor Complex sends: twice a battery's, two or four. */
+    public static int volley(SizeClass body) {
+        return 2 * salvo(body);
     }
 
     /** Where and how soon an interceptor meets a missile: the point, and its flight time in ticks. */

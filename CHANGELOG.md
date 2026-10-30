@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+A bigger missile defence, and a storm that knocks defences out.
+
+### Anti-missile defence
+- **Interceptor Complex**: the multiblock missile defence, a 5 by 5 deck three high. A vertical launcher of 24 cells
+  under armoured hatches stands in front of a deckhouse whose face is a fire-control radar. Beside an Interceptor
+  Battery it reaches two and a half times as far (640 blocks with a Radar Array tracking, 240 on its own radar), its
+  interceptors kill 95% of small missiles, radar array or not, and it sends a volley of two at each missile (four at
+  class L and bigger), fired two at a time: the hatches swing open and the interceptors leap straight up out of their
+  cells. Built from Launch Pads, six new **Launch Cells**, six new **Phased Array Panels**, Machine Casing and an
+  Energy Port and an Item Port; the Holo-Projector shows it.
+- An EMP now fries interceptors flying through it, and an Interceptor Battery's screen says when an EMP has knocked it
+  out.
+
+### Changes
+- The **Storm ICBM**'s lightning strikes each send out an **EMP pulse** 24 blocks round for twelve seconds (it was 4
+  blocks for five): a ring of blue sparks runs out along the ground from each strike. At the storm's height almost anywhere
+  in it sits under a pulse most of the time, so machines and missile defences inside it go dark, interceptors flying
+  through it are fried, and unhardened missiles flown through it may turn duds. Lightning rods still take strikes
+  safely, pulse and all.
+
 ## 0.3.0 — 2026-10-30
 
 Exotic weapons and their own assembler, an anti-missile defence, and upgrade chips for the machines.

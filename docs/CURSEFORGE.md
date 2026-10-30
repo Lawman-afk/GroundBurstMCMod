@@ -15,7 +15,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   a cruise missile launcher. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
 - **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
   that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
-- **Anti-missile defence:** an Interceptor Battery that shoots down incoming missiles, guided by a Radar Array.
+- **Anti-missile defence:** an Interceptor Battery and the multiblock Interceptor Complex, which shoot down incoming
+  missiles, guided by a Radar Array.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and

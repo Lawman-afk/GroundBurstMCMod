@@ -34,6 +34,18 @@ DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left
                       ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
 
 PRESETS = {
+    "interceptor_complex": dict(
+        anim="working",
+        shots=WHOLE + [
+            ("launcher and console", 40, 210, (0, 16, 16), 70, None),
+            ("hatches, close", 55, 200, (-12, 16, 20), 30, None),
+            ("radar face", 12, 190, (0, 32, 40), 60, None),
+            ("radar elements, close", 5, 180, (-10, 30, 39), 20, None),
+            ("roof: lamps, antenna, AC", 45, 140, (0, 52, 58), 60, 0.5),
+            ("back: ports and door", 20, 20, (0, 10, 72), 60, None),
+            ("side: louvres and tray", 15, 270, (-40, 20, 30), 70, None),
+            ("console, close", 20, 200, (0, 18, -5), 20, None),
+        ]),
     "special_weapons_assembler": dict(
         anim="working",
         shots=WHOLE + [

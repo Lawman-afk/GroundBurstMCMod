@@ -70,6 +70,7 @@
     "ordnance/special_weapons",
     "ordnance/radar_array",
     "ordnance/interceptor_battery",
+    "ordnance/interceptor_complex",
     "ordnance/chemical",
     "superweapons/scud_storm",
     "superweapons/toxin",

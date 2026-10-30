@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:military_circuit",
+    "groundburst:military_circuit",
+    "groundburst:crt_display",
+    "groundburst:sensor_array",
+    "groundburst:servo",
+    "groundburst:steel_plate",
+    "groundburst:steel_plate"
+  ],
+  "result": {
+    "id": "groundburst:interceptor_complex"
+  }
+}

@@ -213,6 +213,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(52, 20, 116, 34), 8, 6, List.of(),
             List.of(), 256);
 
+    public static final MachineLayout INTERCEPTOR_COMPLEX = new MachineLayout(
+            GroundBurst.id("textures/gui/machine/interceptor_complex.png"), 176, 166, List.of(new MachineLayout.Pos(28, 17), new MachineLayout.Pos(28, 35), new MachineLayout.Pos(28, 53)), 8, 84,
+            new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
+            null, 196, 0,
+            null, 196, 20,
+            new MachineLayout.Rect(160, 5, 8, 8), new MachineLayout.Rect(151, 58, 18, 18), 180, 56,
+            new MachineLayout.Rect(52, 20, 116, 34), 8, 6, List.of(),
+            List.of(), 256);
+
     public static final MachineLayout RTG = new MachineLayout(
             GroundBurst.id("textures/gui/machine/rtg.png"), 176, 166, List.of(new MachineLayout.Pos(56, 53)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

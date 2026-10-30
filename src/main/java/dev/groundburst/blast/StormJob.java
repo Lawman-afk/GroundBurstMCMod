@@ -40,7 +40,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * the tallest of a few spots, the rest anywhere; a lightning rod near where it would land draws it to itself. A strike
  * hurts whatever stands at its foot (vanilla lightning's own effects too: a creeper charged, a pig turned), then
  * chains on through the nearest creatures, each jump weaker; it scorches the ground (grass burnt to dirt, sand fused to
- * glass, leaves burnt away), may start a fire where fire may spread, and knocks out machines round it (an EMP field);
+ * glass, leaves burnt away), may start a fire where fire may spread, and sends out an EMP pulse
+ * ({@link Storms#EMP_RADIUS} round: machines and interceptor defences go dark in it, interceptors flying through it fried);
  * then it explodes where it came down ({@link Storms#STRIKE_BLAST}: a small crater, fires round its rim). Clients are
  * told of each strike, for the bolt, its chain and its thunder.</li>
  * </ul>
@@ -264,7 +265,7 @@ final class StormJob {
             chain.add(from);
         }
         scorch(at);
-        dev.groundburst.content.effect.EmpFields.add(this.level, foot, Storms.EMP_RADIUS, Storms.EMP_TICKS, source);
+        dev.groundburst.content.effect.EmpFields.pulse(this.level, foot, Storms.empRadius(this.radius), Storms.EMP_TICKS);
         if (this.blasts) {
             Blasts.detonate(this.level, foot, Storms.STRIKE_BLAST, source);      // its explosive impact: a small crater
         }

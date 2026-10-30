@@ -1,0 +1,40 @@
+{
+  "title": "Interceptor Complex",
+  "icon": "groundburst:interceptor_complex",
+  "order": 17,
+  "items": [
+    "groundburst:interceptor_complex",
+    "groundburst:launch_cell",
+    "groundburst:phased_array_panel"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Interceptor Complex** is the anti-missile defence built big: a vertical launcher of 24 cells in front of a fire-control radar. Beside an [Interceptor Battery](ordnance/interceptor_battery) it reaches **two and a half times as far**, its interceptors are surer, and it sends **twice as many** at each missile.\n\nLoad **Interceptor Missiles** into its store (three slots, by hand or by pipe into its Item Port); its cells fill one a second. Powered (160 FE a tick into its Energy Port, and 4,000 for each launch), it watches the sky. A missile bound for within **640 blocks** of it, if a working [Radar Array](ordnance/radar_array) tracks it, or **240** that its own radar alone sees, draws a **volley**: two interceptors, four at a class L or bigger missile, fired two at a time. Their hatches swing open and they leap straight up out of their cells, then curve over onto the missile."
+    },
+    {
+      "type": "text",
+      "text": "**Kill chance.** Its radar guides every interceptor all the way in, so each kills a small missile **95%** of the time, radar array or not: a medium one 86%, a heavy one 71%, a Strategic one 57% and an intercontinental one 48% (less against one coming back down hot, half as often against a superweapon's). With two or four at each, little gets through, and if a whole volley misses and there is time, it fires another.\n\nIt shoots down any missile coming down within its reach, **yours too**: a redstone signal stops it while you fire close by. An **EMP** knocks it out and fries its interceptors flying through one (a [Storm](ordnance/exotic)'s strikes send out EMP pulses). Its screen shows its cells and store, its reach and its tally; it takes [upgrade chips](processing/upgrade_chips)."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:interceptor_complex",
+      "text": "A 5 by 5 deck, three high. The front row: Launch Pads, the controller in the middle. Behind it the launcher: six Launch Cells, three across and two deep, a Launch Pad either side of them; the blocks just over the cells must be clear, for their hatches to swing open. At the back the deckhouse, two deep and three high, of Machine Casing: in the middle of its front, over the deck, six Phased Array Panels (three across, two high), its radar; low in its back wall the Energy Port, on your right as you face the controller, and the Item Port on your left."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:interceptor_complex",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:launch_cell",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:phased_array_panel",
+      "text": ""
+    }
+  ]
+}

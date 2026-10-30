@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.\n\nA comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery): a battery engages any missile a working array tracks at its full reach."
+      "text": "A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.\n\nA comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery) and the [Interceptor Complex](ordnance/interceptor_complex): they engage any missile a working array tracks at their full reach."
     },
     {
       "type": "structure",

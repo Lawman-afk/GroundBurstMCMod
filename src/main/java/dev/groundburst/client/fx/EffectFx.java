@@ -14,10 +14,14 @@ import net.minecraft.world.phys.Vec3;
 /**
  * What the slice 6e systems look like (DESIGN.md §16.7, §21.4): the gas grid's blocks of gas as a drifting tinted haze
  * (puffs spawned through the blocks the server says hold gas, thicker where it is stronger), and EMP fields as a
- * shell of light racing out to the field's edge, then sparks crawling over everything inside until it ends.
+ * shell of light racing out to the field's edge, then sparks crawling over everything inside until it ends; a storm
+ * strike's pulse as a ring of sparks running out along the ground instead of the shell.
  */
 final class EffectFx {
-    private record Emp(Vec3 centre, float radius, double start, double end) {}
+    private record Emp(Vec3 centre, float radius, double start, double end, boolean pulse) {}
+
+    /** A storm strike's pulse: motes of electric blue. */
+    private static final net.minecraft.core.particles.DustParticleOptions PULSE = new net.minecraft.core.particles.DustParticleOptions(0x6FD2FF, 1.3f);
 
     private static List<GasPayloads.Cell> gas = List.of();
     private static double gasX, gasZ;
@@ -37,7 +41,7 @@ final class EffectFx {
             gasX = gas.isEmpty() ? 0 : x / gas.size() + 0.5;
             gasZ = gas.isEmpty() ? 0 : z / gas.size() + 0.5;
         };
-        GasPayloads.empHook = e -> EMPS.add(new Emp(e.centre(), e.radius(), Spectacle.ticks, Spectacle.ticks + e.ticks()));
+        GasPayloads.empHook = e -> EMPS.add(new Emp(e.centre(), e.radius(), Spectacle.ticks, Spectacle.ticks + e.ticks(), e.pulse()));
     }
 
     static void clear() {
@@ -87,15 +91,34 @@ final class EffectFx {
                 puffs.add(p, quality);
             }
         }
-        // EMP: the shell races out over its first 10 ticks; then sparks crackle over surfaces in the field near you.
+        // EMP: the shell races out over its first 10 ticks (a pulse: a ring along the ground over 8); then sparks
+        // crackle over surfaces in the fields near you, as many however many fields overlap there.
         double now = Spectacle.ticks;
         EMPS.removeIf(e -> now > e.end());
+        List<Emp> near = new ArrayList<>();
         for (Emp e : EMPS) {
             if (e.centre().distanceTo(eye) > e.radius() + 96) {
                 continue;
             }
+            near.add(e);
             double age = now - e.start();
-            if (age < 10) {
+            if (e.pulse()) {
+                if (age < 8) {
+                    // A ring of electric blue running out along the ground, a mote every block and a half of its
+                    // edge, sparks among them.
+                    double r = e.radius() * (age + 1) / 8.0;
+                    int count = (int) (2 * Math.PI * r / 1.5 * quality);
+                    for (int i = 0; i < count; i++) {
+                        double a = random.nextDouble() * 2 * Math.PI, rr = r - random.nextDouble() * 1.5;
+                        double x = e.centre().x + Math.cos(a) * rr, z = e.centre().z + Math.sin(a) * rr;
+                        BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                                BlockPos.containing(x, 0, z));
+                        if (Math.abs(top.getY() - e.centre().y) < r) {
+                            level.addParticle(i % 3 == 0 ? ParticleTypes.ELECTRIC_SPARK : PULSE, x, top.getY() + 0.15, z, 0, 0.05, 0);
+                        }
+                    }
+                }
+            } else if (age < 10) {
                 double r = e.radius() * (age + 1) / 10.0;
                 int count = (int) (90 * quality);
                 for (int i = 0; i < count; i++) {
@@ -107,13 +130,18 @@ final class EffectFx {
                             e.centre().z + Math.sin(a) * ring * r, 0, 0, 0);
                 }
             }
+        }
+        if (!near.isEmpty()) {
             int sparks = (int) (8 * quality);
-            double reach = Math.min(e.radius(), 24);
             for (int i = 0; i < sparks; i++) {
-                double x = eye.x + (random.nextDouble() * 2 - 1) * reach, z = eye.z + (random.nextDouble() * 2 - 1) * reach;
+                double x = eye.x + (random.nextDouble() * 2 - 1) * 24, z = eye.z + (random.nextDouble() * 2 - 1) * 24;
                 BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(x, 0, z));
-                if (Vec3.atCenterOf(top).distanceTo(e.centre()) <= e.radius()) {
-                    level.addParticle(ParticleTypes.ELECTRIC_SPARK, x, top.getY() + 0.05, z, 0, 0.05, 0);
+                Vec3 at = Vec3.atCenterOf(top);
+                for (Emp e : near) {
+                    if (at.distanceTo(e.centre()) <= e.radius()) {
+                        level.addParticle(ParticleTypes.ELECTRIC_SPARK, x, top.getY() + 0.05, z, 0, 0.05, 0);
+                        break;
+                    }
                 }
             }
         }

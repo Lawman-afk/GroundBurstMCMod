@@ -2123,6 +2123,18 @@ affect a whole region (over §16.1's 48 blocks for 45 s).
   zap), then fewer and fewer (0.35 a tick falling as the square of what is left of the 100); a third or so with
   thunder; the sky lit, and the screen when near. A client told of a storm late sees none of what has passed. Client
   only (a schedule from the storm's id). FX scenes `storm_birth` and `storm_birth_close`.
+- **Its EMP pulses** (after the user's look at the anti-missile defence, the same day: EMP effects near the strikes, to
+  make the storm worth more against interceptors): each strike's field is now a pulse 24 blocks round for 240 ticks
+  (`Storms.EMP_RADIUS`, `EMP_TICKS`; it was 4 for 100), as much smaller as the storm is but never under 4 (`empRadius`:
+  a GameTest's storm, shrunk to its plot, keeps 4, so it never reaches the next plot's machines and missiles). At six
+  strikes a second over 160 blocks round, a spot sits under a pulse about four fifths of the time at full strength:
+  machines go dark (losing half their energy each time a pulse catches them anew), batteries and complexes fire nothing,
+  interceptors flying through are fried (`Interceptors`, §18.5), missiles flown through unhardened turn duds half the
+  time (§21.4): the storm is the way in for the missiles sent after it, hardened. A strike into a lightning rod makes
+  no pulse. Its show (`EmpFields.pulse`, the payload's `pulse` flag): not the full EMP's dome of light but a ring of
+  electric-blue motes and sparks running out along the ground over 8 ticks (a mote every block and a half of its edge:
+  white sparks alone were lost against sand and rain), a burst at its foot and a quieter, higher zap; the crackle near
+  you counted once however many fields overlap (it was once a field). FX scene `storm_pulses`.
 
 ### 16.15 The Special Weapons Assembler (Phase 11, 2026-10-30)
 The user, after the Storm Warhead: a special weapons assembler for the special weapons, their missiles fired like the
@@ -2554,6 +2566,45 @@ The anti-missile defence, as §18.2 has it with these choices:
   batteries engage only their own test's missiles: one shot down the next plot's.) FX scenes `intercept` (a missile
   crossing the view from the north, met in the sky) and `intercept_close`.
 - Not done: the Point-Defence Laser (§18.3), MIRVs, countermeasures, the Phased-Array module.
+
+### 18.5 As built: the Interceptor Complex (2026-10-30; the user's request after the battery)
+"A new multiblock version of the Interceptor that's more reliable, has further range (2.5x), and has a larger volley."
+- **Structure** (`GBDefence.COMPLEX`): a 5x5 deck three high, the controller in the middle of a front row of Launch
+  Pad; behind it six **Launch Cells** (new part block: four cells under hatches) three across and two deep, a Launch
+  Pad either side and the layer over them required air (the hatches swing open there); at the back a deckhouse of
+  Machine Casing two deep and three high, six **Phased Array Panels** (new part block) three across and two high in the
+  middle of its front over the deck, the Energy and Item Ports low in its back wall. Formed, the deck's pads are cut
+  to `PartCut.DECK` (14 px) and the controller to `CONSOLE_NORTH` (the Launch Complex's). A Structure Spawner. The
+  controller: machine casing, two military circuits, a CRT display, a sensor array, a servo and two steel plates; a
+  Launch Cell: a machine frame boxed in seven steel plates with a servo; a Phased Array Panel: four sensor arrays, an
+  advanced circuit and four steel plates.
+- **Block entity** (`InterceptorComplexBlockEntity`, menu `interceptor_complex`): the battery's logic with these
+  figures: 24 cells, loaded a second each from a store of three slots; 160 FE a tick, 4,000 a launch, holds 1,000,000;
+  reach `Interception.COMPLEX_RADAR_RANGE` 640 where a Radar Array tracks the missile, `COMPLEX_OWN_RANGE` 240 on its
+  own (2.5 times the battery's 256 and 96); kill chance from `COMPLEX_KILL` 0.95 (the battery's `BATTERY_KILL` 0.8)
+  and never the seeker's six tenths: its radar guides them in; a volley (`Interception.volley`: twice the battery's
+  salvo, two or four) fired two a look, a look every 4 ticks, each from the next cell in a spread order, its hatch
+  swung open 105 degrees for 34 ticks (the cell's fire time synced; `boneRotations`, as the battery's turret); its
+  interceptors climb up to 100 before they turn over (the battery's 60); a whole volley missed and time left, another.
+  Reckoned from the launcher's middle; an EMP over its controller or its deckhouse knocks it out. Upgrade chips.
+  JEI page; Field Manual "Interceptor Complex" (Ordnance, after the battery) with its structure page.
+- **Both defences** now hear how each interceptor came out (`InterceptorLauncher.Outcome`: killed, missed, spent (its
+  missile gone first, another's kill: not counted a miss), fried (an EMP on the way: `Interceptors.tick` bursts it
+  where it is)); the battery's screen says when an EMP has knocked it out.
+- **Model** (`tools/assets/interceptor_complex.py`, material library): a concrete walkway deck banded in hazard paint,
+  cable trays down its sides; the launcher three haze-grey modules of eight cells, the hatches (bones `hatch0`-`hatch23`)
+  over dark bores, uptake grates between each module's two columns, a hazard coaming; the deckhouse NATO green in
+  panels with louvred sides, a door at the back between the ports' plates and one on the front's west pillar, a
+  warning sign on the east one; its radar a grey face of elements in rows in a steel rim, a lamp strip under it; on
+  its roof a parapet with red obstruction lamps, an air-conditioning unit and an IFF antenna turning while it works;
+  the console olive with a green screen. Blocks: the Launch Cell's top four hatches in a hazard coaming over its grate,
+  its sides haze grey with a stencil band; the Phased Array Panel's face of elements; the controller's placard an
+  interceptor leaving its cell.
+- GameTests (`DefenceTests`): it forms and meets a class L missile with a volley (two in the air at once), shooting it
+  down; its controller alone fires nothing; its figures; and for both, an EMP over a battery fries its interceptor, a
+  storm's strike beside it knocks it out. FX scenes `intercept_complex`, `intercept_complex_close`, `complex_ui`.
+- It shoots down any missile coming down within its reach, the player's own too (as the battery does, at its smaller
+  reach): its manual page says to stop it with redstone while firing close by.
 
 ---
 
@@ -3873,6 +3924,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The user's next look at the defence: the **Interceptor Complex**, a 5x5x3 multiblock (a 24-cell vertical launcher before a phased-array deckhouse) with 2.5 times the battery's reach (640/240), a 0.95 best kill chance never cut for want of a Radar Array, and volleys twice the battery's salvo (§18.5). The **Storm**'s strikes send EMP pulses 24 blocks round for 12 s (from 4 for 5), so defences inside it go dark and interceptors flying through are fried (§16.14). |
 | 2026-10-30 | Version **0.3.0** (the user's request: a jar to upload and a changelog since 0.2.0): the exotic weapons and their assembler, the Interceptor Battery, upgrade chips, the see-through lattice and grating; README and `docs/CURSEFORGE.md` updated (24 warheads). |
 | 2026-10-30 | The anti-missile defence (the user's request): the **Interceptor Battery** of §18.2 as a two-block tall machine with a four-cell turret, its interceptors flown like missiles (loaded or not) to a solved meeting point and their kill chance rolled there, 256 blocks where a Radar Array tracks the missile and 96 on its own seeker; it never engages missiles bound elsewhere (§18.4). The Lattice Frame framed on all four edges (§22.2). |
 | 2026-10-30 | The user's next look: the Upgrades tab only as wide as its words (82); the Storm ICBM's impact sends lightning up into the sky for five seconds, the storm's birth (§16.14); the Lattice Frame and Steel Grating draw their outer faces both ways and hide only what another of them covers, so you see a stack's far side through it (§22.2). |

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/phased_array_panel"
+    },
+    "formed=true": {
+      "model": "groundburst:block/phased_array_panel_formed"
+    }
+  }
+}

@@ -32,9 +32,20 @@ public final class Storms {
     /** A strike: its damage (vanilla lightning's included), how far it jumps on to the next creature, how many jumps, what each keeps. */
     public static final float STRIKE_DAMAGE = 12, CHAIN_RANGE = 6, CHAIN_KEEP = 0.75f;
     public static final int CHAIN_HOPS = 4;
-    /** What a strike does to machines round it: knocked out (an EMP field) this far, this long. */
-    public static final float EMP_RADIUS = 4;
-    public static final int EMP_TICKS = 100;
+    /**
+     * What a strike does round it: an EMP pulse this far, this long ({@link
+     * dev.groundburst.content.effect.EmpFields#pulse}). After the user's look at the anti-missile defence, wide enough
+     * (it was 4 blocks for 5 s) that at full strength any spot in the storm sits in a pulse four fifths of the time:
+     * machines and defences in it go dark, interceptors flying through are fried, missiles flown in unhardened may turn
+     * duds.
+     */
+    public static final float EMP_RADIUS = 24;
+    public static final int EMP_TICKS = 240;
+
+    /** A strike's pulse in a storm of {@code radius}: as much smaller as the storm is, never under 4 blocks. */
+    static float empRadius(float radius) {
+        return Math.max(4, EMP_RADIUS * radius / RADIUS);
+    }
     /** How far a lightning rod draws a strike to itself (it takes it safely, and gives a redstone pulse). */
     public static final int ROD_REACH = 32;
     /**

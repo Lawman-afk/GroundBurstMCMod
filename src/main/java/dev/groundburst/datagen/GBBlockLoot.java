@@ -83,6 +83,9 @@ public class GBBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.block().get());
         dropSelf(dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().get());
+        dropSelf(dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.block().get());
+        dropSelf(dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.block().get());
+        dropSelf(dev.groundburst.content.defence.GBDefence.PHASED_ARRAY.block().get());
         for (var c : dev.groundburst.content.assembler.AssemblerClass.values()) {
             dropSelf(dev.groundburst.content.assembler.GBAssemblers.controller(c).block().get());
         }

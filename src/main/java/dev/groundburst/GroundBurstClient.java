@@ -63,6 +63,7 @@ public class GroundBurstClient {
         event.register(GBMenus.STRATEGIC_ASSEMBLY.get(), dev.groundburst.client.screen.StrategicAssemblyScreen::new);
         event.register(GBMenus.SPECIAL_WEAPONS.get(), dev.groundburst.client.screen.SpecialWeaponsScreen::new);
         event.register(GBMenus.INTERCEPTOR_BATTERY.get(), MachineScreen::new);
+        event.register(GBMenus.INTERCEPTOR_COMPLEX.get(), MachineScreen::new);
         event.register(GBMenus.MISSILE_ASSEMBLER.get(), dev.groundburst.client.screen.MissileAssemblerScreen::new);
         event.register(GBMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GBMenus.ARC_FURNACE.get(), MachineScreen::new);
@@ -104,6 +105,9 @@ public class GroundBurstClient {
         // The Interceptor Battery: two blocks tall, its turret on top.
         event.registerBlockEntityRenderer(dev.groundburst.content.defence.GBDefence.BATTERY_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.defence.GBDefence.BATTERY_ENTITY.get(), 3));
+        // The Interceptor Complex: five blocks across and back from its controller at the front, four high with its mast.
+        event.registerBlockEntityRenderer(dev.groundburst.content.defence.GBDefence.COMPLEX_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.defence.GBDefence.COMPLEX_ENTITY.get(), 5, 5));
         // The Special Weapons Assembler: as deep, its rings 4 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.strategic.GBStrategic.SPECIAL_ENTITY.get(), 5, 13));

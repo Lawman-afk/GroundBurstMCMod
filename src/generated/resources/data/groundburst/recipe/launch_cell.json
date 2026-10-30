@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "F": "groundburst:machine_frame",
+    "P": "#c:plates/steel",
+    "S": "groundburst:servo"
+  },
+  "pattern": [
+    "PSP",
+    "PFP",
+    "PPP"
+  ],
+  "result": {
+    "id": "groundburst:launch_cell"
+  }
+}

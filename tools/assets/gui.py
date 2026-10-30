@@ -338,6 +338,19 @@ LAYOUTS = {
         "readout": (52, 20, 116, 34),
         "inventory": (8, 84),
     },
+    # Interceptor Complex (DESIGN.md §18.5): its store of interceptor missiles, three slots down the left, and the
+    # readout: cells ready, its reach (with a Radar Array or its own radar), its tally.
+    "interceptor_complex": {
+        "title": (8, 6),
+        "slots": [("missile", 28, 17), ("missile", 28, 35), ("missile", 28, 53)],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (52, 20, 116, 34),
+        "inventory": (8, 84),
+    },
     # RTG: fuel slug slot, decay flame, readout with the fuel time left.
     "rtg": {
         "title": (8, 6),

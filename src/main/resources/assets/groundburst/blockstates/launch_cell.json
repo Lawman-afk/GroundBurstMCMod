@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/launch_cell"
+    },
+    "formed=true": {
+      "model": "groundburst:block/launch_cell_formed"
+    }
+  }
+}

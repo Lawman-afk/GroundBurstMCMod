@@ -113,6 +113,10 @@ public final class GBJeiPlugin implements IModPlugin {
         // Missile defence (DESIGN.md §18.2).
         info(registration, dev.groundburst.content.defence.GBDefence.INFO, dev.groundburst.content.defence.GBDefence.BATTERY.item().get(),
                 dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get());
+        info(registration, dev.groundburst.content.defence.GBDefence.INFO_COMPLEX,
+                dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.item().get(),
+                dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.item().get(),
+                dev.groundburst.content.defence.GBDefence.PHASED_ARRAY.item().get());
         // The superweapons (DESIGN.md §19.5): how each is built and works.
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_SCUD_STORM, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.ADOBE_WALL.item().get(),
                 dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_TANK.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.SCUD_ERECTOR.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_SPAWNER.get(), dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_SCUD.get());

@@ -50,7 +50,7 @@ import net.minecraft.world.phys.Vec3;
  * ({@link Interception#solve}); the turret swings round to it as it fires. Missiles flying out from near it, bound
  * elsewhere, it lets go.
  */
-public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements AnimatedMachine {
+public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements AnimatedMachine, InterceptorLauncher {
     public static final int SLOT_STORE = 0;
     /** Cells, ticks to load one, how often it looks for threats. */
     public static final int CELLS = 4, RELOAD = 60, SCAN_INTERVAL = 4;
@@ -66,6 +66,7 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
     private static final String T_SEEKER = GBLang.add(GroundBurst.MODID + ".interceptor.seeker", "No radar: seeker, reach %s");
     private static final String T_TALLY = GBLang.add(GroundBurst.MODID + ".interceptor.tally", "Threats %s, shot down %s, missed %s");
     private static final String T_NO_POWER = GBLang.add(GroundBurst.MODID + ".interceptor.no_power", "Needs power: %s FE a tick");
+    static final String T_EMP = GBLang.add(GroundBurst.MODID + ".interceptor.emp", "Knocked out by an EMP");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** Interceptors in the cells, and ticks into loading the next. */
@@ -98,6 +99,15 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
         return this.ready;
     }
 
+    /** Its tally: missiles shot down, interceptors that missed (fried ones too). */
+    public int kills() {
+        return this.kills;
+    }
+
+    public int misses() {
+        return this.misses;
+    }
+
     /** For GameTests: its cells filled at once. */
     public void fillForTest() {
         this.ready = CELLS;
@@ -115,12 +125,13 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
         return true;
     }
 
-    /** Told how an interceptor of its own came out (from Interceptors). */
-    void reported(boolean killed) {
-        if (killed) {
-            this.kills++;
-        } else {
-            this.misses++;
+    /** Told how an interceptor of its own came out (from Interceptors): one that never got to its missile counts for nothing. */
+    @Override
+    public void reported(Outcome outcome) {
+        switch (outcome) {
+            case KILLED -> this.kills++;
+            case MISSED, FRIED -> this.misses++;
+            case SPENT -> { }
         }
         setChanged();
     }
@@ -238,7 +249,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
     public List<Component> readout(MachineMenu menu) {
         int store = this.inventory.getItem(SLOT_STORE).getCount();
         Component first = Component.translatable(T_READY, menu.extra(DATA_READY), CELLS, store);
-        Component second = menu.status() == MachineStatus.NO_POWER
+        Component second = menu.status() == MachineStatus.EMP ? Component.translatable(T_EMP).withStyle(ChatFormatting.RED)
+                : menu.status() == MachineStatus.NO_POWER
                 ? Component.translatable(T_NO_POWER, workEnergy(POWER_USE)).withStyle(ChatFormatting.RED)
                 : menu.extra(DATA_RADAR) > 0 ? Component.translatable(T_RADAR, (int) Interception.RADAR_RANGE)
                 : Component.translatable(T_SEEKER, (int) Interception.SEEKER_RANGE);

@@ -528,7 +528,7 @@ It draws **400 FE a tick**, more than copper cable carries: feed it with insulat
 
 entry("processing/upgrade_chips", "Upgrade chips", "quantum_speed_chip", ['basic_speed_chip', 'advanced_speed_chip', 'military_speed_chip', 'quantum_speed_chip', 'basic_efficiency_chip', 'advanced_efficiency_chip', 'military_efficiency_chip', 'quantum_efficiency_chip', 'basic_balanced_chip', 'advanced_balanced_chip', 'military_balanced_chip', 'quantum_balanced_chip'], [
     text("""
-An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly), the [Special Weapons Assembler](ordnance/special_weapons) and the superweapons' ammunition factories, and so does the [Interceptor Battery](ordnance/interceptor_battery). Generators, reactors and launchers take none.
+An **upgrade chip** makes a machine work faster, or on less power. Every processing machine takes one (from the [Ore Crusher](processing/ore_crusher) to the [Exotic Matter Fabricator](processing/exotic_matter_fabricator)), and so does every assembler: the [Assembly Bench](ordnance/assembly), the four [missile assemblers](ordnance/missile_assemblers), the [ICBM Assembly Hall](ordnance/strategic_assembly), the [Special Weapons Assembler](ordnance/special_weapons) and the superweapons' ammunition factories, and so do the [Interceptor Battery](ordnance/interceptor_battery) and the [Interceptor Complex](ordnance/interceptor_complex). Generators, reactors and launchers take none.
 
 Open the machine's screen and click the **Upgrades** tab on its left edge (the config tab's twin): it holds **three chips**, and says what they do together. Shift-clicking a chip from your inventory fits it in the first free slot. Breaking the machine drops the chips with everything else.
 """),
@@ -1185,10 +1185,10 @@ On open ground it eats its way out to about **74 blocks** by the end of its minu
     text("""
 **Storm Warhead**: a Tesla storm generator, squat and caged: a copper-wound drum, four capacitor tubes glowing blue round it and a Tesla coil's ring on top. Its core is a **Storm Core**: capacitor banks, two superconducting coils and a quantum circuit to fire them. Where its missile comes down it seeds a **supercell over a whole region**: **160 blocks round** for **a minute and a half**. A wide dark cloud deck gathers over it in fifteen seconds and turns slowly round the eye, its wall cloud hanging low in the middle; the sky darkens, rain drives down and the wind howls.
 
-**Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. Every strike **explodes** where it comes down, blowing out a small crater about three blocks round with fires round its rim; it burns grass to dirt and fuses sand to glass round it, burns leaves away, and **knocks out every machine** within 4 blocks for five seconds. Thunder cracks close by and rolls on from far off.
+**Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. Every strike **explodes** where it comes down, blowing out a small crater about three blocks round with fires round its rim; it burns grass to dirt and fuses sand to glass round it, burns leaves away, and sends out an **EMP pulse**, a ring of blue sparks running out along the ground: every machine within **24 blocks** goes dark for twelve seconds, interceptors flying through it are fried, and a missile flown through it may turn a dud. At the storm's height almost anywhere in it sits under a pulse most of the time, so **missile defences inside it are knocked out**: send your next missiles in while it rages, fitted with Hardened Electronics so its pulses cannot touch them. Thunder cracks close by and rolls on from far off.
 """),
     text("""
-**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater), giving a redstone pulse each time.
+**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater, no EMP pulse), giving a redstone pulse each time: rods round a base keep its machines and defences running.
 
 **The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it.
 """),
@@ -1233,7 +1233,7 @@ entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "lar
     text("""
 A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.
 
-A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery): a battery engages any missile a working array tracks at its full reach.
+A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery) and the [Interceptor Complex](ordnance/interceptor_complex): they engage any missile a working array tracks at their full reach.
 """),
     structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a Large Radar Dish on top, its middle over the mast: formed, it turns."),
     spot("large_radar_dish", """
@@ -1252,10 +1252,27 @@ Powered (40 FE a tick, and 4,000 for each launch), it watches the sky. A missile
     text("""
 **Kill chance.** An interceptor kills a small missile **80%** of the time, a medium one 72%, a heavy one 60%, a Strategic one 48% and an intercontinental one 40%. Without radar, only six tenths as often; against a missile coming back down hot from high up, 0.85 as often; against a superweapon's missile (a SCUD, China's Nuclear Missile), half as often. A missile shot down breaks up in the air: its warhead **never goes off**. A miss bursts harmlessly, and the battery fires again if there is still time.
 
-Its screen shows its cells, whether a radar is tracking for it, and its tally. It takes [upgrade chips](processing/upgrade_chips): speed loads its cells faster, efficiency spends less power. A redstone signal can stop it, as any machine.
+Its screen shows its cells, whether a radar is tracking for it, and its tally. It takes [upgrade chips](processing/upgrade_chips): speed loads its cells faster, efficiency spends less power. A redstone signal can stop it, as any machine. An **EMP** knocks it out, and fries its interceptors flying through one: a [Storm](ordnance/exotic)'s strikes send out EMP pulses, so a battery inside a storm is down most of the time. For more reach, surer kills and bigger volleys, build the [Interceptor Complex](ordnance/interceptor_complex).
 """),
     craft("interceptor_battery"),
     craft("interceptor_missile"),
+])
+
+entry("ordnance/interceptor_complex", "Interceptor Complex", "interceptor_complex", ["interceptor_complex", "launch_cell", "phased_array_panel"], [
+    text("""
+The **Interceptor Complex** is the anti-missile defence built big: a vertical launcher of 24 cells in front of a fire-control radar. Beside an [Interceptor Battery](ordnance/interceptor_battery) it reaches **two and a half times as far**, its interceptors are surer, and it sends **twice as many** at each missile.
+
+Load **Interceptor Missiles** into its store (three slots, by hand or by pipe into its Item Port); its cells fill one a second. Powered (160 FE a tick into its Energy Port, and 4,000 for each launch), it watches the sky. A missile bound for within **640 blocks** of it, if a working [Radar Array](ordnance/radar_array) tracks it, or **240** that its own radar alone sees, draws a **volley**: two interceptors, four at a class L or bigger missile, fired two at a time. Their hatches swing open and they leap straight up out of their cells, then curve over onto the missile.
+"""),
+    text("""
+**Kill chance.** Its radar guides every interceptor all the way in, so each kills a small missile **95%** of the time, radar array or not: a medium one 86%, a heavy one 71%, a Strategic one 57% and an intercontinental one 48% (less against one coming back down hot, half as often against a superweapon's). With two or four at each, little gets through, and if a whole volley misses and there is time, it fires another.
+
+It shoots down any missile coming down within its reach, **yours too**: a redstone signal stops it while you fire close by. An **EMP** knocks it out and fries its interceptors flying through one (a [Storm](ordnance/exotic)'s strikes send out EMP pulses). Its screen shows its cells and store, its reach and its tally; it takes [upgrade chips](processing/upgrade_chips).
+"""),
+    structure("interceptor_complex", "A 5 by 5 deck, three high. The front row: Launch Pads, the controller in the middle. Behind it the launcher: six Launch Cells, three across and two deep, a Launch Pad either side of them; the blocks just over the cells must be clear, for their hatches to swing open. At the back the deckhouse, two deep and three high, of Machine Casing: in the middle of its front, over the deck, six Phased Array Panels (three across, two high), its radar; low in its back wall the Energy Port, on your right as you face the controller, and the Item Port on your left."),
+    craft("interceptor_complex"),
+    craft("launch_cell"),
+    craft("phased_array_panel"),
 ])
 
 entry("ordnance/chemical", "Chemical grenades", "gas_grenade", ["gas_grenade", "toxin_grenade", "chlorine_canister",

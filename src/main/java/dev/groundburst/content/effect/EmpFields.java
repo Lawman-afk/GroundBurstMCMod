@@ -24,7 +24,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * their stored energy as it hits, then sit dead, and reboot when it ends: Launch Silos cannot launch, Radar Arrays and
  * Launch Computers go dark), and makes a missile flying through it a dud one time in two. As it goes up it makes armed
  * electronic charges safe (remote, timer and laser fuzes: landmines and bouncing mines are pressure plates and stay live).
- * Not saved: fields last seconds. (Vanilla redstone reading zero and powered items shutting down come later.)
+ * Not saved: fields last seconds. (Vanilla redstone reading zero and powered items shutting down come later.) A storm's
+ * strikes each send one out round where they come down ({@link #pulse}: the same field, a lighter show).
  */
 public final class EmpFields {
     private record Field(Vec3 centre, double radius, long until) {}
@@ -35,14 +36,29 @@ public final class EmpFields {
 
     /** An EMP goes off at {@code centre}: a field of {@code radius} blocks for {@code ticks}. */
     public static void add(ServerLevel level, Vec3 centre, double radius, int ticks, @Nullable Entity by) {
-        BY_LEVEL.computeIfAbsent(level, k -> new ArrayList<>()).add(new Field(centre, radius, level.getGameTime() + ticks));
-        Charges.empDisarm(level, centre, radius);
+        add(level, centre, radius, ticks, false);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, centre.x, centre.y + 0.5, centre.z, 120, radius * 0.25, 1, radius * 0.25, 0.4);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, centre.x, centre.y + 0.5, centre.z, 60, 0.3, 0.3, 0.3, 0.8);
         level.playSound(null, centre.x, centre.y, centre.z, GBSounds.EMP_ZAP.get(), SoundSource.BLOCKS, 3f, 1f);
+    }
+
+    /**
+     * A storm strike's pulse at {@code centre} (DESIGN.md §16.14): the same field, a lighter show for one of six a
+     * second: a ring of blue sparks running out along the ground to its edge, a burst at its foot and a quieter zap.
+     */
+    public static void pulse(ServerLevel level, Vec3 centre, double radius, int ticks) {
+        add(level, centre, radius, ticks, true);
+        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, centre.x, centre.y + 0.3, centre.z, 30, 1.2, 0.4, 1.2, 0.5);
+        level.playSound(null, centre.x, centre.y, centre.z, GBSounds.EMP_ZAP.get(), SoundSource.BLOCKS, 1.6f,
+                1.1f + level.getRandom().nextFloat() * 0.3f);
+    }
+
+    private static void add(ServerLevel level, Vec3 centre, double radius, int ticks, boolean pulse) {
+        BY_LEVEL.computeIfAbsent(level, k -> new ArrayList<>()).add(new Field(centre, radius, level.getGameTime() + ticks));
+        Charges.empDisarm(level, centre, radius);
         for (ServerPlayer p : level.players()) {
             if (p.position().distanceTo(centre) < radius + 160) {
-                PacketDistributor.sendToPlayer(p, new GasPayloads.Emp(centre, (float) radius, ticks));
+                PacketDistributor.sendToPlayer(p, new GasPayloads.Emp(centre, (float) radius, ticks, pulse));
             }
         }
     }

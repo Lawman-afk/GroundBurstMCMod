@@ -22,13 +22,18 @@ import net.minecraft.world.phys.Vec3;
  * Interceptors in the air (DESIGN.md §18.2), each in every level moved along every tick whether its chunk is loaded or
  * not, as missiles are ({@link Flights}): out of its cell straight up, then over onto the point where it meets its
  * missile, arriving on the tick the missile does. There it rolls its kill chance: a kill and the missile breaks up in
- * the air, its warhead never going off (a nuclear one flashes as it goes); a miss and the interceptor bursts alone. The
- * entity players see ({@link InterceptorEntity}) is only its picture, put where its chunk is loaded. Not saved.
+ * the air, its warhead never going off (a nuclear one flashes as it goes); a miss and the interceptor bursts alone. One
+ * that flies into an EMP field (a storm's strikes send them out) is fried: it bursts where it is. Its launcher is told
+ * how it came out ({@link InterceptorLauncher}). The entity players see ({@link InterceptorEntity}) is only its
+ * picture, put where its chunk is loaded. Not saved.
  */
 public final class Interceptors {
     /** The interceptor's own burst, and the bigger one of a missile breaking up. */
     public static final ResourceKey<dev.groundburst.blast.BlastProfile> BURST = Blasts.profile("interceptor_burst"),
             KILL = Blasts.profile("interceptor_kill");
+
+    /** How high a battery's interceptors climb at most before they turn over onto their missile. */
+    public static final double BATTERY_CLIMB = 60;
 
     /** One interceptor's flight: from its cell over its bend to where it meets its missile, in its ticks. */
     static final class Shot {
@@ -41,7 +46,7 @@ public final class Interceptors {
         int age;
         private @Nullable InterceptorEntity shown;
 
-        Shot(BlockPos battery, Vec3 from, Interception.Solution s, UUID flight, double kill) {
+        Shot(BlockPos battery, Vec3 from, Interception.Solution s, UUID flight, double kill, double climb) {
             this.battery = battery;
             this.from = from;
             this.to = s.at();
@@ -49,7 +54,7 @@ public final class Interceptors {
             this.flight = flight;
             this.kill = kill;
             double d = from.distanceTo(this.to);
-            this.bend = from.add(0, Math.min(60, d * 0.45), 0);      // up out of the cell first
+            this.bend = from.add(0, Math.min(climb, d * 0.45), 0);   // up out of the cell first
         }
 
         /** Where it is {@code age} ticks after launch: a curve up and over, faster as it goes. */
@@ -78,7 +83,12 @@ public final class Interceptors {
 
     /** One fired from a battery at {@code battery}, out of its cell at {@code from}, to meet {@code flight} as solved. */
     static void fire(ServerLevel level, BlockPos battery, Vec3 from, Interception.Solution s, Flights.Flight flight, double kill) {
-        Shot shot = new Shot(battery, from, s, flight.id(), kill);
+        fire(level, battery, from, s, flight, kill, BATTERY_CLIMB);
+    }
+
+    /** As {@link #fire(ServerLevel, BlockPos, Vec3, Interception.Solution, Flights.Flight, double)}, climbing at most {@code climb}. */
+    static void fire(ServerLevel level, BlockPos launcher, Vec3 from, Interception.Solution s, Flights.Flight flight, double kill, double climb) {
+        Shot shot = new Shot(launcher, from, s, flight.id(), kill, climb);
         SHOTS.computeIfAbsent(level, l -> new ArrayList<>()).add(shot);
         proxy(level, shot, from, shot.at(1));
     }
@@ -95,6 +105,11 @@ public final class Interceptors {
             if (shot.age >= shot.ticks) {
                 shots.remove(shot);
                 resolve(level, shot, now);
+            } else if (dev.groundburst.content.effect.EmpFields.inField(level, now)) {
+                shots.remove(shot);                                  // fried: its fuze fires where it is
+                hide(shot);
+                Blasts.detonate(level, now, BURST, null);
+                report(level, shot, InterceptorLauncher.Outcome.FRIED);
             } else {
                 proxy(level, shot, was, now);
             }
@@ -109,12 +124,22 @@ public final class Interceptors {
         SHOTS.clear();
     }
 
-    /** At its point: the kill roll against its missile, if that is still there (and near: it came on as reckoned). */
-    private static void resolve(ServerLevel level, Shot shot, Vec3 at) {
+    private static void hide(Shot shot) {
         if (shot.shown != null) {
             shot.shown.discard();
             shot.shown = null;
         }
+    }
+
+    private static void report(ServerLevel level, Shot shot, InterceptorLauncher.Outcome outcome) {
+        if (level.getBlockEntity(shot.battery) instanceof InterceptorLauncher launcher) {
+            launcher.reported(outcome);
+        }
+    }
+
+    /** At its point: the kill roll against its missile, if that is still there (and near: it came on as reckoned). */
+    private static void resolve(ServerLevel level, Shot shot, Vec3 at) {
+        hide(shot);
         Flights flights = Flights.of(level);
         Flights.Flight target = null;
         for (Flights.Flight f : flights.all()) {
@@ -139,9 +164,8 @@ public final class Interceptors {
         if (!killed) {
             Blasts.detonate(level, at, BURST, null);               // a miss (or its missile already gone): it bursts alone
         }
-        if (level.getBlockEntity(shot.battery) instanceof InterceptorBatteryBlockEntity battery) {
-            battery.reported(killed);
-        }
+        report(level, shot, killed ? InterceptorLauncher.Outcome.KILLED
+                : target == null ? InterceptorLauncher.Outcome.SPENT : InterceptorLauncher.Outcome.MISSED);
     }
 
     /** The interceptor players see, where its chunk is loaded: found, made, or moved along (as missiles' are). */
