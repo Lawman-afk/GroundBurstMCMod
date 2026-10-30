@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "groundburst:basic_circuit",
+    "groundburst:crt_display"
+  ],
+  "result": {
+    "id": "groundburst:alert_display"
+  }
+}

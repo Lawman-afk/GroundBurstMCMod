@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "groundburst:basic_circuit",
+    "minecraft:note_block",
+    "groundburst:copper_wire"
+  ],
+  "result": {
+    "id": "groundburst:klaxon"
+  }
+}

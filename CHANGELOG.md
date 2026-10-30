@@ -2,7 +2,24 @@
 
 ## Unreleased
 
-A bigger missile defence, and a storm that knocks defences out.
+A bigger missile defence, a storm that knocks defences out, and an alarm system for your base.
+
+### Alarm system
+- Ten devices that warn a base, linked over **alarm channels** (0 to 9999, set on each device's screen; all start on
+  channel 0, so they work together as soon as they are placed). None needs power.
+- **Missile Warning Receiver**: listens to the Radar Arrays and warns of every missile they track that will come down
+  within its warning radius (64 to 1,024 blocks), as real missile warning systems warn only where the missile is
+  going. It gives redstone (steady, by the number incoming, or rising as impact nears), shows the time to impact and
+  plays an attention tone.
+- **Alarm Panel**: sound, silence or test the alarm by hand, or set it off with any redstone signal.
+- **Hazard Monitor**: alarms on radiation over a set dose rate (10 to 1,000 RAD/h) or on poison gas.
+- **Air-Raid Siren**: a Cold War siren whose horn turns as it sounds, its wail swelling as the horn sweeps past you,
+  heard 160 blocks off; Attack (wailing) or Alert (steady), winding up and down, and the All Clear after an attack.
+- **Klaxon** (klaxon, slow whoop, evacuate, hi-lo and a ship's general alarm) and **Alarm Bell**.
+- **Warning Beacon**: rotating with sweeping beams, flashing or steady, in red, amber, blue, green or white (use a dye),
+  on any face; **Emergency Light**: a caged bulkhead lamp, white or dark, red and flashing in an alarm.
+- **Alert Display**: ALL CLEAR, or the alert: missiles inbound and the time to impact, the dose rate, the gas.
+- **Alarm Relay**: wireless redstone while its channel is alarming (or while all is clear), to shut blast doors.
 
 ### Anti-missile defence
 - **Interceptor Complex**: the multiblock missile defence, a 5 by 5 deck three high. A vertical launcher of 24 cells

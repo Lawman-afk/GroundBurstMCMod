@@ -1,4 +1,87 @@
 {
+  "alarm.attention": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:alarm/attention"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.attention"
+  },
+  "alarm.bell": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "groundburst:alarm/bell"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.bell"
+  },
+  "alarm.evacuate": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:alarm/evacuate"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.evacuate"
+  },
+  "alarm.general": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:alarm/general"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.general"
+  },
+  "alarm.hilo": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:alarm/hilo"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.hilo"
+  },
+  "alarm.klaxon": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:alarm/klaxon"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.klaxon"
+  },
+  "alarm.siren_steady": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:alarm/siren_steady",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.siren_steady"
+  },
+  "alarm.siren_wail": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:alarm/siren_wail",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.siren_wail"
+  },
+  "alarm.whoop": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:alarm/whoop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.alarm.whoop"
+  },
   "antimatter.far": {
     "sounds": [
       {

@@ -189,6 +189,12 @@ public final class FxPhotographer {
                 new Scene("intercept_complex_close", "intercept_complex_near", 17, 22, List.of(20, 40, 50, 60, 70, 80)),
                 new Scene("complex_ui", "intercept_complex_near", 4, 0, List.of(30)),
                 new Scene("storm_pulses", "storm_warhead", 40, 8, List.of(478, 480, 482, 485)),
+                // The base alarm system (DESIGN.md §18.6): a wall of every device at midnight, set off by its panel at
+                // clock 10: the beacons on top (rotating, flashing, steady; five colours), the siren on its post; and the
+                // receiver's screen.
+                new Scene("alarms", "alarms", 9, 6, List.of(20, 30, 33, 36, 60), "midnight"),
+                new Scene("alarms_close", "alarms", 5, 12, List.of(30, 34), "midnight"),
+                new Scene("alarm_ui", "alarms", 4, 0, List.of(30)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -1056,6 +1062,8 @@ public final class FxPhotographer {
     }
 
     private static net.minecraft.core.BlockPos benchAt, pressAt;
+    /** The alarms scene: its panel, and the receiver whose screen alarm_ui opens. */
+    private static net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos alarmPanelAt, alarmReceiverAt;
     /** The storm_pulses scene: its storm's eye, and where it strikes in front of the camera (so a pulse's ring shows near). */
     private static Vec3 stormCentre;
     private static net.minecraft.core.BlockPos stormSpot;
@@ -1098,6 +1106,50 @@ public final class FxPhotographer {
     private static void formed(ServerLevel level, net.minecraft.core.BlockPos at, net.minecraft.world.level.block.Block controller,
             dev.groundburst.content.multiblock.MultiblockDefinition def) {
         formed(level, at, controller, def, net.minecraft.core.Direction.WEST);
+    }
+
+    /**
+     * The alarms scene: a stone-brick wall across the view, its face toward the camera; on it (facing the camera) the
+     * receiver, the panel, the monitor and the display at eye height, the klaxon, the bell and two emergency lights (one
+     * kept lit white) above; on top five beacons, red rotating, amber flashing, blue rotating, green steady, white
+     * rotating; the siren on a post at its end; a relay on the ground. All on channel 0.
+     */
+    private static void alarmWall(ServerLevel level, int x, int ground) {
+        var west = net.minecraft.core.Direction.WEST;
+        for (int z = -5; z <= 5; z++) {
+            for (int y = 0; y < 3; y++) {
+                level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + 1, ground + y, z), net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState());
+            }
+        }
+        java.util.function.BiConsumer<net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState> put = level::setBlockAndUpdate;
+        var h = dev.groundburst.content.alarm.AlarmBlock.HORIZONTAL;
+        var six = dev.groundburst.content.alarm.AlarmBlock.Six.FACING;
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 1, -4), dev.groundburst.content.alarm.GBAlarms.RECEIVER.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 1, -2), dev.groundburst.content.alarm.GBAlarms.PANEL.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 1, 0), dev.groundburst.content.alarm.GBAlarms.MONITOR.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 1, 2), dev.groundburst.content.alarm.GBAlarms.DISPLAY.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 2, -3), dev.groundburst.content.alarm.GBAlarms.KLAXON.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 2, -1), dev.groundburst.content.alarm.GBAlarms.BELL.block().get().defaultBlockState().setValue(h, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 2, 1), dev.groundburst.content.alarm.GBAlarms.LIGHT.block().get().defaultBlockState().setValue(six, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 2, 3), dev.groundburst.content.alarm.GBAlarms.LIGHT.block().get().defaultBlockState().setValue(six, west));
+        put.accept(new net.minecraft.core.BlockPos(x, ground, 4), dev.groundburst.content.alarm.GBAlarms.RELAY.block().get().defaultBlockState().setValue(h, west));
+        int[][] beacons = {{-4, 0, 0}, {-2, 1, 1}, {0, 0, 2}, {2, 2, 3}, {4, 0, 4}};                 // z, mode, colour
+        for (int[] b : beacons) {
+            var at = new net.minecraft.core.BlockPos(x + 1, ground + 3, b[0]);
+            put.accept(at, dev.groundburst.content.alarm.GBAlarms.BEACON.block().get().defaultBlockState());
+            if (level.getBlockEntity(at) instanceof dev.groundburst.content.alarm.AlarmBlockEntity be) {
+                be.applySettings(0, new int[] {b[1], b[2]});
+            }
+        }
+        for (int y = 0; y < 3; y++) {
+            put.accept(new net.minecraft.core.BlockPos(x, ground + y, -6), net.minecraft.world.level.block.Blocks.IRON_BARS.defaultBlockState());
+        }
+        put.accept(new net.minecraft.core.BlockPos(x, ground + 3, -6), dev.groundburst.content.alarm.GBAlarms.SIREN.block().get().defaultBlockState().setValue(h, west));
+        if (level.getBlockEntity(new net.minecraft.core.BlockPos(x, ground + 2, 3)) instanceof dev.groundburst.content.alarm.AlarmBlockEntity light) {
+            light.applySettings(0, new int[] {1});                                             // kept lit white
+        }
+        alarmPanelAt = new net.minecraft.core.BlockPos(x, ground + 1, -2);
+        alarmReceiverAt = new net.minecraft.core.BlockPos(x, ground + 1, -4);
     }
 
     /** Builds a structure as the Structure Spawner does (each 3x3's middle before its edges; its required air dug out). */
@@ -1598,6 +1650,10 @@ public final class FxPhotographer {
                     flightShown = dev.groundburst.content.launch.Flights.launch(level, target.add(0, 0, -300), target, spec, null);
                     return;
                 }
+                if (s.profile().equals("alarms")) {
+                    alarmWall(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("see_through")) {
                     var lattice = dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.block().get().defaultBlockState();
                     var grating = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.block().get().defaultBlockState();
@@ -1989,6 +2045,17 @@ public final class FxPhotographer {
             var centre = stormCentre;
             var spot = stormSpot;
             server.execute(() -> dev.groundburst.blast.Storms.strikeForTest(server.overworld(), centre, spot));
+        }
+        if (scene.profile().equals("alarms") && step >= 0 && clock == 10 && alarmPanelAt != null) {
+            var at = alarmPanelAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.alarm.AlarmBlockEntity panel) {
+                    panel.panel(dev.groundburst.content.alarm.AlarmBlockEntity.SOUND);
+                }
+            });
+        }
+        if (scene.name().equals("alarm_ui") && step >= 0 && clock == 14 && alarmReceiverAt != null) {
+            dev.groundburst.content.alarm.AlarmBlock.screenHook.accept(alarmReceiverAt);
         }
         if (scene.name().equals("complex_ui") && step >= 0 && clock == 12 && pressAt != null) {
             var complex = pressAt;

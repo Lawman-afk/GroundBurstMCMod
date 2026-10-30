@@ -2608,6 +2608,83 @@ The anti-missile defence, as §18.2 has it with these choices:
 
 ---
 
+### 18.6 The base alarm system (2026-10-31; the user's request)
+"An alarm system, with all the works, that people can put in their base: something to send a redstone signal from the
+radar array when a missile is detected, something to sound an alarm, and lights; everything people could want; please
+research."
+
+**Research** (what it is modelled on):
+- *Civil defence sirens.* Mechanical sirens chop air with a motor-driven rotor; the big ones (Federal Signal's
+  Thunderbolt, from 1952) turn a single large horn round on a pole, so the sound swells as the horn sweeps past. The
+  Cold War signals: **Alert**, a steady tone for 3-5 minutes, and **Attack Warning**, a wavering tone rising and falling
+  for 3-5 minutes; in Britain the steady tone was the **All Clear**. Sirens were started centrally (the UK's Handel
+  system: carrier receivers at some 4,000 warning points and 7,000 powered sirens switched over telephone lines).
+- *Missile alert systems.* Israel's Red Color: radar detects a launch, predicts where it will land and warns only the
+  places in danger, 15 to 90 s before impact, a voice and then an intermittent tone, repeated until the last rocket is
+  down.
+- *Alarm tones* (fire and industrial alarm standards): ISO 8201's **temporal-three** evacuation pattern (three half-
+  second pulses, a 1.5 s pause; NFPA's sleeping-area tone a 520 Hz square wave); the **slow whoop** (500 to 1200 Hz over
+  3 s, a half-second gap); the **hi-lo** two-tone (800 and 1000 Hz, half a second each); ships' **general alarm** (seven
+  short blasts and a long one); the electric bell; the klaxon horn; the US emergency broadcast attention tone (853 and
+  960 Hz together).
+- *Lights.* Rotating and flashing beacons, colour meaning (red: danger, act now; amber: caution; blue: a change, an
+  action wanted; green: all well); strobes flash once or twice a second and are synchronised; bunkers' red emergency
+  lighting.
+- *Other mods.* Sirens are redstone-driven blocks (Sirencraft, PAM); Nuclear Tech's siren takes tracks and is heard up
+  to 500 blocks off, its radar giving redstone on a detection; Create: Alerted and Asterion Alarms link alarms
+  wirelessly by name or channel and flash them in sync with a rotating beam.
+
+**The design.** Alarm devices talk over **alarm channels** (a number, 0-9999, as the Remote Detonator's frequency; 0 by
+default, so a warning receiver and a siren placed anywhere in a dimension work together at once; set others to keep
+alarms apart). A channel is raised while any of its **senders** has its condition (each refreshes it every half second;
+it lapses a second and a half after the last), with what is wrong (kinds by priority: **Attack**, a missile coming;
+**Radiation**; **Gas**; **Alarm**, raised by hand or by redstone), and for an attack how many and the soonest impact.
+Every sounder, light and display goes off when its channel is raised, or when it is powered by redstone itself.
+- Senders: the **Missile Warning Receiver** (listens to every working Radar Array, Red Color's way: it warns of each
+  tracked missile predicted to come down within its warning radius, 64 to 1,024 blocks, so it alerts only where the
+  missile is going; gives redstone, steady, by the number incoming, or rising as impact nears; plays the attention tone
+  as a warning starts); the **Alarm Panel** (Sound, Silence and Test by hand; a redstone signal into it raises its
+  channel; Silence quiets the channel's sounders, not its lights, until the alert ends); the **Hazard Monitor**
+  (radiation over a set dose rate, 10 to 1,000 RAD/h, or poison gas at it).
+- Sounders: the **Air-Raid Siren** (a motor and rotor under a big flared horn that turns round on top, Attack (wail) or
+  Alert (steady), winding up and down, its sound swelling as the horn sweeps past, heard 160 blocks off; when an attack
+  ends it sounds the All Clear, steady, for 15 s); the **Klaxon** (a wall horn: klaxon, slow whoop, evacuate (temporal-
+  three), hi-lo, general alarm (seven and one), 64 blocks); the **Alarm Bell** (an electric bell, 48 blocks).
+- Lights: the **Warning Beacon** (a dome on a base, any face; rotating, flashing (twice a second, in step with every
+  other) or steady; red, amber, blue, green or white, set with dye; light 15 while on); the **Emergency Light** (a caged
+  bulkhead lamp on any face: off until an alarm, or white always; red and flashing in alarm, every one in step; light 15).
+- The **Alert Display** (a wall screen: ALL CLEAR in green, or the alert: an attack's count and time to impact, the
+  monitor's reading) and the **Alarm Relay** (wireless redstone out while its channel is raised: shut blast doors, cut
+  lights, start a machine).
+- Every device opens a small settings screen (its channel and its own choices). None needs power. Field Manual: in
+  Safety.
+
+**As built** (`content/alarm`: `Alarms` the network, `AlarmDevice` the devices' roles, mounts, shapes and choices,
+`AlarmBlock` (and `Six`, `Light`), `AlarmBlockEntity` (and `Animated` for the siren and the beacon), `AlarmPayloads`,
+`GBAlarms`; client `AlarmScreen`, `AlarmSounds`, `AlertDisplayRenderer`, `VariantGeoModel`):
+- Senders refresh their alerts every 10 ticks (lapsing after 30); listeners look every 5. The receiver counts each
+  `Flights` flight past its pad that `Interception.tracked` says a working Radar Array has, whose target is within its
+  radius; the monitor reads the dose rate (sources through the ambient shielding, plus radioactive blocks) and the
+  strongest gas in the block in front of it. A siren keeps sounding the All Clear 300 ticks after an attack on its
+  channel ends. Silence lasts until the channel goes quiet; a test sounds it 100 ticks.
+- Sounds (`tools/sound/alarms.py`): the siren's wail (an 8 s loop: two rotors a minor third apart, chopped air, an
+  outdoor echo) and its steady tone; the klaxon (a-oo-ga, sagging as it is let go); the slow whoop (500-1200 Hz, 3 s);
+  evacuate (ISO 8201's temporal-three at 520 Hz); hi-lo (800/1000 Hz); the general alarm (seven and one); a trembler
+  bell (18 strikes a second on a gong's modes); the attention tone (853 + 960 Hz). On the client (`AlarmSounds`) each
+  sounder's loop follows its block; the siren's pitch and loudness wind up over 2 s and coast down over 3.5 s, and its
+  loudness swells as its horn (turned on the client, a turn in 8 s) points at you.
+- Models (`tools/assets/alarms.py`, material library): wall devices as block models with lit variants (the lamp
+  elements emit light); the klaxon and the bell built pointing up with round parts as prisms of planks and laid onto
+  the wall by their block states; the Emergency Light's red look an animated two-frame texture (all in step); the
+  siren and the beacon in GeckoLib, the siren's square horn flaring from its drum (its side planks turned the other way
+  for GeckoLib's mirrored x), the beacon standing up and turned to its face by `MachineGeoRenderer.standing()`, its
+  colours as textures chosen through `AnimatedMachine.textureVariant` and `VariantGeoModel`.
+- The display's text is drawn by `AlertDisplayRenderer` (as the timed bomb's clock), lit. Lights: the beacon 15 while
+  on; the emergency light 15 while white or red.
+- GameTests (`AlarmTests`, each on its own channel): the receiver warns and the siren sounds; the panel sets off every
+  kind of device on its channel and none on another; silence and stop; the All Clear; the monitor on radiation and on
+  gas; the network's ranking. FX scenes `alarms` (a wall of every device at midnight), `alarms_close`, `alarm_ui`.
+
 ## 19. Command & Conquer: Generals superweapons
 
 Common to all three:
@@ -3924,6 +4001,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-31 | The base alarm system (the user's request: a redstone signal from the radar when a missile is detected, alarms, lights, "everything people could want", researched): ten devices on **alarm channels** (0-9999, the detonator's numbers; all on 0 at first), senders (the Missile Warning Receiver, warning only of missiles coming down within its radius, as Israel's Red Color does; the Alarm Panel; the Hazard Monitor) and answerers (the turning Air-Raid Siren with Attack, Alert and All Clear; the Klaxon's five standard tones; the bell; the rotating, flashing or steady Warning Beacon in five colours; the Emergency Light; the Alert Display; the Alarm Relay). No power needed (§18.6). |
 | 2026-10-30 | The user's next look at the defence: the **Interceptor Complex**, a 5x5x3 multiblock (a 24-cell vertical launcher before a phased-array deckhouse) with 2.5 times the battery's reach (640/240), a 0.95 best kill chance never cut for want of a Radar Array, and volleys twice the battery's salvo (§18.5). The **Storm**'s strikes send EMP pulses 24 blocks round for 12 s (from 4 for 5), so defences inside it go dark and interceptors flying through are fried (§16.14). |
 | 2026-10-30 | Version **0.3.0** (the user's request: a jar to upload and a changelog since 0.2.0): the exotic weapons and their assembler, the Interceptor Battery, upgrade chips, the see-through lattice and grating; README and `docs/CURSEFORGE.md` updated (24 warheads). |
 | 2026-10-30 | The anti-missile defence (the user's request): the **Interceptor Battery** of §18.2 as a two-block tall machine with a four-cell turret, its interceptors flown like missiles (loaded or not) to a solved meeting point and their kill chance rolled there, 256 blocks where a Radar Array tracks the missile and 96 on its own seeker; it never engages missiles bound elsewhere (§18.4). The Lattice Frame framed on all four edges (§22.2). |

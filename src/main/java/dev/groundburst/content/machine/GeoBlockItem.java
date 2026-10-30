@@ -24,7 +24,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
     /** Bones that only show in a running or loaded machine: items draw the machine idle and empty. */
     private static final java.util.List<String> OPTIONAL_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister",
             "chip", "frost", "core", "sparks", "puff0", "puff1", "puff2", "spray", "led0", "led1", "led2", "led3", "led4", "battery",
-            "workpiece", "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7");
+            "workpiece", "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7", "lens_spot", "lens_full", "beam");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Identifier modelId;

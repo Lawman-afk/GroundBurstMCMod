@@ -152,6 +152,26 @@ public final class GBSounds {
             register("cryo.burst", "Cryo burst freezes", List.of("effect/cryo_burst"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_WHISTLE =
             register("bomb.whistle", "Bomb whistles down", List.of("ordnance/bomb_whistle"), false, 64);
+    // The base alarm system (DESIGN.md §18.6): the Air-Raid Siren's two signals, the Klaxon's five tones, the Alarm Bell
+    // (all loops, played while they sound), and the Missile Warning Receiver's attention tone.
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_SIREN_WAIL =
+            register("alarm.siren_wail", "Air-raid siren wails", List.of("alarm/siren_wail"), true, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_SIREN_STEADY =
+            register("alarm.siren_steady", "Air-raid siren sounds steady", List.of("alarm/siren_steady"), true, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_KLAXON =
+            register("alarm.klaxon", "Klaxon blares", List.of("alarm/klaxon"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_WHOOP =
+            register("alarm.whoop", "Alarm whoops", List.of("alarm/whoop"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_EVACUATE =
+            register("alarm.evacuate", "Evacuation alarm sounds", List.of("alarm/evacuate"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_HILO =
+            register("alarm.hilo", "Two-tone alarm sounds", List.of("alarm/hilo"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_GENERAL =
+            register("alarm.general", "General alarm sounds", List.of("alarm/general"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_BELL =
+            register("alarm.bell", "Alarm bell rings", List.of("alarm/bell"), false, 48);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_ATTENTION =
+            register("alarm.attention", "Missile warning tone", List.of("alarm/attention"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_SIREN =
             register("launch.siren", "Launch siren wails", List.of("launch/siren"), false, 96);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =

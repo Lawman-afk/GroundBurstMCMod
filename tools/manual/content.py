@@ -1606,6 +1606,90 @@ The hood needs plastic sheet, a glass pane for the visor and charcoal for the fi
     links(["safety/radiation", "safety/reactor_safety", "safety/decontamination_shower"]),
 ])
 
+entry("safety/alarms", "Alarm system", "air_raid_siren", ["missile_warning_receiver", "alarm_panel", "hazard_monitor", "air_raid_siren",
+                                                          "klaxon", "alarm_bell", "warning_beacon", "emergency_light", "alert_display",
+                                                          "alarm_relay"], [
+    text("""
+A base can warn itself. **Alarm devices** talk over **alarm channels**: numbers from 0 to 9999, set on each device's screen (right-click it). They all start on channel **0**, so a warning receiver and a siren placed anywhere in the same dimension already work together; give a group its own channel to keep it apart.
+
+A channel **goes off** while any of its **senders** has something wrong:
+- a [Missile Warning Receiver](safety/missile_warning_receiver) sees a missile coming down near it;
+- an [Alarm Panel](safety/alarm_panel) is switched on by hand, or powered by redstone;
+- a [Hazard Monitor](safety/hazard_monitor) reads too much radiation, or poison gas.
+"""),
+    text("""
+Then everything on the channel answers: [sirens, klaxons and bells](safety/sirens) sound, [warning lights](safety/warning_lights) light, [Alert Displays](safety/alert_display) show what is wrong and **Alarm Relays** give redstone (shut your blast doors with them). Each of them also goes off when it is powered by redstone itself, channel or not.
+
+The receiver, the monitor and the relay give redstone out; a comparator by a [Radar Array](ordnance/radar_array) reads how many missiles are coming too. None of the devices needs power.
+"""),
+    links(["safety/missile_warning_receiver", "safety/alarm_panel", "safety/hazard_monitor", "safety/sirens", "safety/warning_lights",
+           "safety/alert_display"]),
+])
+
+entry("safety/missile_warning_receiver", "Missile Warning Receiver", "missile_warning_receiver", ["missile_warning_receiver"], [
+    text("""
+The **Missile Warning Receiver** listens to the radar. Every missile a working [Radar Array](ordnance/radar_array) is tracking (one within 2048 blocks of it) is checked against where it will come down: if that is within the receiver's **warning radius** (64 to 1024 blocks, on its screen), the receiver raises its channel, its lamp lights, and it sounds the attention tone each time a new one appears. It only warns where a missile is going, so a missile passing over to somewhere else stays quiet.
+
+Its screen shows how many are coming and the time to the first impact. Its redstone, by choice: a steady 15; the number incoming; or rising as the first impact nears (15 in its last two seconds).
+"""),
+    craft("missile_warning_receiver"),
+])
+
+entry("safety/alarm_panel", "Alarm Panel", "alarm_panel", ["alarm_panel"], [
+    text("""
+The **Alarm Panel** is the alarm by hand. On its screen: **Sound alarm** raises its channel until you **Stop** it; **Silence** quiets the channel's sounders (its lights and displays stay on) until the alert is over; **Test** sounds the channel for five seconds. A redstone signal into the panel raises its channel too: wire it to a tripwire, a pressure plate, a daylight sensor, a comparator, anything.
+
+It raises its channel as an **Alarm**, or as an **Attack** (a siren then sounds the All Clear when it stops).
+"""),
+    craft("alarm_panel"),
+])
+
+entry("safety/hazard_monitor", "Hazard Monitor", "hazard_monitor", ["hazard_monitor"], [
+    text("""
+The **Hazard Monitor** watches the air in front of it. It raises its channel when the dose rate there passes its threshold (10, 50, 200 or 1000 RAD/h: 10 is the most that is safe to stand in for long), or when there is poison gas in the air (chlorine, the toxin; this it can be set to ignore). Its needle and its lamp show it; its screen reads the radiation and the gas; it gives a redstone signal while it alarms, and beeps.
+
+Put one in your shelter's airlock, and one by the reactor.
+"""),
+    craft("hazard_monitor"),
+])
+
+entry("safety/sirens", "Sirens, klaxons and bells", "air_raid_siren", ["air_raid_siren", "klaxon", "alarm_bell"], [
+    spot("air_raid_siren", """
+A motor and a rotor under a big horn that **turns round** as it sounds: its wail swells each time the horn sweeps past you. Heard 160 blocks off. Two signals, as the Cold War's: **Attack** (a wail rising and falling) and **Alert** (steady). When an attack ends it sounds the **All Clear**, steady, for fifteen seconds. It winds up as it starts and coasts down as it stops. Stand it on top of a post.
+"""),
+    spot("klaxon", """
+A horn for the wall, heard 64 blocks off, with five tones: the **klaxon** (a-oo-ga); the **slow whoop**; **evacuate** (three blasts and a pause, the evacuation signal of fire alarms); **hi-lo** (two tones); the **general alarm** (seven short blasts and a long one, a ship's call to stations).
+"""),
+    spot("alarm_bell", """
+An electric bell for the wall, heard 48 blocks off.
+"""),
+    craft("air_raid_siren"),
+    craft("klaxon"),
+    craft("alarm_bell"),
+])
+
+entry("safety/warning_lights", "Warning lights", "warning_beacon", ["warning_beacon", "emergency_light"], [
+    spot("warning_beacon", """
+A beacon for any face, floor, ceiling or wall: lit, its lens **rotates** (two beams sweeping round), **flashes** twice a second (every beacon in step) or burns **steady**. Red, amber, blue, green or white: use a dye on it (red; orange or yellow for amber; blue; green; white), or choose on its screen. It lights the space round it while it is on.
+"""),
+    spot("emergency_light", """
+A caged bulkhead lamp for any face. Dark until an alarm, or white all the time (your bunker's lights); in alarm it turns **red and flashes**, every one in step, and keeps lighting the room.
+"""),
+    craft("warning_beacon"),
+    craft("emergency_light"),
+])
+
+entry("safety/alert_display", "Alert Display and Alarm Relay", "alert_display", ["alert_display", "alarm_relay"], [
+    spot("alert_display", """
+A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; or **ALARM, TAKE COVER**.
+"""),
+    spot("alarm_relay", """
+Wireless redstone: it gives a signal of 15 while its channel goes off (or, set the other way, while all is clear). Shut blast doors, cut the lights, start the shelter's air.
+"""),
+    craft("alert_display"),
+    craft("alarm_relay"),
+])
+
 
 # =========================================================================================================================
 def write() -> None:

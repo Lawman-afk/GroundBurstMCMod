@@ -678,6 +678,52 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(dev.groundburst.content.assembly.GBAssembly.INERTIAL_GUIDANCE.get()).requires(GBParts.SENSOR_ARRAY)
                 .requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE)
                 .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
+        // The base alarm system (DESIGN.md §18.6). The receiver: a CRT display and an advanced circuit to read the radar
+        // network; the panel: buttons on a circuit; the monitor: a Geiger counter's tube on a circuit; the siren: an electric
+        // motor turning a steel horn, painted yellow; the klaxon: a note block's horn on a circuit; the bell: a bell on a
+        // circuit; the beacon: a redstone lamp under glass on a motor; the emergency light: a redstone lamp in an iron cage;
+        // the display: a CRT display on a circuit; the relay: redstone on a circuit.
+        var al = new Object() {
+            final net.minecraft.world.level.ItemLike plate = GBParts.STEEL_PLATE.get();
+            final net.minecraft.world.level.ItemLike basic = GBParts.BASIC_CIRCUIT.get();
+            final net.minecraft.world.level.ItemLike wire = GBParts.COPPER_WIRE.get();
+        };
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.RECEIVER.item(), 1)
+                .requires(al.plate).requires(al.plate).requires(GBParts.ADVANCED_CIRCUIT).requires(GBParts.CRT_DISPLAY).requires(al.wire)
+                .requires(Items.REDSTONE).unlockedBy(getHasName(GBParts.CRT_DISPLAY), has(GBParts.CRT_DISPLAY)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.PANEL.item(), 1)
+                .requires(al.plate).requires(al.basic).requires(Items.STONE_BUTTON).requires(Items.STONE_BUTTON).requires(Items.REDSTONE)
+                .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.MONITOR.item(), 1)
+                .requires(al.plate).requires(al.plate).requires(al.basic).requires(dev.groundburst.content.radiation.RadiationItems.GEIGER_COUNTER.get())
+                .requires(Items.GLASS_PANE).unlockedBy(getHasName(dev.groundburst.content.radiation.RadiationItems.GEIGER_COUNTER.get()),
+                        has(dev.groundburst.content.radiation.RadiationItems.GEIGER_COUNTER.get())).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.SIREN.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('M', GBParts.ELECTRIC_MOTOR).define('W', al.wire)
+                .define('Y', Tags.Items.DYES_YELLOW).define('C', al.basic)
+                .pattern("PYP").pattern("PMP").pattern("WCW")
+                .unlockedBy(getHasName(GBParts.ELECTRIC_MOTOR), has(GBParts.ELECTRIC_MOTOR)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.KLAXON.item(), 1)
+                .requires(al.plate).requires(al.basic).requires(Items.NOTE_BLOCK).requires(al.wire)
+                .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.BELL.item(), 1)
+                .requires(Items.BELL).requires(al.basic).requires(al.wire)
+                .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.BEACON.item(), 2)
+                .define('G', Items.GLASS).define('L', Items.REDSTONE_LAMP).define('M', GBParts.ELECTRIC_MOTOR)
+                .define('P', GBTags.commonItem("plates/steel")).define('R', Tags.Items.DYES_RED)
+                .pattern("RGR").pattern("GLG").pattern("PMP")
+                .unlockedBy(getHasName(GBParts.ELECTRIC_MOTOR), has(GBParts.ELECTRIC_MOTOR)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.LIGHT.item(), 4)
+                .define('I', Items.IRON_BARS).define('L', Items.REDSTONE_LAMP).define('P', GBTags.commonItem("plates/steel"))
+                .pattern(" I ").pattern("ILI").pattern(" P ")
+                .unlockedBy(getHasName(Items.REDSTONE_LAMP), has(Items.REDSTONE_LAMP)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.DISPLAY.item(), 1)
+                .requires(al.plate).requires(al.basic).requires(GBParts.CRT_DISPLAY)
+                .unlockedBy(getHasName(GBParts.CRT_DISPLAY), has(GBParts.CRT_DISPLAY)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.RELAY.item(), 1)
+                .requires(al.plate).requires(al.basic).requires(Items.REDSTONE).requires(Items.REDSTONE).requires(al.wire)
+                .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
         // The Interceptor Complex (DESIGN.md §18.5): its controller a rung over the battery (two military circuits, a CRT
         // display for its fire control); a Launch Cell from a machine frame boxed in steel with a servo for its hatches; a
         // Phased Array Panel from a sensor array, an advanced circuit and steel plate.

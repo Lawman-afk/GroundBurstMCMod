@@ -1,0 +1,19 @@
+{
+  "title": "Missile Warning Receiver",
+  "icon": "groundburst:missile_warning_receiver",
+  "order": 13,
+  "items": [
+    "groundburst:missile_warning_receiver"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Missile Warning Receiver** listens to the radar. Every missile a working [Radar Array](ordnance/radar_array) is tracking (one within 2048 blocks of it) is checked against where it will come down: if that is within the receiver's **warning radius** (64 to 1024 blocks, on its screen), the receiver raises its channel, its lamp lights, and it sounds the attention tone each time a new one appears. It only warns where a missile is going, so a missile passing over to somewhere else stays quiet.\n\nIts screen shows how many are coming and the time to the first impact. Its redstone, by choice: a steady 15; the number incoming; or rising as the first impact nears (15 in its last two seconds)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:missile_warning_receiver",
+      "text": ""
+    }
+  ]
+}

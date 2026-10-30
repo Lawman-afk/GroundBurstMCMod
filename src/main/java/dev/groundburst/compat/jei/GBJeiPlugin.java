@@ -113,6 +113,8 @@ public final class GBJeiPlugin implements IModPlugin {
         // Missile defence (DESIGN.md §18.2).
         info(registration, dev.groundburst.content.defence.GBDefence.INFO, dev.groundburst.content.defence.GBDefence.BATTERY.item().get(),
                 dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get());
+        info(registration, dev.groundburst.content.alarm.GBAlarms.INFO, dev.groundburst.content.alarm.GBAlarms.all().stream()
+                .map(b -> b.item().get()).toArray(net.minecraft.world.item.Item[]::new));
         info(registration, dev.groundburst.content.defence.GBDefence.INFO_COMPLEX,
                 dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.item().get(),
                 dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.item().get(),

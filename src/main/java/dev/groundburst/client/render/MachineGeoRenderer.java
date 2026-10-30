@@ -62,6 +62,47 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         withGlow();
     }
 
+    /** Whether its model stands on its base pointing up, turned to point the way its block faces (any of six). */
+    private boolean standing;
+
+    /**
+     * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
+     * the way the block faces, on a floor, a ceiling or a wall.
+     */
+    public MachineGeoRenderer<T> standing() {
+        this.standing = true;
+        return this;
+    }
+
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected void tryRotateByBlockstate(com.geckolib.renderer.base.RenderPassInfo pass, PoseStack pose) {
+        if (!this.standing) {
+            super.tryRotateByBlockstate(pass, pose);
+            return;
+        }
+        net.minecraft.core.Direction d = (net.minecraft.core.Direction) pass.getOrDefaultGeckolibData(DIRECTION_FACING, net.minecraft.core.Direction.UP);
+        pose.translate(0, 0.5, 0);
+        switch (d) {
+            case DOWN -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(180));
+            case NORTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));
+            case SOUTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(90));
+            case EAST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(-90));
+            case WEST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(90));
+            default -> { }
+        }
+        pose.translate(0, -0.5, 0);
+    }
+
+    /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
+    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, com.geckolib.model.GeoModel<T> model, int height, int reach) {
+        super(context, model);
+        this.height = height;
+        this.reach = reach;
+        this.depth = reach > 0 ? 1 : 0;
+        withGlow();
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void withGlow() {
         // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
@@ -167,6 +208,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     private static final DataTicket<java.util.Map<String, float[]>> BONE_ROTATIONS = DataTicket.create("groundburst_bone_rotations",
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundburst_missile", new TypeToken<List<ShownMissile>>() {});
+    /** The texture a model is drawn in this frame instead of its own ({@link AnimatedMachine#textureVariant}). */
+    static final DataTicket<net.minecraft.resources.Identifier> TEXTURE = DataTicket.create("groundburst_texture", net.minecraft.resources.Identifier.class);
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
@@ -176,6 +219,10 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
             ((GeoRenderState) renderState).addGeckolibData(BONE_ROTATIONS, machine.boneRotations(partialTick));
             offsets = machine.boneOffsets(partialTick);
+            net.minecraft.resources.Identifier texture = machine.textureVariant();
+            if (texture != null) {
+                ((GeoRenderState) renderState).addGeckolibData(TEXTURE, texture);
+            }
         }
         if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
             String held = carrier.gripsFor();

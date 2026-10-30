@@ -48,6 +48,10 @@ public final class GBNetwork {
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Collapse.TYPE, dev.groundburst.blast.SingularityPayloads.Collapse.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.collapseHook.accept(payload));
         // Placed charges (DESIGN.md §9.4): the fuze settings and defuse screens, and the Remote Detonator's frequency.
+        registrar.playToServer(dev.groundburst.content.alarm.AlarmPayloads.Settings.TYPE, dev.groundburst.content.alarm.AlarmPayloads.Settings.CODEC,
+                dev.groundburst.content.alarm.AlarmPayloads.Settings::handle);
+        registrar.playToServer(dev.groundburst.content.alarm.AlarmPayloads.Panel.TYPE, dev.groundburst.content.alarm.AlarmPayloads.Panel.CODEC,
+                dev.groundburst.content.alarm.AlarmPayloads.Panel::handle);
         registrar.playToServer(dev.groundburst.content.ordnance.charge.ChargePayloads.Settings.TYPE,
                 dev.groundburst.content.ordnance.charge.ChargePayloads.Settings.CODEC, dev.groundburst.content.ordnance.charge.ChargePayloads.Settings::handle);
         registrar.playToServer(dev.groundburst.content.assembly.AssemblyPayloads.FuzeSetting.TYPE,

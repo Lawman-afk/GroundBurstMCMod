@@ -1,0 +1,19 @@
+{
+  "title": "Hazard Monitor",
+  "icon": "groundburst:hazard_monitor",
+  "order": 15,
+  "items": [
+    "groundburst:hazard_monitor"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Hazard Monitor** watches the air in front of it. It raises its channel when the dose rate there passes its threshold (10, 50, 200 or 1000 RAD/h: 10 is the most that is safe to stand in for long), or when there is poison gas in the air (chlorine, the toxin; this it can be set to ignore). Its needle and its lamp show it; its screen reads the radiation and the gas; it gives a redstone signal while it alarms, and beeps.\n\nPut one in your shelter's airlock, and one by the reactor."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:hazard_monitor",
+      "text": ""
+    }
+  ]
+}

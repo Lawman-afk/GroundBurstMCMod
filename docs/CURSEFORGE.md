@@ -17,6 +17,9 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
 - **Anti-missile defence:** an Interceptor Battery and the multiblock Interceptor Complex, which shoot down incoming
   missiles, guided by a Radar Array.
+- **An alarm system for your base:** a missile warning receiver that listens to the radar, air-raid sirens with
+  turning horns, klaxons, bells, rotating beacons, emergency lights, alert displays and wireless redstone relays, linked
+  over alarm channels.
 - **Nuclear weapons and their aftermath:** mushroom clouds, craters, fallout drifting with the wind, radiation you can
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:glass",
+    "L": "minecraft:redstone_lamp",
+    "M": "groundburst:electric_motor",
+    "P": "#c:plates/steel",
+    "R": "#c:dyes/red"
+  },
+  "pattern": [
+    "RGR",
+    "GLG",
+    "PMP"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:warning_beacon"
+  }
+}

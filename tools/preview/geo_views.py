@@ -34,6 +34,14 @@ DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left
                       ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
 
 PRESETS = {
+    "air_raid_siren": dict(
+        shots=[("iso front", 25, 225, None, None, None), ("iso back", 25, 45, None, None, None),
+               ("side", 5, 270, None, None, None), ("from above", 75, 180, None, None, None),
+               ("horn mouth", 10, 180, (0, 11.6, -13), 16, None), ("drum and blower", 20, 30, (0, 11, 2), 16, None)]),
+    "warning_beacon": dict(
+        hide=("lens_spot", "lens_full", "beam"),
+        shots=[("iso", 25, 225, None, None, None), ("side", 5, 270, None, None, None),
+               ("from above", 75, 180, None, None, None), ("lens close", 15, 200, (0, 6, 0), 10, None)]),
     "interceptor_complex": dict(
         anim="working",
         shots=WHOLE + [

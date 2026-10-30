@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=false,facing=up": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=up": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=false,facing=down": {
+      "model": "groundburst:block/warning_beacon"
+    },
+    "active=true,facing=down": {
+      "model": "groundburst:block/warning_beacon"
+    }
+  }
+}

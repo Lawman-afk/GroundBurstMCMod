@@ -1,0 +1,39 @@
+{
+  "title": "Alarm system",
+  "icon": "groundburst:air_raid_siren",
+  "order": 12,
+  "items": [
+    "groundburst:missile_warning_receiver",
+    "groundburst:alarm_panel",
+    "groundburst:hazard_monitor",
+    "groundburst:air_raid_siren",
+    "groundburst:klaxon",
+    "groundburst:alarm_bell",
+    "groundburst:warning_beacon",
+    "groundburst:emergency_light",
+    "groundburst:alert_display",
+    "groundburst:alarm_relay"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A base can warn itself. **Alarm devices** talk over **alarm channels**: numbers from 0 to 9999, set on each device's screen (right-click it). They all start on channel **0**, so a warning receiver and a siren placed anywhere in the same dimension already work together; give a group its own channel to keep it apart.\n\nA channel **goes off** while any of its **senders** has something wrong:\n- a [Missile Warning Receiver](safety/missile_warning_receiver) sees a missile coming down near it;\n- an [Alarm Panel](safety/alarm_panel) is switched on by hand, or powered by redstone;\n- a [Hazard Monitor](safety/hazard_monitor) reads too much radiation, or poison gas."
+    },
+    {
+      "type": "text",
+      "text": "Then everything on the channel answers: [sirens, klaxons and bells](safety/sirens) sound, [warning lights](safety/warning_lights) light, [Alert Displays](safety/alert_display) show what is wrong and **Alarm Relays** give redstone (shut your blast doors with them). Each of them also goes off when it is powered by redstone itself, channel or not.\n\nThe receiver, the monitor and the relay give redstone out; a comparator by a [Radar Array](ordnance/radar_array) reads how many missiles are coming too. None of the devices needs power."
+    },
+    {
+      "type": "links",
+      "entries": [
+        "safety/missile_warning_receiver",
+        "safety/alarm_panel",
+        "safety/hazard_monitor",
+        "safety/sirens",
+        "safety/warning_lights",
+        "safety/alert_display"
+      ],
+      "text": ""
+    }
+  ]
+}

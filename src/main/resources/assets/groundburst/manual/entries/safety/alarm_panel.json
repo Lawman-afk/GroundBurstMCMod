@@ -1,0 +1,19 @@
+{
+  "title": "Alarm Panel",
+  "icon": "groundburst:alarm_panel",
+  "order": 14,
+  "items": [
+    "groundburst:alarm_panel"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Alarm Panel** is the alarm by hand. On its screen: **Sound alarm** raises its channel until you **Stop** it; **Silence** quiets the channel's sounders (its lights and displays stay on) until the alert is over; **Test** sounds the channel for five seconds. A redstone signal into the panel raises its channel too: wire it to a tripwire, a pressure plate, a daylight sensor, a comparator, anything.\n\nIt raises its channel as an **Alarm**, or as an **Attack** (a siren then sounds the All Clear when it stops)."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:alarm_panel",
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "variants": {
+    "active=false,facing=north,lamp=off": {
+      "model": "groundburst:block/emergency_light"
+    },
+    "active=false,facing=north,lamp=white": {
+      "model": "groundburst:block/emergency_light_white"
+    },
+    "active=false,facing=north,lamp=red": {
+      "model": "groundburst:block/emergency_light_red"
+    },
+    "active=true,facing=north,lamp=off": {
+      "model": "groundburst:block/emergency_light"
+    },
+    "active=true,facing=north,lamp=white": {
+      "model": "groundburst:block/emergency_light_white"
+    },
+    "active=true,facing=north,lamp=red": {
+      "model": "groundburst:block/emergency_light_red"
+    },
+    "active=false,facing=east,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 90
+    },
+    "active=false,facing=east,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 90
+    },
+    "active=false,facing=east,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 90
+    },
+    "active=true,facing=east,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 90
+    },
+    "active=true,facing=east,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 90
+    },
+    "active=true,facing=east,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 90
+    },
+    "active=false,facing=south,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 180
+    },
+    "active=false,facing=south,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 180
+    },
+    "active=false,facing=south,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 180
+    },
+    "active=true,facing=south,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 180
+    },
+    "active=true,facing=south,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 180
+    },
+    "active=true,facing=south,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 180
+    },
+    "active=false,facing=west,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 270
+    },
+    "active=false,facing=west,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 270
+    },
+    "active=false,facing=west,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 270
+    },
+    "active=true,facing=west,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "y": 270
+    },
+    "active=true,facing=west,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "y": 270
+    },
+    "active=true,facing=west,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "y": 270
+    },
+    "active=false,facing=up,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "x": 270
+    },
+    "active=false,facing=up,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "x": 270
+    },
+    "active=false,facing=up,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "x": 270
+    },
+    "active=true,facing=up,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "x": 270
+    },
+    "active=true,facing=up,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "x": 270
+    },
+    "active=true,facing=up,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "x": 270
+    },
+    "active=false,facing=down,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "x": 90
+    },
+    "active=false,facing=down,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "x": 90
+    },
+    "active=false,facing=down,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "x": 90
+    },
+    "active=true,facing=down,lamp=off": {
+      "model": "groundburst:block/emergency_light",
+      "x": 90
+    },
+    "active=true,facing=down,lamp=white": {
+      "model": "groundburst:block/emergency_light_white",
+      "x": 90
+    },
+    "active=true,facing=down,lamp=red": {
+      "model": "groundburst:block/emergency_light_red",
+      "x": 90
+    }
+  }
+}

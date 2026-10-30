@@ -1,0 +1,31 @@
+{
+  "title": "Warning lights",
+  "icon": "groundburst:warning_beacon",
+  "order": 17,
+  "items": [
+    "groundburst:warning_beacon",
+    "groundburst:emergency_light"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:warning_beacon",
+      "text": "A beacon for any face, floor, ceiling or wall: lit, its lens **rotates** (two beams sweeping round), **flashes** twice a second (every beacon in step) or burns **steady**. Red, amber, blue, green or white: use a dye on it (red; orange or yellow for amber; blue; green; white), or choose on its screen. It lights the space round it while it is on."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:emergency_light",
+      "text": "A caged bulkhead lamp for any face. Dark until an alarm, or white all the time (your bunker's lights); in alarm it turns **red and flashes**, every one in step, and keeps lighting the room."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:warning_beacon",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:emergency_light",
+      "text": ""
+    }
+  ]
+}

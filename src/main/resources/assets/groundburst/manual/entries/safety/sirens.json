@@ -1,0 +1,42 @@
+{
+  "title": "Sirens, klaxons and bells",
+  "icon": "groundburst:air_raid_siren",
+  "order": 16,
+  "items": [
+    "groundburst:air_raid_siren",
+    "groundburst:klaxon",
+    "groundburst:alarm_bell"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:air_raid_siren",
+      "text": "A motor and a rotor under a big horn that **turns round** as it sounds: its wail swells each time the horn sweeps past you. Heard 160 blocks off. Two signals, as the Cold War's: **Attack** (a wail rising and falling) and **Alert** (steady). When an attack ends it sounds the **All Clear**, steady, for fifteen seconds. It winds up as it starts and coasts down as it stops. Stand it on top of a post."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:klaxon",
+      "text": "A horn for the wall, heard 64 blocks off, with five tones: the **klaxon** (a-oo-ga); the **slow whoop**; **evacuate** (three blasts and a pause, the evacuation signal of fire alarms); **hi-lo** (two tones); the **general alarm** (seven short blasts and a long one, a ship's call to stations)."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:alarm_bell",
+      "text": "An electric bell for the wall, heard 48 blocks off."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:air_raid_siren",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:klaxon",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:alarm_bell",
+      "text": ""
+    }
+  ]
+}

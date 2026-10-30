@@ -43,6 +43,14 @@ public interface AnimatedMachine extends GeoBlockEntity {
         return java.util.Map.of();
     }
 
+    /**
+     * The texture to draw the model in instead of its own (null: its own): the Warning Beacon's colour. Its glowmask is
+     * the texture's {@code _glowmask}. Only for a renderer made with a {@code VariantGeoModel}.
+     */
+    default net.minecraft.resources.@org.jspecify.annotations.Nullable Identifier textureVariant() {
+        return null;
+    }
+
     /** Model bones not to draw right now (e.g. the dies a press is not holding). Read on the client. */
     default java.util.Set<String> hiddenBones() {
         return java.util.Set.of();

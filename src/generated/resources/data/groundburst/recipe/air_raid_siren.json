@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:basic_circuit",
+    "M": "groundburst:electric_motor",
+    "P": "#c:plates/steel",
+    "W": "groundburst:copper_wire",
+    "Y": "#c:dyes/yellow"
+  },
+  "pattern": [
+    "PYP",
+    "PMP",
+    "WCW"
+  ],
+  "result": {
+    "id": "groundburst:air_raid_siren"
+  }
+}

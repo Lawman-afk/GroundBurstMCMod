@@ -1,0 +1,42 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/klaxon",
+      "x": 90
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/klaxon",
+      "x": 90
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 90
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 180
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/klaxon",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "groundburst:item/warning_beacon",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

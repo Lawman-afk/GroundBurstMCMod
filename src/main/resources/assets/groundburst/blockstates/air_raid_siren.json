@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=true,facing=north": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=false,facing=east": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=true,facing=east": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=false,facing=south": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=true,facing=south": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=false,facing=west": {
+      "model": "groundburst:block/air_raid_siren"
+    },
+    "active=true,facing=west": {
+      "model": "groundburst:block/air_raid_siren"
+    }
+  }
+}

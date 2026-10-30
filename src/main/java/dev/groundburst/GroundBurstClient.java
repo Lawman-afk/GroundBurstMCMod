@@ -50,6 +50,8 @@ public class GroundBurstClient {
         dev.groundburst.client.screen.ChargeScreens.register();
         dev.groundburst.client.screen.LaunchComputerScreen.register();
         dev.groundburst.client.screen.RadarArrayScreen.register();
+        dev.groundburst.client.screen.AlarmScreen.register();
+        dev.groundburst.client.sound.AlarmSounds.register();
         dev.groundburst.client.radiation.RadiationClient.register(modBus);
         dev.groundburst.client.fallout.FalloutClient.register(modBus);
     }
@@ -95,6 +97,14 @@ public class GroundBurstClient {
         event.registerEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.THROWN_EXPLOSIVE.get(), dev.groundburst.client.fx.GrenadeRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.SHRAPNEL.get(), dev.groundburst.client.fx.ShrapnelRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.ordnance.GBOrdnance.CHARGE.get(), dev.groundburst.client.render.ChargeRenderer::new);
+        // The alarm system (DESIGN.md §18.6): the siren's head turning over its block, the beacon in its colour, the display's text.
+        event.registerBlockEntityRenderer(dev.groundburst.content.alarm.GBAlarms.SIREN_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.alarm.GBAlarms.SIREN_ENTITY.get(), 2, 1));
+        event.registerBlockEntityRenderer(dev.groundburst.content.alarm.GBAlarms.BEACON_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, new dev.groundburst.client.render.VariantGeoModel<>(
+                        dev.groundburst.GroundBurst.id(dev.groundburst.content.alarm.AlarmDevice.BEACON.id)), 1, 1).standing());
+        event.registerBlockEntityRenderer(dev.groundburst.content.alarm.GBAlarms.DISPLAY_ENTITY.get(),
+                dev.groundburst.client.render.AlertDisplayRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.launch.GBLaunch.MISSILE.get(), dev.groundburst.client.fx.MissileRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.defence.GBDefence.INTERCEPTOR.get(), dev.groundburst.client.fx.InterceptorRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(),

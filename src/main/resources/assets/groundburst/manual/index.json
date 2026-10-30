@@ -88,6 +88,13 @@
     "safety/decontamination_shower",
     "safety/chemical_hazards",
     "safety/reactor_safety",
-    "safety/hazmat_suits"
+    "safety/hazmat_suits",
+    "safety/alarms",
+    "safety/missile_warning_receiver",
+    "safety/alarm_panel",
+    "safety/hazard_monitor",
+    "safety/sirens",
+    "safety/warning_lights",
+    "safety/alert_display"
   ]
 }

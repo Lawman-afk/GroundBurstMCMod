@@ -1,0 +1,31 @@
+{
+  "title": "Alert Display and Alarm Relay",
+  "icon": "groundburst:alert_display",
+  "order": 18,
+  "items": [
+    "groundburst:alert_display",
+    "groundburst:alarm_relay"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:alert_display",
+      "text": "A screen for the wall. **ALL CLEAR** in green, with its channel; in an alert, flashing: **ATTACK**, how many are inbound and the time to impact; **RADIATION** and the dose rate; **POISON GAS** and how much; or **ALARM, TAKE COVER**."
+    },
+    {
+      "type": "spotlight",
+      "item": "groundburst:alarm_relay",
+      "text": "Wireless redstone: it gives a signal of 15 while its channel goes off (or, set the other way, while all is clear). Shut blast doors, cut the lights, start the shelter's air."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:alert_display",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:alarm_relay",
+      "text": ""
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:steel_plate",
+    "groundburst:basic_circuit",
+    "minecraft:redstone",
+    "minecraft:redstone",
+    "groundburst:copper_wire"
+  ],
+  "result": {
+    "id": "groundburst:alarm_relay"
+  }
+}

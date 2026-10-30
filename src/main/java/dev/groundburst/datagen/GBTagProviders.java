@@ -151,6 +151,7 @@ public final class GBTagProviders {
             for (var c : dev.groundburst.content.assembler.AssemblerClass.values()) {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.assembler.GBAssemblers.controller(c).block().key());
             }
+            dev.groundburst.content.alarm.GBAlarms.all().forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             for (var b : java.util.List.of(dev.groundburst.content.superweapon.GBSuperweapons.ADOBE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_TANK, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_CONTROLLER,
                     dev.groundburst.content.superweapon.GBSuperweapons.FIELDSTONE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.MISSILE_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_CONTROLLER, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER,
                     dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER)) {
