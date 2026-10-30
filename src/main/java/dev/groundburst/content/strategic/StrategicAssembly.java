@@ -68,7 +68,8 @@ public final class StrategicAssembly {
 
     /** The exotic cores, in the order JEI lists their missiles. */
     public static List<ItemStack> exoticCores() {
-        return List.of(new ItemStack(GBAssembly.ANTIMATTER_TRAP.get()), new ItemStack(GBAssembly.SINGULARITY_CORE.get()));
+        return List.of(new ItemStack(GBAssembly.ANTIMATTER_TRAP.get()), new ItemStack(GBAssembly.SINGULARITY_CORE.get()),
+                new ItemStack(GBAssembly.STORM_CORE.get()));
     }
 
     /** The primary the jacket slot's part asks for: a Twin Boosted Core for the Tsar, a Boosted Fission Core otherwise. */

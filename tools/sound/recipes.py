@@ -1116,6 +1116,58 @@ def singularity_implosion() -> dict[str, np.ndarray]:
     return out
 
 
+def storm_sounds() -> dict[str, np.ndarray]:
+    """The storm warhead's supercell (DESIGN.md §16.14). Its wind, a 4 s loop: a low roar in gusts, a howl whistling
+    round corners and drifting in pitch, and the hiss of driving rain. Three near strikes: a ripping crack, a heavy boom
+    a moment later and a rumble rolling away with the echo's bumps. Three far ones: no crack, only a long low roll."""
+    out = {}
+    length = 4.0
+    total = 0.25 + length + 0.3
+    t = S.t_axis(total)
+    N = len(t)
+    gust = 0.55 + 0.45 * S.lowpass(S.white(total, 1901), 0.6, order=2) * 18
+    gust = np.clip(gust, 0.15, 1.3)
+    roar = S.lowpass(S.brown(total, 1902), 380) * gust * 0.9
+    howl = sum(S.resonator(S.white(total, 1903 + k), f * (1 + 0.04 * np.sin(2 * np.pi * r * t).mean()), q=18) * a
+               for k, (f, r, a) in enumerate(((620, 0.11, 0.05), (860, 0.17, 0.035), (1180, 0.07, 0.02))))
+    howl = howl * (0.4 + 0.6 * gust)
+    hiss = S.highpass(S.white(total, 1907), 3200) * 0.06
+    wind = roar + howl + hiss
+    out["exotic/storm_wind"] = S.normalize(S.seamless_loop(S.saturate(wind, 1.2), length, 0.3, 0.25), -4)
+    for k in range(3):
+        n = 4.5
+        m = int(n * S.SR)
+        tt = np.arange(m) / S.SR
+        seed = 1920 + 10 * k
+        crack = S.highpass(S.white(n, seed), 1800) * np.exp(-tt / (0.03 + 0.01 * k)) * 2.2
+        rip = S.bandpass(S.grains(n, rate=900, grain_ms=1.5, seed=seed + 1), 900, 7000) * np.exp(-tt / 0.08) * 1.4
+        boom_at = 0.06 + 0.03 * k
+        boom = S.place(S.lowpass(S.white(n, seed + 2), 160)[: int(1.2 * S.SR)] * np.exp(-np.arange(int(1.2 * S.SR)) / S.SR / 0.35) * 4.0,
+                       boom_at, n)
+        bumps = np.ones(m)
+        rng = np.random.default_rng(seed + 3)
+        for at in rng.uniform(0.3, 3.4, 6):
+            bumps += 0.8 * np.exp(-((tt - at) / 0.18) ** 2)
+        rumble = S.lowpass(S.brown(n, seed + 4), 220) * np.exp(-tt / 1.6) * bumps * 1.6
+        x = S.saturate(crack + rip + boom + rumble, 1.5)
+        x = S.reverb(x, seconds=2.2, damping_hz=2500, mix=0.25, seed=seed + 5)[:m]
+        out[f"exotic/storm_thunder_near{k + 1}"] = S.normalize(S.fade(x, 0.0, 0.6), -1)
+    for k in range(3):
+        n = 6.0
+        m = int(n * S.SR)
+        tt = np.arange(m) / S.SR
+        seed = 1960 + 10 * k
+        rng = np.random.default_rng(seed)
+        bumps = np.full(m, 0.3)
+        for at in rng.uniform(0.2, 4.5, 8):
+            bumps += 0.9 * np.exp(-((tt - at) / (0.25 + 0.2 * rng.random())) ** 2)
+        swell = np.clip(tt / 0.4, 0, 1) * np.exp(-tt / 2.6)
+        roll = S.lowpass(S.brown(n, seed + 1), 140) * bumps * swell * 2.2
+        x = S.reverb(S.saturate(roll, 1.2), seconds=3.0, damping_hz=1200, mix=0.35, seed=seed + 2)[:m]
+        out[f"exotic/storm_thunder_far{k + 1}"] = S.normalize(S.fade(x, 0.05, 0.8), -3)
+    return out
+
+
 # (The blasts are made from recordings now, blasts.py. nuke_set, tsar_set and blast_sets above are the synthesized ones they
 # replaced, kept to compare; blast_source, nuke_source and tsar_source are still the bed of the large, nuclear and Tsar
 # blasts since round 2, the boom and roar the recordings lie on.)
@@ -1125,7 +1177,7 @@ def singularity_implosion() -> dict[str, np.ndarray]:
 # (So are the machines, the reactor's alarm and the Geiger counter's clicks, machines.py; the Exotic Matter Fabricator, the
 # Singularity Reactor and its collapse stay the synthesized ones here, and the Fusion Reactor, the Particle Accelerator,
 # the Gas Centrifuge and the Diesel Generator keep theirs under the recordings.)
-RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, singularity_implosion, reactor_alarm, ordnance_sounds, launch_sounds,
+RECIPES = [geiger_clicks, BL.blast_sets, machine_loops, singularity_collapse, antimatter_sounds, singularity_sounds, singularity_implosion, storm_sounds, reactor_alarm, ordnance_sounds, launch_sounds,
            effect_sounds, assembly_sounds, silo_sounds, large_silo_door_sounds, superweapon_sounds, cruise_sounds, LA.launch_set, ORD.ordnance_set,
            MA.machine_set, GE.gear_set]
 

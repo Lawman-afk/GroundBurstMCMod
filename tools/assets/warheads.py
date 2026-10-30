@@ -605,6 +605,7 @@ def build_all() -> list[str]:
     # --- exotic (Phase 11, DESIGN.md §16) ---
     names += antimatter()
     names += singularity()
+    names += storm()
     # --- the superweapons' (DESIGN.md §19.5) ---
     names += scud_storm()
     names += nuclear_missile()
@@ -758,6 +759,57 @@ def antimatter() -> list[str]:
     look.on("coil", windings)
     look.on("body", chevrons)
     look.on("body", lambda k, f, img: decal(f, img, TREFOIL, {"Y": YELLOW[4], "K": VIOLET[2]}, 9.4))
+    look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
+    return save(w, look)
+
+
+def storm() -> list[str]:
+    """The storm warhead (DESIGN.md §16.14): a Tesla storm generator, squat and caged. A dark steel drum on its mounting
+    ring wound with bright copper between two dark collars (the coil's turns showing); four capacitor tubes standing
+    round it in steel ferrules, glowing blue (their elements emit light), tied at the top by a steel hoop (its cage);
+    yellow and black hazard stripes round the drum's shoulder; a neck rising to a Tesla coil's top load (a flat polished
+    ring) and a copper electrode at its middle."""
+    w = Build("storm_warhead")
+    hb, r = 1.5, 3.2
+    mounting_ring(w, 5.3, hb)
+    w.ring("body", r, hb, 9.6, caps=("up",), top=True)
+    # The coil has no caps: its ends lie inside the collars.
+    w.ring("coil", r + 0.45, 3.2, 8.2, caps=(), top=False, bottom=False, foot=False)
+    w.ring("collar", r + 0.65, 2.6, 3.2, caps=("up", "down"), top=True, bottom=True, foot=False)
+    w.ring("collar", r + 0.65, 8.2, 8.8, caps=("up", "down"), top=True, bottom=True, foot=False)
+    for k, a in enumerate((45, 135, 225, 315)):
+        cx, cz = 8 + 4.6 * math.sin(math.radians(a)), 8 + 4.6 * math.cos(math.radians(a))
+        w.add("ferrule", section(w.m, f"ferrule_lo{k}", 0.8, hb, 2.3, 8, cx=cx, cz=cz, caps=("up",)), True, False, True)
+        w.add("tube", section(w.m, f"tube{k}", 0.6, 2.3, 9.1, 8, cx=cx, cz=cz, caps=()), False, False, False)
+        w.add("ferrule", section(w.m, f"ferrule_hi{k}", 0.8, 9.1, 9.75, 8, cx=cx, cz=cz, caps=("up", "down")), True, True, False)
+    hoop(w, "cage", 4.6, 10.0, "y", thick=0.45, width=0.5)
+    w.ring("lid", 2.0, 9.6, 10.0, caps=("up",), top=True, foot=False)      # (covers the drum's planks where they cross)
+    w.ring("neck", 1.0, 10.0, 11.6, caps=("up",), top=True, foot=False)
+    hoop(w, "torus", 2.6, 12.3, "y", thick=1.5, width=1.3)
+    w.ring("electrode", 0.55, 11.6, 13.7, caps=("up",), top=True, foot=False)
+    for n in w.groups["tube"]:
+        w.m.get(n).light_emission = 15
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=ROUND)
+    look = Look(body=metal(GUNMETAL, 0.4), base=BASE, coil=metal(P.COPPER, 0.58), collar=metal(GUNMETAL, 0.32),
+                ferrule=metal(STEEL, 0.5), tube=M.Material(ramp=ramp9(P.TESLA), tone=0.7, **lit), cage=metal(STEEL, 0.52),
+                neck=metal(GUNMETAL, 0.45), lid=metal(GUNMETAL, 0.36), torus=metal(STEEL, 0.66), electrode=metal(P.COPPER, 0.62),
+                lug=LUG)
+
+    def windings(k, f, img):                                   # the coil's turns: every other texel round it a shade lighter
+        if f.d in SIDES:
+            row = np.floor(f.Y * 2).astype(int)
+            M.lighten(img, row % 2 == 0, 1.12, 6)
+
+    def stripes(k, f, img):                                    # hazard stripes round the drum's shoulder
+        if f.d not in SIDES:
+            return
+        col = np.floor((angle_of(f) + 360) % 360 / 360 * 24).astype(int)
+        row = np.floor(f.Y + 0.1).astype(int)
+        band = (row >= 8) & (row < 10) & (f.Y > 8.8)
+        img[band] = YELLOW[4]
+        img[band & (((col + row) % 4) < 2)] = BLACK[1]
+    look.on("coil", windings)
+    look.on("body", stripes)
     look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
     return save(w, look)
 
@@ -1069,7 +1121,7 @@ WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhe
             "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
             "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
             "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead",
-            "antimatter_warhead", "singularity_warhead"]
+            "antimatter_warhead", "singularity_warhead", "storm_warhead"]
 
 
 def mount(name: str) -> tuple[float, float, float]:

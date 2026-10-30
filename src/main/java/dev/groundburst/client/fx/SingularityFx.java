@@ -223,6 +223,11 @@ public final class SingularityFx {
         }
     }
 
+    /** Whether a hole is still growing here, its collapse not yet come. */
+    static boolean growing() {
+        return ACTIVE.values().stream().anyMatch(h -> Double.isNaN(h.collapsed));
+    }
+
     private static void collapse(SingularityPayloads.Collapse collapse) {
         Minecraft mc = Minecraft.getInstance();
         Hole hole = ACTIVE.get(collapse.id());
@@ -344,14 +349,14 @@ public final class SingularityFx {
             }
             if (!Double.isNaN(h.collapsed) && !h.gone(now)) {
                 // The implosion: five thin violet rims rushing inward from past the hole's edge, one after another, onto the
-                // shrinking horizon (rim-lit spheres: only their edges show), brightening as they close in.
+                // shrinking horizon (rims alone: nothing across their faces), brightening as they close in.
                 float from = Math.max(Singularities.horizon(h.reachTo) * 3, h.reachTo * 1.1f);
                 for (int k = 0; k < 5; k++) {
                     double start = 0.14 * k, v = (u - start) / (1 - start);
                     if (v > 0 && v < 1) {
                         float radius = (float) (from + (r - from) * Math.pow(v, 1.6));
-                        glows.add(Spectacle.sphere(c, camera, Math.max(r + 0.1f, radius), 0xB48CFF, (float) (0.06 + 0.4 * v), 0.02f,
-                                (float) t * 0.05f, 0, -3.5f, h.seed + 2 + k));
+                        glows.add(Spectacle.rim(c, camera, Math.max(r + 0.1f, radius), 0xB48CFF, (float) (0.2 + 0.8 * v), 0.02f,
+                                (float) t * 0.05f, 8f, h.seed + 2 + k));
                     }
                 }
             }

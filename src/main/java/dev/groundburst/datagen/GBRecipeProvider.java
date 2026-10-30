@@ -387,6 +387,12 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.QUANTUM_CIRCUIT)
                 .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED), has(dev.groundburst.content.nuclear.GBNuclear.SINGULARITY_SEED))
                 .save(output);
+        // A Tesla storm generator (DESIGN.md §16.14): capacitor banks, two superconducting coils, a military circuit to fire them.
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.STORM_CORE, 1)
+                .requires(GBParts.CAPACITOR, 4).requires(GBParts.SUPERCONDUCTING_COIL, 2).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBTags.commonItem("plates/copper")).requires(GBTags.commonItem("plates/copper"))
+                .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.DIRTY_PAYLOAD, 1)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)

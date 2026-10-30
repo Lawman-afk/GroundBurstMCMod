@@ -63,7 +63,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     /** The missile's sections as the crane lays them: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
     /** Which warhead the cradles show: none yet, a thermonuclear warhead, a cobalt one, the Tsar, the exotic ones. */
-    public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2, LOOK_TSAR = 3, LOOK_ANTIMATTER = 4, LOOK_SINGULARITY = 5;
+    public static final int LOOK_NONE = 0, LOOK_THERMONUCLEAR = 1, LOOK_COBALT = 2, LOOK_TSAR = 3, LOOK_ANTIMATTER = 4, LOOK_SINGULARITY = 5, LOOK_STORM = 6;
     private static final int RECHECK_INTERVAL = 40;
 
     private static final String T_MAKES = GBLang.add(GroundBurst.MODID + ".strategic.makes", "Makes: %s");
@@ -72,6 +72,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     private static final String T_TSAR = GBLang.add(GroundBurst.MODID + ".strategic.tsar", "Tsar ICBM");
     private static final String T_ANTIMATTER = GBLang.add(GroundBurst.MODID + ".strategic.antimatter", "Antimatter ICBM");
     private static final String T_SINGULARITY = GBLang.add(GroundBurst.MODID + ".strategic.singularity", "Singularity ICBM");
+    private static final String T_STORM = GBLang.add(GroundBurst.MODID + ".strategic.storm", "Storm ICBM");
     private static final String T_READY = GBLang.add(GroundBurst.MODID + ".strategic.ready", "Range %s, %s: press Assemble");
     private static final String T_WORKING = GBLang.add(GroundBurst.MODID + ".strategic.working", "Assembling: %s%%");
     private static final String T_DONE = GBLang.add(GroundBurst.MODID + ".strategic.done", "Finished: %s");
@@ -278,6 +279,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             case TSAR_WARHEAD -> LOOK_TSAR;
             case ANTIMATTER_WARHEAD -> LOOK_ANTIMATTER;
             case SINGULARITY_WARHEAD -> LOOK_SINGULARITY;
+            case STORM_WARHEAD -> LOOK_STORM;
             default -> LOOK_THERMONUCLEAR;
         };
     }
@@ -324,6 +326,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
                     case LOOK_TSAR -> T_TSAR;
                     case LOOK_ANTIMATTER -> T_ANTIMATTER;
                     case LOOK_SINGULARITY -> T_SINGULARITY;
+                    case LOOK_STORM -> T_STORM;
                     default -> T_THERMONUCLEAR;
                 }))
                 : !out.isEmpty() ? Component.translatable(T_DONE, out.getHoverName()) : Component.translatable(T_IDLE);
@@ -429,6 +432,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
             case LOOK_THERMONUCLEAR -> dev.groundburst.content.ordnance.GBOrdnance.THERMONUCLEAR_WARHEAD;
             case LOOK_ANTIMATTER -> dev.groundburst.content.ordnance.GBOrdnance.ANTIMATTER_WARHEAD;
             case LOOK_SINGULARITY -> dev.groundburst.content.ordnance.GBOrdnance.SINGULARITY_WARHEAD;
+            case LOOK_STORM -> dev.groundburst.content.ordnance.GBOrdnance.STORM_WARHEAD;
             default -> null;
         };
         return warhead == null ? "" : warhead.block().getId().getPath();

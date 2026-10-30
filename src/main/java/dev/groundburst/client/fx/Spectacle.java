@@ -82,6 +82,7 @@ public final class Spectacle {
         FalloutFx.register();
         AnnihilationFx.register();
         SingularityFx.register();
+        StormFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundBurst.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -108,6 +109,7 @@ public final class Spectacle {
         EffectFx.clear();
         AnnihilationFx.clear();
         SingularityFx.clear();
+        StormFx.clear();
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
@@ -733,6 +735,7 @@ public final class Spectacle {
         }
         AnnihilationFx.tick(mc.level, PUFFS, ticks, q, eye);
         SingularityFx.tick(mc.level, ticks, eye);
+        StormFx.tick(mc.level, ticks, eye);
         PUFFS.tick(ticks);
         DEBRIS.tick(mc.level);
         SpentStages.tick(mc.level, PUFFS, ticks, q);
@@ -751,6 +754,7 @@ public final class Spectacle {
         }
         sum += AnnihilationFx.flash(now);
         sum += SingularityFx.flash(now);
+        sum += StormFx.flash(now);
         return Math.min(0.96f, sum);
     }
 
@@ -810,6 +814,14 @@ public final class Spectacle {
                 clamp((b + (lum * 1.02f - b) * amount) * k));
     }
 
+    /** {@code color} darkened and greyed toward a storm's slate (DESIGN.md §16.14). */
+    private static Vector3f stormy(float r, float g, float b, float amount) {
+        float lum = 0.3f * r + 0.59f * g + 0.11f * b;
+        float k = 1 - 0.6f * amount;
+        return new Vector3f(clamp((r + (lum * 0.82f - r) * amount) * k), clamp((g + (lum * 0.88f - g) * amount) * k),
+                clamp((b + (lum - b) * amount) * k));
+    }
+
     /** How far the sky turns fallout green where the camera is. */
     private static float falloutTint() {
         Minecraft mc = Minecraft.getInstance();
@@ -824,6 +836,13 @@ public final class Spectacle {
         float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
         if (v > 0) {
             Vector3f c = voided(event.getRed(), event.getGreen(), event.getBlue(), v);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
+        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (st > 0) {
+            Vector3f c = stormy(event.getRed(), event.getGreen(), event.getBlue(), st);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
@@ -849,6 +868,15 @@ public final class Spectacle {
         float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
         if (v > 0 && sky.skyColor != null) {
             sky.skyColor = voided(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), v);
+        }
+        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (st > 0) {
+            if (sky.skyColor != null) {
+                sky.skyColor = stormy(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), st);
+            }
+            int cloud = event.getRenderState().cloudColor;
+            Vector3f c = stormy(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, st);
+            event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
         float a = skyTint();
         if (a > 0) {
@@ -876,7 +904,7 @@ public final class Spectacle {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level)
-                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty())) {
+                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty())) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -899,6 +927,7 @@ public final class Spectacle {
         }
         AnnihilationFx.submit(collector, poseStack, camera.pos, now);
         SingularityFx.submit(collector, poseStack, camera.pos, now);
+        StormFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {
@@ -921,11 +950,21 @@ public final class Spectacle {
 
     /**
      * One sphere to draw: centre (camera-relative), radius, colour, alpha, how lumpy, the noise time, texture scroll, and
-     * whether its edges fade (limb darkening).
+     * whether its edges fade (limb darkening). Every part of it keeps a quarter of its alpha however it faces.
      */
     static float[] sphere(Vec3 c, Vec3 camera, float radius, int color, float alpha, float boil, float time, float scroll, float limb, int seed) {
         return new float[] {(float) (c.x - camera.x), (float) (c.y - camera.y), (float) (c.z - camera.z), radius, Float.intBitsToFloat(color),
-                alpha, boil, time, scroll, limb, seed};
+                alpha, boil, time, scroll, limb, seed, 0.25f};
+    }
+
+    /**
+     * A rim alone: a sphere lit only toward its edge ({@code sharpness} as a rim glow's limb) and not at all across its
+     * face, so that from any side it shows as a thin ring of light.
+     */
+    static float[] rim(Vec3 c, Vec3 camera, float radius, int color, float alpha, float boil, float time, float sharpness, int seed) {
+        float[] s = sphere(c, camera, radius, color, alpha, boil, time, 0, -sharpness, seed);
+        s[11] = 0;
+        return s;
     }
 
     private static void fireball(BlastFx fx, double t, Vec3 camera, List<float[]> out, List<float[]> cores) {
@@ -961,6 +1000,7 @@ public final class Spectacle {
         for (float[] s : spheres) {
             float cx = s[0], cy = s[1], cz = s[2], radius = s[3], alpha = s[5], boil = s[6], time = s[7], scroll = s[8], limb = s[9];
             int color = Float.floatToRawIntBits(s[4]), seed = (int) s[10];
+            float face = s.length > 11 ? s[11] : 0.25f;
             float cl = (float) Math.sqrt(cx * cx + cy * cy + cz * cz) + 1e-3f;
             for (int i = 0; i <= LAT; i++) {
                 double th = Math.PI * i / LAT;
@@ -976,7 +1016,7 @@ public final class Spectacle {
                     float facing = Math.abs(dx * -cx + dy * -cy + dz * -cz) / cl;
                     // limb > 0: darkened, fading limb (fire); 0: even all over; < 0: a rim glow, brightest at the edge.
                     float edge = limb >= 0 ? (float) Math.pow(facing, 0.5 * limb) : (float) Math.pow(1 - facing, -0.5 * limb);
-                    int a = (int) (Math.max(0, Math.min(1, alpha * (0.25f + 0.75f * edge))) * 255);
+                    int a = (int) (Math.max(0, Math.min(1, alpha * (face + (1 - face) * edge))) * 255);
                     int shade = limb > 0 ? Puffs.lerpRgb(color & 0xFFFFFF, 0x401008, (1 - facing) * 0.45f * limb) : color & 0xFFFFFF;
                     col[k] = a << 24 | shade;
                 }

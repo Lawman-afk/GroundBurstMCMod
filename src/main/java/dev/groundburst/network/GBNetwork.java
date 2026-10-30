@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "16";
+    public static final String PROTOCOL_VERSION = "17";
 
     private GBNetwork() {}
 
@@ -34,6 +34,13 @@ public final class GBNetwork {
         // Singularities (DESIGN.md §16.2): a singularity warhead's black hole, drawn on the client by SingularityFx.
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Start.TYPE, dev.groundburst.blast.SingularityPayloads.Start.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.startHook.accept(payload));
+        // Storms (DESIGN.md §16.14): a storm warhead's supercell, drawn on the client by StormFx.
+        registrar.playToClient(dev.groundburst.blast.StormPayloads.Start.TYPE, dev.groundburst.blast.StormPayloads.Start.CODEC,
+                (payload, context) -> dev.groundburst.blast.StormPayloads.startHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.StormPayloads.Strike.TYPE, dev.groundburst.blast.StormPayloads.Strike.CODEC,
+                (payload, context) -> dev.groundburst.blast.StormPayloads.strikeHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.StormPayloads.End.TYPE, dev.groundburst.blast.StormPayloads.End.CODEC,
+                (payload, context) -> dev.groundburst.blast.StormPayloads.endHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Grow.TYPE, dev.groundburst.blast.SingularityPayloads.Grow.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.growHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Torn.TYPE, dev.groundburst.blast.SingularityPayloads.Torn.CODEC,

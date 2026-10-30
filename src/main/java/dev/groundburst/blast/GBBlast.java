@@ -44,6 +44,7 @@ public final class GBBlast {
             if (event.getLevel() instanceof ServerLevel level) {
                 Annihilations.tick(level);                  // short-lived: ahead of the blasts in the budget
                 Singularities.tick(level);
+                Storms.tick(level);
                 BlastManager.of(level).tick();
             }
         });
@@ -52,6 +53,7 @@ public final class GBBlast {
                 BlastManager.forget(level);
                 Annihilations.forget(level);
                 Singularities.forget(level);
+                Storms.forget(level);
             }
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
@@ -63,6 +65,7 @@ public final class GBBlast {
                 BlastManager.of(player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
+                Storms.syncTo(player);
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
@@ -70,6 +73,7 @@ public final class GBBlast {
                 BlastManager.of(player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
+                Storms.syncTo(player);
             }
         });
     }

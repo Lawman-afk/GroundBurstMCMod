@@ -86,6 +86,11 @@ public final class AssemblyStats {
     static final String TEARS = GBLang.add(P + "tears", "Tears Loose");
     static final String COLLAPSES = GBLang.add(P + "collapses", "Collapses After");
     static final String NOTE_FEEDS = GBLang.add(P + "feeds", "Grows with what it eats: these on open ground");
+    /** The storm warhead's supercell, as rows. */
+    static final String REGION = GBLang.add(P + "region", "Storm Region");
+    static final String LIGHTNING = GBLang.add(P + "lightning", "Lightning");
+    static final String RAGES = GBLang.add(P + "rages", "Rages For");
+    static final String V_STRIKES = GBLang.add(P + "strikes", "%s a second");
     static final String V_DAYS = GBLang.add(P + "days", "%s days");
     static final String V_DAY = GBLang.add(P + "day", "1 day");
     static final String V_HOURS = GBLang.add(P + "hours", "%s hours");
@@ -119,7 +124,8 @@ public final class AssemblyStats {
         effect(ChargeKind.SCUD_STORM_WARHEAD, "scud_storm", "Toxin residue spreads %s blocks round, under a toxin cloud", (int) Charges.SCUD_SPREAD);
         effect(ChargeKind.NUCLEAR_MISSILE_WARHEAD, "nuclear_missile", "Fired only by a Nuclear Missile silo");
         effect(ChargeKind.ANTIMATTER_WARHEAD, "antimatter", "A perfect sphere erased: no rubble, no drops, no fallout");
-        effect(ChargeKind.SINGULARITY_WARHEAD, "singularity", "A black hole: it grows, swallows, then collapses in a blast");
+        effect(ChargeKind.SINGULARITY_WARHEAD, "singularity", "A black hole: it feeds and grows, then implodes");
+        effect(ChargeKind.STORM_WARHEAD, "storm", "A supercell: lightning chains through all in the open, a region round");
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -220,6 +226,9 @@ public final class AssemblyStats {
             float hole = dev.groundburst.blast.Singularities.TYPICAL_REACH;
             return new Area(dev.groundburst.blast.Singularities.stoneReach(hole), dev.groundburst.blast.Singularities.pullRadius(hole));
         }
+        if (kind == ChargeKind.STORM_WARHEAD) {          // its region: lightning anywhere in it
+            return new Area(0, dev.groundburst.blast.Storms.RADIUS);
+        }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {     // its gamma flash, in the open
             return new Area(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL, dev.groundburst.content.exotic.Antimatter.GAMMA_REACH);
         }
@@ -275,6 +284,14 @@ public final class AssemblyStats {
                 out.add(Stat.row(TEARS, blocks(dev.groundburst.blast.Singularities.stoneReach(reach))));
                 out.add(Stat.row(COLLAPSES, Component.translatable(V_SECONDS, dev.groundburst.blast.Singularities.LIFE / 20)));
                 out.add(Stat.note(Component.translatable(NOTE_FEEDS)));
+                out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
+            }
+        }
+        if (kind == ChargeKind.STORM_WARHEAD) {            // its supercell
+            out.add(Stat.row(REGION, blocks(dev.groundburst.blast.Storms.RADIUS)));
+            out.add(Stat.row(LIGHTNING, Component.translatable(V_STRIKES, (int) dev.groundburst.blast.Storms.STRIKES)));
+            if (full) {
+                out.add(Stat.row(RAGES, Component.translatable(V_SECONDS, dev.groundburst.blast.Storms.LIFE / 20)));
                 out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }

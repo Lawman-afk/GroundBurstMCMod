@@ -1302,6 +1302,100 @@
       },
       {
         "when": [
+          "storm_warhead",
+          "strategic_storm_warhead",
+          "icbm_storm_warhead",
+          "flight_storm_warhead",
+          "flight_strategic_storm_warhead",
+          "flight_icbm_storm_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_s1",
+          "strategic_storm_warhead_s1",
+          "icbm_storm_warhead_s1",
+          "flight_strategic_storm_warhead_s1",
+          "flight_icbm_storm_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_s2",
+          "strategic_storm_warhead_s2",
+          "icbm_storm_warhead_s2",
+          "flight_strategic_storm_warhead_s2",
+          "flight_icbm_storm_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "storm_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/storm_warhead_stage2"
+        }
+      },
+      {
+        "when": [
           "scud_storm_warhead",
           "strategic_scud_storm_warhead",
           "icbm_scud_storm_warhead",

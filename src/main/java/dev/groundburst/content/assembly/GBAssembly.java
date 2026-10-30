@@ -62,6 +62,9 @@ public final class GBAssembly {
     /** A singularity seed held in four containment cells round a quantum circuit's field. */
     public static final DeferredItem<ComponentItems.IcbmCore> SINGULARITY_CORE = icbmCore("singularity_core", "Singularity Core",
             () -> GBOrdnance.SINGULARITY_WARHEAD.block().get());
+    /** A Tesla storm generator: capacitor banks, superconducting coils, a military circuit to fire them (DESIGN.md §16.14). */
+    public static final DeferredItem<ComponentItems.IcbmCore> STORM_CORE = icbmCore("storm_core", "Storm Core",
+            () -> GBOrdnance.STORM_WARHEAD.block().get());
     /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */
     public static final DeferredItem<ComponentItems.PayloadCore> DIRTY_PAYLOAD = core("dirty_payload", "Dirty Payload",
             () -> GBOrdnance.DIRTY_WARHEAD.block().get(), SizeClass.S);

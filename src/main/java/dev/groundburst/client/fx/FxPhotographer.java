@@ -80,6 +80,7 @@ public final class FxPhotographer {
                 new Scene("hall_antimatter_aerial", "hall_antimatter", 26, 24, List.of(60, 900, 1850)),
                 new Scene("hall_antimatter_ui", "hall_antimatter", 4, 0, List.of(30)),
                 new Scene("hall_singularity_aerial", "hall_singularity", 26, 24, List.of(1850)),
+                new Scene("hall_storm_aerial", "hall_storm", 26, 24, List.of(1850)),
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
@@ -218,6 +219,10 @@ public final class FxPhotographer {
                 // A singularity on the same mesa: feeding on it for a minute and growing, imploding from 1200 to 1240.
                 new Scene("singularity", "singularity_warhead", 170, 4, List.of(40, 200, 400, 700, 1000, 1190, 1212, 1226, 1236, 1241, 1300)),
                 new Scene("singularity_aerial", "singularity_warhead", 170, 30, List.of(300, 700, 1190, 1230, 1400)),
+                // A storm over the plain, a herd scattered about in the open: from inside it near its edge (the deck
+                // overhead, bolts and their chains, rain), and from the air outside it (the whole deck turning).
+                new Scene("storm", "storm_warhead", 110, -4, List.of(60, 200, 400, 700, 1000, 1400, 1750)),
+                new Scene("storm_aerial", "storm_warhead", 330, 22, List.of(500, 1000)),
                 // China's Nuclear Missile Silo, its missile loaded, charged and armed, launched at clock 25: the roof
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
@@ -1603,9 +1608,29 @@ public final class FxPhotographer {
                     hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
-                if (s.profile().equals("hall_antimatter") || s.profile().equals("hall_singularity")) {
+                if (s.profile().equals("hall_antimatter") || s.profile().equals("hall_singularity") || s.profile().equals("hall_storm")) {
                     var cores = dev.groundburst.content.strategic.StrategicAssembly.exoticCores();
-                    hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY, cores.get(s.profile().equals("hall_antimatter") ? 0 : 1));
+                    int core = s.profile().equals("hall_antimatter") ? 0 : s.profile().equals("hall_singularity") ? 1 : 2;
+                    hallSite(level, x, ground, net.minecraft.world.item.ItemStack.EMPTY, cores.get(core));
+                    return;
+                }
+                if (s.profile().equals("storm_warhead")) {
+                    // A herd scattered about in the open, for the strikes to find and chain through.
+                    var random = net.minecraft.util.RandomSource.create(17);
+                    for (int i = 0; i < 40; i++) {
+                        double a = random.nextDouble() * 2 * Math.PI, r = 15 + random.nextDouble() * 120;
+                        var pos = new net.minecraft.core.BlockPos((int) (x + r * Math.cos(a)), ground, (int) (r * Math.sin(a)));
+                        level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+                        var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityTypes.COW : net.minecraft.world.entity.EntityTypes.PIG)
+                                .create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                        if (animal != null) {
+                            animal.snapTo(pos.getX() + 0.5, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                                    pos.getX(), pos.getZ()), pos.getZ() + 0.5, random.nextFloat() * 360, 0);
+                            level.addFreshEntity(animal);
+                        }
+                    }
+                    dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.STORM_WARHEAD,
+                            net.minecraft.core.BlockPos.containing(at), null);
                     return;
                 }
                 if (s.profile().equals("cobalt_plume")) {
@@ -1964,6 +1989,10 @@ public final class FxPhotographer {
                     player.openMenu(be, silo);
                 }
             });
+        }
+        if (scene.profile().equals("singularity_warhead") && step >= 0 && clock == dev.groundburst.blast.Singularities.LIFE
+                && SingularityFx.growing()) {
+            clock--;   // its server, busy tearing, runs behind this clock: the moments after its life count from its collapse
         }
         if (step < scene.moments().size() && clock == scene.moments().get(step)) {
             String name = "fx_" + scene.name() + "_" + clock + ".png";

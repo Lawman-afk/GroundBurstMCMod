@@ -6,12 +6,14 @@
     "groundburst:antimatter_warhead",
     "groundburst:antimatter_trap",
     "groundburst:singularity_warhead",
-    "groundburst:singularity_core"
+    "groundburst:singularity_core",
+    "groundburst:storm_warhead",
+    "groundburst:storm_core"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [ICBM Assembly Hall](ordnance/strategic_assembly), which builds it whole with an **Intercontinental Booster** (no secondary, no jacket): an **Antimatter ICBM** or a **Singularity ICBM**, fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.\n\n**Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **67 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater."
+      "text": "An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [ICBM Assembly Hall](ordnance/strategic_assembly), which builds it whole with an **Intercontinental Booster** (no secondary, no jacket): an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, fired only from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.\n\n**Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **67 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater."
     },
     {
       "type": "text",
@@ -33,6 +35,19 @@
     {
       "type": "crafting",
       "item": "groundburst:singularity_core",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "text": "**Storm Warhead**: a Tesla storm generator, squat and caged: a copper-wound drum, four capacitor tubes glowing blue round it and a Tesla coil's ring on top. Its core is a **Storm Core**: capacitor banks, two superconducting coils and a military circuit to fire them. Where its missile comes down it seeds a **supercell over a whole region**: **160 blocks round** for **a minute and a half**. A wide dark cloud deck gathers over it in fifteen seconds and turns slowly round the eye, its wall cloud hanging low in the middle; the sky darkens, rain drives down and the wind howls.\n\n**Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. It burns grass to dirt, fuses sand to glass, burns leaves away, may start a fire, and **knocks out every machine** within 4 blocks for five seconds. Thunder cracks close by and rolls on from far off."
+    },
+    {
+      "type": "text",
+      "text": "**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely, giving a redstone pulse each time.\n\n**The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:storm_core",
       "text": ""
     }
   ]

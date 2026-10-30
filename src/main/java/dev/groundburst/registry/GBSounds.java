@@ -218,6 +218,13 @@ public final class GBSounds {
             register("singularity.drone", "Singularity drones", List.of("exotic/singularity_drone"), false, 80);
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_TEAR =
             register("singularity.tear", "Ground tears loose", variants("exotic/singularity_tear", 3), false, 48);
+    /** The storm warhead's supercell (DESIGN.md §16.14): its wind, and its thunder near and far. */
+    public static final DeferredHolder<SoundEvent, SoundEvent> STORM_WIND =
+            register("storm.wind", "Storm winds howl", List.of("exotic/storm_wind"), false, 96);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STORM_THUNDER_NEAR =
+            register("storm.thunder_near", "Lightning cracks", variants("exotic/storm_thunder_near", 3), false, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STORM_THUNDER_FAR =
+            register("storm.thunder_far", "Thunder rolls", variants("exotic/storm_thunder_far", 3), false, 320);
     /** The singularity's end (DESIGN.md §16.12): an inrush, then the thud as its horizon closes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_IMPLODE =
             register("singularity.implode", "Singularity implodes", List.of("exotic/singularity_implode"), false, 160);

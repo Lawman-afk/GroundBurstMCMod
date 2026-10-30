@@ -84,6 +84,7 @@ public final class GBGameTests {
         NuclearTests.register();
         ExoticTests.register();
         UpgradeTests.register();
+        StormTests.register();
         StrategicTests.register();
         AssemblerTests.register();
         LaunchTests.register();

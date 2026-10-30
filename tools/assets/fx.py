@@ -16,6 +16,9 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
 - ``textures/fx/accretion.png`` (256x64, tileable along u): a singularity's accretion disc (DESIGN.md §16.2), u round
   the disc and v from its inner edge out: streaks of hot gas drawn out round it, brightest within, fading to nothing at
   its rim (tinted violet by vertex colour in game).
+- ``textures/fx/bolt.png`` (64x16, tileable along u): a lightning channel's cross-section for the storm warhead's bolts
+  (DESIGN.md §16.14), v across it and u along it: a white-hot core in a soft glow fading to nothing at its edges, a
+  little ragged along its length (tinted blue-white by vertex colour in game).
 """
 from __future__ import annotations
 
@@ -166,6 +169,18 @@ def accretion() -> Image.Image:
     return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
 
 
+def bolt() -> Image.Image:
+    """A white-hot core a few pixels across in a wide soft glow, the glow's width wavering a little along u."""
+    w, h = 64, 16
+    v = ((np.arange(h) + 0.5) / h * 2 - 1)[:, None]
+    waver = 1 + 0.25 * (spectral(64, 1.7, 51)[:1, :w] - 0.5)
+    core = np.exp(-(v / 0.16) ** 2)
+    glow = 0.55 * np.exp(-(v / (0.55 * waver)) ** 2)
+    alpha = np.clip(core + glow, 0, 1)
+    rgb = np.ones((h, w, 3))
+    return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
 def cloudlet(seed: int) -> np.ndarray:
     """A big soft billow cluster: brighter where it is thick, no light direction, edges frayed by noise."""
     size = CELL
@@ -193,7 +208,7 @@ def cloudlet(seed: int) -> np.ndarray:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation()),
-                        ("accretion", accretion())):
+                        ("accretion", accretion()), ("bolt", bolt())):
         path = OUT / f"{name}.png"
         image.save(path)
         print(path)

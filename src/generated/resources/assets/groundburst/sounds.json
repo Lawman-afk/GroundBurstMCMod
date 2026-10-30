@@ -726,6 +726,49 @@
     ],
     "subtitle": "subtitles.groundburst.sticky.stick"
   },
+  "storm.thunder_far": {
+    "sounds": [
+      {
+        "attenuation_distance": 320,
+        "name": "groundburst:exotic/storm_thunder_far1"
+      },
+      {
+        "attenuation_distance": 320,
+        "name": "groundburst:exotic/storm_thunder_far2"
+      },
+      {
+        "attenuation_distance": 320,
+        "name": "groundburst:exotic/storm_thunder_far3"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.storm.thunder_far"
+  },
+  "storm.thunder_near": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:exotic/storm_thunder_near1"
+      },
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:exotic/storm_thunder_near2"
+      },
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:exotic/storm_thunder_near3"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.storm.thunder_near"
+  },
+  "storm.wind": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:exotic/storm_wind"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.storm.wind"
+  },
   "superweapon.ready": {
     "sounds": [
       "groundburst:superweapon/ready"

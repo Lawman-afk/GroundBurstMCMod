@@ -13,7 +13,12 @@ Exotic weapons, and a clearer name for the hall that builds them.
   and lives for a minute, pulling everything in and tearing the ground loose. It grows by what it eats: on open ground
   it digs a hole about 67 blocks round in rock; in a mountainside or the sea it grows bigger still. Then it implodes,
   pulling harder than ever as it shrinks to a point and vanishes.
-- Both fire only from a Launch Complex or a Missile Silo. They are only ever built whole: there are no exotic bombs.
+- **Storm ICBM**: a Storm Core built into an intercontinental missile. Where it lands a supercell gathers over a whole
+  region, 160 blocks round, for a minute and a half: lightning comes down six times a second on whatever stands in the
+  open or stands tallest, chaining from creature to creature, starting fires, scorching the ground and knocking out
+  machines, while the wind drives everything round its eye. A lightning rod inside the storm draws its strikes.
+- All three fire only from a Launch Complex or a Missile Silo. They are only ever built whole: there are no exotic
+  bombs.
 
 ### Upgrade chips
 - **Speed**, **Efficiency** and **Balanced** chips on each circuit tier, basic to quantum: 10% a tier, so 40% at

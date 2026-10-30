@@ -111,7 +111,12 @@ public enum ChargeKind {
      * A singularity core (DESIGN.md §16.2): a black hole that grows for 20 s to an event horizon of 10 blocks, drawing in
      * everything within 48 and tearing the ground loose out to 32, then collapses in a blast (crater 16).
      */
-    SINGULARITY_WARHEAD("singularity_warhead", 10, true);
+    SINGULARITY_WARHEAD("singularity_warhead", 10, true),
+    /**
+     * A Tesla storm generator (DESIGN.md §16.14): a supercell over a region 160 blocks round for a minute and a half,
+     * lightning chaining through whatever stands in the open, its winds driving everything round its eye.
+     */
+    STORM_WARHEAD("storm_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -163,7 +168,7 @@ public enum ChargeKind {
      * way (a warhead placed in creative) its containment fails (a breach).
      */
     public boolean exotic() {
-        return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD;
+        return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD || this == STORM_WARHEAD;
     }
 
     /** Only a Launch Complex or a Missile Silo fires it: the nuclear warheads (on the Strategic body) and the exotic ones. */

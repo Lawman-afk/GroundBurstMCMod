@@ -2043,15 +2043,60 @@ before its leaves did.
   cores' tooltip names their ICBM and the hall. The breach stays for a warhead placed some other way (a command).
 - **The implosion** (the user: no explosion at the end; a cool implosion and collapse with a matching look). At the end
   of its life the singularity stops eating and implodes for `Singularities.IMPLODE` = 40 ticks: its pull on everything
-  `implodePull(u)` = 1 + 6u times as hard, its horizon `implodeHorizon` = horizon (1 - u^3) (slowly, then all at
-  once, to a point); then it is gone. No blast (the `singularity_collapse` profile is deleted): what is left is the hole
-  it ate. Clients (told at its start, `Collapse`): three bright shells rushing inward one after another onto the
-  shrinking horizon, the photon ring brightening, the disc wound in onto the horizon, hotter and spinning up to 26 times
-  as fast, the jets flaring to 1.8 times their length and falling back in, the debris pulled in as hard as the hole
-  pulls, the sky darkening further; as it closes a white point shrinking away, a softer flash and the ground shaking at
-  the thud. Each client pulls its own player by the same boost. The sound (`singularity.implode`,
-  `exotic/singularity_implode`, 2.9 s): an inrush building the whole time, brightening, over a sub tone climbing and a
-  glassy shimmer bending up; at 2 s (the horizon closing) all cut off, a deep falling thud, a pop and a ring.
+  `implodePull(u)` = 1 + 6u times as hard, its horizon `implodeHorizon` = horizon (1 - u^3) (slowly, then all at once,
+  to a point); then it is gone. No blast (the `singularity_collapse` profile is deleted): what is left is the hole it
+  ate. Clients (told at its start, `Collapse`): five thin violet rims (`Spectacle.rim`: lit toward their edges and not
+  at all across their faces, so only the edges show) rushing inward one after another from past the hole's edge onto the
+  shrinking horizon (the first shots, broad shells and then rims with a faint face, five deep, read as a white bubble),
+  the photon ring brightening, the disc wound in onto the horizon, hotter and spinning up to 26 times as fast, the jets
+  flaring to 1.8 times their length and falling back in, the debris pulled in as hard as the hole pulls, the sky
+  darkening further; as it closes a white point shrinking away, a softer flash and the ground shaking at the thud. Each
+  client pulls its own player by the same boost. The sound (`singularity.implode`, `exotic/singularity_implode`, 2.9 s):
+  an inrush building the whole time, brightening, over a sub tone climbing and a glassy shimmer bending up; at 2 s (the
+  horizon closing) all cut off, a deep falling thud, a pop and a ring.
+
+### 16.14 As built: the Storm Warhead (Phase 11, 2026-10-30)
+The last weapon of the round. The user: special weapons are made in the ICBM hall, and the storm should be scaled up to
+affect a whole region (over §16.1's 48 blocks for 45 s).
+- **Warhead and missile.** `ChargeKind.STORM_WARHEAD`, exotic and a whole weapon like the other two: its **Storm Core**
+  (`IcbmCore`: four capacitors, two superconducting coils, a military circuit, two copper plates) and a booster make the
+  **Storm ICBM** at the hall (`LOOK_STORM`, JEI's sixth recipe); the warhead out of JEI and the creative tab. Set off
+  any other way (a placed warhead, by command) its banks discharge: a storm a fifth the size for 20 s
+  (`Storm.breach`). Stats: Storm Region 160, Lightning 6 a second, Rages For 90 s; the strike circle the region.
+- **The supercell** (`blast.Storms`, `StormJob`): 160 blocks round (x the bomb scale) for 1800 ticks; `intensity`
+  smoothsteps up over 300 ticks and down over the last 300. Strikes come at `STRIKES` (6 a second at full size and
+  strength; a smaller storm fewer, at least 0.5) with a carry: 35% at a creature in the open (refreshed each second:
+  alive, in the region, `canSeeSky`), 35% at the tallest of six random spots, the rest at one; the surface from
+  `MOTION_BLOCKING`, only where the chunk is loaded. A lightning rod at the surface within 32 blocks of the spot and
+  inside the storm takes the bolt (`onLightningStrike`: its redstone pulse) and nothing else happens. Otherwise: each
+  creature within 1.5 of the foot gets vanilla `thunderHit` (5 and a burn; a creeper charged, a pig turned) and 7 more
+  lightning damage; the chain jumps from it (or the foot) to the nearest creature within 6 not yet hit, up to 4 jumps,
+  each 0.75 of the last (and a 2 s burn); the ground: grass, podzol, mycelium to dirt (40% coarse), sand to glass
+  (35%), leaves burnt away; a fire at the foot 40% of the time where fire may spread (`canSpreadFireAround`); an EMP
+  field 4 round for 100 ticks (machines knocked out). Its wind (every other tick, everything but players and missiles
+  in it): `windOn`, round the eye anticlockwise and a quarter as much in, `WIND` 0.035 blocks a tick each tick at the
+  eyewall (0.4 of the radius), nothing in the eye, dying to its edge. Not saved.
+- **Clients** (`StormPayloads` Start/Strike/End, protocol 17; `StormFx`): the cloud deck, ~170 of the puff sheet's
+  smoke cells in six rings at the cloud base (60 over where it struck, x the size, at least 0.3) turning round the eye,
+  inner rings faster, with a darker wall cloud hanging under the middle; each bolt a channel from the deck to the foot,
+  straight-line points thrown aside by up to 3.5% of its length mid-way, forking (13% a step, two levels, each branch
+  ending in the air), the chain's jumps as smaller arcs; drawn as camera-facing ribbons (`fx/bolt.png`, a white core
+  in a soft glow) flickering over 9 ticks and striking again; vanilla's sky flash for strikes within 400, a screen flash
+  for near ones in view; thunder when its sound arrives (`storm.thunder_near`, three: a crack, a boom, a rolling
+  rumble, within 64; `storm.thunder_far`, three: a long low roll, from far off), near strikes shaking the camera; rain
+  (vanilla's streaks on two rings of sheets round the camera) wherever the camera stands under open sky in it; the sky,
+  fog and vanilla clouds greyed toward slate; its wind's howl (`storm.wind`, a 4 s loop heard all round) rising and
+  dying with it; each client's own player driven by the same wind.
+- **Models** (material library): the warhead squat and caged, a dark drum wound with copper between dark collars, four
+  capacitor tubes glowing blue in steel ferrules tied by a steel hoop, hazard stripes on its shoulder, a lid and neck up
+  to a Tesla coil's top load (a flat polished ring of turned planks) and a copper electrode; the Storm Core the warhead
+  in small; the Storm ICBM slate blue and finless on four nozzles, copper coil bands round its second and third stages,
+  a capacitor ring glowing blue near the top of each stage, a raceway, hazard stripes under the bus.
+- GameTests (`StormTests`, a region 6 round, under open sky where it strikes at random): a bolt into a creeper charges
+  it, scorches the grass, knocks out machines round it and chains through the two pigs beside it but not the one 11
+  off; a storm striking 5 a second strikes many times and scorches grass in its region but never the plot's corners,
+  then dies away; a lightning rod in it takes every strike (the grass untouched). (Rods outside a storm are not
+  counted: a neighbouring test's rod drew another's strikes.)
 
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
@@ -3716,6 +3761,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-30 | The Storm Warhead built (§16.14): an ICBM at the hall like the other exotic ones, its storm a supercell over a region 160 round for 90 s (the user: scale it to a region): lightning at 6 a second aimed at what stands in the open and what stands tallest, chaining through creatures, scorching, setting fires and knocking out machines; a wind round its eye; lightning rods inside it take its strikes. |
 | 2026-10-30 | Upgrade chips (the user's request, §7.3): speed, efficiency and balanced chips on the four circuit tiers, 10% a level (balanced 5% and 5%), one per processing machine or assembler in an Upgrades tab on the screen's left edge (the config tab's mirror); a speed chip draws power as much faster as it works, so a job costs the same. |
 | 2026-10-30 | The user's second look at the exotic weapons: no exotic bombs (their cores are ICBM cores only the hall takes; the warheads are whole weapons, out of JEI and the creative tab), and the singularity ends in a two-second implosion instead of a blast: its pull at up to seven times, its horizon shrinking to a point, shells rushing inward, the disc winding in, a last flash and a thud (§16.13). |
 | 2026-10-30 | After the user's look at the exotic warheads: the Strategic Assembly Hall is the **ICBM Assembly Hall** (names only; the ids stay, so worlds keep their halls), and the exotic weapons are built whole there as ICBMs from their cores alone and a booster (no missile assembler takes them; the bench still makes their bombs, which only breach) (§16.12). |

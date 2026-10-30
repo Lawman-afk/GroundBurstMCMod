@@ -28,7 +28,7 @@ import net.minecraft.world.item.ItemStack;
  * Laid out like the hall's screen.
  */
 final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.Recipe> {
-    enum Weapon { THERMONUCLEAR, COBALT, TSAR, ANTIMATTER, SINGULARITY }
+    enum Weapon { THERMONUCLEAR, COBALT, TSAR, ANTIMATTER, SINGULARITY, STORM }
 
     /** One weapon the hall builds. */
     record Recipe(Weapon weapon) {
@@ -46,12 +46,13 @@ final class StrategicCategory extends AbstractRecipeCategory<StrategicCategory.R
             return switch (this.weapon) {
                 case ANTIMATTER -> StrategicAssembly.exoticCores().get(0);
                 case SINGULARITY -> StrategicAssembly.exoticCores().get(1);
+                case STORM -> StrategicAssembly.exoticCores().get(2);
                 default -> StrategicAssembly.primaryFor(option());
             };
         }
 
         boolean exotic() {
-            return this.weapon == Weapon.ANTIMATTER || this.weapon == Weapon.SINGULARITY;
+            return this.weapon == Weapon.ANTIMATTER || this.weapon == Weapon.SINGULARITY || this.weapon == Weapon.STORM;
         }
     }
 

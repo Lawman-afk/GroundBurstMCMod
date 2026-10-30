@@ -79,6 +79,7 @@ public class MissileItem extends Item {
         name("tsar_warhead", "Tsar ICBM");
         name("antimatter_warhead", "Antimatter ICBM");
         name("singularity_warhead", "Singularity ICBM");
+        name("storm_warhead", "Storm ICBM");
         cruise("he_warhead", "HE Cruise Missile");
         cruise("napalm_warhead", "Napalm Cruise Missile");
         cruise("chemical_warhead", "Chemical Cruise Missile");

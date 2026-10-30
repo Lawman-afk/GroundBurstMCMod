@@ -463,6 +463,75 @@ def singularity_core() -> None:
     G.finish(m, t)
 
 
+def storm_core() -> None:
+    """A Tesla storm generator (DESIGN.md §16.14): the storm warhead in small, a copper-wound drum between dark collars
+    with four capacitor tubes glowing blue round it in a steel hoop, a neck up to a polished ring (the top load) and a
+    copper electrode."""
+    import math
+    import numpy as np
+    import warheads as W
+    from gb import machine_kit as K
+    from gb import materials as M
+    m = model("storm_core")
+    m.open_ok = set()
+    groups: dict[str, list[str]] = {}
+    lips: dict[str, tuple[bool, bool, bool]] = {}
+
+    def add(group, names, top=True, bottom=False):
+        groups.setdefault(group, []).extend(names)
+        for n in names:
+            lips[n] = (top, bottom, False)
+    add("base", W.section(m, "base0_", 3.6, 0.0, 1.0, W.sides_for(3.6), caps=("up", "down"), stagger="full"), True, True)
+    add("body", W.section(m, "body0_", 2.1, 1.0, 6.6, W.sides_for(2.1), caps=("up",), stagger="full"), True, False)
+    add("coil", W.section(m, "coil0_", 2.45, 2.0, 5.6, W.sides_for(2.45), caps=()), False, False)
+    for i, (y0, y1) in enumerate(((1.6, 2.0), (5.6, 6.0))):
+        add("collar", W.section(m, f"collar{i}_", 2.6, y0, y1, W.sides_for(2.6), caps=("up", "down"), stagger="full"), True, True)
+    for k, a in enumerate((45, 135, 225, 315)):
+        cx, cz = 8 + 3.0 * math.sin(math.radians(a)), 8 + 3.0 * math.cos(math.radians(a))
+        add("tube", W.section(m, f"tube{k}_", 0.45, 1.0, 6.5, 8, cx=cx, cz=cz, caps=("up",)), True, False)
+    for group, R2, cy, h, w in (("hoop", 3.0, 6.8, 0.25, 0.25), ("torus", 1.7, 8.4, 0.5, 0.55)):
+        chord = 2 * R2 * math.tan(math.pi / 12) + 0.04
+        names = []
+        for i in range(12):
+            hh = h - (0.03 if i % 2 else 0.0)
+            m.box(f"{group}{i}", (8 + R2 - w, cy - hh, 8 - chord / 2), (8 + R2 + w, cy + hh, 8 + chord / 2),
+                  rotation={"origin": (8, cy, 8), "axis": "y", "angle": 30.0 * i})
+            names.append(f"{group}{i}")
+        groups[group] = names
+    add("neck", W.section(m, "neck0_", 0.7, 6.6, 8.2, W.sides_for(0.7), caps=("up",)), True, False)
+    add("electrode", W.section(m, "electrode0_", 0.4, 8.2, 9.6, W.sides_for(0.4), caps=("up",)), True, False)
+    for n in groups["tube"]:
+        m.get(n).light_emission = 15
+    while True:
+        try:
+            m.layout()
+            break
+        except ValueError:
+            m.tex_w *= 2
+            m.tex_h = m.tex_w
+    t = Tex(m.tex_w, m.tex_h)
+    k = K.Kit(m, {}, seed=617, ao_reach=1.5, turned=True)
+    for n, (top, bottom, foot) in lips.items():
+        W.round_faces(k.S, [n], top, bottom, foot)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    k.paint(t, groups["base"], W.BASE)
+    k.paint(t, groups["body"], W.metal(W.GUNMETAL, 0.4))
+    k.paint(t, groups["coil"], W.metal(P.COPPER, 0.6))
+    k.paint(t, groups["collar"], W.metal(W.GUNMETAL, 0.32))
+    k.paint(t, groups["tube"], M.Material(ramp=W.ramp9(P.TESLA), tone=0.72, **lit))
+    k.paint(t, groups["hoop"], W.metal(W.STEEL, 0.55))
+    k.paint(t, groups["torus"], W.metal(W.STEEL, 0.68))
+    k.paint(t, groups["neck"], W.metal(W.GUNMETAL, 0.45))
+    k.paint(t, groups["electrode"], W.metal(P.COPPER, 0.64))
+
+    def windings(f, img):                                     # the coil's turns
+        if f.d in W.SIDES:
+            row = np.floor(f.Y * 2).astype(int)
+            M.lighten(img, row % 2 == 0, 1.12, 6)
+    k.overlay(t, groups["coil"], windings)
+    G.finish(m, t)
+
+
 def dirty_payload() -> None:
     """A rusty drum of nuclear waste with a trefoil band, an olive HE brick taped to its side."""
     m = model("dirty_payload")
@@ -747,7 +816,7 @@ def barometric_fuze() -> None:
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload",
-         "antimatter_trap", "singularity_core"]
+         "antimatter_trap", "singularity_core", "storm_core"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"]
@@ -774,6 +843,7 @@ def main() -> None:
     dirty_payload()
     antimatter_trap()
     singularity_core()
+    storm_core()
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)
