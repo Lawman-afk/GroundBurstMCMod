@@ -2766,7 +2766,14 @@ Every sounder, light and display goes off when its channel is raised, or when it
   overlapping middle covered by the ring beside it; a saddle bracket, a terminal box on the housing, a throat and a
   projector flaring ring by ring (radii 2.0 to 4.2, 0.8 px a ring) to a rolled chrome rim, its mouth dark. The
   **siren**'s horn: its top and bottom planks turned the other way (they narrowed to the mouth; only the sides had been
-  turned for the mirrored x), and the square plate on the drum gone, the drum its own round top under its cap. The
+  turned for the mirrored x), and the square plate on the drum gone, the drum its own round top under its cap. Then
+  (the user: the funnel's sides still not flush, clipping) the horn rebuilt: a flared square horn's walls are trapezoids,
+  which rectangles cannot fill (no rectangle fills a sharp corner), so each wall is a bone leaning out from the throat
+  holding three plates: a centre band (2.8 px wide, standing 0.25 px proud on both faces, its edges painted as a seam in
+  shadow) and two side plates fanned in the wall's plane so their outer edges lie exactly on the horn's corner lines
+  (adjacent walls meet flush); the side plates reach the band's edge at the mouth and overlap each other under it near
+  the throat. The throat 4.8 px square (inside the drum's height with the band's 0.25), the mouth 10, every plate a pixel
+  and a half back into the drum, the slanted plate ends inside a deeper rim (1.2 px). FX scene `siren_close`. The
   **beacon**'s lens body has its top ring (it was open, so you could see into it round the lens top). The **Emergency
   Light**'s cage wraps the lens: two hoops round its sides and front, two over its top, front and bottom, back to the
   base, painted clean dark steel.

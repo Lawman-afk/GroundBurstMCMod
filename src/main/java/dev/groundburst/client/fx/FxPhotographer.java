@@ -195,6 +195,9 @@ public final class FxPhotographer {
                 new Scene("alarms", "alarms", 9, 6, List.of(20, 30, 33, 36, 60), "midnight"),
                 new Scene("alarms_close", "alarms", 5, 12, List.of(30, 34), "midnight"),
                 new Scene("alarm_ui", "alarms", 4, 0, List.of(30)),
+                // The siren's horn up close (after the user's look: its walls meeting flush): one facing the camera, one
+                // side on.
+                new Scene("siren_close", "siren", 3, 14, List.of(20)),
                 // The Launch Control Station (DESIGN.md §17.12): facing the camera, two linked silos behind it (the near one
                 // armed: its keys turned and its cover up), a linked radar, one of its missiles in the air; close up on the
                 // desk and the big screen; at night; its screen.
@@ -1716,6 +1719,13 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("alarms")) {
                     alarmWall(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("siren")) {
+                    var h = dev.groundburst.content.alarm.AlarmBlock.HORIZONTAL;
+                    var siren = dev.groundburst.content.alarm.GBAlarms.SIREN.block().get().defaultBlockState();
+                    level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + 2, ground, -2), siren.setValue(h, net.minecraft.core.Direction.WEST));
+                    level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + 2, ground, 2), siren.setValue(h, net.minecraft.core.Direction.SOUTH));
                     return;
                 }
                 if (s.profile().equals("station")) {

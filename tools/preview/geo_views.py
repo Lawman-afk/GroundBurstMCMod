@@ -37,7 +37,9 @@ PRESETS = {
     "air_raid_siren": dict(
         shots=[("iso front", 25, 225, None, None, None), ("iso back", 25, 45, None, None, None),
                ("side", 5, 270, None, None, None), ("from above", 75, 180, None, None, None),
-               ("horn mouth", 10, 180, (0, 11.6, -13), 16, None), ("drum and blower", 20, 30, (0, 11, 2), 16, None)]),
+               ("horn mouth", 10, 180, (0, 11.5, -13), 16, None), ("drum and blower", 20, 30, (0, 11, 2), 16, None),
+               ("horn corner, close", 25, 235, (4, 15, -8), 8, None), ("horn corner, low", -15, 130, (-4, 8, -8), 8, None),
+               ("throat at the drum", 30, 250, (3, 13, -4), 7, None), ("inside a corner", 5, 170, (2.5, 14, -9), 6, None)]),
     "warning_beacon": dict(
         hide=("lens_spot", "lens_full", "beam"),
         shots=[("iso", 25, 225, None, None, None), ("side", 5, 270, None, None, None),

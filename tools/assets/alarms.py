@@ -24,6 +24,7 @@ GeckoLib:
 """
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -441,6 +442,12 @@ def relay_textures() -> None:
 
 # --- the Air-Raid Siren (GeckoLib) ------------------------------------------------------------------------------------
 
+#: The siren's horn: its axis height (the drum's middle), the throat and the mouth (z), their half-sizes (the walls'
+#: outer faces), its walls' thickness; each wall's centre band (half-width) and how far it stands proud of the plates
+#: beside it (on both faces: a seam you can see, wide enough to draw as a line, and clear of the drum's top and bottom).
+HORN_CY, HORN_THROAT, HORN_MOUTH, HORN_A, HORN_B, HORN_T = 11.5, -3.6, -13.2, 2.4, 5.0, 0.6
+HORN_BAND, HORN_PROUD = 1.4, 0.25
+
 def siren() -> None:
     name = "air_raid_siren"
     g = GeoModel(name, tex_size=(128, 128))
@@ -454,24 +461,55 @@ def siren() -> None:
     drum = W.section(H, "drum", 4.0, 8.5, 14.5, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     cap = W.section(H, "cap", 2.8, 14.5, 15.5, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     g.box("bolt", (-0.9, 15.5, -0.9), (0.9, 15.9, 0.9), faces=SIDES + ("up",), bone="head")             # the cap's bolt
-    # The horn: four planks flaring from the throat (5.2 square, at the drum's face) to the mouth (10 square, 9.4 out).
-    cy, z0, z1 = 11.6, -3.8, -13.2
-    mid, half, t = (z0 + z1) / 2, (z0 - z1) / 2, 0.6
-    tilt = float(np.degrees(np.arctan2(2.4, z0 - z1)))
-    for side, sign in (("top", 1), ("bottom", -1)):
-        y = cy + sign * 3.8
-        g.box(f"horn_{side}", (-3.8, y - t / 2, mid - half), (3.8, y + t / 2, mid + half), faces=SIDES + ("up", "down"), bone="head",
-              rotation={"origin": (0, y, mid), "axis": "x", "angle": sign * tilt})          # widening to the mouth
-    for side, sign in (("west", -1), ("east", 1)):
-        x = sign * 3.8
-        g.box(f"horn_{side}", (x - t / 2, cy - 3.8, mid - half), (x + t / 2, cy + 3.8, mid + half), faces=SIDES + ("up", "down"), bone="head",
-              rotation={"origin": (x, cy, mid), "axis": "y", "angle": -sign * tilt})       # (GeckoLib mirrors x: turns about y flip)
-    for n, a, b in (("rim_top", (-5.6, cy + 4.8, z1 - 0.4), (5.6, cy + 5.6, z1 + 0.4)),
-                    ("rim_bottom", (-5.6, cy - 5.6, z1 - 0.4), (5.6, cy - 4.8, z1 + 0.4)),
-                    ("rim_west", (-5.6, cy - 4.8, z1 - 0.4), (-4.8, cy + 4.8, z1 + 0.4)),
-                    ("rim_east", (4.8, cy - 4.8, z1 - 0.4), (5.6, cy + 4.8, z1 + 0.4))):
-        g.box(n, a, b, faces=SIDES + ("up", "down"), bone="head")
-    g.box("ports", (-2.6, cy - 2.6, -4.3), (2.6, cy + 2.6, -4.0), faces=("north",), bone="head")
+    # The horn: a square flare from the throat (just inside the drum's face) to the mouth. A flared square horn's walls
+    # are trapezoids, which boxes cannot be (no set of rectangles fills a trapezoid's sharp corners), so each wall is
+    # three plates: a centre band straight down its middle, standing proud on both faces, and two side plates fanned in
+    # the wall's own plane so their outer edges lie exactly on the horn's corner lines: walls meet flush along their
+    # corners. Each side plate reaches the band's edge at the mouth; near the throat the two side plates overlap under
+    # the band (hidden there, inside and out). Every plate runs back into the drum, and its slanted end at the mouth is
+    # held inside the rim.
+    cy, zt, zm, a, b, t = HORN_CY, HORN_THROAT, HORN_MOUTH, HORN_A, HORN_B, HORN_T
+    run = zt - zm                                                   # along the axis, throat to mouth
+    tau = math.atan((b - a) / run)                                  # each wall's lean out from the axis
+    ls = run / math.cos(tau)                                        # a wall's length down its slope
+    phi = math.atan((b - a) / ls)                                   # its corner edges' fan, in its own plane
+    c, proud, back = HORN_BAND, HORN_PROUD, 1.4
+    w = (b - c) * math.cos(phi)                                     # a side plate's width: it reaches the band's edge at the mouth
+    reach = ls / math.cos(phi) - w * math.tan(phi) / 2              # a side plate's length (its slanted end straddles the mouth)
+    lean, fan = math.degrees(tau), math.degrees(phi)
+    horn_inner = {}
+    for wall, pivot, rot in (("top", (0, cy + a, zt), (lean, 0, 0)), ("bottom", (0, cy - a, zt), (-lean, 0, 0)),
+                             ("east", (a, cy, zt), (0, -lean, 0)), ("west", (-a, cy, zt), (0, lean, 0))):
+        bone = f"horn_{wall}"
+        g.bone(bone, pivot=pivot, parent="head", rotation=rot)
+        z0, z1 = zt - ls, zt + back
+        if wall in ("top", "bottom"):
+            sy = 1 if wall == "top" else -1                         # outward
+            y_out = cy + sy * a
+            yy = sorted((y_out, y_out - sy * t))
+            g.box(f"{bone}_c", (-c, yy[0] - proud, z0), (c, yy[1] + proud, z1), faces=SIDES + ("up", "down"), bone=bone)
+            for side, sx in (("e", 1), ("w", -1)):
+                xs = sorted((sx * a, sx * (a - w)))
+                g.box(f"{bone}_{side}", (xs[0], yy[0], zt - reach), (xs[1], yy[1], z1), faces=SIDES + ("up", "down"), bone=bone,
+                      rotation={"origin": (sx * a, y_out, zt), "axis": "y", "angle": -sx * fan})
+            horn_inner[wall] = "down" if wall == "top" else "up"
+        else:
+            sx = 1 if wall == "east" else -1
+            x_out = sx * a
+            xx = sorted((x_out, x_out - sx * t))
+            g.box(f"{bone}_c", (xx[0] - proud, cy - c, z0), (xx[1] + proud, cy + c, z1), faces=SIDES + ("up", "down"), bone=bone)
+            for side, sy in (("u", 1), ("d", -1)):
+                ys = sorted((cy + sy * a, cy + sy * (a - w)))
+                g.box(f"{bone}_{side}", (xx[0], ys[0], zt - reach), (xx[1], ys[1], z1), faces=SIDES + ("up", "down"), bone=bone,
+                      rotation={"origin": (x_out, cy + sy * a, zt), "axis": "x", "angle": sy * fan})
+            horn_inner[wall] = "west" if wall == "east" else "east"
+    rim_in, rim_out, rim_d = b - 0.2, b + 0.6, 0.6
+    for n, lo, hi in (("rim_top", (-rim_out, cy + rim_in, zm - rim_d), (rim_out, cy + rim_out, zm + rim_d)),
+                      ("rim_bottom", (-rim_out, cy - rim_out, zm - rim_d), (rim_out, cy - rim_in, zm + rim_d)),
+                      ("rim_west", (-rim_out, cy - rim_in, zm - rim_d), (-rim_in, cy + rim_in, zm + rim_d)),
+                      ("rim_east", (rim_in, cy - rim_in, zm - rim_d), (rim_out, cy + rim_in, zm + rim_d))):
+        g.box(n, lo, hi, faces=SIDES + ("up", "down"), bone="head")
+    g.box("ports", (-(a - 0.3), cy - (a - 0.3), -4.3), (a - 0.3, cy + (a - 0.3), -4.0), faces=("north",), bone="head")   # in the walls' thickness
     g.box("blower", (-2.8, 9.2, 3.4), (2.8, 13.4, 6.6), faces=("south", "east", "west", "up", "down"), bone="head")
     g.layout()
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
@@ -487,13 +525,18 @@ def siren() -> None:
     k.paint(tex, "bolt", K.STEEL)
     k.overlay(tex, drum, lambda f, img: M.darken(img, (f.Y > 10.5) & (f.Y < 12.6) & (np.floor(f.plane_uv()[0]) % 2 == 0), 0.55)
               if f.d in SIDES else None)                                             # the stator's slots round the drum
-    horn = [f"horn_{s}" for s in ("top", "bottom", "west", "east")]
+    horn = [b.name for b in g.boxes if b.name.startswith("horn_")]
     k.paint(tex, horn, CD_YELLOW)
 
     def inside(f, img):                                            # the horn's inner faces in shadow
-        inner = {"horn_top": "down", "horn_bottom": "up", "horn_west": "east", "horn_east": "west"}
-        if inner.get(f.box.name) == f.d:
+        wall = f.box.name.split("_")[1]
+        if horn_inner.get(wall) == f.d:
             M.darken(img, np.ones(img.shape[:2], dtype=bool), 0.45)
+        # A centre band's long edges, where it stands proud of the plates beside it: a seam in shadow (lit, the first
+        # band's thin edges glinted as broken bright lines along the walls and inside the horn).
+        seam = ("east", "west") if wall in ("top", "bottom") else ("up", "down")
+        if f.box.name.endswith("_c") and f.d in seam:
+            M.darken(img, np.ones(img.shape[:2], dtype=bool), 0.42)
     k.overlay(tex, horn, inside)
     k.paint(tex, ["rim_top", "rim_bottom", "rim_west", "rim_east"], CD_YELLOW)
     k.paint(tex, "ports", K.BLACK)
