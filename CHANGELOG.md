@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-31
 
 A network for your launchers across the whole world, a bigger missile defence, a storm that knocks defences out, and an
 alarm system for your base.

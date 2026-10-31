@@ -17,6 +17,9 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   a cruise missile launcher. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
 - **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
   that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
+- **A Launch Control Station** that networks your launchers across the whole world: link them with Launch Codes,
+  aim them on a map of the dimension, fire salvos in patterns or timed to land together, and launchers far away
+  wake up to fire.
 - **Anti-missile defence:** an Interceptor Battery and the multiblock Interceptor Complex, which shoot down incoming
   missiles, guided by a Radar Array.
 - **An alarm system for your base:** a missile warning receiver that listens to the radar, air-raid sirens with
@@ -38,6 +41,12 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 
 ![A missile lifting off from its launch silo in a cloud of exhaust](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/launch.jpg)
 *Lift-off from a Launch Silo*
+
+![A Launch Control Station console with two missile silos behind it](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/launch_control_station.jpg)
+*The Launch Control Station*
+
+![A wall of alarm devices at night with rotating beacons on top](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/alarms.jpg)
+*The alarm system at night*
 
 ![A SCUD strike throwing up fire, smoke and blocks of sand](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/scud_strike.jpg)
 *The SCUD Storm strikes*
@@ -69,7 +78,6 @@ Install it on the server and on every player's game: it adds blocks and items, s
 
 ## Planned
 
-- A Launch Control Station: a network of your launchers across the whole world
 - A Laser Designator
 - MIRVs: several warheads on one missile
 - More special weapons, starting with a Cryo Bomb
