@@ -92,6 +92,16 @@ public final class GBLaunch {
     public static final WithItem<RadarArrayBlock> RADAR_CONTROLLER = GBBlocks.register("radar_array", "Radar Array",
             GBTab.MISSILES, p -> new RadarArrayBlock(p, GBLaunch.RADAR_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    /** The Launch Control Station (DESIGN.md §17.12): its network's launchers anywhere in the dimension. */
+    public static final WithItem<LaunchStationBlock> STATION_CONTROLLER = GBBlocks.register("launch_control_station", "Launch Control Station",
+            GBTab.MISSILES, p -> new LaunchStationBlock(p, GBLaunch.STATION_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchStationBlockEntity>> STATION_ENTITY =
+            GBBlockEntities.BLOCK_ENTITIES.register("launch_control_station", () -> new BlockEntityType<>(LaunchStationBlockEntity::new,
+                    STATION_CONTROLLER.block().get()));
+    /** A station's network's codes: link launchers and radars with them (DESIGN.md §17.12). */
+    public static final DeferredItem<LaunchCodesItem> LAUNCH_CODES = GBItems.register("launch_codes", "Launch Codes", GBTab.MISSILES,
+            LaunchCodesItem::new, p -> p.stacksTo(16));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadarArrayBlockEntity>> RADAR_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("radar_array", () -> new BlockEntityType<>(RadarArrayBlockEntity::new,
                     RADAR_CONTROLLER.block().get()));
@@ -118,6 +128,13 @@ public final class GBLaunch {
     public static final Supplier<SoundEvent> MISSILE_LAUNCH = GBSounds.MISSILE_LAUNCH;
     public static final Supplier<SoundEvent> MISSILE_ENGINE = GBSounds.MISSILE_ENGINE;
     public static final Supplier<SoundEvent> CRUISE_LAUNCH = GBSounds.CRUISE_LAUNCH;
+
+    /**
+     * Wakes a Launch Control Station's member for its launch (its structure's chunks, owned by its controller's
+     * position); dropped as the world loads (orders still waiting set them again).
+     */
+    public static final TicketController NETWORK_TICKETS = new TicketController(GroundBurst.id("launch_network"),
+            (level, tickets) -> LaunchNetwork.dropTickets(tickets));
 
     /** Keeps a missile's chunk, and its target's, loaded while it flies. */
     public static final TicketController TICKETS = new TicketController(GroundBurst.id("missile"), (level, tickets) -> {
@@ -292,6 +309,38 @@ public final class GBLaunch {
                 () -> LARGE_RADAR_DISH.block().get().defaultBlockState().setValue(LargeRadarDishBlock.PART, part));
     }
 
+    /**
+     * The Launch Control Station: the desk across the front (Machine Casing, the controller in the middle, Machine
+     * Casing); behind it the instrument bank, Machine Casing two high with the Energy Port in the middle of its bottom
+     * row; an Antenna on top of the bank's middle (the network's uplink).
+     */
+    public static final MultiblockDefinition STATION = new MultiblockDefinition(GroundBurst.id("launch_control_station"),
+            new String[][] {
+                    {"CXC", "CEC"},
+                    {"   ", "CCC"},
+                    {"   ", " N "},
+            },
+            Map.of('C', Entry.of(() -> GBMultiblocks.MACHINE_CASING.block().get()), 'N', Entry.of(() -> ANTENNA.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> STATION_CONTROLLER.block().get())));
+
+    /** JEI's page for the Launch Control Station and its codes. */
+    public static final String INFO_STATION = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.launch_control_station",
+            "The Launch Control Station runs your launchers anywhere in the dimension, loaded or not. Build it 3 wide, 2 deep "
+                    + "and 3 high: a front row of Machine Casing with the controller in the middle (the desk); behind it Machine "
+                    + "Casing two high with the Energy Port in the middle of the bottom row (the instrument bank); an Antenna on top "
+                    + "of the bank's middle. Take Launch Codes from it (use them on the station), then use them on each launcher's "
+                    + "controller or any part of it (Launch Silo, Launch Complex, Missile Silo, Cruise Missile Launcher, SCUD Storm, "
+                    + "Nuclear Missile) and on Radar Arrays to link them; sneak to unlink. Its map shows the whole dimension: pick "
+                    + "launchers, aim them (several take a pattern), ARM and LAUNCH, at once or timed so they all land together. "
+                    + "Unloaded launchers are woken to launch; they need their energy stored. 40 FE/t.");
+
+    /** Creative: places a whole Launch Control Station. */
+    public static final DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> STATION_SPAWNER =
+            GBItems.register("launch_control_station_spawner", "Structure Spawner: Launch Control Station", GBTab.MISSILES,
+                    p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> STATION),
+                    p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
+
     /** Creative: places a whole Missile Silo dug into the ground where you click (its top level with what you clicked). */
     public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> MISSILE_SILO_SPAWNER =
             GBItems.register("missile_silo_spawner", "Structure Spawner: Missile Silo", GBTab.MISSILES,
@@ -304,7 +353,10 @@ public final class GBLaunch {
 
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);
-        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> event.register(TICKETS));
+        modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent event) -> {
+            event.register(TICKETS);
+            event.register(NETWORK_TICKETS);
+        });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             Launches.clear();
             dev.groundburst.content.defence.Interceptors.clear();
@@ -315,6 +367,7 @@ public final class GBLaunch {
                 Flights.of(level).tick(level);
                 dev.groundburst.content.defence.Interceptors.tick(level);   // after the missiles: they meet them where they are
                 TerrainSurvey.of(level).tick(level);
+                LaunchNetwork.of(level).tick(level);          // the stations' networks: orders, waking, missiles followed
             }
         });
         // The terrain survey hears about chunks coming and going (it maps those near a Launch Computer).

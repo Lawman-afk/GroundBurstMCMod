@@ -49,6 +49,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.SitePhotographer.register();
         dev.groundburst.client.screen.ChargeScreens.register();
         dev.groundburst.client.screen.LaunchComputerScreen.register();
+        dev.groundburst.client.screen.LaunchStationScreen.register();
         dev.groundburst.client.screen.RadarArrayScreen.register();
         dev.groundburst.client.screen.AlarmScreen.register();
         dev.groundburst.client.sound.AlarmSounds.register();
@@ -165,6 +166,8 @@ public class GroundBurstClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.construction.GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), 6, 6));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.RADAR_ENTITY.get(), 7, 2));
+        event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.STATION_ENTITY.get(),
+                dev.groundburst.client.render.LaunchStationRenderer::new);
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPUTER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.COMPUTER_ENTITY.get(), 4, 1));
         event.registerBlockEntityRenderer(GBBlockEntities.ORE_CRUSHER.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.ORE_CRUSHER.get(), 1));

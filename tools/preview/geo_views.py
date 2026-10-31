@@ -98,6 +98,20 @@ PRESETS = {
             ("arm and hinge", 15, 250, (18, 100, 16), 50, None),
             ("platform", 30, 210, (31, 140, 16), 40, None),
         ]),
+    "launch_control_station": dict(
+        # The status board as it might stand: four ready, two armed, one counting, one fault, the rest dark.
+        hide=tuple(f"lamp{i}_{s}" for i in range(16) for s in ("ready", "armed", "busy", "fault")
+                   if s != {0: "ready", 1: "ready", 2: "ready", 3: "ready", 4: "armed", 5: "armed", 6: "busy", 7: "fault"}.get(i)),
+        shots=WHOLE + [
+            ("desk", 25, 200, (0, 12, -2), 50, None),
+            ("raked panel, close", 35, 185, (-6, 13, -1), 26, None),
+            ("keys and guard", 30, 160, (13, 13, -1), 16, None),
+            ("bank front", 10, 190, (0, 18, 9), 52, None),
+            ("big screen", 5, 180, (0, 21, 8), 26, None),
+            ("uplink", 20, 210, (0, 40, 14), 22, None),
+            ("desk side", 15, 270, (-24, 12, 4), 34, None),
+            ("back", 20, 20, (0, 18, 24), 56, None),
+        ]),
     "launch_computer": dict(
         anim="working",
         shots=WHOLE + [

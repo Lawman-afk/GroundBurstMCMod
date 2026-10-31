@@ -133,19 +133,19 @@ public final class LaunchPayloads {
         }
 
         public static void handle(MapRequest p, IPayloadContext context) {
-            LaunchComputerBlockEntity c = computer(context, p.pos());
             int scale = p.scale();
-            if (c == null || !c.isFormed() || !c.powered() || !TerrainSurvey.validScale(scale)
-                    || !(context.player() instanceof ServerPlayer player)) {
+            if (!(context.player() instanceof ServerPlayer player) || player.position().distanceTo(Vec3.atCenterOf(p.pos())) > REACH
+                    || !(player.level().getBlockEntity(p.pos()) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
                 return;
             }
+            boolean bounded = c.boundedMap();
             ServerLevel level = (ServerLevel) player.level();
             TerrainSurvey survey = TerrainSurvey.of(level);
             int span = TerrainSurvey.TILE * scale;
             for (long t : p.tiles()) {
                 int tx = net.minecraft.world.level.ChunkPos.getX(t), tz = net.minecraft.world.level.ChunkPos.getZ(t);
                 double cx = tx * span + span / 2.0 - p.pos().getX(), cz = tz * span + span / 2.0 - p.pos().getZ();
-                if (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span) {
+                if (bounded && (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span)) {
                     continue;
                 }
                 TerrainSurvey.Tile tile = survey.tile(level, scale, tx, tz);

@@ -37,8 +37,11 @@ public final class TerrainSurvey extends SavedData {
      * room for the computer standing some way off from it.
      */
     public static final int RANGE = 3000;
-    /** Blocks a map pixel at each zoom step (32: the whole survey on the computer's screen). */
-    public static final int[] SCALES = {1, 2, 4, 8, 16, 32};
+    /**
+     * Blocks a map pixel at each zoom step (32: the whole survey on the computer's screen; 64 and 128 for the Launch
+     * Control Station's map of the whole dimension).
+     */
+    public static final int[] SCALES = {1, 2, 4, 8, 16, 32, 64, 128};
 
     public static boolean validScale(int scale) {
         for (int s : SCALES) {

@@ -530,6 +530,15 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(l.silo).requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT)
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.LEAD_PLATE)
                 .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        // The Launch Control Station (DESIGN.md §17.12, §26): its controller and its Launch Codes.
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item(), 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.CRT_DISPLAY).requires(GBParts.CRT_DISPLAY)
+                .requires(GBParts.CRT_DISPLAY).requires(GBParts.MILITARY_CIRCUIT).requires(l.antenna).requires(Items.LEVER).requires(Items.LEVER)
+                .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.launch.GBLaunch.LAUNCH_CODES.get(), 2)
+                .requires(Items.PAPER).requires(Tags.Items.NUGGETS_GOLD).requires(Tags.Items.DYES_RED)
+                .unlockedBy(getHasName(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item()),
+                        has(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item())).save(output);
         // The Missile Silo (slice 9b, DESIGN.md §17.10, §26.7): its concrete, its hatch and its controller.
         var m = new Object() {
             final net.minecraft.world.level.ItemLike concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.item();

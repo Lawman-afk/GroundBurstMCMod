@@ -38,7 +38,7 @@ import com.geckolib.util.GeckoLibUtil;
  * links (formed silos within 256 blocks), and every missile in the air. From its screen you aim each silo at its own
  * target and arm it; LAUNCH then fires every armed silo it links.
  */
-public class LaunchComputerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, ScreenWatched {
+public class LaunchComputerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, ScreenWatched, MapSource {
     public static final int ENERGY_CAPACITY = 20_000, RADAR_USE = 20, RADAR_RANGE = 512;
     private static final int RECHECK_INTERVAL = 40, SCOPE_INTERVAL = 10;
 
@@ -60,6 +60,16 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
 
     public boolean powered() {
         return this.powered;
+    }
+
+    @Override
+    public boolean mapping() {
+        return isFormed() && this.powered;
+    }
+
+    @Override
+    public boolean boundedMap() {
+        return true;
     }
 
     /** A silo this computer runs (it formed and powered, the silo within its reach), or null. */

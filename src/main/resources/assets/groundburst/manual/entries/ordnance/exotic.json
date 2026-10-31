@@ -1,7 +1,7 @@
 {
   "title": "Exotic warheads",
   "icon": "groundburst:antimatter_warhead",
-  "order": 12,
+  "order": 13,
   "items": [
     "groundburst:antimatter_warhead",
     "groundburst:antimatter_trap",

@@ -136,6 +136,7 @@ public final class GBTagProviders {
             }
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.launch.GBLaunch.SILO_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.COMPUTER_CONTROLLER.block().key(),
+                    dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.RADAR_CONTROLLER.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.CRANE_RAIL.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().key(),

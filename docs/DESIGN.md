@@ -2492,6 +2492,83 @@ ground-launched Gryphon rode a truck.
   launcher takes them; it fires both, 3 s apart, from its boxes' tails, and lowers them; a flight followed tick by tick;
   the Light assembler builds one). 246/246.
 
+### 17.12 The Launch Control Station (2026-10-31; the user's plan)
+The user's words: "essentially a way of networking your launcher across the whole world". The Launch Computer (§17.6)
+stays the local console (its silos within 256 blocks); the station is the step up: every launcher on its network,
+anywhere in its dimension, loaded or not.
+
+**Research** (the Minuteman launch control centre; the Soviet command networks): a two-officer capsule deep underground
+runs ten silos spread over hundreds of square kilometres by buried cable and radio; its console has a status board with a
+row of lamps for each missile, the two launch keys too far apart for one person, and the launch orders arrive as
+authenticated codes (the "Gold Codes" sealed in plastic: the "biscuit"). Salvos are timed so warheads arrive together, or
+in an order; aimpoints are laid out as patterns over a target area. A launch order wakes a silo that has sat for years
+on its own.
+
+**How it works:**
+- *The Launch Control Station* (`launch_control_station`): a multiblock 3 wide, 2 deep, 3 high. The desk is the front
+  row (Machine Casing, the controller in the middle, Machine Casing); behind it the instrument bank, two Machine Casings
+  high with the Energy Port in the middle of its bottom row, and an **Antenna** on top of the bank's middle: the
+  network's uplink. Formed, a GeckoLib model draws it: the console desk (keyboards, the status board, the two key
+  switches, the guarded LAUNCH button under its flip cover, a red telephone, a teletype printer) and the bank behind
+  (the big tactical map screen in the middle, status screens and lamp panels to each side, a clock, louvres), a small
+  satellite dish on a mast on top. The big screen shows the network's state live (its code, how many are linked and armed,
+  the soonest countdown or missile in flight); the status board's lamps show each of the first 16 launchers (green ready,
+  red armed, flashing amber counting down or in flight, dark otherwise). 40 FE a tick (50,000 buffer); in an EMP it goes
+  dark like the computer.
+- *Launch Codes* (`launch_codes`, paper, a gold nugget and red dye): a sealed codes card. Used on a station it takes that
+  station's network (its tooltip then shows the code, e.g. `K7Q-2XM`). Used on a launcher's controller or any formed
+  part of it (a Launch Silo, Launch Complex, Missile Silo, Cruise Missile Launcher, SCUD Storm or Nuclear Missile) it
+  links it to the network; on a Radar Array it links the radar (the station then shows what it tracks); sneaking, it
+  unlinks. Used on another station, that station joins the network (two control rooms, one arsenal). The station's
+  **NEW CODES** gives the network a new code: every card made before it is void (the links stay).
+- *The network* (`LaunchNetwork`, saved with the world, `launch_networks.dat`): each network has its code, its stations
+  and its members (at most 32). A member's record is what it last reported (kind, readiness, countdown, armed, target,
+  range, strike, the missile or ammunition loaded, its timing) and is kept while its chunks are unloaded: nothing
+  changes there while nothing ticks, so what the station shows stays true. A loaded launcher reports twice a second.
+  A broken one is **No contact** (red) until it is unlinked or rebuilt in its place.
+- *Orders and waking*: aiming, arming and launching go to the member at once if it is loaded; if not they wait in its
+  record (shown as pending) and the network **wakes** it: a chunk ticket on its chunks (the structure's box), the orders
+  applied as soon as it is there, and the ticket kept while it counts down and launches and for 15 s after (the doors
+  shut, the boxes come down). The missile's flight already runs and loads its own way (§17.9). A launcher needs its
+  energy already stored (its generators may not be loaded), a superweapon only charges while it is loaded.
+- *The screen*: a green phosphor map of the whole dimension (the terrain survey now maps the ground round every network
+  member and station as round computers and radars; zoom to 1:128) with every member, its target and its strike, the
+  network's missiles in the air (amber) and what its linked radars track (red); a list of the members (number, kind,
+  state, distance to its target) and a log (launches, impacts, missiles lost, orders that failed). Click a member to pick
+  it, shift-click to pick several; click the map (or type X and Z) to aim the picks: several picked take a **pattern**
+  round the aim point (point, line across the line of attack, ring, grid) at a spacing. ARM arms the picks (each must be
+  ready with a target in range). LAUNCH fires every armed member: **at once**, or **time on target** (each launch held
+  so all the first warheads arrive together: the countdown, the ignition and the flight of each worked out from its own
+  launcher and its own target). UNLINK drops the picked member.
+- *Sounds*: the key switch (ARM), the cover, button and launch tones (LAUNCH), a teletype burst at the station as each
+  report comes in (launched, impact, lost).
+- *Recipe* (§26): a machine casing, 3 CRT displays, a military circuit, an antenna and 2 levers.
+
+**As built (2026-10-31):**
+- *Code*: `LaunchNetwork` (saved data: networks, members with their `Report` and `Orders`, the log; `tick` applies orders,
+  wakes, lets sleep, marks lost contact and follows the network's missiles down), `LaunchStationBlockEntity` (its network,
+  the scope for its screen every half second, what its model shows), `LaunchCodesItem` (`onItemUseFirst`, so a launcher's
+  own screen does not open), `StationPayloads` (Aim, Arm, Fire, Unlink, NewCodes; the Scope). Launchers report through
+  `Launches.track(level, site)` from their tick; `LaunchSite` gained `shownStack()` and `timing()` (`Timing.toImpact`:
+  countdown and ignition, then `Flights.flightTicks` or a cruise plan's ticks). Each launcher tells the network as a
+  missile leaves (`LaunchNetwork.launched`). A woken member's tickets are `GBLaunch.NETWORK_TICKETS`, owned by its
+  controller's position, dropped as the world loads. The map's tiles come through `MapSource` (the computer bounded, the
+  station not).
+- *Patterns* (`LaunchNetwork.points`): a line across the line of attack (square to the way from the picks' middle to
+  the aim), a ring of the spacing's radius, a square grid along the world's axes.
+- *Model* (`tools/assets/launch_station.py`): the olive desk with drawers and a dark board; the raked panel leaning back
+  30 degrees (a bone), the shelf behind it with its corner hidden in the plate; on the panel the status board (bones
+  `lamp<i>_<state>`, numbered from the operator's left), the keys in brass collars (`key_l`, `key_r`, turned 90 degrees
+  while anything is armed), the yellow guard and red button under a clear red cover (`cover`, lifted 105 degrees);
+  keyboard, red telephone, teletype with its paper; the dark grey bank on a plinth, the big screen and two small ones
+  (glass in bone `screens`, hidden while dark), louvres, drawers, lamp panels, clock, placard; on top the galvanised
+  mast, a small white dish leaning 50 degrees and a blinking red beacon (bone `beacon`), a whip at the east corner; the
+  Energy Port's plate on the back. `LaunchStationRenderer` writes LAUNCH CONTROL, the code, the counts and the status
+  on the big screen. Sounds: `tools/sound/station.py`.
+- *Tests* (`StationTests`): codes, links (a part reaches its controller), orders to a loaded silo, patterns, time on
+  target (the near silo held by the difference), a silo 4,096 blocks off unloaded and woken to launch, lost contact,
+  new codes.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -4001,6 +4078,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-31 | The Launch Control Station (§17.12), the first item of the user's plan ("a way of networking your launchers across the whole world"): a new console multiblock beside the Launch Computer (which stays the local console). Launchers join a station's **network** by a **Launch Codes** card (the network's code, changeable to void old cards), not by distance (the Data Link Tool and Comms Relay stay dropped): any number of launchers and radars anywhere in the dimension, a second station can join. A member's last report stands while it is unloaded; aiming and arming wait for it, a launch **wakes** it with a chunk ticket over its structure until it has launched and settled. Time on target from each launcher's own countdown, ignition and flight. The terrain survey now maps round every network member and station; the map zooms to 1:128. |
 | 2026-10-31 | The roadmap trimmed to the user's plan (their reply to a player asking about the mod's future). **Kept:** the Launch Control Station (a network of launchers across the whole world; loading the target's chunks folded into it), the Laser Designator, MIRVs, the Cryo Bomb, the Particle Uplink Cannon, contamination, more fallout and aftermath protection (gas mask, flash goggles, the Advanced CBRN Suit), the performance pass; **new:** artillery, war room displays, seismographs, the Dead Hand, underwater and naval weapons; **being considered:** handheld weapons on the special warheads, as Rival Rebels has them (the Tactical Nuke Launcher, Tesla Rifle, Singularity Cannon, Antimatter Rifle, Cryo Gun). **Dropped:** the Point-Defence Laser, the Phased-Array module, the EMP Bomb, the Satellite Uplink and orbital strikes, the doctrine modules and generic upgrades, the Targeting Binoculars, Data Link Tool and Comms Relay, placed missile detonation, EMP for items and vanilla redstone, the other guns, the flash's afterimage, heat haze, the balance pass. A Discord server for the mod: the user makes it (it needs their account); a setup kit in `docs/DISCORD.md` (local). |
 | 2026-10-31 | The base alarm system (the user's request: a redstone signal from the radar when a missile is detected, alarms, lights, "everything people could want", researched): ten devices on **alarm channels** (0-9999, the detonator's numbers; all on 0 at first), senders (the Missile Warning Receiver, warning only of missiles coming down within its radius, as Israel's Red Color does; the Alarm Panel; the Hazard Monitor) and answerers (the turning Air-Raid Siren with Attack, Alert and All Clear; the Klaxon's five standard tones; the bell; the rotating, flashing or steady Warning Beacon in five colours; the Emergency Light; the Alert Display; the Alarm Relay). No power needed (§18.6). |
 | 2026-10-30 | The user's next look at the defence: the **Interceptor Complex**, a 5x5x3 multiblock (a 24-cell vertical launcher before a phased-array deckhouse) with 2.5 times the battery's reach (640/240), a 0.95 best kill chance never cut for want of a Radar Array, and volleys twice the battery's salvo (§18.5). The **Storm**'s strikes send EMP pulses 24 blocks round for 12 s (from 4 for 5), so defences inside it go dark and interceptors flying through are fried (§16.14). |

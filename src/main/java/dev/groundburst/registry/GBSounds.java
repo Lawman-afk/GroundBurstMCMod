@@ -172,6 +172,13 @@ public final class GBSounds {
             register("alarm.bell", "Alarm bell rings", List.of("alarm/bell"), false, 48);
     public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_ATTENTION =
             register("alarm.attention", "Missile warning tone", List.of("alarm/attention"), false, 32);
+    // The Launch Control Station (DESIGN.md §17.12): its key switch, the LAUNCH button and its tones, the teletype.
+    public static final DeferredHolder<SoundEvent, SoundEvent> STATION_KEY =
+            register("station.key", "Launch key turns", List.of("launch/station_key"), false, 16);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STATION_LAUNCH =
+            register("station.launch", "Launch ordered", List.of("launch/station_launch"), false, 24);
+    public static final DeferredHolder<SoundEvent, SoundEvent> STATION_TELETYPE =
+            register("station.teletype", "Teletype prints a report", List.of("launch/station_teletype"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_SIREN =
             register("launch.siren", "Launch siren wails", List.of("launch/siren"), false, 96);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =

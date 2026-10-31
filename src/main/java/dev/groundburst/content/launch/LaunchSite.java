@@ -7,6 +7,8 @@ import dev.groundburst.content.assembly.MissileSpec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Anything a Launch Computer aims, arms and fires (DESIGN.md §17.3, §19.5): the launch silos and the superweapons. It
@@ -50,6 +52,32 @@ public interface LaunchSite {
     /** What its strike would do round its target now (the computer's map; {@link Strike#NONE}: nothing loaded). */
     default Strike strike(ServerLevel level) {
         return Strike.NONE;
+    }
+
+    /** What it would fire, for the Launch Control Station's list: its missile, or a superweapon's ammunition (empty: none). */
+    default ItemStack shownStack() {
+        return ItemStack.EMPTY;
+    }
+
+    /** How long its strike takes to arrive (the station's time on target, DESIGN.md §17.12). */
+    default Timing timing() {
+        return new Timing(LaunchSiloBlockEntity.COUNTDOWN + MissileEntity.IGNITION, false, getBlockPos().getX() + 0.5,
+                getBlockPos().getZ() + 0.5, 0);
+    }
+
+    /**
+     * When a launch arrives: {@code delay} ticks from LAUNCH until its first missile leaves (its countdown and the
+     * missile's ignition), then its flight from x/z (where it lifts off), on its arc or, for a cruise missile, out
+     * along {@code heading} (radians, as {@link Flights.Flight#heading}) and round onto the target.
+     */
+    record Timing(int delay, boolean cruise, double x, double z, double heading) {
+        /** Ticks from LAUNCH until its first warhead comes down on tx/tz. */
+        public int toImpact(int tx, int tz) {
+            if (this.cruise) {
+                return this.delay + Flights.CruisePlan.of(new Vec3(this.x, 0, this.z), this.heading, new Vec3(tx + 0.5, 0, tz + 0.5)).ticks();
+            }
+            return this.delay + Flights.flightTicks(Math.hypot(tx + 0.5 - this.x, tz + 0.5 - this.z));
+        }
     }
 
     /**

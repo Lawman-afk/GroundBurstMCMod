@@ -2,7 +2,26 @@
 
 ## Unreleased
 
-A bigger missile defence, a storm that knocks defences out, and an alarm system for your base.
+A network for your launchers across the whole world, a bigger missile defence, a storm that knocks defences out, and an
+alarm system for your base.
+
+### Launch Control Station
+- **Launch Control Station**: a console desk and instrument bank with a satellite uplink on top (3 wide, 2 deep, 3 high),
+  that runs your launchers **anywhere in its dimension, loaded or not**: Launch Silos, Launch Complexes, Missile Silos,
+  Cruise Missile Launchers, the SCUD Storm and the Nuclear Missile.
+- **Launch Codes**: take them from the station, then use them on a launcher (its controller or any part of it) or a
+  Radar Array to link it; sneak to unlink. Hand a card to a friend to share the network; sneak-use one on a second
+  station to make it a second control room. **New codes** voids every old card.
+- Its screen: a map of the whole dimension (zoom out to 1:128) with every launcher, target and strike, the network's
+  missiles in the air and what its radars track; the launchers and their state; a log of launches, impacts, missiles
+  lost and orders that failed.
+- Pick several launchers to aim them in a **pattern** (a line, a ring or a grid round the point). **LAUNCH** fires every
+  armed launcher at once, or **on target together**: each launch held so all the first warheads land at the same moment.
+- A launcher far away is **woken to fire**: its chunks load, it counts down, launches and settles, then sleeps again.
+  It needs its energy stored beforehand.
+- On the console: the network's state on its big screen, a status board lamp for each launcher, two launch keys that
+  turn and a guarded LAUNCH button whose cover lifts while anything is armed; a key-switch clack, the launch tones and a
+  teletype printing each report.
 
 ### Alarm system
 - Ten devices that warn a base, linked over **alarm channels** (0 to 9999, set on each device's screen; all start on

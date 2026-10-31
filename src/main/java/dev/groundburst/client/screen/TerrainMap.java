@@ -65,16 +65,23 @@ public final class TerrainMap {
     }
 
     private final int w, h;
+    /** Whether the map stops at the survey round its source (a computer's; a station's maps the whole dimension). */
+    private final boolean bounded;
     private final DynamicTexture texture;
     private final Identifier id;
     private double drawnX = Double.NaN, drawnZ;
     private int drawnZoom, drawnGeneration = -1;
 
     public TerrainMap(int w, int h) {
+        this(w, h, true, "dynamic/terrain_map");
+    }
+
+    public TerrainMap(int w, int h, boolean bounded, String texture) {
         this.w = w;
         this.h = h;
+        this.bounded = bounded;
         this.texture = new DynamicTexture(() -> "Ground Burst terrain map", w, h, true);
-        this.id = GroundBurst.id("dynamic/terrain_map");
+        this.id = GroundBurst.id(texture);
         Minecraft.getInstance().getTextureManager().register(this.id, this.texture);
     }
 
@@ -93,7 +100,7 @@ public final class TerrainMap {
         for (int tz = tz0; tz <= tz1; tz++) {
             for (int tx = tx0; tx <= tx1; tx++) {
                 double cx = tx * span + span / 2.0 - computer.getX(), cz = tz * span + span / 2.0 - computer.getZ();
-                if (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span) {
+                if (this.bounded && (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span)) {
                     continue;                                // beyond the survey: nothing to ask for
                 }
                 Key k = new Key(zoom, tx, tz);
@@ -133,7 +140,8 @@ public final class TerrainMap {
         for (int j = 0; j < this.h; j++) {
             for (int i = 0; i < this.w; i++) {
                 int wx = (int) Math.floor(cx + (i - this.w / 2.0) * zoom), wz = (int) Math.floor(cz + (j - this.h / 2.0) * zoom);
-                boolean inSurvey = Math.abs(wx - computer.getX()) <= TerrainSurvey.RANGE && Math.abs(wz - computer.getZ()) <= TerrainSurvey.RANGE;
+                boolean inSurvey = !this.bounded
+                        || Math.abs(wx - computer.getX()) <= TerrainSurvey.RANGE && Math.abs(wz - computer.getZ()) <= TerrainSurvey.RANGE;
                 int packed = 0;
                 Tile tile = TILES.get(new Key(zoom, Math.floorDiv(wx, span), Math.floorDiv(wz, span)));
                 if (tile != null && tile.colours().length > 0) {

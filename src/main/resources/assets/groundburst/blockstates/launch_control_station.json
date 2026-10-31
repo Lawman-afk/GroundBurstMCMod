@@ -1,0 +1,58 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false": {
+      "model": "groundburst:block/launch_control_station"
+    },
+    "active=false,facing=north,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=true,facing=north,formed=false": {
+      "model": "groundburst:block/launch_control_station"
+    },
+    "active=true,facing=north,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=false,facing=east,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=true,facing=east,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=false,facing=south,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=true,facing=south,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=false,facing=west,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    },
+    "active=true,facing=west,formed=false": {
+      "model": "groundburst:block/launch_control_station",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true": {
+      "model": "groundburst:block/launch_control_station_formed"
+    }
+  }
+}

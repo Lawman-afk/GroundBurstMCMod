@@ -115,13 +115,13 @@ final class LaunchTests {
         helper.succeed();
     }
 
-    private static void floor(GameTestHelper helper) {
+    static void floor(GameTestHelper helper) {
         for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
             helper.setBlock(p, Blocks.STONE);
         }
     }
 
-    private static void build(GameTestHelper helper, BlockPos rel, Block controller, MultiblockDefinition def) {
+    static void build(GameTestHelper helper, BlockPos rel, Block controller, MultiblockDefinition def) {
         helper.setBlock(rel, controller.defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
         for (MultiblockDefinition.Cell cell : def.cells(helper.absolutePos(rel), Direction.NORTH)) {
             if (cell.key() != MultiblockDefinition.CONTROLLER && cell.key() != '.') {
@@ -130,7 +130,7 @@ final class LaunchTests {
         }
     }
 
-    private static LaunchSiloBlockEntity silo(GameTestHelper helper, BlockPos rel) {
+    static LaunchSiloBlockEntity silo(GameTestHelper helper, BlockPos rel) {
         build(helper, rel, GBLaunch.SILO_CONTROLLER.block().get(), GBLaunch.SILO);
         LaunchSiloBlockEntity s = (LaunchSiloBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
         helper.assertTrue(s != null, "a silo controller");

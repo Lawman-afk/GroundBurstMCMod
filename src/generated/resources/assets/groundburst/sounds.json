@@ -803,6 +803,27 @@
     ],
     "subtitle": "subtitles.groundburst.smoke.hiss"
   },
+  "station.key": {
+    "sounds": [
+      "groundburst:launch/station_key"
+    ],
+    "subtitle": "subtitles.groundburst.station.key"
+  },
+  "station.launch": {
+    "sounds": [
+      {
+        "attenuation_distance": 24,
+        "name": "groundburst:launch/station_launch"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.station.launch"
+  },
+  "station.teletype": {
+    "sounds": [
+      "groundburst:launch/station_teletype"
+    ],
+    "subtitle": "subtitles.groundburst.station.teletype"
+  },
   "sticky.stick": {
     "sounds": [
       "groundburst:ordnance/sticky_stick"

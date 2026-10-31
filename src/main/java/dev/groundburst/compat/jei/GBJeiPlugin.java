@@ -130,6 +130,9 @@ public final class GBJeiPlugin implements IModPlugin {
                 .map(c -> (net.minecraft.world.level.ItemLike) c.get()).toArray(net.minecraft.world.level.ItemLike[]::new));
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_ARMS_DEALER, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_SPAWNER.get());
         info(registration, dev.groundburst.content.superweapon.GBSuperweapons.INFO_WAR_FACTORY, dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER.item().get(), dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_SPAWNER.get());
+        // The Launch Control Station and its codes (DESIGN.md §17.12).
+        info(registration, dev.groundburst.content.launch.GBLaunch.INFO_STATION, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item().get(),
+                dev.groundburst.content.launch.GBLaunch.LAUNCH_CODES.get(), dev.groundburst.content.launch.GBLaunch.STATION_SPAWNER.get());
         // The Cruise Missile Launcher and the motor that makes a cruise missile (slice 9c, DESIGN.md §17.11).
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_CRUISE_LAUNCHER, dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.item().get(),
                 dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.item().get(), dev.groundburst.content.launch.GBLaunch.CRUISE_SPAWNER.get());

@@ -55,6 +55,11 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
     }
 
     /** How many missiles are coming down near it (what a comparator reads, up to 15). */
+    /** Whether it is tracking: formed and powered (a Launch Control Station shows what a linked one tracks). */
+    public boolean working() {
+        return isFormed() && this.powered;
+    }
+
     public int incoming() {
         return this.incoming;
     }
@@ -136,6 +141,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
             this.status = this.powered ? MachineStatus.RUNNING : MachineStatus.NO_POWER;
         }
         // The anti-missile defence's eyes (DESIGN.md §18.2): batteries engage what it tracks at their full reach.
+        LaunchNetwork.of(level).tickRadar(level, this, working());
         if (this.powered) {
             dev.groundburst.content.defence.Interception.radarWorking(level, this.worldPosition);
         } else {

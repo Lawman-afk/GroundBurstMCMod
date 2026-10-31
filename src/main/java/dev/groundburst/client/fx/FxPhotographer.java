@@ -195,6 +195,14 @@ public final class FxPhotographer {
                 new Scene("alarms", "alarms", 9, 6, List.of(20, 30, 33, 36, 60), "midnight"),
                 new Scene("alarms_close", "alarms", 5, 12, List.of(30, 34), "midnight"),
                 new Scene("alarm_ui", "alarms", 4, 0, List.of(30)),
+                // The Launch Control Station (DESIGN.md §17.12): facing the camera, two linked silos behind it (the near one
+                // armed: its keys turned and its cover up), a linked radar, one of its missiles in the air; close up on the
+                // desk and the big screen; at night; its screen.
+                new Scene("station", "station", 9, 14, List.of(30)),
+                new Scene("station_close", "station", 4, 18, List.of(30, 31)),
+                new Scene("station_night", "station", 5, 10, List.of(30), "midnight"),
+                new Scene("station_desk", "station", 2, 42, List.of(30)),
+                new Scene("station_ui", "station", 4, 0, List.of(30)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -1062,6 +1070,62 @@ public final class FxPhotographer {
     }
 
     private static net.minecraft.core.BlockPos benchAt, pressAt;
+    /** The station scenes: the station (whose screen station_ui opens). */
+    private static net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos stationAt;
+
+    /**
+     * The station scenes: the Launch Control Station facing the camera; behind it two Launch Silos, loaded and powered, and
+     * a Radar Array off to the side, all linked to it; the near silo aimed 600 blocks off and armed, the far one aimed at a
+     * ring round a point 900 blocks off; one of the network's missiles in the air.
+     */
+    private static void stationSite(ServerLevel level, int x, int ground) {
+        var west = net.minecraft.core.Direction.WEST;
+        var at = new net.minecraft.core.BlockPos(x + 2, ground, 0);
+        formed(level, at, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.STATION, west);
+        stationAt = at;
+        if (!(level.getBlockEntity(at) instanceof dev.groundburst.content.launch.LaunchStationBlockEntity st)) {
+            return;
+        }
+        st.revalidate();
+        st.energy().generate(dev.groundburst.content.launch.LaunchStationBlockEntity.ENERGY_CAPACITY);
+        var network = st.network(level);
+        var nets = dev.groundburst.content.launch.LaunchNetwork.of(level);
+        java.util.List<dev.groundburst.content.launch.LaunchSiloBlockEntity> silos = new java.util.ArrayList<>();
+        for (var siloAt : java.util.List.of(new net.minecraft.core.BlockPos(x + 14, ground, -9), new net.minecraft.core.BlockPos(x + 14, ground, 7))) {
+            formed(level, siloAt, dev.groundburst.content.launch.GBLaunch.SILO_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.SILO, west);
+            if (level.getBlockEntity(siloAt) instanceof dev.groundburst.content.launch.LaunchSiloBlockEntity silo) {
+                silo.revalidate();
+                silo.inventory().setItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                        dev.groundburst.content.assembly.MissileAssembly.missile(new dev.groundburst.content.assembly.MissileSpec(
+                                new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()),
+                                dev.groundburst.content.assembly.SizeClass.M, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
+                                dev.groundburst.content.assembly.MissileParts.Guidance.GPS, false)));
+                silo.energy().generate(dev.groundburst.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
+                nets.link(level, network.id, silo);
+                silos.add(silo);
+            }
+        }
+        var radarAt = new net.minecraft.core.BlockPos(x + 16, ground, 22);
+        formed(level, radarAt, dev.groundburst.content.launch.GBLaunch.RADAR_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.RADAR, west);
+        if (level.getBlockEntity(radarAt) instanceof dev.groundburst.content.launch.RadarArrayBlockEntity radar) {
+            radar.revalidate();
+            radar.energy().generate(dev.groundburst.content.launch.RadarArrayBlockEntity.ENERGY_CAPACITY);
+            nets.link(level, network.id, radar);
+        }
+        if (silos.size() == 2) {
+            var near = silos.get(0).getBlockPos();
+            nets.aim(level, network.id, java.util.List.of(near), near.getX() + 600, near.getZ() - 200, dev.groundburst.content.launch.LaunchNetwork.Pattern.POINT, 0);
+            nets.arm(level, network.id, java.util.List.of(near), true);
+            var far = silos.get(1).getBlockPos();
+            nets.aim(level, network.id, java.util.List.of(far), far.getX() + 900, far.getZ() + 300, dev.groundburst.content.launch.LaunchNetwork.Pattern.POINT, 0);
+            // One of the network's missiles in the air, from the far silo's pad toward a point 800 blocks off.
+            Vec3 pad = Vec3.atBottomCenterOf(far).add(1, 0, 1);
+            var flight = dev.groundburst.content.launch.Flights.launch(level, pad, pad.add(800, 0, -400), net.minecraft.world.item.ItemStack.EMPTY, null);
+            flight.skipForTest(300);
+            dev.groundburst.content.launch.LaunchNetwork.launched(level, far, flight);
+        }
+    }
+
     /** The alarms scene: its panel, and the receiver whose screen alarm_ui opens. */
     private static net.minecraft.core.@org.jspecify.annotations.Nullable BlockPos alarmPanelAt, alarmReceiverAt;
     /** The storm_pulses scene: its storm's eye, and where it strikes in front of the camera (so a pulse's ring shows near). */
@@ -1654,6 +1718,10 @@ public final class FxPhotographer {
                     alarmWall(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("station")) {
+                    stationSite(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("see_through")) {
                     var lattice = dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.block().get().defaultBlockState();
                     var grating = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.block().get().defaultBlockState();
@@ -2053,6 +2121,9 @@ public final class FxPhotographer {
                     panel.panel(dev.groundburst.content.alarm.AlarmBlockEntity.SOUND);
                 }
             });
+        }
+        if (scene.name().equals("station_ui") && step >= 0 && clock == 14 && stationAt != null) {
+            dev.groundburst.content.launch.LaunchStationBlock.screenHook.accept(stationAt);
         }
         if (scene.name().equals("alarm_ui") && step >= 0 && clock == 14 && alarmReceiverAt != null) {
             dev.groundburst.content.alarm.AlarmBlock.screenHook.accept(alarmReceiverAt);

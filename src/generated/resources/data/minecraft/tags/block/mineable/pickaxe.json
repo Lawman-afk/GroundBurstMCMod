@@ -98,6 +98,7 @@
     "groundburst:antenna",
     "groundburst:launch_silo",
     "groundburst:launch_computer",
+    "groundburst:launch_control_station",
     "groundburst:radar_array",
     "groundburst:crane_rail",
     "groundburst:strategic_assembly_hall",

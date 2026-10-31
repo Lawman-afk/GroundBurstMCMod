@@ -1,0 +1,25 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "idle": {
+      "animation_length": 1.0,
+      "bones": {
+        "key_l": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "1": [
+              -0.0,
+              -0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

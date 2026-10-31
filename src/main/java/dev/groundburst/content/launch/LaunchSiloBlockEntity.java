@@ -233,6 +233,18 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return spec == null ? Strike.NONE : Strike.of(level, spec, this.worldPosition, this.target);
     }
 
+    @Override
+    public ItemStack shownStack() {
+        return this.inventory.getItem(SLOT_MISSILE).copy();
+    }
+
+    /** Its countdown and the missile's ignition, then the flight from where it is lit. */
+    @Override
+    public Timing timing() {
+        Vec3 from = launchPoint(padCentre());
+        return new Timing(countdownTicks() + MissileEntity.IGNITION, false, from.x, from.z, 0);
+    }
+
     /** Fires if armed: the countdown to launch at its target. */
     @Override
     public boolean launchArmed(ServerLevel level, @Nullable Entity by) {
@@ -313,7 +325,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     // --- ticking ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
-        Launches.track(level, this.worldPosition);           // a freshly placed silo is not loaded until its first tick
+        Launches.track(level, this);                         // a freshly placed silo is not loaded until its first tick
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
@@ -383,7 +395,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         // Its guidance decides how close to the target it comes down.
         Vec3 from = launchPoint(pad);
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
-        MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
+        Flights.Flight flight = MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
+        LaunchNetwork.launched(level, this.worldPosition, flight);
         onLiftOff(level, pad);
         setChanged();
     }

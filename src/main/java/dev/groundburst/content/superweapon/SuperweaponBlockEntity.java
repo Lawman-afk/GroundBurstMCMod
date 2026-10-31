@@ -239,6 +239,19 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         return RANGE;
     }
 
+    /** Its ammunition (as many rounds as it holds). */
+    @Override
+    public ItemStack shownStack() {
+        return this.inventory.getItem(SLOT_AMMO).copy();
+    }
+
+    /** Its countdown, its first missile's ignition, then that missile's flight. */
+    @Override
+    public Timing timing() {
+        return new Timing(COUNTDOWN + 1 + dev.groundburst.content.launch.MissileEntity.IGNITION, false, this.worldPosition.getX() + 0.5,
+                this.worldPosition.getZ() + 0.5, 0);
+    }
+
     @Override
     public boolean setTarget(int x, int z) {
         if (this.phase != Phase.IDLE) {
@@ -322,7 +335,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     // --- ticking ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
-        Launches.track(level, this.worldPosition);
+        Launches.track(level, this);
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
@@ -410,7 +423,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         RandomSource random = level.getRandom();
         double r = spread() * Math.sqrt(random.nextDouble()), a = random.nextDouble() * Math.PI * 2;
         Vec3 aim = Vec3.atBottomCenterOf(this.target).add(Math.cos(a) * r, 0, Math.sin(a) * r);
-        Flights.launch(level, from, aim, warhead(), body(), true, by, 0);
+        dev.groundburst.content.launch.LaunchNetwork.launched(level, this.worldPosition,
+                Flights.launch(level, from, aim, warhead(), body(), true, by, 0));
         this.firedThisStrike = true;
         onFire(level, index, from);
         setChanged();

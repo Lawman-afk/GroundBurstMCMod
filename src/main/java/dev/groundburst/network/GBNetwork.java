@@ -67,6 +67,18 @@ public final class GBNetwork {
                 dev.groundburst.content.launch.LaunchPayloads.Arm::handle);
         registrar.playToServer(dev.groundburst.content.launch.LaunchPayloads.Launch.TYPE, dev.groundburst.content.launch.LaunchPayloads.Launch.CODEC,
                 dev.groundburst.content.launch.LaunchPayloads.Launch::handle);
+        registrar.playToServer(dev.groundburst.content.launch.StationPayloads.Aim.TYPE, dev.groundburst.content.launch.StationPayloads.Aim.CODEC,
+                dev.groundburst.content.launch.StationPayloads.Aim::handle);
+        registrar.playToServer(dev.groundburst.content.launch.StationPayloads.Arm.TYPE, dev.groundburst.content.launch.StationPayloads.Arm.CODEC,
+                dev.groundburst.content.launch.StationPayloads.Arm::handle);
+        registrar.playToServer(dev.groundburst.content.launch.StationPayloads.Fire.TYPE, dev.groundburst.content.launch.StationPayloads.Fire.CODEC,
+                dev.groundburst.content.launch.StationPayloads.Fire::handle);
+        registrar.playToServer(dev.groundburst.content.launch.StationPayloads.Unlink.TYPE, dev.groundburst.content.launch.StationPayloads.Unlink.CODEC,
+                dev.groundburst.content.launch.StationPayloads.Unlink::handle);
+        registrar.playToServer(dev.groundburst.content.launch.StationPayloads.NewCodes.TYPE, dev.groundburst.content.launch.StationPayloads.NewCodes.CODEC,
+                dev.groundburst.content.launch.StationPayloads.NewCodes::handle);
+        registrar.playToClient(dev.groundburst.content.launch.StationPayloads.Scope.TYPE, dev.groundburst.content.launch.StationPayloads.Scope.CODEC,
+                (payload, context) -> dev.groundburst.content.launch.StationPayloads.scopeHook.accept(payload));
         registrar.playToServer(dev.groundburst.content.launch.LaunchPayloads.MapRequest.TYPE,
                 dev.groundburst.content.launch.LaunchPayloads.MapRequest.CODEC, dev.groundburst.content.launch.LaunchPayloads.MapRequest::handle);
         registrar.playToClient(dev.groundburst.content.launch.LaunchPayloads.MapTile.TYPE, dev.groundburst.content.launch.LaunchPayloads.MapTile.CODEC,

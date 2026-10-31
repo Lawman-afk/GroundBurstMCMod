@@ -1052,7 +1052,7 @@ The silo takes one Light, Medium or Heavy missile, built at its [missile assembl
     text("""
 **The map.** The computer maps the ground within 3000 blocks of it as it gets loaded (by you, by missiles flying over) and keeps what it has seen; ground no one has been near is blank. Hold the right mouse button and drag to look round, scroll to zoom in and out, and press **Centre** to come back. Under the map are the coordinates of the point under the cursor.
 
-**Launching.** Load the silo with a missile (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks. Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target within its missile's range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
+**Launching.** Load the silo with a missile (right-click its controller) and power it. Then open the Launch Computer: it needs a little power of its own, and finds every silo within 256 blocks (for launchers further off, anywhere in the dimension, build a [Launch Control Station](ordnance/launch_control_station)). Each silo has its own target: pick one in the list, then left-click on the map to aim it there, or type the X and Z in and press **Set**. **ARM** arms the picked silo (it must be ready, with a target within its missile's range); **DISARM** makes it safe. **LAUNCH** fires every armed silo at once, each at its own target. A silo that stops being ready makes itself safe.
 
 **Strike circles.** Each armed silo's strike shows round its target, the picked silo's bright and the rest dark: shaded where its warhead kills, a ring at the farthest it harms anything, and a dashed ring further out for how far off it may come down (long or short along its flight more than to either side; a superweapon's missiles anywhere round the target). From the countdown on, the missile is locked in its launcher.
 
@@ -1068,6 +1068,29 @@ Whatever it hits on the way sets off the warhead there, so keep the sky above th
     craft("radar_mast"),
     craft("radar_dish"),
     craft("antenna"),
+])
+
+entry("ordnance/launch_control_station", "Launch Control Station", "launch_control_station", ["launch_control_station", "launch_codes",
+                                                                                               "launch_control_station_spawner"], [
+    text("""
+A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm) and the [Nuclear Missile](superweapons/nuclear_missile_silo)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too.
+"""),
+    structure("launch_control_station", "Three wide, two deep and three high. The desk across the front: Machine Casing, the controller in the middle, Machine Casing. Behind it the instrument bank: Machine Casing two high, the Energy Port in the middle of its bottom row. An Antenna on top of the bank's middle."),
+    text("""
+**Launch Codes.** Use a card of Launch Codes on the station: it takes the station's network code. Then use it on a launcher's controller, or on any part of it, to link that launcher, and on a Radar Array to link the radar; sneak while you use it to unlink. Any number of cards can carry one code: give one to a friend and they can link their launchers to your station. Used while sneaking on another station, a card makes that station join its network (two control rooms, one arsenal). **New codes** on the station's screen (press it twice) voids every card made before; the links stay.
+
+**The map** shows the whole dimension: the ground round every linked launcher and radar is mapped as it loads. Each launcher is a numbered square and its target a cross; the network's missiles in the air are amber, and what its radars track is red. Drag with the right mouse button, scroll to zoom out as far as 1:128, and press **Station** or **Picked** to bring the view back.
+
+**Orders.** Pick a launcher in the list (shift-click to pick several), then left-click on the map to aim, or type X and Z and press **Set**. Several picked take a **pattern** round the point: a line across the line of attack, a ring, or a grid, the **spacing** apart. **ARM** arms the picks (each must be ready, with its aim in range). **LAUNCH** fires every armed launcher: **at once**, or **on target together**, each launch held back so that all the first warheads land in the same moment.
+
+**Far launchers.** A launcher far away keeps showing what it last reported: nothing changes there while no one is near. Aiming and arming it waits until it is next loaded, and **LAUNCH wakes it**: its chunks are loaded, it takes its orders, counts down and fires, and it stays loaded until it has settled. It needs its energy already stored (its generators may not be running), and a superweapon only charges while it is loaded. A launcher that has been broken shows **No contact**.
+
+**The log** lists the network's news: launches, impacts, missiles lost (shot down, or stopped by something on the way) and orders that failed. A teletype at the station prints each report as it comes in.
+
+The station needs 40 FE a tick. In an EMP it goes dark and no orders go out.
+"""),
+    craft("launch_control_station"),
+    craft("launch_codes"),
 ])
 
 entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_complex", "flame_deflector"], [
@@ -1233,7 +1256,7 @@ entry("ordnance/radar_array", "Radar Array", "radar_array", ["radar_array", "lar
     text("""
 A **Radar Array** watches the sky for 2048 blocks round it and tracks every missile in the air, yours or anyone's. Its screen is a sweeping radar scope: a missile shows as a blip where the sweep last passed it. One that will come down within 512 blocks of the array (inside the dashed red ring) is **incoming**: red on the scope, flagged on the list, with how long until it lands and where.
 
-A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery) and the [Interceptor Complex](ordnance/interceptor_complex): they engage any missile a working array tracks at their full reach.
+A comparator by the controller reads how many missiles are incoming (up to 15): wire it to alarms or doors. It runs on 100 FE/t. It is also the eyes of the [Interceptor Battery](ordnance/interceptor_battery) and the [Interceptor Complex](ordnance/interceptor_complex): they engage any missile a working array tracks at their full reach. Link it to a [Launch Control Station](ordnance/launch_control_station) with Launch Codes and the station's map shows what it tracks, while it is loaded and working.
 """),
     structure("radar_array", "A 3 by 3 deck of Machine Casing, the controller in the middle of its front edge and the Energy Port in the middle of its back edge. Three Radar Masts stand up from the middle of the deck, with a Large Radar Dish on top, its middle over the mast: formed, it turns."),
     spot("large_radar_dish", """

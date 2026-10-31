@@ -21,6 +21,10 @@ public final class GBDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** Launch Codes: the code of the network they are for (DESIGN.md §17.12; empty: blank). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> LAUNCH_CODES = COMPONENTS.registerComponentType("launch_codes",
+            b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+
     /** A warhead's fuze and its setting (fitted at the Assembly Bench, DESIGN.md §9.4). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundburst.content.assembly.FuzeSettings>> FUZE =
             COMPONENTS.registerComponentType("fuze", b -> b.persistent(dev.groundburst.content.assembly.FuzeSettings.CODEC)

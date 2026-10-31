@@ -82,7 +82,7 @@ public class LaunchComputerScreen extends Screen {
     private static final int COL = MAP + 22, CW = W - COL - 8, ROW = 10, ROWS = 6;
     private static final int LIST_Y = 29, TARGET_Y = 94, BOX_Y = 105, SET_Y = 123, RANGE_Y = 143, ARM_Y = 166, LAUNCH_Y = 186;
     /** Blocks a map pixel at each zoom step. */
-    private static final int[] ZOOMS = TerrainSurvey.SCALES;
+    private static final int[] ZOOMS = {1, 2, 4, 8, 16, 32};
 
     /** The latest scope from the server (for whichever computer screen is open). */
     private static LaunchPayloads.@Nullable Scope latest;

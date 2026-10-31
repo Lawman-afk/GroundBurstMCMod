@@ -1,7 +1,7 @@
 {
   "title": "Special Weapons Assembler",
   "icon": "groundburst:special_weapons_assembler",
-  "order": 14,
+  "order": 15,
   "items": [
     "groundburst:special_weapons_assembler",
     "groundburst:special_weapons_assembler_spawner"

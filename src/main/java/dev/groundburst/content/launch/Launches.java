@@ -28,6 +28,15 @@ public final class Launches {
         SILOS.computeIfAbsent(level.dimension(), k -> new LongOpenHashSet()).add(pos.asLong());
     }
 
+    /**
+     * A launch site's tick: known to the computers, and if it is on a Launch Control Station's network it takes its
+     * orders and reports (DESIGN.md §17.12).
+     */
+    public static void track(ServerLevel level, LaunchSite site) {
+        track(level, site.getBlockPos());
+        LaunchNetwork.of(level).tickSite(level, site);
+    }
+
     public static void untrack(ServerLevel level, BlockPos pos) {
         LongOpenHashSet set = SILOS.get(level.dimension());
         if (set != null) {
@@ -52,11 +61,14 @@ public final class Launches {
         }
     }
 
-    /** Whether a mapper is within {@code range} blocks (square) of x/z. */
+    /**
+     * Whether a mapper is within {@code range} blocks (square) of x/z: a Launch Computer, a Radar Array, or anything on
+     * a Launch Control Station's network (its station and members: the station's map reaches round all of them).
+     */
     static boolean mapperNear(ServerLevel level, int x, int z, int range) {
         LongOpenHashSet set = MAPPERS.get(level.dimension());
         if (set == null) {
-            return false;
+            return LaunchNetwork.of(level).memberNear(x, z, range);
         }
         for (long l : set) {
             BlockPos p = BlockPos.of(l);
@@ -64,7 +76,7 @@ public final class Launches {
                 return true;
             }
         }
-        return false;
+        return LaunchNetwork.of(level).memberNear(x, z, range);
     }
 
     /** The launch sites (silos, superweapons) within reach of a computer at {@code from}, nearest first. */

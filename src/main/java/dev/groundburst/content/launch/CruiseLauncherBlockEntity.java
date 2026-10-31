@@ -176,6 +176,21 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         return this.phase == Phase.COUNTDOWN ? Math.max(0, COUNTDOWN - this.phaseTicks) : this.phase == Phase.IDLE ? -1 : 0;
     }
 
+    /** Its missiles (both, if it holds two). */
+    @Override
+    public ItemStack shownStack() {
+        ItemStack a = this.inventory.getItem(SLOT_A), b = this.inventory.getItem(SLOT_B);
+        ItemStack one = a.isEmpty() ? b : a;
+        return one.isEmpty() ? ItemStack.EMPTY : one.copyWithCount(loaded());
+    }
+
+    /** Its countdown, then the first box's missile: its booster's ignition and its way round onto the target. */
+    @Override
+    public Timing timing() {
+        Vec3 from = tailPoint(missile(SLOT_A) != null || missile(SLOT_B) == null ? SLOT_A : SLOT_B);
+        return new Timing(COUNTDOWN + 1 + Flights.CruisePlan.IGNITION, true, from.x, from.z, heading());
+    }
+
     @Override
     public @Nullable BlockPos target() {
         return this.target;
@@ -278,7 +293,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     // --- ticking ----------------------------------------------------------------------------------------------------------
     @Override
     protected boolean tickMachine(ServerLevel level) {
-        Launches.track(level, this.worldPosition);
+        Launches.track(level, this);
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
@@ -349,7 +364,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
         Vec3 from = tailPoint(slot);
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
-        Flights.launchCruise(level, from, heading(), aim, spec, by);
+        LaunchNetwork.launched(level, this.worldPosition, Flights.launchCruise(level, from, heading(), aim, spec, by));
         // The cover bursting off the mouth; the booster's blast out of the back of the box, rolling over the deck behind it.
         Vec3 mouth = boxEnd(slot, true);
         level.sendParticles(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, 14, 0.3, 0.3, 0.3, 0.08);
