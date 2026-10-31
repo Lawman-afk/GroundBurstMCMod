@@ -237,32 +237,57 @@ def monitor(on: bool) -> str:
 
 # --- the Klaxon and the Alarm Bell (built pointing up) --------------------------------------------------------------
 
+#: The klaxon's horn: each ring's radius, mouth last (an exponential flare, ring by ring), each 0.8 px tall but the rim.
+KLAXON_FLARE = (2.0, 2.4, 2.9, 3.5, 4.2)
+KLAXON_RIM = 4.6
+
+
 def klaxon() -> str:
+    """A motor-driven diaphragm horn on a wall bracket (built pointing up; its blockstate turns it out from the wall): a
+    black motor housing with a red band on a saddle bracket, a terminal box on its side, the throat, and the projector
+    flaring ring by ring to a rolled rim, its mouth dark. Every ring's planks are sunk only the 0.06 px that keeps their
+    caps apart ("alternate"); the middle where a ring's planks overlap is always covered by the ring beside it, so no
+    ring needs the bigger stagger that left the old horn's edges ragged."""
     name = "klaxon"
     m = BlockModel(name, tex_size=(64, 64))
     m.open_ok = set()
     m.box("plate", (4.5, 0, 4.5), (11.5, 1, 11.5), faces=SIDES + ("up",))
-    m.box("bracket", (6.75, 1, 6.75), (9.25, 2.5, 9.25), faces=SIDES)
-    housing = W.section(m, "housing", 3.0, 2.5, 7.5, 16, caps=("up", "down"), stagger="full")
-    tube = W.section(m, "tube", 1.5, 7.5, 11.5, 8, caps=())
-    bell = W.section(m, "bell", 3.6, 11.5, 13.5, 16, caps=("up", "down"), stagger="full")
+    m.box("bracket", (6, 1, 6), (10, 2.5, 10), faces=SIDES)
+    housing = W.section(m, "housing", 3.0, 2.5, 7.5, 16, caps=("up", "down"), stagger="alternate")
+    m.box("terminal", (10.8, 3.6, 6.9), (12.0, 6.4, 9.1), faces=("north", "south", "east", "up", "down"))
+    m.open_ok.add(("terminal", "west"))                               # against the housing
+    throat = W.section(m, "throat", 1.6, 7.5, 9.0, 8, caps=())
+    flare = []
+    y = 9.0
+    for i, r in enumerate(KLAXON_FLARE):
+        flare += W.section(m, f"flare{i}", r, y, y + 0.8, W.sides_for(r), caps=("down",), stagger="alternate")
+        y += 0.8
+    rim = W.section(m, "rim", KLAXON_RIM, y, y + 0.6, 16, caps=("up", "down"), stagger="alternate")
     m.layout()
     tex = Tex(m.tex_w, m.tex_h)
     k = K.Kit(m, {}, seed=931, turned=True)
-    _round(k, housing)
-    _round(k, tube)
-    _round(k, bell)
+    for names in (housing, throat, flare, rim):
+        _round(k, names)
     k.paint(tex, ["plate", "bracket"], K.DARK)
-    k.paint(tex, housing, BLACK_ENAMEL)
-    k.overlay(tex, housing, lambda f, img: M.paste(img, k.on(f, SIGNAL_RED), (f.Y >= 4.5) & (f.Y < 5.2)) if f.d in SIDES else None)
-    k.paint(tex, tube + bell, CHROME)
+    k.overlay(tex, "plate", lambda f, img: M.rivets(f, img, every=5, inset=1), only=("up",))
+    k.paint(tex, housing + ["terminal"], BLACK_ENAMEL)
+    k.overlay(tex, housing, lambda f, img: M.paste(img, k.on(f, SIGNAL_RED), (f.Y >= 4.6) & (f.Y < 5.4)) if f.d in SIDES else None)
 
-    def mouth(f, img):                                            # the bell's mouth: dark inside its rim
+    def end_bell(f, img):                                             # the housing's ends: a lit lip and its screws
+        if f.d in ("up", "down"):
+            r = np.hypot(f.X - 8, f.Z - 8)
+            M.lighten(img, r > 2.5, 1.18, 6)
+            M.darken(img, (r > 2.0) & (r < 2.3), 0.7)
+    k.overlay(tex, housing, end_bell)
+    k.overlay(tex, "terminal", lambda f, img: M.darken(img, (np.abs(f.Y - 5) < 0.35) & (f.d == "east"), 0.4))   # its cable gland
+    k.paint(tex, throat + flare + rim, CHROME)
+
+    def mouth(f, img):                                                # the mouth: dark inside the rolled rim
         if f.d == "up":
             r = np.hypot(f.X - 8, f.Z - 8)
-            img[r < 2.6, :3] = P.BLACK_PAINT.deep[:3]
-            M.darken(img, (r >= 2.6) & (r < 3.0), 0.6)
-    k.overlay(tex, bell, mouth)
+            img[r < KLAXON_RIM - 0.9, :3] = P.BLACK_PAINT.deep[:3]
+            M.darken(img, (r >= KLAXON_RIM - 0.9) & (r < KLAXON_RIM - 0.5), 0.55)
+    k.overlay(tex, rim, mouth)
     m.save(tex)
     return name
 
@@ -305,14 +330,23 @@ def emergency_light(lamp: str) -> str:
     lit = lamp != "off"
 
     def build() -> BlockModel:
-        m = BlockModel(name, tex_size=(32, 32))
+        m = BlockModel(name, tex_size=(64, 32))
         m.open_ok = set()
         m.box("base", (4, 3, 14.5), (12, 13, 16), faces=FRONT)
         m.box("lens", (5, 4, 11.5), (11, 12, 14.5), faces=FRONT, light=15 if lit else 0, shade=not lit)
-        m.box("bar_v0", (6.4, 3.6, 10.9), (7.0, 12.4, 11.4), faces=FRONT)
-        m.box("bar_v1", (9.0, 3.6, 10.9), (9.6, 12.4, 11.4), faces=FRONT)
-        m.box("bar_h0", (4.6, 6.4, 10.7), (11.4, 7.0, 11.2), faces=FRONT)
-        m.box("bar_h1", (4.6, 9.0, 10.7), (11.4, 9.6, 11.2), faces=FRONT)
+        # The cage: two hoops round the lens's sides and across its front, two over its top, front and bottom, each
+        # running back to the base (the across hoops a little in front of the up-and-down ones where they cross).
+        for i, (y0, y1) in enumerate(((6.4, 7.0), (9.0, 9.6))):
+            m.box(f"bar_h{i}", (4.3, y0, 10.7), (11.7, y1, 11.2), faces=FRONT)
+            m.box(f"bar_h{i}w", (4.3, y0, 11.2), (4.8, y1, 14.5), faces=("east", "west", "up", "down"))
+            m.box(f"bar_h{i}e", (11.2, y0, 11.2), (11.7, y1, 14.5), faces=("east", "west", "up", "down"))
+        for i, (x0, x1) in enumerate(((6.4, 7.0), (9.0, 9.6))):
+            m.box(f"bar_v{i}", (x0, 3.3, 10.9), (x1, 12.7, 11.4), faces=FRONT)
+            m.box(f"bar_v{i}t", (x0, 12.2, 11.4), (x1, 12.7, 14.5), faces=("east", "west", "up", "down"))
+            m.box(f"bar_v{i}b", (x0, 3.3, 11.4), (x1, 3.8, 14.5), faces=("east", "west", "up", "down"))
+        for n in ("bar_h0w", "bar_h0e", "bar_h1w", "bar_h1e", "bar_v0t", "bar_v0b", "bar_v1t", "bar_v1b"):
+            m.open_ok.add((n, "north"))                          # against the bar across the front
+            m.open_ok.add((n, "south"))                          # against the base
         m.layout()
         return m
 
@@ -321,7 +355,7 @@ def emergency_light(lamp: str) -> str:
         k = K.Kit(m, {}, seed=951)
         k.paint(tex, "base", GREY)
         k.overlay(tex, "base", lambda f, img: M.rivets(f, img, every=4, inset=1), only=("north",))
-        k.paint(tex, ["bar_v0", "bar_v1", "bar_h0", "bar_h1"], K.DARK)
+        k.paint(tex, [b.name for b in m.boxes if b.name.startswith("bar_")], M.painted(M.ARMOUR_RAMP, tone=0.4, wear=0.12))   # clean: rust reads as specks on bars this thin
         ramp = {"off": ((210, 212, 206), (160, 164, 160), (110, 114, 112)),
                 "white": ((255, 252, 236), (255, 238, 196), (236, 210, 150)),
                 "red": ((255, 110, 86), (236, 40, 26), (150, 16, 10)) if bright else ((150, 30, 22), (110, 18, 12), (70, 10, 8))}[lamp]
@@ -417,10 +451,9 @@ def siren() -> None:
     g.box("plate", (-6, 0, -6), (6, 1.5, 6), faces=SIDES + ("up",), bone="frame")
     motor = W.section(F, "motor", 3.6, 1.5, 7.3, 16, cx=0, cz=0, caps=(), stagger="alternate", step=0.12)
     turn = W.section(H, "turn", 4.4, 7.5, 8.5, 16, cx=0, cz=0, caps=("up", "down"), stagger="alternate", step=0.12)
-    drum = W.section(H, "drum", 4.0, 8.5, 14.5, 16, cx=0, cz=0, caps=())
+    drum = W.section(H, "drum", 4.0, 8.5, 14.5, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     cap = W.section(H, "cap", 2.8, 14.5, 15.5, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
     g.box("bolt", (-0.9, 15.5, -0.9), (0.9, 15.9, 0.9), faces=SIDES + ("up",), bone="head")             # the cap's bolt
-    g.box("lid", (-4, 14.3, -4), (4, 14.5, 4), faces=("up",), bone="head")            # the drum's top under its cap
     # The horn: four planks flaring from the throat (5.2 square, at the drum's face) to the mouth (10 square, 9.4 out).
     cy, z0, z1 = 11.6, -3.8, -13.2
     mid, half, t = (z0 + z1) / 2, (z0 - z1) / 2, 0.6
@@ -428,7 +461,7 @@ def siren() -> None:
     for side, sign in (("top", 1), ("bottom", -1)):
         y = cy + sign * 3.8
         g.box(f"horn_{side}", (-3.8, y - t / 2, mid - half), (3.8, y + t / 2, mid + half), faces=SIDES + ("up", "down"), bone="head",
-              rotation={"origin": (0, y, mid), "axis": "x", "angle": -sign * tilt})
+              rotation={"origin": (0, y, mid), "axis": "x", "angle": sign * tilt})          # widening to the mouth
     for side, sign in (("west", -1), ("east", 1)):
         x = sign * 3.8
         g.box(f"horn_{side}", (x - t / 2, cy - 3.8, mid - half), (x + t / 2, cy + 3.8, mid + half), faces=SIDES + ("up", "down"), bone="head",
@@ -448,8 +481,9 @@ def siren() -> None:
     k.paint(tex, "plate", K.DARK)
     k.overlay(tex, "plate", lambda f, img: M.rivets(f, img, every=5, inset=1), only=("up",))
     k.paint(tex, motor, GREY)
-    k.paint(tex, turn + ["lid"], K.DARK)
+    k.paint(tex, turn, K.DARK)
     k.paint(tex, drum + cap, CD_YELLOW)
+    k.overlay(tex, drum, lambda f, img: M.darken(img, np.hypot(f.X, f.Z) < 3.3, 0.72) if f.d == "up" else None)   # under the cap's lip
     k.paint(tex, "bolt", K.STEEL)
     k.overlay(tex, drum, lambda f, img: M.darken(img, (f.Y > 10.5) & (f.Y < 12.6) & (np.floor(f.plane_uv()[0]) % 2 == 0), 0.55)
               if f.d in SIDES else None)                                             # the stator's slots round the drum
@@ -490,7 +524,7 @@ def beacon() -> None:
     lenses = {}
     for b in ("lens", "lens_spot", "lens_full"):
         L = OnBone(g, b)
-        lenses[b] = (W.section(L, f"{b}_body", 3.2, 3.6, 8.4, 16, cx=0, cz=0, caps=())
+        lenses[b] = (W.section(L, f"{b}_body", 3.2, 3.6, 8.4, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12)
                      + W.section(L, f"{b}_top", 2.2, 8.4, 9.2, 16, cx=0, cz=0, caps=("up",), stagger="alternate", step=0.12))
         g.box(f"{b}_vent", (-0.8, 9.2, -0.8), (0.8, 9.6, 0.8), faces=SIDES + ("up",), bone=b)              # its vent cap
         lenses[b].append(f"{b}_vent")
@@ -511,6 +545,9 @@ def beacon() -> None:
         def lens_paint(names, top, bottom, lit_side: bool | None):
             def fn(t: Tex, r, d):
                 x, y, w, h = r
+                if d == "up":                                       # the dome's top ring: smooth, no ribs
+                    t.rect(x, y, w, h, (*top, 255))
+                    return
                 for yy in range(y, y + h):
                     for xx in range(x, x + w):
                         c = top if (xx // 1) % 2 == 0 else bottom                 # its Fresnel ribs, up the dome

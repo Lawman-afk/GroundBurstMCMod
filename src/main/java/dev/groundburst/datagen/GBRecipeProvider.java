@@ -733,23 +733,26 @@ public class GBRecipeProvider extends RecipeProvider {
         shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.alarm.GBAlarms.RELAY.item(), 1)
                 .requires(al.plate).requires(al.basic).requires(Items.REDSTONE).requires(Items.REDSTONE).requires(al.wire)
                 .unlockedBy(getHasName(GBParts.BASIC_CIRCUIT), has(GBParts.BASIC_CIRCUIT)).save(output);
-        // The Interceptor Complex (DESIGN.md §18.5): its controller a rung over the battery (two military circuits, a CRT
-        // display for its fire control); a Launch Cell from a machine frame boxed in steel with a servo for its hatches; a
-        // Phased Array Panel from a sensor array, an advanced circuit and steel plate.
+        // The Interceptor Complex (DESIGN.md §18.5), dearer after the user's look (2026-10-31): its controller built round a
+        // whole Interceptor Battery, with two military circuits and two CRT displays for its fire control and a
+        // superconducting coil for its radar's power; a Launch Cell from a machine frame boxed in dense steel with a
+        // tungsten blast plate and a servo for its hatches; a Phased Array Panel from four sensor arrays on a military
+        // circuit in dense steel.
         shapeless(RecipeCategory.REDSTONE, dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.item(), 1)
-                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.MILITARY_CIRCUIT)
-                .requires(GBParts.CRT_DISPLAY).requires(GBParts.SENSOR_ARRAY).requires(GBParts.SERVO)
-                .requires(GBParts.STEEL_PLATE).requires(GBParts.STEEL_PLATE)
-                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get()),
-                        has(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get())).save(output);
+                .requires(dev.groundburst.content.defence.GBDefence.BATTERY.item()).requires(GBMultiblocks.MACHINE_CASING.item())
+                .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.CRT_DISPLAY).requires(GBParts.CRT_DISPLAY)
+                .requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.BATTERY.item()),
+                        has(dev.groundburst.content.defence.GBDefence.BATTERY.item())).save(output);
         shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.item(), 1)
-                .define('P', GBTags.commonItem("plates/steel")).define('F', GBParts.MACHINE_FRAME).define('S', GBParts.SERVO)
-                .pattern("PSP").pattern("PFP").pattern("PPP")
-                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get()),
-                        has(dev.groundburst.content.defence.GBDefence.INTERCEPTOR_MISSILE.get())).save(output);
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('F', GBParts.MACHINE_FRAME).define('S', GBParts.SERVO)
+                .define('T', GBParts.TUNGSTEN_PLATE)
+                .pattern("DSD").pattern("DFD").pattern("DTD")
+                .unlockedBy(getHasName(dev.groundburst.content.defence.GBDefence.BATTERY.item()),
+                        has(dev.groundburst.content.defence.GBDefence.BATTERY.item())).save(output);
         shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.defence.GBDefence.PHASED_ARRAY.item(), 1)
-                .define('P', GBTags.commonItem("plates/steel")).define('A', GBParts.SENSOR_ARRAY).define('C', GBParts.ADVANCED_CIRCUIT)
-                .pattern("PAP").pattern("ACA").pattern("PAP")
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('A', GBParts.SENSOR_ARRAY).define('M', GBParts.MILITARY_CIRCUIT)
+                .pattern("DAD").pattern("AMA").pattern("DAD")
                 .unlockedBy(getHasName(GBParts.SENSOR_ARRAY), has(GBParts.SENSOR_ARRAY)).save(output);
         // The Special Weapons Assembler (DESIGN.md §16.15), a rung over the hall: two quantum circuits and a containment
         // emitter to hold an exotic core's field while it is built in.

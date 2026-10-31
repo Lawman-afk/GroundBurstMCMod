@@ -3,13 +3,13 @@
   "category": "building",
   "key": {
     "A": "groundburst:sensor_array",
-    "C": "groundburst:advanced_circuit",
-    "P": "#c:plates/steel"
+    "D": "groundburst:dense_steel_plate",
+    "M": "groundburst:military_circuit"
   },
   "pattern": [
-    "PAP",
-    "ACA",
-    "PAP"
+    "DAD",
+    "AMA",
+    "DAD"
   ],
   "result": {
     "id": "groundburst:phased_array_panel"

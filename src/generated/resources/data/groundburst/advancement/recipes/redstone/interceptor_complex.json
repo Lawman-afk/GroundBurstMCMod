@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_interceptor_missile": {
+    "has_interceptor_battery": {
       "conditions": {
         "items": [
           {
-            "items": "groundburst:interceptor_missile"
+            "items": "groundburst:interceptor_battery"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_interceptor_missile"
+      "has_interceptor_battery"
     ]
   ],
   "rewards": {

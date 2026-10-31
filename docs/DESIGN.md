@@ -2654,7 +2654,12 @@ The anti-missile defence, as §18.2 has it with these choices:
   to `PartCut.DECK` (14 px) and the controller to `CONSOLE_NORTH` (the Launch Complex's). A Structure Spawner. The
   controller: machine casing, two military circuits, a CRT display, a sensor array, a servo and two steel plates; a
   Launch Cell: a machine frame boxed in seven steel plates with a servo; a Phased Array Panel: four sensor arrays, an
-  advanced circuit and four steel plates.
+  advanced circuit and four steel plates. **Dearer after the user's look (2026-10-31):** the controller is built round a
+  whole Interceptor Battery, with a machine casing, two military circuits, two CRT displays, a superconducting coil and
+  two dense steel plates; a Launch Cell is a machine frame boxed in six dense steel plates with a tungsten plate and a
+  servo; a Phased Array Panel is four sensor arrays on a military circuit with four dense steel plates (the whole
+  complex: 62 dense steel plates, 8 military circuits, 24 sensor arrays, 6 tungsten plates, a superconducting coil and a
+  battery, besides its Launch Pads and casing).
 - **Block entity** (`InterceptorComplexBlockEntity`, menu `interceptor_complex`): the battery's logic with these
   figures: 24 cells, loaded a second each from a store of three slots; 160 FE a tick, 4,000 a launch, holds 1,000,000;
   reach `Interception.COMPLEX_RADAR_RANGE` 640 where a Radar Array tracks the missile, `COMPLEX_OWN_RANGE` 240 on its
@@ -2756,6 +2761,15 @@ Every sounder, light and display goes off when its channel is raised, or when it
   siren and the beacon in GeckoLib, the siren's square horn flaring from its drum (its side planks turned the other way
   for GeckoLib's mirrored x), the beacon standing up and turned to its face by `MachineGeoRenderer.standing()`, its
   colours as textures chosen through `AnimatedMachine.textureVariant` and `VariantGeoModel`.
+- After the user's look (2026-10-31): the **klaxon** rebuilt (its rings were sunk a step a plank, "full" stagger, so their
+  rims looked ragged, and its bell was a flat disc): every ring now sunk only 0.06 px every other plank, each ring's
+  overlapping middle covered by the ring beside it; a saddle bracket, a terminal box on the housing, a throat and a
+  projector flaring ring by ring (radii 2.0 to 4.2, 0.8 px a ring) to a rolled chrome rim, its mouth dark. The
+  **siren**'s horn: its top and bottom planks turned the other way (they narrowed to the mouth; only the sides had been
+  turned for the mirrored x), and the square plate on the drum gone, the drum its own round top under its cap. The
+  **beacon**'s lens body has its top ring (it was open, so you could see into it round the lens top). The **Emergency
+  Light**'s cage wraps the lens: two hoops round its sides and front, two over its top, front and bottom, back to the
+  base, painted clean dark steel.
 - The display's text is drawn by `AlertDisplayRenderer` (as the timed bomb's clock), lit. Lights: the beacon 15 while
   on; the emergency light 15 while white or red.
 - GameTests (`AlarmTests`, each on its own channel): the receiver warns and the siren sounds; the panel sets off every
@@ -3967,6 +3981,9 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Radar controller / dish panels | machine casing, sensor array ×2, military circuit, CRT display / dish panel recipe |
 | Phased-Array module | 4 sensor array, military circuit |
 | Interceptor Battery | machine frame, 2 servo, 4 steel plate, military circuit, sensor array |
+| Interceptor Complex (controller) | Interceptor Battery, machine casing, 2 military circuit, 2 CRT display, superconducting coil, 2 dense steel plate |
+| Launch Cell | machine frame, servo, 6 dense steel plate, tungsten plate |
+| Phased Array Panel | 4 sensor array, military circuit, 4 dense steel plate |
 | Satellite Uplink controller | machine casing, 2 antenna, military circuit, CRT display |
 | Kinetic Strike Satellite (payload) | 4 dish panel (solar wings), 2 military circuit, antenna, 4 tungsten rod, battery ×2 |
 | Tungsten Kinetic Rod | 4 tungsten block, tungsten carbide nose, 4 tungsten plate fins |
@@ -4078,6 +4095,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-10-31 | After the user's look at the alarms: the klaxon rebuilt clean (its horn flaring ring by ring), the siren's horn and drum top, the beacon's open lens top and the Emergency Light's cage round its sides fixed (§18.6). The **Interceptor Complex made dearer** (the user's call): its controller is built round a whole Interceptor Battery with a superconducting coil, Launch Cells and Phased Array Panels move to dense steel, tungsten and military circuits (§18.5, §26). |
 | 2026-10-31 | The Launch Control Station (§17.12), the first item of the user's plan ("a way of networking your launchers across the whole world"): a new console multiblock beside the Launch Computer (which stays the local console). Launchers join a station's **network** by a **Launch Codes** card (the network's code, changeable to void old cards), not by distance (the Data Link Tool and Comms Relay stay dropped): any number of launchers and radars anywhere in the dimension, a second station can join. A member's last report stands while it is unloaded; aiming and arming wait for it, a launch **wakes** it with a chunk ticket over its structure until it has launched and settled. Time on target from each launcher's own countdown, ignition and flight. The terrain survey now maps round every network member and station; the map zooms to 1:128. |
 | 2026-10-31 | The roadmap trimmed to the user's plan (their reply to a player asking about the mod's future). **Kept:** the Launch Control Station (a network of launchers across the whole world; loading the target's chunks folded into it), the Laser Designator, MIRVs, the Cryo Bomb, the Particle Uplink Cannon, contamination, more fallout and aftermath protection (gas mask, flash goggles, the Advanced CBRN Suit), the performance pass; **new:** artillery, war room displays, seismographs, the Dead Hand, underwater and naval weapons; **being considered:** handheld weapons on the special warheads, as Rival Rebels has them (the Tactical Nuke Launcher, Tesla Rifle, Singularity Cannon, Antimatter Rifle, Cryo Gun). **Dropped:** the Point-Defence Laser, the Phased-Array module, the EMP Bomb, the Satellite Uplink and orbital strikes, the doctrine modules and generic upgrades, the Targeting Binoculars, Data Link Tool and Comms Relay, placed missile detonation, EMP for items and vanilla redstone, the other guns, the flash's afterimage, heat haze, the balance pass. A Discord server for the mod: the user makes it (it needs their account); a setup kit in `docs/DISCORD.md` (local). |
 | 2026-10-31 | The base alarm system (the user's request: a redstone signal from the radar when a missile is detected, alarms, lights, "everything people could want", researched): ten devices on **alarm channels** (0-9999, the detonator's numbers; all on 0 at first), senders (the Missile Warning Receiver, warning only of missiles coming down within its radius, as Israel's Red Color does; the Alarm Panel; the Hazard Monitor) and answerers (the turning Air-Raid Siren with Attack, Alert and All Clear; the Klaxon's five standard tones; the bell; the rotating, flashing or steady Warning Beacon in five colours; the Emergency Light; the Alert Display; the Alarm Relay). No power needed (§18.6). |

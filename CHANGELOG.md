@@ -47,7 +47,8 @@ alarm system for your base.
   interceptors kill 95% of small missiles, radar array or not, and it sends a volley of two at each missile (four at
   class L and bigger), fired two at a time: the hatches swing open and the interceptors leap straight up out of their
   cells. Built from Launch Pads, six new **Launch Cells**, six new **Phased Array Panels**, Machine Casing and an
-  Energy Port and an Item Port; the Holo-Projector shows it.
+  Energy Port and an Item Port; the Holo-Projector shows it. A late-game build: its controller is made round a whole
+  Interceptor Battery, and its cells and panels take dense steel, tungsten and military circuits.
 - An EMP now fries interceptors flying through it, and an Interceptor Battery's screen says when an EMP has knocked it
   out.
 
