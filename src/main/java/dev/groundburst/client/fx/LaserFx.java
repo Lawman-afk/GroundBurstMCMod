@@ -139,10 +139,16 @@ public final class LaserFx {
                 pieces(buffer, pose, b, eye, 0.6f, CORE, 0.5f);       // the beam's red middle, blended: red over bright ground too
                 core(buffer, pose, b, eye, right, up, now);
             }
+            if (status != null && scoped(mc)) {
+                aims(buffer, pose, level, status, eye, now, true);    // the spheres' colour, blended: red by day too
+            }
         });
         FxRenderTypes.submit(event.getSubmitNodeCollector(), event.getPoseStack(), FxRenderTypes.glow(LASER), (pose, buffer) -> {
             for (Beam b : beams) {
                 draw(buffer, pose, b, eye, right, up, now, b.ours() ? status : null);
+            }
+            if (status != null && scoped(mc)) {
+                aims(buffer, pose, level, status, eye, now, false);
             }
         });
     }
@@ -192,6 +198,73 @@ public final class LaserFx {
             quad(b, pose, at, camera, right, up, size * (1.3f + 3.2f * (1 - k)), 0.5f, 1,
                     color(DesignatorScope.clickedFire() ? RING : SPOT, 1 - 0.7f * k));
         }
+    }
+
+    /**
+     * While we are zoomed: where our network's armed launchers are aimed, each a glowing sphere sitting on the ground
+     * there, its edge lit like the ring a left click draws (so it reads as a ring from any side); the one our designator
+     * works with red, the rest amber. As big on screen at any range, and never smaller than a block.
+     */
+    private static void aims(VertexConsumer b, PoseStack.Pose pose, ClientLevel level, DesignatorPayloads.Status status, Vec3 camera, double now,
+            boolean blended) {
+        List<net.minecraft.core.BlockPos> aims = status.aims();
+        for (int i = 0; i < aims.size(); i++) {
+            net.minecraft.core.BlockPos a = aims.get(i);
+            double ground = top(level, a);
+            double dist = camera.distanceTo(new Vec3(a.getX() + 0.5, ground, a.getZ() + 0.5));
+            float r = (float) Math.max(0.8, 0.011 * dist);
+            boolean ours = i == status.picked();
+            float pulse = ours ? 0.85f + 0.15f * (float) Math.sin(now * 0.3) : 1;
+            int rgb = blended ? (ours ? CORE : 0xE07018) : ours ? RING : SPOT;
+            float strength = (ours ? 1f : 0.75f) * (blended ? 0.55f : 1f);
+            sphere(b, pose, new Vec3(a.getX() + 0.5, ground + r, a.getZ() + 0.5), r * pulse, camera, rgb, strength);
+        }
+    }
+
+    /**
+     * The top of what is solid in an aim's column, where its missile comes down (scanned down from well above it: the
+     * height map we are sent can miss what is built after the ground is sent); the aim's own height where nothing is
+     * known here.
+     */
+    static double top(ClientLevel level, net.minecraft.core.BlockPos a) {
+        if (level.getChunkSource().getChunk(a.getX() >> 4, a.getZ() >> 4, net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false) == null) {
+            return a.getY();
+        }
+        net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos(a.getX(), Math.min(level.getMaxY(), a.getY() + 96), a.getZ());
+        int floor = Math.max(level.getMinY(), a.getY() - 96);
+        for (; p.getY() > floor; p.move(net.minecraft.core.Direction.DOWN)) {
+            var state = level.getBlockState(p);
+            if (!state.getCollisionShape(level, p).isEmpty() || !state.getFluidState().isEmpty()) {
+                return p.getY() + 1;
+            }
+        }
+        return a.getY();
+    }
+
+    /** A sphere of radius {@code r}, its texels white, faint at its middle and bright toward its edge as the camera sees it. */
+    private static void sphere(VertexConsumer b, PoseStack.Pose pose, Vec3 c, float r, Vec3 camera, int rgb, float strength) {
+        int rings = 10, segments = 18;
+        float cx = (float) (c.x - camera.x), cy = (float) (c.y - camera.y), cz = (float) (c.z - camera.z);
+        for (int i = 0; i < rings; i++) {
+            double t0 = Math.PI * i / rings, t1 = Math.PI * (i + 1) / rings;
+            for (int j = 0; j < segments; j++) {
+                double p0 = 2 * Math.PI * j / segments, p1 = 2 * Math.PI * (j + 1) / segments;
+                sphereVertex(b, pose, cx, cy, cz, r, t0, p0, rgb, strength);
+                sphereVertex(b, pose, cx, cy, cz, r, t1, p0, rgb, strength);
+                sphereVertex(b, pose, cx, cy, cz, r, t1, p1, rgb, strength);
+                sphereVertex(b, pose, cx, cy, cz, r, t0, p1, rgb, strength);
+            }
+        }
+    }
+
+    private static void sphereVertex(VertexConsumer b, PoseStack.Pose pose, float cx, float cy, float cz, float r, double theta, double phi,
+            int rgb, float strength) {
+        float nx = (float) (Math.sin(theta) * Math.cos(phi)), ny = (float) Math.cos(theta), nz = (float) (Math.sin(theta) * Math.sin(phi));
+        float x = cx + nx * r, y = cy + ny * r, z = cz + nz * r;
+        float len = (float) Math.sqrt(x * x + y * y + z * z);
+        float facing = len < 1e-4f ? 0 : Math.abs((nx * x + ny * y + nz * z) / len);    // 1 facing the camera, 0 at the edge
+        float rim = (float) Math.pow(1 - facing, 2.2);
+        vertex(b, pose, x, y, z, 0.25f, 2 / 3f, color(rgb, strength * (0.06f + 0.94f * rim)));
     }
 
     /** The spot's middle, blended over the face it is on: by day added light hardly shows on a bright face, this does. */

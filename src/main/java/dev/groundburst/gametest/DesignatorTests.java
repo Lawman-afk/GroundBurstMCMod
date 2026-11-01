@@ -45,12 +45,12 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The Laser Designator (DESIGN.md §17.13): it lases where its holder looks (on a creature, the creature) and draws its
  * charge; smoke breaks its beam; a laser-guided missile follows the laser of the player who launched it; a left click
- * designates (arms the network's laser-guided launchers on the spot) and then calls fire (launches them).
+ * arms its picked laser-guided launcher on the spot, and once armed launches it; the wheel picks.
  */
 final class DesignatorTests {
     private DesignatorTests() {}
 
-    private static final BlockPos SILO = new BlockPos(2, 1, 1), SILO_GPS = new BlockPos(9, 1, 1);
+    private static final BlockPos SILO = new BlockPos(2, 1, 1), SILO_B = new BlockPos(2, 1, 6), SILO_GPS = new BlockPos(9, 1, 1);
     /** Where the holder stands, looking south at the wall. */
     private static final Vec3 STAND = new Vec3(10.5, 1, 3.5);
     private static final int WALL_Z = 13;
@@ -175,25 +175,29 @@ final class DesignatorTests {
     }
 
     /**
-     * Designate, then call for fire (left clicks while lasing, on the network): designate aims the network's silo loaded
-     * with a laser-guided missile at the spot and arms it, and leaves the one with a GPS missile alone; call for fire
-     * launches it; the log has both.
+     * Left clicks while lasing, on the network, one launcher at a time: the designator works with the first
+     * laser-guided silo by default, and a click arms only that one on the spot; the mouse wheel picks the next (the pick
+     * kept on the designator) and a click arms it too; the GPS silo is never touched; a click on the picked one, now
+     * armed, launches it alone, and the pick then moves on to the next still loaded.
      */
     private static void designates(GameTestHelper helper) {
         LaunchTests.floor(helper);
         wall(helper);
         ServerLevel level = helper.getLevel();
         LaunchStationBlockEntity st = StationTests.station(helper);
-        LaunchSiloBlockEntity laser = LaunchTests.silo(helper, SILO), gps = LaunchTests.silo(helper, SILO_GPS);
-        laser.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, MissileAssembly.missile(new MissileSpec(
-                new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M, MissileParts.Motor.SRM_II, MissileParts.Guidance.LASER, false)));
+        LaunchSiloBlockEntity a = LaunchTests.silo(helper, SILO), b = LaunchTests.silo(helper, SILO_B), gps = LaunchTests.silo(helper, SILO_GPS);
+        for (LaunchSiloBlockEntity s : List.of(a, b)) {
+            s.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, MissileAssembly.missile(new MissileSpec(
+                    new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M, MissileParts.Motor.SRM_II, MissileParts.Guidance.LASER, false)));
+        }
         gps.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
-        laser.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
-        gps.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         ItemStack card = new ItemStack(GBLaunch.LAUNCH_CODES.get());
         LaunchCodesItem.use(level, card, st, false);
-        LaunchCodesItem.use(level, card, laser, false);
-        LaunchCodesItem.use(level, card, gps, false);
+        for (LaunchSiloBlockEntity s : List.of(a, b, gps)) {
+            s.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
+            LaunchCodesItem.use(level, card, s, false);                  // linked in this order: a #1, b #2, the GPS one #3
+        }
+        long net = st.network(level).id;
         ItemStack d = new ItemStack(GBLaunch.LASER_DESIGNATOR.get());
         d.set(GBDataComponents.LAUNCH_CODES.get(), LaunchCodesItem.code(card));
         LaserDesignatorItem item = (LaserDesignatorItem) d.getItem();
@@ -204,24 +208,39 @@ final class DesignatorTests {
             p.setItemInHand(InteractionHand.MAIN_HAND, d);
             p.startUsingItem(InteractionHand.MAIN_HAND);
             item.onUseTick(level, p, d, 1000);                            // lasing the wall
-            LaserDesignatorItem.click(p);                                 // designate
-            helper.assertTrue(laser.armed() && laser.target() != null && laser.target().getX() == spot.getX()
-                    && laser.target().getZ() == spot.getZ(), "the laser-guided silo is armed on the spot: " + laser.target() + " for " + spot);
-            helper.assertTrue(!gps.armed(), "the GPS one is left alone");
+            LaserDesignatorItem.click(p);                                 // designate, with the first: a
+            helper.assertTrue(a.armed() && a.target() != null && a.target().getX() == spot.getX() && a.target().getZ() == spot.getZ(),
+                    "the first laser-guided silo is armed on the spot: " + a.target() + " for " + spot);
+            helper.assertTrue(!b.armed() && !gps.armed(), "only that one");
             LaunchNetwork.Event last = st.network(level).log().getLast();
-            helper.assertTrue(last.kind() == LaunchNetwork.EventKind.DESIGNATED && last.detail() == 1, "the log has the designation: " + last);
+            helper.assertTrue(last.kind() == LaunchNetwork.EventKind.DESIGNATED && last.member().equals(a.getBlockPos()), "the log has it: " + last);
+            LaserDesignatorItem.scroll(p, 1);                             // the wheel: the next one
+            helper.assertTrue(b.getBlockPos().equals(d.get(GBDataComponents.DESIGNATOR_PICK.get())), "the pick moved to b, kept on the designator");
+            LaserDesignatorItem.scroll(p, 1);                             // round: past the GPS one, back to a
+            helper.assertTrue(a.getBlockPos().equals(d.get(GBDataComponents.DESIGNATOR_PICK.get())), "round past the GPS one to a");
+            LaserDesignatorItem.scroll(p, -1);
             holder[0] = p;
         });
         helper.runAfterDelay(9, () -> {                                 // the next click (clicks closer than 4 ticks are one)
             ServerPlayer p = holder[0];
-            d.set(GBDataComponents.DESIGNATOR_MODE.get(), LaserDesignatorItem.Mode.FIRE.ordinal());
             item.onUseTick(level, p, d, 1000);
-            LaserDesignatorItem.click(p);                                 // call for fire
-            helper.assertTrue(laser.countdown() >= 0, "fire called: the laser-guided silo counts down");
-            helper.assertTrue(gps.countdown() < 0, "the GPS one does not");
+            LaserDesignatorItem.click(p);                                 // designate, with b
+            helper.assertTrue(b.armed() && a.armed() && !gps.armed(), "b armed on the spot too, the GPS one still not");
+            helper.assertTrue(LaunchNetwork.of(level).armed(net).size() == 2, "the sight is told of both aims");
+        });
+        helper.runAfterDelay(15, () -> {
+            ServerPlayer p = holder[0];
+            item.onUseTick(level, p, d, 1000);
+            LaserDesignatorItem.click(p);                                 // b is armed: this click launches it
+            helper.assertTrue(b.countdown() >= 0, "fire called: b counts down");
+            helper.assertTrue(a.countdown() < 0 && a.armed(), "a does not: it stays armed");
+            helper.assertTrue(gps.countdown() < 0, "nor the GPS one");
             LaunchNetwork.Event last = st.network(level).log().getLast();
-            helper.assertTrue(last.kind() == LaunchNetwork.EventKind.FIRE_CALLED && last.detail() == 1, "the log has the call for fire: " + last);
+            helper.assertTrue(last.kind() == LaunchNetwork.EventKind.FIRE_CALLED && last.member().equals(b.getBlockPos()), "the log has it: " + last);
+            LaunchNetwork.Member next = LaunchNetwork.of(level).laserSelection(net, d.get(GBDataComponents.DESIGNATOR_PICK.get()));
+            helper.assertTrue(next != null && next.pos.equals(a.getBlockPos()), "the pick moves on from b, firing, round to a");
             helper.setBlock(SILO, Blocks.AIR);                             // scrubbed: no missile left flying after the test
+            helper.setBlock(SILO_B, Blocks.AIR);
             helper.succeed();
         });
     }

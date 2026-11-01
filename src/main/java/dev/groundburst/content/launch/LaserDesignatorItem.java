@@ -1,6 +1,7 @@
 package dev.groundburst.content.launch;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,11 +39,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Laser Designator (DESIGN.md §17.13): hold use to lase (held to the eye, zoomed): a beam and a spot every player
- * sees, and a Launch Control Station of its network shows it. A left click while lasing acts by its mode: designate
- * aims every launcher of its network loaded with a laser-guided missile at the spot and arms it; call for fire launches
- * them, and their missiles then follow the laser of the player who called fire: they go where it points. Sneak-use
- * switches mode; used on a station it takes the station's network. It runs on a charge (a Battery Charger fills it) and
- * an EMP knocks it out.
+ * sees, and a Launch Control Station of its network shows it. It works with one launcher of its network loaded with a
+ * laser-guided missile at a time: the first by default; the mouse wheel while zoomed picks the next, and the pick is
+ * kept on it. A left click while lasing acts on that launcher as it stands: not armed, it is aimed at the spot and armed;
+ * armed, it is launched, and its missile then follows the laser of the player who launched it: it goes where that
+ * points. Used on a station it takes the station's network. It runs on a charge (a Battery Charger fills it) and an EMP
+ * knocks it out.
  */
 public class LaserDesignatorItem extends Item {
     public static final int CAPACITY = 40_000, TRANSFER = 1_000, USE = 20;
@@ -50,24 +53,23 @@ public class LaserDesignatorItem extends Item {
     /** Ticks between left clicks it answers (a held button repeats). */
     private static final int CLICK_GAP = 4;
 
-    /** What a left click does: arm the network's laser-guided launchers on the spot, or launch them. */
-    public enum Mode { DESIGNATE, FIRE }
-
     /** A left click's result, for its holder's sight (its ordinal goes over the wire). */
-    public enum Result { NONE, DESIGNATED, NONE_IN_REACH, FIRED, NONE_ARMED, NO_RETURN, NO_NETWORK }
+    public enum Result { NONE, DESIGNATED, OUT_OF_REACH, NOT_READY, FIRED, NOT_ARMED, NO_LAUNCHER, NO_RETURN, NO_NETWORK }
+
+    /** Its launcher's state, for its holder's sight: ready to arm on the spot, ready but the spot is out of its reach, not ready, armed. */
+    public enum Pick { NONE, READY, OUT_OF_REACH, NOT_READY, ARMED }
 
     private static final String P = GroundBurst.MODID + ".designator.";
     private static final String T_NETWORK = GBLang.add(P + "network", "Network %s");
     private static final String T_NO_NETWORK = GBLang.add(P + "no_network", "No network: use it on a Launch Control Station");
-    private static final String[] T_MODE = {GBLang.add(P + "mode.designate", "Mode: designate"), GBLang.add(P + "mode.fire", "Mode: call for fire")};
     private static final String T_CHARGE = GBLang.add(P + "charge", "Charge: %s%%");
-    private static final String T_USE = GBLang.add(P + "use", "Hold use to lase, left-click to designate or fire; sneak-use to switch mode");
+    private static final String T_USE = GBLang.add(P + "use", "Hold use to lase; left-click to arm a launcher on the spot, or launch it once armed");
     private static final String T_FLAT = GBLang.add(P + "flat", "Flat: charge it in a Battery Charger");
     private static final String T_EMP = GBLang.add(P + "emp", "Knocked out by an EMP");
     private static final String T_LINKED = GBLang.add(P + "linked", "Designator linked to network %s");
     private static final String T_SAME = GBLang.add(P + "same", "Already on this station's network (%s)");
 
-    /** Each holder's last left click: when, what came of it, and how many launchers it took. */
+    /** Each holder's last left click: when, what came of it, and its launcher's number. */
     private record Click(long time, Result result, int count) {}
 
     private static final Map<UUID, Click> CLICKS = new HashMap<>();
@@ -78,16 +80,11 @@ public class LaserDesignatorItem extends Item {
     private static final boolean BEAM_TO_SELF = Boolean.getBoolean("groundburst.fxShots");
 
     public LaserDesignatorItem(Properties properties) {
-        super(properties.stacksTo(1).component(GBDataComponents.ENERGY.get(), CAPACITY).component(GBDataComponents.DESIGNATOR_MODE.get(), 0));
+        super(properties.stacksTo(1).component(GBDataComponents.ENERGY.get(), CAPACITY));
     }
 
     public static int stored(ItemStack stack) {
         return stack.getOrDefault(GBDataComponents.ENERGY.get(), 0);
-    }
-
-    public static Mode mode(ItemStack stack) {
-        Mode[] modes = Mode.values();
-        return modes[Math.clamp(stack.getOrDefault(GBDataComponents.DESIGNATOR_MODE.get(), 0), 0, modes.length - 1)];
     }
 
     /** Knocked out by an EMP (for a while after leaving the field). */
@@ -113,16 +110,6 @@ public class LaserDesignatorItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player.isSecondaryUseActive()) {
-            Mode next = Mode.values()[(mode(stack).ordinal() + 1) % Mode.values().length];
-            stack.set(GBDataComponents.DESIGNATOR_MODE.get(), next.ordinal());
-            if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.translatable(T_MODE[next.ordinal()]).withStyle(next == Mode.FIRE ? ChatFormatting.RED : ChatFormatting.GOLD));
-                level.playSound(null, player.getX(), player.getY(), player.getZ(), GBSounds.DESIGNATOR_ON.get(), SoundSource.PLAYERS, 0.5f,
-                        next == Mode.FIRE ? 0.8f : 1.1f);
-            }
-            return InteractionResult.SUCCESS;
-        }
         if (!works(stack, level)) {
             if (!level.isClientSide()) {
                 player.sendOverlayMessage(Component.translatable(knockedOut(stack, level) ? T_EMP : T_FLAT).withStyle(ChatFormatting.GRAY));
@@ -187,9 +174,9 @@ public class LaserDesignatorItem extends Item {
     }
 
     /**
-     * A left click while lasing (its holder's client sends it): designate aims every launcher of the network loaded with
-     * a laser-guided missile that reaches the spot at it, and arms it; call for fire launches every one armed, and their
-     * missiles follow this player's laser in. Its result shows in the holder's sight at once.
+     * A left click while lasing (its holder's client sends it), on its launcher as it stands: not armed, it is aimed at
+     * the spot and armed; armed, it is launched, and its missile follows this player's laser in. Its result shows in the
+     * holder's sight at once.
      */
     public static void click(ServerPlayer player) {
         ItemStack stack = player.getUseItem();
@@ -203,21 +190,51 @@ public class LaserDesignatorItem extends Item {
             return;
         }
         long net = network(level, stack);
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        LaunchNetwork.Member m = picked(level, stack, net);
         Designators.Spot spot = Designators.spotOf(level, player.getUUID());
         Result result;
-        int count = 0;
         if (net == 0) {
             result = Result.NO_NETWORK;
-        } else if (mode(stack) == Mode.DESIGNATE) {
-            count = spot == null ? 0 : LaunchNetwork.of(level).designate(level, net, BlockPos.containing(spot.pos()), player);
-            result = spot == null ? Result.NO_RETURN : count > 0 ? Result.DESIGNATED : Result.NONE_IN_REACH;
+        } else if (m == null) {
+            result = Result.NO_LAUNCHER;
+        } else if (m.willBeArmed() && m.aim().isPresent()) {
+            result = nets.fireLaser(level, net, m, player) ? Result.FIRED : Result.NOT_ARMED;
         } else {
-            count = LaunchNetwork.of(level).fireLaser(level, net, player);
-            result = count > 0 ? Result.FIRED : Result.NONE_ARMED;
+            result = spot == null ? Result.NO_RETURN : nets.designate(level, net, m, BlockPos.containing(spot.pos())) ? Result.DESIGNATED
+                    : m.report().readiness() == LaunchSiloBlockEntity.Readiness.READY.ordinal() ? Result.OUT_OF_REACH : Result.NOT_READY;
         }
-        CLICKS.put(player.getUUID(), new Click(now, result, count));
+        int number = m == null ? 0 : nets.number(net, m);
+        if (m != null) {
+            stack.set(GBDataComponents.DESIGNATOR_PICK.get(), m.pos);    // (once fired, the pick moves on to the next)
+        }
+        CLICKS.put(player.getUUID(), new Click(now, result, number));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), result == Result.FIRED ? GBSounds.DESIGNATOR_FIRE.get()
                 : GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.6f, result == Result.DESIGNATED || result == Result.FIRED ? 1.2f : 0.7f);
+        sendStatus(level, player, stack, net, spot == null ? null : BlockPos.containing(spot.pos()));
+    }
+
+    /** The launcher a designator works with: the one it picked while it can, else the next (null: none). */
+    static LaunchNetwork.@Nullable Member picked(ServerLevel level, ItemStack stack, long net) {
+        return net == 0 ? null : LaunchNetwork.of(level).laserSelection(net, stack.get(GBDataComponents.DESIGNATOR_PICK.get()));
+    }
+
+    /** The mouse wheel while zoomed (its holder's client sends it): picks the next (1) or the previous (-1) launcher. */
+    public static void scroll(ServerPlayer player, int step) {
+        ItemStack stack = player.getUseItem();
+        ServerLevel level = player.level();
+        if (!player.isUsingItem() || !(stack.getItem() instanceof LaserDesignatorItem) || step == 0) {
+            return;
+        }
+        long net = network(level, stack);
+        LaunchNetwork.Member m = net == 0 ? null : LaunchNetwork.of(level).laserStep(net, stack.get(GBDataComponents.DESIGNATOR_PICK.get()), step);
+        if (m == null) {
+            return;
+        }
+        stack.set(GBDataComponents.DESIGNATOR_PICK.get(), m.pos);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS,
+                0.25f, 1.8f);
+        Designators.Spot spot = Designators.spotOf(level, player.getUUID());
         sendStatus(level, player, stack, net, spot == null ? null : BlockPos.containing(spot.pos()));
     }
 
@@ -249,19 +266,30 @@ public class LaserDesignatorItem extends Item {
     }
 
     /**
-     * What its sight shows that only the server knows: the network's laser-guided launchers that could be armed on the
-     * spot and those armed, the missiles homing on it, and its last left click's result.
+     * What its sight shows that only the server knows: its launcher and its state, the missiles homing on its spot, its
+     * last left click's result, and where the network's armed launchers are aimed.
      */
     private static void sendStatus(ServerLevel level, ServerPlayer player, ItemStack stack, long net, @Nullable BlockPos spot) {
         if (player.connection == null || !player.connection.hasChannel(DesignatorPayloads.Status.TYPE)) {
             return;                                        // (a GameTest's player: nothing to show it on)
         }
-        int[] counts = net == 0 ? new int[2] : LaunchNetwork.of(level).laserCounts(net, spot);
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        LaunchNetwork.Member m = picked(level, stack, net);
+        DesignatorPayloads.Pick pick = DesignatorPayloads.Pick.NONE;
+        if (m != null) {
+            List<LaunchNetwork.Member> choice = nets.laserLaunchers(net);
+            Pick state = m.willBeArmed() && m.aim().isPresent() ? Pick.ARMED
+                    : m.report().readiness() != LaunchSiloBlockEntity.Readiness.READY.ordinal() ? Pick.NOT_READY
+                    : spot != null && !m.canArm(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ())) ? Pick.OUT_OF_REACH : Pick.READY;
+            pick = new DesignatorPayloads.Pick(nets.number(net, m), m.kind, choice.indexOf(m) + 1, choice.size(), state.ordinal());
+        }
+        List<LaunchNetwork.Member> armed = net == 0 ? List.of() : nets.armed(net);
+        List<BlockPos> aims = armed.stream().map(a -> a.aim().orElseThrow()).toList();
         int charge = (int) ((long) stored(stack) * 100 / CAPACITY);
         Click click = lastClick(player);
-        PacketDistributor.sendToPlayer(player, new DesignatorPayloads.Status(mode(stack).ordinal(), counts[0], counts[1],
-                Designators.homingOn(level, player.getUUID()), net != 0 ? LaunchCodesItem.code(stack) : "", charge,
-                click == null ? Result.NONE.ordinal() : click.result().ordinal(), click == null ? 0 : click.count()));
+        PacketDistributor.sendToPlayer(player, new DesignatorPayloads.Status(pick, Designators.homingOn(level, player.getUUID()),
+                net != 0 ? LaunchCodesItem.code(stack) : "", charge, click == null ? Result.NONE.ordinal() : click.result().ordinal(),
+                click == null ? 0 : click.count(), aims, m == null ? -1 : armed.indexOf(m)));
     }
 
     @Override
@@ -305,8 +333,6 @@ public class LaserDesignatorItem extends Item {
         String code = LaunchCodesItem.code(stack);
         tooltip.accept(code.isEmpty() ? Component.translatable(T_NO_NETWORK).withStyle(ChatFormatting.GRAY)
                 : Component.translatable(T_NETWORK, code).withStyle(ChatFormatting.GOLD));
-        Mode m = mode(stack);
-        tooltip.accept(Component.translatable(T_MODE[m.ordinal()]).withStyle(m == Mode.FIRE ? ChatFormatting.RED : ChatFormatting.YELLOW));
         tooltip.accept(Component.translatable(T_CHARGE, (int) ((long) stored(stack) * 100 / CAPACITY)).withStyle(ChatFormatting.AQUA));
         tooltip.accept(Component.translatable(T_USE).withStyle(ChatFormatting.DARK_GRAY));
     }

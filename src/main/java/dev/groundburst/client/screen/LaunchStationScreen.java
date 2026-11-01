@@ -124,8 +124,8 @@ public class LaunchStationScreen extends Screen {
                 case LINKED -> "%s linked";
                 case UNLINKED -> "%s unlinked";
                 case NEW_CODES -> "New codes issued";
-                case FIRE_CALLED -> "Fire called at %s, %s: %s launching";
-                case DESIGNATED -> "Designated %s, %s: %s armed";
+                case FIRE_CALLED -> "%s: fire called on %s, %s";
+                case DESIGNATED -> "%s designated on %s, %s";
             }));
         }
     }
@@ -606,7 +606,8 @@ public class LaunchStationScreen extends Screen {
 
     // --- words ----------------------------------------------------------------------------------------------------------------
     /** A member's kind, short. */
-    private static Component kind(String id) {
+    /** A launcher kind's name (the network's record of it is its block's id). */
+    public static Component kind(String id) {
         Identifier key = Identifier.tryParse(id);
         if (key != null && T_KIND.containsKey(key.getPath())) {
             return Component.translatable(T_KIND.get(key.getPath()));
@@ -695,7 +696,7 @@ public class LaunchStationScreen extends Screen {
             case FAILED -> Component.translatable(key, who, e.detail() < 0 ? Component.translatable(T_NO_ANSWER)
                     : Component.translatable(T_STATE[Mth.clamp(e.detail(), 0, T_STATE.length - 1)], 0));
             case NEW_CODES -> Component.translatable(key);
-            case FIRE_CALLED, DESIGNATED -> Component.translatable(key, e.x(), e.z(), e.detail());
+            case FIRE_CALLED, DESIGNATED -> Component.translatable(key, who, e.x(), e.z());
             default -> Component.translatable(key, who);
         };
     }

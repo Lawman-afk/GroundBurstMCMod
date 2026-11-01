@@ -692,82 +692,115 @@ public final class LaunchNetwork extends SavedData {
         return m.orders.launchAt >= 0 || m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
     }
 
-    /**
-     * Designate (a Laser Designator's left click): every launcher of the network loaded with a laser-guided missile that
-     * can reach {@code spot} is aimed at it and armed (a far one when it is next loaded). Returns how many.
-     */
-    public int designate(ServerLevel level, long id, BlockPos spot, @Nullable ServerPlayer by) {
+    /** The network's launchers loaded with a laser-guided missile and not firing, in the order they were linked: a designator's choice. */
+    public List<Member> laserLaunchers(long id) {
         Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Member m : n.members.values()) {
-            BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
-            if (!laserGuided(m) || firing(m) || !m.canArm(aim)) {
-                continue;
-            }
-            m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
-            orderNow(level, m);
-            count++;
-        }
-        if (count > 0) {
-            log(level, n, EventKind.DESIGNATED, by == null ? BlockPos.ZERO : by.blockPosition(), "", spot.getX(), spot.getZ(), count);
-        }
-        setDirty();
-        return count;
-    }
-
-    /**
-     * Call for fire (a Laser Designator's left click): every armed launcher of the network loaded with a laser-guided
-     * missile fires at once at its aim (woken if it is far); its missile then follows {@code by}'s laser (the flight's
-     * owner is who ordered the launch). Returns how many.
-     */
-    public int fireLaser(ServerLevel level, long id, @Nullable ServerPlayer by) {
-        Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        long now = level.getGameTime();
-        Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
-        int count = 0;
-        BlockPos at = BlockPos.ZERO;
-        for (Member m : n.members.values()) {
-            if (!laserGuided(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
-                continue;
-            }
-            at = m.aim().get();
-            m.orders = new Orders(m.orders.aim, m.orders.arm, now, who);
-            orderNow(level, m);
-            count++;
-        }
-        if (count > 0) {
-            log(level, n, EventKind.FIRE_CALLED, by == null ? BlockPos.ZERO : by.blockPosition(), "", at.getX(), at.getZ(), count);
-        }
-        setDirty();
-        return count;
-    }
-
-    /**
-     * For a designator's sight: the network's laser-guided launchers that could be armed on {@code spot} (null: none
-     * lased), and those armed.
-     */
-    public int[] laserCounts(long id, @Nullable BlockPos spot) {
-        Network n = this.networks.get(id);
-        int ready = 0, armed = 0;
+        List<Member> out = new ArrayList<>();
         if (n != null) {
             for (Member m : n.members.values()) {
-                if (!laserGuided(m) || firing(m)) {
-                    continue;
-                }
-                if (m.willBeArmed() && m.aim().isPresent()) {
-                    armed++;
-                } else if (spot != null && m.canArm(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ()))) {
-                    ready++;
+                if (laserGuided(m) && !firing(m)) {
+                    out.add(m);
                 }
             }
         }
-        return new int[] {ready, armed};
+        return out;
+    }
+
+    /**
+     * A designator's launcher: the one at {@code picked} while it is one of them, else the next of them linked after it,
+     * else the first (null: none).
+     */
+    public @Nullable Member laserSelection(long id, @Nullable BlockPos picked) {
+        Network n = this.networks.get(id);
+        List<Member> choice = laserLaunchers(id);
+        if (n == null || choice.isEmpty()) {
+            return null;
+        }
+        if (picked != null) {
+            List<Member> all = new ArrayList<>(n.members.values());
+            for (int at = 0; at < all.size(); at++) {
+                if (all.get(at).pos.equals(picked)) {
+                    for (int i = 0; i < all.size(); i++) {
+                        Member m = all.get((at + i) % all.size());
+                        if (choice.contains(m)) {
+                            return m;
+                        }
+                    }
+                }
+            }
+        }
+        return choice.getFirst();
+    }
+
+    /** The launcher {@code step} on from a designator's (round the choice). */
+    public @Nullable Member laserStep(long id, @Nullable BlockPos picked, int step) {
+        List<Member> choice = laserLaunchers(id);
+        Member at = laserSelection(id, picked);
+        return at == null ? null : choice.get(Math.floorMod(choice.indexOf(at) + step, choice.size()));
+    }
+
+    /**
+     * Designate (a Laser Designator's left click): {@code m}, one of the network's laser-guided launchers, is aimed at
+     * {@code spot} and armed (a far one when it is next loaded). False if it cannot be: not ready, or out of reach.
+     */
+    public boolean designate(ServerLevel level, long id, Member m, BlockPos spot) {
+        Network n = this.networks.get(id);
+        BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
+        if (n == null || !laserGuided(m) || firing(m) || !m.canArm(aim)) {
+            return false;
+        }
+        m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
+        orderNow(level, m);
+        log(level, n, EventKind.DESIGNATED, m.pos, m.kind, spot.getX(), spot.getZ(), 1);
+        setDirty();
+        return true;
+    }
+
+    /**
+     * Call for fire (a Laser Designator's left click): {@code m}, armed, fires now at its aim (woken if it is far); its
+     * missile then follows {@code by}'s laser (the flight's owner is who ordered the launch). False if it is not armed.
+     */
+    public boolean fireLaser(ServerLevel level, long id, Member m, @Nullable ServerPlayer by) {
+        Network n = this.networks.get(id);
+        if (n == null || !laserGuided(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
+            return false;
+        }
+        m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()));
+        orderNow(level, m);
+        BlockPos at = m.aim().get();
+        log(level, n, EventKind.FIRE_CALLED, m.pos, m.kind, at.getX(), at.getZ(), 1);
+        setDirty();
+        return true;
+    }
+
+    /** The network's armed launchers, armed or counting down, any missile (a designator's sight shows where they are aimed). */
+    public List<Member> armed(long id) {
+        Network n = this.networks.get(id);
+        List<Member> out = new ArrayList<>();
+        if (n != null) {
+            for (Member m : n.members.values()) {
+                boolean counting = m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+                if (m.role == Role.LAUNCHER && !m.lost && m.aim().isPresent() && (m.willBeArmed() || counting)) {
+                    out.add(m);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** A member's number on its network, as the station lists it (1: the first linked; 0: not a member). */
+    public int number(long id, Member m) {
+        Network n = this.networks.get(id);
+        int i = 0;
+        if (n != null) {
+            for (Member x : n.members.values()) {
+                i++;
+                if (x == m) {
+                    return i;
+                }
+            }
+        }
+        return 0;
     }
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */

@@ -331,10 +331,11 @@ public final class GBLaunch {
     public static final String INFO_DESIGNATOR = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.laser_designator",
             "Hold use to lase: a red beam and spot as far off as you can see, seen by everyone, zoomed in your sight with the range "
                     + "and coordinates. Use it on a Launch Control Station to join its network; it commands the network's launchers "
-                    + "loaded with laser-guided missiles (a Laser Guidance Unit). Designate mode: left-click while lasing to aim them "
-                    + "all at the spot and arm them. Call for fire mode (sneak-use to switch): left-click to launch every one armed; "
-                    + "their missiles then follow your laser in, wherever you point it. 40,000 FE (100 s of lasing); charge it in a "
-                    + "Battery Charger. Smoke breaks the beam; an EMP knocks it out.");
+                    + "loaded with laser-guided missiles (a Laser Guidance Unit), one at a time: the first, or scroll while zoomed to "
+                    + "pick the next. Left-click while lasing: an unarmed launcher is aimed at the spot and armed; an armed one "
+                    + "launches, and its missile follows your laser in, wherever you point it. Zoomed, armed launchers' targets show "
+                    + "as spheres. 40,000 FE (100 s of lasing); charge it in a Battery Charger. Smoke breaks the beam; an EMP knocks "
+                    + "it out.");
 
     /** JEI's page for the Launch Control Station and its codes. */
     public static final String INFO_STATION = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.launch_control_station",

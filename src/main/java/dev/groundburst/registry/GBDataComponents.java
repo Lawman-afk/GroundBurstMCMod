@@ -21,9 +21,14 @@ public final class GBDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
-    /** A Laser Designator's mode (DESIGN.md §17.13): 0 designate, 1 call for fire. */
+    /** A Laser Designator's mode, from its first build (no longer read: kept so a designator saved with it still loads). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> DESIGNATOR_MODE = COMPONENTS.registerComponentType("designator_mode",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    /** A Laser Designator's picked launcher (DESIGN.md §17.13): its controller (none: its network's first laser-guided one). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.core.BlockPos>> DESIGNATOR_PICK =
+            COMPONENTS.registerComponentType("designator_pick", b -> b.persistent(net.minecraft.core.BlockPos.CODEC)
+                    .networkSynchronized(net.minecraft.core.BlockPos.STREAM_CODEC));
 
     /** Launch Codes: the code of the network they are for (DESIGN.md §17.12; empty: blank). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> LAUNCH_CODES = COMPONENTS.registerComponentType("launch_codes",

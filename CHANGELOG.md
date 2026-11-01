@@ -10,10 +10,12 @@
 - **Laser Guidance Unit**, a new guidance part: missiles built with it are the ones a designator commands.
 - Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you
   lase, and the new **Laser** button aims the picked launchers at it.
-- **Designate** (left-click while lasing): every launcher of the network loaded with a laser-guided missile that can
-  reach the spot is aimed at it and armed.
-- **Call for fire** (sneak-use to switch, then left-click while lasing): every armed laser-guided launcher launches,
-  and their missiles follow your laser all the way in, wherever you point it: onto a moving target, or another one.
+- It commands one of the network's laser-guided launchers at a time: the first, or **scroll** while zoomed to pick the
+  next (the hotbar stays put while you do); it remembers the pick.
+- **Left-click** while lasing: if the picked launcher is not armed, it is aimed at the spot and armed; if it is armed,
+  it launches, and its missile follows your laser all the way in, wherever you point it: onto a moving target, or
+  another one.
+- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere on the target.
 - It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
   breaks the beam, and an EMP knocks it out for a while.
 

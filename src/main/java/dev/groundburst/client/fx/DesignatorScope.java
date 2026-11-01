@@ -24,6 +24,7 @@ import net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
@@ -50,18 +51,19 @@ public final class DesignatorScope {
     private static final int AMBER = 0xFFFFB547, DIM = 0xFFB07A34, RED = 0xFFFF4A36, RETICLE = 0xD8FFA63A;
 
     private static final String P = GroundBurst.MODID + ".scope.";
-    private static final String[] T_MODE = {GBLang.add(P + "designate", "DESIGNATE"), GBLang.add(P + "fire", "CALL FOR FIRE")};
     private static final String T_NET = GBLang.add(P + "net", "NET %s");
     private static final String T_NO_NET = GBLang.add(P + "no_net", "NO NET");
     private static final String T_RANGE = GBLang.add(P + "range", "RNG %s m");
     private static final String T_NO_RETURN = GBLang.add(P + "no_return", "RNG ---");
     private static final String T_WHERE = GBLang.add(P + "where", "X %s  Y %s  Z %s");
     private static final String T_ON = GBLang.add(P + "on", "ON %s");
-    private static final String T_READY = GBLang.add(P + "ready", "READY %s");
-    private static final String T_ARMED = GBLang.add(P + "armed", "ARMED %s");
     private static final String T_HOMING = GBLang.add(P + "homing", "HOMING %s");
     private static final String T_BATTERY = GBLang.add(P + "battery", "BAT %s%%");
-    private static final String[] T_HINT = {GBLang.add(P + "hint.designate", "LMB: ARM ON IT"), GBLang.add(P + "hint.fire", "LMB: FIRE")};
+    /** The launcher it works with: its number, its kind, its place among the network's laser-guided ones. */
+    private static final String T_PICK = GBLang.add(P + "pick", "#%s %s  %s/%s");
+    private static final String T_NO_PICK = GBLang.add(P + "no_pick", "NO LASER MISSILE");
+    /** That launcher's state (a switch: a state added later cannot go without one). */
+    private static final java.util.EnumMap<LaserDesignatorItem.Pick, String> T_STATE = new java.util.EnumMap<>(LaserDesignatorItem.Pick.class);
     /** A left click's result's text (a switch: a result added later cannot go without one). */
     private static final java.util.EnumMap<LaserDesignatorItem.Result, String> T_RESULT = new java.util.EnumMap<>(LaserDesignatorItem.Result.class);
 
@@ -69,21 +71,32 @@ public final class DesignatorScope {
         for (LaserDesignatorItem.Result r : LaserDesignatorItem.Result.values()) {
             T_RESULT.put(r, GBLang.add(P + "result." + r.name().toLowerCase(java.util.Locale.ROOT), switch (r) {
                 case NONE -> "";
-                case DESIGNATED -> "ARMED %s ON IT";
-                case NONE_IN_REACH -> "NONE IN REACH";
-                case FIRED -> "FIRE CALLED: %s AWAY";
-                case NONE_ARMED -> "NONE ARMED";
+                case DESIGNATED -> "#%s ARMED ON IT";
+                case OUT_OF_REACH -> "#%s CAN'T REACH IT";
+                case NOT_READY -> "#%s NOT READY";
+                case FIRED -> "#%s FIRED";
+                case NOT_ARMED -> "#%s NOT ARMED";
+                case NO_LAUNCHER -> "NO LASER MISSILE";
                 case NO_RETURN -> "NO RETURN";
                 case NO_NETWORK -> "NO NETWORK";
+            }));
+        }
+        for (LaserDesignatorItem.Pick k : LaserDesignatorItem.Pick.values()) {
+            T_STATE.put(k, GBLang.add(P + "state." + k.name().toLowerCase(java.util.Locale.ROOT), switch (k) {
+                case NONE -> "";
+                case READY -> "READY";
+                case OUT_OF_REACH -> "OUT OF REACH";
+                case NOT_READY -> "NOT READY";
+                case ARMED -> "ARMED";
             }));
         }
     }
 
     /** Ticks a left click's brackets snap in over; ticks between left clicks sent. */
     private static final int SNAP = 8, CLICK_GAP = 4;
-    /** Our last left click while lasing: when (game time), and in which mode. */
+    /** Our last left click while lasing: when (game time), and whether it was to launch (its launcher was armed). */
     private static long clickedAt = Long.MIN_VALUE / 2;
-    private static int clickedMode;
+    private static boolean clickedLaunch;
 
     private static DesignatorPayloads.@Nullable Status status;
     private static int statusAge = Integer.MAX_VALUE;
@@ -103,6 +116,13 @@ public final class DesignatorScope {
             }
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> clicks(Minecraft.getInstance()));
+        NeoForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent event) -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (LaserFx.scoped(mc)) {
+                event.setCanceled(true);                   // zoomed, the wheel picks a launcher, not a hotbar slot
+                scroll(mc, event.getScrollDeltaY());
+            }
+        });
         NeoForge.EVENT_BUS.addListener((ComputeFovModifierEvent event) -> {
             Minecraft mc = Minecraft.getInstance();
             if (event.getPlayer() == mc.player && LaserFx.scoped(mc)) {
@@ -147,7 +167,15 @@ public final class DesignatorScope {
         if (clicked && now - clickedAt >= CLICK_GAP) {
             ClientPacketDistributor.sendToServer(new DesignatorPayloads.Click());
             clickedAt = now;
-            clickedMode = LaserDesignatorItem.mode(mc.player.getUseItem()).ordinal();
+            DesignatorPayloads.Status s = status();
+            clickedLaunch = s != null && s.pick().state() == LaserDesignatorItem.Pick.ARMED.ordinal();
+        }
+    }
+
+    /** The mouse wheel while zoomed: down the next laser-guided launcher, up the one before (the server keeps the pick). */
+    static void scroll(Minecraft mc, double delta) {
+        if (delta != 0 && mc.player != null) {
+            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Scroll(delta < 0 ? 1 : -1));
         }
     }
 
@@ -157,7 +185,7 @@ public final class DesignatorScope {
     }
 
     static boolean clickedFire() {
-        return clickedMode == LaserDesignatorItem.Mode.FIRE.ordinal();
+        return clickedLaunch;
     }
 
     /** The server's last word on our designator, while it is fresh. */
@@ -190,31 +218,36 @@ public final class DesignatorScope {
         }
     }
 
-    /** What the readouts say this frame: the action line is a left click's result for a while after it, else what one will do. */
-    private record Readout(Component mode, boolean fire, Component net, Component range, @Nullable Component where, @Nullable Component on,
-            @Nullable Component ready, @Nullable Component armed, @Nullable Component homing, Component battery, Component action,
-            boolean result) {}
+    /**
+     * What the readouts say this frame: the launcher it works with, and by the middle its state, or a left click's
+     * result for a while after it.
+     */
+    private record Readout(Component net, Component range, @Nullable Component where, @Nullable Component on, Component pick, boolean armed,
+            @Nullable Component homing, Component battery, Component action, int actionColour) {}
 
     private static Readout readout(LocalPlayer player, ItemStack stack, Designators.@Nullable Hit hit, Vec3 eye) {
         DesignatorPayloads.Status s = status();
-        LaserDesignatorItem.Mode mode = LaserDesignatorItem.mode(stack);
-        boolean fire = mode == LaserDesignatorItem.Mode.FIRE;
         String code = s != null ? s.network() : LaunchCodesItem.code(stack);
         Component net = code.isEmpty() ? Component.translatable(T_NO_NET) : Component.translatable(T_NET, code);
         Component range = hit == null ? Component.translatable(T_NO_RETURN) : Component.translatable(T_RANGE, Math.round(eye.distanceTo(hit.surface())));
         Component where = hit == null ? null : Component.translatable(T_WHERE, Mth.floor(hit.pos().x), Mth.floor(hit.pos().y), Mth.floor(hit.pos().z));
         Component on = hit == null || hit.entity() == null ? null : Component.translatable(T_ON, hit.entity().getName());
         boolean linked = s != null && !s.network().isEmpty();
-        Component ready = linked && !fire ? Component.translatable(T_READY, s.ready()) : null;
-        Component armed = linked ? Component.translatable(T_ARMED, s.armed()) : null;
-        Component homing = s != null && (fire || s.homing() > 0) ? Component.translatable(T_HOMING, s.homing()) : null;
+        DesignatorPayloads.Pick p = s == null ? DesignatorPayloads.Pick.NONE : s.pick();
+        Component pick = !linked || p.number() == 0 ? Component.translatable(T_NO_PICK)
+                : Component.translatable(T_PICK, p.number(), dev.groundburst.client.screen.LaunchStationScreen.kind(p.kind()), p.index(), p.total());
+        Component homing = linked || s != null && s.homing() > 0 ? Component.translatable(T_HOMING, s.homing()) : null;
         int charge = (int) ((long) LaserDesignatorItem.stored(stack) * 100 / LaserDesignatorItem.CAPACITY);
         LaserDesignatorItem.Result[] results = LaserDesignatorItem.Result.values();
         LaserDesignatorItem.Result result = s == null ? LaserDesignatorItem.Result.NONE : results[Math.clamp(s.result(), 0, results.length - 1)];
-        Component action = result == LaserDesignatorItem.Result.NONE ? Component.translatable(T_HINT[mode.ordinal()])
-                : Component.translatable(T_RESULT.get(result), s.count());
-        return new Readout(Component.translatable(T_MODE[mode.ordinal()]), fire, net, range, where, on, ready, armed, homing,
-                Component.translatable(T_BATTERY, charge), action, result != LaserDesignatorItem.Result.NONE);
+        LaserDesignatorItem.Pick[] states = LaserDesignatorItem.Pick.values();
+        LaserDesignatorItem.Pick state = states[Math.clamp(p.state(), 0, states.length - 1)];
+        Component action = result != LaserDesignatorItem.Result.NONE ? Component.translatable(T_RESULT.get(result), s.count())
+                : Component.translatable(T_STATE.get(state));
+        boolean armed = state == LaserDesignatorItem.Pick.ARMED;
+        int colour = result == LaserDesignatorItem.Result.FIRED ? RED : result != LaserDesignatorItem.Result.NONE ? AMBER
+                : armed ? RED : state == LaserDesignatorItem.Pick.READY ? AMBER : DIM;
+        return new Readout(net, range, where, on, pick, armed, homing, Component.translatable(T_BATTERY, charge), action, colour);
     }
 
     /** The sight: the eyepiece over the view, black round it, the reticle and the readouts within. */
@@ -233,12 +266,12 @@ public final class DesignatorScope {
         if (sinceClick >= 0 && sinceClick < SNAP * 2) {
             brackets(g, cx, cy, Math.min(1, sinceClick / SNAP), clickedFire() ? RED : AMBER);
         }
-        // Along the top: the mode, and the network under it (side by side they would not fit the eyepiece's top).
+        // Along the top: the launcher it works with, and the network under it (side by side they would not fit).
         int topY = cy - (int) (radius * 0.80);
-        centred(g, font, r.mode(), cx, topY, r.fire() ? RED : AMBER);
+        centred(g, font, r.pick(), cx, topY, r.armed() ? RED : AMBER);
         centred(g, font, r.net(), cx, topY + 11, DIM);
-        // By the middle, clear of the lines: what a left click will do, or what the last one did.
-        g.text(font, r.action(), cx + 12, cy + 8, r.result() ? (r.fire() ? RED : AMBER) : DIM, true);
+        // By the middle, clear of the lines: its launcher's state, or what the last left click did.
+        g.text(font, r.action(), cx + 12, cy + 8, r.actionColour(), true);
         // Below: the rangefinder, and the system.
         int y = cy + (int) (radius * 0.40);
         var pose = g.pose();
@@ -260,15 +293,9 @@ public final class DesignatorScope {
         centred(g, font, system, cx, y, DIM);
     }
 
-    /** The launchers ready and armed, the missiles homing and the charge, in one line. */
+    /** The missiles homing and the charge, in one line. */
     private static Component system(Readout r) {
-        Component line = r.battery();
-        for (Component part : new Component[] {r.homing(), r.armed(), r.ready()}) {
-            if (part != null) {
-                line = Component.empty().append(part).append("   ").append(line);
-            }
-        }
-        return line;
+        return r.homing() == null ? r.battery() : Component.empty().append(r.homing()).append("   ").append(r.battery());
     }
 
     /**
@@ -283,7 +310,7 @@ public final class DesignatorScope {
         g.fill(cx, cy + gap + 1, cx + 1, cy + inner + 1, RETICLE);
         g.fill(cx - radius, cy - 1, cx - inner, cy + 2, RETICLE);
         g.fill(cx + inner + 1, cy - 1, cx + radius + 1, cy + 2, RETICLE);
-        g.fill(cx - 1, cy - (int) (radius * 0.56), cx + 2, cy - inner, RETICLE);     // (stopping short of the mode and network)
+        g.fill(cx - 1, cy - (int) (radius * 0.56), cx + 2, cy - inner, RETICLE);     // (stopping short of the lines above)
         int step = Math.max(6, inner / 4);
         for (int d = step; d < inner - 2; d += step) {
             g.fill(cx - d, cy - 2, cx - d + 1, cy + 3, RETICLE);
@@ -310,9 +337,9 @@ public final class DesignatorScope {
     /** Lasing in third person: the mode, the range and the action, and the system, under the crosshair. */
     private static void strip(GuiGraphicsExtractor g, Font font, Readout r) {
         int cx = g.guiWidth() / 2, y = g.guiHeight() / 2 + 14;
-        Component first = Component.empty().append(r.mode()).append("   ").append(r.range()).append("   ").append(r.action());
-        centred(g, font, first, cx, y, r.fire() ? RED : AMBER);
-        centred(g, font, system(r), cx, y + 10, DIM);
+        Component first = Component.empty().append(r.pick()).append("   ").append(r.range()).append("   ").append(r.action());
+        centred(g, font, first, cx, y, r.armed() ? RED : AMBER);
+        centred(g, font, Component.empty().append(r.net()).append("   ").append(system(r)), cx, y + 10, DIM);
     }
 
     private static void centred(GuiGraphicsExtractor g, Font font, Component text, int cx, int y, int color) {
