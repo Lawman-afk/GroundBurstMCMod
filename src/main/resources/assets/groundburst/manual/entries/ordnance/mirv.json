@@ -14,7 +14,7 @@
     },
     {
       "type": "text",
-      "text": "**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). The Heavy bus takes Light and Medium conventional warheads; the Strategic bus the four [nuclear warheads](ordnance/nuclear) a missile carries. Both take decoys."
+      "text": "**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). Both buses take **Light and Medium** warheads, nothing bigger and nothing nuclear, and decoys; the Strategic bus carries more of them."
     },
     {
       "type": "table",
@@ -40,20 +40,12 @@
           "8 mounts, load 16"
         ],
         [
-          "  Tactical Nuclear",
+          "  Light warhead",
           "2"
         ],
         [
-          "  Neutron",
-          "2"
-        ],
-        [
-          "  Fission",
+          "  Medium warhead",
           "4"
-        ],
-        [
-          "  Boosted Fission",
-          "6"
         ],
         [
           "  RV Decoy",

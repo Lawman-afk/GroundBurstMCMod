@@ -2689,9 +2689,8 @@ The plan's next item after the Laser Designator: a missile that splits into seve
   fuze, as far as its load allows:
   - Heavy: 6 mounts, load 12: a Light (S) conventional warhead takes 2, a Medium (M) one 4, a decoy 1 (Heavy warheads
     are too big for it).
-  - Strategic: 8 mounts, load 16, nuclear only (as a Strategic body carries): a Tactical Nuclear or a Neutron Warhead
-    2, a Fission Warhead 4, a Boosted Fission Warhead 6, a decoy 1. (The fusion and exotic warheads stay whole
-    weapons.)
+  - Strategic: 8 mounts, load 16, the same warheads (at first it took the four missile-borne nuclear warheads; the
+    user limited MIRVs to Medium warheads, 2026-11-01: nothing nuclear and nothing bigger than Medium on either bus).
   - **Its spread**, set on the bus: point, line, ring or grid (the station's patterns, `LaunchNetwork.points`), 0 to
     150 blocks apart (a new Heavy bus a ring of 16, a Strategic one 40). Set on the bus, every console and the
     designator honour it: the RVs land round wherever the missile is aimed, in mount order.
@@ -2712,7 +2711,8 @@ The plan's next item after the Laser Designator: a missile that splits into seve
   ablative cone (the Mk 12A's); the decoy the same cone in metallised film.
 
 **As built** (2026-11-01):
-- `content/assembly/Mirv`: the rules (mounts 6 / 8, capacity 12 / 16, `load(bus, rv)`; a warhead's class from
+- `content/assembly/Mirv`: the rules (mounts 6 / 8, capacity 12 / 16, `load(bus, rv)`: Light 2, Medium 4, decoy 1, on
+  either bus; a warhead's class from
   `MissileAssembly.warheadClassOf`), what a bus holds (`DataComponents.CONTAINER`, mount by mount), its spread
   (`groundburst:mirv_spread`, `Mirv.Spread`: a `LaunchNetwork.Pattern` and 0-150; a new bus's default on the item) and
   `points` (`LaunchNetwork.points` for as many launchers as it has RVs, all at the launcher, so a line lies across the
@@ -4287,6 +4287,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | MIRVs limited to Medium warheads (the user): either bus takes only Light and Medium conventional warheads (and decoys); the Strategic bus differs only in carrying more (8, load 16). The user's original idea (a launcher firing a volley of missiles up to class M at once onto one area) becomes a late-game launcher of its own, with the circuit cascade to make military-grade parts harder to come by (proposed for the user's go-ahead). |
 | 2026-11-01 | MIRVs designed (§17.14, the user's plan): two buses carried in the warhead's place, a Heavy (L: 6 mounts, load 12, Light and Medium conventional warheads) and a Strategic (XL: 8 mounts, load 16, the four missile-borne nuclear warheads), loaded by hand like the Lead Container, decoys load 1; the spread (the station's point/line/ring/grid patterns, 0-150 apart) set on the bus so every console and the designator honour it; released one every 4 ticks from 60% of the flight, each RV its own flight and target (kill factor 0.45), decoys drawing fire; a strike circle per RV on the maps. |
 | 2026-11-01 | Every launcher gets an Item Port (the user: "to automate reloading ... no output or any configs, just take them into the launch slot"): beside the Energy Port on the Launch Silo, Launch Complex and Missile Silo, behind it on the Cruise Missile Launcher; insert-only into the launch slot, only missiles that launcher fires; the cell still takes its old block so launchers built before keep forming; drawn on each formed model as the Energy Port's yellow-banded twin with a grated loading mouth (§17.2). The Laser Designator: a sneaking left click disarms the picked launcher, still aimed; the armed targets' spheres centred on the point clicked (they sat touching the face, off to one side). |
 | 2026-11-01 | The armed targets' spheres sit where the launcher was clicked on (the user: "on the place it is clicked, not above it"): designating keeps the clicked point and face with the launcher, and its sphere touches that face there; a launcher aimed from the station keeps the top of its column. |

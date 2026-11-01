@@ -441,18 +441,19 @@ public final class FxPhotographer {
         }
     }
 
-    /** A Strategic MIRV Bus's screen: two fission warheads, two tactical ones and two decoys in it, a line 30 apart. */
+    /** A Strategic MIRV Bus's screen: two Heavy HE warheads, two cluster ones, two HE ones and two decoys in it, a line 30 apart. */
     private static void mirvUi(ServerLevel level) {
         ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
         player.setGameMode(GameType.CREATIVE);                                     // spectators open no menus
-        var fission = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.FISSION_WARHEAD.item().get());
-        var tactical = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get());
+        var heavy = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HEAVY_WARHEAD.item().get());
+        var cluster = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.CLUSTER_WARHEAD.item().get());
+        var he = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get());
         var decoy = new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get());
         var bus = mirvBus(dev.groundburst.content.assembly.SizeClass.XL, dev.groundburst.content.launch.LaunchNetwork.Pattern.LINE, 30,
-                fission.copy(), fission.copy(), tactical.copy(), tactical.copy(), decoy.copy(), decoy.copy());
+                heavy.copy(), heavy.copy(), cluster.copy(), he.copy(), he.copy(), decoy.copy(), decoy.copy());
         player.getInventory().setSelectedSlot(0);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, bus);
-        player.getInventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.BOOSTED_FISSION_WARHEAD.item().get()));
+        player.getInventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.SMOKE_WARHEAD.item().get()));
         player.getInventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get(), 8));
         player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new dev.groundburst.content.assembly.MirvBusMenu(id, inv,
                 net.minecraft.world.InteractionHand.MAIN_HAND), bus.getHoverName()), buf -> dev.groundburst.content.assembly.MirvBusMenu.write(buf,

@@ -71,10 +71,9 @@ public final class Mirv {
     /** JEI's page for the buses and the decoy. */
     public static final String INFO = GBLang.add(GroundBurst.MODID + ".jei.info.mirv",
             "A MIRV carries a bus of re-entry vehicles in its warhead's place: the Heavy MIRV Bus on a Heavy body, the Strategic "
-                    + "MIRV Bus on a Strategic one, built at their missile assemblers. Use a bus to load it: the Heavy bus takes up to 6 "
-                    + "Light or Medium warheads (load 12: Light 2, Medium 4), the Strategic bus up to 8 of the missile-borne nuclear "
-                    + "warheads (load 16: Tactical Nuclear and Neutron 2, Fission 4, Boosted Fission 6), and either takes RV Decoys (1). "
-                    + "Set its spread there too: point, line, ring or grid, up to 150 blocks apart. Coming down from the top of its arc "
+                    + "MIRV Bus on a Strategic one, built at their missile assemblers. Use a bus to load it with Light and Medium warheads "
+                    + "(a Light one takes 2 of its load, a Medium one 4) and RV Decoys (1): the Heavy bus up to 6 (load 12), the "
+                    + "Strategic bus up to 8 (load 16). Set its spread there too: point, line, ring or grid, up to 150 blocks apart. Coming down from the top of its arc "
                     + "the bus lets its RVs go one by one, each falling white-hot on its own point round the aim, each warhead by its "
                     + "own fuze. Interceptors must kill every RV, and cannot tell a decoy from a warhead.");
 
@@ -101,9 +100,9 @@ public final class Mirv {
     }
 
     /**
-     * How much of a {@code bus}'s load an RV takes (0: that bus does not take it). A decoy 1 on either. The Heavy bus: a
-     * Light conventional warhead 2, a Medium one 4. The Strategic bus, only the missile-borne nuclear warheads: a
-     * Tactical Nuclear or a Neutron Warhead 2, a Fission Warhead 4, a Boosted Fission Warhead 6.
+     * How much of a bus's load an RV takes (0: no bus takes it): a Light conventional warhead 2, a Medium one 4, a decoy 1.
+     * Nothing bigger than Medium, and nothing nuclear (the user's limit, after MIRVs were built with nuclear RVs on the
+     * Strategic bus): the buses differ in how many they carry.
      */
     public static int load(SizeClass bus, ItemStack rv) {
         if (rv.isEmpty()) {
@@ -116,14 +115,6 @@ public final class Mirv {
         SizeClass size = MissileAssembly.warheadClassOf(rv);
         if (kind == null || size == null) {
             return 0;
-        }
-        if (bus == SizeClass.XL) {
-            return switch (kind) {
-                case TACTICAL_NUCLEAR_WARHEAD, NEUTRON_WARHEAD -> 2;
-                case FISSION_WARHEAD -> 4;
-                case BOOSTED_FISSION_WARHEAD -> 6;
-                default -> 0;
-            };
         }
         if (kind.strategic() || kind.wholeWeapon()) {
             return 0;

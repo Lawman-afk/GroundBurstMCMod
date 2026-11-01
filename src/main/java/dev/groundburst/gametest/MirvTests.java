@@ -62,9 +62,9 @@ final class MirvTests {
     }
 
     /**
-     * The Heavy bus takes Light and Medium warheads and decoys and nothing bigger or nuclear, by its load of 12; the
-     * Strategic bus the four missile-borne nuclear warheads and decoys, by its load of 16. Loaded through its screen,
-     * the bus keeps what is in it and the spread set there.
+     * Either bus takes Light and Medium warheads and decoys, nothing bigger and nothing nuclear: the Heavy bus by its load
+     * of 12, the Strategic bus by its load of 16. Loaded through its screen, the bus keeps what is in it and the spread set
+     * there.
      */
     private static void loads(GameTestHelper helper) {
         Player p = helper.makeMockServerPlayer(GameType.SURVIVAL);
@@ -91,19 +91,19 @@ final class MirvTests {
         helper.assertTrue(spread.pattern() == LaunchNetwork.Pattern.GRID && spread.spacing() == 16 + Mirv.STEP,
                 "and its spread: a ring of 16 made a grid " + (16 + Mirv.STEP) + " apart: " + spread);
         helper.assertTrue(Mirv.mounts(SizeClass.XL) == 8 && Mirv.capacity(SizeClass.XL) == 16, "the Strategic bus: 8 mounts, load 16");
-        helper.assertTrue(Mirv.load(SizeClass.XL, warhead(GBOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get())) == 2
-                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.NEUTRON_WARHEAD.item().get())) == 2
-                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.FISSION_WARHEAD.item().get())) == 4
-                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.BOOSTED_FISSION_WARHEAD.item().get())) == 6,
-                "nuclear warheads by their yield");
-        helper.assertTrue(Mirv.load(SizeClass.XL, he) == 0 && Mirv.load(SizeClass.XL, decoy) == 1, "no conventional warheads; decoys");
-        helper.assertTrue(Mirv.load(SizeClass.XL, warhead(GBOrdnance.THERMONUCLEAR_WARHEAD.item().get())) == 0, "no whole weapon's warhead");
+        helper.assertTrue(Mirv.load(SizeClass.XL, he) == 2 && Mirv.load(SizeClass.XL, heavy) == 4 && Mirv.load(SizeClass.XL, decoy) == 1,
+                "the Strategic bus takes the same: Light and Medium warheads, decoys");
+        helper.assertTrue(Mirv.load(SizeClass.XL, warhead(GBOrdnance.TACTICAL_NUCLEAR_WARHEAD.item().get())) == 0
+                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.FISSION_WARHEAD.item().get())) == 0
+                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.THERMOBARIC_WARHEAD.item().get())) == 0
+                        && Mirv.load(SizeClass.XL, warhead(GBOrdnance.THERMONUCLEAR_WARHEAD.item().get())) == 0,
+                "nothing nuclear and nothing bigger than Medium");
         helper.succeed();
     }
 
     /**
      * A MIRV assembles on its own class's body only, and only loaded; its look is its bus's; the Launch Silo fires a
-     * Heavy MIRV and not a Strategic one (nuclear); its strike is a circle at each RV's point (a decoy's empty).
+     * Heavy MIRV and not a Strategic one (its body); its strike is a circle at each RV's point (a decoy's empty).
      */
     private static void assembles(GameTestHelper helper) {
         ItemStack he = warhead(GBOrdnance.HE_WARHEAD.item().get());
@@ -119,9 +119,9 @@ final class MirvTests {
         helper.assertTrue(MissileAssembly.classOf(heavyBus) == SizeClass.L && MissileAssembly.isPayload(heavyBus), "a payload of class L");
         MissileSpec heavy = new MissileSpec(heavyBus, SizeClass.L, motor, MissileParts.Guidance.GPS, false);
         helper.assertTrue(heavy.mirv() && heavy.look().equals("heavy_mirv_bus") && !heavy.nuclear(), "a Heavy MIRV: " + heavy.look());
-        ItemStack strategicBus = bus(SizeClass.XL, LaunchNetwork.Pattern.LINE, 30, warhead(GBOrdnance.FISSION_WARHEAD.item().get()));
+        ItemStack strategicBus = bus(SizeClass.XL, LaunchNetwork.Pattern.LINE, 30, warhead(GBOrdnance.HEAVY_WARHEAD.item().get()));
         MissileSpec strategic = new MissileSpec(strategicBus, SizeClass.XL, MissileParts.Motor.LIQUID, MissileParts.Guidance.GPS, false);
-        helper.assertTrue(strategic.nuclear() && strategic.needsComplex(), "a Strategic MIRV of fission RVs is nuclear");
+        helper.assertTrue(!strategic.nuclear() && strategic.needsComplex(), "a Strategic MIRV is not nuclear, but its body needs a complex");
         LaunchSiloBlockEntity silo = LaunchTests.formedSilo(helper);
         helper.assertTrue(silo.accepts(heavy) && !silo.accepts(strategic), "the Launch Silo fires the Heavy MIRV, not the Strategic");
         BlockPos from = silo.getBlockPos(), aim = from.offset(200, 0, 0);

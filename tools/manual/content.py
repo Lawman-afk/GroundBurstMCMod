@@ -1127,7 +1127,7 @@ A **MIRV** carries several warheads where a missile carries one: a **MIRV bus** 
 There are two buses. The **Heavy MIRV Bus** goes on a Heavy body, built at the Heavy Missile Assembler (see [missile assemblers](ordnance/missile_assemblers)), and fires from a [Launch Silo](ordnance/launch_site). The **Strategic MIRV Bus** goes on a Strategic body, built at the Strategic Missile Assembler, and fires from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). A bus fits only its own class's body, and only once it is loaded.
 """),
     text("""
-**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). The Heavy bus takes Light and Medium conventional warheads; the Strategic bus the four [nuclear warheads](ordnance/nuclear) a missile carries. Both take decoys.
+**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). Both buses take **Light and Medium** warheads, nothing bigger and nothing nuclear, and decoys; the Strategic bus carries more of them.
 """),
     table([
         ["Heavy MIRV Bus", "6 mounts, load 12"],
@@ -1135,10 +1135,8 @@ There are two buses. The **Heavy MIRV Bus** goes on a Heavy body, built at the H
         ["  Medium warhead", "4"],
         ["  RV Decoy", "1"],
         ["Strategic MIRV Bus", "8 mounts, load 16"],
-        ["  Tactical Nuclear", "2"],
-        ["  Neutron", "2"],
-        ["  Fission", "4"],
-        ["  Boosted Fission", "6"],
+        ["  Light warhead", "2"],
+        ["  Medium warhead", "4"],
         ["  RV Decoy", "1"],
     ], "What each takes"),
     text("""

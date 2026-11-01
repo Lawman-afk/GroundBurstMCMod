@@ -24,7 +24,7 @@
 ### MIRVs
 - **MIRVs**: a missile that carries several warheads and splits over the target. Put a **MIRV bus** in the warhead's
   place: the **Heavy MIRV Bus** on a Heavy body (up to 6 Light or Medium warheads) or the **Strategic MIRV Bus** on a
-  Strategic one (up to 8 of the missile-borne nuclear warheads), each by how much of its load they take.
+  Strategic one (up to 8), each by how much of its load they take.
 - Use the bus to load it, and set its **spread** there: point, line, ring or grid, up to 150 blocks apart. Every
   launch console and the Laser Designator honour it; the station's and the computer's maps show a circle for each
   warhead.
