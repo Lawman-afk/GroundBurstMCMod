@@ -105,11 +105,15 @@ public final class Interception {
         return killChance(BATTERY_KILL, flight, tracked);
     }
 
-    /** The kill chance against a flight as it is now, from a best chance of {@code best}. */
+    /** A MIRV's re-entry vehicle's weight on the kill chance (DESIGN.md §17.14): small, hot and fast, the hardest of all. */
+    public static final double RV_FACTOR = 0.45;
+
+    /** The kill chance against a flight as it is now, from a best chance of {@code best}: an RV (or a decoy) at {@link #RV_FACTOR}. */
     public static double killChance(double best, Flights.Flight flight, boolean tracked) {
         ChargeKind kind = AssemblyStats.kindOf(flight.warhead());
         boolean superweapon = kind == ChargeKind.SCUD_STORM_WARHEAD || kind == ChargeKind.NUCLEAR_MISSILE_WARHEAD;
-        return killChance(best, flight.body(), tracked, flight.reentry() > 0.3f, superweapon);
+        double factor = flight.rv() ? RV_FACTOR : classFactor(flight.body());
+        return best * factor * (tracked ? 1 : 0.6) * (flight.reentry() > 0.3f ? 0.85 : 1) * (superweapon ? 0.5 : 1);
     }
 
     /** How many interceptors a battery sends at a missile: one, or two at once for the big ones (class L and up). */

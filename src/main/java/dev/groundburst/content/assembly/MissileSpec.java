@@ -81,10 +81,18 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return id.isEmpty() || !cruise ? id : id + CRUISE_LOOK;
     }
 
-    /** Whether it carries a nuclear warhead (only a Launch Complex or a Missile Silo fires it). */
+    /** Whether it carries a nuclear warhead, or a MIRV bus with one (only a Launch Complex or a Missile Silo fires it). */
     public boolean nuclear() {
+        if (mirv()) {
+            return Mirv.rvs(this.warhead).stream().anyMatch(rv -> AssemblyStats.kindOf(rv) instanceof ChargeKind k && k.nuclear());
+        }
         ChargeKind kind = AssemblyStats.kindOf(this.warhead);
         return kind != null && kind.nuclear();
+    }
+
+    /** A MIRV (DESIGN.md §17.14): it carries a bus of re-entry vehicles in its warhead's place. */
+    public boolean mirv() {
+        return Mirv.isBus(this.warhead);
     }
 
     /** How far it flies, blocks. */
@@ -97,8 +105,11 @@ public record MissileSpec(ItemStack warhead, SizeClass body, MissileParts.Motor 
         return warheadId(this.warhead);
     }
 
-    /** A warhead's id ("he_warhead"; empty for anything else). */
+    /** A warhead's id ("he_warhead"), or a MIRV bus's ("heavy_mirv_bus": its MIRV's look); empty for anything else. */
     public static String warheadId(ItemStack warhead) {
+        if (Mirv.isBus(warhead)) {
+            return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(warhead.getItem()).getPath();
+        }
         return warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof ChargeBlock c
                 ? net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(c).getPath() : "";
     }

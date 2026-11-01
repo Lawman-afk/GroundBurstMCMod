@@ -60,6 +60,12 @@ public final class AssemblyStats {
     static final String FIRES = GBLang.add(P + "fires", "Sets Fires");
     static final String YIELD = GBLang.add(P + "yield", "Yield");
     static final String FUZE = GBLang.add(P + "fuze", "Fuze");
+    static final String RVS = GBLang.add(P + "rvs", "Re-entry Vehicles");
+    static final String V_RVS = GBLang.add(P + "rvs_value", "%s, load %s/%s");
+    static final String MIRV_SPREAD = GBLang.add(P + "spread", "Spread");
+    static final String V_SPREAD = GBLang.add(P + "spread_value", "%s, %s blocks apart");
+    static final String V_ON_AIM = GBLang.add(P + "on_aim", "All on the aim");
+    static final String H_RV = GBLang.add(P + "rv_header", "%sx %s");
     static final String BURST = GBLang.add(P + "burst", "Bursts At");
     static final String RANGE = GBLang.add(P + "range", "Range");
     static final String APEX = GBLang.add(P + "apex", "Climbs To");
@@ -332,13 +338,16 @@ public final class AssemblyStats {
         if (spec == null) {
             return out;
         }
-        ChargeKind kind = kindOf(spec.warhead());
-        out.add(Stat.header(spec.warhead().getHoverName()));
-        if (kind != null) {
-            blast(out, kind, registries, false);
+        if (spec.mirv()) {
+            mirv(out, spec.warhead(), registries);
+        } else {
+            ChargeKind kind = kindOf(spec.warhead());
+            out.add(Stat.header(spec.warhead().getHoverName()));
+            if (kind != null) {
+                blast(out, kind, registries, false);
+            }
+            fuze(out, spec.warhead());
         }
-        FuzeSettings fuze = spec.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
-        out.add(Stat.row(FUZE, fuze.fuze() == Fuze.BAROMETRIC ? Component.translatable(V_UP, fuze.value()) : Component.translatable(fuze.fuze().name)));
         int range = spec.range();
         out.add(Stat.header(H_FULL_RANGE));
         out.add(Stat.row(RANGE, Component.translatable(V_BLOCKS, range)));
@@ -353,6 +362,41 @@ public final class AssemblyStats {
         }
         out.add(Stat.row(EMP, Component.translatable(spec.hardened() ? V_HARDENED : V_UNHARDENED)));
         return out;
+    }
+
+    private static void fuze(List<Stat> out, ItemStack warhead) {
+        FuzeSettings fuze = warhead.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+        out.add(Stat.row(FUZE, fuze.fuze() == Fuze.BAROMETRIC ? Component.translatable(V_UP, fuze.value()) : Component.translatable(fuze.fuze().name)));
+    }
+
+    /**
+     * A MIRV's bus (DESIGN.md §17.14): how many RVs and how much of its load, its spread, then each kind of RV it carries
+     * (how many, and its warhead's stats and fuze; a decoy just its name).
+     */
+    private static void mirv(List<Stat> out, ItemStack bus, RegistryAccess registries) {
+        out.add(Stat.header(bus.getHoverName()));
+        SizeClass size = Mirv.classOf(bus);
+        List<ItemStack> rvs = Mirv.rvs(bus);
+        out.add(Stat.row(RVS, Component.translatable(V_RVS, rvs.size(), Mirv.loadOf(bus), size == null ? 0 : Mirv.capacity(size))));
+        Mirv.Spread spread = Mirv.spread(bus);
+        out.add(Stat.row(MIRV_SPREAD, spread.pattern() == dev.groundburst.content.launch.LaunchNetwork.Pattern.POINT || spread.spacing() == 0
+                ? Component.translatable(V_ON_AIM)
+                : Component.translatable(V_SPREAD, Component.translatable(Mirv.T_PATTERN[spread.pattern().ordinal()]), spread.spacing())));
+        java.util.Map<net.minecraft.world.item.Item, int[]> counts = new java.util.LinkedHashMap<>();
+        java.util.Map<net.minecraft.world.item.Item, ItemStack> first = new java.util.LinkedHashMap<>();
+        for (ItemStack rv : rvs) {
+            counts.computeIfAbsent(rv.getItem(), k -> new int[1])[0]++;
+            first.putIfAbsent(rv.getItem(), rv);
+        }
+        counts.forEach((item, n) -> {
+            ItemStack rv = first.get(item);
+            out.add(Stat.header(Component.translatable(H_RV, n[0], rv.getHoverName())));
+            ChargeKind kind = kindOf(rv);
+            if (kind != null) {
+                blast(out, kind, registries, false);
+                fuze(out, rv);
+            }
+        });
     }
 
     /** "28 blocks", "1.5 blocks". */

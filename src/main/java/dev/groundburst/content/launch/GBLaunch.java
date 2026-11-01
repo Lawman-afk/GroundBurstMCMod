@@ -131,6 +131,8 @@ public final class GBLaunch {
     public static final Supplier<SoundEvent> MISSILE_LAUNCH = GBSounds.MISSILE_LAUNCH;
     public static final Supplier<SoundEvent> MISSILE_ENGINE = GBSounds.MISSILE_ENGINE;
     public static final Supplier<SoundEvent> CRUISE_LAUNCH = GBSounds.CRUISE_LAUNCH;
+    /** A MIRV's bus letting a re-entry vehicle go (DESIGN.md §17.14). */
+    public static final Supplier<SoundEvent> RV_RELEASE = GBSounds.RV_RELEASE;
 
     /**
      * Wakes a Launch Control Station's member for its launch (its structure's chunks, owned by its controller's

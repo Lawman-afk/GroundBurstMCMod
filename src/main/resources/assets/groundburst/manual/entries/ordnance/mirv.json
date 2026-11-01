@@ -1,0 +1,86 @@
+{
+  "title": "MIRVs",
+  "icon": "groundburst:strategic_mirv_bus",
+  "order": 10,
+  "items": [
+    "groundburst:heavy_mirv_bus",
+    "groundburst:strategic_mirv_bus",
+    "groundburst:rv_decoy"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A **MIRV** carries several warheads where a missile carries one: a **MIRV bus** in the warhead's place, holding **re-entry vehicles** (RVs), each a warhead with its own fuze. The missile flies its arc as any does; coming down from the top of it, the bus lets its RVs go one by one, each with a crack and a puff of smoke, and each falls white-hot onto **its own point** round the target.\n\nThere are two buses. The **Heavy MIRV Bus** goes on a Heavy body, built at the Heavy Missile Assembler (see [missile assemblers](ordnance/missile_assemblers)), and fires from a [Launch Silo](ordnance/launch_site). The **Strategic MIRV Bus** goes on a Strategic body, built at the Strategic Missile Assembler, and fires from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). A bus fits only its own class's body, and only once it is loaded."
+    },
+    {
+      "type": "text",
+      "text": "**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). The Heavy bus takes Light and Medium conventional warheads; the Strategic bus the four [nuclear warheads](ordnance/nuclear) a missile carries. Both take decoys."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "Heavy MIRV Bus",
+          "6 mounts, load 12"
+        ],
+        [
+          "  Light warhead",
+          "2"
+        ],
+        [
+          "  Medium warhead",
+          "4"
+        ],
+        [
+          "  RV Decoy",
+          "1"
+        ],
+        [
+          "Strategic MIRV Bus",
+          "8 mounts, load 16"
+        ],
+        [
+          "  Tactical Nuclear",
+          "2"
+        ],
+        [
+          "  Neutron",
+          "2"
+        ],
+        [
+          "  Fission",
+          "4"
+        ],
+        [
+          "  Boosted Fission",
+          "6"
+        ],
+        [
+          "  RV Decoy",
+          "1"
+        ]
+      ],
+      "text": "",
+      "title": "What each takes"
+    },
+    {
+      "type": "text",
+      "text": "**Its spread.** Set on the bus's screen: **point** (all on the aim), **line** (across the way it flies), **ring** or **grid**, and how far apart, up to 150 blocks (shift moves it 20 at a time). However the missile is aimed, from a [Launch Computer](ordnance/launch_site), a [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator), its RVs come down in that pattern round the aim, in the order they sit in the bus. The station's and the computer's maps draw a circle at each RV's point.\n\n**RV Decoys** are light copper replicas of an RV. They fall with the warheads and land as nothing, but radar and interceptors cannot tell them from the real ones, so each draws its share of the defence's fire.\n\n**Against defences.** Until it lets its RVs go a MIRV is one missile. After, every RV must be shot down on its own, and they are the hardest targets there are: small, fast and hot."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:heavy_mirv_bus",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:strategic_mirv_bus",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:rv_decoy",
+      "text": ""
+    }
+  ]
+}

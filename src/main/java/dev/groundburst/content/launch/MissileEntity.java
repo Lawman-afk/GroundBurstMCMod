@@ -140,13 +140,21 @@ public class MissileEntity extends Entity {
 
     /** A warhead's id for the missile's nose ("" for none or not a warhead). */
     public static String warheadId(ItemStack stack) {
-        return LaunchSiloBlockEntity.isWarhead(stack) ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() : "";
+        return LaunchSiloBlockEntity.isWarhead(stack) || dev.groundburst.content.assembly.Mirv.isBus(stack)
+                ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() : "";
     }
 
     void setLook(ItemStack warhead, dev.groundburst.content.assembly.SizeClass body, boolean cruise) {
         this.entityData.set(WARHEAD, warheadId(warhead));
         this.entityData.set(BODY, body.ordinal());
         this.entityData.set(CRUISE, cruise);
+    }
+
+    /** A MIRV's re-entry vehicle (DESIGN.md §17.14): drawn as one, whatever it carries. */
+    void setRvLook(dev.groundburst.content.assembly.SizeClass body) {
+        this.entityData.set(WARHEAD, dev.groundburst.content.assembly.Mirv.RV_LOOK);
+        this.entityData.set(BODY, body.ordinal());
+        this.entityData.set(CRUISE, false);
     }
 
     /** Its body's size class, as the client knows it. */

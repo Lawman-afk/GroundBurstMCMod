@@ -1,7 +1,7 @@
 {
   "title": "Interceptor Complex",
   "icon": "groundburst:interceptor_complex",
-  "order": 19,
+  "order": 20,
   "items": [
     "groundburst:interceptor_complex",
     "groundburst:launch_cell",

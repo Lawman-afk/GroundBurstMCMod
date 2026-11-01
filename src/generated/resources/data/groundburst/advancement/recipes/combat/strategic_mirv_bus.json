@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_heavy_mirv_bus": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:heavy_mirv_bus"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:strategic_mirv_bus"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_heavy_mirv_bus"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:strategic_mirv_bus"
+    ]
+  }
+}

@@ -80,6 +80,8 @@ public class MissileItem extends Item {
         name("antimatter_warhead", "Antimatter ICBM");
         name("singularity_warhead", "Singularity ICBM");
         name("storm_warhead", "Storm ICBM");
+        name("heavy_mirv_bus", "Heavy MIRV");                  // DESIGN.md §17.14: the bus's id is its missile's look
+        name("strategic_mirv_bus", "Strategic MIRV");
         cruise("he_warhead", "HE Cruise Missile");
         cruise("napalm_warhead", "Napalm Cruise Missile");
         cruise("chemical_warhead", "Chemical Cruise Missile");
@@ -119,8 +121,12 @@ public class MissileItem extends Item {
             return;
         }
         tooltip.accept(Component.translatable(T_WARHEAD, s.warhead().getHoverName()).withStyle(ChatFormatting.GRAY));
-        FuzeSettings fuze = s.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
-        tooltip.accept(Component.literal("  ").append(WarheadItem.fuzeLine(fuze)).withStyle(ChatFormatting.DARK_GRAY));
+        if (s.mirv()) {
+            Mirv.describe(s.warhead()).forEach(line -> tooltip.accept(Component.literal("  ").append(line)));
+        } else {
+            FuzeSettings fuze = s.warhead().getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT);
+            tooltip.accept(Component.literal("  ").append(WarheadItem.fuzeLine(fuze)).withStyle(ChatFormatting.DARK_GRAY));
+        }
         tooltip.accept(Component.translatable(T_RANGE, s.range()).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable(T_GUIDANCE, Component.translatable(MissileParts.guidanceName(s.guidance()))).withStyle(ChatFormatting.GRAY));
         if (s.hardened()) {

@@ -70,6 +70,7 @@ public class GroundBurstClient {
         event.register(GBMenus.INTERCEPTOR_BATTERY.get(), MachineScreen::new);
         event.register(GBMenus.INTERCEPTOR_COMPLEX.get(), MachineScreen::new);
         event.register(GBMenus.MISSILE_ASSEMBLER.get(), dev.groundburst.client.screen.MissileAssemblerScreen::new);
+        event.register(dev.groundburst.content.assembly.GBAssembly.MIRV_BUS_MENU.get(), dev.groundburst.client.screen.MirvBusScreen::new);
         event.register(GBMenus.COMBUSTION_GENERATOR.get(), MachineScreen::new);
         event.register(GBMenus.ARC_FURNACE.get(), MachineScreen::new);
         event.register(GBMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:copper_plate",
+    "groundburst:copper_plate",
+    "minecraft:paper",
+    "minecraft:paper",
+    "#c:rods/steel"
+  ],
+  "result": {
+    "count": 2,
+    "id": "groundburst:rv_decoy"
+  }
+}

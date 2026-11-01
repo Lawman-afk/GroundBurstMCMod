@@ -21,6 +21,18 @@
 - It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
   breaks the beam, and an EMP knocks it out for a while.
 
+### MIRVs
+- **MIRVs**: a missile that carries several warheads and splits over the target. Put a **MIRV bus** in the warhead's
+  place: the **Heavy MIRV Bus** on a Heavy body (up to 6 Light or Medium warheads) or the **Strategic MIRV Bus** on a
+  Strategic one (up to 8 of the missile-borne nuclear warheads), each by how much of its load they take.
+- Use the bus to load it, and set its **spread** there: point, line, ring or grid, up to 150 blocks apart. Every
+  launch console and the Laser Designator honour it; the station's and the computer's maps show a circle for each
+  warhead.
+- Coming down from the top of its arc, the bus lets its re-entry vehicles go one by one, each with a crack and a puff
+  of smoke, and each falls white-hot onto its own point. Each warhead goes off by its own fuze.
+- **RV Decoys**: cheap replicas that fall with the warheads; radar and interceptors cannot tell them apart.
+- Interceptors must shoot down every re-entry vehicle on its own, and they are the hardest targets there are.
+
 ### Launchers
 - Every launcher has an **Item Port** now: the Launch Silo, the Launch Complex and the Missile Silo beside their Energy
   Port, the Cruise Missile Launcher behind its Energy Port. Pipes and hoppers load missiles through it straight into the

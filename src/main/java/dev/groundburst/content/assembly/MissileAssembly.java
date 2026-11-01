@@ -34,7 +34,10 @@ public final class MissileAssembly {
         NOT_FORMED("Finish building the structure first"),
         NEEDS_WARHEAD("Fit a class %s warhead"),
         WRONG_CLASS("A class %s warhead: build it at a %s"),
-        NEEDS_BODY("Fit a %s");
+        NEEDS_BODY("Fit a %s"),
+        // MIRVs (DESIGN.md §17.14).
+        BUS_BODY("A MIRV bus fits only a body of its own class"),
+        EMPTY_BUS("Load the MIRV bus first");
 
         public final String key;
 
@@ -46,7 +49,7 @@ public final class MissileAssembly {
     private MissileAssembly() {}
 
     public static Problem check(ItemStack warhead, ItemStack body, ItemStack motor, ItemStack output) {
-        if (!WarheadAssembly.isWarhead(warhead)) {
+        if (!isPayload(warhead)) {
             return Problem.NO_WARHEAD;
         }
         if (!(body.getItem() instanceof MissileParts.Body b)) {
@@ -67,9 +70,14 @@ public final class MissileAssembly {
 
     /**
      * Whether a body takes a warhead: a nuclear warhead only a Strategic body (and that body nothing else); any other a
-     * body of its class or bigger. A whole weapon's warhead (a fusion or exotic one) takes none.
+     * body of its class or bigger. A whole weapon's warhead (a fusion or exotic one) takes none. A MIRV bus a body of its
+     * own class, once it is loaded.
      */
     public static Problem fit(ItemStack warhead, SizeClass body) {
+        SizeClass bus = Mirv.classOf(warhead);
+        if (bus != null) {
+            return bus != body ? Problem.BUS_BODY : Mirv.rvs(warhead).isEmpty() ? Problem.EMPTY_BUS : Problem.NONE;
+        }
         var kind = AssemblyStats.kindOf(warhead);
         if (kind != null && kind.wholeWeapon()) {
             return Problem.WHOLE_WEAPON;                   // only ever built into its missile, at the ICBM Assembly Hall
@@ -88,7 +96,7 @@ public final class MissileAssembly {
      * class, its class's body, a motor that fits that body, and room in the output.
      */
     public static Problem check(ItemStack warhead, ItemStack body, ItemStack motor, ItemStack output, SizeClass size) {
-        if (!WarheadAssembly.isWarhead(warhead)) {
+        if (!isPayload(warhead)) {
             return Problem.NEEDS_WARHEAD;
         }
         if (classOf(warhead) != size) {
@@ -110,8 +118,19 @@ public final class MissileAssembly {
         return output.isEmpty() ? Problem.NONE : Problem.OUTPUT_FULL;
     }
 
+    /** What a missile can carry in its warhead's place: a warhead, or a MIRV bus (DESIGN.md §17.14). */
+    public static boolean isPayload(ItemStack stack) {
+        return WarheadAssembly.isWarhead(stack) || Mirv.isBus(stack);
+    }
+
+    /** A payload's size class: a warhead's, or a MIRV bus's (null: neither). */
+    public static @org.jspecify.annotations.Nullable SizeClass classOf(ItemStack payload) {
+        SizeClass bus = Mirv.classOf(payload);
+        return bus != null ? bus : warheadClassOf(payload);
+    }
+
     /** A warhead's size class (null: not an assembled warhead). */
-    public static @org.jspecify.annotations.Nullable SizeClass classOf(ItemStack warhead) {
+    public static @org.jspecify.annotations.Nullable SizeClass warheadClassOf(ItemStack warhead) {
         return warhead.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof dev.groundburst.content.ordnance.charge.ChargeBlock c
                 ? WarheadAssembly.sizeOf(c) : null;
     }

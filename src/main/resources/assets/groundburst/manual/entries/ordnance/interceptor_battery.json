@@ -1,7 +1,7 @@
 {
   "title": "Interceptor Battery",
   "icon": "groundburst:interceptor_battery",
-  "order": 18,
+  "order": 19,
   "items": [
     "groundburst:interceptor_battery",
     "groundburst:interceptor_missile"

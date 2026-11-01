@@ -720,6 +720,15 @@
     ],
     "subtitle": "subtitles.groundburst.missile.reentry"
   },
+  "missile.rv_release": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:launch/rv_release"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.missile.rv_release"
+  },
   "missile.staging": {
     "sounds": [
       {

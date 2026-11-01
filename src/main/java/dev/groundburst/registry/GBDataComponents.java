@@ -39,6 +39,11 @@ public final class GBDataComponents {
             COMPONENTS.registerComponentType("fuze", b -> b.persistent(dev.groundburst.content.assembly.FuzeSettings.CODEC)
                     .networkSynchronized(dev.groundburst.content.assembly.FuzeSettings.STREAM_CODEC));
 
+    /** A MIRV bus's spread: how its re-entry vehicles land round its missile's aim (DESIGN.md §17.14). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundburst.content.assembly.Mirv.Spread>> MIRV_SPREAD =
+            COMPONENTS.registerComponentType("mirv_spread", b -> b.persistent(dev.groundburst.content.assembly.Mirv.Spread.CODEC)
+                    .networkSynchronized(dev.groundburst.content.assembly.Mirv.Spread.STREAM_CODEC));
+
     /** An assembled missile: its warhead, body, motor, guidance and hardening (DESIGN.md §10). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<dev.groundburst.content.assembly.MissileSpec>> MISSILE =
             COMPONENTS.registerComponentType("missile", b -> b.persistent(dev.groundburst.content.assembly.MissileSpec.CODEC)

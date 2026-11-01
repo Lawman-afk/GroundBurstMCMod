@@ -830,10 +830,14 @@ public class LaunchStationScreen extends Screen {
         double scale = zoom();
         int tx = screenX(m.targetX() + 0.5), tz = screenY(m.targetZ() + 0.5);
         int lethal = (int) Math.round(k.lethal() / scale), reach = (int) Math.round(k.reach() / scale);
-        if (lethal > 0) {
-            Phosphor.disc(g, tx, tz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
+        if (!k.rvs().isEmpty()) {
+            LaunchComputerScreen.drawRvs(g, k, m.targetX(), m.targetZ(), scale, this::screenX, this::screenY, picked, x0, y0, x1, y1);
+        } else {
+            if (lethal > 0) {
+                Phosphor.disc(g, tx, tz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
+            }
+            Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         }
-        Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         if (k.along() / scale >= 1.5) {
             double dx = m.targetX() - m.pos().getX(), dz = m.targetZ() - m.pos().getZ(), d = Math.sqrt(dx * dx + dz * dz);
             Phosphor.ellipse(g, tx, tz, (k.along() + k.reach()) / scale, (k.across() + k.reach()) / scale, d > 1e-6 ? dx / d : 1,

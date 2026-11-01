@@ -2217,6 +2217,133 @@
           "type": "minecraft:model",
           "model": "groundburst:item/missile/cryo_warhead_cruise_stage1"
         }
+      },
+      {
+        "when": [
+          "heavy_mirv_bus",
+          "strategic_heavy_mirv_bus",
+          "icbm_heavy_mirv_bus",
+          "flight_heavy_mirv_bus",
+          "flight_strategic_heavy_mirv_bus",
+          "flight_icbm_heavy_mirv_bus"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_mirv_bus"
+        }
+      },
+      {
+        "when": [
+          "heavy_mirv_bus_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_mirv_bus_part1"
+        }
+      },
+      {
+        "when": [
+          "heavy_mirv_bus_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_mirv_bus_part2"
+        }
+      },
+      {
+        "when": [
+          "heavy_mirv_bus_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/heavy_mirv_bus_part3"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus",
+          "strategic_strategic_mirv_bus",
+          "icbm_strategic_mirv_bus",
+          "flight_strategic_mirv_bus",
+          "flight_strategic_strategic_mirv_bus",
+          "flight_icbm_strategic_mirv_bus"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus_part1"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus_part2"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus_part3"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus_s1",
+          "strategic_strategic_mirv_bus_s1",
+          "icbm_strategic_mirv_bus_s1",
+          "flight_strategic_strategic_mirv_bus_s1",
+          "flight_icbm_strategic_mirv_bus_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus_s1"
+        }
+      },
+      {
+        "when": [
+          "strategic_mirv_bus_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/strategic_mirv_bus_stage1"
+        }
+      },
+      {
+        "when": [
+          "re_entry_vehicle",
+          "strategic_re_entry_vehicle",
+          "icbm_re_entry_vehicle",
+          "flight_re_entry_vehicle",
+          "flight_strategic_re_entry_vehicle",
+          "flight_icbm_re_entry_vehicle"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/re_entry_vehicle"
+        }
+      },
+      {
+        "when": [
+          "re_entry_vehicle_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/re_entry_vehicle_part1"
+        }
       }
     ],
     "fallback": {

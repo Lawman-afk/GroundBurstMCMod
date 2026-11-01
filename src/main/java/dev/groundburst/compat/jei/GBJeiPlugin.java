@@ -136,6 +136,9 @@ public final class GBJeiPlugin implements IModPlugin {
         // The Laser Designator and the guidance that homes on it (DESIGN.md §17.13).
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_DESIGNATOR, dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get(),
                 dev.groundburst.content.assembly.GBAssembly.LASER_GUIDANCE.get());
+        // MIRVs: the buses and the decoy (DESIGN.md §17.14).
+        info(registration, dev.groundburst.content.assembly.Mirv.INFO, dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS.get(),
+                dev.groundburst.content.assembly.GBAssembly.STRATEGIC_MIRV_BUS.get(), dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get());
         // The Cruise Missile Launcher and the motor that makes a cruise missile (slice 9c, DESIGN.md §17.11).
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_CRUISE_LAUNCHER, dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.item().get(),
                 dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.item().get(), dev.groundburst.content.launch.GBLaunch.CRUISE_SPAWNER.get());

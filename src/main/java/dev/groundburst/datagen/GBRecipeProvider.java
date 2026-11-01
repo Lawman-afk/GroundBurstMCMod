@@ -879,6 +879,24 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SENSOR_ARRAY).requires(GBParts.SERVO)
                 .requires(GBTags.commonItem("plates/steel"))
                 .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        // DESIGN.md §17.14: the MIRV buses (a deck of RV mounts on a post-boost stage that steers and lets them go, under
+        // its shroud) and the decoy RV (a thin copper shell, light as a balloon, on a spine).
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS, 1)
+                .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SERVO).requires(GBParts.SERVO)
+                .requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.DENSE_STEEL_PLATE)
+                .requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("rods/steel"))
+                .requires(GBTags.commonItem("rods/steel")).requires(GBTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.STRATEGIC_MIRV_BUS, 1)
+                .requires(dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBParts.SERVO).requires(GBParts.SERVO).requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.TUNGSTEN_PLATE)
+                .requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.DENSE_STEEL_PLATE)
+                .unlockedBy(getHasName(dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS),
+                        has(dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS)).save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.RV_DECOY, 2)
+                .requires(GBParts.COPPER_PLATE).requires(GBParts.COPPER_PLATE).requires(Items.PAPER).requires(Items.PAPER)
+                .requires(GBTags.commonItem("rods/steel"))
+                .unlockedBy(getHasName(GBParts.COPPER_PLATE), has(GBParts.COPPER_PLATE)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.HARDENED_ELECTRONICS, 1)
                 .requires(GBParts.LEAD_PLATE).requires(GBParts.LEAD_PLATE).requires(GBParts.ADVANCED_CIRCUIT)
                 .requires(GBParts.COPPER_WIRE)

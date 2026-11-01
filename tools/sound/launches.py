@@ -111,6 +111,17 @@ def stage_separation() -> np.ndarray:
     return R.finish(x, tail=0.3)
 
 
+def rv_release() -> np.ndarray:
+    """A MIRV's bus letting a re-entry vehicle go, high overhead (1.2 s; DESIGN.md §17.14): its separation charge's crack
+    (the stage bolts', smaller: the maroon's bang sped up), then the hiss of the bus's cold-gas thrusters backing it off
+    the RV, heard from far below (the air takes its edge)."""
+    crack = R.tail_fade(take("maroon", 1.35, aligned=True)[: int(0.22 * S.SR)], 0.15)
+    n = int(0.9 * S.SR)
+    hiss = S.bandpass(S.white(0.9, 714), 1800, 7000)[:n] * S.adsr(n, 0.02, 0.25, 0.35, 0.45)
+    x = R.air(R.layer(1.2, (at(crack, -15), 0.0, 1.0), (at(hiss, -24), 0.08, 1.0)), 450)
+    return R.finish(x, tail=0.25)
+
+
 def reentry_loop() -> np.ndarray:
     """A warhead roaring back down: a seamless 4 s loop. Round 2 (round 1, a fighter's pass played faster, "sounds
     nothing like a re-entry and just sounds like a jet fly over"; the user preferred the old): the old synthesized
@@ -197,7 +208,7 @@ def nuclear_erect() -> np.ndarray:
 #: How loud each is (its loudest 3 s, LUFS): as loud as the synthesized sound it replaces, whose in-game volume was tuned
 #: to it (the loops are set before their seam is closed).
 LOUDNESS = {"launch/siren": -13.8, "launch/missile_launch": -8.6, "launch/missile_engine_loop": -15.7,
-            "launch/stage_separation": -22.8, "launch/reentry_loop": -14.5, "launch/silo_doors": -11.5,
+            "launch/stage_separation": -22.8, "launch/rv_release": -24.0, "launch/reentry_loop": -14.5, "launch/silo_doors": -11.5,
             "launch/cruise_launch": -13.8, "launch/cruise_engine_loop": -13.1, "launch/cruise_elevate": -15.5,
             "superweapon/scud_erect": -16.4, "superweapon/nuclear_erect": -16.3}
 LOOPS = ("launch/missile_engine_loop", "launch/reentry_loop", "launch/cruise_engine_loop")
@@ -207,7 +218,8 @@ def launch_set() -> dict[str, np.ndarray]:
     """Every launch and superweapon sound made from recordings (the superweapons' warning and ready tones stay
     synthesized: recipes.superweapon_sounds), each as loud as the one it replaces."""
     made = {"launch/siren": siren(), "launch/missile_launch": missile_launch(), "launch/missile_engine_loop": missile_engine_loop(),
-            "launch/stage_separation": stage_separation(), "launch/reentry_loop": reentry_loop(), "launch/silo_doors": silo_doors(),
+            "launch/stage_separation": stage_separation(), "launch/rv_release": rv_release(), "launch/reentry_loop": reentry_loop(),
+            "launch/silo_doors": silo_doors(),
             "launch/cruise_launch": cruise_launch(), "launch/cruise_engine_loop": cruise_engine_loop(),
             "launch/cruise_elevate": cruise_elevate(), "superweapon/scud_erect": scud_erect(),
             "superweapon/nuclear_erect": nuclear_erect()}
