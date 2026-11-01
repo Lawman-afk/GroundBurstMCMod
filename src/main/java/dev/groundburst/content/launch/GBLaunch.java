@@ -329,7 +329,7 @@ public final class GBLaunch {
 
     /** JEI's page for the Laser Designator and laser guidance. */
     public static final String INFO_DESIGNATOR = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.laser_designator",
-            "Hold use to lase: a red beam and spot up to 256 blocks off, seen by everyone, zoomed in your sight with the range "
+            "Hold use to lase: a red beam and spot as far off as you can see, seen by everyone, zoomed in your sight with the range "
                     + "and coordinates. Missiles with a Laser Guidance Unit home on the spot as they come down, if it is within 48 "
                     + "blocks (and 5% of their flight) of where they were aimed, from a designator on their launcher's network (or "
                     + "yours, from a launcher on none). Use it on a Launch Control Station to join its network: the station's map "

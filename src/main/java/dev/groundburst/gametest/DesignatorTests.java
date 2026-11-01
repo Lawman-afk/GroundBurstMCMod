@@ -2,6 +2,11 @@ package dev.groundburst.gametest;
 
 import java.util.List;
 
+import dev.groundburst.content.assembler.AssemblerClass;
+import dev.groundburst.content.assembler.MissileAssemblerBlockEntity;
+import dev.groundburst.content.assembly.AssemblyStats;
+import dev.groundburst.content.assembly.GBAssembly;
+import dev.groundburst.content.assembly.MissileAssembly;
 import dev.groundburst.content.assembly.MissileParts;
 import dev.groundburst.content.assembly.MissileSpec;
 import dev.groundburst.content.assembly.SizeClass;
@@ -13,6 +18,7 @@ import dev.groundburst.content.launch.LaunchCodesItem;
 import dev.groundburst.content.launch.LaunchNetwork;
 import dev.groundburst.content.launch.LaunchSiloBlockEntity;
 import dev.groundburst.content.launch.LaunchStationBlockEntity;
+import dev.groundburst.content.machine.MachineMenu;
 import dev.groundburst.content.ordnance.GBOrdnance;
 import dev.groundburst.content.ordnance.ThrownExplosive;
 import dev.groundburst.registry.GBDataComponents;
@@ -20,6 +26,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +34,9 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -51,6 +60,7 @@ final class DesignatorTests {
         GBGameTests.test("smoke_breaks_the_designator_beam", GBGameTests.FLOOR_16, 80, DesignatorTests::smoke);
         GBGameTests.test("laser_missile_homes_on_the_spot", GBGameTests.FLOOR_16, 60, DesignatorTests::homes);
         GBGameTests.test("designator_calls_fire_on_armed_launchers", GBGameTests.FLOOR_16, 40, DesignatorTests::callsFire);
+        GBGameTests.test("laser_guided_missile_reads_everywhere", GBGameTests.FLOOR_16, 20, DesignatorTests::reads);
     }
 
     /** A stone wall across the far side, three high. */
@@ -206,6 +216,37 @@ final class DesignatorTests {
             helper.assertTrue(st.network(level).log().size() == log.size(), "one call for each lock");
             helper.setBlock(SILO, Blocks.AIR);                             // scrubbed: no missile left flying after the test
                 helper.succeed();
+        });
+    }
+
+    /**
+     * A laser-guided missile read everywhere it is shown (a missing name for laser guidance crashed the assembler's
+     * screen): the assembler's readout with the laser unit loaded, the missile's tooltip and stats; taken apart, the laser
+     * unit comes back.
+     */
+    private static void reads(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MissileAssemblerBlockEntity a = AssemblerTests.assembler(helper, AssemblerClass.LIGHT, true);
+        SizeClass size = AssemblerClass.LIGHT.size;
+        a.energy().generate(AssemblerClass.LIGHT.capacity);
+        a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_WARHEAD, new ItemStack(GBOrdnance.HE_WARHEAD.item().get()));
+        a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_BODY, new ItemStack(GBAssembly.BODIES.get(size.ordinal()).get()));
+        a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_MOTOR,
+                new ItemStack(GBAssembly.MOTORS.get(MissileAssembly.rocketsFor(size).getLast().ordinal()).get()));
+        a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_GUIDANCE, new ItemStack(GBAssembly.LASER_GUIDANCE.get()));
+        helper.runAfterDelay(3, () -> {
+            Player p = helper.makeMockServerPlayer(GameType.SURVIVAL);
+            MachineMenu menu = (MachineMenu) a.createMenu(0, p.getInventory(), p);
+            List<Component> lines = a.readout(menu);
+            helper.assertTrue(lines.stream().anyMatch(c -> c.getString().toLowerCase(java.util.Locale.ROOT).contains("laser")),
+                    "the readout names laser guidance: " + lines);
+            ItemStack missile = MissileAssembly.missile(new MissileSpec(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), size,
+                    MissileParts.Motor.SRM_I, MissileParts.Guidance.LASER, false));
+            helper.assertTrue(!missile.getTooltipLines(Item.TooltipContext.of(level), null, TooltipFlag.NORMAL).isEmpty(), "its tooltip");
+            helper.assertTrue(!AssemblyStats.missile(missile, level.registryAccess()).isEmpty(), "its stats");
+            helper.assertTrue(MissileAssembly.takeApart(missile).stream().anyMatch(s -> s.is(GBAssembly.LASER_GUIDANCE.get())),
+                    "taken apart, the laser unit comes back");
+            helper.succeed();
         });
     }
 }

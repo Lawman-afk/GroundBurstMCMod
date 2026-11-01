@@ -68,6 +68,11 @@ public class LaserDesignatorItem extends Item {
     private record Lock(Vec3 pos, int ticks, boolean fired) {}
 
     private static final Map<UUID, Lock> LOCKS = new HashMap<>();
+    /** Each lasing player's beam as last sent to those who see it ({@link #NOWHERE}: on nothing). */
+    private static final Map<UUID, Vec3> LAST_SENT = new HashMap<>();
+    private static final Vec3 NOWHERE = new Vec3(Double.NaN, Double.NaN, Double.NaN);
+    /** The photographers' runs (a development aid): the holder is sent its own beam too, to picture it as others see it. */
+    private static final boolean BEAM_TO_SELF = Boolean.getBoolean("groundburst.fxShots");
 
     public LaserDesignatorItem(Properties properties) {
         super(properties.stacksTo(1).component(GBDataComponents.ENERGY.get(), CAPACITY).component(GBDataComponents.DESIGNATOR_MODE.get(), 0));
@@ -166,7 +171,8 @@ public class LaserDesignatorItem extends Item {
             stack.set(GBDataComponents.ENERGY.get(), Math.max(0, stored(stack) - USE));
         }
         long net = network(server, stack);
-        Designators.Hit hit = Designators.trace(server, player);
+        Designators.Hit hit = Designators.trace(server, player, Designators.range(player));
+        beam(player, hit);
         UUID id = player.getUUID();
         if (hit == null) {
             Designators.stop(server, id);
@@ -181,6 +187,27 @@ public class LaserDesignatorItem extends Item {
         }
         if (server.getGameTime() % STATUS == 0) {
             sendStatus(server, player, stack, net, hit);
+        }
+    }
+
+    /**
+     * The beam for every player who can see its holder (not the holder: its own client traces its own, exactly): where it
+     * lands, or that it lands on nothing. Sent each tick it moves, and every few ticks while it is still.
+     */
+    private static void beam(ServerPlayer player, Designators.@Nullable Hit hit) {
+        Vec3 at = hit == null ? null : hit.surface();
+        Vec3 last = LAST_SENT.get(player.getUUID());
+        long now = player.level().getGameTime();
+        boolean moved = at == null ? last != NOWHERE : last == null || last == NOWHERE || last.distanceToSqr(at) > 1e-4;
+        if (!moved && now % STATUS != 0) {
+            return;
+        }
+        LAST_SENT.put(player.getUUID(), at == null ? NOWHERE : at);
+        DesignatorPayloads.Beam payload = at == null ? new DesignatorPayloads.Beam(player.getId(), false, 0, 0, 0)
+                : new DesignatorPayloads.Beam(player.getId(), true, at.x, at.y, at.z);
+        PacketDistributor.sendToPlayersTrackingEntity(player, payload);
+        if (BEAM_TO_SELF && player.connection != null && player.connection.hasChannel(DesignatorPayloads.Beam.TYPE)) {
+            PacketDistributor.sendToPlayer(player, payload);
         }
     }
 
@@ -240,6 +267,7 @@ public class LaserDesignatorItem extends Item {
         if (level instanceof ServerLevel server) {
             Designators.stop(server, entity.getUUID());
             LOCKS.remove(entity.getUUID());
+            LAST_SENT.remove(entity.getUUID());
         }
     }
 
@@ -252,6 +280,7 @@ public class LaserDesignatorItem extends Item {
 
     static void clear() {
         LOCKS.clear();
+        LAST_SENT.clear();
     }
 
     @Override

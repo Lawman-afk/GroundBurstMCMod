@@ -9,7 +9,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "A **Laser Designator** marks a target for your missiles. Hold use and it goes to your eye: the view zooms in, the reticle shows where the beam lands, and the rangefinder gives the **range** and the **spot's coordinates** (and the creature, if it is on one). A thin red beam runs from it to a pulsing red spot, and everyone sees both: by day they are faint, at night they shine. It reaches **256 blocks** over loaded ground and picks out creatures within 128; on a creature the spot follows it."
+      "text": "A **Laser Designator** marks a target for your missiles. Hold use and it goes to your eye: the view zooms in, the reticle shows where the beam lands, and the rangefinder gives the **range** and the **spot's coordinates** (and the creature, if it is on one). A thin red beam runs from it to a pulsing red spot, and everyone sees both: by day they are faint, at night they shine. It reaches **as far as you can see** (your view distance, up to 1,024 blocks), creatures and blocks alike; on a creature the spot follows it. Other players see the whole beam, out to the spot the missiles use."
     },
     {
       "type": "text",

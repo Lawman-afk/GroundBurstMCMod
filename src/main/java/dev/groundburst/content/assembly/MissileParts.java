@@ -147,7 +147,7 @@ public final class MissileParts {
     static final String T_ACCURACY_SHARE = GBLang.add(GroundBurst.MODID + ".missile.accuracy_share", "Lands within %s%% of the distance");
     static final String T_ACCURACY_BLOCKS = GBLang.add(GroundBurst.MODID + ".missile.accuracy_blocks", "Lands within %s blocks of the target");
     static final String T_ACCURACY_LASER = GBLang.add(GroundBurst.MODID + ".missile.accuracy_laser",
-            "Homes on a Laser Designator's spot; without one, lands within 4% of the distance");
+            "Homes on a laser spot, else within 4%");
     static final String T_BODY_TIP = GBLang.add(GroundBurst.MODID + ".missile.body_tip", "Takes class %s warheads");
     static final String T_STRATEGIC_TIP = GBLang.add(GroundBurst.MODID + ".missile.strategic_tip", "Takes nuclear warheads only; fires from a Launch Complex or a Missile Silo");
     static final String T_MOTOR_TIP = GBLang.add(GroundBurst.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");
@@ -156,10 +156,10 @@ public final class MissileParts {
     static final String T_HARDENED_TIP = GBLang.add(GroundBurst.MODID + ".missile.hardened_tip", "Optional: an EMP never leaves the missile a dud");
     static final String T_BENCH = GBLang.add(GroundBurst.MODID + ".missile.bench", "Fitted at a missile assembler");
     static final String T_BENCH_AT = GBLang.add(GroundBurst.MODID + ".missile.bench_at", "Fitted at a %s");
-    static final String[] GUIDANCE_NAMES = {
-            GBLang.add(GroundBurst.MODID + ".missile.guidance.unguided", "Unguided"),
-            GBLang.add(GroundBurst.MODID + ".missile.guidance.inertial", "Inertial"),
-            GBLang.add(GroundBurst.MODID + ".missile.guidance.gps", "GPS")};
+    static final String T_UNGUIDED_NAME = GBLang.add(GroundBurst.MODID + ".missile.guidance.unguided", "Unguided");
+    static final String T_INERTIAL_NAME = GBLang.add(GroundBurst.MODID + ".missile.guidance.inertial", "Inertial");
+    static final String T_GPS_NAME = GBLang.add(GroundBurst.MODID + ".missile.guidance.gps", "GPS");
+    static final String T_LASER_NAME = GBLang.add(GroundBurst.MODID + ".missile.guidance.laser", "Laser");
 
     private static Component grey(Component c) {
         return c.copy().withStyle(ChatFormatting.GRAY);
@@ -290,8 +290,14 @@ public final class MissileParts {
         return look(warheadId) + "_stage" + k;
     }
 
+    /** Its name's key (a switch, so a guidance added later cannot go nameless). */
     public static String guidanceName(Guidance g) {
-        return GUIDANCE_NAMES[g.ordinal()];
+        return switch (g) {
+            case UNGUIDED -> T_UNGUIDED_NAME;
+            case INERTIAL -> T_INERTIAL_NAME;
+            case GPS -> T_GPS_NAME;
+            case LASER -> T_LASER_NAME;
+        };
     }
 
     public static String bodyName(SizeClass s) {

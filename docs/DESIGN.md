@@ -2581,7 +2581,8 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
 **How it works:**
 - *The Laser Designator* (`laser_designator`): held to the eye (as a spyglass, a 2x zoom) while you hold use: a thin red
   beam from it to the point under the reticle and a pulsing red spot there, seen by every player; on a creature the spot
-  follows it. Up to 256 blocks over loaded ground. Its HUD: a rangefinder (range and the spot's coordinates), its mode,
+  follows it. As far as its holder sees (its view distance; after the user's look, 2026-11-01: it was 256 blocks).
+  Its HUD: a rangefinder (range and the spot's coordinates), its mode,
   its charge, the launchers able to reach the spot and the missiles homing on it. It runs on a charge (40,000 FE, 20 a tick
   while lasing: a hundred seconds; charged in a Battery Charger) and an EMP kills it for a while. Smoke (a smoke or gas
   grenade's cloud) in the way breaks the beam.
@@ -2602,7 +2603,9 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
 **As built** (2026-11-01):
 - `laser_designator` (`LaserDesignatorItem`): used as a spyglass is (`ItemUseAnimation.SPYGLASS`, up to an hour); each
   tick lasing it draws 20 FE (none in creative), traces (`Designators.trace`: along the look over loaded ground only,
-  8-block steps, to 256; creatures within 128 picked first; a smoke or gas grenade's cloud across it: no spot) and
+  8-block steps, to its holder's view distance in blocks (`Designators.range`: the server's view distance, or the
+  client's if it asks for less, to 1,024); creatures along all of it picked first, searched 16 blocks of beam at a time;
+  a smoke or gas grenade's cloud across it: no spot) and
   records the spot (`Designators`: per dimension and player, its network, live for 4 ticks). Every 5 ticks it sends its
   holder a `designator_status` (mode, lock, armed launchers reaching the spot, missiles homing, network, charge), only
   over a connection that has the channel. Sneak-use switches mode; used on a station (any part) it takes its network
@@ -2619,7 +2622,11 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   just under the eye in our own sight) in camera-facing pieces as wide on screen at any range (at most 16 blocks long,
   shorter near the camera so a beam passing close keeps its width), additive red over `textures/fx/laser.png`; the spot
   pulsing five times a second, its middle also drawn blended so it shows red on a bright face by day; a glint at the
-  port; and for our own designator in call-for-fire mode a ring closing on the spot. `DesignatorScope`: in first person the FOV
+  port; and for our own designator in call-for-fire mode a ring closing on the spot. Our own beam is traced on the
+  client once a frame (the sight reads the same trace) to our render distance; another player's beam goes to the spot
+  the server traced: the server sends `designator_beam` (the holder's entity id, where it lands or that it lands on
+  nothing) to every player tracking the holder, each tick it moves and every 5 ticks while still. Traced on the client
+  from the holder's synced rotation (rounded to 1.4 degrees), a far beam would have missed the real spot by blocks. `DesignatorScope`: in first person the FOV
   halved and the mouse slowed to match, the hand and crosshair hidden, the eyepiece (`textures/gui/designator_scope.png`)
   with a lit duplex reticle, the readouts (mode, network, range, coordinates, creature, armed, homing, charge) and the
   lock brackets; in third person the readouts under the crosshair.
@@ -4165,6 +4172,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | After the user's look at the Laser Designator: the missile assembler's screen crashed with a Laser Guidance Unit loaded (laser guidance had no name; `guidanceName` is now a switch over every guidance), and laser guidance's stats read "Homes On: A Laser Spot" and "Else Within: n blocks" (one row was too long for the panel). By day, light added over bright ground washed the beam out to a pale line: a thin red middle is drawn blended under it. The designator reaches as far as its holder sees (its view distance, to 1,024 blocks; it was 256, creatures 128), and other players draw its whole beam to the server's spot (`designator_beam`). |
 | 2026-11-01 | The Laser Designator (§17.13), the second item of the user's plan: a handheld designator, a new Laser Guidance Unit that homes on its spot as it comes down, and call for fire on a station's network. Spots are the server's (each player's, per dimension, fresh for 4 ticks); the beam is traced on each side alike (over loaded ground only, smoke breaks it), so every player sees the same spot the missiles use. Taking a missile apart maps each guidance to its own part (it assumed GPS for anything not inertial). |
 | 2026-10-31 | Version **0.4.0** (the user's request: a jar to upload, the GitHub page and the CurseForge description updated): the Launch Control Station, the alarm system, the Interceptor Complex, the Storm's EMP pulses. README and `docs/CURSEFORGE.md` gain the station and two screenshots (the station, the alarm wall at night); the station leaves the Planned list. |
 | 2026-10-31 | After the user's look at the alarms: the klaxon rebuilt clean (its horn flaring ring by ring), the siren's horn and drum top, the beacon's open lens top and the Emergency Light's cage round its sides fixed (§18.6). The **Interceptor Complex made dearer** (the user's call): its controller is built round a whole Interceptor Battery with a superconducting coil, Launch Cells and Phased Array Panels move to dense steel, tungsten and military circuits (§18.5, §26). |

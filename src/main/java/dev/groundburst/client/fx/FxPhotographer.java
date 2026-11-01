@@ -214,6 +214,10 @@ public final class FxPhotographer {
                 new Scene("designator_back", "designator", 40, 1.5f, List.of(25), "13000"),
                 new Scene("designator_carry", "designator", 40, 1.5f, List.of(25)),
                 new Scene("designator_carry_front", "designator", 40, 1.5f, List.of(25)),
+                // Far: the pillbox 300 blocks off, through the sight; and from a camera off to one side, the whole beam
+                // out to it, drawn from the server's spot as other players see it.
+                new Scene("designator_far", "designator", 300, 0.2f, List.of(300)),
+                new Scene("designator_side", "designator", 200, 0.3f, List.of(30)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -224,6 +228,7 @@ public final class FxPhotographer {
                 new Scene("asm_strategic_close", "asm_strategic", 17, 6, List.of(60, 200, 400, 700)),
                 new Scene("asm_strategic_aerial", "asm_strategic", 14, 34, List.of(200, 700)),
                 new Scene("asm_ui", "asm_medium", 4, 0, List.of(30)),
+                new Scene("asm_laser_ui", "asm_medium", 4, 0, List.of(30)),
                 new Scene("asm_jei", "asm_medium", 4, 0, List.of(25, 45)),
                 new Scene("assembly_mow_ui", "assembly", 4, 0, List.of(30, 44)),
                 new Scene("assembly_nuke_ui", "assembly", 4, 0, List.of(30, 44)),
@@ -680,6 +685,8 @@ public final class FxPhotographer {
     /** Where the hall scenes put the ICBM Assembly Hall's controller. */
     private static net.minecraft.core.BlockPos hallAt;
     private static net.minecraft.core.BlockPos assemblerAt;
+    /** The assembler scene with the Laser Guidance Unit loaded (not started). */
+    private static boolean assemblerLaser;
 
     /**
      * A missile assembler (DESIGN.md §10.4), facing north with its controller at {@code z} (the structure running south
@@ -705,10 +712,12 @@ public final class FxPhotographer {
                     new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.BODIES.get(kind.size.ordinal()).get()));
             inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_MOTOR, new net.minecraft.world.item.ItemStack(
                     dev.groundburst.content.assembly.GBAssembly.MOTORS.get(dev.groundburst.content.assembly.MissileAssembly.rocketsFor(kind.size).getLast().ordinal()).get()));
-            inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_GUIDANCE,
-                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.GPS_GUIDANCE.get()));
+            inv.setItem(dev.groundburst.content.assembler.MissileAssemblerBlockEntity.SLOT_GUIDANCE, new net.minecraft.world.item.ItemStack(
+                    assemblerLaser ? dev.groundburst.content.assembly.GBAssembly.LASER_GUIDANCE.get() : dev.groundburst.content.assembly.GBAssembly.GPS_GUIDANCE.get()));
             a.energy().generate(kind.capacity);
-            a.startAssembly();
+            if (!assemblerLaser) {
+                a.startAssembly();                          // (the laser one waits, ready: its screen shows what it will make)
+            }
         }
     }
 
@@ -1094,6 +1103,9 @@ public final class FxPhotographer {
      * creative player standing 40 blocks west of it, the designator in hand (use is held down from the fourth tick). In the first, a laser-guided
      * missile from far beyond the pillbox, aimed 22 blocks south of it, 76 ticks out: it homes on the spot.
      */
+    /** The side scene's camera (an armour stand's entity id; -1: none). */
+    private static volatile int sideCamera = -1;
+
     private static void designatorSite(ServerLevel level, int x, int ground, Scene s) {
         var concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get().defaultBlockState();
         var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
@@ -1113,6 +1125,20 @@ public final class FxPhotographer {
         player.teleportTo(level, x - s.distance() + 0.5, ground, 0.5, java.util.Set.of(), -90, s.pitch(), true);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
                 new net.minecraft.world.item.ItemStack(dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get()));
+        if (s.name().equals("designator_side")) {
+            // An invisible armour stand off to one side and behind, the camera: the holder on the left of the view, its
+            // beam running away across it to the pillbox.
+            var stand = new net.minecraft.world.entity.decoration.ArmorStand(net.minecraft.world.entity.EntityTypes.ARMOR_STAND, level);
+            stand.setInvisible(true);
+            stand.setNoGravity(true);
+            double cx = x - s.distance() - 9.5, cy = ground + 2.5, cz = 13.5;
+            double lx = x - s.distance() + 60, lz = 0.5;
+            float yaw = (float) Math.toDegrees(Math.atan2(-(lx - cx), lz - cz));
+            stand.snapTo(cx, cy, cz, yaw, 8);
+            stand.setYHeadRot(yaw);
+            level.addFreshEntity(stand);
+            sideCamera = stand.getId();
+        }
         if (s.name().equals("designator")) {
             var spec = new dev.groundburst.content.assembly.MissileSpec(
                     new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()),
@@ -1552,6 +1578,9 @@ public final class FxPhotographer {
             site++;
             mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
             mc.options.renderDistance().set(24);
+            if (scene.name().equals("designator_far")) {
+                mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
+            }
             Scene s = scene;
             int x = site * 1200;
             server.execute(() -> {
@@ -1853,6 +1882,7 @@ public final class FxPhotographer {
                     return;
                 }
                 if (s.profile().startsWith("asm_")) {
+                    assemblerLaser = s.name().contains("laser");
                     var kind = dev.groundburst.content.assembler.AssemblerClass.valueOf(s.profile().substring(4).toUpperCase(java.util.Locale.ROOT));
                     assemblerSite(level, x, ground, kind, -(dev.groundburst.content.assembler.GBAssemblers.definition(kind).size()[2] - 1) / 2);
                     return;
@@ -2118,7 +2148,7 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.name().equals("asm_ui") && step >= 0 && clock == 12 && assemblerAt != null) {
+        if ((scene.name().equals("asm_ui") || scene.name().equals("asm_laser_ui")) && step >= 0 && clock == 12 && assemblerAt != null) {
             var at = assemblerAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.assembler.MissileAssemblerBlockEntity be) {
@@ -2183,6 +2213,10 @@ public final class FxPhotographer {
             mc.options.setCameraType(scene.name().endsWith("_front") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
                     : scene.name().endsWith("_back") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON);
             mc.options.keyUse.setDown(!scene.name().contains("_carry"));   // use held down: it goes to the eye and lases while held
+            if (scene.name().endsWith("_side") && sideCamera >= 0 && mc.level.getEntity(sideCamera) != null) {
+                mc.setCameraEntity(mc.level.getEntity(sideCamera));
+                LaserFx.serverBeamForSelf = true;
+            }
         }
         if (scene.name().equals("station_ui") && step >= 0 && clock == 14 && stationAt != null) {
             dev.groundburst.content.launch.LaunchStationBlock.screenHook.accept(stationAt);
@@ -2328,6 +2362,9 @@ public final class FxPhotographer {
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
             if (scene.profile().equals("designator")) {
+                mc.setCameraEntity(mc.player);
+                LaserFx.serverBeamForSelf = false;
+                sideCamera = -1;
                 mc.options.keyUse.setDown(false);
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 mc.player.stopUsingItem();

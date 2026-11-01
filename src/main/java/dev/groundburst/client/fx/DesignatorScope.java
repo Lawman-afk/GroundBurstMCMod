@@ -127,7 +127,7 @@ public final class DesignatorScope {
         }
         float partial = delta.getGameTimeDeltaPartialTick(false);
         Vec3 eye = player.getEyePosition(partial);
-        Designators.Hit hit = Designators.trace(mc.level, player, eye, player.getViewVector(partial));
+        Designators.Hit hit = LaserFx.ourHit(mc, partial);                 // the beam's own trace, as far as we see
         Readout r = readout(player, player.getUseItem(), hit, eye);
         if (mc.options.getCameraType().isFirstPerson()) {
             eyepiece(g, mc.font, r, player.tickCount + partial);

@@ -12,6 +12,7 @@ import dev.groundburst.content.ordnance.ThrownExplosive;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
@@ -31,8 +32,13 @@ public final class Designators {
     /** A spot: whose, on which network (0: its designator is linked to none), where, when it was last lased, on a creature. */
     public record Spot(UUID player, long net, Vec3 pos, long seen, boolean onEntity) {}
 
-    /** How far a designator reaches over loaded ground, and how far it picks out creatures, blocks. */
-    public static final int RANGE = 256, ENTITY_RANGE = 128;
+    /**
+     * How far a designator reaches when nothing says how far its holder sees, and the farthest it ever reaches (64
+     * chunks): it reaches as far as its holder sees, over loaded ground, creatures and blocks alike.
+     */
+    public static final int RANGE = 256, MAX_RANGE = 1024;
+    /** The stretch of beam searched for creatures at a time (a box round a long beam would hold thousands of chunks). */
+    private static final double STRETCH = 16;
     /** Ticks a spot lasts after it was last lased. */
     private static final int FRESH = 4;
     private static final Map<ResourceKey<Level>, Map<UUID, Spot>> SPOTS = new HashMap<>();
@@ -135,30 +141,42 @@ public final class Designators {
 
     // --- the beam ---------------------------------------------------------------------------------------------------------
     /**
+     * How far {@code player} sees, in blocks: its view distance (the server's, or its own if it asks for less, as the
+     * server sends it chunks), to {@link #MAX_RANGE}.
+     */
+    public static int range(ServerPlayer player) {
+        int server = Math.max(2, player.level().getServer().getPlayerList().getViewDistance());   // (a test server says 0)
+        int chunks = Math.clamp(player.requestedViewDistance(), 2, server);
+        return Math.min(MAX_RANGE, chunks * 16 + 8);
+    }
+
+    /**
      * Where a designator's beam lands: {@code pos} where missiles home (a block's face, or a creature's middle), {@code surface}
      * where the spot is seen (the face, or where the beam meets the creature), and the creature if it is one.
      */
     public record Hit(Vec3 pos, Vec3 surface, @Nullable Entity entity) {}
 
-    /**
-     * Where {@code holder}'s beam lands: along its look, up to {@link #RANGE} blocks over loaded ground (it stops where the
-     * ground is not loaded rather than load it), the first creature within {@link #ENTITY_RANGE} or else the first
-     * block; null if it reaches neither, or smoke is in the way.
-     */
+    /** As {@link #trace(Level, Entity, double)}, to {@link #RANGE}. */
     public static @Nullable Hit trace(Level level, Entity holder) {
-        return trace(level, holder, holder.getEyePosition(), holder.getViewVector(1f));
+        return trace(level, holder, RANGE);
     }
 
-    /** As {@link #trace(Level, Entity)}, from {@code eye} along {@code look} (a frame's, on the client). */
-    public static @Nullable Hit trace(Level level, Entity holder, Vec3 eye, Vec3 look) {
-        double length = loaded(level, eye, look);
+    /**
+     * Where {@code holder}'s beam lands: along its look, up to {@code range} blocks over loaded ground (it stops where the
+     * ground is not loaded rather than load it), the first creature or else the first block; null if it reaches neither,
+     * or smoke is in the way.
+     */
+    public static @Nullable Hit trace(Level level, Entity holder, double range) {
+        return trace(level, holder, holder.getEyePosition(), holder.getViewVector(1f), range);
+    }
+
+    /** As {@link #trace(Level, Entity, double)}, from {@code eye} along {@code look} (a frame's, on the client). */
+    public static @Nullable Hit trace(Level level, Entity holder, Vec3 eye, Vec3 look, double range) {
+        double length = loaded(level, eye, look, Math.min(range, MAX_RANGE));
         Vec3 end = eye.add(look.scale(length));
         BlockHitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, holder));
         double blockAt = block.getType() == HitResult.Type.MISS ? length : eye.distanceTo(block.getLocation());
-        double entityAt = Math.min(blockAt, ENTITY_RANGE);
-        Vec3 entityEnd = eye.add(look.scale(entityAt));
-        EntityHitResult creature = ProjectileUtil.getEntityHitResult(holder, eye, entityEnd, holder.getBoundingBox().expandTowards(look.scale(entityAt)).inflate(1),
-                e -> !e.isSpectator() && e.isPickable() && e != holder.getVehicle(), entityAt * entityAt);
+        EntityHitResult creature = firstCreature(holder, eye, look, blockAt);
         Hit hit;
         if (creature != null) {
             Entity e = creature.getEntity();
@@ -171,16 +189,30 @@ public final class Designators {
         return smoke(level, eye, hit.surface()) ? null : hit;
     }
 
-    /** How far along {@code look} from {@code eye} the ground stays loaded (to {@link #RANGE}). */
-    private static double loaded(Level level, Vec3 eye, Vec3 look) {
+    /** The first creature along the beam before {@code limit}, a stretch at a time from the eye out. */
+    private static @Nullable EntityHitResult firstCreature(Entity holder, Vec3 eye, Vec3 look, double limit) {
+        for (double a = 0; a < limit; a += STRETCH) {
+            double b = Math.min(limit, a + STRETCH);
+            AABB box = new AABB(eye.add(look.scale(a)), eye.add(look.scale(b))).inflate(2);
+            EntityHitResult hit = ProjectileUtil.getEntityHitResult(holder, eye, eye.add(look.scale(b)), box,
+                    e -> !e.isSpectator() && e.isPickable() && e != holder.getVehicle(), b * b);
+            if (hit != null) {
+                return hit;
+            }
+        }
+        return null;
+    }
+
+    /** How far along {@code look} from {@code eye} the ground stays loaded (to {@code range}). */
+    private static double loaded(Level level, Vec3 eye, Vec3 look, double range) {
         double step = 8, d = step;
-        while (d <= RANGE) {
+        while (d <= range) {
             if (!level.hasChunkAt(BlockPos.containing(eye.add(look.scale(d))))) {
                 return d - step;
             }
             d += step;
         }
-        return RANGE;
+        return range;
     }
 
     /** Whether a smoke (or gas) grenade's cloud lies across the beam from {@code from} to {@code to}. */

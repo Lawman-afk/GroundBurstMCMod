@@ -5,7 +5,8 @@
 ### Laser Designator
 - **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
   **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot
-  that everyone sees: faint by day, bright at night. It reaches 256 blocks and picks out creatures within 128.
+  that everyone sees all the way to the spot: faint by day, bright at night. It reaches as far as you can see (your
+  view distance, up to 1,024 blocks).
 - **Laser Guidance Unit**, a new guidance part: the missile flies as inertial guidance until it is coming down, then
   homes on a designator's spot near where it was aimed and lands on it, following it if it moves.
 - Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you

@@ -67,6 +67,9 @@ public final class AssemblyStats {
     static final String LANDS = GBLang.add(P + "lands", "Lands Within");
     static final String EMP = GBLang.add(P + "emp", "EMP");
     static final String V_BLOCKS = GBLang.add(P + "blocks", "%s blocks");
+    /** Laser guidance: it homes on a designator's spot; without one, it lands within its inertial scatter. */
+    static final String HOMES = GBLang.add(P + "homes", "Homes On"), ELSE = GBLang.add(P + "else", "Else Within");
+    static final String V_SPOT = GBLang.add(P + "laser_spot", "A Laser Spot");
     static final String V_UP = GBLang.add(P + "up", "%s blocks up");
     static final String V_SECONDS = GBLang.add(P + "seconds", "%s s");
     static final String V_KG = GBLang.add(P + "kg", "%s kg TNT");
@@ -341,7 +344,13 @@ public final class AssemblyStats {
         out.add(Stat.row(RANGE, Component.translatable(V_BLOCKS, range)));
         out.add(Stat.row(APEX, Component.translatable(V_BLOCKS, (int) Math.round(Flights.apex(range)))));
         out.add(Stat.row(TIME, Component.translatable(V_SECONDS, Math.round(Flights.flightTicks(range) / 20.0))));
-        out.add(Stat.row(LANDS, Component.translatable(V_BLOCKS, (int) Math.round(spec.guidance().scatter(range)))));
+        int scatter = (int) Math.round(spec.guidance().scatter(range));
+        if (spec.guidance() == MissileParts.Guidance.LASER) {
+            out.add(Stat.row(HOMES, Component.translatable(V_SPOT)));
+            out.add(Stat.row(ELSE, Component.translatable(V_BLOCKS, scatter)));
+        } else {
+            out.add(Stat.row(LANDS, Component.translatable(V_BLOCKS, scatter)));
+        }
         out.add(Stat.row(EMP, Component.translatable(spec.hardened() ? V_HARDENED : V_UNHARDENED)));
         return out;
     }
