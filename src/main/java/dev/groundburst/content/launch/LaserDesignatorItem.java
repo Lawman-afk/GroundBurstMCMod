@@ -37,37 +37,40 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Laser Designator (DESIGN.md §17.13): hold use to lase (held to the eye, zoomed): a beam and a spot every player
- * sees, laser-guided missiles home on the spot, and a Launch Control Station of its network shows it. Its other mode
- * calls fire: held steady on a spot for two seconds it locks, and every armed launcher of its network that reaches the
- * spot is aimed at it and launched. Sneak-use switches mode; used on a station it takes the station's network. It runs
- * on a charge (a Battery Charger fills it) and an EMP knocks it out.
+ * sees, and a Launch Control Station of its network shows it. A left click while lasing acts by its mode: designate
+ * aims every launcher of its network loaded with a laser-guided missile at the spot and arms it; call for fire launches
+ * them, and their missiles then follow the laser of the player who called fire: they go where it points. Sneak-use
+ * switches mode; used on a station it takes the station's network. It runs on a charge (a Battery Charger fills it) and
+ * an EMP knocks it out.
  */
 public class LaserDesignatorItem extends Item {
     public static final int CAPACITY = 40_000, TRANSFER = 1_000, USE = 20;
-    /** Ticks a spot must be held (within {@link #STEADY} blocks) to lock in call-for-fire mode; ticks between status updates. */
-    public static final int LOCK = 40, STATUS = 5, EMP_TICKS = 200;
-    private static final double STEADY = 2.0;
+    /** Ticks between status updates; ticks an EMP knocks it out for; ticks a left click's result shows. */
+    public static final int STATUS = 5, EMP_TICKS = 200, RESULT_TICKS = 40;
+    /** Ticks between left clicks it answers (a held button repeats). */
+    private static final int CLICK_GAP = 4;
 
-    /** What lasing does: guides missiles and marks the map, or calls fire too. */
+    /** What a left click does: arm the network's laser-guided launchers on the spot, or launch them. */
     public enum Mode { DESIGNATE, FIRE }
+
+    /** A left click's result, for its holder's sight (its ordinal goes over the wire). */
+    public enum Result { NONE, DESIGNATED, NONE_IN_REACH, FIRED, NONE_ARMED, NO_RETURN, NO_NETWORK }
 
     private static final String P = GroundBurst.MODID + ".designator.";
     private static final String T_NETWORK = GBLang.add(P + "network", "Network %s");
     private static final String T_NO_NETWORK = GBLang.add(P + "no_network", "No network: use it on a Launch Control Station");
     private static final String[] T_MODE = {GBLang.add(P + "mode.designate", "Mode: designate"), GBLang.add(P + "mode.fire", "Mode: call for fire")};
     private static final String T_CHARGE = GBLang.add(P + "charge", "Charge: %s%%");
-    private static final String T_USE = GBLang.add(P + "use", "Hold use to lase; sneak-use to switch mode");
+    private static final String T_USE = GBLang.add(P + "use", "Hold use to lase, left-click to designate or fire; sneak-use to switch mode");
     private static final String T_FLAT = GBLang.add(P + "flat", "Flat: charge it in a Battery Charger");
     private static final String T_EMP = GBLang.add(P + "emp", "Knocked out by an EMP");
     private static final String T_LINKED = GBLang.add(P + "linked", "Designator linked to network %s");
     private static final String T_SAME = GBLang.add(P + "same", "Already on this station's network (%s)");
-    private static final String T_FIRED = GBLang.add(P + "fired", "Fire called: %s launching");
-    private static final String T_NONE_ARMED = GBLang.add(P + "none_armed", "Locked: no armed launcher of the network reaches it");
 
-    /** Each lasing player's lock: where it is held, for how long, and whether this lock has called fire already. */
-    private record Lock(Vec3 pos, int ticks, boolean fired) {}
+    /** Each holder's last left click: when, what came of it, and how many launchers it took. */
+    private record Click(long time, Result result, int count) {}
 
-    private static final Map<UUID, Lock> LOCKS = new HashMap<>();
+    private static final Map<UUID, Click> CLICKS = new HashMap<>();
     /** Each lasing player's beam as last sent to those who see it ({@link #NOWHERE}: on nothing). */
     private static final Map<UUID, Vec3> LAST_SENT = new HashMap<>();
     private static final Vec3 NOWHERE = new Vec3(Double.NaN, Double.NaN, Double.NaN);
@@ -173,21 +176,55 @@ public class LaserDesignatorItem extends Item {
         long net = network(server, stack);
         Designators.Hit hit = Designators.trace(server, player, Designators.range(player));
         beam(player, hit);
-        UUID id = player.getUUID();
         if (hit == null) {
-            Designators.stop(server, id);
-            LOCKS.remove(id);
+            Designators.stop(server, player.getUUID());
         } else {
-            Designators.lase(server, id, net, hit.pos(), hit.entity() != null);
-            if (mode(stack) == Mode.FIRE && net != 0) {
-                lockOn(server, player, net, hit.pos());
-            } else {
-                LOCKS.remove(id);
-            }
+            Designators.lase(server, player.getUUID(), net, hit.pos(), hit.entity() != null);
         }
         if (server.getGameTime() % STATUS == 0) {
-            sendStatus(server, player, stack, net, hit);
+            sendStatus(server, player, stack, net, hit == null ? null : BlockPos.containing(hit.pos()));
         }
+    }
+
+    /**
+     * A left click while lasing (its holder's client sends it): designate aims every launcher of the network loaded with
+     * a laser-guided missile that reaches the spot at it, and arms it; call for fire launches every one armed, and their
+     * missiles follow this player's laser in. Its result shows in the holder's sight at once.
+     */
+    public static void click(ServerPlayer player) {
+        ItemStack stack = player.getUseItem();
+        ServerLevel level = player.level();
+        if (!player.isUsingItem() || !(stack.getItem() instanceof LaserDesignatorItem) || !works(stack, level)) {
+            return;
+        }
+        long now = level.getGameTime();
+        Click last = CLICKS.get(player.getUUID());
+        if (last != null && now - last.time() < CLICK_GAP) {
+            return;
+        }
+        long net = network(level, stack);
+        Designators.Spot spot = Designators.spotOf(level, player.getUUID());
+        Result result;
+        int count = 0;
+        if (net == 0) {
+            result = Result.NO_NETWORK;
+        } else if (mode(stack) == Mode.DESIGNATE) {
+            count = spot == null ? 0 : LaunchNetwork.of(level).designate(level, net, BlockPos.containing(spot.pos()), player);
+            result = spot == null ? Result.NO_RETURN : count > 0 ? Result.DESIGNATED : Result.NONE_IN_REACH;
+        } else {
+            count = LaunchNetwork.of(level).fireLaser(level, net, player);
+            result = count > 0 ? Result.FIRED : Result.NONE_ARMED;
+        }
+        CLICKS.put(player.getUUID(), new Click(now, result, count));
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), result == Result.FIRED ? GBSounds.DESIGNATOR_FIRE.get()
+                : GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.6f, result == Result.DESIGNATED || result == Result.FIRED ? 1.2f : 0.7f);
+        sendStatus(level, player, stack, net, spot == null ? null : BlockPos.containing(spot.pos()));
+    }
+
+    /** A holder's last left click's result while it shows (null: none lately). */
+    static @Nullable Click lastClick(ServerPlayer player) {
+        Click c = CLICKS.get(player.getUUID());
+        return c != null && player.level().getGameTime() - c.time() <= RESULT_TICKS ? c : null;
     }
 
     /**
@@ -211,39 +248,20 @@ public class LaserDesignatorItem extends Item {
         }
     }
 
-    /** Call for fire: held steady for {@link #LOCK} ticks, the spot locks and its network's armed launchers fire on it. */
-    private static void lockOn(ServerLevel level, ServerPlayer player, long net, Vec3 spot) {
-        UUID id = player.getUUID();
-        Lock lock = LOCKS.get(id);
-        if (lock == null || lock.pos().distanceTo(spot) > STEADY) {
-            LOCKS.put(id, new Lock(spot, 1, false));
-            return;
-        }
-        Lock next = new Lock(lock.pos(), lock.ticks() + 1, lock.fired());
-        LOCKS.put(id, next);
-        if (next.ticks() == LOCK && !next.fired()) {
-            LOCKS.put(id, new Lock(next.pos(), next.ticks(), true));
-            int n = LaunchNetwork.of(level).callFire(level, net, BlockPos.containing(spot), player);
-            player.sendOverlayMessage(n > 0 ? Component.translatable(T_FIRED, n).withStyle(ChatFormatting.RED)
-                    : Component.translatable(T_NONE_ARMED).withStyle(ChatFormatting.GRAY));
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), n > 0 ? GBSounds.DESIGNATOR_FIRE.get() : GBSounds.DESIGNATOR_LOCK.get(),
-                    SoundSource.PLAYERS, 0.7f, 1f);
-        } else if (next.ticks() == LOCK / 2) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.35f, 0.8f);
-        }
-    }
-
-    /** What its screen shows that only the server knows: the lock, the armed launchers reaching the spot, the missiles homing. */
-    private static void sendStatus(ServerLevel level, ServerPlayer player, ItemStack stack, long net, Designators.@Nullable Hit hit) {
+    /**
+     * What its sight shows that only the server knows: the network's laser-guided launchers that could be armed on the
+     * spot and those armed, the missiles homing on it, and its last left click's result.
+     */
+    private static void sendStatus(ServerLevel level, ServerPlayer player, ItemStack stack, long net, @Nullable BlockPos spot) {
         if (player.connection == null || !player.connection.hasChannel(DesignatorPayloads.Status.TYPE)) {
             return;                                        // (a GameTest's player: nothing to show it on)
         }
-        Lock lock = LOCKS.get(player.getUUID());
-        float locked = lock == null ? 0 : Math.min(1, lock.ticks() / (float) LOCK);
-        int armed = hit == null || net == 0 ? 0 : LaunchNetwork.of(level).armedReaching(net, BlockPos.containing(hit.pos()));
+        int[] counts = net == 0 ? new int[2] : LaunchNetwork.of(level).laserCounts(net, spot);
         int charge = (int) ((long) stored(stack) * 100 / CAPACITY);
-        PacketDistributor.sendToPlayer(player, new DesignatorPayloads.Status(mode(stack).ordinal(), locked, lock != null && lock.fired(), armed,
-                Designators.homingOn(level, player.getUUID()), net != 0 ? LaunchCodesItem.code(stack) : "", charge));
+        Click click = lastClick(player);
+        PacketDistributor.sendToPlayer(player, new DesignatorPayloads.Status(mode(stack).ordinal(), counts[0], counts[1],
+                Designators.homingOn(level, player.getUUID()), net != 0 ? LaunchCodesItem.code(stack) : "", charge,
+                click == null ? Result.NONE.ordinal() : click.result().ordinal(), click == null ? 0 : click.count()));
     }
 
     @Override
@@ -266,7 +284,6 @@ public class LaserDesignatorItem extends Item {
     private static void stopLasing(Level level, Entity entity) {
         if (level instanceof ServerLevel server) {
             Designators.stop(server, entity.getUUID());
-            LOCKS.remove(entity.getUUID());
             LAST_SENT.remove(entity.getUUID());
         }
     }
@@ -279,7 +296,7 @@ public class LaserDesignatorItem extends Item {
     }
 
     static void clear() {
-        LOCKS.clear();
+        CLICKS.clear();
         LAST_SENT.clear();
     }
 

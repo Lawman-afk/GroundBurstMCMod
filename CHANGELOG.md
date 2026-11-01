@@ -7,12 +7,13 @@
   **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot
   that everyone sees all the way to the spot: faint by day, bright at night. It reaches as far as you can see (your
   view distance, up to 1,024 blocks).
-- **Laser Guidance Unit**, a new guidance part: the missile flies as inertial guidance until it is coming down, then
-  homes on a designator's spot near where it was aimed and lands on it, following it if it moves.
+- **Laser Guidance Unit**, a new guidance part: missiles built with it are the ones a designator commands.
 - Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you
   lase, and the new **Laser** button aims the picked launchers at it.
-- **Call for fire** (sneak-use to switch): hold the spot steady for two seconds and every armed launcher of the network
-  that reaches it fires on it at once.
+- **Designate** (left-click while lasing): every launcher of the network loaded with a laser-guided missile that can
+  reach the spot is aimed at it and armed.
+- **Call for fire** (sneak-use to switch, then left-click while lasing): every armed laser-guided launcher launches,
+  and their missiles follow your laser all the way in, wherever you point it: onto a moving target, or another one.
 - It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
   breaks the beam, and an EMP knocks it out for a while.
 

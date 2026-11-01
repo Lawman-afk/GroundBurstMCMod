@@ -63,7 +63,7 @@ public final class LaunchNetwork extends SavedData {
     /** Aim points round the aim for several picked members (DESIGN.md §17.12). */
     public enum Pattern { POINT, LINE, RING, GRID }
 
-    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED }
+    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED, DESIGNATED }
 
     // --- records -----------------------------------------------------------------------------------------------------------
     private static final Codec<LaunchSite.Strike> STRIKE_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -680,11 +680,50 @@ public final class LaunchNetwork extends SavedData {
         return armed.size();
     }
 
+    // --- the Laser Designator (DESIGN.md §17.13) ---------------------------------------------------------------------------
+    /** Whether a member is a launcher loaded with a laser-guided missile (as it last reported). */
+    private static boolean laserGuided(Member m) {
+        var spec = dev.groundburst.content.assembly.MissileItem.spec(m.report.shown);
+        return m.role == Role.LAUNCHER && !m.lost && spec != null && spec.guidance() == dev.groundburst.content.assembly.MissileParts.Guidance.LASER;
+    }
+
+    /** Whether it is counting down or ordered to fire (its aim and its arming are settled). */
+    private static boolean firing(Member m) {
+        return m.orders.launchAt >= 0 || m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+    }
+
     /**
-     * Call for fire (DESIGN.md §17.13, a Laser Designator's lock): every armed launcher of the network that reaches
-     * {@code spot} is aimed at it and launched at once (woken if it is far). Returns how many were ordered to fire.
+     * Designate (a Laser Designator's left click): every launcher of the network loaded with a laser-guided missile that
+     * can reach {@code spot} is aimed at it and armed (a far one when it is next loaded). Returns how many.
      */
-    public int callFire(ServerLevel level, long id, BlockPos spot, @Nullable ServerPlayer by) {
+    public int designate(ServerLevel level, long id, BlockPos spot, @Nullable ServerPlayer by) {
+        Network n = this.networks.get(id);
+        if (n == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Member m : n.members.values()) {
+            BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
+            if (!laserGuided(m) || firing(m) || !m.canArm(aim)) {
+                continue;
+            }
+            m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
+            orderNow(level, m);
+            count++;
+        }
+        if (count > 0) {
+            log(level, n, EventKind.DESIGNATED, by == null ? BlockPos.ZERO : by.blockPosition(), "", spot.getX(), spot.getZ(), count);
+        }
+        setDirty();
+        return count;
+    }
+
+    /**
+     * Call for fire (a Laser Designator's left click): every armed launcher of the network loaded with a laser-guided
+     * missile fires at once at its aim (woken if it is far); its missile then follows {@code by}'s laser (the flight's
+     * owner is who ordered the launch). Returns how many.
+     */
+    public int fireLaser(ServerLevel level, long id, @Nullable ServerPlayer by) {
         Network n = this.networks.get(id);
         if (n == null) {
             return 0;
@@ -692,41 +731,43 @@ public final class LaunchNetwork extends SavedData {
         long now = level.getGameTime();
         Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
         int count = 0;
+        BlockPos at = BlockPos.ZERO;
         for (Member m : n.members.values()) {
-            if (!reaches(m, spot)) {
+            if (!laserGuided(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
                 continue;
             }
-            m.orders = new Orders(Optional.of(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ())), m.orders.arm, now, who);
+            at = m.aim().get();
+            m.orders = new Orders(m.orders.aim, m.orders.arm, now, who);
             orderNow(level, m);
             count++;
         }
         if (count > 0) {
-            log(level, n, EventKind.FIRE_CALLED, by == null ? BlockPos.ZERO : by.blockPosition(), "", spot.getX(), spot.getZ(), count);
+            log(level, n, EventKind.FIRE_CALLED, by == null ? BlockPos.ZERO : by.blockPosition(), "", at.getX(), at.getZ(), count);
         }
         setDirty();
         return count;
     }
 
-    /** How many armed launchers of the network reach {@code spot} (a designator's screen). */
-    public int armedReaching(long id, BlockPos spot) {
+    /**
+     * For a designator's sight: the network's laser-guided launchers that could be armed on {@code spot} (null: none
+     * lased), and those armed.
+     */
+    public int[] laserCounts(long id, @Nullable BlockPos spot) {
         Network n = this.networks.get(id);
-        if (n == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Member m : n.members.values()) {
-            if (reaches(m, spot)) {
-                count++;
+        int ready = 0, armed = 0;
+        if (n != null) {
+            for (Member m : n.members.values()) {
+                if (!laserGuided(m) || firing(m)) {
+                    continue;
+                }
+                if (m.willBeArmed() && m.aim().isPresent()) {
+                    armed++;
+                } else if (spot != null && m.canArm(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ()))) {
+                    ready++;
+                }
             }
         }
-        return count;
-    }
-
-    /** An armed launcher, not already launching, whose missile reaches {@code spot}. */
-    private static boolean reaches(Member m, BlockPos spot) {
-        boolean counting = m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
-        return m.role == Role.LAUNCHER && !m.lost && m.willBeArmed() && m.orders.launchAt < 0 && !counting
-                && Math.hypot(spot.getX() - m.pos.getX(), spot.getZ() - m.pos.getZ()) <= m.report.range;
+        return new int[] {ready, armed};
     }
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */

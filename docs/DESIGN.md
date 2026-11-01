@@ -2588,14 +2588,17 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   grenade's cloud) in the way breaks the beam.
 - *Linked to a network*: used on a Launch Control Station it takes the station's network code (as Launch Codes do), and
   its spot shows on the station's map; the station's **To laser** aims the picked launchers at it (in their pattern).
-- *Two modes* (sneak-use to switch): **designate** (the spot guides laser-guided missiles and shows on the map) and
-  **call for fire**: hold the spot steady for two seconds and it locks: every armed launcher of its network that reaches
-  the spot is aimed at it and launched at once (the station's log: "fire called").
-- *Laser Guidance Unit* (`laser_guidance_unit`, a new guidance part for any missile): it flies as inertial guidance (4% of
-  the range) until it is coming down; from half way, its seeker looks for a spot within its reach of where it was aimed
-  (48 blocks and 5% of the range) from a designator of its launcher's network (or, from a launcher on no network, its
-  launcher's player) and steers onto it, following it as it moves (up to a block a tick): it lands on the spot. Cruise
-  missiles follow their planned path and do not home.
+- *Two modes* (sneak-use to switch), each a **left click while lasing** (redesigned 2026-11-01 after the user's look:
+  it was a two-second hold that launched every armed launcher): **designate** aims every launcher of the network loaded
+  with a laser-guided missile that can reach the spot at it and arms it; **call for fire** launches every armed one, and
+  their missiles then follow the laser of the player who called fire: that player leads them in, wherever it points
+  (the station's log: "designated", "fire called").
+- *Laser Guidance Unit* (`laser_guidance_unit`, a new guidance part for any missile): launched by a call for fire, once
+  clear of its climb (an eighth of the way) it follows its launching player's laser wherever it points, its target moving
+  up to 1.5 blocks a tick; without that laser it flies as inertial guidance (4% of the range) and from half way steers
+  onto a spot within its reach of where it was aimed (48 blocks and 5% of the range) from a designator of its
+  launcher's network (or, from a launcher on no network, its launcher's player). Cruise missiles follow their planned
+  path and do not home.
 - *Sounds*: the designator's switch-on chirp, the lock tone, the fire-called tones.
 - *Recipes* (§26): the designator a sensor array, a redstone torch, a military circuit, a battery and glass; the guidance
   unit a military circuit, a sensor array and a servo.
@@ -2607,29 +2610,35 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   client's if it asks for less, to 1,024); creatures along all of it picked first, searched 16 blocks of beam at a time;
   a smoke or gas grenade's cloud across it: no spot) and
   records the spot (`Designators`: per dimension and player, its network, live for 4 ticks). Every 5 ticks it sends its
-  holder a `designator_status` (mode, lock, armed launchers reaching the spot, missiles homing, network, charge), only
-  over a connection that has the channel. Sneak-use switches mode; used on a station (any part) it takes its network
-  code into `LAUNCH_CODES`. In call-for-fire mode the spot held within 2 blocks for 40 ticks locks: a half-way tone,
-  then `LaunchNetwork.callFire` once per lock (every member that `reaches` the spot: a launcher, in contact, armed or
-  being armed, not counting down or ordered to, within its missile's range) aims and launches them at once and logs
-  `FIRE_CALLED` with the count. An EMP field sets its `EMP_UNTIL` 10 s ahead.
-- Flights: a laser-guided flight carries a `Seeker` (its network, set when a station's launcher fires it; its aim; its
-  reach, 48 + 5% of the range), saved with the flight. From half way (ballistic only; cruise missiles keep their plan)
-  it takes the live spot of its network's designators (no network: its launcher's player's) within its reach of its
-  aim, nearest its current target, and moves the target toward it a block a tick; with none it keeps its target.
+  holder a `designator_status` (mode; the network's laser-guided launchers that could be armed on the spot and those
+  armed, from `LaunchNetwork.laserCounts`; missiles homing; network; charge; the last left click's result for 2 s),
+  only over a connection that has the channel. Sneak-use switches mode; used on a station (any part) it takes its
+  network code into `LAUNCH_CODES`. A left click while lasing: the client takes attack clicks before the game drops
+  them (it ignores attacks while an item is in use, `ClientTickEvent.Pre`) and sends `designator_click`;
+  `LaserDesignatorItem.click` (one per 4 ticks) checks the holder is lasing, then `LaunchNetwork.designate` (members
+  whose reported missile has laser guidance, not counting down or ordered to fire, that `canArm` the spot: aimed there
+  and armed, logged `DESIGNATED`) or `LaunchNetwork.fireLaser` (those armed with an aim: launched now, the order's
+  `by` the holder, so the flight's owner; logged `FIRE_CALLED`), and sends the status at once with its result. An EMP
+  field sets its `EMP_UNTIL` 10 s ahead.
+- Flights: a laser-guided flight carries a `Seeker` (its network, set when a network's launcher fires it; its aim; its
+  reach, 48 + 5% of the range), saved with the flight. Ballistic only (cruise missiles keep their plan): from 0.12 of
+  its flight it takes its owner's live spot (the player who ordered the launch) wherever it is; failing that, from half
+  way, the live spot of its network's designators (no network: its owner's) within its reach of its aim, nearest its
+  current target; and moves the target toward it 1.5 blocks a tick; with none it keeps its target.
   `GBAssembly.guidanceItem` gives each guidance's part back when a missile is taken apart (all three disassemblers).
 - Client: `LaserFx` draws every lasing player's beam from the designator's laser port (0.68 blocks ahead of the eye;
   just under the eye in our own sight) in camera-facing pieces as wide on screen at any range (at most 16 blocks long,
   shorter near the camera so a beam passing close keeps its width), additive red over `textures/fx/laser.png`; the spot
   pulsing five times a second, its middle also drawn blended so it shows red on a bright face by day; a glint at the
-  port; and for our own designator in call-for-fire mode a ring closing on the spot. Our own beam is traced on the
+  port; and after our own left click a ring closing on the spot (red for fire). Our own beam is traced on the
   client once a frame (the sight reads the same trace) to our render distance; another player's beam goes to the spot
   the server traced: the server sends `designator_beam` (the holder's entity id, where it lands or that it lands on
   nothing) to every player tracking the holder, each tick it moves and every 5 ticks while still. Traced on the client
   from the holder's synced rotation (rounded to 1.4 degrees), a far beam would have missed the real spot by blocks. `DesignatorScope`: in first person the FOV
   halved and the mouse slowed to match, the hand and crosshair hidden, the eyepiece (`textures/gui/designator_scope.png`)
-  with a lit duplex reticle, the readouts (mode, network, range, coordinates, creature, armed, homing, charge) and the
-  lock brackets; in third person the readouts under the crosshair.
+  with a lit duplex reticle, the readouts (mode and network across the top; range, coordinates, creature; ready,
+  armed, homing, charge), what a left click will do ("LMB: ARM ON IT", "LMB: FIRE") or its result for 2 s, and brackets
+  snapping onto the middle as you click; in third person the readouts under the crosshair.
 - The station: its map draws the network's spots as pulsing red diamonds with their holders' names; **Laser** aims the
   picked launchers at the first spot (in their pattern); the log reads "Fire called at x, z: n launching".
 - Models (`tools/assets/designator.py`, material library): the designator built optics along +y, the handle +z, so
@@ -4172,6 +4181,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The Laser Designator's controls redesigned to the user's wishes: a left click while lasing acts by mode. **Designate** aims and arms every launcher of the designator's network loaded with a laser-guided missile on the spot; **call for fire** launches them, and the missiles follow the laser of the player who called fire from early in their flight, wherever it points (leading guidance; the old terminal homing near the aim stays for other designators). The two-second lock is gone. Left clicks are taken on the client before the game drops them (it ignores attacks while an item is in use). |
 | 2026-11-01 | After the user's look at the Laser Designator: the missile assembler's screen crashed with a Laser Guidance Unit loaded (laser guidance had no name; `guidanceName` is now a switch over every guidance), and laser guidance's stats read "Homes On: A Laser Spot" and "Else Within: n blocks" (one row was too long for the panel). By day, light added over bright ground washed the beam out to a pale line: a thin red middle is drawn blended under it. The designator reaches as far as its holder sees (its view distance, to 1,024 blocks; it was 256, creatures 128), and other players draw its whole beam to the server's spot (`designator_beam`). |
 | 2026-11-01 | The Laser Designator (§17.13), the second item of the user's plan: a handheld designator, a new Laser Guidance Unit that homes on its spot as it comes down, and call for fire on a station's network. Spots are the server's (each player's, per dimension, fresh for 4 ticks); the beam is traced on each side alike (over loaded ground only, smoke breaks it), so every player sees the same spot the missiles use. Taking a missile apart maps each guidance to its own part (it assumed GPS for anything not inertial). |
 | 2026-10-31 | Version **0.4.0** (the user's request: a jar to upload, the GitHub page and the CurseForge description updated): the Launch Control Station, the alarm system, the Interceptor Complex, the Storm's EMP pulses. README and `docs/CURSEFORGE.md` gain the station and two screenshots (the station, the alarm wall at night); the station leaves the Planned list. |

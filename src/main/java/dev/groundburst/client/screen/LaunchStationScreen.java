@@ -110,16 +110,25 @@ public class LaunchStationScreen extends Screen {
             GBLang.add(P + "state.blocked", "Blocked"),
             GBLang.add(P + "state.charging", "Charging %s")};
     private static final String T_AGO = GBLang.add(P + "ago", "%s ago");
-    private static final String[] T_EVENT = {
-            GBLang.add(P + "event.launched", "%s launched"),
-            GBLang.add(P + "event.impact", "%s: impact at %s, %s"),
-            GBLang.add(P + "event.lost", "%s: missile lost at %s, %s"),
-            GBLang.add(P + "event.no_contact", "No contact with %s"),
-            GBLang.add(P + "event.failed", "%s: order failed (%s)"),
-            GBLang.add(P + "event.linked", "%s linked"),
-            GBLang.add(P + "event.unlinked", "%s unlinked"),
-            GBLang.add(P + "event.new_codes", "New codes issued"),
-            GBLang.add(P + "event.fire_called", "Fire called at %s, %s: %s launching")};
+    /** Each log event's text (a switch: a kind added later cannot go without one). */
+    private static final java.util.EnumMap<LaunchNetwork.EventKind, String> T_EVENT = new java.util.EnumMap<>(LaunchNetwork.EventKind.class);
+
+    static {
+        for (LaunchNetwork.EventKind k : LaunchNetwork.EventKind.values()) {
+            T_EVENT.put(k, GBLang.add(P + "event." + k.name().toLowerCase(java.util.Locale.ROOT), switch (k) {
+                case LAUNCHED -> "%s launched";
+                case IMPACT -> "%s: impact at %s, %s";
+                case LOST -> "%s: missile lost at %s, %s";
+                case NO_CONTACT -> "No contact with %s";
+                case FAILED -> "%s: order failed (%s)";
+                case LINKED -> "%s linked";
+                case UNLINKED -> "%s unlinked";
+                case NEW_CODES -> "New codes issued";
+                case FIRE_CALLED -> "Fire called at %s, %s: %s launching";
+                case DESIGNATED -> "Designated %s, %s: %s armed";
+            }));
+        }
+    }
     private static final String T_LASER = GBLang.add(P + "laser", "Laser");
     private static final String T_NO_ANSWER = GBLang.add(P + "event.no_answer", "no answer");
     private static final String T_GONE = GBLang.add(P + "gone", "%s at %s, %s");
@@ -680,13 +689,13 @@ public class LaunchStationScreen extends Screen {
 
     private Component event(LaunchNetwork.Event e) {
         Component who = named(e.member(), e.memberKind());
-        String key = T_EVENT[e.kind().ordinal()];
+        String key = T_EVENT.get(e.kind());
         return switch (e.kind()) {
             case IMPACT, LOST -> Component.translatable(key, who, e.x(), e.z());
             case FAILED -> Component.translatable(key, who, e.detail() < 0 ? Component.translatable(T_NO_ANSWER)
                     : Component.translatable(T_STATE[Mth.clamp(e.detail(), 0, T_STATE.length - 1)], 0));
             case NEW_CODES -> Component.translatable(key);
-            case FIRE_CALLED -> Component.translatable(key, e.x(), e.z(), e.detail());
+            case FIRE_CALLED, DESIGNATED -> Component.translatable(key, e.x(), e.z(), e.detail());
             default -> Component.translatable(key, who);
         };
     }

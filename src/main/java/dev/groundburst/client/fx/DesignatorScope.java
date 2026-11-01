@@ -28,14 +28,16 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * The Laser Designator's sight (DESIGN.md §17.13), while we lase in first person: a 2x zoom (and the aim slowed to
  * match), the hand put away, an eyepiece with a lit reticle, and a rangefinder's readouts: the range to the spot and
- * where it is, what it is on, the mode, the network and the charge; and from the server, the call-for-fire lock, the
- * armed launchers of the network that reach the spot and the missiles homing on it. Lasing in third person, the
- * readouts in a strip over the hotbar.
+ * where it is, what it is on, the mode, the network and the charge; from the server, the network's laser-guided
+ * launchers that could be armed on the spot and those armed, the missiles homing, and what a left click did; what a
+ * left click will do. Lasing in third person, the readouts in a strip under the crosshair. A left click while lasing
+ * (which the game would otherwise drop while an item is in use) goes to the server here.
  */
 public final class DesignatorScope {
     static final Identifier EYEPIECE = GroundBurst.id("textures/gui/designator_scope.png");
@@ -55,11 +57,33 @@ public final class DesignatorScope {
     private static final String T_NO_RETURN = GBLang.add(P + "no_return", "RNG ---");
     private static final String T_WHERE = GBLang.add(P + "where", "X %s  Y %s  Z %s");
     private static final String T_ON = GBLang.add(P + "on", "ON %s");
+    private static final String T_READY = GBLang.add(P + "ready", "READY %s");
     private static final String T_ARMED = GBLang.add(P + "armed", "ARMED %s");
     private static final String T_HOMING = GBLang.add(P + "homing", "HOMING %s");
     private static final String T_BATTERY = GBLang.add(P + "battery", "BAT %s%%");
-    private static final String T_LOCKING = GBLang.add(P + "locking", "LOCKING %s%%");
-    private static final String T_FIRED = GBLang.add(P + "fired", "FIRE CALLED");
+    private static final String[] T_HINT = {GBLang.add(P + "hint.designate", "LMB: ARM ON IT"), GBLang.add(P + "hint.fire", "LMB: FIRE")};
+    /** A left click's result's text (a switch: a result added later cannot go without one). */
+    private static final java.util.EnumMap<LaserDesignatorItem.Result, String> T_RESULT = new java.util.EnumMap<>(LaserDesignatorItem.Result.class);
+
+    static {
+        for (LaserDesignatorItem.Result r : LaserDesignatorItem.Result.values()) {
+            T_RESULT.put(r, GBLang.add(P + "result." + r.name().toLowerCase(java.util.Locale.ROOT), switch (r) {
+                case NONE -> "";
+                case DESIGNATED -> "ARMED %s ON IT";
+                case NONE_IN_REACH -> "NONE IN REACH";
+                case FIRED -> "FIRE CALLED: %s AWAY";
+                case NONE_ARMED -> "NONE ARMED";
+                case NO_RETURN -> "NO RETURN";
+                case NO_NETWORK -> "NO NETWORK";
+            }));
+        }
+    }
+
+    /** Ticks a left click's brackets snap in over; ticks between left clicks sent. */
+    private static final int SNAP = 8, CLICK_GAP = 4;
+    /** Our last left click while lasing: when (game time), and in which mode. */
+    private static long clickedAt = Long.MIN_VALUE / 2;
+    private static int clickedMode;
 
     private static DesignatorPayloads.@Nullable Status status;
     private static int statusAge = Integer.MAX_VALUE;
@@ -78,6 +102,7 @@ public final class DesignatorScope {
                 statusAge++;
             }
         });
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> clicks(Minecraft.getInstance()));
         NeoForge.EVENT_BUS.addListener((ComputeFovModifierEvent event) -> {
             Minecraft mc = Minecraft.getInstance();
             if (event.getPlayer() == mc.player && LaserFx.scoped(mc)) {
@@ -106,6 +131,35 @@ public final class DesignatorScope {
         });
     }
 
+    /**
+     * Left clicks while lasing: taken before the game would drop them (it ignores attacks while an item is in use) and
+     * sent to the server, which designates or calls fire by the designator's mode.
+     */
+    private static void clicks(Minecraft mc) {
+        if (mc.player == null || mc.level == null || mc.gui.screen() != null || !LaserFx.lasing(mc.player)) {
+            return;
+        }
+        boolean clicked = false;
+        while (mc.options.keyAttack.consumeClick()) {
+            clicked = true;
+        }
+        long now = mc.level.getGameTime();
+        if (clicked && now - clickedAt >= CLICK_GAP) {
+            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Click());
+            clickedAt = now;
+            clickedMode = LaserDesignatorItem.mode(mc.player.getUseItem()).ordinal();
+        }
+    }
+
+    /** Ticks since our last left click while lasing (with the frame's part), and its mode, for the spot's ring. */
+    static float sinceClick(Minecraft mc, float partial) {
+        return mc.level == null ? Float.MAX_VALUE : (float) (mc.level.getGameTime() - clickedAt) + partial;
+    }
+
+    static boolean clickedFire() {
+        return clickedMode == LaserDesignatorItem.Mode.FIRE.ordinal();
+    }
+
     /** The server's last word on our designator, while it is fresh. */
     static DesignatorPayloads.@Nullable Status status() {
         return statusAge <= STALE ? status : null;
@@ -130,15 +184,16 @@ public final class DesignatorScope {
         Designators.Hit hit = LaserFx.ourHit(mc, partial);                 // the beam's own trace, as far as we see
         Readout r = readout(player, player.getUseItem(), hit, eye);
         if (mc.options.getCameraType().isFirstPerson()) {
-            eyepiece(g, mc.font, r, player.tickCount + partial);
+            eyepiece(g, mc.font, r, player.tickCount + partial, sinceClick(mc, partial));
         } else {
             strip(g, mc.font, r);
         }
     }
 
-    /** What the readouts say this frame. */
+    /** What the readouts say this frame: the action line is a left click's result for a while after it, else what one will do. */
     private record Readout(Component mode, boolean fire, Component net, Component range, @Nullable Component where, @Nullable Component on,
-            @Nullable Component armed, @Nullable Component homing, Component battery, float lock, boolean fired) {}
+            @Nullable Component ready, @Nullable Component armed, @Nullable Component homing, Component battery, Component action,
+            boolean result) {}
 
     private static Readout readout(LocalPlayer player, ItemStack stack, Designators.@Nullable Hit hit, Vec3 eye) {
         DesignatorPayloads.Status s = status();
@@ -150,16 +205,20 @@ public final class DesignatorScope {
         Component where = hit == null ? null : Component.translatable(T_WHERE, Mth.floor(hit.pos().x), Mth.floor(hit.pos().y), Mth.floor(hit.pos().z));
         Component on = hit == null || hit.entity() == null ? null : Component.translatable(T_ON, hit.entity().getName());
         boolean linked = s != null && !s.network().isEmpty();
+        Component ready = linked && !fire ? Component.translatable(T_READY, s.ready()) : null;
         Component armed = linked ? Component.translatable(T_ARMED, s.armed()) : null;
-        Component homing = s != null && (linked || s.homing() > 0) ? Component.translatable(T_HOMING, s.homing()) : null;
+        Component homing = s != null && (fire || s.homing() > 0) ? Component.translatable(T_HOMING, s.homing()) : null;
         int charge = (int) ((long) LaserDesignatorItem.stored(stack) * 100 / LaserDesignatorItem.CAPACITY);
-        float lock = s != null && fire ? s.lock() : 0;
-        return new Readout(Component.translatable(T_MODE[mode.ordinal()]), fire, net, range, where, on, armed, homing,
-                Component.translatable(T_BATTERY, charge), lock, s != null && fire && s.fired());
+        LaserDesignatorItem.Result[] results = LaserDesignatorItem.Result.values();
+        LaserDesignatorItem.Result result = s == null ? LaserDesignatorItem.Result.NONE : results[Math.clamp(s.result(), 0, results.length - 1)];
+        Component action = result == LaserDesignatorItem.Result.NONE ? Component.translatable(T_HINT[mode.ordinal()])
+                : Component.translatable(T_RESULT.get(result), s.count());
+        return new Readout(Component.translatable(T_MODE[mode.ordinal()]), fire, net, range, where, on, ready, armed, homing,
+                Component.translatable(T_BATTERY, charge), action, result != LaserDesignatorItem.Result.NONE);
     }
 
     /** The sight: the eyepiece over the view, black round it, the reticle and the readouts within. */
-    private static void eyepiece(GuiGraphicsExtractor g, Font font, Readout r, float time) {
+    private static void eyepiece(GuiGraphicsExtractor g, Font font, Readout r, float time, float sinceClick) {
         int w = g.guiWidth(), h = g.guiHeight();
         int size = Math.min(w, h);
         int left = (w - size) / 2, top = (h - size) / 2;
@@ -171,23 +230,15 @@ public final class DesignatorScope {
         int cx = w / 2, cy = h / 2;
         int radius = (int) (size * APERTURE);
         reticle(g, cx, cy, radius);
-        boolean blink = (int) (time / 4) % 2 == 0;
-        if (r.fire() && (r.lock() > 0 || r.fired())) {
-            lockBox(g, cx, cy, r.fired() ? 1 : r.lock(), r.fired() && !blink);
+        if (sinceClick >= 0 && sinceClick < SNAP * 2) {
+            brackets(g, cx, cy, Math.min(1, sinceClick / SNAP), clickedFire() ? RED : AMBER);
         }
-        // Along the top: the mode and the network.
+        // Along the top: the mode, and the network under it (side by side they would not fit the eyepiece's top).
         int topY = cy - (int) (radius * 0.80);
-        int span = (int) (radius * 0.56);
-        g.text(font, r.mode(), cx - span, topY, r.fire() ? RED : AMBER, true);
-        g.text(font, r.net(), cx + span - font.width(r.net()), topY, DIM, true);
-        // By the middle, clear of the lines and the brackets: the lock, in call-for-fire mode.
-        if (r.fired()) {
-            if (blink) {
-                g.text(font, Component.translatable(T_FIRED), cx + 12, cy + 8, RED, true);
-            }
-        } else if (r.lock() > 0) {
-            g.text(font, Component.translatable(T_LOCKING, Math.round(r.lock() * 100)), cx + 12, cy + 8, AMBER, true);
-        }
+        centred(g, font, r.mode(), cx, topY, r.fire() ? RED : AMBER);
+        centred(g, font, r.net(), cx, topY + 11, DIM);
+        // By the middle, clear of the lines: what a left click will do, or what the last one did.
+        g.text(font, r.action(), cx + 12, cy + 8, r.result() ? (r.fire() ? RED : AMBER) : DIM, true);
         // Below: the rangefinder, and the system.
         int y = cy + (int) (radius * 0.40);
         var pose = g.pose();
@@ -209,21 +260,20 @@ public final class DesignatorScope {
         centred(g, font, system, cx, y, DIM);
     }
 
-    /** The armed launchers, the missiles homing and the charge, in one line. */
+    /** The launchers ready and armed, the missiles homing and the charge, in one line. */
     private static Component system(Readout r) {
         Component line = r.battery();
-        if (r.homing() != null) {
-            line = Component.empty().append(r.homing()).append("   ").append(line);
-        }
-        if (r.armed() != null) {
-            line = Component.empty().append(r.armed()).append("   ").append(line);
+        for (Component part : new Component[] {r.homing(), r.armed(), r.ready()}) {
+            if (part != null) {
+                line = Component.empty().append(part).append("   ").append(line);
+            }
         }
         return line;
     }
 
     /**
-     * A lit duplex reticle: thin lines with a gap at the middle, heavy posts from the sides and the top out to the edge
-     * (none below, where the readouts are), marks every few degrees; the spot itself is the aim point.
+     * A lit duplex reticle: thin lines with a gap at the middle, heavy posts from the sides out to the edge and a short
+     * one above (none below, where the readouts are), marks every few degrees; the spot itself is the aim point.
      */
     private static void reticle(GuiGraphicsExtractor g, int cx, int cy, int radius) {
         int gap = 4, inner = (int) (radius * 0.32);
@@ -233,7 +283,7 @@ public final class DesignatorScope {
         g.fill(cx, cy + gap + 1, cx + 1, cy + inner + 1, RETICLE);
         g.fill(cx - radius, cy - 1, cx - inner, cy + 2, RETICLE);
         g.fill(cx + inner + 1, cy - 1, cx + radius + 1, cy + 2, RETICLE);
-        g.fill(cx - 1, cy - radius, cx + 2, cy - inner, RETICLE);
+        g.fill(cx - 1, cy - (int) (radius * 0.56), cx + 2, cy - inner, RETICLE);     // (stopping short of the mode and network)
         int step = Math.max(6, inner / 4);
         for (int d = step; d < inner - 2; d += step) {
             g.fill(cx - d, cy - 2, cx - d + 1, cy + 3, RETICLE);
@@ -242,11 +292,10 @@ public final class DesignatorScope {
         }
     }
 
-    /** Call for fire: brackets closing on the middle as the lock builds, red once locked. */
-    private static void lockBox(GuiGraphicsExtractor g, int cx, int cy, float lock, boolean dim) {
-        int half = 7 + Math.round(24 * (1 - lock));
+    /** A left click: brackets snapping in on the middle ({@code done} 0 to 1), then held a moment; red for fire. */
+    private static void brackets(GuiGraphicsExtractor g, int cx, int cy, float done, int c) {
+        int half = 7 + Math.round(24 * (1 - done));
         int arm = Math.max(3, half / 3);
-        int c = lock >= 1 ? (dim ? 0x80FF4A36 : RED) : AMBER;
         for (int sx = -1; sx <= 1; sx += 2) {
             for (int sy = -1; sy <= 1; sy += 2) {
                 int x = cx + sx * half, y = cy + sy * half;
@@ -258,15 +307,10 @@ public final class DesignatorScope {
         }
     }
 
-    /** Lasing in third person: the range, the lock and the system under the crosshair. */
+    /** Lasing in third person: the mode, the range and the action, and the system, under the crosshair. */
     private static void strip(GuiGraphicsExtractor g, Font font, Readout r) {
         int cx = g.guiWidth() / 2, y = g.guiHeight() / 2 + 14;
-        Component first = Component.empty().append(r.mode()).append("   ").append(r.range());
-        if (r.fired()) {
-            first = Component.empty().append(first).append("   ").append(Component.translatable(T_FIRED));
-        } else if (r.lock() > 0) {
-            first = Component.empty().append(first).append("   ").append(Component.translatable(T_LOCKING, Math.round(r.lock() * 100)));
-        }
+        Component first = Component.empty().append(r.mode()).append("   ").append(r.range()).append("   ").append(r.action());
         centred(g, font, first, cx, y, r.fire() ? RED : AMBER);
         centred(g, font, system(r), cx, y + 10, DIM);
     }

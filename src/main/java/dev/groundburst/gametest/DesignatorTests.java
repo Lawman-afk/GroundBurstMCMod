@@ -32,6 +32,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -43,14 +44,13 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The Laser Designator (DESIGN.md §17.13): it lases where its holder looks (on a creature, the creature) and draws its
- * charge; smoke breaks its beam; a laser-guided missile homes on its holder's spot as it comes down (and one aimed too
- * far from the spot does not); held steady in call-for-fire mode it locks after two seconds and fires the network's
- * armed launcher on the spot.
+ * charge; smoke breaks its beam; a laser-guided missile follows the laser of the player who launched it; a left click
+ * designates (arms the network's laser-guided launchers on the spot) and then calls fire (launches them).
  */
 final class DesignatorTests {
     private DesignatorTests() {}
 
-    private static final BlockPos SILO = new BlockPos(2, 1, 1);
+    private static final BlockPos SILO = new BlockPos(2, 1, 1), SILO_GPS = new BlockPos(9, 1, 1);
     /** Where the holder stands, looking south at the wall. */
     private static final Vec3 STAND = new Vec3(10.5, 1, 3.5);
     private static final int WALL_Z = 13;
@@ -59,7 +59,7 @@ final class DesignatorTests {
         GBGameTests.test("designator_lases_where_it_looks", GBGameTests.FLOOR_16, 20, DesignatorTests::lases);
         GBGameTests.test("smoke_breaks_the_designator_beam", GBGameTests.FLOOR_16, 80, DesignatorTests::smoke);
         GBGameTests.test("laser_missile_homes_on_the_spot", GBGameTests.FLOOR_16, 60, DesignatorTests::homes);
-        GBGameTests.test("designator_calls_fire_on_armed_launchers", GBGameTests.FLOOR_16, 40, DesignatorTests::callsFire);
+        GBGameTests.test("designator_arms_and_fires_laser_guided_launchers", GBGameTests.FLOOR_16, 40, DesignatorTests::designates);
         GBGameTests.test("laser_guided_missile_reads_everywhere", GBGameTests.FLOOR_16, 20, DesignatorTests::reads);
     }
 
@@ -141,81 +141,88 @@ final class DesignatorTests {
     }
 
     /**
-     * Two laser-guided missiles from the same player, past half way: the one aimed 30 blocks from the player's spot homes
-     * on it (its target walks onto the spot, a block a tick); the one aimed 70 blocks from it (beyond its 63-block reach)
-     * flies on as aimed.
+     * Laser-guided missiles in flight: one launched by a player follows that player's laser from early in its flight,
+     * wherever it points (here 120 blocks off its aim: its target walks there, a block and a half a tick); one launched
+     * by a player who is not lasing, with no designator of its network near its aim, flies on as aimed.
      */
     private static void homes(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player owner = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Player leader = helper.makeMockServerPlayer(GameType.SURVIVAL), other = helper.makeMockServerPlayer(GameType.SURVIVAL);
         Vec3 pad = helper.absoluteVec(new Vec3(8.5, 2, 8.5));
         Vec3 aim = pad.add(300, 0, 0);
-        Vec3 spot = aim.add(0, 0, 30);
+        Vec3 spot = aim.add(0, 0, 120);
         MissileSpec spec = new MissileSpec(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M, MissileParts.Motor.SRM_II,
                 MissileParts.Guidance.LASER, false);
-        Flights.Flight lased = Flights.launch(level, pad, aim, spec, owner);
-        Flights.Flight blind = Flights.launch(level, pad, aim.add(0, 0, 100), spec, owner);
-        helper.assertTrue(lased.laserGuided() && blind.laserGuided(), "laser guided");
-        int past = (int) (0.4 * Flights.flightTicks(300));                // to six tenths of the way, coming down
-        lased.skipForTest(lased.ticksToImpact() - past);
-        blind.skipForTest(blind.ticksToImpact() - past);
-        helper.onEachTick(() -> Designators.lase(level, owner.getUUID(), 0, spot, false));
+        Flights.Flight led = Flights.launch(level, pad, aim, spec, leader);
+        Flights.Flight blind = Flights.launch(level, pad, aim.add(0, 0, -60), spec, other);
+        helper.assertTrue(led.laserGuided() && blind.laserGuided(), "laser guided");
+        int left = (int) (0.7 * Flights.flightTicks(300));                // three tenths of the way: still climbing
+        led.skipForTest(led.ticksToImpact() - left);
+        blind.skipForTest(blind.ticksToImpact() - left);
+        helper.onEachTick(() -> Designators.lase(level, leader.getUUID(), 0, spot, false));
         helper.runAfterDelay(20, () -> {
-            Vec3 t = lased.target();
-            double off = Math.hypot(t.x - spot.x, t.z - spot.z);
-            helper.assertTrue(lased.homing(), "the missile aimed near the spot homes on it");
-            helper.assertTrue(off < 15, "its target walks onto the spot (30 blocks off at first): " + off);
+            Vec3 t = led.target();
+            double moved = 120 - Math.hypot(t.x - spot.x, t.z - spot.z);
+            helper.assertTrue(led.homing(), "the missile follows its launcher's laser");
+            helper.assertTrue(moved > 20, "its target walks toward the laser's spot, 120 blocks off at first (" + moved + " closer)");
             Vec3 b = blind.target();
-            helper.assertTrue(!blind.homing() && Math.abs(b.x - aim.x) < 1e-6 && Math.abs(b.z - (aim.z + 100)) < 1e-6,
-                    "the one aimed beyond its reach flies on as aimed: " + b);
-            Flights.of(level).cancelForTest(level, lased);
+            helper.assertTrue(!blind.homing() && Math.abs(b.x - aim.x) < 1e-6 && Math.abs(b.z - (aim.z - 60)) < 1e-6,
+                    "the one whose launcher is not lasing flies on as aimed: " + b);
+            Flights.of(level).cancelForTest(level, led);
             Flights.of(level).cancelForTest(level, blind);
             helper.succeed();
         });
     }
 
-    /** Call for fire: on the network, held steady two seconds, the lock fires the network's armed silo on the spot. */
-    private static void callsFire(GameTestHelper helper) {
+    /**
+     * Designate, then call for fire (left clicks while lasing, on the network): designate aims the network's silo loaded
+     * with a laser-guided missile at the spot and arms it, and leaves the one with a GPS missile alone; call for fire
+     * launches it; the log has both.
+     */
+    private static void designates(GameTestHelper helper) {
         LaunchTests.floor(helper);
         wall(helper);
         ServerLevel level = helper.getLevel();
         LaunchStationBlockEntity st = StationTests.station(helper);
-        LaunchSiloBlockEntity silo = LaunchTests.silo(helper, SILO);
-        silo.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
-        silo.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
+        LaunchSiloBlockEntity laser = LaunchTests.silo(helper, SILO), gps = LaunchTests.silo(helper, SILO_GPS);
+        laser.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, MissileAssembly.missile(new MissileSpec(
+                new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), SizeClass.M, MissileParts.Motor.SRM_II, MissileParts.Guidance.LASER, false)));
+        gps.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
+        laser.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
+        gps.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
         ItemStack card = new ItemStack(GBLaunch.LAUNCH_CODES.get());
         LaunchCodesItem.use(level, card, st, false);
-        LaunchCodesItem.use(level, card, silo, false);
-        String code = LaunchCodesItem.code(card);
-        helper.runAfterDelay(3, () -> {
-            List<BlockPos> picked = List.of(silo.getBlockPos());
-            BlockPos far = silo.getBlockPos().offset(150, 0, 40);
-            st.aim(level, picked, far.getX(), far.getZ(), LaunchNetwork.Pattern.POINT, 0);
-            st.arm(level, picked, true);
-            helper.assertTrue(silo.armed(), "the silo is armed");
-        });
-        helper.runAfterDelay(6, () -> {
+        LaunchCodesItem.use(level, card, laser, false);
+        LaunchCodesItem.use(level, card, gps, false);
+        ItemStack d = new ItemStack(GBLaunch.LASER_DESIGNATOR.get());
+        d.set(GBDataComponents.LAUNCH_CODES.get(), LaunchCodesItem.code(card));
+        LaserDesignatorItem item = (LaserDesignatorItem) d.getItem();
+        ServerPlayer[] holder = new ServerPlayer[1];
+        BlockPos spot = BlockPos.containing(helper.absoluteVec(new Vec3(STAND.x, 2.62, WALL_Z)));
+        helper.runAfterDelay(3, () -> {                                 // the launchers have reported
             ServerPlayer p = holder(helper);
-            ItemStack d = new ItemStack(GBLaunch.LASER_DESIGNATOR.get());
-            d.set(GBDataComponents.LAUNCH_CODES.get(), code);
+            p.setItemInHand(InteractionHand.MAIN_HAND, d);
+            p.startUsingItem(InteractionHand.MAIN_HAND);
+            item.onUseTick(level, p, d, 1000);                            // lasing the wall
+            LaserDesignatorItem.click(p);                                 // designate
+            helper.assertTrue(laser.armed() && laser.target() != null && laser.target().getX() == spot.getX()
+                    && laser.target().getZ() == spot.getZ(), "the laser-guided silo is armed on the spot: " + laser.target() + " for " + spot);
+            helper.assertTrue(!gps.armed(), "the GPS one is left alone");
+            LaunchNetwork.Event last = st.network(level).log().getLast();
+            helper.assertTrue(last.kind() == LaunchNetwork.EventKind.DESIGNATED && last.detail() == 1, "the log has the designation: " + last);
+            holder[0] = p;
+        });
+        helper.runAfterDelay(9, () -> {                                 // the next click (clicks closer than 4 ticks are one)
+            ServerPlayer p = holder[0];
             d.set(GBDataComponents.DESIGNATOR_MODE.get(), LaserDesignatorItem.Mode.FIRE.ordinal());
-            LaserDesignatorItem item = (LaserDesignatorItem) d.getItem();
-            for (int i = 0; i < LaserDesignatorItem.LOCK - 1; i++) {
-                item.onUseTick(level, p, d, 1000);
-            }
-            helper.assertTrue(silo.countdown() < 0, "not yet: the lock takes two seconds");
             item.onUseTick(level, p, d, 1000);
-            helper.assertTrue(silo.countdown() >= 0, "locked: fire called, the silo counts down");
-            BlockPos spot = BlockPos.containing(helper.absoluteVec(new Vec3(STAND.x, 2.62, WALL_Z)));
-            helper.assertTrue(silo.target() != null && silo.target().getX() == spot.getX() && silo.target().getZ() == spot.getZ(),
-                    "aimed at the spot: " + silo.target() + " for " + spot);
-            List<LaunchNetwork.Event> log = st.network(level).log();
-            LaunchNetwork.Event last = log.getLast();
+            LaserDesignatorItem.click(p);                                 // call for fire
+            helper.assertTrue(laser.countdown() >= 0, "fire called: the laser-guided silo counts down");
+            helper.assertTrue(gps.countdown() < 0, "the GPS one does not");
+            LaunchNetwork.Event last = st.network(level).log().getLast();
             helper.assertTrue(last.kind() == LaunchNetwork.EventKind.FIRE_CALLED && last.detail() == 1, "the log has the call for fire: " + last);
-            item.onUseTick(level, p, d, 1000);
-            helper.assertTrue(st.network(level).log().size() == log.size(), "one call for each lock");
             helper.setBlock(SILO, Blocks.AIR);                             // scrubbed: no missile left flying after the test
-                helper.succeed();
+            helper.succeed();
         });
     }
 

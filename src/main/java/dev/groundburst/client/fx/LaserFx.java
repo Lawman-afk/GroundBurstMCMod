@@ -48,6 +48,8 @@ public final class LaserFx {
     /** How far a beam that lands on nothing is drawn, fading out; ticks another player's beam from the server is believed. */
     private static final double NO_RETURN = 160;
     private static final int FRESH = 10;
+    /** Ticks a left click's ring takes to close on the spot. */
+    private static final float CLICK_RING = 10;
     private static final Vec3 UP = new Vec3(0, 1, 0);
 
     /** Another player's beam as the server traced it: where it lands (null: on nothing), and the game time it came. */
@@ -184,10 +186,11 @@ public final class LaserFx {
         Vec3 at = dist > 0.6 ? spot.add(toCamera.scale(0.3 / dist)) : spot;   // a little toward the eye, clear of the face it is on
         float size = (float) (0.18 + 0.0075 * dist);
         quad(b, pose, at, camera, right, up, size * (0.92f + 0.08f * pulse), 0, 0.5f, color(SPOT, pulse));
-        if (status != null && status.mode() == LaserDesignatorItem.Mode.FIRE.ordinal() && status.lock() > 0) {
-            boolean blink = status.fired() && (int) (now / 3) % 2 == 0;
-            float ring = status.fired() ? 1.3f : 1.3f + 3.2f * (1 - status.lock());
-            quad(b, pose, at, camera, right, up, size * ring, 0.5f, 1, color(RING, status.fired() ? (blink ? 1 : 0.35f) : 0.35f + 0.6f * status.lock()));
+        float since = beam.ours() ? DesignatorScope.sinceClick(Minecraft.getInstance(), (float) (now - Math.floor(now))) : Float.MAX_VALUE;
+        if (since >= 0 && since < CLICK_RING) {                // our left click: a ring shrinking onto the spot, red for fire
+            float k = since / CLICK_RING;
+            quad(b, pose, at, camera, right, up, size * (1.3f + 3.2f * (1 - k)), 0.5f, 1,
+                    color(DesignatorScope.clickedFire() ? RING : SPOT, 1 - 0.7f * k));
         }
     }
 

@@ -79,6 +79,8 @@ public final class GBNetwork {
                 dev.groundburst.content.launch.StationPayloads.NewCodes::handle);
         registrar.playToClient(dev.groundburst.content.launch.DesignatorPayloads.Status.TYPE, dev.groundburst.content.launch.DesignatorPayloads.Status.CODEC,
                 (payload, context) -> dev.groundburst.content.launch.DesignatorPayloads.statusHook.accept(payload));
+        registrar.playToServer(dev.groundburst.content.launch.DesignatorPayloads.Click.TYPE, dev.groundburst.content.launch.DesignatorPayloads.Click.CODEC,
+                dev.groundburst.content.launch.DesignatorPayloads.Click::handle);
         registrar.playToClient(dev.groundburst.content.launch.DesignatorPayloads.Beam.TYPE, dev.groundburst.content.launch.DesignatorPayloads.Beam.CODEC,
                 (payload, context) -> dev.groundburst.content.launch.DesignatorPayloads.beamHook.accept(payload));
         registrar.playToClient(dev.groundburst.content.launch.StationPayloads.Scope.TYPE, dev.groundburst.content.launch.StationPayloads.Scope.CODEC,

@@ -437,13 +437,15 @@ public final class Flights extends SavedData {
 
     /**
      * A laser-guided missile's seeker (DESIGN.md §17.13): the network whose designators it answers (0: its launcher's
-     * player's), where it was aimed, and how far round that it looks for a spot. Coming down (from half way) it homes.
+     * player's), where it was aimed, and how far round that it looks for a spot. Once clear of its climb it follows the
+     * laser of the player who launched it (a designator's call for fire), wherever it points: that player leads it in.
+     * Without that laser, coming down (from half way) it homes on a spot of its network's designators near its aim.
      */
     static final class Seeker {
         /** It looks this far round its aim, and this share of its range more. */
         static final double REACH = 48, SHARE = 0.05;
-        /** It homes from this far through its flight; its target moves at most this far a tick. */
-        static final double FROM = 0.5, STEP = 1.0;
+        /** It follows its launcher's laser from this far through its flight, any other spot from this far; its target moves at most this far a tick. */
+        static final double LEAD_FROM = 0.12, FROM = 0.5, STEP = 1.5;
         static final Codec<Seeker> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.LONG.fieldOf("net").forGetter(s -> s.net), Vec3.CODEC.fieldOf("aim").forGetter(s -> s.aim),
                 Codec.DOUBLE.fieldOf("reach").forGetter(s -> s.reach)).apply(i, Seeker::new));
@@ -607,8 +609,11 @@ public final class Flights extends SavedData {
          * tick at most, so the missile turns smoothly onto it and follows it as it moves. False with no spot: it flies on
          * as it was aimed.
          */
-        private boolean home(ServerLevel level) {
-            Designators.Spot spot = Designators.spotFor(level, this.seeker.net, this.owner, this.seeker.aim, this.seeker.reach, this.target);
+        private boolean home(ServerLevel level, double s) {
+            Designators.Spot spot = this.owner == null ? null : Designators.spotOf(level, this.owner);    // led in, wherever it points
+            if (spot == null && s >= Seeker.FROM) {
+                spot = Designators.spotFor(level, this.seeker.net, this.owner, this.seeker.aim, this.seeker.reach, this.target);
+            }
             if (spot == null) {
                 this.seeker.locked = false;
                 return false;
@@ -719,7 +724,7 @@ public final class Flights extends SavedData {
                 double s = Math.min(1, (this.age - ignition()) / (double) this.flightTicks);
                 // Coming down, a laser-guided missile homes on its spot; otherwise the ground at the target, once its
                 // chunk is in (it is ticket-loaded from launch).
-                boolean homing = this.seeker != null && this.plan == null && s >= Seeker.FROM && home(level);
+                boolean homing = this.seeker != null && this.plan == null && s >= Seeker.LEAD_FROM && home(level, s);
                 BlockPos tc = BlockPos.containing(this.target);
                 if (!homing && level.hasChunkAt(tc)) {
                     this.target = new Vec3(this.target.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, tc.getX(), tc.getZ()), this.target.z);

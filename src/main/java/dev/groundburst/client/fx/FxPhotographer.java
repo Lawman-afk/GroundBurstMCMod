@@ -217,6 +217,10 @@ public final class FxPhotographer {
                 // Far: the pillbox 300 blocks off, through the sight; and from a camera off to one side, the whole beam
                 // out to it, drawn from the server's spot as other players see it.
                 new Scene("designator_far", "designator", 300, 0.2f, List.of(300)),
+                // Designate and call for fire, with real left clicks: the network's laser-guided silo 150 blocks behind
+                // the camera armed on pillbox A (clock 20), launched (40; it counts down ten seconds), then led in: the
+                // laser swung onto pillbox B (300-320) as the missile comes, and it lands on B.
+                new Scene("designator_call", "designator", 40, 1.5f, List.of(24, 44, 290, 330, 340, 347, 354, 362)),
                 new Scene("designator_side", "designator", 200, 0.3f, List.of(30)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
@@ -1125,6 +1129,37 @@ public final class FxPhotographer {
         player.teleportTo(level, x - s.distance() + 0.5, ground, 0.5, java.util.Set.of(), -90, s.pitch(), true);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
                 new net.minecraft.world.item.ItemStack(dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get()));
+        if (s.name().equals("designator_call")) {
+            for (int dx = -2; dx <= 2; dx++) {                 // pillbox B, 14 blocks south of A
+                for (int dz = -2; dz <= 2; dz++) {
+                    for (int dy = 0; dy < 3; dy++) {
+                        boolean wall = Math.abs(dx) == 2 || Math.abs(dz) == 2 || dy == 2;
+                        level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground + dy, 14 + dz), wall ? concrete : air);
+                    }
+                }
+            }
+            var stationAt = new net.minecraft.core.BlockPos(x - 150, ground, 12);
+            var siloAt = new net.minecraft.core.BlockPos(x - 150, ground, -10);
+            formed(level, stationAt, dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.STATION);
+            formed(level, siloAt, dev.groundburst.content.launch.GBLaunch.SILO_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.SILO);
+            if (level.getBlockEntity(stationAt) instanceof dev.groundburst.content.launch.LaunchStationBlockEntity st
+                    && level.getBlockEntity(siloAt) instanceof dev.groundburst.content.launch.LaunchSiloBlockEntity silo) {
+                st.revalidate();
+                st.energy().generate(dev.groundburst.content.launch.LaunchStationBlockEntity.ENERGY_CAPACITY);
+                silo.revalidate();
+                silo.inventory().setItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE,
+                        dev.groundburst.content.assembly.MissileAssembly.missile(new dev.groundburst.content.assembly.MissileSpec(
+                                new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()),
+                                dev.groundburst.content.assembly.SizeClass.M, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
+                                dev.groundburst.content.assembly.MissileParts.Guidance.LASER, false)));
+                silo.energy().generate(dev.groundburst.content.launch.LaunchSiloBlockEntity.ENERGY_CAPACITY);
+                var network = st.network(level);
+                if (network != null) {
+                    dev.groundburst.content.launch.LaunchNetwork.of(level).link(level, network.id, silo);
+                    player.getMainHandItem().set(dev.groundburst.registry.GBDataComponents.LAUNCH_CODES.get(), network.code());
+                }
+            }
+        }
         if (s.name().equals("designator_side")) {
             // An invisible armour stand off to one side and behind, the camera: the holder on the left of the view, its
             // beam running away across it to the pillbox.
@@ -2208,6 +2243,20 @@ public final class FxPhotographer {
                     panel.panel(dev.groundburst.content.alarm.AlarmBlockEntity.SOUND);
                 }
             });
+        }
+        if (scene.name().equals("designator_call") && step >= 0) {
+            if (clock == 20 || clock == 40) {
+                net.minecraft.client.KeyMapping.click(mc.options.keyAttack.getKey());   // a left click: designate, then fire
+            }
+            if (clock == 30) {
+                server.execute(() -> server.getPlayerList().getPlayers().getFirst().getMainHandItem().set(
+                        dev.groundburst.registry.GBDataComponents.DESIGNATOR_MODE.get(), dev.groundburst.content.launch.LaserDesignatorItem.Mode.FIRE.ordinal()));
+            }
+            if (clock >= 300 && clock <= 320) {                // leading it in: the laser walked onto pillbox B
+                float k = (clock - 300) / 20f;
+                mc.player.setYRot(-90 + 18.9f * k);
+                mc.player.setYHeadRot(mc.player.getYRot());
+            }
         }
         if (scene.profile().equals("designator") && step >= 0 && clock == 4) {
             mc.options.setCameraType(scene.name().endsWith("_front") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
