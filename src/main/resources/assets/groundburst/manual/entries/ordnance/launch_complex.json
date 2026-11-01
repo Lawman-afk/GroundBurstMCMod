@@ -1,7 +1,7 @@
 {
   "title": "Launch Complex",
   "icon": "groundburst:launch_complex",
-  "order": 11,
+  "order": 10,
   "items": [
     "groundburst:launch_complex",
     "groundburst:flame_deflector"

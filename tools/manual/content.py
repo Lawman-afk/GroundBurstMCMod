@@ -940,8 +940,6 @@ Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: t
     text("""
 **Bodies** come in the warheads' classes: a **Tactical** body for class S warheads (Light missiles, about 4 blocks long), a **Medium** body for class M (5 to 5.5 blocks), a **Heavy** body for class L (about 7 blocks) and a **Strategic** body for the class XL [nuclear warheads](ordnance/nuclear): a long two-stage rocket, about 9 blocks, that only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires. Bigger still are the three-stage intercontinental missiles the [ICBM Assembly Hall](ordnance/strategic_assembly) builds whole, and the exotic ones of the [Special Weapons Assembler](ordnance/special_weapons).
 
-A [MIRV](ordnance/mirv) carries a bus of several warheads instead of one, on a Heavy or a Strategic body.
-
 **Motors** decide how far it flies: **Solid Rocket Motor I**, 400 blocks (Tactical and Medium bodies); **Solid Rocket Motor II**, 1024 blocks (Tactical, Medium and Heavy bodies); **Liquid-fuel Stage**, 2500 blocks (Heavy and Strategic bodies).
 """),
     text("""
@@ -1118,37 +1116,6 @@ It holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Cha
 """),
     craft("laser_designator"),
     craft("laser_guidance_unit"),
-])
-
-entry("ordnance/mirv", "MIRVs", "strategic_mirv_bus", ["heavy_mirv_bus", "strategic_mirv_bus", "rv_decoy"], [
-    text("""
-A **MIRV** carries several warheads where a missile carries one: a **MIRV bus** in the warhead's place, holding **re-entry vehicles** (RVs), each a warhead with its own fuze. The missile flies its arc as any does; coming down from the top of it, the bus lets its RVs go one by one, each with a crack and a puff of smoke, and each falls white-hot onto **its own point** round the target.
-
-There are two buses. The **Heavy MIRV Bus** goes on a Heavy body, built at the Heavy Missile Assembler (see [missile assemblers](ordnance/missile_assemblers)), and fires from a [Launch Silo](ordnance/launch_site). The **Strategic MIRV Bus** goes on a Strategic body, built at the Strategic Missile Assembler, and fires from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). A bus fits only its own class's body, and only once it is loaded.
-"""),
-    text("""
-**Loading it.** Use a bus to open it. Its mounts take RVs, as far as its **load** allows: put assembled warheads in them (each keeps the fuze it was given at the [Assembly Bench](ordnance/assembly)). Both buses take **Light and Medium** warheads, nothing bigger and nothing nuclear, and decoys; the Strategic bus carries more of them.
-"""),
-    table([
-        ["Heavy MIRV Bus", "6 mounts, load 12"],
-        ["  Light warhead", "2"],
-        ["  Medium warhead", "4"],
-        ["  RV Decoy", "1"],
-        ["Strategic MIRV Bus", "8 mounts, load 16"],
-        ["  Light warhead", "2"],
-        ["  Medium warhead", "4"],
-        ["  RV Decoy", "1"],
-    ], "What each takes"),
-    text("""
-**Its spread.** Set on the bus's screen: **point** (all on the aim), **line** (across the way it flies), **ring** or **grid**, and how far apart, up to 150 blocks (shift moves it 20 at a time). However the missile is aimed, from a [Launch Computer](ordnance/launch_site), a [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator), its RVs come down in that pattern round the aim, in the order they sit in the bus. The station's and the computer's maps draw a circle at each RV's point.
-
-**RV Decoys** are light copper replicas of an RV. They fall with the warheads and land as nothing, but radar and interceptors cannot tell them from the real ones, so each draws its share of the defence's fire.
-
-**Against defences.** Until it lets its RVs go a MIRV is one missile. After, every RV must be shot down on its own, and they are the hardest targets there are: small, fast and hot.
-"""),
-    craft("heavy_mirv_bus"),
-    craft("strategic_mirv_bus"),
-    craft("rv_decoy"),
 ])
 
 entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_complex", "flame_deflector"], [

@@ -82,78 +82,24 @@ public interface LaunchSite {
 
     /**
      * A strike's reach, blocks: its warhead's lethal and outer radii ({@link AssemblyStats.Area}) and how far from the
-     * target it may come down, along its flight ({@code along}) and across it ({@code across}). A MIRV's (DESIGN.md
-     * §17.14): each of its RVs' own circle round its point ({@code rvs}), its lethal radius their biggest and its reach
-     * the farthest any of them harms from the aim.
+     * target it may come down, along its flight ({@code along}) and across it ({@code across}).
      */
-    record Strike(float lethal, float reach, float along, float across, java.util.List<Rv> rvs) {
+    record Strike(float lethal, float reach, float along, float across) {
         public static final Strike NONE = new Strike(0, 0, 0, 0);
-
-        /** One RV's circle: where it comes down from the aim, its warhead's lethal and outer radii (a decoy's none). */
-        public record Rv(int dx, int dz, float lethal, float reach) {
-            public static final com.mojang.serialization.Codec<Rv> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-                    com.mojang.serialization.Codec.INT.fieldOf("dx").forGetter(Rv::dx), com.mojang.serialization.Codec.INT.fieldOf("dz").forGetter(Rv::dz),
-                    com.mojang.serialization.Codec.FLOAT.fieldOf("lethal").forGetter(Rv::lethal),
-                    com.mojang.serialization.Codec.FLOAT.fieldOf("reach").forGetter(Rv::reach)).apply(i, Rv::new));
-        }
-
-        public Strike(float lethal, float reach, float along, float across) {
-            this(lethal, reach, along, across, java.util.List.of());
-        }
 
         /** A missile's strike at {@code target} from {@code from} (no target: at its full range). */
         public static Strike of(ServerLevel level, MissileSpec spec, BlockPos from, @Nullable BlockPos target) {
+            AssemblyStats.Area area = AssemblyStats.area(spec.warhead(), level.registryAccess());
             double distance = target == null ? spec.range()
                     : Math.sqrt(Math.pow(target.getX() - from.getX(), 2) + Math.pow(target.getZ() - from.getZ(), 2));
             float scatter = (float) spec.guidance().scatter(distance);
-            if (spec.mirv()) {
-                BlockPos aim = target != null ? target : from.offset(spec.range(), 0, 0);
-                java.util.List<ItemStack> rvs = dev.groundburst.content.assembly.Mirv.rvs(spec.warhead());
-                java.util.List<int[]> points = dev.groundburst.content.assembly.Mirv.points(spec.warhead(), from, aim.getX(), aim.getZ());
-                java.util.List<Rv> circles = new java.util.ArrayList<>();
-                float lethal = 0, reach = 0;
-                for (int i = 0; i < rvs.size(); i++) {
-                    AssemblyStats.Area a = AssemblyStats.area(rvs.get(i), level.registryAccess());
-                    int dx = points.get(i)[0] - aim.getX(), dz = points.get(i)[1] - aim.getZ();
-                    circles.add(new Rv(dx, dz, a.lethal(), a.reach()));
-                    lethal = Math.max(lethal, a.lethal());
-                    reach = Math.max(reach, (float) Math.hypot(dx, dz) + a.reach());
-                }
-                return new Strike(lethal, reach, scatter, scatter / 2, java.util.List.copyOf(circles));
-            }
-            AssemblyStats.Area area = AssemblyStats.area(spec.warhead(), level.registryAccess());
             return new Strike(area.lethal(), area.reach(), scatter, scatter / 2);
         }
 
         /** The larger of two strikes, figure by figure (two missiles fired together). */
         public Strike max(Strike o) {
             return new Strike(Math.max(this.lethal, o.lethal), Math.max(this.reach, o.reach), Math.max(this.along, o.along),
-                    Math.max(this.across, o.across), this.rvs.isEmpty() ? o.rvs : this.rvs);
-        }
-
-        /** Over the network (the station's and the computer's maps). */
-        public void write(net.minecraft.network.FriendlyByteBuf buf) {
-            buf.writeFloat(this.lethal);
-            buf.writeFloat(this.reach);
-            buf.writeFloat(this.along);
-            buf.writeFloat(this.across);
-            buf.writeVarInt(this.rvs.size());
-            for (Rv r : this.rvs) {
-                buf.writeVarInt(r.dx());
-                buf.writeVarInt(r.dz());
-                buf.writeFloat(r.lethal());
-                buf.writeFloat(r.reach());
-            }
-        }
-
-        public static Strike read(net.minecraft.network.FriendlyByteBuf buf) {
-            float lethal = buf.readFloat(), reach = buf.readFloat(), along = buf.readFloat(), across = buf.readFloat();
-            int n = Math.min(64, buf.readVarInt());
-            java.util.List<Rv> rvs = new java.util.ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                rvs.add(new Rv(buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readFloat()));
-            }
-            return new Strike(lethal, reach, along, across, java.util.List.copyOf(rvs));
+                    Math.max(this.across, o.across));
         }
     }
 }

@@ -175,7 +175,10 @@ public final class StationPayloads {
             buf.writeVarInt(m.targetZ());
             buf.writeBoolean(m.pendingAim());
             buf.writeVarInt(m.range());
-            m.strike().write(buf);
+            buf.writeFloat(m.strike().lethal());
+            buf.writeFloat(m.strike().reach());
+            buf.writeFloat(m.strike().along());
+            buf.writeFloat(m.strike().across());
             ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, m.shown());
             buf.writeVarInt(m.timing().delay());
             buf.writeBoolean(m.timing().cruise());
@@ -189,7 +192,7 @@ public final class StationPayloads {
             buf.writeVarInt(m.inFlight() + 1);
         }, buf -> new MemberView(buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
                 buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
-                LaunchSite.Strike.read(buf), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
+                new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
                 new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble()),
                 buf.readBoolean(), buf.readBoolean(), buf.readVarLong() - 1, buf.readBoolean(), buf.readVarInt() - 1));
     }

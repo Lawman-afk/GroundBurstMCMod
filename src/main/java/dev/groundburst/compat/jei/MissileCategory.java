@@ -58,15 +58,6 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
                         out.add(new Recipe(r.warhead(), r.assembler(), true));
                     }
                 });
-        // MIRVs (DESIGN.md §17.14): a bus in the warhead's place, at its class's assembler.
-        for (var bus : List.of(dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS, dev.groundburst.content.assembly.GBAssembly.STRATEGIC_MIRV_BUS)) {
-            ItemStack s = new ItemStack(bus.get());
-            SizeClass size = MissileAssembly.classOf(s);
-            AssemblerClass assembler = size == null ? null : AssemblerClass.of(size);
-            if (assembler != null) {
-                out.add(new Recipe(s, assembler, false));
-            }
-        }
         return out;
     }
 

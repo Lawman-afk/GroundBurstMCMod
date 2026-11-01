@@ -451,34 +451,14 @@ public class LaunchComputerScreen extends Screen {
         double scale = zoom();
         int tx = screenX(silo.targetX() + 0.5), tz = screenY(silo.targetZ() + 0.5);
         int lethal = (int) Math.round(k.lethal() / scale), reach = (int) Math.round(k.reach() / scale);
-        if (!k.rvs().isEmpty()) {
-            drawRvs(g, k, silo.targetX(), silo.targetZ(), scale, this::screenX, this::screenY, picked, x0, y0, x1, y1);
-        } else {
-            if (lethal > 0) {
-                Phosphor.disc(g, tx, tz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
-            }
-            Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
+        if (lethal > 0) {
+            Phosphor.disc(g, tx, tz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
         }
+        Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         if (k.along() / scale >= 1.5) {
             double dx = silo.targetX() - silo.pos().getX(), dz = silo.targetZ() - silo.pos().getZ(), d = Math.sqrt(dx * dx + dz * dz);
             Phosphor.ellipse(g, tx, tz, (k.along() + k.reach()) / scale, (k.across() + k.reach()) / scale,
                     d > 1e-6 ? dx / d : 1, d > 1e-6 ? dz / d : 0, picked ? 0xCCFF4A3A : 0x997A2418, 3);
-        }
-    }
-
-    /**
-     * A MIRV's strike (DESIGN.md §17.14), for the computer's and the station's maps: each RV's circle at its point round
-     * the aim (filled where its warhead kills, ringed where it harms; a decoy a small ring).
-     */
-    static void drawRvs(GuiGraphicsExtractor g, LaunchSite.Strike k, int targetX, int targetZ, double scale,
-            java.util.function.DoubleToIntFunction sx, java.util.function.DoubleToIntFunction sz, boolean picked, int x0, int y0, int x1, int y1) {
-        for (LaunchSite.Strike.Rv rv : k.rvs()) {
-            int px = sx.applyAsInt(targetX + rv.dx() + 0.5), pz = sz.applyAsInt(targetZ + rv.dz() + 0.5);
-            int lethal = (int) Math.round(rv.lethal() / scale), reach = (int) Math.round(rv.reach() / scale);
-            if (lethal > 0) {
-                Phosphor.disc(g, px, pz, lethal, picked ? 0x40FF4A3A : 0x30701C16, x0, y0, x1, y1);
-            }
-            Phosphor.ring(g, px, pz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         }
     }
 

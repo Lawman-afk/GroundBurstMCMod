@@ -184,9 +184,13 @@ public final class LaunchPayloads {
             buf.writeVarInt(s.targetZ());
             buf.writeVarInt(s.range());
             buf.writeVarInt(s.kind());
-            s.strike().write(buf);
+            buf.writeFloat(s.strike().lethal());
+            buf.writeFloat(s.strike().reach());
+            buf.writeFloat(s.strike().along());
+            buf.writeFloat(s.strike().across());
         }, buf -> new Silo(buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
-                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), LaunchSite.Strike.read(buf)));
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat())));
     }
 
     /**

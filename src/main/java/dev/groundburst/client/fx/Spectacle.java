@@ -309,9 +309,6 @@ public final class Spectacle {
         int seen = SEEN_DROPPED.getOrDefault(missile.getId(), -1);
         if (seen < 0) {
             SEEN_DROPPED.put(missile.getId(), dropped);           // first seen part way: what has gone has gone
-            if (dev.groundburst.content.assembly.Mirv.RV_LOOK.equals(missile.look()) && missile.age() < 4) {
-                rvRelease(missile, q, t);                         // a MIRV's re-entry vehicle, just let go by its bus
-            }
         } else if (dropped > seen) {
             for (int k = seen + 1; k <= dropped; k++) {
                 separate(missile, k, back, q, t);
@@ -653,52 +650,6 @@ public final class Spectacle {
     private static double engineHeight(dev.groundburst.content.launch.MissileEntity missile, int dropped) {
         var shape = dev.groundburst.client.render.MissileShapes.get(missile.look());
         return shape == null ? 0 : shape.engine(dropped);
-    }
-
-    /**
-     * A MIRV's bus lets a re-entry vehicle go (DESIGN.md §17.14): its separation charge's flash, and a small burst of white
-     * smoke where it parted, left hanging behind as it falls away.
-     */
-    private static void rvRelease(dev.groundburst.content.launch.MissileEntity missile, float q, double t) {
-        var random = missile.level().getRandom();
-        net.minecraft.world.phys.Vec3 at = missile.position();
-        for (int i = 0; i < 10; i++) {
-            Puffs.Puff p = new Puffs.Puff();
-            p.kind = Puffs.Kind.SMOKE;
-            double a = i / 10.0 * Math.PI * 2;
-            p.x = at.x;
-            p.y = at.y;
-            p.z = at.z;
-            float speed = 0.2f + random.nextFloat() * 0.15f;
-            p.vx = (float) Math.cos(a) * speed;
-            p.vz = (float) Math.sin(a) * speed;
-            p.vy = (random.nextFloat() - 0.5f) * 0.1f;
-            p.drag = 0.1f;
-            p.birth = t;
-            p.life = 120 + random.nextInt(60);
-            p.size0 = 1f;
-            p.size1 = 3.5f + random.nextFloat() * 1.5f;
-            p.color0 = 0xF6F4F0;
-            p.color1 = 0xCAC6C0;
-            p.alpha = 0.75f;
-            p.variant = random.nextInt(8);
-            p.rot = random.nextFloat() * 6.283f;
-            PUFFS.add(p, q);
-        }
-        Puffs.Puff flash = new Puffs.Puff();
-        flash.kind = Puffs.Kind.GLOW;
-        flash.x = at.x;
-        flash.y = at.y;
-        flash.z = at.z;
-        flash.birth = t;
-        flash.life = 5;
-        flash.size0 = 4;
-        flash.size1 = 1.5f;
-        flash.color0 = 0xFFF6DC;
-        flash.color1 = 0xFFB060;
-        flash.alpha = 1;
-        flash.variant = random.nextInt(4);
-        PUFFS.add(flash, 1);
     }
 
     /** A spent stage parts: a flash and a ring of white smoke at the joint, a bang, and the stage falling away. */

@@ -1654,74 +1654,6 @@ def _cryo_cruise() -> dict:
     return cruise("cryo_warhead", "M", 4.6, paint(G.CRYO_CAN, 0.55), paint(W.WHITE, 0.68), marks)
 
 
-# --- MIRVs (DESIGN.md §17.14): each bus is its missile's head; every RV flies as the re-entry vehicle -----------------------------
-
-def heavy_mirv() -> dict:
-    """The Heavy MIRV (after the Polaris A3, the first missile with several warheads, cut to one stage): white under the
-    bus's grey shroud, black roll bands, four small fins, an aft skirt and a single bell."""
-    rk = Rocket("heavy_mirv_bus", "L")
-    R = W.mount("heavy_mirv_bus")[0]
-    rk.bell("bell", 3.2, 2.2, 0.0, 4)
-    rk.ring("skirt", R + 0.4, 4.0, 14.0, caps=("up", "down"), top=True, bottom=True)
-    rk.fins("fin", R + 0.4, 4.0, 10.0, 5.0, 5.0, thick=0.9)
-    rk.closure("aft", R + 0.4, 4.0)
-    rk.tube("body", R, 14.0, 66.0)
-    rk.joint("joint", R + 0.3, 66.0, 1.0)
-    rk.tube("guidance", R, 67.0, 72.0, on_joint=True)
-    rk.on_side("raceway", 90, R, 15.0, 65.0, 0.6, 1.2)
-    rk.mount(72.0)
-    rk.parts, rk.stages, rk.engines = [14.0, 72.0, rk.tip], [rk.tip], [0.0]
-    white = paint(W.WHITE, 0.72, rust=0.0)
-    lv = Livery(body=white, skirt=paint(W.WHITE, 0.62), fin=paint(W.BLACK, 0.45), joint=RING, guidance=white, bell=NOZZLE,
-                raceway=paint(W.WHITE, 0.62))
-    lv.on("body", roll(54.0, 60.0, W.BLACK[2])).on("body", roll(22.0, 28.0, W.BLACK[2], (1, 3)))
-    lv.on("body", stencil((46.0, 45.0, 43.0), W.BLACK[2], 7, "xx.xxx.x"))
-    lv.on("guidance", rivets(70.0)).on("joint", rivets(66.0)).on("skirt", rivets(12.5))
-    lv.on("bell", soot)
-    return save(rk, lv)
-
-
-def strategic_mirv() -> dict:
-    """The Strategic MIRV (after the Poseidon C3, the first missile built round a MIRV bus): two white stages of one
-    breadth with a black interstage, small fins on the first, black roll bands, under the bus's white shroud."""
-    rk = Rocket("strategic_mirv_bus", "XL")
-    R = W.mount("strategic_mirv_bus")[0]
-    rk.bell("bell", 4.0, 2.8, 0.0, 5)
-    rk.ring("skirt", R + 0.4, 5.0, 16.0, caps=("up", "down"), top=True, bottom=True)
-    rk.fins("fin", R + 0.4, 5.0, 12.0, 5.0, 5.0, thick=1.0)
-    rk.closure("aft", R + 0.4, 5.0)
-    rk.tube("stage1", R, 16.0, 62.0)
-    rk.ring("inter", R + 0.3, 62.0, 68.0, caps=("up", "down"), top=True, bottom=True)
-    rk.bell("bell2", 3.4, 2.4, 63.0, 3)
-    rk.tube("stage2", R, 68.0, 106.0, on_joint=True)
-    rk.joint("joint", R + 0.3, 106.0, 1.0)
-    rk.tube("guidance", R, 107.0, 112.0, on_joint=True)
-    rk.on_side("raceway", 90, R, 17.0, 61.0, 0.7, 1.4)
-    rk.on_side("raceway2", 90, R, 69.0, 105.0, 0.6, 1.2)
-    rk.mount(112.0)
-    rk.parts, rk.stages, rk.engines = [62.0, 112.0, rk.tip], [62.0, rk.tip], [0.0, 63.0]
-    white = paint(W.WHITE, 0.72, rust=0.0)
-    lv = Livery(body=white, stage1=white, stage2=white, skirt=paint(W.WHITE, 0.62), fin=paint(W.BLACK, 0.45), inter=W.metal(W.BLACK, 0.42),
-                joint=RING, guidance=white, bell=NOZZLE, bell2=NOZZLE, raceway=paint(W.WHITE, 0.62), raceway2=paint(W.WHITE, 0.62))
-    lv.on("stage2", roll(94.0, 100.0, W.BLACK[2])).on("stage1", roll(48.0, 54.0, W.BLACK[2], (1, 3)))
-    lv.on("stage2", stencil((88.0, 87.0, 85.0), W.BLACK[2], 7, "xx.xxx.x"))
-    lv.on("stage1", stencil((40.0, 39.0), W.BLACK[2], 6, "x.xx.xx"))
-    lv.on("inter", rivets(63.0)).on("inter", rivets(67.0)).on("skirt", rivets(14.5)).on("joint", rivets(106.0))
-    lv.on("bell", soot).on("bell2", soot)
-    return save(rk, lv)
-
-
-def re_entry_vehicle() -> dict:
-    """Every RV a MIRV lets go, as it flies (its look whatever it carries): the re-entry vehicle alone, its aft cover
-    on a flat base plate (the cover's own ring, a pixel)."""
-    rk = Rocket("re_entry_vehicle", "S")
-    rk.ring("plate", 2.6, 0.0, 0.4, caps=("down",), top=False, bottom=True, stagger="full")
-    rk.mount(0.4)
-    rk.parts, rk.stages, rk.engines = [rk.tip], [rk.tip], [0.0]
-    lv = Livery(body=W.metal(W.GUNMETAL, 0.32), plate=W.metal(W.GUNMETAL, 0.32))
-    return save(rk, lv)
-
-
 #: Every missile, by its warhead, in the order the warheads are listed.
 BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chemical, "toxic_waste_warhead": toxic_waste,
             "dirty_warhead": dirty, "heavy_warhead": heavy, "cluster_warhead": cluster, "gas_warhead": gas, "smoke_warhead": smoke,
@@ -1734,9 +1666,7 @@ BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chem
             "he_warhead_cruise": _he_cruise, "napalm_warhead_cruise": _napalm_cruise, "chemical_warhead_cruise": _chemical_cruise,
             "toxic_waste_warhead_cruise": _toxic_waste_cruise, "dirty_warhead_cruise": _dirty_cruise,
             "heavy_warhead_cruise": _heavy_cruise, "cluster_warhead_cruise": _cluster_cruise, "gas_warhead_cruise": _gas_cruise,
-            "smoke_warhead_cruise": _smoke_cruise, "cryo_warhead_cruise": _cryo_cruise,
-            # MIRVs (DESIGN.md §17.14): each bus's missile, and the re-entry vehicle every RV flies as.
-            "heavy_mirv_bus": heavy_mirv, "strategic_mirv_bus": strategic_mirv, "re_entry_vehicle": re_entry_vehicle}
+            "smoke_warhead_cruise": _smoke_cruise, "cryo_warhead_cruise": _cryo_cruise}
 
 
 def _own(name: str, file_stem: str) -> bool:

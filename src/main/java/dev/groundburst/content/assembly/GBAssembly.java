@@ -126,19 +126,6 @@ public final class GBAssembly {
 
     public static final DeferredItem<MissileParts.HardenedModule> HARDENED_ELECTRONICS = GBItems.register("hardened_electronics",
             "Hardened Electronics", GBTab.MISSILES, MissileParts.HardenedModule::new);
-    /**
-     * DESIGN.md §17.14: the MIRV buses, carried in a warhead's place (the Heavy bus on a Heavy body, the Strategic bus on
-     * a Strategic one), and the decoy re-entry vehicle; the bus's screen.
-     */
-    public static final DeferredItem<MirvBusItem> HEAVY_MIRV_BUS = GBItems.register("heavy_mirv_bus", "Heavy MIRV Bus", GBTab.MISSILES,
-            p -> new MirvBusItem(p, SizeClass.L));
-    public static final DeferredItem<MirvBusItem> STRATEGIC_MIRV_BUS = GBItems.register("strategic_mirv_bus", "Strategic MIRV Bus",
-            GBTab.MISSILES, p -> new MirvBusItem(p, SizeClass.XL));
-    public static final DeferredItem<MirvDecoyItem> RV_DECOY = GBItems.register("rv_decoy", "RV Decoy", GBTab.MISSILES, MirvDecoyItem::new);
-    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<MirvBusMenu>> MIRV_BUS_MENU =
-            dev.groundburst.registry.GBMenus.MENUS.register("mirv_bus",
-                    () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(MirvBusMenu::new));
-
     /** An assembled missile (its parts in its component): what a Launch Silo launches. */
     public static final DeferredItem<MissileItem> MISSILE = GBItems.register("missile", "Missile", GBTab.MISSILES, MissileItem::new);
 

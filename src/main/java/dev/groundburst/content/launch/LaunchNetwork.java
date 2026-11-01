@@ -68,8 +68,7 @@ public final class LaunchNetwork extends SavedData {
     // --- records -----------------------------------------------------------------------------------------------------------
     private static final Codec<LaunchSite.Strike> STRIKE_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.FLOAT.fieldOf("lethal").forGetter(LaunchSite.Strike::lethal), Codec.FLOAT.fieldOf("reach").forGetter(LaunchSite.Strike::reach),
-            Codec.FLOAT.fieldOf("along").forGetter(LaunchSite.Strike::along), Codec.FLOAT.fieldOf("across").forGetter(LaunchSite.Strike::across),
-            LaunchSite.Strike.Rv.CODEC.listOf().optionalFieldOf("rvs", List.of()).forGetter(LaunchSite.Strike::rvs))
+            Codec.FLOAT.fieldOf("along").forGetter(LaunchSite.Strike::along), Codec.FLOAT.fieldOf("across").forGetter(LaunchSite.Strike::across))
             .apply(i, LaunchSite.Strike::new));
     private static final Codec<LaunchSite.Timing> TIMING_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("delay").forGetter(LaunchSite.Timing::delay), Codec.BOOL.fieldOf("cruise").forGetter(LaunchSite.Timing::cruise),

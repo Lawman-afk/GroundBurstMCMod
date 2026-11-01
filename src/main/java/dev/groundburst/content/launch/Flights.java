@@ -46,12 +46,6 @@ public final class Flights extends SavedData {
     private static final int LOOKAHEAD = 30, LOOKAHEAD_STEP = 6;
     /** The whistle of the dive: this many ticks before impact. */
     private static final int WHISTLE_AT = 50;
-    /**
-     * A MIRV (DESIGN.md §17.14): how far through its flight its bus starts letting its re-entry vehicles go (coming
-     * down from the top of its arc), and the ticks between one and the next (fewer on a short flight).
-     */
-    public static final double MIRV_SPLIT = 0.6;
-    public static final int MIRV_GAP = 4;
 
     static final Codec<Flight> FLIGHT_CODEC = RecordCodecBuilder.create(i -> i.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(f -> f.id),
@@ -70,11 +64,8 @@ public final class Flights extends SavedData {
             Codec.DOUBLE.optionalFieldOf("cruise_heading").forGetter(f -> f.plan == null ? Optional.empty() : Optional.of(f.plan.heading)),
             Codec.FLOAT.listOf().optionalFieldOf("cruise_alt", List.of()).forGetter(f -> f.plan == null ? List.of() : f.plan.altList()),
             // A laser-guided missile's seeker (DESIGN.md §17.13).
-            Seeker.CODEC.optionalFieldOf("seeker").forGetter(f -> Optional.ofNullable(f.seeker)),
-            // A MIRV's (DESIGN.md §17.14): a bus's RVs let go so far, or an RV's path.
-            MirvPart.CODEC.optionalFieldOf("mirv").forGetter(f -> f.released > 0 || f.lead != null
-                    ? Optional.of(new MirvPart(f.released, Optional.ofNullable(f.lead), f.scale)) : Optional.empty())
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt, seeker, mirv) -> {
+            Seeker.CODEC.optionalFieldOf("seeker").forGetter(f -> Optional.ofNullable(f.seeker))
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt, seeker) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
@@ -86,21 +77,8 @@ public final class Flights extends SavedData {
             f.plan.setAlt(alt);
         }
         f.seeker = seeker.orElse(null);
-        mirv.ifPresent(m -> {
-            f.released = m.released();
-            f.lead = m.lead().orElse(null);
-            f.scale = m.scale();
-        });
         return f;
     }));
-
-    /** A MIRV's part in a flight, as saved: its bus's RVs let go so far; an RV's path's lead; the blast scale they fly at. */
-    record MirvPart(int released, Optional<Vec3> lead, float scale) {
-        static final Codec<MirvPart> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.INT.optionalFieldOf("released", 0).forGetter(MirvPart::released),
-                Vec3.CODEC.optionalFieldOf("lead").forGetter(MirvPart::lead),
-                Codec.FLOAT.optionalFieldOf("scale", 1f).forGetter(MirvPart::scale)).apply(i, MirvPart::new));
-    }
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundBurst.id("missile_flights"), Flights::new,
             FLIGHT_CODEC.listOf().fieldOf("flights").codec().xmap(list -> {
                 Flights fs = new Flights();
@@ -495,8 +473,8 @@ public final class Flights extends SavedData {
         int age;
         final ItemStack warhead;
         final @Nullable UUID owner;
-        /** The bomb scale it was launched at (GameTests' shrunken blasts; 1 in play, and after a reload; an RV its bus's). */
-        float scale = dev.groundburst.content.ordnance.charge.Charges.bombScale;
+        /** The bomb scale it was launched at (GameTests' shrunken blasts; 1 in play, and after a reload). */
+        final float scale = dev.groundburst.content.ordnance.charge.Charges.bombScale;
         private final LongOpenHashSet tickets = new LongOpenHashSet();
         private Vec3 pos;
         private float yaw, tilt;
@@ -511,13 +489,6 @@ public final class Flights extends SavedData {
         private @Nullable CruisePlan plan;
         /** A laser-guided missile's seeker (null: none). */
         private @Nullable Seeker seeker;
-        /** A MIRV's bus (DESIGN.md §17.14): how many of its re-entry vehicles it has let go. */
-        private int released;
-        /**
-         * A re-entry vehicle let go by a MIRV's bus (null: not one): the first bend of its path, on from where it left
-         * along the bus's heading; its path then comes steeply down onto its point.
-         */
-        private @Nullable Vec3 lead;
         /**
          * The missile it put in the world last (not saved). The level cannot find an entity in a chunk whose entities are
          * not active yet, and its id then stops a new one being added; held here, it is moved along all the same.
@@ -587,24 +558,9 @@ public final class Flights extends SavedData {
             return this.plan != null;
         }
 
-        /** A MIRV's bus (DESIGN.md §17.14): it carries re-entry vehicles, and lets them go coming down. */
-        public boolean bus() {
-            return this.plan == null && dev.groundburst.content.assembly.Mirv.isBus(this.warhead);
-        }
-
-        /** A re-entry vehicle a MIRV's bus let go: a warhead (or a decoy) falling on its own. */
-        public boolean rv() {
-            return this.lead != null;
-        }
-
-        /** A decoy: an RV that carries nothing (radar and interceptors take it for a warhead). */
-        public boolean decoy() {
-            return rv() && this.warhead.getItem() instanceof dev.groundburst.content.assembly.MirvDecoyItem;
-        }
-
-        /** Ticks it burns where it was lit before it moves: a cruise missile's booster less than a rocket's ignition; an RV none. */
+        /** Ticks it burns where it was lit before it moves: a cruise missile's booster less than a rocket's ignition. */
         int ignition() {
-            return this.lead != null ? 0 : this.plan != null ? CruisePlan.IGNITION : MissileEntity.IGNITION;
+            return this.plan != null ? CruisePlan.IGNITION : MissileEntity.IGNITION;
         }
 
         /** How far through its flight it is: 0 on the pad, 1 at the target. */
@@ -612,11 +568,8 @@ public final class Flights extends SavedData {
             return this.age < ignition() ? 0 : Math.min(1, (this.age - ignition()) / (float) this.flightTicks);
         }
 
-        /** Spent stages it has dropped so far (a cruise missile's booster, once its boost is done; an RV has none). */
+        /** Spent stages it has dropped so far (a cruise missile's booster, once its boost is done). */
         public int dropped() {
-            if (this.lead != null) {
-                return 0;
-            }
             if (this.plan != null) {
                 return this.age >= ignition() + CruisePlan.BOOST_TICKS ? 1 : 0;
             }
@@ -630,8 +583,7 @@ public final class Flights extends SavedData {
 
         /** Whether an engine is burning: on the pad, and climbing until its last stage burns out (a cruise missile's jet: always). */
         public boolean burning() {
-            return this.lead == null && (this.plan != null || this.age < MissileEntity.IGNITION
-                    || progress() < dev.groundburst.content.assembly.MissileParts.burnout(this.body));
+            return this.plan != null || this.age < MissileEntity.IGNITION || progress() < dev.groundburst.content.assembly.MissileParts.burnout(this.body);
         }
 
         /**
@@ -639,9 +591,6 @@ public final class Flights extends SavedData {
          * short flight barely warms; a cruise missile never).
          */
         public float reentry() {
-            if (this.lead != null) {
-                return Math.min(1f, 0.55f + this.age / 10f);             // an RV: white-hot from the moment it parts
-            }
             if (this.plan != null) {
                 return 0;
             }
@@ -743,17 +692,6 @@ public final class Flights extends SavedData {
             return from.scale(v * v * v).add(p1.scale(3 * v * v * u)).add(p2.scale(3 * v * u * u)).add(this.target.scale(u * u * u));
         }
 
-        /**
-         * An RV's way down, {@code u} (0-1) along it: a cubic curve from where it left its bus, bending on along the bus's
-         * heading ({@link #lead}), then steeply down onto its point.
-         */
-        private Vec3 rvPath(double u) {
-            Vec3 p0 = this.start, p1 = this.lead, p3 = this.target;
-            Vec3 p2 = p3.add(0, Math.max(8, (p0.y - p3.y) * 0.45), 0);
-            double v = 1 - u;
-            return p0.scale(v * v * v).add(p1.scale(3 * v * v * u)).add(p2.scale(3 * v * u * u)).add(p3.scale(u * u * u));
-        }
-
         /** Launched from a silo: the ground at the shaft's mouth, over its pad (null: launched from a pad). */
         public @Nullable Vec3 siloMouth() {
             return this.silo > 0 ? this.start.add(0, this.silo, 0) : null;
@@ -766,9 +704,6 @@ public final class Flights extends SavedData {
 
         /** Where it is at {@code age} ticks after lighting (on the pad through its ignition). */
         private Vec3 at(int age) {
-            if (this.lead != null) {
-                return rvPath(Math.pow(Math.min(1, Math.max(0, age) / (double) this.flightTicks), 1.15));
-            }
             if (age < ignition()) {
                 return this.start;
             }
@@ -789,7 +724,7 @@ public final class Flights extends SavedData {
                 double s = Math.min(1, (this.age - ignition()) / (double) this.flightTicks);
                 // Coming down, a laser-guided missile homes on its spot; otherwise the ground at the target, once its
                 // chunk is in (it is ticket-loaded from launch).
-                boolean homing = this.seeker != null && this.plan == null && this.released == 0 && s >= Seeker.LEAD_FROM && home(level, s);
+                boolean homing = this.seeker != null && this.plan == null && s >= Seeker.LEAD_FROM && home(level, s);
                 BlockPos tc = BlockPos.containing(this.target);
                 if (!homing && level.hasChunkAt(tc)) {
                     this.target = new Vec3(this.target.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, tc.getX(), tc.getZ()), this.target.z);
@@ -804,7 +739,7 @@ public final class Flights extends SavedData {
                 // silo's shaft and mouth: straight up the middle of the open shaft, it cannot touch it; a cruise missile
                 // once its booster has carried it clear of its box).
                 boolean climbingOut = this.silo > 0 && to.y < this.start.y + this.silo + CLEAR_MOUTH;
-                boolean clear = this.lead != null || (this.plan != null ? this.age > ignition() + CruisePlan.BOOST_TICKS : s > 0.1);
+                boolean clear = this.plan != null ? this.age > ignition() + CruisePlan.BOOST_TICKS : s > 0.1;
                 if (clear && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
                     BlockHitResult hit = level.clip(new ClipContext(from, to.add(v.normalize().scale(0.5)), ClipContext.Block.COLLIDER,
                             ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
@@ -818,16 +753,12 @@ public final class Flights extends SavedData {
                     this.tilt = (float) Math.toDegrees(Math.atan2(Math.sqrt(v.x * v.x + v.z * v.z), v.y));
                 }
                 this.pos = to;
-                if (bus() && release(level, v)) {
-                    return true;                              // its last RV gone: the spent bus breaks up
-                }
                 // A barometric fuze bursts the warhead at its set height over the target on the way down; a cluster-type
                 // warhead on an impact fuze still opens 30 blocks over its target. Otherwise it goes off where it hits.
                 if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
                     FuzeSettings fuze = fuze();
                     // (a cruise missile sinks over falling ground too: only its dive counts)
-                    boolean falling = this.plan != null ? this.plan.diving(this.plan.along(this.age - ignition()))
-                            : (this.lead != null || s > 0.5) && v.y < 0;
+                    boolean falling = this.plan != null ? this.plan.diving(this.plan.along(this.age - ignition())) : s > 0.5 && v.y < 0;
                     double over = to.y - this.target.y;
                     double height = fuze.fuze() == Fuze.BAROMETRIC ? fuze.value() : bomb.kind.airburst() ? Charges.AIRBURST_HEIGHT : -1;
                     boolean burst = falling && height >= 0 && over <= height;
@@ -877,11 +808,7 @@ public final class Flights extends SavedData {
             }
             MissileEntity m = new MissileEntity(GBLaunch.MISSILE.get(), level);
             m.setUUID(this.id);
-            if (this.lead != null) {
-                m.setRvLook(this.body);
-            } else {
-                m.setLook(this.warhead, this.body, this.plan != null);
-            }
+            m.setLook(this.warhead, this.body, this.plan != null);
             m.setSilo(siloMouth());
             m.setPos(this.pos);
             m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
@@ -920,74 +847,14 @@ public final class Flights extends SavedData {
         /** It hits: its warhead goes off where it hit (a bunker buster bores in first; an empty one does nothing). */
         private void impact(ServerLevel level, Vec3 at) {
             Entity by = this.owner == null ? null : level.getEntity(this.owner);
-            if (this.dud || decoy()) {
-                // A dead fuze (or a decoy): it just slams into the ground.
+            if (this.dud) {
+                // A dead fuze: it just slams into the ground.
                 level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 20, 0.6, 0.4, 0.6, 0.05);
                 level.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2f, 0.5f);
             } else if (this.warhead.getItem() instanceof BlockItem b && b.getBlock() instanceof BombBlock bomb) {
                 Charges.scaled(this.scale, () -> Charges.impact(level, bomb.kind, BlockPos.containing(at.add(0, 0.5, 0)), by));
             }
             finish(level);
-        }
-
-        /**
-         * A MIRV's bus, coming down (DESIGN.md §17.14): from {@link #MIRV_SPLIT} of its flight it lets its RVs go, one every
-         * {@link #MIRV_GAP} ticks (closer together on a short flight, so the last leaves well before it would come down),
-         * each to its point of the bus's spread round where the bus is aimed. True once the last has gone: the spent bus
-         * breaks up.
-         */
-        private boolean release(ServerLevel level, Vec3 v) {
-            int split = ignition() + (int) Math.ceil(MIRV_SPLIT * this.flightTicks);
-            if (this.age < split) {
-                return false;
-            }
-            List<ItemStack> rvs = dev.groundburst.content.assembly.Mirv.rvs(this.warhead);
-            int n = rvs.size();
-            double gap = n <= 1 ? 0 : Math.min(MIRV_GAP, (ignition() + this.flightTicks - split) * 0.5 / (n - 1));
-            List<int[]> points = null;
-            while (this.released < n && this.age >= split + Math.round(gap * this.released)) {
-                if (points == null) {
-                    points = dev.groundburst.content.assembly.Mirv.points(this.warhead, BlockPos.containing(this.start),
-                            Mth.floor(this.target.x), Mth.floor(this.target.z));
-                }
-                letGo(level, rvs.get(this.released), points.get(this.released), v);
-                this.released++;
-            }
-            if (this.released < n) {
-                return false;
-            }
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, true, true, this.pos.x, this.pos.y, this.pos.z, 12, 0.6, 0.6, 0.6, 0.05);
-            finish(level);
-            return true;
-        }
-
-        /**
-         * One RV leaves the bus for {@code point}: a little to that side of the bus, moving as it does, then on its own way
-         * down; it flies with the bus's owner, hardening, fuze state and blast scale.
-         */
-        private void letGo(ServerLevel level, ItemStack rv, int[] point, Vec3 v) {
-            Vec3 aim = new Vec3(point[0] + 0.5, this.target.y, point[1] + 0.5);
-            Vec3 side = new Vec3(aim.x - this.target.x, 0, aim.z - this.target.z);
-            Vec3 from = this.pos.add(side.lengthSqr() > 1e-6 ? side.normalize().scale(0.6) : Vec3.ZERO);
-            double speed = Math.max(2.5, v.length());
-            Vec3 heading = v.lengthSqr() > 1e-6 ? v.normalize() : new Vec3(0, -1, 0);
-            double dist = from.distanceTo(aim);
-            int ticks = Math.max(12, (int) Math.ceil(dist * 1.2 / (speed * 1.1)));
-            Flight f = new Flight(UUID.randomUUID(), from, aim, 0, ticks, rv.copyWithCount(1), this.owner);
-            f.lead = from.add(heading.scale(dist * 0.3));
-            f.body = this.body;
-            f.hardened = this.hardened;
-            f.scale = this.scale;
-            f.dud = this.dud;
-            f.empChecked = this.empChecked;
-            f.yaw = this.yaw;
-            f.tilt = this.tilt;
-            Flights fs = of(level);
-            fs.flights.add(f);
-            fs.setDirty();
-            f.keepLoaded(level);
-            f.proxy(level);
-            level.playSound(null, from.x, from.y, from.z, GBLaunch.RV_RELEASE.get(), SoundSource.BLOCKS, 6f, 0.9f + level.getRandom().nextFloat() * 0.2f);
         }
 
         /** Done: the missile players see goes, and so do its chunk tickets. */

@@ -205,9 +205,6 @@ public final class GBSounds {
     // Slice 9a: a stage parting in flight, and a warhead's nose coming back down.
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_STAGING =
             register("missile.staging", "Missile stage separates", List.of("launch/stage_separation"), false, 256);
-    /** A MIRV's bus letting a re-entry vehicle go: its separation charge (DESIGN.md §17.14). */
-    public static final DeferredHolder<SoundEvent, SoundEvent> RV_RELEASE =
-            register("missile.rv_release", "Warhead separates", List.of("launch/rv_release"), false, 256);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_REENTRY =
             register("missile.reentry", "Missile screams down", List.of("launch/reentry_loop"), false, 192);
     // Slice 9b: the Missile Silo's doors unlatching and grinding apart (or shut).

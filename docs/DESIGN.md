@@ -2681,78 +2681,13 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   red band and a violet glass dome. Sounds (`tools/sound/designator.py`): the switch-on click, charging whine and chirp;
   the lock's three pips; fire called: squelch, a long tone, two pips, squelch.
 
-### 17.14 MIRVs (2026-11-01; the user's plan)
-The plan's next item after the Laser Designator: a missile that splits into several warheads over the target area
-(§15's sketch: a bus of warhead units spreading its re-entry vehicles over a footprint). The design:
-- *MIRV Buses*, carried in the warhead's place: the **Heavy MIRV Bus** (class L: a Heavy body, built at the Heavy
-  Missile Assembler) and the **Strategic MIRV Bus** (class XL: a Strategic body, at the Strategic Missile Assembler). Using one opens it: its mounts take re-entry vehicles, each a warhead with its own
-  fuze, as far as its load allows:
-  - Heavy: 6 mounts, load 12: a Light (S) conventional warhead takes 2, a Medium (M) one 4, a decoy 1 (Heavy warheads
-    are too big for it).
-  - Strategic: 8 mounts, load 16, the same warheads (at first it took the four missile-borne nuclear warheads; the
-    user limited MIRVs to Medium warheads, 2026-11-01: nothing nuclear and nothing bigger than Medium on either bus).
-  - **Its spread**, set on the bus: point, line, ring or grid (the station's patterns, `LaunchNetwork.points`), 0 to
-    150 blocks apart (a new Heavy bus a ring of 16, a Strategic one 40). Set on the bus, every console and the
-    designator honour it: the RVs land round wherever the missile is aimed, in mount order.
-- *RV Decoy*: a light replica of a re-entry vehicle (a metallised shell); load 1. It falls like an RV and lands as
-  nothing; radar and interceptors cannot tell it from a warhead.
-- *Assembly*: a bus fits only a body of its class, and only loaded ("Load the MIRV bus first"); any motor that fits
-  the body, any guidance (laser guidance steers the bus until it lets its RVs go).
-- *Launchers*: as its body: a Heavy MIRV from a Launch Silo, a Strategic one from a Launch Complex or a Missile Silo.
-- *Flight*: one missile on its arc until 60% of the way, coming down from its top: then the bus lets its RVs go one
-  every 4 ticks (a crack and a puff as each leaves; sooner on a short flight), each falling on its own way to its point
-  of the spread, white-hot all the way down; each warhead goes off by its own fuze. The spent bus breaks up after its
-  last.
-- *Defence*: one target until it releases; then every RV is its own, the hardest kind to hit (class factor 0.45,
-  where the Strategic class is 0.6), and decoys draw interceptors as warheads do.
-- *Maps*: the station and the Launch Computer draw an armed MIRV's strike as a circle at each RV's point, each its own
-  warhead's size.
-- *Looks*: each MIRV its own missile under a payload shroud (the bus is the missile's head); the RVs a slim dark
-  ablative cone (the Mk 12A's); the decoy the same cone in metallised film.
-
-**As built** (2026-11-01):
-- `content/assembly/Mirv`: the rules (mounts 6 / 8, capacity 12 / 16, `load(bus, rv)`: Light 2, Medium 4, decoy 1, on
-  either bus; a warhead's class from
-  `MissileAssembly.warheadClassOf`), what a bus holds (`DataComponents.CONTAINER`, mount by mount), its spread
-  (`groundburst:mirv_spread`, `Mirv.Spread`: a `LaunchNetwork.Pattern` and 0-150; a new bus's default on the item) and
-  `points` (`LaunchNetwork.points` for as many launchers as it has RVs, all at the launcher, so a line lies across the
-  flight), `describe` for tooltips. `MirvBusItem` (the Heavy L, the Strategic XL) opens `MirvBusMenu` as the Lead
-  Container does (the held bus locked in its slot; written back as it changes; the client's built from the hand and
-  the bus's class sent with it, `MirvBusMenu.write`, not from what it holds, which may lag behind: its mounts must
-  match the server's slot for slot, or the client is disconnected): its mounts take one RV each while
-  `fits` (an RV of the bus's, its load in place of what is there within the capacity); the spread by
-  `clickMenuButton` (next pattern, 4 closer or wider, 20 with shift), shown through two data slots.
-  `MirvBusScreen` (`textures/gui/mirv_bus.png`): the deck with its mounts centred, the load bar (red when full), the
-  pattern button and the spacing with - and +. `MirvDecoyItem` (`rv_decoy`).
-- Assembly: `MissileAssembly.isPayload` (a warhead or a bus) and `classOf` (a bus's class) at the missile
-  assemblers' warhead slot; `fit`: a bus only on its class's body (`BUS_BODY`), only loaded (`EMPTY_BUS`).
-  `MissileSpec.mirv()`; `nuclear()` counts its RVs; `warheadId` is the bus's id, so the missile's look (its model,
-  "heavy_mirv_bus" / "strategic_mirv_bus") and name ("Heavy MIRV", "Strategic MIRV") follow the bus; the tooltip and
-  the assemblers' stats list its RVs, load and spread.
-- Flight (`Flights.Flight`): a bus (`bus()`) flies as any missile; from `MIRV_SPLIT` (0.6) of its flight `release`
-  lets one RV go every `MIRV_GAP` (4) ticks (on a short flight closer: the last by half of what is left), each to its
-  point of the spread round the bus's target, then the spent bus breaks up (a puff of cloud). Laser homing stops once
-  it starts letting go. `letGo` makes the RV a flight of its own, 0.6 to its point's side of the bus, with the bus's
-  owner, body class, hardening, fuze state (dud or not), blast scale and heading: its path (`rvPath`) a cubic from
-  there, its first bend `lead` along the bus's heading 0.3 of the way, then steeply down onto its point (u =
-  s^1.15); its time from the distance at the bus's speed. An RV has no ignition, stages or engine, glows from 0.55
-  rising to white-hot, bursts or lands by its own fuze; a decoy lands as a dud does. Saved (`mirv`: released, lead,
-  scale). The sound `missile.rv_release` (the separation charge's crack, the thrusters' hiss) as each leaves.
-- Client: an RV's entity has the look `re_entry_vehicle` (`MissileEntity.setRvLook`); `Spectacle.rvRelease`: a
-  flash and a burst of white smoke where an RV first seen young parted.
-- Defence: an RV (a decoy too) weighs `Interception.RV_FACTOR` (0.45) on the kill chance; salvoes as its bus's
-  class.
-- Maps: `LaunchSite.Strike.rvs` (each RV's offset from the aim and its warhead's radii; saved, optional; sent by
-  `write`/`read`), drawn by `LaunchComputerScreen.drawRvs` on the computer's and the station's maps.
-- Assets: `tools/assets/mirv.py` (the two shrouds: a gunmetal ring, the bus's section with its thrusters, the shroud
-  split down its sides, an ogive and a tip; the RV a pixel-ring cone from 2.88 to a blunt 0.85; the decoy; the
-  screen), `missiles.py` (`heavy_mirv`: one white stage after the Polaris A3; `strategic_mirv`: two white stages after
-  the Poseidon C3; `re_entry_vehicle`: the RV alone on a plate), `tools/sound/launches.py` (`rv_release`).
-- Recipes: the Heavy bus a military circuit, 2 servos, 2 dense steel plates and 4 steel rods; the Strategic bus a
-  Heavy bus, a military circuit, 2 servos, 2 tungsten plates and 2 dense steel plates; 2 decoys from 2 copper plates,
-  2 paper and a steel rod. JEI: an info page; the missile category's two MIRV rows. The manual's MIRVs entry.
-- Tests (3): what each bus takes, loaded through its menu with its spread; assembly, launchers, the strike's
-  circles; the split (four RVs on their ring points, the decoy last, the bus gone, the kill chance).
+### 17.14 MIRVs (built and removed, 2026-11-01)
+Built to the user's plan (two MIRV buses carried in a warhead's place, loaded by hand, their spread set on the bus;
+re-entry vehicles let go from 60% of the flight; decoys; a strike circle per RV), limited to Medium warheads after the
+user's look, then removed at the user's wish: "a little out of place" for now. What the user had pictured under the
+name, a launcher firing a volley of missiles (up to class M) at once onto one area, becomes a late-game launcher of
+its own, behind a harder circuit chain. The MIRV build is in the history (commits c7fa97c3 and c372af43) should it come
+back.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -4287,8 +4222,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
-| 2026-11-01 | MIRVs limited to Medium warheads (the user): either bus takes only Light and Medium conventional warheads (and decoys); the Strategic bus differs only in carrying more (8, load 16). The user's original idea (a launcher firing a volley of missiles up to class M at once onto one area) becomes a late-game launcher of its own, with the circuit cascade to make military-grade parts harder to come by (proposed for the user's go-ahead). |
-| 2026-11-01 | MIRVs designed (§17.14, the user's plan): two buses carried in the warhead's place, a Heavy (L: 6 mounts, load 12, Light and Medium conventional warheads) and a Strategic (XL: 8 mounts, load 16, the four missile-borne nuclear warheads), loaded by hand like the Lead Container, decoys load 1; the spread (the station's point/line/ring/grid patterns, 0-150 apart) set on the bus so every console and the designator honour it; released one every 4 ticks from 60% of the flight, each RV its own flight and target (kill factor 0.45), decoys drawing fire; a strike circle per RV on the maps. |
+| 2026-11-01 | MIRVs removed (§17.14), after they were built and limited to Medium warheads: the user found them out of place for now. Agreed with the user instead: a late-game vertical launch battery firing a volley of up to 16 Light and Medium missiles onto one area; and a circuit cascade to make military-grade parts as hard to come by as they are in reality, every step a real process (silicon from the Arc Furnace, purified in the Chemical Plant, grown into crystals in a Crystal Puller and sawn into wafers, chips printed in a Clean Room multiblock with photoresist, hydrofluoric acid and phosphorus), applied to advanced circuits as well as military ones (the user: "the entire mid-game can be slowed by this process"); the weapons' own recipes, fission ones too, stay as they are. The circuit chain first, then the launcher. |
 | 2026-11-01 | Every launcher gets an Item Port (the user: "to automate reloading ... no output or any configs, just take them into the launch slot"): beside the Energy Port on the Launch Silo, Launch Complex and Missile Silo, behind it on the Cruise Missile Launcher; insert-only into the launch slot, only missiles that launcher fires; the cell still takes its old block so launchers built before keep forming; drawn on each formed model as the Energy Port's yellow-banded twin with a grated loading mouth (§17.2). The Laser Designator: a sneaking left click disarms the picked launcher, still aimed; the armed targets' spheres centred on the point clicked (they sat touching the face, off to one side). |
 | 2026-11-01 | The armed targets' spheres sit where the launcher was clicked on (the user: "on the place it is clicked, not above it"): designating keeps the clicked point and face with the launcher, and its sphere touches that face there; a launcher aimed from the station keeps the top of its column. |
 | 2026-11-01 | The Laser Designator reworked again to the user's wishes: it works with one laser-guided launcher of its network at a time (the first by default; the mouse wheel while zoomed picks the next and no longer turns the hotbar; the pick kept on the designator); no modes: a left click arms the pick on the spot if it is not armed, or launches it if it is; zoomed, every armed launcher of the network shows its aim as a glowing sphere; the sight's left-click tip removed. |

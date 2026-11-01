@@ -102,7 +102,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
         return switch (slot) {
-            case SLOT_WARHEAD -> MissileAssembly.isPayload(stack) && MissileAssembly.classOf(stack) == this.kind.size;
+            case SLOT_WARHEAD -> WarheadAssembly.isWarhead(stack) && MissileAssembly.classOf(stack) == this.kind.size;
             case SLOT_BODY -> stack.getItem() instanceof MissileParts.Body b && b.sizeClass == this.kind.size;
             case SLOT_MOTOR -> stack.getItem() instanceof MissileParts.MotorItem m && m.motor.fits(this.kind.size);
             case SLOT_GUIDANCE -> stack.getItem() instanceof MissileParts.GuidanceItem;
@@ -321,7 +321,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
 
     /** The missile the parts in the slots make (null: they make none yet). */
     public @Nullable ItemStack makes() {
-        if (MissileAssembly.isPayload(slot(SLOT_WARHEAD)) && slot(SLOT_BODY).getItem() instanceof MissileParts.Body body
+        if (WarheadAssembly.isWarhead(slot(SLOT_WARHEAD)) && slot(SLOT_BODY).getItem() instanceof MissileParts.Body body
                 && slot(SLOT_MOTOR).getItem() instanceof MissileParts.MotorItem motor) {
             return MissileAssembly.assemble(slot(SLOT_WARHEAD), body, motor, slot(SLOT_GUIDANCE), slot(SLOT_MODULE));
         }

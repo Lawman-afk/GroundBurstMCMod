@@ -147,13 +147,6 @@ public final class FxPhotographer {
                 // and the Lead Container's screen.
                 new Scene("geiger", "geiger", 4, 15, List.of(40, 80)),
                 new Scene("lead_ui", "lead_ui", 4, 15, List.of(30)),
-                // MIRVs (DESIGN.md §17.14): a Heavy MIRV on a Launch Silo; a Strategic bus's screen, loaded; and a Heavy
-                // MIRV from 260 blocks east coming at the camera (its flight skipped to just short of the split): its bus
-                // letting six RVs go (five HE warheads and a decoy), their fall onto a ring 18 round the site, and the ring
-                // of craters (the decoy's point a dud's thud).
-                new Scene("mirv_pad", "mirv_pad", 12, -18, List.of(20)),
-                new Scene("mirv_ui", "mirv_ui", 4, 15, List.of(30)),
-                new Scene("mirv_rain", "mirv", 70, -14, List.of(12, 20, 26, 32, 40, 48, 56, 70, 100)),
                 // After the user's look at 12b: the redrawn icons in real slots (the suits on vanilla's armour shapes, the
                 // instruments and medicine re-centred, the soil and the dead grass), JEI showing the hazmat sets.
                 new Scene("gear_icons", "gear_icons", 4, 15, List.of(30)),
@@ -404,76 +397,6 @@ public final class FxPhotographer {
                 }
             }
         }
-    }
-
-    /** A MIRV bus of {@code size} with {@code rvs} in its first mounts, its spread {@code pattern}, {@code spacing} apart. */
-    private static net.minecraft.world.item.ItemStack mirvBus(dev.groundburst.content.assembly.SizeClass size,
-            dev.groundburst.content.launch.LaunchNetwork.Pattern pattern, int spacing, net.minecraft.world.item.ItemStack... rvs) {
-        var bus = new net.minecraft.world.item.ItemStack(size == dev.groundburst.content.assembly.SizeClass.XL
-                ? dev.groundburst.content.assembly.GBAssembly.STRATEGIC_MIRV_BUS.get() : dev.groundburst.content.assembly.GBAssembly.HEAVY_MIRV_BUS.get());
-        var mounts = net.minecraft.core.NonNullList.withSize(dev.groundburst.content.assembly.Mirv.mounts(size), net.minecraft.world.item.ItemStack.EMPTY);
-        for (int i = 0; i < rvs.length; i++) {
-            mounts.set(i, rvs[i]);
-        }
-        bus.set(net.minecraft.core.component.DataComponents.CONTAINER, net.minecraft.world.item.component.ItemContainerContents.fromItems(mounts));
-        bus.set(dev.groundburst.registry.GBDataComponents.MIRV_SPREAD.get(), dev.groundburst.content.assembly.Mirv.Spread.of(pattern, spacing));
-        return bus;
-    }
-
-    /** A Heavy MIRV of five HE warheads and a decoy, spread in a ring 18 apart. */
-    private static net.minecraft.world.item.ItemStack heavyMirv() {
-        var he = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get());
-        var bus = mirvBus(dev.groundburst.content.assembly.SizeClass.L, dev.groundburst.content.launch.LaunchNetwork.Pattern.RING, 18,
-                he.copy(), he.copy(), he.copy(), new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get()),
-                he.copy(), he.copy());
-        return dev.groundburst.content.assembly.MissileAssembly.missile(new dev.groundburst.content.assembly.MissileSpec(bus,
-                dev.groundburst.content.assembly.SizeClass.L, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
-                dev.groundburst.content.assembly.MissileParts.Guidance.GPS, false));
-    }
-
-    /** A Launch Silo with a Heavy MIRV on it, in front of the camera. */
-    private static void mirvPad(ServerLevel level, int x, int ground) {
-        var at = new net.minecraft.core.BlockPos(x, ground, -1);
-        formed(level, at, dev.groundburst.content.launch.GBLaunch.SILO_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.SILO);
-        if (level.getBlockEntity(at) instanceof dev.groundburst.content.launch.LaunchSiloBlockEntity silo) {
-            silo.revalidate();
-            silo.inventory().setItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE, heavyMirv());
-        }
-    }
-
-    /** A Strategic MIRV Bus's screen: two Heavy HE warheads, two cluster ones, two HE ones and two decoys in it, a line 30 apart. */
-    private static void mirvUi(ServerLevel level) {
-        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
-        player.setGameMode(GameType.CREATIVE);                                     // spectators open no menus
-        var heavy = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HEAVY_WARHEAD.item().get());
-        var cluster = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.CLUSTER_WARHEAD.item().get());
-        var he = new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get());
-        var decoy = new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get());
-        var bus = mirvBus(dev.groundburst.content.assembly.SizeClass.XL, dev.groundburst.content.launch.LaunchNetwork.Pattern.LINE, 30,
-                heavy.copy(), heavy.copy(), cluster.copy(), he.copy(), he.copy(), decoy.copy(), decoy.copy());
-        player.getInventory().setSelectedSlot(0);
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, bus);
-        player.getInventory().setItem(4, new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.SMOKE_WARHEAD.item().get()));
-        player.getInventory().setItem(5, new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.RV_DECOY.get(), 8));
-        player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new dev.groundburst.content.assembly.MirvBusMenu(id, inv,
-                net.minecraft.world.InteractionHand.MAIN_HAND), bus.getHoverName()), buf -> dev.groundburst.content.assembly.MirvBusMenu.write(buf,
-                net.minecraft.world.InteractionHand.MAIN_HAND, dev.groundburst.content.assembly.SizeClass.XL));
-    }
-
-    /**
-     * A Heavy MIRV launched from 260 blocks east at the site in front of the camera, skipped to a few ticks short of
-     * letting its RVs go: the camera, 70 west of the site looking east and up, sees the bus come in high, its RVs part
-     * and fall onto their ring round the site.
-     */
-    private static void mirvRain(ServerLevel level, int x, int ground) {
-        var spec = dev.groundburst.content.assembly.MissileItem.spec(heavyMirv());
-        Vec3 target = new Vec3(x + 0.5, ground, 0.5);
-        Vec3 pad = new Vec3(x + 260.5, ground, 0.5);
-        level.getChunk((x + 260) >> 4, 0);
-        var f = dev.groundburst.content.launch.Flights.launch(level, pad, target, spec, null);
-        int flight = f.ticksToImpact() - dev.groundburst.content.launch.MissileEntity.IGNITION;
-        int split = dev.groundburst.content.launch.MissileEntity.IGNITION + (int) Math.ceil(dev.groundburst.content.launch.Flights.MIRV_SPLIT * flight);
-        f.skipForTest(split - 16);
     }
 
     /** The Lead Container's screen (slice 12a), with plutonium, a spent fuel rod and nuclear waste inside. */
@@ -1695,7 +1618,7 @@ public final class FxPhotographer {
             site++;
             mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
             mc.options.renderDistance().set(24);
-            if (scene.name().equals("designator_far") || scene.name().equals("mirv_rain")) {
+            if (scene.name().equals("designator_far")) {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
             }
             Scene s = scene;
@@ -1748,18 +1671,6 @@ public final class FxPhotographer {
                 }
                 if (s.profile().equals("lead_ui")) {
                     leadUi(level);
-                    return;
-                }
-                if (s.profile().equals("mirv_ui")) {
-                    mirvUi(level);
-                    return;
-                }
-                if (s.profile().equals("mirv_pad")) {
-                    mirvPad(level, x, ground);
-                    return;
-                }
-                if (s.profile().equals("mirv")) {
-                    mirvRain(level, x, ground);
                     return;
                 }
                 if (s.profile().equals("gear_icons")) {
