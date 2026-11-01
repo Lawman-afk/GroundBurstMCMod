@@ -314,6 +314,7 @@ public final class FxPhotographer {
                 new Scene("vls", "vls", 18, 12, List.of(30, 228, 234, 242, 254, 270, 300)),
                 new Scene("vls_aerial", "vls", 22, 32, List.of(229, 245, 272)),
                 new Scene("vls_ui", "vls", 5, 0, List.of(30)),                  // its screen: the CRT's four lines
+                new Scene("vls_close", "vls", 10, 16, List.of(229, 233, 237, 241, 245, 249, 253)),   // missiles out of their cells
                 new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);

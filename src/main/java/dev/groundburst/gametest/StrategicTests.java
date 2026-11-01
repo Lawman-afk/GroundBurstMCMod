@@ -45,6 +45,7 @@ final class StrategicTests {
         GBGameTests.test("strategic_hall_builds_a_tsar_and_takes_it_apart", GBGameTests.FLOOR_16, 40, StrategicTests::tsar);
         GBGameTests.test("tsar_goes_off_from_a_missile", GBGameTests.FLOOR_16, 200, StrategicTests::tsarBlast);
         GBGameTests.test("icbm_hall_works_faster_with_a_speed_chip", GBGameTests.FLOOR_16, 80, StrategicTests::speedChip);
+        GBGameTests.test("icbm_hall_takes_a_pipe_on_its_item_port", GBGameTests.FLOOR_16, 20, StrategicTests::pipeOnPort);
     }
 
     /**
@@ -77,6 +78,18 @@ final class StrategicTests {
         for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
             helper.setBlock(p, Blocks.STONE);
         }
+    }
+
+    /** A pipe standing on the hall's Item Port (in its back row) leaves it formed. */
+    private static void pipeOnPort(GameTestHelper helper) {
+        floor(helper);
+        StrategicAssemblyBlockEntity hall = hall(helper, true);
+        helper.setBlock(new BlockPos(6, 2, 13), dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get());
+        helper.assertTrue(helper.getBlockState(new BlockPos(6, 1, 13)).is(dev.groundburst.content.multiblock.GBMultiblocks.ITEM_PORT.block().get()),
+                "the pipe stands on the Item Port");
+        hall.revalidate();
+        helper.assertTrue(hall.isFormed(), "still formed: " + GBStrategic.HALL.check(helper.getLevel(), hall.getBlockPos(), Direction.NORTH));
+        helper.succeed();
     }
 
     /** The hall built round a controller at (8, 1, 1) facing north: 7 wide (x 5-11), 13 deep (z 1-13), 6 high. */

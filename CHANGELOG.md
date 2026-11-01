@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 — 2026-11-01
+
+A volley launcher sunk into the ground, a laser to call missiles onto a target, and chips made the hard way:
+every advanced, military and quantum circuit now waits on a real silicon chain.
 
 ### Vertical Launch Battery
 - **Vertical Launch Battery**, a very late-game launcher sunk into the ground: sixteen cells in two modules (4 wide, 6
@@ -14,7 +17,26 @@
   a grid, up to 48 blocks apart, set on its screen.
 - 20,000 FE a missile; it holds enough for two full volleys.
 
-### Silicon and chips (a harder circuit chain, under way)
+### Laser Designator
+- **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
+  **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot
+  that everyone sees all the way to the spot: faint by day, bright at night. It reaches as far as you can see (your
+  view distance, up to 1,024 blocks).
+- **Laser Guidance Unit**, a new guidance part: missiles built with it are the ones a designator commands.
+- Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you
+  lase, and the new **Laser** button aims the picked launchers at it.
+- It commands one of the network's laser-guided launchers at a time: the first, or **scroll** while zoomed to pick the
+  next (the hotbar stays put while you do); it remembers the pick.
+- **Left-click** while lasing: if the picked launcher is not armed, it is aimed at the spot and armed; if it is armed,
+  it launches, and its missile follows your laser all the way in, wherever you point it: onto a moving target, or
+  another one.
+- **Sneak and left-click** to disarm the picked launcher (it stays aimed where it was).
+- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere centred on the point you
+  clicked.
+- It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
+  breaks the beam, and an EMP knocks it out for a while.
+
+### Silicon and chips: a harder circuit chain
 - **Fluorite Ore**: purple and green cubes in the Overworld (Y −24 to 72). Crush it and dissolve the dust in sulfuric
   acid for **hydrofluoric acid**.
 - **Silicon** from quartz and coal in the Arc Furnace, purified in the Chemical Plant: with **hydrogen chloride** (from
@@ -45,25 +67,8 @@
   the finished one has been taken out.
 - The structures' Item Ports show on the side of the deck as well as on top, so pipes can feed one face and empty the
   other.
-
-### Laser Designator
-- **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
-  **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot
-  that everyone sees all the way to the spot: faint by day, bright at night. It reaches as far as you can see (your
-  view distance, up to 1,024 blocks).
-- **Laser Guidance Unit**, a new guidance part: missiles built with it are the ones a designator commands.
-- Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you
-  lase, and the new **Laser** button aims the picked launchers at it.
-- It commands one of the network's laser-guided launchers at a time: the first, or **scroll** while zoomed to pick the
-  next (the hotbar stays put while you do); it remembers the pick.
-- **Left-click** while lasing: if the picked launcher is not armed, it is aimed at the spot and armed; if it is armed,
-  it launches, and its missile follows your laser all the way in, wherever you point it: onto a moving target, or
-  another one.
-- **Sneak and left-click** to disarm the picked launcher (it stays aimed where it was).
-- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere centred on the point you
-  clicked.
-- It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
-  breaks the beam, and an EMP knocks it out for a while.
+- Pipes and cables can now stand on top of the missile assemblers' Item and Energy Ports, and on the ICBM Assembly
+  Hall's and the Special Weapons Assembler's Item Port, without breaking the structure.
 
 ### Launchers
 - Every launcher has an **Item Port** now: the Launch Silo, the Launch Complex and the Missile Silo beside their Energy
@@ -71,6 +76,10 @@
   launch slot, so a launcher reloads itself after each launch. It takes only missiles that launcher can fire, and
   nothing comes out of it. Launchers you built before still work as they are; put an Item Port in that spot to
   automate them.
+
+### Changes
+- A lightning rod in a Storm ICBM's storm still takes its strikes safely (no blast, crater or fire), but each
+  strike's EMP pulse now goes out from the rod.
 
 ## 0.4.0 — 2026-10-31
 
@@ -128,9 +137,8 @@ alarm system for your base.
 - The **Storm ICBM**'s lightning strikes each send out an **EMP pulse** 24 blocks round for twelve seconds (it was 4
   blocks for five): a ring of blue sparks runs out along the ground from each strike. At the storm's height almost anywhere
   in it sits under a pulse most of the time, so machines and missile defences inside it go dark, interceptors flying
-  through it are fried, and unhardened missiles flown through it may turn duds. A lightning rod still takes a strike
-  safely (no blast, crater or fire), but its EMP pulse now goes out from the rod.
-- The Crystal Puller's handwheel is a solid wheel.
+  through it are fried, and unhardened missiles flown through it may turn duds. Lightning rods still take strikes
+  safely, pulse and all.
 
 ## 0.3.0 — 2026-10-30
 

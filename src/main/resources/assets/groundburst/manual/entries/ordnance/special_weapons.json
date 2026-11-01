@@ -18,7 +18,7 @@
     {
       "type": "structure",
       "structure": "groundburst:special_weapons_assembler",
-      "text": "A 7 by 13 floor of Launch Pads, as the ICBM Assembly Hall's: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Across it, on the fourth, seventh and tenth rows from the front, stand three containment rings: each a square of eight Toroidal Field Coils, three wide and three high, round the middle of its row, its middle left empty. Keep the bay clear five wide and three high: the missile and its cradles need the room."
+      "text": "A 7 by 13 floor of Launch Pads, as the ICBM Assembly Hall's: the controller in the middle of the front edge, the Energy Port in the middle of the back edge, and an Item Port two blocks to its right as you face the controller. Across it, on the fourth, seventh and tenth rows from the front, stand three containment rings: each a square of eight Toroidal Field Coils, three wide and three high, round the middle of its row, its middle left empty. Keep the bay clear five wide and three high: the missile and its cradles need the room. A pipe may stand on the Item Port."
     },
     {
       "type": "crafting",

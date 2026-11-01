@@ -71,13 +71,14 @@ public final class GBAssemblers {
     /**
      * The Medium Missile Assembler: a 5x7 deck of Launch Pad (the controller at the front middle, the Item Port and
      * Energy Port in the back row); the slewing jib crane's post, Gantry Frame four high, in the middle of the right
-     * side; the missile's bay down the middle three columns kept clear two blocks up.
+     * side; the missile's bay down the middle three columns kept clear two blocks up, but for the blocks over the two
+     * ports (after the user's look: a pipe put on the Item Port broke the structure), where pipes and cables may stand.
      */
     public static final MultiblockDefinition MEDIUM = new MultiblockDefinition(GroundBurst.id(AssemblerClass.MEDIUM.id),
             new String[][] {
                     {"PPXPP", "PPPPP", "PPPPP", "PPPPP", "PPPPP", "PPPPP", "PIPEP"},
-                    {" ... ", " ... ", " ... ", " ...F", " ... ", " ... ", " ... "},
-                    {" ... ", " ... ", " ... ", " ...F", " ... ", " ... ", " ... "},
+                    {" ... ", " ... ", " ... ", " ...F", " ... ", " ... ", "  .  "},
+                    {" ... ", " ... ", " ... ", " ...F", " ... ", " ... ", "  .  "},
                     {"     ", "     ", "     ", "    F", "     ", "     ", "     "},
                     {"     ", "     ", "     ", "    F", "     ", "     ", "     "},
             },
@@ -88,7 +89,8 @@ public final class GBAssemblers {
      * The Heavy Missile Assembler: a 5x9 deck, its outer columns Crane Rail (the gantry crane's track) and the rest
      * Launch Pad (the controller at the front middle, the Item Port and Energy Port in the back row); the crane parked
      * over the back row, a Gantry Frame leg four high on each rail and a Crane Rail bridge across the top; everything
-     * over the deck in front of it kept clear for the crane to run and the missile to lie.
+     * over the deck in front of it kept clear for the crane to run and the missile to lie, and the middle of the back
+     * row under the crane (the blocks over the two ports are free for pipes and cables).
      */
     public static final MultiblockDefinition HEAVY = new MultiblockDefinition(GroundBurst.id(AssemblerClass.HEAVY.id), heavyLayers(),
             legend(HEAVY_CONTROLLER),
@@ -161,7 +163,7 @@ public final class GBAssemblers {
         for (int row = 0; row < 9; row++) {
             layers[0][row] = row == 0 ? "RPXPR" : row == 8 ? "RIPER" : "RPPPR";
             for (int y = 1; y <= 4; y++) {
-                layers[y][row] = row == 8 ? "F...F" : ".....";
+                layers[y][row] = row == 8 ? "F . F" : ".....";
             }
             layers[5][row] = row == 8 ? "RRRRR" : ".....";
         }

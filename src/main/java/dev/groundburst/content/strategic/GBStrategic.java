@@ -100,9 +100,11 @@ public final class GBStrategic {
             layers[0][row] = row == 0 ? "PPPXPPP" : row == 12 ? "PIPEPPP" : "PPPPPPP";
             final int at = row;
             boolean ring = java.util.Arrays.stream(RING_ROWS).anyMatch(r -> r == at);
-            layers[1][row] = ring ? " .TTT. " : " ..... ";
-            layers[2][row] = ring ? " .T.T. " : " ..... ";
-            layers[3][row] = ring ? " .TTT. " : " ..... ";
+            // (the block over the Item Port, in the back row, is free: a pipe may stand on it)
+            String bay = row == 12 ? "  .... " : " ..... ";
+            layers[1][row] = ring ? " .TTT. " : bay;
+            layers[2][row] = ring ? " .T.T. " : bay;
+            layers[3][row] = ring ? " .TTT. " : bay;
         }
         return layers;
     }
@@ -111,10 +113,11 @@ public final class GBStrategic {
         String[][] layers = new String[6][13];
         for (int row = 0; row < 13; row++) {
             layers[0][row] = row == 0 ? "PPPXPPP" : row == 12 ? "PIPEPPP" : "PPPPPPP";
+            // (the column over the Item Port, in the back row, is free: a pipe may stand on it)
             for (int y = 1; y <= 4; y++) {
-                layers[y][row] = row % 6 == 0 ? "G.....G" : " ..... ";
+                layers[y][row] = row == 12 ? "G ....G" : row % 6 == 0 ? "G.....G" : " ..... ";
             }
-            layers[5][row] = "R.....R";
+            layers[5][row] = row == 12 ? "R ....R" : "R.....R";
         }
         return layers;
     }

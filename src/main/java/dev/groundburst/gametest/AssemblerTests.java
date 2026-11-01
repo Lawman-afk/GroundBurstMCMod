@@ -45,6 +45,7 @@ final class AssemblerTests {
         GBGameTests.test("missile_assembler_motor_must_fit", GBGameTests.FLOOR_16, 20, AssemblerTests::motorFit);
         GBGameTests.test("missile_assembler_takes_a_missile_apart", GBGameTests.FLOOR_16, 20, AssemblerTests::takesApart);
         GBGameTests.test("missile_assembler_auto_assembles_the_next", GBGameTests.FLOOR_16, 40, AssemblerTests::auto);
+        GBGameTests.test("assembler_ports_take_pipes_from_above", GBGameTests.FLOOR_16, 20, AssemblerTests::portsFromAbove);
         GBGameTests.test("bench_drops_its_old_missile_page", GBGameTests.FLOOR_16, 20, AssemblerTests::benchDrops);
         GBGameTests.test("launcher_arms_stay_set_for_their_missile", GBGameTests.FLOOR_16, 20, AssemblerTests::armsHold);
     }
@@ -136,6 +137,43 @@ final class AssemblerTests {
             helper.assertTrue(a.laid() == MissileAssemblerBlockEntity.SECTIONS && shown != null && shown.looks().size() == MissileAssemblerBlockEntity.SECTIONS
                     && shown.lying() == kind.lying && shown.warhead().equals(s.warheadId()), "the finished missile on show: " + shown);
         });
+    }
+
+    /**
+     * Pipes and cables on top of the ports (the user put a pipe on the Medium's Item Port and the structure came apart):
+     * every missile assembler stays formed with an item pipe on its Item Port and a cable on its Energy Port, and the
+     * pipe on the port connects to it.
+     */
+    private static void portsFromAbove(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pipe = dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get().defaultBlockState();
+        var cable = dev.groundburst.content.machine.GBMachines.CABLES.getFirst().block().get().defaultBlockState();
+        for (AssemblerClass kind : AssemblerClass.values()) {
+            MissileAssemblerBlockEntity a = assembler(helper, kind, true);
+            MultiblockDefinition def = GBAssemblers.definition(kind);
+            BlockPos item = null, energy = null;
+            for (MultiblockDefinition.Cell cell : def.cells(a.getBlockPos(), Direction.NORTH)) {
+                if (cell.key() == 'I') {
+                    item = cell.pos();
+                } else if (cell.key() == 'E') {
+                    energy = cell.pos();
+                }
+            }
+            helper.assertTrue(item != null && energy != null, kind + " has its ports");
+            level.setBlockAndUpdate(item.above(), pipe);
+            level.setBlockAndUpdate(energy.above(), cable);
+            a.revalidate();
+            helper.assertTrue(a.isFormed(), kind + " stays formed with a pipe and a cable on its ports: " + def.check(level, a.getBlockPos(), Direction.NORTH));
+            helper.assertTrue(level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, item, Direction.UP) != null,
+                    kind + ": its Item Port gives its items to the pipe on it");
+            // Clear the plot for the next class.
+            for (MultiblockDefinition.Cell cell : def.cells(a.getBlockPos(), Direction.NORTH)) {
+                level.removeBlock(cell.pos(), false);
+            }
+            level.removeBlock(item.above(), false);
+            level.removeBlock(energy.above(), false);
+        }
+        helper.succeed();
     }
 
     /**

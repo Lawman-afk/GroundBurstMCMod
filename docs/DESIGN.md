@@ -1134,6 +1134,12 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
   on every face (inputs in, products out); the formed models now show it on two: the grated hatch in the deck and a
   barred mouth in the deck's outer face under it (the Light's west edge, the others' back edge; the hall's and the
   special assembler's floor's back edge), `launch._paint_side_port`.
+- *Pipes on the ports* (the user's next look: a pipe put on the Medium's Item Port broke the structure, its whole back
+  row required clear): the blocks over the Item and Energy Ports of the Medium and Heavy assemblers, and the column
+  over the Item Port of the ICBM Assembly Hall and the Special Weapons Assembler, are free now (the Light's and the
+  Strategic's always were); the middle of each back row stays clear for the missile's tail and the cranes. The hall's
+  and the special assembler's Energy Port is under the tail: a cable reaches it from the floor's back edge. GameTests:
+  each assembler formed with a pipe and a cable on its ports.
 ---
 
 ## 11. Explosion engine (`dev.groundburst.blast`)
@@ -4403,6 +4409,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | Version **0.5.0** (the user's request: the jar, a changelog, GitHub and the CurseForge description updated): the Vertical Launch Battery, the Laser Designator, the silicon chain (chips, sapphire, the Clean Room), Auto Assemble, launchers' Item Ports, rods passing a strike's EMP. CHANGELOG's Unreleased became 0.5.0 (its 0.4.0 section restored: a note for this version had landed in it); README and `docs/CURSEFORGE.md` gain the battery, the designator and the chip chain, two screenshots (`vertical_launch_battery.jpg` from a new FX scene `vls_close`, `laser_designator.jpg`), and the designator and MIRVs leave the Planned list (one built, the other removed). Before it, the user's next look: pipes and cables may stand on the assemblers' ports (§10.4). |
 | 2026-11-01 | After the user's look at the battery and the chain: the Vertical Launch Battery's cells deepened to a Medium missile's length (five layers of a new Missile Canister under the Strike Cells), each missile lit at its cell's floor and climbing out through its hatch after half a second (a flight's cell hold, synced); its screen's CRT made tall enough for its lines (§17.15). Every assembler gets Auto Assemble (the next job starts itself when the parts are in and the output is clear) and its Item Port drawn on the deck's edge as well as its top (§10.4). Lightning rods no longer stop a storm strike's EMP pulse (§16.14). The puller's handwheel made solid (§8.1). |
 | 2026-11-01 | The jump from advanced to military widened (§8.1), the user's request: hydrogen from the Electrolytic Separator through a new Proton Exchange Membrane (not coal and liquid oxygen); rad-hard chips built on sapphire (silicon-on-sapphire): alumina from clay and sulfuric acid, a Tungsten Crucible, a Sapphire Boule in the Crystal Puller, six Sapphire Wafers a boule, trichlorosilane for the silicon film; a Quantum Chip (sapphire wafer, stabilised exotic matter, ceramic package; argon) in the exotic matter's place in the quantum circuit, two a circuit. A recipe with no catalyst runs only with the catalyst slot empty. |
 | 2026-11-01 | The Vertical Launch Battery (§17.15), the user's volley launcher: sixteen Strike Cells after the Mk 41 ashore, Light and Medium conventional missiles only (no cruise missiles: the Cruise Missile Launcher stays theirs), rippled out a quarter second apart, each to its own point of a spread (point, line, ring, grid; up to 48 apart) round the target; any launch console or the Laser Designator fires it. Very late: 16 advanced circuits in its cells, two military and a quantum circuit in its controller. |

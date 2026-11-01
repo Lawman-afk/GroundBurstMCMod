@@ -32,6 +32,19 @@ final class SpecialWeaponsTests {
                 SpecialWeaponsTests::builds);
         GBGameTests.test("special_weapons_assembler_needs_its_structure_and_parts", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::needsParts);
         GBGameTests.test("icbm_hall_takes_no_exotic_core", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::hallRefuses);
+        GBGameTests.test("special_weapons_assembler_takes_a_pipe_on_its_item_port", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::pipeOnPort);
+    }
+
+    /** A pipe standing on the assembler's Item Port (in its back row) leaves it formed. */
+    private static void pipeOnPort(GameTestHelper helper) {
+        floor(helper);
+        SpecialWeaponsBlockEntity special = assembler(helper, true);
+        helper.setBlock(new BlockPos(6, 2, 13), dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get());
+        helper.assertTrue(helper.getBlockState(new BlockPos(6, 1, 13)).is(dev.groundburst.content.multiblock.GBMultiblocks.ITEM_PORT.block().get()),
+                "the pipe stands on the Item Port");
+        special.revalidate();
+        helper.assertTrue(special.isFormed(), "still formed: " + GBStrategic.SPECIAL.check(helper.getLevel(), special.getBlockPos(), Direction.NORTH));
+        helper.succeed();
     }
 
     private static void floor(GameTestHelper helper) {

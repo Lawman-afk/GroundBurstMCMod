@@ -25,12 +25,12 @@
     {
       "type": "structure",
       "structure": "groundburst:medium_missile_assembler",
-      "text": "The Medium Missile Assembler: a 5 by 7 deck of Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The slewing jib crane's post, Gantry Frame four high, stands in the middle of the side on your left as you face the controller. Keep the middle three columns clear two blocks up: the missile's bay."
+      "text": "The Medium Missile Assembler: a 5 by 7 deck of Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The slewing jib crane's post, Gantry Frame four high, stands in the middle of the side on your left as you face the controller. Keep the middle three columns clear two blocks up: the missile's bay. Pipes and cables may stand on the two ports."
     },
     {
       "type": "structure",
       "structure": "groundburst:heavy_missile_assembler",
-      "text": "The Heavy Missile Assembler: a 5 by 9 deck, its two outer columns Crane Rail (the gantry crane's track) and the rest Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The crane stands parked over the back row: a Gantry Frame leg four high on each rail and a row of Crane Rail across the top. Everything over the deck in front of it must be clear, for the crane to run and the missile to lie."
+      "text": "The Heavy Missile Assembler: a 5 by 9 deck, its two outer columns Crane Rail (the gantry crane's track) and the rest Launch Pads, the controller in the middle of the front edge, the Item Port and the Energy Port in the back row. The crane stands parked over the back row: a Gantry Frame leg four high on each rail and a row of Crane Rail across the top. Everything over the deck in front of it must be clear, for the crane to run and the missile to lie; pipes and cables may stand on the two ports under it."
     },
     {
       "type": "structure",

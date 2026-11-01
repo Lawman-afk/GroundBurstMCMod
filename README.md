@@ -23,8 +23,11 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
-- **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex and
-  a cruise missile launcher. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
+- **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex, a
+  cruise missile launcher and a Vertical Launch Battery sunk into the ground that ripples sixteen missiles out of its
+  cells onto one area. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
+- **A Laser Designator** to call fire onto a target from up to 1,024 blocks away: arm and launch from its sight, and
+  laser-guided missiles follow your beam all the way in, onto a moving target or another one.
 - **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
   that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
 - **A Launch Control Station** that networks your launchers across the whole world: link them with Launch Codes,
@@ -39,6 +42,9 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   measure, hazmat suits, and a wasteland biome over the scorched ground.
 - **Industry and power:** new ores, processing machines on FE power with upgrade chips for speed and efficiency, and
   multiblock fission, fusion and singularity reactors.
+- **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
+  military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
+  the chain, and assemblers with Auto Assemble keep a piped production line building.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm and the Nuclear Missile Silo.
 - **Seven abandoned Cold War sites** to explore, with loot:
   - a Titan II missile silo, sometimes flooded or caved in;
@@ -61,6 +67,10 @@ What changed in each version is in the [changelog](CHANGELOG.md).
   <tr>
     <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile lifting off from its launch silo in a cloud of exhaust"><br>Lift-off from a Launch Silo</td>
     <td><img src="docs/screenshots/scud_strike.jpg" width="380" alt="A SCUD strike throwing up fire, smoke and blocks of sand"><br>The SCUD Storm strikes</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/vertical_launch_battery.jpg" width="380" alt="Missiles climbing out of a Vertical Launch Battery's cells in a column of smoke"><br>The Vertical Launch Battery's ripple</td>
+    <td><img src="docs/screenshots/laser_designator.jpg" width="380" alt="The Laser Designator's sight on a target, its range and coordinates shown"><br>Calling fire with the Laser Designator</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/launch_control_station.jpg" width="380" alt="A Launch Control Station console with two missile silos behind it"><br>The Launch Control Station</td>
