@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.content.ordnance.ThrownExplosive;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,8 +30,11 @@ import net.minecraft.world.phys.Vec3;
  * them; Launch Control Stations show their network's. A spot not lased for a few ticks is gone.
  */
 public final class Designators {
-    /** A spot: whose, on which network (0: its designator is linked to none), where, when it was last lased, on a creature. */
-    public record Spot(UUID player, long net, Vec3 pos, long seen, boolean onEntity) {}
+    /**
+     * A spot: whose, on which network (0: its designator is linked to none), where missiles home, when it was last lased,
+     * on a creature; where the beam meets it and the face it meets (a sight's marks sit there).
+     */
+    public record Spot(UUID player, long net, Vec3 pos, long seen, boolean onEntity, Vec3 surface, Direction face) {}
 
     /**
      * How far a designator reaches when nothing says how far its holder sees, and the farthest it ever reaches (64
@@ -47,9 +51,15 @@ public final class Designators {
 
     private Designators() {}
 
-    /** {@code player} lases {@code pos} this tick. */
+    /** {@code player} lases {@code pos} this tick (on the top of what is there). */
     public static void lase(ServerLevel level, UUID player, long net, Vec3 pos, boolean onEntity) {
-        SPOTS.computeIfAbsent(level.dimension(), k -> new HashMap<>()).put(player, new Spot(player, net, pos, level.getGameTime(), onEntity));
+        SPOTS.computeIfAbsent(level.dimension(), k -> new HashMap<>()).put(player, new Spot(player, net, pos, level.getGameTime(), onEntity, pos, Direction.UP));
+    }
+
+    /** {@code player}'s beam lands at {@code hit} this tick. */
+    public static void lase(ServerLevel level, UUID player, long net, Hit hit) {
+        SPOTS.computeIfAbsent(level.dimension(), k -> new HashMap<>()).put(player,
+                new Spot(player, net, hit.pos(), level.getGameTime(), hit.entity() != null, hit.surface(), hit.face()));
     }
 
     /** {@code player} stopped lasing (or lost the spot). */
@@ -152,9 +162,10 @@ public final class Designators {
 
     /**
      * Where a designator's beam lands: {@code pos} where missiles home (a block's face, or a creature's middle), {@code surface}
-     * where the spot is seen (the face, or where the beam meets the creature), and the creature if it is one.
+     * where the spot is seen (the face, or where the beam meets the creature), the face it meets (on a creature, the side
+     * toward the holder), and the creature if it is one.
      */
-    public record Hit(Vec3 pos, Vec3 surface, @Nullable Entity entity) {}
+    public record Hit(Vec3 pos, Vec3 surface, Direction face, @Nullable Entity entity) {}
 
     /** As {@link #trace(Level, Entity, double)}, to {@link #RANGE}. */
     public static @Nullable Hit trace(Level level, Entity holder) {
@@ -180,9 +191,9 @@ public final class Designators {
         Hit hit;
         if (creature != null) {
             Entity e = creature.getEntity();
-            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), e);
+            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), Direction.getApproximateNearest(eye.subtract(creature.getLocation())), e);
         } else if (block.getType() != HitResult.Type.MISS) {
-            hit = new Hit(block.getLocation(), block.getLocation(), null);
+            hit = new Hit(block.getLocation(), block.getLocation(), block.getDirection(), null);
         } else {
             return null;
         }

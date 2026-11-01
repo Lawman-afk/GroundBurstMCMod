@@ -89,6 +89,12 @@ public final class LaunchNetwork extends SavedData {
                 .apply(i, Report::new));
     }
 
+    /** Where a Laser Designator designated a launcher: the point it was lased on, and the face there. */
+    public record Mark(Vec3 at, net.minecraft.core.Direction face) {
+        static final Codec<Mark> CODEC = RecordCodecBuilder.create(i -> i.group(Vec3.CODEC.fieldOf("at").forGetter(Mark::at),
+                net.minecraft.core.Direction.CODEC.fieldOf("face").forGetter(Mark::face)).apply(i, Mark::new));
+    }
+
     /** What the network has told a member to do and it has not done yet (-1: nothing). */
     public record Orders(Optional<BlockPos> aim, int arm, long launchAt, Optional<UUID> by) {
         static final Orders NONE = new Orders(Optional.empty(), -1, -1, Optional.empty());
@@ -109,12 +115,14 @@ public final class LaunchNetwork extends SavedData {
                 Codec.STRING.fieldOf("kind").forGetter(m -> m.kind), Report.CODEC.fieldOf("report").forGetter(m -> m.report),
                 Orders.CODEC.fieldOf("orders").forGetter(m -> m.orders), Codec.BOOL.fieldOf("lost").forGetter(m -> m.lost),
                 Codec.INT.listOf().fieldOf("box").forGetter(m -> List.of(m.minCX, m.minCZ, m.maxCX, m.maxCZ)),
-                UUIDUtil.CODEC.listOf().fieldOf("flights").forGetter(m -> List.copyOf(m.flights)))
-                .apply(i, (pos, role, kind, report, orders, lost, box, flights) -> {
+                UUIDUtil.CODEC.listOf().fieldOf("flights").forGetter(m -> List.copyOf(m.flights)),
+                Mark.CODEC.optionalFieldOf("mark").forGetter(m -> Optional.ofNullable(m.mark)))
+                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark) -> {
                     Member m = new Member(pos, Role.valueOf(role), kind);
                     m.report = report;
                     m.orders = orders;
                     m.lost = lost;
+                    m.mark = mark.orElse(null);
                     if (box.size() == 4) {
                         m.minCX = box.get(0);
                         m.minCZ = box.get(1);
@@ -137,6 +145,8 @@ public final class LaunchNetwork extends SavedData {
         int minCX, minCZ, maxCX, maxCZ;
         /** Its missiles in the air. */
         final List<UUID> flights = new ArrayList<>();
+        /** Where a designator designated it (null: it was aimed some other way). */
+        @Nullable Mark mark;
         // Not saved: chunk tickets are dropped as the world loads and set again for orders still waiting.
         boolean awake;
         long keepUntil, wokeAt;
@@ -151,6 +161,13 @@ public final class LaunchNetwork extends SavedData {
 
         public Report report() {
             return this.report;
+        }
+
+        /** The point it was designated on and the face there (a designator's sight shows it), while it is still aimed there. */
+        public @Nullable Mark mark() {
+            Optional<BlockPos> aim = aim();
+            return this.mark != null && aim.isPresent() && Mth.floor(this.mark.at().x) == aim.get().getX()
+                    && Mth.floor(this.mark.at().z) == aim.get().getZ() ? this.mark : null;
         }
 
         public Orders orders() {
@@ -743,12 +760,13 @@ public final class LaunchNetwork extends SavedData {
      * Designate (a Laser Designator's left click): {@code m}, one of the network's laser-guided launchers, is aimed at
      * {@code spot} and armed (a far one when it is next loaded). False if it cannot be: not ready, or out of reach.
      */
-    public boolean designate(ServerLevel level, long id, Member m, BlockPos spot) {
+    public boolean designate(ServerLevel level, long id, Member m, BlockPos spot, @Nullable Mark mark) {
         Network n = this.networks.get(id);
         BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
         if (n == null || !laserGuided(m) || firing(m) || !m.canArm(aim)) {
             return false;
         }
+        m.mark = mark;
         m.orders = new Orders(Optional.of(aim), 1, -1, m.orders.by);
         orderNow(level, m);
         log(level, n, EventKind.DESIGNATED, m.pos, m.kind, spot.getX(), spot.getZ(), 1);

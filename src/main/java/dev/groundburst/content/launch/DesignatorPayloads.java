@@ -85,17 +85,27 @@ public final class DesignatorPayloads {
     }
 
     /**
+     * Where an armed launcher is aimed, for a designator's sight: the point it was designated on and the face there
+     * ({@code face} a {@link net.minecraft.core.Direction}'s ordinal), or, aimed some other way, only its column
+     * ({@code face} -1: x and z the block's, the mark sits on the top of what is there).
+     */
+    public record Aim(double x, double y, double z, int face) {
+        public static final StreamCodec<ByteBuf, Aim> CODEC = StreamCodec.composite(ByteBufCodecs.DOUBLE, Aim::x, ByteBufCodecs.DOUBLE, Aim::y,
+                ByteBufCodecs.DOUBLE, Aim::z, ByteBufCodecs.VAR_INT, Aim::face, Aim::new);
+    }
+
+    /**
      * The launcher it works with; the missiles homing on its spot; its network's code (empty: none); its
      * charge, percent; its last left click's result ({@link LaserDesignatorItem.Result}) and the launcher's number, for
      * two seconds after it; where the network's armed launchers are aimed, and which of those is its launcher's (-1: none).
      */
-    public record Status(Pick pick, int homing, String network, int charge, int result, int count, List<BlockPos> aims, int picked)
+    public record Status(Pick pick, int homing, String network, int charge, int result, int count, List<Aim> aims, int picked)
             implements CustomPacketPayload {
         public static final Type<Status> TYPE = GBNetwork.type("designator_status");
         public static final StreamCodec<RegistryFriendlyByteBuf, Status> CODEC = StreamCodec.composite(
                 Pick.CODEC, Status::pick, ByteBufCodecs.VAR_INT, Status::homing,
                 ByteBufCodecs.STRING_UTF8, Status::network, ByteBufCodecs.VAR_INT, Status::charge, ByteBufCodecs.VAR_INT, Status::result,
-                ByteBufCodecs.VAR_INT, Status::count, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()), Status::aims,
+                ByteBufCodecs.VAR_INT, Status::count, Aim.CODEC.apply(ByteBufCodecs.list()), Status::aims,
                 ByteBufCodecs.VAR_INT, Status::picked, Status::new);
 
         @Override

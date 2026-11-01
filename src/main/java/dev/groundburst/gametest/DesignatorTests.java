@@ -24,6 +24,7 @@ import dev.groundburst.content.ordnance.ThrownExplosive;
 import dev.groundburst.registry.GBDataComponents;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -212,6 +213,10 @@ final class DesignatorTests {
             helper.assertTrue(a.armed() && a.target() != null && a.target().getX() == spot.getX() && a.target().getZ() == spot.getZ(),
                     "the first laser-guided silo is armed on the spot: " + a.target() + " for " + spot);
             helper.assertTrue(!b.armed() && !gps.armed(), "only that one");
+            LaunchNetwork.Mark mark = st.network(level).member(a.getBlockPos()).mark();
+            Vec3 clicked = helper.absoluteVec(new Vec3(STAND.x, 2.62, WALL_Z));
+            helper.assertTrue(mark != null && mark.face() == Direction.NORTH && mark.at().distanceTo(clicked) < 0.05,
+                    "it keeps the point clicked, on the wall's face toward the holder (its sphere goes there): " + mark);
             LaunchNetwork.Event last = st.network(level).log().getLast();
             helper.assertTrue(last.kind() == LaunchNetwork.EventKind.DESIGNATED && last.member().equals(a.getBlockPos()), "the log has it: " + last);
             LaserDesignatorItem.scroll(p, 1);                             // the wheel: the next one

@@ -1105,7 +1105,7 @@ A **Laser Designator** marks a target for your missiles. Hold use and it goes to
 
 **Arm, then launch.** Lase the target and **left-click**: if the picked launcher is not armed, it is aimed at the spot and **armed**; if it is armed, it **launches**. By the reticle the sight says which: **READY** (a click arms it), **ARMED** (a click launches it), **OUT OF REACH** or **NOT READY**. Once one has launched, the designator moves on to the next.
 
-**Armed targets.** While you are zoomed in, every armed launcher of the network shows where it is aimed: a glowing sphere on the ground there, red for the one you have picked, whoever armed it.
+**Armed targets.** While you are zoomed in, every armed launcher of the network shows where it is aimed, whoever armed it: a glowing sphere at the point you clicked (one aimed from the station sits on top of its target), red for the one you have picked.
 """),
     text("""
 **Leading it in.** Keep lasing after a launch: the missile follows **your laser** all the way in, wherever you point it, so you can walk it onto a moving target or onto another one entirely. If you let go, it keeps going where it was headed. The sight counts the missiles **homing** on your spot, and the station's log notes each launcher armed and launched from a designator.

@@ -15,7 +15,7 @@
 - **Left-click** while lasing: if the picked launcher is not armed, it is aimed at the spot and armed; if it is armed,
   it launches, and its missile follows your laser all the way in, wherever you point it: onto a moving target, or
   another one.
-- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere on the target.
+- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere at the point you clicked.
 - It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
   breaks the beam, and an EMP knocks it out for a while.
 

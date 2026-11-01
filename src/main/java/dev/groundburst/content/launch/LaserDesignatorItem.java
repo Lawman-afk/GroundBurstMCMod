@@ -166,7 +166,7 @@ public class LaserDesignatorItem extends Item {
         if (hit == null) {
             Designators.stop(server, player.getUUID());
         } else {
-            Designators.lase(server, player.getUUID(), net, hit.pos(), hit.entity() != null);
+            Designators.lase(server, player.getUUID(), net, hit);
         }
         if (server.getGameTime() % STATUS == 0) {
             sendStatus(server, player, stack, net, hit == null ? null : BlockPos.containing(hit.pos()));
@@ -201,7 +201,8 @@ public class LaserDesignatorItem extends Item {
         } else if (m.willBeArmed() && m.aim().isPresent()) {
             result = nets.fireLaser(level, net, m, player) ? Result.FIRED : Result.NOT_ARMED;
         } else {
-            result = spot == null ? Result.NO_RETURN : nets.designate(level, net, m, BlockPos.containing(spot.pos())) ? Result.DESIGNATED
+            result = spot == null ? Result.NO_RETURN
+                    : nets.designate(level, net, m, BlockPos.containing(spot.pos()), new LaunchNetwork.Mark(spot.surface(), spot.face())) ? Result.DESIGNATED
                     : m.report().readiness() == LaunchSiloBlockEntity.Readiness.READY.ordinal() ? Result.OUT_OF_REACH : Result.NOT_READY;
         }
         int number = m == null ? 0 : nets.number(net, m);
@@ -284,7 +285,12 @@ public class LaserDesignatorItem extends Item {
             pick = new DesignatorPayloads.Pick(nets.number(net, m), m.kind, choice.indexOf(m) + 1, choice.size(), state.ordinal());
         }
         List<LaunchNetwork.Member> armed = net == 0 ? List.of() : nets.armed(net);
-        List<BlockPos> aims = armed.stream().map(a -> a.aim().orElseThrow()).toList();
+        List<DesignatorPayloads.Aim> aims = armed.stream().map(a -> {
+            LaunchNetwork.Mark mark = a.mark();
+            BlockPos aim = a.aim().orElseThrow();
+            return mark != null ? new DesignatorPayloads.Aim(mark.at().x, mark.at().y, mark.at().z, mark.face().ordinal())
+                    : new DesignatorPayloads.Aim(aim.getX(), aim.getY(), aim.getZ(), -1);
+        }).toList();
         int charge = (int) ((long) stored(stack) * 100 / CAPACITY);
         Click click = lastClick(player);
         PacketDistributor.sendToPlayer(player, new DesignatorPayloads.Status(pick, Designators.homingOn(level, player.getUUID()),

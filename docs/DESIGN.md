@@ -2596,7 +2596,8 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   that player leads it in, wherever it points (the station's log: "designated", "fire called"). Once it has launched
   the pick moves on to the next.
 - *Armed targets*: zoomed, the sight shows where every armed launcher of the network is aimed (whoever armed it): a
-  glowing sphere on the ground there, its edge lit like the ring a left click draws; red for the picked one.
+  glowing sphere at the point clicked, against the face it was clicked on (one aimed from the station: on the top of
+  its column), its edge lit like the ring a left click draws; red for the picked one.
 - *Laser Guidance Unit* (`laser_guidance_unit`, a new guidance part for any missile): launched by a call for fire, once
   clear of its climb (an eighth of the way) it follows its launching player's laser wherever it points, its target moving
   up to 1.5 blocks a tick; without that laser it flies as inertial guidance (4% of the range) and from half way steers
@@ -2639,9 +2640,12 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   shorter near the camera so a beam passing close keeps its width), additive red over `textures/fx/laser.png`; the spot
   pulsing five times a second, its middle also drawn blended so it shows red on a bright face by day; a glint at the
   port; and after our own left click a ring closing on the spot (red for a launch). Zoomed, a sphere at each of the
-  network's armed aims (sitting on the top of what is solid there, found by scanning the column: the height map the
-  client is sent missed blocks built after it; at least 0.8 blocks across and as big on screen at any range; its edge
-  lit, additive and again blended so it reads red by day). Our own beam is traced on the
+  network's armed aims: a designated one touching the face it was clicked on at the point clicked (`LaunchNetwork.Mark`:
+  the point and face, kept with the member and saved, used while the member is still aimed at that column; the trace's
+  `Hit` and the `Spot` carry the face: a block's, or on a creature the side toward the holder); one aimed some other
+  way on the top of what is solid in its column, found by scanning it (the height map the client is sent missed
+  blocks built after it). At least 0.8 blocks across and as big on screen at any range; its edge lit, additive and
+  again blended so it reads red by day. Our own beam is traced on the
   client once a frame (the sight reads the same trace) to our render distance; another player's beam goes to the spot
   the server traced: the server sends `designator_beam` (the holder's entity id, where it lands or that it lands on
   nothing) to every player tracking the holder, each tick it moves and every 5 ticks while still. Traced on the client
@@ -4193,6 +4197,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The armed targets' spheres sit where the launcher was clicked on (the user: "on the place it is clicked, not above it"): designating keeps the clicked point and face with the launcher, and its sphere touches that face there; a launcher aimed from the station keeps the top of its column. |
 | 2026-11-01 | The Laser Designator reworked again to the user's wishes: it works with one laser-guided launcher of its network at a time (the first by default; the mouse wheel while zoomed picks the next and no longer turns the hotbar; the pick kept on the designator); no modes: a left click arms the pick on the spot if it is not armed, or launches it if it is; zoomed, every armed launcher of the network shows its aim as a glowing sphere; the sight's left-click tip removed. |
 | 2026-11-01 | The Laser Designator's controls redesigned to the user's wishes: a left click while lasing acts by mode. **Designate** aims and arms every launcher of the designator's network loaded with a laser-guided missile on the spot; **call for fire** launches them, and the missiles follow the laser of the player who called fire from early in their flight, wherever it points (leading guidance; the old terminal homing near the aim stays for other designators). The two-second lock is gone. Left clicks are taken on the client before the game drops them (it ignores attacks while an item is in use). |
 | 2026-11-01 | After the user's look at the Laser Designator: the missile assembler's screen crashed with a Laser Guidance Unit loaded (laser guidance had no name; `guidanceName` is now a switch over every guidance), and laser guidance's stats read "Homes On: A Laser Spot" and "Else Within: n blocks" (one row was too long for the panel). By day, light added over bright ground washed the beam out to a pale line: a thin red middle is drawn blended under it. The designator reaches as far as its holder sees (its view distance, to 1,024 blocks; it was 256, creatures 128), and other players draw its whole beam to the server's spot (`designator_beam`). |
