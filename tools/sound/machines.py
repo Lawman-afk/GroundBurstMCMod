@@ -81,7 +81,7 @@ FIT, ENVELOPE = 0.25, 0.5
 #: whine softer (it was most of the old one's loudness).
 LEVEL_DB = {"machine/battery_charger": -5.0, "machine/gas_centrifuge": -1.5}
 #: Machines made after the synthesized set, with no old sound of their own: each is as loud as a kin's.
-LIKE = {"machine/crystal_puller": "machine/electrolytic_separator"}
+LIKE = {"machine/crystal_puller": "machine/electrolytic_separator", "machine/clean_room": "machine/chemical_plant"}
 
 
 def take(name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
@@ -243,6 +243,12 @@ def crystal_puller() -> Cycle:
     """A Czochralski crystal puller: its heater's supply transformer humming, the cooling water running through the
     furnace's jacket under it (a water pump's flow, its motor filtered away)."""
     return steady((take("hum"), -20), (S.lowpass(take("pump"), 900), -27))
+
+
+def clean_room() -> Cycle:
+    """A clean room: its fan filter units' steady rush of air (a plant room's ventilation, its low roar filtered off),
+    the transformer of the scanner's lamp humming under it."""
+    return steady((S.highpass(take("plant"), 180), -20), (take("hum"), -30))
 
 
 def water_pump() -> Cycle:
@@ -433,7 +439,7 @@ LOOPS = {"machine/combustion_generator": combustion_generator, "machine/arc_furn
          "machine/canning_machine": canning_machine, "machine/diesel_generator": diesel_generator,
          "machine/battery_charger": battery_charger, "machine/fusion_reactor": fusion_reactor,
          "machine/particle_accelerator": particle_accelerator, "machine/assembly_bench": assembly_bench,
-         "machine/crystal_puller": crystal_puller}
+         "machine/crystal_puller": crystal_puller, "machine/clean_room": clean_room}
 
 
 def machine_set(only: set[str] | None = None) -> dict[str, np.ndarray]:

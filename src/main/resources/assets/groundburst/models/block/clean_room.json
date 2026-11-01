@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "groundburst:block/clean_room_front",
+    "side": "groundburst:block/clean_room_side",
+    "top": "groundburst:block/clean_room_top"
+  }
+}

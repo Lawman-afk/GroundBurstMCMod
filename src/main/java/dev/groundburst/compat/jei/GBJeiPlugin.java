@@ -57,6 +57,7 @@ public final class GBJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.ACCELERATING, GBMachines.PARTICLE_ACCELERATOR.item().get());
         m.put(ProcessingKind.CANNING, GBMachines.CANNING_MACHINE.item().get());
         m.put(ProcessingKind.CRYSTAL_PULLING, GBMachines.CRYSTAL_PULLER.item().get());
+        m.put(ProcessingKind.LITHOGRAPHY, GBMachines.CLEAN_ROOM.item().get());
         return m;
     }
 
@@ -167,6 +168,8 @@ public final class GBJeiPlugin implements IModPlugin {
                         GBMultiblocks.CHEMICAL_PLANT_SPAWNER.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_CHEMICAL_PLANT));
+        info(registration, MachineText.INFO_CLEAN_ROOM, GBMachines.CLEAN_ROOM.item().get(), GBMultiblocks.CLEAN_ROOM_PANEL.item().get(),
+                GBMultiblocks.FAN_FILTER_UNIT.item().get(), GBMultiblocks.CLEAN_ROOM_SPAWNER.get());
         registration.addIngredientInfo(List.of(dev.groundburst.content.fluid.GBFluids.FLUID_TANK.item().get().getDefaultInstance()),
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK, Component.translatable(MachineText.INFO_FLUID_TANK));
         registration.addIngredientInfo(List.of(dev.groundburst.content.fluid.GBFluids.CREATIVE_FLUID_TANK.item().get().getDefaultInstance()),

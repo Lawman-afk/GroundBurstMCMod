@@ -1,0 +1,65 @@
+{
+  "title": "Clean Room",
+  "icon": "groundburst:clean_room",
+  "order": 12,
+  "items": [
+    "groundburst:clean_room",
+    "groundburst:clean_room_panel",
+    "groundburst:fan_filter_unit",
+    "groundburst:clean_room_spawner",
+    "groundburst:microchip",
+    "groundburst:rad_hard_microchip"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:clean_room",
+      "text": "A sealed module (3 wide, 2 deep, 2 high) where chips are printed on silicon wafers, under yellow light: photoresist is spoiled by any other. Draws 320 FE a tick.\n\n**Microchips:** a wafer is coated with **photoresist**, the circuit's pattern exposed into it, etched with **hydrofluoric acid** and doped with **red phosphorus**; four chips come off it, moulded in a plastic sheet. Thirty seconds.\n\n**Rad-Hard Microchips:** two wafers bonded over an oxide grown in **liquid oxygen** (silicon-on-insulator), printed the same way and sealed in a **ceramic package**: two chips that radiation and an EMP do not upset. A minute."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:clean_room",
+      "text": "Controller at the front left, a Clean Room Panel beside it and the Energy Port at the front right; behind them the Fluid Port, the Item Port and a panel. On top: three Reactor Glass across the front, two Fan Filter Units and a panel behind them."
+    },
+    {
+      "type": "text",
+      "text": "Power goes into the **Energy Port**; wafers, phosphorus and packages go in, and chips come out, through the **Item Port**; the photoresist, hydrofluoric acid and liquid oxygen go into its three tanks through the **Fluid Port** (or pour canisters into any part). The controller connects to nothing itself."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:clean_room",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:clean_room_panel",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:fan_filter_unit",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "lithography",
+      "text": "",
+      "item": "groundburst:microchip"
+    },
+    {
+      "type": "machine",
+      "kind": "lithography",
+      "text": "",
+      "item": "groundburst:rad_hard_microchip"
+    },
+    {
+      "type": "links",
+      "entries": [
+        "components/semiconductors",
+        "processing/crystal_puller",
+        "components/circuits"
+      ],
+      "text": ""
+    }
+  ]
+}

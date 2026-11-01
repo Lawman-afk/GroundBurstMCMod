@@ -387,6 +387,20 @@ LAYOUTS = {
         "readout": None,
         "inventory": (8, 84),
     },
+    # Clean Room (DESIGN.md §8.1): wafers, phosphorus and a package in; photoresist, hydrofluoric acid and liquid oxygen in
+    # its three tanks; the chips out.
+    "clean_room": {
+        "title": (8, 6),
+        "slots": [("wafer", 76, 20), ("in", 76, 38), ("in", 76, 56), ("out_big", 134, 35)],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(26, 20, 12, 42, None, True), (42, 20, 12, 42, None, True), (58, 20, 12, 42, None, True)],
+        "progress": (98, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     # Canning Machine: the supply tank (left) feeds the filler, poured-out canisters go to the catch tank (right).
     "canning_machine": {
         "title": (8, 6),
@@ -590,6 +604,13 @@ CRUCIBLE_GHOST = ["................", "................", "................", ".
                   "...##########...", "...#........#...", "...#........#...", "....#......#....", "....#......#....",
                   ".....#....#.....", ".....######.....", "................", "................", "................",
                   "................"]
+
+
+# A silicon wafer: a disc with its flat at the bottom.
+WAFER_GHOST = ["................", "................", ".....######.....", "....#......#....", "...#........#...",
+               "...#.++.....#...", "..#..++......#..", "..#..........#..", "..#..........#..", "..#..........#..",
+               "...#........#...", "...#........#...", "....#......#....", ".....######.....", "................",
+               "................"]
 
 
 # The Battery item's outline ("#") and its lightning bolt ("+", a lighter ghost), so the slot shows what goes in it.
@@ -1013,7 +1034,7 @@ def build(name: str, spec: dict) -> Path:
          "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
          "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST),
          "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST),
-         "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST), "crucible": ghost_slot(CRUCIBLE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST), "crucible": ghost_slot(CRUCIBLE_GHOST), "wafer": ghost_slot(WAFER_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills

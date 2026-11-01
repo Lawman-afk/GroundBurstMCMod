@@ -109,6 +109,7 @@ public class GBBlockLoot extends BlockLootSubProvider {
         GBMachines.CABLES.forEach(c -> dropSelf(c.block().get()));
         dropSelf(GBMachines.ELECTROLYTIC_SEPARATOR.block().get());
         dropSelf(GBMachines.CHEMICAL_PLANT.block().get());
+        dropSelf(GBMachines.CLEAN_ROOM.block().get());
         dropSelf(GBMachines.WATER_PUMP.block().get());
         dropSelf(GBMachines.CIRCUIT_FABRICATOR.block().get());
         dropSelf(GBMachines.FUSION_FUEL_SYNTHESIZER.block().get());
@@ -135,7 +136,8 @@ public class GBBlockLoot extends BlockLootSubProvider {
         for (var part : java.util.List.of(GBMultiblocks.LEAD_LINED_CASING, GBMultiblocks.STEEL_PLATING,
                 GBMultiblocks.FUEL_CHANNEL,
                 GBMultiblocks.MAGNET_SEGMENT, GBMultiblocks.INJECTOR, GBMultiblocks.TARGET_CHAMBER, GBMultiblocks.TOROIDAL_FIELD_COIL,
-                GBMultiblocks.VACUUM_VESSEL, GBMultiblocks.CENTRAL_SOLENOID, GBMultiblocks.CONTAINMENT_EMITTER, GBMultiblocks.CORE_CRADLE)) {
+                GBMultiblocks.VACUUM_VESSEL, GBMultiblocks.CENTRAL_SOLENOID, GBMultiblocks.CONTAINMENT_EMITTER, GBMultiblocks.CORE_CRADLE,
+                GBMultiblocks.CLEAN_ROOM_PANEL, GBMultiblocks.FAN_FILTER_UNIT)) {
             dropSelf(part.block().get());
         }
         dropSelf(GBMultiblocks.ENERGY_PORT.block().get());

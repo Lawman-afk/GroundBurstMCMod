@@ -1191,6 +1191,7 @@ final class ManualPages {
             case "accelerating" -> "Particle Accelerator";
             case "canning" -> "Canning Machine";
             case "crystal_pulling" -> "Crystal Puller";
+            case "lithography" -> "Clean Room";
             default -> kind;
         };
     }

@@ -60,6 +60,10 @@ public final class GBParts {
     public static final DeferredItem<Item> SILICON_BOULE = GBItems.simple("silicon_boule", "Silicon Boule", GBTab.RESOURCES);
     /** A boule sawn into slices on the Industrial Press's diamond wire saw: what chips are printed on. */
     public static final DeferredItem<Item> SILICON_WAFER = GBItems.simple("silicon_wafer", "Silicon Wafer", GBTab.RESOURCES);
+    /** Printed in the Clean Room, moulded in plastic: what an advanced circuit is built round. */
+    public static final DeferredItem<Item> MICROCHIP = GBItems.simple("microchip", "Microchip", GBTab.MACHINES);
+    /** Silicon-on-insulator, sealed in a ceramic package: chips that radiation and an EMP do not upset; military circuits'. */
+    public static final DeferredItem<Item> RAD_HARD_MICROCHIP = GBItems.simple("rad_hard_microchip", "Rad-Hard Microchip", GBTab.MACHINES);
 
     // --- press dies (not consumed) -----------------------------------------------------------------------------------------
     public static final DeferredItem<Item> PLATE_DIE = die("plate_die", "Plate Die");

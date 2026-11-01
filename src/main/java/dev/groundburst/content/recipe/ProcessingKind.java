@@ -14,7 +14,8 @@ public enum ProcessingKind {
     EXOTIC_FABRICATING("exotic_fabricating"),
     ACCELERATING("accelerating"),
     CANNING("canning"),
-    CRYSTAL_PULLING("crystal_pulling");
+    CRYSTAL_PULLING("crystal_pulling"),
+    LITHOGRAPHY("lithography");
 
     private final String id;
 

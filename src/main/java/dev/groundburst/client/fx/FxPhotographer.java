@@ -104,6 +104,9 @@ public final class FxPhotographer {
                 new Scene("glow_reactors0_day", "glow_reactors0", 13, 16, List.of(60)),
                 new Scene("glow_reactors1_night", "glow_reactors1", 19, 22, List.of(60), "midnight"),
                 new Scene("glow_reactors1_day", "glow_reactors1", 19, 22, List.of(60)),
+                // The Clean Room, its bay lit yellow through its windows.
+                new Scene("glow_reactors2_night", "glow_reactors2", 7, 12, List.of(60), "midnight"),
+                new Scene("glow_reactors2_day", "glow_reactors2", 7, 12, List.of(60)),
                 new Scene("glow_radar_night", "radar", 10, -4, List.of(60), "midnight"),
                 new Scene("glow_complex_night", "complex_tsar", 16, -24, List.of(30), "midnight"),
                 new Scene("glow_hall_night", "hall_tsar", 14, 34, List.of(1850), "midnight"),
@@ -857,7 +860,9 @@ public final class FxPhotographer {
      * singularity reactor (row 0), or the fusion reactor and particle accelerator (row 1).
      */
     private static void glowReactors(ServerLevel level, int x, int ground, int row) {
-        List<Object[]> list = row == 0
+        List<Object[]> list = row == 2
+                ? List.<Object[]>of(new Object[] {dev.groundburst.content.machine.GBMachines.CLEAN_ROOM, dev.groundburst.content.multiblock.GBMultiblocks.CLEAN_ROOM})
+                : row == 0
                 ? List.of(new Object[] {dev.groundburst.content.machine.GBMachines.CHEMICAL_PLANT, dev.groundburst.content.multiblock.GBMultiblocks.CHEMICAL_PLANT},
                         new Object[] {dev.groundburst.content.machine.GBMachines.FISSION_REACTOR, dev.groundburst.content.multiblock.GBMultiblocks.FISSION_REACTOR},
                         new Object[] {dev.groundburst.content.machine.GBMachines.SINGULARITY_REACTOR, dev.groundburst.content.multiblock.GBMultiblocks.SINGULARITY_REACTOR})

@@ -540,6 +540,15 @@
     ],
     "subtitle": "subtitles.groundburst.machine.circuit_fabricator"
   },
+  "machine.clean_room": {
+    "sounds": [
+      {
+        "attenuation_distance": 20,
+        "name": "groundburst:machine/clean_room"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.machine.clean_room"
+  },
   "machine.combustion_generator": {
     "sounds": [
       "groundburst:machine/combustion_generator"

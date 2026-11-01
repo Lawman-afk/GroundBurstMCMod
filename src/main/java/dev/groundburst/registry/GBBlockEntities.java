@@ -105,6 +105,9 @@ public final class GBBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GBMachines.CHEMICAL_PLANT.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CleanRoomBlockEntity>> CLEAN_ROOM =
+            BLOCK_ENTITIES.register("clean_room", () -> new BlockEntityType<>(dev.groundburst.content.machine.CleanRoomBlockEntity::new,
+                    GBMachines.CLEAN_ROOM.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.FusionReactorBlockEntity>> FUSION_REACTOR =
             BLOCK_ENTITIES.register("fusion_reactor", () -> new BlockEntityType<>(dev.groundburst.content.machine.FusionReactorBlockEntity::new,
                     GBMachines.FUSION_REACTOR.block().get()));
@@ -128,6 +131,7 @@ public final class GBBlockEntities {
         machine(event, COMBUSTION_GENERATOR.get());
         machine(event, ELECTROLYTIC_SEPARATOR.get());
         machine(event, CHEMICAL_PLANT.get());
+        machine(event, CLEAN_ROOM.get());
         machine(event, WATER_PUMP.get());
         machine(event, CIRCUIT_FABRICATOR.get());
         machine(event, FUSION_FUEL_SYNTHESIZER.get());

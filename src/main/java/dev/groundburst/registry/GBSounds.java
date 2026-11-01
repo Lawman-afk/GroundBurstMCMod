@@ -231,6 +231,8 @@ public final class GBSounds {
             register("machine.particle_accelerator", "Particle Accelerator thrums", List.of("machine/particle_accelerator"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CHEMICAL_PLANT =
             register("machine.chemical_plant", "Chemical Plant churns", List.of("machine/chemical_plant"), false, 20);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CLEAN_ROOM =
+            register("machine.clean_room", "Clean Room's fans whir", List.of("machine/clean_room"), false, 20);
 
     // Radiation instruments and medicine (DESIGN.md §21.8): the Geiger Counter's alarm and its switch, the Lead
     // Container's lid, the Anti-Rad Injector.

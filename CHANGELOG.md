@@ -12,8 +12,10 @@
 - **Crystal Puller**, a new two-block machine: polysilicon melted in a quartz crucible under argon grows a **silicon
   boule** in a minute; watch the crystal rise in its sight glass while the melt glows in its viewport.
 - A **Diamond Wire Saw** in the Industrial Press's die slot saws a boule into eight **silicon wafers**.
-- **Photoresist**, **red phosphorus** and the **Ceramic Package**: what the chips will be made with, once the Clean Room
-  arrives.
+- **Clean Room**, a new multiblock (3 wide, 2 deep, 2 high, with the new **Clean Room Panel** and **Fan Filter Unit**):
+  prints **Microchips** from a wafer, red phosphorus and a plastic sheet with photoresist and hydrofluoric acid, and
+  **Rad-Hard Microchips** from two wafers, red phosphorus and a **Ceramic Package** with liquid oxygen as well. Its
+  windows look into a bay lit yellow, where the tools work while it runs.
 - The **Cryogenic Condenser** takes a basic circuit now instead of an advanced one.
 - Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
 

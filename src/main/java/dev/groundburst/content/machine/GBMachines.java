@@ -90,6 +90,11 @@ public final class GBMachines {
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.CHEMICAL_PLANT),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
 
+    /** Prints chips on silicon wafers (DESIGN.md §8.1). */
+    public static final WithItem<MultiblockControllerBlock> CLEAN_ROOM = GBBlocks.register("clean_room", "Clean Room Controller",
+            GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.CLEAN_ROOM),
+            p -> p.mapColor(MapColor.SNOW).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+
     // Slice 7 multiblock controllers (DESIGN.md §7, §23.3).
     public static final WithItem<MultiblockControllerBlock> FISSION_REACTOR = GBBlocks.register("fission_reactor", "Fission Reactor Controller",
             GBTab.MACHINES, p -> new MultiblockControllerBlock(p, GBBlockEntities.FISSION_REACTOR),

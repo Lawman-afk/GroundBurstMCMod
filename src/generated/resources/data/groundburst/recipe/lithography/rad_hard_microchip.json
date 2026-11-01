@@ -1,0 +1,41 @@
+{
+  "type": "groundburst:lithography",
+  "energy_per_tick": 320,
+  "fluids": [
+    {
+      "amount": 500,
+      "ingredient": "#c:photoresist"
+    },
+    {
+      "amount": 500,
+      "ingredient": "#c:hydrofluoric_acid"
+    },
+    {
+      "amount": 500,
+      "ingredient": "#c:liquid_oxygen"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "groundburst:silicon_wafer"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:red_phosphorus"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:ceramic_package"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:rad_hard_microchip"
+      }
+    }
+  ],
+  "time": 1200
+}

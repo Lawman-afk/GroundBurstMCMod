@@ -245,6 +245,58 @@ def silicon_wafer() -> None:
     save("silicon_wafer", t)
 
 
+def microchip() -> None:
+    """A chip moulded in black epoxy, seen from above: silver gull-wing leads on all four sides, a pin-1 dimple, its
+    laser marking faint on the lid, its moulding's thickness along the front."""
+    rows = [
+        "................",
+        "................",
+        "....L.L..L.L....",
+        "....l.l..l.l....",
+        "..oooooooooooo..",
+        "LloHHHHHHHHHHolL",
+        "..oHdBBBBBBBBo..",
+        "LloHBBmmBmBBBolL",
+        "..oHBBBBBBBBBo..",
+        "LloHBmBmmBBBBolL",
+        "..oHBBBBBBBBBo..",
+        "LloHBBBBBBBBBolL",
+        "..oFFFFFFFFFFo..",
+        "..oooooooooooo..",
+        "....l.l..l.l....",
+        "................",
+    ]
+    legend = {"o": P.BLACK_PAINT.outline, "H": P.BLACK_PAINT[4], "B": P.BLACK_PAINT[3], "F": P.BLACK_PAINT[1],
+              "d": P.BLACK_PAINT[1], "m": P.BLACK_PAINT[5], "L": P.STEEL[5], "l": P.STEEL[3]}
+    t, _ = PT.template(rows, legend, P.BLACK_PAINT)
+    save("microchip", t)
+
+
+def rad_hard_microchip() -> None:
+    """The ceramic package sealed: its gold lid over the chips, engraved, gold leads down both sides."""
+    rows = [
+        "................",
+        "................",
+        "................",
+        "..oooooooooooo..",
+        "LLo6666666665oLL",
+        "..o6GGGGGGGG5o..",
+        "LLo6GhhhhhhG4oLL",
+        "..o5GhcckccG4o..",
+        "LLo5GhckcccG4oLL",
+        "..o5GhcccccG3o..",
+        "LLo5GGGGGGGG3oLL",
+        "..o4444444443o..",
+        "..o3333333332o..",
+        "..oooooooooooo..",
+        "................",
+        "................",
+    ]
+    legend = {"o": P.WHITE_CERAMIC.outline, "G": GOLD[3], "h": GOLD[6], "c": GOLD[5], "k": GOLD[3], "L": GOLD[4]}
+    t, _ = PT.template(rows, legend, P.WHITE_CERAMIC)
+    save("rad_hard_microchip", t)
+
+
 def build() -> None:
     silicon()
     polysilicon()
@@ -252,6 +304,8 @@ def build() -> None:
     ceramic_package()
     silicon_boule()
     silicon_wafer()
+    microchip()
+    rad_hard_microchip()
 
 
 if __name__ == "__main__":

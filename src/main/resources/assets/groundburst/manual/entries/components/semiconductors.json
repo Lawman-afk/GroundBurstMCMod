@@ -62,7 +62,7 @@
     },
     {
       "type": "text",
-      "text": "The chips are printed with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Military chips are sealed in a **ceramic package**: clay fired round gold leads.\n\nHydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids."
+      "text": "The chips are printed in the [Clean Room](processing/clean_room) with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Rad-hard chips are sealed in a **ceramic package**: clay fired round gold leads.\n\nHydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids."
     },
     {
       "type": "machine",

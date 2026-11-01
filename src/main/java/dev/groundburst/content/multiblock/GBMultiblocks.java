@@ -53,6 +53,10 @@ public final class GBMultiblocks {
     public static final WithItem<MultiblockPartBlock> CONTAINMENT_EMITTER = part("containment_emitter", "Containment Emitter", MapColor.COLOR_PURPLE);
     public static final WithItem<MultiblockPartBlock> CORE_CRADLE = part("core_cradle", "Core Cradle", MapColor.COLOR_PURPLE);
 
+    // The Clean Room's (DESIGN.md §8.1): white sandwich panels and the fan filter units over its bay.
+    public static final WithItem<MultiblockPartBlock> CLEAN_ROOM_PANEL = part("clean_room_panel", "Clean Room Panel", MapColor.SNOW);
+    public static final WithItem<MultiblockPartBlock> FAN_FILTER_UNIT = part("fan_filter_unit", "Fan Filter Unit", MapColor.METAL);
+
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color) {
         return GBBlocks.register(id, english, GBTab.MACHINES, MultiblockPartBlock::new,
                 p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -151,6 +155,22 @@ public final class GBMultiblocks {
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> GBMachines.CHEMICAL_PLANT.block().get())));
 
     /**
+     * Clean Room (DESIGN.md §8.1): a sealed module 3 wide, 2 deep and 2 high. Bottom layer: the controller at the front
+     * left, a panel beside it and the Energy Port at the front right; behind them the Fluid Port, the Item Port and a
+     * panel. Top layer: three Reactor Glass windows across the front, onto the lithography bay; behind them two Fan
+     * Filter Units and a panel (the acid scrubber's corner).
+     */
+    public static final MultiblockDefinition CLEAN_ROOM = new MultiblockDefinition(GroundBurst.id("clean_room"),
+            new String[][] {
+                    {"XWE", "FIW"},
+                    {"GGG", "UUW"},
+            },
+            Map.of('W', Entry.of(() -> CLEAN_ROOM_PANEL.block().get()), 'U', Entry.of(() -> FAN_FILTER_UNIT.block().get()),
+                    'G', Entry.of(REACTOR_GLASS.block()), 'E', Entry.of(() -> ENERGY_PORT.block().get()),
+                    'F', Entry.of(() -> FLUID_PORT.block().get()), 'I', Entry.of(ITEM_PORT.block()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> GBMachines.CLEAN_ROOM.block().get())));
+
+    /**
      * Fusion Reactor (DESIGN.md §23.3): a three-layer octagonal ring 9 blocks across, the Particle Accelerator's
      * footprint (three straight cells on each side, a five-cell staircase at each corner, 32 cells a layer), round a
      * central solenoid column. Bottom layer machine casing with the controller at the front centre, a Fluid Port in the
@@ -195,7 +215,7 @@ public final class GBMultiblocks {
 
     /** Every structure, for lookups by id (the Field Manual's structure pages). */
     public static java.util.List<MultiblockDefinition> all() {
-        return java.util.List.of(CHEMICAL_PLANT, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR,
+        return java.util.List.of(CHEMICAL_PLANT, CLEAN_ROOM, FISSION_REACTOR, PARTICLE_ACCELERATOR, FUSION_REACTOR, SINGULARITY_REACTOR,
                 dev.groundburst.content.launch.GBLaunch.SILO, dev.groundburst.content.launch.GBLaunch.COMPLEX, dev.groundburst.content.launch.GBLaunch.COMPUTER,
                 dev.groundburst.content.launch.GBLaunch.RADAR, dev.groundburst.content.strategic.GBStrategic.HALL,
                 dev.groundburst.content.strategic.GBStrategic.SPECIAL,
@@ -221,6 +241,10 @@ public final class GBMultiblocks {
             HoloProjectorItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<StructureSpawnerItem> CHEMICAL_PLANT_SPAWNER = GBItems.register("chemical_plant_spawner",
             "Structure Spawner: Chemical Plant", GBTab.MACHINES, p -> new StructureSpawnerItem(p, () -> CHEMICAL_PLANT),
+            p -> p.stacksTo(1).rarity(Rarity.EPIC));
+
+    public static final DeferredItem<StructureSpawnerItem> CLEAN_ROOM_SPAWNER = GBItems.register("clean_room_spawner",
+            "Structure Spawner: Clean Room", GBTab.MACHINES, p -> new StructureSpawnerItem(p, () -> CLEAN_ROOM),
             p -> p.stacksTo(1).rarity(Rarity.EPIC));
 
     public static final DeferredItem<StructureSpawnerItem> FISSION_REACTOR_SPAWNER = GBItems.register("fission_reactor_spawner",

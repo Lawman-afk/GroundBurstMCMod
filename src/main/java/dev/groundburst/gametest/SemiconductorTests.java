@@ -8,7 +8,11 @@ import dev.groundburst.content.chem.GBChemicals;
 import dev.groundburst.content.fluid.ChemFluid;
 import dev.groundburst.content.fluid.GBFluids;
 import dev.groundburst.content.machine.ArcFurnaceBlockEntity;
+import dev.groundburst.content.machine.CleanRoomBlockEntity;
 import dev.groundburst.content.machine.CryogenicCondenserBlockEntity;
+import dev.groundburst.content.machine.MachineBlock;
+import dev.groundburst.content.multiblock.GBMultiblocks;
+import dev.groundburst.content.multiblock.MultiblockDefinition;
 import dev.groundburst.content.machine.CrystalPullerBlockEntity;
 import dev.groundburst.content.machine.IndustrialPressBlockEntity;
 import dev.groundburst.content.machine.GBMachines;
@@ -20,6 +24,7 @@ import dev.groundburst.content.recipe.ProcessingKind;
 import dev.groundburst.content.recipe.ProcessingRecipe;
 import dev.groundburst.content.resource.GBResources;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,6 +42,8 @@ final class SemiconductorTests {
         GBGameTests.test("semiconductor_recipes_pick_right", GBGameTests.FLOOR_16, 20, SemiconductorTests::recipes);
         GBGameTests.test("crystal_puller_grows_a_boule", GBGameTests.FLOOR_16, 1_400, SemiconductorTests::boule);
         GBGameTests.test("press_saws_a_boule_into_wafers", GBGameTests.FLOOR_16, 400, SemiconductorTests::wafers);
+        GBGameTests.test("clean_room_forms_and_prints_microchips", GBGameTests.FLOOR_16, 800, SemiconductorTests::microchips);
+        GBGameTests.test("clean_room_prints_rad_hard_chips", GBGameTests.FLOOR_16, 1_400, SemiconductorTests::radHard);
     }
 
     private static void silicon(GameTestHelper helper) {
@@ -99,6 +106,11 @@ final class SemiconductorTests {
         pick(helper, ProcessingKind.ARC_SMELTING, List.of(new ItemStack(Items.CLAY_BALL, 4), new ItemStack(GBParts.GOLD_WIRE.get(), 2)), List.of(),
                 "arc_smelting/ceramic_package");
         pick(helper, ProcessingKind.CRUSHING, List.of(new ItemStack(GBResources.FLUORITE.get())), List.of(), "crushing/fluorite_dust");
+        ItemStack wafers = new ItemStack(GBParts.SILICON_WAFER.get(), 4), red = new ItemStack(GBChemicals.RED_PHOSPHORUS.get(), 4);
+        pick(helper, ProcessingKind.LITHOGRAPHY, List.of(wafers, red, plastic),
+                List.of(fl(GBFluids.PHOTORESIST), fl(GBFluids.HYDROFLUORIC_ACID), fl(GBFluids.LIQUID_OXYGEN)), "lithography/microchip");
+        pick(helper, ProcessingKind.LITHOGRAPHY, List.of(wafers, red, new ItemStack(GBParts.CERAMIC_PACKAGE.get(), 2)),
+                List.of(fl(GBFluids.PHOTORESIST), fl(GBFluids.HYDROFLUORIC_ACID), fl(GBFluids.LIQUID_OXYGEN)), "lithography/rad_hard_microchip");
         pick(helper, ProcessingKind.CRYSTAL_PULLING, List.of(new ItemStack(GBParts.POLYSILICON.get(), 4), new ItemStack(GBParts.QUARTZ_CRUCIBLE.get())),
                 List.of(fl(GBFluids.ARGON)), "crystal_pulling/silicon_boule");
         helper.succeed();
@@ -147,6 +159,55 @@ final class SemiconductorTests {
             helper.assertTrue(out.is(GBParts.SILICON_WAFER.get()) && out.getCount() == 8, "eight wafers, have " + out);
             helper.assertTrue(press.inventory().getItem(1).is(GBParts.DIAMOND_WIRE_SAW.get()), "the saw is kept");
             helper.assertTrue(!press.hiddenBones().contains("die_saw"), "the saw shows on the press bed");
+        });
+    }
+
+    /** Builds the Clean Room by hand round its controller (facing north), part by part. */
+    private static CleanRoomBlockEntity cleanRoom(GameTestHelper helper, BlockPos rel) {
+        helper.setBlock(rel, GBMachines.CLEAN_ROOM.block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
+        MultiblockDefinition def = GBMultiblocks.CLEAN_ROOM;
+        for (MultiblockDefinition.Cell cell : def.cells(helper.absolutePos(rel), Direction.NORTH)) {
+            if (cell.key() != MultiblockDefinition.CONTROLLER) {
+                helper.getLevel().setBlockAndUpdate(cell.pos(), def.legend().get(cell.key()).preview().get());
+            }
+        }
+        return helper.getBlockEntity(rel, CleanRoomBlockEntity.class);
+    }
+
+    /** A wafer, phosphorus and a plastic sheet under photoresist and hydrofluoric acid: four microchips in 30 s. */
+    private static void microchips(GameTestHelper helper) {
+        CleanRoomBlockEntity room = cleanRoom(helper, new BlockPos(3, 1, 3));
+        helper.assertTrue(room.isFormed(), "the clean room forms");
+        room.energy().generate(160_000);
+        helper.runAtTickTime(400, () -> room.energy().generate(160_000));   // 30 s at 320 FE/t is more than its buffer
+        room.inventory().setItem(0, new ItemStack(GBParts.SILICON_WAFER.get()));
+        room.inventory().setItem(1, new ItemStack(GBChemicals.RED_PHOSPHORUS.get()));
+        room.inventory().setItem(2, new ItemStack(GBChemicals.PLASTIC_SHEET.get()));
+        room.tank(0).fillInternal(new FluidStack(GBFluids.PHOTORESIST.source().get(), 1_000));
+        room.tank(1).fillInternal(new FluidStack(GBFluids.HYDROFLUORIC_ACID.source().get(), 1_000));
+        helper.succeedWhen(() -> {
+            ItemStack out = room.inventory().getItem(3);
+            helper.assertTrue(out.is(GBParts.MICROCHIP.get()) && out.getCount() == 4, "four microchips, have " + out);
+            helper.assertTrue(room.tank(0).amount() == 750 && room.tank(1).amount() == 750, "250 mB of each fluid used");
+        });
+    }
+
+    /** Two wafers, phosphorus and a ceramic package under photoresist, HF and liquid oxygen: two rad-hard chips. */
+    private static void radHard(GameTestHelper helper) {
+        CleanRoomBlockEntity room = cleanRoom(helper, new BlockPos(3, 1, 3));
+        room.energy().generate(160_000);
+        for (int t : new int[] {400, 800, 1_100}) {
+            helper.runAtTickTime(t, () -> room.energy().generate(160_000));
+        }
+        room.inventory().setItem(0, new ItemStack(GBParts.SILICON_WAFER.get(), 2));
+        room.inventory().setItem(1, new ItemStack(GBChemicals.RED_PHOSPHORUS.get()));
+        room.inventory().setItem(2, new ItemStack(GBParts.CERAMIC_PACKAGE.get()));
+        room.tank(0).fillInternal(new FluidStack(GBFluids.PHOTORESIST.source().get(), 500));
+        room.tank(1).fillInternal(new FluidStack(GBFluids.HYDROFLUORIC_ACID.source().get(), 500));
+        room.tank(2).fillInternal(new FluidStack(GBFluids.LIQUID_OXYGEN.source().get(), 500));
+        helper.succeedWhen(() -> {
+            ItemStack out = room.inventory().getItem(3);
+            helper.assertTrue(out.is(GBParts.RAD_HARD_MICROCHIP.get()) && out.getCount() == 2, "two rad-hard chips, have " + out);
         });
     }
 

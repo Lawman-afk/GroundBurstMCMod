@@ -1,7 +1,7 @@
 {
   "title": "Upgrade chips",
   "icon": "groundburst:quantum_speed_chip",
-  "order": 15,
+  "order": 16,
   "items": [
     "groundburst:basic_speed_chip",
     "groundburst:advanced_speed_chip",

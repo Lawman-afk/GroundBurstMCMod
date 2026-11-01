@@ -515,6 +515,27 @@ An [Industrial Press](processing/industrial_press) with a **Diamond Wire Saw** i
     links(["components/semiconductors", "processing/cryogenic_condenser"]),
 ])
 
+entry("processing/clean_room", "Clean Room", "clean_room", ["clean_room", "clean_room_panel", "fan_filter_unit", "clean_room_spawner",
+                                                              "microchip", "rad_hard_microchip"], [
+    spot("clean_room", """
+A sealed module (3 wide, 2 deep, 2 high) where chips are printed on silicon wafers, under yellow light: photoresist is spoiled by any other. Draws 320 FE a tick.
+
+**Microchips:** a wafer is coated with **photoresist**, the circuit's pattern exposed into it, etched with **hydrofluoric acid** and doped with **red phosphorus**; four chips come off it, moulded in a plastic sheet. Thirty seconds.
+
+**Rad-Hard Microchips:** two wafers bonded over an oxide grown in **liquid oxygen** (silicon-on-insulator), printed the same way and sealed in a **ceramic package**: two chips that radiation and an EMP do not upset. A minute.
+"""),
+    structure("clean_room", "Controller at the front left, a Clean Room Panel beside it and the Energy Port at the front right; behind them the Fluid Port, the Item Port and a panel. On top: three Reactor Glass across the front, two Fan Filter Units and a panel behind them."),
+    text("""
+Power goes into the **Energy Port**; wafers, phosphorus and packages go in, and chips come out, through the **Item Port**; the photoresist, hydrofluoric acid and liquid oxygen go into its three tanks through the **Fluid Port** (or pour canisters into any part). The controller connects to nothing itself.
+"""),
+    craft("clean_room"),
+    craft("clean_room_panel"),
+    craft("fan_filter_unit"),
+    machine("lithography", "", item="microchip"),
+    machine("lithography", "", item="rad_hard_microchip"),
+    links(["components/semiconductors", "processing/crystal_puller", "components/circuits"]),
+])
+
 entry("processing/gas_centrifuge", "Gas Centrifuge", "gas_centrifuge", ["gas_centrifuge"], [
     spot("gas_centrifuge", """
 Pipe uranium hexafluoride gas from the [Chemical Plant](processing/chemical_plant) in to get **enriched uranium nuggets** and depleted uranium dust. Draws 50 FE a tick.
@@ -610,7 +631,7 @@ The crucible each crystal grows in is fused from quartz and sand.
     machine("chemistry", "", fluid="hydrogen"),
     machine("arc_smelting", "", item="quartz_crucible"),
     text("""
-The chips are printed with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Military chips are sealed in a **ceramic package**: clay fired round gold leads.
+The chips are printed in the [Clean Room](processing/clean_room) with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Rad-hard chips are sealed in a **ceramic package**: clay fired round gold leads.
 
 Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
 """),

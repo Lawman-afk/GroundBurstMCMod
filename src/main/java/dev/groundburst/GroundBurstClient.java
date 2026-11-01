@@ -77,6 +77,7 @@ public class GroundBurstClient {
         event.register(GBMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
         event.register(GBMenus.CRYSTAL_PULLER.get(), MachineScreen::new);
         event.register(GBMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
+        event.register(GBMenus.CLEAN_ROOM.get(), MachineScreen::new);
         event.register(GBMenus.WATER_PUMP.get(), MachineScreen::new);
         event.register(GBMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
         event.register(GBMenus.FISSION_REACTOR.get(), dev.groundburst.client.screen.FissionReactorScreen::new);
@@ -210,5 +211,7 @@ public class GroundBurstClient {
         event.registerBlockEntityRenderer(GBBlockEntities.CREATIVE_FLUID_TANK.get(), ctx -> new dev.groundburst.client.render.FluidTankRenderer<>());
         // The formed Chemical Plant spans 2x2x2 from its controller in any rotation.
         event.registerBlockEntityRenderer(GBBlockEntities.CHEMICAL_PLANT.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.CHEMICAL_PLANT.get(), 2, 1));
+        // The formed Clean Room spans 3x2x2 from its controller.
+        event.registerBlockEntityRenderer(GBBlockEntities.CLEAN_ROOM.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.CLEAN_ROOM.get(), 2, 2));
     }
 }

@@ -114,6 +114,7 @@ public class GBRecipeProvider extends RecipeProvider {
         arcSmelting();
         pressing();
         crystals();
+        cleanRoom();
         parts();
         gases();
         canning();
@@ -1634,6 +1635,42 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('B', GBTags.BASIC_CIRCUITS)
                 .pattern("PMP").pattern("GVG").pattern("HFB")
                 .unlockedBy(getHasName(GBParts.POLYSILICON), has(GBParts.POLYSILICON))
+                .save(output);
+    }
+
+    /**
+     * The Clean Room (DESIGN.md §8.1): chips printed on wafers with photoresist, etched with hydrofluoric acid and doped with
+     * phosphorus. Microchips are moulded in plastic, rad-hard ones built on silicon-on-insulator (two wafers bonded over
+     * an oxide grown in liquid oxygen) and sealed in a ceramic package; each takes a package the other does not, so
+     * neither recipe is satisfied by the other's ingredients. Its blocks take basic circuits only.
+     */
+    private void cleanRoom() {
+        int fe = dev.groundburst.content.machine.CleanRoomBlockEntity.ENERGY_PER_TICK;
+        Ingredient wafer = Ingredient.of(GBParts.SILICON_WAFER), phosphorus = Ingredient.of(GBChemicals.RED_PHOSPHORUS);
+        machine(ProcessingKind.LITHOGRAPHY, "lithography/microchip",
+                List.of(in(wafer, 1), in(phosphorus, 1), in(Ingredient.of(GBChemicals.PLASTIC_SHEET), 1)), null,
+                List.of(fluid(GBFluids.PHOTORESIST, 250), fluid(GBFluids.HYDROFLUORIC_ACID, 250)),
+                List.of(out(GBParts.MICROCHIP, 4)), List.of(), 600, fe);
+        machine(ProcessingKind.LITHOGRAPHY, "lithography/rad_hard_microchip",
+                List.of(in(wafer, 2), in(phosphorus, 1), in(Ingredient.of(GBParts.CERAMIC_PACKAGE), 1)), null,
+                List.of(fluid(GBFluids.PHOTORESIST, 500), fluid(GBFluids.HYDROFLUORIC_ACID, 500), fluid(GBFluids.LIQUID_OXYGEN, 500)),
+                List.of(out(GBParts.RAD_HARD_MICROCHIP, 2)), List.of(), 1_200, fe);
+
+        shapeless(RecipeCategory.BUILDING_BLOCKS, GBMultiblocks.CLEAN_ROOM_PANEL.item(), 2)
+                .requires(GBTags.commonItem("plates/steel")).requires(GBChemicals.PLASTIC_SHEET).requires(GBChemicals.PLASTIC_SHEET)
+                .requires(Tags.Items.DYES_WHITE)
+                .unlockedBy(getHasName(GBChemicals.PLASTIC_SHEET), has(GBChemicals.PLASTIC_SHEET))
+                .save(output);
+        // A fan over a HEPA filter (its glass-fibre media is a paper).
+        shapeless(RecipeCategory.BUILDING_BLOCKS, GBMultiblocks.FAN_FILTER_UNIT.item(), 1)
+                .requires(GBParts.ELECTRIC_MOTOR).requires(GBTags.commonItem("plates/steel")).requires(Items.PAPER).requires(Items.PAPER)
+                .unlockedBy(getHasName(GBParts.ELECTRIC_MOTOR), has(GBParts.ELECTRIC_MOTOR))
+                .save(output);
+        shaped(RecipeCategory.REDSTONE, GBMachines.CLEAN_ROOM.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('C', GBParts.CRT_DISPLAY).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+                .define('F', GBParts.MACHINE_FRAME).define('B', GBTags.BASIC_CIRCUITS).define('M', GBParts.ELECTRIC_MOTOR)
+                .pattern("PCP").pattern("GFG").pattern("BMB")
+                .unlockedBy(getHasName(GBParts.SILICON_WAFER), has(GBParts.SILICON_WAFER))
                 .save(output);
     }
 

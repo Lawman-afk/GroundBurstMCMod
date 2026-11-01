@@ -733,7 +733,7 @@ need the most of them, cost the most. Every new step is a real industrial proces
 own recipes (fission ones included: they are realistic as they are). The mid-game slows with it, by the user's wish
 ("the entire mid-game can be slowed by this process").
 
-The chain (as built, 2026-11-01: steps 1-12 and 14; the chips and circuits with the Clean Room):
+The chain (as built, 2026-11-01: steps 1-14; the circuits next):
 1. **Silicon** (Arc Furnace): 2 quartz and a coal: the carbothermic reduction smelters make it by. Tagged `c:silicon`,
    as other mods' silicon is.
 2. **Hydrogen** (Chemical Plant): a coal, 1000 mB water and 250 mB liquid oxygen give 1000 mB: an oxygen-blown
@@ -761,14 +761,17 @@ The chain (as built, 2026-11-01: steps 1-12 and 14; the chips and circuits with 
     resin. It needs more than napalm's plastic and fuel, so a napalm plant stays a napalm plant.
 12. **Red Phosphorus** (Arc Furnace): 3 bone meal (calcium phosphate) and a coal: the thermal process; the chips'
     dopant. The Arc Furnace has two input slots, so the silica flux is left out.
-13. **Chips** (Clean Room, a new multiblock): a wafer, phosphorus, photoresist and hydrofluoric acid give
-    **Microchips** (printed, etched and doped); two wafers, phosphorus, photoresist, hydrofluoric acid and liquid
-    oxygen (the buried oxide of silicon-on-insulator) give **Rad-Hard Microchips**.
-14. **Ceramic Package** (Arc Furnace): 2 clay and a gold wire: clay co-fired round gold-plated leads: a military
-    chip's sealed housing.
+13. **Chips** (Clean Room, a new multiblock, 320 FE/t): a wafer, a red phosphorus and a plastic sheet (the chips'
+    moulding) under 250 mB each of photoresist and hydrofluoric acid give four **Microchips** in 30 s; two wafers, a red
+    phosphorus and a ceramic package under 500 mB each of photoresist, hydrofluoric acid and liquid oxygen (the buried
+    oxide of silicon-on-insulator) give two **Rad-Hard Microchips** in a minute. Each takes a package the other does not
+    (plastic, ceramic), so neither recipe is satisfied by the other's ingredients: the rad-hard one, a superset of the
+    microchip's otherwise, could never have been picked.
+14. **Ceramic Package** (Arc Furnace): 2 clay and a gold wire: clay co-fired round gold-plated leads: the rad-hard
+    chips' sealed housing (so it goes into the Clean Room's recipe, not the circuit's).
 15. **Circuits** (Circuit Fabricator): basic unchanged; advanced: 2 basic circuits, 2 microchips, 2 gold wire, rare
-    earth; military: 2 advanced circuits, 2 rad-hard microchips, a ceramic package and a diamond (its heat
-    spreader, as in real high-power electronics); quantum unchanged.
+    earth; military: 2 advanced circuits, 2 rad-hard microchips, 2 gold wire and a diamond (its heat spreader, as in
+    real high-power electronics); quantum unchanged.
 
 The machines:
 - **Crystal Puller** (1x2 tall, as built): on the hazard plinth a round water-jacketed stainless furnace chamber with a
@@ -782,9 +785,19 @@ The machines:
   heater's transformer hum over cooling water, as loud as the Electrolytic Separator.
 - **The Cryogenic Condenser** now takes a basic circuit, not an advanced one: it feeds the chain (argon; liquid oxygen
   for hydrogen), so an advanced circuit in its recipe would have closed a loop.
-- **Clean Room** (multiblock): a sealed white module with fan filter units on its roof, windows onto its lithography
-  bay lit yellow (photoresist is safe only under yellow light), an acid scrubber's stack; ports for items, fluids and
-  power. Its machines fill it: it is not walked into.
+- **Clean Room** (multiblock, as built): 3 wide, 2 deep, 2 high. Bottom: the controller at the front left, a Clean
+  Room Panel and the Energy Port beside it; behind them the Fluid Port, the Item Port and a panel. Top: three Reactor
+  Glass across the front, two Fan Filter Units and a panel behind. New blocks: the **Clean Room Panel** (2 from a steel
+  plate, 2 plastic sheets and white dye) and the **Fan Filter Unit** (an electric motor, a steel plate and two paper:
+  the HEPA filter's media); the controller from steel plates, a CRT display, glass, a machine frame, an electric motor
+  and two **basic** circuits. Formed model: white sandwich panels in courses with aluminium trims on a stainless kick
+  plate; a band of windows onto the bay lit yellow (photoresist is safe only under yellow light) where a coat-and-
+  develop track's robot arm swings, a scanner's wafer stage steps and a wet bench stands under its fume hood, the
+  ceiling's filter grilles glowing (the bay glows at night); a control panel with a green CRT and an air-shower door
+  with its green lamp below; five fan filter units on the roof; a pale grey glass-fibre acid scrubber with a corrosive
+  label in the back-east corner, a duct from the bay into it and its stack; striped port housings (red power, blue
+  fluid, yellow items). Its sound: the filter units' rush of air, as loud as the Chemical Plant. It is not walked
+  into.
 
 Then the Vertical Launch Battery (§17.14 notes the MIRVs it replaces).
 
@@ -4293,6 +4306,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The Clean Room (§8.1): a 3x2x2 multiblock (new Clean Room Panel and Fan Filter Unit blocks, the three ports, Reactor Glass windows) printing Microchips (wafer, red phosphorus, plastic sheet; photoresist, HF) and Rad-Hard Microchips (2 wafers, red phosphorus, ceramic package; photoresist, HF, liquid oxygen) at 320 FE/t. The ceramic package moves from the military circuit's recipe into the rad-hard chip's, and the microchip takes a plastic sheet: without a package of each, the rad-hard recipe (a superset of the microchip's) could never be picked. The military circuit takes 2 gold wire in the package's place. |
 | 2026-11-01 | The Crystal Puller (§8.1): a new two-block machine (a Czochralski puller: stainless chamber, viewport on the melt, isolation valve, pull chamber with the crystal rising in its sight glass, a turning seed-lift head) growing boules from 4 polysilicon and a crucible under 1000 mB argon in a minute at 160 FE/t; the Industrial Press saws a boule into 8 wafers with a new Diamond Wire Saw in its die slot (shown on the press bed). The puller and the condenser take basic circuits: both feed the chain that advanced circuits come from, so the condenser's advanced circuit (since 2026-10-20) would have closed a loop. New machines' sounds take a kin's loudness (`LIKE` in tools/sound/machines.py). |
 | 2026-11-01 | The semiconductor chain's chemistry and materials (§8.1, §5): fluorite ore; silicon (`c:silicon`), polysilicon, the quartz crucible, the ceramic package, red phosphorus and the Argon Molecular Sieve; hydrogen, hydrogen chloride, argon (gases) and trichlorosilane, photoresist, hydrofluoric acid (liquids), each with a canister. Recipes chosen so none is satisfied by another's ingredients (a machine takes the first recipe by id its contents satisfy): hydrogen takes liquid oxygen (an oxygen-blown gasifier) so coal and water alone still make fuel; photoresist takes coal and nitric acid besides plastic and fuel; the crucible takes sand besides quartz. |
 | 2026-11-01 | MIRVs removed (§17.14), after they were built and limited to Medium warheads: the user found them out of place for now. Agreed with the user instead: a late-game vertical launch battery firing a volley of up to 16 Light and Medium missiles onto one area; and a circuit cascade to make military-grade parts as hard to come by as they are in reality, every step a real process (silicon from the Arc Furnace, purified in the Chemical Plant, grown into crystals in a Crystal Puller and sawn into wafers, chips printed in a Clean Room multiblock with photoresist, hydrofluoric acid and phosphorus), applied to advanced circuits as well as military ones (the user: "the entire mid-game can be slowed by this process"); the weapons' own recipes, fission ones too, stay as they are. The circuit chain first, then the launcher. |

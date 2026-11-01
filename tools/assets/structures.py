@@ -331,6 +331,39 @@ def singularity_placard(t: Tex) -> None:
     t.px(4, 9, P.SINGULARITY[5])
 
 
+# --- the Clean Room's (DESIGN.md §8.1) ----------------------------------------------------------------------------------
+
+WHITE_PANEL = M.white_paint(tone=0.82, wear=0.0)
+
+
+def clean_room_panel() -> Tex:
+    """Clean Room Panel: a white sandwich panel in the steel frame, the joint to the next panel down its middle."""
+    img = PN.face(WHITE_PANEL, style="inset", seed=31)
+    M.darken(img, PN.area(7, 2, 1, 12), 0.72)
+    M.lighten(img, PN.area(8, 2, 1, 12), 1.06, 4)
+    return M.to_tex(img)
+
+
+def fan_filter_unit() -> Tex:
+    """Fan Filter Unit: the perforated face plate over its HEPA filter (the side the bay sees) in the steel frame."""
+    img = PN.face(PN.STEEL, style="inset", seed=33)
+    col, row = PN.grid()
+    plate = PN.area(3, 3, 10, 10)
+    M.lighten(img, plate, 1.12, 8)
+    M.darken(img, plate & ((col + row) % 2 == 0), 0.32)          # the perforations
+    PN.bevel_box(img, 3, 3, 10, 10, False, 0.8)
+    return M.to_tex(img)
+
+
+def chip_placard(t: Tex) -> None:
+    """Clean Room: a chip, its pins down both sides."""
+    t.rect(5, 9, 2, 4, P.BLACK_PAINT[1])
+    for y in (9, 11):
+        t.px(4, y, P.STEEL[5])
+        t.px(7, y, P.STEEL[5])
+    t.px(5, 9, P.WHITE_CERAMIC[5])
+
+
 def controller_top() -> Tex:
     """A controller's top: the casing with a louvred vent."""
     img = PN.face(OLIVE_PAINT, style="inset", seed=22)
@@ -391,6 +424,9 @@ if __name__ == "__main__":
     part_block("reactor_glass", reactor_glass(), translucent=True)
     part_block("item_port", item_port())
     controller("chemical_plant", controller_front(), controller_top(), casing())
+    part_block("clean_room_panel", clean_room_panel())
+    part_block("fan_filter_unit", fan_filter_unit())
+    controller("clean_room", controller_front(chip_placard), controller_top(), clean_room_panel())
     # Slice 7.
     part_block("lead_lined_casing", lead_casing())
     part_block("energy_port", energy_port())

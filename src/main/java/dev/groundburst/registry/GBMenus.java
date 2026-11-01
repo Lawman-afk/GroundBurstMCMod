@@ -45,6 +45,7 @@ public final class GBMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> PARTICLE_ACCELERATOR = machine("particle_accelerator", () -> MachineLayouts.PARTICLE_ACCELERATOR);
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CHEMICAL_PLANT = machine("chemical_plant", () -> MachineLayouts.CHEMICAL_PLANT);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CLEAN_ROOM = machine("clean_room", () -> MachineLayouts.CLEAN_ROOM);
 
     /** The Launch Silo's controller screen (DESIGN.md §17.2). */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> LAUNCH_SILO = machine("launch_silo", () -> MachineLayouts.LAUNCH_SILO);
