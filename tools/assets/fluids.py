@@ -113,6 +113,8 @@ FLUIDS = [
     ("liquid_oxygen", "liquid", False), ("liquid_nitrogen", "liquid", False), ("heavy_water", "liquid", False),
     ("deuterium", "gas", True), ("uranium_hexafluoride", "gas", True), ("tritium", "gas", True),
     ("chlorine", "gas", True), ("toxin", "thick", False),
+    ("hydrogen", "gas", True), ("hydrogen_chloride", "gas", True), ("trichlorosilane", "liquid", False),
+    ("argon", "gas", True), ("photoresist", "liquid", False), ("hydrofluoric_acid", "liquid", False),
 ]
 
 
@@ -184,6 +186,8 @@ TINTS = {
     "thermobaric_slurry": 0x8C949C, "napalm": 0xE2742A, "liquid_oxygen": 0x9CC4FF, "liquid_nitrogen": 0xD8E8F2,
     "heavy_water": 0x5A8CD8, "deuterium": 0xA4BCFF, "uranium_hexafluoride": 0xC6D06A, "tritium": 0xB8F0D0,
     "chlorine": 0xA8D430, "toxin": 0x7CE03A,
+    "hydrogen": 0xEFD3EA, "hydrogen_chloride": 0xCFE3B8, "trichlorosilane": 0xBCCAD4, "argon": 0xB9A6F0,
+    "photoresist": 0xC0541E, "hydrofluoric_acid": 0xC8F0E4,
 }
 
 

@@ -1,0 +1,12 @@
+{
+  "type": "groundburst:cryo_condensing",
+  "catalyst": "groundburst:argon_sieve",
+  "energy_per_tick": 100,
+  "fluid_outputs": [
+    {
+      "amount": 250,
+      "id": "groundburst:argon"
+    }
+  ],
+  "time": 300
+}

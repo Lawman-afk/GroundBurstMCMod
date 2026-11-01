@@ -93,7 +93,7 @@ final class ResourceTests {
         String[][] cases = {
                 {"ore_uranium", "uranium_ore"}, {"ore_lithium", "lithium_ore"}, {"ore_sulfur", "sulfur_ore"},
                 {"ore_saltpeter", "saltpeter_ore"}, {"ore_tungsten", "tungsten_ore"}, {"ore_lead", "lead_ore"},
-                {"ore_rare_earth", "rare_earth_ore"},
+                {"ore_rare_earth", "rare_earth_ore"}, {"ore_fluorite", "fluorite_ore"},
         };
         RandomSource random = RandomSource.create(7);
         BlockPos centre = helper.absolutePos(new BlockPos(6, 6, 6));

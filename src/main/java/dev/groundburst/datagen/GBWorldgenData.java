@@ -94,6 +94,7 @@ public final class GBWorldgenData {
         SPECS.add(new Spec("ore_lead", "lead", ores("lead", CountPlacement.of(5), triangle(-32, 48)), BiomeTags.IS_OVERWORLD, GenerationStep.Decoration.UNDERGROUND_ORES));
         SPECS.add(new Spec("ore_rare_earth", "rare_earth", ores("rare_earth", CountPlacement.of(2), uniform(-32, 48)), BiomeTags.IS_OVERWORLD, GenerationStep.Decoration.UNDERGROUND_ORES));
         SPECS.add(new Spec("ore_rare_earth_mountain", "rare_earth", ores("rare_earth", CountPlacement.of(2), uniform(0, 96)), Tags.Biomes.IS_MOUNTAIN, GenerationStep.Decoration.UNDERGROUND_ORES));
+        SPECS.add(new Spec("ore_fluorite", "fluorite", ores("fluorite", CountPlacement.of(3), uniform(-24, 72)), BiomeTags.IS_OVERWORLD, GenerationStep.Decoration.UNDERGROUND_ORES));
         // Void geodes: anchored inside End-island stone so they hang in the islands' undersides and flanks.
         SPECS.add(new Spec("exotic_geode", "exotic_geodes", List.of(new ConfigToggleFilter("exotic_geodes"),
                 RarityFilter.onAverageOnceEvery(3), CountPlacement.of(4), InSquarePlacement.spread(), uniform(16, 72),
@@ -161,6 +162,7 @@ public final class GBWorldgenData {
         context.register(featureKey("ore_lead"), new OreFeature(pair(stone, GBResources.LEAD_ORE.block().get(), deepslate, GBResources.DEEPSLATE_LEAD_ORE.block().get()), 8));
         context.register(featureKey("ore_rare_earth"), new OreFeature(pair(stone, GBResources.RARE_EARTH_ORE.block().get(), deepslate, GBResources.DEEPSLATE_RARE_EARTH_ORE.block().get()), 4));
         context.register(featureKey("ore_rare_earth_mountain"), new OreFeature(pair(stone, GBResources.RARE_EARTH_ORE.block().get(), deepslate, GBResources.DEEPSLATE_RARE_EARTH_ORE.block().get()), 4));
+        context.register(featureKey("ore_fluorite"), new OreFeature(pair(stone, GBResources.FLUORITE_ORE.block().get(), deepslate, GBResources.DEEPSLATE_FLUORITE_ORE.block().get()), 7));
 
         HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
         context.register(featureKey("exotic_geode"), new GeodeFeature(

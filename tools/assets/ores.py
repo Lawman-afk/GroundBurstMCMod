@@ -228,13 +228,46 @@ def build_others() -> list[Path]:
     for name, host, ramp, stamps, seed, rim, shift in plans:
         ore, _ = V.ore_overlay(ramp, stamps, seed, rim=rim, shift=shift)
         out.append(_ore(name, host, lambda t, ore=ore: t.blit(ore, 0, 0)))
+
+    def zoned(t, rng, painted):
+        # Fluorite's colour zoning: a third of the cubes grew green rather than purple.
+        crystals = _components(painted)
+        rng.shuffle(crystals)
+        for crystal in crystals[: max(1, len(crystals) // 3)]:
+            for (x, y) in crystal:
+                c = t.get(x, y)[:3]
+                for i in range(7):
+                    if M.FLUORITE[i][:3] == c:
+                        t.px(x, y, M.FLUORITE_GREEN[i])
+                        break
+    cubes = ["cube", "cube_s", "cube", "cube_s", "cube_s", "pair", "speck", "speck"]
+    for name, host, seed in (("fluorite_ore", STONE, 91), ("deepslate_fluorite_ore", DEEPSLATE, 92)):
+        ore, _ = V.ore_overlay(M.FLUORITE, cubes, seed, rim=M.FLUORITE[1], accent=zoned)
+        out.append(_ore(name, host, lambda t, ore=ore: t.blit(ore, 0, 0)))
     return out
+
+
+def _components(pts: set[tuple[int, int]]) -> list[list[tuple[int, int]]]:
+    """The 4-connected groups of pixels in `pts`, each sorted (so a seeded shuffle picks the same ones)."""
+    left, out = set(pts), []
+    while left:
+        stack, group = [min(left)], []
+        left.discard(stack[0])
+        while stack:
+            x, y = stack.pop()
+            group.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in left:
+                    left.discard(q)
+                    stack.append(q)
+        out.append(sorted(group))
+    return sorted(out)
 
 
 ALL_ORES = ["uranium_ore", "deepslate_uranium_ore", "lithium_ore", "deepslate_lithium_ore", "sulfur_ore",
             "deepslate_sulfur_ore", "nether_sulfur_ore", "saltpeter_ore", "deepslate_saltpeter_ore",
             "sandstone_saltpeter_ore", "tungsten_ore", "deepslate_tungsten_ore", "lead_ore", "deepslate_lead_ore",
-            "rare_earth_ore", "deepslate_rare_earth_ore"]
+            "rare_earth_ore", "deepslate_rare_earth_ore", "fluorite_ore", "deepslate_fluorite_ore"]
 
 
 def review_sheet(names: list[str], out_name: str, cell: int = 200) -> Path:

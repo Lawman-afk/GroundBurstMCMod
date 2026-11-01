@@ -1,0 +1,27 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:hydrogen"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:water"
+    },
+    {
+      "amount": 250,
+      "ingredient": "#c:liquid_oxygen"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "time": 240
+}

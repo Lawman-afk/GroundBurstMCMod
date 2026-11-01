@@ -1,0 +1,24 @@
+{
+  "type": "groundburst:canning",
+  "energy_per_tick": 20,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:hydrogen_chloride"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:hydrogen_chloride_canister"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:empty_gas_canister"
+      }
+    }
+  ],
+  "time": 40
+}

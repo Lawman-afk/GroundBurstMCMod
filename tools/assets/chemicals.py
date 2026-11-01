@@ -30,6 +30,12 @@ CHLORINE = fixed("chlorine", "#2c4008", "#48660c", "#689012", "#88b41c", "#a8d43
 TOXIN = fixed("toxin", "#0c2a06", "#16480a", "#22680e", "#349014", "#4cb420", "#7cd83a", "#c0f480")
 SALT = fixed("salt", "#6c6a66", "#8e8c88", "#b0aeaa", "#cecdca", "#e4e3e0", "#f2f1ee", "#ffffff")
 UF6 = fixed("uf6", "#3c4410", "#5e6a1a", "#848f2a", "#a8b440", "#c6d062", "#dce48e", "#f2f6c8")
+# The semiconductor chain (DESIGN.md §8.1).
+HCL = fixed("hcl", "#2e3a1c", "#4a5a2c", "#687c40", "#88a058", "#a8c072", "#c6da98", "#eaf4d0")
+TCS = fixed("tcs", "#1e2630", "#333e4a", "#4c5866", "#677584", "#8694a2", "#a8b4c0", "#dce4ec")
+PHOTORESIST = fixed("photoresist", "#2e0e04", "#521a08", "#7a2c0e", "#a24216", "#c25e24", "#dc8644", "#f4bc84")
+HF = fixed("hf", "#123a30", "#1e5a4a", "#2e7c66", "#46a086", "#6cc2a6", "#9cdcc6", "#d8f6ec")
+RED_PHOSPHORUS = fixed("red_phosphorus", "#2a0a10", "#4a1018", "#701a22", "#962a2c", "#b6443a", "#d06c58", "#eaa08c")
 
 
 def canisters() -> None:
@@ -45,6 +51,13 @@ def canisters() -> None:
     c("heavy_water_canister", PT.CANISTER_ROWS, HEAVY_WATER, P.WHITE_CERAMIC[6])
     c("chlorine_canister", PT.GAS_ROWS, CHLORINE, P.HAZARD_YELLOW[4])
     c("toxin_canister", PT.CANISTER_ROWS, TOXIN, P.HAZARD_BLACK[3])
+    # Gas bottles in the colours real cylinders wear where it helps: flammable hydrogen red.
+    c("hydrogen_canister", PT.GAS_ROWS, P.WARNING_RED, P.WHITE_CERAMIC[6])
+    c("hydrogen_chloride_canister", PT.GAS_ROWS, HCL, P.HAZARD_BLACK[3])
+    c("argon_canister", PT.GAS_ROWS, PT.ARGON, P.WHITE_CERAMIC[6])
+    c("trichlorosilane_canister", PT.CANISTER_ROWS, TCS, P.WARNING_RED[3])
+    c("photoresist_canister", PT.CANISTER_ROWS, PHOTORESIST, P.HAZARD_BLACK[3])
+    c("hydrofluoric_acid_canister", PT.CANISTER_ROWS, HF, P.WARNING_RED[3])
 
 
 def flask() -> None:
@@ -148,6 +161,7 @@ def powders() -> None:
     PT.save("lithium6_dust", V.dust2(LITHIUM6, 22, sparkle=True))
     PT.save("rdx_crystals", V.dust2(RDX, 23, sparkle=True))
     PT.save("salt", V.dust2(SALT, 24, sparkle=True))
+    PT.save("red_phosphorus", V.dust2(RED_PHOSPHORUS, 26))
 
 
 def build() -> None:

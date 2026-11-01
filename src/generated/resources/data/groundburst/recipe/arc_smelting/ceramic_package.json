@@ -1,0 +1,22 @@
+{
+  "type": "groundburst:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:clay_ball"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:wires/gold"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:ceramic_package"
+      }
+    }
+  ],
+  "time": 200
+}

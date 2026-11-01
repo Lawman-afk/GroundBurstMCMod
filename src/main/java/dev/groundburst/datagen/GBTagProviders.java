@@ -33,7 +33,7 @@ public final class GBTagProviders {
             Tags.BlockItems.STORAGE_BLOCKS, Tags.BlockItems.BUDDING_BLOCKS, Tags.BlockItems.BUDS, Tags.BlockItems.CLUSTERS,
             GBTags.RADIOACTIVE,
             GBTags.common("ores/uranium"), GBTags.common("ores/lithium"), GBTags.common("ores/sulfur"), GBTags.common("ores/saltpeter"),
-            GBTags.common("ores/tungsten"), GBTags.common("ores/lead"), GBTags.common("ores/rare_earth"),
+            GBTags.common("ores/tungsten"), GBTags.common("ores/lead"), GBTags.common("ores/rare_earth"), GBTags.common("ores/fluorite"),
             GBTags.common("storage_blocks/uranium"), GBTags.common("storage_blocks/lead"), GBTags.common("storage_blocks/tungsten"),
             GBTags.common("storage_blocks/raw_uranium"), GBTags.common("storage_blocks/raw_lithium"),
             GBTags.common("storage_blocks/raw_tungsten"), GBTags.common("storage_blocks/raw_lead"),
@@ -263,6 +263,9 @@ public final class GBTagProviders {
             item("dusts/gold", GBResources.GOLD_DUST, Tags.Items.DUSTS);
             item("dusts/copper", GBResources.COPPER_DUST, Tags.Items.DUSTS);
             item("dusts/cinnabar", GBResources.CINNABAR_DUST, Tags.Items.DUSTS);
+            item("gems/fluorite", GBResources.FLUORITE, Tags.Items.GEMS);
+            item("dusts/fluorite", GBResources.FLUORITE_DUST, Tags.Items.DUSTS);
+            tag(GBTags.commonItem("silicon")).add(GBParts.SILICON.key());   // the tag other mods' silicon carries
             item("gems/exotic_matter", GBResources.EXOTIC_SHARD, Tags.Items.GEMS);
             item("ingots/steel", GBParts.STEEL_INGOT, Tags.Items.INGOTS);
             item("ingots/cobalt", GBParts.COBALT_INGOT, Tags.Items.INGOTS);

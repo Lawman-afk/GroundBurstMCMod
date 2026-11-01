@@ -1,0 +1,21 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:hydrogen_chloride"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:hydrogen"
+    },
+    {
+      "amount": 1000,
+      "ingredient": "#c:chlorine"
+    }
+  ],
+  "time": 200
+}

@@ -48,7 +48,7 @@ public final class MachineText {
     public static final String INFO_DIE = GBLang.add(GroundBurst.MODID + ".info.die",
             "Goes in the Industrial Press die slot and picks what the press makes. Dies are never used up.");
     public static final String INFO_MEMBRANE = GBLang.add(GroundBurst.MODID + ".info.membrane",
-            "Goes in the Cryogenic Condenser's membrane slot and picks which gas it liquefies. Membranes are never used up.");
+            "Goes in the Cryogenic Condenser's membrane slot and picks what it draws from the air: liquid oxygen, liquid nitrogen or argon. Membranes and sieves are never used up.");
     public static final String INFO_CHEMICAL_PLANT = GBLang.add(GroundBurst.MODID + ".info.chemical_plant",
             "Chemical Plant (2x2x2): put the controller down, then add an Energy Port beside it, a Fluid Port behind it, an Item Port in the far corner of that bottom layer, and four Reactor Glass on top. Right-click the controller, or hold a Holo-Projector, to see where each block goes (sneak-right-click opens it before it is finished). The controller itself connects to nothing: power goes into the Energy Port, items in and out through the Item Port, and fluids in and out through the Fluid Port (a Water Pump supplies water). Right-click with a bucket or canister to pour it in, sneak-right-click with an empty one to draw off the product.");
     public static final String INFO_FLUID_PIPE = GBLang.add(GroundBurst.MODID + ".info.fluid_pipe",

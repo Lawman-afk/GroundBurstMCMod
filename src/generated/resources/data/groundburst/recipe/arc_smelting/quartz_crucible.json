@@ -1,0 +1,22 @@
+{
+  "type": "groundburst:arc_smelting",
+  "energy_per_tick": 80,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": "#c:gems/quartz"
+    },
+    {
+      "count": 4,
+      "ingredient": "#c:sands/colorless"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:quartz_crucible"
+      }
+    }
+  ],
+  "time": 300
+}

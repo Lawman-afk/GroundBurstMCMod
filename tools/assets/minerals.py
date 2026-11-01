@@ -7,6 +7,7 @@ Each mineral is drawn as its real habit so ores are recognisable at a glance:
     wolframite (tungsten) dark tabular crystals with a steel-blue metallic edge glint
     galena (lead)         small silver cubes with crisp three-face shading
     monazite (rare earth) honey-red resinous grains with gold highlights
+    fluorite              purple cubes, some grown green (its colour zoning)
 Placements are hand-made per variant; seeds only pick small details.
 """
 from __future__ import annotations
@@ -23,6 +24,8 @@ NITER = fixed("niter", "#4e5254", "#7d8386", "#a8aeb0", "#c9cdce", "#e1e4e4", "#
 WOLFRAMITE = fixed("wolframite", "#100a08", "#21140f", "#332018", "#463024", "#5e4636", "#8fa2b8", "#d4e6f8")
 GALENA = fixed("galena", "#1f2328", "#363c44", "#525a64", "#737c87", "#9aa3ad", "#c4cbd2", "#eef2f6")
 MONAZITE = fixed("monazite", "#3a1408", "#62240e", "#8c3a16", "#b45a22", "#d4823a", "#ecb062", "#fbe0a0")
+FLUORITE = fixed("fluorite", "#1c0a2c", "#36144c", "#53226f", "#723694", "#9456bc", "#b986dc", "#e0c2f4")
+FLUORITE_GREEN = fixed("fluorite_green", "#0a261a", "#13442c", "#1e623e", "#2e8452", "#46a66a", "#76c68e", "#bce8c8")
 
 
 def _shadow(t: Tex, pts: set[tuple[int, int]], color) -> None:

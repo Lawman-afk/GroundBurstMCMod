@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Silicon and chips (a harder circuit chain, under way)
+- **Fluorite Ore**: purple and green cubes in the Overworld (Y −24 to 72). Crush it and dissolve the dust in sulfuric
+  acid for **hydrofluoric acid**.
+- **Silicon** from quartz and coal in the Arc Furnace, purified in the Chemical Plant: with **hydrogen chloride** (from
+  hydrogen and chlorine) into **trichlorosilane**, then with hydrogen into **polysilicon**.
+- **Hydrogen** from coal, water and liquid oxygen; **argon** drawn from the air by the new **Argon Molecular Sieve** in
+  the Cryogenic Condenser.
+- **Photoresist**, **red phosphorus**, the **Quartz Crucible** and the **Ceramic Package**: what the chips will be made
+  with, once the Crystal Puller and the Clean Room arrive.
+- Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
+
 ### Laser Designator
 - **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
   **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot

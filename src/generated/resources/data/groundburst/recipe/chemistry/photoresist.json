@@ -1,0 +1,31 @@
+{
+  "type": "groundburst:chemistry",
+  "energy_per_tick": 60,
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "id": "groundburst:photoresist"
+    }
+  ],
+  "fluids": [
+    {
+      "amount": 250,
+      "ingredient": "#c:nitric_acid"
+    },
+    {
+      "amount": 1000,
+      "ingredient": "#c:synthetic_fuel"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:plastic_sheet"
+    },
+    {
+      "count": 1,
+      "ingredient": "#minecraft:coals"
+    }
+  ],
+  "time": 300
+}

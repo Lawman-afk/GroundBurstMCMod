@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "volume=1": {
+      "model": "groundburst:block/argon_1"
+    },
+    "volume=2": {
+      "model": "groundburst:block/argon_2"
+    },
+    "volume=3": {
+      "model": "groundburst:block/argon_3"
+    },
+    "volume=4": {
+      "model": "groundburst:block/argon_4"
+    },
+    "volume=5": {
+      "model": "groundburst:block/argon_5"
+    },
+    "volume=6": {
+      "model": "groundburst:block/argon_6"
+    },
+    "volume=7": {
+      "model": "groundburst:block/argon_7"
+    },
+    "volume=8": {
+      "model": "groundburst:block/argon_8"
+    }
+  }
+}

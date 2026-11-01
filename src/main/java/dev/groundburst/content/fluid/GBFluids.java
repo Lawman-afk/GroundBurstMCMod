@@ -76,6 +76,24 @@ public final class GBFluids {
     public static final ChemFluid TOXIN = liquid("toxin", "Toxin", Look.THICK, 0xFF7CE03A, Hazard.TOXIC,
             1300, 4, 300, GBChemicals.TOXIN_CANISTER, GBParts.EMPTY_CANISTER, MapColor.COLOR_LIGHT_GREEN);
 
+    // The semiconductor chain (DESIGN.md §8.1).
+    /** From coal, steam and oxygen (an oxygen-blown gasifier). */
+    public static final ChemFluid HYDROGEN = gas("hydrogen", "Hydrogen", 0xFFEFD3EA, Hazard.NONE, GBChemicals.HYDROGEN_CANISTER);
+    /** Hydrogen burnt in chlorine; fumes that eat at the lungs. */
+    public static final ChemFluid HYDROGEN_CHLORIDE = gas("hydrogen_chloride", "Hydrogen Chloride", 0xFFCFE3B8, Hazard.TOXIC,
+            GBChemicals.HYDROGEN_CHLORIDE_CANISTER);
+    /** Silicon dissolved in hydrogen chloride: a clear, fuming liquid, distilled pure before it is turned back into silicon. */
+    public static final ChemFluid TRICHLOROSILANE = liquid("trichlorosilane", "Trichlorosilane", Look.LIQUID, 0xFFBCCAD4, Hazard.ACID,
+            1342, 1, 300, GBChemicals.TRICHLOROSILANE_CANISTER, GBParts.EMPTY_CANISTER, MapColor.COLOR_LIGHT_GRAY);
+    /** Drawn from the air in the Cryogenic Condenser; the cover gas a crystal is grown under. */
+    public static final ChemFluid ARGON = gas("argon", "Argon", 0xFFB9A6F0, Hazard.NONE, GBChemicals.ARGON_CANISTER);
+    /** A light-sensitive resin the chips' patterns are printed in. */
+    public static final ChemFluid PHOTORESIST = liquid("photoresist", "Photoresist", Look.LIQUID, 0xFFC0541E, Hazard.NONE,
+            1050, 3, 300, GBChemicals.PHOTORESIST_CANISTER, GBParts.EMPTY_CANISTER, MapColor.COLOR_ORANGE);
+    /** Fluorite and sulfuric acid; it etches glass and silicon, and the chips' patterns into them. */
+    public static final ChemFluid HYDROFLUORIC_ACID = liquid("hydrofluoric_acid", "Hydrofluoric Acid", Look.LIQUID, 0xFFC8F0E4, Hazard.ACID,
+            1150, 1, 300, GBChemicals.HYDROFLUORIC_ACID_CANISTER, GBParts.EMPTY_CANISTER, MapColor.ICE);
+
     /** Fluid pipes in three tiers, like the cables (see {@link FluidPipeTier}). */
     public static final GBBlocks.WithItem<FluidPipeBlock> COPPER_FLUID_PIPE = pipe(FluidPipeTier.COPPER);
     public static final GBBlocks.WithItem<FluidPipeBlock> FLUID_PIPE = pipe(FluidPipeTier.STEEL);

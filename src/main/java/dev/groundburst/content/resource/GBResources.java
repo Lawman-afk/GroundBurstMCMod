@@ -55,6 +55,8 @@ public final class GBResources {
     public static final WithItem<Block> DEEPSLATE_LEAD_ORE = ore("lead", Host.DEEPSLATE, "Deepslate Lead Ore", () -> GBResources.RAW_LEAD.get(), 1, 1, Tier.STONE);
     public static final WithItem<Block> RARE_EARTH_ORE = ore("rare_earth", Host.STONE, "Rare-Earth Ore", () -> GBResources.RAW_RARE_EARTH.get(), 1, 1, Tier.IRON);
     public static final WithItem<Block> DEEPSLATE_RARE_EARTH_ORE = ore("rare_earth", Host.DEEPSLATE, "Deepslate Rare-Earth Ore", () -> GBResources.RAW_RARE_EARTH.get(), 1, 1, Tier.IRON);
+    public static final WithItem<Block> FLUORITE_ORE = ore("fluorite", Host.STONE, "Fluorite Ore", () -> GBResources.FLUORITE.get(), 1, 2, Tier.STONE);
+    public static final WithItem<Block> DEEPSLATE_FLUORITE_ORE = ore("fluorite", Host.DEEPSLATE, "Deepslate Fluorite Ore", () -> GBResources.FLUORITE.get(), 1, 2, Tier.STONE);
 
     // --- raw materials & products --------------------------------------------------------------------------------
     public static final DeferredItem<Item> RAW_URANIUM = GBItems.simple("raw_uranium", "Raw Uranium", GBTab.RESOURCES);
@@ -62,6 +64,8 @@ public final class GBResources {
     public static final DeferredItem<Item> RAW_TUNGSTEN = GBItems.simple("raw_tungsten", "Raw Tungsten", GBTab.RESOURCES);
     public static final DeferredItem<Item> RAW_LEAD = GBItems.simple("raw_lead", "Raw Lead", GBTab.RESOURCES);
     public static final DeferredItem<Item> RAW_RARE_EARTH = GBItems.simple("raw_rare_earth", "Raw Rare Earths", GBTab.RESOURCES);
+    /** Fluorspar: purple and green cubes, the source of hydrofluoric acid (DESIGN.md §8.1). */
+    public static final DeferredItem<Item> FLUORITE = GBItems.simple("fluorite", "Fluorite", GBTab.RESOURCES);
     public static final DeferredItem<Item> SULFUR_DUST = GBItems.simple("sulfur_dust", "Sulfur Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> SALTPETER_DUST = GBItems.simple("saltpeter_dust", "Saltpeter Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> URANIUM_DUST = GBItems.simple("uranium_dust", "Uranium Dust", GBTab.RESOURCES);
@@ -69,6 +73,7 @@ public final class GBResources {
     public static final DeferredItem<Item> TUNGSTEN_DUST = GBItems.simple("tungsten_dust", "Tungsten Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> LEAD_DUST = GBItems.simple("lead_dust", "Lead Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> RARE_EARTH_DUST = GBItems.simple("rare_earth_dust", "Rare-Earth Dust", GBTab.RESOURCES);
+    public static final DeferredItem<Item> FLUORITE_DUST = GBItems.simple("fluorite_dust", "Fluorite Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> COBALT_DUST = GBItems.simple("cobalt_dust", "Cobalt Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> IRON_DUST = GBItems.simple("iron_dust", "Iron Dust", GBTab.RESOURCES);
     public static final DeferredItem<Item> GOLD_DUST = GBItems.simple("gold_dust", "Gold Dust", GBTab.RESOURCES);

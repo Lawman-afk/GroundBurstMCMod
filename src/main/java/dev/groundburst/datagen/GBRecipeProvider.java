@@ -197,6 +197,9 @@ public class GBRecipeProvider extends RecipeProvider {
         crush("crushing/cinnabar_dust", Ingredient.of(Items.CINNABAR), 1, GBResources.CINNABAR_DUST, 4, null, 0, 160);
         crush("crushing/gravel_from_cobblestone", Ingredient.of(Items.COBBLESTONE), 1, Items.GRAVEL, 1, Items.FLINT, 0.10f, 100);
         crush("crushing/sand_from_gravel", Ingredient.of(Items.GRAVEL), 1, Items.SAND, 1, null, 0, 100);
+        // Fluorite (fluorspar) crushes to the dust hydrofluoric acid is made from.
+        crush("crushing/fluorite_dust", tag(GBTags.commonItem("gems/fluorite")), 1, GBResources.FLUORITE_DUST, 2, null, 0, 120);
+        crush("crushing/fluorite_dust_from_ore", tag(GBTags.commonItem("ores/fluorite")), 1, GBResources.FLUORITE_DUST, 4, null, 0, 160);
     }
 
     /** Raw material -> 2 dust; ore block -> 2 dust with a 50% chance of a third. */
@@ -1074,6 +1077,9 @@ public class GBRecipeProvider extends RecipeProvider {
                 List.of(), List.of(fluidOut(GBFluids.LIQUID_OXYGEN, 1_000)), 300, cryo);
         machine(ProcessingKind.CRYO_CONDENSING, "cryo_condensing/liquid_nitrogen", List.of(), Ingredient.of(GBParts.NITROGEN_MEMBRANE), List.of(),
                 List.of(), List.of(fluidOut(GBFluids.LIQUID_NITROGEN, 1_000)), 300, cryo);
+        // Argon is 1% of the air: a quarter of the yield.
+        machine(ProcessingKind.CRYO_CONDENSING, "cryo_condensing/argon", List.of(), Ingredient.of(GBParts.ARGON_SIEVE), List.of(),
+                List.of(), List.of(fluidOut(GBFluids.ARGON, 250)), 300, cryo);
 
         shapeless(RecipeCategory.MISC, GBChemicals.EMPTY_GAS_CANISTER, 1)
                 .requires(GBTags.commonItem("plates/steel")).requires(GBTags.commonItem("plates/steel")).requires(Items.GLASS)
@@ -1081,6 +1087,7 @@ public class GBRecipeProvider extends RecipeProvider {
                 .save(output);
         membrane(GBParts.OXYGEN_MEMBRANE, Items.LAPIS_LAZULI);
         membrane(GBParts.NITROGEN_MEMBRANE, Items.QUARTZ);
+        membrane(GBParts.ARGON_SIEVE, GBChemicals.SALT);   // a sodium zeolite
         // DESIGN.md §26.4: the separator takes a basic circuit, the condenser an advanced one.
         shaped(RecipeCategory.REDSTONE, GBMachines.ELECTROLYTIC_SEPARATOR.item(), 1)
                 .define('W', GBTags.commonItem("wires/gold")).define('G', Items.GLASS).define('P', GBTags.commonItem("plates/copper"))
@@ -1144,6 +1151,21 @@ public class GBRecipeProvider extends RecipeProvider {
                 List.of(out(GBChemicals.LITHIUM6_DUST, 1), new ProcessingRecipe.Output(new ItemStackTemplate(GBChemicals.MERCURY_FLASK.get(), 1), 0.9f)),
                 null, 300, fe);
         // Phase 15: a damaged warhead found in an old silo or a crashed missile, its core leached out with acid.
+        // The semiconductor chain (DESIGN.md §8.1).
+        // Hydrogen from an oxygen-blown gasifier: coal, steam and oxygen.
+        chem("hydrogen", List.of(in(coal, 1)), List.of(water(1_000), fluid(GBFluids.LIQUID_OXYGEN, 250)), List.of(), GBFluids.HYDROGEN, 240, fe);
+        chem("hydrogen_chloride", List.of(), List.of(fluid(GBFluids.HYDROGEN, 1_000), fluid(GBFluids.CHLORINE, 1_000)),
+                List.of(), GBFluids.HYDROGEN_CHLORIDE, 200, fe);
+        chem("trichlorosilane", List.of(in(Ingredient.of(GBParts.SILICON), 1)), List.of(fluid(GBFluids.HYDROGEN_CHLORIDE, 1_000)),
+                List.of(), GBFluids.TRICHLOROSILANE, 300, fe);
+        // The Siemens process: trichlorosilane decomposed under hydrogen, silicon laid down pure.
+        chem("polysilicon", List.of(), List.of(fluid(GBFluids.TRICHLOROSILANE, 1_000), fluid(GBFluids.HYDROGEN, 1_000)),
+                List.of(out(GBParts.POLYSILICON, 1)), null, 400, fe);
+        // A novolac resin (the plastic) with its light-sensitive compound (from coal, with nitric acid), in a solvent.
+        chem("photoresist", List.of(in(plastic, 1), in(coal, 1)), List.of(fluid(GBFluids.NITRIC_ACID, 250), fluid(GBFluids.SYNTHETIC_FUEL, 1_000)),
+                List.of(), GBFluids.PHOTORESIST, 300, fe);
+        chem("hydrofluoric_acid", List.of(in(tag(GBTags.commonItem("dusts/fluorite")), 1)), List.of(fluid(GBFluids.SULFURIC_ACID, 1_000)),
+                List.of(), GBFluids.HYDROFLUORIC_ACID, 300, fe);
         chem("salvaged_warhead", List.of(in(Ingredient.of(dev.groundburst.content.salvage.GBSalvage.DAMAGED_WARHEAD), 1)), List.of(fluid(GBFluids.SULFURIC_ACID, 1_000)),
                 List.of(out(dev.groundburst.content.nuclear.GBNuclear.ENRICHED_URANIUM_NUGGET, 4),
                         new ProcessingRecipe.Output(new ItemStackTemplate(dev.groundburst.content.nuclear.GBNuclear.PLUTONIUM_NUGGET.get(), 2), 0.5f),
@@ -1577,6 +1599,19 @@ public class GBRecipeProvider extends RecipeProvider {
                 List.of(out(GBParts.COBALT_INGOT, 1)), 300, fe);
         machine(ProcessingKind.ARC_SMELTING, "arc_smelting/lead_ingot_from_raw", List.of(in(tag(GBTags.commonItem("raw_materials/lead")), 1)), null,
                 List.of(out(GBResources.LEAD_INGOT, 1), new ProcessingRecipe.Output(new ItemStackTemplate(GBResources.LEAD_DUST.get(), 1), 0.25f)), 120, fe);
+        // The semiconductor chain (DESIGN.md §8.1). Silicon: quartz reduced with coal, as smelters make it.
+        Ingredient quartz = tag(Tags.Items.GEMS_QUARTZ);
+        machine(ProcessingKind.ARC_SMELTING, "arc_smelting/silicon", List.of(in(quartz, 2), in(coal, 1)), null,
+                List.of(out(GBParts.SILICON, 1)), 240, fe);
+        // Quartz sand fused into a crucible.
+        machine(ProcessingKind.ARC_SMELTING, "arc_smelting/quartz_crucible", List.of(in(quartz, 2), in(tag(Tags.BlockItems.SANDS_COLORLESS.item()), 4)), null,
+                List.of(out(GBParts.QUARTZ_CRUCIBLE, 1)), 300, fe);
+        // Phosphorus: calcium phosphate (bone meal) reduced with coal, the thermal process.
+        machine(ProcessingKind.ARC_SMELTING, "arc_smelting/red_phosphorus", List.of(in(Ingredient.of(Items.BONE_MEAL), 3), in(coal, 1)), null,
+                List.of(out(GBChemicals.RED_PHOSPHORUS, 1)), 240, fe);
+        // Clay fired to a ceramic round its gold-plated leads.
+        machine(ProcessingKind.ARC_SMELTING, "arc_smelting/ceramic_package", List.of(in(Ingredient.of(Items.CLAY_BALL), 2), in(tag(GBTags.commonItem("wires/gold")), 1)), null,
+                List.of(out(GBParts.CERAMIC_PACKAGE, 1)), 200, fe);
     }
 
     /** Industrial Press (DESIGN.md §26.2): the die in the catalyst slot picks the product; dies are not consumed. */

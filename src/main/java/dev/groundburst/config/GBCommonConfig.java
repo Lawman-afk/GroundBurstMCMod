@@ -25,6 +25,7 @@ public final class GBCommonConfig {
         toggle("tungsten", "Tungsten ore");
         toggle("lead", "Lead ore");
         toggle("rare_earth", "Rare-earth ore");
+        toggle("fluorite", "Fluorite ore");
         toggle("exotic_geodes", "Exotic matter geodes (End)");
         B.pop();
     }

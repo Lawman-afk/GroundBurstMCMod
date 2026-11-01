@@ -36,6 +36,16 @@ public final class GBChemicals {
     public static final DeferredItem<Item> YELLOWCAKE = GBItems.simple("yellowcake", "Yellowcake", GBTab.RESOURCES);
     public static final DeferredItem<Item> LITHIUM6_DUST = GBItems.simple("lithium6_dust", "Lithium-6 Dust", GBTab.RESOURCES);
 
+    // The semiconductor chain (DESIGN.md §8.1).
+    public static final DeferredItem<Item> HYDROGEN_CANISTER = GBItems.simple("hydrogen_canister", "Hydrogen Canister", GBTab.RESOURCES);
+    public static final DeferredItem<Item> HYDROGEN_CHLORIDE_CANISTER = GBItems.simple("hydrogen_chloride_canister", "Hydrogen Chloride Canister", GBTab.RESOURCES);
+    public static final DeferredItem<Item> TRICHLOROSILANE_CANISTER = GBItems.simple("trichlorosilane_canister", "Trichlorosilane Canister", GBTab.RESOURCES);
+    public static final DeferredItem<Item> ARGON_CANISTER = GBItems.simple("argon_canister", "Argon Canister", GBTab.RESOURCES);
+    public static final DeferredItem<Item> PHOTORESIST_CANISTER = GBItems.simple("photoresist_canister", "Photoresist Canister", GBTab.RESOURCES);
+    public static final DeferredItem<Item> HYDROFLUORIC_ACID_CANISTER = GBItems.simple("hydrofluoric_acid_canister", "Hydrofluoric Acid Canister", GBTab.RESOURCES);
+    /** The chips' dopant: bone meal (calcium phosphate) reduced with coal in the Arc Furnace. */
+    public static final DeferredItem<Item> RED_PHOSPHORUS = GBItems.simple("red_phosphorus", "Red Phosphorus", GBTab.RESOURCES);
+
     private GBChemicals() {}
 
     public static void init() {}

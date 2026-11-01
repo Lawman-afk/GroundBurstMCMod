@@ -181,7 +181,7 @@ public final class GBJeiPlugin implements IModPlugin {
         registration.addIngredientInfo(dev.groundburst.content.fluid.GBFluids.all().stream()
                         .map(f -> f.bucket().get().getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_FLUIDS));
-        registration.addIngredientInfo(List.of(GBParts.OXYGEN_MEMBRANE.get(), GBParts.NITROGEN_MEMBRANE.get())
+        registration.addIngredientInfo(List.of(GBParts.OXYGEN_MEMBRANE.get(), GBParts.NITROGEN_MEMBRANE.get(), GBParts.ARGON_SIEVE.get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_MEMBRANE));
         registration.addIngredientInfo(List.of(GBMachines.COMBUSTION_GENERATOR.item().get(), GBMachines.ORE_CRUSHER.item().get(),

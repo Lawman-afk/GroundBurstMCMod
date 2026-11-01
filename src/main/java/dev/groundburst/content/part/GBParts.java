@@ -47,6 +47,16 @@ public final class GBParts {
     public static final DeferredItem<Item> SENSOR_ARRAY = GBItems.simple("sensor_array", "Sensor Array", GBTab.MACHINES);
     public static final DeferredItem<Item> SUPERCONDUCTING_COIL = GBItems.simple("superconducting_coil", "Superconducting Coil", GBTab.MACHINES);
 
+    // --- the semiconductor chain (DESIGN.md §8.1) -----------------------------------------------------------------------
+    /** Metallurgical silicon from the Arc Furnace (quartz reduced with coal). */
+    public static final DeferredItem<Item> SILICON = GBItems.simple("silicon", "Silicon", GBTab.RESOURCES);
+    /** Silicon purified through trichlorosilane (the Siemens process): what crystals are grown from. */
+    public static final DeferredItem<Item> POLYSILICON = GBItems.simple("polysilicon", "Polysilicon", GBTab.RESOURCES);
+    /** Fused quartz; one holds the melt for each crystal grown. */
+    public static final DeferredItem<Item> QUARTZ_CRUCIBLE = GBItems.simple("quartz_crucible", "Quartz Crucible", GBTab.RESOURCES);
+    /** A military chip's sealed housing: co-fired alumina with gold-plated leads. */
+    public static final DeferredItem<Item> CERAMIC_PACKAGE = GBItems.simple("ceramic_package", "Ceramic Package", GBTab.RESOURCES);
+
     // --- press dies (not consumed) -----------------------------------------------------------------------------------------
     public static final DeferredItem<Item> PLATE_DIE = die("plate_die", "Plate Die");
     public static final DeferredItem<Item> ROD_DIE = die("rod_die", "Rod Die");
@@ -56,6 +66,8 @@ public final class GBParts {
     // --- condenser membranes (not consumed) ----------------------------------------------------------------------------------
     public static final DeferredItem<Item> OXYGEN_MEMBRANE = GBItems.simple("oxygen_membrane", "Oxygen Separation Membrane", GBTab.MACHINES, p -> p.stacksTo(1));
     public static final DeferredItem<Item> NITROGEN_MEMBRANE = GBItems.simple("nitrogen_membrane", "Nitrogen Separation Membrane", GBTab.MACHINES, p -> p.stacksTo(1));
+    /** A zeolite sieve that holds back oxygen and nitrogen and lets argon, 1% of the air, through. */
+    public static final DeferredItem<Item> ARGON_SIEVE = GBItems.simple("argon_sieve", "Argon Molecular Sieve", GBTab.MACHINES, p -> p.stacksTo(1));
 
     private GBParts() {}
 

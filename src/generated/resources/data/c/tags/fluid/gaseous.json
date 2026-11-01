@@ -7,6 +7,12 @@
     "groundburst:uranium_hexafluoride",
     "groundburst:flowing_uranium_hexafluoride",
     "groundburst:chlorine",
-    "groundburst:flowing_chlorine"
+    "groundburst:flowing_chlorine",
+    "groundburst:hydrogen",
+    "groundburst:flowing_hydrogen",
+    "groundburst:hydrogen_chloride",
+    "groundburst:flowing_hydrogen_chloride",
+    "groundburst:argon",
+    "groundburst:flowing_argon"
   ]
 }

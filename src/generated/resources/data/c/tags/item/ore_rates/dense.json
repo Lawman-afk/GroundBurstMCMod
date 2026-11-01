@@ -5,6 +5,8 @@
     "groundburst:nether_sulfur_ore",
     "groundburst:saltpeter_ore",
     "groundburst:deepslate_saltpeter_ore",
-    "groundburst:sandstone_saltpeter_ore"
+    "groundburst:sandstone_saltpeter_ore",
+    "groundburst:fluorite_ore",
+    "groundburst:deepslate_fluorite_ore"
   ]
 }

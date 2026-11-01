@@ -27,6 +27,7 @@ COPPER = fixed("copper_metal", "#3a1608", "#62280e", "#8c3e18", "#b45a26", "#d27
 GOLD = fixed("gold_metal", "#4a2c06", "#7a4a0a", "#b07412", "#d89a1e", "#f0bc34", "#fad866", "#fff4b8")
 PCB = fixed("perfboard", "#2a1606", "#46260c", "#643a14", "#82501e", "#a0682c", "#bc8640", "#dcb070")
 MAGNET_RED = fixed("magnet_red", "#2e0606", "#560c0c", "#801414", "#a8201c", "#cc3428", "#e45a48", "#f8988a")
+ARGON = fixed("argon", "#1e1440", "#33246a", "#4c3a94", "#6852b8", "#8a74d6", "#ae9cea", "#dcd2fa")
 HOT = P.NUCLEAR_AMBER
 
 ITEMS: list[str] = []
@@ -528,6 +529,7 @@ def build() -> None:
     filament("tungsten_filament")
     canisters()
     membrane("oxygen_membrane", P.CRYO)
+    membrane("argon_sieve", ARGON)
     membrane("nitrogen_membrane", P.TOXIN)
     magnet()
     circuit_board()

@@ -114,6 +114,46 @@ def build_raw_items() -> None:
     save_item("raw_tungsten", V.raw(M.WOLFRAMITE, "a", spots([M.WOLFRAMITE.shine, M.WOLFRAMITE.highlight], 5)))
     save_item("raw_lead", V.raw(M.GALENA, "b", spots([M.GALENA.shine], 4)))
     save_item("raw_rare_earth", V.raw(M.MONAZITE, "a", spots([M.MONAZITE.shine, M.MONAZITE.highlight], 4)))
+    save_item("fluorite", fluorite_crystal())
+
+
+FLUORITE_ROWS = [
+    # A purple cube with a small green one grown on in front (fluorite's colour zoning). Purple cube: T top, E the
+    # lit front edges of its top, C its deeper-coloured core, W a glint, L/l left face, R/r right face; green cube:
+    # t top, e its top's front edges, g left face, h right face.
+    "................",
+    ".....TT.........",
+    "...TWTTT........",
+    ".TTTTCCTTTT.....",
+    ".EETCCCCTEE.....",
+    ".LLEECCEERR.....",
+    ".LLLLEERRRR.....",
+    ".LLLLLRRRRRtt...",
+    ".LLLLLRRRtttttt.",
+    ".LLLLLRRReettee.",
+    ".lllllrrrggeehh.",
+    "...lllrrrggghhh.",
+    ".....lr..ggghhh.",
+    ".........ggghhh.",
+    "...........gh...",
+    "................",
+]
+
+
+def fluorite_crystal() -> Tex:
+    """Fluorite as it grows: a glassy purple cube with a small green cube grown on in front of it."""
+    f, g = M.FLUORITE, M.FLUORITE_GREEN
+    legend = {"T": f[5], "E": f[6], "C": f[4], "W": (255, 255, 255, 255), "L": f[4], "l": f[3], "R": f[2], "r": f[1],
+              "t": g[5], "e": g[6], "g": g[4], "h": g[2]}
+    t = Tex(16, 16)
+    pts = set()
+    for y, row in enumerate(FLUORITE_ROWS):
+        for x, c in enumerate(row):
+            if c != ".":
+                t.px(x, y, legend[c])
+                pts.add((x, y))
+    outline(t, pts, f.outline)
+    return t
 
 
 # --- ingots --------------------------------------------------------------------------------------------------------------
@@ -145,6 +185,7 @@ COPPER_DUST = fixed("copper_dust", "#3a160a", "#64280e", "#8e3e18", "#b45a26", "
 TUNGSTEN_DUST = fixed("tungsten_dust", "#121418", "#202329", "#33373f", "#484d56", "#626872", "#868d98", "#bcc3cc")
 RARE_EARTH_DUST = fixed("rare_earth_dust", "#2e200e", "#4e3618", "#705024", "#906c34", "#ae8a4a", "#ccaa6c", "#ecd4a4")
 CINNABAR_DUST = fixed("cinnabar_dust", "#3a0808", "#640e0c", "#901812", "#b8261a", "#d6402a", "#ec6c50", "#ffb09a")
+FLUORITE_DUST = fixed("fluorite_dust", "#2a1a36", "#463056", "#664a7a", "#86689c", "#a68abc", "#c6aed8", "#ead8f4")
 
 DUSTS = [
     # name, ramp, seed, metallic glints
@@ -160,6 +201,7 @@ DUSTS = [
     ("gold_dust", GOLD_DUST, 18, True),
     ("copper_dust", COPPER_DUST, 19, True),
     ("cinnabar_dust", CINNABAR_DUST, 20, False),
+    ("fluorite_dust", FLUORITE_DUST, 25, False),
 ]
 
 

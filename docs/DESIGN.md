@@ -410,6 +410,7 @@ Launch Silo, the Launch Complex and the Missile Silo, and lying on the Strategic
 | **Tungsten** (wolframite) | `tungsten_ore`, `deepslate_tungsten_ore` | Overworld Y −64…0, peak −40 | 5, 2/chunk | Raw tungsten → crush → 2 tungsten dust → **Arc Furnace only** → ingot (too hot for a furnace) |
 | **Lead** (galena) | `lead_ore`, `deepslate_lead_ore` | Overworld Y −32…48 | 8, 5/chunk | Raw lead → smelt/crush. Radiation shielding, hazmat lining, ammo. *(Added: shielding needs a material.)* |
 | **Rare earths** (monazite) | `rare_earth_ore`, `deepslate_rare_earth_ore` | Overworld Y −32…48; +100% in mountains | 4, 2/chunk | Raw → crush → rare-earth dust (5% uranium dust byproduct: monazite carries thorium and some uranium) |
+| **Fluorite** (fluorspar) | `fluorite_ore`, `deepslate_fluorite_ore` | Overworld Y −24…72 | 7, 3/chunk | Drops 1–2 fluorite (fortune) → crush → 2 fluorite dust (the ore crushes to 4) → with sulfuric acid, hydrofluoric acid (the chips' etchant, §8.1). Mekanism's fluorite shares its `c:` tags. |
 | **Mercury** (vanilla cinnabar) | — (uses vanilla 26.2 cinnabar blocks from Sulfur Caves) | Sulfur Caves | — | Cinnabar → crush → cinnabar dust → Arc Furnace → mercury flask (lithium-6 enrichment). |
 | **Cobalt** (byproduct) | — | — | — | Byproduct of crushing copper (15%, as in real copper–cobalt ores) and iron (10%) → cobalt dust (for salted bombs). No new ore: keeps the ore list focused. |
 | **Exotic matter** | `exotic_crystal_cluster` (+ budding `voidstone`) | **End**: "void geodes" hanging under outer End islands (rare, 1 per ~12 chunks). Fragments also in Ancient City loot. | geode ~11 blocks | Exotic shard → Exotic Matter Fabricator. Clusters hum and distort light (subtle shader lensing). |
@@ -417,7 +418,8 @@ Launch Silo, the Launch Complex and the Missile Silo, and lying on the Strategic
 All ore blocks have stone/deepslate (and nether/sandstone where listed) textures with the ore drawn as real
 crystal/mineral shapes (pitchblende: black-green botryoidal lumps; spodumene: pale pink prismatic crystals; sulfur:
 yellow crusts; niter: white efflorescence; wolframite: dark blocky crystals with metallic sheen; galena: silver cubes;
-monazite: reddish-brown grains; exotic: violet crystals with a black core).
+monazite: reddish-brown grains; fluorite: purple cubes, a third of them grown green; exotic: violet crystals with a
+black core).
 
 Storage blocks: raw-ore blocks and ingot blocks for every metal (uranium is radioactive as a block: carrying a block of
 enriched uranium in your inventory hurts).
@@ -448,6 +450,7 @@ enriched uranium in your inventory hurts).
 | Napalm gel | Chemical Plant | synthetic fuel + plastic sheet + slimeball |
 | Solid propellant | Chemical Plant | saltpeter + sulfuric acid + iron dust + slimeball ("ammonium perchlorate composite") |
 | Liquid oxygen / Liquid nitrogen canister | Cryogenic Condenser | air (power) + empty canister |
+| Silicon, polysilicon, quartz crucible, ceramic package, red phosphorus; hydrogen, hydrogen chloride, trichlorosilane, argon, photoresist, hydrofluoric acid | Arc Furnace, Chemical Plant, Cryogenic Condenser | the semiconductor chain, §8.1 |
 | Liquid rocket fuel | Chemical Plant | synthetic fuel + liquid oxygen |
 | Toxin precursor, Anthrax α/β/γ cultures | Chemical Plant | rotten flesh + spider eye + sulfuric acid (+ tiers add fermented spider eye / exotic shard) |
 | Yellowcake | Chemical Plant | uranium dust + sulfuric acid |
@@ -721,6 +724,63 @@ theme, working / idle / jammed (EMP) states, looping work sound + start/stop sou
 | **Ordnance Assembly Bench** | 2×1 wide | 10 FE/t (optional) | assembles bombs, warheads and missiles | See §10. |
 | **Decontamination Shower** | 1×2 tall, walk-in | 20 FE/t + 10 mB water/t while spraying | puts out fire, washes off poison/wither/nausea; radiation contamination from Phase 12 | Booth with yellow nozzles, falling water + splash/foam particles. |
 | **Battery Charger** | 1 block | up to 512 FE/t from cables | recharges batteries and any mod's FE item (energy cells/guns/Geiger later) | Cradle with chasing charge LEDs. |
+
+### 8.1 The semiconductor chain (2026-11-01, the user's go-ahead)
+Why: military-grade parts were too easy to make. Every circuit was one step in one small Circuit Fabricator, and a
+military circuit was two advanced circuits, a filament, a diamond and some rare earths. The difficulty now sits where
+it does in reality, in making chips, and cascades through everything built from circuits: the biggest weapons, which
+need the most of them, cost the most. Every new step is a real industrial process; nothing is added to the weapons'
+own recipes (fission ones included: they are realistic as they are). The mid-game slows with it, by the user's wish
+("the entire mid-game can be slowed by this process").
+
+The chain (as built, 2026-11-01: steps 1-7, 10-12 and 14; the rest with the Crystal Puller and the Clean Room):
+1. **Silicon** (Arc Furnace): 2 quartz and a coal: the carbothermic reduction smelters make it by. Tagged `c:silicon`,
+   as other mods' silicon is.
+2. **Hydrogen** (Chemical Plant): a coal, 1000 mB water and 250 mB liquid oxygen give 1000 mB: an oxygen-blown
+   gasifier (coal gasified with steam and oxygen, how coal gives hydrogen). The oxygen also keeps it apart from
+   synthetic fuel (2 coal and water): a machine takes the first recipe, by id, that its contents satisfy, so hydrogen
+   from coal and water alone would have taken every plant set up for fuel.
+3. **Hydrogen chloride** (Chemical Plant): 1000 mB each of hydrogen and chlorine: hydrogen burnt in chlorine. A
+   toxic gas.
+4. **Trichlorosilane** (Chemical Plant): a silicon and 1000 mB of hydrogen chloride; a fuming, corrosive liquid.
+5. **Polysilicon** (Chemical Plant): 1000 mB each of trichlorosilane and hydrogen give one: the Siemens process.
+6. **Argon** (Cryogenic Condenser, an **Argon Molecular Sieve** in its membrane slot: a sodium zeolite of clay and
+   salt in a steel frame, crafted as the membranes are): 250 mB a run, a quarter of the oxygen membrane's (argon is 1%
+   of the air).
+7. **Quartz Crucible** (Arc Furnace): 2 quartz and 4 sand fused; every crystal grown takes one (as in a real puller).
+   Quartz alone would clash with silicon's quartz and coal, as hydrogen would with fuel.
+8. **Silicon Boule** (Crystal Puller, a new machine): polysilicon melted in a quartz crucible under argon and a single
+   crystal pulled from the melt (the Czochralski process).
+9. **Silicon Wafers** (Industrial Press, a Diamond Wire Saw in its die slot): a boule sliced into wafers.
+10. **Fluorite** (a new ore, fluorspar, §5): crushed, then a dust with 1000 mB of sulfuric acid in the Chemical
+    Plant gives 1000 mB of **hydrofluoric acid**, as HF is made.
+11. **Photoresist** (Chemical Plant): a plastic sheet (the novolac resin) and a coal (its light-sensitive compound is
+    made from coal tar) with 250 mB of nitric acid, in 1000 mB of synthetic fuel (the solvent): a light-sensitive
+    resin. It needs more than napalm's plastic and fuel, so a napalm plant stays a napalm plant.
+12. **Red Phosphorus** (Arc Furnace): 3 bone meal (calcium phosphate) and a coal: the thermal process; the chips'
+    dopant. The Arc Furnace has two input slots, so the silica flux is left out.
+13. **Chips** (Clean Room, a new multiblock): a wafer, phosphorus, photoresist and hydrofluoric acid give
+    **Microchips** (printed, etched and doped); two wafers, phosphorus, photoresist, hydrofluoric acid and liquid
+    oxygen (the buried oxide of silicon-on-insulator) give **Rad-Hard Microchips**.
+14. **Ceramic Package** (Arc Furnace): 2 clay and a gold wire: clay co-fired round gold-plated leads: a military
+    chip's sealed housing.
+15. **Circuits** (Circuit Fabricator): basic unchanged; advanced: 2 basic circuits, 2 microchips, 2 gold wire, rare
+    earth; military: 2 advanced circuits, 2 rad-hard microchips, a ceramic package and a diamond (its heat
+    spreader, as in real high-power electronics); quantum unchanged.
+
+The machines:
+- **Crystal Puller** (1x2 tall): a water-jacketed steel furnace with a viewport onto the glowing melt and a pull head on
+  top that turns as it slowly rises.
+- **Clean Room** (multiblock): a sealed white module with fan filter units on its roof, windows onto its lithography
+  bay lit yellow (photoresist is safe only under yellow light), an acid scrubber's stack; ports for items, fluids and
+  power. Its machines fill it: it is not walked into.
+
+Then the Vertical Launch Battery (§17.14 notes the MIRVs it replaces).
+
+Hazards: hydrogen chloride is toxic as a gas cloud (as chlorine); trichlorosilane and hydrofluoric acid burn as acids
+do. The new canisters wear real cylinder colours where that helps: hydrogen's is red, as flammable gases' are. A
+GameTest (`semiconductor_recipes_pick_right`) checks that each new recipe is the one its machine picks, and that the
+old ones (synthetic fuel, plastic, napalm) are still picked when they should be.
 
 ---
 
@@ -4222,6 +4282,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The semiconductor chain's chemistry and materials (§8.1, §5): fluorite ore; silicon (`c:silicon`), polysilicon, the quartz crucible, the ceramic package, red phosphorus and the Argon Molecular Sieve; hydrogen, hydrogen chloride, argon (gases) and trichlorosilane, photoresist, hydrofluoric acid (liquids), each with a canister. Recipes chosen so none is satisfied by another's ingredients (a machine takes the first recipe by id its contents satisfy): hydrogen takes liquid oxygen (an oxygen-blown gasifier) so coal and water alone still make fuel; photoresist takes coal and nitric acid besides plastic and fuel; the crucible takes sand besides quartz. |
 | 2026-11-01 | MIRVs removed (§17.14), after they were built and limited to Medium warheads: the user found them out of place for now. Agreed with the user instead: a late-game vertical launch battery firing a volley of up to 16 Light and Medium missiles onto one area; and a circuit cascade to make military-grade parts as hard to come by as they are in reality, every step a real process (silicon from the Arc Furnace, purified in the Chemical Plant, grown into crystals in a Crystal Puller and sawn into wafers, chips printed in a Clean Room multiblock with photoresist, hydrofluoric acid and phosphorus), applied to advanced circuits as well as military ones (the user: "the entire mid-game can be slowed by this process"); the weapons' own recipes, fission ones too, stay as they are. The circuit chain first, then the launcher. |
 | 2026-11-01 | Every launcher gets an Item Port (the user: "to automate reloading ... no output or any configs, just take them into the launch slot"): beside the Energy Port on the Launch Silo, Launch Complex and Missile Silo, behind it on the Cruise Missile Launcher; insert-only into the launch slot, only missiles that launcher fires; the cell still takes its old block so launchers built before keep forming; drawn on each formed model as the Energy Port's yellow-banded twin with a grated loading mouth (§17.2). The Laser Designator: a sneaking left click disarms the picked launcher, still aimed; the armed targets' spheres centred on the point clicked (they sat touching the face, off to one side). |
 | 2026-11-01 | The armed targets' spheres sit where the launcher was clicked on (the user: "on the place it is clicked, not above it"): designating keeps the clicked point and face with the launcher, and its sphere touches that face there; a launcher aimed from the station keeps the top of its column. |
