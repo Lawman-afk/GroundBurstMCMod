@@ -34,7 +34,7 @@ public final class MachineLayouts {
             List.of(), 256);
 
     public static final MachineLayout ELECTROLYTIC_SEPARATOR = new MachineLayout(
-            GroundBurst.id("textures/gui/machine/electrolytic_separator.png"), 176, 166, List.of(), 8, 84,
+            GroundBurst.id("textures/gui/machine/electrolytic_separator.png"), 176, 166, List.of(new MachineLayout.Pos(57, 35)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,
             new MachineLayout.Rect(79, 34, 24, 17), 196, 0,
             null, 196, 20,
@@ -146,9 +146,9 @@ public final class MachineLayouts {
             new MachineLayout.Rect(8, 18, 14, 72), 436, 0,
             null, 452, 0,
             null, 452, 20,
-            new MachineLayout.Rect(190, 5, 8, 8), new MachineLayout.Rect(180, 88, 18, 18), 436, 56,
-            new MachineLayout.Rect(106, 18, 92, 44), 8, 6, List.of(),
-            List.of(new MachineLayout.Control("pattern", new MachineLayout.Rect(106, 66, 40, 18), -1, 0, 0, "groundburst.gui.vls_pattern"), new MachineLayout.Control("closer", new MachineLayout.Rect(150, 66, 22, 18), -1, 0, 2, "groundburst.gui.vls_closer"), new MachineLayout.Control("wider", new MachineLayout.Rect(176, 66, 22, 18), -1, 0, 1, "groundburst.gui.vls_wider")), 512);
+            new MachineLayout.Rect(190, 5, 8, 8), new MachineLayout.Rect(180, 90, 18, 18), 436, 56,
+            new MachineLayout.Rect(106, 18, 92, 46), 8, 6, List.of(),
+            List.of(new MachineLayout.Control("pattern", new MachineLayout.Rect(106, 68, 40, 18), -1, 0, 0, "groundburst.gui.vls_pattern"), new MachineLayout.Control("closer", new MachineLayout.Rect(150, 68, 22, 18), -1, 0, 2, "groundburst.gui.vls_closer"), new MachineLayout.Control("wider", new MachineLayout.Rect(176, 68, 22, 18), -1, 0, 1, "groundburst.gui.vls_wider")), 512);
 
     public static final MachineLayout SUPERWEAPON = new MachineLayout(
             GroundBurst.id("textures/gui/machine/superweapon.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
@@ -184,7 +184,7 @@ public final class MachineLayouts {
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
-            List.of(), 512);
+            List.of(new MachineLayout.Control("auto", new MachineLayout.Rect(10, 98, 18, 18), 4, 0, 2, "groundburst.gui.auto_assemble")), 512);
 
     public static final MachineLayout MISSILE_ASSEMBLER = new MachineLayout(
             GroundBurst.id("textures/gui/machine/missile_assembler.png"), 288, 210, List.of(new MachineLayout.Pos(26, 24), new MachineLayout.Pos(44, 24), new MachineLayout.Pos(62, 24), new MachineLayout.Pos(80, 24), new MachineLayout.Pos(98, 24), new MachineLayout.Pos(150, 24)), 8, 128,
@@ -193,7 +193,7 @@ public final class MachineLayouts {
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 98, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 50, 134, 24), 8, 6, List.of(),
-            List.of(), 512);
+            List.of(new MachineLayout.Control("auto", new MachineLayout.Rect(10, 98, 18, 18), 3, 0, 2, "groundburst.gui.auto_assemble")), 512);
 
     public static final MachineLayout STRATEGIC_ASSEMBLY = new MachineLayout(
             GroundBurst.id("textures/gui/machine/strategic_assembly.png"), 288, 210, List.of(new MachineLayout.Pos(30, 22), new MachineLayout.Pos(48, 22), new MachineLayout.Pos(66, 22), new MachineLayout.Pos(30, 42), new MachineLayout.Pos(48, 42), new MachineLayout.Pos(66, 42), new MachineLayout.Pos(124, 31)), 8, 128,
@@ -202,7 +202,7 @@ public final class MachineLayouts {
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 94, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 64, 134, 24), 8, 6, List.of(),
-            List.of(), 512);
+            List.of(new MachineLayout.Control("auto", new MachineLayout.Rect(10, 94, 18, 18), 3, 0, 2, "groundburst.gui.auto_assemble")), 512);
 
     public static final MachineLayout SPECIAL_WEAPONS = new MachineLayout(
             GroundBurst.id("textures/gui/machine/special_weapons.png"), 288, 210, List.of(new MachineLayout.Pos(48, 22), new MachineLayout.Pos(30, 42), new MachineLayout.Pos(48, 42), new MachineLayout.Pos(66, 42), new MachineLayout.Pos(124, 31)), 8, 128,
@@ -211,7 +211,7 @@ public final class MachineLayouts {
             null, 452, 20,
             new MachineLayout.Rect(272, 5, 8, 8), new MachineLayout.Rect(151, 94, 18, 18), 436, 56,
             new MachineLayout.Rect(34, 64, 134, 24), 8, 6, List.of(),
-            List.of(), 512);
+            List.of(new MachineLayout.Control("auto", new MachineLayout.Rect(10, 94, 18, 18), 3, 0, 2, "groundburst.gui.auto_assemble")), 512);
 
     public static final MachineLayout INTERCEPTOR_BATTERY = new MachineLayout(
             GroundBurst.id("textures/gui/machine/interceptor_battery.png"), 176, 166, List.of(new MachineLayout.Pos(28, 35)), 8, 84,

@@ -144,9 +144,11 @@ public class GroundBurstClient {
         // The Cruise Missile Launcher (DESIGN.md §17.11): its deck 6 blocks back, its raised boxes 6 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.CRUISE_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.CRUISE_ENTITY.get(), 7, 6));
-        // The battery reaches five blocks back and two to the side of its controller, its hatches swinging up over it.
+        // The battery reaches five blocks back and two to the side of its controller, its hatches swinging up over it and
+        // its cells five blocks down under it.
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.VLS_ENTITY.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.VLS_ENTITY.get(), 2, 5));
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.VLS_ENTITY.get(), 2, 5,
+                        dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity.DEPTH));
         // The superweapons (DESIGN.md §19.5): the SCUD Storm's pad and wall reach 16 blocks back, its raised SCUDs 7 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_ENTITY.get(), 8, 17));

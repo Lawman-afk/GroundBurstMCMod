@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Vertical Launch Battery
-- **Vertical Launch Battery**, a very late-game launcher: sixteen **Strike Cells** in two modules (4 wide, 6 deep, with a
-  walkway and its fire-control console in front and launch control cabinets behind). Load a Light or Medium missile
-  into each cell (conventional warheads; no cruise missiles), by hand or through its Item Port.
+- **Vertical Launch Battery**, a very late-game launcher sunk into the ground: sixteen cells in two modules (4 wide, 6
+  deep, with a walkway and its fire-control console in front and launch control cabinets behind), each cell a **Strike
+  Cell** with its hatch over five **Missile Canisters**: six blocks deep, as long as a Medium missile. Load a Light or
+  Medium missile into each cell (conventional warheads; no cruise missiles), by hand or through its Item Port.
 - Aim, arm and fire it from a Launch Computer, the Launch Control Station or a Laser Designator. After a 10 s countdown
-  it **ripples** its whole load out, a cell every quarter of a second, each hatch swinging open as its missile climbs out.
+  it **ripples** its whole load out, a cell every quarter of a second: each hatch swings open, the missile's motor
+  lights at the foot of its cell, its blast roars up the module's uptake, and the missile climbs straight out.
 - Each missile goes to its own point of the battery's **spread** round the target: all on the point, a line, a ring or
   a grid, up to 48 blocks apart, set on its screen.
 - 20,000 FE a missile; it holds enough for two full volleys.
@@ -17,20 +19,32 @@
   acid for **hydrofluoric acid**.
 - **Silicon** from quartz and coal in the Arc Furnace, purified in the Chemical Plant: with **hydrogen chloride** (from
   hydrogen and chlorine) into **trichlorosilane**, then with hydrogen into **polysilicon**.
-- **Hydrogen** from coal, water and liquid oxygen; **argon** drawn from the air by the new **Argon Molecular Sieve** in
-  the Cryogenic Condenser.
+- **Hydrogen** from the **Electrolytic Separator**, a new **Proton Exchange Membrane** in its new membrane slot (with
+  the slot empty it makes deuterium as before); **argon** drawn from the air by the new **Argon Molecular Sieve** in the
+  Cryogenic Condenser.
 - **Crystal Puller**, a new two-block machine: polysilicon melted in a quartz crucible under argon grows a **silicon
   boule** in a minute; watch the crystal rise in its sight glass while the melt glows in its viewport.
 - A **Diamond Wire Saw** in the Industrial Press's die slot saws a boule into eight **silicon wafers**.
+- **Sapphire** for military-grade chips: **Alumina** from clay and sulfuric acid in the Chemical Plant, grown into a
+  **Sapphire Boule** in the Crystal Puller in a **Tungsten Crucible**, sawn into six **Sapphire Wafers**.
 - **Clean Room**, a new multiblock (3 wide, 2 deep, 2 high, with the new **Clean Room Panel** and **Fan Filter Unit**):
-  prints **Microchips** from a wafer, red phosphorus and a plastic sheet with photoresist and hydrofluoric acid, and
-  **Rad-Hard Microchips** from two wafers, red phosphorus and a **Ceramic Package** with liquid oxygen as well. Its
-  windows look into a bay lit yellow, where the tools work while it runs.
+  prints **Microchips** from a wafer, red phosphorus and a plastic sheet with photoresist and hydrofluoric acid;
+  **Rad-Hard Microchips** from two sapphire wafers, red phosphorus and a **Ceramic Package** with trichlorosilane as
+  well (silicon-on-sapphire); and **Quantum Chips** from a sapphire wafer, stabilised exotic matter and a ceramic
+  package with argon. Its windows look into a bay lit yellow, where the tools work while it runs.
 - The **Cryogenic Condenser** takes a basic circuit now instead of an advanced one.
 - Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
-- **Advanced circuits** are now built round two microchips, and **military circuits** round two rad-hard microchips
-  (with two gold wire and their diamond): every advanced and military machine, part and weapon waits on the chip
-  chain. Basic and quantum circuits are as they were.
+- **Advanced circuits** are now built round two microchips, **military circuits** round two rad-hard microchips (with
+  two gold wire and their diamond) and **quantum circuits** round two quantum chips (in place of their stabilised
+  exotic matter): every advanced, military and quantum machine, part and weapon waits on the chip chain. Basic
+  circuits are as they were.
+
+### Assemblers
+- Every assembler (the Assembly Bench, the four missile assemblers, the ICBM Assembly Hall and the Special Weapons
+  Assembler) has an **Auto Assemble** button: while it is on, the next job starts by itself once the parts are in and
+  the finished one has been taken out.
+- The structures' Item Ports show on the side of the deck as well as on top, so pipes can feed one face and empty the
+  other.
 
 ### Laser Designator
 - **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
@@ -114,8 +128,9 @@ alarm system for your base.
 - The **Storm ICBM**'s lightning strikes each send out an **EMP pulse** 24 blocks round for twelve seconds (it was 4
   blocks for five): a ring of blue sparks runs out along the ground from each strike. At the storm's height almost anywhere
   in it sits under a pulse most of the time, so machines and missile defences inside it go dark, interceptors flying
-  through it are fried, and unhardened missiles flown through it may turn duds. Lightning rods still take strikes
-  safely, pulse and all.
+  through it are fried, and unhardened missiles flown through it may turn duds. A lightning rod still takes a strike
+  safely (no blast, crater or fire), but its EMP pulse now goes out from the rod.
+- The Crystal Puller's handwheel is a solid wheel.
 
 ## 0.3.0 — 2026-10-30
 

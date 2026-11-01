@@ -92,6 +92,9 @@ public final class GBLaunch {
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
     /** One Mk 41 cell: a Light or Medium missile's canister under an armoured hatch. */
     public static final WithItem<MultiblockPartBlock> STRIKE_CELL = part("strike_cell", "Strike Cell", MapColor.COLOR_GRAY, SoundType.METAL, false);
+    /** A cell's length of canister under its Strike Cell: five of them make the cell deep enough for a Medium missile. */
+    public static final WithItem<MultiblockPartBlock> MISSILE_CANISTER = part("missile_canister", "Missile Canister", MapColor.COLOR_GRAY,
+            SoundType.METAL, false);
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GBBlocks.register("launch_computer", "Launch Computer",
             GBTab.MISSILES, p -> new LaunchComputerBlock(p, GBLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -267,32 +270,45 @@ public final class GBLaunch {
                     + "it. Only the Cruise Missile Launcher fires it.");
 
     /**
-     * The Vertical Launch Battery (DESIGN.md §17.15): four wide and six deep, one block high. Its front row a walkway of
-     * Launch Pad with the controller's console second from the left; behind it four rows of four Strike Cells (two
-     * eight-cell modules side by side), the air over them clear for their hatches; at the back its launch control
-     * cabinets: Machine Casing, the Energy Port, the Item Port and Machine Casing. Formed, the walkway is the model's deck,
-     * 14 px high, and the controller its console.
+     * The Vertical Launch Battery (DESIGN.md §17.15): four wide and six deep at the ground, its cells six blocks deep
+     * (after the user's look: as long as a Medium missile, so each missile stands in its cell and climbs out of it). At
+     * the ground its front row a walkway of Launch Pad with the controller's console second from the left; behind it
+     * four rows of four Strike Cells (two eight-cell modules side by side, their hatches level with the ground), the air
+     * over them clear; at the back its launch control cabinets: Machine Casing, the Energy Port, the Item Port and
+     * Machine Casing. Under the Strike Cells, five layers of four by four Missile Canisters: the cells' length. Formed,
+     * the walkway is the model's deck, 14 px high, and the controller its console.
      */
-    public static final MultiblockDefinition VLS = new MultiblockDefinition(GroundBurst.id("vertical_launch_battery"),
-            new String[][] {
-                    {"PXPP", "SSSS", "SSSS", "SSSS", "SSSS", "MEIM"},
-                    {"    ", "....", "....", "....", "....", "    "},
-            },
+    public static final MultiblockDefinition VLS = new MultiblockDefinition(GroundBurst.id("vertical_launch_battery"), vlsLayers(),
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'S', Entry.of(() -> STRIKE_CELL.block().get()),
+                    'K', Entry.of(() -> MISSILE_CANISTER.block().get()),
                     'M', Entry.of(GBMultiblocks.MACHINE_CASING.block()), 'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
                     'I', Entry.of(GBMultiblocks.ITEM_PORT.block()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> VLS_CONTROLLER.block().get())),
-            MultiblockDefinition.layerCuts(0, new String[] {"DCDD"}, Map.of('D', PartCut.DECK, 'C', PartCut.CONSOLE_NORTH)));
+            MultiblockDefinition.layerCuts(VerticalLaunchBatteryBlockEntity.DEPTH, new String[] {"DCDD"},
+                    Map.of('D', PartCut.DECK, 'C', PartCut.CONSOLE_NORTH)));
+
+    private static String[][] vlsLayers() {
+        int depth = VerticalLaunchBatteryBlockEntity.DEPTH;
+        String[][] layers = new String[depth + 2][];
+        for (int y = 0; y < depth; y++) {
+            layers[y] = new String[] {"    ", "KKKK", "KKKK", "KKKK", "KKKK", "    "};
+        }
+        layers[depth] = new String[] {"PXPP", "SSSS", "SSSS", "SSSS", "SSSS", "MEIM"};
+        layers[depth + 1] = new String[] {"    ", "....", "....", "....", "....", "    "};
+        return layers;
+    }
 
     /** JEI: how the Vertical Launch Battery is built and works (DESIGN.md §17.15). */
     public static final String INFO_VLS = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.vertical_launch_battery",
-            "Ripples a volley of up to sixteen Light or Medium missiles onto one area. Build a walkway of four Launch Pads with the "
-                    + "controller second from the left, sixteen Strike Cells four by four behind it with the air over them clear, and "
-                    + "at the back Machine Casing, an Energy Port, an Item Port and Machine Casing (the Holo-Projector shows it). Load "
-                    + "a missile into each cell (by hand, or by pipe or hopper into the Item Port; conventional warheads only, no "
-                    + "cruise missiles) and power it (20,000 FE a missile); set its spread on its screen. A Launch Computer, the "
-                    + "Launch Control Station or a Laser Designator aims, arms and fires it: after a 10 s countdown its cells fire "
-                    + "one after another, a quarter of a second apart, each missile to its own point of the spread round the target.");
+            "Ripples a volley of up to sixteen Light or Medium missiles onto one area. Its cells are six blocks deep: dig a pit "
+                    + "four by four and five deep and fill it with Missile Canisters; on top of them, level with the ground, sixteen "
+                    + "Strike Cells four by four with the air over them clear; in front of the cells a walkway of four Launch Pads "
+                    + "with the controller second from the left, and behind them Machine Casing, an Energy Port, an Item Port and "
+                    + "Machine Casing (the Holo-Projector shows it). Load a missile into each cell (by hand, or by pipe or hopper "
+                    + "into the Item Port; conventional warheads only, no cruise missiles) and power it (20,000 FE a missile); set "
+                    + "its spread on its screen. A Launch Computer, the Launch Control Station or a Laser Designator aims, arms and "
+                    + "fires it: after a 10 s countdown its cells fire one after another, a quarter of a second apart, each "
+                    + "missile lighting in its cell and climbing out through its hatch to its own point of the spread round the target.");
 
     /** Creative: places a whole Vertical Launch Battery where you click. */
     public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> VLS_SPAWNER =

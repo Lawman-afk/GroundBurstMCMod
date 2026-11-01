@@ -736,10 +736,14 @@ own recipes (fission ones included: they are realistic as they are). The mid-gam
 The chain (as built, 2026-11-01: all of it):
 1. **Silicon** (Arc Furnace): 2 quartz and a coal: the carbothermic reduction smelters make it by. Tagged `c:silicon`,
    as other mods' silicon is.
-2. **Hydrogen** (Chemical Plant): a coal, 1000 mB water and 250 mB liquid oxygen give 1000 mB: an oxygen-blown
-   gasifier (coal gasified with steam and oxygen, how coal gives hydrogen). The oxygen also keeps it apart from
-   synthetic fuel (2 coal and water): a machine takes the first recipe, by id, that its contents satisfy, so hydrogen
-   from coal and water alone would have taken every plant set up for fuel.
+2. **Hydrogen** (Electrolytic Separator, a **Proton Exchange Membrane** in its new membrane slot: steel rods, two
+   plastic sheets and two gold wires; never used up): 1000 mB water gives 1000 mB in 10 s, the oxygen vented: PEM
+   electrolysis. With the slot empty the separator concentrates deuterium as before. (Until the user's look later on
+   2026-11-01 it came from the Chemical Plant: a coal, 1000 mB water and 250 mB liquid oxygen, an oxygen-blown
+   gasifier. The user: hydrogen without oxygen makes more sense, and liquid oxygen, already used before, was all that
+   set the military chips apart.) A machine with a catalyst slot now runs a recipe with no catalyst only with the slot
+   empty (`ProcessingRecipe.catalystFits`; the press's and condenser's recipes all have one), so the membrane alone
+   picks hydrogen or deuterium.
 3. **Hydrogen chloride** (Chemical Plant): 1000 mB each of hydrogen and chlorine: hydrogen burnt in chlorine. A
    toxic gas.
 4. **Trichlorosilane** (Chemical Plant): a silicon and 1000 mB of hydrogen chloride; a fuming, corrosive liquid.
@@ -762,16 +766,37 @@ The chain (as built, 2026-11-01: all of it):
 12. **Red Phosphorus** (Arc Furnace): 3 bone meal (calcium phosphate) and a coal: the thermal process; the chips'
     dopant. The Arc Furnace has two input slots, so the silica flux is left out.
 13. **Chips** (Clean Room, a new multiblock, 320 FE/t): a wafer, a red phosphorus and a plastic sheet (the chips'
-    moulding) under 250 mB each of photoresist and hydrofluoric acid give four **Microchips** in 30 s; two wafers, a red
-    phosphorus and a ceramic package under 500 mB each of photoresist, hydrofluoric acid and liquid oxygen (the buried
-    oxide of silicon-on-insulator) give two **Rad-Hard Microchips** in a minute. Each takes a package the other does not
-    (plastic, ceramic), so neither recipe is satisfied by the other's ingredients: the rad-hard one, a superset of the
-    microchip's otherwise, could never have been picked.
+    moulding) under 250 mB each of photoresist and hydrofluoric acid give four **Microchips** in 30 s; two **sapphire
+    wafers**, a red phosphorus and a ceramic package under 500 mB each of photoresist, hydrofluoric acid and
+    trichlorosilane (the silicon film grown on the sapphire) give two **Rad-Hard Microchips** in a minute: silicon-on-
+    sapphire, the classic radiation-hardened process (it was silicon wafers and liquid oxygen, silicon-on-insulator,
+    until the user's look: items 16-19). Each takes a package the other does not (plastic, ceramic), so neither recipe is
+    satisfied by the other's ingredients: the rad-hard one, a superset of the microchip's otherwise, could never have
+    been picked.
 14. **Ceramic Package** (Arc Furnace): 2 clay and a gold wire: clay co-fired round gold-plated leads: the rad-hard
     chips' sealed housing (so it goes into the Clean Room's recipe, not the circuit's).
 15. **Circuits** (Circuit Fabricator): basic unchanged; advanced: 2 basic circuits, 2 microchips, 2 gold wire, rare
     earth; military: 2 advanced circuits, 2 rad-hard microchips, 2 gold wire and a diamond (its heat spreader, as in
-    real high-power electronics); quantum unchanged.
+    real high-power electronics); quantum: a military circuit, 2 **quantum chips** and a superconducting coil (its
+    stabilised exotic matter went into the chips: item 20).
+
+After the user's look (later on 2026-11-01: the step from advanced to military was too small, the only new thing
+liquid oxygen, easy and used before), military chips stand on a second crystal, as real rad-hard ones do:
+16. **Alumina** (Chemical Plant): 4 clay balls and 1000 mB of sulfuric acid give 2: kaolin leached with acid and the
+    aluminium sulfate calcined (an alumina-from-clay process; bauxite is the usual ore, and the mod has none).
+17. **Tungsten Crucible** (crafting): 5 tungsten plates, a cup ("T T", "TTT"). Sapphire melts at 2050 °C, past fused
+    quartz; Kyropoulos furnaces hold it in tungsten or molybdenum. One a crystal, as the quartz one.
+18. **Sapphire Boule** (Crystal Puller): 4 alumina and a tungsten crucible under 1000 mB of argon, 80 s at 160 FE/t.
+19. **Sapphire Wafers** (Industrial Press, the Diamond Wire Saw): a boule into 6 wafers in 30 s (sapphire is hard).
+20. **Quantum Chips** (Clean Room): a sapphire wafer, a stabilised exotic matter and a ceramic package under 500 mB each
+    of photoresist and hydrofluoric acid and 1000 mB of argon (the superconducting film is sputtered under argon) give
+    2 in 80 s. The user asked for a chip matching the quantum circuit, in the stabilised exotic matter's place in its
+    recipe and made from it: one exotic matter makes the two chips a circuit takes, so its exotic matter cost is as it
+    was. Sprite: a gold-plated carrier, coax pins out of its sides, a violet die gridded with bright qubits.
+No Clean Room recipe is satisfied by another's ingredients: the microchip's silicon wafer and plastic, the rad-hard
+chip's sapphire, phosphorus and trichlorosilane, the quantum chip's exotic matter and argon; silicon wafers in a
+ceramic package make nothing now. Per military circuit: a quarter of a sapphire boule (four alumina, 5/4 tungsten
+plates, argon, 80 s of the puller) on top of the advanced circuits it already took.
 
 The machines:
 - **Crystal Puller** (1x2 tall, as built): on the hazard plinth a round water-jacketed stainless furnace chamber with a
@@ -783,8 +808,13 @@ The machines:
   with a drain; 80,000 FE buffer. Crafted from steel plates, an electric motor, glass, a pressure vessel, a heating
   element, a machine frame and a **basic** circuit (advanced circuits are made from what it grows). Its sound: the
   heater's transformer hum over cooling water, as loud as the Electrolytic Separator.
-- **The Cryogenic Condenser** now takes a basic circuit, not an advanced one: it feeds the chain (argon; liquid oxygen
-  for hydrogen), so an advanced circuit in its recipe would have closed a loop.
+- **The Cryogenic Condenser** now takes a basic circuit, not an advanced one: it feeds the chain (argon), so an
+  advanced circuit in its recipe would have closed a loop.
+- **The Electrolytic Separator** gained a membrane slot between its tanks (the condenser's ghost) for the proton
+  exchange membrane (item 2).
+- **The Crystal Puller's handwheel** (after the user's look: it had no side faces, a flat cut-out plate gone edge on):
+  a solid wheel, a rim of eight segments turned round its stem's axis, four spokes from a gunmetal hub, a stem into the
+  bonnet. `tools/preview/geo_views.py crystal_puller` has close-ups of it.
 - **Clean Room** (multiblock, as built): 3 wide, 2 deep, 2 high. Bottom: the controller at the front left, a Clean
   Room Panel and the Energy Port beside it; behind them the Fluid Port, the Item Port and a panel. Top: three Reactor
   Glass across the front, two Fan Filter Units and a panel behind. New blocks: the **Clean Room Panel** (2 from a steel
@@ -1095,6 +1125,15 @@ Buster, EMP, Massive Ordnance. Strategic (XL): Tactical Nuclear, Fission, Booste
   a warhead names the assembler its missile is built at, a body the assembler it is fitted at.
 - *Review tool*: `tools/preview/assembler_view.py <model> <warhead> [--laid n] [--anim a --time t]` draws a formed
   model with a missile on it as the game does (sections, cradle seating, standing or lying).
+- *Auto Assemble* (the user's request, 2026-11-01), on every assembler (the bench, the four missile assemblers, the
+  ICBM Assembly Hall, the Special Weapons Assembler): an 18x18 toggle left of the Assemble button (a looping arrow, its
+  lamp lit green while on: a layout control whose data slot the screen reads, `MachineScreen`), button 2, saved. While
+  on, an idle assembler starts the next job itself as soon as `problem()` is clear: its parts in and the output empty.
+  Its tooltip says whether it is on and what it does.
+- *Item Ports from above and the side* (the user: "so the player can have in and out"): a port block always took pipes
+  on every face (inputs in, products out); the formed models now show it on two: the grated hatch in the deck and a
+  barred mouth in the deck's outer face under it (the Light's west edge, the others' back edge; the hall's and the
+  special assembler's floor's back edge), `launch._paint_side_port`.
 ---
 
 ## 11. Explosion engine (`dev.groundburst.blast`)
@@ -2163,7 +2202,8 @@ affect a whole region (over §16.1's 48 blocks for 45 s).
   strength; a smaller storm fewer, at least 0.5) with a carry: 35% at a creature in the open (refreshed each second:
   alive, in the region, `canSeeSky`), 35% at the tallest of six random spots, the rest at one; the surface from
   `MOTION_BLOCKING`, only where the chunk is loaded. A lightning rod at the surface within 32 blocks of the spot and
-  inside the storm takes the bolt (`onLightningStrike`: its redstone pulse) and nothing else happens. Otherwise: each
+  inside the storm takes the bolt (`onLightningStrike`: its redstone pulse): no blast, scorch, fire or chain, but its
+  EMP pulse still goes out from the rod's tip (the user, 2026-11-01: rods should not stop the pulse; it was none). Otherwise: each
   creature within 1.5 of the foot gets vanilla `thunderHit` (5 and a burn; a creeper charged, a pig turned) and 7 more
   lightning damage; the chain jumps from it (or the foot) to the nearest creature within 6 not yet hit, up to 4 jumps,
   each 0.75 of the last (and a 2 s burn); the ground: grass, podzol, mycelium to dirt (40% coarse), sand to glass
@@ -2214,8 +2254,8 @@ affect a whole region (over §16.1's 48 blocks for 45 s).
   strikes a second over 160 blocks round, a spot sits under a pulse about four fifths of the time at full strength:
   machines go dark (losing half their energy each time a pulse catches them anew), batteries and complexes fire nothing,
   interceptors flying through are fried (`Interceptors`, §18.5), missiles flown through unhardened turn duds half the
-  time (§21.4): the storm is the way in for the missiles sent after it, hardened. A strike into a lightning rod makes
-  no pulse. Its show (`EmpFields.pulse`, the payload's `pulse` flag): not the full EMP's dome of light but a ring of
+  time (§21.4): the storm is the way in for the missiles sent after it, hardened. A strike into a lightning rod made
+  no pulse until 2026-11-01; now it does (the current down the rod). Its show (`EmpFields.pulse`, the payload's `pulse` flag): not the full EMP's dome of light but a ring of
   electric-blue motes and sparks running out along the ground over 8 ticks (a mote every block and a half of its edge:
   white sparks alone were lost against sand and rain), a burst at its foot and a quieter, higher zap; the crackle near
   you counted once however many fields overlap (it was once a field). FX scene `storm_pulses`.
@@ -2807,6 +2847,28 @@ as it stands ashore (Aegis Ashore).
 - GameTests (`VlsTests`): forming (and a block over a cell stops it), what the cells take, power, range, spread, the
   buttons; a four-missile ripple, a quarter second apart, one to each corner of a 2x2 grid. FX scenes `vls`,
   `vls_aerial`.
+- **After the user's look** (later on 2026-11-01): the missiles appeared whole over the deck and burned there for
+  two seconds (a pad's ignition) before they went; the user wanted them to come out of the launcher, and the structure
+  deepened to a Medium missile's length ("it balances it well"):
+  - **Deeper cells**: five layers of a new part block, the **Missile Canister** (four from four steel plates and four
+    iron bars; eighty in all), four by four under the Strike Cells (`DEPTH` 5): each cell six blocks from its floor to
+    its hatch (a Medium missile is at most 5.5). The structure is seven layers now, the deck the sixth (its cuts
+    there). Built in a pit, the hatches level with the ground.
+  - **Out of the cell**: each missile is lit at its cell's floor (`CELL_FLOOR` -79 px) and its motor burns there
+    `HOLD` 10 ticks (out of sight, its blast up the uptake each tick for 16, `exhaust`) before it climbs straight up out
+    of the hatch (the silo's straight rise up the shaft, `Flights.launch(..., silo, cellHold)`): a flight's `cell`
+    hold (saved) is its ignition, synced to its entity (`MissileEntity` HOLD and CELL), whose smoke rises out of the
+    cell but never out of a silo's corner vents. Hatches stand open 36 ticks. Formed parts pass light, so a missile in
+    its cell is lit.
+  - **Model**: the cells are real: square bores 10 px across, from the hatches down to scorched floor plates, webs of
+    haze grey between them, dark inside with a guide rail down the middle of each wall and the canisters' joints
+    across; the module's outside under the deck haze grey, seamed a block apart. Faces seen alike share one texture
+    (`GeoModel.share`): the bores' walls, the outsides, the floors. The renderer reaches five blocks down. Block: the
+    Missile Canister (its square bore at each end, a rail seam on its sides).
+  - **Screen**: its CRT was a pixel too short for its four lines (they went into two cramped columns, cut short): 46
+    high now, the buttons and the redstone button below it. FX scene `vls_ui` photographs it.
+  - GameTests: a canister gone stops it forming; the first missile lit below the deck, out above it by the time the
+    fourth has gone.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -4341,6 +4403,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | After the user's look at the battery and the chain: the Vertical Launch Battery's cells deepened to a Medium missile's length (five layers of a new Missile Canister under the Strike Cells), each missile lit at its cell's floor and climbing out through its hatch after half a second (a flight's cell hold, synced); its screen's CRT made tall enough for its lines (§17.15). Every assembler gets Auto Assemble (the next job starts itself when the parts are in and the output is clear) and its Item Port drawn on the deck's edge as well as its top (§10.4). Lightning rods no longer stop a storm strike's EMP pulse (§16.14). The puller's handwheel made solid (§8.1). |
+| 2026-11-01 | The jump from advanced to military widened (§8.1), the user's request: hydrogen from the Electrolytic Separator through a new Proton Exchange Membrane (not coal and liquid oxygen); rad-hard chips built on sapphire (silicon-on-sapphire): alumina from clay and sulfuric acid, a Tungsten Crucible, a Sapphire Boule in the Crystal Puller, six Sapphire Wafers a boule, trichlorosilane for the silicon film; a Quantum Chip (sapphire wafer, stabilised exotic matter, ceramic package; argon) in the exotic matter's place in the quantum circuit, two a circuit. A recipe with no catalyst runs only with the catalyst slot empty. |
 | 2026-11-01 | The Vertical Launch Battery (§17.15), the user's volley launcher: sixteen Strike Cells after the Mk 41 ashore, Light and Medium conventional missiles only (no cruise missiles: the Cruise Missile Launcher stays theirs), rippled out a quarter second apart, each to its own point of a spread (point, line, ring, grid; up to 48 apart) round the target; any launch console or the Laser Designator fires it. Very late: 16 advanced circuits in its cells, two military and a quantum circuit in its controller. |
 | 2026-11-01 | The circuit cascade in place (§8.1, §26.2): advanced circuits take 2 microchips (in the quartz's place), military circuits 2 rad-hard microchips and 2 gold wire with their diamond (in the tungsten filament's and rare earths' place). Every advanced and military machine, part and weapon now waits on the silicon chain; basic and quantum circuits as they were. |
 | 2026-11-01 | The Clean Room (§8.1): a 3x2x2 multiblock (new Clean Room Panel and Fan Filter Unit blocks, the three ports, Reactor Glass windows) printing Microchips (wafer, red phosphorus, plastic sheet; photoresist, HF) and Rad-Hard Microchips (2 wafers, red phosphorus, ceramic package; photoresist, HF, liquid oxygen) at 320 FE/t. The ceramic package moves from the military circuit's recipe into the rad-hard chip's, and the microchip takes a plastic sheet: without a package of each, the rad-hard recipe (a superset of the microchip's) could never be picked. The military circuit takes 2 gold wire in the package's place. |

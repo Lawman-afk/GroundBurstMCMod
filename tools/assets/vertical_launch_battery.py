@@ -1,16 +1,20 @@
 """Vertical Launch Battery, formed (GeckoLib model), DESIGN.md §17.15: the user's volley launcher, after the Mk 41 as it
 stands ashore. Drawn from its controller, second from the left of the front row; the model spans x -24..40, z -8..88,
-y 0..32 in the north-facing frame (model origin = the controller block's bottom centre).
+y -80..32 in the north-facing frame (model origin = the controller block's bottom centre).
 
 Look: a concrete walkway along the front, banded in hazard paint, the fire-control console on it (olive, its green
 scope); behind it the launcher, two haze-grey modules of eight cells (two across, four deep) side by side, each cell
-under a square armoured hatch (bones "hatch0" to "hatch15", swung open by the block entity as its cell fires) over a
-dark bore, each module's uptake grate down its middle between its two columns, a hazard coaming round the whole; at
+under a square armoured hatch (bones "hatch0" to "hatch15", swung open by the block entity as its cell fires) over its
+open cell: a square bore six blocks deep, down through the deck block and the five Missile Canisters under it to the
+floor its missile stands on, dark, guide rails down its walls and the canisters' joints across them (after the user's
+look: the missiles light in their cells and climb out through the hatches); each module's uptake grate down its middle
+between its two columns, a hazard coaming round the whole; under the deck, the canisters' haze-grey sides; at
 the back a row of launch control cabinets, louvred, the Energy and Item Ports' striped housings on their back, and a
 status beacon on a short mast at their east end, lit red while it counts down and fires (bone "beacon").
 
 Blocks (this script too): the Strike Cell (its hatch in a hazard coaming on top, haze-grey sides with a stencil band),
-the controller's faces (a missile leaving its cell on the placard), and the Structure Spawner's blueprint.
+the Missile Canister (its square bore at each end, haze-grey sides with a guide-rail seam), the controller's faces (a
+missile leaving its cell on the placard), and the Structure Spawner's blueprint.
 """
 from __future__ import annotations
 
@@ -37,12 +41,21 @@ DECK, VLS_TOP, LID, HALF = 14.0, 16.0, 0.75, 6.0
 CELL_X = (-16.0, 0.0, 16.0, 32.0)
 CELL_Z = (16.0, 32.0, 48.0, 64.0)
 UPTAKE_X = (-8.0, 24.0)
+#: The cells' depth under the deck (five Missile Canisters: VerticalLaunchBatteryBlockEntity.DEPTH) and their floor
+#: (CELL_FLOOR); a cell's bore's half-width (the hatch's opening).
+DEPTH = 80.0
+CELL_FLOOR = 1.0 - DEPTH
+BORE = HALF - 1
+#: The webs between the bores (and the outer walls), across (x) and along (z) the launcher; the bores' columns.
+X_WALLS = ((-24.0, -21.0), (-11.0, -5.0), (5.0, 11.0), (21.0, 27.0), (37.0, 40.0))
+Z_WALLS = ((8.0, 11.0), (21.0, 27.0), (37.0, 43.0), (53.0, 59.0), (69.0, 72.0))
+COLS = tuple((x - BORE, x + BORE) for x in CELL_X)
 CAB_Z0, CAB_Z1, CAB_TOP = 72.0, 88.0, 20.0
 HAZE_RAMP = M.ramp("#1b1f24", "#272c33", "#343a42", "#434a53", "#545c66", "#68717c", "#808a95", "#9ba5b0", "#bcc5ce")
 
 
 def build() -> tuple[GeoModel, Tex, Tex, dict]:
-    g = GeoModel(NAME, tex_size=(256, 256))
+    g = GeoModel(NAME, tex_size=(256, 512))
     g.bone("frame")
     g.bone("beacon", pivot=(37.75, 27, 84.75), parent="frame")
     for i in range(16):
@@ -57,7 +70,7 @@ def build() -> tuple[GeoModel, Tex, Tex, dict]:
 
     add("deck", g.box("deck", (-24, 0, -8), (40, DECK, 8), faces=("north", "east", "west", "up"), bone=F))
     add("console", g.box("console", (-5, DECK, -7), (5, 22, -2), faces=SIDES + ("up",), bone=F))
-    add("vls", g.box("vls", (-24, 0, 8), (40, VLS_TOP, CAB_Z0), faces=("north", "east", "west", "up"), bone=F))
+    build_cells(g, add)
     for i in range(16):
         x, z = CELL_X[i % 4], CELL_Z[i // 4]
         add("lid", g.box(f"lid{i}", (x - HALF, VLS_TOP, z - HALF), (x + HALF, VLS_TOP + LID, z + HALF), bone=f"hatch{i}"))
@@ -72,6 +85,53 @@ def build() -> tuple[GeoModel, Tex, Tex, dict]:
     tex, glow = Tex(g.tex_w, g.tex_h), Tex(g.tex_w, g.tex_h)
     paint(g, tex, glow, parts)
     return g, tex, glow, parts
+
+
+def build_cells(g: GeoModel, add) -> None:
+    """The launcher: its sixteen cells, each a square bore from its hatch down through the deck block and the five Missile
+    Canisters under it to its floor. The webs between the bores and the outer walls are boxes: the deck layer's ("vls",
+    y 0-16, its own paint: the coaming, the uptake grates, the hazard band) and the canisters' under it ("deep"); a
+    floor in each bore ("floor"). Faces seen alike (the bores' walls, the canisters' outsides, the floors) share one
+    texture each."""
+    F = "frame"
+    box = {}
+    nx, nz, nc = len(X_WALLS), len(Z_WALLS), len(COLS)
+
+    def wall(group, name, frm, to, faces):
+        box[name] = add(group, g.box(name, frm, to, faces=faces, bone=F))
+
+    for i, (a, b) in enumerate(X_WALLS):
+        wall("vls", f"vls_x{i}", (a, 0, Z_WALLS[0][0]), (b, VLS_TOP, Z_WALLS[-1][1]), ("north", "east", "west", "up"))
+        wall("deep", f"deep_x{i}", (a, -DEPTH, Z_WALLS[0][0]), (b, 0, Z_WALLS[-1][1]), ("north", "south", "east", "west", "down"))
+    for c, (c0, c1) in enumerate(COLS):
+        for j, (a, b) in enumerate(Z_WALLS):
+            # (the deck layer's back face is the cabinets' front)
+            wall("vls", f"vls_z{c}_{j}", (c0, 0, a), (c1, VLS_TOP, b), ("north", "up") if j == nz - 1 else ("north", "south", "up"))
+            wall("deep", f"deep_z{c}_{j}", (c0, -DEPTH, a), (c1, 0, b), ("north", "south", "down"))
+        for r, z in enumerate(CELL_Z):
+            wall("floor", f"floor{c}_{r}", (c0, -DEPTH, z - BORE), (c1, CELL_FLOOR, z + BORE), ("up", "down"))
+
+    def share(faces):
+        (src, sd), *rest = faces
+        for n, d in rest:
+            g.share(box[n], d, box[src], sd)
+
+    for prefix in ("vls", "deep"):
+        # The bores' walls: the webs' faces toward them, along the launcher and across it.
+        share([(f"{prefix}_x{i}", "east") for i in range(nx - 1)] + [(f"{prefix}_x{i}", "west") for i in range(1, nx)])
+        share([(f"{prefix}_z{c}_{j}", d) for c in range(nc) for j in range(nz) for d in ("north", "south")
+               if not (j == 0 and d == "north") and not (j == nz - 1 and d == "south")])
+    # The canisters' outside: its two long sides, its ends (the bores' ends, the webs' ends by their width), its foot.
+    share([("deep_x0", "west"), (f"deep_x{nx - 1}", "east")])
+    share([(f"deep_z{c}_0", "north") for c in range(nc)] + [(f"deep_z{c}_{nz - 1}", "south") for c in range(nc)])
+    share([(f"deep_x{i}", d) for i in (0, nx - 1) for d in ("north", "south")])
+    share([(f"deep_x{i}", d) for i in range(1, nx - 1) for d in ("north", "south")])
+    share([(f"deep_x{i}", "down") for i in (0, nx - 1)])
+    share([(f"deep_x{i}", "down") for i in range(1, nx - 1)])
+    share([(f"deep_z{c}_{j}", "down") for c in range(nc) for j in (0, nz - 1)])
+    share([(f"deep_z{c}_{j}", "down") for c in range(nc) for j in range(1, nz - 1)])
+    share([(f"floor{c}_{r}", "up") for c in range(nc) for r in range(len(CELL_Z))])
+    share([(f"floor{c}_{r}", "down") for c in range(nc) for r in range(len(CELL_Z))])
 
 
 def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
@@ -106,15 +166,39 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
             M.darken(img, grate & (np.floor(f.Z) % 2 == 1), 0.75)
         for x in CELL_X:
             for z in CELL_Z:
-                bore = (np.abs(f.X - x) < HALF - 1) & (np.abs(f.Z - z) < HALF - 1)
-                img[bore, :3] = P.BLACK_PAINT.deep[:3]
-                M.darken(img, (np.abs(f.X - x) < HALF) & (np.abs(f.Z - z) < HALF) & ~bore, 0.6)
+                M.darken(img, (np.abs(f.X - x) < HALF) & (np.abs(f.Z - z) < HALF), 0.6)  # the hatch's seat round its bore
     k.overlay(tex, "vls", vls, only=("up",))
 
     def stencil(f, img):                                                             # a white stencil band on the launcher's front
         s = (f.Y > 3) & (f.Y < 5) & (np.floor(f.X) % 4 != 3)
         M.lighten(img, s & (f.X > -20) & (f.X < 36), 1.8, 60)
     k.overlay(tex, "vls", stencil, only=("east", "west"))
+
+    # Under the deck: the canisters' haze-grey outside, their joints a block apart and their seams between the cells.
+    k.paint(tex, "deep", M.painted(HAZE_RAMP, tone=0.5, wear=0.16, rust=0.04))
+    k.overlay(tex, "deep", lambda f, img: M.seams(f, img, every=16, axis="v", offset=0, light=False), only=SIDES)
+    k.seams(tex, "deep", every=16, axis="u", offset=8, only=("east", "west"))
+    # Inside the cells (painted last: a web's face toward a bore is its wall): dark, a guide rail down the middle of each
+    # wall, the canisters' joints across; the floor a scorched blast plate.
+    walls = [("vls_x0", "east"), ("vls_z0_0", "south"), ("deep_x0", "east"), ("deep_z0_0", "south")]
+    dark = M.painted(HAZE_RAMP, tone=0.16, wear=0.05, rust=0.02)
+
+    def bore(f, img):
+        along = f.Z if f.d in ("east", "west") else f.X
+        rail = np.abs(((along + 8) % 16) - 8) < 0.6                                  # a cell's middle (16 px apart)
+        M.lighten(img, rail, 1.5, 10)
+        M.darken(img, np.abs(((f.Y + 8) % 16) - 8) > 7.4, 0.55)                     # a canister's joint
+        M.darken(img, f.Y < CELL_FLOOR + 6, 0.7)                                     # soot round the foot
+    for name, d in walls:
+        k.paint(tex, [name], dark, only=(d,))
+        k.overlay(tex, [name], bore, only=(d,))
+    k.paint(tex, "floor", M.steel(tone=0.3, brushed=0.02, rust=0.12))
+
+    def scorch(f, img):
+        r = np.hypot(f.X - CELL_X[0], f.Z - CELL_Z[0])
+        M.darken(img, r < 4, 0.45)
+        M.darken(img, (r >= 4) & (r < 5.5), 0.7)
+    k.overlay(tex, ["floor0_0"], scorch, only=("up",))
 
     k.paint(tex, "lid", M.painted(HAZE_RAMP, tone=0.62, wear=0.22, rust=0.02))
 
@@ -192,6 +276,29 @@ def strike_cell_side() -> Tex:
     return M.to_tex(img)
 
 
+def canister_end() -> Tex:
+    """The Missile Canister's ends: its square bore, dark, a guide rail in the middle of each side, in a haze-grey frame."""
+    haze = M.painted(HAZE_RAMP, tone=0.55, wear=0.2, rust=0.03)
+    img = PN.face(haze, style="inset", seed=95)
+    col, row = PN.grid()
+    bore = PN.area(3, 3, 10, 10)
+    M.darken(img, bore, 0.22)
+    M.darken(img, PN.outline(3, 3, 10, 10), 0.7)                                       # the bore's lip
+    rails = bore & (((col >= 7) & (col <= 8) & ((row == 3) | (row == 12))) | ((row >= 7) & (row <= 8) & ((col == 3) | (col == 12))))
+    M.lighten(img, rails, 2.2, 30)
+    return M.to_tex(img)
+
+
+def canister_side() -> Tex:
+    """Its sides: haze-grey steel, a guide rail's seam down the middle, a stencilled data plate."""
+    haze = M.painted(HAZE_RAMP, tone=0.5, wear=0.2, rust=0.04)
+    img = PN.face(haze, style="inset", seed=97)
+    M.darken(img, PN.area(8, 1, 1, 14), 0.6)                                            # the rail's seam
+    M.lighten(img, PN.area(9, 1, 1, 14), 1.15, 6)
+    M.lighten(img, PN.area(3, 10, 3, 2), 1.8, 60)                                        # its data plate
+    return M.to_tex(img)
+
+
 def vls_placard(t: Tex) -> None:
     """The battery's controller: a missile leaving its cell."""
     t.rect(4, 11, 4, 2, P.HAZARD_BLACK.base)
@@ -219,6 +326,19 @@ def blocks() -> None:
         "formed=true": {"model": "groundburst:block/strike_cell_formed"},
     }})
     write_json(paths.ASSETS / "items" / "strike_cell.json", {"model": {"type": "minecraft:model", "model": "groundburst:block/strike_cell"}})
+    end, wall = canister_end(), canister_side()
+    end.save(paths.TEXTURES / "block" / "missile_canister_end.png")
+    wall.save(paths.TEXTURES / "block" / "missile_canister_side.png")
+    write_json(paths.MODELS / "block" / "missile_canister.json", {"parent": "minecraft:block/cube_column",
+                                                                  "textures": {"end": "groundburst:block/missile_canister_end",
+                                                                               "side": "groundburst:block/missile_canister_side"}})
+    write_json(paths.MODELS / "block" / "missile_canister_formed.json", ST.particle_model("groundburst:block/missile_canister_side"))
+    write_json(paths.ASSETS / "blockstates" / "missile_canister.json", {"variants": {
+        "formed=false": {"model": "groundburst:block/missile_canister"},
+        "formed=true": {"model": "groundburst:block/missile_canister_formed"},
+    }})
+    write_json(paths.ASSETS / "items" / "missile_canister.json",
+               {"model": {"type": "minecraft:model", "model": "groundburst:block/missile_canister"}})
     ST.controller(NAME, ST.controller_front(vls_placard), ST.controller_top(), ST.casing())
 
 

@@ -26,9 +26,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Vertical Launch Battery (DESIGN.md §17.15): it forms with the air over its cells clear, takes Light and Medium
- * conventional missiles only, wants power for its whole load, and ripples its volley out of its cells a quarter of a
- * second apart, each missile to its own point of its spread round the target.
+ * The Vertical Launch Battery (DESIGN.md §17.15): it forms with its Missile Canisters under its cells and the air over
+ * them clear, takes Light and Medium conventional missiles only, wants power for its whole load, and ripples its volley
+ * out of its cells a quarter of a second apart, each missile lit at the foot of its cell and climbing out through its
+ * hatch to its own point of its spread round the target.
  */
 final class VlsTests {
     private VlsTests() {}
@@ -39,8 +40,8 @@ final class VlsTests {
         GBGameTests.testOpenSky("vls_ripples_its_volley_round_the_target", GBGameTests.FLOOR_16, 120, VlsTests::ripple);
     }
 
-    /** The controller, second from the left of the front row: the battery fills x 3-6, z 2-7 at y 1. */
-    private static final BlockPos CONTROLLER = new BlockPos(4, 1, 2);
+    /** The controller, second from the left of the front row: the battery fills x 3-6, z 2-7 at y 6, its canisters y 1-5. */
+    private static final BlockPos CONTROLLER = new BlockPos(4, 1 + VerticalLaunchBatteryBlockEntity.DEPTH, 2);
 
     /** Builds the battery the way the Structure Spawner does and forms it, facing north. */
     static VerticalLaunchBatteryBlockEntity battery(GameTestHelper helper) {
@@ -69,8 +70,12 @@ final class VlsTests {
     private static void forms(GameTestHelper helper) {
         VerticalLaunchBatteryBlockEntity be = battery(helper);
         var level = helper.getLevel();
-        BlockState cell = level.getBlockState(helper.absolutePos(new BlockPos(5, 1, 4)));
+        int deck = CONTROLLER.getY();
+        BlockState cell = level.getBlockState(helper.absolutePos(new BlockPos(5, deck, 4)));
         helper.assertTrue(cell.is(GBLaunch.STRIKE_CELL.block().get()) && cell.getValue(MultiblockPartBlock.FORMED), "a Strike Cell, hidden: " + cell);
+        BlockState canister = level.getBlockState(helper.absolutePos(new BlockPos(5, 1, 4)));
+        helper.assertTrue(canister.is(GBLaunch.MISSILE_CANISTER.block().get()) && canister.getValue(MultiblockPartBlock.FORMED),
+                "a Missile Canister at the foot of the cell, hidden: " + canister);
         helper.assertTrue(be.readiness() == LaunchSiloBlockEntity.Readiness.NO_MISSILE, "wants missiles: " + be.readiness());
         ItemStack light = missile(SizeClass.S, MissileParts.Motor.SRM_I), medium = LaunchTests.missile();
         helper.assertTrue(be.inventory().canPlaceItem(0, light) && be.inventory().canPlaceItem(15, medium), "takes Light and Medium missiles");
@@ -89,8 +94,16 @@ final class VlsTests {
                 "a 2x2 grid 8 apart reaches 5.7 from its middle: " + be.spreadRadius(4));
         helper.assertTrue(be.handleButton(0) && be.pattern() == LaunchNetwork.Pattern.POINT && be.spreadRadius(16) == 0, "the pattern button cycles round");
         helper.assertTrue(be.handleButton(1) && be.spacing() == 12, "wider by 4: " + be.spacing());
+        // A canister gone stops it: the cell would be too short for its missile.
+        BlockPos low = helper.absolutePos(new BlockPos(6, 3, 5));
+        level.removeBlock(low, false);
+        be.revalidate();
+        helper.assertTrue(!be.isFormed(), "a canister gone stops it");
+        level.setBlockAndUpdate(low, GBLaunch.MISSILE_CANISTER.block().get().defaultBlockState());
+        be.revalidate();
+        helper.assertTrue(be.isFormed(), "formed again with the canister back");
         // A block over a cell stops it forming: its hatch could not open.
-        BlockPos over = helper.absolutePos(new BlockPos(5, 2, 4));
+        BlockPos over = helper.absolutePos(new BlockPos(5, deck + 1, 4));
         level.setBlockAndUpdate(over, Blocks.STONE.defaultBlockState());
         be.revalidate();
         helper.assertTrue(!be.isFormed(), "a block over its cells stops it");
@@ -100,7 +113,10 @@ final class VlsTests {
         helper.succeed();
     }
 
-    /** Four missiles rippled out, a quarter of a second apart, each to its own corner of a 2x2 grid 8 apart round the target. */
+    /**
+     * Four missiles rippled out, a quarter of a second apart, each to its own corner of a 2x2 grid 8 apart round the
+     * target; each lit at the foot of its cell (below the deck), and out over it by the time the last has gone.
+     */
     private static void ripple(GameTestHelper helper) {
         VerticalLaunchBatteryBlockEntity be = battery(helper);
         var level = helper.getLevel();
@@ -119,14 +135,20 @@ final class VlsTests {
                 "a 10 s countdown: " + be.countdown());
         be.skipCountdownForTest();
         List<Flights.Flight> ours = new ArrayList<>();
+        java.util.UUID[] first = new java.util.UUID[1];
         helper.runAfterDelay(3, () -> {
             var now = Flights.of(level).all().stream().filter(bound).toList();
             helper.assertTrue(now.size() == 1, "the first is lit: " + now.size());
             helper.assertTrue(!be.boneRotations(0).isEmpty(), "its cell's hatch swings open");
+            Vec3 at = now.getFirst().position();
+            helper.assertTrue(at.y < be.getBlockPos().getY() - 3, "lit at the foot of its cell, under the deck: " + at.y);
+            first[0] = now.getFirst().id();
         });
         helper.runAfterDelay(3 * VerticalLaunchBatteryBlockEntity.RIPPLE + 4, () -> {
             ours.addAll(Flights.of(level).all().stream().filter(bound).toList());
             helper.assertTrue(ours.size() == 4, "all four gone: " + ours.size());
+            Vec3 lead = ours.stream().filter(f -> f.id().equals(first[0])).findFirst().map(Flights.Flight::position).orElse(Vec3.ZERO);
+            helper.assertTrue(lead.y > be.getBlockPos().getY() + 1, "the first has climbed out of its cell: " + lead.y);
             helper.assertTrue(be.loaded() == 0, "the cells empty");
             helper.assertTrue(be.energy().stored() == VerticalLaunchBatteryBlockEntity.ENERGY_CAPACITY - 4L * VerticalLaunchBatteryBlockEntity.LAUNCH_COST,
                     "20k FE a missile: " + be.energy().stored());

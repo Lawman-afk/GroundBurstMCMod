@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_alumina": {
+      "conditions": {
+        "items": [
+          {
+            "items": "groundburst:alumina"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "groundburst:tungsten_crucible"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_alumina"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "groundburst:tungsten_crucible"
+    ]
+  }
+}

@@ -103,6 +103,7 @@ def hall() -> None:
     # The ports are floor blocks (the back row's middle and two west of it): plates flush with the floor over them.
     g.box("energy_port", (-7, FLOOR_Y, 185), (7, FLOOR_Y + 0.5, 199), faces=sides + ("up",), bone=F)
     g.box("item_port", (-39, FLOOR_Y, 185), (-25, FLOOR_Y + 0.5, 199), faces=sides + ("up",), bone=F)
+    g.box("item_port_side", (-38, 2, 200), (-26, 12, 200.5), faces=("south", "east", "west", "up", "down"), bone=F)
     g.box("pallet", (26, FLOOR_Y, 186), (38, 16, 198), faces=sides + ("up",), bone=F)
     g.box("crate_a", (27, 16, 187), (33, 22, 193), faces=sides + ("up",), bone=F)
     g.box("crate_b", (33, 16, 191), (37, 21, 197), faces=sides + ("up",), bone=F)
@@ -229,6 +230,7 @@ def paint_hall(g: GeoModel, tex: Tex, columns, girders, rails, cradles) -> None:
                 t.hline(cx - 3, yy + 1, 7, P.BLACK_PAINT.deep)
     g.paint_all(tex, "energy_port", bolt)
     g.paint_all(tex, "item_port", grate)
+    L._paint_side_port(S, g, tex, "item_port_side", "south")
 
     S.paint(tex, "pallet", M.wood(tone=0.55))
     S.overlay(tex, "pallet", lambda f, img: M.seams(f, img, every=3, axis="u", light=False), only=("up",))

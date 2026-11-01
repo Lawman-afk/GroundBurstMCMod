@@ -119,7 +119,10 @@ final class StormTests {
         });
     }
 
-    /** A lightning rod standing in the storm draws its strikes: they come down on the rod, and the grass round it is untouched. */
+    /**
+     * A lightning rod standing in the storm draws its strikes: they come down on the rod, and the grass round it is
+     * untouched; but each still sends out its EMP pulse from the rod (the user's call: a rod is no shield from the pulse).
+     */
     private static void rod(GameTestHelper helper) {
         Vec3 eye = storm(helper, 200, 5);
         helper.setBlock(new BlockPos(8, 1, 10), Blocks.LIGHTNING_ROD.asList().getFirst());
@@ -130,6 +133,8 @@ final class StormTests {
             for (BlockPos p : BlockPos.betweenClosed(0, 0, 0, 15, 0, 15)) {
                 helper.assertTrue(helper.getBlockState(p).is(Blocks.GRASS_BLOCK), "the rod took every strike, none scorched " + p);
             }
+            helper.assertTrue(dev.groundburst.content.effect.EmpFields.inField(helper.getLevel(), helper.absolutePos(new BlockPos(8, 1, 12))),
+                    "the strikes the rod took still pulsed: an EMP field round it");
             helper.succeed();
         });
     }

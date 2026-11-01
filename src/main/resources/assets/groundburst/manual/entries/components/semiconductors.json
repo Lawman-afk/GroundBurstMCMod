@@ -7,6 +7,7 @@
     "groundburst:polysilicon",
     "groundburst:quartz_crucible",
     "groundburst:red_phosphorus",
+    "groundburst:alumina",
     "groundburst:ceramic_package",
     "groundburst:fluorite_dust",
     "groundburst:hydrogen_canister",
@@ -46,11 +47,11 @@
     },
     {
       "type": "text",
-      "text": "**Hydrogen** comes from coal gasified with steam and **liquid oxygen** from a [Cryogenic Condenser](processing/cryogenic_condenser); without the oxygen the plant makes synthetic fuel instead. The condenser also draws the **argon** the crystals grow under.\n\nThe crucible each crystal grows in is fused from quartz and sand."
+      "text": "**Hydrogen** comes from the [Electrolytic Separator](processing/electrolytic_separator), a **Proton Exchange Membrane** in its slot: water split by electricity. A [Cryogenic Condenser](processing/cryogenic_condenser) draws the **argon** the crystals grow under.\n\nThe crucible each crystal grows in is fused from quartz and sand."
     },
     {
       "type": "machine",
-      "kind": "chemistry",
+      "kind": "electrolysis",
       "text": "",
       "fluid": "groundburst:hydrogen"
     },
@@ -87,6 +88,16 @@
       "kind": "arc_smelting",
       "text": "",
       "item": "groundburst:ceramic_package"
+    },
+    {
+      "type": "text",
+      "text": "**Military-grade chips** are built on **sapphire**, as real radiation-hardened ones are (silicon-on-sapphire). **Alumina** is leached out of clay with sulfuric acid in the Chemical Plant; the [Crystal Puller](processing/crystal_puller) grows it into sapphire in a **tungsten crucible**, and the saw cuts the crystal into wafers. Quantum chips are built on sapphire too."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "item": "groundburst:alumina"
     }
   ]
 }

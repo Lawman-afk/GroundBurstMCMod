@@ -44,6 +44,10 @@ public class MissileEntity extends Entity {
      */
     private static final EntityDataAccessor<java.util.Optional<net.minecraft.core.BlockPos>> SILO =
             SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    /** Ticks it burns where it was lit before it moves, as the client knows it (a pad's or silo's ignition; a VLS cell's is short). */
+    private static final EntityDataAccessor<Integer> HOLD = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.INT);
+    /** Fired from a Vertical Launch Battery's cell: its blast goes up the module's uptake, not out of a silo's vents. */
+    private static final EntityDataAccessor<Boolean> CELL = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.BOOLEAN);
     /** A cruise missile (slice 9c): its warhead's cruise missile's look, a jet's exhaust and whine after its booster. */
     private static final EntityDataAccessor<Boolean> CRUISE = SynchedEntityData.defineId(MissileEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -82,6 +86,18 @@ public class MissileEntity extends Entity {
         builder.define(REENTRY, 0f);
         builder.define(SILO, java.util.Optional.empty());
         builder.define(CRUISE, false);
+        builder.define(HOLD, IGNITION);
+        builder.define(CELL, false);
+    }
+
+    void setHold(int hold, boolean cell) {
+        this.entityData.set(HOLD, hold);
+        this.entityData.set(CELL, cell);
+    }
+
+    /** Fired from a Vertical Launch Battery's cell, as the client knows it. */
+    public boolean cell() {
+        return this.entityData.get(CELL);
     }
 
     /** A cruise missile, as the client knows it. */
@@ -130,7 +146,7 @@ public class MissileEntity extends Entity {
 
     /** Still on the pad (or in its box), burning, not yet climbing. */
     public boolean igniting() {
-        return age() < (cruise() ? Flights.CruisePlan.IGNITION : IGNITION);
+        return age() < (cruise() ? Flights.CruisePlan.IGNITION : this.entityData.get(HOLD));
     }
 
     /** A cruise missile still in its box or leaving it: its wings and scoop stowed (they would stand out through the box). */

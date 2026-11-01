@@ -8,13 +8,14 @@
     "groundburst:fan_filter_unit",
     "groundburst:clean_room_spawner",
     "groundburst:microchip",
-    "groundburst:rad_hard_microchip"
+    "groundburst:rad_hard_microchip",
+    "groundburst:quantum_chip"
   ],
   "pages": [
     {
       "type": "spotlight",
       "item": "groundburst:clean_room",
-      "text": "A sealed module (3 wide, 2 deep, 2 high) where chips are printed on silicon wafers, under yellow light: photoresist is spoiled by any other. Draws 320 FE a tick.\n\n**Microchips:** a wafer is coated with **photoresist**, the circuit's pattern exposed into it, etched with **hydrofluoric acid** and doped with **red phosphorus**; four chips come off it, moulded in a plastic sheet. Thirty seconds.\n\n**Rad-Hard Microchips:** two wafers bonded over an oxide grown in **liquid oxygen** (silicon-on-insulator), printed the same way and sealed in a **ceramic package**: two chips that radiation and an EMP do not upset. A minute."
+      "text": "A sealed module (3 wide, 2 deep, 2 high) where chips are printed on silicon wafers, under yellow light: photoresist is spoiled by any other. Draws 320 FE a tick.\n\n**Microchips:** a wafer is coated with **photoresist**, the circuit's pattern exposed into it, etched with **hydrofluoric acid** and doped with **red phosphorus**; four chips come off it, moulded in a plastic sheet. Thirty seconds.\n\n**Rad-Hard Microchips:** two **sapphire wafers**, a film of silicon grown on each from **trichlorosilane** (silicon-on-sapphire: the insulating crystal under the circuit is why radiation and an EMP do not upset it), printed the same way and sealed in a **ceramic package**: two chips. A minute.\n\n**Quantum Chips:** a sapphire wafer and a **stabilised exotic matter**: the qubits are held in the exotic matter and wired with a superconducting film sputtered on under **argon**, then sealed in a ceramic package: two chips in 80 seconds. A quantum circuit is built round two."
     },
     {
       "type": "structure",
@@ -23,7 +24,7 @@
     },
     {
       "type": "text",
-      "text": "Power goes into the **Energy Port**; wafers, phosphorus and packages go in, and chips come out, through the **Item Port**; the photoresist, hydrofluoric acid and liquid oxygen go into its three tanks through the **Fluid Port** (or pour canisters into any part). The controller connects to nothing itself."
+      "text": "Power goes into the **Energy Port**; wafers, phosphorus, packages and exotic matter go in, and chips come out, through the **Item Port**; its fluids go into its three tanks through the **Fluid Port** (or pour canisters into any part): photoresist and hydrofluoric acid for every chip, then trichlorosilane for rad-hard chips or argon for quantum ones. The controller connects to nothing itself."
     },
     {
       "type": "crafting",
@@ -51,6 +52,12 @@
       "kind": "lithography",
       "text": "",
       "item": "groundburst:rad_hard_microchip"
+    },
+    {
+      "type": "machine",
+      "kind": "lithography",
+      "text": "",
+      "item": "groundburst:quantum_chip"
     },
     {
       "type": "links",

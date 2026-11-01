@@ -37,7 +37,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * <li>its wind drives everything but players (each player's own client drives its player) round the eye and a little
  * in ({@link Storms#windOn});</li>
  * <li>lightning comes down ({@link Storms#strikeRate}), a third of it at a creature standing in the open, a third at
- * the tallest of a few spots, the rest anywhere; a lightning rod near where it would land draws it to itself. A strike
+ * the tallest of a few spots, the rest anywhere; a lightning rod near where it would land draws it to itself (safely,
+ * but its EMP pulse still goes out from the rod). A strike
  * hurts whatever stands at its foot (vanilla lightning's own effects too: a creeper charged, a pig turned), then
  * chains on through the nearest creatures, each jump weaker; it scorches the ground (grass burnt to dirt, sand fused to
  * glass, leaves burnt away), may start a fire where fire may spread, and sends out an EMP pulse
@@ -212,14 +213,20 @@ final class StormJob {
                 at, Storms.ROD_REACH, PoiManager.Occupancy.ANY);
     }
 
-    /** A bolt into a lightning rod: it takes it safely and gives its redstone pulse. */
+    /**
+     * A bolt into a lightning rod: it takes it safely (no blast, scorch, fire or chain) and gives its redstone pulse. The
+     * current pouring down it still sends out the strike's EMP pulse (DESIGN.md §16.14, the user's call): a rod saves
+     * what stands round it from the bolt, not from the pulse.
+     */
     private void grounded(BlockPos rod) {
         BlockState state = this.level.getBlockState(rod);
         if (state.getBlock() instanceof LightningRodBlock block) {
             block.onLightningStrike(state, this.level, rod);
         }
+        Vec3 tip = Vec3.atCenterOf(rod).add(0, 0.5, 0);
+        dev.groundburst.content.effect.EmpFields.pulse(this.level, tip, Storms.empRadius(this.radius), Storms.EMP_TICKS);
         this.strikes++;
-        tell(Vec3.atCenterOf(rod).add(0, 0.5, 0), List.of());
+        tell(tip, List.of());
     }
 
     /** A bolt coming down at {@code at} (on {@code target}, if aimed at one): what it does there. */

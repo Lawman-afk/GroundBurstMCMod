@@ -163,6 +163,28 @@ PRESETS = {
             ("detail: item port", 35, 110, (21, 17, 16), 18, None),
             ("detail: item port, other", 35, 290, (21, 17, 16), 18, None),
         ]),
+    "light_missile_assembler": dict(
+        shots=WHOLE + [("item port: hatch and side mouth", 25, 110, (-24, 10, 64), 26, None),
+                       ("side mouth, square on", 5, 90, (-24, 7, 64), 16, None)]),
+    "medium_missile_assembler": dict(
+        shots=WHOLE + [("item port: hatch and side mouth", 25, 20, (-16, 10, 104), 26, None),
+                       ("side mouth, square on", 5, 0, (-16, 7, 104), 16, None)]),
+    "strategic_assembly_hall": dict(
+        shots=[("iso back", 30, 45, None, None, None), ("item port: hatch and side mouth", 25, 20, (-32, 10, 200), 30, None)]),
+    "vertical_launch_battery": dict(
+        hide=("hatch5", "hatch6", "hatch10"),
+        shots=[("iso front", 30, 225, None, None, None), ("iso back", 30, 45, None, None, None),
+               ("from below", -35, 200, None, None, None), ("side", 5, 270, None, None, None),
+               ("into the open cells", 70, 200, (8, 0, 40), 40, None),
+               ("down one cell", 88, 180, (0, -30, 32), 24, None),
+               ("cut-away: the module's west side", 10, 90, (-24, -32, 40), 70, None)]),
+    "crystal_puller": dict(
+        shots=WHOLE + [
+            ("valve and handwheel", 20, 240, (4, 17.5, 0), 12, None),
+            ("handwheel, edge on", 5, 180, (5, 17.5, 0), 9, None),
+            ("handwheel from above", 70, 250, (5, 17.5, 0), 9, None),
+            ("handwheel from behind", 15, 315, (5, 17.5, 0), 9, None),
+        ]),
 }
 
 

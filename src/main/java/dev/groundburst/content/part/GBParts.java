@@ -62,8 +62,19 @@ public final class GBParts {
     public static final DeferredItem<Item> SILICON_WAFER = GBItems.simple("silicon_wafer", "Silicon Wafer", GBTab.RESOURCES);
     /** Printed in the Clean Room, moulded in plastic: what an advanced circuit is built round. */
     public static final DeferredItem<Item> MICROCHIP = GBItems.simple("microchip", "Microchip", GBTab.MACHINES);
-    /** Silicon-on-insulator, sealed in a ceramic package: chips that radiation and an EMP do not upset; military circuits'. */
+    /** Silicon-on-sapphire, sealed in a ceramic package: chips that radiation and an EMP do not upset; military circuits'. */
     public static final DeferredItem<Item> RAD_HARD_MICROCHIP = GBItems.simple("rad_hard_microchip", "Rad-Hard Microchip", GBTab.MACHINES);
+    /** Alumina leached out of clay with sulfuric acid and calcined: what sapphire is grown from. */
+    public static final DeferredItem<Item> ALUMINA = GBItems.simple("alumina", "Alumina", GBTab.RESOURCES);
+    /** Sapphire melts at 2 050 °C, past fused quartz: its melt is held in tungsten, one crucible a crystal. */
+    public static final DeferredItem<Item> TUNGSTEN_CRUCIBLE = GBItems.simple("tungsten_crucible", "Tungsten Crucible", GBTab.RESOURCES);
+    /** A single crystal of sapphire (aluminium oxide) grown in the Crystal Puller. */
+    public static final DeferredItem<Item> SAPPHIRE_BOULE = GBItems.simple("sapphire_boule", "Sapphire Boule", GBTab.RESOURCES);
+    /** A sapphire boule sawn into slices: the insulating ground rad-hard and quantum chips are built on. */
+    public static final DeferredItem<Item> SAPPHIRE_WAFER = GBItems.simple("sapphire_wafer", "Sapphire Wafer", GBTab.RESOURCES);
+    /** Qubits held in stabilised exotic matter on sapphire, in a gold-plated package: what a quantum circuit is built round. */
+    public static final DeferredItem<Item> QUANTUM_CHIP = GBItems.simple("quantum_chip", "Quantum Chip", GBTab.MACHINES,
+            p -> p.rarity(net.minecraft.world.item.Rarity.UNCOMMON));
 
     // --- press dies (not consumed) -----------------------------------------------------------------------------------------
     public static final DeferredItem<Item> PLATE_DIE = die("plate_die", "Plate Die");
@@ -78,6 +89,9 @@ public final class GBParts {
     public static final DeferredItem<Item> NITROGEN_MEMBRANE = GBItems.simple("nitrogen_membrane", "Nitrogen Separation Membrane", GBTab.MACHINES, p -> p.stacksTo(1));
     /** A zeolite sieve that holds back oxygen and nitrogen and lets argon, 1% of the air, through. */
     public static final DeferredItem<Item> ARGON_SIEVE = GBItems.simple("argon_sieve", "Argon Molecular Sieve", GBTab.MACHINES, p -> p.stacksTo(1));
+    /** The Electrolytic Separator's membrane (not consumed): with it the separator splits water for hydrogen. */
+    public static final DeferredItem<Item> PROTON_EXCHANGE_MEMBRANE = GBItems.simple("proton_exchange_membrane", "Proton Exchange Membrane",
+            GBTab.MACHINES, p -> p.stacksTo(1));
 
     private GBParts() {}
 

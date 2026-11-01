@@ -394,11 +394,13 @@ Presses ingots into parts. The **die** in its die slot picks what it makes; dies
     machine("pressing"),
 ])
 
-entry("processing/electrolytic_separator", "Electrolytic Separator", "electrolytic_separator", ["electrolytic_separator"], [
+entry("processing/electrolytic_separator", "Electrolytic Separator", "electrolytic_separator", ["electrolytic_separator",
+                                                                                         "proton_exchange_membrane"], [
     spot("electrolytic_separator", """
-Splits deuterium gas out of water. Pipe water into its water tank (a [Water Pump](processing/water_pump) is easiest) and draw the gas off with a pipe or a gas canister. Draws 60 FE a tick.
+Splits water with electricity. With a **Proton Exchange Membrane** in its slot it makes **hydrogen**: 1,000 mB from a bucket of water in ten seconds (the oxygen is let go). With the slot empty it concentrates **deuterium** instead: 1,000 mB from eight buckets. The membrane is never used up. Pipe water into its water tank (a [Water Pump](processing/water_pump) is easiest) and draw the gas off with a pipe or a gas canister. Draws 60 FE a tick.
 """),
     craft("electrolytic_separator"),
+    craft("proton_exchange_membrane"),
     machine("electrolysis"),
 ])
 
@@ -499,7 +501,8 @@ Makes every circuit, from basic to quantum, plus sensor arrays and superconducti
     machine("fabricating"),
 ])
 
-entry("processing/crystal_puller", "Crystal Puller", "crystal_puller", ["crystal_puller", "silicon_boule", "silicon_wafer", "diamond_wire_saw"], [
+entry("processing/crystal_puller", "Crystal Puller", "crystal_puller", ["crystal_puller", "silicon_boule", "silicon_wafer", "diamond_wire_saw",
+                                                                    "sapphire_boule", "sapphire_wafer", "tungsten_crucible"], [
     spot("crystal_puller", """
 Grows the single crystals of silicon that chips are made on. Four **polysilicon** melt in a **quartz crucible** under **argon** (1,000 mB a crystal, piped or poured into its tank), and a seed is drawn slowly up out of the melt, turning: in a minute, a **silicon boule**. Each crystal takes a crucible, as in a real puller. Draws 160 FE a tick.
 
@@ -512,27 +515,35 @@ An [Industrial Press](processing/industrial_press) with a **Diamond Wire Saw** i
 """),
     craft("diamond_wire_saw"),
     machine("pressing", "", item="silicon_wafer"),
+    text("""
+**Sapphire** grows the same way, slower: four **alumina** melted in a **tungsten crucible** (sapphire melts at 2,050 °C, too hot for fused quartz) under argon give a **sapphire boule** in 80 seconds, and the saw cuts it into **six sapphire wafers**, more slowly (sapphire is hard). Rad-hard and quantum chips are built on sapphire.
+"""),
+    craft("tungsten_crucible"),
+    machine("pressing", "", item="sapphire_wafer"),
     links(["components/semiconductors", "processing/cryogenic_condenser"]),
 ])
 
 entry("processing/clean_room", "Clean Room", "clean_room", ["clean_room", "clean_room_panel", "fan_filter_unit", "clean_room_spawner",
-                                                              "microchip", "rad_hard_microchip"], [
+                                                              "microchip", "rad_hard_microchip", "quantum_chip"], [
     spot("clean_room", """
 A sealed module (3 wide, 2 deep, 2 high) where chips are printed on silicon wafers, under yellow light: photoresist is spoiled by any other. Draws 320 FE a tick.
 
 **Microchips:** a wafer is coated with **photoresist**, the circuit's pattern exposed into it, etched with **hydrofluoric acid** and doped with **red phosphorus**; four chips come off it, moulded in a plastic sheet. Thirty seconds.
 
-**Rad-Hard Microchips:** two wafers bonded over an oxide grown in **liquid oxygen** (silicon-on-insulator), printed the same way and sealed in a **ceramic package**: two chips that radiation and an EMP do not upset. A minute.
+**Rad-Hard Microchips:** two **sapphire wafers**, a film of silicon grown on each from **trichlorosilane** (silicon-on-sapphire: the insulating crystal under the circuit is why radiation and an EMP do not upset it), printed the same way and sealed in a **ceramic package**: two chips. A minute.
+
+**Quantum Chips:** a sapphire wafer and a **stabilised exotic matter**: the qubits are held in the exotic matter and wired with a superconducting film sputtered on under **argon**, then sealed in a ceramic package: two chips in 80 seconds. A quantum circuit is built round two.
 """),
     structure("clean_room", "Controller at the front left, a Clean Room Panel beside it and the Energy Port at the front right; behind them the Fluid Port, the Item Port and a panel. On top: three Reactor Glass across the front, two Fan Filter Units and a panel behind them."),
     text("""
-Power goes into the **Energy Port**; wafers, phosphorus and packages go in, and chips come out, through the **Item Port**; the photoresist, hydrofluoric acid and liquid oxygen go into its three tanks through the **Fluid Port** (or pour canisters into any part). The controller connects to nothing itself.
+Power goes into the **Energy Port**; wafers, phosphorus, packages and exotic matter go in, and chips come out, through the **Item Port**; its fluids go into its three tanks through the **Fluid Port** (or pour canisters into any part): photoresist and hydrofluoric acid for every chip, then trichlorosilane for rad-hard chips or argon for quantum ones. The controller connects to nothing itself.
 """),
     craft("clean_room"),
     craft("clean_room_panel"),
     craft("fan_filter_unit"),
     machine("lithography", "", item="microchip"),
     machine("lithography", "", item="rad_hard_microchip"),
+    machine("lithography", "", item="quantum_chip"),
     links(["components/semiconductors", "processing/crystal_puller", "components/circuits"]),
 ])
 
@@ -599,7 +610,7 @@ entry("components/circuits", "Circuits", "basic_circuit", ["handmade_circuit_boa
     text("""
 Four tiers, each built on the one below in the [Circuit Fabricator](processing/circuit_fabricator). Early on a **handmade circuit board**, crafted by hand, counts as a basic circuit.
 
-An **advanced circuit** is built round two **microchips**, a **military circuit** round two **rad-hard microchips** with a diamond to spread their heat: both kinds are printed in the [Clean Room](processing/clean_room), on silicon grown and sawn as [Silicon and chips](components/semiconductors) tells. That is the long road every advanced and military machine and weapon waits on.
+An **advanced circuit** is built round two **microchips**, a **military circuit** round two **rad-hard microchips** (built on sapphire) with a diamond to spread their heat, and a **quantum circuit** round two **quantum chips** (stabilised exotic matter on sapphire) with a superconducting coil: all three are printed in the [Clean Room](processing/clean_room), on crystals grown and sawn as [Silicon and chips](components/semiconductors) tells. That is the long road every advanced, military and quantum machine and weapon waits on.
 """),
     craft("handmade_circuit_board"),
     machine("fabricating", "", item="basic_circuit"),
@@ -609,7 +620,7 @@ An **advanced circuit** is built round two **microchips**, a **military circuit*
     machine("fabricating", "", item="sensor_array"),
 ])
 
-entry("components/semiconductors", "Silicon and chips", "silicon_wafer", ["silicon", "polysilicon", "quartz_crucible", "red_phosphorus",
+entry("components/semiconductors", "Silicon and chips", "silicon_wafer", ["silicon", "polysilicon", "quartz_crucible", "red_phosphorus", "alumina",
                                                                        "ceramic_package", "fluorite_dust", "hydrogen_canister",
                                                                        "hydrogen_chloride_canister", "trichlorosilane_canister",
                                                                        "photoresist_canister", "hydrofluoric_acid_canister"], [
@@ -626,11 +637,11 @@ Chips are made on silicon purer than anything else you will make, by the steps r
     machine("chemistry", "", fluid="trichlorosilane"),
     machine("chemistry", "", item="polysilicon"),
     text("""
-**Hydrogen** comes from coal gasified with steam and **liquid oxygen** from a [Cryogenic Condenser](processing/cryogenic_condenser); without the oxygen the plant makes synthetic fuel instead. The condenser also draws the **argon** the crystals grow under.
+**Hydrogen** comes from the [Electrolytic Separator](processing/electrolytic_separator), a **Proton Exchange Membrane** in its slot: water split by electricity. A [Cryogenic Condenser](processing/cryogenic_condenser) draws the **argon** the crystals grow under.
 
 The crucible each crystal grows in is fused from quartz and sand.
 """),
-    machine("chemistry", "", fluid="hydrogen"),
+    machine("electrolysis", "", fluid="hydrogen"),
     machine("arc_smelting", "", item="quartz_crucible"),
     text("""
 The chips are printed in the [Clean Room](processing/clean_room) with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Rad-hard chips are sealed in a **ceramic package**: clay fired round gold leads.
@@ -641,6 +652,10 @@ Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn lik
     machine("chemistry", "", fluid="hydrofluoric_acid"),
     machine("arc_smelting", "", item="red_phosphorus"),
     machine("arc_smelting", "", item="ceramic_package"),
+    text("""
+**Military-grade chips** are built on **sapphire**, as real radiation-hardened ones are (silicon-on-sapphire). **Alumina** is leached out of clay with sulfuric acid in the Chemical Plant; the [Crystal Puller](processing/crystal_puller) grows it into sapphire in a **tungsten crucible**, and the saw cuts the crystal into wafers. Quantum chips are built on sapphire too.
+"""),
+    machine("chemistry", "", item="alumina"),
 ])
 
 entry("components/parts", "Machine parts", "machine_frame", ["machine_frame", "electric_motor", "servo", "heating_element", "pressure_vessel",
@@ -959,6 +974,8 @@ A warhead is three parts: a **payload core**, which decides what the warhead doe
 
 **Take Apart** does the reverse: with the three part slots empty, a warhead in the output slot comes apart into its core, a casing and its fuze, so a fuze can be swapped or set again.
 
+**Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
+
 The bench is two blocks wide, and its side configuration (the wrench tab) covers both halves: each half's top, front, bottom and back, and its two ends, can be set separately.
 """),
     spot("assembly_bench", """
@@ -1048,7 +1065,9 @@ entry("ordnance/missile_assemblers", "Missile Assemblers", "light_missile_assemb
                                                                                    "light_missile_assembler_spawner", "medium_missile_assembler_spawner",
                                                                                    "heavy_missile_assembler_spawner", "strategic_missile_assembler_spawner"], [
     text("""
-A **missile assembler** builds [missiles](ordnance/missiles): one for each class of warhead, each a bigger structure than the last and a harder one to craft. Each takes only its own class: a warhead of that class, the class's missile body, a motor that fits it, and optionally a guidance unit and Hardened Electronics. Its screen is the [bench's](ordnance/assembly), with the missile the parts make turning in the window on the right. Press **Assemble**; while it works the crane lays the missile out section by section (motor and fins, then the body, then the warhead) and the finished missile waits on the cradles until you take it out. **Take Apart** gives every part back. Each draws power through an Energy Port, and pipes feed and empty it through an Item Port.
+A **missile assembler** builds [missiles](ordnance/missiles): one for each class of warhead, each a bigger structure than the last and a harder one to craft. Each takes only its own class: a warhead of that class, the class's missile body, a motor that fits it, and optionally a guidance unit and Hardened Electronics. Its screen is the [bench's](ordnance/assembly), with the missile the parts make turning in the window on the right. Press **Assemble**; while it works the crane lays the missile out section by section (motor and fins, then the body, then the warhead) and the finished missile waits on the cradles until you take it out. **Take Apart** gives every part back. Each draws power through an Energy Port, and pipes feed and empty it through an Item Port: its hatch in the deck, or its mouth in the deck's edge under it (parts go in and finished missiles come out through either).
+
+**Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
 
 **Light** (class S: HE, Napalm, Chemical, Toxic Waste, Dirty): 10 seconds at 20 FE a tick. **Medium** (class M: Heavy HE, Cluster, Poison Gas, Smoke, Cryo): 15 seconds at 40 FE a tick. These two also build [cruise missiles](ordnance/missiles): give one a Cruise Engine for its motor. **Heavy** (class L: Thermobaric, Bunker Buster, EMP, Massive Ordnance): 20 seconds at 80 FE a tick. **Strategic** (class XL, the nuclear warheads): 30 seconds at 160 FE a tick.
 """),
@@ -1240,20 +1259,21 @@ Out of its box, each climbs on its booster, drops it, unfolds its wings and turn
 ])
 
 entry("ordnance/vertical_launch_battery", "Vertical Launch Battery", "vertical_launch_battery", ["vertical_launch_battery", "strike_cell",
-                                                                                         "vertical_launch_battery_spawner"], [
+                                                                                         "missile_canister", "vertical_launch_battery_spawner"], [
     text("""
-The **Vertical Launch Battery** saturates an area: sixteen **Strike Cells** in two eight-cell modules, each holding one Light or Medium [missile](ordnance/missiles) under an armoured hatch, all fired in one volley. It takes conventional warheads only (nothing nuclear or exotic) and no cruise missiles. A [Launch Computer](ordnance/launch_site), the [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator) aims, arms and fires it like any launcher.
+The **Vertical Launch Battery** saturates an area: sixteen cells in two eight-cell modules sunk into the ground, each holding one Light or Medium [missile](ordnance/missiles) upright under an armoured hatch, all fired in one volley. Each cell is six blocks deep, as long as a Medium missile: a **Strike Cell** at the top (its hatch and launch electronics) over five **Missile Canisters**. It takes conventional warheads only (nothing nuclear or exotic) and no cruise missiles. A [Launch Computer](ordnance/launch_site), the [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator) aims, arms and fires it like any launcher.
 
 Load a missile into each cell (right-click the controller, or pipe them into its Item Port) and power it: 20,000 FE a missile (it holds 640,000, enough for two full volleys). Its range is its shortest missile's.
 """),
-    structure("vertical_launch_battery", "A walkway of four Launch Pads with the controller second from the left; behind it sixteen Strike Cells four by four, the air over them clear for their hatches; at the back Machine Casing, the Energy Port, the Item Port and Machine Casing."),
+    structure("vertical_launch_battery", "Dig a pit four by four and five deep and fill it with Missile Canisters. On top of them, level with the ground, sixteen Strike Cells four by four, the air over them clear for their hatches. In front of the cells a walkway of four Launch Pads with the controller second from the left; behind them Machine Casing, the Energy Port, the Item Port and Machine Casing."),
     text("""
 **The spread.** On its screen, the dotted button picks the pattern its missiles land in round the target: all on the **point**, a **line** across the line of attack, a **ring**, or a **grid**; the arrows set how far apart, up to 48 blocks. Each missile goes to its own point (and its own guidance's scatter on top).
 
-**Firing.** The siren sounds and the count runs 10 seconds while the beacon at its back turns. Then it **ripples**: one cell every quarter of a second, back and forth across the two modules, each hatch swinging open as its missile lights, the blast venting up the module's uptake. A full load is in the air in four seconds. An EMP, a redstone signal or a broken structure stops the ripple; whatever has not gone stays loaded.
+**Firing.** The siren sounds and the count runs 10 seconds while the beacon at its back turns. Then it **ripples**: one cell every quarter of a second, back and forth across the two modules. Each hatch swings open, the missile's motor lights at the foot of its cell, its blast roaring up the module's uptake, and half a second later the missile climbs straight up out of the cell and away. A full load is in the air in four seconds. An EMP, a redstone signal or a broken structure stops the ripple; whatever has not gone stays loaded.
 """),
     craft("vertical_launch_battery"),
     craft("strike_cell"),
+    craft("missile_canister"),
 ])
 
 entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [
@@ -1329,7 +1349,7 @@ On open ground it eats its way out to about **74 blocks** by the end of its minu
 **Lightning** comes down all over the region, **six strikes a second** at its height: a third of them at creatures standing in the open, a third at whatever stands tallest (trees, towers, hilltops), the rest anywhere. A strike does what lightning does (a creeper is charged, a pig turned) and more: it **chains** on to the nearest creature within 6 blocks, and on again, up to four jumps, each weaker. Every strike **explodes** where it comes down, blowing out a small crater about three blocks round with fires round its rim; it burns grass to dirt and fuses sand to glass round it, burns leaves away, and sends out an **EMP pulse**, a ring of blue sparks running out along the ground: every machine within **24 blocks** goes dark for twelve seconds, interceptors flying through it are fried, and a missile flown through it may turn a dud. At the storm's height almost anywhere in it sits under a pulse most of the time, so **missile defences inside it are knocked out**: send your next missiles in while it rages, fitted with Hardened Electronics so its pulses cannot touch them. Thunder cracks close by and rolls on from far off.
 """),
     text("""
-**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater, no EMP pulse), giving a redstone pulse each time: rods round a base keep its machines and defences running.
+**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater, no fire), giving a redstone pulse each time. But the current pouring down the rod still sends out the strike's **EMP pulse**: rods keep a base from being blasted, not its machines and defences from going dark.
 
 **The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it.
 """),
@@ -1340,7 +1360,7 @@ entry("ordnance/strategic_assembly", "ICBM Assembly Hall", "strategic_assembly_h
     text("""
 The **ICBM Assembly Hall** builds the biggest weapons whole. No missile body takes a two-stage thermonuclear warhead, so the hall puts the warhead and its missile together at once: an **intercontinental missile** (an ICBM), ready for the [Launch Complex](ordnance/launch_complex) or the [Missile Silo](ordnance/missile_silo). It is a long crane hall; while it works, the crane lays the missile on its cradles section by section. Each of its three warheads has an ICBM of its own: a drab three-stage one for the thermonuclear warhead, a dark blue one for the cobalt and the Tsar's clustered giant. The exotic weapons have an assembler of their own, the [Special Weapons Assembler](ordnance/special_weapons). (Not to be confused with the [Strategic Missile Assembler](ordnance/missile_assemblers), which builds the two-stage Strategic missiles for the fission warheads.)
 
-Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port.
+Fit a **Boosted Fission Core** (the primary, from the [Assembly Bench's](ordnance/assembly) cores), a **Fusion Secondary** and an **Intercontinental Booster**: that makes a thermonuclear warhead. The slot beside the secondary takes one more part: a **Cobalt-59 Jacket** makes a [cobalt warhead](ordnance/nuclear) instead, a **Tertiary Stage** the **Tsar Mega-bomb**, whose primary is a **Twin Boosted Core** (two Boosted Fission Cores, two tritium canisters, a military circuit and a dense steel plate) in place of the Boosted Fission Core. A guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute's work at 250 FE a tick, a minute and a half for the Tsar. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port, from above or from the floor's back edge. **Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
 """),
     text("""
 An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer's](ordnance/launch_site) map reaches, from a Launch Complex or a Missile Silo. Its warhead goes off where it lands. What its warheads do is under [Nuclear warheads](ordnance/nuclear) and [Exotic warheads](ordnance/exotic).
@@ -1362,7 +1382,7 @@ The **Special Weapons Assembler** builds the [exotic weapons](ordnance/exotic) w
 It is a containment bay: three magnetic **containment rings** stand across it, and the missile is laid on its cradles through them, section by section, the warhead last. While it works the rings' rotors turn and their fields glow violet round the missile.
 """),
     text("""
-Fit an **Antimatter Trap**, a **Singularity Core** or a **Storm Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port, and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers.
+Fit an **Antimatter Trap**, a **Singularity Core** or a **Storm Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port (from above or from the floor's back edge), and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers. **Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
 
 The cores themselves are crafted: see [Exotic warheads](ordnance/exotic).
 """),

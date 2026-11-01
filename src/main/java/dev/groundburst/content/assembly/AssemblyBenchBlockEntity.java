@@ -47,7 +47,13 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     public static final int SLOT_CORE = 0, SLOT_CASING = 1, SLOT_FUZE = 2, SLOT_WARHEAD = 3;
     /** The missile page's old slots (4-9): kept so older worlds load, emptied beside the bench. */
     private static final int RETIRED_FROM = 4, SLOTS = 10;
-    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1;
+    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1, BUTTON_AUTO = 2;
+
+    /**
+     * AUTO ASSEMBLE (the user's request): while it is on, the next job starts by itself as soon as the parts are in and
+     * the output is clear (a finished one taken out by hand or by pipe), so a fed line keeps building.
+     */
+    private boolean auto;
     public static final int ENERGY_PER_TICK = 10, CAPACITY = 20_000;
 
     private static final String T_MAKES = GBLang.add(GroundBurst.MODID + ".assembly.makes", "Makes: %s");
@@ -129,11 +135,23 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     // --- the buttons ------------------------------------------------------------------------------------------------------
+    /** AUTO ASSEMBLE on or off. */
+    public boolean toggleAuto() {
+        this.auto = !this.auto;
+        setChanged();
+        return true;
+    }
+
+    public boolean autoAssemble() {
+        return this.auto;
+    }
+
     @Override
     public boolean handleButton(int button) {
         return switch (button) {
             case BUTTON_ASSEMBLE -> startAssembly();
             case BUTTON_TAKE_APART -> takeApart();
+            case BUTTON_AUTO -> toggleAuto();
             default -> false;
         };
     }
@@ -188,6 +206,9 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     protected boolean tickMachine(ServerLevel level) {
         if (!this.retiredChecked) {
             dropRetired(level);
+        }
+        if (!assembling() && this.auto) {
+            startAssembly();                                       // AUTO: the next one as soon as it can
         }
         if (!assembling()) {
             this.status = MachineStatus.IDLE;
@@ -245,11 +266,11 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_FUZE_VALUE = 3;
+    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_FUZE_VALUE = 3, DATA_AUTO = 4;
 
     @Override
     protected int extraDataCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -258,6 +279,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
             case DATA_PROGRESS -> this.progress;
             case DATA_TOTAL -> this.total;
             case DATA_FUZE_VALUE -> fuzeValue();
+            case DATA_AUTO -> this.auto ? 1 : 0;
             default -> problem().ordinal();
         };
     }
@@ -335,6 +357,7 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putIntArray("fuze_values", this.fuzeValues);
+        output.putBoolean("auto", this.auto);
     }
 
     @Override
@@ -343,5 +366,6 @@ public class AssemblyBenchBlockEntity extends MachineBlockEntity implements Anim
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         input.getIntArray("fuze_values").ifPresent(v -> System.arraycopy(v, 0, this.fuzeValues, 0, Math.min(v.length, this.fuzeValues.length)));
+        this.auto = input.getBooleanOr("auto", false);
     }
 }

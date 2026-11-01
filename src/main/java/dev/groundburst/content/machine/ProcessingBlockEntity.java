@@ -234,8 +234,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
     private boolean shortOfFluid(ServerLevel level, MachineRecipeInput input) {
         for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GBRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
-            if (recipe.fluids().isEmpty() || recipe.assignSlots(input) == null
-                    || recipe.catalyst().isPresent() && !recipe.catalyst().get().test(input.catalyst())) {
+            if (recipe.fluids().isEmpty() || recipe.assignSlots(input) == null || !recipe.catalystFits(input.catalyst())) {
                 continue;
             }
             boolean started = !recipe.inputs().isEmpty() || recipe.fluids().stream().anyMatch(need -> input.fluids().stream()

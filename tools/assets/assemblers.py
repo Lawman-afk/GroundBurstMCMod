@@ -86,9 +86,14 @@ def housing(g: GeoModel, cx: float, cz: float, edge: str = "back") -> None:
         g.box("housing", (cx - 5, DECK_Y, cz + 3), (cx + 5, 19, cz + 8), faces=NO_DOWN, bone="frame")
 
 
-def hatch(g: GeoModel, cx: float, cz: float) -> None:
-    """The Item Port: a hatch in the deck over its block."""
+def hatch(g: GeoModel, cx: float, cz: float, edge: str = "south") -> None:
+    """The Item Port: a hatch in the deck over its block, and its mouth on the deck's outer face beside it ({edge}: the
+    face of its block on the structure's edge), so pipes can feed it from above and from the side."""
     g.box("item_port", (cx - 7, DECK_Y, cz - 7), (cx + 7, DECK_Y + 0.5, cz + 7), faces=NO_DOWN, bone="frame")
+    if edge == "west":
+        g.box("item_port_side", (cx - 8.5, 2, cz - 6), (cx - 8, 12, cz + 6), faces=("west", "north", "south", "up", "down"), bone="frame")
+    else:
+        g.box("item_port_side", (cx - 6, 2, cz + 8), (cx + 6, 12, cz + 8.5), faces=("south", "east", "west", "up", "down"), bone="frame")
 
 
 def cradle(g: GeoModel, i: int, zc: float, inner: float, base_top: float, top: float) -> list[str]:
@@ -123,9 +128,10 @@ def paint_deck(S: M.Surfacer, tex: Tex, bounds, bay_half: float, seed: int, bay_
     S.overlay(tex, "deck", floor, only=("up",))
 
 
-def paint_ports(S: M.Surfacer, g: GeoModel, tex: Tex, plug: str = "south") -> None:
+def paint_ports(S: M.Surfacer, g: GeoModel, tex: Tex, plug: str = "south", side: str = "south") -> None:
     """The console, the Energy Port's housing (its socket on its outer face: "south" for a back edge, "west" for the
-    +x edge, as GeckoLib models name their faces) and the Item Port's grated hatch (hazard-bordered)."""
+    +x edge, as GeckoLib models name their faces), the Item Port's grated hatch (hazard-bordered) and its mouth on the
+    deck's {side} face."""
     L._console(S, g, tex, "console")
     L._power_housing(S, g, tex, "housing", plug=plug)
     S.paint(tex, "item_port", M.steel(tone=0.4, brushed=0.04, rust=0.08))
@@ -144,6 +150,7 @@ def paint_ports(S: M.Surfacer, g: GeoModel, tex: Tex, plug: str = "south") -> No
                 t.hline(cx - 3, yy, 7, P.STEEL[5])
                 t.hline(cx - 3, yy + 1, 7, P.BLACK_PAINT.deep)
     g.paint_all(tex, "item_port", grate)
+    L._paint_side_port(S, g, tex, "item_port_side", side)
 
 
 def paint_cradles(S: M.Surfacer, tex: Tex, names: list[str]) -> None:
@@ -197,7 +204,7 @@ def light() -> None:
     deck(g, -24, 24, -8, 88)
     console(g)
     housing(g, 16, 64, edge="east")                       # on the deck's right-hand edge
-    hatch(g, -16, 64)
+    hatch(g, -16, 64, edge="west")
     cradles = []
     for i, h in enumerate(c["at"]):
         cradles += cradle(g, i, c["tail"] - h, 5, 16, c["top"])
@@ -246,7 +253,7 @@ def light() -> None:
     tex = Tex(g.tex_w, g.tex_h)
     S = M.Surfacer(g, seed=71)
     paint_deck(S, tex, (-24, 24, -8, 88), 10, 71, bay_z=(10, 86))
-    paint_ports(S, g, tex, plug="west")
+    paint_ports(S, g, tex, plug="west", side="west")
     paint_cradles(S, tex, cradles)
     olive = M.painted(M.OLIVE_RAMP, tone=0.55, wear=0.3, rust=0.08)
     S.paint(tex, frames + heads, olive)

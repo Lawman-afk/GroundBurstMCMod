@@ -65,7 +65,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  */
 public class MissileAssemblerBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, MissileCarrier {
     public static final int SLOT_WARHEAD = 0, SLOT_BODY = 1, SLOT_MOTOR = 2, SLOT_GUIDANCE = 3, SLOT_MODULE = 4, SLOT_OUTPUT = 5;
-    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1;
+    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1, BUTTON_AUTO = 2;
     /** The sections a missile is laid in: its motor and fins (or first stage), its body (or second stage), its warhead. */
     public static final int SECTIONS = 3;
     private static final int RECHECK_INTERVAL = 40;
@@ -88,6 +88,12 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     /** What the model shows: how many sections are laid, and whose missile they are (the warhead's id; empty: none). */
     private int laid;
     private String shown = "";
+
+    /**
+     * AUTO ASSEMBLE (the user's request): while it is on, the next job starts by itself as soon as the parts are in and
+     * the output is clear (a finished one taken out by hand or by pipe), so a fed line keeps building.
+     */
+    private boolean auto;
 
     public MissileAssemblerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, AssemblerClass kind) {
         super(type, pos, state, kind.capacity, kind.energyPerTick * 50, 0, 6,
@@ -149,11 +155,23 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     }
 
     // --- the buttons ------------------------------------------------------------------------------------------------------
+    /** AUTO ASSEMBLE on or off. */
+    public boolean toggleAuto() {
+        this.auto = !this.auto;
+        setChanged();
+        return true;
+    }
+
+    public boolean autoAssemble() {
+        return this.auto;
+    }
+
     @Override
     public boolean handleButton(int button) {
         return switch (button) {
             case BUTTON_ASSEMBLE -> startAssembly();
             case BUTTON_TAKE_APART -> takeApart();
+            case BUTTON_AUTO -> toggleAuto();
             default -> false;
         };
     }
@@ -213,6 +231,9 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         if (!isFormed()) {
             this.status = MachineStatus.INCOMPLETE;
             return false;
+        }
+        if (!assembling() && this.auto) {
+            startAssembly();                                       // AUTO: the next one as soon as it can
         }
         if (!assembling()) {
             this.status = MachineStatus.IDLE;
@@ -303,11 +324,11 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2;
+    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_AUTO = 3;
 
     @Override
     protected int extraDataCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -315,6 +336,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         return switch (index) {
             case DATA_PROGRESS -> this.progress;
             case DATA_TOTAL -> this.total;
+            case DATA_AUTO -> this.auto ? 1 : 0;
             default -> problem().ordinal();
         };
     }
@@ -499,6 +521,7 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
         output.putString("shown", this.shown);
+        output.putBoolean("auto", this.auto);
     }
 
     @Override
@@ -508,5 +531,6 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);
         this.shown = input.getStringOr("shown", "");
+        this.auto = input.getBooleanOr("auto", false);
     }
 }

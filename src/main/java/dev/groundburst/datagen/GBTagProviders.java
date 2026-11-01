@@ -149,6 +149,7 @@ public final class GBTagProviders {
                     dev.groundburst.content.launch.GBLaunch.MISSILE_SILO_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.block().key(), dev.groundburst.content.launch.GBLaunch.STRIKE_CELL.block().key(),
+                    dev.groundburst.content.launch.GBLaunch.MISSILE_CANISTER.block().key(),
                     dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.block().key());
             for (var c : dev.groundburst.content.assembler.AssemblerClass.values()) {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.assembler.GBAssemblers.controller(c).block().key());

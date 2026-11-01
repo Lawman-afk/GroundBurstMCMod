@@ -591,6 +591,12 @@ public class GBRecipeProvider extends RecipeProvider {
                 .define('A', GBTags.ADVANCED_CIRCUITS)
                 .pattern("DSD").pattern("DFD").pattern("DAD")
                 .unlockedBy("has_advanced_circuit", has(GBTags.ADVANCED_CIRCUITS)).save(output);
+        // A Missile Canister: a cell's length of steel tube on its guide rails (iron bars), four at a time; eighty of them
+        // under the Strike Cells make the cells deep enough for a Medium missile.
+        shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.launch.GBLaunch.MISSILE_CANISTER.item(), 4)
+                .define('P', GBTags.commonItem("plates/steel")).define('B', Items.IRON_BARS)
+                .pattern("PBP").pattern("B B").pattern("PBP")
+                .unlockedBy("has_advanced_circuit", has(GBTags.ADVANCED_CIRCUITS)).save(output);
         shaped(RecipeCategory.REDSTONE, dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.item(), 1)
                 .define('C', GBParts.CRT_DISPLAY).define('S', GBParts.SENSOR_ARRAY).define('M', GBParts.MILITARY_CIRCUIT)
                 .define('Q', GBParts.QUANTUM_CIRCUIT).define('X', GBMultiblocks.MACHINE_CASING.item())
@@ -1087,6 +1093,10 @@ public class GBRecipeProvider extends RecipeProvider {
         // Products go to the machines' output tanks; canisters and buckets fill there (or pipes take them away).
         machine(ProcessingKind.ELECTROLYSIS, "electrolysis/deuterium", List.of(), null, List.of(water(8_000)),
                 List.of(), List.of(fluidOut(GBFluids.DEUTERIUM, 1_000)), 400, ElectrolyticSeparatorBlockEntity.ENERGY_PER_TICK);
+        // With a proton exchange membrane in its slot it splits water for hydrogen (the oxygen vented); a recipe with no
+        // catalyst only runs with the slot empty, so the membrane picks which.
+        machine(ProcessingKind.ELECTROLYSIS, "electrolysis/hydrogen", List.of(), Ingredient.of(GBParts.PROTON_EXCHANGE_MEMBRANE),
+                List.of(water(1_000)), List.of(), List.of(fluidOut(GBFluids.HYDROGEN, 1_000)), 200, ElectrolyticSeparatorBlockEntity.ENERGY_PER_TICK);
         int cryo = CryogenicCondenserBlockEntity.ENERGY_PER_TICK;
         machine(ProcessingKind.CRYO_CONDENSING, "cryo_condensing/liquid_oxygen", List.of(), Ingredient.of(GBParts.OXYGEN_MEMBRANE), List.of(),
                 List.of(), List.of(fluidOut(GBFluids.LIQUID_OXYGEN, 1_000)), 300, cryo);
@@ -1103,6 +1113,12 @@ public class GBRecipeProvider extends RecipeProvider {
         membrane(GBParts.OXYGEN_MEMBRANE, Items.LAPIS_LAZULI);
         membrane(GBParts.NITROGEN_MEMBRANE, Items.QUARTZ);
         membrane(GBParts.ARGON_SIEVE, GBChemicals.SALT);   // a sodium zeolite
+        // A polymer membrane (the plastic) between its catalyst layers (gold for the platinum), in a steel frame.
+        shaped(RecipeCategory.TOOLS, GBParts.PROTON_EXCHANGE_MEMBRANE, 1)
+                .define('R', GBTags.commonItem("rods/steel")).define('P', GBChemicals.PLASTIC_SHEET).define('W', GBTags.commonItem("wires/gold"))
+                .pattern("RPR").pattern("WPW").pattern("RPR")
+                .unlockedBy(getHasName(GBChemicals.PLASTIC_SHEET), has(GBChemicals.PLASTIC_SHEET))
+                .save(output);
         // DESIGN.md §26.4: the separator and the condenser take a basic circuit (the condenser feeds the chip chain, §8.1).
         shaped(RecipeCategory.REDSTONE, GBMachines.ELECTROLYTIC_SEPARATOR.item(), 1)
                 .define('W', GBTags.commonItem("wires/gold")).define('G', Items.GLASS).define('P', GBTags.commonItem("plates/copper"))
@@ -1167,8 +1183,7 @@ public class GBRecipeProvider extends RecipeProvider {
                 null, 300, fe);
         // Phase 15: a damaged warhead found in an old silo or a crashed missile, its core leached out with acid.
         // The semiconductor chain (DESIGN.md §8.1).
-        // Hydrogen from an oxygen-blown gasifier: coal, steam and oxygen.
-        chem("hydrogen", List.of(in(coal, 1)), List.of(water(1_000), fluid(GBFluids.LIQUID_OXYGEN, 250)), List.of(), GBFluids.HYDROGEN, 240, fe);
+        // (Hydrogen comes from the Electrolytic Separator, its proton exchange membrane fitted: gases().)
         chem("hydrogen_chloride", List.of(), List.of(fluid(GBFluids.HYDROGEN, 1_000), fluid(GBFluids.CHLORINE, 1_000)),
                 List.of(), GBFluids.HYDROGEN_CHLORIDE, 200, fe);
         chem("trichlorosilane", List.of(in(Ingredient.of(GBParts.SILICON), 1)), List.of(fluid(GBFluids.HYDROGEN_CHLORIDE, 1_000)),
@@ -1181,6 +1196,9 @@ public class GBRecipeProvider extends RecipeProvider {
                 List.of(), GBFluids.PHOTORESIST, 300, fe);
         chem("hydrofluoric_acid", List.of(in(tag(GBTags.commonItem("dusts/fluorite")), 1)), List.of(fluid(GBFluids.SULFURIC_ACID, 1_000)),
                 List.of(), GBFluids.HYDROFLUORIC_ACID, 300, fe);
+        // Alumina leached out of clay (kaolin) with sulfuric acid and calcined: what sapphire is grown from (rad-hard chips).
+        chem("alumina", List.of(in(Ingredient.of(Items.CLAY_BALL), 4)), List.of(fluid(GBFluids.SULFURIC_ACID, 1_000)),
+                List.of(out(GBParts.ALUMINA, 2)), null, 300, fe);
         chem("salvaged_warhead", List.of(in(Ingredient.of(dev.groundburst.content.salvage.GBSalvage.DAMAGED_WARHEAD), 1)), List.of(fluid(GBFluids.SULFURIC_ACID, 1_000)),
                 List.of(out(dev.groundburst.content.nuclear.GBNuclear.ENRICHED_URANIUM_NUGGET, 4),
                         new ProcessingRecipe.Output(new ItemStackTemplate(dev.groundburst.content.nuclear.GBNuclear.PLUTONIUM_NUGGET.get(), 2), 0.5f),
@@ -1303,9 +1321,8 @@ public class GBRecipeProvider extends RecipeProvider {
                 in(rareEarth, 1)), List.of(), out(GBParts.ADVANCED_CIRCUIT, 1), 300);
         fab("military_circuit", List.of(in(advanced, 2), in(Ingredient.of(GBParts.RAD_HARD_MICROCHIP), 2), in(goldWire, 2),
                 in(tag(Tags.Items.GEMS_DIAMOND), 1)), List.of(), out(GBParts.MILITARY_CIRCUIT, 1), 400);
-        fab("quantum_circuit", List.of(in(Ingredient.of(GBParts.MILITARY_CIRCUIT), 1),
-                in(Ingredient.of(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER), 1), in(Ingredient.of(GBParts.SUPERCONDUCTING_COIL), 1)),
-                List.of(), out(GBParts.QUANTUM_CIRCUIT, 1), 600);
+        fab("quantum_circuit", List.of(in(Ingredient.of(GBParts.MILITARY_CIRCUIT), 1), in(Ingredient.of(GBParts.QUANTUM_CHIP), 2),
+                in(Ingredient.of(GBParts.SUPERCONDUCTING_COIL), 1)), List.of(), out(GBParts.QUANTUM_CIRCUIT, 1), 600);
         fab("sensor_array", List.of(in(advanced, 1), in(tag(Tags.Items.GLASS_BLOCKS_COLORLESS), 1), in(rareEarth, 1), in(goldWire, 2)),
                 List.of(), out(GBParts.SENSOR_ARRAY, 1), 300);
         fab("superconducting_coil", List.of(in(filament, 2), in(rareEarth, 1), in(goldWire, 2)),
@@ -1644,6 +1661,19 @@ public class GBRecipeProvider extends RecipeProvider {
         press("silicon_wafer", Ingredient.of(GBParts.SILICON_BOULE), 1, Ingredient.of(GBParts.DIAMOND_WIRE_SAW), GBParts.SILICON_WAFER, 8, 300,
                 IndustrialPressBlockEntity.ENERGY_PER_TICK);
         die(GBParts.DIAMOND_WIRE_SAW, Items.DIAMOND);
+        // Sapphire for silicon-on-sapphire (rad-hard chips) and quantum chips: alumina melted at 2 050 °C in a tungsten
+        // crucible under argon, a crystal drawn from it, slower than silicon's; sawn slower, fewer slices (it is hard).
+        machine(ProcessingKind.CRYSTAL_PULLING, "crystal_pulling/sapphire_boule",
+                List.of(in(Ingredient.of(GBParts.ALUMINA), 4), in(Ingredient.of(GBParts.TUNGSTEN_CRUCIBLE), 1)), null,
+                List.of(fluid(GBFluids.ARGON, 1_000)), List.of(out(GBParts.SAPPHIRE_BOULE, 1)), List.of(), 1_600,
+                dev.groundburst.content.machine.CrystalPullerBlockEntity.ENERGY_PER_TICK);
+        press("sapphire_wafer", Ingredient.of(GBParts.SAPPHIRE_BOULE), 1, Ingredient.of(GBParts.DIAMOND_WIRE_SAW), GBParts.SAPPHIRE_WAFER, 6, 600,
+                IndustrialPressBlockEntity.ENERGY_PER_TICK);
+        shaped(RecipeCategory.MISC, GBParts.TUNGSTEN_CRUCIBLE, 1)
+                .define('T', GBTags.commonItem("plates/tungsten"))
+                .pattern("T T").pattern("TTT")
+                .unlockedBy(getHasName(GBParts.ALUMINA), has(GBParts.ALUMINA))
+                .save(output);
         shaped(RecipeCategory.REDSTONE, GBMachines.CRYSTAL_PULLER.item(), 1)
                 .define('P', GBTags.commonItem("plates/steel")).define('M', GBParts.ELECTRIC_MOTOR).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
                 .define('V', GBParts.PRESSURE_VESSEL).define('H', GBParts.HEATING_ELEMENT).define('F', GBParts.MACHINE_FRAME)
@@ -1655,9 +1685,10 @@ public class GBRecipeProvider extends RecipeProvider {
 
     /**
      * The Clean Room (DESIGN.md §8.1): chips printed on wafers with photoresist, etched with hydrofluoric acid and doped with
-     * phosphorus. Microchips are moulded in plastic, rad-hard ones built on silicon-on-insulator (two wafers bonded over
-     * an oxide grown in liquid oxygen) and sealed in a ceramic package; each takes a package the other does not, so
-     * neither recipe is satisfied by the other's ingredients. Its blocks take basic circuits only.
+     * phosphorus. Microchips are moulded in plastic; rad-hard ones are silicon-on-sapphire (a silicon film grown on
+     * sapphire from trichlorosilane) sealed in a ceramic package; quantum chips hold their qubits in stabilised exotic
+     * matter on sapphire, its superconducting film sputtered under argon. No recipe is satisfied by another's ingredients
+     * (each takes something the others do not). Its blocks take basic circuits only.
      */
     private void cleanRoom() {
         int fe = dev.groundburst.content.machine.CleanRoomBlockEntity.ENERGY_PER_TICK;
@@ -1666,10 +1697,15 @@ public class GBRecipeProvider extends RecipeProvider {
                 List.of(in(wafer, 1), in(phosphorus, 1), in(Ingredient.of(GBChemicals.PLASTIC_SHEET), 1)), null,
                 List.of(fluid(GBFluids.PHOTORESIST, 250), fluid(GBFluids.HYDROFLUORIC_ACID, 250)),
                 List.of(out(GBParts.MICROCHIP, 4)), List.of(), 600, fe);
+        Ingredient sapphire = Ingredient.of(GBParts.SAPPHIRE_WAFER), ceramic = Ingredient.of(GBParts.CERAMIC_PACKAGE);
         machine(ProcessingKind.LITHOGRAPHY, "lithography/rad_hard_microchip",
-                List.of(in(wafer, 2), in(phosphorus, 1), in(Ingredient.of(GBParts.CERAMIC_PACKAGE), 1)), null,
-                List.of(fluid(GBFluids.PHOTORESIST, 500), fluid(GBFluids.HYDROFLUORIC_ACID, 500), fluid(GBFluids.LIQUID_OXYGEN, 500)),
+                List.of(in(sapphire, 2), in(phosphorus, 1), in(ceramic, 1)), null,
+                List.of(fluid(GBFluids.PHOTORESIST, 500), fluid(GBFluids.HYDROFLUORIC_ACID, 500), fluid(GBFluids.TRICHLOROSILANE, 500)),
                 List.of(out(GBParts.RAD_HARD_MICROCHIP, 2)), List.of(), 1_200, fe);
+        machine(ProcessingKind.LITHOGRAPHY, "lithography/quantum_chip",
+                List.of(in(sapphire, 1), in(Ingredient.of(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER), 1), in(ceramic, 1)), null,
+                List.of(fluid(GBFluids.PHOTORESIST, 500), fluid(GBFluids.HYDROFLUORIC_ACID, 500), fluid(GBFluids.ARGON, 1_000)),
+                List.of(out(GBParts.QUANTUM_CHIP, 2)), List.of(), 1_600, fe);
 
         shapeless(RecipeCategory.BUILDING_BLOCKS, GBMultiblocks.CLEAN_ROOM_PANEL.item(), 2)
                 .requires(GBTags.commonItem("plates/steel")).requires(GBChemicals.PLASTIC_SHEET).requires(GBChemicals.PLASTIC_SHEET)

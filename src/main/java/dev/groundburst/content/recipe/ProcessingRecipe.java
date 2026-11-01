@@ -79,13 +79,22 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
                 (in, cat, fl, out, flOut, time, fe) -> new ProcessingRecipe(kind, in, cat, fl, out, flOut, time, fe));
     }
 
-    /** Every ingredient must be satisfied by a different input slot, every fluid by a different input tank. */
+    /**
+     * Every ingredient must be satisfied by a different input slot, every fluid by a different input tank; the catalyst
+     * must sit in its slot, and a recipe with none only runs with that slot empty (the Electrolytic Separator: with its
+     * membrane fitted, hydrogen; without, deuterium).
+     */
     @Override
     public boolean matches(MachineRecipeInput input, Level level) {
-        if (this.catalyst.isPresent() && !this.catalyst.get().test(input.catalyst())) {
+        if (!catalystFits(input.catalyst())) {
             return false;
         }
         return assignSlots(input) != null && assignTanks(input) != null;
+    }
+
+    /** Whether what sits in the machine's catalyst slot suits this recipe: its catalyst, or nothing if it takes none. */
+    public boolean catalystFits(ItemStack inSlot) {
+        return this.catalyst.isPresent() ? this.catalyst.get().test(inSlot) : inSlot.isEmpty();
     }
 
     /** Slot index used for each ingredient, or null if the inputs don't satisfy the recipe. */

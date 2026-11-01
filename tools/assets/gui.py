@@ -63,7 +63,7 @@ LAYOUTS = {
     },
     "electrolytic_separator": {
         "title": (8, 6),
-        "slots": [],
+        "slots": [("membrane", 57, 35)],
         "energy": (8, 20, 14, 46),
         "tanks": [(40, 20, 12, 46, "H2O", False), (116, 20, 12, 42, None, True)],
         "progress": (79, 34, 24, 17),
@@ -222,11 +222,11 @@ LAYOUTS = {
         "progress": None,
         "flame": None,
         "status": (190, 5, 8, 8),
-        "redstone": (180, 88, 18, 18),
-        "readout": (106, 18, 92, 44),
-        "controls": [("pattern", 106, 66, 40, 18, -1, 0, 0, "groundburst.gui.vls_pattern"),
-                     ("closer", 150, 66, 22, 18, -1, 0, 2, "groundburst.gui.vls_closer"),
-                     ("wider", 176, 66, 22, 18, -1, 0, 1, "groundburst.gui.vls_wider")],
+        "redstone": (180, 90, 18, 18),
+        "readout": (106, 18, 92, 46),
+        "controls": [("pattern", 106, 68, 40, 18, -1, 0, 0, "groundburst.gui.vls_pattern"),
+                     ("closer", 150, 68, 22, 18, -1, 0, 2, "groundburst.gui.vls_closer"),
+                     ("wider", 176, 68, 22, 18, -1, 0, 1, "groundburst.gui.vls_wider")],
         "inventory": (22, 114),
     },
     # The superweapons (DESIGN.md §19.5): their ammunition (a SCUD Storm's nine Toxin SCUDs, a Nuclear Missile Silo's one
@@ -285,6 +285,7 @@ LAYOUTS = {
         "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
         "readout": (34, 50, 134, 24),
+        "controls": [("auto", 10, 98, 18, 18, 4, 0, 2, "groundburst.gui.auto_assemble")],
         "inventory": (8, 128),
     },
     # The missile assemblers (DESIGN.md §10.4; once the bench's missile page): warhead, body, motor, guidance and module
@@ -303,6 +304,7 @@ LAYOUTS = {
         "status": (272, 5, 8, 8),
         "redstone": (151, 98, 18, 18),
         "readout": (34, 50, 134, 24),
+        "controls": [("auto", 10, 98, 18, 18, 3, 0, 2, "groundburst.gui.auto_assemble")],
         "inventory": (8, 128),
     },
     # ICBM Assembly Hall (Phase 8 slice 8c): the warhead's parts (primary, secondary, an optional cobalt jacket) over
@@ -323,6 +325,7 @@ LAYOUTS = {
         "status": (272, 5, 8, 8),
         "redstone": (151, 94, 18, 18),
         "readout": (34, 64, 134, 24),
+        "controls": [("auto", 10, 94, 18, 18, 3, 0, 2, "groundburst.gui.auto_assemble")],
         "inventory": (8, 128),
     },
     # Special Weapons Assembler (Phase 11, DESIGN.md §16.15): the hall's layout with the exotic core alone over the
@@ -341,6 +344,7 @@ LAYOUTS = {
         "status": (272, 5, 8, 8),
         "redstone": (151, 94, 18, 18),
         "readout": (34, 64, 134, 24),
+        "controls": [("auto", 10, 94, 18, 18, 3, 0, 2, "groundburst.gui.auto_assemble")],
         "inventory": (8, 128),
     },
     # Interceptor Battery (Phase 10, DESIGN.md §18.2): its store of interceptor missiles, and the readout: cells ready,
@@ -913,6 +917,22 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000, 
             t.px(tip, ay + 1, P.WHITE_CERAMIC[5])
             t.vline(tip + step, ay, 3, P.WHITE_CERAMIC[5])
             t.hline(min(tip + step * 2, tip + step * 3), ay + 1, 2, P.WHITE_CERAMIC[5])
+        return
+    if kind == "auto":
+        cx, cy, r = x + w / 2 - 1, y + h / 2 + 0.5, 4.6
+        import math as _m
+        for yy in range(y + 2, y + h - 2):
+            for xx in range(x + 2, x + w - 2):
+                dx, dy = xx + 0.5 - cx, yy + 0.5 - cy
+                a = _m.degrees(_m.atan2(dy, dx))
+                if abs(_m.hypot(dx, dy) - r) < 0.75 and not -75 < a < -20:
+                    t.px(xx, yy, P.WHITE_CERAMIC[5])
+        # The arrowhead where the loop ends (upper right), pointing on round it.
+        ax, ay = round(cx + 1), round(cy - r) - 1
+        for k in range(3):
+            t.vline(ax + k, ay - (2 - k), 2 * (2 - k) + 1, P.WHITE_CERAMIC[5])
+        t.rect(x + w - 5, y + 2, 3, 3, P.BLACK_PAINT.deep)                      # its lamp (lit by the screen)
+        t.outline(x + w - 6, y + 1, 5, 5, PANEL.outline)
         return
     if kind == "pattern":
         # The spread's points: four at the corners of a square and one in its middle.

@@ -50,7 +50,9 @@ import net.minecraft.world.phys.Vec3;
  * modules, after the Navy's Mk 41 as it stands ashore. Each cell holds one Light or Medium missile, conventional only; a
  * Launch Computer, the Launch Control Station or a Laser Designator aims, arms and fires it like any launcher (it is a
  * {@link LaunchSite}). LAUNCH starts a 10 s countdown, then it ripples its whole load out, one cell every
- * {@link #RIPPLE} ticks in a spread order, each hatch swinging open as its missile lights and climbs out: every missile
+ * {@link #RIPPLE} ticks in a spread order, each hatch swinging open as its missile lights at the foot of its cell (six
+ * blocks deep: {@link #DEPTH} Missile Canisters under the Strike Cell), its blast up the module's uptake, and climbs
+ * straight out through it after {@link #HOLD} ticks: every missile
  * goes to its own point of the battery's spread round the target (a point, a line across the line of attack, a ring or
  * a grid, so far apart; set on its screen), then its own guidance's scatter. 20 000 FE a missile. An EMP, a redstone
  * halt or a broken structure stops the ripple: what has not gone stays loaded.
@@ -62,8 +64,12 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
     public static final int COUNTDOWN = 200, RIPPLE = 5, LINGER = 40;
     /** How far apart the spread's points may be set (blocks), and its step. */
     public static final int MAX_SPACING = 48, SPACING_STEP = 4;
+    /** Missile Canister layers under the Strike Cells: the cells' length below the deck (a Medium missile is 5.5 blocks). */
+    public static final int DEPTH = 5;
+    /** Ticks a motor burns at the foot of its cell before the missile moves (a pad's ignition is 40). */
+    public static final int HOLD = 10;
     /** How long a hatch stands open after its cell fires, how long it takes to swing, how far it swings (degrees). */
-    static final int HATCH_OPEN = 30, HATCH_SWING = 5;
+    static final int HATCH_OPEN = 36, HATCH_SWING = 5;
     static final float HATCH_ANGLE = 110;
     private static final int RECHECK_INTERVAL = 40;
     /**
@@ -72,7 +78,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
      * the hatches' top; the modules' uptakes (between each module's two columns).
      */
     public static final double[] CELL_X = {-16, 0, 16, 32}, CELL_Z = {16, 32, 48, 64};
-    public static final double CELL_FLOOR = 1, HATCH_TOP = 16.75;
+    public static final double CELL_FLOOR = 1 - 16 * DEPTH, HATCH_TOP = 16.75;
     static final double[] UPTAKE_X = {-8, 24};
     /** The order its cells fire in: back and forth across the two modules, so the launcher's weight stays even. */
     private static final int[] ORDER = {0, 15, 5, 10, 3, 12, 6, 9, 1, 14, 4, 11, 2, 13, 7, 8};
@@ -258,7 +264,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
     @Override
     public Timing timing() {
         Vec3 from = middle();
-        return new Timing(COUNTDOWN + 1 + MissileEntity.IGNITION, false, from.x, from.z, 0);
+        return new Timing(COUNTDOWN + 1 + HOLD, false, from.x, from.z, 0);
     }
 
     @Override
@@ -399,6 +405,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
             }
             case FIRING -> {
                 this.status = MachineStatus.RUNNING;
+                exhaust(level);
                 if (this.phaseTicks % RIPPLE == 0 && this.shot < this.queue.length) {
                     fire(level, this.shot);
                     this.shot++;
@@ -412,7 +419,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         return true;
     }
 
-    /** The {@code n}th missile of the ripple goes: its hatch swings open, it lights and climbs out of its cell. */
+    /** The {@code n}th missile of the ripple goes: its hatch swings open, it lights at the foot of its cell and climbs out. */
     private void fire(ServerLevel level, int n) {
         int cell = this.queue[n];
         MissileSpec spec = missile(cell);
@@ -426,15 +433,29 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         Vec3 from = cellFloor(cell);
         Vec3 point = new Vec3(this.aimX[n] + 0.5, this.target.getY(), this.aimZ[n] + 0.5);
         Vec3 aim = spec.guidance().aim(from, point, level.getRandom());
-        Flights.Flight flight = MissileEntity.launch(level, from, aim, spec, by, (HATCH_TOP - CELL_FLOOR) / 16.0);
+        Flights.Flight flight = Flights.launch(level, from, aim, spec, by, (HATCH_TOP - CELL_FLOOR) / 16.0, HOLD);
         LaunchNetwork.launched(level, this.worldPosition, flight);
-        // The motor's blast vented up the module's uptake beside the cell (a short burst: sixteen missiles' own exhaust is
-        // smoke enough).
-        Vec3 uptake = modelPoint(UPTAKE_X[CELL_X[cell % 4] < 8 ? 0 : 1], HATCH_TOP, CELL_Z[cell / 4]);
-        level.sendParticles(ParticleTypes.FLAME, uptake.x, uptake.y, uptake.z, 10, 0.15, 0.4, 0.4, 0.05);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, uptake.x, uptake.y + 0.5, uptake.z, 6, 0.3, 0.5, 0.5, 0.04);
         setChanged();
         sync();
+    }
+
+    /**
+     * Each motor's blast while it burns at the foot of its cell and climbs out: vented up its module's uptake beside the
+     * cell (a short burst: sixteen missiles' own exhaust is smoke enough).
+     */
+    private void exhaust(ServerLevel level) {
+        long now = level.getGameTime();
+        for (int cell = 0; cell < CELLS; cell++) {
+            long t = now - this.opened[cell];
+            if (t < 0 || t > HOLD + 6) {
+                continue;
+            }
+            Vec3 uptake = modelPoint(UPTAKE_X[CELL_X[cell % 4] < 8 ? 0 : 1], HATCH_TOP, CELL_Z[cell / 4]);
+            level.sendParticles(ParticleTypes.FLAME, uptake.x, uptake.y, uptake.z, t < HOLD ? 3 : 2, 0.12, 0.3, 0.35, 0.05);
+            if (t % 2 == 0) {
+                level.sendParticles(ParticleTypes.LARGE_SMOKE, uptake.x, uptake.y + 0.5, uptake.z, 2, 0.25, 0.4, 0.4, 0.04);
+            }
+        }
     }
 
     /** Back to idle, ready for the next load. */

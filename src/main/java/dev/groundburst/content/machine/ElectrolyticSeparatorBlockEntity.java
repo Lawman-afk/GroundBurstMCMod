@@ -31,7 +31,7 @@ public class ElectrolyticSeparatorBlockEntity extends ProcessingBlockEntity impl
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public ElectrolyticSeparatorBlockEntity(BlockPos pos, BlockState state) {
-        super(GBBlockEntities.ELECTROLYTIC_SEPARATOR.get(), pos, state, ProcessingKind.ELECTROLYSIS, 0, false, 0, 30_000, 300,
+        super(GBBlockEntities.ELECTROLYTIC_SEPARATOR.get(), pos, state, ProcessingKind.ELECTROLYSIS, 0, true, 0, 30_000, 300,
                 java.util.List.of(MachineTank.Spec.water(16_000), MachineTank.Spec.output(8_000)));
     }
 

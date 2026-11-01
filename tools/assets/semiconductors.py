@@ -1,9 +1,12 @@
-"""The semiconductor chain's items (DESIGN.md §8.1): silicon, polysilicon, the quartz crucible and the ceramic
-package. Item sprites plus their model / item-definition JSON.
+"""The semiconductor chain's items (DESIGN.md §8.1): silicon, polysilicon, the crucibles, the boules and wafers, the
+ceramic package, alumina and the chips. Item sprites plus their model / item-definition JSON.
 
 Silicon is a lump of metallurgical silicon in flat, glassy facets; polysilicon a length broken off a Siemens rod, its
-cut end showing the rings it grew in round the thin seed rod; the crucible a cup of milky fused quartz; the ceramic
-package a white alumina housing, its gold seal ring round an empty gold cavity and gold leads down both sides.
+cut end showing the rings it grew in round the thin seed rod; the quartz crucible a cup of milky fused quartz, the
+tungsten one the same cup in dull grey metal; the ceramic package a white alumina housing, its gold seal ring round an
+empty gold cavity and gold leads down both sides. Sapphire boules and wafers are silicon's shapes in pale ice blue;
+alumina a heap of white powder. The quantum chip is a gold-plated carrier, coax pins round it, its violet die (the
+exotic matter) gridded with bright qubits.
 """
 from __future__ import annotations
 
@@ -26,6 +29,10 @@ import resources as R  # noqa: E402
 SILICON = fixed("silicon", "#121620", "#232a38", "#363f52", "#4f5a72", "#717e98", "#a2aec4", "#e2e8f4")
 POLYSILICON = fixed("polysilicon", "#1a1e26", "#2e343e", "#464e5a", "#646d7a", "#8a939e", "#b6bec6", "#eef2f6")
 FUSED_QUARTZ = fixed("fused_quartz", "#47505a", "#6a747e", "#8e98a2", "#b2bbc3", "#d1d8dd", "#e8edf0", "#ffffff")
+TUNGSTEN = fixed("tungsten_metal", "#1c1f24", "#2f333a", "#454a53", "#5d636d", "#7a818c", "#9da4ae", "#d2d7dd")
+SAPPHIRE = fixed("sapphire", "#1a2a44", "#2c4466", "#46648c", "#6a8cb2", "#98b6d4", "#c4daec", "#f2f8ff")
+ALUMINA = fixed("alumina", "#5a5e66", "#7c818a", "#a0a5ad", "#c0c4ca", "#d8dbe0", "#eceef1", "#ffffff")
+EXOTIC = fixed("exotic_violet", "#12041e", "#2a0a46", "#4a1678", "#6e26ac", "#9444d8", "#b878f0", "#e4c8ff")
 GOLD = PT.GOLD
 ITEMS: list[str] = []
 
@@ -112,10 +119,10 @@ def polysilicon() -> None:
     save("polysilicon", t)
 
 
-def quartz_crucible() -> None:
-    """A cup of milky fused quartz seen from a little above: its lip, the shadowed hollow inside, a lit left flank."""
+def crucible(name: str, q, streak: bool = True) -> None:
+    """A crucible seen from a little above: its lip, the shadowed hollow inside, a lit left flank (fused quartz: a glassy
+    streak down it)."""
     t = Tex(16, 16)
-    q = FUSED_QUARTZ
     cx, top, bottom, rx_top, rx_bot, ry = 7.5, 5.0, 11.6, 6.3, 4.4, 2.7
     drawn: set[tuple[int, int]] = set()
     for y in range(16):
@@ -141,11 +148,12 @@ def quartz_crucible() -> None:
                 if py > bottom - 0.4:
                     tone = max(1, tone - 1)
                 t.px(x, y, q[tone])
-    for y in range(8, 12):
-        if (4, y) in drawn:
-            t.px(4, y, q[6])                                   # the glassy streak down its lit side
+    if streak:
+        for y in range(8, 12):
+            if (4, y) in drawn:
+                t.px(4, y, q[6])                               # the glassy streak down its lit side
     outline(t, drawn, q.outline)
-    save("quartz_crucible", t)
+    save(name, t)
 
 
 def ceramic_package() -> None:
@@ -174,11 +182,10 @@ def ceramic_package() -> None:
     save("ceramic_package", t)
 
 
-def silicon_boule() -> None:
+def boule(name: str, s) -> None:
     """A single crystal as it comes out of the puller, lying up to the right: the cone of its shoulder and the thin seed
-    neck at the top end, its tail tapering at the other; polished grey, a growth ridge running down its length."""
+    neck at the top end, its tail tapering at the other; polished, a growth ridge running down its length."""
     t = Tex(16, 16)
-    s = SILICON
     ax, ay, bx, by = 2.6, 13.4, 13.4, 2.6
     ux, uy = bx - ax, by - ay
     length = math.hypot(ux, uy)
@@ -215,14 +222,12 @@ def silicon_boule() -> None:
                 tone = 6                                         # a growth ridge
             t.px(x, y, s[tone])
     outline(t, drawn, s.outline)
-    save("silicon_boule", t)
+    save(name, t)
 
 
-def silicon_wafer() -> None:
-    """A polished wafer seen from above at a slant: a mirror-grey disc catching a band of light, its edge below, the
-    orientation notch at its foot."""
+def wafer(name: str, s) -> None:
+    """A polished wafer seen from above at a slant: a mirror disc catching a band of light, its edge below."""
     t = Tex(16, 16)
-    s = SILICON
     cx, cy, rx, ry = 7.5, 7.2, 6.6, 4.4
     drawn: set[tuple[int, int]] = set()
     for y in range(16):
@@ -242,7 +247,7 @@ def silicon_wafer() -> None:
             t.px(x, y, s[tone])
     t.px(4, 5, (255, 255, 255, 255))
     outline(t, drawn, s.outline)
-    save("silicon_wafer", t)
+    save(name, t)
 
 
 def microchip() -> None:
@@ -297,15 +302,52 @@ def rad_hard_microchip() -> None:
     save("rad_hard_microchip", t)
 
 
+def quantum_chip() -> None:
+    """A quantum processor seen from above: a gold-plated carrier, coax pins out of its sides, its violet die (qubits held
+    in exotic matter) gridded with bright qubits joined by their couplers, the carrier's thickness along the front."""
+    rows = [
+        "................",
+        "................",
+        "..oooooooooooo..",
+        "c.o6666666665o.c",
+        "..o6dddddddd4o..",
+        "c.o6dVqVqVqd4o.c",
+        "..o5dqvqvqvd4o..",
+        "c.o5dVqWqVqd3o.c",
+        "..o5dqvqvqvd3o..",
+        "c.o5dVqVqVqd3o.c",
+        "..o4dddddddd3o..",
+        "..o4444444443o..",
+        "..o2222222222o..",
+        "..oooooooooooo..",
+        "................",
+        "................",
+    ]
+    legend = {"o": GOLD.outline, "d": EXOTIC[1], "v": EXOTIC[2], "q": EXOTIC[4], "V": EXOTIC[6], "W": (255, 255, 255, 255),
+              "c": P.STEEL[5]}
+    t, _ = PT.template(rows, legend, GOLD)
+    save("quantum_chip", t)
+
+
+def alumina() -> None:
+    """Calcined alumina: a heap of white powder."""
+    save("alumina", V.dust2(ALUMINA, 26, sparkle=False))
+
+
 def build() -> None:
     silicon()
     polysilicon()
-    quartz_crucible()
+    crucible("quartz_crucible", FUSED_QUARTZ)
+    crucible("tungsten_crucible", TUNGSTEN, streak=False)
     ceramic_package()
-    silicon_boule()
-    silicon_wafer()
+    boule("silicon_boule", SILICON)
+    wafer("silicon_wafer", SILICON)
+    alumina()
+    boule("sapphire_boule", SAPPHIRE)
+    wafer("sapphire_wafer", SAPPHIRE)
     microchip()
     rad_hard_microchip()
+    quantum_chip()
 
 
 if __name__ == "__main__":

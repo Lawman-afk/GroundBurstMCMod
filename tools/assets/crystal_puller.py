@@ -10,6 +10,8 @@ centre; the front faces north.
 """
 from __future__ import annotations
 
+import math
+
 import sys
 from pathlib import Path
 
@@ -33,6 +35,8 @@ PULL = [(-3, -2, 2), (-2, 2, 3), (2, 3, 2)]
 DRUM = [(-2.6, -1.6, 1.6), (-1.6, 1.6, 2.6), (1.6, 2.6, 1.6)]
 CH_Y0, CH_Y1, LID_Y1, NECK_Y1, VALVE_Y1, PULL_Y1, FLANGE_Y1, DRUM_Y1 = 3.0, 13.0, 15.0, 16.5, 19.0, 27.0, 27.8, 30.4
 CRYSTAL_Y0, CRYSTAL_Y1 = 20.3, 26.3
+#: The valve's handwheel: its axis's height and the radius of its rim's middle.
+WHEEL_Y, WHEEL_R = 17.75, 2.0
 
 
 def build() -> tuple[GeoModel, Tex, Tex]:
@@ -59,7 +63,23 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     # The isolation valve between the furnace and the pull chamber: its body, the bonnet and a red handwheel (east).
     add("valve", g.box("valve", (-3.2, NECK_Y1, -2.8), (3.2, VALVE_Y1, 2.8), bone=F))
     add("bonnet", g.box("bonnet", (3.2, NECK_Y1 + 0.6, -1.0), (5.0, VALVE_Y1 - 0.6, 1.0), faces=("north", "south", "east", "up", "down"), bone=F))
-    add("wheel", g.box("wheel", (5.15, NECK_Y1 - 1.0, -2.5), (5.55, VALVE_Y1 + 1.0, 2.5), faces=("east", "west"), bone=F))
+    # Its handwheel, a solid wheel (it was once a flat cut-out plate, gone edge on): a stem out of the bonnet to the hub,
+    # two spokes across and a rim of eight segments turned round the stem's axis.
+    add("stem", g.box("stem", (5.0, WHEEL_Y - 0.3, -0.3), (5.5, WHEEL_Y + 0.3, 0.3), faces=("north", "south", "up", "down"), bone=F))
+    add("hub", g.box("hub", (5.4, WHEEL_Y - 0.45, -0.45), (6.05, WHEEL_Y + 0.45, 0.45), bone=F))
+    for i, sign in enumerate((1, -1)):                         # four spokes, each from the hub out to the rim
+        y0, y1 = sorted((WHEEL_Y + sign * 0.45, WHEEL_Y + sign * (WHEEL_R - 0.1)))
+        add("wheel", g.box(f"spoke_v{i}", (5.6, y0, -0.21), (5.8, y1, 0.21), faces=("north", "south", "east", "west"), bone=F))
+        z0, z1 = sorted((sign * 0.45, sign * (WHEEL_R - 0.1)))
+        add("wheel", g.box(f"spoke_h{i}", (5.6, WHEEL_Y - 0.21, z0), (5.8, WHEEL_Y + 0.21, z1), faces=("up", "down", "east", "west"), bone=F))
+    half = WHEEL_R * math.tan(math.pi / 8) + 0.12              # a little long, so the joints close
+    for k in range(8):
+        # Alternate segments a little thinner across the wheel: overlapping joints never share a plane (they would flicker).
+        w = 0.21 if k % 2 == 0 else 0.17
+        angle = k * 45.0 if k * 45.0 <= 180 else k * 45.0 - 360
+        rot = None if k == 0 else {"origin": (5.7, WHEEL_Y, 0), "axis": "x", "angle": angle}
+        add("wheel", g.box(f"rim{k}", (5.7 - w, WHEEL_Y + WHEEL_R - 0.24, -half), (5.7 + w, WHEEL_Y + WHEEL_R + 0.24, half),
+                           rotation=rot, bone=F))
     round_part("pull", PULL, VALVE_Y1, PULL_Y1)
     add("flange", g.box("flange", (-3.5, PULL_Y1, -3.5), (3.5, FLANGE_Y1, 3.5), bone=F))
     # The sight glass on the pull chamber: a frame with an open slot onto a dark recess, the crystal inside it.
@@ -106,6 +126,7 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
     k.paint(tex, ["neck", "flange"], k.STEEL)
     k.paint(tex, ["valve", "bonnet", "viewport", "sight"], k.GUN)
     k.paint(tex, "wheel", k.RED)
+    k.paint(tex, ["stem", "hub"], k.GUN)
     k.paint(tex, "water", k.COPPER)
     k.paint(tex, "argon", k.BRASS)
     k.paint(tex, ["drum", "motor"], k.WHITE)
@@ -126,24 +147,6 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
     for b in parts["drum"]:
         g.paint_all(tex, b, stripe)
 
-    def wheel(t, r, d):
-        """A handwheel on a square plate: the rim, four spokes and the hub; the plate's corners cut away."""
-        x, y, w, h = r
-        cx, cy = x + (w - 1) / 2, y + (h - 1) / 2
-        rad = min(w, h) / 2
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                dd = ((xx - cx) ** 2 + (yy - cy) ** 2) ** 0.5
-                spoke = abs(xx - cx) < 0.6 or abs(yy - cy) < 0.6
-                if dd > rad:
-                    t.px(xx, yy, (0, 0, 0, 0))
-                elif dd > rad - 1.1:
-                    pass                                                # the rim keeps its red paint
-                elif dd < 1.0:
-                    t.px(xx, yy, P.GUNMETAL[2])                           # hub
-                elif not spoke:
-                    t.px(xx, yy, (0, 0, 0, 0))
-    g.paint_all(tex, parts["wheel"][0], wheel)
 
     def slot(t, r, d):
         x, y, w, h = r

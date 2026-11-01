@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "groundburst:block/missile_canister_end",
+    "side": "groundburst:block/missile_canister_side"
+  }
+}

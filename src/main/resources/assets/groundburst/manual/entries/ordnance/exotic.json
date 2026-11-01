@@ -43,7 +43,7 @@
     },
     {
       "type": "text",
-      "text": "**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater, no EMP pulse), giving a redstone pulse each time: rods round a base keep its machines and defences running.\n\n**The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it."
+      "text": "**Shelter.** Under a roof you are safe from the strikes aimed at creatures in the open, though a chain can still jump to you from someone outside. A **lightning rod** inside the storm draws every strike that would land within 32 blocks of it to itself, safely (no blast, no crater, no fire), giving a redstone pulse each time. But the current pouring down the rod still sends out the strike's **EMP pulse**: rods keep a base from being blasted, not its machines and defences from going dark.\n\n**The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it."
     },
     {
       "type": "crafting",

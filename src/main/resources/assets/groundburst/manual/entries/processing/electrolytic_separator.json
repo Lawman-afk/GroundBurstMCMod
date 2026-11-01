@@ -3,17 +3,23 @@
   "icon": "groundburst:electrolytic_separator",
   "order": 3,
   "items": [
-    "groundburst:electrolytic_separator"
+    "groundburst:electrolytic_separator",
+    "groundburst:proton_exchange_membrane"
   ],
   "pages": [
     {
       "type": "spotlight",
       "item": "groundburst:electrolytic_separator",
-      "text": "Splits deuterium gas out of water. Pipe water into its water tank (a [Water Pump](processing/water_pump) is easiest) and draw the gas off with a pipe or a gas canister. Draws 60 FE a tick."
+      "text": "Splits water with electricity. With a **Proton Exchange Membrane** in its slot it makes **hydrogen**: 1,000 mB from a bucket of water in ten seconds (the oxygen is let go). With the slot empty it concentrates **deuterium** instead: 1,000 mB from eight buckets. The membrane is never used up. Pipe water into its water tank (a [Water Pump](processing/water_pump) is easiest) and draw the gas off with a pipe or a gas canister. Draws 60 FE a tick."
     },
     {
       "type": "crafting",
       "item": "groundburst:electrolytic_separator",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:proton_exchange_membrane",
       "text": ""
     },
     {

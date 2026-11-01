@@ -58,7 +58,13 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         dev.groundburst.content.launch.MissileCarrier {
     public static final int SLOT_PRIMARY = 0, SLOT_SECONDARY = 1, SLOT_JACKET = 2, SLOT_BOOSTER = 3, SLOT_GUIDANCE = 4, SLOT_MODULE = 5,
             SLOT_OUTPUT = 6;
-    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1;
+    public static final int BUTTON_ASSEMBLE = 0, BUTTON_TAKE_APART = 1, BUTTON_AUTO = 2;
+
+    /**
+     * AUTO ASSEMBLE (the user's request): while it is on, the next job starts by itself as soon as the parts are in and
+     * the output is clear (a finished one taken out by hand or by pipe), so a fed line keeps building.
+     */
+    private boolean auto;
     public static final int ENERGY_PER_TICK = 250, CAPACITY = 400_000;
     /** The missile's sections as the crane lays them: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
@@ -137,11 +143,23 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     // --- the buttons ------------------------------------------------------------------------------------------------------
+    /** AUTO ASSEMBLE on or off. */
+    public boolean toggleAuto() {
+        this.auto = !this.auto;
+        setChanged();
+        return true;
+    }
+
+    public boolean autoAssemble() {
+        return this.auto;
+    }
+
     @Override
     public boolean handleButton(int button) {
         return switch (button) {
             case BUTTON_ASSEMBLE -> startAssembly();
             case BUTTON_TAKE_APART -> takeApart();
+            case BUTTON_AUTO -> toggleAuto();
             default -> false;
         };
     }
@@ -201,6 +219,9 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         if (!isFormed()) {
             this.status = MachineStatus.INCOMPLETE;
             return false;
+        }
+        if (!assembling() && this.auto) {
+            startAssembly();                                       // AUTO: the next one as soon as it can
         }
         if (!assembling()) {
             this.status = MachineStatus.IDLE;
@@ -299,11 +320,11 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2;
+    public static final int DATA_PROGRESS = 0, DATA_TOTAL = 1, DATA_PROBLEM = 2, DATA_AUTO = 3;
 
     @Override
     protected int extraDataCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -311,6 +332,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         return switch (index) {
             case DATA_PROGRESS -> this.progress;
             case DATA_TOTAL -> this.total;
+            case DATA_AUTO -> this.auto ? 1 : 0;
             default -> problem().ordinal();
         };
     }
@@ -464,6 +486,7 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
         output.putInt("look", this.look);
+        output.putBoolean("auto", this.auto);
     }
 
     @Override
@@ -473,5 +496,6 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);
         this.look = input.getIntOr("look", LOOK_NONE);
+        this.auto = input.getBooleanOr("auto", false);
     }
 }

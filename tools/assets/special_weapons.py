@@ -29,6 +29,7 @@ from gb import palette as P  # noqa: E402
 from gb.geo import Animation, GeoModel, save_animations  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import assemblers as A  # noqa: E402
+import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
 import structures as ST  # noqa: E402
 
@@ -124,6 +125,7 @@ def build() -> tuple[GeoModel, Tex, Tex, dict]:
     # The ports are floor blocks (the back row's middle and two west of it): plates flush with the floor over them.
     add("energy_port", g.box("energy_port", (-7, FLOOR_Y, 185), (7, FLOOR_Y + 0.5, 199), faces=SIDES + ("up",), bone=F))
     add("item_port", g.box("item_port", (-39, FLOOR_Y, 185), (-25, FLOOR_Y + 0.5, 199), faces=SIDES + ("up",), bone=F))
+    add("item_port_side", g.box("item_port_side", (-38, 2, 200), (-26, 12, 200.5), faces=("south", "east", "west", "up", "down"), bone=F))
     g.layout()
     tex = Tex(g.tex_w, g.tex_h)
     glow = Tex(g.tex_w, g.tex_h)
@@ -304,6 +306,7 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
                 t.hline(cx - 3, yy + 1, 7, P.BLACK_PAINT.deep)
     g.paint_all(tex, "energy_port", bolt)
     g.paint_all(tex, "item_port", grate)
+    L._paint_side_port(S, g, tex, "item_port_side", "south")
 
 
 def animations() -> list[Animation]:

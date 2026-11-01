@@ -1,0 +1,41 @@
+{
+  "type": "groundburst:lithography",
+  "energy_per_tick": 320,
+  "fluids": [
+    {
+      "amount": 500,
+      "ingredient": "#c:photoresist"
+    },
+    {
+      "amount": 500,
+      "ingredient": "#c:hydrofluoric_acid"
+    },
+    {
+      "amount": 1000,
+      "ingredient": "#c:argon"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": "groundburst:sapphire_wafer"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:stabilised_exotic_matter"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:ceramic_package"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "count": 2,
+        "id": "groundburst:quantum_chip"
+      }
+    }
+  ],
+  "time": 1600
+}

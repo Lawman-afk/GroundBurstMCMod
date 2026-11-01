@@ -131,6 +131,12 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
                 if (cr.contains(mouseX - x, mouseY - y)) {
                     g.fill(x + cr.x() + 1, y + cr.y() + 1, x + cr.x() + cr.w() - 1, y + cr.y() + cr.h() - 1, 0x40FFFFFF);
                 }
+                if (c.data() >= 0 && this.menu.extra(c.data()) != 0) {
+                    // A toggle that is on: its lamp (top right of the button) lit green.
+                    int lx = x + cr.x() + cr.w() - 5, ly = y + cr.y() + 2;
+                    g.fill(lx, ly, lx + 3, ly + 3, 0xFF4AD06A);
+                    g.fill(lx, ly, lx + 1, ly + 1, 0xC0FFFFFF);
+                }
                 continue;
             }
             float frac = Math.max(0, Math.min(1, this.menu.extra(c.data()) / (float) Math.max(1, c.max())));
@@ -303,8 +309,15 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             if (c.kind().equals("heat") && dev.groundburst.config.GBServerConfig.REACTOR_MELTDOWNS.get()) {
                 key = MachineText.HEAT_TIP_MELTDOWN;                // critical at 900, melts down at 1 400
             }
-            g.setTooltipForNextFrame(c.isButton() ? Component.translatable(key)
-                    : Component.translatable(key, this.menu.extra(c.data())), mouseX, mouseY);
+            if (c.isButton() && c.data() >= 0) {
+                // A toggle: whether it is on, and what it does.
+                boolean on = this.menu.extra(c.data()) != 0;
+                g.setTooltipForNextFrame(this.font, List.of(Component.translatable(key, Component.translatable(on ? MachineText.ON : MachineText.OFF)),
+                        Component.translatable(key + "_hint").withColor(0xFF9AA0A8)), java.util.Optional.empty(), mouseX, mouseY);
+            } else {
+                g.setTooltipForNextFrame(c.isButton() ? Component.translatable(key)
+                        : Component.translatable(key, this.menu.extra(c.data())), mouseX, mouseY);
+            }
         } else if (this.layout.status().contains(mx, my)) {
             g.setTooltipForNextFrame(Component.translatable(this.menu.status().translationKey()), mouseX, mouseY);
         } else if (this.layout.redstone().contains(mx, my)) {

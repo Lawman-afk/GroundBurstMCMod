@@ -313,6 +313,7 @@ public final class FxPhotographer {
                 // The Vertical Launch Battery's ripple: armed and launched at 25, its cells firing from about 227.
                 new Scene("vls", "vls", 18, 12, List.of(30, 228, 234, 242, 254, 270, 300)),
                 new Scene("vls_aerial", "vls", 22, 32, List.of(229, 245, 272)),
+                new Scene("vls_ui", "vls", 5, 0, List.of(30)),                  // its screen: the CRT's four lines
                 new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
@@ -2134,7 +2135,17 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.profile().equals("vls") && step >= 0 && clock == 25 && vlsAt != null) {
+        if (scene.name().equals("vls_ui") && step >= 0 && clock == 12 && vlsAt != null) {
+            var at = vlsAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity be) {
+                    var player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);                         // spectators open no menus
+                    player.openMenu(be, at);
+                }
+            });
+        }
+        if (scene.profile().equals("vls") && !scene.name().equals("vls_ui") && step >= 0 && clock == 25 && vlsAt != null) {
             var at = vlsAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity be) {

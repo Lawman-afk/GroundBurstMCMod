@@ -6,7 +6,10 @@
     "groundburst:crystal_puller",
     "groundburst:silicon_boule",
     "groundburst:silicon_wafer",
-    "groundburst:diamond_wire_saw"
+    "groundburst:diamond_wire_saw",
+    "groundburst:sapphire_boule",
+    "groundburst:sapphire_wafer",
+    "groundburst:tungsten_crucible"
   ],
   "pages": [
     {
@@ -38,6 +41,21 @@
       "kind": "pressing",
       "text": "",
       "item": "groundburst:silicon_wafer"
+    },
+    {
+      "type": "text",
+      "text": "**Sapphire** grows the same way, slower: four **alumina** melted in a **tungsten crucible** (sapphire melts at 2,050 °C, too hot for fused quartz) under argon give a **sapphire boule** in 80 seconds, and the saw cuts it into **six sapphire wafers**, more slowly (sapphire is hard). Rad-hard and quantum chips are built on sapphire."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:tungsten_crucible",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "pressing",
+      "text": "",
+      "item": "groundburst:sapphire_wafer"
     },
     {
       "type": "links",

@@ -73,6 +73,7 @@ public class GBBlockLoot extends BlockLootSubProvider {
         dropSelf(dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.STRIKE_CELL.block().get());
+        dropSelf(dev.groundburst.content.launch.GBLaunch.MISSILE_CANISTER.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get());
         dropSelf(dev.groundburst.content.launch.GBLaunch.HAZARD_CONCRETE.block().get());

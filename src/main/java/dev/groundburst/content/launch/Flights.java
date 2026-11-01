@@ -64,8 +64,10 @@ public final class Flights extends SavedData {
             Codec.DOUBLE.optionalFieldOf("cruise_heading").forGetter(f -> f.plan == null ? Optional.empty() : Optional.of(f.plan.heading)),
             Codec.FLOAT.listOf().optionalFieldOf("cruise_alt", List.of()).forGetter(f -> f.plan == null ? List.of() : f.plan.altList()),
             // A laser-guided missile's seeker (DESIGN.md §17.13).
-            Seeker.CODEC.optionalFieldOf("seeker").forGetter(f -> Optional.ofNullable(f.seeker))
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt, seeker) -> {
+            Seeker.CODEC.optionalFieldOf("seeker").forGetter(f -> Optional.ofNullable(f.seeker)),
+            // Fired from a Vertical Launch Battery's cell (DESIGN.md §17.15): its motor's burn there before it moves.
+            Codec.INT.optionalFieldOf("cell", 0).forGetter(f -> f.cell)
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt, seeker, cell) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
@@ -77,6 +79,7 @@ public final class Flights extends SavedData {
             f.plan.setAlt(alt);
         }
         f.seeker = seeker.orElse(null);
+        f.cell = cell;
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundBurst.id("missile_flights"), Flights::new,
@@ -118,7 +121,17 @@ public final class Flights extends SavedData {
      */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundburst.content.assembly.MissileSpec spec, @Nullable Entity owner,
             double silo) {
-        Flight f = launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner, silo);
+        return launch(level, pad, target, spec, owner, silo, 0);
+    }
+
+    /**
+     * The same from the foot of a Vertical Launch Battery's cell {@code silo} blocks under its hatch (DESIGN.md §17.15):
+     * its motor burns there {@code cellHold} ticks (its blast up the module's uptake, not a silo's vents) before it
+     * climbs straight out (0: a silo's or a pad's ignition).
+     */
+    public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundburst.content.assembly.MissileSpec spec, @Nullable Entity owner,
+            double silo, int cellHold) {
+        Flight f = launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner, silo, cellHold);
         if (spec.guidance() == dev.groundburst.content.assembly.MissileParts.Guidance.LASER) {
             double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
             f.seeker = new Seeker(0, target, Seeker.REACH + Seeker.SHARE * range);
@@ -148,6 +161,11 @@ public final class Flights extends SavedData {
      */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
             double silo) {
+        return launch(level, pad, target, warhead, body, hardened, owner, silo, 0);
+    }
+
+    private static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, ItemStack warhead, SizeClass body, boolean hardened, @Nullable Entity owner,
+            double silo, int cellHold) {
         double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
         double apex = apex(range);
         int ticks = flightTicks(range);
@@ -155,6 +173,7 @@ public final class Flights extends SavedData {
         f.body = body;
         f.hardened = hardened;
         f.silo = Math.max(0, silo);
+        f.cell = Math.max(0, cellHold);
         Flights fs = of(level);
         fs.flights.add(f);
         fs.setDirty();
@@ -485,6 +504,8 @@ public final class Flights extends SavedData {
         private SizeClass body = SizeClass.M;
         /** Launched from a silo: how far below the ground at the shaft's mouth its pad is (0: a pad on the surface). */
         private double silo;
+        /** Fired from a Vertical Launch Battery's cell: its motor's burn there before it moves (0: not). */
+        private int cell;
         /** A cruise missile's plan (null: a ballistic missile on its arc). */
         private @Nullable CruisePlan plan;
         /** A laser-guided missile's seeker (null: none). */
@@ -558,9 +579,12 @@ public final class Flights extends SavedData {
             return this.plan != null;
         }
 
-        /** Ticks it burns where it was lit before it moves: a cruise missile's booster less than a rocket's ignition. */
+        /**
+         * Ticks it burns where it was lit before it moves: a cruise missile's booster less than a rocket's ignition, a
+         * missile in a Vertical Launch Battery's cell less again.
+         */
         int ignition() {
-            return this.plan != null ? CruisePlan.IGNITION : MissileEntity.IGNITION;
+            return this.plan != null ? CruisePlan.IGNITION : this.cell > 0 ? this.cell : MissileEntity.IGNITION;
         }
 
         /** How far through its flight it is: 0 on the pad, 1 at the target. */
@@ -583,7 +607,7 @@ public final class Flights extends SavedData {
 
         /** Whether an engine is burning: on the pad, and climbing until its last stage burns out (a cruise missile's jet: always). */
         public boolean burning() {
-            return this.plan != null || this.age < MissileEntity.IGNITION || progress() < dev.groundburst.content.assembly.MissileParts.burnout(this.body);
+            return this.plan != null || this.age < ignition() || progress() < dev.groundburst.content.assembly.MissileParts.burnout(this.body);
         }
 
         /**
@@ -712,7 +736,7 @@ public final class Flights extends SavedData {
                 double[] g = this.plan.ground(d);
                 return new Vec3(g[0], this.plan.height(d, this.target.y), g[1]);
             }
-            double s = Math.min(1, (age - MissileEntity.IGNITION) / (double) this.flightTicks);
+            double s = Math.min(1, (age - ignition()) / (double) this.flightTicks);
             return path(Math.pow(s, 1.25));                 // slow off the pad, fastest coming down
         }
 
@@ -810,6 +834,7 @@ public final class Flights extends SavedData {
             m.setUUID(this.id);
             m.setLook(this.warhead, this.body, this.plan != null);
             m.setSilo(siloMouth());
+            m.setHold(ignition(), this.cell > 0);
             m.setPos(this.pos);
             m.follow(this.pos, this.yaw, this.tilt, this.age, dropped(), burning(), reentry());
             if (!level.addFreshEntity(m)) {

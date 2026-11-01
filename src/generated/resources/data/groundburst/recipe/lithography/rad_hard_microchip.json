@@ -12,13 +12,13 @@
     },
     {
       "amount": 500,
-      "ingredient": "#c:liquid_oxygen"
+      "ingredient": "#c:trichlorosilane"
     }
   ],
   "inputs": [
     {
       "count": 2,
-      "ingredient": "groundburst:silicon_wafer"
+      "ingredient": "groundburst:sapphire_wafer"
     },
     {
       "count": 1,

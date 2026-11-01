@@ -727,6 +727,20 @@ def _item_mouth(S, inset: int = 1):
     return fn
 
 
+def _paint_side_port(S, g, tex, name: str, face: str) -> None:
+    """An Item Port's mouth on the outer face of a deck or floor, under the hatch in its top (so a pipe or hopper beside
+    the structure can feed it, or take the finished missile away, as well as one over it): a dark steel plate, its rim
+    in hazard stripes, a dark mouth barred with galvanised steel."""
+    S.paint(tex, name, M.steel(tone=0.4, brushed=0.04, rust=0.08))
+    band = M.stripes(width=2, wear=0.3)
+
+    def rim(f, img):
+        ring = np.minimum(np.minimum(f.border["top"], f.border["bottom"]), np.minimum(f.border["left"], f.border["right"]))
+        M.paste(img, S.material_on(f, band), ring < 2)
+    S.overlay(tex, name, rim, only=(face,))
+    S.overlay(tex, name, _item_mouth(S, inset=3), only=(face,))
+
+
 def _item_housing(S, g, tex, name: str, mouth: str = "up") -> None:
     """The Item Port's housing (beside the Energy Port's): dark steel, a yellow-and-black band round its top (the power
     housing's is red) and a loading mouth, where pipes and hoppers feed missiles in: a grate in its top, or, where its

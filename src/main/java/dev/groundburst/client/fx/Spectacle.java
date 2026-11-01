@@ -380,8 +380,8 @@ public final class Spectacle {
             f.rot = random.nextFloat() * 6.283f;
             PUFFS.add(f, 1);
         }
-        if (silo.isPresent()) {
-            siloVents(missile, silo.get(), q, t);
+        if (silo.isPresent() && !missile.cell()) {
+            siloVents(missile, silo.get(), q, t);       // (a battery's cell vents up its module's uptake: the battery's own)
         }
         if (missile.igniting()) {
             return;

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/missile_canister"
+    },
+    "formed=true": {
+      "model": "groundburst:block/missile_canister_formed"
+    }
+  }
+}

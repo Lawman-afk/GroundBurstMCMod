@@ -44,6 +44,7 @@ final class AssemblerTests {
         GBGameTests.test("missile_assembler_takes_only_its_class", GBGameTests.FLOOR_16, 20, AssemblerTests::ownClass);
         GBGameTests.test("missile_assembler_motor_must_fit", GBGameTests.FLOOR_16, 20, AssemblerTests::motorFit);
         GBGameTests.test("missile_assembler_takes_a_missile_apart", GBGameTests.FLOOR_16, 20, AssemblerTests::takesApart);
+        GBGameTests.test("missile_assembler_auto_assembles_the_next", GBGameTests.FLOOR_16, 40, AssemblerTests::auto);
         GBGameTests.test("bench_drops_its_old_missile_page", GBGameTests.FLOOR_16, 20, AssemblerTests::benchDrops);
         GBGameTests.test("launcher_arms_stay_set_for_their_missile", GBGameTests.FLOOR_16, 20, AssemblerTests::armsHold);
     }
@@ -134,6 +135,33 @@ final class AssemblerTests {
             var shown = a.shownMissile();
             helper.assertTrue(a.laid() == MissileAssemblerBlockEntity.SECTIONS && shown != null && shown.looks().size() == MissileAssemblerBlockEntity.SECTIONS
                     && shown.lying() == kind.lying && shown.warhead().equals(s.warheadId()), "the finished missile on show: " + shown);
+        });
+    }
+
+    /**
+     * AUTO ASSEMBLE: with it on, a job starts by itself once the parts are in; the next waits while the finished missile
+     * sits in the output, and starts as soon as it is taken out (fresh parts already fed in).
+     */
+    private static void auto(GameTestHelper helper) {
+        MissileAssemblerBlockEntity a = assembler(helper, AssemblerClass.LIGHT, true);
+        a.energy().generate(AssemblerClass.LIGHT.capacity);
+        helper.assertTrue(a.handleButton(MissileAssemblerBlockEntity.BUTTON_AUTO) && a.autoAssemble(), "auto on");
+        load(a, warheadOf(AssemblerClass.LIGHT), ItemStack.EMPTY, ItemStack.EMPTY);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(a.assembling(), "it started by itself");
+            a.skipToEndForTest();
+        });
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(MissileItem.spec(a.inventory().getItem(MissileAssemblerBlockEntity.SLOT_OUTPUT)) != null, "the first is done");
+            load(a, warheadOf(AssemblerClass.LIGHT), ItemStack.EMPTY, ItemStack.EMPTY);   // fresh parts, as a pipe would bring them
+        });
+        helper.runAfterDelay(8, () -> {
+            helper.assertTrue(!a.assembling(), "the next waits while the finished one is in the output");
+            a.inventory().setItem(MissileAssemblerBlockEntity.SLOT_OUTPUT, ItemStack.EMPTY);
+        });
+        helper.runAfterDelay(11, () -> {
+            helper.assertTrue(a.assembling(), "and starts once it is taken out");
+            helper.succeed();
         });
     }
 
