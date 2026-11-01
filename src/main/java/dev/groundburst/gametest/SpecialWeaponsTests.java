@@ -30,6 +30,7 @@ final class SpecialWeaponsTests {
     static void register() {
         GBGameTests.test("special_weapons_assembler_builds_an_antimatter_icbm_and_takes_it_apart", GBGameTests.FLOOR_16, 40,
                 SpecialWeaponsTests::builds);
+        GBGameTests.test("special_weapons_assembler_builds_a_cryo_icbm", GBGameTests.FLOOR_16, 40, SpecialWeaponsTests::buildsCryo);
         GBGameTests.test("special_weapons_assembler_needs_its_structure_and_parts", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::needsParts);
         GBGameTests.test("icbm_hall_takes_no_exotic_core", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::hallRefuses);
         GBGameTests.test("special_weapons_assembler_takes_a_pipe_on_its_item_port", GBGameTests.FLOOR_16, 20, SpecialWeaponsTests::pipeOnPort);
@@ -108,6 +109,31 @@ final class SpecialWeaponsTests {
                     && inv.getItem(SpecialWeaponsBlockEntity.SLOT_BOOSTER).is(GBStrategic.INTERCONTINENTAL_BOOSTER.get())
                     && inv.getItem(SpecialWeaponsBlockEntity.SLOT_GUIDANCE).is(GBAssembly.GPS_GUIDANCE.get())
                     && inv.getItem(SpecialWeaponsBlockEntity.SLOT_MODULE).is(GBAssembly.HARDENED_ELECTRONICS.get()), "every part back");
+        });
+    }
+
+    /** A Cryo Core and a booster make a Cryo ICBM (DESIGN.md §16.16): its own model, laid on the cradles with its warhead last. */
+    private static void buildsCryo(GameTestHelper helper) {
+        floor(helper);
+        SpecialWeaponsBlockEntity special = assembler(helper, true);
+        Container inv = special.inventory();
+        inv.setItem(SpecialWeaponsBlockEntity.SLOT_CORE, new ItemStack(GBAssembly.CRYO_CORE.get()));
+        inv.setItem(SpecialWeaponsBlockEntity.SLOT_BOOSTER, new ItemStack(GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
+        helper.assertTrue(special.problem() == SpecialWeapons.Problem.NONE, "ready: " + special.problem());
+        special.energy().generate(SpecialWeaponsBlockEntity.CAPACITY);
+        helper.assertTrue(special.startAssembly(), "it starts");
+        special.skipToEndForTest();
+        helper.succeedWhen(() -> {
+            ItemStack out = inv.getItem(SpecialWeaponsBlockEntity.SLOT_OUTPUT);
+            MissileSpec spec = MissileItem.spec(out);
+            helper.assertTrue(spec != null && spec.intercontinental() && spec.exotic() && spec.needsComplex()
+                    && AssemblyStats.kindOf(spec.warhead()) == ChargeKind.CRYOGENIC_WARHEAD, "a Cryo ICBM: " + spec);
+            helper.assertTrue(out.getHoverName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                    && t.getKey().endsWith(".missile.name.cryogenic_warhead"), "named a Cryo ICBM: " + out.getHoverName());
+            var look = out.get(DataComponents.CUSTOM_MODEL_DATA);
+            helper.assertTrue(look != null && look.strings().getFirst().equals("cryogenic_warhead"), "its own model: " + look);
+            var shown = special.shownMissile();
+            helper.assertTrue(shown != null && shown.looks().getLast().equals("cryogenic_warhead_part4"), "on the cradles: " + shown);
         });
     }
 

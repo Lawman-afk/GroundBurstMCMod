@@ -29,7 +29,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 - **A Laser Designator** to call fire onto a target from up to 1,024 blocks away: arm and launch from its sight, and
   laser-guided missiles follow your beam all the way in, onto a moving target or another one.
 - **Exotic weapons**, built whole into intercontinental missiles at the Special Weapons Assembler: an antimatter sphere
-  that erases everything in it, a black hole that feeds and then implodes, and a supercell storm over a whole region.
+  that erases everything in it, a black hole that feeds and then implodes, a supercell storm over a whole region, and a
+  deep freeze: a wall of frozen air rolling over the land, spires of ice at its heart and a cold snap after.
 - **A Launch Control Station** that networks your launchers across the whole world: link them with Launch Codes,
   aim them on a map of the dimension, fire salvos in patterns or timed to land together, and launchers far away
   wake up to fire.

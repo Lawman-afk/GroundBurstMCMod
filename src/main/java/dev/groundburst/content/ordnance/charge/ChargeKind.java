@@ -116,7 +116,13 @@ public enum ChargeKind {
      * A Tesla storm generator (DESIGN.md §16.14): a supercell over a region 160 blocks round for a minute and a half,
      * lightning chaining through whatever stands in the open, its winds driving everything round its eye.
      */
-    STORM_WARHEAD("storm_warhead", 10, true);
+    STORM_WARHEAD("storm_warhead", 10, true),
+    /**
+     * A cryogenic heat sink (DESIGN.md §16.16): exotic matter held near absolute zero, let go. A white front of frozen air
+     * rolls out 128 blocks over the land, freezing everything it passes; within 40 of where it struck nothing lives, and
+     * spires of ice burst out of the ground; a cold snap holds the region for three minutes.
+     */
+    CRYOGENIC_WARHEAD("cryogenic_warhead", 10, true);
 
     /** What sets it off by itself once armed (from the moment it is armed: arm it from a step away). */
     public enum Sensor { NONE, PRESSURE, TRIPWIRE }
@@ -163,12 +169,12 @@ public enum ChargeKind {
     }
 
     /**
-     * An exotic warhead (Phase 11): antimatter, a singularity or a storm. Only ever built whole into its ICBM, at the
+     * An exotic warhead (Phase 11): antimatter, a singularity, a storm or a deep freeze. Only ever built whole into its ICBM, at the
      * Special Weapons Assembler from its core (a whole weapon), and goes off in full only on a missile's arrival; set off
      * any other way (a warhead placed in creative) its containment fails (a breach).
      */
     public boolean exotic() {
-        return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD || this == STORM_WARHEAD;
+        return this == ANTIMATTER_WARHEAD || this == SINGULARITY_WARHEAD || this == STORM_WARHEAD || this == CRYOGENIC_WARHEAD;
     }
 
     /** Only a Launch Complex or a Missile Silo fires it: the nuclear warheads (on the Strategic body) and the exotic ones. */

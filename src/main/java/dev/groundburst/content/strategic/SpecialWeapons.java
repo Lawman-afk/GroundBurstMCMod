@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The Special Weapons Assembler's recipes (DESIGN.md §16.15; after the user's look at Phase 11 the exotic weapons moved
- * here from the ICBM Assembly Hall): an exotic core (an Antimatter Trap, a Singularity Core or a Storm Core) is a warhead
+ * here from the ICBM Assembly Hall): an exotic core (an Antimatter Trap, a Singularity Core, a Storm Core or a Cryo Core) is a warhead
  * in itself. Set on an Intercontinental Booster, with a guidance unit and Hardened Electronics if fitted, it makes that
  * weapon's intercontinental missile, fired like any other from a Launch Complex or a Missile Silo. Taken apart, the
  * missile gives them all back.
@@ -47,7 +47,7 @@ public final class SpecialWeapons {
 
     private SpecialWeapons() {}
 
-    /** The exotic warhead a core is (an Antimatter Trap's, a Singularity Core's, a Storm Core's); null for anything else. */
+    /** The exotic warhead a core is (an Antimatter Trap's, a Singularity Core's, a Storm Core's, a Cryo Core's); null for anything else. */
     public static @Nullable ChargeBlock core(ItemStack stack) {
         return stack.getItem() instanceof ComponentItems.IcbmCore core ? core.warhead() : null;
     }
@@ -60,7 +60,7 @@ public final class SpecialWeapons {
     /** The exotic cores, in the order JEI lists their missiles. */
     public static List<ItemStack> cores() {
         return List.of(new ItemStack(GBAssembly.ANTIMATTER_TRAP.get()), new ItemStack(GBAssembly.SINGULARITY_CORE.get()),
-                new ItemStack(GBAssembly.STORM_CORE.get()));
+                new ItemStack(GBAssembly.STORM_CORE.get()), new ItemStack(GBAssembly.CRYO_CORE.get()));
     }
 
     /** What stops the parts making a missile (NONE: they will). */

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "source=true": {
+      "model": "groundburst:block/cryo_ice"
+    },
+    "source=false": {
+      "model": "groundburst:block/cryo_ice"
+    }
+  }
+}

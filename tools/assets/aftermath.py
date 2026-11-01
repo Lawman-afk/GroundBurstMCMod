@@ -31,6 +31,9 @@ sheen on char, rust and the glow, which are drawn over it as the library's weath
   (vanilla's short grass through an icy tint), Toxic Soil (vanilla's dirt, stained sickly yellow-green and bruise
   purple with spore specks, fitted to it). Cryo Crystal is ours: a cluster of pale blue ice needles, each lit down one
   side, a cold glint at the tips.
+- A Cryo ICBM's ground (DESIGN.md §16.16): Cryo Snow is vanilla's snow (its models, layer for layer); Cryo Ice is ours,
+  water frozen in an instant, a cold translucent blue clouded milky white with the air it trapped, bubble trails and
+  two frost cracks.
 
     tools/.venv/Scripts/python.exe tools/assets/aftermath.py
 """
@@ -397,6 +400,43 @@ def cryo_crystal() -> np.ndarray:
     return img
 
 
+#: Cryo ice: its clear body, darkest to lightest (a cold blue, seen through), and the milk of the air it trapped.
+CRYO_ICE_RAMP = M.ramp("#3e7ea6", "#4c8cb4", "#5c9cc2", "#6eacce", "#82bcd8", "#98cce2", "#b0daea", "#c8e6f2")
+MILK = ((206, 228, 240), (226, 240, 248), (242, 250, 253))
+CRACK_SHADE = (52, 112, 150)
+
+
+def cryo_ice() -> np.ndarray:
+    """Water frozen in an instant (a Cryo ICBM's front): not clear like ice that set slowly but milky with the air it
+    trapped. A cold blue body, seen through (translucent as vanilla's ice), its value drifting in soft streaks; small
+    clouds of milky white where the air was caught, thick at their hearts and feathered at their edges (a cloud's
+    top-left texels whitest, as everything here is lit); short trails of bubbles; two short broken frost cracks, each a
+    bright line with its shade beside it. It wraps round the block (nothing lines up with its neighbour's)."""
+    f = M.tile_face()
+    idx = paint(CRYO_ICE_RAMP, 4, 171, rough=False, mottle=0.07, grain=0.03, scale=0.6)
+    img = image(CRYO_ICE_RAMP, idx)
+    out = np.zeros((N, N, 4), dtype=np.uint8)
+    out[..., :3] = img[..., :3]
+    out[..., 3] = 140 + 6 * idx.astype(np.int32)                       # lighter ice a touch less clear
+    field = M.noise(f, 3.2, 172, 2) + 0.2 * (M.white(f.X, f.Y, f.Z, 173) - 0.5)
+    cloud = field > np.quantile(field, 0.74)
+    heart = field > np.quantile(field, 0.92)
+    lit, shade = edges(np.where(cloud, 0, -1))
+    for y in range(N):
+        for x in range(N):
+            if not cloud[y, x]:
+                continue
+            k = 2 if heart[y, x] or lit[y, x] else 0 if shade[y, x] else 1
+            out[y, x] = (*MILK[k], 205 if heart[y, x] else 175)
+    for x, y in ((2, 12), (2, 10), (3, 8), (12, 6), (12, 4), (13, 2), (7, 14), (8, 12)):   # bubbles rising in short trails
+        at(out, x, y, (*MILK[2], 230))
+    for crack in (((3, 4), (4, 4), (5, 5), (6, 5), (7, 6)), ((10, 11), (11, 10), (12, 10), (13, 9))):   # two short frost cracks
+        for x, y in crack:
+            at(out, x, y, (248, 252, 255, 235))
+            at(out, x, y + 1, (*CRACK_SHADE, 190))
+    return out
+
+
 def ash() -> np.ndarray:
     idx = paint(ASH_RAMP, 5, 71, extra=relief(72, 4, 0.11), rough=True, mottle=0.03, grain=0.04, dither=0.7)
     for x, y in sites(73, 4):                          # charcoal crumbs, each with its little shadow
@@ -651,6 +691,22 @@ def frozen_ground() -> None:
     item_def("cryo_crystal", "groundburst:item/cryo_crystal")
 
 
+def cryo_ground() -> None:
+    """A Cryo ICBM's snow and ice (DESIGN.md §16.16): Cryo Snow is vanilla's snow, layer for layer (its own models: it
+    thaws, but it is snow); Cryo Ice our milky ice, translucent as vanilla's, the same whether it was still water or
+    running."""
+    variants = {}
+    for n in range(1, 9):
+        variants[f"layers={n}"] = {"model": "minecraft:block/snow_block" if n == 8 else f"minecraft:block/snow_height{2 * n}"}
+    write_json(paths.ASSETS / "blockstates" / "cryo_snow.json", {"variants": variants})
+    item_def("cryo_snow", "minecraft:block/snow_height2")             # (as vanilla's snow item is)
+    write_json(paths.MODELS / "block" / "cryo_ice.json", {"parent": "minecraft:block/cube_all", "render_type": "minecraft:translucent",
+                                                          "textures": {"all": block_id("cryo_ice")}})
+    write_json(paths.ASSETS / "blockstates" / "cryo_ice.json", {"variants": {
+        f"source={s}": {"model": block_id("cryo_ice")} for s in ("true", "false")}})
+    item_def("cryo_ice", block_id("cryo_ice"))
+
+
 def pillar(name: str, side: str, end: str) -> None:
     write_json(paths.MODELS / "block" / f"{name}.json", {"parent": "minecraft:block/cube_column",
                                                          "textures": {"end": block_id(end), "side": block_id(side)}})
@@ -734,6 +790,8 @@ def main() -> None:
     save_block("toxic_soil_stain", toxic_stain())
     save_block("cryo_crystal", cryo_crystal())
     frozen_ground()
+    save_block("cryo_ice", cryo_ice())
+    cryo_ground()
     for i in range(len(FLAKES)):
         flake(i).save(paths.TEXTURES / "particle" / f"fallout_ash_{i}.png")
     write_json(paths.ASSETS / "particles" / "fallout_ash.json", {"textures": [f"groundburst:fallout_ash_{i}" for i in range(len(FLAKES))]})

@@ -532,6 +532,75 @@ def storm_core() -> None:
     G.finish(m, t)
 
 
+def cryo_core() -> None:
+    """A cryogenic heat sink (DESIGN.md §16.16): the cryogenic warhead in small, a frosted steel dewar with its sight glass
+    glowing ice blue between dark collars, four liquid nitrogen tanks round it under white domes, a white lid and the
+    relief valve's stack with its brass cap."""
+    import math
+    import numpy as np
+    import warheads as W
+    from gb import machine_kit as K
+    from gb import materials as M
+    m = model("cryo_core")
+    m.open_ok = set()
+    groups: dict[str, list[str]] = {}
+    lips: dict[str, tuple[bool, bool, bool]] = {}
+
+    def add(group, names, top=True, bottom=False):
+        groups.setdefault(group, []).extend(names)
+        for n in names:
+            lips[n] = (top, bottom, False)
+    add("base", W.section(m, "base0_", 3.6, 0.0, 1.0, W.sides_for(3.6), caps=("up", "down"), stagger="full"), True, True)
+    add("body", W.section(m, "body0_", 2.1, 1.0, 6.6, W.sides_for(2.1), caps=("up",), stagger="full"), True, False)
+    add("glass", W.section(m, "glass0_", 2.25, 3.2, 4.6, W.sides_for(2.25), caps=()), False, False)
+    for i, (y0, y1) in enumerate(((2.8, 3.2), (4.6, 5.0))):
+        add("collar", W.section(m, f"collar{i}_", 2.38, y0, y1, W.sides_for(2.38), caps=("up", "down"), stagger="full"), True, True)
+    for k, a in enumerate((45, 135, 225, 315)):
+        cx, cz = 8 + 3.1 * math.sin(math.radians(a)), 8 + 3.1 * math.cos(math.radians(a))
+        add("tank", W.section(m, f"tank{k}_", 0.5, 1.0, 5.6, 8, cx=cx, cz=cz, caps=("up",)), True, False)
+        add("dome", W.section(m, f"dome{k}_", 0.34, 5.6, 6.1, 8, cx=cx, cz=cz, caps=("up",)), True, False)
+    add("lid", W.section(m, "lid0_", 1.5, 6.6, 7.3, W.sides_for(1.5), caps=("up",)), True, False)
+    add("stack", W.section(m, "stack0_", 0.38, 7.3, 8.8, W.sides_for(0.38), caps=()), False, False)
+    add("valve", W.section(m, "valve0_", 0.62, 8.8, 9.4, W.sides_for(0.62), caps=("up", "down"), stagger="full"), True, True)
+    for n in groups["glass"]:
+        m.get(n).light_emission = 15
+    while True:
+        try:
+            m.layout()
+            break
+        except ValueError:
+            m.tex_w *= 2
+            m.tex_h = m.tex_w
+    t = Tex(m.tex_w, m.tex_h)
+    k = K.Kit(m, {}, seed=619, ao_reach=1.5, turned=True)
+    for n, (top, bottom, foot) in lips.items():
+        W.round_faces(k.S, [n], top, bottom, foot)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    k.paint(t, groups["base"], W.BASE)
+    k.paint(t, groups["body"], W.metal(W.STEEL, 0.64))
+    k.paint(t, groups["glass"], M.Material(ramp=W.ramp9(P.CRYO), tone=0.74, **lit))
+    k.paint(t, groups["collar"], W.metal(W.GUNMETAL, 0.32))
+    k.paint(t, groups["tank"], W.paint(G.CRYO_CAN, 0.56, 0.14))
+    k.paint(t, groups["dome"], W.paint(W.WHITE, 0.7, 0.08))
+    k.paint(t, groups["lid"], W.paint(W.WHITE, 0.68, 0.1))
+    k.paint(t, groups["stack"], W.metal(W.STEEL, 0.6))
+    k.paint(t, groups["valve"], W.BRASS)
+
+    def frost(f, img):                                        # rime gathered toward the feet
+        if f.d in W.SIDES:
+            r = M.white(f.X, f.Y, f.Z, 919)
+            img[r < 0.1 + 0.2 * np.clip(1 - (f.Y - 1) / 4.5, 0, 1), :3] = W.FROST[6][:3]
+    k.overlay(t, groups["body"], frost)
+    k.overlay(t, groups["tank"], frost)
+
+    def churn(f, img):                                        # the cold churning behind the glass
+        if f.d in W.SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 16 + f.Y * 1.5).astype(int)
+            M.darken(img, col % 4 == 0, 0.78)
+    k.overlay(t, groups["glass"], churn)
+    G.finish(m, t)
+
+
 def dirty_payload() -> None:
     """A rusty drum of nuclear waste with a trefoil band, an olive HE brick taped to its side."""
     m = model("dirty_payload")
@@ -816,7 +885,7 @@ def barometric_fuze() -> None:
 CORES = ["he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge",
          "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank",
          "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload",
-         "antimatter_trap", "singularity_core", "storm_core"]
+         "antimatter_trap", "singularity_core", "storm_core", "cryo_core"]
 CASINGS = ["light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing"]
 FUZES = ["impact_fuze", "barometric_fuze"]
 STRATEGIC = ["fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"]
@@ -844,6 +913,7 @@ def main() -> None:
     antimatter_trap()
     singularity_core()
     storm_core()
+    cryo_core()
     casing("light_warhead_casing", 1, 3, 2, 10, 4)
     casing("medium_warhead_casing", 2, 4, 2.5, 12, 5)
     casing("heavy_warhead_casing", 3, 4.5, 3, 13.5, 6.2)

@@ -153,7 +153,8 @@ public final class GBJeiPlugin implements IModPlugin {
         info(registration, dev.groundburst.content.fallout.GBFallout.INFO_FALLOUT_ASH, dev.groundburst.content.fallout.GBFallout.FALLOUT_ASH.item().get(),
                 dev.groundburst.content.fallout.GBFallout.ASH.item().get());
         info(registration, dev.groundburst.content.fallout.GBFallout.INFO_FROZEN, dev.groundburst.content.fallout.GBFallout.FROSTED_STONE.item().get(), dev.groundburst.content.fallout.GBFallout.FROSTED_GRASS_BLOCK.item().get(),
-                dev.groundburst.content.fallout.GBFallout.FROZEN_PLANT.item().get(), dev.groundburst.content.fallout.GBFallout.CRYO_CRYSTAL.item().get());
+                dev.groundburst.content.fallout.GBFallout.FROZEN_PLANT.item().get(), dev.groundburst.content.fallout.GBFallout.CRYO_CRYSTAL.item().get(),
+                dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.item().get(), dev.groundburst.content.fallout.GBFallout.CRYO_ICE.item().get());
         info(registration, dev.groundburst.content.fallout.GBFallout.INFO_TOXIC_SOIL, dev.groundburst.content.fallout.GBFallout.TOXIC_SOIL.item().get());
         info(registration, dev.groundburst.content.salvage.GBSalvage.INFO_SALVAGE, dev.groundburst.content.salvage.GBSalvage.DAMAGED_WARHEAD.get());
         info(registration, dev.groundburst.content.salvage.GBSalvage.INFO_WASTE_DRUM, dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.item().get());

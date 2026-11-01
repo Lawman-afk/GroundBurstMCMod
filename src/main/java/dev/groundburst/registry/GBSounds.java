@@ -263,6 +263,18 @@ public final class GBSounds {
             register("storm.thunder_near", "Lightning cracks", variants("exotic/storm_thunder_near", 3), false, 160);
     public static final DeferredHolder<SoundEvent, SoundEvent> STORM_THUNDER_FAR =
             register("storm.thunder_far", "Thunder rolls", variants("exotic/storm_thunder_far", 3), false, 320);
+    /**
+     * The cryogenic warhead's deep freeze (DESIGN.md §16.16): its burst (a thump and the roar of its cryogen boiling off,
+     * ice cracking through it), its front crackling past, a spire of ice groaning up, its cold snap's wind.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_ICBM_BURST =
+            register("cryo.icbm_burst", "Cryo bomb bursts", List.of("exotic/cryo_icbm_burst"), false, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_FRONT =
+            register("cryo.front", "Ice cracks across the land", variants("exotic/cryo_front", 2), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_SPIRE =
+            register("cryo.spire", "Ice spire bursts up", variants("exotic/cryo_spire", 2), false, 96);
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_WIND =
+            register("cryo.wind", "Freezing wind whistles", List.of("exotic/cryo_wind"), false, 96);
     /** The singularity's end (DESIGN.md §16.12): an inrush, then the thud as its horizon closes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_IMPLODE =
             register("singularity.implode", "Singularity implodes", List.of("exotic/singularity_implode"), false, 160);

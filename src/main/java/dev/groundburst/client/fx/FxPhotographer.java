@@ -86,6 +86,13 @@ public final class FxPhotographer {
                 new Scene("special_jei", "special_antimatter", 4, 0, List.of(25)),
                 new Scene("special_singularity_aerial", "special_singularity", 26, 24, List.of(1850)),
                 new Scene("special_storm_aerial", "special_storm", 26, 24, List.of(1850)),
+                new Scene("special_cryo_aerial", "special_cryo", 26, 24, List.of(1850)),
+                // The cryogenic warhead's deep freeze (DESIGN.md §16.16) on a plain laid out for it (a herd, ponds, trees,
+                // grass): its flash and vapour dome, the white front rolling out, the spires; close to its heart in the
+                // cold snap (snow falling, the whiteout); from the air (the frozen land, the spires).
+                new Scene("cryo", "cryogenic_warhead", 150, -3, List.of(6, 14, 30, 60, 100, 170, 400)),
+                new Scene("cryo_close", "cryogenic_warhead", 52, -2, List.of(30, 120, 600)),
+                new Scene("cryo_aerial", "cryogenic_warhead", 240, 26, List.of(40, 120, 300, 900)),
                 new Scene("complex_tsar", "complex_tsar", 34, -12, List.of(20)),
                 new Scene("complex_tsar_close", "complex_tsar", 13, -38, List.of(20)),
                 new Scene("nuke_tsar", "tsar_warhead", 900, -16, List.of(3, 40, 160, 500, 1200)),
@@ -750,6 +757,87 @@ public final class FxPhotographer {
      * The Special Weapons Assembler where the hall would stand (controller facing north, the bay running south from it),
      * powered and given {@code core}, a booster and GPS, and set to work.
      */
+    /**
+     * The plain round the cryogenic warhead's scene: a herd scattered in the open, two ponds, simple trees (a trunk under a
+     * ball of leaves) and grass and flowers, so its front has water, treetops, plants and creatures to freeze.
+     */
+    private static void cryoField(ServerLevel level, int x, int ground) {
+        var random = net.minecraft.util.RandomSource.create(23);
+        java.util.function.BiFunction<Integer, Integer, net.minecraft.core.BlockPos> top = (px, pz) -> {
+            level.getChunk(px >> 4, pz >> 4);
+            return new net.minecraft.core.BlockPos(px, level.getHeight(Heightmap.Types.MOTION_BLOCKING, px, pz), pz);
+        };
+        // The test world is flat sand: a meadow laid over it first, 140 blocks round.
+        var grass = net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        for (int dx = -140; dx <= 140; dx++) {
+            for (int dz = -140; dz <= 140; dz++) {
+                if (dx * dx + dz * dz > 140 * 140) {
+                    continue;
+                }
+                var p = top.apply(x + dx, dz).below();
+                level.setBlock(p, grass, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                level.setBlock(p.below(), dirt, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+        }
+        int[][] ponds = {{x + 30, -16, 6}, {x + 70, 24, 9}, {x - 40, 30, 7}};
+        for (int[] pond : ponds) {
+            for (int dx = -pond[2]; dx <= pond[2]; dx++) {
+                for (int dz = -pond[2]; dz <= pond[2]; dz++) {
+                    if (dx * dx + dz * dz > pond[2] * pond[2]) {
+                        continue;
+                    }
+                    var p = top.apply(pond[0] + dx, pond[1] + dz).below();
+                    level.setBlockAndUpdate(p, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+                    if (dx * dx + dz * dz < (pond[2] - 2) * (pond[2] - 2)) {
+                        level.setBlockAndUpdate(p.below(), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+                    }
+                }
+            }
+        }
+        var log = net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState();
+        var leaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        for (int i = 0; i < 34; i++) {
+            double a = random.nextDouble() * 2 * Math.PI, r = 16 + random.nextDouble() * 110;
+            var foot = top.apply((int) (x + r * Math.cos(a)), (int) (r * Math.sin(a)));
+            if (!level.getBlockState(foot.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)) {
+                continue;
+            }
+            int h = 4 + random.nextInt(3);
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        if (dx * dx + dy * dy + dz * dz <= 5 + random.nextInt(2)) {
+                            level.setBlockAndUpdate(foot.offset(dx, h + dy, dz), leaves);
+                        }
+                    }
+                }
+            }
+            for (int dy = 0; dy < h + 1; dy++) {
+                level.setBlockAndUpdate(foot.above(dy), log);
+            }
+        }
+        for (int i = 0; i < 900; i++) {
+            double a = random.nextDouble() * 2 * Math.PI, r = 6 + random.nextDouble() * 140;
+            var p = top.apply((int) (x + r * Math.cos(a)), (int) (r * Math.sin(a)));
+            if (level.getBlockState(p.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) && level.getBlockState(p).isAir()) {
+                level.setBlockAndUpdate(p, (i % 9 == 0 ? net.minecraft.world.level.block.Blocks.POPPY : i % 7 == 0
+                        ? net.minecraft.world.level.block.Blocks.DANDELION : net.minecraft.world.level.block.Blocks.SHORT_GRASS).defaultBlockState());
+            }
+        }
+        for (int i = 0; i < 46; i++) {
+            double a = random.nextDouble() * 2 * Math.PI, r = 8 + random.nextDouble() * 125;
+            var p = top.apply((int) (x + r * Math.cos(a)), (int) (r * Math.sin(a)));
+            var animal = (i % 3 == 0 ? net.minecraft.world.entity.EntityTypes.COW : i % 3 == 1 ? net.minecraft.world.entity.EntityTypes.SHEEP
+                    : net.minecraft.world.entity.EntityTypes.PIG).create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (animal != null) {
+                animal.snapTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, random.nextFloat() * 360, 0);
+                level.addFreshEntity(animal);
+            }
+        }
+    }
+
     private static void specialSite(ServerLevel level, int x, int ground, net.minecraft.world.item.ItemStack core) {
         hallAt = new net.minecraft.core.BlockPos(x, ground, -6);
         formed(level, hallAt, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().get(),
@@ -1688,6 +1776,9 @@ public final class FxPhotographer {
                         lift = ANTIMATTER_MESA + 6;            // level with the mesa's top, to see the hole on it
                     }
                 }
+                if (s.profile().equals("cryogenic_warhead")) {
+                    cryoField(level, x, ground);               // laid now: it takes the server a few seconds
+                }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
@@ -2010,9 +2101,11 @@ public final class FxPhotographer {
                     hallSite(level, x, ground, new net.minecraft.world.item.ItemStack(dev.groundburst.content.strategic.GBStrategic.TERTIARY_STAGE.get()));
                     return;
                 }
-                if (s.profile().equals("special_antimatter") || s.profile().equals("special_singularity") || s.profile().equals("special_storm")) {
+                if (s.profile().equals("special_antimatter") || s.profile().equals("special_singularity") || s.profile().equals("special_storm")
+                        || s.profile().equals("special_cryo")) {
                     var cores = dev.groundburst.content.strategic.SpecialWeapons.cores();
-                    int core = s.profile().equals("special_antimatter") ? 0 : s.profile().equals("special_singularity") ? 1 : 2;
+                    int core = s.profile().equals("special_antimatter") ? 0 : s.profile().equals("special_singularity") ? 1
+                            : s.profile().equals("special_storm") ? 2 : 3;
                     specialSite(level, x, ground, cores.get(core));
                     return;
                 }
@@ -2037,6 +2130,11 @@ public final class FxPhotographer {
                         stormCentre = at;
                         stormSpot = new net.minecraft.core.BlockPos(x - 26, ground, 0);
                     }
+                    return;
+                }
+                if (s.profile().equals("cryogenic_warhead")) {
+                    dev.groundburst.content.ordnance.charge.Charges.impact(level, dev.groundburst.content.ordnance.charge.ChargeKind.CRYOGENIC_WARHEAD,
+                            net.minecraft.core.BlockPos.containing(at), null);
                     return;
                 }
                 if (s.profile().equals("cobalt_plume")) {

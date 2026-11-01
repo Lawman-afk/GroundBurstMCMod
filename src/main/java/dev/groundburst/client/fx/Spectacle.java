@@ -84,6 +84,7 @@ public final class Spectacle {
         AnnihilationFx.register();
         SingularityFx.register();
         StormFx.register();
+        FreezeFx.register();
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerAboveAll(GroundBurst.id("blast_flash"), (graphics, delta) -> {
             float flash = flash();
             if (flash > 0.002f) {
@@ -111,6 +112,7 @@ public final class Spectacle {
         AnnihilationFx.clear();
         SingularityFx.clear();
         StormFx.clear();
+        FreezeFx.clear();
         BLASTS.clear();
         PUFFS.clear();
         DEBRIS.clear();
@@ -797,6 +799,7 @@ public final class Spectacle {
         AnnihilationFx.tick(mc.level, PUFFS, ticks, q, eye);
         SingularityFx.tick(mc.level, ticks, eye);
         StormFx.tick(mc.level, ticks, eye);
+        FreezeFx.tick(mc.level, PUFFS, ticks, q, eye);
         PUFFS.tick(ticks);
         DEBRIS.tick(mc.level);
         SpentStages.tick(mc.level, PUFFS, ticks, q);
@@ -816,6 +819,7 @@ public final class Spectacle {
         sum += AnnihilationFx.flash(now);
         sum += SingularityFx.flash(now);
         sum += StormFx.flash(now);
+        sum += FreezeFx.flash(now);
         return Math.min(0.96f, sum);
     }
 
@@ -883,6 +887,14 @@ public final class Spectacle {
                 clamp((b + (lum - b) * amount) * k));
     }
 
+    /** {@code color} paled toward a deep freeze's icy white (DESIGN.md §16.16), as bright as the sky allows (night stays dark). */
+    private static Vector3f frosty(float r, float g, float b, float amount) {
+        float lum = 0.3f * r + 0.59f * g + 0.11f * b;
+        float k = Math.min(1, lum * 1.2f + 0.08f);
+        return new Vector3f(clamp(r + (FreezeFx.ICE_R * k - r) * amount), clamp(g + (FreezeFx.ICE_G * k - g) * amount),
+                clamp(b + (FreezeFx.ICE_B * k - b) * amount));
+    }
+
     /** How far the sky turns fallout green where the camera is. */
     private static float falloutTint() {
         Minecraft mc = Minecraft.getInstance();
@@ -904,6 +916,13 @@ public final class Spectacle {
         float st = StormFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
         if (st > 0) {
             Vector3f c = stormy(event.getRed(), event.getGreen(), event.getBlue(), st);
+            event.setRed(c.x);
+            event.setGreen(c.y);
+            event.setBlue(c.z);
+        }
+        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (ft > 0) {
+            Vector3f c = frosty(event.getRed(), event.getGreen(), event.getBlue(), ft);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
@@ -939,6 +958,15 @@ public final class Spectacle {
             Vector3f c = stormy(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, st);
             event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
+        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        if (ft > 0) {
+            if (sky.skyColor != null) {
+                sky.skyColor = frosty(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), ft * 0.8f);
+            }
+            int cloud = event.getRenderState().cloudColor;
+            Vector3f c = frosty(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, ft);
+            event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
+        }
         float a = skyTint();
         if (a > 0) {
             if (sky.skyColor != null) {
@@ -965,7 +993,7 @@ public final class Spectacle {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || (BLASTS.isEmpty() && PUFFS.size() == 0 && DEBRIS.size() == 0 && SpentStages.isEmpty() && !FalloutFx.active(level)
-                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty())) {
+                && AnnihilationFx.isEmpty() && SingularityFx.isEmpty() && StormFx.isEmpty() && FreezeFx.isEmpty())) {
             return;
         }
         var camera = event.getLevelRenderState().cameraRenderState;
@@ -989,6 +1017,7 @@ public final class Spectacle {
         AnnihilationFx.submit(collector, poseStack, camera.pos, now);
         SingularityFx.submit(collector, poseStack, camera.pos, now);
         StormFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
+        FreezeFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {

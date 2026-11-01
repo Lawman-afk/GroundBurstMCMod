@@ -97,6 +97,16 @@ public final class GBFallout {
     public static final WithItem<CryoCrystalBlock> CRYO_CRYSTAL = GBBlocks.register("cryo_crystal", "Cryo Crystal", GBTab.AFTERMATH,
             CryoCrystalBlock::new, p -> p.mapColor(MapColor.ICE).strength(0.5f).noOcclusion().sound(SoundType.AMETHYST_CLUSTER)
                     .lightLevel(s -> 4).friction(0.98f).pushReaction(PushReaction.POPPED));
+    /** Snow a Cryo ICBM's front laid (DESIGN.md §16.16): vanilla's snow, but it thaws a layer at a time where snow would not lie. */
+    public static final WithItem<CryoSnowBlock> CRYO_SNOW = GBBlocks.register("cryo_snow", "Cryo Snow", GBTab.AFTERMATH, CryoSnowBlock::new,
+            p -> p.mapColor(MapColor.SNOW).replaceable().forceSolidOff().randomTicks().strength(0.1f).requiresCorrectToolForDrops()
+                    .sound(SoundType.SNOW).isViewBlocking((s, l, pos, box) -> s.getValue(CryoSnowBlock.LAYERS) >= 8)
+                    .pushReaction(PushReaction.POPPED));
+    /** Water a Cryo ICBM's front froze in an instant: milky ice that thaws where snow would not lie (DESIGN.md §16.16). */
+    public static final WithItem<CryoIceBlock> CRYO_ICE = GBBlocks.register("cryo_ice", "Cryo Ice", GBTab.AFTERMATH, CryoIceBlock::new,
+            p -> p.mapColor(MapColor.ICE).friction(0.98f).randomTicks().strength(0.5f).sound(SoundType.GLASS).noOcclusion()
+                    .isValidSpawn((s, l, pos, type) -> type == net.minecraft.world.entity.EntityTypes.POLAR_BEAR)
+                    .isRedstoneConductor((s, l, pos) -> false));
 
     // --- toxic ground (slice 12e) -------------------------------------------------------------------------------------------
     /** Earth soaked in anthrax: it kills what grows on it, breathes a thin haze, and is spent in about a day. */
@@ -111,7 +121,9 @@ public final class GBFallout {
     public static final String INFO_FROZEN = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.frozen_ground",
             "A cryo burst freezes the ground it reaches: rime on stone and grass, plants frozen solid, and ice crystals grown "
                     + "round its middle. Where snow would not lie it thaws again over the next quarter of an hour or so; in cold "
-                    + "places it stays. Frozen plants and crystals melt away (silk touch keeps a crystal).");
+                    + "places it stays. Frozen plants and crystals melt away (silk touch keeps a crystal). A Cryo ICBM's front "
+                    + "also lays Cryo Snow and freezes water to milky Cryo Ice: both thaw the same way, the snow a layer at a "
+                    + "time, the ice back to water (running water's ice melts away). Its spires of packed and blue ice stay.");
     public static final String INFO_TOXIC_SOIL = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.toxic_soil",
             "Where a heavy anthrax cloud lies on the ground, or a toxin SCUD's residue settles, the soil turns. Toxic Soil kills "
                     + "what grows on it, breathes a thin anthrax haze now and then, and is spent (coarse dirt) after about a day.");
@@ -140,7 +152,7 @@ public final class GBFallout {
     public static List<WithItem<? extends Block>> blocks() {
         return List.of(TRINITITE, GLASSED_SAND, SLAG, SCORCHED_EARTH, SCORCHED_STONE, IRRADIATED_SOIL, ASH, FALLOUT_ASH,
                 CHARRED_LOG, CHARRED_WOOD, CHARRED_PLANKS, DEAD_GRASS_BLOCK, DEAD_LEAVES, WITHERED_CROPS, TOXIC_SOIL, FROSTED_STONE,
-                FROSTED_GRASS_BLOCK, FROZEN_PLANT, CRYO_CRYSTAL);
+                FROSTED_GRASS_BLOCK, FROZEN_PLANT, CRYO_CRYSTAL, CRYO_SNOW, CRYO_ICE);
     }
 
     public static void init() {}

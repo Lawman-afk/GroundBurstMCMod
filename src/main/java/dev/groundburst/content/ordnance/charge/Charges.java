@@ -280,6 +280,7 @@ public final class Charges {
             case ANTIMATTER_WARHEAD -> dev.groundburst.content.exotic.Antimatter.breach(level, c, by, bombScale);
             case SINGULARITY_WARHEAD -> dev.groundburst.content.exotic.Singularity.breach(level, c, by, bombScale);
             case STORM_WARHEAD -> dev.groundburst.content.exotic.Storm.breach(level, c, by, bombScale);
+            case CRYOGENIC_WARHEAD -> dev.groundburst.content.exotic.Cryo.breach(level, c, by, bombScale);
             // Set off where it stands it is just a bomb; it bores only when delivered at speed (Phase 9, see penetrate).
             case BUNKER_BUSTER -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("bunker_buster_warhead"), by, bombScale);
         }
@@ -478,6 +479,8 @@ public final class Charges {
             dev.groundburst.content.exotic.Singularity.burst(level, at, by, bombScale);
         } else if (kind == ChargeKind.STORM_WARHEAD) {
             dev.groundburst.content.exotic.Storm.burst(level, at, by, bombScale);
+        } else if (kind == ChargeKind.CRYOGENIC_WARHEAD) {
+            dev.groundburst.content.exotic.Cryo.burst(level, at, by, bombScale);
         }
     }
 

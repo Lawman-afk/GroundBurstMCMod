@@ -182,6 +182,9 @@ public final class GBBlastData {
         ctx.register(dev.groundburst.blast.Annihilations.ANNIHILATED, new DamageType(GroundBurst.MODID + ".annihilated", DamageScaling.NEVER, 0f));
         ctx.register(dev.groundburst.content.exotic.Antimatter.GAMMA_FLASH, new DamageType(GroundBurst.MODID + ".gamma_flash", DamageScaling.NEVER, 0f));
         ctx.register(dev.groundburst.blast.Singularities.SPAGHETTIFIED, new DamageType(GroundBurst.MODID + ".spaghettified", DamageScaling.NEVER, 0f));
+        // DESIGN.md §16.16: the cryogenic warhead's heart, where everything is frozen through.
+        ctx.register(dev.groundburst.blast.Freezes.FLASH_FROZEN, new DamageType(GroundBurst.MODID + ".flash_frozen", DamageScaling.NEVER, 0f,
+                net.minecraft.world.damagesource.DamageEffects.FREEZING));
     }
 
     /** {@code groundburst:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -212,6 +215,11 @@ public final class GBBlastData {
             tag(DamageTypeTags.BYPASSES_COOLDOWN).add(annihilated, spaghettified);
             tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(annihilated, gamma, spaghettified);
             tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(annihilated, spaghettified);
+            // Frozen through: the cold goes through armour (as powder snow's does) and counts as freezing.
+            var frozen = dev.groundburst.blast.Freezes.FLASH_FROZEN;
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(frozen);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(frozen);
+            tag(DamageTypeTags.IS_FREEZING).add(frozen);
         }
     }
 }

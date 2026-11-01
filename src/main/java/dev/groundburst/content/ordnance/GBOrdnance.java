@@ -141,11 +141,15 @@ public final class GBOrdnance {
     /** Phase 11 (DESIGN.md §16.14): the storm warhead, built whole into its ICBM like the other exotic ones. */
     public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> STORM_WARHEAD = bomb(
             "storm_warhead", "Storm Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.STORM_WARHEAD);
+    /** DESIGN.md §16.16: the cryogenic warhead, built whole into the Cryo ICBM like the other exotic ones. */
+    public static final dev.groundburst.registry.GBBlocks.WithItem<dev.groundburst.content.ordnance.charge.ChargeBlock> CRYOGENIC_WARHEAD = bomb(
+            "cryogenic_warhead", "Cryogenic Warhead", dev.groundburst.content.ordnance.charge.ChargeKind.CRYOGENIC_WARHEAD);
     static {
         // Phase 11 after the user's look (DESIGN.md §16.12): the exotic warheads live only inside their ICBMs.
         GBItems.hide(ANTIMATTER_WARHEAD.item());
         GBItems.hide(SINGULARITY_WARHEAD.item());
         GBItems.hide(STORM_WARHEAD.item());
+        GBItems.hide(CRYOGENIC_WARHEAD.item());
     }
 
     /** Every warhead, in the order the creative tab and the Field Manual show them. */
@@ -153,7 +157,7 @@ public final class GBOrdnance {
             java.util.List.of(HE_WARHEAD, HEAVY_WARHEAD, THERMOBARIC_WARHEAD, CLUSTER_WARHEAD, BUNKER_BUSTER, NAPALM_WARHEAD, MASSIVE_WARHEAD,
                     GAS_WARHEAD, SMOKE_WARHEAD, CRYO_WARHEAD, EMP_WARHEAD, TOXIC_WASTE_WARHEAD, CHEMICAL_WARHEAD, DIRTY_WARHEAD, TACTICAL_NUCLEAR_WARHEAD,
                     FISSION_WARHEAD, BOOSTED_FISSION_WARHEAD, NEUTRON_WARHEAD, THERMONUCLEAR_WARHEAD, COBALT_WARHEAD, TSAR_WARHEAD,
-                    ANTIMATTER_WARHEAD, SINGULARITY_WARHEAD, STORM_WARHEAD, SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
+                    ANTIMATTER_WARHEAD, SINGULARITY_WARHEAD, STORM_WARHEAD, CRYOGENIC_WARHEAD, SCUD_STORM_WARHEAD, NUCLEAR_MISSILE_WARHEAD);
     /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
@@ -174,7 +178,7 @@ public final class GBOrdnance {
                     BOOSTED_FISSION_WARHEAD.block().get(), NEUTRON_WARHEAD.block().get(), DIRTY_WARHEAD.block().get(),
                     THERMONUCLEAR_WARHEAD.block().get(), COBALT_WARHEAD.block().get(), TSAR_WARHEAD.block().get(),
                     SCUD_STORM_WARHEAD.block().get(), NUCLEAR_MISSILE_WARHEAD.block().get(), ANTIMATTER_WARHEAD.block().get(),
-                    SINGULARITY_WARHEAD.block().get(), STORM_WARHEAD.block().get()));
+                    SINGULARITY_WARHEAD.block().get(), STORM_WARHEAD.block().get(), CRYOGENIC_WARHEAD.block().get()));
     public static final DeferredItem<dev.groundburst.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GBItems.register("remote_detonator",
             "Remote Detonator", GBTab.ORDNANCE, dev.groundburst.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

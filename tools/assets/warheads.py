@@ -44,6 +44,9 @@ for high explosive, light red for incendiary, dark green for a toxic chemical.
 - Singularity Warhead (Phase 11, DESIGN.md §16.2): a matte-black sphere held in a gyroscope of three hoops (dark steel
   outermost, bright steel, brass innermost, pinned together where they cross), its violet core glowing through a slit
   round its equator, on a cradle on its mounting ring.
+- Cryogenic Warhead (DESIGN.md §16.16; built whole into its Cryo ICBM): a steel dewar rimed at its foot, a sight glass
+  glowing ice blue round its waist between dark collars, an ice-blue band, four liquid nitrogen tanks strapped round it
+  and piped in, a white domed lid and a relief valve's stack with a brass cap.
 - Toxin SCUD Warhead (a superweapon's, DESIGN.md §19.5; built whole into its Toxin SCUD): the C&C Generals SCUD's
   toxin-green nose, a long ogive over a short green section, a black band and white stencils.
 - Nuclear Missile Warhead (China's superweapon, built whole into its Nuclear Missile): a DF-5's re-entry vehicle, a long
@@ -606,6 +609,7 @@ def build_all() -> list[str]:
     names += antimatter()
     names += singularity()
     names += storm()
+    names += cryogenic()
     # --- the superweapons' (DESIGN.md §19.5) ---
     names += scud_storm()
     names += nuclear_missile()
@@ -810,6 +814,61 @@ def storm() -> list[str]:
         img[band & (((col + row) % 4) < 2)] = BLACK[1]
     look.on("coil", windings)
     look.on("body", stripes)
+    look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
+    return save(w, look)
+
+
+def cryogenic() -> list[str]:
+    """The cryogenic warhead (DESIGN.md §16.16): a heat sink of exotic matter held near absolute zero in a polished steel
+    dewar, rime dusting it at its foot. A sight glass round its waist glows ice blue between two dark collars (the heat
+    sink seen through it: lit); a cryogen's ice-blue band under its shoulder. Four liquid nitrogen tanks stand strapped
+    round it, ice blue, rimed at their feet, under white domes and their valves,
+    each piped in at the dewar's shoulder. A white insulated lid is domed over it, and on top a relief valve's stack with
+    a brass cap, where its boil-off vents."""
+    w = Build("cryogenic_warhead")
+    hb, r = 1.5, 3.5
+    mounting_ring(w, 5.8, hb)
+    w.ring("body", r, hb, 10.6, caps=("up",), top=True)
+    # The glass has no caps: its ends lie inside the collars.
+    w.ring("glass", r + 0.22, 5.1, 6.7, caps=(), top=False, bottom=False, foot=False)
+    w.ring("collar", r + 0.35, 4.6, 5.1, caps=("up", "down"), top=True, bottom=True, foot=False)
+    w.ring("collar", r + 0.35, 6.7, 7.2, caps=("up", "down"), top=True, bottom=True, foot=False)
+    for k, a in enumerate((45, 135, 225, 315)):
+        cx, cz = 8 + 4.85 * math.sin(math.radians(a)), 8 + 4.85 * math.cos(math.radians(a))
+        w.add("tank", section(w.m, f"tank{k}", 0.85, hb, 8.6, 8, cx=cx, cz=cz, caps=("up",)), True, False, True)
+        w.add("dome", section(w.m, f"dome{k}", 0.62, 8.6, 9.1, 8, cx=cx, cz=cz, caps=("up",)), True, False, False)
+        w.add("tankvalve", section(w.m, f"tankvalve{k}", 0.3, 9.1, 9.6, 8, cx=cx, cz=cz, caps=("up",)), True, False, False)
+        for j, y in enumerate((2.6, 7.6)):
+            w.add("strap", section(w.m, f"strap{k}_{j}", 0.97, y, y + 0.5, 8, cx=cx, cz=cz, caps=("up", "down")), True, True, False)
+        # Its feed line in to the dewar's shoulder, from the dome's side.
+        w.box("pipe", (7.82, 8.63, 8 + r - 0.25), (8.18, 8.85, 8 + 4.85), rotation={"origin": (8, 8.74, 8), "axis": "y", "angle": a})
+    top = w.nose("lid", r, 10.6, 2.0, "dome", 3)
+    top = tip(w, 1.1, top - 0.3, 0.6, "neck")
+    # The stack has no cap: its top is inside the valve.
+    w.ring("stack", 0.5, top, 14.6, caps=(), top=False, foot=False)
+    w.ring("valve", 0.85, 14.6, 15.3, caps=("up", "down"), top=True, bottom=True, foot=False)
+    for n in w.groups["glass"]:
+        w.m.get(n).light_emission = 15
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=ROUND)
+    look = Look(body=metal(STEEL, 0.7), base=BASE, glass=M.Material(ramp=ramp9(P.CRYO), tone=0.74, **lit),
+                collar=metal(GUNMETAL, 0.32), tank=paint(G.CRYO_CAN, 0.56, 0.1), dome=paint(WHITE, 0.7, 0.08),
+                tankvalve=metal(STEEL, 0.6), strap=metal(GUNMETAL, 0.4), pipe=metal(STEEL, 0.55), lid=paint(WHITE, 0.68, 0.1),
+                neck=metal(STEEL, 0.55), stack=metal(STEEL, 0.6), valve=BRASS, lug=LUG)
+
+    def churn(k, f, img):                                      # the cold churning behind the glass: darker swirls round it
+        if f.d in SIDES:
+            col = np.floor((angle_of(f) + 360) % 360 / 360 * 24 + f.Y * 1.5).astype(int)
+            M.darken(img, col % 4 == 0, 0.78)
+
+    def rime(k, f, img):                                       # a dusting of rime at the feet, thinning upward
+        if f.d not in SIDES:
+            return
+        r = M.white(f.X, f.Y, f.Z, 923)
+        on = (r < 0.22 * np.clip(1 - (f.Y - hb) / 3.2, 0, 1) ** 1.5) & (f.Y >= hb)
+        img[on, :3] = (img[on, :3] * 0.35 + np.array(FROST[5][:3]) * 0.65).astype(img.dtype)
+    look.on("glass", churn)
+    look.on("body", lambda k, f, img: band(k, f, img, 9, 10, paint(G.CRYO_CAN, 0.6, 0.06)))     # a cryogen's ice-blue band
+    look.on("body", rime).on("tank", rime)
     look.on("base", lambda k, f, img: bolts(f, img, hb * 0.6))
     return save(w, look)
 
@@ -1121,7 +1180,7 @@ WARHEADS = ["he_warhead", "heavy_warhead", "thermobaric_warhead", "cluster_warhe
             "massive_warhead", "gas_warhead", "smoke_warhead", "cryo_warhead", "emp_warhead", "chemical_warhead",
             "toxic_waste_warhead", "tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead",
             "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "scud_storm_warhead", "nuclear_missile_warhead",
-            "antimatter_warhead", "singularity_warhead", "storm_warhead"]
+            "antimatter_warhead", "singularity_warhead", "storm_warhead", "cryogenic_warhead"]
 
 
 def mount(name: str) -> tuple[float, float, float]:

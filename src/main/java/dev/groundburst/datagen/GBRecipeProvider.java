@@ -399,6 +399,14 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBTags.commonItem("plates/copper")).requires(GBTags.commonItem("plates/copper"))
                 .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL))
                 .save(output);
+        // A cryogenic heat sink (DESIGN.md §16.16): stabilised exotic matter held near absolute zero by two superconducting
+        // coils in a jacket of liquid nitrogen, a quantum circuit to let it go.
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.CRYO_CORE, 1)
+                .requires(dev.groundburst.content.chem.GBChemicals.LIQUID_NITROGEN_CANISTER, 4).requires(GBParts.SUPERCONDUCTING_COIL, 2)
+                .requires(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER).requires(GBParts.QUANTUM_CIRCUIT)
+                .unlockedBy(getHasName(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER),
+                        has(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER))
+                .save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.DIRTY_PAYLOAD, 1)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)
                 .requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE).requires(dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE)

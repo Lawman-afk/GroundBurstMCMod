@@ -7,7 +7,9 @@
     "groundburst:frosted_stone",
     "groundburst:frosted_grass_block",
     "groundburst:frozen_plant",
-    "groundburst:cryo_crystal"
+    "groundburst:cryo_crystal",
+    "groundburst:cryo_snow",
+    "groundburst:cryo_ice"
   ],
   "pages": [
     {
@@ -17,7 +19,7 @@
     {
       "type": "spotlight",
       "item": "groundburst:frosted_stone",
-      "text": "**Frozen ground.** A cryo burst rimes the stone and grass it reaches, freezes small plants solid and grows **Cryo Crystals** round its middle. Where snow would not lie it all thaws again within a quarter of an hour or so; in cold places it stays. Frozen plants and crystals melt away; silk touch keeps a crystal."
+      "text": "**Frozen ground.** A cryo burst rimes the stone and grass it reaches, freezes small plants solid and grows **Cryo Crystals** round its middle. Where snow would not lie it all thaws again within a quarter of an hour or so; in cold places it stays. Frozen plants and crystals melt away; silk touch keeps a crystal.\n\nA [Cryo ICBM's](ordnance/exotic) front also lays **Cryo Snow** (snow that thaws, a layer at a time, where snow would not lie) and freezes water to **Cryo Ice**, milky with the air it trapped: it thaws in the same places within about half an hour, still water's ice back to water and a stream's away, so a thaw floods nothing. Its spires of packed and blue ice stay."
     },
     {
       "type": "spotlight",

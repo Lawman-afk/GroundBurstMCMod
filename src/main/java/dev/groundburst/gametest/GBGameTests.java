@@ -85,6 +85,7 @@ public final class GBGameTests {
         ExoticTests.register();
         UpgradeTests.register();
         StormTests.register();
+        CryoTests.register();
         StrategicTests.register();
         SpecialWeaponsTests.register();
         DefenceTests.register();

@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "17";
+    public static final String PROTOCOL_VERSION = "18";
 
     private GBNetwork() {}
 
@@ -41,6 +41,15 @@ public final class GBNetwork {
                 (payload, context) -> dev.groundburst.blast.StormPayloads.strikeHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.StormPayloads.End.TYPE, dev.groundburst.blast.StormPayloads.End.CODEC,
                 (payload, context) -> dev.groundburst.blast.StormPayloads.endHook.accept(payload));
+        // Deep freezes (DESIGN.md §16.16): a cryogenic warhead's front, spires and cold snap, drawn on the client by FreezeFx.
+        registrar.playToClient(dev.groundburst.blast.FreezePayloads.Start.TYPE, dev.groundburst.blast.FreezePayloads.Start.CODEC,
+                (payload, context) -> dev.groundburst.blast.FreezePayloads.startHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.FreezePayloads.Front.TYPE, dev.groundburst.blast.FreezePayloads.Front.CODEC,
+                (payload, context) -> dev.groundburst.blast.FreezePayloads.frontHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.FreezePayloads.Spire.TYPE, dev.groundburst.blast.FreezePayloads.Spire.CODEC,
+                (payload, context) -> dev.groundburst.blast.FreezePayloads.spireHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.FreezePayloads.End.TYPE, dev.groundburst.blast.FreezePayloads.End.CODEC,
+                (payload, context) -> dev.groundburst.blast.FreezePayloads.endHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Grow.TYPE, dev.groundburst.blast.SingularityPayloads.Grow.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.growHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Torn.TYPE, dev.groundburst.blast.SingularityPayloads.Torn.CODEC,

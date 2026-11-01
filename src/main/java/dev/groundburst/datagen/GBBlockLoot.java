@@ -199,11 +199,28 @@ public class GBBlockLoot extends BlockLootSubProvider {
         add(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().get(), createSingleItemTableWithSilkTouch(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().get(),
                 dev.groundburst.content.nuclear.GBNuclear.NUCLEAR_WASTE.get(), net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders.between(1, 3)));
         add(dev.groundburst.content.fallout.GBFallout.CRYO_CRYSTAL.block().get(), createSilkTouchOnlyTable(dev.groundburst.content.fallout.GBFallout.CRYO_CRYSTAL.block().get()));
+        // DESIGN.md §16.16: cryo snow gives a snowball a layer (to a shovel), as vanilla's does; cryo ice only to silk touch.
+        add(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().get(), cryoSnow(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().get()));
+        add(dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().get(), createSilkTouchOnlyTable(dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().get()));
         add(dev.groundburst.content.fallout.GBFallout.TOXIC_SOIL.block().get(), createSingleItemTableWithSilkTouch(dev.groundburst.content.fallout.GBFallout.TOXIC_SOIL.block().get(), net.minecraft.world.item.Items.COARSE_DIRT));
         add(GBResources.SMALL_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GBResources.SMALL_EXOTIC_BUD.block().get()));
         add(GBResources.LARGE_EXOTIC_BUD.block().get(), createSilkTouchOnlyTable(GBResources.LARGE_EXOTIC_BUD.block().get()));
         Block cluster = GBResources.EXOTIC_CRYSTAL_CLUSTER.block().get();
         add(cluster, multiDrop(cluster, GBResources.EXOTIC_SHARD.get(), 1, 3));
+    }
+
+    /** Cryo snow (DESIGN.md §16.16): a snowball a layer, as vanilla's snow gives (to a shovel: it needs the right tool). */
+    private LootTable.Builder cryoSnow(Block block) {
+        return LootTable.lootTable().withPool(net.minecraft.world.level.storage.loot.LootPool.lootPool()
+                .when(net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition.entityPresent(
+                        net.minecraft.world.level.storage.loot.LootContext.EntityTarget.THIS))
+                .add(net.minecraft.world.level.storage.loot.entries.AlternativesEntry.alternatives(
+                        net.minecraft.world.level.block.SnowLayerBlock.LAYERS.getPossibleValues(),
+                        layers -> LootItem.lootTableItem(net.minecraft.world.item.Items.SNOWBALL)
+                                .when(net.minecraft.world.level.storage.loot.predicates.MatchBlock.blockMatches(this.blocks, block,
+                                        net.minecraft.advancements.predicates.StatePropertiesPredicate.Builder.properties()
+                                                .hasProperty(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, layers.intValue())))
+                                .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(layers))))));
     }
 
     /** Powder / gem style: min..max items, Fortune adds more, Silk Touch keeps the block. */

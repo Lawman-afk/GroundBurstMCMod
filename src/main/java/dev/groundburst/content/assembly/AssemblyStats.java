@@ -93,6 +93,10 @@ public final class AssemblyStats {
     static final String REGION = GBLang.add(P + "region", "Storm Region");
     static final String LIGHTNING = GBLang.add(P + "lightning", "Lightning");
     static final String RAGES = GBLang.add(P + "rages", "Rages For");
+    /** The cryogenic warhead's freeze, as rows. */
+    static final String FREEZES = GBLang.add(P + "freezes", "Freezes");
+    static final String FROZEN_THROUGH = GBLang.add(P + "frozen_through", "Frozen Through");
+    static final String COLD_SNAP = GBLang.add(P + "cold_snap", "Cold Snap");
     static final String V_STRIKES = GBLang.add(P + "strikes", "%s a second");
     static final String V_DAYS = GBLang.add(P + "days", "%s days");
     static final String V_DAY = GBLang.add(P + "day", "1 day");
@@ -129,6 +133,7 @@ public final class AssemblyStats {
         effect(ChargeKind.ANTIMATTER_WARHEAD, "antimatter", "A perfect sphere erased: no rubble, no drops, no fallout");
         effect(ChargeKind.SINGULARITY_WARHEAD, "singularity", "A black hole: it feeds and grows, then implodes");
         effect(ChargeKind.STORM_WARHEAD, "storm", "A supercell: lightning chains through all in the open, a region round");
+        effect(ChargeKind.CRYOGENIC_WARHEAD, "cryogenic", "A deep freeze: spires of ice at its heart, then a cold snap");
     }
 
     private static void effect(ChargeKind kind, String id, String english, Object... args) {
@@ -232,6 +237,9 @@ public final class AssemblyStats {
         if (kind == ChargeKind.STORM_WARHEAD) {          // its region: lightning anywhere in it
             return new Area(0, dev.groundburst.blast.Storms.RADIUS);
         }
+        if (kind == ChargeKind.CRYOGENIC_WARHEAD) {      // its heart kills; its front freezes all it reaches
+            return new Area(dev.groundburst.blast.Freezes.core(dev.groundburst.blast.Freezes.RADIUS), dev.groundburst.blast.Freezes.RADIUS);
+        }
         if (kind == ChargeKind.ANTIMATTER_WARHEAD) {     // its gamma flash, in the open
             return new Area(dev.groundburst.content.exotic.Antimatter.GAMMA_LETHAL, dev.groundburst.content.exotic.Antimatter.GAMMA_REACH);
         }
@@ -295,6 +303,14 @@ public final class AssemblyStats {
             out.add(Stat.row(LIGHTNING, Component.translatable(V_STRIKES, (int) dev.groundburst.blast.Storms.STRIKES)));
             if (full) {
                 out.add(Stat.row(RAGES, Component.translatable(V_SECONDS, dev.groundburst.blast.Storms.LIFE / 20)));
+                out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
+            }
+        }
+        if (kind == ChargeKind.CRYOGENIC_WARHEAD) {        // its front, its heart and its cold snap
+            out.add(Stat.row(FREEZES, blocks(dev.groundburst.blast.Freezes.RADIUS)));
+            out.add(Stat.row(FROZEN_THROUGH, blocks(dev.groundburst.blast.Freezes.core(dev.groundburst.blast.Freezes.RADIUS))));
+            if (full) {
+                out.add(Stat.row(COLD_SNAP, Component.translatable(V_SECONDS, dev.groundburst.blast.Freezes.LIFE / 20)));
                 out.add(Stat.note(Component.translatable(NOTE_NUCLEAR)));
             }
         }

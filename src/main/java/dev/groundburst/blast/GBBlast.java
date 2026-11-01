@@ -39,12 +39,15 @@ public final class GBBlast {
         GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated.player", "%1$s was annihilated by %2$s's antimatter");
         GBLang.add("death.attack." + GroundBurst.MODID + ".spaghettified", "%1$s was spaghettified");
         GBLang.add("death.attack." + GroundBurst.MODID + ".spaghettified.player", "%1$s was spaghettified by %2$s's singularity");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".flash_frozen", "%1$s was frozen solid");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".flash_frozen.player", "%1$s was frozen solid by %2$s's cryo bomb");
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) -> BlastManager.resetBudget());
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
                 Annihilations.tick(level);                  // short-lived: ahead of the blasts in the budget
                 Singularities.tick(level);
                 Storms.tick(level);
+                Freezes.tick(level);
                 BlastManager.of(level).tick();
             }
         });
@@ -54,6 +57,7 @@ public final class GBBlast {
                 Annihilations.forget(level);
                 Singularities.forget(level);
                 Storms.forget(level);
+                Freezes.forget(level);
             }
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
@@ -66,6 +70,7 @@ public final class GBBlast {
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
+                Freezes.syncTo(player);
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
@@ -74,6 +79,7 @@ public final class GBBlast {
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
+                Freezes.syncTo(player);
             }
         });
     }

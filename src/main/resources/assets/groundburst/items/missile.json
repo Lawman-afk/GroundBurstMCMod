@@ -1396,6 +1396,100 @@
       },
       {
         "when": [
+          "cryogenic_warhead",
+          "strategic_cryogenic_warhead",
+          "icbm_cryogenic_warhead",
+          "flight_cryogenic_warhead",
+          "flight_strategic_cryogenic_warhead",
+          "flight_icbm_cryogenic_warhead"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_part1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_part1"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_part2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_part2"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_part3"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_part3"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_part4"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_part4"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_s1",
+          "strategic_cryogenic_warhead_s1",
+          "icbm_cryogenic_warhead_s1",
+          "flight_strategic_cryogenic_warhead_s1",
+          "flight_icbm_cryogenic_warhead_s1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_s1"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_s2",
+          "strategic_cryogenic_warhead_s2",
+          "icbm_cryogenic_warhead_s2",
+          "flight_strategic_cryogenic_warhead_s2",
+          "flight_icbm_cryogenic_warhead_s2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_s2"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_stage1"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_stage1"
+        }
+      },
+      {
+        "when": [
+          "cryogenic_warhead_stage2"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "groundburst:item/missile/cryogenic_warhead_stage2"
+        }
+      },
+      {
+        "when": [
           "scud_storm_warhead",
           "strategic_scud_storm_warhead",
           "icbm_scud_storm_warhead",

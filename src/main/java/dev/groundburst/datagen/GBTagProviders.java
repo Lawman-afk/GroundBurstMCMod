@@ -194,6 +194,18 @@ public final class GBTagProviders {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.fallout.GBFallout.FROSTED_STONE.block().key(), dev.groundburst.content.fallout.GBFallout.CRYO_CRYSTAL.block().key());
             tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.groundburst.content.fallout.GBFallout.FROSTED_GRASS_BLOCK.block().key(), dev.groundburst.content.fallout.GBFallout.TOXIC_SOIL.block().key());
             tag(BlockTags.DIRT).add(dev.groundburst.content.fallout.GBFallout.TOXIC_SOIL.block().key());
+            // DESIGN.md §16.16: cryo snow is snow (grass, podzol and mycelium under it look snowy), cryo ice ice to a pickaxe.
+            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().key());
+            tag(BlockTags.SNOW).add(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().key());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().key());
+            // 26.x finds the ground for its heightmaps (rain, lightning, the surface a front or a strike lands on) by these
+            // tags alone: the aftermath's ground and ice are ground (vanilla's own ice is in it, through #ice).
+            tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(dev.groundburst.content.fallout.GBFallout.TRINITITE.block().key(),
+                    dev.groundburst.content.fallout.GBFallout.GLASSED_SAND.block().key(), dev.groundburst.content.fallout.GBFallout.SLAG.block().key(),
+                    dev.groundburst.content.fallout.GBFallout.SCORCHED_EARTH.block().key(), dev.groundburst.content.fallout.GBFallout.SCORCHED_STONE.block().key(),
+                    dev.groundburst.content.fallout.GBFallout.IRRADIATED_SOIL.block().key(), dev.groundburst.content.fallout.GBFallout.CHARRED_LOG.block().key(),
+                    dev.groundburst.content.fallout.GBFallout.CHARRED_WOOD.block().key(), dev.groundburst.content.fallout.GBFallout.CHARRED_PLANKS.block().key(),
+                    dev.groundburst.content.fallout.GBFallout.FROSTED_STONE.block().key(), dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().key());
             tag(BlockTags.NEEDS_STONE_TOOL).add(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().key());
 

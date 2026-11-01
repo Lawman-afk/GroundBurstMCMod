@@ -131,7 +131,8 @@ final class ExoticTests {
         ItemStack casing = new ItemStack(dev.groundburst.content.assembly.WarheadAssembly.casing(SizeClass.XL));
         ItemStack fuze = new ItemStack(GBAssembly.FUZES.getFirst().get());
         var cores = dev.groundburst.content.strategic.SpecialWeapons.cores();
-        var warheads = java.util.List.of(GBOrdnance.ANTIMATTER_WARHEAD, GBOrdnance.SINGULARITY_WARHEAD, GBOrdnance.STORM_WARHEAD);
+        var warheads = java.util.List.of(GBOrdnance.ANTIMATTER_WARHEAD, GBOrdnance.SINGULARITY_WARHEAD, GBOrdnance.STORM_WARHEAD,
+                GBOrdnance.CRYOGENIC_WARHEAD);
         for (int i = 0; i < warheads.size(); i++) {
             var warhead = warheads.get(i);
             ItemStack exotic = new ItemStack(warhead.item().get());

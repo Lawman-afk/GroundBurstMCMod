@@ -70,13 +70,14 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
     /** The missile's sections as they are laid: the first stage, the second, the third, the warhead's shroud. */
     public static final int SECTIONS = 4;
     /** Which warhead the cradles show: none yet, or one of the three exotic ones. */
-    public static final int LOOK_NONE = 0, LOOK_ANTIMATTER = 1, LOOK_SINGULARITY = 2, LOOK_STORM = 3;
+    public static final int LOOK_NONE = 0, LOOK_ANTIMATTER = 1, LOOK_SINGULARITY = 2, LOOK_STORM = 3, LOOK_CRYO = 4;
     private static final int RECHECK_INTERVAL = 40;
 
     private static final String T_MAKES = GBLang.add(GroundBurst.MODID + ".special_weapons.makes", "Makes: %s");
     private static final String T_ANTIMATTER = GBLang.add(GroundBurst.MODID + ".special_weapons.antimatter", "Antimatter ICBM");
     private static final String T_SINGULARITY = GBLang.add(GroundBurst.MODID + ".special_weapons.singularity", "Singularity ICBM");
     private static final String T_STORM = GBLang.add(GroundBurst.MODID + ".special_weapons.storm", "Storm ICBM");
+    private static final String T_CRYO = GBLang.add(GroundBurst.MODID + ".special_weapons.cryo", "Cryo ICBM");
     private static final String T_READY = GBLang.add(GroundBurst.MODID + ".special_weapons.ready", "Range %s, %s: press Assemble");
     private static final String T_WORKING = GBLang.add(GroundBurst.MODID + ".special_weapons.working", "Assembling: %s%%");
     private static final String T_DONE = GBLang.add(GroundBurst.MODID + ".special_weapons.done", "Finished: %s");
@@ -295,6 +296,7 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
             case ANTIMATTER_WARHEAD -> LOOK_ANTIMATTER;
             case SINGULARITY_WARHEAD -> LOOK_SINGULARITY;
             case STORM_WARHEAD -> LOOK_STORM;
+            case CRYOGENIC_WARHEAD -> LOOK_CRYO;
             default -> LOOK_NONE;
         };
     }
@@ -335,6 +337,7 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
         return switch (look) {
             case LOOK_SINGULARITY -> T_SINGULARITY;
             case LOOK_STORM -> T_STORM;
+            case LOOK_CRYO -> T_CRYO;
             default -> T_ANTIMATTER;
         };
     }
@@ -453,6 +456,7 @@ public class SpecialWeaponsBlockEntity extends MachineBlockEntity implements Ani
             case LOOK_ANTIMATTER -> GBOrdnance.ANTIMATTER_WARHEAD;
             case LOOK_SINGULARITY -> GBOrdnance.SINGULARITY_WARHEAD;
             case LOOK_STORM -> GBOrdnance.STORM_WARHEAD;
+            case LOOK_CRYO -> GBOrdnance.CRYOGENIC_WARHEAD;
             default -> null;
         };
         return warhead == null ? "" : warhead.block().getId().getPath();

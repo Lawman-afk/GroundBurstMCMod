@@ -1433,6 +1433,73 @@ def storm() -> dict:
     return save(rk, lv)
 
 
+#: The cryo missile's ice white (DESIGN.md §16.16): white enamel with ice blue in its shadows.
+CRYO_ICE = W.fixed("cryo_ice_white", "#2e4250", "#4a6476", "#6c8a9e", "#90b0c4", "#b4d0e0", "#d4e8f2", "#eef7fb")
+
+
+def cryogenic() -> dict:
+    """The cryogenic warhead's missile (DESIGN.md §16.16), an intercontinental one the Special Weapons Assembler builds
+    whole: ice white, finless on four nozzles, black interstages. Rime frosts each stage up from its foot, thickest on the
+    first, as it does a cold tank's; an ice-blue band at each stage's foot and a sight glass ring glowing ice blue near the
+    top of each stage (its elements emit light) between dark collars; a raceway up its side, ice-blue and white chevrons
+    under the bus, dark stencils; the cryogenic warhead on top."""
+    rk = Rocket("cryogenic_warhead", "XXL", tex=512)
+    R1, R2, R3, RB = 11.0, 9.6, 8.2, 5.55
+    for dx, dz in ((-4, -4), (4, -4), (-4, 4), (4, 4)):
+        rk.bell("bell", 2.6, 1.8, 0.0, 3, cx=8 + dx, cz=8 + dz)
+    rk.ring("skirt", R1 + 0.4, 3.0, 8.0, caps=("up", "down"), top=True, bottom=True)
+    rk.closure("aft", R1 + 0.4, 3.0, inner=0.0)
+    rk.tube("stage1", R1, 8.0, 60.0, on_joint=True)
+    rk.taper("inter1", R1 - 0.1, R2 + 0.35, 60.0, 4)
+    rk.bell("bell2", 4.0, 2.8, 59.0, 4)
+    rk.tube("stage2", R2, 64.0, 104.0)
+    rk.taper("inter2", R2 - 0.1, R3 + 0.35, 104.0, 3)
+    rk.bell("bell3", 3.4, 2.4, 103.0, 3)
+    rk.tube("stage3", R3, 107.0, 136.0)
+    rk.taper("bus", R3 - 0.1, RB - 0.05, 136.0, 4)
+    rk.tube("bus", RB - 0.25, 140.0, 146.0)
+    rk.on_side("raceway", 270, R1, 10.0, 59.0, 0.8, 1.6)
+    rk.on_side("raceway2", 270, R2, 65.0, 103.0, 0.7, 1.4)
+    for y, R in ((50.0, R1), (95.0, R2), (128.0, R3)):
+        rk.ring("collar", R + 0.4, y, y + 0.6, caps=("up", "down"), top=True, bottom=True)
+        rk.ring("glass", R + 0.25, y + 0.6, y + 2.2, caps=(), top=False, bottom=False)
+        rk.ring("collar", R + 0.4, y + 2.2, y + 2.8, caps=("up", "down"), top=True, bottom=True)
+    for n in rk.groups["glass"]:
+        rk.m.get(n).light_emission = 15
+    rk.mount(146.0)
+    rk.parts, rk.stages, rk.engines = [60.0, 104.0, 146.0, rk.tip], [60.0, 104.0, rk.tip], [0.0, 59.0, 103.0]
+    ice = paint(CRYO_ICE, 0.68)
+    lit = dict(mottle=0.04, grain=0.03, dither=0.4, edge_light=0.0, edge_dark=0.0, ao=0.0, grime=0.0, dust=0.0, facing=W.ROUND)
+    lv = Livery(body=ice, stage1=ice, stage2=ice, stage3=ice, skirt=W.metal(W.GUNMETAL, 0.42), inter1=W.metal(W.BLACK, 0.42),
+                inter2=W.metal(W.BLACK, 0.42), bus=W.metal(W.GUNMETAL, 0.45), bell=NOZZLE, bell2=NOZZLE, bell3=NOZZLE,
+                raceway=paint(CRYO_ICE, 0.56), raceway2=paint(CRYO_ICE, 0.56), collar=W.metal(W.GUNMETAL, 0.34),
+                glass=M.Material(ramp=W.ramp9(P.CRYO), tone=0.74, **lit))
+    blue = W.paint(G.CRYO_CAN, 0.52, 0.1)
+
+    def chevrons(k, f, img):                                   # ice blue and white chevrons round the top of the third stage
+        if f.d not in SIDES:
+            return
+        col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 40).astype(int)
+        row = np.floor(f.Y + 0.1).astype(int)
+        on = (row >= 133) & (row < 136)
+        img[on] = W.WHITE[6]
+        img[on & (((col + row) % 4) < 2)] = G.CRYO_CAN[3]
+
+    def churn(k, f, img):                                      # the cold churning behind the glass
+        if f.d in SIDES:
+            col = np.floor((W.angle_of(f) + 360) % 360 / 360 * 48 + f.Y * 1.5).astype(int)
+            M.darken(img, col % 4 == 0, 0.8)
+    lv.on("stage1", frost(8.0, 44.0)).on("stage2", frost(64.0, 84.0)).on("stage3", frost(107.0, 120.0))
+    lv.on("stage1", band(12, 13, blue)).on("stage2", band(67, 68, blue)).on("stage3", band(110, 111, blue))
+    lv.on("stage3", chevrons).on("glass", churn)
+    lv.on("stage1", stencil((40.0, 39.0, 37.0), W.BLACK[2], 9, "xx.xxx.x"))
+    lv.on("stage2", stencil((90.0, 89.0), W.BLACK[2], 7, "x.xx.xx"))
+    lv.on("stage3", stencil((124.0,), W.BLACK[2], 6, "xx.xx"))
+    lv.on("bus", rivets(144.0)).on("skirt", rivets(5.5))
+    lv.on("bell", soot).on("bell2", soot).on("bell3", soot)
+    return save(rk, lv)
+
+
 # --- The superweapons' ammunition (DESIGN.md §19.5) ---------------------------------------------------------------------------
 
 #: A star of nine rows (China's red star on a broad body).
@@ -1660,7 +1727,7 @@ BUILDERS = {"he_warhead": he, "napalm_warhead": napalm, "chemical_warhead": chem
             "cryo_warhead": cryo, "thermobaric_warhead": thermobaric, "bunker_buster_warhead": bunker_buster, "emp_warhead": emp,
             "massive_warhead": massive, "tactical_nuclear_warhead": tactical, "fission_warhead": fission,
             "boosted_fission_warhead": boosted, "neutron_warhead": neutron, "thermonuclear_warhead": thermonuclear,
-            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "antimatter_warhead": antimatter, "singularity_warhead": singularity, "storm_warhead": storm,
+            "cobalt_warhead": cobalt, "tsar_warhead": tsar, "antimatter_warhead": antimatter, "singularity_warhead": singularity, "storm_warhead": storm, "cryogenic_warhead": cryogenic,
             "scud_storm_warhead": scud_storm, "nuclear_missile_warhead": nuclear_missile,
             # The cruise missiles (slice 9c): each Light and Medium warhead's, its look "<warhead>_cruise".
             "he_warhead_cruise": _he_cruise, "napalm_warhead_cruise": _napalm_cruise, "chemical_warhead_cruise": _chemical_cruise,

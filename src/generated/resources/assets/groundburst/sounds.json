@@ -390,6 +390,50 @@
     ],
     "subtitle": "subtitles.groundburst.cryo.burst"
   },
+  "cryo.front": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:exotic/cryo_front1"
+      },
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:exotic/cryo_front2"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cryo.front"
+  },
+  "cryo.icbm_burst": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:exotic/cryo_icbm_burst"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cryo.icbm_burst"
+  },
+  "cryo.spire": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:exotic/cryo_spire1"
+      },
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:exotic/cryo_spire2"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cryo.spire"
+  },
+  "cryo.wind": {
+    "sounds": [
+      {
+        "attenuation_distance": 96,
+        "name": "groundburst:exotic/cryo_wind"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.cryo.wind"
+  },
   "designator.fire": {
     "sounds": [
       "groundburst:launch/designator_fire"

@@ -1320,9 +1320,9 @@ So much ground goes that the crater keeps forming for a minute or two after the 
 ])
 
 entry("ordnance/exotic", "Exotic warheads", "antimatter_warhead", ["antimatter_warhead", "antimatter_trap", "singularity_warhead", "singularity_core",
-                                                                     "storm_warhead", "storm_core"], [
+                                                                     "storm_warhead", "storm_core", "cryogenic_warhead", "cryo_core"], [
     text("""
-An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [Special Weapons Assembler](ordnance/special_weapons), which builds it whole with an **Intercontinental Booster**: an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, fired like any other intercontinental missile from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.
+An exotic warhead holds something stranger than a nuclear core, and it is only ever built whole into its **ICBM**. Its core goes to the [Special Weapons Assembler](ordnance/special_weapons), which builds it whole with an **Intercontinental Booster**: an **Antimatter ICBM**, a **Singularity ICBM**, a **Storm ICBM** or a **Cryo ICBM**, fired like any other intercontinental missile from a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo). There is no exotic bomb: the Assembly Bench takes no exotic core, and no missile assembler builds an exotic missile.
 
 **Antimatter Warhead**: a white ceramic capsule ringed by three violet confinement coils. Its core is an **Antimatter Trap**: four [antimatter cells](nuclear/particle_accelerator) held in a Penning trap by two superconducting coils and a quantum circuit. When its missile brings it down the trap opens: a blinding white flash, then a white sphere grows to **67 blocks** in a second and a half and erases everything in it. Blocks of every kind go, however blast-proof (only bedrock and the like stay), with nothing dropped, no rubble and no fire; a chest goes with what is in it; anything alive inside is annihilated. When the sphere fades it leaves a perfectly round hole, a faint violet glow hanging in it for a few seconds. Sand at its edge falls in and water runs in, as at the rim of a crater.
 """),
@@ -1354,6 +1354,19 @@ On open ground it eats its way out to about **74 blocks** by the end of its minu
 **The wind** drives everything round the eye, anticlockwise and a little in, hardest two fifths of the way out and calm in the eye itself. On foot you can still walk against it.
 """),
     craft("storm_core"),
+    text("""
+**Cryogenic Warhead**: a steel dewar with a sight glass glowing ice blue round its waist, four liquid nitrogen tanks strapped round it and a relief valve on top. Its core is a **Cryo Core**: [stabilised exotic matter](processing/exotic_matter_fabricator) held near absolute zero by two superconducting coils in a jacket of four liquid nitrogen canisters, and a quantum circuit to let it go. Where its missile comes down the heat sink is let go and drinks the heat out of everything round it: a blue-white flash, a dome of white vapour boiling up, and a **white wall of frozen air** rolls out over the land, **128 blocks** in eight seconds.
+
+**The front.** Where it passes, water freezes to milky **Cryo Ice** (ponds near the middle freeze solid), lava crusts over to obsidian, fires go out, stone and grass rime over, plants freeze solid, and **Cryo Snow** is laid over the land and the treetops, deepest near the middle. Its cold air pools in low ground: it climbs no more than about 40 blocks above where it struck, so hilltops are spared. Every creature it catches is **frozen solid** (for 20 seconds near the heart, 4 at the edge, half as long under a roof) and hurt by the cold; armour does not help.
+"""),
+    text("""
+**The heart.** Within **40 blocks** of where it struck nothing lives: everything there is frozen through and shatters. The cold goes underground there too: water and lava freeze in caves, glass cracks and falls apart, cave floors rime over and grow crystals. **Spires of ice** burst out of the ground as the front passes, a great one at the middle and a ring of smaller ones leaning outward, packed ice round a core of blue ice. They stay when the rest thaws.
+
+**The cold snap.** For **three minutes** the region stays deadly cold: snow falls, a mist drifts over the ground, ice glitters in the air and the fog closes in (a whiteout near the heart), and your breath smokes. Anything in it freezes as in powder snow, faster near the middle and in the open, and once frozen through takes cold damage every second. **Leather** keeps the cold out, as it does powder snow's: wear one piece of leather armour and the cold snap cannot touch you (the front itself still freezes you where you stand).
+
+**The thaw.** Where snow would not lie, the snow thaws a layer at a time and the ice melts over the next half hour or so: still water's ice back to water, a stream's away. In cold places it all stays, as do the spires anywhere.
+"""),
+    craft("cryo_core"),
 ])
 
 entry("ordnance/strategic_assembly", "ICBM Assembly Hall", "strategic_assembly_hall", ["strategic_assembly_hall", "strategic_assembly_hall_spawner", "crane_rail", "fusion_secondary", "cobalt_jacket", "intercontinental_booster", "tertiary_stage", "twin_boosted_core"], [
@@ -1377,12 +1390,12 @@ An intercontinental missile flies **3,000 blocks**, as far as a [Launch Computer
 
 entry("ordnance/special_weapons", "Special Weapons Assembler", "special_weapons_assembler", ["special_weapons_assembler", "special_weapons_assembler_spawner"], [
     text("""
-The **Special Weapons Assembler** builds the [exotic weapons](ordnance/exotic) whole: an **Antimatter ICBM**, a **Singularity ICBM** or a **Storm ICBM**, each from its core and an **Intercontinental Booster**. A [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires them like any other intercontinental missile, **3,000 blocks**.
+The **Special Weapons Assembler** builds the [exotic weapons](ordnance/exotic) whole: an **Antimatter ICBM**, a **Singularity ICBM**, a **Storm ICBM** or a **Cryo ICBM**, each from its core and an **Intercontinental Booster**. A [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires them like any other intercontinental missile, **3,000 blocks**.
 
 It is a containment bay: three magnetic **containment rings** stand across it, and the missile is laid on its cradles through them, section by section, the warhead last. While it works the rings' rotors turn and their fields glow violet round the missile.
 """),
     text("""
-Fit an **Antimatter Trap**, a **Singularity Core** or a **Storm Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port (from above or from the floor's back edge), and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers. **Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
+Fit an **Antimatter Trap**, a **Singularity Core**, a **Storm Core** or a **Cryo Core** and an **Intercontinental Booster**; a guidance unit and Hardened Electronics are optional, as on any [missile](ordnance/missiles). Press **Assemble**: a minute and a half's work at 320 FE a tick. **Take Apart** gives every part back. Pipes can feed and empty it through its Item Port (from above or from the floor's back edge), and it takes [upgrade chips](processing/upgrade_chips) like the other assemblers. **Auto Assemble**, the looping-arrow button left of **Assemble** (its lamp lit green while it is on), starts the next one by itself as soon as its parts are in and the finished one has been taken out of the output: pipe parts in and finished ones out and it keeps building.
 
 The cores themselves are crafted: see [Exotic warheads](ordnance/exotic).
 """),
@@ -1599,7 +1612,7 @@ A trunk burnt black. Four Charred Planks from a log, or smelt it for charcoal. C
 ])
 
 entry("safety/wasteland", "The wasteland", "frosted_stone",
-      ["toxic_soil", "frosted_stone", "frosted_grass_block", "frozen_plant", "cryo_crystal"], [
+      ["toxic_soil", "frosted_stone", "frosted_grass_block", "frozen_plant", "cryo_crystal", "cryo_snow", "cryo_ice"], [
     text("""
 **The Nuclear Wasteland.** Once a nuclear blast has dug its crater, the land it scorched turns to wasteland: grey-brown grass and leaves, water a dead olive, a dusty sky and brown fog, ash drifting down and no animals; only the dead walk there. It stays wasteland when the radiation has gone (the server can turn this off).
 
@@ -1607,6 +1620,8 @@ entry("safety/wasteland", "The wasteland", "frosted_stone",
 """),
     spot("frosted_stone", """
 **Frozen ground.** A cryo burst rimes the stone and grass it reaches, freezes small plants solid and grows **Cryo Crystals** round its middle. Where snow would not lie it all thaws again within a quarter of an hour or so; in cold places it stays. Frozen plants and crystals melt away; silk touch keeps a crystal.
+
+A [Cryo ICBM's](ordnance/exotic) front also lays **Cryo Snow** (snow that thaws, a layer at a time, where snow would not lie) and freezes water to **Cryo Ice**, milky with the air it trapped: it thaws in the same places within about half an hour, still water's ice back to water and a stream's away, so a thaw floods nothing. Its spires of packed and blue ice stay.
 """),
     spot("toxic_soil", """
 **Toxic Soil.** Where a heavy anthrax cloud lies on the ground, or a toxin SCUD's residue settles, the soil turns. It kills what grows on it, breathes a thin anthrax haze now and then (a gas mask or a hazmat suit keeps it out), and is spent, coarse dirt, after about a day.

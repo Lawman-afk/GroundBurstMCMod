@@ -101,12 +101,12 @@ public final class Frost {
     }
 
     /** Ground the frost rimes: stone, and vanilla's grass. */
-    static boolean frostable(BlockState s) {
+    public static boolean frostable(BlockState s) {
         return s.is(Blocks.STONE) || s.is(Blocks.GRASS_BLOCK);
     }
 
     /** Small plants it freezes solid: grass, ferns, flowers, saplings (a tall plant's upper half just goes). */
-    static boolean plant(BlockState s) {
+    public static boolean plant(BlockState s) {
         return s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
                 || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.SAPLINGS) || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(Blocks.BUSH);
     }
@@ -148,7 +148,7 @@ public final class Frost {
     }
 
     /** A frozen mob hit hard enough breaks apart (shards of ice, the sound of breaking glass). */
-    static void shatter(ServerLevel level, LivingEntity e) {
+    public static void shatter(ServerLevel level, LivingEntity e) {
         Vec3 at = e.position().add(0, e.getBbHeight() / 2, 0);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.ICE.defaultBlockState()), at.x, at.y, at.z, 60,
                 e.getBbWidth() * 0.4, e.getBbHeight() * 0.35, e.getBbWidth() * 0.4, 0.25);

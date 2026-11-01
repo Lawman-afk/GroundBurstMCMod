@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+### Cryo ICBM
+- **Cryo ICBM**, the fourth special weapon: a **Cryo Core** (four liquid nitrogen canisters, two superconducting coils,
+  stabilised exotic matter and a quantum circuit) and an Intercontinental Booster at the Special Weapons Assembler,
+  fired from a Launch Complex or a Missile Silo.
+- Where it lands a blue-white flash and a dome of white vapour boil up, and a **wall of frozen air rolls out 128 blocks**
+  over the land in eight seconds: water freezes (ponds near the middle freeze solid), lava crusts to obsidian, fires go
+  out, stone and grass rime over, plants freeze solid, and snow is laid over the land and the treetops. Its cold air
+  pools in low ground, so hilltops are spared. Everything it catches is frozen solid for up to 20 seconds and hurt by
+  the cold.
+- Within **40 blocks** nothing lives: everything is frozen through and shatters, glass cracks apart, caves freeze, and
+  **spires of ice** burst out of the ground, a great one at the middle and a ring leaning outward. They stay.
+- A **three-minute cold snap** holds the region: snow falls, the fog closes in (a whiteout near the middle), a mist
+  drifts over the ground, ice glitters in the air, breath smokes and a thin wind whistles. Anything in it freezes as in
+  powder snow and takes cold damage once frozen through; one piece of **leather armour** keeps the cold out.
+- Its snow (**Cryo Snow**) and milky **Cryo Ice** thaw over the next half hour where snow would not lie: the ice back to
+  water where it was still, away where it ran. In cold places they stay.
+
+### Changes
+- Scorched, glassed and frozen ground now counts as ground for rain, lightning and mob spawning (it was passed through).
+
 ## 0.5.0 — 2026-11-01
 
 A volley launcher sunk into the ground, a laser to call missiles onto a target, and chips made the hard way:

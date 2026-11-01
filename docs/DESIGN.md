@@ -1955,6 +1955,7 @@ range, sound class (`nuke` vs `tsar`), and sky tint duration.
 - Look: white ceramic capsule with glowing violet magnetic confinement rings, no fins, warning chevrons.
 
 ### 16.4 Cryo Bomb
+(As built, §16.16: the Cryo ICBM, a front of 128 with this as its heart.)
 - Radius 40. Water → ice (packed ice near centre), lava → obsidian, leaves → frosted leaves, grass → frosted grass
   with snow layers, plants → frozen plant blocks, stone → frost-covered stone variant; fire extinguished.
 - Mobs and players in r 40 are **frozen solid**: immobilised for 30 s inside a rendered ice shell; non-boss mobs
@@ -2300,6 +2301,91 @@ other ICBMs. So the exotic weapons leave the ICBM Assembly Hall (§16.12), which
   exotic warheads', the missiles' and the upgrade chips' pages changed to match. GameTests (`SpecialWeaponsTests`): it
   builds a hardened Antimatter ICBM and takes it apart; it needs its structure and its own parts; the hall refuses the
   cores and their missiles.
+
+### 16.16 As built: the Cryogenic Warhead and the Cryo ICBM (Phase 11, 2026-11-02)
+The plan's Cryo Bomb (§16.4), next on the user's list after the vertical launch battery. Built as the fourth special
+weapon, by the rules the user set for them (§16.12-16.15): an ICBM built whole at the Special Weapons Assembler, and,
+after the antimatter and singularity were judged far too weak and the storm was scaled to a region, at their scale from
+the start (§16.4's 40 blocks became the heart; the front runs 128).
+- **Warhead and missile.** `ChargeKind.CRYOGENIC_WARHEAD` (`cryogenic_warhead`, "Cryogenic Warhead": the Cryo Cluster
+  Warhead holds `cryo_warhead`), exotic and a whole weapon, hidden like the others. Its **Cryo Core** (`IcbmCore`: four
+  liquid nitrogen canisters, two superconducting coils, stabilised exotic matter, a quantum circuit: a heat sink of
+  exotic matter held near absolute zero) and an Intercontinental Booster make the **Cryo ICBM** at the Special Weapons
+  Assembler (`LOOK_CRYO`, JEI's fourth recipe), fired from a Launch Complex or a Missile Silo. Set off any other way it
+  breaches: a freeze a fifth the size, its cold snap 45 s (`Cryo.breach`). Stats: Freezes 128, Frozen Through 40, Cold
+  Snap 180 s; the strike circles the heart (lethal) and the front (reach).
+- **The freeze** (`blast.Freezes`, `FreezeJob`; not saved). Its **front** runs out to `RADIUS` 128 (x the bomb scale)
+  in `frontTicks` (160 at full size, as the square root of its size smaller), `front = R (1 - (1 - u)^2)`: fast at first,
+  slowing. It freezes the land column by column, nearest first (every column within its reach sorted by distance at the
+  start), within a work budget a tick (a column of the land a few units, one through the heart a block each), keeping
+  every chunk inside it loaded (`BlastChunks.prepare(r, disk)`) and waiting where the world still loads. A column's
+  surface (`MOTION_BLOCKING`): what stands on it (plants and crops frozen to Frozen Plants or gone, fires out), then the
+  ground: open water frozen down 1 + 5k^2 blocks (+3 in the heart; k is 1 at the middle, 0 at the rim) to **Cryo Ice**,
+  lava crusted 1 + 2k down (obsidian, cobblestone where it ran), stone and grass rimed (55% at the rim to all at the
+  middle), then **Cryo Snow** over it in drifts (`drift`, about -1 to 1: six waves of 8 to 36 blocks at random headings
+  and a little roughness block to block; after the first look a layer count drawn per column was a noisy patchwork of
+  steps, and three regular waves drew petals round the middle from the air): 3.2k^2 + 1.1 + 0.8 drift - 0.5 (1 - k)
+  layers rounded, none under 0.75 (so it thins to patches toward the rim), +1 in the heart; on new ice in patches
+  (where the drift is high); the treetops too. Its cold air pools: it climbs `CLIMB` 40 over where it struck (as much smaller as it is), so a hilltop above that
+  is spared.
+- **Its heart** (`CORE_SHARE` 0.3125: 40). Each column's slice through the heart's sphere is frozen too, underground and
+  all: water (and kelp, seagrass, bubble columns) to cryo ice, lava to obsidian, fires out, **glass shattered** by the
+  cold (a few heard a tick), plants frozen, open stone and grass rimed (60%) with now and then a cryo crystal on top.
+  Everything alive in the heart's sphere is **frozen through**: it shatters (`Frost.shatter`) and dies
+  (`groundburst:flash_frozen`, 1000: through armour, freezing; "was frozen solid"); a boss takes 40.
+- **Spires.** As the front passes, ice bursts out of the heart: a great spire at the middle, straight up ((26 to 34)s + 2
+  tall, s the size), and a ring of 12s (2 to 14) leaning outward 0.15 to 0.45 a block, 18 to 73% of the heart out,
+  each rooted two blocks down and growing over 10 + 1.2 h ticks: a six-sided section narrowing to its tip, blue ice
+  through its middle where it is thick, packed ice round it, a cryo crystal on its tip. It bursts through loose and
+  natural ground, plants and trees, never through anything built. They stay (packed and blue ice never melt).
+- **Creatures** the front catches beyond the heart: Frozen (`FrozenEffect`, the ice block round it) from 20 s at the
+  heart's edge to 4 s at the rim, and freezing damage 2 + 10k'^2 (k' 1 at the heart's edge, 0 at the rim; through
+  armour, as powder snow's is); under a roof half of both; above where its cold climbs, passed over.
+- **The cold snap** (`LIFE` 3600: three minutes, easing off over its last third, `Freezes.cold`). Every other tick,
+  whatever stands in the region behind the front, below its climb, and can freeze (vanilla's `canFreeze`: one piece of
+  leather keeps it out; not what the ice holds already) frosts over as in powder snow: 4 + 2 gain on its counter, gain
+  `round(3c)` with c = cold (0.35 + 0.65 (1 - d/R)), halved under a roof (vanilla thaws 2 a tick, so it freezes at 2 gain
+  a tick); once frozen through, every second, freezing damage 2c - 0.5 on top of powder snow's.
+- **The thaw.** Cryo Snow (`CryoSnowBlock`, vanilla's snow in every way, its models vanilla's) loses a layer at a
+  sixth of its random ticks where snow would not lie (`FrostedBlock.cold`: about seven minutes a layer); Cryo Ice
+  (`CryoIceBlock`, ours: water frozen in an instant, milky with the air it trapped) melts at an eighteenth (about
+  twenty minutes) and by a lamp as vanilla's does: ice that was still water (`source`) back to water, ice that was
+  running water away, so a thaw floods nothing. In cold places both stay. Both thaw in the same places the frosted
+  ground does. Cryo Snow is snow (`#minecraft:snow`: grass under it looks snowy); Cryo Ice gives nothing but to silk touch.
+- **Heightmaps (26.x).** A block counts for the game's heightmaps (rain, lightning, mob spawning, the surface a front or
+  a strike finds) only if a tag says so (`#minecraft:blocks_motion_no_leaves`; `blocksMotion()` is gone). None of ours
+  were: the aftermath's ground (trinitite, glassed sand, slag, scorched earth and stone, irradiated soil, charred wood,
+  frosted stone) and cryo ice are tagged now. The mod's other blocks (machines, construction blocks) are a follow-up.
+- **Clients** (`FreezePayloads` Start/Front/Spire/End, protocol 18; `FreezeFx`): a blue-white flash and the sky lit; a
+  dome of white cryogen vapour boiling up and slumping out (falling back: the vapour is cold); the burst heard when its
+  sound arrives (`cryo.icbm_burst`: a thump, liquid nitrogen's roar played slow, ice cracking through it, a rumble) and
+  the camera shaken; the **white surge**, low vapour laid ring by ring as the front runs (the server's word every 5
+  ticks, moved on between by the curve, never far ahead), under the trees, rolling out and settling, thicker near the
+  heart, glinting with ice, never above where the cold climbs (each puff clear of the ground by a third of its size: cut
+  by the ground a billboard read as a dome); as it passes the camera the ground crackling round it
+  (`cryo.front`), a frost-white flash and a shake; at each spire a groan and a crunch (`cryo.spire`), ice dust and glints
+  rising up it. In the cold snap, where the camera stands: snow falling round it (vanilla's flakes on three rings of
+  sheets at vanilla's scale), the sky, fog and clouds paled toward an icy white (night stays dark) and the fog drawn in
+  (`RenderFog`: its end to 110 at the rim and 40 at the heart divided by how deep in the cold the camera is, so it
+  reaches them at full cold: vanilla's own end is hundreds of blocks off, and blended toward it the cold barely showed),
+  a low mist over the ground, diamond dust glinting in the air, every
+  player's breath smoking (not the camera's own in first person), and its wind (`cryo.wind`, a thin whistling loop),
+  all easing off with it. The frost on a player's own screen is vanilla's, from the server freezing them.
+- **Models** (material library): the warhead a polished steel dewar, rime dusting its foot, its sight glass glowing ice
+  blue between dark collars, an ice-blue band, four liquid nitrogen tanks strapped round it (ice blue, white domes,
+  valves) and piped in at its shoulder, a white domed lid and a relief valve's stack with a brass cap; the Cryo Core the
+  warhead in small; the Cryo ICBM ice white, finless on four nozzles, black interstages, frost thickening toward each
+  stage's foot (a cold tank's rime), an ice-blue band at each foot, a sight glass ring glowing ice blue near each
+  stage's top between dark collars, ice-blue and white chevrons under the bus, dark stencils. Cryo Ice's texture ours,
+  painted: a cold translucent blue clouded milky white, bubble trails, two short frost cracks.
+- **Sounds** from the recordings already in the library (liquid nitrogen, ice cracking; `tools/sound/cryo.py`), their
+  tones notched out (the dewar valve's whistle in the nitrogen; the rumble synthesized: the recorded one hums); the wind
+  synthesized.
+- GameTests (`CryoTests`, a front 12 round): the front freezes still water to cryo ice, crusts lava, snows the grass,
+  kills a pig at its heart and freezes one 7 off alive, shatters glass in the heart, raises a spire at the middle and
+  spares a pillar's top 8.5 over where it struck; its cold snap frosts a pig brought in afterwards but not one in leather
+  boots, then ends; still water's ice melts back to water, running water's away, and the snow thaws away (plains); the
+  Special Weapons Assembler builds a Cryo ICBM with its own model on the cradles; the exotic checks cover its warhead.
 
 ### 16.8 Extras beyond the brief (decision D5)
 - **Approved:** **Railgun** (§20) and **Point-Defence Laser** (§18.3).
@@ -4409,6 +4495,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-02 | The **Cryo ICBM** (the user: continue development; next on their list): the plan's Cryo Bomb built as the fourth special weapon, by the user's rules for them (an ICBM whole from its core at the Special Weapons Assembler) and at their scale from the start: a front of frozen air 128 blocks round, a heart of 40 where nothing lives and spires of ice burst up, a three-minute cold snap that leather keeps out, snow and ice that thaw where snow would not lie (vanilla's would never melt in a warm land) while the spires stay (§16.16). The aftermath's ground and the new ice are tagged to count for 26.x's heightmaps. |
 | 2026-11-01 | Version **0.5.0** (the user's request: the jar, a changelog, GitHub and the CurseForge description updated): the Vertical Launch Battery, the Laser Designator, the silicon chain (chips, sapphire, the Clean Room), Auto Assemble, launchers' Item Ports, rods passing a strike's EMP. CHANGELOG's Unreleased became 0.5.0 (its 0.4.0 section restored: a note for this version had landed in it); README and `docs/CURSEFORGE.md` gain the battery, the designator and the chip chain, two screenshots (`vertical_launch_battery.jpg` from a new FX scene `vls_close`, `laser_designator.jpg`), and the designator and MIRVs leave the Planned list (one built, the other removed). Before it, the user's next look: pipes and cables may stand on the assemblers' ports (§10.4). |
 | 2026-11-01 | After the user's look at the battery and the chain: the Vertical Launch Battery's cells deepened to a Medium missile's length (five layers of a new Missile Canister under the Strike Cells), each missile lit at its cell's floor and climbing out through its hatch after half a second (a flight's cell hold, synced); its screen's CRT made tall enough for its lines (§17.15). Every assembler gets Auto Assemble (the next job starts itself when the parts are in and the output is clear) and its Item Port drawn on the deck's edge as well as its top (§10.4). Lightning rods no longer stop a storm strike's EMP pulse (§16.14). The puller's handwheel made solid (§8.1). |
 | 2026-11-01 | The jump from advanced to military widened (§8.1), the user's request: hydrogen from the Electrolytic Separator through a new Proton Exchange Membrane (not coal and liquid oxygen); rad-hard chips built on sapphire (silicon-on-sapphire): alumina from clay and sulfuric acid, a Tungsten Crucible, a Sapphire Boule in the Crystal Puller, six Sapphire Wafers a boule, trichlorosilane for the silicon film; a Quantum Chip (sapphire wafer, stabilised exotic matter, ceramic package; argon) in the exotic matter's place in the quantum circuit, two a circuit. A recipe with no catalyst runs only with the catalyst slot empty. |

@@ -65,6 +65,12 @@ public final class GBAssembly {
     /** A Tesla storm generator: capacitor banks, superconducting coils, a quantum circuit to fire them (DESIGN.md §16.14). */
     public static final DeferredItem<ComponentItems.IcbmCore> STORM_CORE = icbmCore("storm_core", "Storm Core",
             () -> GBOrdnance.STORM_WARHEAD.block().get());
+    /**
+     * A cryogenic heat sink: stabilised exotic matter held near absolute zero by superconducting coils in a jacket of
+     * liquid nitrogen, a quantum circuit to let it go (DESIGN.md §16.16).
+     */
+    public static final DeferredItem<ComponentItems.IcbmCore> CRYO_CORE = icbmCore("cryo_core", "Cryo Core",
+            () -> GBOrdnance.CRYOGENIC_WARHEAD.block().get());
     /** Radiological, not nuclear: a class S core for an ordinary casing and missile. */
     public static final DeferredItem<ComponentItems.PayloadCore> DIRTY_PAYLOAD = core("dirty_payload", "Dirty Payload",
             () -> GBOrdnance.DIRTY_WARHEAD.block().get(), SizeClass.S);
