@@ -112,8 +112,7 @@ public final class StrategicAssembly {
             return List.of();
         }
         ChargeKind kind = AssemblyStats.kindOf(s.warhead());
-        ItemStack guidance = s.guidance() == MissileParts.Guidance.UNGUIDED ? ItemStack.EMPTY
-                : new ItemStack(s.guidance() == MissileParts.Guidance.INERTIAL ? GBAssembly.INERTIAL_GUIDANCE.get() : GBAssembly.GPS_GUIDANCE.get());
+        ItemStack guidance = GBAssembly.guidanceItem(s.guidance());
         ItemStack module = s.hardened() ? new ItemStack(GBAssembly.HARDENED_ELECTRONICS.get()) : ItemStack.EMPTY;
         ItemStack booster = new ItemStack(GBStrategic.INTERCONTINENTAL_BOOSTER.get());
         ItemStack third = kind == ChargeKind.COBALT_WARHEAD ? new ItemStack(GBStrategic.COBALT_JACKET.get())

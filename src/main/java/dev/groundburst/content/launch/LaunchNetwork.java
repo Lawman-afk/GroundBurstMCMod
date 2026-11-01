@@ -63,7 +63,7 @@ public final class LaunchNetwork extends SavedData {
     /** Aim points round the aim for several picked members (DESIGN.md §17.12). */
     public enum Pattern { POINT, LINE, RING, GRID }
 
-    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES }
+    public enum EventKind { LAUNCHED, IMPACT, LOST, NO_CONTACT, FAILED, LINKED, UNLINKED, NEW_CODES, FIRE_CALLED }
 
     // --- records -----------------------------------------------------------------------------------------------------------
     private static final Codec<LaunchSite.Strike> STRIKE_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -522,6 +522,7 @@ public final class LaunchNetwork extends SavedData {
             return;
         }
         m.flights.add(flight.id());
+        flight.seekerNetwork(n.id);                      // a laser-guided missile answers its network's designators
         net.lastSeen.put(flight.id(), flight.position());
         net.lastEta.put(flight.id(), flight.ticksToImpact());
         net.log(level, n, EventKind.LAUNCHED, launcher, m.kind, (int) Math.floor(flight.target().x), (int) Math.floor(flight.target().z), 0);
@@ -677,6 +678,55 @@ public final class LaunchNetwork extends SavedData {
         }
         setDirty();
         return armed.size();
+    }
+
+    /**
+     * Call for fire (DESIGN.md §17.13, a Laser Designator's lock): every armed launcher of the network that reaches
+     * {@code spot} is aimed at it and launched at once (woken if it is far). Returns how many were ordered to fire.
+     */
+    public int callFire(ServerLevel level, long id, BlockPos spot, @Nullable ServerPlayer by) {
+        Network n = this.networks.get(id);
+        if (n == null) {
+            return 0;
+        }
+        long now = level.getGameTime();
+        Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
+        int count = 0;
+        for (Member m : n.members.values()) {
+            if (!reaches(m, spot)) {
+                continue;
+            }
+            m.orders = new Orders(Optional.of(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ())), m.orders.arm, now, who);
+            orderNow(level, m);
+            count++;
+        }
+        if (count > 0) {
+            log(level, n, EventKind.FIRE_CALLED, by == null ? BlockPos.ZERO : by.blockPosition(), "", spot.getX(), spot.getZ(), count);
+        }
+        setDirty();
+        return count;
+    }
+
+    /** How many armed launchers of the network reach {@code spot} (a designator's screen). */
+    public int armedReaching(long id, BlockPos spot) {
+        Network n = this.networks.get(id);
+        if (n == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Member m : n.members.values()) {
+            if (reaches(m, spot)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** An armed launcher, not already launching, whose missile reaches {@code spot}. */
+    private static boolean reaches(Member m, BlockPos spot) {
+        boolean counting = m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+        return m.role == Role.LAUNCHER && !m.lost && m.willBeArmed() && m.orders.launchAt < 0 && !counting
+                && Math.hypot(spot.getX() - m.pos.getX(), spot.getZ() - m.pos.getZ()) <= m.report.range;
     }
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */

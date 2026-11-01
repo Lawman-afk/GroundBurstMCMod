@@ -43,6 +43,8 @@ public class GroundBurstClient {
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::registerTints);
         dev.groundburst.client.blast.ClientBlasts.register(modBus);
         dev.groundburst.client.fx.Spectacle.register(modBus);
+        dev.groundburst.client.fx.LaserFx.register();
+        dev.groundburst.client.fx.DesignatorScope.register(modBus);
         dev.groundburst.client.fx.FxPhotographer.register();
         dev.groundburst.client.fx.BlastBenchClient.register();
         dev.groundburst.client.fx.WorldSurveyClient.register();

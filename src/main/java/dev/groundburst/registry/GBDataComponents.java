@@ -21,6 +21,10 @@ public final class GBDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FREQUENCY = COMPONENTS.registerComponentType("frequency",
             b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** A Laser Designator's mode (DESIGN.md §17.13): 0 designate, 1 call for fire. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> DESIGNATOR_MODE = COMPONENTS.registerComponentType("designator_mode",
+            b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
     /** Launch Codes: the code of the network they are for (DESIGN.md §17.12; empty: blank). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> LAUNCH_CODES = COMPONENTS.registerComponentType("launch_codes",
             b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));

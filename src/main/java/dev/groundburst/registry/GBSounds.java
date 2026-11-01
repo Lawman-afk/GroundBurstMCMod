@@ -179,6 +179,13 @@ public final class GBSounds {
             register("station.launch", "Launch ordered", List.of("launch/station_launch"), false, 24);
     public static final DeferredHolder<SoundEvent, SoundEvent> STATION_TELETYPE =
             register("station.teletype", "Teletype prints a report", List.of("launch/station_teletype"), false, 16);
+    // The Laser Designator (DESIGN.md §17.13): switched on, a lock, fire called.
+    public static final DeferredHolder<SoundEvent, SoundEvent> DESIGNATOR_ON =
+            register("designator.on", "Laser designator hums", List.of("launch/designator_on"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> DESIGNATOR_LOCK =
+            register("designator.lock", "Designator locks on", List.of("launch/designator_lock"), false, 12);
+    public static final DeferredHolder<SoundEvent, SoundEvent> DESIGNATOR_FIRE =
+            register("designator.fire", "Fire called", List.of("launch/designator_fire"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> LAUNCH_SIREN =
             register("launch.siren", "Launch siren wails", List.of("launch/siren"), false, 96);
     public static final DeferredHolder<SoundEvent, SoundEvent> MISSILE_LAUNCH =

@@ -539,6 +539,12 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(Items.PAPER).requires(Tags.Items.NUGGETS_GOLD).requires(Tags.Items.DYES_RED)
                 .unlockedBy(getHasName(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item()),
                         has(dev.groundburst.content.launch.GBLaunch.STATION_CONTROLLER.item())).save(output);
+        // The Laser Designator (DESIGN.md §17.13, §26).
+        shaped(RecipeCategory.COMBAT, dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get(), 1)
+                .pattern("GSR").pattern("PCP").pattern(" B ")
+                .define('G', Tags.Items.GLASS_PANES_COLORLESS).define('S', GBParts.SENSOR_ARRAY).define('R', Items.REDSTONE_TORCH)
+                .define('P', GBTags.commonItem("plates/steel")).define('C', GBParts.MILITARY_CIRCUIT).define('B', GBParts.BATTERY)
+                .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
         // The Missile Silo (slice 9b, DESIGN.md §17.10, §26.7): its concrete, its hatch and its controller.
         var m = new Object() {
             final net.minecraft.world.level.ItemLike concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.item();
@@ -866,6 +872,11 @@ public class GBRecipeProvider extends RecipeProvider {
                 .unlockedBy(getHasName(GBParts.ADVANCED_CIRCUIT), has(GBParts.ADVANCED_CIRCUIT)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.GPS_GUIDANCE, 1)
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SENSOR_ARRAY).requires(GBParts.COPPER_WIRE)
+                .requires(GBTags.commonItem("plates/steel"))
+                .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        // DESIGN.md §17.13: the semi-active laser seeker (a sensor array behind its dome, a servo to steer by).
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.LASER_GUIDANCE, 1)
+                .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.SENSOR_ARRAY).requires(GBParts.SERVO)
                 .requires(GBTags.commonItem("plates/steel"))
                 .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
         shapeless(RecipeCategory.COMBAT, dev.groundburst.content.assembly.GBAssembly.HARDENED_ELECTRONICS, 1)

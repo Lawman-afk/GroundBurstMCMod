@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Laser Designator
+- **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
+  **range** and the **coordinates** of the spot (and the creature, if it is on one). A thin red beam and a pulsing spot
+  that everyone sees: faint by day, bright at night. It reaches 256 blocks and picks out creatures within 128.
+- **Laser Guidance Unit**, a new guidance part: the missile flies as inertial guidance until it is coming down, then
+  homes on a designator's spot near where it was aimed and lands on it, following it if it moves.
+- Use the designator on a **Launch Control Station** to join its network: the station's map shows its spot while you
+  lase, and the new **Laser** button aims the picked launchers at it.
+- **Call for fire** (sneak-use to switch): hold the spot steady for two seconds and every armed launcher of the network
+  that reaches it fires on it at once.
+- It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
+  breaks the beam, and an EMP knocks it out for a while.
+
 ## 0.4.0 — 2026-10-31
 
 A network for your launchers across the whole world, a bigger missile defence, a storm that knocks defences out, and an

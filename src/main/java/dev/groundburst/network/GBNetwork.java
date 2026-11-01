@@ -77,6 +77,8 @@ public final class GBNetwork {
                 dev.groundburst.content.launch.StationPayloads.Unlink::handle);
         registrar.playToServer(dev.groundburst.content.launch.StationPayloads.NewCodes.TYPE, dev.groundburst.content.launch.StationPayloads.NewCodes.CODEC,
                 dev.groundburst.content.launch.StationPayloads.NewCodes::handle);
+        registrar.playToClient(dev.groundburst.content.launch.DesignatorPayloads.Status.TYPE, dev.groundburst.content.launch.DesignatorPayloads.Status.CODEC,
+                (payload, context) -> dev.groundburst.content.launch.DesignatorPayloads.statusHook.accept(payload));
         registrar.playToClient(dev.groundburst.content.launch.StationPayloads.Scope.TYPE, dev.groundburst.content.launch.StationPayloads.Scope.CODEC,
                 (payload, context) -> dev.groundburst.content.launch.StationPayloads.scopeHook.accept(payload));
         registrar.playToServer(dev.groundburst.content.launch.LaunchPayloads.MapRequest.TYPE,

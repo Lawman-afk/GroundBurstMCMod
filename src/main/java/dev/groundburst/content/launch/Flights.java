@@ -62,8 +62,10 @@ public final class Flights extends SavedData {
             Codec.DOUBLE.optionalFieldOf("silo", 0.0).forGetter(f -> f.silo),
             // A cruise missile's plan (slice 9c): the heading it left its launcher on and its height along its path.
             Codec.DOUBLE.optionalFieldOf("cruise_heading").forGetter(f -> f.plan == null ? Optional.empty() : Optional.of(f.plan.heading)),
-            Codec.FLOAT.listOf().optionalFieldOf("cruise_alt", List.of()).forGetter(f -> f.plan == null ? List.of() : f.plan.altList())
-    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt) -> {
+            Codec.FLOAT.listOf().optionalFieldOf("cruise_alt", List.of()).forGetter(f -> f.plan == null ? List.of() : f.plan.altList()),
+            // A laser-guided missile's seeker (DESIGN.md §17.13).
+            Seeker.CODEC.optionalFieldOf("seeker").forGetter(f -> Optional.ofNullable(f.seeker))
+    ).apply(i, (id, start, target, apex, ticks, age, dud, warhead, owner, hardened, body, silo, heading, alt, seeker) -> {
         Flight f = new Flight(id, start, target, apex, ticks, warhead, owner.orElse(null));
         f.age = age;
         f.dud = dud;
@@ -74,6 +76,7 @@ public final class Flights extends SavedData {
             f.plan = CruisePlan.of(start, heading.get(), target);
             f.plan.setAlt(alt);
         }
+        f.seeker = seeker.orElse(null);
         return f;
     }));
     static final SavedDataType<Flights> TYPE = new SavedDataType<>(GroundBurst.id("missile_flights"), Flights::new,
@@ -115,7 +118,13 @@ public final class Flights extends SavedData {
      */
     public static Flight launch(ServerLevel level, Vec3 pad, Vec3 target, dev.groundburst.content.assembly.MissileSpec spec, @Nullable Entity owner,
             double silo) {
-        return launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner, silo);
+        Flight f = launch(level, pad, target, spec.warhead(), spec.body(), spec.hardened(), owner, silo);
+        if (spec.guidance() == dev.groundburst.content.assembly.MissileParts.Guidance.LASER) {
+            double range = Math.sqrt(Mth.square(target.x - pad.x) + Mth.square(target.z - pad.z));
+            f.seeker = new Seeker(0, target, Seeker.REACH + Seeker.SHARE * range);
+            of(level).setDirty();
+        }
+        return f;
     }
 
     /** How high a flight of {@code range} blocks climbs above its pad. */
@@ -426,6 +435,32 @@ public final class Flights extends SavedData {
         setDirty();
     }
 
+    /**
+     * A laser-guided missile's seeker (DESIGN.md §17.13): the network whose designators it answers (0: its launcher's
+     * player's), where it was aimed, and how far round that it looks for a spot. Coming down (from half way) it homes.
+     */
+    static final class Seeker {
+        /** It looks this far round its aim, and this share of its range more. */
+        static final double REACH = 48, SHARE = 0.05;
+        /** It homes from this far through its flight; its target moves at most this far a tick. */
+        static final double FROM = 0.5, STEP = 1.0;
+        static final Codec<Seeker> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.LONG.fieldOf("net").forGetter(s -> s.net), Vec3.CODEC.fieldOf("aim").forGetter(s -> s.aim),
+                Codec.DOUBLE.fieldOf("reach").forGetter(s -> s.reach)).apply(i, Seeker::new));
+
+        long net;
+        final Vec3 aim;
+        final double reach;
+        /** Homing on a spot now (not saved: it looks again next tick). */
+        boolean locked;
+
+        Seeker(long net, Vec3 aim, double reach) {
+            this.net = net;
+            this.aim = aim;
+            this.reach = reach;
+        }
+    }
+
     /** One missile's flight: a fixed curve from its pad to its target (see {@link #path}). */
     public static final class Flight {
         final UUID id;
@@ -450,6 +485,8 @@ public final class Flights extends SavedData {
         private double silo;
         /** A cruise missile's plan (null: a ballistic missile on its arc). */
         private @Nullable CruisePlan plan;
+        /** A laser-guided missile's seeker (null: none). */
+        private @Nullable Seeker seeker;
         /**
          * The missile it put in the world last (not saved). The level cannot find an entity in a chunk whose entities are
          * not active yet, and its id then stops a new one being added; held here, it is moved along all the same.
@@ -564,6 +601,43 @@ public final class Flights extends SavedData {
             return height * t * t * (3 - 2 * t);
         }
 
+        /**
+         * The seeker's step (DESIGN.md §17.13): the spot it answers (its network's designators', or its launcher's
+         * player's) nearest its target within its reach of where it was aimed, and the target moved toward it, a block a
+         * tick at most, so the missile turns smoothly onto it and follows it as it moves. False with no spot: it flies on
+         * as it was aimed.
+         */
+        private boolean home(ServerLevel level) {
+            Designators.Spot spot = Designators.spotFor(level, this.seeker.net, this.owner, this.seeker.aim, this.seeker.reach, this.target);
+            if (spot == null) {
+                this.seeker.locked = false;
+                return false;
+            }
+            this.seeker.locked = true;
+            Designators.homing(level, spot.player());
+            Vec3 d = spot.pos().subtract(this.target);
+            double len = d.length();
+            this.target = len <= Seeker.STEP ? spot.pos() : this.target.add(d.scale(Seeker.STEP / len));
+            return true;
+        }
+
+        /** A laser-guided missile (it has a seeker). */
+        public boolean laserGuided() {
+            return this.seeker != null;
+        }
+
+        /** Homing on a laser spot right now. */
+        public boolean homing() {
+            return this.seeker != null && this.seeker.locked;
+        }
+
+        /** Its seeker answers this network's designators (from its launcher, if that is on one). */
+        public void seekerNetwork(long net) {
+            if (this.seeker != null) {
+                this.seeker.net = net;
+            }
+        }
+
         /** A short id for radar screens to follow it by. */
         public int trackId() {
             return (int) (this.id.getMostSignificantBits() ^ this.id.getLeastSignificantBits());
@@ -642,12 +716,14 @@ public final class Flights extends SavedData {
             this.age++;
             keepLoaded(level);
             if (this.age >= ignition()) {
-                // The ground at the target, once its chunk is in (it is ticket-loaded from launch).
+                double s = Math.min(1, (this.age - ignition()) / (double) this.flightTicks);
+                // Coming down, a laser-guided missile homes on its spot; otherwise the ground at the target, once its
+                // chunk is in (it is ticket-loaded from launch).
+                boolean homing = this.seeker != null && this.plan == null && s >= Seeker.FROM && home(level);
                 BlockPos tc = BlockPos.containing(this.target);
-                if (level.hasChunkAt(tc)) {
+                if (!homing && level.hasChunkAt(tc)) {
                     this.target = new Vec3(this.target.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, tc.getX(), tc.getZ()), this.target.z);
                 }
-                double s = Math.min(1, (this.age - ignition()) / (double) this.flightTicks);
                 Vec3 from = this.pos, to = at(this.age);
                 if (!this.empChecked && dev.groundburst.content.effect.EmpFields.inField(level, to)) {
                     this.empChecked = true;

@@ -213,6 +213,16 @@ public final class StationPayloads {
                 buf.readVarInt(), buf.readVarInt(), buf.readBoolean()));
     }
 
+    /** A laser spot one of the network's designators lases now (DESIGN.md §17.13): where, and who lases it. */
+    public record SpotView(int x, int y, int z, String who) {
+        static final StreamCodec<RegistryFriendlyByteBuf, SpotView> CODEC = StreamCodec.of((buf, s) -> {
+            buf.writeVarInt(s.x());
+            buf.writeVarInt(s.y());
+            buf.writeVarInt(s.z());
+            buf.writeUtf(s.who());
+        }, buf -> new SpotView(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readUtf()));
+    }
+
     private static final StreamCodec<RegistryFriendlyByteBuf, LaunchNetwork.Event> EVENT = StreamCodec.of((buf, e) -> {
         buf.writeVarLong(e.time());
         buf.writeVarInt(e.kind().ordinal());
@@ -226,7 +236,7 @@ public final class StationPayloads {
 
     /** The station's state for its screen, sent while it is open: its network's members, the missiles in the air, its log. */
     public record Scope(BlockPos pos, boolean formed, boolean powered, int energy, String code, long now, List<MemberView> members,
-            List<ContactView> contacts, List<LaunchNetwork.Event> log) implements CustomPacketPayload {
+            List<ContactView> contacts, List<LaunchNetwork.Event> log, List<SpotView> spots) implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("station_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
@@ -238,9 +248,10 @@ public final class StationPayloads {
             MemberView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.members());
             ContactView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.contacts());
             EVENT.apply(ByteBufCodecs.list()).encode(buf, s.log());
+            SpotView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.spots());
         }, buf -> new Scope(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarLong(),
                 MemberView.CODEC.apply(ByteBufCodecs.list()).decode(buf), ContactView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
-                EVENT.apply(ByteBufCodecs.list()).decode(buf)));
+                EVENT.apply(ByteBufCodecs.list()).decode(buf), SpotView.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override
         public Type<Scope> type() {

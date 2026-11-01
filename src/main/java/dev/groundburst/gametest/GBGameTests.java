@@ -95,6 +95,7 @@ public final class GBGameTests {
         SuperweaponTests.register();
         CruiseTests.register();
         StationTests.register();
+        DesignatorTests.register();
         RadiationTests.register();
         FalloutTests.register();
         WastelandTests.register();

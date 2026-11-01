@@ -62,6 +62,7 @@
     "ordnance/warheads",
     "ordnance/launch_site",
     "ordnance/launch_control_station",
+    "ordnance/laser_designator",
     "ordnance/launch_complex",
     "ordnance/missile_silo",
     "ordnance/cruise_launcher",

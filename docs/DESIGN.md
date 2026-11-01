@@ -2569,6 +2569,69 @@ on its own.
   target (the near silo held by the difference), a silo 4,096 blocks off unloaded and woken to launch, lost contact,
   new codes.
 
+### 17.13 The Laser Designator (2026-11-01; the user's plan)
+The second item of the user's plan, after the Launch Control Station.
+
+**Research** (the AN/PEQ-1 SOFLAM, the LLDR, Paveway and Hellfire): a ground laser designator is a boxy unit with a big
+lens on a tripod or held to the eye, with a rangefinder and a reticle; it sends a coded pulsed laser (a 4-digit PRF code)
+at the target, and a semi-active laser seeker in the weapon's nose homes on the reflected spot in the last stretch of its
+flight, so it hits the spot even as it moves, and its builder's "fire mission" calls weapons onto the lased point. Smoke,
+dust and cloud break the beam; a missile that loses the spot flies on as it was aimed.
+
+**How it works:**
+- *The Laser Designator* (`laser_designator`): held to the eye (as a spyglass, a 2x zoom) while you hold use: a thin red
+  beam from it to the point under the reticle and a pulsing red spot there, seen by every player; on a creature the spot
+  follows it. Up to 256 blocks over loaded ground. Its HUD: a rangefinder (range and the spot's coordinates), its mode,
+  its charge, the launchers able to reach the spot and the missiles homing on it. It runs on a charge (40,000 FE, 20 a tick
+  while lasing: a hundred seconds; charged in a Battery Charger) and an EMP kills it for a while. Smoke (a smoke or gas
+  grenade's cloud) in the way breaks the beam.
+- *Linked to a network*: used on a Launch Control Station it takes the station's network code (as Launch Codes do), and
+  its spot shows on the station's map; the station's **To laser** aims the picked launchers at it (in their pattern).
+- *Two modes* (sneak-use to switch): **designate** (the spot guides laser-guided missiles and shows on the map) and
+  **call for fire**: hold the spot steady for two seconds and it locks: every armed launcher of its network that reaches
+  the spot is aimed at it and launched at once (the station's log: "fire called").
+- *Laser Guidance Unit* (`laser_guidance_unit`, a new guidance part for any missile): it flies as inertial guidance (4% of
+  the range) until it is coming down; from half way, its seeker looks for a spot within its reach of where it was aimed
+  (48 blocks and 5% of the range) from a designator of its launcher's network (or, from a launcher on no network, its
+  launcher's player) and steers onto it, following it as it moves (up to a block a tick): it lands on the spot. Cruise
+  missiles follow their planned path and do not home.
+- *Sounds*: the designator's switch-on chirp, the lock tone, the fire-called tones.
+- *Recipes* (§26): the designator a sensor array, a redstone torch, a military circuit, a battery and glass; the guidance
+  unit a military circuit, a sensor array and a servo.
+
+**As built** (2026-11-01):
+- `laser_designator` (`LaserDesignatorItem`): used as a spyglass is (`ItemUseAnimation.SPYGLASS`, up to an hour); each
+  tick lasing it draws 20 FE (none in creative), traces (`Designators.trace`: along the look over loaded ground only,
+  8-block steps, to 256; creatures within 128 picked first; a smoke or gas grenade's cloud across it: no spot) and
+  records the spot (`Designators`: per dimension and player, its network, live for 4 ticks). Every 5 ticks it sends its
+  holder a `designator_status` (mode, lock, armed launchers reaching the spot, missiles homing, network, charge), only
+  over a connection that has the channel. Sneak-use switches mode; used on a station (any part) it takes its network
+  code into `LAUNCH_CODES`. In call-for-fire mode the spot held within 2 blocks for 40 ticks locks: a half-way tone,
+  then `LaunchNetwork.callFire` once per lock (every member that `reaches` the spot: a launcher, in contact, armed or
+  being armed, not counting down or ordered to, within its missile's range) aims and launches them at once and logs
+  `FIRE_CALLED` with the count. An EMP field sets its `EMP_UNTIL` 10 s ahead.
+- Flights: a laser-guided flight carries a `Seeker` (its network, set when a station's launcher fires it; its aim; its
+  reach, 48 + 5% of the range), saved with the flight. From half way (ballistic only; cruise missiles keep their plan)
+  it takes the live spot of its network's designators (no network: its launcher's player's) within its reach of its
+  aim, nearest its current target, and moves the target toward it a block a tick; with none it keeps its target.
+  `GBAssembly.guidanceItem` gives each guidance's part back when a missile is taken apart (all three disassemblers).
+- Client: `LaserFx` draws every lasing player's beam from the designator's laser port (0.68 blocks ahead of the eye;
+  just under the eye in our own sight) in camera-facing pieces as wide on screen at any range (at most 16 blocks long,
+  shorter near the camera so a beam passing close keeps its width), additive red over `textures/fx/laser.png`; the spot
+  pulsing five times a second, its middle also drawn blended so it shows red on a bright face by day; a glint at the
+  port; and for our own designator in call-for-fire mode a ring closing on the spot. `DesignatorScope`: in first person the FOV
+  halved and the mouse slowed to match, the hand and crosshair hidden, the eyepiece (`textures/gui/designator_scope.png`)
+  with a lit duplex reticle, the readouts (mode, network, range, coordinates, creature, armed, homing, charge) and the
+  lock brackets; in third person the readouts under the crosshair.
+- The station: its map draws the network's spots as pulsing red diamonds with their holders' names; **Laser** aims the
+  picked launchers at the first spot (in their pattern); the log reads "Fire called at x, z: n launching".
+- Models (`tools/assets/designator.py`, material library): the designator built optics along +y, the handle +z, so
+  carried it points where the arm does; while it is in use the item swaps (`minecraft:using_item`) to
+  `laser_designator_raised`, whose third-person transform (-110, 0, -15) undoes the spyglass arm pose, so the optics run
+  along the gaze with the eyecup at the right eye; in the inventory on its side, lens to the left; the Laser Guidance Unit a gunmetal box, a white collar with a
+  red band and a violet glass dome. Sounds (`tools/sound/designator.py`): the switch-on click, charging whine and chirp;
+  the lock's three pips; fire called: squelch, a long tone, two pips, squelch.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -4102,6 +4165,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The Laser Designator (§17.13), the second item of the user's plan: a handheld designator, a new Laser Guidance Unit that homes on its spot as it comes down, and call for fire on a station's network. Spots are the server's (each player's, per dimension, fresh for 4 ticks); the beam is traced on each side alike (over loaded ground only, smoke breaks it), so every player sees the same spot the missiles use. Taking a missile apart maps each guidance to its own part (it assumed GPS for anything not inertial). |
 | 2026-10-31 | Version **0.4.0** (the user's request: a jar to upload, the GitHub page and the CurseForge description updated): the Launch Control Station, the alarm system, the Interceptor Complex, the Storm's EMP pulses. README and `docs/CURSEFORGE.md` gain the station and two screenshots (the station, the alarm wall at night); the station leaves the Planned list. |
 | 2026-10-31 | After the user's look at the alarms: the klaxon rebuilt clean (its horn flaring ring by ring), the siren's horn and drum top, the beacon's open lens top and the Emergency Light's cage round its sides fixed (§18.6). The **Interceptor Complex made dearer** (the user's call): its controller is built round a whole Interceptor Battery with a superconducting coil, Launch Cells and Phased Array Panels move to dense steel, tungsten and military circuits (§18.5, §26). |
 | 2026-10-31 | The Launch Control Station (§17.12), the first item of the user's plan ("a way of networking your launchers across the whole world"): a new console multiblock beside the Launch Computer (which stays the local console). Launchers join a station's **network** by a **Launch Codes** card (the network's code, changeable to void old cards), not by distance (the Data Link Tool and Comms Relay stay dropped): any number of launchers and radars anywhere in the dimension, a second station can join. A member's last report stands while it is unloaded; aiming and arming wait for it, a launch **wakes** it with a chunk ticket over its structure until it has launched and settled. Time on target from each launcher's own countdown, ignition and flight. The terrain survey now maps round every network member and station; the map zooms to 1:128. |

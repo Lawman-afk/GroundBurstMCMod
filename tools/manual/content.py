@@ -933,7 +933,7 @@ Casings come in three classes, marked by yellow bands: one for **Light**, two fo
     craft("chemical_agent_canister"),
 ])
 
-entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "cruise_engine", "inertial_guidance_unit", "gps_guidance_unit", "hardened_electronics"], [
+entry("ordnance/missiles", "Missiles", "missile", ["missile", "tactical_missile_body", "medium_missile_body", "heavy_missile_body", "strategic_missile_body", "solid_rocket_motor_i", "solid_rocket_motor_ii", "liquid_fuel_stage", "cruise_engine", "inertial_guidance_unit", "gps_guidance_unit", "laser_guidance_unit", "hardened_electronics"], [
     text("""
 Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: the warhead is its nose, and the body under it is cut to the warhead's own girth and painted to match all the way down, with its own fins, bands and markings. A missile is put together at the [missile assembler](ordnance/missile_assemblers) of its warhead's class: the warhead, the class's **body**, a **rocket motor**, and if you like a **guidance unit** and **Hardened Electronics**. **Take Apart** gives every part back.
 """),
@@ -946,7 +946,7 @@ Every [warhead](ordnance/warheads) has a **missile of its own**, built for it: t
 **Cruise missiles.** A **Cruise Engine** (Tactical and Medium bodies, 1500 blocks) is a small jet with its own launch booster. A missile built with one is a **cruise missile**: the same warhead on its own winged body, painted as that warhead's missile (an HE Cruise Missile, a Cryo Cruise Missile...). It does not arc through the sky: its booster lights it out of its box and falls away, its wings unfold, and its jet carries it **40 blocks over the ground** all the way, climbing early for a hill and easing down after it, at 32 blocks a second. 50 blocks short of the target it pops up and dives on it. Anything standing taller than its cruise height in its way stops it there. Only the [Cruise Missile Launcher](ordnance/cruise_launcher) fires it, and no other launcher will take one.
 """),
     text("""
-**Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks.
+**Guidance** decides how close to the target it comes down. With none it lands anywhere within 25% of the distance flown: up to 250 blocks long or short on a 1000-block shot, half that to either side, and seldom close. An **Inertial Guidance Unit** brings that to 4%, a **GPS Guidance Unit** to 2 blocks. A **Laser Guidance Unit** flies as inertial guidance does until it is coming down; then its seeker looks for a [Laser Designator's](ordnance/laser_designator) spot near where it was aimed and steers onto it, following it if it moves: it lands on the spot. Cruise missiles keep to their path and do not home.
 
 **Hardened Electronics** keep a missile live through an EMP: without them, a missile that flies through an EMP field has an even chance of coming down a dud.
 """),
@@ -963,6 +963,7 @@ Its tooltip lists its warhead and fuze, its range and its guidance; its name is 
     craft("cruise_engine"),
     craft("inertial_guidance_unit"),
     craft("gps_guidance_unit"),
+    craft("laser_guidance_unit"),
     craft("hardened_electronics"),
 ])
 
@@ -1085,12 +1086,32 @@ A **Launch Control Station** runs your launchers anywhere in its dimension, near
 
 **Far launchers.** A launcher far away keeps showing what it last reported: nothing changes there while no one is near. Aiming and arming it waits until it is next loaded, and **LAUNCH wakes it**: its chunks are loaded, it takes its orders, counts down and fires, and it stays loaded until it has settled. It needs its energy already stored (its generators may not be running), and a superweapon only charges while it is loaded. A launcher that has been broken shows **No contact**.
 
-**The log** lists the network's news: launches, impacts, missiles lost (shot down, or stopped by something on the way) and orders that failed. A teletype at the station prints each report as it comes in.
+**The log** lists the network's news: launches, impacts, missiles lost (shot down, or stopped by something on the way), orders that failed and fire called from the field. A teletype at the station prints each report as it comes in.
+
+**Laser Designators** on the network show on the map as red diamonds while they lase, with their holders' names; **Laser** aims the picked launchers at the spot (in their pattern). See [Laser Designator](ordnance/laser_designator).
 
 The station needs 40 FE a tick. In an EMP it goes dark and no orders go out.
 """),
     craft("launch_control_station"),
     craft("launch_codes"),
+])
+
+entry("ordnance/laser_designator", "Laser Designator", "laser_designator", ["laser_designator", "laser_guidance_unit"], [
+    text("""
+A **Laser Designator** marks a target for your missiles. Hold use and it goes to your eye: the view zooms in, the reticle shows where the beam lands, and the rangefinder gives the **range** and the **spot's coordinates** (and the creature, if it is on one). A thin red beam runs from it to a pulsing red spot, and everyone sees both: by day they are faint, at night they shine. It reaches **256 blocks** over loaded ground and picks out creatures within 128; on a creature the spot follows it.
+"""),
+    text("""
+**Laser-guided missiles.** A missile built with a **Laser Guidance Unit** flies as inertial guidance does (within 4% of the distance) until it is half way down. Then it looks for a spot within **48 blocks**, and 5% of the distance it has flown, of where it was aimed, and steers onto it: it lands on the spot, and follows it if it moves. It takes spots from the designators of its launcher's network; a missile from a launcher on no network takes only its launcher's player's. With no spot, or once the beam is broken, it comes down where it was going.
+
+**On a network.** Use the designator on a [Launch Control Station](ordnance/launch_control_station): it takes the station's network. The station's map shows its spot while you lase, and the station's **Laser** button aims the picked launchers at it. The sight shows the network's code, how many of its **armed** launchers reach the spot and how many missiles are **homing** on it.
+"""),
+    text("""
+**Call for fire.** Sneak and use it to switch it from **designate** to **call for fire**. Hold the spot steady for two seconds: brackets close on it as it locks, and every armed launcher of the network that reaches the spot is aimed at it and launched at once. The station's log notes who called fire, and where. It calls once for each lock: move off the spot and lock on again to call again.
+
+It holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Charger](power/batteries). Smoke or gas between it and the target breaks the beam, and an EMP knocks it out for a while.
+"""),
+    craft("laser_designator"),
+    craft("laser_guidance_unit"),
 ])
 
 entry("ordnance/launch_complex", "Launch Complex", "launch_complex", ["launch_complex", "flame_deflector"], [

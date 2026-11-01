@@ -82,7 +82,8 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
         builder.addInputSlot(59, 5).setStandardSlotBackground()
                 .addItemStacks(motors(recipe).stream().map(m -> new ItemStack(GBAssembly.MOTORS.get(m.ordinal()).get())).toList());
         builder.addInputSlot(77, 5).setStandardSlotBackground()
-                .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get())))
+                .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get()),
+                        new ItemStack(GBAssembly.LASER_GUIDANCE.get())))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
         builder.addInputSlot(95, 5).setStandardSlotBackground().add(GBAssembly.HARDENED_ELECTRONICS.get())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));

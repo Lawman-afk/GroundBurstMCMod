@@ -50,7 +50,8 @@ final class SpecialWeaponsCategory extends AbstractRecipeCategory<SpecialWeapons
         builder.addInputSlot(19, 1).setStandardSlotBackground().add(recipe.core());
         builder.addInputSlot(1, 21).setStandardSlotBackground().add(GBStrategic.INTERCONTINENTAL_BOOSTER.get());
         builder.addInputSlot(19, 21).setStandardSlotBackground()
-                .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get())))
+                .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get()),
+                        new ItemStack(GBAssembly.LASER_GUIDANCE.get())))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
         builder.addInputSlot(37, 21).setStandardSlotBackground().add(GBAssembly.HARDENED_ELECTRONICS.get())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));

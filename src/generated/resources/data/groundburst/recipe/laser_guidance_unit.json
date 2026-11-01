@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "groundburst:military_circuit",
+    "groundburst:sensor_array",
+    "groundburst:servo",
+    "#c:plates/steel"
+  ],
+  "result": {
+    "id": "groundburst:laser_guidance_unit"
+  }
+}

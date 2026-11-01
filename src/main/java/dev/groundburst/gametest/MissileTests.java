@@ -49,7 +49,7 @@ final class MissileTests {
                 longShort = Math.max(longShort, Math.abs(off.x));
                 side = Math.max(side, Math.abs(off.z));
             }
-            double limit = g == MissileParts.Guidance.UNGUIDED ? 250 : g == MissileParts.Guidance.INERTIAL ? 40 : 2;
+            double limit = g.scatter(1000);              // unguided 250, inertial and laser (no spot) 40, GPS 2
             helper.assertTrue(worst <= limit + 1e-6 && worst > limit * 0.8, g + " lands within " + limit + " (worst " + worst + ")");
             helper.assertTrue(total / 500 > limit * 0.35, g + " misses are mostly wide (average " + total / 500 + ")");
             helper.assertTrue(side <= limit * 0.5 + 1e-6 && side < longShort, g + " spreads long and short more than sideways");

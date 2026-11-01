@@ -390,6 +390,30 @@
     ],
     "subtitle": "subtitles.groundburst.cryo.burst"
   },
+  "designator.fire": {
+    "sounds": [
+      "groundburst:launch/designator_fire"
+    ],
+    "subtitle": "subtitles.groundburst.designator.fire"
+  },
+  "designator.lock": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:launch/designator_lock"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.designator.lock"
+  },
+  "designator.on": {
+    "sounds": [
+      {
+        "attenuation_distance": 12,
+        "name": "groundburst:launch/designator_on"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.designator.on"
+  },
   "detonator.click": {
     "sounds": [
       "groundburst:ordnance/detonator_click"

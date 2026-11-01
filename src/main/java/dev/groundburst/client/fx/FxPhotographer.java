@@ -206,6 +206,14 @@ public final class FxPhotographer {
                 new Scene("station_night", "station", 5, 10, List.of(30), "midnight"),
                 new Scene("station_desk", "station", 2, 42, List.of(30)),
                 new Scene("station_ui", "station", 4, 0, List.of(30)),
+                // The Laser Designator (DESIGN.md §17.13): through its sight, lasing a pillbox 40 blocks off while a
+                // laser-guided missile homes on the spot and lands on it; at night; and from outside, held to the eye.
+                new Scene("designator", "designator", 40, 1.5f, List.of(20, 60, 68, 72, 76, 90)),
+                new Scene("designator_night", "designator", 40, 1.5f, List.of(25), "midnight"),
+                new Scene("designator_front", "designator", 40, 1.5f, List.of(25)),
+                new Scene("designator_back", "designator", 40, 1.5f, List.of(25), "13000"),
+                new Scene("designator_carry", "designator", 40, 1.5f, List.of(25)),
+                new Scene("designator_carry_front", "designator", 40, 1.5f, List.of(25)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
                 // missile out section by section, the Strategic one from above, a screen, and JEI's recipe for a missile.
@@ -1081,6 +1089,41 @@ public final class FxPhotographer {
      * a Radar Array off to the side, all linked to it; the near silo aimed 600 blocks off and armed, the far one aimed at a
      * ring round a point 900 blocks off; one of the network's missiles in the air.
      */
+    /**
+     * The Laser Designator's scenes: a reinforced-concrete pillbox (a slit in its west wall) to lase, and the camera, a
+     * creative player standing 40 blocks west of it, the designator in hand (use is held down from the fourth tick). In the first, a laser-guided
+     * missile from far beyond the pillbox, aimed 22 blocks south of it, 76 ticks out: it homes on the spot.
+     */
+    private static void designatorSite(ServerLevel level, int x, int ground, Scene s) {
+        var concrete = dev.groundburst.content.launch.GBLaunch.REINFORCED_CONCRETE.block().get().defaultBlockState();
+        var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                for (int dy = 0; dy < 3; dy++) {
+                    boolean wall = Math.abs(dx) == 2 || Math.abs(dz) == 2 || dy == 2;
+                    boolean slit = dy == 1 && dx == -2 && Math.abs(dz) <= 1;
+                    level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground + dy, dz), wall && !slit ? concrete : air);
+                }
+            }
+        }
+        ServerPlayer player = level.getServer().getPlayerList().getPlayers().getFirst();
+        player.setGameMode(GameType.CREATIVE);
+        player.getAbilities().flying = false;
+        player.onUpdateAbilities();
+        player.teleportTo(level, x - s.distance() + 0.5, ground, 0.5, java.util.Set.of(), -90, s.pitch(), true);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.item.ItemStack(dev.groundburst.content.launch.GBLaunch.LASER_DESIGNATOR.get()));
+        if (s.name().equals("designator")) {
+            var spec = new dev.groundburst.content.assembly.MissileSpec(
+                    new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()),
+                    dev.groundburst.content.assembly.SizeClass.M, dev.groundburst.content.assembly.MissileParts.Motor.SRM_II,
+                    dev.groundburst.content.assembly.MissileParts.Guidance.LASER, false);
+            var f = dev.groundburst.content.launch.Flights.launch(level, new Vec3(x + 420, ground, 160), new Vec3(x + 0.5, ground, 22.5), spec, player);
+            f.skipForTest(Math.max(0, f.ticksToImpact() - 76));
+            flightShown = f;
+        }
+    }
+
     private static void stationSite(ServerLevel level, int x, int ground) {
         var west = net.minecraft.core.Direction.WEST;
         var at = new net.minecraft.core.BlockPos(x + 2, ground, 0);
@@ -1732,6 +1775,10 @@ public final class FxPhotographer {
                     stationSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("designator")) {
+                    designatorSite(level, x, ground, s);
+                    return;
+                }
                 if (s.profile().equals("see_through")) {
                     var lattice = dev.groundburst.content.construction.GBConstruction.LATTICE_FRAME.block().get().defaultBlockState();
                     var grating = dev.groundburst.content.construction.GBConstruction.STEEL_GRATING.block().get().defaultBlockState();
@@ -2132,6 +2179,11 @@ public final class FxPhotographer {
                 }
             });
         }
+        if (scene.profile().equals("designator") && step >= 0 && clock == 4) {
+            mc.options.setCameraType(scene.name().endsWith("_front") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
+                    : scene.name().endsWith("_back") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON);
+            mc.options.keyUse.setDown(!scene.name().contains("_carry"));   // use held down: it goes to the eye and lases while held
+        }
         if (scene.name().equals("station_ui") && step >= 0 && clock == 14 && stationAt != null) {
             dev.groundburst.content.launch.LaunchStationBlock.screenHook.accept(stationAt);
         }
@@ -2275,6 +2327,16 @@ public final class FxPhotographer {
             step++;
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
+            if (scene.profile().equals("designator")) {
+                mc.options.keyUse.setDown(false);
+                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+                mc.player.stopUsingItem();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                    player.stopUsingItem();
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+                });
+            }
             if (scene.name().equals("geiger")) {
                 dev.groundburst.config.GBClientConfig.GEIGER_CORNER.set(dev.groundburst.config.GBClientConfig.HudCorner.BOTTOM_RIGHT);
             }

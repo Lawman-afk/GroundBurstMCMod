@@ -157,8 +157,7 @@ public final class MissileAssembly {
         parts.add(s.warhead().copy());
         parts.add(new ItemStack(GBAssembly.BODIES.get(s.body().ordinal()).get()));
         parts.add(new ItemStack(GBAssembly.MOTORS.get(s.motor().ordinal()).get()));
-        parts.add(s.guidance() == MissileParts.Guidance.UNGUIDED ? ItemStack.EMPTY
-                : new ItemStack(s.guidance() == MissileParts.Guidance.INERTIAL ? GBAssembly.INERTIAL_GUIDANCE.get() : GBAssembly.GPS_GUIDANCE.get()));
+        parts.add(GBAssembly.guidanceItem(s.guidance()));
         parts.add(s.hardened() ? new ItemStack(GBAssembly.HARDENED_ELECTRONICS.get()) : ItemStack.EMPTY);
         return parts;
     }

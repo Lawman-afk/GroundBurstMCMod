@@ -1,0 +1,39 @@
+{
+  "parent": "groundburst:item/laser_designator",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        -110,
+        0,
+        -15
+      ],
+      "translation": [
+        -2.19,
+        0.46,
+        -0.79
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        -110,
+        0,
+        -15
+      ],
+      "translation": [
+        -2.19,
+        0.46,
+        -0.79
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    }
+  }
+}

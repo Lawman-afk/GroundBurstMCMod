@@ -100,8 +100,7 @@ public final class SpecialWeapons {
         if (core.isEmpty()) {
             return List.of();
         }
-        ItemStack guidance = s.guidance() == MissileParts.Guidance.UNGUIDED ? ItemStack.EMPTY
-                : new ItemStack(s.guidance() == MissileParts.Guidance.INERTIAL ? GBAssembly.INERTIAL_GUIDANCE.get() : GBAssembly.GPS_GUIDANCE.get());
+        ItemStack guidance = GBAssembly.guidanceItem(s.guidance());
         ItemStack module = s.hardened() ? new ItemStack(GBAssembly.HARDENED_ELECTRONICS.get()) : ItemStack.EMPTY;
         return List.of(core, new ItemStack(GBStrategic.INTERCONTINENTAL_BOOSTER.get()), guidance, module);
     }

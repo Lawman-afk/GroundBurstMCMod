@@ -99,6 +99,9 @@ public final class GBLaunch {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchStationBlockEntity>> STATION_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("launch_control_station", () -> new BlockEntityType<>(LaunchStationBlockEntity::new,
                     STATION_CONTROLLER.block().get()));
+    /** The Laser Designator (DESIGN.md §17.13): lase a spot for laser-guided missiles, or call fire on it. */
+    public static final DeferredItem<LaserDesignatorItem> LASER_DESIGNATOR = GBItems.register("laser_designator", "Laser Designator",
+            GBTab.MISSILES, LaserDesignatorItem::new);
     /** A station's network's codes: link launchers and radars with them (DESIGN.md §17.12). */
     public static final DeferredItem<LaunchCodesItem> LAUNCH_CODES = GBItems.register("launch_codes", "Launch Codes", GBTab.MISSILES,
             LaunchCodesItem::new, p -> p.stacksTo(16));
@@ -324,6 +327,16 @@ public final class GBLaunch {
                     'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> STATION_CONTROLLER.block().get())));
 
+    /** JEI's page for the Laser Designator and laser guidance. */
+    public static final String INFO_DESIGNATOR = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.laser_designator",
+            "Hold use to lase: a red beam and spot up to 256 blocks off, seen by everyone, zoomed in your sight with the range "
+                    + "and coordinates. Missiles with a Laser Guidance Unit home on the spot as they come down, if it is within 48 "
+                    + "blocks (and 5% of their flight) of where they were aimed, from a designator on their launcher's network (or "
+                    + "yours, from a launcher on none). Use it on a Launch Control Station to join its network: the station's map "
+                    + "shows the spot and its To laser button aims at it. Sneak-use for call for fire: hold the spot steady for two "
+                    + "seconds and every armed launcher of the network that reaches it fires on it. 40,000 FE (100 s of lasing); "
+                    + "charge it in a Battery Charger. Smoke breaks the beam; an EMP knocks it out.");
+
     /** JEI's page for the Launch Control Station and its codes. */
     public static final String INFO_STATION = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.launch_control_station",
             "The Launch Control Station runs your launchers anywhere in the dimension, loaded or not. Build it 3 wide, 2 deep "
@@ -357,8 +370,16 @@ public final class GBLaunch {
             event.register(TICKETS);
             event.register(NETWORK_TICKETS);
         });
+        // The Laser Designator's charge, filled by the Battery Charger (or any mod's charger) like a Battery's.
+        modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> event.registerItem(
+                net.neoforged.neoforge.capabilities.Capabilities.Energy.ITEM,
+                (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access,
+                        dev.groundburst.registry.GBDataComponents.ENERGY.get(), LaserDesignatorItem.CAPACITY, LaserDesignatorItem.TRANSFER),
+                LASER_DESIGNATOR.get()));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             Launches.clear();
+            Designators.clear();
+            LaserDesignatorItem.clear();
             dev.groundburst.content.defence.Interceptors.clear();
         });
         // Missiles in the air move on every tick, loaded or not (Flights).

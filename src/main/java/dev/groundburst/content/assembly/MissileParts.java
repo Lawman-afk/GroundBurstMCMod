@@ -80,7 +80,12 @@ public final class MissileParts {
     public enum Guidance {
         UNGUIDED("unguided", 0.25, 0),
         INERTIAL("inertial", 0.04, 0),
-        GPS("gps", 0, 2);
+        GPS("gps", 0, 2),
+        /**
+         * Laser (DESIGN.md §17.13): inertial until it comes down, then its seeker homes on a laser designator's spot near
+         * where it was aimed, if there is one.
+         */
+        LASER("laser", 0.04, 0);
 
         public final String id;
         /** Scatter: this share of the range, or this many blocks. */
@@ -113,6 +118,9 @@ public final class MissileParts {
 
         /** "Lands within 2% of the range", "within 2 blocks". */
         public Component accuracy() {
+            if (this == LASER) {
+                return Component.translatable(T_ACCURACY_LASER);
+            }
             return this.share > 0 ? Component.translatable(T_ACCURACY_SHARE, Math.round(this.share * 100))
                     : Component.translatable(T_ACCURACY_BLOCKS, (int) this.blocks);
         }
@@ -138,6 +146,8 @@ public final class MissileParts {
     static final String T_BODY_THREE = GBLang.add(GroundBurst.MODID + ".missile.fits_three", "%s, %s and %s bodies");
     static final String T_ACCURACY_SHARE = GBLang.add(GroundBurst.MODID + ".missile.accuracy_share", "Lands within %s%% of the distance");
     static final String T_ACCURACY_BLOCKS = GBLang.add(GroundBurst.MODID + ".missile.accuracy_blocks", "Lands within %s blocks of the target");
+    static final String T_ACCURACY_LASER = GBLang.add(GroundBurst.MODID + ".missile.accuracy_laser",
+            "Homes on a Laser Designator's spot; without one, lands within 4% of the distance");
     static final String T_BODY_TIP = GBLang.add(GroundBurst.MODID + ".missile.body_tip", "Takes class %s warheads");
     static final String T_STRATEGIC_TIP = GBLang.add(GroundBurst.MODID + ".missile.strategic_tip", "Takes nuclear warheads only; fires from a Launch Complex or a Missile Silo");
     static final String T_MOTOR_TIP = GBLang.add(GroundBurst.MODID + ".missile.motor_tip", "Range %s blocks; fits %s");

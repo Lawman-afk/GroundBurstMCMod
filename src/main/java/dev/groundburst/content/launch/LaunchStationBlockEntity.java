@@ -314,8 +314,16 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
         List<StationPayloads.MemberView> members = new ArrayList<>();
         List<StationPayloads.ContactView> contacts = new ArrayList<>();
         List<LaunchNetwork.Event> log = List.of();
+        List<StationPayloads.SpotView> spots = new ArrayList<>();
         String code = "";
         if (n != null) {
+            if (this.powered) {                                  // its designators' laser spots
+                for (Designators.Spot s : Designators.spots(level, n.id)) {
+                    var who = level.getPlayerByUUID(s.player());
+                    spots.add(new StationPayloads.SpotView((int) Math.floor(s.pos().x), (int) Math.floor(s.pos().y), (int) Math.floor(s.pos().z),
+                            who == null ? "" : who.getName().getString()));
+                }
+            }
             code = n.code();
             log = n.log();
             Map<UUID, Flights.Flight> flying = flying(level);
@@ -350,7 +358,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
             }
         }
         PacketDistributor.sendToPlayer(player, new StationPayloads.Scope(this.worldPosition, isFormed(), this.powered && !isEmpDisabled(),
-                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), code, now, members, contacts, log));
+                (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), code, now, members, contacts, log, spots));
     }
 
     private static StationPayloads.ContactView contact(Flights.Flight f, boolean own) {

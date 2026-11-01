@@ -1,7 +1,7 @@
 {
   "title": "Nuclear warheads",
   "icon": "groundburst:tactical_nuclear_warhead",
-  "order": 12,
+  "order": 13,
   "items": [
     "groundburst:tactical_nuclear_warhead",
     "groundburst:fission_warhead",

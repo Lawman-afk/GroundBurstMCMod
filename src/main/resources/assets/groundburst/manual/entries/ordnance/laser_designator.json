@@ -1,0 +1,33 @@
+{
+  "title": "Laser Designator",
+  "icon": "groundburst:laser_designator",
+  "order": 9,
+  "items": [
+    "groundburst:laser_designator",
+    "groundburst:laser_guidance_unit"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "A **Laser Designator** marks a target for your missiles. Hold use and it goes to your eye: the view zooms in, the reticle shows where the beam lands, and the rangefinder gives the **range** and the **spot's coordinates** (and the creature, if it is on one). A thin red beam runs from it to a pulsing red spot, and everyone sees both: by day they are faint, at night they shine. It reaches **256 blocks** over loaded ground and picks out creatures within 128; on a creature the spot follows it."
+    },
+    {
+      "type": "text",
+      "text": "**Laser-guided missiles.** A missile built with a **Laser Guidance Unit** flies as inertial guidance does (within 4% of the distance) until it is half way down. Then it looks for a spot within **48 blocks**, and 5% of the distance it has flown, of where it was aimed, and steers onto it: it lands on the spot, and follows it if it moves. It takes spots from the designators of its launcher's network; a missile from a launcher on no network takes only its launcher's player's. With no spot, or once the beam is broken, it comes down where it was going.\n\n**On a network.** Use the designator on a [Launch Control Station](ordnance/launch_control_station): it takes the station's network. The station's map shows its spot while you lase, and the station's **Laser** button aims the picked launchers at it. The sight shows the network's code, how many of its **armed** launchers reach the spot and how many missiles are **homing** on it."
+    },
+    {
+      "type": "text",
+      "text": "**Call for fire.** Sneak and use it to switch it from **designate** to **call for fire**. Hold the spot steady for two seconds: brackets close on it as it locks, and every armed launcher of the network that reaches the spot is aimed at it and launched at once. The station's log notes who called fire, and where. It calls once for each lock: move off the spot and lock on again to call again.\n\nIt holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Charger](power/batteries). Smoke or gas between it and the target breaks the beam, and an EMP knocks it out for a while."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:laser_designator",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:laser_guidance_unit",
+      "text": ""
+    }
+  ]
+}

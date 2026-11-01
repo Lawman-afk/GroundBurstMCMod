@@ -111,6 +111,19 @@ public final class GBAssembly {
             "Inertial Guidance Unit", GBTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.INERTIAL));
     public static final DeferredItem<MissileParts.GuidanceItem> GPS_GUIDANCE = GBItems.register("gps_guidance_unit",
             "GPS Guidance Unit", GBTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.GPS));
+    /** DESIGN.md §17.13: a semi-active laser seeker; the missile homes on a Laser Designator's spot as it comes down. */
+    public static final DeferredItem<MissileParts.GuidanceItem> LASER_GUIDANCE = GBItems.register("laser_guidance_unit",
+            "Laser Guidance Unit", GBTab.MISSILES, p -> new MissileParts.GuidanceItem(p, MissileParts.Guidance.LASER));
+    /** The part a missile's guidance is (empty: unguided), as taking a missile apart gives it back. */
+    public static net.minecraft.world.item.ItemStack guidanceItem(MissileParts.Guidance guidance) {
+        return switch (guidance) {
+            case UNGUIDED -> net.minecraft.world.item.ItemStack.EMPTY;
+            case INERTIAL -> new net.minecraft.world.item.ItemStack(INERTIAL_GUIDANCE.get());
+            case GPS -> new net.minecraft.world.item.ItemStack(GPS_GUIDANCE.get());
+            case LASER -> new net.minecraft.world.item.ItemStack(LASER_GUIDANCE.get());
+        };
+    }
+
     public static final DeferredItem<MissileParts.HardenedModule> HARDENED_ELECTRONICS = GBItems.register("hardened_electronics",
             "Hardened Electronics", GBTab.MISSILES, MissileParts.HardenedModule::new);
     /** An assembled missile (its parts in its component): what a Launch Silo launches. */

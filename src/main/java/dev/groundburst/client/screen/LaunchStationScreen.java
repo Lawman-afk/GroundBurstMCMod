@@ -118,7 +118,9 @@ public class LaunchStationScreen extends Screen {
             GBLang.add(P + "event.failed", "%s: order failed (%s)"),
             GBLang.add(P + "event.linked", "%s linked"),
             GBLang.add(P + "event.unlinked", "%s unlinked"),
-            GBLang.add(P + "event.new_codes", "New codes issued")};
+            GBLang.add(P + "event.new_codes", "New codes issued"),
+            GBLang.add(P + "event.fire_called", "Fire called at %s, %s: %s launching")};
+    private static final String T_LASER = GBLang.add(P + "laser", "Laser");
     private static final String T_NO_ANSWER = GBLang.add(P + "event.no_answer", "no answer");
     private static final String T_GONE = GBLang.add(P + "gone", "%s at %s, %s");
     /** Short names for the members' kinds (by their controller's id); others go by their block's own name. */
@@ -145,7 +147,7 @@ public class LaunchStationScreen extends Screen {
 
     private final BlockPos pos;
     private @Nullable EditBox xBox, zBox, spacingBox;
-    private @Nullable Button setButton, armButton, launchButton, patternButton, timingButton, unlinkButton, codesButton;
+    private @Nullable Button setButton, laserButton, armButton, launchButton, patternButton, timingButton, unlinkButton, codesButton;
     /** The picked members (by position, so picks survive the list changing), in the order they were picked. */
     private final Set<BlockPos> picked = new LinkedHashSet<>();
     private int scroll, logScroll;
@@ -271,14 +273,22 @@ public class LaunchStationScreen extends Screen {
             this.map = new TerrainMap(MAP, MAP, false, "dynamic/station_map");
         }
         int x = col(), t = top();
-        int boxW = (CW - 40) / 2;
+        int boxW = (CW - 80) / 2;
         this.xBox = addRenderableWidget(new EditBox(this.font, x, t + BOX_Y, boxW, 16, Component.literal("X")));
         this.zBox = addRenderableWidget(new EditBox(this.font, x + boxW + 4, t + BOX_Y, boxW, 16, Component.literal("Z")));
         this.xBox.setMaxLength(9);
         this.zBox.setMaxLength(9);
         this.boxesFor = null;
         this.setButton = addRenderableWidget(Button.builder(Component.translatable(T_SET), b -> sendTarget())
-                .bounds(x + CW - 32, t + BOX_Y, 32, 16).build());
+                .bounds(x + CW - 74, t + BOX_Y, 34, 16).build());
+        // To laser: aim the picks at a spot one of the network's Laser Designators is lasing (DESIGN.md §17.13).
+        this.laserButton = addRenderableWidget(Button.builder(Component.translatable(T_LASER), b -> {
+            StationPayloads.Scope s = scope();
+            if (s != null && !s.spots().isEmpty()) {
+                StationPayloads.SpotView spot = s.spots().getFirst();
+                aimAt(spot.x(), spot.z());
+            }
+        }).bounds(x + CW - 38, t + BOX_Y, 38, 16).build());
         this.patternButton = addRenderableWidget(Button.builder(Component.translatable(T_PATTERN[this.pattern]), b -> {
             this.pattern = (this.pattern + 1) % T_PATTERN.length;
             b.setMessage(Component.translatable(T_PATTERN[this.pattern]));
@@ -430,6 +440,10 @@ public class LaunchStationScreen extends Screen {
         List<StationPayloads.MemberView> launchers = picks.stream().filter(m -> !m.radar()).toList();
         if (this.setButton != null) {
             this.setButton.active = on && launchers.stream().anyMatch(m -> !counting(m) && !m.lost());
+            if (this.laserButton != null) {
+                StationPayloads.Scope sc = scope();
+                this.laserButton.active = this.setButton.active && sc != null && !sc.spots().isEmpty();
+            }
         }
         if (this.armButton != null) {
             boolean disarm = anyArmed(launchers);
@@ -672,6 +686,7 @@ public class LaunchStationScreen extends Screen {
             case FAILED -> Component.translatable(key, who, e.detail() < 0 ? Component.translatable(T_NO_ANSWER)
                     : Component.translatable(T_STATE[Mth.clamp(e.detail(), 0, T_STATE.length - 1)], 0));
             case NEW_CODES -> Component.translatable(key);
+            case FIRE_CALLED -> Component.translatable(key, e.x(), e.z(), e.detail());
             default -> Component.translatable(key, who);
         };
     }
@@ -758,6 +773,20 @@ public class LaunchStationScreen extends Screen {
                 g.fill(sx - 2, sz - 2, sx + 3, sz + 3, color);
             }
             label(g, Integer.toString(number(m.pos())), sx + 4, sz - 6, picked ? WHITE : DIM);
+        }
+        // The network's laser spots: pulsing red diamonds, who lases each beside it.
+        boolean pulse = this.ticks % 10 < 6;
+        for (StationPayloads.SpotView spot : s.spots()) {
+            int px = screenX(spot.x() + 0.5), pz = screenY(spot.z() + 0.5);
+            int r = pulse ? 4 : 3;
+            Phosphor.line(g, px - r, pz, px, pz - r, RED, 0);
+            Phosphor.line(g, px, pz - r, px + r, pz, RED, 0);
+            Phosphor.line(g, px + r, pz, px, pz + r, RED, 0);
+            Phosphor.line(g, px, pz + r, px - r, pz, RED, 0);
+            g.fill(px, pz, px + 1, pz + 1, WHITE);
+            if (!spot.who().isEmpty()) {
+                label(g, spot.who(), px + 6, pz - 3, RED);
+            }
         }
         // Missiles in the air: the network's amber, others its radars track red.
         for (StationPayloads.ContactView c : s.contacts()) {
