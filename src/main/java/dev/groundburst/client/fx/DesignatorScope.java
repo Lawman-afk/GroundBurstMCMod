@@ -79,6 +79,7 @@ public final class DesignatorScope {
                 case NO_LAUNCHER -> "NO LASER MISSILE";
                 case NO_RETURN -> "NO RETURN";
                 case NO_NETWORK -> "NO NETWORK";
+                case DISARMED -> "#%s DISARMED";
             }));
         }
         for (LaserDesignatorItem.Pick k : LaserDesignatorItem.Pick.values()) {
@@ -94,9 +95,12 @@ public final class DesignatorScope {
 
     /** Ticks a left click's brackets snap in over; ticks between left clicks sent. */
     private static final int SNAP = 8, CLICK_GAP = 4;
-    /** Our last left click while lasing: when (game time), and whether it was to launch (its launcher was armed). */
+    /**
+     * Our last left click while lasing: when (game time), whether it was to launch (its launcher was armed) and whether
+     * it was to disarm (sneaking).
+     */
     private static long clickedAt = Long.MIN_VALUE / 2;
-    private static boolean clickedLaunch;
+    private static boolean clickedLaunch, clickedDisarm;
 
     private static DesignatorPayloads.@Nullable Status status;
     private static int statusAge = Integer.MAX_VALUE;
@@ -153,7 +157,7 @@ public final class DesignatorScope {
 
     /**
      * Left clicks while lasing: taken before the game would drop them (it ignores attacks while an item is in use) and
-     * sent to the server, which designates or calls fire by the designator's mode.
+     * sent to the server, which arms, launches or (sneaking) disarms the designator's launcher.
      */
     private static void clicks(Minecraft mc) {
         if (mc.player == null || mc.level == null || mc.gui.screen() != null || !LaserFx.lasing(mc.player)) {
@@ -165,10 +169,12 @@ public final class DesignatorScope {
         }
         long now = mc.level.getGameTime();
         if (clicked && now - clickedAt >= CLICK_GAP) {
-            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Click());
+            boolean disarm = mc.player.isShiftKeyDown();
+            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Click(disarm));
             clickedAt = now;
             DesignatorPayloads.Status s = status();
-            clickedLaunch = s != null && s.pick().state() == LaserDesignatorItem.Pick.ARMED.ordinal();
+            clickedDisarm = disarm;
+            clickedLaunch = !disarm && s != null && s.pick().state() == LaserDesignatorItem.Pick.ARMED.ordinal();
         }
     }
 
@@ -186,6 +192,10 @@ public final class DesignatorScope {
 
     static boolean clickedFire() {
         return clickedLaunch;
+    }
+
+    static boolean clickedDisarm() {
+        return clickedDisarm;
     }
 
     /** The server's last word on our designator, while it is fresh. */
@@ -264,7 +274,12 @@ public final class DesignatorScope {
         int radius = (int) (size * APERTURE);
         reticle(g, cx, cy, radius);
         if (sinceClick >= 0 && sinceClick < SNAP * 2) {
-            brackets(g, cx, cy, Math.min(1, sinceClick / SNAP), clickedFire() ? RED : AMBER);
+            float k = Math.min(1, sinceClick / SNAP);
+            if (clickedDisarm()) {
+                brackets(g, cx, cy, 1 - k, DIM);           // let go: the brackets open out off the middle
+            } else {
+                brackets(g, cx, cy, k, clickedFire() ? RED : AMBER);
+            }
         }
         // Along the top: the launcher it works with, and the network under it (side by side they would not fit).
         int topY = cy - (int) (radius * 0.80);

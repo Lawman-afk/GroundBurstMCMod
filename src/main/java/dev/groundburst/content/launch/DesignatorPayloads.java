@@ -21,10 +21,13 @@ public final class DesignatorPayloads {
 
     private DesignatorPayloads() {}
 
-    /** A left click while lasing (its holder's client): what it does is the designator's mode's; the server checks it. */
-    public record Click() implements CustomPacketPayload {
+    /**
+     * A left click while lasing (its holder's client), sneaking ({@code disarm}) or not: what it does to the designator's
+     * launcher is the server's to work out.
+     */
+    public record Click(boolean disarm) implements CustomPacketPayload {
         public static final Type<Click> TYPE = GBNetwork.type("designator_click");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Click> CODEC = StreamCodec.unit(new Click());
+        public static final StreamCodec<RegistryFriendlyByteBuf, Click> CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, Click::disarm, Click::new);
 
         @Override
         public Type<Click> type() {
@@ -33,7 +36,7 @@ public final class DesignatorPayloads {
 
         public static void handle(Click click, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player) {
-                LaserDesignatorItem.click(player);
+                LaserDesignatorItem.click(player, click.disarm());
             }
         }
     }

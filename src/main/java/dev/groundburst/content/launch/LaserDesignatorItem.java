@@ -43,8 +43,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * laser-guided missile at a time: the first by default; the mouse wheel while zoomed picks the next, and the pick is
  * kept on it. A left click while lasing acts on that launcher as it stands: not armed, it is aimed at the spot and armed;
  * armed, it is launched, and its missile then follows the laser of the player who launched it: it goes where that
- * points. Used on a station it takes the station's network. It runs on a charge (a Battery Charger fills it) and an EMP
- * knocks it out.
+ * points. A sneaking left click disarms it. Used on a station it takes the station's network. It runs on a charge (a
+ * Battery Charger fills it) and an EMP knocks it out.
  */
 public class LaserDesignatorItem extends Item {
     public static final int CAPACITY = 40_000, TRANSFER = 1_000, USE = 20;
@@ -54,7 +54,7 @@ public class LaserDesignatorItem extends Item {
     private static final int CLICK_GAP = 4;
 
     /** A left click's result, for its holder's sight (its ordinal goes over the wire). */
-    public enum Result { NONE, DESIGNATED, OUT_OF_REACH, NOT_READY, FIRED, NOT_ARMED, NO_LAUNCHER, NO_RETURN, NO_NETWORK }
+    public enum Result { NONE, DESIGNATED, OUT_OF_REACH, NOT_READY, FIRED, NOT_ARMED, NO_LAUNCHER, NO_RETURN, NO_NETWORK, DISARMED }
 
     /** Its launcher's state, for its holder's sight: ready to arm on the spot, ready but the spot is out of its reach, not ready, armed. */
     public enum Pick { NONE, READY, OUT_OF_REACH, NOT_READY, ARMED }
@@ -64,6 +64,7 @@ public class LaserDesignatorItem extends Item {
     private static final String T_NO_NETWORK = GBLang.add(P + "no_network", "No network: use it on a Launch Control Station");
     private static final String T_CHARGE = GBLang.add(P + "charge", "Charge: %s%%");
     private static final String T_USE = GBLang.add(P + "use", "Hold use to lase; left-click to arm a launcher on the spot, or launch it once armed");
+    private static final String T_DISARM = GBLang.add(P + "disarm", "Sneak and left-click to disarm it");
     private static final String T_FLAT = GBLang.add(P + "flat", "Flat: charge it in a Battery Charger");
     private static final String T_EMP = GBLang.add(P + "emp", "Knocked out by an EMP");
     private static final String T_LINKED = GBLang.add(P + "linked", "Designator linked to network %s");
@@ -175,10 +176,10 @@ public class LaserDesignatorItem extends Item {
 
     /**
      * A left click while lasing (its holder's client sends it), on its launcher as it stands: not armed, it is aimed at
-     * the spot and armed; armed, it is launched, and its missile follows this player's laser in. Its result shows in the
-     * holder's sight at once.
+     * the spot and armed; armed, it is launched, and its missile follows this player's laser in. Sneaking ({@code disarm})
+     * it is disarmed instead, still aimed where it was. Its result shows in the holder's sight at once.
      */
-    public static void click(ServerPlayer player) {
+    public static void click(ServerPlayer player, boolean disarm) {
         ItemStack stack = player.getUseItem();
         ServerLevel level = player.level();
         if (!player.isUsingItem() || !(stack.getItem() instanceof LaserDesignatorItem) || !works(stack, level)) {
@@ -198,6 +199,8 @@ public class LaserDesignatorItem extends Item {
             result = Result.NO_NETWORK;
         } else if (m == null) {
             result = Result.NO_LAUNCHER;
+        } else if (disarm) {
+            result = m.willBeArmed() && nets.arm(level, net, List.of(m.pos), false) > 0 ? Result.DISARMED : Result.NOT_ARMED;
         } else if (m.willBeArmed() && m.aim().isPresent()) {
             result = nets.fireLaser(level, net, m, player) ? Result.FIRED : Result.NOT_ARMED;
         } else {
@@ -211,7 +214,8 @@ public class LaserDesignatorItem extends Item {
         }
         CLICKS.put(player.getUUID(), new Click(now, result, number));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), result == Result.FIRED ? GBSounds.DESIGNATOR_FIRE.get()
-                : GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.6f, result == Result.DESIGNATED || result == Result.FIRED ? 1.2f : 0.7f);
+                : GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.6f,
+                result == Result.DESIGNATED || result == Result.FIRED ? 1.2f : result == Result.DISARMED ? 0.9f : 0.7f);
         sendStatus(level, player, stack, net, spot == null ? null : BlockPos.containing(spot.pos()));
     }
 
@@ -341,6 +345,7 @@ public class LaserDesignatorItem extends Item {
                 : Component.translatable(T_NETWORK, code).withStyle(ChatFormatting.GOLD));
         tooltip.accept(Component.translatable(T_CHARGE, (int) ((long) stored(stack) * 100 / CAPACITY)).withStyle(ChatFormatting.AQUA));
         tooltip.accept(Component.translatable(T_USE).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable(T_DISARM).withStyle(ChatFormatting.DARK_GRAY));
     }
 
 }

@@ -91,6 +91,8 @@ PRESETS = {
             ("detail: hold-down post", 30, 220, (-13, 18, 19), 20, None),
             ("detail: console and lip", 30, 200, (0, 16, 0), 30, None),
             ("detail: walkway", 35, 230, (48, 66, 30), 30, None),
+            ("ports", 35, 30, (-8, 16, 69), 34, None),
+            ("detail: item port", 45, 20, (-16, 17, 69), 16, None),
         ]),
     "launch_silo": dict(
         keep_one=("nose_",), anim="working",
@@ -99,6 +101,8 @@ PRESETS = {
             ("tower foot", 20, 210, (31, 20, 16), 50, None),
             ("arm and hinge", 15, 250, (18, 100, 16), 50, None),
             ("platform", 30, 210, (31, 140, 16), 40, None),
+            ("ports", 35, 30, (-8, 16, 37), 34, None),
+            ("detail: item port", 45, 20, (-16, 17, 37), 16, None),
         ]),
     "launch_control_station": dict(
         # The status board as it might stand: four ready, two armed, one counting, one fault, the rest dark.
@@ -149,6 +153,15 @@ PRESETS = {
             ("collar and doors", 35, 225, (0, 4, 32), 90, 0.0),
             ("doors open", 35, 225, (0, 4, 32), 90, 2.0),
             ("console", 25, 200, (0, 8, -8), 40, 0.0),
+            ("ports", 45, 30, (-8, 16, 64), 36, 0.0),
+            ("detail: item port", 60, 20, (-16, 16, 64), 18, 0.0),
+        ]),
+    "cruise_launcher": dict(
+        shots=WHOLE + [
+            ("ports", 30, 120, (18, 16, 6), 40, None),
+            ("ports, other side", 30, 300, (18, 16, 6), 40, None),
+            ("detail: item port", 35, 110, (21, 17, 16), 18, None),
+            ("detail: item port, other", 35, 290, (21, 17, 16), 18, None),
         ]),
 }
 

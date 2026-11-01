@@ -147,13 +147,13 @@ public final class GBLaunch {
     });
 
     /**
-     * The Launch Silo (gantry type): a 3x3 Launch Pad with the controller at the front middle and an Energy Port at the
-     * back middle; a Gantry Frame tower 9 tall beside the pad's middle row, its Gantry Arm reaching in at the sixth
-     * layer; the missile's column over the pad's middle kept clear 6 blocks up.
+     * The Launch Silo (gantry type): a 3x3 Launch Pad with the controller at the front middle, an Energy Port at the
+     * back middle and an Item Port beside it; a Gantry Frame tower 9 tall beside the pad's middle row, its Gantry Arm
+     * reaching in at the sixth layer; the missile's column over the pad's middle kept clear 6 blocks up.
      */
     public static final MultiblockDefinition SILO = new MultiblockDefinition(GroundBurst.id("launch_silo"),
             new String[][] {
-                    {"PXP ", "PPPG", "PEP "},
+                    {"PXP ", "PPPG", "IEP "},
                     {"    ", " . G", "    "},
                     {"    ", " . G", "    "},
                     {"    ", " . G", "    "},
@@ -165,19 +165,20 @@ public final class GBLaunch {
             },
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'G', Entry.of(() -> GANTRY_FRAME.block().get()),
                     'A', Entry.of(() -> GANTRY_ARM.block().get()), 'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    'I', itemPort(() -> LAUNCH_PAD.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> SILO_CONTROLLER.block().get())));
 
     /**
      * The Launch Complex (Phase 8): a 5x5 deck of Launch Pad with the controller at the front middle, an Energy Port at
-     * the back middle and the Flame Deflector at its middle, under the missile; a Gantry Frame service tower two cells
-     * deep and 13 high beside the deck's middle and back rows, with Gantry Arms (the umbilicals) reaching in at the
-     * fifth and ninth layers; the missile's column over the deflector kept clear 11 blocks up. Formed, the deck's
-     * blocks take the model's shape (after slice 9b, the user's request): a deck 14 px high you can walk on, the flame
-     * trench down its west side and the deflector's steps rising out of it under the missile.
+     * the back middle with an Item Port beside it, and the Flame Deflector at its middle, under the missile; a Gantry
+     * Frame service tower two cells deep and 13 high beside the deck's middle and back rows, with Gantry Arms (the
+     * umbilicals) reaching in at the fifth and ninth layers; the missile's column over the deflector kept clear 11 blocks
+     * up. Formed, the deck's blocks take the model's shape (after slice 9b, the user's request): a deck 14 px high you can
+     * walk on, the flame trench down its west side and the deflector's steps rising out of it under the missile.
      */
     public static final MultiblockDefinition COMPLEX = new MultiblockDefinition(GroundBurst.id("launch_complex"),
             new String[][] {
-                    {"PPXPP ", "PPPPP ", "PPFPPG", "PPPPPG", "PPEPP "},
+                    {"PPXPP ", "PPPPP ", "PPFPPG", "PPPPPG", "PIEPP "},
                     {"      ", "      ", "  .  G", "     G", "      "},
                     {"      ", "      ", "  .  G", "     G", "      "},
                     {"      ", "      ", "  .  G", "     G", "      "},
@@ -193,9 +194,9 @@ public final class GBLaunch {
             },
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'G', Entry.of(() -> GANTRY_FRAME.block().get()),
                     'A', Entry.of(() -> GANTRY_ARM.block().get()), 'F', Entry.of(() -> FLAME_DEFLECTOR.block().get()),
-                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()), 'I', itemPort(() -> LAUNCH_PAD.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> COMPLEX_CONTROLLER.block().get())),
-            MultiblockDefinition.layerCuts(0, new String[] {"DDCDD", "DDDDD", "TTSDD", "DDDDD", "DDHDD"},
+            MultiblockDefinition.layerCuts(0, new String[] {"DDCDD", "DDDDD", "TTSDD", "DDDDD", "DHHDD"},
                     Map.of('D', PartCut.DECK, 'T', PartCut.TRENCH_NORTH, 'S', PartCut.STEPS_NORTH, 'C', PartCut.CONSOLE_NORTH,
                             'H', PartCut.HOUSING_NORTH)));
 
@@ -203,12 +204,12 @@ public final class GBLaunch {
      * The Missile Silo (Phase 9 slice 9b), dug into the ground: a floor of Reinforced Concrete with the Flame Deflector
      * in its middle; twelve rings of Reinforced Concrete round a 3x3 shaft that must be clear (the missile stands in
      * it); at the top, level with the ground, a ring of Hazard Concrete round a Silo Hatch over the shaft, with the
-     * controller in the middle of the ring's front and an Energy Port in the middle of its back.
+     * controller in the middle of the ring's front, an Energy Port in the middle of its back and an Item Port beside it.
      */
     public static final MultiblockDefinition MISSILE_SILO = new MultiblockDefinition(GroundBurst.id("missile_silo"), siloLayers(),
             Map.of('R', Entry.of(() -> REINFORCED_CONCRETE.block().get()), 'H', Entry.of(() -> HAZARD_CONCRETE.block().get()),
                     'F', Entry.of(() -> FLAME_DEFLECTOR.block().get()), 'O', hatch(SiloHatchBlock.Part.CENTER), 'o', hatch(SiloHatchBlock.Part.EDGE),
-                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()), 'I', itemPort(() -> HAZARD_CONCRETE.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> MISSILE_SILO_CONTROLLER.block().get())));
 
     private static String[][] siloLayers() {
@@ -217,20 +218,20 @@ public final class GBLaunch {
         for (int y = 1; y <= 12; y++) {
             layers[y] = new String[] {"RRRRR", "R...R", "R...R", "R...R", "RRRRR"};
         }
-        layers[13] = new String[] {"HHXHH", "HoooH", "HoOoH", "HoooH", "HHEHH"};
+        layers[13] = new String[] {"HHXHH", "HoooH", "HoOoH", "HoooH", "HIEHH"};
         return layers;
     }
 
     /**
      * The Cruise Missile Launcher (slice 9c, DESIGN.md §17.11): a 2x6 deck of Launch Pad, the controller and an Energy
-     * Port side by side in its front row; on its back row two Launch Boxes (the boxes' hinged ends); clear over the deck
-     * where the boxes lie and sweep as they rise to 45 degrees (tools/assets/cruise_launcher.py: two blocks over all of
-     * it, then higher toward the front, five blocks up over its second and third rows). Formed, the deck's blocks are the
-     * model's deck, 14 px high, to walk on.
+     * Port side by side in its front row, an Item Port behind the Energy Port; on its back row two Launch Boxes (the
+     * boxes' hinged ends); clear over the deck where the boxes lie and sweep as they rise to 45 degrees
+     * (tools/assets/cruise_launcher.py: two blocks over all of it, then higher toward the front, five blocks up over its
+     * second and third rows). Formed, the deck's blocks are the model's deck, 14 px high, to walk on.
      */
     public static final MultiblockDefinition CRUISE_LAUNCHER = new MultiblockDefinition(GroundBurst.id("cruise_launcher"),
             new String[][] {
-                    {"XE", "PP", "PP", "PP", "PP", "PP"},
+                    {"XE", "PI", "PP", "PP", "PP", "PP"},
                     {"..", "..", "..", "..", "..", "BB"},
                     {"..", "..", "..", "..", "..", ".."},
                     {"..", "..", "..", "..", "..", "  "},
@@ -238,16 +239,17 @@ public final class GBLaunch {
                     {"  ", "..", "..", "  ", "  ", "  "},
             },
             Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'B', Entry.of(() -> LAUNCH_BOX.block().get()),
-                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()), 'I', itemPort(() -> LAUNCH_PAD.block().get()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> CRUISE_CONTROLLER.block().get())),
             MultiblockDefinition.layerCuts(0, new String[] {"DD", "DD", "DD", "DD", "DD", "DD"}, Map.of('D', PartCut.DECK)));
 
     /** JEI: how the Cruise Missile Launcher is built and works, and what the Cruise Engine makes (DESIGN.md §17.11). */
     public static final String INFO_CRUISE_LAUNCHER = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.cruise_launcher",
             "Fires cruise missiles, and only those. Build a 2x6 deck of Launch Pad with the controller and an Energy Port side "
-                    + "by side in its front row and two Launch Boxes on its back row; keep the space over the deck clear where its "
-                    + "boxes lie and rise (the Holo-Projector shows it). Load two cruise missiles and power it (60,000 FE a "
-                    + "missile); a Launch Computer aims, arms and fires it. Its rams raise the boxes during a 10 s countdown, then "
+                    + "by side in its front row, an Item Port behind the Energy Port and two Launch Boxes on its back row; keep the "
+                    + "space over the deck clear where its boxes lie and rise (the Holo-Projector shows it). Load two cruise missiles "
+                    + "(by hand, or by pipe or hopper into the Item Port) and power it (60,000 FE a missile); a Launch Computer "
+                    + "aims, arms and fires it. Its rams raise the boxes during a 10 s countdown, then "
                     + "the two missiles go 3 s apart at the same target, each bursting its box's cover.");
     public static final String INFO_CRUISE_ENGINE = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.cruise_engine",
             "A missile assembled with a Cruise Engine (Light and Medium missiles) is a cruise missile, winged and painted as its "
@@ -260,6 +262,15 @@ public final class GBLaunch {
             GBItems.register("cruise_launcher_spawner", "Structure Spawner: Cruise Missile Launcher", GBTab.MISSILES,
                     p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> CRUISE_LAUNCHER),
                     p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
+
+    /**
+     * A launcher's Item Port: pipes and hoppers load its missiles through it (only into its launch slots; nothing comes
+     * out). A launcher built before it had one, with {@code instead} there, still forms, without it.
+     */
+    private static Entry itemPort(Supplier<? extends net.minecraft.world.level.block.Block> instead) {
+        return new Entry(s -> s.is(GBMultiblocks.ITEM_PORT.block().get()) || s.is(instead.get()),
+                () -> GBMultiblocks.ITEM_PORT.block().get().defaultBlockState());
+    }
 
     /** A cell of the Silo Hatch: its middle, or one of the parts round it. */
     private static Entry hatch(SiloHatchBlock.Part part) {
@@ -333,9 +344,9 @@ public final class GBLaunch {
                     + "and coordinates. Use it on a Launch Control Station to join its network; it commands the network's launchers "
                     + "loaded with laser-guided missiles (a Laser Guidance Unit), one at a time: the first, or scroll while zoomed to "
                     + "pick the next. Left-click while lasing: an unarmed launcher is aimed at the spot and armed; an armed one "
-                    + "launches, and its missile follows your laser in, wherever you point it. Zoomed, armed launchers' targets show "
-                    + "as spheres. 40,000 FE (100 s of lasing); charge it in a Battery Charger. Smoke breaks the beam; an EMP knocks "
-                    + "it out.");
+                    + "launches, and its missile follows your laser in, wherever you point it; sneak and left-click to disarm it. "
+                    + "Zoomed, armed launchers' targets show as spheres. 40,000 FE (100 s of lasing); charge it in a Battery "
+                    + "Charger. Smoke breaks the beam; an EMP knocks it out.");
 
     /** JEI's page for the Launch Control Station and its codes. */
     public static final String INFO_STATION = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".jei.info.launch_control_station",

@@ -2196,6 +2196,19 @@ on its fins.
 Pad GUI: missile readout (what's loaded), target X/Y/Z, distance & bearing, in-range check, flight time, arm key
 switch, **LAUNCH** (guarded red button), status lamps (POWER / ARMED / FUEL / EMP), countdown display.
 
+**Item Ports** (2026-11-01, the user's request: "an item port, to automate reloading ... no output or any configs,
+just take them into the launch slot"): every launcher has one beside its Energy Port: the Launch Silo and the Launch
+Complex at the back edge on the side away from the tower (on your right as you face the controller), the Missile Silo
+in the top ring beside its Energy Port, the Cruise Missile Launcher right behind its Energy Port. Pipes and hoppers put
+missiles through it into the launch slot (the Cruise Launcher's two), only ones that launcher fires
+(`isItemValid`); nothing comes out (the launchers have no output slots, so `portItems` is insert-only) and it has no
+settings. The cell also takes the block that stood there before (a Launch Pad; the Missile Silo's Hazard Concrete,
+`GBLaunch.itemPort`), so launchers built before still form, without a port; the Holo-Projector and the spawners show
+the port. Formed, the models draw it as the Energy Port's twin: a dark steel housing with a yellow-and-black band
+(the power one's is red) and a grated loading mouth on top (the Cruise Launcher's, under its boxes, in its outer
+side); the Missile Silo's a flush hazard-striped plate with the grated mouth (`launch._item_housing`, `_item_mouth`).
+The Launch Complex's port cell has the housing's shape too (`HOUSING_NORTH`).
+
 ### 17.3 Launch Control Station
 - A desk console with CRT screens. Links to up to 16 pads/silos/launchers/uplinks within 1 024 blocks (Data Link
   Tool), more with Comms Relay antennas.
@@ -2594,10 +2607,12 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   put) and the pick is kept on the designator. A **left click while lasing** acts on it as it stands: not armed, it is
   aimed at the spot and armed; armed, it launches, and its missile then follows the laser of the player who launched it:
   that player leads it in, wherever it points (the station's log: "designated", "fire called"). Once it has launched
-  the pick moves on to the next.
+  the pick moves on to the next. A **sneaking left click** disarms the pick (the user's request), leaving it aimed
+  where it was.
 - *Armed targets*: zoomed, the sight shows where every armed launcher of the network is aimed (whoever armed it): a
-  glowing sphere at the point clicked, against the face it was clicked on (one aimed from the station: on the top of
-  its column), its edge lit like the ring a left click draws; red for the picked one.
+  glowing sphere centred on the point clicked (one aimed from the station: on the top of its column; at first it sat
+  touching the face, which looked off to one side, so the user asked for it centred), its edge lit like the ring a left
+  click draws; red for the picked one.
 - *Laser Guidance Unit* (`laser_guidance_unit`, a new guidance part for any missile): launched by a call for fire, once
   clear of its climb (an eighth of the way) it follows its launching player's laser wherever it points, its target moving
   up to 1.5 blocks a tick; without that laser it flies as inertial guidance (4% of the range) and from half way steers
@@ -2624,9 +2639,10 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   else the first; `laserStep` steps it. Zoomed, the client cancels mouse-wheel events (no hotbar change) and sends
   `designator_scroll`. A left click while lasing: the client takes attack clicks before the game drops them (it ignores
   attacks while an item is in use, `ClientTickEvent.Pre`) and sends `designator_click`; `LaserDesignatorItem.click`
-  (one per 4 ticks) checks the holder is lasing, then on the pick: armed, `LaunchNetwork.fireLaser` (launched now, the
-  order's `by` the holder, so the flight's owner; logged `FIRE_CALLED`); else `designate` (aimed at the spot and armed
-  if it `canArm` it; logged `DESIGNATED`); and sends the status at once with its result. An EMP field sets its
+  (one per 4 ticks) checks the holder is lasing, then on the pick: sneaking (the click carries the client's sneak
+  key), `LaunchNetwork.arm(..., false)` if it is armed (`DISARMED`, else `NOT_ARMED`); armed, `LaunchNetwork.fireLaser`
+  (launched now, the order's `by` the holder, so the flight's owner; logged `FIRE_CALLED`); else `designate` (aimed at
+  the spot and armed if it `canArm` it; logged `DESIGNATED`); and sends the status at once with its result. An EMP field sets its
   `EMP_UNTIL` 10 s ahead. (`designator_mode`, from the two modes, is still registered so a designator saved with it
   loads; nothing reads it.)
 - Flights: a laser-guided flight carries a `Seeker` (its network, set when a network's launcher fires it; its aim; its
@@ -2639,8 +2655,9 @@ dust and cloud break the beam; a missile that loses the spot flies on as it was 
   just under the eye in our own sight) in camera-facing pieces as wide on screen at any range (at most 16 blocks long,
   shorter near the camera so a beam passing close keeps its width), additive red over `textures/fx/laser.png`; the spot
   pulsing five times a second, its middle also drawn blended so it shows red on a bright face by day; a glint at the
-  port; and after our own left click a ring closing on the spot (red for a launch). Zoomed, a sphere at each of the
-  network's armed aims: a designated one touching the face it was clicked on at the point clicked (`LaunchNetwork.Mark`:
+  port; and after our own left click a ring closing on the spot (red for a launch; none for a disarm, whose brackets
+  open out instead, dim). Zoomed, a sphere at each of the network's armed aims, centred on it and pulled 0.3 blocks
+  toward the eye, as the click ring is, so its lit edge clears the face: a designated one at the point clicked (`LaunchNetwork.Mark`:
   the point and face, kept with the member and saved, used while the member is still aimed at that column; the trace's
   `Hit` and the `Spot` carry the face: a block's, or on a creature the side toward the holder); one aimed some other
   way on the top of what is solid in its column, found by scanning it (the height map the client is sent missed
@@ -4197,6 +4214,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | Every launcher gets an Item Port (the user: "to automate reloading ... no output or any configs, just take them into the launch slot"): beside the Energy Port on the Launch Silo, Launch Complex and Missile Silo, behind it on the Cruise Missile Launcher; insert-only into the launch slot, only missiles that launcher fires; the cell still takes its old block so launchers built before keep forming; drawn on each formed model as the Energy Port's yellow-banded twin with a grated loading mouth (§17.2). The Laser Designator: a sneaking left click disarms the picked launcher, still aimed; the armed targets' spheres centred on the point clicked (they sat touching the face, off to one side). |
 | 2026-11-01 | The armed targets' spheres sit where the launcher was clicked on (the user: "on the place it is clicked, not above it"): designating keeps the clicked point and face with the launcher, and its sphere touches that face there; a launcher aimed from the station keeps the top of its column. |
 | 2026-11-01 | The Laser Designator reworked again to the user's wishes: it works with one laser-guided launcher of its network at a time (the first by default; the mouse wheel while zoomed picks the next and no longer turns the hotbar; the pick kept on the designator); no modes: a left click arms the pick on the spot if it is not armed, or launches it if it is; zoomed, every armed launcher of the network shows its aim as a glowing sphere; the sight's left-click tip removed. |
 | 2026-11-01 | The Laser Designator's controls redesigned to the user's wishes: a left click while lasing acts by mode. **Designate** aims and arms every launcher of the designator's network loaded with a laser-guided missile on the spot; **call for fire** launches them, and the missiles follow the laser of the player who called fire from early in their flight, wherever it points (leading guidance; the old terminal homing near the aim stays for other designators). The two-second lock is gone. Left clicks are taken on the client before the game drops them (it ignores attacks while an item is in use). |

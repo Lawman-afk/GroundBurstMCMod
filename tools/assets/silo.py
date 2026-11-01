@@ -10,8 +10,9 @@ cabinet, the formed structure (GeckoLib) and its Structure Spawner.
   opening, two heavy door leaves on rails that run out to either side (they slide apart for a launch, moved by the
   block entity: MissileSiloBlockEntity#boneOffsets), an exhaust vent grate at each corner, a squat armoured console at
   the front with a green CRT and two red beacons (they flash while it counts down: the "working" animation), the
-  Energy Port's flush plate at the back; down the shaft, conduits in its corners and the missile standing on its
-  launch ring over the flame duct at the bottom (no lamps: the user asked for them to go after 9b).
+  Energy Port's flush plate at the back and the Item Port's beside it (hazard-striped, a grated loading mouth); down
+  the shaft, conduits in its corners and the missile standing on its launch ring over the flame duct at the bottom (no
+  lamps: the user asked for them to go after 9b).
 
 Coordinates are model pixels with the controller's cell centred on x = z = 0 and y = 0 the bottom of the top layer:
 the opening is x -24..24, z 8..56; the ground (the collar's top) is y 16; the shaft's floor is y -192.
@@ -247,6 +248,9 @@ def formed() -> None:
     g.open_ok.add(("port", "down"))
     g.box("socket", (-2, TOP + 0.6, 62), (2, TOP + 2, 66), faces=sides + ("up",), bone=F)
     g.open_ok.add(("socket", "down"))
+    # The Item Port beside it: a flush plate with its loading mouth.
+    g.box("item_port", (-22, TOP, 58), (-10, TOP + 0.6, 70), faces=sides + ("up",), bone=F)
+    g.open_ok.add(("item_port", "down"))
 
     # Down the shaft: a conduit in each corner (just off the walls, which are the blocks you built).
     conduits = []
@@ -352,6 +356,10 @@ def formed() -> None:
                                    other=M.painted(M.BLACK_RAMP, tone=0.5), width=1.5))
     S.overlay(tex, "port", lambda f, img: M.paste(img, S.material_on(f, M.steel(tone=0.5)), f.edge_near() > 2) if f.d == "up" else None)
     S.paint(tex, "socket", M.steel(tone=0.3))
+    # The Item Port's plate: yellow and black hazard paint round a steel plate, a grated mouth in its middle.
+    S.paint(tex, "item_port", M.stripes(width=1.5, wear=0.3, under=M.STEEL_RAMP[2:7]))
+    S.overlay(tex, "item_port", lambda f, img: M.paste(img, S.material_on(f, M.steel(tone=0.5)), f.edge_near() > 2) if f.d == "up" else None)
+    S.overlay(tex, "item_port", L._item_mouth(S, inset=4), only=("up",))
     # Down the shaft: grey-painted conduits clamped every block, the yellow launch ring and posts, the sooted grate over
     # the duct.
     S.paint(tex, conduits, M.painted(M.GREY_PAINT_RAMP, tone=0.48, wear=0.2, rust=0.15))

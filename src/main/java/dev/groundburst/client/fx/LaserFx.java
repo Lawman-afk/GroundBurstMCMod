@@ -193,7 +193,8 @@ public final class LaserFx {
         float size = (float) (0.18 + 0.0075 * dist);
         quad(b, pose, at, camera, right, up, size * (0.92f + 0.08f * pulse), 0, 0.5f, color(SPOT, pulse));
         float since = beam.ours() ? DesignatorScope.sinceClick(Minecraft.getInstance(), (float) (now - Math.floor(now))) : Float.MAX_VALUE;
-        if (since >= 0 && since < CLICK_RING) {                // our left click: a ring shrinking onto the spot, red for fire
+        // Our left click: a ring shrinking onto the spot, red for a launch (none for a disarm).
+        if (since >= 0 && since < CLICK_RING && !DesignatorScope.clickedDisarm()) {
             float k = since / CLICK_RING;
             quad(b, pose, at, camera, right, up, size * (1.3f + 3.2f * (1 - k)), 0.5f, 1,
                     color(DesignatorScope.clickedFire() ? RING : SPOT, 1 - 0.7f * k));
@@ -202,32 +203,31 @@ public final class LaserFx {
 
     /**
      * While we are zoomed: where our network's armed launchers are aimed, each a glowing sphere, its edge lit like the ring
-     * a left click draws (so it reads as a ring from any side): one armed by a designator against the face it was clicked
-     * on, at the point clicked; one aimed some other way on the top of what is in its column. The one our designator works
-     * with red, the rest amber. As big on screen at any range, and never smaller than 0.8 blocks.
+     * a left click draws (so it reads as a ring from any side), centred on the aim: one armed by a designator on the point
+     * clicked; one aimed some other way on the top of what is in its column. Pulled a little toward the eye, as the click
+     * ring is, so its lit edge is clear of the face the point is on. The one our designator works with red, the rest
+     * amber. As big on screen at any range, and never smaller than 0.8 blocks.
      */
     private static void aims(VertexConsumer b, PoseStack.Pose pose, ClientLevel level, DesignatorPayloads.Status status, Vec3 camera, double now,
             boolean blended) {
         List<DesignatorPayloads.Aim> aims = status.aims();
-        net.minecraft.core.Direction[] faces = net.minecraft.core.Direction.values();
         for (int i = 0; i < aims.size(); i++) {
             DesignatorPayloads.Aim a = aims.get(i);
-            Vec3 at, out;                                       // the point, and the way out of the surface there
+            Vec3 at;                                            // the point: designated (it has a face), or the column's top
             if (a.face() >= 0) {
-                net.minecraft.core.Direction face = faces[Math.clamp(a.face(), 0, faces.length - 1)];
                 at = new Vec3(a.x(), a.y(), a.z());
-                out = new Vec3(face.getStepX(), face.getStepY(), face.getStepZ());
             } else {
                 net.minecraft.core.BlockPos column = net.minecraft.core.BlockPos.containing(a.x(), a.y(), a.z());
                 at = new Vec3(column.getX() + 0.5, top(level, column), column.getZ() + 0.5);
-                out = UP;
             }
-            float r = (float) Math.max(0.8, 0.011 * camera.distanceTo(at));
+            Vec3 toCamera = camera.subtract(at);
+            double dist = toCamera.length();
+            float r = (float) Math.max(0.8, 0.011 * dist);
             boolean ours = i == status.picked();
             float radius = r * (ours ? 0.85f + 0.15f * (float) Math.sin(now * 0.3) : 1);
             int rgb = blended ? (ours ? CORE : 0xE07018) : ours ? RING : SPOT;
             float strength = (ours ? 1f : 0.75f) * (blended ? 0.55f : 1f);
-            sphere(b, pose, at.add(out.scale(radius)), radius, camera, rgb, strength);    // touching the surface at the point
+            sphere(b, pose, dist > 0.6 ? at.add(toCamera.scale(0.3 / dist)) : at, radius, camera, rgb, strength);
         }
     }
 

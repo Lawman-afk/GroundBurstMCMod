@@ -39,6 +39,58 @@ final class LaunchTests {
         GBGameTests.test("computer_surveys_the_ground_round_it", GBGameTests.FLOOR_16, 40, LaunchTests::survey);
         GBGameTests.testOpenSky("missile_flies_and_its_warhead_goes_off", GBGameTests.FLOOR_16, 400, LaunchTests::flight);
         GBGameTests.test("formed_decks_take_the_models_shape", GBGameTests.FLOOR_16, 20, LaunchTests::walkableDecks);
+        // Every launcher loads through its Item Port.
+        GBGameTests.test("launch_silo_loads_through_its_item_port", GBGameTests.FLOOR_16, 20, h -> {
+            floor(h);
+            loadsThroughPort(h, silo(h, new BlockPos(5, 1, 3)), missile(), NuclearTests.nuke(), GBLaunch.LAUNCH_PAD.block().get());
+        });
+        GBGameTests.test("launch_complex_loads_through_its_item_port", GBGameTests.FLOOR_16, 20, h -> {
+            floor(h);
+            loadsThroughPort(h, NuclearTests.complex(h, new BlockPos(5, 1, 2)), NuclearTests.nuke(), cruiseMissile(), GBLaunch.LAUNCH_PAD.block().get());
+        });
+        GBGameTests.testOpenSky("missile_silo_loads_through_its_item_port", GBGameTests.FLOOR_16, 20,
+                h -> loadsThroughPort(h, SiloTests.silo(h), NuclearTests.nuke(), cruiseMissile(), GBLaunch.HAZARD_CONCRETE.block().get()));
+        GBGameTests.test("cruise_launcher_loads_through_its_item_port", GBGameTests.FLOOR_16, 20,
+                h -> loadsThroughPort(h, CruiseTests.launcher(h), cruiseMissile(), missile(), GBLaunch.LAUNCH_PAD.block().get()));
+    }
+
+    /** A cruise missile with an HE warhead (only the Cruise Missile Launcher fires it). */
+    private static ItemStack cruiseMissile() {
+        return CruiseTests.cruise(new ItemStack(GBOrdnance.HE_WARHEAD.item().get()), dev.groundburst.content.assembly.SizeClass.M);
+    }
+
+    /**
+     * A launcher loads through its Item Port: what a pipe or hopper puts in goes into its launch slot if it fires it
+     * ({@code missile}) and not if it does not ({@code refused}), and nothing comes back out; built with {@code instead},
+     * the block that stood in the port's place before launchers had one, it still forms, with no port there.
+     */
+    private static <T extends dev.groundburst.content.machine.MachineBlockEntity & dev.groundburst.content.multiblock.MultiblockController> void loadsThroughPort(
+            GameTestHelper helper, T launcher, ItemStack missile, ItemStack refused, Block instead) {
+        var level = helper.getLevel();
+        helper.assertTrue(launcher.isFormed(), "formed: " + launcher.definition().check(level, launcher.controllerPos(), launcher.controllerFacing()));
+        BlockPos port = launcher.definition().cells(launcher.controllerPos(), launcher.controllerFacing()).stream()
+                .filter(c -> c.key() == 'I').findFirst().orElseThrow().pos();
+        helper.assertTrue(level.getBlockState(port).is(dev.groundburst.content.multiblock.GBMultiblocks.ITEM_PORT.block().get()),
+                "an Item Port in its port's place");
+        var items = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, port, Direction.UP);
+        helper.assertTrue(items != null, "its Item Port takes items");
+        try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+            helper.assertTrue(items.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(refused), 1, tx) == 0,
+                    "it takes nothing it cannot fire");
+            helper.assertTrue(items.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(missile), 1, tx) == 1, "it takes a missile it fires");
+            tx.commit();
+        }
+        helper.assertTrue(ItemStack.isSameItemSameComponents(launcher.inventory().getItem(0), missile), "the missile is in its launch slot");
+        try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+            helper.assertTrue(items.extract(net.neoforged.neoforge.transfer.item.ItemResource.of(missile), 1, tx) == 0, "nothing comes out of its port");
+        }
+        helper.assertTrue(!launcher.inventory().getItem(0).isEmpty(), "the missile stays loaded");
+        level.setBlockAndUpdate(port, instead.defaultBlockState());
+        launcher.revalidate();
+        helper.assertTrue(launcher.isFormed(), "with " + instead.getName().getString() + " where the port goes it still forms");
+        helper.assertTrue(level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK, port, Direction.UP) == null,
+                "and nothing loads it there");
+        helper.succeed();
     }
 
     /** Whether a point of a block (in pixels) is inside its shape. */
@@ -76,6 +128,7 @@ final class LaunchTests {
                 "the deflector's steps rise east, 5 px to 11 px");
         shape.apply("2,0", PartCut.CONSOLE_NORTH);                      // the controller, under its console
         shape.apply("2,4", PartCut.HOUSING_NORTH);
+        shape.apply("1,4", PartCut.HOUSING_NORTH);                      // the Item Port, under its housing beside it
         // A player's room (0.6 wide, 1.8 tall) on the trench's floor, all the way along it and under the missile.
         for (String key : java.util.List.of("0,2", "1,2")) {
             BlockPos p = at.get(key);

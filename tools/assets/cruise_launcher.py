@@ -4,10 +4,10 @@ controller and its spawner.
 After the Navy's Armored Box Launchers: two armored boxes side by side on a 2 x 6 concrete deck, hinged at its back, a
 cruise missile in each. Haze-grey boxes banded with steel straps, a striped collar round each mouth and a stencilled
 cover in it, the aft ends louvred for the booster's blast; a warning beacon on their backs. Under them two telescopic
-rams fold down into pits in the deck; a low console and the Energy Port's housing at the deck's front edge, a scorched
-blast plate behind the hinge. Fired, the rams raise the boxes to 45 degrees; each box's cover bursts off as its missile
-lights (it is frangible, as a missile canister's is) and the missile leaves along the box; the beacon turns while it
-counts down and fires.
+rams fold down into pits in the deck; a low console and the Energy Port's housing at the deck's front edge, the Item
+Port's on its side behind it, a scorched blast plate behind the hinge. Fired, the rams raise the boxes to 45 degrees;
+each box's cover bursts off as its missile lights (it is frangible, as a missile canister's is) and the missile leaves
+along the box; the beacon turns while it counts down and fires.
 
 The missiles are not drawn in their boxes (closed, armoured): the game draws each from its own model once it is lit
 (MissileRenderer), its wings and scoop stowed until it is clear of its box (the "_folded" variant). The bones tail_a and
@@ -15,7 +15,7 @@ tail_b (no cubes) mark where a missile's tail lies in its box, for the preview. 
 figures: the hinge, the boxes' axes, where a missile's tail sits.
 
 Pixels: x right, y up, z back from the middle of the controller's cell (its bottom at y 0); the controller is the front
-left cell, the Energy Port the front right.
+left cell, the Energy Port the front right and the Item Port behind it.
 
     tools\\.venv\\Scripts\\python.exe tools\\assets\\cruise_launcher.py
 """
@@ -147,8 +147,8 @@ def pits() -> tuple[float, float, list[tuple[float, float]]]:
 
 
 def build_deck(g: GeoModel, p: Parts) -> list[dict]:
-    """The deck, cut by the rams' two pits; the hinge's base, cheeks and pin; the rests; the console, the Energy Port's
-    housing and the blast plate."""
+    """The deck, cut by the rams' two pits; the hinge's base, cheeks and pin; the rests; the console, the Energy and Item
+    Ports' housings and the blast plate."""
     x0, x1, z0, z1 = DECK
     rams = [ram_geometry(xa) for xa in BOX_RIGHT]
     pz0, pz1, pits_x = pits()
@@ -185,6 +185,8 @@ def build_deck(g: GeoModel, p: Parts) -> list[dict]:
     # The console (the controller's) and the Energy Port's housing at the front edge, low enough to go under the boxes.
     g.box("console", (-6, DECK_Y, z0), (4, 19.4, z0 + 4), faces=NO_DOWN, bone=F)
     g.box("housing", (11, DECK_Y, z0), (21, 19.0, z0 + 5), faces=NO_DOWN, bone=F)
+    # The Item Port's housing on the deck's edge behind it (its cell), as low; its mouth in its outer face.
+    g.box("item_housing", (x1 - 5, DECK_Y, 11), (x1, 19.0, 21), faces=NO_DOWN, bone=F)
     # The blast plate behind the hinge, where the boosters' blast comes out of the boxes' backs.
     g.box("blast_plate", (x0, DECK_Y, 79.4), (x1, 14.4, z1), faces=NO_DOWN, bone=F)
     p.add("blast", "blast_plate")
@@ -302,6 +304,7 @@ def paint_model(g: GeoModel, p: Parts) -> tuple[Tex, Tex]:
     paint_deck(S, tex, p)
     L._console(S, g, tex, "console", lamps=(P.WARNING_RED, P.HAZARD_YELLOW))
     L._power_housing(S, g, tex, "housing", plug="north")
+    L._item_housing(S, g, tex, "item_housing", mouth="east")         # (its top is under the box: its mouth faces out)
     # The hinge: dark armour steel, its pins bright.
     S.paint(tex, p["hinge"] + p["barrel"] + p["lug"] + p["clevis"], ARMOUR)
     S.paint(tex, p["pin"], M.steel(tone=0.62, brushed=0.08))

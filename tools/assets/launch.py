@@ -9,9 +9,10 @@ the Basic Missile, and the two formed structures (GeckoLib).
   tools/assets/missiles.py).
 - Launch Silo, formed: a concrete pad with a hazard border and a flame trench under the missile (a grate in it),
   four hold-down posts, a control box at the front with a green CRT, the Energy Port's red-hatched housing at the
-  back; beside it a red lattice gantry tower 9 blocks tall with a platform on top and an arm reaching in to the
-  missile at its sixth level (the arm swings away during the countdown); the missile on the pad while one is loaded
-  (drawn by the game from its own model at the "missile" bone, its tail on the pad).
+  back and the Item Port's beside it (a hazard band, a grated loading mouth in its top); beside it a red lattice
+  gantry tower 9 blocks tall with a platform on top and an arm reaching in to the missile at its sixth level (the arm
+  swings away during the countdown); the missile on the pad while one is loaded (drawn by the game from its own model
+  at the "missile" bone, its tail on the pad).
 - Launch Computer, formed: an olive desk with a sloped console, two CRT monitors (glowing green), the Energy Port's
   red-hatched socket on its side, a Yagi antenna on top; behind it a grey lattice mast with a radar dish on a yoke,
   tilted up, that turns while the computer is powered.
@@ -367,6 +368,7 @@ def silo() -> None:
         g.box(posts[-1], (x, 14, z), (x + 2, 19, z + 2), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("console", (-5, 14, -7), (5, 22, -2), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("housing", (-5, 14, 35), (5, 19, 40), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("item_housing", (-21, 14, 35), (-11, 19, 40), faces=("north", "south", "east", "west", "up"), bone=F)
     tower = []
     for i, (x, z) in enumerate(((25, 9), (37, 9), (25, 21), (37, 21))):
         tower.append(f"post{i}")
@@ -470,6 +472,7 @@ def launch_complex() -> None:
         g.box(posts[-1], (x, 14, z), (x + 2, 20, z + 2), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("console", (-5, 14, -7), (5, 22, -2), faces=("north", "south", "east", "west", "up"), bone=F)
     g.box("housing", (-5, 14, 67), (5, 19, 72), faces=("north", "south", "east", "west", "up"), bone=F)
+    g.box("item_housing", (-21, 14, 67), (-11, 19, 72), faces=("north", "south", "east", "west", "up"), bone=F)
     # The service tower: column 5, rows 2-3 (x 40-56, z 24-56), 13 high.
     tower = []
     for i, (x, z) in enumerate(((40, 24), (54, 24), (40, 54), (54, 54))):
@@ -708,6 +711,35 @@ def _power_housing(S, g, tex, name: str, plug: str | None = "south") -> None:
         g.paint_all(tex, name, socket)
 
 
+def _item_mouth(S, inset: int = 1):
+    """An overlay: an Item Port's loading mouth, a dark opening {inset} texels in from the face's edges with galvanised
+    bars across it every other texel (across its long side), its rim's inner lip shadowed."""
+    bars = M.galvanized(tone=0.55, rust=0.1)
+
+    def fn(f, img):
+        b = f.border
+        ring = np.minimum(np.minimum(b["top"], b["bottom"]), np.minimum(b["left"], b["right"]))
+        hole = ring >= inset
+        img[hole, :3] = P.BLACK_PAINT.deep[:3]
+        along = b["left"] if f.shape[1] >= f.shape[0] else b["top"]
+        M.paste(img, S.material_on(f, bars), hole & ((np.floor(along) % 2) == 1))
+        M.darken(img, (ring >= inset - 1) & (ring < inset) & (b["top"] < b["bottom"]), 0.7)
+    return fn
+
+
+def _item_housing(S, g, tex, name: str, mouth: str = "up") -> None:
+    """The Item Port's housing (beside the Energy Port's): dark steel, a yellow-and-black band round its top (the power
+    housing's is red) and a loading mouth, where pipes and hoppers feed missiles in: a grate in its top, or, where its
+    top is hidden, in its {mouth} face, ringed with the hazard paint."""
+    S.paint(tex, name, M.painted(M.ARMOUR_RAMP, tone=0.55, wear=0.3, rust=0.08))
+    band = M.stripes(width=2, wear=0.3, under=M.STEEL_RAMP[2:7])
+    S.overlay(tex, name, lambda f, img: M.paste(img, S.material_on(f, band), f.border["top"] < 3),
+              only=tuple(d for d in SIDES if d != mouth))
+    if mouth != "up":
+        S.paint(tex, name, band, only=(mouth,))
+    S.overlay(tex, name, _item_mouth(S, inset=1), only=(mouth,))
+
+
 def _grating(S, tex, names, toe) -> None:
     """Galvanised walkway grating, its toe boards painted."""
     S.paint(tex, names, M.galvanized(tone=0.6))
@@ -750,6 +782,7 @@ def paint_silo(g: GeoModel, tex: Tex, pad, posts, tower, girders, hinge) -> None
     _hazard_posts(S, tex, posts, top=17)
     _console(S, g, tex, "console")
     _power_housing(S, g, tex, "housing")
+    _item_housing(S, g, tex, "item_housing")
     red = M.painted(GANTRY_RAMP, tone=0.6, wear=0.18, rust=0.08, streaks=0.05)
     S.paint(tex, tower + girders + ["hinge_spine", "arm_sleeve"], red)
     S.paint(tex, "arm_beam", M.galvanized(tone=0.6, rust=0.08))
@@ -792,6 +825,7 @@ def paint_complex(g: GeoModel, tex: Tex, deck, wedge, pipes, posts, tower, girde
     _hazard_posts(S, tex, posts, top=18)
     _console(S, g, tex, "console", lamps=(RED, YELLOW))
     _power_housing(S, g, tex, "housing", plug=None)
+    _item_housing(S, g, tex, "item_housing")
     grey = M.painted(M.GREY_PAINT_RAMP, tone=0.58, wear=0.15, rust=0.08, streaks=0.05)
     S.paint(tex, tower + girders + braces + ["mast", "spine"], grey)
     _grating(S, tex, decks + ["roof"], M.ORANGE_PAINT_RAMP)

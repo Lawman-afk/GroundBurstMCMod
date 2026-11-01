@@ -179,7 +179,8 @@ final class DesignatorTests {
      * Left clicks while lasing, on the network, one launcher at a time: the designator works with the first
      * laser-guided silo by default, and a click arms only that one on the spot; the mouse wheel picks the next (the pick
      * kept on the designator) and a click arms it too; the GPS silo is never touched; a click on the picked one, now
-     * armed, launches it alone, and the pick then moves on to the next still loaded.
+     * armed, launches it alone, and the pick then moves on to the next still loaded; a sneaking click disarms that one,
+     * leaving it aimed where it was.
      */
     private static void designates(GameTestHelper helper) {
         LaunchTests.floor(helper);
@@ -209,7 +210,7 @@ final class DesignatorTests {
             p.setItemInHand(InteractionHand.MAIN_HAND, d);
             p.startUsingItem(InteractionHand.MAIN_HAND);
             item.onUseTick(level, p, d, 1000);                            // lasing the wall
-            LaserDesignatorItem.click(p);                                 // designate, with the first: a
+            LaserDesignatorItem.click(p, false);                          // designate, with the first: a
             helper.assertTrue(a.armed() && a.target() != null && a.target().getX() == spot.getX() && a.target().getZ() == spot.getZ(),
                     "the first laser-guided silo is armed on the spot: " + a.target() + " for " + spot);
             helper.assertTrue(!b.armed() && !gps.armed(), "only that one");
@@ -229,14 +230,14 @@ final class DesignatorTests {
         helper.runAfterDelay(9, () -> {                                 // the next click (clicks closer than 4 ticks are one)
             ServerPlayer p = holder[0];
             item.onUseTick(level, p, d, 1000);
-            LaserDesignatorItem.click(p);                                 // designate, with b
+            LaserDesignatorItem.click(p, false);                          // designate, with b
             helper.assertTrue(b.armed() && a.armed() && !gps.armed(), "b armed on the spot too, the GPS one still not");
             helper.assertTrue(LaunchNetwork.of(level).armed(net).size() == 2, "the sight is told of both aims");
         });
         helper.runAfterDelay(15, () -> {
             ServerPlayer p = holder[0];
             item.onUseTick(level, p, d, 1000);
-            LaserDesignatorItem.click(p);                                 // b is armed: this click launches it
+            LaserDesignatorItem.click(p, false);                          // b is armed: this click launches it
             helper.assertTrue(b.countdown() >= 0, "fire called: b counts down");
             helper.assertTrue(a.countdown() < 0 && a.armed(), "a does not: it stays armed");
             helper.assertTrue(gps.countdown() < 0, "nor the GPS one");
@@ -244,6 +245,16 @@ final class DesignatorTests {
             helper.assertTrue(last.kind() == LaunchNetwork.EventKind.FIRE_CALLED && last.member().equals(b.getBlockPos()), "the log has it: " + last);
             LaunchNetwork.Member next = LaunchNetwork.of(level).laserSelection(net, d.get(GBDataComponents.DESIGNATOR_PICK.get()));
             helper.assertTrue(next != null && next.pos.equals(a.getBlockPos()), "the pick moves on from b, firing, round to a");
+        });
+        helper.runAfterDelay(21, () -> {
+            ServerPlayer p = holder[0];
+            item.onUseTick(level, p, d, 1000);
+            LaserDesignatorItem.click(p, true);                           // sneaking: the pick, a, armed, is disarmed
+            helper.assertTrue(!a.armed() && a.countdown() < 0, "a sneaking click disarms the picked launcher");
+            helper.assertTrue(a.target() != null && a.target().getX() == spot.getX() && a.target().getZ() == spot.getZ(), "still aimed where it was");
+            helper.assertTrue(LaunchNetwork.of(level).armed(net).stream().noneMatch(m -> m.pos.equals(a.getBlockPos())),
+                    "its aim leaves the sight's armed ones");
+            helper.assertTrue(b.countdown() >= 0, "b, launched, counts on");
             helper.setBlock(SILO, Blocks.AIR);                             // scrubbed: no missile left flying after the test
             helper.setBlock(SILO_B, Blocks.AIR);
             helper.succeed();

@@ -15,9 +15,18 @@
 - **Left-click** while lasing: if the picked launcher is not armed, it is aimed at the spot and armed; if it is armed,
   it launches, and its missile follows your laser all the way in, wherever you point it: onto a moving target, or
   another one.
-- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere at the point you clicked.
+- **Sneak and left-click** to disarm the picked launcher (it stays aimed where it was).
+- Zoomed in, every armed launcher of your network shows where it is aimed: a glowing sphere centred on the point you
+  clicked.
 - It runs on a 40,000 FE charge (a hundred seconds of lasing; a Battery Charger fills it). Smoke or gas in the way
   breaks the beam, and an EMP knocks it out for a while.
+
+### Launchers
+- Every launcher has an **Item Port** now: the Launch Silo, the Launch Complex and the Missile Silo beside their Energy
+  Port, the Cruise Missile Launcher behind its Energy Port. Pipes and hoppers load missiles through it straight into the
+  launch slot, so a launcher reloads itself after each launch. It takes only missiles that launcher can fire, and
+  nothing comes out of it. Launchers you built before still work as they are; put an Item Port in that spot to
+  automate them.
 
 ## 0.4.0 — 2026-10-31
 

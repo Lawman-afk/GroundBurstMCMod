@@ -220,8 +220,9 @@ public final class FxPhotographer {
                 // Left clicks with real input, one launcher at a time: two laser-guided silos 150 blocks behind the
                 // camera; #1 (the default) armed on pillbox A (clock 20); the laser swung onto pillbox B; the wheel picks
                 // #2 (45), armed on B (55): a sphere on each target; #2, armed, launched by the next click (76; ten
-                // seconds' countdown), the pick moving on to #1; #2's missile comes down on B.
-                new Scene("designator_call", "designator", 40, 1.5f, List.of(26, 52, 62, 82, 330, 360, 380, 392)),
+                // seconds' countdown), the pick moving on to #1; a sneaking click disarms #1 (100), its sphere gone;
+                // #2's missile comes down on B.
+                new Scene("designator_call", "designator", 40, 1.5f, List.of(26, 52, 62, 82, 104, 330, 360, 380, 392)),
                 new Scene("designator_side", "designator", 200, 0.3f, List.of(30)),
                 new Scene("see_through_low", "see_through", 7, 2, List.of(20)),
                 // The missile assemblers (DESIGN.md §10.4): all four at work side by side, each close up as it lays its
@@ -2259,6 +2260,12 @@ public final class FxPhotographer {
             }
             if (clock == 45) {
                 DesignatorScope.scroll(mc, -1);                // the wheel (down): the next launcher, #2
+            }
+            if (clock == 96 || clock == 106) {
+                mc.options.keyShift.setDown(clock == 96);      // sneaking, the pick moved on to #1 (armed on A) ...
+            }
+            if (clock == 100) {
+                net.minecraft.client.KeyMapping.click(mc.options.keyAttack.getKey());   // ... a left click disarms it
             }
         }
         if (scene.profile().equals("designator") && step >= 0 && clock == 4) {
