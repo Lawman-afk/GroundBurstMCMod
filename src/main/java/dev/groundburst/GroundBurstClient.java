@@ -75,6 +75,7 @@ public class GroundBurstClient {
         event.register(GBMenus.INDUSTRIAL_PRESS.get(), MachineScreen::new);
         event.register(GBMenus.ELECTROLYTIC_SEPARATOR.get(), MachineScreen::new);
         event.register(GBMenus.CRYOGENIC_CONDENSER.get(), MachineScreen::new);
+        event.register(GBMenus.CRYSTAL_PULLER.get(), MachineScreen::new);
         event.register(GBMenus.CHEMICAL_PLANT.get(), MachineScreen::new);
         event.register(GBMenus.WATER_PUMP.get(), MachineScreen::new);
         event.register(GBMenus.DIESEL_GENERATOR.get(), MachineScreen::new);
@@ -181,6 +182,7 @@ public class GroundBurstClient {
         event.registerBlockEntityRenderer(GBBlockEntities.INDUSTRIAL_PRESS.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.INDUSTRIAL_PRESS.get(), 2));
         event.registerBlockEntityRenderer(GBBlockEntities.ELECTROLYTIC_SEPARATOR.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.ELECTROLYTIC_SEPARATOR.get(), 1));
         event.registerBlockEntityRenderer(GBBlockEntities.CRYOGENIC_CONDENSER.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.CRYOGENIC_CONDENSER.get(), 2));
+        event.registerBlockEntityRenderer(GBBlockEntities.CRYSTAL_PULLER.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.CRYSTAL_PULLER.get(), 2));
         event.registerBlockEntityRenderer(GBBlockEntities.WATER_PUMP.get(), ctx -> new MachineGeoRenderer<>(ctx, GBBlockEntities.WATER_PUMP.get(), 1));
         // Multiblocks: the formed model reaches beyond the controller (accelerator ring 8). The Fission Reactor is built of
         // ordinary blocks: its renderer only fills the core with coolant.

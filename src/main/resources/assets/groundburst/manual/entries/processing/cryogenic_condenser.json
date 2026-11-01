@@ -5,13 +5,15 @@
   "items": [
     "groundburst:cryogenic_condenser",
     "groundburst:oxygen_membrane",
-    "groundburst:nitrogen_membrane"
+    "groundburst:nitrogen_membrane",
+    "groundburst:argon_sieve",
+    "groundburst:argon_canister"
   ],
   "pages": [
     {
       "type": "spotlight",
       "item": "groundburst:cryogenic_condenser",
-      "text": "Liquefies gases out of the air. The **membrane** in its slot picks the gas: liquid oxygen or liquid nitrogen. Membranes are never used up. Draws 100 FE a tick.\n\nCryogenic liquids freeze anything standing in them."
+      "text": "Draws gases out of the air. The **membrane** in its slot picks the gas: liquid oxygen or liquid nitrogen, or with the **argon molecular sieve**, argon (a quarter as fast: argon is 1% of the air). Membranes and sieves are never used up. Draws 100 FE a tick.\n\nCryogenic liquids freeze anything standing in them."
     },
     {
       "type": "crafting",
@@ -26,6 +28,11 @@
     {
       "type": "crafting",
       "item": "groundburst:nitrogen_membrane",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:argon_sieve",
       "text": ""
     },
     {

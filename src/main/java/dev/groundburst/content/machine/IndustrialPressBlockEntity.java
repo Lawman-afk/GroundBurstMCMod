@@ -40,14 +40,15 @@ public class IndustrialPressBlockEntity extends ProcessingBlockEntity implements
         return new MachineMenu(GBMenus.INDUSTRIAL_PRESS.get(), containerId, inventory, this, MachineLayouts.INDUSTRIAL_PRESS, this.data);
     }
 
-    private static final java.util.List<String> DIE_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister");
+    private static final java.util.List<String> DIE_BONES = java.util.List.of("die_plate", "die_rod", "die_wire", "die_canister", "die_saw");
 
     /** The die in the catalyst slot shows on the press bed; others stay hidden. */
     @Override
     public java.util.Set<String> hiddenBones() {
         ItemStack die = this.inventory.getItem(catalystSlot());
         String shown = die.is(GBParts.PLATE_DIE.get()) ? "die_plate" : die.is(GBParts.ROD_DIE.get()) ? "die_rod"
-                : die.is(GBParts.WIRE_DIE.get()) ? "die_wire" : die.is(GBParts.CANISTER_DIE.get()) ? "die_canister" : "";
+                : die.is(GBParts.WIRE_DIE.get()) ? "die_wire" : die.is(GBParts.CANISTER_DIE.get()) ? "die_canister"
+                : die.is(GBParts.DIAMOND_WIRE_SAW.get()) ? "die_saw" : "";
         java.util.Set<String> hidden = new java.util.HashSet<>(DIE_BONES);
         hidden.remove(shown);
         return hidden;

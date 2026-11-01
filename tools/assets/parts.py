@@ -468,7 +468,7 @@ def _die_region(px: float, py: float) -> tuple[str, float, float]:
     return "", 0, 0
 
 
-def die(name: str, band, inside) -> None:
+def die(name: str, band, inside, wire=None) -> None:
     """A hardened tool-steel die block: a square slab seen from above at 2:1 with its cavity cut into the centre of the
     top face and a colour band round its flanks so each die is recognisable at a glance. {@code inside(u, v)} says
     whether a point of the top face (0..DIE_A each way) is part of the cavity."""
@@ -487,6 +487,8 @@ def die(name: str, band, inside) -> None:
                     # In the cavity you see its far walls (lit) and its dark floor.
                     wall = not inside(u - 0.9, v) or not inside(u, v - 0.9)
                     colour = DIE_STEEL[3] if wall else DIE_STEEL[1]
+                    if wire is not None and wire(u, v):
+                        colour = band[5]                                          # a wire strung across the cavity
                 elif inside(u - 0.9, v) or inside(u, v - 0.9):
                     colour = DIE_STEEL[6]                                     # bright lip on the cavity's near edge
             else:
@@ -511,6 +513,9 @@ def dies() -> None:
     die("wire_die", COPPER, lambda u, v: abs(v - c) <= 1.0 and any(abs(u - hu) <= 0.85 for hu in (c - 2.1, c, c + 2.1)))
     # Canister die: a wide square cavity.
     die("canister_die", P.CHERENKOV, lambda u, v: abs(u - c) <= 1.85 and abs(v - c) <= 1.85)
+    # Diamond wire saw: a long slot with a web of diamond-coated wires strung across it.
+    die("diamond_wire_saw", P.CRYO, lambda u, v: 0.8 <= u <= DIE_A - 0.8 and abs(v - c) <= 1.9,
+        wire=lambda u, v: (u - 0.8) % 1.4 < 0.55)
 
 
 def build() -> None:

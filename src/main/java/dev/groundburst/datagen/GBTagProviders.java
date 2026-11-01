@@ -114,7 +114,7 @@ public final class GBTagProviders {
             tag(BlockTags.NEEDS_IRON_TOOL).add(GBResources.VOIDSTONE.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(GBMachines.COMBUSTION_GENERATOR.block().key(), GBMachines.ORE_CRUSHER.block().key(),
                     GBMachines.ARC_FURNACE.block().key(), GBMachines.INDUSTRIAL_PRESS.block().key(),
-                    GBMachines.ELECTROLYTIC_SEPARATOR.block().key(), GBMachines.CRYOGENIC_CONDENSER.block().key(),
+                    GBMachines.ELECTROLYTIC_SEPARATOR.block().key(), GBMachines.CRYOGENIC_CONDENSER.block().key(), GBMachines.CRYSTAL_PULLER.block().key(),
                     GBMachines.CHEMICAL_PLANT.block().key(), GBMachines.WATER_PUMP.block().key(),
                     GBMachines.CIRCUIT_FABRICATOR.block().key(), GBMachines.GAS_CENTRIFUGE.block().key(),
                     GBMachines.FUSION_FUEL_SYNTHESIZER.block().key(), GBMachines.EXOTIC_MATTER_FABRICATOR.block().key(),
@@ -287,7 +287,8 @@ public final class GBTagProviders {
             item("circuits/basic", GBParts.BASIC_CIRCUIT, GBTags.commonItem("circuits"));
             item("circuits/advanced", GBParts.ADVANCED_CIRCUIT, GBTags.commonItem("circuits"));
             tag(GBTags.BASIC_CIRCUITS).add(GBParts.HANDMADE_CIRCUIT_BOARD.key()).addTag(GBTags.commonItem("circuits/basic"));
-            tag(GBTags.PRESS_DIES).add(GBParts.PLATE_DIE.key(), GBParts.ROD_DIE.key(), GBParts.WIRE_DIE.key(), GBParts.CANISTER_DIE.key());
+            tag(GBTags.PRESS_DIES).add(GBParts.PLATE_DIE.key(), GBParts.ROD_DIE.key(), GBParts.WIRE_DIE.key(), GBParts.CANISTER_DIE.key(),
+                    GBParts.DIAMOND_WIRE_SAW.key());
             tag(GBTags.RADIOACTIVE.item()).add(GBResources.RAW_URANIUM.key(), GBResources.URANIUM_INGOT.key(), GBResources.URANIUM_DUST.key(),
                     dev.groundburst.content.nuclear.GBNuclear.ENRICHED_URANIUM_NUGGET.key(), dev.groundburst.content.nuclear.GBNuclear.ENRICHED_URANIUM_INGOT.key(),
                     dev.groundburst.content.nuclear.GBNuclear.DEPLETED_URANIUM_DUST.key(), dev.groundburst.content.nuclear.GBNuclear.DEPLETED_URANIUM_INGOT.key(),

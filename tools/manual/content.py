@@ -202,9 +202,9 @@ entry("resources/ores", "Ores", "uranium_ore", [
     "uranium_ore", "deepslate_uranium_ore", "raw_uranium", "lead_ore", "deepslate_lead_ore", "raw_lead", "lithium_ore",
     "deepslate_lithium_ore", "raw_lithium", "rare_earth_ore", "deepslate_rare_earth_ore", "raw_rare_earth", "tungsten_ore",
     "deepslate_tungsten_ore", "raw_tungsten", "sulfur_ore", "deepslate_sulfur_ore", "nether_sulfur_ore", "saltpeter_ore",
-    "deepslate_saltpeter_ore", "sandstone_saltpeter_ore"], [
+    "deepslate_saltpeter_ore", "sandstone_saltpeter_ore", "fluorite_ore", "deepslate_fluorite_ore", "fluorite"], [
     text("""
-Seven new ores generate in new chunks. Each has a deepslate form; sulfur also grows in the Nether and saltpeter in desert and badlands sandstone. Tungsten is the rarest; lithium and rare earths are richer in the mountains, uranium in the badlands.
+Eight new ores generate in new chunks. Each has a deepslate form; sulfur also grows in the Nether and saltpeter in desert and badlands sandstone. Tungsten is the rarest; lithium and rare earths are richer in the mountains, uranium in the badlands.
 """),
     table([
         ["Uranium", "y -48 to 24"],
@@ -219,9 +219,10 @@ Seven new ores generate in new chunks. Each has a deepslate form; sulfur also gr
         ["  also", "the Nether"],
         ["Saltpeter", "y 0 to 80"],
         ["  also", "deserts"],
+        ["Fluorite", "y -24 to 72"],
     ], "Where they are"),
     text("""
-Uranium, lead, lithium, rare earths and tungsten drop **raw ores**: crush them in an [Ore Crusher](processing/ore_crusher) for two dusts each. Sulfur and saltpeter drop their dusts directly.
+Uranium, lead, lithium, rare earths and tungsten drop **raw ores**: crush them in an [Ore Crusher](processing/ore_crusher) for two dusts each. Sulfur and saltpeter drop their dusts directly, fluorite its purple and green crystals (see [Silicon and chips](components/semiconductors)).
 
 Vanilla's cinnabar gives cinnabar dust, the source of mercury. Each ore can be turned off in the server config.
 """),
@@ -401,15 +402,17 @@ Splits deuterium gas out of water. Pipe water into its water tank (a [Water Pump
     machine("electrolysis"),
 ])
 
-entry("processing/cryogenic_condenser", "Cryogenic Condenser", "cryogenic_condenser", ["cryogenic_condenser", "oxygen_membrane", "nitrogen_membrane"], [
+entry("processing/cryogenic_condenser", "Cryogenic Condenser", "cryogenic_condenser", ["cryogenic_condenser", "oxygen_membrane", "nitrogen_membrane",
+                                                                                   "argon_sieve", "argon_canister"], [
     spot("cryogenic_condenser", """
-Liquefies gases out of the air. The **membrane** in its slot picks the gas: liquid oxygen or liquid nitrogen. Membranes are never used up. Draws 100 FE a tick.
+Draws gases out of the air. The **membrane** in its slot picks the gas: liquid oxygen or liquid nitrogen, or with the **argon molecular sieve**, argon (a quarter as fast: argon is 1% of the air). Membranes and sieves are never used up. Draws 100 FE a tick.
 
 Cryogenic liquids freeze anything standing in them.
 """),
     craft("cryogenic_condenser"),
     craft("oxygen_membrane"),
     craft("nitrogen_membrane"),
+    craft("argon_sieve"),
     machine("cryo_condensing"),
 ])
 
@@ -496,6 +499,22 @@ Makes every circuit, from basic to quantum, plus sensor arrays and superconducti
     machine("fabricating"),
 ])
 
+entry("processing/crystal_puller", "Crystal Puller", "crystal_puller", ["crystal_puller", "silicon_boule", "silicon_wafer", "diamond_wire_saw"], [
+    spot("crystal_puller", """
+Grows the single crystals of silicon that chips are made on. Four **polysilicon** melt in a **quartz crucible** under **argon** (1,000 mB a crystal, piped or poured into its tank), and a seed is drawn slowly up out of the melt, turning: in a minute, a **silicon boule**. Each crystal takes a crucible, as in a real puller. Draws 160 FE a tick.
+
+The crystal shows in the window of its pull chamber as it grows.
+"""),
+    craft("crystal_puller"),
+    machine("crystal_pulling"),
+    text("""
+An [Industrial Press](processing/industrial_press) with a **Diamond Wire Saw** in its die slot saws a boule into **eight wafers**. The saw is never used up.
+"""),
+    craft("diamond_wire_saw"),
+    machine("pressing", "", item="silicon_wafer"),
+    links(["components/semiconductors", "processing/cryogenic_condenser"]),
+])
+
 entry("processing/gas_centrifuge", "Gas Centrifuge", "gas_centrifuge", ["gas_centrifuge"], [
     spot("gas_centrifuge", """
 Pipe uranium hexafluoride gas from the [Chemical Plant](processing/chemical_plant) in to get **enriched uranium nuggets** and depleted uranium dust. Draws 50 FE a tick.
@@ -565,6 +584,40 @@ Four tiers, each built on the one below in the [Circuit Fabricator](processing/c
     machine("fabricating", "", item="military_circuit"),
     machine("fabricating", "", item="quantum_circuit"),
     machine("fabricating", "", item="sensor_array"),
+])
+
+entry("components/semiconductors", "Silicon and chips", "silicon_wafer", ["silicon", "polysilicon", "quartz_crucible", "red_phosphorus",
+                                                                       "ceramic_package", "fluorite_dust", "hydrogen_canister",
+                                                                       "hydrogen_chloride_canister", "trichlorosilane_canister",
+                                                                       "photoresist_canister", "hydrofluoric_acid_canister"], [
+    text("""
+Chips are made on silicon purer than anything else you will make, by the steps real fabs use:
+
+1. **Silicon:** quartz reduced with coal in the [Arc Furnace](processing/arc_furnace).
+2. **Trichlorosilane:** silicon dissolved in **hydrogen chloride** (hydrogen burnt in chlorine) in the [Chemical Plant](processing/chemical_plant).
+3. **Polysilicon:** trichlorosilane broken down under hydrogen, pure silicon laid down.
+4. **Wafers:** a crystal grown in the [Crystal Puller](processing/crystal_puller), sawn on the press.
+"""),
+    machine("arc_smelting", "", item="silicon"),
+    machine("chemistry", "", fluid="hydrogen_chloride"),
+    machine("chemistry", "", fluid="trichlorosilane"),
+    machine("chemistry", "", item="polysilicon"),
+    text("""
+**Hydrogen** comes from coal gasified with steam and **liquid oxygen** from a [Cryogenic Condenser](processing/cryogenic_condenser); without the oxygen the plant makes synthetic fuel instead. The condenser also draws the **argon** the crystals grow under.
+
+The crucible each crystal grows in is fused from quartz and sand.
+"""),
+    machine("chemistry", "", fluid="hydrogen"),
+    machine("arc_smelting", "", item="quartz_crucible"),
+    text("""
+The chips are printed with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Military chips are sealed in a **ceramic package**: clay fired round gold leads.
+
+Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
+"""),
+    machine("chemistry", "", fluid="photoresist"),
+    machine("chemistry", "", fluid="hydrofluoric_acid"),
+    machine("arc_smelting", "", item="red_phosphorus"),
+    machine("arc_smelting", "", item="ceramic_package"),
 ])
 
 entry("components/parts", "Machine parts", "machine_frame", ["machine_frame", "electric_motor", "servo", "heating_element", "pressure_vessel",

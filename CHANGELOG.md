@@ -9,8 +9,12 @@
   hydrogen and chlorine) into **trichlorosilane**, then with hydrogen into **polysilicon**.
 - **Hydrogen** from coal, water and liquid oxygen; **argon** drawn from the air by the new **Argon Molecular Sieve** in
   the Cryogenic Condenser.
-- **Photoresist**, **red phosphorus**, the **Quartz Crucible** and the **Ceramic Package**: what the chips will be made
-  with, once the Crystal Puller and the Clean Room arrive.
+- **Crystal Puller**, a new two-block machine: polysilicon melted in a quartz crucible under argon grows a **silicon
+  boule** in a minute; watch the crystal rise in its sight glass while the melt glows in its viewport.
+- A **Diamond Wire Saw** in the Industrial Press's die slot saws a boule into eight **silicon wafers**.
+- **Photoresist**, **red phosphorus** and the **Ceramic Package**: what the chips will be made with, once the Clean Room
+  arrives.
+- The **Cryogenic Condenser** takes a basic circuit now instead of an advanced one.
 - Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
 
 ### Laser Designator

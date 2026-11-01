@@ -1,0 +1,28 @@
+{
+  "type": "groundburst:crystal_pulling",
+  "energy_per_tick": 160,
+  "fluids": [
+    {
+      "amount": 1000,
+      "ingredient": "#c:argon"
+    }
+  ],
+  "inputs": [
+    {
+      "count": 4,
+      "ingredient": "groundburst:polysilicon"
+    },
+    {
+      "count": 1,
+      "ingredient": "groundburst:quartz_crucible"
+    }
+  ],
+  "outputs": [
+    {
+      "item": {
+        "id": "groundburst:silicon_boule"
+      }
+    }
+  ],
+  "time": 1200
+}

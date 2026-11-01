@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "A": "#c:circuits/advanced",
+    "A": "#groundburst:basic_circuits",
     "F": "groundburst:machine_frame",
     "M": "groundburst:electric_motor",
     "P": "#c:plates/copper",

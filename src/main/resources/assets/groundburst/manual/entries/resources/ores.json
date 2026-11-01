@@ -23,12 +23,15 @@
     "groundburst:nether_sulfur_ore",
     "groundburst:saltpeter_ore",
     "groundburst:deepslate_saltpeter_ore",
-    "groundburst:sandstone_saltpeter_ore"
+    "groundburst:sandstone_saltpeter_ore",
+    "groundburst:fluorite_ore",
+    "groundburst:deepslate_fluorite_ore",
+    "groundburst:fluorite"
   ],
   "pages": [
     {
       "type": "text",
-      "text": "Seven new ores generate in new chunks. Each has a deepslate form; sulfur also grows in the Nether and saltpeter in desert and badlands sandstone. Tungsten is the rarest; lithium and rare earths are richer in the mountains, uranium in the badlands."
+      "text": "Eight new ores generate in new chunks. Each has a deepslate form; sulfur also grows in the Nether and saltpeter in desert and badlands sandstone. Tungsten is the rarest; lithium and rare earths are richer in the mountains, uranium in the badlands."
     },
     {
       "type": "table",
@@ -80,6 +83,10 @@
         [
           "  also",
           "deserts"
+        ],
+        [
+          "Fluorite",
+          "y -24 to 72"
         ]
       ],
       "text": "",
@@ -87,7 +94,7 @@
     },
     {
       "type": "text",
-      "text": "Uranium, lead, lithium, rare earths and tungsten drop **raw ores**: crush them in an [Ore Crusher](processing/ore_crusher) for two dusts each. Sulfur and saltpeter drop their dusts directly.\n\nVanilla's cinnabar gives cinnabar dust, the source of mercury. Each ore can be turned off in the server config."
+      "text": "Uranium, lead, lithium, rare earths and tungsten drop **raw ores**: crush them in an [Ore Crusher](processing/ore_crusher) for two dusts each. Sulfur and saltpeter drop their dusts directly, fluorite its purple and green crystals (see [Silicon and chips](components/semiconductors)).\n\nVanilla's cinnabar gives cinnabar dust, the source of mercury. Each ore can be turned off in the server config."
     },
     {
       "type": "spotlight",

@@ -146,7 +146,7 @@ public class GBBlockLoot extends BlockLootSubProvider {
         for (var pipe : dev.groundburst.content.fluid.GBFluids.pipes()) {
             dropSelf(pipe.block().get());
         }
-        for (var tall : java.util.List.of(GBMachines.ARC_FURNACE, GBMachines.INDUSTRIAL_PRESS, GBMachines.CRYOGENIC_CONDENSER,
+        for (var tall : java.util.List.of(GBMachines.ARC_FURNACE, GBMachines.INDUSTRIAL_PRESS, GBMachines.CRYOGENIC_CONDENSER, GBMachines.CRYSTAL_PULLER,
                 GBMachines.GAS_CENTRIFUGE, GBMachines.EXOTIC_MATTER_FABRICATOR, GBMachines.DECONTAMINATION_SHOWER,
                 dev.groundburst.content.defence.GBDefence.BATTERY)) {
             add(tall.block().get(), createSinglePropConditionTable(tall.block().get(), TallMachineBlock.HALF, DoubleBlockHalf.LOWER));

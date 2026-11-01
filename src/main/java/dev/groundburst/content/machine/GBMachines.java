@@ -49,6 +49,12 @@ public final class GBMachines {
                     Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 16, 14)),
                     Shapes.or(Block.box(2, 0, 2, 14, 13, 14), Block.box(5, 13, 5, 11, 16, 11))));
 
+    /** Grows silicon crystals (DESIGN.md §8.1): a furnace chamber, its isolation valve, the pull chamber and head. */
+    public static final WithItem<TallMachineBlock> CRYSTAL_PULLER = tallMachine("crystal_puller", "Crystal Puller",
+            p -> new TallMachineBlock(p, GBBlockEntities.CRYSTAL_PULLER, true,
+                    Shapes.or(Block.box(0, 0, 0, 16, 3, 16), Block.box(2, 3, 2, 14, 15, 14), Block.box(5, 15, 5, 11, 16, 11)),
+                    Shapes.or(Block.box(5, 0, 5, 11, 12, 11), Block.box(4.5, 11, 4.5, 11.5, 15, 11.5))));
+
     // Slice 5 (DESIGN.md §8): circuits, enrichment, fusion fuel, exotic matter.
     public static final WithItem<MachineBlock> CIRCUIT_FABRICATOR = machine("circuit_fabricator", "Circuit Fabricator",
             p -> new MachineBlock(p, GBBlockEntities.CIRCUIT_FABRICATOR, true, Shapes.block()));

@@ -46,6 +46,9 @@ public final class GBBlockEntities {
                     dev.groundburst.content.fluid.GBFluids.CREATIVE_FLUID_TANK.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CryogenicCondenserBlockEntity>> CRYOGENIC_CONDENSER =
             BLOCK_ENTITIES.register("cryogenic_condenser", () -> new BlockEntityType<>(CryogenicCondenserBlockEntity::new, GBMachines.CRYOGENIC_CONDENSER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CrystalPullerBlockEntity>> CRYSTAL_PULLER =
+            BLOCK_ENTITIES.register("crystal_puller", () -> new BlockEntityType<>(dev.groundburst.content.machine.CrystalPullerBlockEntity::new,
+                    GBMachines.CRYSTAL_PULLER.block().get()));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CircuitFabricatorBlockEntity>> CIRCUIT_FABRICATOR =
             BLOCK_ENTITIES.register("circuit_fabricator", () -> new BlockEntityType<>(dev.groundburst.content.machine.CircuitFabricatorBlockEntity::new,
@@ -160,6 +163,7 @@ public final class GBBlockEntities {
         machine(event, dev.groundburst.content.defence.GBDefence.COMPLEX_ENTITY.get());
         tallMachine(event, GBMachines.ARC_FURNACE.block().get());
         tallMachine(event, GBMachines.CRYOGENIC_CONDENSER.block().get());
+        tallMachine(event, GBMachines.CRYSTAL_PULLER.block().get());
         tallMachine(event, GBMachines.INDUSTRIAL_PRESS.block().get());
         tallMachine(event, GBMachines.GAS_CENTRIFUGE.block().get());
         tallMachine(event, GBMachines.EXOTIC_MATTER_FABRICATOR.block().get());

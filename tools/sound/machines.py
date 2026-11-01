@@ -80,6 +80,8 @@ FIT, ENVELOPE = 0.25, 0.5
 #: Loudness against the sound replaced, where the user asked for a change (dB): the charger calmer, the centrifuge's
 #: whine softer (it was most of the old one's loudness).
 LEVEL_DB = {"machine/battery_charger": -5.0, "machine/gas_centrifuge": -1.5}
+#: Machines made after the synthesized set, with no old sound of their own: each is as loud as a kin's.
+LIKE = {"machine/crystal_puller": "machine/electrolytic_separator"}
 
 
 def take(name: str, speed: float = 1.0, aligned: bool = False) -> np.ndarray:
@@ -235,6 +237,12 @@ def electrolytic_separator() -> Cycle:
 def cryogenic_condenser() -> Cycle:
     """A cryogenic condenser: the compressor's pistons, and cryogen boiling off with a sigh every 2 s."""
     return steady((take("compressor"), -18)).put(take("nitrogen"), 0.6, -24).put(take("nitrogen"), 2.6, -24)
+
+
+def crystal_puller() -> Cycle:
+    """A Czochralski crystal puller: its heater's supply transformer humming, the cooling water running through the
+    furnace's jacket under it (a water pump's flow, its motor filtered away)."""
+    return steady((take("hum"), -20), (S.lowpass(take("pump"), 900), -27))
 
 
 def water_pump() -> Cycle:
@@ -424,22 +432,27 @@ LOOPS = {"machine/combustion_generator": combustion_generator, "machine/arc_furn
          "machine/chemical_plant": chemical_plant, "machine/circuit_fabricator": circuit_fabricator,
          "machine/canning_machine": canning_machine, "machine/diesel_generator": diesel_generator,
          "machine/battery_charger": battery_charger, "machine/fusion_reactor": fusion_reactor,
-         "machine/particle_accelerator": particle_accelerator, "machine/assembly_bench": assembly_bench}
+         "machine/particle_accelerator": particle_accelerator, "machine/assembly_bench": assembly_bench,
+         "machine/crystal_puller": crystal_puller}
 
 
-def machine_set() -> dict[str, np.ndarray]:
+def machine_set(only: set[str] | None = None) -> dict[str, np.ndarray]:
     """Every machine sound made from recordings, each as loud as the synthesized one it replaces (the Exotic Matter
     Fabricator, the Singularity Reactor and its collapse, the Ore Crusher and the RTG stay synthesized)."""
     import loudness  # noqa: PLC0415
     out = {}
     for rel, make in LOOPS.items():
+        if only and rel not in only:
+            continue
         cycle = make()
         loop = cycle.close()
         if cycle.steady:
             dip = seam_dip(loop)
             assert dip < 4.0, f"{rel} is {dip:.1f} dB quieter across its seam than as a whole"
-        target = loudness.measure_array(tiled(old(rel), 2), S.SR)["S-max"] + LEVEL_DB.get(rel, 0.0)
+        target = loudness.measure_array(tiled(old(LIKE.get(rel, rel)), 2), S.SR)["S-max"] + LEVEL_DB.get(rel, 0.0)
         out[rel] = level_loop(loop, target)
+    if only:
+        return out
     for rel, x in {"machine/assembly_clank": assembly_clank(), "reactor/alarm": reactor_alarm(), **geiger_clicks()}.items():
         out[rel] = R.loud_as(x, loudness.measure_array(old(rel), S.SR)["S-max"] + LEVEL_DB.get(rel, 0.0))
     return out
@@ -450,6 +463,7 @@ if __name__ == "__main__":
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from gb import paths  # noqa: E402
-    for rel, x in machine_set().items():
+    # Names given: make only those (e.g. `machines.py machine/crystal_puller`); none: the whole set.
+    for rel, x in machine_set(set(sys.argv[1:]) or None).items():
         S.save_ogg(x, paths.SOUNDS / f"{rel}.ogg")
         print(f"{rel}: {len(x) / S.SR:.2f} s")

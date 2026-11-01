@@ -42,7 +42,8 @@ def build() -> tuple[GeoModel, Tex, Tex]:
     add("plinth", g.box("plinth", (-8, 0, -8), (8, 2, 8), bone=F))
     add("bed", g.box("bed", (-6.5, 2, -7), (6.5, 7, 4), bone=F))
     # One die block per die type; the renderer shows only the die loaded in the press (none when empty).
-    DIES = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV}
+    DIES = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV,
+            "die_saw": P.CRYO}
     g.exclusive = [set(DIES)]
     for name in DIES:
         g.bone(name, pivot=(0, 7, -1.5), parent="frame")
@@ -110,6 +111,10 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
                 elif name == "die_wire":
                     for dx in (-2, 0, 2):
                         t.px(cx + dx, cy, cav)                           # drawing holes
+                elif name == "die_saw":
+                    t.rect(x + 1, y + 1, w - 2, h - 2, cav)              # the cutting slot, the boule's cradle
+                    for yy in range(y + 1, y + h - 1, 2):
+                        t.hline(x + 1, yy, w - 2, P.CRYO[5])             # the web of diamond-coated wires
                 else:
                     t.rect(cx - 2, cy - 2, 4, 4, cav)                    # deep cylindrical cavity
                     t.outline(cx - 2, cy - 2, 4, 4, P.BLACK_PAINT[2])
@@ -117,7 +122,8 @@ def paint(g: GeoModel, tex: Tex, glow: Tex, parts: dict) -> None:
             else:
                 t.hline(x, y + 1, w, band[4])                            # die colour band
         return paint_die
-    dies = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV}
+    dies = {"die_plate": P.HAZARD_YELLOW, "die_rod": P.WARNING_RED, "die_wire": P.COPPER, "die_canister": P.CHERENKOV,
+            "die_saw": P.CRYO}
     for name, band in dies.items():
         k.paint(tex, name, k.STEEL)
         g.paint_all(tex, parts[name][0], die_painter(name, band))

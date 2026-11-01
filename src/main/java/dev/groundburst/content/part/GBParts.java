@@ -56,12 +56,18 @@ public final class GBParts {
     public static final DeferredItem<Item> QUARTZ_CRUCIBLE = GBItems.simple("quartz_crucible", "Quartz Crucible", GBTab.RESOURCES);
     /** A military chip's sealed housing: co-fired alumina with gold-plated leads. */
     public static final DeferredItem<Item> CERAMIC_PACKAGE = GBItems.simple("ceramic_package", "Ceramic Package", GBTab.RESOURCES);
+    /** A single crystal of silicon grown in the Crystal Puller. */
+    public static final DeferredItem<Item> SILICON_BOULE = GBItems.simple("silicon_boule", "Silicon Boule", GBTab.RESOURCES);
+    /** A boule sawn into slices on the Industrial Press's diamond wire saw: what chips are printed on. */
+    public static final DeferredItem<Item> SILICON_WAFER = GBItems.simple("silicon_wafer", "Silicon Wafer", GBTab.RESOURCES);
 
     // --- press dies (not consumed) -----------------------------------------------------------------------------------------
     public static final DeferredItem<Item> PLATE_DIE = die("plate_die", "Plate Die");
     public static final DeferredItem<Item> ROD_DIE = die("rod_die", "Rod Die");
     public static final DeferredItem<Item> WIRE_DIE = die("wire_die", "Wire Die");
     public static final DeferredItem<Item> CANISTER_DIE = die("canister_die", "Canister Die");
+    /** Not a die: a web of diamond-coated wires that saws a silicon boule into wafers, in the press's die slot. */
+    public static final DeferredItem<Item> DIAMOND_WIRE_SAW = die("diamond_wire_saw", "Diamond Wire Saw");
 
     // --- condenser membranes (not consumed) ----------------------------------------------------------------------------------
     public static final DeferredItem<Item> OXYGEN_MEMBRANE = GBItems.simple("oxygen_membrane", "Oxygen Separation Membrane", GBTab.MACHINES, p -> p.stacksTo(1));

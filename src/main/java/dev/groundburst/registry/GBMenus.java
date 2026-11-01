@@ -24,6 +24,7 @@ public final class GBMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ELECTROLYTIC_SEPARATOR = machine("electrolytic_separator", () -> MachineLayouts.ELECTROLYTIC_SEPARATOR);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRYOGENIC_CONDENSER = machine("cryogenic_condenser", () -> MachineLayouts.CRYOGENIC_CONDENSER);
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRYSTAL_PULLER = machine("crystal_puller", () -> MachineLayouts.CRYSTAL_PULLER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> WATER_PUMP = machine("water_pump", () -> MachineLayouts.WATER_PUMP);
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CIRCUIT_FABRICATOR = machine("circuit_fabricator", () -> MachineLayouts.CIRCUIT_FABRICATOR);

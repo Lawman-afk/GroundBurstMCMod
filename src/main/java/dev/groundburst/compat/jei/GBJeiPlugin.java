@@ -56,6 +56,7 @@ public final class GBJeiPlugin implements IModPlugin {
         m.put(ProcessingKind.EXOTIC_FABRICATING, GBMachines.EXOTIC_MATTER_FABRICATOR.item().get());
         m.put(ProcessingKind.ACCELERATING, GBMachines.PARTICLE_ACCELERATOR.item().get());
         m.put(ProcessingKind.CANNING, GBMachines.CANNING_MACHINE.item().get());
+        m.put(ProcessingKind.CRYSTAL_PULLING, GBMachines.CRYSTAL_PULLER.item().get());
         return m;
     }
 
@@ -190,7 +191,7 @@ public final class GBJeiPlugin implements IModPlugin {
                         GBMachines.CIRCUIT_FABRICATOR.item().get(), GBMachines.GAS_CENTRIFUGE.item().get(),
                         GBMachines.FUSION_FUEL_SYNTHESIZER.item().get(), GBMachines.EXOTIC_MATTER_FABRICATOR.item().get(),
                         GBMachines.DIESEL_GENERATOR.item().get(), GBMachines.RTG.item().get(), GBMachines.BATTERY_CHARGER.item().get(),
-                        GBMachines.DECONTAMINATION_SHOWER.item().get(), GBMachines.CANNING_MACHINE.item().get())
+                        GBMachines.DECONTAMINATION_SHOWER.item().get(), GBMachines.CANNING_MACHINE.item().get(), GBMachines.CRYSTAL_PULLER.item().get())
                 .stream().map(i -> i.getDefaultInstance()).toList(), mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 Component.translatable(MachineText.INFO_SIDES));
         info(registration, MachineText.INFO_FISSION_REACTOR, GBMachines.FISSION_REACTOR.item().get(), GBMultiblocks.LEAD_LINED_CASING.item().get(),

@@ -174,11 +174,84 @@ def ceramic_package() -> None:
     save("ceramic_package", t)
 
 
+def silicon_boule() -> None:
+    """A single crystal as it comes out of the puller, lying up to the right: the cone of its shoulder and the thin seed
+    neck at the top end, its tail tapering at the other; polished grey, a growth ridge running down its length."""
+    t = Tex(16, 16)
+    s = SILICON
+    ax, ay, bx, by = 2.6, 13.4, 13.4, 2.6
+    ux, uy = bx - ax, by - ay
+    length = math.hypot(ux, uy)
+    ux, uy = ux / length, uy / length
+    nx, ny = uy, -ux
+    nx, ny = (-nx, -ny) if nx > 0 else (nx, ny)
+
+    def radius(f: float) -> float:
+        if f < 0.1:
+            return 1.6 + (3.6 - 1.6) * f / 0.1               # the tail
+        if f < 0.62:
+            return 3.6
+        if f < 0.86:
+            return 3.6 - (3.6 - 0.7) * (f - 0.62) / 0.24     # the shoulder's cone
+        return 0.6                                            # the seed neck
+    drawn: set[tuple[int, int]] = set()
+    for y in range(16):
+        for x in range(16):
+            px, py = x + 0.5, y + 0.5
+            along = (px - ax) * ux + (py - ay) * uy
+            across = (px - ax) * nx + (py - ay) * ny
+            f = along / length
+            if not 0 <= f <= 1:
+                continue
+            r = radius(f)
+            if abs(across) > r:
+                continue
+            drawn.add((x, y))
+            k = across / r
+            tone = 6 if 0.35 < k < 0.7 else 5 if k > 0.0 else 4 if k > -0.45 else 3
+            if f >= 0.62 or f < 0.1:
+                tone = max(2, tone - 1)                          # the cones face away from the light
+            if 0.1 <= f < 0.62 and abs(k + 0.1) < 0.12:
+                tone = 6                                         # a growth ridge
+            t.px(x, y, s[tone])
+    outline(t, drawn, s.outline)
+    save("silicon_boule", t)
+
+
+def silicon_wafer() -> None:
+    """A polished wafer seen from above at a slant: a mirror-grey disc catching a band of light, its edge below, the
+    orientation notch at its foot."""
+    t = Tex(16, 16)
+    s = SILICON
+    cx, cy, rx, ry = 7.5, 7.2, 6.6, 4.4
+    drawn: set[tuple[int, int]] = set()
+    for y in range(16):
+        for x in range(16):
+            px, py = x + 0.5, y + 0.5
+            top = ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 <= 1
+            edge = ((px - cx) / rx) ** 2 + ((py - cy - 1.1) / ry) ** 2 <= 1 and py > cy
+            if not (top or edge):
+                continue
+            drawn.add((x, y))
+            if not top:
+                t.px(x, y, s[2])                                # the wafer's edge, its thickness
+                continue
+            # A mirror: dark, with a broad band of reflected light across it from the upper left.
+            band = (px - cx) * 0.55 + (py - cy) * 0.9
+            tone = 6 if -1.6 < band < -0.5 else 5 if -3.0 < band < 0.6 else 4 if band < 2.6 else 3
+            t.px(x, y, s[tone])
+    t.px(4, 5, (255, 255, 255, 255))
+    outline(t, drawn, s.outline)
+    save("silicon_wafer", t)
+
+
 def build() -> None:
     silicon()
     polysilicon()
     quartz_crucible()
     ceramic_package()
+    silicon_boule()
+    silicon_wafer()
 
 
 if __name__ == "__main__":

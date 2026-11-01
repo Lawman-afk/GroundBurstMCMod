@@ -113,6 +113,7 @@ public class GBRecipeProvider extends RecipeProvider {
         crushing();
         arcSmelting();
         pressing();
+        crystals();
         parts();
         gases();
         canning();
@@ -1088,7 +1089,7 @@ public class GBRecipeProvider extends RecipeProvider {
         membrane(GBParts.OXYGEN_MEMBRANE, Items.LAPIS_LAZULI);
         membrane(GBParts.NITROGEN_MEMBRANE, Items.QUARTZ);
         membrane(GBParts.ARGON_SIEVE, GBChemicals.SALT);   // a sodium zeolite
-        // DESIGN.md §26.4: the separator takes a basic circuit, the condenser an advanced one.
+        // DESIGN.md §26.4: the separator and the condenser take a basic circuit (the condenser feeds the chip chain, §8.1).
         shaped(RecipeCategory.REDSTONE, GBMachines.ELECTROLYTIC_SEPARATOR.item(), 1)
                 .define('W', GBTags.commonItem("wires/gold")).define('G', Items.GLASS).define('P', GBTags.commonItem("plates/copper"))
                 .define('F', GBParts.MACHINE_FRAME).define('B', GBTags.BASIC_CIRCUITS).define('K', Items.CAULDRON)
@@ -1097,7 +1098,7 @@ public class GBRecipeProvider extends RecipeProvider {
                 .save(output);
         shaped(RecipeCategory.REDSTONE, GBMachines.CRYOGENIC_CONDENSER.item(), 1)
                 .define('P', GBTags.commonItem("plates/copper")).define('M', GBParts.ELECTRIC_MOTOR).define('F', GBParts.MACHINE_FRAME)
-                .define('V', GBParts.PRESSURE_VESSEL).define('A', GBTags.ADVANCED_CIRCUITS)
+                .define('V', GBParts.PRESSURE_VESSEL).define('A', GBTags.BASIC_CIRCUITS)
                 .pattern("PMP").pattern("PFP").pattern("AV ")
                 .unlockedBy(getHasName(GBParts.PRESSURE_VESSEL), has(GBParts.PRESSURE_VESSEL))
                 .save(output);
@@ -1612,6 +1613,28 @@ public class GBRecipeProvider extends RecipeProvider {
         // Clay fired to a ceramic round its gold-plated leads.
         machine(ProcessingKind.ARC_SMELTING, "arc_smelting/ceramic_package", List.of(in(Ingredient.of(Items.CLAY_BALL), 2), in(tag(GBTags.commonItem("wires/gold")), 1)), null,
                 List.of(out(GBParts.CERAMIC_PACKAGE, 1)), 200, fe);
+    }
+
+    /**
+     * The Crystal Puller and the wafer saw (DESIGN.md §8.1): polysilicon melted in a quartz crucible under argon and a
+     * crystal drawn from it; the boule sawn into wafers on the press. The puller takes a basic circuit: advanced
+     * circuits are made from what it grows.
+     */
+    private void crystals() {
+        machine(ProcessingKind.CRYSTAL_PULLING, "crystal_pulling/silicon_boule",
+                List.of(in(Ingredient.of(GBParts.POLYSILICON), 4), in(Ingredient.of(GBParts.QUARTZ_CRUCIBLE), 1)), null,
+                List.of(fluid(GBFluids.ARGON, 1_000)), List.of(out(GBParts.SILICON_BOULE, 1)), List.of(), 1_200,
+                dev.groundburst.content.machine.CrystalPullerBlockEntity.ENERGY_PER_TICK);
+        press("silicon_wafer", Ingredient.of(GBParts.SILICON_BOULE), 1, Ingredient.of(GBParts.DIAMOND_WIRE_SAW), GBParts.SILICON_WAFER, 8, 300,
+                IndustrialPressBlockEntity.ENERGY_PER_TICK);
+        die(GBParts.DIAMOND_WIRE_SAW, Items.DIAMOND);
+        shaped(RecipeCategory.REDSTONE, GBMachines.CRYSTAL_PULLER.item(), 1)
+                .define('P', GBTags.commonItem("plates/steel")).define('M', GBParts.ELECTRIC_MOTOR).define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+                .define('V', GBParts.PRESSURE_VESSEL).define('H', GBParts.HEATING_ELEMENT).define('F', GBParts.MACHINE_FRAME)
+                .define('B', GBTags.BASIC_CIRCUITS)
+                .pattern("PMP").pattern("GVG").pattern("HFB")
+                .unlockedBy(getHasName(GBParts.POLYSILICON), has(GBParts.POLYSILICON))
+                .save(output);
     }
 
     /** Industrial Press (DESIGN.md §26.2): the die in the catalyst slot picks the product; dies are not consumed. */

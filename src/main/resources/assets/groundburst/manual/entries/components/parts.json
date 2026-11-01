@@ -1,7 +1,7 @@
 {
   "title": "Machine parts",
   "icon": "groundburst:machine_frame",
-  "order": 1,
+  "order": 2,
   "items": [
     "groundburst:machine_frame",
     "groundburst:electric_motor",

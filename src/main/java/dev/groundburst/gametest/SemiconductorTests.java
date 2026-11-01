@@ -9,6 +9,8 @@ import dev.groundburst.content.fluid.ChemFluid;
 import dev.groundburst.content.fluid.GBFluids;
 import dev.groundburst.content.machine.ArcFurnaceBlockEntity;
 import dev.groundburst.content.machine.CryogenicCondenserBlockEntity;
+import dev.groundburst.content.machine.CrystalPullerBlockEntity;
+import dev.groundburst.content.machine.IndustrialPressBlockEntity;
 import dev.groundburst.content.machine.GBMachines;
 import dev.groundburst.content.machine.TallMachineBlock;
 import dev.groundburst.content.part.GBParts;
@@ -33,6 +35,8 @@ final class SemiconductorTests {
         GBGameTests.test("arc_furnace_makes_silicon", GBGameTests.FLOOR_16, 400, SemiconductorTests::silicon);
         GBGameTests.test("condenser_draws_argon", GBGameTests.FLOOR_16, 400, SemiconductorTests::argon);
         GBGameTests.test("semiconductor_recipes_pick_right", GBGameTests.FLOOR_16, 20, SemiconductorTests::recipes);
+        GBGameTests.test("crystal_puller_grows_a_boule", GBGameTests.FLOOR_16, 1_400, SemiconductorTests::boule);
+        GBGameTests.test("press_saws_a_boule_into_wafers", GBGameTests.FLOOR_16, 400, SemiconductorTests::wafers);
     }
 
     private static void silicon(GameTestHelper helper) {
@@ -95,7 +99,55 @@ final class SemiconductorTests {
         pick(helper, ProcessingKind.ARC_SMELTING, List.of(new ItemStack(Items.CLAY_BALL, 4), new ItemStack(GBParts.GOLD_WIRE.get(), 2)), List.of(),
                 "arc_smelting/ceramic_package");
         pick(helper, ProcessingKind.CRUSHING, List.of(new ItemStack(GBResources.FLUORITE.get())), List.of(), "crushing/fluorite_dust");
+        pick(helper, ProcessingKind.CRYSTAL_PULLING, List.of(new ItemStack(GBParts.POLYSILICON.get(), 4), new ItemStack(GBParts.QUARTZ_CRUCIBLE.get())),
+                List.of(fl(GBFluids.ARGON)), "crystal_pulling/silicon_boule");
         helper.succeed();
+    }
+
+    /** Four polysilicon and a crucible under argon: a boule in a minute, the crucible used, the argon drawn down. */
+    private static void boule(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        TallMachineBlock block = GBMachines.CRYSTAL_PULLER.block().get();
+        helper.setBlock(pos, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(pos), block.defaultBlockState(), null, ItemStack.EMPTY);
+        CrystalPullerBlockEntity puller = helper.getBlockEntity(pos, CrystalPullerBlockEntity.class);
+        puller.energy().generate(80_000);
+        puller.inventory().setItem(0, new ItemStack(GBParts.POLYSILICON.get(), 4));
+        puller.inventory().setItem(1, new ItemStack(GBParts.QUARTZ_CRUCIBLE.get()));
+        puller.tank(0).fillInternal(new FluidStack(GBFluids.ARGON.source().get(), 1_500));
+        // 160 FE a tick for a minute is more than its buffer: top it up as a cable would.
+        for (int t : new int[] {400, 800, 1_100}) {
+            helper.runAtTickTime(t, () -> puller.energy().generate(80_000));
+        }
+        helper.runAtTickTime(600, () -> {
+            helper.assertTrue(puller.inventory().getItem(2).isEmpty(), "no boule before the minute is up");
+            helper.assertTrue(puller.boneScales().get("crystal")[1] > 0.3f, "the crystal shows, half grown");
+        });
+        helper.succeedWhen(() -> {
+            ItemStack out = puller.inventory().getItem(2);
+            helper.assertTrue(out.is(GBParts.SILICON_BOULE.get()) && out.getCount() == 1, "a boule, have " + out);
+            helper.assertTrue(puller.inventory().getItem(0).isEmpty() && puller.inventory().getItem(1).isEmpty(),
+                    "the polysilicon and the crucible are used");
+            helper.assertTrue(puller.tank(0).amount() == 500, "1000 mB of argon used, 500 left; have " + puller.tank(0).amount());
+        });
+    }
+
+    /** A boule on the press with the diamond wire saw in its die slot: eight wafers, the saw kept. */
+    private static void wafers(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        TallMachineBlock block = GBMachines.INDUSTRIAL_PRESS.block().get();
+        helper.setBlock(pos, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(pos), block.defaultBlockState(), null, ItemStack.EMPTY);
+        IndustrialPressBlockEntity press = helper.getBlockEntity(pos, IndustrialPressBlockEntity.class);
+        press.energy().generate(20_000);
+        press.inventory().setItem(0, new ItemStack(GBParts.SILICON_BOULE.get()));
+        press.inventory().setItem(1, new ItemStack(GBParts.DIAMOND_WIRE_SAW.get()));
+        helper.succeedWhen(() -> {
+            ItemStack out = press.inventory().getItem(2);
+            helper.assertTrue(out.is(GBParts.SILICON_WAFER.get()) && out.getCount() == 8, "eight wafers, have " + out);
+            helper.assertTrue(press.inventory().getItem(1).is(GBParts.DIAMOND_WIRE_SAW.get()), "the saw is kept");
+            helper.assertTrue(!press.hiddenBones().contains("die_saw"), "the saw shows on the press bed");
+        });
     }
 
     private static FluidStack fl(ChemFluid fluid) {

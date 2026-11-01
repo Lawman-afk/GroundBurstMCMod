@@ -88,6 +88,8 @@ public final class GBSounds {
             register("machine.water_pump", "Water Pump runs", List.of("machine/water_pump"), false, 16);
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CRYOGENIC_CONDENSER =
             register("machine.cryogenic_condenser", "Cryogenic Condenser hisses", List.of("machine/cryogenic_condenser"), false, 20);
+    public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CRYSTAL_PULLER =
+            register("machine.crystal_puller", "Crystal Puller hums", List.of("machine/crystal_puller"), false, 16);
 
     public static final DeferredHolder<SoundEvent, SoundEvent> MACHINE_CIRCUIT_FABRICATOR =
             register("machine.circuit_fabricator", "Circuit Fabricator whirs", List.of("machine/circuit_fabricator"), false, 16);

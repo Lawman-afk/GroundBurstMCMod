@@ -1,7 +1,7 @@
 {
   "title": "Gas Centrifuge",
   "icon": "groundburst:gas_centrifuge",
-  "order": 11,
+  "order": 12,
   "items": [
     "groundburst:gas_centrifuge"
   ],

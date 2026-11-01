@@ -733,7 +733,7 @@ need the most of them, cost the most. Every new step is a real industrial proces
 own recipes (fission ones included: they are realistic as they are). The mid-game slows with it, by the user's wish
 ("the entire mid-game can be slowed by this process").
 
-The chain (as built, 2026-11-01: steps 1-7, 10-12 and 14; the rest with the Crystal Puller and the Clean Room):
+The chain (as built, 2026-11-01: steps 1-12 and 14; the chips and circuits with the Clean Room):
 1. **Silicon** (Arc Furnace): 2 quartz and a coal: the carbothermic reduction smelters make it by. Tagged `c:silicon`,
    as other mods' silicon is.
 2. **Hydrogen** (Chemical Plant): a coal, 1000 mB water and 250 mB liquid oxygen give 1000 mB: an oxygen-blown
@@ -749,9 +749,11 @@ The chain (as built, 2026-11-01: steps 1-7, 10-12 and 14; the rest with the Crys
    of the air).
 7. **Quartz Crucible** (Arc Furnace): 2 quartz and 4 sand fused; every crystal grown takes one (as in a real puller).
    Quartz alone would clash with silicon's quartz and coal, as hydrogen would with fuel.
-8. **Silicon Boule** (Crystal Puller, a new machine): polysilicon melted in a quartz crucible under argon and a single
-   crystal pulled from the melt (the Czochralski process).
-9. **Silicon Wafers** (Industrial Press, a Diamond Wire Saw in its die slot): a boule sliced into wafers.
+8. **Silicon Boule** (Crystal Puller, a new machine): 4 polysilicon and a quartz crucible under 1000 mB of argon, a
+   minute at 160 FE/t: a single crystal pulled from the melt (the Czochralski process). The crucible is used up.
+9. **Silicon Wafers** (Industrial Press, a **Diamond Wire Saw** in its die slot, crafted as the dies are with a
+   diamond): a boule sawn into 8 wafers in 15 s; the saw is kept. The press shows it on its bed (a cyan-banded block,
+   wires across its slot).
 10. **Fluorite** (a new ore, fluorspar, §5): crushed, then a dust with 1000 mB of sulfuric acid in the Chemical
     Plant gives 1000 mB of **hydrofluoric acid**, as HF is made.
 11. **Photoresist** (Chemical Plant): a plastic sheet (the novolac resin) and a coal (its light-sensitive compound is
@@ -769,8 +771,17 @@ The chain (as built, 2026-11-01: steps 1-7, 10-12 and 14; the rest with the Crys
     spreader, as in real high-power electronics); quantum unchanged.
 
 The machines:
-- **Crystal Puller** (1x2 tall): a water-jacketed steel furnace with a viewport onto the glowing melt and a pull head on
-  top that turns as it slowly rises.
+- **Crystal Puller** (1x2 tall, as built): on the hazard plinth a round water-jacketed stainless furnace chamber with a
+  domed lid and a viewport onto the melt (it glows orange only while the heater is on), copper water lines down its
+  west side; the isolation valve with a red handwheel; the narrow pull chamber with a sight glass, in which the crystal
+  shows as it grows (the run's progress reaches clients in 24 steps and scales the crystal up from the melt); the
+  white seed-lift head on top, turning once every 4 s (seed rotation), its motor on top; a brass argon line up the east
+  side into the top of the pull chamber. Two input slots (the crucible's has a cup ghost), one output, an argon tank
+  with a drain; 80,000 FE buffer. Crafted from steel plates, an electric motor, glass, a pressure vessel, a heating
+  element, a machine frame and a **basic** circuit (advanced circuits are made from what it grows). Its sound: the
+  heater's transformer hum over cooling water, as loud as the Electrolytic Separator.
+- **The Cryogenic Condenser** now takes a basic circuit, not an advanced one: it feeds the chain (argon; liquid oxygen
+  for hydrogen), so an advanced circuit in its recipe would have closed a loop.
 - **Clean Room** (multiblock): a sealed white module with fan filter units on its roof, windows onto its lithography
   bay lit yellow (photoresist is safe only under yellow light), an acid scrubber's stack; ports for items, fluids and
   power. Its machines fill it: it is not walked into.
@@ -4094,7 +4105,7 @@ See §6 for every chemical/nuclear intermediate with its station and inputs. Add
 | Gas Centrifuge | CT | machine frame, 2 electric motor, tungsten rod, 2 dense steel plate, advanced circuit |
 | Electrolytic Separator | CT | machine frame, 2 copper plate, 2 gold wire, glass, basic circuit, cauldron |
 | Fusion Fuel Synthesizer | CT | machine frame, 2 pressure vessel, heating element, advanced circuit, tungsten plate |
-| Cryogenic Condenser | CT | machine frame, electric motor, 4 copper plate, pressure vessel, advanced circuit |
+| Cryogenic Condenser | CT | machine frame, electric motor, 4 copper plate, pressure vessel, basic circuit (an advanced one until 2026-11-01, §8.1) |
 | Circuit Fabricator | CT | machine frame, 2 servo, glass, handmade circuit board |
 | Exotic Matter Fabricator | CT | machine frame, 4 superconducting coil, military circuit, 2 tungsten plate, ender eye |
 | Diesel Generator | CT | machine frame, electric motor, pressure vessel, combustion generator |
@@ -4282,6 +4293,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The Crystal Puller (§8.1): a new two-block machine (a Czochralski puller: stainless chamber, viewport on the melt, isolation valve, pull chamber with the crystal rising in its sight glass, a turning seed-lift head) growing boules from 4 polysilicon and a crucible under 1000 mB argon in a minute at 160 FE/t; the Industrial Press saws a boule into 8 wafers with a new Diamond Wire Saw in its die slot (shown on the press bed). The puller and the condenser take basic circuits: both feed the chain that advanced circuits come from, so the condenser's advanced circuit (since 2026-10-20) would have closed a loop. New machines' sounds take a kin's loudness (`LIKE` in tools/sound/machines.py). |
 | 2026-11-01 | The semiconductor chain's chemistry and materials (§8.1, §5): fluorite ore; silicon (`c:silicon`), polysilicon, the quartz crucible, the ceramic package, red phosphorus and the Argon Molecular Sieve; hydrogen, hydrogen chloride, argon (gases) and trichlorosilane, photoresist, hydrofluoric acid (liquids), each with a canister. Recipes chosen so none is satisfied by another's ingredients (a machine takes the first recipe by id its contents satisfy): hydrogen takes liquid oxygen (an oxygen-blown gasifier) so coal and water alone still make fuel; photoresist takes coal and nitric acid besides plastic and fuel; the crucible takes sand besides quartz. |
 | 2026-11-01 | MIRVs removed (§17.14), after they were built and limited to Medium warheads: the user found them out of place for now. Agreed with the user instead: a late-game vertical launch battery firing a volley of up to 16 Light and Medium missiles onto one area; and a circuit cascade to make military-grade parts as hard to come by as they are in reality, every step a real process (silicon from the Arc Furnace, purified in the Chemical Plant, grown into crystals in a Crystal Puller and sawn into wafers, chips printed in a Clean Room multiblock with photoresist, hydrofluoric acid and phosphorus), applied to advanced circuits as well as military ones (the user: "the entire mid-game can be slowed by this process"); the weapons' own recipes, fission ones too, stay as they are. The circuit chain first, then the launcher. |
 | 2026-11-01 | Every launcher gets an Item Port (the user: "to automate reloading ... no output or any configs, just take them into the launch slot"): beside the Energy Port on the Launch Silo, Launch Complex and Missile Silo, behind it on the Cruise Missile Launcher; insert-only into the launch slot, only missiles that launcher fires; the cell still takes its old block so launchers built before keep forming; drawn on each formed model as the Energy Port's yellow-banded twin with a grated loading mouth (§17.2). The Laser Designator: a sneaking left click disarms the picked launcher, still aimed; the armed targets' spheres centred on the point clicked (they sat touching the face, off to one side). |

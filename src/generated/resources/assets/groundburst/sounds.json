@@ -555,6 +555,12 @@
     ],
     "subtitle": "subtitles.groundburst.machine.cryogenic_condenser"
   },
+  "machine.crystal_puller": {
+    "sounds": [
+      "groundburst:machine/crystal_puller"
+    ],
+    "subtitle": "subtitles.groundburst.machine.crystal_puller"
+  },
   "machine.decontamination_shower": {
     "sounds": [
       "groundburst:machine/decontamination_shower"

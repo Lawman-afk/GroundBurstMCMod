@@ -1,7 +1,7 @@
 {
   "title": "Plates, rods and wire",
   "icon": "groundburst:steel_plate",
-  "order": 2,
+  "order": 3,
   "items": [
     "groundburst:steel_plate",
     "groundburst:dense_steel_plate",

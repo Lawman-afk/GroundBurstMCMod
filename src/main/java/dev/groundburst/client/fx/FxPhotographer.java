@@ -97,6 +97,9 @@ public final class FxPhotographer {
                 new Scene("glow_machines1_day", "glow_machines1", 9, 12, List.of(60)),
                 new Scene("glow_machines2_night", "glow_machines2", 9, 12, List.of(60), "midnight"),
                 new Scene("glow_machines2_day", "glow_machines2", 9, 12, List.of(60)),
+                // The Crystal Puller running for real, its crystal a third grown in the pull chamber's window.
+                new Scene("glow_machines3_night", "glow_machines3", 5, 10, List.of(420), "midnight"),
+                new Scene("glow_machines3_day", "glow_machines3", 5, 10, List.of(420)),
                 new Scene("glow_reactors0_night", "glow_reactors0", 13, 16, List.of(60), "midnight"),
                 new Scene("glow_reactors0_day", "glow_reactors0", 13, 16, List.of(60)),
                 new Scene("glow_reactors1_night", "glow_reactors1", 19, 22, List.of(60), "midnight"),
@@ -803,6 +806,7 @@ public final class FxPhotographer {
                     M.of(dev.groundburst.content.machine.GBMachines.FUSION_FUEL_SYNTHESIZER), M.of(dev.groundburst.content.machine.GBMachines.EXOTIC_MATTER_FABRICATOR),
                     M.of(dev.groundburst.content.machine.GBMachines.DIESEL_GENERATOR), M.of(dev.groundburst.content.machine.GBMachines.RTG),
                     M.of(dev.groundburst.content.machine.GBMachines.BATTERY_CHARGER));
+            case 3 -> List.of(M.of(dev.groundburst.content.machine.GBMachines.CRYSTAL_PULLER));
             default -> {
                 List<java.util.function.Supplier<net.minecraft.world.level.block.Block>> out = new java.util.ArrayList<>();
                 out.add(M.of(dev.groundburst.content.machine.GBMachines.DECONTAMINATION_SHOWER));
@@ -837,6 +841,11 @@ public final class FxPhotographer {
                 }
                 if (machine instanceof dev.groundburst.content.power.BatteryChargerBlockEntity) {
                     machine.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.part.GBParts.BATTERY.get()));
+                }
+                if (machine instanceof dev.groundburst.content.machine.CrystalPullerBlockEntity) {   // it really grows one
+                    machine.inventory().setItem(0, new net.minecraft.world.item.ItemStack(dev.groundburst.content.part.GBParts.POLYSILICON.get(), 4));
+                    machine.inventory().setItem(1, new net.minecraft.world.item.ItemStack(dev.groundburst.content.part.GBParts.QUARTZ_CRUCIBLE.get()));
+                    machine.tank(0).fillInternal(new net.neoforged.neoforge.fluids.FluidStack(dev.groundburst.content.fluid.GBFluids.ARGON.source().get(), 1_000));
                 }
             }
             z += 3;

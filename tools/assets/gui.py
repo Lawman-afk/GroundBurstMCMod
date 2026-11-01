@@ -374,6 +374,19 @@ LAYOUTS = {
         "readout": (40, 22, 100, 24),
         "inventory": (8, 84),
     },
+    # Crystal Puller (DESIGN.md §8.1): polysilicon and a crucible in, argon from its tank, the boule out.
+    "crystal_puller": {
+        "title": (8, 6),
+        "slots": [("in", 56, 25), ("crucible", 56, 47), ("out_big", 116, 35)],
+        "energy": (8, 20, 14, 46),
+        "tanks": [(32, 20, 12, 42, None, True)],
+        "progress": (79, 34, 24, 17),
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": None,
+        "inventory": (8, 84),
+    },
     # Canning Machine: the supply tank (left) feeds the filler, poured-out canisters go to the catch tank (right).
     "canning_machine": {
         "title": (8, 6),
@@ -569,6 +582,13 @@ CANISTER_GHOST = ["................", "......####......", ".....#....#.....", ".
 MEMBRANE_GHOST = ["................", "................", "...##########...", "...#.#.#.#.#.#..", "...##########...",
                   "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..", "...##########...", "...#.#.#.#.#.#..",
                   "...##########...", "................", "................", "................", "................",
+                  "................"]
+
+
+# A quartz crucible: a tapering cup, its rim and the hollow inside.
+CRUCIBLE_GHOST = ["................", "................", "................", "....########....", "...#++++++++#...",
+                  "...##########...", "...#........#...", "...#........#...", "....#......#....", "....#......#....",
+                  ".....#....#.....", ".....######.....", "................", "................", "................",
                   "................"]
 
 
@@ -993,7 +1013,7 @@ def build(name: str, spec: dict) -> Path:
          "warhead": ghost_slot(WARHEAD_GHOST), "body": ghost_slot(BODY_GHOST), "motor": ghost_slot(MOTOR_GHOST),
          "guidance": ghost_slot(GUIDANCE_GHOST), "module": ghost_slot(MODULE_GHOST), "missile": ghost_slot(MISSILE_GHOST),
          "secondary": ghost_slot(SECONDARY_GHOST), "jacket": ghost_slot(JACKET_GHOST), "booster": ghost_slot(BOOSTER_GHOST),
-         "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
+         "core_cell": core_cell, "spent": ghost_slot(SPENT_GHOST), "crucible": ghost_slot(CRUCIBLE_GHOST)}.get(kind, slot)(t, x - 1, y - 1)
     fills = [(x, y) for kind, x, y in spec["slots"] if kind in ("fill_in", "fill_out")]
     if len(fills) == 2:
         (ax, ay), (bx, by) = fills

@@ -1,7 +1,7 @@
 {
   "title": "Fusion Fuel Synthesizer",
   "icon": "groundburst:fusion_fuel_synthesizer",
-  "order": 12,
+  "order": 13,
   "items": [
     "groundburst:fusion_fuel_synthesizer",
     "groundburst:lithium_deuteride_pellet"

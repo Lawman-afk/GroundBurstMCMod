@@ -1,0 +1,92 @@
+{
+  "title": "Silicon and chips",
+  "icon": "groundburst:silicon_wafer",
+  "order": 1,
+  "items": [
+    "groundburst:silicon",
+    "groundburst:polysilicon",
+    "groundburst:quartz_crucible",
+    "groundburst:red_phosphorus",
+    "groundburst:ceramic_package",
+    "groundburst:fluorite_dust",
+    "groundburst:hydrogen_canister",
+    "groundburst:hydrogen_chloride_canister",
+    "groundburst:trichlorosilane_canister",
+    "groundburst:photoresist_canister",
+    "groundburst:hydrofluoric_acid_canister"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "Chips are made on silicon purer than anything else you will make, by the steps real fabs use:\n\n1. **Silicon:** quartz reduced with coal in the [Arc Furnace](processing/arc_furnace).\n2. **Trichlorosilane:** silicon dissolved in **hydrogen chloride** (hydrogen burnt in chlorine) in the [Chemical Plant](processing/chemical_plant).\n3. **Polysilicon:** trichlorosilane broken down under hydrogen, pure silicon laid down.\n4. **Wafers:** a crystal grown in the [Crystal Puller](processing/crystal_puller), sawn on the press."
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:silicon"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:hydrogen_chloride"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:trichlorosilane"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "item": "groundburst:polysilicon"
+    },
+    {
+      "type": "text",
+      "text": "**Hydrogen** comes from coal gasified with steam and **liquid oxygen** from a [Cryogenic Condenser](processing/cryogenic_condenser); without the oxygen the plant makes synthetic fuel instead. The condenser also draws the **argon** the crystals grow under.\n\nThe crucible each crystal grows in is fused from quartz and sand."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:hydrogen"
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:quartz_crucible"
+    },
+    {
+      "type": "text",
+      "text": "The chips are printed with **photoresist** (plastic and coal with nitric acid, in synthetic fuel), etched with **hydrofluoric acid** (fluorite dust in sulfuric acid) and doped with **red phosphorus** (bone meal and coal in the Arc Furnace). Military chips are sealed in a **ceramic package**: clay fired round gold leads.\n\nHydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids."
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:photoresist"
+    },
+    {
+      "type": "machine",
+      "kind": "chemistry",
+      "text": "",
+      "fluid": "groundburst:hydrofluoric_acid"
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:red_phosphorus"
+    },
+    {
+      "type": "machine",
+      "kind": "arc_smelting",
+      "text": "",
+      "item": "groundburst:ceramic_package"
+    }
+  ]
+}

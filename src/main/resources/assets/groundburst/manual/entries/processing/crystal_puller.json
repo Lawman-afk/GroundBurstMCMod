@@ -1,0 +1,51 @@
+{
+  "title": "Crystal Puller",
+  "icon": "groundburst:crystal_puller",
+  "order": 11,
+  "items": [
+    "groundburst:crystal_puller",
+    "groundburst:silicon_boule",
+    "groundburst:silicon_wafer",
+    "groundburst:diamond_wire_saw"
+  ],
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "groundburst:crystal_puller",
+      "text": "Grows the single crystals of silicon that chips are made on. Four **polysilicon** melt in a **quartz crucible** under **argon** (1,000 mB a crystal, piped or poured into its tank), and a seed is drawn slowly up out of the melt, turning: in a minute, a **silicon boule**. Each crystal takes a crucible, as in a real puller. Draws 160 FE a tick.\n\nThe crystal shows in the window of its pull chamber as it grows."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:crystal_puller",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "crystal_pulling",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "text": "An [Industrial Press](processing/industrial_press) with a **Diamond Wire Saw** in its die slot saws a boule into **eight wafers**. The saw is never used up."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:diamond_wire_saw",
+      "text": ""
+    },
+    {
+      "type": "machine",
+      "kind": "pressing",
+      "text": "",
+      "item": "groundburst:silicon_wafer"
+    },
+    {
+      "type": "links",
+      "entries": [
+        "components/semiconductors",
+        "processing/cryogenic_condenser"
+      ],
+      "text": ""
+    }
+  ]
+}

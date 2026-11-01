@@ -29,7 +29,7 @@ from gb.tex import Tex  # noqa: E402
 GECKO_MACHINES = ["combustion_generator", "ore_crusher", "electrolytic_separator", "water_pump", "circuit_fabricator",
                   "fusion_fuel_synthesizer", "canning_machine", "diesel_generator", "rtg", "battery_charger", "capacitor_bank",
                   "advanced_capacitor_bank", "superconducting_capacitor_bank", "creative_capacitor_bank"]
-TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser", "gas_centrifuge", "exotic_matter_fabricator",
+TALL_GECKO_MACHINES = ["arc_furnace", "industrial_press", "cryogenic_condenser", "crystal_puller", "gas_centrifuge", "exotic_matter_fabricator",
                        "decontamination_shower"]
 
 # --- GeckoLib machines -------------------------------------------------------------------------------------------------

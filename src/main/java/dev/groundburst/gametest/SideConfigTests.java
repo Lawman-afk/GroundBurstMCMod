@@ -120,9 +120,9 @@ final class SideConfigTests {
         helper.setBlock(pos, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(pos), block.defaultBlockState(), null, ItemStack.EMPTY);
         IndustrialPressBlockEntity press = helper.getBlockEntity(pos, IndustrialPressBlockEntity.class);
-        helper.assertTrue(press.hiddenBones().size() == 4, "no die loaded: all dies hidden");
+        helper.assertTrue(press.hiddenBones().size() == 5, "no die loaded: all five dies hidden");
         press.inventory().setItem(press.catalystSlot(), new ItemStack(GBParts.WIRE_DIE.get()));
-        helper.assertTrue(!press.hiddenBones().contains("die_wire") && press.hiddenBones().size() == 3, "wire die should show");
+        helper.assertTrue(!press.hiddenBones().contains("die_wire") && press.hiddenBones().size() == 4, "wire die should show");
         helper.assertTrue(press.getUpdateTag(helper.getLevel().registryAccess()).contains("items"), "the update tag must carry the die");
         helper.succeed();
     }

@@ -247,6 +247,11 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         return false;
     }
 
+    /** How far the current run has got, 0..1 (0 between runs). Clients have it too where the machine syncs it. */
+    protected float progressFraction() {
+        return this.maxProgress <= 0 ? 0f : Math.min(1f, (float) this.progress / this.maxProgress);
+    }
+
     private void resetProgress() {
         if (this.progress != 0 || this.maxProgress != 0) {
             this.progress = 0;
