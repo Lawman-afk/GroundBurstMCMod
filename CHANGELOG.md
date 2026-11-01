@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Vertical Launch Battery
+- **Vertical Launch Battery**, a very late-game launcher: sixteen **Strike Cells** in two modules (4 wide, 6 deep, with a
+  walkway and its fire-control console in front and launch control cabinets behind). Load a Light or Medium missile
+  into each cell (conventional warheads; no cruise missiles), by hand or through its Item Port.
+- Aim, arm and fire it from a Launch Computer, the Launch Control Station or a Laser Designator. After a 10 s countdown
+  it **ripples** its whole load out, a cell every quarter of a second, each hatch swinging open as its missile climbs out.
+- Each missile goes to its own point of the battery's **spread** round the target: all on the point, a line, a ring or
+  a grid, up to 48 blocks apart, set on its screen.
+- 20,000 FE a missile; it holds enough for two full volleys.
+
 ### Silicon and chips (a harder circuit chain, under way)
 - **Fluorite Ore**: purple and green cubes in the Overworld (Y −24 to 72). Crush it and dissolve the dust in sulfuric
   acid for **hydrofluoric acid**.

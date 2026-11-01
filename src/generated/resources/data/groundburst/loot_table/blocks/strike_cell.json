@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "groundburst:strike_cell"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "groundburst:blocks/strike_cell"
+}

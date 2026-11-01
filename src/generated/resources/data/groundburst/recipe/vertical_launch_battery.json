@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "groundburst:crt_display",
+    "M": "groundburst:military_circuit",
+    "Q": "groundburst:quantum_circuit",
+    "S": "groundburst:sensor_array",
+    "X": "groundburst:machine_casing"
+  },
+  "pattern": [
+    "CSC",
+    "MQM",
+    " X "
+  ],
+  "result": {
+    "id": "groundburst:vertical_launch_battery"
+  }
+}

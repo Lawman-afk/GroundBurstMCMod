@@ -157,6 +157,7 @@ public final class GBBlockEntities {
         machine(event, PARTICLE_ACCELERATOR.get());
         machine(event, dev.groundburst.content.launch.GBLaunch.SILO_ENTITY.get());
         machine(event, dev.groundburst.content.launch.GBLaunch.CRUISE_ENTITY.get());
+        machine(event, dev.groundburst.content.launch.GBLaunch.VLS_ENTITY.get());
         machine(event, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_ENTITY.get());
         machine(event, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get());
         machine(event, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_ENTITY.get());

@@ -310,6 +310,9 @@ public final class FxPhotographer {
                 new Scene("cruise_aerial", "cruise", 24, 30, List.of(110, 240, 300)),
                 new Scene("cruise_ui", "cruise", 5, 0, List.of(30)),
                 new Scene("cruise_flight", "cruise_flight", 30, -25, List.of(4, 12, 20, 28, 36)),
+                // The Vertical Launch Battery's ripple: armed and launched at 25, its cells firing from about 227.
+                new Scene("vls", "vls", 18, 12, List.of(30, 228, 234, 242, 254, 270, 300)),
+                new Scene("vls_aerial", "vls", 22, 32, List.of(229, 245, 272)),
                 new Scene("cruise_dive", "cruise_dive", 40, -12, List.of(6, 16, 24, 32, 38, 44, 47, 60)))) {
             if (only.isEmpty() || java.util.Arrays.stream(only.split(",")).anyMatch(o -> s.name().startsWith(o.trim()))) {   // -PfxOnly=a,b
                 SCENES.add(s);
@@ -1048,6 +1051,32 @@ public final class FxPhotographer {
         }
     }
 
+    private static net.minecraft.core.BlockPos vlsAt;
+
+    /**
+     * The Vertical Launch Battery, side on to the camera: facing north, its walkway to the camera's left, its cells running
+     * across the view; sixteen HE missiles in it (Light and Medium), powered, its spread a grid 12 apart, aimed far off
+     * north-east, armed.
+     */
+    private static void vlsSite(ServerLevel level, int x, int ground) {
+        vlsAt = new net.minecraft.core.BlockPos(x, ground, -3);
+        formed(level, vlsAt, dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.block().get(), dev.groundburst.content.launch.GBLaunch.VLS,
+                net.minecraft.core.Direction.NORTH);
+        if (level.getBlockEntity(vlsAt) instanceof dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity be) {
+            be.revalidate();
+            for (int i = 0; i < dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity.CELLS; i++) {
+                var body = i % 2 == 0 ? dev.groundburst.content.assembly.SizeClass.M : dev.groundburst.content.assembly.SizeClass.S;
+                be.inventory().setItem(i, dev.groundburst.content.assembly.MissileAssembly.missile(new dev.groundburst.content.assembly.MissileSpec(
+                        new net.minecraft.world.item.ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()), body,
+                        dev.groundburst.content.assembly.MissileParts.Motor.SRM_II, dev.groundburst.content.assembly.MissileParts.Guidance.GPS, false)));
+            }
+            be.energy().generate(dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity.ENERGY_CAPACITY);
+            be.setSpread(dev.groundburst.content.launch.LaunchNetwork.Pattern.GRID, 12);
+            be.setTarget(x + 300, -600);
+            be.arm(true);
+        }
+    }
+
     private static net.minecraft.world.item.ItemStack cruiseMissile(dev.groundburst.registry.GBBlocks.WithItem<?> warhead, dev.groundburst.content.assembly.SizeClass body) {
         return dev.groundburst.content.assembly.MissileAssembly.missile(new dev.groundburst.content.assembly.MissileSpec(
                 new net.minecraft.world.item.ItemStack(warhead.item().get()), body, dev.groundburst.content.assembly.MissileParts.Motor.CRUISE,
@@ -1718,6 +1747,10 @@ public final class FxPhotographer {
                     cruiseSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("vls")) {
+                    vlsSite(level, x, ground);
+                    return;
+                }
                 if (s.profile().equals("cruise_flight") || s.profile().equals("cruise_dive")) {
                     flightShown = cruiseFlight(level, x, ground, s.profile().equals("cruise_dive"));
                     return;
@@ -2101,8 +2134,16 @@ public final class FxPhotographer {
                 }
             });
         }
+        if (scene.profile().equals("vls") && step >= 0 && clock == 25 && vlsAt != null) {
+            var at = vlsAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.launch.VerticalLaunchBatteryBlockEntity be) {
+                    be.launchArmed(server.overworld(), null);
+                }
+            });
+        }
         // Its missiles fly off far beyond the pictures: called off once they are out of them.
-        if (scene.profile().equals("cruise") && step >= 0 && clock == scene.moments().getLast() + 5) {
+        if ((scene.profile().equals("cruise") || scene.profile().equals("vls")) && step >= 0 && clock == scene.moments().getLast() + 5) {
             server.execute(() -> {
                 var flights = dev.groundburst.content.launch.Flights.of(server.overworld());
                 flights.all().forEach(f -> flights.cancelForTest(server.overworld(), f));

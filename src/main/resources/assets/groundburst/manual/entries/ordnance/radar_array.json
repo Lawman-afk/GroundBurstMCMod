@@ -1,7 +1,7 @@
 {
   "title": "Radar Array",
   "icon": "groundburst:radar_array",
-  "order": 17,
+  "order": 18,
   "items": [
     "groundburst:radar_array",
     "groundburst:large_radar_dish"

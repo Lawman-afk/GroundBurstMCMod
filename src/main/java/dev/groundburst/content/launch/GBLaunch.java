@@ -86,6 +86,12 @@ public final class GBLaunch {
     public static final WithItem<MultiblockControllerBlock> CRUISE_CONTROLLER = GBBlocks.register("cruise_launcher", "Cruise Missile Launcher Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.CRUISE_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    /** The Vertical Launch Battery (DESIGN.md §17.15): sixteen Strike Cells rippling a volley onto one area. */
+    public static final WithItem<MultiblockControllerBlock> VLS_CONTROLLER = GBBlocks.register("vertical_launch_battery",
+            "Vertical Launch Battery Controller", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.VLS_ENTITY),
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    /** One Mk 41 cell: a Light or Medium missile's canister under an armoured hatch. */
+    public static final WithItem<MultiblockPartBlock> STRIKE_CELL = part("strike_cell", "Strike Cell", MapColor.COLOR_GRAY, SoundType.METAL, false);
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GBBlocks.register("launch_computer", "Launch Computer",
             GBTab.MISSILES, p -> new LaunchComputerBlock(p, GBLaunch.COMPUTER_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
@@ -119,6 +125,9 @@ public final class GBLaunch {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CruiseLauncherBlockEntity>> CRUISE_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("cruise_launcher", () -> new BlockEntityType<>(CruiseLauncherBlockEntity::new,
                     CRUISE_CONTROLLER.block().get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<VerticalLaunchBatteryBlockEntity>> VLS_ENTITY =
+            GBBlockEntities.BLOCK_ENTITIES.register("vertical_launch_battery", () -> new BlockEntityType<>(VerticalLaunchBatteryBlockEntity::new,
+                    VLS_CONTROLLER.block().get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> new BlockEntityType<>(LaunchComputerBlockEntity::new,
                     COMPUTER_CONTROLLER.block().get()));
@@ -256,6 +265,40 @@ public final class GBLaunch {
                     + "warhead's own: a booster lights it out of its box, then its jet carries it 40 blocks over the ground, "
                     + "following the ground's rise and fall, for up to 1,500 blocks; short of the target it pops up and dives on "
                     + "it. Only the Cruise Missile Launcher fires it.");
+
+    /**
+     * The Vertical Launch Battery (DESIGN.md §17.15): four wide and six deep, one block high. Its front row a walkway of
+     * Launch Pad with the controller's console second from the left; behind it four rows of four Strike Cells (two
+     * eight-cell modules side by side), the air over them clear for their hatches; at the back its launch control
+     * cabinets: Machine Casing, the Energy Port, the Item Port and Machine Casing. Formed, the walkway is the model's deck,
+     * 14 px high, and the controller its console.
+     */
+    public static final MultiblockDefinition VLS = new MultiblockDefinition(GroundBurst.id("vertical_launch_battery"),
+            new String[][] {
+                    {"PXPP", "SSSS", "SSSS", "SSSS", "SSSS", "MEIM"},
+                    {"    ", "....", "....", "....", "....", "    "},
+            },
+            Map.of('P', Entry.of(() -> LAUNCH_PAD.block().get()), 'S', Entry.of(() -> STRIKE_CELL.block().get()),
+                    'M', Entry.of(GBMultiblocks.MACHINE_CASING.block()), 'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    'I', Entry.of(GBMultiblocks.ITEM_PORT.block()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> VLS_CONTROLLER.block().get())),
+            MultiblockDefinition.layerCuts(0, new String[] {"DCDD"}, Map.of('D', PartCut.DECK, 'C', PartCut.CONSOLE_NORTH)));
+
+    /** JEI: how the Vertical Launch Battery is built and works (DESIGN.md §17.15). */
+    public static final String INFO_VLS = dev.groundburst.registry.GBLang.add(GroundBurst.MODID + ".info.vertical_launch_battery",
+            "Ripples a volley of up to sixteen Light or Medium missiles onto one area. Build a walkway of four Launch Pads with the "
+                    + "controller second from the left, sixteen Strike Cells four by four behind it with the air over them clear, and "
+                    + "at the back Machine Casing, an Energy Port, an Item Port and Machine Casing (the Holo-Projector shows it). Load "
+                    + "a missile into each cell (by hand, or by pipe or hopper into the Item Port; conventional warheads only, no "
+                    + "cruise missiles) and power it (20,000 FE a missile); set its spread on its screen. A Launch Computer, the "
+                    + "Launch Control Station or a Laser Designator aims, arms and fires it: after a 10 s countdown its cells fire "
+                    + "one after another, a quarter of a second apart, each missile to its own point of the spread round the target.");
+
+    /** Creative: places a whole Vertical Launch Battery where you click. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> VLS_SPAWNER =
+            GBItems.register("vertical_launch_battery_spawner", "Structure Spawner: Vertical Launch Battery", GBTab.MISSILES,
+                    p -> new dev.groundburst.content.multiblock.StructureSpawnerItem(p, () -> VLS),
+                    p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     /** Creative: places a whole Cruise Missile Launcher where you click. */
     public static final net.neoforged.neoforge.registries.DeferredItem<dev.groundburst.content.multiblock.StructureSpawnerItem> CRUISE_SPAWNER =

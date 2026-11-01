@@ -141,6 +141,15 @@ public final class MachineLayouts {
             new MachineLayout.Rect(66, 17, 104, 38), 8, 6, List.of(),
             List.of(), 256);
 
+    public static final MachineLayout VERTICAL_LAUNCH_BATTERY = new MachineLayout(
+            GroundBurst.id("textures/gui/machine/vertical_launch_battery.png"), 206, 196, List.of(new MachineLayout.Pos(28, 18), new MachineLayout.Pos(46, 18), new MachineLayout.Pos(64, 18), new MachineLayout.Pos(82, 18), new MachineLayout.Pos(28, 36), new MachineLayout.Pos(46, 36), new MachineLayout.Pos(64, 36), new MachineLayout.Pos(82, 36), new MachineLayout.Pos(28, 54), new MachineLayout.Pos(46, 54), new MachineLayout.Pos(64, 54), new MachineLayout.Pos(82, 54), new MachineLayout.Pos(28, 72), new MachineLayout.Pos(46, 72), new MachineLayout.Pos(64, 72), new MachineLayout.Pos(82, 72)), 22, 114,
+            new MachineLayout.Rect(8, 18, 14, 72), 436, 0,
+            null, 452, 0,
+            null, 452, 20,
+            new MachineLayout.Rect(190, 5, 8, 8), new MachineLayout.Rect(180, 88, 18, 18), 436, 56,
+            new MachineLayout.Rect(106, 18, 92, 44), 8, 6, List.of(),
+            List.of(new MachineLayout.Control("pattern", new MachineLayout.Rect(106, 66, 40, 18), -1, 0, 0, "groundburst.gui.vls_pattern"), new MachineLayout.Control("closer", new MachineLayout.Rect(150, 66, 22, 18), -1, 0, 2, "groundburst.gui.vls_closer"), new MachineLayout.Control("wider", new MachineLayout.Rect(176, 66, 22, 18), -1, 0, 1, "groundburst.gui.vls_wider")), 512);
+
     public static final MachineLayout SUPERWEAPON = new MachineLayout(
             GroundBurst.id("textures/gui/machine/superweapon.png"), 176, 166, List.of(new MachineLayout.Pos(34, 37)), 8, 84,
             new MachineLayout.Rect(8, 20, 14, 46), 180, 0,

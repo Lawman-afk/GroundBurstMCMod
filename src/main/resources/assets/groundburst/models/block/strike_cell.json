@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "groundburst:block/strike_cell_top",
+    "side": "groundburst:block/strike_cell_side"
+  }
+}

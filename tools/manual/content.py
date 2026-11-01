@@ -1239,6 +1239,23 @@ Out of its box, each climbs on its booster, drops it, unfolds its wings and turn
     craft("launch_box"),
 ])
 
+entry("ordnance/vertical_launch_battery", "Vertical Launch Battery", "vertical_launch_battery", ["vertical_launch_battery", "strike_cell",
+                                                                                         "vertical_launch_battery_spawner"], [
+    text("""
+The **Vertical Launch Battery** saturates an area: sixteen **Strike Cells** in two eight-cell modules, each holding one Light or Medium [missile](ordnance/missiles) under an armoured hatch, all fired in one volley. It takes conventional warheads only (nothing nuclear or exotic) and no cruise missiles. A [Launch Computer](ordnance/launch_site), the [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator) aims, arms and fires it like any launcher.
+
+Load a missile into each cell (right-click the controller, or pipe them into its Item Port) and power it: 20,000 FE a missile (it holds 640,000, enough for two full volleys). Its range is its shortest missile's.
+"""),
+    structure("vertical_launch_battery", "A walkway of four Launch Pads with the controller second from the left; behind it sixteen Strike Cells four by four, the air over them clear for their hatches; at the back Machine Casing, the Energy Port, the Item Port and Machine Casing."),
+    text("""
+**The spread.** On its screen, the dotted button picks the pattern its missiles land in round the target: all on the **point**, a **line** across the line of attack, a **ring**, or a **grid**; the arrows set how far apart, up to 48 blocks. Each missile goes to its own point (and its own guidance's scatter on top).
+
+**Firing.** The siren sounds and the count runs 10 seconds while the beacon at its back turns. Then it **ripples**: one cell every quarter of a second, back and forth across the two modules, each hatch swinging open as its missile lights, the blast venting up the module's uptake. A full load is in the air in four seconds. An EMP, a redstone signal or a broken structure stops the ripple; whatever has not gone stays loaded.
+"""),
+    craft("vertical_launch_battery"),
+    craft("strike_cell"),
+])
+
 entry("ordnance/nuclear", "Nuclear warheads", "tactical_nuclear_warhead", ["tactical_nuclear_warhead", "fission_warhead", "boosted_fission_warhead", "neutron_warhead", "dirty_warhead", "thermonuclear_warhead", "cobalt_warhead", "tsar_warhead", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload"], [
     text("""
 A nuclear warhead is put together at the [Assembly Bench](ordnance/assembly) like any other, from a nuclear payload core, a **Strategic Warhead Casing** (nuclear warheads are class XL, Strategic) and a fuze, and is built into its two-stage **Strategic** [missile](ordnance/missiles) at the [Strategic Missile Assembler](ordnance/missile_assemblers). Only a [Launch Complex](ordnance/launch_complex) or a [Missile Silo](ordnance/missile_silo) fires it. Weapons too big for any missile are built whole, missile and all, in the [ICBM Assembly Hall](ordnance/strategic_assembly).

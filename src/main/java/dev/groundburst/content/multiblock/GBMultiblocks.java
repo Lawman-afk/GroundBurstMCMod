@@ -220,7 +220,7 @@ public final class GBMultiblocks {
                 dev.groundburst.content.launch.GBLaunch.RADAR, dev.groundburst.content.strategic.GBStrategic.HALL,
                 dev.groundburst.content.strategic.GBStrategic.SPECIAL,
                 dev.groundburst.content.launch.GBLaunch.MISSILE_SILO, dev.groundburst.content.launch.GBLaunch.CRUISE_LAUNCHER,
-                dev.groundburst.content.launch.GBLaunch.STATION,
+                dev.groundburst.content.launch.GBLaunch.STATION, dev.groundburst.content.launch.GBLaunch.VLS,
                 dev.groundburst.content.assembler.GBAssemblers.LIGHT,
                 dev.groundburst.content.assembler.GBAssemblers.MEDIUM, dev.groundburst.content.assembler.GBAssemblers.HEAVY,
                 dev.groundburst.content.assembler.GBAssemblers.STRATEGIC, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM,

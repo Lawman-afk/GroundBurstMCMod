@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "A": "#c:circuits/advanced",
+    "D": "groundburst:dense_steel_plate",
+    "F": "groundburst:machine_frame",
+    "S": "groundburst:servo"
+  },
+  "pattern": [
+    "DSD",
+    "DFD",
+    "DAD"
+  ],
+  "result": {
+    "id": "groundburst:strike_cell"
+  }
+}

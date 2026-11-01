@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/strike_cell"
+    },
+    "formed=true": {
+      "model": "groundburst:block/strike_cell_formed"
+    }
+  }
+}

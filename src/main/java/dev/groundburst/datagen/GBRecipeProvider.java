@@ -583,6 +583,19 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.CRT_DISPLAY).requires(GBParts.ADVANCED_CIRCUIT)
                 .requires(GBParts.PRESSURE_VESSEL).requires(GBParts.ELECTRIC_MOTOR).requires(Items.LEVER)
                 .unlockedBy(getHasName(GBParts.ADVANCED_CIRCUIT), has(GBParts.ADVANCED_CIRCUIT)).save(output);
+        // The Vertical Launch Battery (DESIGN.md §17.15), very late: a Strike Cell is a frame boxed in six dense plates (its
+        // canister), a servo for its hatch and an advanced circuit to sequence its launch; the controller a fire-control
+        // console of two military circuits and a quantum one, two CRT displays and a sensor array on machine casing.
+        shaped(RecipeCategory.BUILDING_BLOCKS, dev.groundburst.content.launch.GBLaunch.STRIKE_CELL.item(), 1)
+                .define('D', GBParts.DENSE_STEEL_PLATE).define('S', GBParts.SERVO).define('F', GBParts.MACHINE_FRAME)
+                .define('A', GBTags.ADVANCED_CIRCUITS)
+                .pattern("DSD").pattern("DFD").pattern("DAD")
+                .unlockedBy("has_advanced_circuit", has(GBTags.ADVANCED_CIRCUITS)).save(output);
+        shaped(RecipeCategory.REDSTONE, dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.item(), 1)
+                .define('C', GBParts.CRT_DISPLAY).define('S', GBParts.SENSOR_ARRAY).define('M', GBParts.MILITARY_CIRCUIT)
+                .define('Q', GBParts.QUANTUM_CIRCUIT).define('X', GBMultiblocks.MACHINE_CASING.item())
+                .pattern("CSC").pattern("MQM").pattern(" X ")
+                .unlockedBy(getHasName(GBParts.QUANTUM_CIRCUIT), has(GBParts.QUANTUM_CIRCUIT)).save(output);
         // The SCUD Storm (DESIGN.md §19.5): adobe (mud brick and sand bound with straw), the tank of toxin, the SCUDs'
         // erectors (hydraulics and a pump), and its controller (the toxin's canister for its placard).
         var sw = new Object() {

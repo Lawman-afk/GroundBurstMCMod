@@ -2773,6 +2773,41 @@ name, a launcher firing a volley of missiles (up to class M) at once onto one ar
 its own, behind a harder circuit chain. The MIRV build is in the history (commits c7fa97c3 and c372af43) should it come
 back.
 
+### 17.15 As built: the Vertical Launch Battery (2026-11-01, the user's volley launcher)
+What the user had pictured under "MIRV": "an individual launcher that launches the missiles (up to class M) all at once
+in a volley in the same general area", very late game, after the harder circuit chain (§8.1). After the Navy's Mk 41
+as it stands ashore (Aegis Ashore).
+- **Structure** (`GBLaunch.VLS`): four wide, six deep, one block high: a front walkway of Launch Pad with the
+  controller second from the left (cut to `CONSOLE_NORTH`, the pads to `DECK`); sixteen **Strike Cells** (new part
+  block) four by four behind it, the air over them required clear (their hatches swing up there); at the back Machine
+  Casing, the Energy Port, the Item Port and Machine Casing. A Structure Spawner.
+- **What it takes**: Light and Medium missiles (body S or M), conventional (`!needsComplex()`: nothing nuclear or
+  exotic), not cruise missiles (the Cruise Missile Launcher stays their only launcher). One a cell, sixteen cells,
+  loaded by hand or through the Item Port.
+- **Block entity** (`VerticalLaunchBatteryBlockEntity`, a `LaunchSite`, so the Launch Computer, the Launch Control
+  Station and the Laser Designator aim, arm and fire it as any launcher): 640,000 FE, 20,000 a missile, READY with
+  power for its whole load; its range its shortest missile's; its strike the worst of its missiles' widened by its
+  spread. LAUNCH: the siren, a 10 s countdown (the beacon turning), then a **ripple**: one cell every 5 ticks in a
+  spread order back and forth across the two modules, each missile climbing out of its cell (`Flights.launch` with
+  the cell's depth as its shaft) to its own point of the **spread** round the target (`LaunchNetwork.points`: a point,
+  a line across the line of attack, a ring, a grid; 0 to 48 blocks apart, set on its screen; GRID 8 by default), with
+  its own guidance's scatter on top; each hatch swings open 110 degrees for 30 ticks (`boneRotations`, synced fire
+  times), the blast vented up the module's uptake. An EMP, a redstone halt or a broken structure stops the ripple;
+  what has not gone stays loaded.
+- **Recipes**, very late: a Strike Cell is a machine frame in six dense steel plates with a servo and an advanced
+  circuit (sixteen of them: 96 dense plates, 16 advanced circuits); the controller two CRT displays, a sensor array,
+  two military circuits and a quantum circuit on machine casing.
+- **Model** (`tools/assets/vertical_launch_battery.py`): a concrete walkway banded in hazard paint with the olive fire-
+  control console; two haze-grey eight-cell modules, their canisters' seams down the sides, a hazard coaming, the
+  uptake grates down each module's middle, sixteen square hatches over dark bores; louvred launch control cabinets at
+  the back with the ports' striped housings; a status beacon on a mast, red and turning while it fires. Blocks: the
+  Strike Cell (its hatch in a hazard coaming; haze sides with a stencil band), the controller (a missile leaving its
+  cell on its placard).
+- Screen: the cells four by four, the CRT (state, load, spread, target), the spread's buttons (pattern, closer, wider).
+- GameTests (`VlsTests`): forming (and a block over a cell stops it), what the cells take, power, range, spread, the
+  buttons; a four-missile ripple, a quarter second apart, one to each corner of a 2x2 grid. FX scenes `vls`,
+  `vls_aerial`.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -4306,6 +4341,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The Vertical Launch Battery (§17.15), the user's volley launcher: sixteen Strike Cells after the Mk 41 ashore, Light and Medium conventional missiles only (no cruise missiles: the Cruise Missile Launcher stays theirs), rippled out a quarter second apart, each to its own point of a spread (point, line, ring, grid; up to 48 apart) round the target; any launch console or the Laser Designator fires it. Very late: 16 advanced circuits in its cells, two military and a quantum circuit in its controller. |
 | 2026-11-01 | The circuit cascade in place (§8.1, §26.2): advanced circuits take 2 microchips (in the quartz's place), military circuits 2 rad-hard microchips and 2 gold wire with their diamond (in the tungsten filament's and rare earths' place). Every advanced and military machine, part and weapon now waits on the silicon chain; basic and quantum circuits as they were. |
 | 2026-11-01 | The Clean Room (§8.1): a 3x2x2 multiblock (new Clean Room Panel and Fan Filter Unit blocks, the three ports, Reactor Glass windows) printing Microchips (wafer, red phosphorus, plastic sheet; photoresist, HF) and Rad-Hard Microchips (2 wafers, red phosphorus, ceramic package; photoresist, HF, liquid oxygen) at 320 FE/t. The ceramic package moves from the military circuit's recipe into the rad-hard chip's, and the microchip takes a plastic sheet: without a package of each, the rad-hard recipe (a superset of the microchip's) could never be picked. The military circuit takes 2 gold wire in the package's place. |
 | 2026-11-01 | The Crystal Puller (§8.1): a new two-block machine (a Czochralski puller: stainless chamber, viewport on the melt, isolation valve, pull chamber with the crystal rising in its sight glass, a turning seed-lift head) growing boules from 4 polysilicon and a crucible under 1000 mB argon in a minute at 160 FE/t; the Industrial Press saws a boule into 8 wafers with a new Diamond Wire Saw in its die slot (shown on the press bed). The puller and the condenser take basic circuits: both feed the chain that advanced circuits come from, so the condenser's advanced circuit (since 2026-10-20) would have closed a loop. New machines' sounds take a kin's loudness (`LIKE` in tools/sound/machines.py). |

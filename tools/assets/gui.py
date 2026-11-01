@@ -211,6 +211,24 @@ LAYOUTS = {
         "readout": (66, 17, 104, 38),
         "inventory": (8, 84),
     },
+    # The Vertical Launch Battery (DESIGN.md §17.15): its sixteen cells four by four, as they stand on its deck; the energy
+    # for the volley; the CRT with its state, load, spread and target; under it the spread's buttons (pattern, closer,
+    # wider). Wider than the others, the player's inventory centred under it.
+    "vertical_launch_battery": {
+        "title": (8, 6),
+        "size": (206, 196),
+        "slots": [("missile", 28 + 18 * c, 18 + 18 * r) for r in range(4) for c in range(4)],
+        "energy": (8, 18, 14, 72),
+        "progress": None,
+        "flame": None,
+        "status": (190, 5, 8, 8),
+        "redstone": (180, 88, 18, 18),
+        "readout": (106, 18, 92, 44),
+        "controls": [("pattern", 106, 66, 40, 18, -1, 0, 0, "groundburst.gui.vls_pattern"),
+                     ("closer", 150, 66, 22, 18, -1, 0, 2, "groundburst.gui.vls_closer"),
+                     ("wider", 176, 66, 22, 18, -1, 0, 1, "groundburst.gui.vls_wider")],
+        "inventory": (22, 114),
+    },
     # The superweapons (DESIGN.md §19.5): their ammunition (a SCUD Storm's nine Toxin SCUDs, a Nuclear Missile Silo's one
     # missile), the energy they charge from, and the CRT with the state (the charge's clock), ammunition and target.
     "superweapon": {
@@ -895,6 +913,22 @@ def control(t: Tex, kind: str, x: int, y: int, w: int, h: int, top: int = 1000, 
             t.px(tip, ay + 1, P.WHITE_CERAMIC[5])
             t.vline(tip + step, ay, 3, P.WHITE_CERAMIC[5])
             t.hline(min(tip + step * 2, tip + step * 3), ay + 1, 2, P.WHITE_CERAMIC[5])
+        return
+    if kind == "pattern":
+        # The spread's points: four at the corners of a square and one in its middle.
+        cx, cy = x + w // 2, y + h // 2
+        for dx, dy in ((-5, -4), (4, -4), (-5, 3), (4, 3), (0, 0)):
+            t.rect(cx + dx, cy + dy, 2, 2, P.WHITE_CERAMIC[5])
+        return
+    if kind in ("wider", "closer"):
+        # Two arrowheads on a bar: pointing out from the middle (wider) or in toward it (closer).
+        cx, cy = x + w // 2, y + h // 2
+        t.hline(cx - 6, cy, 13, P.WHITE_CERAMIC[3])
+        for side in (-1, 1):
+            tip = cx + side * (6 if kind == "wider" else 2)
+            back = -side if kind == "wider" else side
+            for k in range(3):
+                t.vline(tip + back * k, cy - k, 2 * k + 1, P.WHITE_CERAMIC[5])
         return
     rows = ARROW_UP if kind == "up" else ARROW_UP[::-1]
     gx, gy = x + (w - 7) // 2, y + (h - 7) // 2

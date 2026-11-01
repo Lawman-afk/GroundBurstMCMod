@@ -69,6 +69,7 @@
     "ordnance/launch_complex",
     "ordnance/missile_silo",
     "ordnance/cruise_launcher",
+    "ordnance/vertical_launch_battery",
     "ordnance/nuclear",
     "ordnance/exotic",
     "ordnance/strategic_assembly",

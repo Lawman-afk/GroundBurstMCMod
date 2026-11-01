@@ -94,6 +94,7 @@ public final class GBGameTests {
         SiloTests.register();
         SuperweaponTests.register();
         CruiseTests.register();
+        VlsTests.register();
         StationTests.register();
         DesignatorTests.register();
         SemiconductorTests.register();

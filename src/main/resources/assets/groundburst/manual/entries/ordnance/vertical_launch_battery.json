@@ -1,0 +1,35 @@
+{
+  "title": "Vertical Launch Battery",
+  "icon": "groundburst:vertical_launch_battery",
+  "order": 13,
+  "items": [
+    "groundburst:vertical_launch_battery",
+    "groundburst:strike_cell",
+    "groundburst:vertical_launch_battery_spawner"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **Vertical Launch Battery** saturates an area: sixteen **Strike Cells** in two eight-cell modules, each holding one Light or Medium [missile](ordnance/missiles) under an armoured hatch, all fired in one volley. It takes conventional warheads only (nothing nuclear or exotic) and no cruise missiles. A [Launch Computer](ordnance/launch_site), the [Launch Control Station](ordnance/launch_control_station) or a [Laser Designator](ordnance/laser_designator) aims, arms and fires it like any launcher.\n\nLoad a missile into each cell (right-click the controller, or pipe them into its Item Port) and power it: 20,000 FE a missile (it holds 640,000, enough for two full volleys). Its range is its shortest missile's."
+    },
+    {
+      "type": "structure",
+      "structure": "groundburst:vertical_launch_battery",
+      "text": "A walkway of four Launch Pads with the controller second from the left; behind it sixteen Strike Cells four by four, the air over them clear for their hatches; at the back Machine Casing, the Energy Port, the Item Port and Machine Casing."
+    },
+    {
+      "type": "text",
+      "text": "**The spread.** On its screen, the dotted button picks the pattern its missiles land in round the target: all on the **point**, a **line** across the line of attack, a **ring**, or a **grid**; the arrows set how far apart, up to 48 blocks. Each missile goes to its own point (and its own guidance's scatter on top).\n\n**Firing.** The siren sounds and the count runs 10 seconds while the beacon at its back turns. Then it **ripples**: one cell every quarter of a second, back and forth across the two modules, each hatch swinging open as its missile lights, the blast venting up the module's uptake. A full load is in the air in four seconds. An EMP, a redstone signal or a broken structure stops the ripple; whatever has not gone stays loaded."
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:vertical_launch_battery",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:strike_cell",
+      "text": ""
+    }
+  ]
+}

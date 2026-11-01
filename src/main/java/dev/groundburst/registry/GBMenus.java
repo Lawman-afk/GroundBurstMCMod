@@ -52,6 +52,8 @@ public final class GBMenus {
     /** The Missile Silo's controller screen (DESIGN.md §17.10): with its DOORS button. */
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> MISSILE_SILO = machine("missile_silo", () -> MachineLayouts.MISSILE_SILO);
     /** The Cruise Missile Launcher's (DESIGN.md §17.11): its two boxes' missiles. */
+    public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> VERTICAL_LAUNCH_BATTERY = machine("vertical_launch_battery",
+            () -> MachineLayouts.VERTICAL_LAUNCH_BATTERY);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> CRUISE_LAUNCHER = machine("cruise_launcher", () -> MachineLayouts.CRUISE_LAUNCHER);
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMenu>> ASSEMBLY_BENCH = machine("assembly_bench", () -> MachineLayouts.ASSEMBLY_BENCH);
     /** The ICBM Assembly Hall's controller screen (DESIGN.md §15.2). */

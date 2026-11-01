@@ -142,6 +142,9 @@ public final class GBJeiPlugin implements IModPlugin {
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_CRUISE_LAUNCHER, dev.groundburst.content.launch.GBLaunch.CRUISE_CONTROLLER.item().get(),
                 dev.groundburst.content.launch.GBLaunch.LAUNCH_BOX.item().get(), dev.groundburst.content.launch.GBLaunch.CRUISE_SPAWNER.get());
         info(registration, dev.groundburst.content.launch.GBLaunch.INFO_CRUISE_ENGINE, dev.groundburst.content.assembly.GBAssembly.CRUISE_ENGINE.get());
+        // The Vertical Launch Battery (DESIGN.md §17.15).
+        info(registration, dev.groundburst.content.launch.GBLaunch.INFO_VLS, dev.groundburst.content.launch.GBLaunch.VLS_CONTROLLER.item().get(),
+                dev.groundburst.content.launch.GBLaunch.STRIKE_CELL.item().get(), dev.groundburst.content.launch.GBLaunch.VLS_SPAWNER.get());
         // Radiation's instruments and medicine (slice 12a, DESIGN.md §21.8).
         info(registration, dev.groundburst.content.radiation.RadiationItems.INFO_GEIGER, dev.groundburst.content.radiation.RadiationItems.GEIGER_COUNTER.get());
         info(registration, dev.groundburst.content.radiation.RadiationItems.INFO_DOSIMETER, dev.groundburst.content.radiation.RadiationItems.DOSIMETER_BADGE.get());
