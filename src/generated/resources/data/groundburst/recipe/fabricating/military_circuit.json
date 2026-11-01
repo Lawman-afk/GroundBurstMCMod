@@ -7,16 +7,16 @@
       "ingredient": "#c:circuits/advanced"
     },
     {
-      "count": 1,
-      "ingredient": "groundburst:tungsten_filament"
+      "count": 2,
+      "ingredient": "groundburst:rad_hard_microchip"
+    },
+    {
+      "count": 2,
+      "ingredient": "#c:wires/gold"
     },
     {
       "count": 1,
       "ingredient": "#c:gems/diamond"
-    },
-    {
-      "count": 2,
-      "ingredient": "#c:dusts/rare_earth"
     }
   ],
   "outputs": [

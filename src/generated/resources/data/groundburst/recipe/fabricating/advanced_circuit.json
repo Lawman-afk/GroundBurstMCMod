@@ -8,15 +8,15 @@
     },
     {
       "count": 2,
+      "ingredient": "groundburst:microchip"
+    },
+    {
+      "count": 2,
       "ingredient": "#c:wires/gold"
     },
     {
       "count": 1,
       "ingredient": "#c:dusts/rare_earth"
-    },
-    {
-      "count": 1,
-      "ingredient": "#c:gems/quartz"
     }
   ],
   "outputs": [

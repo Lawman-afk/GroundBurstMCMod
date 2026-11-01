@@ -733,7 +733,7 @@ need the most of them, cost the most. Every new step is a real industrial proces
 own recipes (fission ones included: they are realistic as they are). The mid-game slows with it, by the user's wish
 ("the entire mid-game can be slowed by this process").
 
-The chain (as built, 2026-11-01: steps 1-14; the circuits next):
+The chain (as built, 2026-11-01: all of it):
 1. **Silicon** (Arc Furnace): 2 quartz and a coal: the carbothermic reduction smelters make it by. Tagged `c:silicon`,
    as other mods' silicon is.
 2. **Hydrogen** (Chemical Plant): a coal, 1000 mB water and 250 mB liquid oxygen give 1000 mB: an oxygen-blown
@@ -4088,8 +4088,8 @@ manual. Processing times/energy are tuned in implementation and recorded here th
 | HE lens ×4 | CT | 2 RDX, plastic sheet |
 | Burster charge | CT | RDX, steel plate, copper wire |
 | Basic circuit ×2 | CF | 2 copper wire, 2 redstone, plastic sheet |
-| Advanced circuit | CF | 2 basic circuit, 2 gold wire, rare-earth dust, quartz |
-| Military circuit | CF | 2 advanced circuit, tungsten filament, diamond, rare-earth dust ×2 |
+| Advanced circuit | CF | 2 basic circuit, 2 microchip, 2 gold wire, rare-earth dust (until 2026-11-01: quartz for the chips; §8.1) |
+| Military circuit | CF | 2 advanced circuit, 2 rad-hard microchip, 2 gold wire, diamond (until 2026-11-01: tungsten filament, diamond, 2 rare-earth dust; §8.1) |
 | Quantum circuit | CF | military circuit, stabilised exotic matter, superconducting coil |
 | Sensor array | CF | advanced circuit, glass, rare-earth dust, 2 gold wire |
 | Superconducting coil | CF | 2 tungsten filament, rare-earth dust, 2 gold wire, 1 000 mB LN₂ (coolant tank) |
@@ -4306,6 +4306,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-01 | The circuit cascade in place (§8.1, §26.2): advanced circuits take 2 microchips (in the quartz's place), military circuits 2 rad-hard microchips and 2 gold wire with their diamond (in the tungsten filament's and rare earths' place). Every advanced and military machine, part and weapon now waits on the silicon chain; basic and quantum circuits as they were. |
 | 2026-11-01 | The Clean Room (§8.1): a 3x2x2 multiblock (new Clean Room Panel and Fan Filter Unit blocks, the three ports, Reactor Glass windows) printing Microchips (wafer, red phosphorus, plastic sheet; photoresist, HF) and Rad-Hard Microchips (2 wafers, red phosphorus, ceramic package; photoresist, HF, liquid oxygen) at 320 FE/t. The ceramic package moves from the military circuit's recipe into the rad-hard chip's, and the microchip takes a plastic sheet: without a package of each, the rad-hard recipe (a superset of the microchip's) could never be picked. The military circuit takes 2 gold wire in the package's place. |
 | 2026-11-01 | The Crystal Puller (§8.1): a new two-block machine (a Czochralski puller: stainless chamber, viewport on the melt, isolation valve, pull chamber with the crystal rising in its sight glass, a turning seed-lift head) growing boules from 4 polysilicon and a crucible under 1000 mB argon in a minute at 160 FE/t; the Industrial Press saws a boule into 8 wafers with a new Diamond Wire Saw in its die slot (shown on the press bed). The puller and the condenser take basic circuits: both feed the chain that advanced circuits come from, so the condenser's advanced circuit (since 2026-10-20) would have closed a loop. New machines' sounds take a kin's loudness (`LIKE` in tools/sound/machines.py). |
 | 2026-11-01 | The semiconductor chain's chemistry and materials (§8.1, §5): fluorite ore; silicon (`c:silicon`), polysilicon, the quartz crucible, the ceramic package, red phosphorus and the Argon Molecular Sieve; hydrogen, hydrogen chloride, argon (gases) and trichlorosilane, photoresist, hydrofluoric acid (liquids), each with a canister. Recipes chosen so none is satisfied by another's ingredients (a machine takes the first recipe by id its contents satisfy): hydrogen takes liquid oxygen (an oxygen-blown gasifier) so coal and water alone still make fuel; photoresist takes coal and nitric acid besides plastic and fuel; the crucible takes sand besides quartz. |

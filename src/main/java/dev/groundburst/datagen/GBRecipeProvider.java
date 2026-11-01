@@ -1284,10 +1284,12 @@ public class GBRecipeProvider extends RecipeProvider {
         // Circuit Fabricator: circuits, sensor arrays, superconducting coils (coils use liquid nitrogen from the coolant tank).
         fab("basic_circuit", List.of(in(tag(GBTags.commonItem("wires/copper")), 2), in(tag(Tags.Items.DUSTS_REDSTONE), 2),
                 in(Ingredient.of(GBChemicals.PLASTIC_SHEET), 1)), List.of(), out(GBParts.BASIC_CIRCUIT, 2), 200);
-        fab("advanced_circuit", List.of(in(tag(GBTags.BASIC_CIRCUITS), 2), in(goldWire, 2), in(rareEarth, 1), in(tag(Tags.Items.GEMS_QUARTZ), 1)),
-                List.of(), out(GBParts.ADVANCED_CIRCUIT, 1), 300);
-        fab("military_circuit", List.of(in(advanced, 2), in(filament, 1), in(tag(Tags.Items.GEMS_DIAMOND), 1), in(rareEarth, 2)),
-                List.of(), out(GBParts.MILITARY_CIRCUIT, 1), 400);
+        // DESIGN.md §8.1: advanced circuits are built round microchips, military ones round rad-hard microchips (both
+        // printed in the Clean Room), with a diamond as the hot chips' heat spreader.
+        fab("advanced_circuit", List.of(in(tag(GBTags.BASIC_CIRCUITS), 2), in(Ingredient.of(GBParts.MICROCHIP), 2), in(goldWire, 2),
+                in(rareEarth, 1)), List.of(), out(GBParts.ADVANCED_CIRCUIT, 1), 300);
+        fab("military_circuit", List.of(in(advanced, 2), in(Ingredient.of(GBParts.RAD_HARD_MICROCHIP), 2), in(goldWire, 2),
+                in(tag(Tags.Items.GEMS_DIAMOND), 1)), List.of(), out(GBParts.MILITARY_CIRCUIT, 1), 400);
         fab("quantum_circuit", List.of(in(Ingredient.of(GBParts.MILITARY_CIRCUIT), 1),
                 in(Ingredient.of(dev.groundburst.content.nuclear.GBNuclear.STABILISED_EXOTIC_MATTER), 1), in(Ingredient.of(GBParts.SUPERCONDUCTING_COIL), 1)),
                 List.of(), out(GBParts.QUANTUM_CIRCUIT, 1), 600);

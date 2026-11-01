@@ -598,6 +598,8 @@ entry("components/circuits", "Circuits", "basic_circuit", ["handmade_circuit_boa
                                                            "quantum_circuit", "sensor_array"], [
     text("""
 Four tiers, each built on the one below in the [Circuit Fabricator](processing/circuit_fabricator). Early on a **handmade circuit board**, crafted by hand, counts as a basic circuit.
+
+An **advanced circuit** is built round two **microchips**, a **military circuit** round two **rad-hard microchips** with a diamond to spread their heat: both kinds are printed in the [Clean Room](processing/clean_room), on silicon grown and sawn as [Silicon and chips](components/semiconductors) tells. That is the long road every advanced and military machine and weapon waits on.
 """),
     craft("handmade_circuit_board"),
     machine("fabricating", "", item="basic_circuit"),

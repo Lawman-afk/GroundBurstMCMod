@@ -18,6 +18,9 @@
   windows look into a bay lit yellow, where the tools work while it runs.
 - The **Cryogenic Condenser** takes a basic circuit now instead of an advanced one.
 - Hydrogen chloride is a toxic gas; trichlorosilane and hydrofluoric acid burn like acids.
+- **Advanced circuits** are now built round two microchips, and **military circuits** round two rad-hard microchips
+  (with two gold wire and their diamond): every advanced and military machine, part and weapon waits on the chip
+  chain. Basic and quantum circuits are as they were.
 
 ### Laser Designator
 - **Laser Designator**: hold use and it goes to your eye: the view zooms in, and its sight shows a reticle, the
