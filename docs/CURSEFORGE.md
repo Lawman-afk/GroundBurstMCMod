@@ -50,6 +50,18 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 
 ## Screenshots
 
+![The Particle Uplink Cannon firing its uplink beam into the sky from its pit](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/particle_cannon.jpg)
+*The Particle Uplink Cannon fires*
+
+![The particle beam burning down through the night onto a meadow, fires round its foot](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/particle_beam.jpg)
+*The particle beam, steered across a meadow at night*
+
+![A mortar's strategic view over a hut struck by its shell, the aiming readout below](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/mortar.jpg)
+*The mortar's strategic view: a shell lands on target*
+
+![Spires of ice standing over snowed-over trees after a Cryo ICBM](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/cryo_icbm.jpg)
+*Spires of ice after a Cryo ICBM*
+
 ![A missile lifting off from its launch silo in a cloud of exhaust](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/launch.jpg)
 *Lift-off from a Launch Silo*
 
@@ -95,7 +107,6 @@ Install it on the server and on every player's game: it adds blocks and items, s
 
 ## Planned
 
-- More special weapons
 - Contamination that sticks to you and your gear, and more fallout and aftermath protection
 - More artillery: a towed howitzer and an atomic cannon
 - War room displays

@@ -1,20 +1,25 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 — 2026-11-02
 
-### Artillery: the 81 mm Mortar
-- **81 mm Mortar**: a crewed gun that lobs shells **16 to 200 blocks**, high over walls and hills. Right-click it with
-  shells to load its rack (hoppers and pipes load it too), or with anything else to **man it**; Shift gets up.
-- Aimed as *World of Tanks* aims its artillery: it follows where you look, or **scroll out** (or press **V**) for a
-  **strategic view**, a camera high over the ground where the mouse moves your aim and the wheel the height. **1 to 6**
-  pick the shell, **left click** fires.
-- It is laid on your aim at its own pace and picks its propellant charge itself. A shell falls where the tube points,
-  somewhere in the **aiming circle** drawn on the ground: the circle grows with range, blooms as the gun fires and
-  turns, and shrinks back over two seconds (white while it shrinks, green fully aimed, red out of range or blocked). A
-  readout shows the rack, the reload, the range, the charge, the elevation and the flight time.
-- **Six shells**, each made from its grenade, a steel plate and gunpowder: **HE** (a blast and fragments), **smoke** (a
-  screen of three clouds), **incendiary** (napalm 6 blocks round), **chemical** (two chlorine clouds), **cryo** (a freeze
-  7 blocks round) and **EMP** (16 blocks round). Shells whistle in their last two seconds.
+The USA's superweapon from *Command & Conquer: Generals*, a deep freeze as the fourth special weapon, and the first of
+the artillery: an 81 mm mortar aimed from above as *World of Tanks* aims its guns.
+
+### Particle Uplink Cannon
+- **Particle Uplink Cannon**, the USA's superweapon from *Command & Conquer: Generals*: a drum of white concrete with
+  eight **Particle Emitters** round a pit, a control tower with a glazed cab and two antennas, and an operations building
+  with two satellite dishes, on a 15x15 pad (a Structure Spawner places it in creative).
+- It takes **no ammunition**: power it and it charges for **4 minutes**. Charged, its focusing column rises out of the
+  pit, its core aglow and arcs leaping to it from the emitters.
+- Fire it from a Launch Computer or a **Laser Designator**: a beam goes up out of the pit to its satellite and two
+  seconds later comes down from orbit on the target, burning for **48 seconds**.
+- Whoever fired it **steers the beam** with their Laser Designator: it follows the spot at three blocks a second. A new
+  aim from a Launch Computer turns it too.
+- The beam **eats a trench** into whatever it stands on, deeper the longer it lingers (up to 8 blocks), melting its sides
+  to slag, glassed sand and scorched earth, glowing magma in its bottom; fires catch round it, and anything under it is
+  **vaporised**, armour or not.
+- It draws 1,000 FE a tick while it fires: whatever powers it well enough to charge keeps it burning, and what the
+  cannon holds lasts twenty seconds. Cut its power, knock it out with an EMP or break it, and the beam dies.
 
 ### Cryo ICBM
 - **Cryo ICBM**, the fourth special weapon: a **Cryo Core** (four liquid nitrogen canisters, two superconducting coils,
@@ -33,21 +38,19 @@
 - Its snow (**Cryo Snow**) and milky **Cryo Ice** thaw over the next half hour where snow would not lie: the ice back to
   water where it was still, away where it ran. In cold places they stay.
 
-### Particle Uplink Cannon
-- **Particle Uplink Cannon**, the USA's superweapon from *Command & Conquer: Generals*: a drum of white concrete with
-  eight **Particle Emitters** round a pit, a control tower with a glazed cab and two antennas, and an operations building
-  with two satellite dishes, on a 15x15 pad (a Structure Spawner places it in creative).
-- It takes **no ammunition**: power it and it charges for **4 minutes**. Charged, its focusing column rises out of the
-  pit, its core aglow and arcs leaping to it from the emitters.
-- Fire it from a Launch Computer or a **Laser Designator**: a beam goes up out of the pit to its satellite and two
-  seconds later comes down from orbit on the target, burning for **48 seconds**.
-- Whoever fired it **steers the beam** with their Laser Designator: it follows the spot at three blocks a second. A new
-  aim from a Launch Computer turns it too.
-- The beam **eats a trench** into whatever it stands on, deeper the longer it lingers (up to 8 blocks), melting its sides
-  to slag, glassed sand and scorched earth, glowing magma in its bottom; fires catch round it, and anything under it is
-  **vaporised**, armour or not.
-- It draws 1,000 FE a tick while it fires: whatever powers it well enough to charge keeps it burning, and what the
-  cannon holds lasts twenty seconds. Cut its power, knock it out with an EMP or break it, and the beam dies.
+### Artillery: the 81 mm Mortar
+- **81 mm Mortar**: a crewed gun that lobs shells **16 to 200 blocks**, high over walls and hills. Right-click it with
+  shells to load its rack (hoppers and pipes load it too), or with anything else to **man it**; Shift gets up.
+- Aimed as *World of Tanks* aims its artillery: it follows where you look, or **scroll out** (or press **V**) for a
+  **strategic view**, a camera high over the ground where the mouse moves your aim and the wheel the height. **1 to 6**
+  pick the shell, **left click** fires.
+- It is laid on your aim at its own pace and picks its propellant charge itself. A shell falls where the tube points,
+  somewhere in the **aiming circle** drawn on the ground: the circle grows with range, blooms as the gun fires and
+  turns, and shrinks back over two seconds (white while it shrinks, green fully aimed, red out of range or blocked). A
+  readout shows the rack, the reload, the range, the charge, the elevation and the flight time.
+- **Six shells**, each made from its grenade, a steel plate and gunpowder: **HE** (a blast and fragments), **smoke** (a
+  screen of three clouds), **incendiary** (napalm 6 blocks round), **chemical** (two chlorine clouds), **cryo** (a freeze
+  7 blocks round) and **EMP** (16 blocks round). Shells whistle in their last two seconds.
 
 ### Changes
 - Scorched, glassed and frozen ground now counts as ground for rain, lightning and mob spawning (it was passed through),

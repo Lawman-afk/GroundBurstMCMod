@@ -70,6 +70,14 @@ What changed in each version is in the [changelog](CHANGELOG.md).
 
 <table>
   <tr>
+    <td><img src="docs/screenshots/particle_cannon.jpg" width="380" alt="The Particle Uplink Cannon firing its uplink beam into the sky from its pit"><br>The Particle Uplink Cannon fires</td>
+    <td><img src="docs/screenshots/particle_beam.jpg" width="380" alt="The particle beam burning down through the night onto a meadow, fires round its foot"><br>The particle beam, steered across a meadow at night</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/mortar.jpg" width="380" alt="A mortar's strategic view over a hut struck by its shell, the aiming readout below"><br>The mortar's strategic view: a shell lands on target</td>
+    <td><img src="docs/screenshots/cryo_icbm.jpg" width="380" alt="Spires of ice standing over snowed-over trees after a Cryo ICBM"><br>Spires of ice after a Cryo ICBM</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile lifting off from its launch silo in a cloud of exhaust"><br>Lift-off from a Launch Silo</td>
     <td><img src="docs/screenshots/scud_strike.jpg" width="380" alt="A SCUD strike throwing up fire, smoke and blocks of sand"><br>The SCUD Storm strikes</td>
   </tr>
