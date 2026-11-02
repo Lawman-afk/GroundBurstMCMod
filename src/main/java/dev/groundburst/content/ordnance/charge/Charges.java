@@ -337,9 +337,10 @@ public final class Charges {
     public static final float NAPALM_RADIUS = 10;
     /**
      * A toxin SCUD (DESIGN.md §19.5): how far its residue spreads (well past its crater, over the ground round it), and how far
-     * its cloud reaches as it wells up (a third further than the first figures, 16 and 12: the user's rebalance).
+     * its cloud reaches as it wells up (the first figures 16 and 12, a third further at the user's first rebalance, about
+     * 40% further again at their second, with the salvo spread wider: 21 and 16 before).
      */
-    public static final float SCUD_SPREAD = 21, SCUD_CLOUD = 16;
+    public static final float SCUD_SPREAD = 30, SCUD_CLOUD = 22;
 
     /**
      * A toxin SCUD coming down: a heavy blast, then (the crater dug) its toxin wells up out of the crater as a heavy

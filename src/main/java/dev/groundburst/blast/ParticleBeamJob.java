@@ -50,13 +50,16 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * every grace period); round it, things catch fire and are scalded.</li>
  * </ul>
  * It burns while its cannon keeps firing it (power cut, knocked out, broken: the beam is gone). Terrain is left alone
- * when the server says so (as for blasts: the master switch, protected dimensions, the spawn area). Not saved.
+ * when the server says so (as for blasts: the master switch, protected dimensions, the spawn area). The chunks round it
+ * are kept loaded as it goes ({@link #KEEP}: a 48 s beam can walk 144 blocks). Not saved.
  */
 final class ParticleBeamJob {
     /** Heat over which a column's trench deepens: {@code MAX_DEPTH (1 - e^(-heat / DEEPEN))}; a tick in its core is 1. */
     private static final float DEEPEN = 60;
     /** Damage a tick to whatever is in its core; every half second to what is near it. */
     private static final float VAPORISE = 20, SCALD = 3;
+    /** How far round it the chunks are kept loaded, and how far it may move before they are kept round it anew. */
+    private static final float KEEP = ParticleBeams.FIRE + 24, KEEP_SLACK = 12;
     /**
      * Chance a tick that a column round it catches fire while it is there (at its melt's edge, falling to none at its
      * reach): a column the beam passes at full speed is round it about a second or three, so a third or so of them burn;
@@ -76,8 +79,9 @@ final class ParticleBeamJob {
     private final boolean terrain, hurts;
     private final @Nullable BlockPos spawn;
     private final int spawnRadius;
-    private final UUID owner = UUID.randomUUID();
-    private final BlastChunks chunks;
+    /** The chunks it keeps loaded, round {@link #chunkX}, {@link #chunkZ} (each loader its own ticket owner). */
+    private BlastChunks chunks;
+    private double chunkX, chunkZ;
     private final RandomSource random = RandomSource.create();
     /** Where it touches now (x, z; y the ground's top there) and where it is heading. */
     private double x, y, z, aimX, aimZ;
@@ -115,8 +119,7 @@ final class ParticleBeamJob {
         }
         this.spawn = spawnAt;
         this.spawnRadius = spawnR;
-        this.chunks = new BlastChunks(level, this.owner, new Vec3(this.x, this.y, this.z), ParticleBeams.WANDER,
-                GBServerConfig.GENERATE_CHUNKS.get(), h -> {});
+        this.chunks = keep();
         this.heat.defaultReturnValue(0);
     }
 
@@ -145,7 +148,14 @@ final class ParticleBeamJob {
             return false;
         }
         if (age % 5 == 0) {
-            this.chunks.prepare((int) Math.ceil(ParticleBeams.WANDER), true);
+            if (Math.hypot(this.x - this.chunkX, this.z - this.chunkZ) > KEEP_SLACK) {
+                BlastChunks old = this.chunks;                   // it has moved on: keep the chunks round it now
+                this.chunks = keep();
+                this.chunks.prepare((int) Math.ceil(KEEP), true);
+                old.release(Integer.MAX_VALUE);
+            } else {
+                this.chunks.prepare((int) Math.ceil(KEEP), true);
+            }
         }
         steer(cannon);
         if (age >= this.uplink) {
@@ -185,6 +195,13 @@ final class ParticleBeamJob {
     /** The level is going: let every chunk go now. */
     void releaseAll() {
         this.chunks.release(Integer.MAX_VALUE);
+    }
+
+    /** A chunk loader round where it is now. */
+    private BlastChunks keep() {
+        this.chunkX = this.x;
+        this.chunkZ = this.z;
+        return new BlastChunks(this.level, UUID.randomUUID(), new Vec3(this.x, this.y, this.z), KEEP, GBServerConfig.GENERATE_CHUNKS.get(), h -> {});
     }
 
     /** The top of the ground at a column: the first air over whatever is highest there ({@code fallback} if unloaded). */

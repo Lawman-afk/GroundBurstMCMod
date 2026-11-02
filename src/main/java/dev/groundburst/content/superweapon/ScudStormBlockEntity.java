@@ -24,15 +24,16 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The GLA's SCUD Storm (DESIGN.md §19.5, C&C Generals): a square sand pad, nine Toxin SCUDs lying like the spokes of a
  * wheel on their erectors round a tank of toxin, behind a low adobe wall with two watchtowers. Charged (5:00) and fired,
- * the erectors raise the SCUDs upright and they go one after another (0.6 s apart), each coming down anywhere within 16
- * blocks of the target with a heavy blast, a toxin cloud and a spreading front of anthrax residue.
+ * the erectors raise the SCUDs upright and they go one after another (0.6 s apart), each coming down anywhere within 24
+ * blocks of the target (the user's balance: wider, and each SCUD reaching further) with a heavy blast, a toxin cloud and
+ * a spreading front of anthrax residue.
  *
  * <p>The figures here are the model's (tools/assets/scud_storm.py): the pad's middle, each erector's bearing and where a
  * raised SCUD's tail stands.
  */
 public class ScudStormBlockEntity extends SuperweaponBlockEntity {
     public static final int CAPACITY = 9, CHARGE_TICKS = 6000, CHARGE_POWER = 400, FIRE_INTERVAL = 12;
-    public static final float SPREAD = 16;
+    public static final float SPREAD = 24;
     /** The pad's middle: pixels back from the middle of the controller's cell (seven cells). */
     public static final float CENTER_BACK = 112;
     /** Erector k's bearing, degrees clockwise from the front: FIRST_BEARING + k * BEARING_STEP. */

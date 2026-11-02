@@ -32,7 +32,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gb import materials as M  # noqa: E402
 from gb import palette as P  # noqa: E402
 from gb import panels as PN  # noqa: E402
+from gb import paths  # noqa: E402
 from gb.geo import Animation, GeoModel, rest_pose, save_animations  # noqa: E402
+from gb.model import write_json  # noqa: E402
 from gb.tex import Tex  # noqa: E402
 import launch as L  # noqa: E402
 import multiblock_tools as MT  # noqa: E402
@@ -858,6 +860,17 @@ def uplink_wall_block() -> Tex:
     return M.to_tex(img)
 
 
+def uplink_wall_end() -> Tex:
+    """Uplink Wall's top and bottom: the panel's concrete and its joints round the edge, no band (the sides' band, drawn
+    on a top, sat along one edge of it: the user's look)."""
+    img = M.tile(M.Material(ramp=UPLINK_GREY_RAMP, tone=0.64, mottle=0.06, grain=0.05, dither=0.7, scale=0.5, despeckle=False), seed=93)
+    col, row = M.grid_xy()
+    seam = (row == 0) | (col == 0)
+    M.darken(img, seam, 0.62)
+    M.lighten(img, ((row == 1) | (col == 1)) & ~seam, 1.06, 3)
+    return M.to_tex(img)
+
+
 def particle_emitter_block() -> Tex:
     """Particle Emitter: a gunmetal plate, the coil housing's blue cap in its middle round a bright lens."""
     img = PN.face(M.painted(M.ARMOUR_RAMP, tone=0.5, wear=0.2), style="inset", seed=93)
@@ -901,6 +914,10 @@ def roundel(t: Tex) -> None:
 
 def blocks() -> None:
     ST.part_block("uplink_wall", uplink_wall_block())
+    uplink_wall_end().save(paths.TEXTURES / "block" / "uplink_wall_end.png")       # its ends plain concrete
+    write_json(paths.MODELS / "block" / "uplink_wall.json", {"parent": "minecraft:block/cube_column",
+                                                            "textures": {"end": "groundburst:block/uplink_wall_end",
+                                                                         "side": "groundburst:block/uplink_wall"}})
     ST.part_block("particle_emitter", particle_emitter_block())
     ST.part_block("focusing_column", focusing_column_block())
     side = M.to_tex(PN.face(M.Material(ramp=UPLINK_GREY_RAMP, tone=0.62, mottle=0.04, grain=0.04, dither=0.6), style="inset", seed=98))

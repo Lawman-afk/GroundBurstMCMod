@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_column",
   "textures": {
-    "all": "groundburst:block/uplink_wall"
+    "end": "groundburst:block/uplink_wall_end",
+    "side": "groundburst:block/uplink_wall"
   }
 }

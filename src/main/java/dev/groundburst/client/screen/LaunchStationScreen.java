@@ -140,7 +140,9 @@ public class LaunchStationScreen extends Screen {
             "missile_silo", GBLang.add(P + "kind.missile_silo", "Missile Silo"),
             "cruise_launcher", GBLang.add(P + "kind.cruise_launcher", "Cruise Launcher"),
             "radar_array", GBLang.add(P + "kind.radar_array", "Radar Array"),
-            "particle_uplink_cannon", GBLang.add(P + "kind.particle_uplink_cannon", "Particle Cannon"));
+            "particle_uplink_cannon", GBLang.add(P + "kind.particle_uplink_cannon", "Particle Cannon"),
+            "scud_storm", GBLang.add(P + "kind.scud_storm", "SCUD Storm"),
+            "nuclear_missile_silo", GBLang.add(P + "kind.nuclear_missile_silo", "Nuclear Missile"));
 
     private static final int W = 420, H = 236, MAP = 196;
     private static final int COL = MAP + 18, CW = W - COL - 8, ROW = 10, ROWS = 7;

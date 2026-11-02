@@ -7,6 +7,7 @@ import dev.groundburst.content.effect.GasGrid;
 import dev.groundburst.content.launch.Flights;
 import dev.groundburst.content.launch.LaunchSiloBlockEntity.Readiness;
 import dev.groundburst.content.launch.LaunchSite;
+import dev.groundburst.content.launch.LaunchNetwork;
 import dev.groundburst.content.launch.Launches;
 import dev.groundburst.content.machine.MachineBlock;
 import dev.groundburst.content.multiblock.MultiblockDefinition;
@@ -41,6 +42,7 @@ final class SuperweaponTests {
         GBGameTests.test("scud_storm_forms_charges_and_fires_its_salvo", GBGameTests.FLOOR_16, 400, SuperweaponTests::scudStormFires);
         GBGameTests.test("nuclear_missile_silo_forms_charges_and_fires", GBGameTests.FLOOR_16, 300, SuperweaponTests::nuclearSiloFires);
         GBGameTests.test("superweapons_take_only_their_own_ammunition", GBGameTests.FLOOR_16, 20, SuperweaponTests::ownAmmo);
+        GBGameTests.test("designator_commands_the_superweapons", GBGameTests.FLOOR_16, 20, SuperweaponTests::designated);
         GBGameTests.test("toxin_scud_spreads_residue_and_a_cloud", GBGameTests.FLOOR_16, 120, SuperweaponTests::toxinStrike);
         GBGameTests.test("nuclear_missile_warhead_leaves_its_radiation", GBGameTests.FLOOR_16, 100, SuperweaponTests::nuclearStrike);
         GBGameTests.test("superweapon_warheads_are_whole_weapons", GBGameTests.FLOOR_16, 20, SuperweaponTests::warheadKinds);
@@ -156,6 +158,37 @@ final class SuperweaponTests {
             helper.assertTrue(n.charge() < 100, "charging again from empty after the strike: " + n.charge());
             helper.succeed();
         });
+    }
+
+    /**
+     * A Laser Designator commands every superweapon on its network (the user's look: the SCUD Storm and the Nuclear
+     * Missile had been left out, having no laser-guided missile in them): a charged, loaded SCUD Storm is among its
+     * launchers; a designation aims and arms it on the spot; a call for fire starts its countdown.
+     */
+    private static void designated(GameTestHelper helper) {
+        ScudStormBlockEntity s = scudStorm(helper, true);
+        var level = helper.getLevel();
+        s.inventory().setItem(SuperweaponBlockEntity.SLOT_AMMO, new ItemStack(GBSuperweapons.TOXIN_SCUD.get(), ScudStormBlockEntity.CAPACITY));
+        s.energy().generate(400_000);
+        s.chargeForTest();
+        helper.assertTrue(s.readiness() == Readiness.READY, "charged and loaded: " + s.readiness());
+        LaunchNetwork nets = LaunchNetwork.of(level);
+        long net = nets.create(level, helper.absolutePos(new BlockPos(0, 1, 15)));
+        helper.assertTrue(nets.link(level, net, s) == LaunchNetwork.LinkResult.LINKED, "linked");
+        LaunchNetwork.Member m = nets.network(net).member(s.getBlockPos());
+        helper.assertTrue(m != null && nets.laserLaunchers(net).contains(m), "among a designator's launchers");
+        helper.assertTrue(GBSuperweapons.isSuperweapon(dev.groundburst.GroundBurst.MODID + ":nuclear_missile_silo")
+                && GBSuperweapons.isSuperweapon(dev.groundburst.content.superweapon.ParticleCannonBlockEntity.KIND)
+                && !GBSuperweapons.isSuperweapon(dev.groundburst.GroundBurst.MODID + ":launch_silo"), "so are the others; not a silo");
+        BlockPos spot = s.getBlockPos().offset(300, 0, 120);
+        helper.assertTrue(nets.designate(level, net, m, spot, null), "designated");
+        helper.assertTrue(s.armed() && s.target() != null && s.target().getX() == spot.getX() && s.target().getZ() == spot.getZ(),
+                "aimed and armed on the spot: " + s.target());
+        helper.assertTrue(nets.fireLaser(level, net, m, null), "fire called");
+        helper.assertTrue(s.readiness() == Readiness.COUNTING, "counting down: " + s.readiness());
+        nets.unlink(level, s.getBlockPos());
+        helper.setBlock(new BlockPos(8, 1, 0), Blocks.AIR);           // scrubbed: no SCUDs flying after the test
+        helper.succeed();
     }
 
     /** Each takes only its own round (nine Toxin SCUDs, one Nuclear Missile), and not an assembled missile. */

@@ -13,7 +13,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "The GLA's superweapon: a square sand pad, nine **Toxin SCUDs** lying like the spokes of a wheel on their erectors round a tank of toxin, behind a low adobe wall with a watchtower at each end, a guard hut flying its flag.\n\nLoad it with up to nine Toxin SCUDs and give it power through its Energy Port (pipes can feed it through its Item Port). It **charges for 5 minutes** at 400 FE a tick (charging pauses without power); then it is **READY**. A [Launch Computer](ordnance/launch_site) within reach lists it with its charge; aim it, arm it and press LAUNCH. Its erectors raise the SCUDs upright, a 10 second countdown runs and they go **one after another**, each coming down anywhere within **16 blocks** of the target. Then it charges again from empty."
+      "text": "The GLA's superweapon: a square sand pad, nine **Toxin SCUDs** lying like the spokes of a wheel on their erectors round a tank of toxin, behind a low adobe wall with a watchtower at each end, a guard hut flying its flag.\n\nLoad it with up to nine Toxin SCUDs and give it power through its Energy Port (pipes can feed it through its Item Port). It **charges for 5 minutes** at 400 FE a tick (charging pauses without power); then it is **READY**. A [Launch Computer](ordnance/launch_site) within reach lists it with its charge; aim it, arm it and press LAUNCH (or arm and fire it with a [Laser Designator](ordnance/laser_designator)). Its erectors raise the SCUDs upright, a 10 second countdown runs and they go **one after another**, each coming down anywhere within **24 blocks** of the target. Then it charges again from empty."
     },
     {
       "type": "structure",

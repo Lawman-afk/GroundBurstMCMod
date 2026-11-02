@@ -26,20 +26,25 @@
 - It takes **no ammunition**: power it and it charges for **4 minutes**. Charged, its focusing column rises out of the
   pit, its core aglow and arcs leaping to it from the emitters.
 - Fire it from a Launch Computer or a **Laser Designator**: a beam goes up out of the pit to its satellite and two
-  seconds later comes down from orbit on the target, burning for **12 seconds**.
+  seconds later comes down from orbit on the target, burning for **48 seconds**.
 - Whoever fired it **steers the beam** with their Laser Designator: it follows the spot at three blocks a second. A new
   aim from a Launch Computer turns it too.
 - The beam **eats a trench** into whatever it stands on, deeper the longer it lingers (up to 8 blocks), melting its sides
   to slag, glassed sand and scorched earth, glowing magma in its bottom; fires catch round it, and anything under it is
   **vaporised**, armour or not.
-- It draws 2,000 FE a tick while it fires: what the cannon holds lasts ten seconds, so feed it to burn the full twelve.
-  Cut its power, knock it out with an EMP or break it, and the beam dies.
+- It draws 1,000 FE a tick while it fires: whatever powers it well enough to charge keeps it burning, and what the
+  cannon holds lasts twenty seconds. Cut its power, knock it out with an EMP or break it, and the beam dies.
 
 ### Changes
 - Scorched, glassed and frozen ground now counts as ground for rain, lightning and mob spawning (it was passed through),
   and so do the mod's machines, structures and other solid blocks: rain no longer falls through them.
 - The superweapon settings in the server config (announcements, maximum range, charge time multiplier) now take effect.
 - A Launch Computer's map can aim a superweapon while it charges.
+- A **Laser Designator** now arms and fires the SCUD Storm and the Nuclear Missile too (their missiles come down where
+  you designated).
+- The **SCUD Storm** spreads its salvo wider (each SCUD comes down within 24 blocks of the target, was 16), and each
+  SCUD reaches further: a blast a quarter bigger and its anthrax residue spreading 30 blocks round (was 21) under a
+  bigger cloud.
 
 ## 0.5.0 — 2026-11-01
 

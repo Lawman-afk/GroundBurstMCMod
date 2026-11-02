@@ -3266,7 +3266,7 @@ shared one), with effects to match ("like the toxic waste spread on the ground")
   aims it, arms it and fires it with LAUNCH; range 4 096 blocks.
 - *Announcements* (all players in the dimension): a superweapon detected (formed), ready, launched; an alarm.
 - *SCUD Storm strike*: the cranes raise the missiles upright (3 s), then the loaded SCUDs (up to nine) fire one every
-  0.6 s, each coming down anywhere within 16 blocks of the target. Each: a blast, a ground-hugging anthrax cloud, and a
+  0.6 s, each coming down anywhere within 16 blocks of the target (24 since 2026-11-02). Each: a blast, a ground-hugging anthrax cloud, and a
   front of glowing **anthrax residue** sludge spreading out over the ground from where it hit (a ring growing over a
   second or so, splashing as it goes), lasting minutes and poisoning anything on it.
 - *Nuclear strike*: the roof slides open and the rams raise the missile beside its tower, then it lights (exhaust
@@ -3282,7 +3282,9 @@ shared one), with effects to match ("like the toxic waste spread on the ground")
   crater 68, wrecks to 100, deadly to 108, burns to 120, "20 kt", just under the fission warhead's blast; contamination
   200 blocks round for two days; fizzles if set off any other way). (After the first look the user rebalanced them: the
   nuke's radii and damage x0.8, from crater 85 and "25 kt"; the SCUD's blast and toxin x1.33, from crater 10, residue 16
-  and cloud 12.) Their models are the
+  and cloud 12. On 2026-11-02, balancing the three superweapons, the user had the SCUD's salvo spread wider (16 to 24)
+  and each SCUD reach further: its blast radii x1.25 (crater 16.6, wrecks to 26.6, deadly to 20), residue 30 and cloud
+  22; and every superweapon answers the Laser Designator.) Their models are the
   missiles' noses (`tools/assets/warheads.py`): the SCUD's long toxin-green ogive, the DF-5 re-entry vehicle's silver cone
   with a red tip and a red star.
 - *Missiles* (`tools/assets/missiles.py`): the **Toxin SCUD** (class M, an R-17 in the game's white and toxin green,
@@ -3390,11 +3392,14 @@ steered. 4:00 between strikes.
   and no slot); 4:00 at 1,200 FE/t. Charged, the column rises out of the pit (it telescopes: at rest squeezed to 30%
   and sunk a block, so nothing of it hangs under the pad), its core aglow and arcs flickering from the emitters' tips
   (the "charged" loop after "raise"); a crackle every 2.5 s.
-- *Firing*: from a Launch Computer or a Laser Designator (the launch network counts it as a laser launcher by its block
-  id). After the 10 s countdown the uplink goes up out of the pit (`ParticleBeams.UPLINK`, 2 s), then the beam comes down
-  on the target and burns 12 s. It draws 2,000 FE a tick: the cannon's 400,000 FE carry it 10 s, so it needs feeding for
-  the full 12; out of power, EMP'd, halted or broken, it stands down and the beam goes out at once. Its time on target
-  is the countdown and the uplink wherever it is aimed (`LaunchSite.Timing.direct`).
+- *Firing*: from a Launch Computer or a Laser Designator (the launch network lets a designator command every
+  superweapon, by its block id: `GBSuperweapons.isSuperweapon`). After the 10 s countdown the uplink goes up out of the
+  pit (`ParticleBeams.UPLINK`, 2 s), then the beam comes down on the target and burns 48 s (the user's: four times the
+  game's 12). It draws 1,000 FE a tick: whatever can charge it (1,200) keeps it burning, and the cannon's 400,000 FE
+  carry it 20 s; out of power, EMP'd, halted or broken, it stands down and the beam goes out at once. (At first 12 s at
+  2,000 FE/t.) Its time on target is the countdown and the uplink wherever it is aimed (`LaunchSite.Timing.direct`).
+  The chunks within 31 of the beam are kept loaded, a new loader round it whenever it has moved 12 (a 48 s beam can walk
+  144 blocks).
 - *Steering*: the beam moves toward its aim at 0.15 blocks a tick (3 a second, as the game's): the spot of whoever fired
   it while they lase with their designator (held after they let go), or the cannon's new aim (it may be aimed during its
   countdown and while it fires: the Launch Computer's map allows it); never beyond the cannon's reach.
@@ -4575,6 +4580,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-02 | After the user's look at the cannon, balancing the three superweapons (harder to use than the pack's other weapons): the particle beam burns four times as long (48 s; it draws 1,000 FE/t now, so whatever can charge the cannon keeps its beam burning); the SCUD Storm's salvo spreads wider (24 blocks, from 16) and each SCUD reaches further (blast radii x1.25, residue 30 from 21, cloud 22 from 16); a Laser Designator commands every superweapon (the SCUD Storm and the Nuclear Missile had been left out: no laser-guided missile in them; their missiles still come down where designated, without homing). Uplink Wall's top and bottom are plain concrete (the sides' blue band sat along one edge of them). |
 | 2026-11-02 | The **Particle Uplink Cannon** (the user: continue development; the plan's next item), by the user's rule for the superweapons: built as the game's (a drum of eight emitters round a pit, the control tower and the operations building, laid out as the game's picture seen from in front) and working as it does (no ammunition, 4:00 on power alone, a beam up to the satellite and down from orbit for 12 s, steered by whoever fired it with their designator at 3 blocks a second; §19.6). It eats a trench deeper where it lingers (8 at most), melts its sides, sets fires and vaporises what is in it; it draws 2,000 FE/t, so cut its power and it dies. The superweapons' server settings (announcements, range, charge multiplier) now apply. Every solid block of the mod counts for 26.x's heightmaps (vanilla's `isSolid` rule: §16.16's follow-up). |
 | 2026-11-02 | The **Cryo ICBM** (the user: continue development; next on their list): the plan's Cryo Bomb built as the fourth special weapon, by the user's rules for them (an ICBM whole from its core at the Special Weapons Assembler) and at their scale from the start: a front of frozen air 128 blocks round, a heart of 40 where nothing lives and spires of ice burst up, a three-minute cold snap that leather keeps out, snow and ice that thaw where snow would not lie (vanilla's would never melt in a warm land) while the spires stay (§16.16). The aftermath's ground and the new ice are tagged to count for 26.x's heightmaps. |
 | 2026-11-01 | Version **0.5.0** (the user's request: the jar, a changelog, GitHub and the CurseForge description updated): the Vertical Launch Battery, the Laser Designator, the silicon chain (chips, sapphire, the Clean Room), Auto Assemble, launchers' Item Ports, rods passing a strike's EMP. CHANGELOG's Unreleased became 0.5.0 (its 0.4.0 section restored: a note for this version had landed in it); README and `docs/CURSEFORGE.md` gain the battery, the designator and the chip chain, two screenshots (`vertical_launch_battery.jpg` from a new FX scene `vls_close`, `laser_designator.jpg`), and the designator and MIRVs leave the Planned list (one built, the other removed). Before it, the user's next look: pipes and cables may stand on the assemblers' ports (§10.4). |

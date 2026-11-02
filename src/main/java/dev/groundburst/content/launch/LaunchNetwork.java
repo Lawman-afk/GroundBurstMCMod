@@ -700,14 +700,15 @@ public final class LaunchNetwork extends SavedData {
 
     // --- the Laser Designator (DESIGN.md §17.13) ---------------------------------------------------------------------------
     /**
-     * Whether a member is a launcher loaded with a laser-guided missile (as it last reported), or a Particle Uplink
-     * Cannon (its beam follows the laser of whoever fired it).
+     * Whether a Laser Designator commands a member (as it last reported): a launcher loaded with a laser-guided missile,
+     * or a superweapon (the SCUD Storm's and the Nuclear Missile's missiles come down where it designated; the Particle
+     * Uplink Cannon's beam follows the laser of whoever fired it).
      */
-    private static boolean laserGuided(Member m) {
+    private static boolean designatable(Member m) {
         if (m.role != Role.LAUNCHER || m.lost) {
             return false;
         }
-        if (dev.groundburst.content.superweapon.ParticleCannonBlockEntity.KIND.equals(m.kind)) {
+        if (dev.groundburst.content.superweapon.GBSuperweapons.isSuperweapon(m.kind)) {
             return true;
         }
         var spec = dev.groundburst.content.assembly.MissileItem.spec(m.report.shown);
@@ -719,13 +720,16 @@ public final class LaunchNetwork extends SavedData {
         return m.orders.launchAt >= 0 || m.report.readiness == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
     }
 
-    /** The network's launchers loaded with a laser-guided missile and not firing, in the order they were linked: a designator's choice. */
+    /**
+     * The network's launchers a designator commands (loaded with a laser-guided missile, or a superweapon) and not firing,
+     * in the order they were linked: a designator's choice.
+     */
     public List<Member> laserLaunchers(long id) {
         Network n = this.networks.get(id);
         List<Member> out = new ArrayList<>();
         if (n != null) {
             for (Member m : n.members.values()) {
-                if (laserGuided(m) && !firing(m)) {
+                if (designatable(m) && !firing(m)) {
                     out.add(m);
                 }
             }
@@ -773,7 +777,7 @@ public final class LaunchNetwork extends SavedData {
     public boolean designate(ServerLevel level, long id, Member m, BlockPos spot, @Nullable Mark mark) {
         Network n = this.networks.get(id);
         BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
-        if (n == null || !laserGuided(m) || firing(m) || !m.canArm(aim)) {
+        if (n == null || !designatable(m) || firing(m) || !m.canArm(aim)) {
             return false;
         }
         m.mark = mark;
@@ -790,7 +794,7 @@ public final class LaunchNetwork extends SavedData {
      */
     public boolean fireLaser(ServerLevel level, long id, Member m, @Nullable ServerPlayer by) {
         Network n = this.networks.get(id);
-        if (n == null || !laserGuided(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
+        if (n == null || !designatable(m) || firing(m) || !m.willBeArmed() || m.aim().isEmpty()) {
             return false;
         }
         m.orders = new Orders(m.orders.aim, m.orders.arm, level.getGameTime(), Optional.ofNullable(by == null ? null : by.getUUID()));

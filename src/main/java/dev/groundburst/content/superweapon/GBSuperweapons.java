@@ -478,15 +478,15 @@ public final class GBSuperweapons {
             "The GLA's superweapon. Build it on a 15x15 pad of Launch Pad with its controller in the middle of the front edge, a "
                     + "3x3 Toxin Tank two high in the middle, nine SCUD Erectors round it and an L of Adobe Wall (two high, a "
                     + "watchtower four high at each end) down its left side and across its back (the Holo-Projector shows it). "
-                    + "Load up to nine Toxin SCUDs and power it: it charges for 5 minutes, then a Launch Computer aims, arms and "
-                    + "fires it. The erectors raise the SCUDs and they go one after another, coming down within 16 blocks of the "
-                    + "target: heavy blasts, toxin clouds and anthrax residue spreading over the ground.");
+                    + "Load up to nine Toxin SCUDs and power it: it charges for 5 minutes, then a Launch Computer or a Laser "
+                    + "Designator aims, arms and fires it. The erectors raise the SCUDs and they go one after another, coming down "
+                    + "within 24 blocks of the target: heavy blasts, toxin clouds and anthrax residue spreading over the ground.");
     public static final String INFO_NUCLEAR_MISSILE = GBLang.add(GroundBurst.MODID + ".info.nuclear_missile",
             "China's superweapon, an above-ground coffin. Build its hall (5 wide, 15 long, walls of Fieldstone Wall two high, "
                     + "the controller in the middle of the front wall) on a floor of Launch Pad with the Missile Erector at the back, "
                     + "its 3x3 control house beside the front and a Gantry Frame tower nine high beside the back (the Holo-Projector "
-                    + "shows it). Load a Nuclear Missile and power it: it charges for 6 minutes, then a Launch Computer aims, arms "
-                    + "and fires it. The roof opens, the missile is raised and it climbs straight out: a nuclear blast and a "
+                    + "shows it). Load a Nuclear Missile and power it: it charges for 6 minutes, then a Launch Computer or a Laser "
+                    + "Designator aims, arms and fires it. The roof opens, the missile is raised and it climbs straight out: a nuclear blast and a "
                     + "radiation field 200 blocks round.");
     public static final String INFO_PARTICLE_CANNON = GBLang.add(GroundBurst.MODID + ".info.particle_uplink_cannon",
             "The USA's superweapon. Build it on a 15x15 pad of Launch Pad with its controller in the middle of the front edge "
@@ -495,9 +495,9 @@ public final class GBSuperweapons {
                     + "middle of the pit; at the left a control tower of Uplink Wall 2x2 and nine high, and behind it the operations "
                     + "building (the Holo-Projector shows it). It takes no ammunition: power it and it charges for 4 minutes, then a Launch "
                     + "Computer or a Laser Designator aims, arms and fires it. A beam goes up out of the pit to its satellite and "
-                    + "comes down on the target for 12 seconds, melting a trench and burning everything in it. Whoever fired it "
-                    + "steers it with their Laser Designator; it follows at three blocks a second. The beam draws 2,000 FE/t: cut "
-                    + "its power and it dies.");
+                    + "comes down on the target for 48 seconds, melting a trench and burning everything in it. Whoever fired it "
+                    + "steers it with their Laser Designator; it follows at three blocks a second. The beam draws 1,000 FE/t "
+                    + "(what it holds lasts 20 seconds): cut its power and it dies.");
     public static final String INFO_ARMS_DEALER = GBLang.add(GroundBurst.MODID + ".info.arms_dealer",
             "The GLA's factory for Toxin SCUDs: an adobe compound (9x7, walls of Adobe Wall two high, the controller in the "
                     + "middle of the front wall) round a yard of Launch Pad, its workshop at the back. Load its parts and power it: "
@@ -510,6 +510,15 @@ public final class GBSuperweapons {
             "Where a toxin SCUD comes down, its toxin wells up out of the crater as a heavy green cloud and spreads over the "
                     + "ground as glowing anthrax residue. The residue poisons whatever walks through it and dries out over about "
                     + "eight minutes. A hazmat suit keeps it out.");
+
+    /** The superweapons' controllers' ids: what a launch network calls them (a Laser Designator commands them all). */
+    public static final java.util.Set<String> KINDS = java.util.Set.of(GroundBurst.MODID + ":scud_storm", GroundBurst.MODID + ":nuclear_missile_silo",
+            ParticleCannonBlockEntity.KIND);
+
+    /** Whether a launch network's member of this kind (its controller's block id) is a superweapon. */
+    public static boolean isSuperweapon(String kind) {
+        return KINDS.contains(kind);
+    }
 
     private GBSuperweapons() {}
 

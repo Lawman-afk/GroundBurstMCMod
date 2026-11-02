@@ -36,16 +36,17 @@ import net.minecraft.world.phys.Vec3;
  * through its wall round a hexagonal pit, beside a control tower and an operations building with two satellite dishes.
  * It takes no ammunition: it charges on power alone (4:00), and charged, its focusing column rises out of the pit, its
  * core aglow and arcs leaping to it from the emitters. Fired, a beam goes up out of the pit to its satellite and two
- * seconds later comes down from orbit on the target, burning for twelve seconds ({@link ParticleBeams}): a trench melted
+ * seconds later comes down from orbit on the target, burning for 48 seconds ({@link ParticleBeams}): a trench melted
  * into the ground, fires along it, everything in it vaporised. Whoever fired it steers it with a Laser Designator (or a
- * Launch Computer aims it anew); it follows at three blocks a second. The beam draws {@link #BEAM_POWER} FE a tick: what
- * the cannon holds lasts ten seconds of it, so cut its power and the beam dies early.
+ * Launch Computer aims it anew); it follows at three blocks a second. The beam draws {@link #BEAM_POWER} FE a tick:
+ * whatever can charge it keeps it burning, and what the cannon holds lasts twenty seconds of it, so cut its power and
+ * the beam dies early.
  *
  * <p>The figures here are the model's (tools/assets/particle_cannon.py): where the pit's middle is and how high its
  * core stands once the column is up.
  */
 public class ParticleCannonBlockEntity extends SuperweaponBlockEntity {
-    public static final int CHARGE_TICKS = 4800, CHARGE_POWER = 1200, BEAM_POWER = 2000;
+    public static final int CHARGE_TICKS = 4800, CHARGE_POWER = 1200, BEAM_POWER = 1000;
     /**
      * The pit's middle: pixels to the controller's right (negative: its left) and back from the middle of its cell (the
      * drum's middle, two cells to its left and six back); its core's height once the column is up.

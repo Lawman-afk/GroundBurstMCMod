@@ -28,16 +28,14 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class ParticleBeams {
     /** Ticks from the beam leaving the cannon's pit until it comes down on the target (the game's two seconds). */
     public static final int UPLINK = 40;
-    /** Ticks it burns on the ground (twelve seconds). */
-    public static final int BURN = 240;
+    /** Ticks it burns on the ground: 48 seconds (the user's: four times the game's twelve). */
+    public static final int BURN = 960;
     /** How fast it turns toward a new aim, blocks a tick (three a second). */
     public static final double SPEED = 0.15;
     /** Its core (everything in it is vaporised), how far round it the ground melts, how far it sets fires: blocks. */
     public static final float CORE = 2.5f, MELT = 4.5f, FIRE = 7f;
     /** Deepest its trench goes where it lingers, blocks. */
     public static final int MAX_DEPTH = 8;
-    /** How far from where it first comes down it can wander in its burn (and the chunks kept loaded round there). */
-    public static final float WANDER = (float) (SPEED * BURN) + FIRE + 4;
     /** {@code groundburst:particle_beam}: what its core does to whatever is in it. */
     public static final ResourceKey<DamageType> PARTICLE_BEAM = ResourceKey.create(Registries.DAMAGE_TYPE, GroundBurst.id("particle_beam"));
 
