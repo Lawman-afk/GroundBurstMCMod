@@ -224,7 +224,8 @@ public final class GBMultiblocks {
                 dev.groundburst.content.assembler.GBAssemblers.LIGHT,
                 dev.groundburst.content.assembler.GBAssemblers.MEDIUM, dev.groundburst.content.assembler.GBAssemblers.HEAVY,
                 dev.groundburst.content.assembler.GBAssemblers.STRATEGIC, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM,
-                dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER, dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY,
+                dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON,
+                dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER, dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY,
                 dev.groundburst.content.defence.GBDefence.COMPLEX);
     }
 

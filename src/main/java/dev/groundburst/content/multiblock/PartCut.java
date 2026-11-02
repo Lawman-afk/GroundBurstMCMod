@@ -24,6 +24,8 @@ public enum PartCut implements StringRepresentable {
     NONE, NORTH_WEST, NORTH_EAST, SOUTH_EAST, SOUTH_WEST,
     /** The Launch Complex's deck: a slab 14 px high. */
     DECK,
+    /** The Particle Uplink Cannon's pit: a slab 4 px high. */
+    PIT,
     /** The flame trench: a floor 2 px high between strips of deck along its two sides, running west to east. */
     TRENCH_NORTH, TRENCH_EAST, TRENCH_SOUTH, TRENCH_WEST,
     /** The deflector under the missile: the trench's floor rising east in three steps (5, 8, 11 px) toward the deck. */
@@ -50,8 +52,8 @@ public enum PartCut implements StringRepresentable {
     public static final double LEG = 16 * (1.5 - Math.sqrt(0.5));
     /** The slope is built from slices this many pixels thick. */
     private static final int STEP = 2;
-    /** Deck heights (pixels): the Launch Complex's pad, the Radar Array's deck. */
-    private static final double DECK_TOP = 14, RADAR_TOP = 6;
+    /** Deck heights (pixels): the Launch Complex's pad, the Radar Array's deck, the Particle Uplink Cannon's pit. */
+    private static final double DECK_TOP = 14, RADAR_TOP = 6, PIT_TOP = 4;
     private static final Map<PartCut, VoxelShape> SHAPES = new EnumMap<>(PartCut.class);
     private static final Direction[] TURNS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
@@ -101,7 +103,7 @@ public enum PartCut implements StringRepresentable {
      * pattern's north is the controller's front and its west the controller's left, as in MultiblockDefinition.
      */
     public PartCut rotated(Direction facing) {
-        if (this == NONE || this == DECK || this == MAST) {
+        if (this == NONE || this == DECK || this == PIT || this == MAST) {
             return this;
         }
         if (isCorner()) {
@@ -146,9 +148,10 @@ public enum PartCut implements StringRepresentable {
 
     /** A walkable shape: its boxes as written for north (pixels: x0, y0, z0, x1, y1, z1), turned to its direction. */
     private static VoxelShape walkable(PartCut cut) {
-        int turns = (cut == DECK || cut == MAST) ? 0 : turnOf(cut);
+        boolean plain = cut == DECK || cut == PIT || cut == MAST;
+        int turns = plain ? 0 : turnOf(cut);
         VoxelShape shape = Shapes.empty();
-        for (double[] b : boxes(cut == DECK || cut == MAST ? cut.name() : kind(cut))) {
+        for (double[] b : boxes(plain ? cut.name() : kind(cut))) {
             double x0 = b[0], z0 = b[2], x1 = b[3], z1 = b[5];
             for (int t = 0; t < turns; t++) {                       // a quarter turn clockwise, seen from above
                 double nx0 = 16 - z1, nx1 = 16 - z0;
@@ -167,6 +170,7 @@ public enum PartCut implements StringRepresentable {
         double d = DECK_TOP, r = RADAR_TOP;
         return switch (kind) {
             case "DECK" -> List.of(new double[] {0, 0, 0, 16, d, 16});
+            case "PIT" -> List.of(new double[] {0, 0, 0, 16, PIT_TOP, 16});
             // The trench (model z 26-38 in a row of z 24-40) between strips of deck, its floor 2 px up.
             case "TRENCH" -> List.of(new double[] {0, 0, 0, 16, d, 2}, new double[] {0, 0, 14, 16, d, 16},
                     new double[] {0, 0, 2, 16, 2, 14});

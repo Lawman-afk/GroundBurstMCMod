@@ -178,6 +178,17 @@ PRESETS = {
                ("into the open cells", 70, 200, (8, 0, 40), 40, None),
                ("down one cell", 88, 180, (0, -30, 32), 24, None),
                ("cut-away: the module's west side", 10, 90, (-24, -32, 40), 70, None)]),
+    # The Particle Uplink Cannon (DESIGN.md §19.6): built charged (its column up, its arcs out); "lowered" at rest.
+    "particle_uplink_cannon": dict(
+        anim="lowered",
+        shots=[("iso front, charged", 30, 225, None, None, None), ("iso back, charged", 30, 45, None, None, None),
+               ("low front, at rest", 10, 200, None, None, 0.0), ("from above, at rest", 80, 180, None, None, 0.0),
+               ("drum and column", 35, 210, (-32, 30, 96), 190, None), ("column and core", 20, 200, (-32, 40, 96), 60, None),
+               ("pit at rest", 60, 200, (-32, 10, 96), 90, 0.0), ("emitter, inside", 15, 200, (-32, 31, 60), 30, None),
+               ("fans, outside the drum", 15, 90, (-100, 31, 123), 50, None), ("tower", 15, 200, (88, 80, 152), 120, None),
+               ("tower cab", 20, 220, (88, 125, 152), 50, None), ("yard and fence", 25, 210, (88, 22, 100), 80, None),
+               ("ops building", 25, 200, (56, 30, 196), 120, None), ("dishes", 35, 200, (60, 60, 202), 70, None),
+               ("console and port", 30, 200, (16, 16, -4), 40, None), ("conduits", 40, 110, (40, 18, 150), 60, None)]),
     "crystal_puller": dict(
         shots=WHOLE + [
             ("valve and handwheel", 20, 240, (4, 17.5, 0), 12, None),

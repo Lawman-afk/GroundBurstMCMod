@@ -46,7 +46,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
   military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
   the chain, and assemblers with Auto Assemble keep a piped production line building.
-- **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm and the Nuclear Missile Silo.
+- **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
+  and the Particle Uplink Cannon, its beam steered across the ground with a Laser Designator.
 - **Seven abandoned Cold War sites** to explore, with loot:
   - a Titan II missile silo, sometimes flooded or caved in;
   - a command bunker under an earth berm;

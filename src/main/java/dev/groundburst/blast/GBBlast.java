@@ -41,6 +41,8 @@ public final class GBBlast {
         GBLang.add("death.attack." + GroundBurst.MODID + ".spaghettified.player", "%1$s was spaghettified by %2$s's singularity");
         GBLang.add("death.attack." + GroundBurst.MODID + ".flash_frozen", "%1$s was frozen solid");
         GBLang.add("death.attack." + GroundBurst.MODID + ".flash_frozen.player", "%1$s was frozen solid by %2$s's cryo bomb");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".particle_beam", "%1$s was vaporized by a particle beam");
+        GBLang.add("death.attack." + GroundBurst.MODID + ".particle_beam.player", "%1$s was vaporized by %2$s's particle beam");
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) -> BlastManager.resetBudget());
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
@@ -48,6 +50,7 @@ public final class GBBlast {
                 Singularities.tick(level);
                 Storms.tick(level);
                 Freezes.tick(level);
+                ParticleBeams.tick(level);
                 BlastManager.of(level).tick();
             }
         });
@@ -58,6 +61,7 @@ public final class GBBlast {
                 Singularities.forget(level);
                 Storms.forget(level);
                 Freezes.forget(level);
+                ParticleBeams.forget(level);
             }
         });
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> commands(event.getDispatcher()));
@@ -71,6 +75,7 @@ public final class GBBlast {
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
                 Freezes.syncTo(player);
+                ParticleBeams.syncTo(player);
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
@@ -80,6 +85,7 @@ public final class GBBlast {
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
                 Freezes.syncTo(player);
+                ParticleBeams.syncTo(player);
             }
         });
     }

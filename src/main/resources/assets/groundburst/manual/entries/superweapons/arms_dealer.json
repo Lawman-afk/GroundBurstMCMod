@@ -1,7 +1,7 @@
 {
   "title": "Arms Dealer",
   "icon": "groundburst:arms_dealer",
-  "order": 3,
+  "order": 4,
   "items": [
     "groundburst:arms_dealer",
     "groundburst:arms_dealer_spawner"

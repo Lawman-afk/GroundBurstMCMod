@@ -301,6 +301,18 @@ public final class FxPhotographer {
                 // folding open, the missile raised and the arm swinging in, vapour boiling off it, the launch.
                 new Scene("nuke_silo", "nuke_silo", 30, 12, List.of(20, 70, 150, 228, 240, 260, 290)),
                 new Scene("nuke_silo_aerial", "nuke_silo", 26, 34, List.of(20, 150, 235)),
+                // The USA's Particle Uplink Cannon (DESIGN.md §19.6) facing the camera, charged (its column up, arcs leaping
+                // to its core), fired at clock 25: the countdown, the uplink going up out of its pit at 226, the beam coming
+                // down from orbit off to the camera's left at 266 and burning; from the air too, and at night.
+                new Scene("particle_cannon", "particle_cannon", 30, 12, List.of(20, 150, 230, 245, 268, 290, 360, 470)),
+                new Scene("particle_cannon_aerial", "particle_cannon", 22, 34, List.of(20, 240, 300)),
+                new Scene("particle_cannon_close", "particle_cannon", 14, 20, List.of(20, 150, 245)),
+                new Scene("particle_cannon_night", "particle_cannon", 30, 12, List.of(20, 250, 300), "midnight"),
+                // Its beam close up on a meadow (a pond, trees, a few cows in its way), walked along a line by a designator
+                // from clock 25: its strike, its burn, the trench it leaves; from the air; at night.
+                new Scene("particle_beam", "particle_beam", 30, 8, List.of(26, 29, 40, 80, 160, 250, 330)),
+                new Scene("particle_beam_aerial", "particle_beam", 26, 40, List.of(80, 200, 330)),
+                new Scene("particle_beam_night", "particle_beam", 30, 8, List.of(40, 160), "midnight"),
                 // The ammunition factories at work, their parts loaded: the Arms Dealer laying a Toxin SCUD out section by
                 // section on its trestles under its hoist; the War Factory its Nuclear Missile under its gantry crane.
                 // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
@@ -1100,6 +1112,88 @@ public final class FxPhotographer {
     }
 
     /**
+     * The Particle Uplink Cannon (DESIGN.md §19.6) facing the camera (its drum on the camera's right, as the game shows it),
+     * charged and armed, aimed 60 blocks off to the camera's left (the scene fires it at clock 25).
+     */
+    private static void particleCannonSite(ServerLevel level, int x, int ground) {
+        scudAt = new net.minecraft.core.BlockPos(x + 2, ground, 0);
+        formed(level, scudAt, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_CONTROLLER.block().get(), dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON,
+                net.minecraft.core.Direction.WEST);
+        if (level.getBlockEntity(scudAt) instanceof dev.groundburst.content.superweapon.ParticleCannonBlockEntity be) {
+            be.revalidate();
+            be.energy().generate(400_000);
+            be.chargeForTest();
+            be.setTarget(x + 26, -34);
+            be.arm(true);
+        }
+    }
+
+    /** Who walks the close-up's beam along (a designator's spot, not a player), and the line it walks: x, z from and to. */
+    private static final java.util.UUID BEAM_WHO = java.util.UUID.fromString("5eaf0b1e-0000-4000-8000-00000000be4a");
+    private static final int BEAM_X = 6, BEAM_FROM_Z = -16, BEAM_TO_Z = 14;
+
+    /**
+     * The particle beam's meadow: grass over the flat world's sand 50 blocks round, a pond and a sandy patch on the beam's
+     * line, trees beside it, a few cows standing in its way (still).
+     */
+    private static void beamField(ServerLevel level, int x, int ground) {
+        var grass = net.minecraft.world.level.block.Blocks.GRASS_BLOCK.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        java.util.function.BiFunction<Integer, Integer, net.minecraft.core.BlockPos> top = (px, pz) -> {
+            level.getChunk(px >> 4, pz >> 4);
+            return new net.minecraft.core.BlockPos(px, level.getHeight(Heightmap.Types.MOTION_BLOCKING, px, pz), pz);
+        };
+        for (int dx = -50; dx <= 50; dx++) {
+            for (int dz = -50; dz <= 50; dz++) {
+                if (dx * dx + dz * dz > 2500) {
+                    continue;
+                }
+                var p = top.apply(x + dx, dz).below();
+                boolean sand = Math.hypot(dx - BEAM_X, dz + 2) < 3.5;
+                level.setBlock(p, sand ? net.minecraft.world.level.block.Blocks.SAND.defaultBlockState() : grass, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                level.setBlock(p.below(), dirt, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+        }
+        for (int dx = -3; dx <= 3; dx++) {                         // a pond on the line, two deep in its middle
+            for (int dz = -3; dz <= 3; dz++) {
+                if (dx * dx + dz * dz <= 9) {
+                    var p = top.apply(x + BEAM_X + dx, 7 + dz).below();
+                    level.setBlockAndUpdate(p, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+                    if (dx * dx + dz * dz <= 3) {
+                        level.setBlockAndUpdate(p.below(), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+                    }
+                }
+            }
+        }
+        var log = net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState();
+        var leaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        for (int[] t : new int[][] {{BEAM_X + 4, -9}, {BEAM_X - 5, 0}, {BEAM_X + 1, 12}, {BEAM_X + 12, -3}, {BEAM_X - 10, 10}}) {
+            var foot = top.apply(x + t[0], t[1]);
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        if (dx * dx + dy * dy + dz * dz <= 5) {
+                            level.setBlockAndUpdate(foot.offset(dx, 5 + dy, dz), leaves);
+                        }
+                    }
+                }
+            }
+            for (int dy = 0; dy < 6; dy++) {
+                level.setBlockAndUpdate(foot.above(dy), log);
+            }
+        }
+        for (int[] c : new int[][] {{BEAM_X - 1, -6}, {BEAM_X + 2, -1}, {BEAM_X - 2, 3}, {BEAM_X + 5, -12}}) {
+            var cow = net.minecraft.world.entity.EntityTypes.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (cow != null) {
+                var p = top.apply(x + c[0], c[1]);
+                cow.snapTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 90, 0);
+                cow.setNoAi(true);
+                level.addFreshEntity(cow);
+            }
+        }
+    }
+
+    /**
      * An ammunition factory (DESIGN.md §19.5), its parts loaded and powered: it sets to work at once. The Arms Dealer
      * faces the camera; the War Factory faces south, so its yard (on its right) is nearest the camera and its missile
      * lies across the view, the hall and the annex behind it.
@@ -1779,6 +1873,9 @@ public final class FxPhotographer {
                 if (s.profile().equals("cryogenic_warhead")) {
                     cryoField(level, x, ground);               // laid now: it takes the server a few seconds
                 }
+                if (s.profile().equals("particle_beam")) {
+                    beamField(level, x, ground);
+                }
                 if (s.profile().equals("msilo")) {             // on the silo's plateau, looking down at it (steeply, into its shaft)
                     lift = SILO_PLATEAU + (s.name().endsWith("_ui") ? 1.6 : s.distance() * (s.name().endsWith("_aerial") ? 1.6 : 0.42));
                 }
@@ -1835,6 +1932,13 @@ public final class FxPhotographer {
                 if (s.profile().equals("nuke_silo")) {
                     nukeSiloSite(level, x, ground);
                     return;
+                }
+                if (s.profile().equals("particle_cannon")) {
+                    particleCannonSite(level, x, ground);
+                    return;
+                }
+                if (s.profile().equals("particle_beam")) {
+                    return;                                // the beam comes down in tick()
                 }
                 if (s.profile().equals("cruise")) {
                     cruiseSite(level, x, ground);
@@ -2269,7 +2373,20 @@ public final class FxPhotographer {
                 }
             });
         }
-        if ((scene.profile().equals("scud_storm") || scene.profile().equals("nuke_silo")) && step >= 0 && clock == 25 && scudAt != null) {
+        if (scene.profile().equals("particle_beam") && step >= 0 && clock >= 25 && clock < 25 + dev.groundburst.blast.ParticleBeams.BURN) {
+            int x = site * 1200, c = clock;
+            server.execute(() -> {
+                ServerLevel level = server.overworld();
+                double z = Math.min(BEAM_TO_Z, BEAM_FROM_Z + (c - 25) * dev.groundburst.blast.ParticleBeams.SPEED);
+                if (c == 25) {
+                    int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x + BEAM_X, BEAM_FROM_Z);
+                    dev.groundburst.blast.ParticleBeams.strike(level, new net.minecraft.core.BlockPos(x + BEAM_X, top, BEAM_FROM_Z), BEAM_WHO, false);
+                }
+                dev.groundburst.content.launch.Designators.lase(level, BEAM_WHO, 0, new Vec3(x + BEAM_X + 0.5, 0, z + 0.5), false);
+            });
+        }
+        if ((scene.profile().equals("scud_storm") || scene.profile().equals("nuke_silo") || scene.profile().equals("particle_cannon"))
+                && step >= 0 && clock == 25 && scudAt != null) {
             var at = scudAt;
             server.execute(() -> {
                 if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.superweapon.SuperweaponBlockEntity be) {

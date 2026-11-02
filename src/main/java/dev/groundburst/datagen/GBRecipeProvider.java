@@ -622,6 +622,10 @@ public class GBRecipeProvider extends RecipeProvider {
             final net.minecraft.world.level.ItemLike nuke = dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_CONTROLLER.item();
             final net.minecraft.world.level.ItemLike armsDealer = dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item();
             final net.minecraft.world.level.ItemLike warFactory = dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER.item();
+            final net.minecraft.world.level.ItemLike uplinkWall = dev.groundburst.content.superweapon.GBSuperweapons.UPLINK_WALL.item();
+            final net.minecraft.world.level.ItemLike emitter = dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_EMITTER.item();
+            final net.minecraft.world.level.ItemLike column = dev.groundburst.content.superweapon.GBSuperweapons.FOCUSING_COLUMN.item();
+            final net.minecraft.world.level.ItemLike cannon = dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_CONTROLLER.item();
         };
         shapeless(RecipeCategory.BUILDING_BLOCKS, sw.adobe, 4)
                 .requires(Items.MUD_BRICKS).requires(Items.MUD_BRICKS).requires(Tags.Items.SANDS).requires(Tags.Items.SANDS).requires(Items.WHEAT)
@@ -654,6 +658,26 @@ public class GBRecipeProvider extends RecipeProvider {
                 .requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.CRT_DISPLAY).requires(GBParts.SENSOR_ARRAY).requires(Tags.Items.DYES_RED)
                 .requires(Items.LEVER)
                 .unlockedBy(getHasName(GBParts.MILITARY_CIRCUIT), has(GBParts.MILITARY_CIRCUIT)).save(output);
+        // The Particle Uplink Cannon (DESIGN.md §19.6): reinforced concrete panelling (white concrete round a steel plate);
+        // an emitter (a superconducting coil, a sapphire lens, capacitors to dump into it, tungsten round it); the focusing
+        // column (coils, a sapphire boule for its core, a quantum circuit to aim it, a motor to raise it); its controller.
+        shaped(RecipeCategory.BUILDING_BLOCKS, sw.uplinkWall, 8)
+                .define('C', Items.CONCRETE.pick(net.minecraft.world.item.DyeColor.WHITE)).define('P', GBTags.commonItem("plates/steel"))
+                .pattern("CCC").pattern("CPC").pattern("CCC")
+                .unlockedBy(getHasName(Items.CONCRETE.pick(net.minecraft.world.item.DyeColor.WHITE)), has(Items.CONCRETE.pick(net.minecraft.world.item.DyeColor.WHITE))).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.emitter, 1)
+                .requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.SAPPHIRE_WAFER).requires(GBParts.CAPACITOR).requires(GBParts.CAPACITOR)
+                .requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.TUNGSTEN_PLATE).requires(GBParts.ADVANCED_CIRCUIT).requires(Tags.Items.DYES_BLUE)
+                .unlockedBy(getHasName(GBParts.SUPERCONDUCTING_COIL), has(GBParts.SUPERCONDUCTING_COIL)).save(output);
+        shapeless(RecipeCategory.BUILDING_BLOCKS, sw.column, 1)
+                .requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.SUPERCONDUCTING_COIL)
+                .requires(GBParts.SUPERCONDUCTING_COIL).requires(GBParts.SAPPHIRE_BOULE).requires(GBParts.QUANTUM_CIRCUIT).requires(GBParts.ELECTRIC_MOTOR)
+                .unlockedBy(getHasName(GBParts.QUANTUM_CIRCUIT), has(GBParts.QUANTUM_CIRCUIT)).save(output);
+        shapeless(RecipeCategory.REDSTONE, sw.cannon, 1)
+                .requires(GBMultiblocks.MACHINE_CASING.item()).requires(GBParts.MILITARY_CIRCUIT).requires(GBParts.MILITARY_CIRCUIT)
+                .requires(GBParts.QUANTUM_CIRCUIT).requires(GBParts.CRT_DISPLAY).requires(GBParts.SENSOR_ARRAY).requires(Tags.Items.DYES_BLUE)
+                .requires(Items.LEVER)
+                .unlockedBy(getHasName(GBParts.QUANTUM_CIRCUIT), has(GBParts.QUANTUM_CIRCUIT)).save(output);
         // The superweapons' ammunition factories (DESIGN.md §19.5): the Arms Dealer a Medium Missile Assembler's rung
         // (motors, an advanced circuit), the War Factory a Strategic one's (a military circuit, a sensor array).
         shapeless(RecipeCategory.REDSTONE, sw.armsDealer, 1)

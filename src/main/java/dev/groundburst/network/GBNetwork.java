@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "18";
+    public static final String PROTOCOL_VERSION = "19";
 
     private GBNetwork() {}
 
@@ -50,6 +50,13 @@ public final class GBNetwork {
                 (payload, context) -> dev.groundburst.blast.FreezePayloads.spireHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.FreezePayloads.End.TYPE, dev.groundburst.blast.FreezePayloads.End.CODEC,
                 (payload, context) -> dev.groundburst.blast.FreezePayloads.endHook.accept(payload));
+        // Particle Uplink Cannon beams (DESIGN.md §19.6): drawn on the client by ParticleBeamFx.
+        registrar.playToClient(dev.groundburst.blast.ParticleBeamPayloads.Start.TYPE, dev.groundburst.blast.ParticleBeamPayloads.Start.CODEC,
+                (payload, context) -> dev.groundburst.blast.ParticleBeamPayloads.startHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.ParticleBeamPayloads.Move.TYPE, dev.groundburst.blast.ParticleBeamPayloads.Move.CODEC,
+                (payload, context) -> dev.groundburst.blast.ParticleBeamPayloads.moveHook.accept(payload));
+        registrar.playToClient(dev.groundburst.blast.ParticleBeamPayloads.End.TYPE, dev.groundburst.blast.ParticleBeamPayloads.End.CODEC,
+                (payload, context) -> dev.groundburst.blast.ParticleBeamPayloads.endHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Grow.TYPE, dev.groundburst.blast.SingularityPayloads.Grow.CODEC,
                 (payload, context) -> dev.groundburst.blast.SingularityPayloads.growHook.accept(payload));
         registrar.playToClient(dev.groundburst.blast.SingularityPayloads.Torn.TYPE, dev.groundburst.blast.SingularityPayloads.Torn.CODEC,

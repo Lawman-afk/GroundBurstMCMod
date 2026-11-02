@@ -2355,7 +2355,9 @@ the start (§16.4's 40 blocks became the heart; the front runs 128).
 - **Heightmaps (26.x).** A block counts for the game's heightmaps (rain, lightning, mob spawning, the surface a front or
   a strike finds) only if a tag says so (`#minecraft:blocks_motion_no_leaves`; `blocksMotion()` is gone). None of ours
   were: the aftermath's ground (trinitite, glassed sand, slag, scorched earth and stone, irradiated soil, charred wood,
-  frosted stone) and cryo ice are tagged now. The mod's other blocks (machines, construction blocks) are a follow-up.
+  frosted stone) and cryo ice were tagged first; since 2026-11-02 every block of the mod that is solid by vanilla's own
+  rule (`isSolid`: machines, multiblock parts, warheads, ground, ice) is tagged by that rule (`GBTagProviders`), and
+  cables, pipes, layers, plants, fire and fluids stay out.
 - **Clients** (`FreezePayloads` Start/Front/Spire/End, protocol 18; `FreezeFx`): a blue-white flash and the sky lit; a
   dome of white cryogen vapour boiling up and slumping out (falling back: the vapour is cold); the burst heard when its
   sound arrives (`cryo.icbm_burst`: a thump, liquid nitrogen's roar played slow, ice cracking through it, a rumble) and
@@ -3205,6 +3207,8 @@ Common to all three:
   scale with time spent over a spot.
 - Visual: layered white-blue beam with a dazzling impact splash, ground plasma ripple, heat haze, sparks; the sky
   beam column visible from far away. Sounds: charge hum, fire crack, beam roar loop, impact sizzle.
+- *Superseded by §19.6 (2026-11-02): the game's own layout (a drum of emitters round a pit, no dish), steered with the
+  Laser Designator.*
 
 ### 19.2 Nuclear Missile Silo (China)
 - **Structure:** 7×7 footprint, 8 tall above ground + 4 below. Heavy concrete bunker with red bands and yellow
@@ -3357,7 +3361,83 @@ shared one), with effects to match ("like the toxic waste spread on the ground")
   4 px and the glass is two lines high; "Needs: %s" drops "x1". New checks: `tools/preview/zfight_script.py` (every face
   turned with its cube and bones, in any animation's pose, overlaps that something solid covers left out) and
   `tools/preview/unpainted.py` (faces a painter missed).
-- Not yet: §19.4's doctrine modules and the generic upgrades, the Particle Uplink Cannon, a configurable range.
+- Not yet: §19.4's doctrine modules and the generic upgrades (dropped 2026-10-31). The Particle Uplink Cannon: §19.6;
+  the range is configurable since then (it was always meant to be).
+
+### 19.6 The Particle Uplink Cannon, as the game has it (built 2026-11-02)
+The user's next item: the USA's superweapon, by their rule for the superweapons (look like the game's, effects to
+match). Supersedes §19.1.
+
+**Research** (the game's model; the C&C wiki's pictures of it at rest, ready to fire and firing): a twelve-sided drum
+of white concrete on a wider plate, painted blue inside, emitters through its wall (steel cones pointing in at the pit,
+blue-capped coil housings outside), a box of two fans on its side, a hexagonal pit. Beside it a control tower (a tan
+base, a grey shaft ribbed near the top, a glazed cab with a blue band under a hipped glass roof, two tall antennas) with
+a chain-link yard; behind them a low operations building (blue-grey walls, tan corners, two fans by its door, two
+satellite dishes on its roof) joined to the drum by two conduits. Ready to fire, a column rises out of the pit, a ball
+of light on top and arcs leaping to it from the emitters. Fired, a beam goes up out of the pit and the strike comes
+down from orbit on the target, a column of white-blue light burning a line across the ground; Zero Hour lets it be
+steered. 4:00 between strikes.
+
+**How it works:**
+- *Structure* (`GBSuperweapons.PARTICLE_CANNON`, 15 x 15 x 10): a pad of Launch Pad, the controller in the middle of
+  its front edge (a console), an Energy Port two to its left as you face it; the drum a ring of 32 Uplink Wall cells
+  (3.5 to 4.55 cells from its middle) three high with eight Particle Emitters in its middle course, the Focusing Column
+  in the middle of the pit (the pit's cells cut to a 4 px slab, a new `PartCut.PIT`), its inside kept clear to the top;
+  the tower 2 x 2 of Uplink Wall nine high; the operations building's walls (6 x 4, three high). Laid out as the game's
+  picture: facing the controller, the drum is at the front right, the tower at the left with the building behind it
+  (the pattern's columns run from the controller's left; a first model had it mirrored).
+- *Charge*: no ammunition (`SuperweaponBlockEntity.needsAmmo`: its slot takes nothing; its own screen, a wider readout
+  and no slot); 4:00 at 1,200 FE/t. Charged, the column rises out of the pit (it telescopes: at rest squeezed to 30%
+  and sunk a block, so nothing of it hangs under the pad), its core aglow and arcs flickering from the emitters' tips
+  (the "charged" loop after "raise"); a crackle every 2.5 s.
+- *Firing*: from a Launch Computer or a Laser Designator (the launch network counts it as a laser launcher by its block
+  id). After the 10 s countdown the uplink goes up out of the pit (`ParticleBeams.UPLINK`, 2 s), then the beam comes down
+  on the target and burns 12 s. It draws 2,000 FE a tick: the cannon's 400,000 FE carry it 10 s, so it needs feeding for
+  the full 12; out of power, EMP'd, halted or broken, it stands down and the beam goes out at once. Its time on target
+  is the countdown and the uplink wherever it is aimed (`LaunchSite.Timing.direct`).
+- *Steering*: the beam moves toward its aim at 0.15 blocks a tick (3 a second, as the game's): the spot of whoever fired
+  it while they lase with their designator (held after they let go), or the cannon's new aim (it may be aimed during its
+  countdown and while it fires: the Launch Computer's map allows it); never beyond the cannon's reach.
+- *The burn* (`ParticleBeamJob`): each column within 4.5 of it gathers heat (1 a tick in its 2.5 core, falling as
+  ((4.5 - d) / 2)^1.5 to the edge) and is eaten down from its top as it was when the beam first reached it, to
+  8 (1 - e^(-heat / 60)) deep: a beam parked 12 s digs 8 deep, one passing at full speed about 3. Roofs, trees and water
+  go first; bedrock and obsidian (hardness 50 and up) stop it; nothing drops. The trench's bottom and sides melt as they
+  are laid bare: rock and gravel to slag (magma in 30% of its core's bottom), netherrack to magma, sand to glassed sand,
+  earth and clay to scorched earth, anything else as the nuclear fireball scorches (wood charred, snow gone). Out to 7,
+  each column once: leaves and plants burn away, logs char, the ground is scorched; and while the beam is near, napalm
+  fire may catch on it (1.2% a tick at the melt's edge, none at the reach: a third or so of the columns along a beam
+  passing at full speed, most round one parked; first tried as one chance at first touch, which for a moving beam is
+  its far edge, so only where it came down burned). Whatever is in the core, from the sky down to the trench's
+  bottom, takes 20 a tick of `groundburst:particle_beam` (through armour, shields and grace periods; not fire as fire
+  resistance knows it: "was vaporized by a particle beam"); out to 7 it catches fire and takes 3 every half second.
+  Terrain is left alone as blasts leave it (the master switch, protected dimensions, the spawn area). Not saved: a
+  cannon reloaded mid-strike stands down.
+- *Clients* (`ParticleBeamPayloads` Start/Move/End, protocol 19; `ParticleBeamFx`): the uplink a column of light (a
+  white core in a blue halo) climbing out of the pit to the sky, the core flaring, sparks; the strike: the column coming
+  down from orbit in three ticks, a flash (the sky, and the screen if it is near and in view), a ring of light running
+  out over the ground, a burst of sparks and smoke, the camera shaken; while it burns the column wavering, a double coil
+  twisting down round it, a pool of glare on the ground, sparks and molten spatter flying, smoke boiling off the trench,
+  the sky and fog paled toward its blue-white light out to 220 blocks (even at night); its end, both columns thinning
+  away. Textures `fx/particle_beam.png`, `fx/particle_flare.png` (tools/assets/fx.py). Sounds (`tools/sound/uplink.py`,
+  from recordings: high-voltage sparks, a Jacob's ladder, close lightning and a thunderclap, an afterburner, arc
+  welding; and synthesis, no steady tones): `particle_cannon.charged`, `.uplink`, `.strike`, `.beam` (a loop following
+  the beam), `.fade`.
+- *Model* (`tools/assets/particle_cannon.py`, 871 boxes, preset in `geo_views.py`): the drum's sixteen facets are turned
+  panels (a round section cannot be hollow), every other one a little lower where their tops overlap; the emitters on
+  bones turned to their bearings, their cones and caps on bones turned to point in and out; the fans' blades turning
+  (fast while it charges), the dishes swinging a little, the antenna's lamp blinking; the column and its core on bones,
+  the chain-link see-through. Blocks: Uplink Wall (concrete, a blue band), Particle Emitter (its blue cap round a lens),
+  Focusing Column (a glowing core in a hexagonal frame); the controller's placard a white star on blue.
+- *Recipes*: Uplink Wall 8 from 8 white concrete round a steel plate; a Particle Emitter from a superconducting coil, a
+  sapphire wafer (its lens), two capacitors, two tungsten plates, an advanced circuit and blue dye; the Focusing Column
+  from two dense steel plates, two superconducting coils, a sapphire boule (its core), a quantum circuit and a motor; the
+  controller from a machine casing, two military circuits, a quantum circuit, a CRT, a sensor array, blue dye and a
+  lever. JEI information page; a Field Manual entry in the Superweapons chapter.
+- *Alongside*: the superweapons' server settings now apply (announcements, maximum range, charge time multiplier:
+  defined in Phase 1, never read); the Launch Computer's map aims a charging superweapon (its charge clock had blocked
+  it).
+- GameTests: `ParticleCannonTests` (3: forms, charges, fires, re-aimed, dies without power; the trench, the vaporised
+  and the burnt; steered by a designator). FX scenes `particle_cannon` and `particle_beam` (each with aerial and night).
 
 ### 19.4 Zero Hour doctrine modules
 One **Doctrine** module per superweapon (they are mutually exclusive). Researched behaviour of the Zero Hour generals
@@ -4495,6 +4575,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-02 | The **Particle Uplink Cannon** (the user: continue development; the plan's next item), by the user's rule for the superweapons: built as the game's (a drum of eight emitters round a pit, the control tower and the operations building, laid out as the game's picture seen from in front) and working as it does (no ammunition, 4:00 on power alone, a beam up to the satellite and down from orbit for 12 s, steered by whoever fired it with their designator at 3 blocks a second; §19.6). It eats a trench deeper where it lingers (8 at most), melts its sides, sets fires and vaporises what is in it; it draws 2,000 FE/t, so cut its power and it dies. The superweapons' server settings (announcements, range, charge multiplier) now apply. Every solid block of the mod counts for 26.x's heightmaps (vanilla's `isSolid` rule: §16.16's follow-up). |
 | 2026-11-02 | The **Cryo ICBM** (the user: continue development; next on their list): the plan's Cryo Bomb built as the fourth special weapon, by the user's rules for them (an ICBM whole from its core at the Special Weapons Assembler) and at their scale from the start: a front of frozen air 128 blocks round, a heart of 40 where nothing lives and spires of ice burst up, a three-minute cold snap that leather keeps out, snow and ice that thaw where snow would not lie (vanilla's would never melt in a warm land) while the spires stay (§16.16). The aftermath's ground and the new ice are tagged to count for 26.x's heightmaps. |
 | 2026-11-01 | Version **0.5.0** (the user's request: the jar, a changelog, GitHub and the CurseForge description updated): the Vertical Launch Battery, the Laser Designator, the silicon chain (chips, sapphire, the Clean Room), Auto Assemble, launchers' Item Ports, rods passing a strike's EMP. CHANGELOG's Unreleased became 0.5.0 (its 0.4.0 section restored: a note for this version had landed in it); README and `docs/CURSEFORGE.md` gain the battery, the designator and the chip chain, two screenshots (`vertical_launch_battery.jpg` from a new FX scene `vls_close`, `laser_designator.jpg`), and the designator and MIRVs leave the Planned list (one built, the other removed). Before it, the user's next look: pipes and cables may stand on the assemblers' ports (§10.4). |
 | 2026-11-01 | After the user's look at the battery and the chain: the Vertical Launch Battery's cells deepened to a Medium missile's length (five layers of a new Missile Canister under the Strike Cells), each missile lit at its cell's floor and climbing out through its hatch after half a second (a flight's cell hold, synced); its screen's CRT made tall enough for its lines (§17.15). Every assembler gets Auto Assemble (the next job starts itself when the parts are in and the output is clear) and its Item Port drawn on the deck's edge as well as its top (§10.4). Lightning rods no longer stop a storm strike's EMP pulse (§16.14). The puller's handwheel made solid (§8.1). |

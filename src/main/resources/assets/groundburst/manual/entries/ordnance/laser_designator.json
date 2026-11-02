@@ -17,7 +17,7 @@
     },
     {
       "type": "text",
-      "text": "**Leading it in.** Keep lasing after a launch: the missile follows **your laser** all the way in, wherever you point it, so you can walk it onto a moving target or onto another one entirely. If you let go, it keeps going where it was headed. The sight counts the missiles **homing** on your spot, and the station's log notes each launcher armed and launched from a designator.\n\nIt holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Charger](power/batteries). Smoke or gas between it and the target breaks the beam, and an EMP knocks it out for a while."
+      "text": "**Leading it in.** Keep lasing after a launch: the missile follows **your laser** all the way in, wherever you point it, so you can walk it onto a moving target or onto another one entirely. If you let go, it keeps going where it was headed. The sight counts the missiles **homing** on your spot, and the station's log notes each launcher armed and launched from a designator.\n\n**The particle beam.** A [Particle Uplink Cannon](superweapons/particle_uplink_cannon) on the network is one of the designator's launchers too, with no missile in it: arm it and fire it the same way, then keep lasing and its beam follows your spot across the ground.\n\nIt holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Charger](power/batteries). Smoke or gas between it and the target breaks the beam, and an EMP knocks it out for a while."
     },
     {
       "type": "crafting",

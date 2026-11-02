@@ -1171,7 +1171,7 @@ Whatever it hits on the way sets off the warhead there, so keep the sky above th
 entry("ordnance/launch_control_station", "Launch Control Station", "launch_control_station", ["launch_control_station", "launch_codes",
                                                                                                "launch_control_station_spawner"], [
     text("""
-A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm) and the [Nuclear Missile](superweapons/nuclear_missile_silo)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too.
+A **Launch Control Station** runs your launchers anywhere in its dimension, near or far, loaded or not: Launch Silos, [Launch Complexes](ordnance/launch_complex), [Missile Silos](ordnance/missile_silo), [Cruise Missile Launchers](ordnance/cruise_launcher) and the superweapons (the [SCUD Storm](superweapons/scud_storm), the [Nuclear Missile](superweapons/nuclear_missile_silo) and the [Particle Uplink Cannon](superweapons/particle_uplink_cannon)). It shows what your linked [Radar Arrays](ordnance/radar_array) track too.
 """),
     structure("launch_control_station", "Three wide, two deep and three high. The desk across the front: Machine Casing, the controller in the middle, Machine Casing. Behind it the instrument bank: Machine Casing two high, the Energy Port in the middle of its bottom row. An Antenna on top of the bank's middle."),
     text("""
@@ -1206,6 +1206,8 @@ A **Laser Designator** marks a target for your missiles. Hold use and it goes to
 """),
     text("""
 **Leading it in.** Keep lasing after a launch: the missile follows **your laser** all the way in, wherever you point it, so you can walk it onto a moving target or onto another one entirely. If you let go, it keeps going where it was headed. The sight counts the missiles **homing** on your spot, and the station's log notes each launcher armed and launched from a designator.
+
+**The particle beam.** A [Particle Uplink Cannon](superweapons/particle_uplink_cannon) on the network is one of the designator's launchers too, with no missile in it: arm it and fire it the same way, then keep lasing and its beam follows your spot across the ground.
 
 It holds **40,000 FE**: a hundred seconds of lasing; charge it in a [Battery Charger](power/batteries). Smoke or gas between it and the target breaks the beam, and an EMP knocks it out for a while.
 """),
@@ -1472,7 +1474,7 @@ Salt is leached out of dried kelp with water; chlorine comes from salt water. To
 
 # =========================================================================================================================
 chapter("superweapons", "Superweapons", "scud_storm", """
-The two great superweapons of the old wars: the GLA's **SCUD Storm** and China's **Nuclear Missile**. Each is a structure of its own, takes only its own ammunition (built at a factory of its own faction, the **Arms Dealer** or the **War Factory**), charges for minutes on power and is fired from a [Launch Computer](ordnance/launch_site). When one is built, readied or launched, everyone in the dimension hears the warning.
+The great superweapons of the old wars: the GLA's **SCUD Storm**, China's **Nuclear Missile** and the USA's **Particle Uplink Cannon**. Each is a structure of its own and charges for minutes on power; the SCUD Storm and the Nuclear Missile take only their own ammunition (built at a factory of their own faction, the **Arms Dealer** or the **War Factory**), the cannon none. Each is fired from a [Launch Computer](ordnance/launch_site). When one is built, readied or fired, everyone in the dimension hears the warning.
 """)
 
 entry("superweapons/scud_storm", "SCUD Storm", "scud_storm", ["scud_storm", "adobe_wall", "toxin_tank", "scud_erector", "scud_storm_spawner",
@@ -1515,6 +1517,25 @@ China's missile, a two-stage liquid-fuelled ICBM in silver with red bands and a 
     craft("nuclear_missile_silo"),
     craft("fieldstone_wall"),
     craft("missile_erector"),
+])
+
+entry("superweapons/particle_uplink_cannon", "Particle Uplink Cannon", "particle_uplink_cannon",
+      ["particle_uplink_cannon", "uplink_wall", "particle_emitter", "focusing_column", "particle_uplink_cannon_spawner"], [
+    text("""
+The USA's superweapon fires no missile: it charges a particle beam and sends it up to a satellite, which brings it down from orbit wherever it is aimed. A drum of white concrete on its own plate, eight emitters through its wall round a hexagonal pit, beside a control tower with a glazed cab and an operations building with two satellite dishes on its roof.
+
+It takes **no ammunition**: give it power through its Energy Port and it **charges for 4 minutes** at 1,200 FE a tick (charging pauses without power). Charged, its **focusing column** rises out of the pit, its core aglow and arcs leaping to it from the emitters: it is **READY**. Aim it, arm it and press LAUNCH on a [Launch Computer](ordnance/launch_site), or arm and fire it with a [Laser Designator](ordnance/laser_designator).
+"""),
+    text("""
+**The beam.** After a 10 second countdown a beam goes up out of the pit into the sky; two seconds later it comes down from orbit on the target and **burns for 12 seconds**. It eats down into whatever it stands on, deeper the longer it lingers (a trench up to 8 blocks deep): roofs, trees and water go first, and only bedrock and obsidian stop it. Its trench's sides melt (rock to **slag**, sand to **glassed sand**, earth to **scorched earth**, glowing magma here and there in its bottom), fires catch round it and anything under it, from the sky down, is **vaporised**: no armour, shield or potion saves you.
+
+**Steering it.** Whoever fired it steers the beam: keep your Laser Designator on the ground and it follows your spot at **three blocks a second**; let go and it holds where it was headed. A new aim from a Launch Computer turns it too. **The beam draws 2,000 FE a tick**: what the cannon holds keeps it going ten seconds, so feed it to burn the full twelve; cut its power, knock it out with an EMP or break it and the beam dies at once.
+"""),
+    structure("particle_uplink_cannon", "The Particle Uplink Cannon, facing its controller: a 15 by 15 pad of Launch Pads, the controller in the middle of its front edge and an Energy Port two to its left. At the front right, the uplink drum: a ring of Uplink Wall nine across and three high, eight Particle Emitters through its middle course, the Focusing Column in the middle of the pit inside it; keep the drum's inside clear to the top, where the beam goes up. At the left, the control tower: Uplink Wall 2 by 2 and nine high. Behind it, the operations building: a 6 by 4 block of Uplink Wall three high (its walls only)."),
+    craft("particle_uplink_cannon"),
+    craft("uplink_wall"),
+    craft("particle_emitter"),
+    craft("focusing_column"),
 ])
 
 entry("superweapons/arms_dealer", "Arms Dealer", "arms_dealer", ["arms_dealer", "arms_dealer_spawner"], [

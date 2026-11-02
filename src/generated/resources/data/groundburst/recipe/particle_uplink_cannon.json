@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "groundburst:machine_casing",
+    "groundburst:military_circuit",
+    "groundburst:military_circuit",
+    "groundburst:quantum_circuit",
+    "groundburst:crt_display",
+    "groundburst:sensor_array",
+    "#c:dyes/blue",
+    "minecraft:lever"
+  ],
+  "result": {
+    "id": "groundburst:particle_uplink_cannon"
+  }
+}

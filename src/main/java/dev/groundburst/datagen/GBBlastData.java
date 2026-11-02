@@ -185,6 +185,9 @@ public final class GBBlastData {
         // DESIGN.md §16.16: the cryogenic warhead's heart, where everything is frozen through.
         ctx.register(dev.groundburst.blast.Freezes.FLASH_FROZEN, new DamageType(GroundBurst.MODID + ".flash_frozen", DamageScaling.NEVER, 0f,
                 net.minecraft.world.damagesource.DamageEffects.FREEZING));
+        // DESIGN.md §19.6: the Particle Uplink Cannon's beam, which vaporises what is in its core.
+        ctx.register(dev.groundburst.blast.ParticleBeams.PARTICLE_BEAM, new DamageType(GroundBurst.MODID + ".particle_beam", DamageScaling.NEVER, 0.1f,
+                net.minecraft.world.damagesource.DamageEffects.BURNING));
     }
 
     /** {@code groundburst:blast} counts as an explosion (Blast Protection, explosion-proof mobs). */
@@ -220,6 +223,15 @@ public final class GBBlastData {
             tag(DamageTypeTags.BYPASSES_ARMOR).add(frozen);
             tag(DamageTypeTags.NO_KNOCKBACK).add(frozen);
             tag(DamageTypeTags.IS_FREEZING).add(frozen);
+            // The particle beam: through armour, shields and every grace period (it hits every tick); not fire as fire
+            // resistance knows it, so no potion saves anyone from it.
+            var beam = dev.groundburst.blast.ParticleBeams.PARTICLE_BEAM;
+            tag(DamageTypeTags.BYPASSES_ARMOR).add(beam);
+            tag(DamageTypeTags.BYPASSES_SHIELD).add(beam);
+            tag(DamageTypeTags.BYPASSES_COOLDOWN).add(beam);
+            tag(DamageTypeTags.NO_KNOCKBACK).add(beam);
+            tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(beam);
+            tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(beam);
         }
     }
 }

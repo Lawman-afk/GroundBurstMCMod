@@ -84,6 +84,7 @@ public class LaunchStationScreen extends Screen {
     private static final String T_PICKED = GBLang.add(P + "picked", "%s picked");
     private static final String T_PATTERN_OF = GBLang.add(P + "pattern_of", "Aimed round the point: %s");
     private static final String T_NOTHING = GBLang.add(P + "nothing", "Nothing loaded");
+    private static final String T_BEAM = GBLang.add(P + "beam", "Particle beam (steered by its designator)");
     private static final String T_RADAR_SEES = GBLang.add(P + "radar_sees", "Tracks %s missiles within %s blocks");
     private static final String T_RANGE = GBLang.add(P + "range", "%s m: lands %s after LAUNCH");
     private static final String T_TOO_FAR = GBLang.add(P + "too_far", "Out of range (max %s m)");
@@ -138,7 +139,8 @@ public class LaunchStationScreen extends Screen {
             "launch_complex", GBLang.add(P + "kind.launch_complex", "Launch Complex"),
             "missile_silo", GBLang.add(P + "kind.missile_silo", "Missile Silo"),
             "cruise_launcher", GBLang.add(P + "kind.cruise_launcher", "Cruise Launcher"),
-            "radar_array", GBLang.add(P + "kind.radar_array", "Radar Array"));
+            "radar_array", GBLang.add(P + "kind.radar_array", "Radar Array"),
+            "particle_uplink_cannon", GBLang.add(P + "kind.particle_uplink_cannon", "Particle Cannon"));
 
     private static final int W = 420, H = 236, MAP = 196;
     private static final int COL = MAP + 18, CW = W - COL - 8, ROW = 10, ROWS = 7;
@@ -973,6 +975,7 @@ public class LaunchStationScreen extends Screen {
             Component head = Component.translatable(T_AT, number(one.pos()), kind(one.kind()), one.pos().getX(), one.pos().getZ());
             g.text(this.font, this.font.plainSubstrByWidth(head.getString(), textW), x, t + DETAIL_Y + 1, TEXT, false);
             Component what = one.radar() ? Component.translatable(T_RADAR_SEES, tracked(one, contacts), RadarArrayBlockEntity.RANGE)
+                    : dev.groundburst.content.superweapon.ParticleCannonBlockEntity.KIND.equals(one.kind()) ? Component.translatable(T_BEAM)
                     : one.shown().isEmpty() ? Component.translatable(T_NOTHING)
                     : one.shown().getCount() > 1 ? one.shown().getHoverName().copy().append(" x" + one.shown().getCount()) : one.shown().getHoverName();
             g.text(this.font, this.font.plainSubstrByWidth(what.getString(), CW), x, t + DETAIL_Y + 11, DIM, false);

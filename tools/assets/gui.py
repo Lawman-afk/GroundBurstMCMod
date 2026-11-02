@@ -242,6 +242,19 @@ LAYOUTS = {
         "readout": (58, 17, 110, 38),
         "inventory": (8, 84),
     },
+    # The Particle Uplink Cannon (DESIGN.md §19.6): no ammunition, only the energy it charges from and its beam draws, and
+    # a wider CRT (its state, its beam, its target).
+    "particle_cannon": {
+        "title": (8, 6),
+        "slots": [],
+        "energy": (8, 20, 14, 46),
+        "progress": None,
+        "flame": None,
+        "status": (160, 5, 8, 8),
+        "redstone": (151, 58, 18, 18),
+        "readout": (30, 17, 138, 38),
+        "inventory": (8, 84),
+    },
     # The superweapons' ammunition factories (DESIGN.md §19.5): their parts in two rows of three (the Arms Dealer four,
     # the War Factory five), the arrow, the finished round; the readout under them, tall enough for its two lines to
     # stack (a one-line glass set them side by side, half the width each, and cut the parts' names short).

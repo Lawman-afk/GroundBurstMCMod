@@ -28,8 +28,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
- * The C&C Generals superweapons (DESIGN.md §19.5): the GLA's SCUD Storm and China's Nuclear Missile, their themed
- * structure blocks and their ammunition.
+ * The C&C Generals superweapons (DESIGN.md §19.5, §19.6): the GLA's SCUD Storm, China's Nuclear Missile and the USA's
+ * Particle Uplink Cannon, their themed structure blocks and their ammunition.
  */
 public final class GBSuperweapons {
     // --- the SCUD Storm's blocks ---
@@ -61,6 +61,23 @@ public final class GBSuperweapons {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NuclearMissileBlockEntity>> NUCLEAR_MISSILE_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("nuclear_missile_silo", () -> new BlockEntityType<>(NuclearMissileBlockEntity::new,
                     NUCLEAR_MISSILE_CONTROLLER.block().get()));
+
+    // --- the Particle Uplink Cannon's blocks (DESIGN.md §19.6) ---
+    /** Reinforced concrete panelling: the uplink drum's wall, the control tower and the operations building. */
+    public static final WithItem<MultiblockPartBlock> UPLINK_WALL = part("uplink_wall", "Uplink Wall", MapColor.QUARTZ, SoundType.STONE);
+    /** One of the eight emitters through the drum's wall: a focusing cone inside, its blue-capped coil housing outside. */
+    public static final WithItem<MultiblockPartBlock> PARTICLE_EMITTER = part("particle_emitter", "Particle Emitter", MapColor.COLOR_BLUE,
+            SoundType.METAL);
+    /** The focusing column in the pit, which rises when the cannon is charged, its core aglow. */
+    public static final WithItem<MultiblockPartBlock> FOCUSING_COLUMN = part("focusing_column", "Focusing Column", MapColor.METAL,
+            SoundType.METAL);
+
+    public static final WithItem<MultiblockControllerBlock> PARTICLE_CANNON_CONTROLLER = GBBlocks.register("particle_uplink_cannon",
+            "Particle Uplink Cannon Controller", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBSuperweapons.PARTICLE_CANNON_ENTITY),
+            p -> p.mapColor(MapColor.COLOR_BLUE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ParticleCannonBlockEntity>> PARTICLE_CANNON_ENTITY =
+            GBBlockEntities.BLOCK_ENTITIES.register("particle_uplink_cannon", () -> new BlockEntityType<>(ParticleCannonBlockEntity::new,
+                    PARTICLE_CANNON_CONTROLLER.block().get()));
 
     // --- the ammunition's factories ---
     public static final WithItem<MultiblockControllerBlock> ARMS_DEALER_CONTROLLER = GBBlocks.register("arms_dealer", "Arms Dealer Controller",
@@ -158,6 +175,32 @@ public final class GBSuperweapons {
                     'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()), 'I', Entry.of(GBMultiblocks.ITEM_PORT.block()),
                     MultiblockDefinition.CONTROLLER, Entry.of(() -> WAR_FACTORY_CONTROLLER.block().get())),
             warFactoryCuts());
+
+    /**
+     * The eight Particle Emitters' cells (column, row offsets from the drum's middle): ahead, then clockwise from above.
+     * (Here, ahead of the definition that reads it: a class's statics are set in order.)
+     */
+    public static final int[][] PUC_EMITTERS = {{0, -4}, {3, -3}, {4, 0}, {3, 3}, {0, 4}, {-3, 3}, {-4, 0}, {-3, -3}};
+
+    /**
+     * The Particle Uplink Cannon, seen (as in the game) from in front of its controller: a 15x15 pad of Launch Pad (the
+     * controller in the middle of its front edge, an Energy Port two to its left); on it, at the front right, the uplink
+     * drum, a ring of Uplink Wall nine across and three high with eight Particle Emitters through its middle course, the
+     * Focusing Column in the middle of the pit inside it (kept clear up to the top, where the beam goes up); the control
+     * tower of Uplink Wall at the left, 2x2 and nine high; and behind it the operations building, Uplink Wall round a 6x4
+     * block three high. (The pattern's columns run from the controller's left, so from in front the drum is in its
+     * first columns.)
+     */
+    public static final MultiblockDefinition PARTICLE_CANNON = new MultiblockDefinition(GroundBurst.id("particle_uplink_cannon"),
+            particleCannonLayers(), Map.of('P', Entry.of(() -> GBLaunch.LAUNCH_PAD.block().get()), 'W', Entry.of(() -> UPLINK_WALL.block().get()),
+                    'M', Entry.of(() -> PARTICLE_EMITTER.block().get()), 'C', Entry.of(() -> FOCUSING_COLUMN.block().get()),
+                    'E', Entry.of(() -> GBMultiblocks.ENERGY_PORT.block().get()),
+                    MultiblockDefinition.CONTROLLER, Entry.of(() -> PARTICLE_CANNON_CONTROLLER.block().get())),
+            particleCannonCuts());
+
+    public static final DeferredItem<StructureSpawnerItem> PARTICLE_CANNON_SPAWNER = GBItems.register("particle_uplink_cannon_spawner",
+            "Structure Spawner: Particle Uplink Cannon", GBTab.MISSILES, p -> new StructureSpawnerItem(p, () -> PARTICLE_CANNON),
+            p -> p.stacksTo(1).rarity(Rarity.EPIC));
 
     public static final DeferredItem<StructureSpawnerItem> ARMS_DEALER_SPAWNER = GBItems.register("arms_dealer_spawner",
             "Structure Spawner: Arms Dealer", GBTab.MISSILES, p -> new StructureSpawnerItem(p, () -> ARMS_DEALER),
@@ -297,6 +340,79 @@ public final class GBSuperweapons {
         return cuts;
     }
 
+    /**
+     * The Particle Uplink Cannon's pattern: 15 columns by 15 rows, 10 layers; the controller in the middle of the front
+     * row. The drum's middle is the cell {@link #PUC_RING_COL}, {@link #PUC_RING_ROW}: its wall the cells 3.5 to 4.55
+     * from it, its pit those within 2.25 (cut low), the Focusing Column at its middle.
+     */
+    public static final int PUC_COLS = 15, PUC_ROWS = 15, PUC_LAYERS = 10, PUC_CENTER_COL = 7, PUC_RING_COL = 5, PUC_RING_ROW = 6;
+    /** The drum's wall (from the drum's middle, cells), its pit's reach; the tower's and the operations building's cells. */
+    public static final double PUC_WALL_IN = 3.5, PUC_WALL_OUT = 4.55, PUC_PIT = 2.25;
+    public static final int PUC_TOWER_COL = 12, PUC_TOWER_ROW = 9, PUC_OPS_COL0 = 8, PUC_OPS_COL1 = 13, PUC_OPS_ROW0 = 11, PUC_OPS_ROW1 = 14;
+
+    private static double ringDistance(int col, int row) {
+        return Math.hypot(col - PUC_RING_COL, row - PUC_RING_ROW);
+    }
+
+    private static String[][] particleCannonLayers() {
+        char[][][] grid = new char[PUC_LAYERS][PUC_ROWS][PUC_COLS];
+        for (int y = 0; y < PUC_LAYERS; y++) {
+            for (int row = 0; row < PUC_ROWS; row++) {
+                for (int col = 0; col < PUC_COLS; col++) {
+                    double d = ringDistance(col, row);
+                    boolean wall = d >= PUC_WALL_IN && d < PUC_WALL_OUT;
+                    boolean inside = d < PUC_WALL_IN;
+                    boolean tower = col >= PUC_TOWER_COL && col <= PUC_TOWER_COL + 1 && row >= PUC_TOWER_ROW && row <= PUC_TOWER_ROW + 1;
+                    boolean ops = col >= PUC_OPS_COL0 && col <= PUC_OPS_COL1 && row >= PUC_OPS_ROW0 && row <= PUC_OPS_ROW1;
+                    boolean opsWall = ops && (col == PUC_OPS_COL0 || col == PUC_OPS_COL1 || row == PUC_OPS_ROW0 || row == PUC_OPS_ROW1);
+                    char c = ' ';
+                    if (wall) {
+                        c = y <= 2 ? 'W' : ' ';
+                    } else if (inside) {
+                        c = y == 0 ? 'P' : '.';
+                    } else if (tower) {
+                        c = y <= 8 ? 'W' : ' ';
+                    } else if (ops) {
+                        c = opsWall && y <= 2 ? 'W' : ' ';
+                    } else if (y == 0) {
+                        c = 'P';
+                    }
+                    grid[y][row][col] = c;
+                }
+            }
+        }
+        grid[0][0][PUC_CENTER_COL] = MultiblockDefinition.CONTROLLER;
+        grid[0][0][PUC_CENTER_COL + 2] = 'E';
+        grid[0][PUC_RING_ROW][PUC_RING_COL] = 'C';
+        for (int[] e : PUC_EMITTERS) {
+            grid[1][PUC_RING_ROW + e[1]][PUC_RING_COL + e[0]] = 'M';
+        }
+        String[][] layers = new String[PUC_LAYERS][PUC_ROWS];
+        for (int y = 0; y < PUC_LAYERS; y++) {
+            for (int row = 0; row < PUC_ROWS; row++) {
+                layers[y][row] = new String(grid[y][row]);
+            }
+        }
+        return layers;
+    }
+
+    /** The pad cut to the deck (14 px), the pit lower (4 px), the controller's console and the port's housing. */
+    private static Map<Long, PartCut> particleCannonCuts() {
+        Map<Long, PartCut> cuts = new HashMap<>();
+        String[] floor = particleCannonLayers()[0];
+        for (int row = 0; row < PUC_ROWS; row++) {
+            for (int col = 0; col < PUC_COLS; col++) {
+                char c = floor[row].charAt(col);
+                if (c == 'P' || c == 'C') {
+                    cuts.put(MultiblockDefinition.cutKey(col, row, 0), ringDistance(col, row) <= PUC_PIT ? PartCut.PIT : PartCut.DECK);
+                }
+            }
+        }
+        cuts.put(MultiblockDefinition.cutKey(PUC_CENTER_COL, 0, 0), PartCut.CONSOLE_NORTH);
+        cuts.put(MultiblockDefinition.cutKey(PUC_CENTER_COL + 2, 0, 0), PartCut.HOUSING_SOUTH);
+        return cuts;
+    }
+
     /** The SCUD Storm's pattern: 16 columns (the wall in the first) by 16 rows (the wall in the last), 7 layers. */
     public static final int SCUD_COLS = 16, SCUD_ROWS = 16, SCUD_LAYERS = 7, SCUD_CENTER_COL = 8, SCUD_CENTER_ROW = 7;
 
@@ -372,6 +488,16 @@ public final class GBSuperweapons {
                     + "shows it). Load a Nuclear Missile and power it: it charges for 6 minutes, then a Launch Computer aims, arms "
                     + "and fires it. The roof opens, the missile is raised and it climbs straight out: a nuclear blast and a "
                     + "radiation field 200 blocks round.");
+    public static final String INFO_PARTICLE_CANNON = GBLang.add(GroundBurst.MODID + ".info.particle_uplink_cannon",
+            "The USA's superweapon. Build it on a 15x15 pad of Launch Pad with its controller in the middle of the front edge "
+                    + "and an Energy Port two blocks to its left. Facing the controller: at the front right a ring of Uplink Wall nine "
+                    + "across and three high with eight Particle Emitters through its middle course and the Focusing Column in the "
+                    + "middle of the pit; at the left a control tower of Uplink Wall 2x2 and nine high, and behind it the operations "
+                    + "building (the Holo-Projector shows it). It takes no ammunition: power it and it charges for 4 minutes, then a Launch "
+                    + "Computer or a Laser Designator aims, arms and fires it. A beam goes up out of the pit to its satellite and "
+                    + "comes down on the target for 12 seconds, melting a trench and burning everything in it. Whoever fired it "
+                    + "steers it with their Laser Designator; it follows at three blocks a second. The beam draws 2,000 FE/t: cut "
+                    + "its power and it dies.");
     public static final String INFO_ARMS_DEALER = GBLang.add(GroundBurst.MODID + ".info.arms_dealer",
             "The GLA's factory for Toxin SCUDs: an adobe compound (9x7, walls of Adobe Wall two high, the controller in the "
                     + "middle of the front wall) round a yard of Launch Pad, its workshop at the back. Load its parts and power it: "
@@ -391,7 +517,7 @@ public final class GBSuperweapons {
     public static void init() {}
 
     public static List<MultiblockDefinition> definitions() {
-        return List.of(SCUD_STORM, NUCLEAR_MISSILE, ARMS_DEALER, WAR_FACTORY);
+        return List.of(SCUD_STORM, NUCLEAR_MISSILE, PARTICLE_CANNON, ARMS_DEALER, WAR_FACTORY);
     }
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color, SoundType sound) {

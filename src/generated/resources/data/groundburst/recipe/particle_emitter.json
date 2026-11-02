@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "groundburst:superconducting_coil",
+    "groundburst:sapphire_wafer",
+    "groundburst:capacitor",
+    "groundburst:capacitor",
+    "groundburst:tungsten_plate",
+    "groundburst:tungsten_plate",
+    "groundburst:advanced_circuit",
+    "#c:dyes/blue"
+  ],
+  "result": {
+    "id": "groundburst:particle_emitter"
+  }
+}

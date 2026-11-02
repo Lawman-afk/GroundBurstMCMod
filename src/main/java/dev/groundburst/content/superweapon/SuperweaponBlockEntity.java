@@ -60,10 +60,12 @@ import net.minecraft.world.phys.Vec3;
  * {@link LaunchSite}). Fired, it warns everyone in the dimension, makes its launchers ready during a countdown (the SCUD
  * Storm raises its nine missiles; the Nuclear Missile opens its roof and raises its missile), fires, stands down and
  * starts charging again. An EMP, a redstone halt or a broken structure scrubs a strike: what was not fired stays loaded.
+ * A superweapon that fires no missiles (the Particle Uplink Cannon, DESIGN.md §19.6) takes no ammunition
+ * ({@link #needsAmmo}) and fires its own way ({@link #fireTick}).
  */
 public abstract class SuperweaponBlockEntity extends MachineBlockEntity implements AnimatedMachine, MultiblockController, MissileCarrier, LaunchSite {
     public static final int SLOT_AMMO = 0;
-    /** How far a superweapon reaches, blocks. */
+    /** How far a superweapon reaches by default, blocks (the server's {@code superweapons.maxRange}). */
     public static final int RANGE = 4096;
     /** From LAUNCH to the first missile lighting, ticks (its launchers are made ready within it). */
     public static final int COUNTDOWN = 200;
@@ -114,8 +116,13 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     /** How many rounds of it it holds (the SCUD Storm's nine). */
     public abstract int capacity();
 
-    /** How long it takes to charge from empty, ticks (the game's timer). */
+    /** How long it takes to charge from empty, ticks (the game's timer), before the server's multiplier ({@link #chargeTime}). */
     public abstract int chargeTicks();
+
+    /** How long it takes to charge from empty here, ticks: its own time scaled by the server's {@code superweapons.chargeTimeMultiplier}. */
+    public final int chargeTime() {
+        return Math.max(1, (int) Math.round(chargeTicks() * dev.groundburst.config.GBServerConfig.SUPERWEAPON_CHARGE_MULTIPLIER.get()));
+    }
 
     /** The energy charging takes, FE a tick. */
     public abstract int chargePower();
@@ -149,13 +156,31 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     /** Each tick it charges (vents steaming, the tank bubbling). */
     protected void onCharging(ServerLevel level) {}
 
+    /** Each tick it is formed and working, whatever it is doing (before its phase's own work). */
+    protected void onTick(ServerLevel level) {}
+
+    /** Whether it fires ammunition (false: it charges from power alone and is ready once charged). */
+    protected boolean needsAmmo() {
+        return true;
+    }
+
+    /** Who launched the strike under way (null: no one, or a Launch Computer's redstone). */
+    protected @Nullable UUID launchedBy() {
+        return this.launchedBy;
+    }
+
+    /** Ticks into its present phase. */
+    protected int phaseTicks() {
+        return this.phaseTicks;
+    }
+
     // --- state ----------------------------------------------------------------------------------------------------------
     public int charge() {
         return this.charge;
     }
 
     public boolean charged() {
-        return this.charge >= chargeTicks();
+        return this.charge >= chargeTime();
     }
 
     public Phase phase() {
@@ -174,7 +199,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return slot == SLOT_AMMO && stack.is(ammo());
+        return needsAmmo() && slot == SLOT_AMMO && stack.is(ammo());
     }
 
     @Override
@@ -199,7 +224,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         if (!charged()) {
             return this.energy.stored() < chargePower() ? Readiness.NO_POWER : Readiness.CHARGING;
         }
-        return loaded() == 0 ? Readiness.NO_MISSILE : Readiness.READY;
+        return needsAmmo() && loaded() == 0 ? Readiness.NO_MISSILE : Readiness.READY;
     }
 
     /** Each of its missiles' warhead, coming down anywhere within its spread of the target. */
@@ -219,7 +244,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
             return Math.max(0, COUNTDOWN - this.phaseTicks);
         }
         if (this.phase == Phase.IDLE && !charged()) {
-            return chargeTicks() - this.charge;
+            return chargeTime() - this.charge;
         }
         return this.phase == Phase.IDLE ? -1 : 0;
     }
@@ -236,7 +261,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     @Override
     public int range() {
-        return RANGE;
+        return dev.groundburst.config.GBServerConfig.SUPERWEAPON_MAX_RANGE.get();
     }
 
     /** Its ammunition (as many rounds as it holds). */
@@ -254,7 +279,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     @Override
     public boolean setTarget(int x, int z) {
-        if (this.phase != Phase.IDLE) {
+        if (!retargetable()) {
             return false;
         }
         this.target = new BlockPos(x, this.worldPosition.getY(), z);
@@ -263,6 +288,11 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         }
         setChanged();
         return true;
+    }
+
+    /** Whether it may be aimed now (a missile superweapon only while idle: its missiles are committed once it counts down). */
+    protected boolean retargetable() {
+        return this.phase == Phase.IDLE;
     }
 
     private boolean inRange(BlockPos at) {
@@ -305,7 +335,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         setChanged();
     }
 
-    private void setRaised(boolean up) {
+    protected final void setRaised(boolean up) {
         if (this.raised != up) {
             this.raised = up;
             setChanged();
@@ -321,7 +351,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     /** For GameTests: charge it fully at once. */
     public void chargeForTest() {
-        this.charge = chargeTicks();
+        this.charge = chargeTime();
         setChanged();
     }
 
@@ -349,6 +379,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
             announce(level, Announcement.DETECTED);
             setChanged();
         }
+        onTick(level);
         return switch (this.phase) {
             case IDLE -> idle(level);
             case COUNTDOWN -> countingDown(level);
@@ -403,16 +434,37 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     private boolean firing(ServerLevel level) {
         this.status = MachineStatus.RUNNING;
-        if (this.phaseTicks % fireInterval() == 0) {
+        fireTick(level, this.phaseTicks);
+        if (this.phase == Phase.FIRING) {
+            this.phaseTicks++;
+        }
+        return true;
+    }
+
+    /**
+     * One tick of a strike, {@code ticks} into its firing: by default a missile every {@link #fireInterval} ticks, the
+     * last loaded first, until none is left ({@link #endFiring}).
+     */
+    protected void fireTick(ServerLevel level, int ticks) {
+        if (ticks % fireInterval() == 0) {
             int index = loaded() - 1;
             if (index < 0 || this.target == null) {
-                enter(Phase.STANDING_DOWN);
-                return true;
+                endFiring();
+                return;
             }
             fire(level, index);
         }
-        this.phaseTicks++;
-        return true;
+    }
+
+    /** The strike has done all it will: it stands down. */
+    protected final void endFiring() {
+        enter(Phase.STANDING_DOWN);
+    }
+
+    /** It fired something this strike (so it charges again from empty). */
+    protected final void markFired() {
+        this.firedThisStrike = true;
+        setChanged();
     }
 
     /** Missile {@code index} (the last loaded) lights on its launcher and sets off for somewhere near the target. */
@@ -488,6 +540,9 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     // --- announcements ----------------------------------------------------------------------------------------------------
     /** Everyone in the dimension hears it, as the game's announcer has it: a line in chat and a warning tone. */
     protected void announce(ServerLevel level, Announcement which) {
+        if (!dev.groundburst.config.GBServerConfig.SUPERWEAPON_ANNOUNCE.get()) {
+            return;
+        }
         Component line = Component.translatable(announcementKey(which)).withStyle(announcementColour(), ChatFormatting.BOLD);
         Holder<SoundEvent> sound = which == Announcement.READY ? dev.groundburst.registry.GBSounds.SUPERWEAPON_READY
                 : dev.groundburst.registry.GBSounds.SUPERWEAPON_WARNING;
@@ -574,7 +629,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     }
 
     // --- screen -----------------------------------------------------------------------------------------------------------
-    private static final int DATA_READINESS = 0, DATA_COUNTDOWN = 1, DATA_ARMED = 2, DATA_LOADED = 3, DATA_PHASE = 4;
+    /** Its screen's extra data: readiness, countdown (or charge left), armed, rounds loaded, phase. */
+    protected static final int DATA_READINESS = 0, DATA_COUNTDOWN = 1, DATA_ARMED = 2, DATA_LOADED = 3, DATA_PHASE = 4;
 
     @Override
     protected int extraDataCount() {
@@ -619,15 +675,27 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
                     : Component.translatable(p == Phase.FIRING ? T_FIRING : T_STANDING_DOWN);
             default -> Component.translatable(r == Readiness.EMP ? "groundburst.silo.state.emp" : "groundburst.silo.state.halted");
         };
-        Component ammo = Component.translatable(T_AMMO, new ItemStack(ammo()).getHoverName(), menu.extra(DATA_LOADED), capacity());
         Component aim = this.target == null ? Component.translatable(T_NO_TARGET) : Component.translatable(T_TARGET, this.target.getX(), this.target.getZ());
-        return List.of(state, ammo, aim);
+        return List.of(state, ammoLine(menu), aim);
+    }
+
+    /** The readout's middle line: its ammunition, loaded of what it holds. */
+    protected Component ammoLine(MachineMenu menu) {
+        return Component.translatable(T_AMMO, new ItemStack(ammo()).getHoverName(), menu.extra(DATA_LOADED), capacity());
     }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        return new MachineMenu(dev.groundburst.registry.GBMenus.SUPERWEAPON.get(), containerId, inventory, this,
-                dev.groundburst.content.machine.MachineLayouts.SUPERWEAPON, this.data);
+        return new MachineMenu(menuType(), containerId, inventory, this, layout(), this.data);
+    }
+
+    /** Its screen: the superweapons' (its ammunition's slot, the energy it charges from, the readout). */
+    protected net.minecraft.world.inventory.MenuType<MachineMenu> menuType() {
+        return dev.groundburst.registry.GBMenus.SUPERWEAPON.get();
+    }
+
+    protected dev.groundburst.content.machine.MachineLayout layout() {
+        return dev.groundburst.content.machine.MachineLayouts.SUPERWEAPON;
     }
 
     // --- model ------------------------------------------------------------------------------------------------------------
@@ -679,6 +747,11 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         return AMBIENT;
     }
 
+    /** What its launchers do once raised: rise and hold (a superweapon whose raised part keeps moving loops after it). */
+    protected RawAnimation raisedAnimation() {
+        return RAISE;
+    }
+
     /**
      * The main controller ("working" while it charges) and the launchers': raised while it is ready to fire; lowered
      * again after, but only once this client has seen them up (a superweapon loaded at rest stays at rest).
@@ -690,7 +763,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
             SuperweaponBlockEntity be = test.animatable();
             if (be.raised) {
                 be.clientSawRaised = true;
-                return test.setAndContinue(RAISE);
+                return test.setAndContinue(be.raisedAnimation());
             }
             return test.setAndContinue(be.clientSawRaised ? LOWER : LOWERED);
         }));

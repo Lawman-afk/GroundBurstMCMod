@@ -15,8 +15,8 @@ import net.minecraft.world.phys.Vec3;
  * finds them through {@link Launches} and shows each in its list and on its map.
  */
 public interface LaunchSite {
-    /** What it is, for the computer's list and map (its ordinal goes over the wire). */
-    enum Kind { LAUNCHER, SCUD_STORM, NUCLEAR_MISSILE }
+    /** What it is, for the computer's list and map (its ordinal goes over the wire: new kinds go at the end). */
+    enum Kind { LAUNCHER, SCUD_STORM, NUCLEAR_MISSILE, PARTICLE_CANNON }
 
     BlockPos getBlockPos();
 
@@ -68,11 +68,24 @@ public interface LaunchSite {
     /**
      * When a launch arrives: {@code delay} ticks from LAUNCH until its first missile leaves (its countdown and the
      * missile's ignition), then its flight from x/z (where it lifts off), on its arc or, for a cruise missile, out
-     * along {@code heading} (radians, as {@link Flights.Flight#heading}) and round onto the target.
+     * along {@code heading} (radians, as {@link Flights.Flight#heading}) and round onto the target. A {@code direct}
+     * strike has no flight: it arrives {@code delay} ticks after LAUNCH wherever it is aimed (a particle beam from orbit).
      */
-    record Timing(int delay, boolean cruise, double x, double z, double heading) {
+    record Timing(int delay, boolean cruise, double x, double z, double heading, boolean direct) {
+        public Timing(int delay, boolean cruise, double x, double z, double heading) {
+            this(delay, cruise, x, z, heading, false);
+        }
+
+        /** A strike that comes down {@code delay} ticks after LAUNCH wherever it is aimed. */
+        public static Timing direct(int delay) {
+            return new Timing(delay, false, 0, 0, 0, true);
+        }
+
         /** Ticks from LAUNCH until its first warhead comes down on tx/tz. */
         public int toImpact(int tx, int tz) {
+            if (this.direct) {
+                return this.delay;
+            }
             if (this.cruise) {
                 return this.delay + Flights.CruisePlan.of(new Vec3(this.x, 0, this.z), this.heading, new Vec3(tx + 0.5, 0, tz + 0.5)).ticks();
             }

@@ -797,6 +797,51 @@
     ],
     "subtitle": "subtitles.groundburst.nuclear_missile.erect"
   },
+  "particle_cannon.beam": {
+    "sounds": [
+      {
+        "attenuation_distance": 160,
+        "name": "groundburst:superweapon/particle_beam_loop"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.particle_cannon.beam"
+  },
+  "particle_cannon.charged": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "groundburst:superweapon/particle_charged"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.particle_cannon.charged"
+  },
+  "particle_cannon.fade": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundburst:superweapon/particle_fade"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.particle_cannon.fade"
+  },
+  "particle_cannon.strike": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:superweapon/particle_strike"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.particle_cannon.strike"
+  },
+  "particle_cannon.uplink": {
+    "sounds": [
+      {
+        "attenuation_distance": 192,
+        "name": "groundburst:superweapon/particle_uplink"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.particle_cannon.uplink"
+  },
   "reactor.alarm": {
     "sounds": [
       {

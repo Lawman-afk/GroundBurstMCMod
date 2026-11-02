@@ -294,12 +294,12 @@ and contamination · 12d EMP everywhere · 12e the wasteland.
 | Item | Status |
 |---|---|
 | Superweapon base (charge, power, announcements, controller GUI, Launch Computer firing) | done 2026-10-23 — needs in-game test (doctrine and upgrade slots dropped 2026-10-31 (the user's plan)) |
-| Particle Uplink Cannon (structure, charge visuals, steerable beam, trench, remote) | todo (the user's plan) |
+| Particle Uplink Cannon (structure, charge visuals, steerable beam, trench; steered with the Laser Designator) | done 2026-11-02 — the game's layout and look (§19.6): no ammunition, 4:00 on power, the beam up and down from orbit for 12 s, steered at 3 blocks/s, a trench up to 8 deep, fires, vaporising; dies without power — client-checked, needs the user's look |
 | Nuclear Missile Silo (C&C's coffin: roof opening, erector, DF-5, 200-block radiation field) | done 2026-10-23 — needs in-game test |
 | SCUD Storm (erectors raising nine SCUDs, the barrage, toxin cloud and anthrax residue) | done 2026-10-23 — needs in-game test |
 | Ammunition factories: Arms Dealer (Toxin SCUD), War Factory (Nuclear Missile) | done 2026-10-23 — needs in-game test |
 | Doctrine modules (10) + generic upgrades (4) | dropped 2026-10-31 (the user's plan) |
-| Creative structure spawners | done for the four built |
+| Creative structure spawners | done for the five built |
 
 ## Phase 15 — Structures & loot
 | Item | Status |

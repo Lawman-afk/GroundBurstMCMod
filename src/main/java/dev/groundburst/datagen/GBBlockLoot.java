@@ -97,7 +97,8 @@ public class GBBlockLoot extends BlockLootSubProvider {
         // The superweapons (DESIGN.md §19.5).
         for (var b : java.util.List.of(dev.groundburst.content.superweapon.GBSuperweapons.ADOBE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_TANK, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_CONTROLLER,
                 dev.groundburst.content.superweapon.GBSuperweapons.FIELDSTONE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.MISSILE_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_CONTROLLER, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER,
-                dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER)) {
+                dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER, dev.groundburst.content.superweapon.GBSuperweapons.UPLINK_WALL, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_EMITTER,
+                dev.groundburst.content.superweapon.GBSuperweapons.FOCUSING_COLUMN, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_CONTROLLER)) {
             dropSelf(b.block().get());
         }
         // The Large Radar Dish drops itself from its middle only (its parts go with it).

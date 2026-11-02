@@ -275,6 +275,20 @@ public final class GBSounds {
             register("cryo.spire", "Ice spire bursts up", variants("exotic/cryo_spire", 2), false, 96);
     public static final DeferredHolder<SoundEvent, SoundEvent> CRYO_WIND =
             register("cryo.wind", "Freezing wind whistles", List.of("exotic/cryo_wind"), false, 96);
+    /**
+     * The Particle Uplink Cannon (DESIGN.md §19.6): its charged core crackling; the uplink, the beam going up out of its
+     * pit to the satellite; the beam striking from orbit, its roar as it burns (looped, following it) and its dying away.
+     */
+    public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_CHARGED =
+            register("particle_cannon.charged", "Particle Cannon crackles", List.of("superweapon/particle_charged"), false, 32);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_UPLINK =
+            register("particle_cannon.uplink", "Particle Cannon fires its uplink", List.of("superweapon/particle_uplink"), false, 192);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_STRIKE =
+            register("particle_cannon.strike", "Particle beam strikes", List.of("superweapon/particle_strike"), false, 256);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_BEAM =
+            register("particle_cannon.beam", "Particle beam roars", List.of("superweapon/particle_beam_loop"), false, 160);
+    public static final DeferredHolder<SoundEvent, SoundEvent> PARTICLE_FADE =
+            register("particle_cannon.fade", "Particle beam dies away", List.of("superweapon/particle_fade"), false, 128);
     /** The singularity's end (DESIGN.md §16.12): an inrush, then the thud as its horizon closes. */
     public static final DeferredHolder<SoundEvent, SoundEvent> SINGULARITY_IMPLODE =
             register("singularity.implode", "Singularity implodes", List.of("exotic/singularity_implode"), false, 160);

@@ -73,7 +73,8 @@ public final class LaunchNetwork extends SavedData {
     private static final Codec<LaunchSite.Timing> TIMING_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("delay").forGetter(LaunchSite.Timing::delay), Codec.BOOL.fieldOf("cruise").forGetter(LaunchSite.Timing::cruise),
             Codec.DOUBLE.fieldOf("x").forGetter(LaunchSite.Timing::x), Codec.DOUBLE.fieldOf("z").forGetter(LaunchSite.Timing::z),
-            Codec.DOUBLE.fieldOf("heading").forGetter(LaunchSite.Timing::heading)).apply(i, LaunchSite.Timing::new));
+            Codec.DOUBLE.fieldOf("heading").forGetter(LaunchSite.Timing::heading),
+            Codec.BOOL.optionalFieldOf("direct", false).forGetter(LaunchSite.Timing::direct)).apply(i, LaunchSite.Timing::new));
 
     /** What a member last reported. */
     public record Report(int readiness, int countdown, boolean armed, Optional<BlockPos> target, int range, LaunchSite.Strike strike,
@@ -698,10 +699,19 @@ public final class LaunchNetwork extends SavedData {
     }
 
     // --- the Laser Designator (DESIGN.md §17.13) ---------------------------------------------------------------------------
-    /** Whether a member is a launcher loaded with a laser-guided missile (as it last reported). */
+    /**
+     * Whether a member is a launcher loaded with a laser-guided missile (as it last reported), or a Particle Uplink
+     * Cannon (its beam follows the laser of whoever fired it).
+     */
     private static boolean laserGuided(Member m) {
+        if (m.role != Role.LAUNCHER || m.lost) {
+            return false;
+        }
+        if (dev.groundburst.content.superweapon.ParticleCannonBlockEntity.KIND.equals(m.kind)) {
+            return true;
+        }
         var spec = dev.groundburst.content.assembly.MissileItem.spec(m.report.shown);
-        return m.role == Role.LAUNCHER && !m.lost && spec != null && spec.guidance() == dev.groundburst.content.assembly.MissileParts.Guidance.LASER;
+        return spec != null && spec.guidance() == dev.groundburst.content.assembly.MissileParts.Guidance.LASER;
     }
 
     /** Whether it is counting down or ordered to fire (its aim and its arming are settled). */

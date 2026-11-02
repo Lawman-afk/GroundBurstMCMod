@@ -75,7 +75,8 @@ public class LaunchComputerScreen extends Screen {
     /** The superweapons' names in the list (LaunchSite.Kind order, the launcher none). */
     private static final String[] T_KIND = {"",
             GBLang.add(GroundBurst.MODID + ".computer.kind.scud_storm", "SCUD Storm"),
-            GBLang.add(GroundBurst.MODID + ".computer.kind.nuclear_missile", "Nuclear Missile")};
+            GBLang.add(GroundBurst.MODID + ".computer.kind.nuclear_missile", "Nuclear Missile"),
+            GBLang.add(GroundBurst.MODID + ".computer.kind.particle_cannon", "Particle Cannon")};
 
     private static final int W = 336, H = 214, MAP = 184;
     /** The right-hand column: its left edge (from the panel's) and width; the silo list's rows. */
@@ -227,9 +228,14 @@ public class LaunchComputerScreen extends Screen {
         }
     }
 
+    /**
+     * Aims the picked silo here: not while it counts down (its missiles are committed), but a superweapon may be aimed
+     * while it charges, and a Particle Uplink Cannon even while it fires (its beam turns toward the new aim).
+     */
     private void aimAt(int x, int z) {
         LaunchPayloads.Silo silo = selectedSilo();
-        if (silo == null || silo.countdown() >= 0) {
+        boolean counting = silo != null && silo.readiness() == LaunchSiloBlockEntity.Readiness.COUNTING.ordinal();
+        if (silo == null || counting && silo.kind() != dev.groundburst.content.launch.LaunchSite.Kind.PARTICLE_CANNON.ordinal()) {
             return;
         }
         if (this.xBox != null && this.zBox != null) {

@@ -185,6 +185,7 @@ public final class StationPayloads {
             buf.writeDouble(m.timing().x());
             buf.writeDouble(m.timing().z());
             buf.writeDouble(m.timing().heading());
+            buf.writeBoolean(m.timing().direct());
             buf.writeBoolean(m.contact());
             buf.writeBoolean(m.lost());
             buf.writeVarLong(m.launchAt() + 1);
@@ -193,7 +194,7 @@ public final class StationPayloads {
         }, buf -> new MemberView(buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
                 buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
                 new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
-                new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble()),
+                new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean()),
                 buf.readBoolean(), buf.readBoolean(), buf.readVarLong() - 1, buf.readBoolean(), buf.readVarInt() - 1));
     }
 

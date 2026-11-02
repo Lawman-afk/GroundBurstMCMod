@@ -95,6 +95,7 @@ public class GroundBurstClient {
         event.register(GBMenus.CANNING_MACHINE.get(), MachineScreen::new);
         event.register(GBMenus.EXOTIC_MATTER_FABRICATOR.get(), MachineScreen::new);
         event.register(GBMenus.SUPERWEAPON.get(), MachineScreen::new);
+        event.register(GBMenus.PARTICLE_CANNON.get(), MachineScreen::new);
         event.register(GBMenus.ARMS_DEALER.get(), MachineScreen::new);
         event.register(GBMenus.WAR_FACTORY.get(), MachineScreen::new);
     }
@@ -161,6 +162,8 @@ public class GroundBurstClient {
         // The Nuclear Missile Silo: its hall 15 blocks back, its tower and raised missile 11 up.
         event.registerBlockEntityRenderer(dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_ENTITY.get(), 11, 15));
+        event.registerBlockEntityRenderer(dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_ENTITY.get(), 14, 15));
         // The Search Radar's reflector reaches six blocks out and up from its bearing.
         // The Large Silo Door: its rails reach eight blocks either side of its middle.
         event.registerBlockEntityRenderer(dev.groundburst.content.construction.GBConstruction.LARGE_SILO_DOOR_ENTITY.get(),

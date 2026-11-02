@@ -19,6 +19,11 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
 - ``textures/fx/bolt.png`` (64x16, tileable along u): a lightning channel's cross-section for the storm warhead's bolts
   (DESIGN.md §16.14), v across it and u along it: a white-hot core in a soft glow fading to nothing at its edges, a
   little ragged along its length (tinted blue-white by vertex colour in game).
+- ``textures/fx/particle_beam.png`` (128x32, tileable along u): the Particle Uplink Cannon's beam (DESIGN.md §19.6), v
+  across it and u along it: a white-hot core in a glow and a wide soft halo, streaks of brighter energy running along
+  it (scrolled down the beam in game, tinted white or blue by vertex colour).
+- ``textures/fx/particle_flare.png`` (128x128): the glare where the beam touches and over the cannon's pit: a hot round
+  middle in a soft glow, thin rays of light out of it.
 """
 from __future__ import annotations
 
@@ -181,6 +186,44 @@ def bolt() -> Image.Image:
     return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
 
 
+def particle_beam() -> Image.Image:
+    """A white-hot core, a glow round it and a wide soft halo; streaks of energy along u brighten the glow and halo."""
+    w, h = 128, 32
+    v = ((np.arange(h) + 0.5) / h * 2 - 1)[:, None]
+    streak = spectral(128, 1.6, 61, aniso=(0.08, 1.0))[:h, :w]
+    flow = spectral(128, 2.0, 62, aniso=(0.25, 1.0))[:1, :w]
+    waver = 1 + 0.18 * (flow - 0.5)
+    core = np.exp(-(v / 0.13) ** 2)
+    glow = 0.6 * np.exp(-(v / (0.36 * waver)) ** 2) * (0.75 + 0.5 * streak)
+    halo = 0.32 * np.exp(-(v / 0.8) ** 2) * (0.8 + 0.4 * streak)
+    alpha = np.clip(core + glow + halo, 0, 1) * smoothstep(1.0, 0.78, np.abs(v))     # to nothing at its edges
+    rgb = np.ones((h, w, 3))
+    return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
+def particle_flare() -> Image.Image:
+    """A hot round middle in a soft glow, thin rays of light out of it (fewer, longer ones and many faint short ones)."""
+    size = 128
+    x, y = grid(size)
+    r = np.sqrt(x * x + y * y)
+    a = np.arctan2(y, x)
+    rng = np.random.default_rng(71)
+    rays = np.zeros_like(r)
+    for _ in range(14):
+        th = rng.uniform(-np.pi, np.pi)
+        width = rng.uniform(0.012, 0.03)
+        reach = rng.uniform(0.55, 0.95)
+        d = np.abs(np.angle(np.exp(1j * (a - th))))
+        rays += np.exp(-(d / width) ** 2) * np.clip(1 - r / reach, 0, 1) ** 1.5 * rng.uniform(0.35, 0.7)
+    fine = spectral(size, 1.2, 72)
+    core = np.exp(-(r / 0.16) ** 2)
+    glow = 0.55 * np.exp(-(r / 0.42) ** 2) * (0.85 + 0.3 * fine)
+    edge = smoothstep(1.0, 0.85, r)
+    alpha = np.clip((core + glow + 0.6 * rays) * edge, 0, 1)
+    rgb = np.ones((size, size, 3))
+    return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
 def cloudlet(seed: int) -> np.ndarray:
     """A big soft billow cluster: brighter where it is thick, no light direction, edges frayed by noise."""
     size = CELL
@@ -208,7 +251,8 @@ def cloudlet(seed: int) -> np.ndarray:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation()),
-                        ("accretion", accretion()), ("bolt", bolt())):
+                        ("accretion", accretion()), ("bolt", bolt()), ("particle_beam", particle_beam()),
+                        ("particle_flare", particle_flare())):
         path = OUT / f"{name}.png"
         image.save(path)
         print(path)

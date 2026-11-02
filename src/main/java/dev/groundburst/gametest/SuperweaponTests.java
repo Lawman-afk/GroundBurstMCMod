@@ -55,7 +55,7 @@ final class SuperweaponTests {
     }
 
     /** Builds a structure round a controller at {@code rel} facing north, as the Structure Spawner would. */
-    private static void build(GameTestHelper helper, BlockPos rel, Block controller, MultiblockDefinition def) {
+    static void build(GameTestHelper helper, BlockPos rel, Block controller, MultiblockDefinition def) {
         floor(helper);
         helper.setBlock(rel, controller.defaultBlockState().setValue(MachineBlock.FACING, Direction.NORTH));
         for (MultiblockDefinition.Cell cell : def.cells(helper.absolutePos(rel), Direction.NORTH)) {

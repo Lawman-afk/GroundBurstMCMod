@@ -157,7 +157,8 @@ public final class GBTagProviders {
             dev.groundburst.content.alarm.GBAlarms.all().forEach(b -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key()));
             for (var b : java.util.List.of(dev.groundburst.content.superweapon.GBSuperweapons.ADOBE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.TOXIN_TANK, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.SCUD_STORM_CONTROLLER,
                     dev.groundburst.content.superweapon.GBSuperweapons.FIELDSTONE_WALL, dev.groundburst.content.superweapon.GBSuperweapons.MISSILE_ERECTOR, dev.groundburst.content.superweapon.GBSuperweapons.NUCLEAR_MISSILE_CONTROLLER, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER,
-                    dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER)) {
+                    dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER, dev.groundburst.content.superweapon.GBSuperweapons.UPLINK_WALL, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_EMITTER,
+                    dev.groundburst.content.superweapon.GBSuperweapons.FOCUSING_COLUMN, dev.groundburst.content.superweapon.GBSuperweapons.PARTICLE_CANNON_CONTROLLER)) {
                 tag(BlockTags.MINEABLE_WITH_PICKAXE).add(b.block().key());
             }
             // The Missile Silo's concrete and hatch are bunker material: an iron pickaxe at least.
@@ -198,14 +199,17 @@ public final class GBTagProviders {
             tag(BlockTags.MINEABLE_WITH_SHOVEL).add(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().key());
             tag(BlockTags.SNOW).add(dev.groundburst.content.fallout.GBFallout.CRYO_SNOW.block().key());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().key());
-            // 26.x finds the ground for its heightmaps (rain, lightning, the surface a front or a strike lands on) by these
-            // tags alone: the aftermath's ground and ice are ground (vanilla's own ice is in it, through #ice).
-            tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(dev.groundburst.content.fallout.GBFallout.TRINITITE.block().key(),
-                    dev.groundburst.content.fallout.GBFallout.GLASSED_SAND.block().key(), dev.groundburst.content.fallout.GBFallout.SLAG.block().key(),
-                    dev.groundburst.content.fallout.GBFallout.SCORCHED_EARTH.block().key(), dev.groundburst.content.fallout.GBFallout.SCORCHED_STONE.block().key(),
-                    dev.groundburst.content.fallout.GBFallout.IRRADIATED_SOIL.block().key(), dev.groundburst.content.fallout.GBFallout.CHARRED_LOG.block().key(),
-                    dev.groundburst.content.fallout.GBFallout.CHARRED_WOOD.block().key(), dev.groundburst.content.fallout.GBFallout.CHARRED_PLANKS.block().key(),
-                    dev.groundburst.content.fallout.GBFallout.FROSTED_STONE.block().key(), dev.groundburst.content.fallout.GBFallout.CRYO_ICE.block().key());
+            // 26.x finds the ground for its heightmaps (rain and snow, lightning, mob spawning, where endermen may land, the
+            // surface a front or a strike comes down on) by this tag alone; vanilla's lists every block that is solid by its
+            // own rule (`isSolid`: a collision shape big or tall enough, as "blocks motion" was). Every block of ours that is
+            // solid by that rule goes in (machines, multiblock parts, warheads, ground, ice), so rain no longer falls through
+            // them; what is not (cables, pipes, layers, plants, fire, fluids) stays out.
+            var motion = tag(BlockTags.BLOCKS_MOTION_NO_LEAVES);
+            for (var holder : dev.groundburst.registry.GBBlocks.BLOCKS.getEntries()) {
+                if (holder.get().defaultBlockState().isSolid()) {
+                    motion.add(holder.getKey());
+                }
+            }
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().key());
             tag(BlockTags.NEEDS_STONE_TOOL).add(dev.groundburst.content.salvage.GBSalvage.WASTE_DRUM.block().key());
 

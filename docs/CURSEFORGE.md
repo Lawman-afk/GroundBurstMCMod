@@ -36,7 +36,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
 - **Chips made the hard way:** silicon purified and grown into crystals in a Crystal Puller, sapphire for
   military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
   the chain, and assemblers with Auto Assemble keep a piped production line building.
-- **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm and the Nuclear Missile Silo.
+- **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
+  and the Particle Uplink Cannon, its beam steered across the ground with a Laser Designator.
 - **Seven abandoned Cold War sites** to explore, with loot: a Titan II missile silo, a command bunker, a radar outpost,
   a nuclear test site, a crashed missile, a waste repository deep in salt, and a research station floating over the
   End's islands.
@@ -92,7 +93,6 @@ Install it on the server and on every player's game: it adds blocks and items, s
 ## Planned
 
 - More special weapons
-- The Particle Uplink Cannon from *Command & Conquer: Generals – Zero Hour*
 - Contamination that sticks to you and your gear, and more fallout and aftermath protection
 - Artillery
 - War room displays

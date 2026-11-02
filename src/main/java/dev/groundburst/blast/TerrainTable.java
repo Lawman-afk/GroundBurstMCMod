@@ -129,17 +129,17 @@ public enum TerrainTable {
     }
 
     /** Rock: the overworld's stone (stone, granite, diorite, andesite, tuff, deepslate) and cobblestone. */
-    private static boolean rock(BlockState state) {
+    static boolean rock(BlockState state) {
         return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.BlockItems.COBBLESTONES.block());
     }
 
     /** Sand and sandstone (a desert's ground is sandstone a few blocks down, and flat worlds' is on top). */
-    private static boolean sand(BlockState state) {
+    static boolean sand(BlockState state) {
         return state.is(BlockTags.SAND) || state.is(Tags.BlockItems.SANDSTONE_BLOCKS.block());
     }
 
     /** Earth: dirt, grass blocks (grass, podzol, mycelium, and dead grass), moss, farmland. */
-    private static boolean earth(BlockState state) {
+    static boolean earth(BlockState state) {
         return state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS) || state.is(BlockTags.MOSS_BLOCKS) || state.is(Blocks.FARMLAND);
     }
 }

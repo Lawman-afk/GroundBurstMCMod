@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "groundburst:block/particle_emitter"
+    },
+    "formed=true": {
+      "model": "groundburst:block/particle_emitter_formed"
+    }
+  }
+}
