@@ -21,12 +21,16 @@ LICENSES = {"CC0-1.0": ("CC0 1.0 (public domain)", "https://creativecommons.org/
 def used() -> set[str]:
     """The recordings the sound recipes actually cut from (only those are credited)."""
     sys.path.insert(0, str(HERE.parent))
+    import artillery  # noqa: PLC0415
     import blasts  # noqa: PLC0415
+    import cryo  # noqa: PLC0415
     import gear  # noqa: PLC0415
     import launches  # noqa: PLC0415
     import machines  # noqa: PLC0415
     import ordnance  # noqa: PLC0415
-    return {cut[0] for module in (blasts, launches, ordnance, machines, gear) for cut in module.CUTS.values()}
+    import uplink  # noqa: PLC0415
+    modules = (blasts, launches, ordnance, machines, gear, cryo, uplink, artillery)
+    return {cut[0] for module in modules for cut in module.CUTS.values()}
 
 
 def main() -> None:

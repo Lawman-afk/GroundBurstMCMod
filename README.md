@@ -14,8 +14,8 @@
   <a href="https://discord.gg/UZd6Sk5mzB"><img src="https://img.shields.io/badge/Discord-Join_the_server-5865F2?logo=discord&logoColor=white" alt="Join the Ground Burst Discord"></a>
 </p>
 
-Mine, refine and assemble your own arsenal, from grenades and mines to missiles and the Tsar Bomba, then watch real
-craters, mushroom clouds and radioactive fallout reshape the world.
+Mine, refine and assemble your own arsenal, from grenades, mines and mortars to missiles and the Tsar Bomba, then
+watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 ![The Tsar Bomba's mushroom cloud rising over green hills](docs/screenshots/tsar_bomba.jpg)
 
@@ -50,7 +50,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
   the chain, and assemblers with Auto Assemble keep a piped production line building.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
-  and the Particle Uplink Cannon, its beam steered across the ground with a Laser Designator.
+  and the Particle Uplink Cannon. Call any of them down with a Laser Designator, and steer the cannon's beam across the
+  ground with it.
 - **Seven abandoned Cold War sites** to explore, with loot:
   - a Titan II missile silo, sometimes flooded or caved in;
   - a command bunker under an earth berm;

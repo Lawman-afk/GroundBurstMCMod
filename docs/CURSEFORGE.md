@@ -6,8 +6,8 @@
 
 [![Join the Ground Burst Discord](https://img.shields.io/badge/Discord-Join_the_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/UZd6Sk5mzB)
 
-Mine, refine and assemble your own arsenal, from grenades and mines to missiles and the Tsar Bomba, then watch real
-craters, mushroom clouds and radioactive fallout reshape the world.
+Mine, refine and assemble your own arsenal, from grenades, mines and mortars to missiles and the Tsar Bomba, then
+watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 ## What's in it
 
@@ -40,7 +40,8 @@ craters, mushroom clouds and radioactive fallout reshape the world.
   military-grade chips, and microchips printed in a Clean Room. Every advanced, military and quantum circuit waits on
   the chain, and assemblers with Auto Assemble keep a piped production line building.
 - **Superweapons** in homage to *Command & Conquer: Generals – Zero Hour*: the SCUD Storm, the Nuclear Missile Silo
-  and the Particle Uplink Cannon, its beam steered across the ground with a Laser Designator.
+  and the Particle Uplink Cannon. Call any of them down with a Laser Designator, and steer the cannon's beam across the
+  ground with it.
 - **Seven abandoned Cold War sites** to explore, with loot: a Titan II missile silo, a command bunker, a radar outpost,
   a nuclear test site, a crashed missile, a waste repository deep in salt, and a research station floating over the
   End's islands.
@@ -144,10 +145,10 @@ cleaned of background noise, filtered, slowed or layered with others and with sy
 - "BurlingtonIndustriesImplosion.wav" by the_toilet_guy, https://freesound.org/people/the_toilet_guy/sounds/98852/
 
 **Licensed [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain):** recordings by aerror,
-Andriejus, Breviceps, cambrianman, cognito perceptu, craigsmith, deleted_user_7146007, dnewtonjr, dwareing, elonen,
+Andriejus, Breviceps, cambrianman, cognito perceptu, craigsmith, csengeri, deleted_user_7146007, dnewtonjr, dwareing, elonen,
 Ev-Dawg, F3ather, frankelmedico, Garuda1982, greenbastardd, Groovy_Studio, Iamgiorgio, interkin3tic, jasonLON,
 joneekemp, julujanus, Kinoton, klangfabrik, kyles, megashroom, modusmogulus, nooly, northern87, Nox_Sound, nuckan,
-parabolix, pedrgloria, qubodup, Rudmer_Rotteveel, RytmenPinnen, sevenbsb, Sheyvan, sidohzen, sirkhandijoan, SpaceJoe,
+parabolix, pedrgloria, pyer75, qubodup, Rudmer_Rotteveel, RytmenPinnen, sevenbsb, Sheyvan, sidohzen, sirkhandijoan, SpaceJoe,
 SpooksJH, squashy555, ThabzMalik, TiesWijnen, unfa and Yoyodaman234. Each recording, with its link, is listed in
 [CREDITS.txt](https://github.com/Lawman-afk/GroundBurstMCMod/blob/main/src/main/resources/assets/groundburst/sounds/CREDITS.txt).
 

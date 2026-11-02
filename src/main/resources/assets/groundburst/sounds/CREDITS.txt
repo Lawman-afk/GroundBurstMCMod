@@ -16,6 +16,7 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "G16-09-Factory-Overhead Crane.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438133/
   "G40-15-Single Cylinder Engine.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438663/
   "G32-12-Arc Welding.wav" by craigsmith, https://freesound.org/people/craigsmith/sounds/438496/
+  "Close lightning strike 2018 07 07" by csengeri, https://freesound.org/people/csengeri/sounds/434359/
   "Opening Closing Big Heavy Metal Exterior Door" by deleted_user_7146007, https://freesound.org/people/deleted_user_7146007/sounds/383830/
   "Punch Press, 20 Ton, Clip1.wav" by dnewtonjr, https://freesound.org/people/dnewtonjr/sounds/232597/
   "Maroon.wav" by dwareing, https://freesound.org/people/dwareing/sounds/172983/
@@ -49,6 +50,7 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "jacobs ladder from side.wav" by parabolix, https://freesound.org/people/parabolix/sounds/449013/
   "civil defense geiger counter_lionel electronic labs model 6b.wav" by parabolix, https://freesound.org/people/parabolix/sounds/417424/
   "Paint mixer machine" by pedrgloria, https://freesound.org/people/pedrgloria/sounds/645117/
+  "thunder.mp3" by pyer75, https://freesound.org/people/pyer75/sounds/191992/
   "Rocket Launch.flac" by qubodup, https://freesound.org/people/qubodup/sounds/182794/
   "Truck Engine Idle Loops.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187564/
   "M-327 Mortar Shots.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187542/
@@ -64,4 +66,5 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "Electronic sliding gate" by ThabzMalik, https://freesound.org/people/ThabzMalik/sounds/767060/
   "Afterburner" by TiesWijnen, https://freesound.org/people/TiesWijnen/sounds/413312/
   "Firecracker Explosion" by unfa, https://freesound.org/people/unfa/sounds/609588/
+  "Thunder2" by Yoyodaman234, https://freesound.org/people/Yoyodaman234/sounds/267551/
   "Washing Machine Spin Cycle" by Yoyodaman234, https://freesound.org/people/Yoyodaman234/sounds/270275/
