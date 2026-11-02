@@ -154,6 +154,11 @@ public final class GBSounds {
             register("cryo.burst", "Cryo burst freezes", List.of("effect/cryo_burst"), false, 32);
     public static final DeferredHolder<SoundEvent, SoundEvent> BOMB_WHISTLE =
             register("bomb.whistle", "Bomb whistles down", List.of("ordnance/bomb_whistle"), false, 64);
+    // Artillery (DESIGN.md §20.1): the mortar firing (two takes), and a shell's whistle in its last two seconds.
+    public static final DeferredHolder<SoundEvent, SoundEvent> MORTAR_FIRE =
+            register("artillery.mortar_fire", "Mortar fires", variants("artillery/mortar_fire", 2), false, 128);
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHELL_INCOMING =
+            register("artillery.shell_incoming", "Shell whistles in", List.of("artillery/shell_incoming"), false, 64);
     // The base alarm system (DESIGN.md §18.6): the Air-Raid Siren's two signals, the Klaxon's five tones, the Alarm Bell
     // (all loops, played while they sound), and the Missile Warning Receiver's attention tone.
     public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_SIREN_WAIL =

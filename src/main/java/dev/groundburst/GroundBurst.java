@@ -54,6 +54,7 @@ public class GroundBurst {
         dev.groundburst.content.strategic.GBStrategic.init();
         dev.groundburst.content.assembler.GBAssemblers.init();
         dev.groundburst.content.superweapon.GBSuperweapons.init();
+        dev.groundburst.content.artillery.GBArtillery.init();
         dev.groundburst.content.effect.EffectSystems.init();
         dev.groundburst.content.fluid.GBFluids.init();
         dev.groundburst.content.pipe.GBPipes.init();
@@ -72,6 +73,7 @@ public class GroundBurst {
         GBSounds.SOUNDS.register(modBus);
         dev.groundburst.content.nuclear.GBEffects.EFFECTS.register(modBus);
         dev.groundburst.content.ordnance.GBOrdnance.ENTITIES.register(modBus);
+        dev.groundburst.content.artillery.GBArtillery.register(modBus);
         dev.groundburst.content.launch.GBLaunch.register(modBus);
         dev.groundburst.content.effect.EffectSystems.register();
         dev.groundburst.content.radiation.GBRadiation.register(modBus);

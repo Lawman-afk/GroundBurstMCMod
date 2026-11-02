@@ -27,7 +27,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * line for it: the manual's first entry explains the key.
  */
 public final class ManualHotkey {
-    private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(GroundBurst.id("groundburst"));
+    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(GroundBurst.id("groundburst"));
     public static final KeyMapping KEY = new KeyMapping(ManualStrings.KEY, KeyConflictContext.GUI, InputConstants.Type.KEYBOARD, InputConstants.KEY_H, CATEGORY);
 
     private ManualHotkey() {}

@@ -1,0 +1,53 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "idle": {
+      "animation_length": 0.05,
+      "bones": {
+        "frame": {
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    },
+    "rest": {
+      "animation_length": 0.05,
+      "bones": {
+        "tube": {
+          "rotation": {
+            "0": [
+              30.0,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "bipod": {
+          "rotation": {
+            "0": [
+              -29.74488129694221,
+              -0.0,
+              0.0
+            ]
+          }
+        },
+        "screw_base": {
+          "rotation": {
+            "0": [
+              29.74488129694222,
+              -0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame"
+    }
+  }
+}

@@ -100,6 +100,28 @@
     ],
     "subtitle": "subtitles.groundburst.antimatter.near"
   },
+  "artillery.mortar_fire": {
+    "sounds": [
+      {
+        "attenuation_distance": 128,
+        "name": "groundburst:artillery/mortar_fire1"
+      },
+      {
+        "attenuation_distance": 128,
+        "name": "groundburst:artillery/mortar_fire2"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.artillery.mortar_fire"
+  },
+  "artillery.shell_incoming": {
+    "sounds": [
+      {
+        "attenuation_distance": 64,
+        "name": "groundburst:artillery/shell_incoming"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.artillery.shell_incoming"
+  },
   "assembly.clank": {
     "sounds": [
       "groundburst:machine/assembly_clank"

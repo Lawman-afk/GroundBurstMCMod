@@ -3490,6 +3490,57 @@ disabled by EMP.
 | **EMP Gun** | EMP cell | 30° cone, 12 range | disables machines 15 s; disarms electronic fuzes; downs missiles in the cone; disables powered items of players hit; stuns iron golems | dish-muzzled pistol-grip device with crackling coil |
 | **Railgun** | tungsten slugs | 1 s charge; hitscan; pierces 8 entities; breaks soft blocks (glass, leaves, wood) along 32 blocks | 40 dmg | long twin-rail barrel, capacitor banks, sonic crack |
 
+
+### 20.1 Artillery (2026-11-02; the user's plan)
+The user's choice: three guns, built in turn and each shown to them before the next: an 81 mm mortar, a 155 mm towed
+howitzer and an Atomic Cannon. Crewed, and aimed as World of Tanks aims its artillery, with its kind of inaccuracy. The
+mortar fires HE, smoke, incendiary, chemical, cryo and EMP shells; the larger guns HE and incendiary (the Atomic Cannon
+nuclear shells too).
+
+**World of Tanks' aiming, researched** (the WoT wiki's pages on accuracy, aiming and the strategic view, and players'
+write-ups of the dispersion model):
+- A gun's accuracy is its aiming circle's radius at 100 m; the circle grows in proportion to the distance. The circle
+  is two standard deviations of a normal spread of shots; since 0.8.6 a shot that would fall outside it is rolled
+  again, evenly inside it, so none lands outside.
+- The circle blooms as the gun fires (artillery's the most), while the turret and the gun turn and while the vehicle
+  moves (the factors added as the root of the sum of their squares), and shrinks back over the aim time (to a third of
+  its size each aim time, down to its least).
+- Artillery aims from a strategic view: a camera high over the ground, the cursor moved over it with the mouse, the
+  wheel its height. The circle lies on the ground as an oval stretched along the line of fire (a shell comes down at an
+  angle), and the reticle turns red where the shell cannot get (out of range, or its path blocked). The circle's middle
+  is where the gun is laid, which follows the cursor at the gun's own pace.
+
+**The 81 mm Mortar** (`groundburst:mortar`, one block; after the M252):
+- *Model* (GeckoLib): a round baseplate, the tube on its ball socket, a bipod with its elevating screw and traverse
+  handwheel, a sight. Bones: `traverse` (turned about the socket), `tube` (raised), `bipod` (its legs leaned to meet the
+  tube's collar), `screw` (the elevating screw, stretched), `recoil` (the tube's kick into the baseplate as it fires).
+- *Crewing*: right-click it (with anything it does not take) to man it: you sit beside it on an invisible seat
+  (`GunSeat`); Shift gets up. Manned, it follows where you look (the gun view) or the cursor (the strategic view); 1 to 6
+  pick the shell (HE, smoke, incendiary, chemical, cryo, EMP; the hotbar does not change); left click fires; the mouse
+  wheel out (or V) goes up into the strategic view, in at its lowest comes back down.
+- *Loading*: right-click it with shells to put them in its rack (six slots, one a kind, 16 in each); hoppers and pipes
+  load it too. It fires from its rack, then from its crew's own inventory.
+- *Fire*: elevation 45 to 85 degrees, all the way round; four propellant charges (muzzle speeds 1.58, 2.24, 2.74 and
+  3.16 blocks a tick: 50, 100, 150 and 200 blocks at 45 degrees on the flat), the lowest that reaches picked for each
+  aim (so short flights at short ranges); 16 to 200 blocks. Shells fly true parabolas (gravity 0.05 blocks a tick
+  squared, no drag; launched half a tick's gravity up so their ticks lie on the curve), so the aim is solved exactly for
+  any height. It turns 40 degrees a second and elevates 20; 2.5 s to reload.
+- *Dispersion* (WoT's model): 1.6 blocks per 100 of range fully aimed (the circle's radius); aim time 2 s (the circle
+  shrinks to a third each 2 s, to its least); firing blooms it fourfold (at most sixfold, as it is when just manned);
+  laying the gun blooms it to the root of 1 + (0.06 w)^2 for w degrees a second. A shot falls where the tube points
+  when it fires, spread over the circle laid on the ground (stretched along the line of fire by 1 / sin of its
+  descent): normally, sigma half the radius, a shot outside rolled again evenly inside.
+- *Strategic view* (client): a camera over the aim looking down 75 degrees along the line of fire (its bearing set as
+  you go up); the mouse moves the cursor over the ground, the wheel the height (24 to 96 over it). On the terrain the
+  oval (white while it shrinks, green fully aimed, red out of range or blocked), the cursor's cross and the shell's arc;
+  a readout of the rack, the reload, range, charge, elevation and time of flight.
+- *Shells* (16 a stack; a grenade, a steel plate and gunpowder each): on impact HE is a blast between dynamite's and
+  C4's with 20 fragments; smoke three smoke canisters' clouds in a line across the line of fire (a screen some 14 wide,
+  30 s); incendiary a small burst and napalm fire over most of the ground within 6, anything alive there set alight;
+  chemical two chlorine canisters' clouds (the gas grenade's, twice over); cryo a freeze 7 round for 12 s; EMP a field
+  16 round for 20 s. The incoming whistle in a shell's last two seconds; the launch from the M-327 recording.
+- The chunks a shell is in and is about to enter are kept ticking while it flies (beyond the simulation distance it
+  would stop in the air).
 ---
 
 ## 21. Aftermath systems
@@ -4580,6 +4631,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-02 | **Artillery** (the user: "carry on to artillery"; their answers): all three guns, built in turn and each shown before the next (an 81 mm mortar, a 155 mm towed howitzer, an Atomic Cannon); the mortar fires HE, smoke, incendiary, chemical, cryo and EMP shells, the larger guns HE and incendiary (and the Atomic Cannon nuclear); crewed, aimed from a strategic view as World of Tanks aims its artillery, with WoT's dispersion (a circle two sigma wide, growing with range, blooming as it fires and turns, shrinking over its aim time; no shot outside it). The mortar first (§20.1). |
 | 2026-11-02 | After the user's look at the cannon, balancing the three superweapons (harder to use than the pack's other weapons): the particle beam burns four times as long (48 s; it draws 1,000 FE/t now, so whatever can charge the cannon keeps its beam burning); the SCUD Storm's salvo spreads wider (24 blocks, from 16) and each SCUD reaches further (blast radii x1.25, residue 30 from 21, cloud 22 from 16); a Laser Designator commands every superweapon (the SCUD Storm and the Nuclear Missile had been left out: no laser-guided missile in them; their missiles still come down where designated, without homing). Uplink Wall's top and bottom are plain concrete (the sides' blue band sat along one edge of them). |
 | 2026-11-02 | The **Particle Uplink Cannon** (the user: continue development; the plan's next item), by the user's rule for the superweapons: built as the game's (a drum of eight emitters round a pit, the control tower and the operations building, laid out as the game's picture seen from in front) and working as it does (no ammunition, 4:00 on power alone, a beam up to the satellite and down from orbit for 12 s, steered by whoever fired it with their designator at 3 blocks a second; §19.6). It eats a trench deeper where it lingers (8 at most), melts its sides, sets fires and vaporises what is in it; it draws 2,000 FE/t, so cut its power and it dies. The superweapons' server settings (announcements, range, charge multiplier) now apply. Every solid block of the mod counts for 26.x's heightmaps (vanilla's `isSolid` rule: §16.16's follow-up). |
 | 2026-11-02 | The **Cryo ICBM** (the user: continue development; next on their list): the plan's Cryo Bomb built as the fourth special weapon, by the user's rules for them (an ICBM whole from its core at the Special Weapons Assembler) and at their scale from the start: a front of frozen air 128 blocks round, a heart of 40 where nothing lives and spires of ice burst up, a three-minute cold snap that leather keeps out, snow and ice that thaw where snow would not lie (vanilla's would never melt in a warm land) while the spires stay (§16.16). The aftermath's ground and the new ice are tagged to count for 26.x's heightmaps. |

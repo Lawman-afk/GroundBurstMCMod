@@ -966,6 +966,35 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
     craft("claymore"),
 ])
 
+entry("ordnance/mortar", "81 mm Mortar", "mortar", ["mortar", "mortar_shell_he", "mortar_shell_smoke", "mortar_shell_incendiary",
+                                                   "mortar_shell_chemical", "mortar_shell_cryo", "mortar_shell_emp"], [
+    text("""
+The **81 mm Mortar** lobs shells high over walls, hills and trees onto ground **16 to 200 blocks** away. Place it facing where you mean to fire (its tube rests that way), then **right-click it with shells** to load its rack, 16 of each kind (hoppers and pipes load it too). Right-click it with anything else to **man it**: you sit beside it, and **Shift** gets you up.
+
+Manned, it is laid on where you aim, and turns and elevates **at its own pace**: a big swing takes a few seconds. It picks the propellant charge for you, the lowest that reaches (four of them, 50 to 200 blocks), so its shells always come down steeply. It fires from its rack first, then from your own inventory; in creative, without end.
+"""),
+    text("""
+**Aiming.** In the gun view it follows where you look. **Scroll out** (or press **V**) for the **strategic view**: a camera high over the ground looking down along your line of fire. The mouse moves your aim over the ground, the wheel the camera's height; scroll back in at its lowest (or V) to come down. **1 to 6** pick the shell, **left click** fires.
+
+On the ground lies the **aiming circle**: where the tube points now, as wide as a shot's spread. It is **white** while it shrinks, **green** when fully aimed, and **red** when your aim is out of range or the shell's path is blocked (a ridge, a roof). From above you also see the shell's arc. The readout shows your rack, the reload, the range, the charge, the elevation and the flight time.
+"""),
+    text("""
+**Spread.** A shell falls somewhere inside the circle, never outside it, most often near its middle. The circle grows with range (fully aimed, its radius is 1.6 blocks for every 100), is **four times wider** just after a shot, blooms while the gun turns, and shrinks back to a third every **two seconds**. It reloads in 2.5 s: a steady crew that waits for green lands its shells closest; firing as fast as it loads walks them round the target.
+
+A shell coming in **whistles** for its last two seconds. Each is a grenade in a steel case with a propellant charge, so the shells are as easy to make as the grenades.
+"""),
+    table([
+        ["HE", "blast + 20 fragments"],
+        ["Smoke", "a screen of three clouds, 30 s"],
+        ["Incendiary", "napalm 6 blocks round"],
+        ["Chemical", "two chlorine clouds"],
+        ["Cryo", "freezes 7 blocks round"],
+        ["EMP", "16 blocks round, 20 s"],
+    ], "Shells"),
+    craft("mortar"),
+    craft("mortar_shell_he", "Every shell is made the same way from its grenade: smoke, incendiary, chemical (the poison gas grenade), cryo and EMP."),
+])
+
 entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "singularity_core", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [
     text("""
 The **Ordnance Assembly Bench** puts warheads together; a [missile assembler](ordnance/missile_assemblers) of the warhead's class then builds it into its [missile](ordnance/missiles). The bench is two blocks wide (it takes the space to the right of where you place it) and runs on power, 10 FE a tick. Pipes and hoppers feed its part slots and take from its output.

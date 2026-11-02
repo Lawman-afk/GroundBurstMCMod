@@ -30,6 +30,11 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
     private final Identifier modelId;
     /** Blocks to shift the model east so it is centred (a two-block-wide machine drawn from its main half: 0.5). */
     private final float centreX;
+    /**
+     * Bones turned {x, y, z} radians in the item (as its block entity turns them in the world): a model built in one
+     * pose and set in another at rest (the mortar's tube, built upright, laid at 60 degrees).
+     */
+    private java.util.Map<String, float[]> pose = java.util.Map.of();
 
     public GeoBlockItem(Block block, Properties properties, Identifier modelId) {
         this(block, properties, modelId, 0);
@@ -41,10 +46,17 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
         this.centreX = centreX;
     }
 
+    /** This item's model drawn with these bones turned (see {@link #pose}). */
+    public GeoBlockItem posed(java.util.Map<String, float[]> pose) {
+        this.pose = pose;
+        return this;
+    }
+
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
         Identifier id = this.modelId;
         float shift = this.centreX;
+        java.util.Map<String, float[]> turned = this.pose;
         consumer.accept(new GeoRenderProvider() {
             private @Nullable GeoItemRenderer<GeoBlockItem> renderer;
 
@@ -66,6 +78,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
                             for (String bone : OPTIONAL_BONES) {
                                 snapshots.ifPresent(bone, snapshot -> snapshot.skipRender(true));
                             }
+                            turned.forEach((bone, r) -> snapshots.ifPresent(bone, snapshot -> snapshot.setRotation(r[0], r[1], r[2])));
                         }
                     };
                 }

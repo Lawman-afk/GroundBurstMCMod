@@ -260,6 +260,32 @@ public class GBRecipeProvider extends RecipeProvider {
         aftermath();
         construction();
         grenades();
+        artillery();
+    }
+
+    /**
+     * Artillery (DESIGN.md §20.1): the 81 mm Mortar (a tube of steel, a baseplate of plates, a bipod of rods, a sight);
+     * its shells each a grenade in a steel case with a propellant charge of gunpowder.
+     */
+    private void artillery() {
+        shaped(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.MORTAR.item(), 1)
+                .define('I', GBTags.commonItem("ingots/steel")).define('R', GBParts.STEEL_ROD).define('P', GBTags.commonItem("plates/steel"))
+                .define('G', Items.GLASS_PANE)
+                .pattern(" IG").pattern("RIR").pattern("PPP")
+                .unlockedBy(getHasName(GBParts.STEEL_PLATE), has(GBParts.STEEL_PLATE)).save(output);
+        var grenades = java.util.Map.of(
+                dev.groundburst.content.artillery.ShellType.HE, dev.groundburst.content.ordnance.GBOrdnance.FRAG_GRENADE,
+                dev.groundburst.content.artillery.ShellType.SMOKE, dev.groundburst.content.ordnance.GBOrdnance.SMOKE_GRENADE,
+                dev.groundburst.content.artillery.ShellType.INCENDIARY, dev.groundburst.content.ordnance.GBOrdnance.INCENDIARY_GRENADE,
+                dev.groundburst.content.artillery.ShellType.CHEMICAL, dev.groundburst.content.ordnance.GBOrdnance.GAS_GRENADE,
+                dev.groundburst.content.artillery.ShellType.CRYO, dev.groundburst.content.ordnance.GBOrdnance.CRYO_GRENADE,
+                dev.groundburst.content.artillery.ShellType.EMP, dev.groundburst.content.ordnance.GBOrdnance.EMP_GRENADE);
+        for (var t : dev.groundburst.content.artillery.ShellType.values()) {
+            var grenade = grenades.get(t);
+            shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.MORTAR_SHELLS.get(t), 1)
+                    .requires(grenade).requires(GBTags.commonItem("plates/steel")).requires(Items.GUNPOWDER)
+                    .unlockedBy(getHasName(grenade), has(grenade)).save(output);
+        }
     }
 
     /** Thrown explosives (DESIGN.md §14). */

@@ -313,6 +313,15 @@ public final class FxPhotographer {
                 new Scene("particle_beam", "particle_beam", 30, 8, List.of(26, 29, 40, 80, 160, 250, 330)),
                 new Scene("particle_beam_aerial", "particle_beam", 26, 40, List.of(80, 200, 330)),
                 new Scene("particle_beam_night", "particle_beam", 30, 8, List.of(40, 160), "midnight"),
+                // Artillery (DESIGN.md §20.1): the 81 mm Mortar side on (its tube to the camera's left), laid on a point 90
+                // blocks off and fired at clock 25 (the kick, the smoke, the shell going up); close up. Shells coming
+                // down 40 blocks from a hidden gun (HE, smoke, incendiary) and bursting. The crewman's strategic view over
+                // a hut 70 blocks off: the circle shrinking as it is laid, green fully aimed, fired at clock 112 (bloomed),
+                // the shell's arc, its burst.
+                new Scene("mortar", "mortar", 6, 4, List.of(20, 26, 27, 29, 33, 45)),
+                new Scene("mortar_close", "mortar", 3, 16, List.of(20, 26)),
+                new Scene("mortar_impact", "mortar_impact", 30, 10, List.of(98, 104, 111, 119, 135, 170, 260)),
+                new Scene("mortar_view", "mortar_view", 5, 12, List.of(40, 110, 116, 160, 197, 240)),
                 // The ammunition factories at work, their parts loaded: the Arms Dealer laying a Toxin SCUD out section by
                 // section on its trestles under its hoist; the War Factory its Nuclear Missile under its gantry crane.
                 // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
@@ -1090,6 +1099,44 @@ public final class FxPhotographer {
 
     private static net.minecraft.core.BlockPos radarAt;
     private static net.minecraft.core.BlockPos scudAt;
+    /** The scene's mortar. */
+    private static net.minecraft.core.BlockPos mortarAt;
+
+    /** An 81 mm Mortar at (x, z 0) on the ground, facing {@code facing}, its rack full of HE. */
+    private static net.minecraft.core.BlockPos mortar(ServerLevel level, int x, int ground, net.minecraft.core.Direction facing) {
+        var at = new net.minecraft.core.BlockPos(x, ground, 0);
+        level.setBlockAndUpdate(at, dev.groundburst.content.artillery.GBArtillery.MORTAR.block().get().defaultBlockState()
+                .setValue(dev.groundburst.content.artillery.MortarBlock.FACING, facing));
+        if (level.getBlockEntity(at) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+            m.load(new net.minecraft.world.item.ItemStack(dev.groundburst.content.artillery.GBArtillery.MORTAR_SHELLS.get(
+                    dev.groundburst.content.artillery.ShellType.HE).get(), 16));
+        }
+        return at;
+    }
+
+    /** A small plank hut (5 x 5, three high, a doorway) and two cows by it, still: something to aim at. */
+    private static void hut(ServerLevel level, int x, int ground) {
+        var planks = net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS.defaultBlockState();
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                for (int dy = 0; dy < 4; dy++) {
+                    boolean wall = Math.abs(dx) == 2 || Math.abs(dz) == 2;
+                    boolean door = dx == -2 && dz == 0 && dy < 2;
+                    if (dy == 3 || wall && !door) {
+                        level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x + dx, ground + dy, dz), planks);
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < 2; i++) {
+            var cow = net.minecraft.world.entity.EntityTypes.COW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (cow != null) {
+                cow.setPos(x - 5.5, ground, -2.5 + 5 * i);
+                cow.setNoAi(true);
+                level.addFreshEntity(cow);
+            }
+        }
+    }
 
     /**
      * The SCUD Storm (DESIGN.md §19.5) facing the camera (its pad running away east), nine Toxin SCUDs loaded, charged,
@@ -1937,6 +1984,26 @@ public final class FxPhotographer {
                     particleCannonSite(level, x, ground);
                     return;
                 }
+                if (s.profile().equals("mortar")) {
+                    mortarAt = mortar(level, x, ground, net.minecraft.core.Direction.NORTH);
+                    if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+                        m.layForTest(new Vec3(x + 0.5, ground, -89.5));
+                    }
+                    return;
+                }
+                if (s.profile().equals("mortar_impact")) {
+                    return;                                // the shells come down in tick()
+                }
+                if (s.profile().equals("mortar_view")) {
+                    mortarAt = mortar(level, x, ground, net.minecraft.core.Direction.EAST);
+                    hut(level, x + 70, ground);
+                    ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);
+                    if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+                        m.man(player);
+                    }
+                    return;
+                }
                 if (s.profile().equals("particle_beam")) {
                     return;                                // the beam comes down in tick()
                 }
@@ -2394,6 +2461,44 @@ public final class FxPhotographer {
                 }
             });
         }
+        if (scene.profile().equals("mortar") && step >= 0 && clock == 25 && mortarAt != null) {
+            var at = mortarAt;
+            server.execute(() -> {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+                    m.shootForTest(server.overworld(), dev.groundburst.content.artillery.ShellType.HE);
+                }
+            });
+        }
+        if (scene.profile().equals("mortar_impact") && step >= 0 && (clock == 15 || clock == 22 || clock == 30)) {
+            int x = site * 1200, i = clock == 15 ? 0 : clock == 22 ? 1 : 2;
+            server.execute(() -> {
+                ServerLevel level = server.overworld();
+                int[][] spots = {{2, 0}, {12, -8}, {8, 9}};
+                var types = List.of(dev.groundburst.content.artillery.ShellType.HE, dev.groundburst.content.artillery.ShellType.SMOKE,
+                        dev.groundburst.content.artillery.ShellType.INCENDIARY);
+                int tx = x + spots[i][0], tz = spots[i][1];
+                level.getChunk(tx >> 4, (tz + 40) >> 4);
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, tx, tz);
+                Vec3 to = new Vec3(tx + 0.5, y, tz + 0.5), from = new Vec3(tx + 0.5, y + 1, tz + 40.5);
+                double e = dev.groundburst.content.artillery.Ballistics.highAngle(2.24, 40, to.y - from.y);
+                dev.groundburst.content.artillery.ArtilleryShell.launch(level, from, dev.groundburst.content.artillery.Ballistics.velocity(2.24, 180, e),
+                        types.get(i), null);
+            });
+        }
+        if (scene.profile().equals("mortar_view") && step >= 0 && clock == 8 && mc.level != null) {
+            int x = site * 1200;
+            int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x + 70, 0);
+            ArtilleryClient.photoView(new Vec3(x + 70.5, y, 0.5), 36);
+        }
+        if (scene.profile().equals("mortar_view") && step >= 0 && clock == 112 && mortarAt != null) {
+            var at = mortarAt;
+            server.execute(() -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+                    m.fire(player);
+                }
+            });
+        }
         if (scene.profile().equals("scud_strike") && step >= 0 && (clock == 25 || clock == 37 || clock == 49)) {
             int x = site * 1200, i = (clock - 25) / 12;
             server.execute(() -> {
@@ -2702,6 +2807,14 @@ public final class FxPhotographer {
             step++;
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
+            if (scene.profile().equals("mortar_view")) {
+                ArtilleryClient.photoLeave();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                    player.stopRiding();
+                    player.setGameMode(GameType.SPECTATOR);
+                });
+            }
             if (scene.profile().equals("designator")) {
                 mc.setCameraEntity(mc.player);
                 LaserFx.serverBeamForSelf = false;

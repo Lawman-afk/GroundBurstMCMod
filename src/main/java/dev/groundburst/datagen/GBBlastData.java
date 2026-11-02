@@ -158,6 +158,12 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("incendiary_grenade"), profile(0, 1, 2, 4, 4, 1.5f, 4, 4, 0.7f, 0f, 0f, 0f, 8, 4, 0.6f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // Artillery shells (DESIGN.md §20.1), instant. The 81 mm HE shell between dynamite and C4 (its fragments are
+        // thrown by the shell); the incendiary's burster small (its napalm is spread by the shell).
+        ctx.register(Blasts.profile("mortar_shell_he"), profile(1.6f, 3.8f, 6, 5, 0, 4.5f, 10, 4, 0.65f, 0.12f, 0.3f, 0.4f, 34, 10, 1.6f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("mortar_shell_incendiary"), profile(0.4f, 1.5f, 2.5f, 6, 6, 2, 5, 4, 0.7f, 0f, 0.1f, 0.1f, 12, 5, 0.8f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

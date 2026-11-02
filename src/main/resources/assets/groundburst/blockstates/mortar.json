@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/mortar"
+    },
+    "facing=east": {
+      "model": "groundburst:block/mortar"
+    },
+    "facing=south": {
+      "model": "groundburst:block/mortar"
+    },
+    "facing=west": {
+      "model": "groundburst:block/mortar"
+    }
+  }
+}

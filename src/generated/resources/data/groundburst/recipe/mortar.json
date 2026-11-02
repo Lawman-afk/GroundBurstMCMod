@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "minecraft:glass_pane",
+    "I": "#c:ingots/steel",
+    "P": "#c:plates/steel",
+    "R": "groundburst:steel_rod"
+  },
+  "pattern": [
+    " IG",
+    "RIR",
+    "PPP"
+  ],
+  "result": {
+    "id": "groundburst:mortar"
+  }
+}

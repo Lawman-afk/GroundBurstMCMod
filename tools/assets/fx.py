@@ -24,6 +24,8 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
   it (scrolled down the beam in game, tinted white or blue by vertex colour).
 - ``textures/fx/particle_flare.png`` (128x128): the glare where the beam touches and over the cannon's pit: a hot round
   middle in a soft glow, thin rays of light out of it.
+- ``textures/fx/reticle.png`` (16x16): an artillery reticle's line (DESIGN.md §20.1), v across it: solid white through its
+  middle, its edges a pixel soft (tinted white, green or red by vertex colour; a wider one drawn dark under it).
 """
 from __future__ import annotations
 
@@ -248,11 +250,21 @@ def cloudlet(seed: int) -> np.ndarray:
     return np.concatenate([rgb, alpha[..., None]], -1)
 
 
+def reticle() -> Image.Image:
+    """A clean line: opaque through the middle of v, falling off smoothly over its outer quarter each side."""
+    w, h = 16, 16
+    v = np.abs((np.arange(h) + 0.5) / h * 2 - 1)[:, None] * np.ones((1, w))
+    edge = np.clip((1 - v) / 0.3, 0, 1)
+    alpha = edge * edge * (3 - 2 * edge)
+    rgb = np.ones((h, w, 3))
+    return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, image in (("puffs", puffs()), ("fireball", fireball()), ("shock", shock()), ("annihilation", annihilation()),
                         ("accretion", accretion()), ("bolt", bolt()), ("particle_beam", particle_beam()),
-                        ("particle_flare", particle_flare())):
+                        ("particle_flare", particle_flare()), ("reticle", reticle())):
         path = OUT / f"{name}.png"
         image.save(path)
         print(path)

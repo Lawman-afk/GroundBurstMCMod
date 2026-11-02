@@ -142,6 +142,7 @@ public final class GBTagProviders {
                     dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.block().key(),
                     dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.block().key(),
                     dev.groundburst.content.defence.GBDefence.BATTERY.block().key(),
+                    dev.groundburst.content.artillery.GBArtillery.MORTAR.block().key(),
                     dev.groundburst.content.defence.GBDefence.COMPLEX_CONTROLLER.block().key(),
                     dev.groundburst.content.defence.GBDefence.LAUNCH_CELL.block().key(),
                     dev.groundburst.content.defence.GBDefence.PHASED_ARRAY.block().key(),

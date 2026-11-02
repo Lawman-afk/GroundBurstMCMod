@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Artillery: the 81 mm Mortar
+- **81 mm Mortar**: a crewed gun that lobs shells **16 to 200 blocks**, high over walls and hills. Right-click it with
+  shells to load its rack (hoppers and pipes load it too), or with anything else to **man it**; Shift gets up.
+- Aimed as *World of Tanks* aims its artillery: it follows where you look, or **scroll out** (or press **V**) for a
+  **strategic view**, a camera high over the ground where the mouse moves your aim and the wheel the height. **1 to 6**
+  pick the shell, **left click** fires.
+- It is laid on your aim at its own pace and picks its propellant charge itself. A shell falls where the tube points,
+  somewhere in the **aiming circle** drawn on the ground: the circle grows with range, blooms as the gun fires and
+  turns, and shrinks back over two seconds (white while it shrinks, green fully aimed, red out of range or blocked). A
+  readout shows the rack, the reload, the range, the charge, the elevation and the flight time.
+- **Six shells**, each made from its grenade, a steel plate and gunpowder: **HE** (a blast and fragments), **smoke** (a
+  screen of three clouds), **incendiary** (napalm 6 blocks round), **chemical** (two chlorine clouds), **cryo** (a freeze
+  7 blocks round) and **EMP** (16 blocks round). Shells whistle in their last two seconds.
+
 ### Cryo ICBM
 - **Cryo ICBM**, the fourth special weapon: a **Cryo Core** (four liquid nitrogen canisters, two superconducting coils,
   stabilised exotic matter and a quantum circuit) and an Intercontinental Booster at the Special Weapons Assembler,

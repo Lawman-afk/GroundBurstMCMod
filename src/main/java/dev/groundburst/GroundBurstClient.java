@@ -45,6 +45,7 @@ public class GroundBurstClient {
         dev.groundburst.client.fx.Spectacle.register(modBus);
         dev.groundburst.client.fx.LaserFx.register();
         dev.groundburst.client.fx.DesignatorScope.register(modBus);
+        dev.groundburst.client.fx.ArtilleryClient.register(modBus);
         dev.groundburst.client.fx.FxPhotographer.register();
         dev.groundburst.client.fx.BlastBenchClient.register();
         dev.groundburst.client.fx.WorldSurveyClient.register();
@@ -114,6 +115,10 @@ public class GroundBurstClient {
                 dev.groundburst.client.render.AlertDisplayRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.launch.GBLaunch.MISSILE.get(), dev.groundburst.client.fx.MissileRenderer::new);
         event.registerEntityRenderer(dev.groundburst.content.defence.GBDefence.INTERCEPTOR.get(), dev.groundburst.client.fx.InterceptorRenderer::new);
+        event.registerEntityRenderer(dev.groundburst.content.artillery.GBArtillery.SHELL.get(), dev.groundburst.client.fx.ShellRenderer::new);
+        event.registerEntityRenderer(dev.groundburst.content.artillery.GBArtillery.SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+        event.registerBlockEntityRenderer(dev.groundburst.content.artillery.GBArtillery.MORTAR_ENTITY.get(),
+                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.artillery.GBArtillery.MORTAR_ENTITY.get(), 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(), 14, 4));
         // The hall: 13 blocks deep behind its controller, its crane 6 up.

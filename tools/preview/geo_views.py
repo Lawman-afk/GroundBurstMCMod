@@ -34,6 +34,12 @@ DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left
                       ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
 
 PRESETS = {
+    "mortar": dict(
+        shots=[("iso front", 25, 225, None, None, 0), ("iso back", 25, 45, None, None, 0),
+               ("side", 5, 270, None, None, 0), ("from above", 75, 180, None, None, 0),
+               ("breech and socket", 25, 160, (0, 4, 1), 9, 0), ("bipod and screw", 15, 215, (0, 9, -5), 11, 0),
+               ("collar and sight", 20, 120, (-2, 12, -3), 9, 0), ("muzzle", 55, 200, (0, 19, -8), 7, 0)],
+        anim="rest"),
     "air_raid_siren": dict(
         shots=[("iso front", 25, 225, None, None, None), ("iso back", 25, 45, None, None, None),
                ("side", 5, 270, None, None, None), ("from above", 75, 180, None, None, None),
