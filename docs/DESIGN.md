@@ -2964,11 +2964,18 @@ as it stands ashore (Aegis Ashore).
   - GameTests: a canister gone stops it forming; the first missile lit below the deck, out above it by the time the
     fourth has gone.
 
-### 17.16 Launchers on moving structures: Create and Create Aeronautics (2026-11-03; the user's request)
+### 17.16 Machines on moving structures: Create and Create Aeronautics (2026-11-03, 2026-11-04; the user's requests)
 The user: "Is it possible to now make the 1.21.1 version compatible with create? And get launchers to work on create
 moving entities? And even better, to work with create aeronautics contraptions." Create (6.0.10) and Create Aeronautics
 (1.3.2, on Sable 2.0.6) exist only for Minecraft 1.21.1, so the support for them is the 1.21.1 build's (its branch's
-docs/BACKPORT.md); what it needs from the launchers is here in main, where every frame is the world's.
+docs/BACKPORT.md); what it needs from the machines is here in main, where every frame is the world's.
+
+After their first play with it (2026-11-04): "When the medium assembler was turned into a contraption whilst assembling
+it spewed out the items in it, then when uncontraptioned, it still had items in it, duplicating them, same for the
+vertical launchers. Also I want assemblers, launch computers, everything to work on create contraptions if possible, as
+well as allowing access to their menus. Also the pipe I setup to extract into my launcher whilst being a contraption
+didnt work because it removed the wrenched setting for extracting I put on it." So every machine is carried now, not
+only the launchers, with its menu; a contraption powers its machines and runs its pipes; nothing is had twice.
 
 **Two ways another mod moves blocks:**
 - *Sable* (Create Aeronautics' airships, planes, cars and boats: "sub-levels"): the blocks stay real blocks, their block
@@ -2988,20 +2995,37 @@ the computers' silos (`Silo.at`) and the computers and stations themselves (`Sco
 radar covers and shows the sky round where it is; a screen's packets reach to where its block is.
 
 **Carried** (`MachineBlockEntity.carried`): a block entity something has taken out of the world (a contraption) runs from
-its carrier's tick (`carriedTick`, never the world's): no redstone reaches it, it pushes nothing out, checks no structure
-round it (it was formed when taken) and sets no blocks; its changes go to its carrier to save and its looks to the
-carrier to show (`takeCarriedChange`, `takeCarriedSync`). It keeps its key, the place it was taken from, so its network
-and computers find it (`Launches.carried`, `Launches.site`) and order it as before; it fires on its own stored power.
+its carrier's tick (`carriedTick`, never the world's): no redstone reaches it, it pushes nothing out (a carried
+generator or capacitor bank gives the world's blocks round its old place nothing), checks no structure round it (it
+was formed when taken) and sets no blocks; its changes go to its carrier to save and its looks to the carrier to show
+(`takeCarriedChange`, `takeCarriedSync`). It keeps its key, the place it was taken from, and is known by it while it
+is carried (`Carried`, any machine): its network and computers find it (`Launches.carried`, `Launches.site`) and order
+it as before, and its menu, its screen and their packets find it wherever it is (`Carried.blockEntity`, `Carried.near`);
+its menu stays open while its player is in reach of where it is now. It works on what it holds and the power it has.
+The three reactors are held while carried (`runsCarried`; the status "Held while carried"): their cores, coolant and
+shielding are the world's blocks round them.
+
+**Never had twice:** a machine another mod takes drops nothing, so it is set down with all it held and nothing lies on
+the ground. 26.x drops a block entity's contents only when its block is broken or replaced with the block entity still
+there (`preRemoveSideEffects`); a Create contraption takes the block entity first, so none drop. Sable saves a block and
+then empties it before taking it away, as vanilla's `/setblock` does: machines and guns are `Clearable`. A formed
+structure's parts moved with it tell its controller nothing (they un-formed it, and a launcher un-formed dropped its
+missiles).
 
 **Moved** (`placed_at`): a machine that loads at another place than it was saved at has been moved by another mod (a
 contraption set it down, a ship took it aboard or let it go): a structure points its parts at its controller again, and
 a launcher's network membership (its place on the list, orders, missiles in the air) and the computers follow it to its
-new key (`LaunchSite.moved`, `LaunchNetwork.moved`; not while the old place still holds it: then it was a copy).
+new key (`LaunchSite.moved`, `LaunchNetwork.moved`; not while the old place still holds it: then it was a copy). Pipes
+and cables keep their sides (the Wrench's pull and switched-off settings) when they are set down before the blocks round
+them (they were checked against air and lost them), and turn and mirror them with their block (`rotate`, `mirror`), so
+a contraption set down a quarter turned leaves a pipe pulling from the chest it pulled from.
 
 GameTests (`CarryTests`): a Cruise Missile Launcher carried in a frame turned a quarter and moved off fires from its
 box's tail where that is in the world, heading the way its boxes now point, and the computers find it by its key and
 near where it is; a Launch Silo carried off the same way lifts off from where its pad is, on the power it carried; a
-Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and forms again.
+Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and forms again; a pipe
+set down before the chest it pulls from keeps its pull side; a pipe turned a quarter turns its pull, switched-off and
+connected sides, and mirrored they swap; a machine emptied before a move, as Sable empties it, drops nothing.
 
 **In the 1.21.1 build** (`dev.groundburst.compat`, its own files; both mods optional, declared so in its mods.toml):
 - *Sable* (`SableFrames`): a block in a sub-level's plot stands in its ship's frame, the ship's pose read afresh each
@@ -3011,23 +3035,50 @@ Launch Silo on a network, picked up and set down six blocks off, keeps its place
   follows).
 - *Create* (`CreateCompat`): Create may move every block of ours (pistons still may not: most of our structures are
   immovable to them, which Create would otherwise respect); a formed structure's blocks hold to one another and a
-  two-block machine's halves to each other, so moving any part of a launcher takes all of it. Every launcher's
-  controller (the five missile launchers, the three superweapons, both interceptor launchers) has a movement behaviour
-  (`CarriedLauncher`): on the server it makes the launcher from the contraption's saved copy at the place it was taken
-  from, carries it in the contraption's frame (`ContraptionFrame`, itself taken through a ship's frame when the
-  contraption is aboard one), ticks it with the contraption, saves its changes back into the contraption's copy (so it
-  is set down as it is) and sends clients its looks (`CarriedSync`: the boxes rising, the missile gone). Set down, it is
-  moved: it forms again where it lands and its network follows.
-- *Not carried*: Launch Computers, Control Stations and Radar Arrays on a contraption (they work aboard a Sable ship);
-  a carried launcher's screen (aim, arm and fire it from a computer, a station or a designator); power and reloading
-  while carried (it fires on what it was loaded and charged with). Blasts do not yet reach ships' or contraptions'
-  blocks: a missile flies through a ship and bursts where it was aimed.
+  two-block machine's halves to each other, so moving any part of a structure takes all of it. Every machine (each block
+  whose block entity is a `MachineBlockEntity`: launchers, assemblers, computers, stations, radars, generators, banks,
+  every processing machine) has a movement behaviour (`CarriedMachine`): on the server it makes the machine from the
+  contraption's saved copy at the place it was taken from, carries it in the contraption's frame (`ContraptionFrame`,
+  itself taken through a ship's frame when the contraption is aboard one), ticks it with the contraption, saves its
+  changes back into the contraption's copy (so it is set down as it is) and sends clients its looks (`CarriedSync`: the
+  boxes rising, the missile gone, a missile laid section by section). Set down, it is moved: it forms again where it
+  lands and its network follows.
+- *Menus* (`OpenOnContraption`): right-clicking a carried machine, either half of a two-block one or any block of a
+  formed structure opens its menu, as in the world; a Launch Computer, Control Station or Radar Array opens its screen.
+  Create hands a click on a contraption to the block's interaction behaviour on the client and then on the server; the
+  screens open on the client, the menus from the server.
+- *Aboard* (`Aboard`, one for each contraption, run once a tick by the first of its machines to tick): **power**, the
+  contraption's generators feed every machine aboard that takes power, capacitor banks among them, then the banks feed
+  the machines that are not banks. Each gives at most its own output a tick and each takes at most its own intake; what
+  there is is shared out evenly first, then what is left goes round from a different machine each tick, so a launcher
+  charging at 8,000 FE a tick does not starve a Launch Computer that needs 20. No cables are needed: a contraption's
+  machines share one supply. **Pipes**, the contraption's runs of item and fluid pipes move what their pull sides draw to
+  their other ends (round-robin, never back where it came from), item runs a batch every 10 ticks and fluid runs their
+  rate every tick, as in the world; they reach carried machines (either half of a two-block one, as its sides allow),
+  structures' Item and Fluid Ports, and Create's chests, vaults and tanks aboard (`Adapters`: Create's item and fluid
+  handlers seen as ours).
+- *Never had twice*: 1.21.1 drops a block entity's contents when the block entity is removed (`setRemoved`), so the
+  port's stand-in for 26.x's drop hook drops them only when the block itself has gone from its place (broken or
+  replaced), not when a contraption takes the block entity alone; Sable empties `Clearable` block entities as it
+  assembles a ship (`Clearable.tryClear`).
+- *Not yet*: a carried machine reaches nothing in the world (no pipe, cable or redstone between a contraption and the
+  blocks round it); reactors are held while carried; blasts do not reach ships' or contraptions' blocks (a missile flies
+  through a ship and bursts where it was aimed).
 - *Checked* by `gradlew runCreateCheck -PwithCreate` (`CreateCheck`: Create 6.0.10, Sable 2.0.6, Create Aeronautics
   1.3.2 in a dev client): a Cruise Missile Launcher on a mechanical bearing turned by a creative motor is carried, fires
   from its box's tail where the bearing has it and heads the way its boxes point (-36 degrees, built facing 180); one
   made into a ship (`/sable assemble area`) and turned 30 degrees is aboard, still on its network, and fires heading 150;
   the bearing stopped at a quarter turn sets the first down two blocks off facing east, formed, on its network, its
-  missiles gone and its power spent. 7 of 7, pictures in run/screenshots/create_*.png.
+  missiles gone and its power spent. A factory on a second bearing (a Cruise Missile Launcher holding one missile and no
+  power, a chest of two more and a pipe set to pull from it into the launcher's Item Port, a Combustion Generator burning
+  coal, a Launch Computer, a Create tank of water and a fluid pipe pulling from it into an Electrolytic Separator):
+  nothing dropped as it is taken; the pipe loads the launcher, the fluid pipe fills the separator, the generator powers
+  both the launcher and the computer; right-clicked, the launcher's menu and the computer's screen open; stopped, it is
+  set down with nothing dropped, the pipe still pulling from the chest (turned with it) and the launcher formed with both
+  missiles. A yard on a third bearing (a Medium Missile Assembler partway through a missile and a Launch Silo holding
+  one): nothing dropped, the assembler goes on building aboard and finishes one missile, the silo's menu (clicked on its
+  pad) and the assembler's open; set down, nothing dropped, the assembler formed with just its one missile and the silo
+  formed with its own. Pictures in run/screenshots/create_*.png.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
@@ -4762,6 +4813,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-04 | **Every machine works on Create's contraptions, with its menu** (the user, after their first play with it: "assemblers, launch computers, everything to work on create contraptions if possible, as well as allowing access to their menus"): §17.16. One movement behaviour for every machine, run from the contraption's tick; right-clicking any block of a carried machine or structure opens its menu (or the computers' and radar's screens); a carried machine is known by the place it was taken from, so its menu, screen and packets find it wherever it is. A contraption shares its generators' and capacitor banks' power among its machines with no cables (each giver at most its output, each taker at most its intake; an even share first, then the rest round from a different machine each tick: without it a launcher's 8,000 FE intake starved the Launch Computer), and its pipe runs move items and fluids between what it carries, Create's chests, vaults and tanks among them. Reactors are held while carried (their cores are the world's blocks round them); nothing passes between a contraption and the world's blocks round it yet. The 1.21.1 build's Create check: 29 checks, among them a factory (pipes, power, menus) and a Medium Missile Assembler mid-build with a loaded Launch Silo. |
+| 2026-11-04 | **Nothing had twice when another mod moves a machine** (the user: the Medium Missile Assembler, taken by a contraption while it worked, "spewed out the items in it, then when uncontraptioned, it still had items in it, duplicating them, same for the vertical launchers"): on 1.21.1 the port's stand-in for 26.x's drop hook drops only when the block itself has gone from its place, not when a contraption takes the block entity alone; machines and guns are `Clearable`, so Sable empties them after saving them, as `/setblock` does; a structure's parts moved with it tell its controller nothing (they un-formed it). **Pipes and cables keep their Wrench settings** through a move (a pipe set down before the chest it pulled from lost its pull side, "the wrenched setting for extracting") and turn and mirror them with their block. |
 | 2026-11-03 | **Launchers on moving structures** (the user: make the 1.21.1 version work with Create, launchers on Create's moving contraptions, "even better" on Create Aeronautics'): §17.16. A launcher works in its own block coordinates and turns them into the world's through its frame wherever it meets the world (where it lights, the way it heads, reach, sounds, maps), so one on a Sable ship needs nothing more; one on a Create contraption is carried: a copy run from the contraption's tick, kept at the place it was taken from so its network still orders it. Main carries the frames (every one the world's here); the 1.21.1 build adds Create and Sable, both optional. A machine that loads somewhere else has been moved: its structure and network follow it. The howitzer's far-scatter test now checks each shot's point inside the circle and the shell's curve through it (it had worked out the landing from the shell's first velocity, which carries half a tick of gravity, so a shot near the circle's far edge came out past it, and other tests' floors far off could lie under the point). |
 | 2026-11-03 | Version **0.7.0** (the user's request: the jar files, the changelog, the CurseForge description and GitHub updated), for Minecraft 26.3 and, for the first time, 1.21.1 (`groundburst-0.7.0.jar` and `groundburst-mc1.21.1-0.7.0.jar`, from the branch `1.21.1`): the 155 mm Howitzer, the 1.21.1 build, and the fixes since 0.6.0. CHANGELOG's Unreleased became 0.7.0 (the howitzer, a Minecraft 1.21.1 section with what is simpler there, the changes); README and the CurseForge description name both versions and their requirements, and show the howitzer firing (`docs/screenshots/howitzer.jpg`, from fx_howitzer_27). No GitHub release, as before. |
 | 2026-11-03 | **The Atomic Cannon removed** (the user: "just to annoying to use with the loading problem") and **the howitzer's reach cut by 200 blocks, to 600** ("to encourage use of max chunks, and not go further"): far ground is what the gun has to map and load, so the guns now stop near what a player at the longest render distance sees. The cannon, its 280 mm calibre and shells, the nuclear shell type, its model, sound (and the recording only it used), Field Manual page, JEI page and tests went; its "scatters over ground not loaded" test now fires the howitzer 590 blocks, under open sky (its steep shot would meet a test's barrier roof). Never in a release, so no world that had one needs care. |
