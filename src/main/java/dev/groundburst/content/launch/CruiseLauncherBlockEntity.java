@@ -165,7 +165,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         for (int slot : new int[] {SLOT_A, SLOT_B}) {
             MissileSpec spec = missile(slot);
             if (spec != null) {
-                out = out.max(Strike.of(level, spec, this.worldPosition, this.target));
+                out = out.max(Strike.of(level, spec, worldBlockPos(), this.target));
             }
         }
         return out;
@@ -187,8 +187,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     /** Its countdown, then the first box's missile: its booster's ignition and its way round onto the target. */
     @Override
     public Timing timing() {
-        Vec3 from = tailPoint(missile(SLOT_A) != null || missile(SLOT_B) == null ? SLOT_A : SLOT_B);
-        return new Timing(COUNTDOWN + 1 + Flights.CruisePlan.IGNITION, true, from.x, from.z, heading());
+        Vec3 from = inWorld(tailPoint(missile(SLOT_A) != null || missile(SLOT_B) == null ? SLOT_A : SLOT_B));
+        return new Timing(COUNTDOWN + 1 + Flights.CruisePlan.IGNITION, true, from.x, from.z, worldHeading());
     }
 
     @Override
@@ -219,7 +219,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         if (this.phase != Phase.IDLE) {
             return false;
         }
-        this.target = new BlockPos(x, this.worldPosition.getY(), z);
+        this.target = new BlockPos(x, worldBlockPos().getY(), z);
         if (this.armed && !inRange(this.target)) {
             this.armed = false;
         }
@@ -227,8 +227,10 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         return true;
     }
 
+    /** Whether {@code at} is within its missiles' reach of where it is now (DESIGN.md §17.16). */
     private boolean inRange(BlockPos at) {
-        return Math.hypot(at.getX() - this.worldPosition.getX(), at.getZ() - this.worldPosition.getZ()) <= range();
+        BlockPos here = worldBlockPos();
+        return Math.hypot(at.getX() - here.getX(), at.getZ() - here.getZ()) <= range();
     }
 
     @Override
@@ -258,8 +260,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
                 : new int[] {missile(SLOT_A) != null ? SLOT_A : SLOT_B};
         enter(Phase.COUNTDOWN);
         setRaised(true);
-        level.playSound(null, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1.1f);
-        level.playSound(null, this.worldPosition, dev.groundburst.registry.GBSounds.CRUISE_ELEVATE.get(), SoundSource.BLOCKS, 2f, 1f);
+        playSound(level, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1.1f);
+        playSound(level, this.worldPosition, dev.groundburst.registry.GBSounds.CRUISE_ELEVATE.get(), SoundSource.BLOCKS, 2f, 1f);
         return true;
     }
 
@@ -278,9 +280,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     }
 
     private void sync() {
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     /** For GameTests: jump to the end of the countdown. */
@@ -317,7 +317,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
                 this.phaseTicks++;
                 int left = COUNTDOWN - this.phaseTicks;
                 if (left > 0 && left % 20 == 0) {
-                    level.playSound(null, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f,
+                    playSound(level, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f,
                             left <= 60 ? 1.4f : 1f);
                 }
                 if (left <= 0) {
@@ -334,7 +334,7 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
                 if (this.phaseTicks >= (this.queue.length - 1) * BETWEEN + LINGER) {
                     enter(Phase.LOWERING);
                     setRaised(false);
-                    level.playSound(null, this.worldPosition, dev.groundburst.registry.GBSounds.CRUISE_ELEVATE.get(), SoundSource.BLOCKS, 2f, 0.85f);
+                    playSound(level, this.worldPosition, dev.groundburst.registry.GBSounds.CRUISE_ELEVATE.get(), SoundSource.BLOCKS, 2f, 0.85f);
                 }
             }
             case LOWERING -> {
@@ -362,18 +362,20 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
             this.firedB = true;
         }
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
-        Vec3 from = tailPoint(slot);
+        // Out of its box where the box is in the world, the way it points there (a ship or a contraption may carry it and
+        // turn it, DESIGN.md §17.16).
+        Vec3 from = inWorld(tailPoint(slot));
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
-        LaunchNetwork.launched(level, this.worldPosition, Flights.launchCruise(level, from, heading(), aim, spec, by));
+        LaunchNetwork.launched(level, this.worldPosition, Flights.launchCruise(level, from, worldHeading(), aim, spec, by));
         // The cover bursting off the mouth; the booster's blast out of the back of the box, rolling over the deck behind it.
         Vec3 mouth = boxEnd(slot, true);
-        level.sendParticles(ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, 14, 0.3, 0.3, 0.3, 0.08);
-        level.sendParticles(ParticleTypes.CRIT, mouth.x, mouth.y, mouth.z, 10, 0.2, 0.2, 0.2, 0.4);
+        particles(level, ParticleTypes.POOF, mouth.x, mouth.y, mouth.z, 14, 0.3, 0.3, 0.3, 0.08);
+        particles(level, ParticleTypes.CRIT, mouth.x, mouth.y, mouth.z, 10, 0.2, 0.2, 0.2, 0.4);
         Vec3 back = boxEnd(slot, false);
         Direction b = controllerFacing().getOpposite();
-        level.sendParticles(ParticleTypes.FLAME, back.x, back.y, back.z, 24, 0.3, 0.2, 0.3, 0.08);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, back.x + b.getStepX() * 0.8, back.y, back.z + b.getStepZ() * 0.8, 36, 0.6, 0.3, 0.6, 0.06);
-        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, back.x + b.getStepX() * 1.5, back.y - 0.5, back.z + b.getStepZ() * 1.5, 10, 0.8, 0.2, 0.8, 0.02);
+        particles(level, ParticleTypes.FLAME, back.x, back.y, back.z, 24, 0.3, 0.2, 0.3, 0.08);
+        particles(level, ParticleTypes.LARGE_SMOKE, back.x + b.getStepX() * 0.8, back.y, back.z + b.getStepZ() * 0.8, 36, 0.6, 0.3, 0.6, 0.06);
+        particles(level, ParticleTypes.CAMPFIRE_COSY_SMOKE, back.x + b.getStepX() * 1.5, back.y - 0.5, back.z + b.getStepZ() * 1.5, 10, 0.8, 0.2, 0.8, 0.02);
         setChanged();
         sync();
     }
@@ -417,6 +419,11 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     public double heading() {
         Direction f = controllerFacing();
         return Math.atan2(f.getStepX(), f.getStepZ());
+    }
+
+    /** The way its boxes point over the ground in the world now (turned with a ship or a contraption that carries it). */
+    public double worldHeading() {
+        return frame().heading(heading());
     }
 
     /** Where box {@code slot}'s missile's tail is with the boxes up, in the world. */
@@ -478,8 +485,8 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -503,6 +510,12 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
         if (this.level instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
+    }
+
+    @Override
+    protected void onMoved(ServerLevel level, BlockPos from) {
+        super.onMoved(level, from);
+        LaunchSite.moved(level, from, this);
     }
 
     @Override

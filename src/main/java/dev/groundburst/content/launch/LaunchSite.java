@@ -18,7 +18,21 @@ public interface LaunchSite {
     /** What it is, for the computer's list and map (its ordinal goes over the wire: new kinds go at the end). */
     enum Kind { LAUNCHER, SCUD_STORM, NUCLEAR_MISSILE, PARTICLE_CANNON }
 
+    /** Its key: where its controller stands (on a Sable ship, in the ship's plot; carried by a contraption, where it was taken from). */
     BlockPos getBlockPos();
+
+    /** Where it is in the world now (DESIGN.md §17.16): its block, unless a ship or a contraption carries it about. */
+    BlockPos worldBlockPos();
+
+    /**
+     * It loaded somewhere else than it was saved (a Create contraption set it down, a Sable ship took it aboard): its
+     * network and the computers follow it to its new place.
+     */
+    static void moved(ServerLevel level, BlockPos from, LaunchSite site) {
+        Launches.untrack(level, from);
+        Launches.track(level, site.getBlockPos());
+        LaunchNetwork.of(level).moved(level, from, site.getBlockPos());
+    }
 
     default Kind siteKind() {
         return Kind.LAUNCHER;
@@ -61,8 +75,8 @@ public interface LaunchSite {
 
     /** How long its strike takes to arrive (the station's time on target, DESIGN.md §17.12). */
     default Timing timing() {
-        return new Timing(LaunchSiloBlockEntity.COUNTDOWN + MissileEntity.IGNITION, false, getBlockPos().getX() + 0.5,
-                getBlockPos().getZ() + 0.5, 0);
+        BlockPos at = worldBlockPos();
+        return new Timing(LaunchSiloBlockEntity.COUNTDOWN + MissileEntity.IGNITION, false, at.getX() + 0.5, at.getZ() + 0.5, 0);
     }
 
     /**

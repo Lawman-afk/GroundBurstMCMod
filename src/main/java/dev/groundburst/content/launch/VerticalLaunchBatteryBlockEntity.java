@@ -233,7 +233,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         for (int i = 0; i < CELLS; i++) {
             MissileSpec spec = missile(i);
             if (spec != null) {
-                out = out.max(Strike.of(level, spec, this.worldPosition, this.target));
+                out = out.max(Strike.of(level, spec, worldBlockPos(), this.target));
                 n++;
             }
         }
@@ -263,7 +263,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
 
     @Override
     public Timing timing() {
-        Vec3 from = middle();
+        Vec3 from = inWorld(middle());
         return new Timing(COUNTDOWN + 1 + HOLD, false, from.x, from.z, 0);
     }
 
@@ -295,7 +295,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         if (this.phase != Phase.IDLE) {
             return false;
         }
-        this.target = new BlockPos(x, this.worldPosition.getY(), z);
+        this.target = new BlockPos(x, worldBlockPos().getY(), z);
         if (this.armed && !inRange(this.target)) {
             this.armed = false;
         }
@@ -303,8 +303,9 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         return true;
     }
 
+    /** Whether {@code at} is within its missiles' reach of where it is now (DESIGN.md §17.16). */
     private boolean inRange(BlockPos at) {
-        Vec3 m = middle();
+        Vec3 m = inWorld(middle());
         return Math.hypot(at.getX() + 0.5 - m.x, at.getZ() + 0.5 - m.z) <= range();
     }
 
@@ -339,14 +340,14 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         }
         this.queue = cells.stream().mapToInt(Integer::intValue).toArray();
         // Every missile its own point of the spread, centred on the target (a line lies across the line of attack).
-        BlockPos from = BlockPos.containing(middle());
+        BlockPos from = BlockPos.containing(inWorld(middle()));
         List<int[]> points = LaunchNetwork.points(java.util.Collections.nCopies(this.queue.length, from), target.getX(), target.getZ(),
                 this.pattern, this.spacing);
         this.aimX = points.stream().mapToInt(p -> p[0]).toArray();
         this.aimZ = points.stream().mapToInt(p -> p[1]).toArray();
         this.shot = 0;
         enter(Phase.COUNTDOWN);
-        level.playSound(null, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
+        playSound(level, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
         return true;
     }
 
@@ -357,9 +358,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
     }
 
     private void sync() {
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     /** For GameTests: jump to the end of the countdown. */
@@ -396,7 +395,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
                 this.phaseTicks++;
                 int left = COUNTDOWN - this.phaseTicks;
                 if (left > 0 && left % 20 == 0) {
-                    level.playSound(null, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f,
+                    playSound(level, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f,
                             left <= 60 ? 1.4f : 1f);
                 }
                 if (left <= 0) {
@@ -430,7 +429,7 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         this.energy.consume(LAUNCH_COST);
         this.opened[cell] = level.getGameTime();
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
-        Vec3 from = cellFloor(cell);
+        Vec3 from = inWorld(cellFloor(cell));                  // where its cell is in the world (DESIGN.md §17.16)
         Vec3 point = new Vec3(this.aimX[n] + 0.5, this.target.getY(), this.aimZ[n] + 0.5);
         Vec3 aim = spec.guidance().aim(from, point, level.getRandom());
         Flights.Flight flight = Flights.launch(level, from, aim, spec, by, (HATCH_TOP - CELL_FLOOR) / 16.0, HOLD);
@@ -451,9 +450,9 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
                 continue;
             }
             Vec3 uptake = modelPoint(UPTAKE_X[CELL_X[cell % 4] < 8 ? 0 : 1], HATCH_TOP, CELL_Z[cell / 4]);
-            level.sendParticles(ParticleTypes.FLAME, uptake.x, uptake.y, uptake.z, t < HOLD ? 3 : 2, 0.12, 0.3, 0.35, 0.05);
+            particles(level, ParticleTypes.FLAME, uptake.x, uptake.y, uptake.z, t < HOLD ? 3 : 2, 0.12, 0.3, 0.35, 0.05);
             if (t % 2 == 0) {
-                level.sendParticles(ParticleTypes.LARGE_SMOKE, uptake.x, uptake.y + 0.5, uptake.z, 2, 0.25, 0.4, 0.4, 0.04);
+                particles(level, ParticleTypes.LARGE_SMOKE, uptake.x, uptake.y + 0.5, uptake.z, 2, 0.25, 0.4, 0.4, 0.04);
             }
         }
     }
@@ -544,8 +543,8 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -569,6 +568,12 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
         if (this.level instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
+    }
+
+    @Override
+    protected void onMoved(ServerLevel level, BlockPos from) {
+        super.onMoved(level, from);
+        LaunchSite.moved(level, from, this);
     }
 
     @Override

@@ -203,7 +203,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.countdown >= 0) {
             return false;
         }
-        this.target = new BlockPos(x, this.worldPosition.getY(), z);
+        this.target = new BlockPos(x, worldBlockPos().getY(), z);
         if (this.armed && !inRange(this.target)) {
             this.armed = false;
         }
@@ -211,9 +211,10 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         return true;
     }
 
+    /** Whether {@code at} is within its missile's reach of where it is now (DESIGN.md §17.16). */
     private boolean inRange(BlockPos at) {
-        return Math.sqrt(Math.pow(at.getX() - this.worldPosition.getX(), 2) + Math.pow(at.getZ() - this.worldPosition.getZ(), 2))
-                <= range();
+        BlockPos here = worldBlockPos();
+        return Math.sqrt(Math.pow(at.getX() - here.getX(), 2) + Math.pow(at.getZ() - here.getZ(), 2)) <= range();
     }
 
     /** Arms (only a ready silo with a target in range) or makes safe. */
@@ -230,7 +231,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     @Override
     public Strike strike(ServerLevel level) {
         var spec = missile();
-        return spec == null ? Strike.NONE : Strike.of(level, spec, this.worldPosition, this.target);
+        return spec == null ? Strike.NONE : Strike.of(level, spec, worldBlockPos(), this.target);
     }
 
     @Override
@@ -241,7 +242,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
     /** Its countdown and the missile's ignition, then the flight from where it is lit. */
     @Override
     public Timing timing() {
-        Vec3 from = launchPoint(padCentre());
+        Vec3 from = inWorld(launchPoint(padCentre()));
         return new Timing(countdownTicks() + MissileEntity.IGNITION, false, from.x, from.z, 0);
     }
 
@@ -260,7 +261,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.armed = false;
         this.launchedBy = by == null ? null : by.getUUID();
         this.countdown = countdownTicks();
-        level.playSound(null, padCentre(), GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
+        playSound(level, padCentre(), GBLaunch.SIREN.get(), SoundSource.BLOCKS, 4f, 1f);
         setChanged();
         return true;
     }
@@ -303,8 +304,8 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -352,7 +353,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         }
         this.countdown--;
         if (this.countdown > 0 && this.countdown % 20 == 0) {
-            level.playSound(null, pad, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f, this.countdown <= 60 ? 1.4f : 1f);
+            playSound(level, pad, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 2f, this.countdown <= 60 ? 1.4f : 1f);
         }
         if (this.countdown > 0) {
             onCountdown(level, pad, this.countdown);
@@ -392,8 +393,9 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         this.inventory.removeItem(SLOT_MISSILE, 1);
         this.energy.consume(launchCost());
         Entity by = this.launchedBy == null ? null : level.getEntity(this.launchedBy);
-        // Its guidance decides how close to the target it comes down.
-        Vec3 from = launchPoint(pad);
+        // Its guidance decides how close to the target it comes down. It lifts off from where the pad is in the world
+        // (a ship or a contraption may carry it, DESIGN.md §17.16).
+        Vec3 from = inWorld(launchPoint(pad));
         Vec3 aim = spec.guidance().aim(from, Vec3.atBottomCenterOf(this.target), level.getRandom());
         Flights.Flight flight = MissileEntity.launch(level, from, aim, spec, by, shaftHeight());
         LaunchNetwork.launched(level, this.worldPosition, flight);
@@ -415,6 +417,12 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
         if (this.level instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
+    }
+
+    @Override
+    protected void onMoved(ServerLevel level, BlockPos from) {
+        super.onMoved(level, from);
+        LaunchSite.moved(level, from, this);
     }
 
     @Override
@@ -474,9 +482,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity implements Animate
             this.held = spec.warheadId();
             setChanged();
         }
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     /** The last missile loaded (its warhead's id): the arms stay set for it after it has gone, until another comes. */

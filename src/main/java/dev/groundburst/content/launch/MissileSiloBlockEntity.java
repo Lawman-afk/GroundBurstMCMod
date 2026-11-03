@@ -126,8 +126,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     /** Anything solid over the middle of the hatch, in the missile's way out. */
     @Override
     protected boolean blocked() {
-        if (this.level == null) {
-            return false;
+        if (this.level == null || carried()) {
+            return false;                                      // carried: no world round it (DESIGN.md §17.16)
         }
         BlockPos top = hatchCentre();
         for (int k = 1; k <= CLEAR_ABOVE; k++) {
@@ -160,7 +160,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
             this.doorSince = level.getGameTime();
             this.doorsWanted = want;
             if (isFormed()) {
-                level.playSound(null, hatchCentre().above(), GBSounds.SILO_DOORS.get(), SoundSource.BLOCKS, 4f, want ? 1f : 0.94f);
+                playSound(level, hatchCentre().above(), GBSounds.SILO_DOORS.get(), SoundSource.BLOCKS, 4f, want ? 1f : 0.94f);
             }
             sync();
         }
@@ -185,6 +185,9 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
 
     /** Sets the hatch's nine blocks open or shut (only those still there, and only if they are not already). */
     private void setHatch(ServerLevel level, boolean open) {
+        if (carried()) {
+            return;                                            // its blocks are its carrier's, not the world's
+        }
         BlockPos c = hatchCentre();
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
@@ -205,12 +208,12 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
         Vec3 c = Vec3.atBottomCenterOf(hatchCentre().above());
         float f = this.smoke / (float) SMOKE_TICKS;
         if (this.smoke % 2 == 0) {
-            level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, c.x, c.y + 0.2, c.z, 1 + (int) (2 * f), 0.7, 0.1, 0.7, 0.012);
+            particles(level, ParticleTypes.CAMPFIRE_COSY_SMOKE, c.x, c.y + 0.2, c.z, 1 + (int) (2 * f), 0.7, 0.1, 0.7, 0.012);
         }
         if (this.smoke % 4 == 0) {
             for (int sx = -1; sx <= 1; sx += 2) {
                 for (int sz = -1; sz <= 1; sz += 2) {
-                    level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, c.x + sx * 2, c.y + 0.15, c.z + sz * 2, 1, 0.15, 0.05, 0.15, 0.01);
+                    particles(level, ParticleTypes.CAMPFIRE_COSY_SMOKE, c.x + sx * 2, c.y + 0.15, c.z + sz * 2, 1, 0.15, 0.05, 0.15, 0.01);
                 }
             }
         }
@@ -265,9 +268,7 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
 
     private void sync() {
         setChanged();
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     @Override

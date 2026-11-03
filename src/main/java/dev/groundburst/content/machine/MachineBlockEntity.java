@@ -13,18 +13,22 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import dev.groundburst.port.transfer.Capabilities;
 import dev.groundburst.port.transfer.ResourceHandler;
 import dev.groundburst.port.transfer.ResourceHandlerUtil;
@@ -344,8 +348,147 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         return steps;
     }
 
+    // --- where it is (DESIGN.md §17.16) -------------------------------------------------------------------------------------
+    /** What carries it out of the world (a Create contraption), or null while it stands in the world. */
+    private @Nullable Frame carrier;
+    /** Carried: it changed since its carrier last saved it, and its looks changed since the carrier last told clients. */
+    private boolean carriedChanged, carriedSync;
+    /** Where it stood when it was saved: if it loads somewhere else, something moved it ({@link #onMoved}). */
+    private @Nullable BlockPos placedAt;
+
+    /**
+     * Whether something has taken it out of the world and carries it (a Create contraption): it then stands at the place
+     * it was taken from, in its carrier's frame, and its carrier ticks it ({@link #carriedTick}).
+     */
+    public boolean carried() {
+        return this.carrier != null;
+    }
+
+    /** Taken out of the world by something that moves it ({@code frame}: where it is now), or back (null). */
+    public void carry(@Nullable Frame frame) {
+        this.carrier = frame;
+    }
+
+    /** Where it really is: its carrier's frame, a frame another mod's blocks stand in (a Sable ship's), or the world. */
+    public Frame frame() {
+        return this.carrier != null ? this.carrier : Frames.at(this.level, this.worldPosition);
+    }
+
+    /** A point of its own (its block coordinates) where it is in the world. */
+    public Vec3 inWorld(Vec3 local) {
+        return frame().toWorld(local);
+    }
+
+    /** The block in the world its own block {@code local} is over. */
+    public BlockPos inWorld(BlockPos local) {
+        return frame().toWorld(local);
+    }
+
+    /** The block in the world it is over (its block position, unless something carries it about). */
+    public BlockPos worldBlockPos() {
+        return inWorld(this.worldPosition);
+    }
+
+    /** A sound from its block {@code at}, wherever that is in the world. */
+    protected void playSound(Level level, BlockPos at, SoundEvent sound, SoundSource source, float volume, float pitch) {
+        playSound(level, Vec3.atCenterOf(at), sound, source, volume, pitch);
+    }
+
+    /** A sound from a point of its own, wherever that is in the world. */
+    protected void playSound(Level level, Vec3 at, SoundEvent sound, SoundSource source, float volume, float pitch) {
+        Vec3 p = inWorld(at);
+        level.playSound(null, p.x, p.y, p.z, sound, source, volume, pitch);
+    }
+
+    /**
+     * Particles at a point of its own, wherever that is in the world (with a count of 0, dx/dy/dz are one particle's
+     * direction, turned with it too).
+     */
+    protected void particles(ServerLevel level, ParticleOptions type, double x, double y, double z, int count, double dx, double dy, double dz,
+            double speed) {
+        Frame frame = frame();
+        Vec3 p = frame.toWorld(new Vec3(x, y, z));
+        Vec3 d = count == 0 && !frame.isWorld() ? frame.directionToWorld(new Vec3(dx, dy, dz)) : new Vec3(dx, dy, dz);
+        level.sendParticles(type, p.x, p.y, p.z, count, d.x, d.y, d.z, speed);
+    }
+
+    /** Tells clients its looks changed: with its block's update, or (carried) through its carrier. */
+    protected void syncToClients() {
+        if (this.carrier != null) {
+            this.carriedSync = true;
+        } else if (this.level != null && !this.level.isClientSide()) {
+            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public void setChanged() {
+        if (this.carrier != null) {
+            this.carriedChanged = true;                     // its carrier saves it; no world is round it to tell
+            return;
+        }
+        super.setChanged();
+    }
+
+    /** For its carrier: whether it changed since last asked. */
+    public boolean takeCarriedChange() {
+        boolean changed = this.carriedChanged;
+        this.carriedChanged = false;
+        return changed;
+    }
+
+    /** For its carrier: whether its looks changed since last asked (clients need its update tag again). */
+    public boolean takeCarriedSync() {
+        boolean sync = this.carriedSync;
+        this.carriedSync = false;
+        return sync;
+    }
+
+    /**
+     * A tick while carried, from its carrier (in place of {@link #serverTick}): no world is round it, so no redstone
+     * reaches it, it pushes nothing out and its block state is left alone; an EMP where it is now still knocks it out.
+     */
+    public void carriedTick(ServerLevel level) {
+        if (isEmpDisabled()) {
+            this.status = MachineStatus.EMP;
+            if (!this.emped) {
+                this.emped = true;
+                this.energy.consume(this.energy.stored() / 2);
+                setChanged();
+                particles(level, net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 30, 0.4, 0.4, 0.4, 0.3);
+            }
+            onEmp(level);
+            return;
+        }
+        this.emped = false;
+        tickMachine(level);
+    }
+
+    /**
+     * Something moved it: it loaded at another place than it was saved at (a Create contraption set it down, a Sable ship
+     * took it aboard or let it go). A structure's controller points its parts at itself again, then checks them.
+     */
+    protected void onMoved(ServerLevel level, BlockPos from) {
+        if (this instanceof dev.groundburst.content.multiblock.MultiblockController c && c.isFormed()) {
+            dev.groundburst.content.multiblock.MultiblockController.setPartsFormed(level, c, true);
+            c.revalidate();
+        }
+    }
+
     // --- ticking ----------------------------------------------------------------------------------------------------------
     public void serverTick(ServerLevel level) {
+        if (this.carrier != null) {
+            return;                                         // carried: its carrier ticks it (carriedTick)
+        }
+        if (this.placedAt == null || !this.placedAt.equals(this.worldPosition)) {
+            BlockPos from = this.placedAt;
+            this.placedAt = this.worldPosition.immutable();
+            setChanged();
+            if (from != null) {
+                onMoved(level, from);
+            }
+        }
         boolean active;
         if (isEmpDisabled()) {
             status = MachineStatus.EMP;
@@ -355,10 +498,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 this.emped = true;
                 this.energy.consume(this.energy.stored() / 2);
                 setChanged();
-                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
+                particles(level, net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
                         worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 30, 0.4, 0.4, 0.4, 0.3);
             } else if (level.getRandom().nextInt(30) == 0) {
-                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
+                particles(level, net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, worldPosition.getX() + 0.5,
                         worldPosition.getY() + 0.6, worldPosition.getZ() + 0.5, 4, 0.4, 0.4, 0.4, 0.2);
             }
             onEmp(level);
@@ -391,14 +534,15 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
-    /** Whether an EMP field is over it (DESIGN.md §21.4): then it does nothing at all. */
+    /** Whether an EMP field is over it (DESIGN.md §21.4; where it is in the world): then it does nothing at all. */
     protected boolean isEmpDisabled() {
-        return this.level != null && dev.groundburst.content.effect.EmpFields.inField(this.level, this.worldPosition);
+        return this.level != null && dev.groundburst.content.effect.EmpFields.any(this.level)
+                && dev.groundburst.content.effect.EmpFields.inField(this.level, worldBlockPos());
     }
 
-    /** Whether its redstone setting holds it stopped right now. */
+    /** Whether its redstone setting holds it stopped right now (never while carried: no redstone reaches it). */
     protected boolean redstoneHalted() {
-        return this.level != null && !this.redstoneMode.allows(this.level.hasNeighborSignal(this.worldPosition));
+        return this.level != null && this.carrier == null && !this.redstoneMode.allows(this.level.hasNeighborSignal(this.worldPosition));
     }
 
     /** Each tick redstone holds it stopped (instead of working). */
@@ -705,6 +849,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         for (int i = 0; i < this.tanks.size(); i++) {
             this.tanks.get(i).serialize(output.child("tank" + i));
         }
+        if (this.placedAt != null) {
+            output.putLong("placed_at", this.placedAt.asLong());
+        }
     }
 
     @Override
@@ -721,6 +868,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         for (int i = 0; i < this.tanks.size(); i++) {
             this.tanks.get(i).deserialize(input.childOrEmpty("tank" + i));
         }
+        this.placedAt = input.getLong("placed_at").map(BlockPos::of).orElse(null);
     }
 
         public void preRemoveSideEffects(BlockPos pos, BlockState state) {

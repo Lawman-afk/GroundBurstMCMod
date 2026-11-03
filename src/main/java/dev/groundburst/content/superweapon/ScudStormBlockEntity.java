@@ -143,12 +143,12 @@ public class ScudStormBlockEntity extends SuperweaponBlockEntity {
     @Override
     protected void onCountdown(ServerLevel level, int ticks) {
         if (ticks == 1) {
-            level.playSound(null, getBlockPos(), dev.groundburst.registry.GBSounds.SCUD_ERECT.get(), SoundSource.BLOCKS, 4f, 1f);
+            playSound(level, getBlockPos(), dev.groundburst.registry.GBSounds.SCUD_ERECT.get(), SoundSource.BLOCKS, 4f, 1f);
         }
         if (ticks % 4 == 0) {
             for (int k = 0; k < loaded(); k++) {
                 Vec3 tail = launchPoint(k);
-                level.sendParticles(ParticleTypes.CLOUD, tail.x, tail.y + 0.3, tail.z, 1, 0.2, 0.1, 0.2, 0.01);
+                particles(level, ParticleTypes.CLOUD, tail.x, tail.y + 0.3, tail.z, 1, 0.2, 0.1, 0.2, 0.01);
             }
         }
     }
@@ -156,9 +156,9 @@ public class ScudStormBlockEntity extends SuperweaponBlockEntity {
     /** A SCUD lights: flame and smoke burst out over its erector's foot and roll across the pad. */
     @Override
     protected void onFire(ServerLevel level, int index, Vec3 at) {
-        level.sendParticles(ParticleTypes.FLAME, at.x, at.y, at.z, 30, 0.4, 0.2, 0.4, 0.06);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, at.x, at.y, at.z, 40, 0.8, 0.3, 0.8, 0.04);
-        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, at.x, at.y + 0.2, at.z, 12, 1.2, 0.2, 1.2, 0.02);
+        particles(level, ParticleTypes.FLAME, at.x, at.y, at.z, 30, 0.4, 0.2, 0.4, 0.06);
+        particles(level, ParticleTypes.LARGE_SMOKE, at.x, at.y, at.z, 40, 0.8, 0.3, 0.8, 0.04);
+        particles(level, ParticleTypes.CAMPFIRE_COSY_SMOKE, at.x, at.y + 0.2, at.z, 12, 1.2, 0.2, 1.2, 0.02);
     }
 
     /** Charging: vapour off the vents in the pad, now and then. */
@@ -170,7 +170,7 @@ public class ScudStormBlockEntity extends SuperweaponBlockEntity {
         for (double[] v : VENTS) {
             if (level.getRandom().nextInt(3) == 0) {
                 Vec3 p = modelPoint(v[0], 14.5, v[1]);
-                level.sendParticles(ParticleTypes.CLOUD, p.x, p.y, p.z, 1, 0.08, 0.02, 0.08, 0.015);
+                particles(level, ParticleTypes.CLOUD, p.x, p.y, p.z, 1, 0.08, 0.02, 0.08, 0.015);
             }
         }
     }

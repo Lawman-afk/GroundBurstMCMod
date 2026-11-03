@@ -128,14 +128,14 @@ public class NuclearMissileBlockEntity extends SuperweaponBlockEntity {
     @Override
     protected void onCountdown(ServerLevel level, int ticks) {
         if (ticks == 1) {
-            level.playSound(null, getBlockPos(), dev.groundburst.registry.GBSounds.NUCLEAR_ERECT.get(), SoundSource.BLOCKS, 5f, 1f);
+            playSound(level, getBlockPos(), dev.groundburst.registry.GBSounds.NUCLEAR_ERECT.get(), SoundSource.BLOCKS, 5f, 1f);
         }
         if (ticks > 80 && ticks % 3 == 0) {
             Vec3 tail = launchPoint(0);
             var random = level.getRandom();
             double y = tail.y + 2 + random.nextDouble() * 5;
             double a = random.nextDouble() * Math.PI * 2;
-            level.sendParticles(ParticleTypes.CLOUD, tail.x + Math.cos(a) * 0.55, y, tail.z + Math.sin(a) * 0.55, 1,
+            particles(level, ParticleTypes.CLOUD, tail.x + Math.cos(a) * 0.55, y, tail.z + Math.sin(a) * 0.55, 1,
                     Math.cos(a) * 0.1, -0.02, Math.sin(a) * 0.1, 0.03);
         }
     }
@@ -143,12 +143,12 @@ public class NuclearMissileBlockEntity extends SuperweaponBlockEntity {
     /** The missile lights: fire and smoke pour out of the hall and roll out along the ground. */
     @Override
     protected void onFire(ServerLevel level, int index, Vec3 at) {
-        level.sendParticles(ParticleTypes.FLAME, at.x, at.y, at.z, 80, 0.6, 0.3, 0.6, 0.12);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 120, 1.5, 0.6, 1.5, 0.08);
-        level.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, at.x, at.y + 0.5, at.z, 30, 1.2, 0.3, 1.2, 0.02);
+        particles(level, ParticleTypes.FLAME, at.x, at.y, at.z, 80, 0.6, 0.3, 0.6, 0.12);
+        particles(level, ParticleTypes.LARGE_SMOKE, at.x, at.y + 0.5, at.z, 120, 1.5, 0.6, 1.5, 0.08);
+        particles(level, ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, at.x, at.y + 0.5, at.z, 30, 1.2, 0.3, 1.2, 0.02);
         for (double back : new double[] {40, 100, 160}) {
             Vec3 p = modelPoint(0, 26, back);
-            level.sendParticles(ParticleTypes.LARGE_SMOKE, p.x, p.y, p.z, 30, 0.8, 0.4, 0.8, 0.12);
+            particles(level, ParticleTypes.LARGE_SMOKE, p.x, p.y, p.z, 30, 0.8, 0.4, 0.8, 0.12);
         }
     }
 
@@ -157,7 +157,7 @@ public class NuclearMissileBlockEntity extends SuperweaponBlockEntity {
     protected void onCharging(ServerLevel level) {
         if (level.getGameTime() % 40 == 0) {
             Vec3 p = modelPoint(-64, 50, 16);
-            level.sendParticles(ParticleTypes.SMOKE, p.x, p.y, p.z, 2, 0.05, 0.05, 0.05, 0.01);
+            particles(level, ParticleTypes.SMOKE, p.x, p.y, p.z, 2, 0.05, 0.05, 0.05, 0.01);
         }
     }
 }

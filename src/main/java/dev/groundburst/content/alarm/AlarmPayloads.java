@@ -59,6 +59,6 @@ public final class AlarmPayloads {
     }
 
     private static boolean near(ServerPlayer player, BlockPos pos) {
-        return player.position().distanceTo(Vec3.atCenterOf(pos)) <= REACH;
+        return player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH;
     }
 }

@@ -39,3 +39,18 @@ ${mod_description}
     versionRange="[19,)"
     ordering="NONE"
     side="BOTH"
+
+# Optional: launchers ride Create's contraptions (Create 6) and Sable's sub-levels (Create Aeronautics' ships).
+[[dependencies.${mod_id}]]
+    modId="create"
+    type="optional"
+    versionRange="[6.0.0,7)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="sable"
+    type="optional"
+    versionRange="[2.0.0,3)"
+    ordering="NONE"
+    side="BOTH"

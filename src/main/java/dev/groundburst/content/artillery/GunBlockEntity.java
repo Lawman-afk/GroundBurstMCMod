@@ -410,12 +410,14 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
             fall = Ballistics.flightTo(muzzle, u, this.laid);
         }
         Vec3 launch = u;
+        this.lastSpread = null;
         if (fall != null) {
             Vec3 laidOn = fall.at();
             double range = Math.hypot(laidOn.x - muzzle.x, laidOn.z - muzzle.z);
             Vec3 off = Ballistics.scatter(level.getRandom(), radius(range), fall.stretch(), this.yaw);
             double x = laidOn.x + off.x, z = laidOn.z + off.z;
             Vec3 target = new Vec3(x, Ballistics.ground(level, x, z, laidOn.y), z);
+            this.lastSpread = target;
             float yaw2 = Ballistics.yaw(muzzle, target);
             double hx = Math.hypot(target.x - muzzle.x, target.z - muzzle.z), dy = target.y - muzzle.y;
             double high = Ballistics.highAngle(speed, hx, dy), low = Ballistics.lowAngle(speed, hx, dy);
@@ -456,6 +458,13 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     /** A shell of {@code type} away now, as it is laid (the photographer's). */
     public void shootForTest(ServerLevel level, ShellType type) {
         shoot(level, null, type);
+    }
+
+    /** Where its last shot was spread to (for GameTests: the point it was sent to, on the ground there). */
+    private @Nullable Vec3 lastSpread;
+
+    public @Nullable Vec3 lastSpreadForTest() {
+        return this.lastSpread;
     }
 
     // --- the far ground's map ----------------------------------------------------------------------------------------------

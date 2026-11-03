@@ -85,6 +85,12 @@ public final class EmpFields {
         return inField(level, Vec3.atCenterOf(pos));
     }
 
+    /** Whether any field is up in {@code level} (a quick look before working out where anything is). */
+    public static boolean any(Level level) {
+        List<Field> fields = level instanceof ServerLevel server ? BY_LEVEL.get(server) : null;
+        return fields != null && !fields.isEmpty();
+    }
+
     static void tick(ServerLevel level) {
         List<Field> fields = BY_LEVEL.get(level);
         if (fields != null) {

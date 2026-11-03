@@ -36,19 +36,22 @@ public final class Interception {
     /** For GameTests: the kill chance of every interceptor launched while it is set (negative: their own). Read at launch. */
     public static double killOverride = -1;
 
-    /** The Radar Arrays working in each level, and the game time each last tracked. */
-    private static final Map<ServerLevel, Map<BlockPos, Long>> RADARS = new WeakHashMap<>();
+    /** The Radar Arrays working in each level (by their block), where each is in the world and when it last tracked. */
+    private static final Map<ServerLevel, Map<BlockPos, Seen>> RADARS = new WeakHashMap<>();
+
+    /** A working radar: where it is in the world (DESIGN.md §17.16) and the game time it last tracked. */
+    private record Seen(BlockPos at, long time) {}
 
     private Interception() {}
 
-    /** A Radar Array tracking this tick (from its tick, while it is formed and powered). */
-    public static void radarWorking(ServerLevel level, BlockPos pos) {
-        RADARS.computeIfAbsent(level, l -> new HashMap<>()).put(pos.immutable(), level.getGameTime());
+    /** A Radar Array tracking this tick (from its tick, while it is formed and powered), {@code at} where it is in the world. */
+    public static void radarWorking(ServerLevel level, BlockPos pos, BlockPos at) {
+        RADARS.computeIfAbsent(level, l -> new HashMap<>()).put(pos.immutable(), new Seen(at.immutable(), level.getGameTime()));
     }
 
     /** A Radar Array gone dark (unformed, unpowered or broken). */
     public static void radarStopped(ServerLevel level, BlockPos pos) {
-        Map<BlockPos, Long> m = RADARS.get(level);
+        Map<BlockPos, Seen> m = RADARS.get(level);
         if (m != null) {
             m.remove(pos);
         }
@@ -60,14 +63,14 @@ public final class Interception {
 
     /** Whether a working Radar Array tracks a missile at {@code at} (it is within the array's range). */
     public static boolean tracked(ServerLevel level, Vec3 at) {
-        Map<BlockPos, Long> m = RADARS.get(level);
+        Map<BlockPos, Seen> m = RADARS.get(level);
         if (m == null) {
             return false;
         }
         long now = level.getGameTime();
-        for (Map.Entry<BlockPos, Long> e : m.entrySet()) {
-            BlockPos p = e.getKey();
-            if (now - e.getValue() <= RADAR_GRACE && Math.abs(p.getX() + 0.5 - at.x) <= RadarArrayBlockEntity.RANGE
+        for (Seen seen : m.values()) {
+            BlockPos p = seen.at();
+            if (now - seen.time() <= RADAR_GRACE && Math.abs(p.getX() + 0.5 - at.x) <= RadarArrayBlockEntity.RANGE
                     && Math.abs(p.getZ() + 0.5 - at.z) <= RadarArrayBlockEntity.RANGE) {
                 return true;
             }

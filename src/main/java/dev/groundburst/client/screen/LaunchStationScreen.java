@@ -211,6 +211,12 @@ public class LaunchStationScreen extends Screen {
         return latest != null && latest.pos().equals(this.pos) ? latest : null;
     }
 
+    /** Where the station is in the world (on a ship, DESIGN.md §17.16). */
+    private BlockPos here() {
+        StationPayloads.Scope s = scope();
+        return s == null ? this.pos : s.at();
+    }
+
     private boolean on() {
         StationPayloads.Scope s = scope();
         return s != null && s.formed() && s.powered();
@@ -324,8 +330,8 @@ public class LaunchStationScreen extends Screen {
         this.codesButton = addRenderableWidget(Button.builder(Component.translatable(T_NEW_CODES), b -> newCodes())
                 .bounds(left() + W - 8 - 30 - 64, t + 2, 60, 12).build());
         addRenderableWidget(Button.builder(Component.translatable(T_CENTRE), b -> {
-            this.viewX = this.pos.getX() + 0.5;
-            this.viewZ = this.pos.getZ() + 0.5;
+            this.viewX = here().getX() + 0.5;
+            this.viewZ = here().getZ() + 0.5;
         }).bounds(mapX() + MAP - 88, mapY() + MAP + 3, 42, 14).build());
         addRenderableWidget(Button.builder(Component.translatable(T_CENTRE_PICK), b -> centreOnPicks())
                 .bounds(mapX() + MAP - 42, mapY() + MAP + 3, 42, 14).build());
@@ -338,8 +344,8 @@ public class LaunchStationScreen extends Screen {
     private void centreOnPicks() {
         List<StationPayloads.MemberView> ms = pickedMembers();
         if (!ms.isEmpty()) {
-            this.viewX = ms.stream().mapToDouble(m -> m.pos().getX() + 0.5).average().orElse(this.viewX);
-            this.viewZ = ms.stream().mapToDouble(m -> m.pos().getZ() + 0.5).average().orElse(this.viewZ);
+            this.viewX = ms.stream().mapToDouble(m -> m.at().getX() + 0.5).average().orElse(this.viewX);
+            this.viewZ = ms.stream().mapToDouble(m -> m.at().getZ() + 0.5).average().orElse(this.viewZ);
         }
     }
 
@@ -420,7 +426,7 @@ public class LaunchStationScreen extends Screen {
     }
 
     private static double distance(StationPayloads.MemberView m) {
-        return Math.hypot(m.targetX() - m.pos().getX(), m.targetZ() - m.pos().getZ());
+        return Math.hypot(m.targetX() - m.at().getX(), m.targetZ() - m.at().getZ());
     }
 
     private static boolean counting(StationPayloads.MemberView m) {
@@ -447,7 +453,7 @@ public class LaunchStationScreen extends Screen {
         }
         boolean on = on();
         if (on && this.map != null) {
-            this.map.request(this.pos, this.viewX, this.viewZ, zoom());
+            this.map.request(this.pos, here(), this.viewX, this.viewZ, zoom());
         }
         int armed = (int) ms.stream().filter(m -> !m.radar() && !m.lost() && m.willBeArmed() && m.launchAt() < 0).count();
         List<StationPayloads.MemberView> launchers = picks.stream().filter(m -> !m.radar()).toList();
@@ -730,13 +736,13 @@ public class LaunchStationScreen extends Screen {
             g.text(this.font, off, x0 + MAP / 2 - this.font.width(off) / 2, y0 + MAP / 2 - 4, RED);
             return;
         }
-        this.map.draw(g, x0, y0, this.pos, this.viewX, this.viewZ, zoom());
+        this.map.draw(g, x0, y0, here(), this.viewX, this.viewZ, zoom());
         g.enableScissor(x0, y0, x1, y1);
         // The radars' reach (dim squares), under everything.
         for (StationPayloads.MemberView m : s.members()) {
             if (m.radar() && !m.lost() && m.contact() && m.working()) {
-                int ax0 = screenX(m.pos().getX() - RadarArrayBlockEntity.RANGE), ax1 = screenX(m.pos().getX() + RadarArrayBlockEntity.RANGE);
-                int az0 = screenY(m.pos().getZ() - RadarArrayBlockEntity.RANGE), az1 = screenY(m.pos().getZ() + RadarArrayBlockEntity.RANGE);
+                int ax0 = screenX(m.at().getX() - RadarArrayBlockEntity.RANGE), ax1 = screenX(m.at().getX() + RadarArrayBlockEntity.RANGE);
+                int az0 = screenY(m.at().getZ() - RadarArrayBlockEntity.RANGE), az1 = screenY(m.at().getZ() + RadarArrayBlockEntity.RANGE);
                 Phosphor.line(g, ax0, az0, ax1, az0, DIM, 4);
                 Phosphor.line(g, ax0, az1, ax1, az1, DIM, 4);
                 Phosphor.line(g, ax0, az0, ax0, az1, DIM, 4);
@@ -763,13 +769,13 @@ public class LaunchStationScreen extends Screen {
             }
         }
         // The station, each member and its target (the picked bright; armed ones joined to theirs by a red line).
-        int cx = screenX(this.pos.getX() + 0.5), cz = screenY(this.pos.getZ() + 0.5);
+        int cx = screenX(here().getX() + 0.5), cz = screenY(here().getZ() + 0.5);
         g.fill(cx - 2, cz - 2, cx + 3, cz + 3, WHITE);
         g.fill(cx - 1, cz - 1, cx + 2, cz + 2, 0xFF061A0C);
         boolean blink = this.ticks % 20 < 12;
         for (StationPayloads.MemberView m : s.members()) {
             boolean picked = this.picked.contains(m.pos());
-            int sx = screenX(m.pos().getX() + 0.5), sz = screenY(m.pos().getZ() + 0.5);
+            int sx = screenX(m.at().getX() + 0.5), sz = screenY(m.at().getZ() + 0.5);
             if (!m.radar() && m.hasTarget()) {
                 int tx = screenX(m.targetX() + 0.5), tz = screenY(m.targetZ() + 0.5);
                 boolean armed = m.willBeArmed() || m.launchAt() >= 0;
@@ -839,7 +845,7 @@ public class LaunchStationScreen extends Screen {
         }
         Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         if (k.along() / scale >= 1.5) {
-            double dx = m.targetX() - m.pos().getX(), dz = m.targetZ() - m.pos().getZ(), d = Math.sqrt(dx * dx + dz * dz);
+            double dx = m.targetX() - m.at().getX(), dz = m.targetZ() - m.at().getZ(), d = Math.sqrt(dx * dx + dz * dz);
             Phosphor.ellipse(g, tx, tz, (k.along() + k.reach()) / scale, (k.across() + k.reach()) / scale, d > 1e-6 ? dx / d : 1,
                     d > 1e-6 ? dz / d : 0, picked ? 0xCCFF4A3A : 0x997A2418, 3);
         }

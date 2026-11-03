@@ -285,7 +285,7 @@ public class LaserDesignatorItem extends Item {
             List<LaunchNetwork.Member> choice = nets.laserLaunchers(net);
             Pick state = m.willBeArmed() && m.aim().isPresent() ? Pick.ARMED
                     : m.report().readiness() != LaunchSiloBlockEntity.Readiness.READY.ordinal() ? Pick.NOT_READY
-                    : spot != null && !m.canArm(new BlockPos(spot.getX(), m.pos.getY(), spot.getZ())) ? Pick.OUT_OF_REACH : Pick.READY;
+                    : spot != null && !m.canArm(new BlockPos(spot.getX(), m.at().getY(), spot.getZ())) ? Pick.OUT_OF_REACH : Pick.READY;
             pick = new DesignatorPayloads.Pick(nets.number(net, m), m.kind, choice.indexOf(m) + 1, choice.size(), state.ordinal());
         }
         List<LaunchNetwork.Member> armed = net == 0 ? List.of() : nets.armed(net);

@@ -216,8 +216,8 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -255,7 +255,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
-        Launches.trackMapper(level, this.worldPosition);
+        Launches.trackMapper(level, this.worldPosition, worldBlockPos());
         if (!isFormed()) {
             this.status = MachineStatus.INCOMPLETE;
             this.powered = false;
@@ -264,14 +264,14 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
             network(level);
             if (!this.surveyed) {
                 this.surveyed = true;
-                TerrainSurvey.of(level).surveyAround(level, this.worldPosition, 16);
+                TerrainSurvey.of(level).surveyAround(level, worldBlockPos(), 16);
             }
             this.powered = this.energy.consume(POWER_USE);
             this.status = this.powered ? MachineStatus.RUNNING : MachineStatus.NO_POWER;
         }
         if (!this.viewers.isEmpty() && level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(Vec3.atCenterOf(this.worldPosition)) < 16) {
+                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     sendScope(level, p);
                 } else {
                     this.viewers.remove(id);
@@ -349,7 +349,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
                     }
                     for (Flights.Flight f : flying.values()) {
                         Vec3 p = f.position();
-                        if (Math.abs(p.x - m.pos.getX() - 0.5) <= RadarArrayBlockEntity.RANGE && Math.abs(p.z - m.pos.getZ() - 0.5) <= RadarArrayBlockEntity.RANGE
+                        if (Math.abs(p.x - m.at().getX() - 0.5) <= RadarArrayBlockEntity.RANGE && Math.abs(p.z - m.at().getZ() - 0.5) <= RadarArrayBlockEntity.RANGE
                                 && shown.add(f.id())) {
                             contacts.add(contact(f, false));
                         }
@@ -357,7 +357,7 @@ public class LaunchStationBlockEntity extends MachineBlockEntity implements Anim
                 }
             }
         }
-        PacketDistributor.sendToPlayer(player, new StationPayloads.Scope(this.worldPosition, isFormed(), this.powered && !isEmpDisabled(),
+        PacketDistributor.sendToPlayer(player, new StationPayloads.Scope(this.worldPosition, worldBlockPos(), isFormed(), this.powered && !isEmpDisabled(),
                 (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), code, now, members, contacts, log, spots));
     }
 

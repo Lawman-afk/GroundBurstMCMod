@@ -45,6 +45,30 @@ repositories {
             includeGroup 'net.mezzdev.config'
         }
     }
+    // Create, Sable and Create Aeronautics, as released (compile against Create; run all three with -PwithCreate).
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
+    // Sable Companion: Sable's small API for where a block on a sub-level really is (Sable carries it).
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'RyanHCode'
+                url = 'https://maven.ryanhcode.dev/releases'
+            }
+        }
+        filter {
+            includeGroup 'dev.ryanhcode.sable-companion'
+        }
+    }
 }
 
 base {
@@ -79,6 +103,16 @@ neoForge {
             client()
             programArguments.addAll '--width', '1280', '--height', '720'
             systemProperty 'groundburst.portCheck', 'true'
+        }
+
+        // Launchers on moving structures (with -PwithCreate: Create, Sable and Create Aeronautics loaded): a Cruise Missile
+        // Launcher on a Create bearing and one made into a Sable ship fire, the log saying whether each missile lit where
+        // its launcher is and headed the way it points; pictures in run/screenshots/create_*.png
+        // (dev.groundburst.compat.CreateCheck).
+        createCheck {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.createCheck', 'true'
         }
 
         server {
@@ -130,6 +164,18 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Create and Sable (both optional, docs/BACKPORT.md): launchers ride Create's contraptions and Sable's sub-levels
+    // (Create Aeronautics' ships). Compiled against, never shipped: the code that touches them runs only when they are
+    // installed (dev.groundburst.compat).
+    compileOnly "maven.modrinth:create:${create_version}"
+    compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
+    // -PwithCreate: the dev runs load Create, Sable and Create Aeronautics too (the createCheck run needs them).
+    if (providers.gradleProperty('withCreate').isPresent()) {
+        localRuntime "maven.modrinth:create:${create_version}"
+        localRuntime "maven.modrinth:sable:${sable_version}"
+        localRuntime "maven.modrinth:create-aeronautics:${aeronautics_version}"
+    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
