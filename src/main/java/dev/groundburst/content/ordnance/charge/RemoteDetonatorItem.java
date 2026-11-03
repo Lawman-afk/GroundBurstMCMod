@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
@@ -58,13 +58,13 @@ public class RemoteDetonatorItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (player.isSecondaryUseActive()) {
             if (level.isClientSide()) {
                 frequencyHook.accept(hand);
             }
-            return InteractionResult.SUCCESS;
+            return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
         }
         if (level instanceof ServerLevel server) {
             int f = frequency(stack);
@@ -74,11 +74,11 @@ public class RemoteDetonatorItem extends Item {
                     : Component.translatable(NOTHING, f).withStyle(ChatFormatting.GRAY), true);
         }
         player.getCooldowns().addCooldown(stack, 10);
-        return InteractionResult.SUCCESS;
+        return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(TIP_FREQ, frequency(stack)).withStyle(ChatFormatting.GOLD));
         tooltip.accept(Component.translatable(TIP_USE).withStyle(ChatFormatting.GRAY));
     }

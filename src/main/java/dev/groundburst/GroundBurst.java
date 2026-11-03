@@ -12,8 +12,6 @@ import dev.groundburst.content.multiblock.GBMultiblocks;
 import dev.groundburst.content.part.GBParts;
 import dev.groundburst.content.recipe.GBRecipes;
 import dev.groundburst.content.resource.GBResources;
-import dev.groundburst.datagen.GBDataGen;
-import dev.groundburst.gametest.GBGameTests;
 import dev.groundburst.network.GBNetwork;
 import dev.groundburst.registry.GBBlockEntities;
 import dev.groundburst.registry.GBBlocks;
@@ -69,6 +67,7 @@ public class GroundBurst {
         GBMenus.MENUS.register(modBus);
         GBRecipes.register(modBus);
         modBus.addListener(GBBlockEntities::registerCapabilities);
+        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers
         GBCreativeTabs.TABS.register(modBus);
         GBSounds.SOUNDS.register(modBus);
         dev.groundburst.content.nuclear.GBEffects.EFFECTS.register(modBus);
@@ -88,8 +87,6 @@ public class GroundBurst {
 
         GBNetwork.register(modBus);
         dev.groundburst.blast.GBBlast.register(modBus);
-        GBDataGen.register(modBus);
-        GBGameTests.register(modBus);
 
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 

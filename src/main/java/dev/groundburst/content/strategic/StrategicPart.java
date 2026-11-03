@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /** A part only the ICBM Assembly Hall uses (DESIGN.md §15.2): what it is for, and where it goes. */
 public class StrategicPart extends Item {
@@ -24,7 +24,7 @@ public class StrategicPart extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(Component.translatable(this.tip).withStyle(ChatFormatting.GRAY));
         tooltip.accept(Component.translatable(T_HALL).withStyle(ChatFormatting.DARK_GRAY));
     }

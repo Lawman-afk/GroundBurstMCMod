@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +20,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class AnthraxResidueBlock extends ToxicSludgeBlock {
     /** Ticks a stage lasts (plus up to 30 s more, so a strike's residue dries out unevenly). */
     public static final int STAGE_TICKS = 2400;
-    private static final DustParticleOptions FUME = new DustParticleOptions(0x7BE84A, 1.6f);
-    private static final DustParticleOptions BUBBLE = new DustParticleOptions(0xD4FF96, 0.5f);
+    private static final DustParticleOptions FUME = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x7BE84A).toVector3f(), 1.6f);
+    private static final DustParticleOptions BUBBLE = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0xD4FF96).toVector3f(), 0.5f);
 
     public AnthraxResidueBlock(Properties properties) {
         super(properties);
@@ -33,7 +33,7 @@ public class AnthraxResidueBlock extends ToxicSludgeBlock {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level instanceof ServerLevel server && entity instanceof LivingEntity living && living.tickCount % 10 == 0) {
             Toxins.expose(server, living, 2.5f, 140, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
         }

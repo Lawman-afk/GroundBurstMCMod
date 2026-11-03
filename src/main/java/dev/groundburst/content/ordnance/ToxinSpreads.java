@@ -37,8 +37,8 @@ public final class ToxinSpreads {
     public static final int DELAY = 8;
     /** How far down from the burst it looks for the floor (the bottom of the crater). */
     private static final int FLOOR_REACH = 14;
-    private static final DustParticleOptions SPLASH = new DustParticleOptions(0x6CF038, 1.8f);
-    private static final DustParticleOptions MIST = new DustParticleOptions(0xA6F870, 1.2f);
+    private static final DustParticleOptions SPLASH = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x6CF038).toVector3f(), 1.8f);
+    private static final DustParticleOptions MIST = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0xA6F870).toVector3f(), 1.2f);
     /** How thick its cloud is as it wells up (the grid's full strength is 0.3). */
     public static final float CLOUD_STRENGTH = 1.6f;
 

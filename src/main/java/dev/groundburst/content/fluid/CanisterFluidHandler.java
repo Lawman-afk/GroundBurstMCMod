@@ -4,10 +4,10 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.transfer.ItemAccessResourceHandler;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
+import dev.groundburst.port.transfer.ItemAccessResourceHandler;
+import dev.groundburst.port.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.item.ItemResource;
 
 /**
  * Canisters behave like buckets for the mod's fluids: an empty canister takes exactly 1000 mB of any fluid that has a

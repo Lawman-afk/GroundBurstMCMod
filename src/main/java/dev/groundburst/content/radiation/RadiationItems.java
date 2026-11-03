@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -80,7 +80,7 @@ public final class RadiationItems {
     public static void register(IEventBus modBus) {
         // The Geiger Counter's charge, filled by the Battery Charger (or any mod's charger) like a Battery's.
         modBus.addListener((RegisterCapabilitiesEvent event) -> event.registerItem(Capabilities.Energy.ITEM,
-                (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access, GBDataComponents.ENERGY.get(),
+                (stack, access) -> new dev.groundburst.port.transfer.energy.ItemAccessEnergyHandler(access, GBDataComponents.ENERGY.get(),
                         GeigerCounterItem.CAPACITY, GeigerCounterItem.TRANSFER), GEIGER_COUNTER.get()));
     }
 }

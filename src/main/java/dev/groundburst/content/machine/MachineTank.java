@@ -6,8 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.fluid.FluidStacksResourceHandler;
 
 /**
  * One of a machine's fluid tanks. Input tanks feed recipes and may be filled from outside (pipes, buckets, canisters);

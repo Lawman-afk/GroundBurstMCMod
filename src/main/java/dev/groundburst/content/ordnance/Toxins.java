@@ -36,7 +36,7 @@ public final class Toxins {
             return;
         }
         if (damage > 0) {
-            entity.hurtServer(level, new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
+            entity.hurt(new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
                     .getOrThrow(GBOrdnance.TOXIN_DAMAGE)), damage * keep);
         }
         int ticks = Math.round(poisonTicks * keep);

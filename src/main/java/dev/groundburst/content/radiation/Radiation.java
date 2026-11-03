@@ -194,7 +194,7 @@ public final class Radiation {
             body.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 0, false, false, true));
         }
         if (stage >= 5) {
-            body.hurtServer(level, level.damageSources().source(GBEffects.RADIATION_DAMAGE),
+            body.hurt(level.damageSources().source(GBEffects.RADIATION_DAMAGE),
                     2 + (dose - RadiationState.STAGES[4]) / 250);
         }
     }

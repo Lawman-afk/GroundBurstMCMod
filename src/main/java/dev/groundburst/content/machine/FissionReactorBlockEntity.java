@@ -49,7 +49,7 @@ import net.minecraft.world.level.material.Fluids;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.fluid.FluidResource;
 
 /**
  * Fission Reactor (DESIGN.md §7, §7.2, §23.3): a box of lead-lined casing any size from 3x3x3 to 6x6x6

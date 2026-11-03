@@ -8,8 +8,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import dev.groundburst.port.transfer.item.ItemResource;
+import dev.groundburst.port.transfer.item.ItemStacksResourceHandler;
 
 /**
  * A machine's item slots. It is both a NeoForge {@code ResourceHandler} (automation, capabilities) and a vanilla
@@ -48,7 +48,7 @@ public class MachineInventory extends ItemStacksResourceHandler implements Conta
      * so a machine saved before its slot layout changed would come back with the wrong number of slots.
      */
     @Override
-    public void deserialize(net.minecraft.world.level.storage.ValueInput input) {
+    public void deserialize(dev.groundburst.port.ValueInput input) {
         int size = this.stacks.size();
         super.deserialize(input);
         if (this.stacks.size() != size) {

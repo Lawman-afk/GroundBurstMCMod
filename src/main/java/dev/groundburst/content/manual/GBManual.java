@@ -47,11 +47,11 @@ public final class GBManual {
         }
 
         @Override
-        public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
             if (level.isClientSide()) {
                 open.accept(null);
             }
-            return InteractionResult.SUCCESS;
+            return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
         }
     }
 }

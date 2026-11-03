@@ -430,14 +430,14 @@ final class FreezeJob {
                 continue;
             }
             boolean boss = e.typeHolder().is(Tags.EntityType.BOSSES);
-            e.damageCooldownTime = 0;
+            e.invulnerableTime = 0;
             if (e.position().distanceTo(this.center) <= this.core) {
                 DamageSource frozen = this.level.damageSources().source(Freezes.FLASH_FROZEN, null, source);
                 if (boss) {
-                    e.hurtServer(this.level, frozen, 40);
+                    e.hurt(frozen, 40);
                 } else {
                     Frost.shatter(this.level, e);
-                    e.hurtServer(this.level, frozen, 1000);
+                    e.hurt(frozen, 1000);
                 }
                 continue;
             }
@@ -447,7 +447,7 @@ final class FreezeJob {
                 e.addEffect(new MobEffectInstance(EffectSystems.FROZEN, (int) ((FROZEN_OUTER + (FROZEN_INNER - FROZEN_OUTER) * k) * shelter), 0, false, true, true));
                 e.setTicksFrozen(e.getTicksRequiredToFreeze() + FrozenEffect.MARK);
             }
-            e.hurtServer(this.level, this.level.damageSources().freeze(), (float) (HURT_OUTER + (HURT_INNER - HURT_OUTER) * k * k) * shelter);
+            e.hurt(this.level.damageSources().freeze(), (float) (HURT_OUTER + (HURT_INNER - HURT_OUTER) * k * k) * shelter);
         }
     }
 
@@ -480,7 +480,7 @@ final class FreezeJob {
             e.setTicksFrozen(Math.min(e.getTicksRequiredToFreeze(), e.getTicksFrozen() + 4 + 2 * gain));
             float extra = 2 * c - 0.5f;
             if (age % 20 == 0 && e.isFullyFrozen() && extra > 0) {
-                e.hurtServer(this.level, this.level.damageSources().freeze(), extra);
+                e.hurt(this.level.damageSources().freeze(), extra);
             }
         }
     }

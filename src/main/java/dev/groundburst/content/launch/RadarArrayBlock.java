@@ -41,7 +41,7 @@ public class RadarArrayBlock extends MultiblockControllerBlock {
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
         return level.getBlockEntity(pos) instanceof RadarArrayBlockEntity radar ? radar.incoming() : 0;
     }
 }

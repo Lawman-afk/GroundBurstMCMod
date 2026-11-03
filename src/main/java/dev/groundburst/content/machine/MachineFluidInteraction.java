@@ -14,13 +14,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.ResourceHandlerUtil;
+import dev.groundburst.port.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.transaction.Transaction;
 
 /**
  * Buckets and canisters on machines. Fluids are meant to move through pipes; by hand there are only two shortcuts:

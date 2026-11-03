@@ -14,7 +14,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -120,8 +120,7 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-            BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         // Only a piece of it going (not one being put in place, as a structure is laid out) breaks it up.
         boolean lost = direction.getAxis().isHorizontal() && !neighborState.is(this);
         if (lost && state.getValue(PART) == Part.EDGE) {
@@ -131,7 +130,7 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
         } else if (lost && !complete(level, pos)) {
             ticks.scheduleTick(pos, this, 1);                // a part was lost: it falls apart (dropping itself)
         }
-        return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 
     @Override

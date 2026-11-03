@@ -25,13 +25,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.ResourceHandlerUtil;
+import dev.groundburst.port.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.item.ItemResource;
 
 /**
  * Shared base of every powered machine: FE buffer, item slots, fluid tanks, redstone control, the EMP hook, ACTIVE
@@ -723,11 +723,26 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         }
     }
 
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level != null) {
             Containers.dropContents(this.level, pos, this.inventory);
             Containers.dropContents(this.level, pos, this.upgrade);
         }
+    }
+
+    private boolean unloading_;
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        this.unloading_ = true;
+    }
+
+    @Override
+    public void setRemoved() {
+        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {
+            preRemoveSideEffects(this.worldPosition, this.getBlockState());
+        }
+        super.setRemoved();
     }
 }

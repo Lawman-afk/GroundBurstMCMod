@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /**
  * The Dosimeter Badge (DESIGN.md §21.3, §21.8): a film badge carried anywhere in the inventory. Its film darkens with the
@@ -41,7 +41,7 @@ public class DosimeterItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         RadiationState state = local.get();
         if (state != null) {
             int stage = state.stage();

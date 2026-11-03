@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -16,7 +16,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * through an icy tint. It stands on any solid ground, gives nothing, and melts away once it is warm enough
  * ({@link #MELT_CHANCE} a random tick): the cold killed it.
  */
-public class FrozenPlantBlock extends VegetationBlock {
+public class FrozenPlantBlock extends BushBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends FrozenPlantBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final float MELT_CHANCE = 1f / 8;
     private static final VoxelShape SHAPE = Block.column(12, 0, 13);
 

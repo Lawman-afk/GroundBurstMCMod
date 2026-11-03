@@ -193,6 +193,14 @@ public final class GuiGraphicsExtractor {
     }
 
     // --- tooltips (drawn at once) --------------------------------------------------------------------------------------------
+    public void setTooltipForNextFrame(Component text, int x, int y) {
+        this.g.renderTooltip(net.minecraft.client.Minecraft.getInstance().font, text, x, y);
+    }
+
+    public void setTooltipForNextFrame(List<FormattedCharSequence> lines, int x, int y) {
+        this.g.renderTooltip(net.minecraft.client.Minecraft.getInstance().font, lines, x, y);
+    }
+
     public void setTooltipForNextFrame(Font font, Component text, int x, int y) {
         this.g.renderTooltip(font, text, x, y);
     }

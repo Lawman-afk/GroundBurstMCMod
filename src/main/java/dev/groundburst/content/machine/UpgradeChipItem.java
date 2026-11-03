@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /**
  * An upgrade chip (DESIGN.md §7.3): slotted into a machine's or an assembler's Upgrades tab (three slots), it makes the
@@ -88,7 +88,7 @@ public class UpgradeChipItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         if (speedBonus() > 0) {
             tooltip.accept(Component.translatable(T_SPEED, percent(speedBonus())).withStyle(ChatFormatting.GOLD));
         }

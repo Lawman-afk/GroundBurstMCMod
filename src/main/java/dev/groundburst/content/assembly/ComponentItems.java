@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /** The warhead components (DESIGN.md §9.2-9.4): payload cores, casings and fuzes, each saying where it goes. */
 public final class ComponentItems {
@@ -51,7 +51,7 @@ public final class ComponentItems {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(Component.translatable(T_CORE, warhead().getName())));
             tooltip.accept(grey(Component.translatable(this.sizeClass.label)));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
@@ -77,7 +77,7 @@ public final class ComponentItems {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(warhead()).getPath();
             tooltip.accept(grey(Component.translatable(T_ICBM_CORE, Component.translatable(GroundBurst.MODID + ".missile.name." + id))));
             tooltip.accept(Component.translatable(T_HALL).withStyle(ChatFormatting.DARK_GRAY));
@@ -95,7 +95,7 @@ public final class ComponentItems {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(Component.translatable(T_CASING, this.sizeClass.name())));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }
@@ -112,7 +112,7 @@ public final class ComponentItems {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(Component.translatable(T_FUZE_WHAT[this.fuze.ordinal()])));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }

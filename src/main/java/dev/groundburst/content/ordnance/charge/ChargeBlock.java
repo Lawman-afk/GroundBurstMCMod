@@ -20,7 +20,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.redstone.Orientation;
+
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -106,8 +106,7 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-            BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         // A burning thermite charge stays where it is while it eats away what it was stuck to.
         boolean burning = state.hasProperty(LIT) && state.getValue(LIT);
         return direction == attached(state) && !burning && !canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : state;
@@ -234,22 +233,22 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     // --- using it --------------------------------------------------------------------------------------------------------
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         if (this.kind == ChargeKind.C4 && stack.is(asItem()) && !player.isSecondaryUseActive()) {
             // Stack another block of C4 on this one.
             int n = state.getValue(COUNT);
             if (n >= 4 || state.getValue(ARMED)) {
-                return InteractionResult.FAIL;
+                return net.minecraft.world.ItemInteractionResult.FAIL;
             }
             if (!level.isClientSide()) {
                 level.setBlock(pos, state.setValue(COUNT, n + 1), Block.UPDATE_ALL);
                 level.playSound(null, pos, SoundEvents.SLIME_BLOCK_PLACE, SoundSource.BLOCKS, 0.8f, 0.9f);
                 stack.consume(1, player);
             }
-            return InteractionResult.SUCCESS;
+            return net.minecraft.world.ItemInteractionResult.SUCCESS;
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
@@ -264,7 +263,7 @@ public class ChargeBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos_, boolean movedByPiston) {
         if (level instanceof ServerLevel server && state.getValue(ARMED) && server.hasNeighborSignal(pos)) {
             ChargeBlockEntity be = at(level, pos);
             if (be != null) {
@@ -275,7 +274,7 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     /** Caught in a vanilla explosion (TNT, a creeper): it goes off too, a moment later. */
     @Override
-    protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
+    protected void onExplosionHit(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, Explosion explosion,
             java.util.function.BiConsumer<ItemStack, BlockPos> onHit) {
         Charges.caughtInBlast(level, pos, state);
         super.onExplosionHit(state, level, pos, explosion, onHit);

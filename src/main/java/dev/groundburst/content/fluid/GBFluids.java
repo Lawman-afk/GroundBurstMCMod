@@ -157,16 +157,16 @@ public final class GBFluids {
         for (ChemFluid f : ALL) {
             canisters.add(f.canister().get());
         }
-        event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM, (stack, access) -> new CanisterFluidHandler(access),
+        event.registerItem(dev.groundburst.port.transfer.Capabilities.Fluid.ITEM, (stack, access) -> new CanisterFluidHandler(access),
                 canisters.toArray(Item[]::new));
         // Gas buckets are BucketItem subclasses, which NeoForge only gives the bucket capability for the exact class.
         for (ChemFluid f : ALL) {
             if (f.isGas()) {
-                event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.Fluid.ITEM,
-                        (stack, access) -> new net.neoforged.neoforge.transfer.fluid.BucketResourceHandler(access), f.bucket().get());
+                event.registerItem(dev.groundburst.port.transfer.Capabilities.Fluid.ITEM,
+                        (stack, access) -> new dev.groundburst.port.transfer.fluid.BucketResourceHandler(access), f.bucket().get());
             }
         }
-        event.registerBlock(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,
+        event.registerBlock(dev.groundburst.port.transfer.Capabilities.Fluid.BLOCK,
                 (level, pos, state, be, side) -> side != null && FluidPipeBlock.mode(state, side) == FluidPipeBlock.Mode.DISABLED
                         ? null : FluidPipeNetwork.handler(level, pos, side),
                 pipes().stream().map(p -> (net.minecraft.world.level.block.Block) p.block().get()).toArray(net.minecraft.world.level.block.Block[]::new));
@@ -188,7 +188,7 @@ public final class GBFluids {
         h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
         h.block = GBBlocks.blockOnly(name, english, p -> new ChemLiquidBlock(h.source.get(), hazard, p),
-                p -> p.mapColor(mapColor).replaceable().noCollision().strength(100f).pushReaction(PushReaction.DESTROY)
+                p -> p.mapColor(mapColor).replaceable().noCollission().strength(100f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().liquid().sound(SoundType.EMPTY).lightLevel(s -> hazard == Hazard.FIRE ? 3 : 0));
         h.bucket = GBItems.register(name + "_bucket", english + " Bucket", GBTab.RESOURCES, p -> new BucketItem(h.source.get(), p),
                 p -> p.craftRemainder(Items.BUCKET).stacksTo(1));
@@ -209,7 +209,7 @@ public final class GBFluids {
         h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
         DeferredBlock<GasCloudBlock> cloud = GBBlocks.blockOnly(name, english, p -> new GasCloudBlock(p, hazard),
-                p -> p.mapColor(MapColor.NONE).replaceable().noCollision().noOcclusion().strength(0f).pushReaction(PushReaction.DESTROY)
+                p -> p.mapColor(MapColor.NONE).replaceable().noCollission().noOcclusion().strength(0f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
         h.gasBucket = GBItems.register(name + "_bucket", english + " Bucket", GBTab.RESOURCES,
                 p -> new GasBucketItem(h.source.get(), cloud, p), p -> p.craftRemainder(Items.BUCKET).stacksTo(1));

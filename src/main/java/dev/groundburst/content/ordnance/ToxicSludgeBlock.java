@@ -6,12 +6,12 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,7 +32,7 @@ public class ToxicSludgeBlock extends Block {
     /** Ticks a stage lasts (plus up to 10 s more, so a splash dries out unevenly). */
     public static final int STAGE_TICKS = 600;
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 1, 16);
-    private static final DustParticleOptions FUME = new DustParticleOptions(0x9CE84C, 1.2f);
+    private static final DustParticleOptions FUME = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x9CE84C).toVector3f(), 1.2f);
 
     public ToxicSludgeBlock(Properties properties) {
         super(properties);
@@ -61,8 +61,7 @@ public class ToxicSludgeBlock extends Block {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-            BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         return direction == Direction.DOWN && !canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : state;
     }
 
@@ -82,7 +81,7 @@ public class ToxicSludgeBlock extends Block {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level instanceof ServerLevel server && entity instanceof LivingEntity living && living.tickCount % 10 == 0) {
             Toxins.expose(server, living, 1.5f, 80, Toxins.TOXIN, Toxins.TOXIN_NAUSEA);
         }

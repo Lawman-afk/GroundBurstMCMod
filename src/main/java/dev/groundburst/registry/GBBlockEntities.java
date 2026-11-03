@@ -15,7 +15,7 @@ import dev.groundburst.content.machine.TallMachineBlock;
 import dev.groundburst.content.power.CombustionGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -143,7 +143,7 @@ public final class GBBlockEntities {
         machine(event, ADVANCED_CAPACITOR_BANK.get());
         machine(event, SUPERCONDUCTING_CAPACITOR_BANK.get());
         machine(event, CREATIVE_CAPACITOR_BANK.get());
-        event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access,
+        event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new dev.groundburst.port.transfer.energy.ItemAccessEnergyHandler(access,
                 GBDataComponents.ENERGY.get(), dev.groundburst.content.power.BatteryItem.CAPACITY, dev.groundburst.content.power.BatteryItem.TRANSFER),
                 dev.groundburst.content.part.GBParts.BATTERY.get());
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_TANK.get(), (be, side) -> be.handler());

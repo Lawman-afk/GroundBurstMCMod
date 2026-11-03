@@ -10,7 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -176,7 +176,7 @@ public final class MissileParts {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(this.sizeClass == SizeClass.XL ? Component.translatable(T_STRATEGIC_TIP)
                     : Component.translatable(T_BODY_TIP, this.sizeClass.name())));
             tooltip.accept(assemblerLine(this.sizeClass));
@@ -193,7 +193,7 @@ public final class MissileParts {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(Component.translatable(T_MOTOR_TIP, this.motor.range, this.motor.bodies())));
             if (this.motor.cruise()) {
                 tooltip.accept(Component.translatable(T_CRUISE_TIP).withStyle(ChatFormatting.AQUA));
@@ -212,7 +212,7 @@ public final class MissileParts {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(this.guidance.accuracy()));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }
@@ -225,7 +225,7 @@ public final class MissileParts {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             tooltip.accept(grey(Component.translatable(T_HARDENED_TIP)));
             tooltip.accept(Component.translatable(T_BENCH).withStyle(ChatFormatting.DARK_GRAY));
         }

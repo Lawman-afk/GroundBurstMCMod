@@ -17,7 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemContainerContents;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 import net.minecraft.world.level.Level;
 
 /**
@@ -34,14 +34,14 @@ public class LeadContainerItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer server) {
             ItemStack stack = player.getItemInHand(hand);
             server.openMenu(new SimpleMenuProvider((id, inventory, p) -> new LeadContainerMenu(id, inventory, hand), stack.getHoverName()),
                     buf -> buf.writeEnum(hand));
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBSounds.LEAD_CONTAINER_OPEN.get(), SoundSource.PLAYERS, 0.8f, 1f);
         }
-        return InteractionResult.SUCCESS;
+        return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 
     /** It goes in no other container (nor into a bundle): lead inside a shulker box inside a bundle helps nobody. */
@@ -52,7 +52,7 @@ public class LeadContainerItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         builder.accept(Component.translatable(HINT).withColor(0xFF9AA0A8));
     }
 }

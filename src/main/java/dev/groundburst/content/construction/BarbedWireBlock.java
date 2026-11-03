@@ -3,7 +3,7 @@ package dev.groundburst.content.construction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -29,7 +29,7 @@ public class BarbedWireBlock extends IronBarsBlock {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!(entity instanceof LivingEntity)) {
             return;
         }
@@ -37,7 +37,7 @@ public class BarbedWireBlock extends IronBarsBlock {
         if (level instanceof ServerLevel serverLevel) {
             Vec3 movement = entity.isClientAuthoritative() ? entity.getKnownMovement() : entity.oldPosition().subtract(entity.position());
             if (Math.abs(movement.x()) >= 0.003 || Math.abs(movement.z()) >= 0.003) {
-                entity.hurtServer(serverLevel, level.damageSources().sweetBerryBush(), 1.0F);
+                entity.hurt(level.damageSources().sweetBerryBush(), 1.0F);
             }
         }
     }

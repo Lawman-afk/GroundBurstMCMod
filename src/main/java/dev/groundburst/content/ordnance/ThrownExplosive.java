@@ -285,7 +285,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             }
             case BOUNCE -> {
                 if (level() instanceof ServerLevel server) {
-                    target.hurtServer(server, damageSources().thrown(this, getOwner()), 1f);   // a thrown can on the head
+                    target.hurt(damageSources().thrown(this, getOwner()), 1f);   // a thrown can on the head
                 }
                 setDeltaMovement(v.scale(-0.25));
                 setPos(hit.getLocation().add(v.normalize().scale(-0.1)));
@@ -525,7 +525,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
         return false;
     }
 }

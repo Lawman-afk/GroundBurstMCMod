@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /**
  * A rechargeable FE cell (DESIGN.md §26.2): charged in the Battery Charger (or any mod's charger, through the item
@@ -46,7 +46,7 @@ public class BatteryItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         builder.accept(chargeLine(stored(stack), CAPACITY));
     }
 

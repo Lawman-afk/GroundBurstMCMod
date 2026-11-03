@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 /** Machines, generators and cables (DESIGN.md §7–8). */

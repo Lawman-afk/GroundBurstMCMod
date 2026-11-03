@@ -88,11 +88,11 @@ public final class Antimatter {
             double share = d <= lethal ? 1 : 1 - (d - lethal) / (reach - lethal);
             double dose = share * shielding(level, at, body) * (1 - SUIT_SHARE * GBArmor.radiationProtection(e));
             if (dose >= LETHAL_DOSE) {
-                e.damageCooldownTime = 0;
-                e.hurtServer(level, source, 1000);
+                e.invulnerableTime = 0;
+                e.hurt(source, 1000);
             } else if (dose > 0.03) {
-                e.damageCooldownTime = 0;
-                e.hurtServer(level, source, (float) dose * HURT_PER_DOSE);
+                e.invulnerableTime = 0;
+                e.hurt(source, (float) dose * HURT_PER_DOSE);
                 dev.groundburst.content.radiation.Radiation.addDose(e, (float) dose * RAD_PER_DOSE);
             }
         }

@@ -9,7 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -46,7 +46,7 @@ public class ToxicSoilBlock extends Block {
         BlockState plant = level.getBlockState(pos);
         if (plant.getBlock() instanceof CropBlock) {
             level.setBlockAndUpdate(pos, GBFallout.WITHERED_CROPS.block().get().defaultBlockState());
-        } else if (plant.getBlock() instanceof VegetationBlock && !plant.is(GBFallout.WITHERED_CROPS.block().get())
+        } else if (plant.getBlock() instanceof BushBlock && !plant.is(GBFallout.WITHERED_CROPS.block().get())
                 || plant.is(BlockTags.REPLACEABLE_BY_TREES) && !plant.isAir() && plant.getFluidState().isEmpty()) {
             level.removeBlock(pos, false);
         }

@@ -5,9 +5,9 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.transaction.Transaction;
 
 import dev.groundburst.content.machine.MachineEnergy;
 

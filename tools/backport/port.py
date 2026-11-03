@@ -76,6 +76,9 @@ DROP_LINES = [re.compile(p) for p in (
     r"^\s*ManualPhotographer\.register\(\);\s*$",
     r"^\s*BlastBench\.register\(\);\s*$",
     r"^\s*WorldSurvey\.register\(\);\s*$",
+    r"^\s*GBDataGen\.register\(modBus\);\s*$",
+    r"^\s*GBGameTests\.register\(modBus\);\s*$",
+    r"^import dev\.groundburst\.(datagen|gametest)\.\w+;\s*$",
 )]
 # Whole statements removed (they may run over several lines): hooks into the dropped tools.
 DROP_STATEMENTS = [re.compile(p, re.M) for p in (
@@ -99,6 +102,12 @@ IMPORTS = {
     "net.minecraft.client.renderer.RenderPipelines": "dev.groundburst.port.RenderPipelines",
     "com.mojang.blaze3d.pipeline.RenderPipeline": "dev.groundburst.port.RenderPipeline",
     "org.joml.Matrix3x2fStack": "dev.groundburst.port.Matrix3x2fStack",
+    "net.minecraft.util.Util": "net.minecraft.Util",
+    "net.minecraft.world.level.ScheduledTickAccess": "net.minecraft.world.level.LevelAccessor",
+    "net.minecraft.world.level.redstone.Orientation": None,
+    "net.minecraft.world.entity.InsideBlockEffectApplier": None,
+    "net.minecraft.world.item.component.TooltipDisplay": None,
+    "net.minecraft.world.level.block.VegetationBlock": "net.minecraft.world.level.block.BushBlock",
     # GeckoLib 5 -> 4
     "com.geckolib.animatable.manager.AnimatableManager": "software.bernie.geckolib.animation.AnimatableManager",
     "com.geckolib.cache.model.GeoBone": "software.bernie.geckolib.cache.object.GeoBone",
@@ -119,6 +128,10 @@ RULES = [
     sub(r"\bPushReaction\.POPPED\b", "PushReaction.DESTROY"),
     sub(r"\bTags\.BlockItems\.(\w+)\.block\(\)", r"Tags.Blocks.\1"),
     sub(r"\bTags\.BlockItems\.(\w+)\.item\(\)", r"Tags.Items.\1"),
+    # NeoForge 26.x's transfer API: this branch's own (dev.groundburst.port.transfer), bridged to 1.21.1's handlers.
+    sub(r"\bnet\.neoforged\.neoforge\.transfer\.", "dev.groundburst.port.transfer."),
+    sub(r"\bnet\.neoforged\.neoforge\.capabilities\.Capabilities\b", "dev.groundburst.port.transfer.Capabilities"),
+    sub(r"\bnet\.minecraft\.world\.level\.storage\.Value(Input|Output)\b", r"dev.groundburst.port.Value\1"),
     # --- methods --------------------------------------------------------------------------------------------------------
     sub(r"\.sendOverlayMessage\(((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)", r".displayClientMessage(\1, true)"),
     sub(r"\bChunkPos\.containing\(", "new ChunkPos("),
@@ -128,6 +141,20 @@ RULES = [
     sub(r"((?:[A-Za-z_]\w*(?:\([^()]*\))?\.)*[A-Za-z_]\w*(?:\([^()]*\))?)\.getMaxY\(\)", r"(\1.getMaxBuildHeight() - 1)"),
     sub(r"\.gui\.screen\(\)", ".screen"),
     sub(r"\.gui\.setScreen\(", ".setScreen("),
+    sub(r"\.mainCamera\(\)", ".getMainCamera()"),
+    sub(r"\.damageCooldownTime\b", ".invulnerableTime"),
+    sub(r"\bInteractionResult\.SUCCESS_SERVER\b", "InteractionResult.SUCCESS"),
+    sub(r"\.getUnitVec3i\(\)", ".getNormal()"),
+    sub(r"\.noCollision\(\)", ".noCollission()"),
+    sub(r"\bVegetationBlock\b", "BushBlock"),
+    sub(r"\bScheduledTickAccess\b", "LevelAccessor"),
+    # Entities are hurt on the server in 26.x (hurtServer, given the level); 1.21.1's hurt runs on either side.
+    sub(r"(\b(?:public|protected) boolean )hurtServer\(ServerLevel (\w+), DamageSource (\w+), float (\w+)\)(\s*\{)",
+        r"\1hurt(DamageSource \3, float \4)\5 if (!(this.level() instanceof ServerLevel \2)) return false;"),
+    sub(r"\bsuper\.hurtServer\(\w+, ", "super.hurt("),
+    sub(r"\.hurtServer\((?:[^,()]|\([^()]*\))+, ", ".hurt("),
+    # Dust takes its colour as a vector in 1.21.1.
+    sub(r"\bnew DustParticleOptions\(((?:[^,()]|\([^()]*\))+), ", r"new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(\1).toVector3f(), "),
     # Items and blocks name their own registry key in 26.x (Properties.setId); 1.21.1 has no such step.
     sub(r"\.setId\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)", ""),
     # --- saving: main's ValueOutput / ValueInput over 1.21.1's CompoundTag (dev.groundburst.port) -----------------------
@@ -159,6 +186,161 @@ RULES = [
 ]
 
 
+def param(type_re: str) -> str:
+    """A parameter of a type matching {type_re}, its name captured (annotations and final allowed before it)."""
+    return r"(?:final\s+)?(?:@[\w.]+\s+)*(?:" + type_re + r")\s+(\w+)"
+
+
+C = r"\s*,\s*"
+QN = r"(?:[\w.]+\.)?"                                     # an optional package or outer class before a type's name
+
+# Overridden methods whose signatures changed: main's parameter names and body kept, the signature 1.21.1's, and a line or
+# two at the body's top giving main's code what it had (a server level, a tick scheduler).
+SIGNATURES = [
+    # Tooltips: 26.x hands a consumer and the display settings; 1.21.1 a list.
+    sub(r"(\bpublic void appendHoverText\(\s*)" + param(QN + "ItemStack") + C + param(QN + "TooltipContext") + C + param(QN + "TooltipDisplay")
+        + C + param(QN + r"Consumer<(?:[\w.]+\.)?Component>") + C + param(QN + "TooltipFlag") + r"\s*\)(\s*\{)",
+        r"\1net.minecraft.world.item.ItemStack \2, net.minecraft.world.item.Item.TooltipContext \3, java.util.List<net.minecraft.network.chat.Component> \5_list, "
+        r"net.minecraft.world.item.TooltipFlag \6)\7 java.util.function.Consumer<net.minecraft.network.chat.Component> \5 = \5_list::add;"),
+    sub(r"\bsuper\.appendHoverText\((\w+), (\w+), \w+, (\w+), (\w+)\)", r"super.appendHoverText(\1, \2, \3_list, \4)"),
+    # Neighbour changes: 26.x passes a tick scheduler and a random; 1.21.1 the level does both.
+    sub(r"(\bprotected BlockState updateShape\(\s*)" + param("BlockState") + C + param(QN + "LevelReader") + C + param(QN + "LevelAccessor") + C
+        + param("BlockPos") + C + param("Direction") + C + param("BlockPos") + C + param("BlockState") + C + param(QN + "RandomSource") + r"\s*\)(\s*\{)",
+        r"\1BlockState \2, Direction \6, BlockState \8, net.minecraft.world.level.LevelAccessor \3, BlockPos \5, BlockPos \7)\10 "
+        r"net.minecraft.world.level.LevelAccessor \4 = \3; net.minecraft.util.RandomSource \9 = \3.getRandom();"),
+    sub(r"\bsuper\.updateShape\((\w+), (\w+), \w+, (\w+), (\w+), (\w+), (\w+), \w+\)", r"super.updateShape(\1, \4, \6, \2, \3, \5)"),
+    sub(r"(\bprotected void neighborChanged\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + C + param(QN + "Block") + C + r")"
+        + param(QN + "Orientation") + r"(" + C + r")", r"\1BlockPos fromPos_\7"),
+    sub(r"\bsuper\.neighborChanged\((\w+), (\w+), (\w+), (\w+), \w+, (\w+)\)", r"super.neighborChanged(\1, \2, \3, \4, fromPos_, \5)"),
+    sub(r"\.updateNeighborsAt\(([^,()]+), ([^,()]+), [^,()]+\)", r".updateNeighborsAt(\1, \2)"),
+    # Entities inside a block: 26.x adds an effect applier and whether it was a precise check.
+    sub(r"(\bprotected void entityInside\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + C + param(QN + "Entity") + r")"
+        + C + param(QN + "InsideBlockEffectApplier") + C + param("boolean") + r"\s*\)", r"\1)"),
+    sub(r"\bsuper\.entityInside\((\w+), (\w+), (\w+), (\w+), \w+, \w+\)", r"super.entityInside(\1, \2, \3, \4)"),
+    # After a block is removed: 1.21.1 tells the block on removal, with what replaced it.
+    sub(r"(\bprotected void )affectNeighborsAfterRemoval\(\s*" + param("BlockState") + C + param(QN + "ServerLevel") + C + param("BlockPos") + C
+        + param("boolean") + r"\s*\)(\s*\{)",
+        r"\1onRemove(BlockState \2, net.minecraft.world.level.Level \3_l, BlockPos \4, BlockState newState_, boolean \5)\6 "
+        r"super.onRemove(\2, \3_l, \4, newState_, \5); if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3) || \2.is(newState_.getBlock())) return;"),
+    sub(r"\bsuper\.affectNeighborsAfterRemoval\([^;]*\);", ""),
+    # Light and shape questions about a state: 1.21.1 asks them of a state in a place.
+    sub(r"(\bprotected boolean propagatesSkylightDown\(\s*" + param("BlockState") + r")\s*\)",
+        r"\1, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
+    sub(r"(\bprotected int )getLightDampening\(\s*" + param("BlockState") + r"\s*\)",
+        r"\1getLightBlock(BlockState \2, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
+    sub(r"(\bprotected VoxelShape getOcclusionShape\(\s*" + param("BlockState") + r")\s*\)",
+        r"\1, net.minecraft.world.level.BlockGetter level_, BlockPos pos_)"),
+    sub(r"(\bprotected int getAnalogOutputSignal\(\s*" + param("BlockState") + C + param(QN + "Level") + C + param("BlockPos") + r")" + C
+        + param(QN + "Direction") + r"\s*\)(\s*\{)", r"\1)\6 Direction \5 = Direction.NORTH;"),
+    # Effects tick on the server in 26.x, given its level.
+    sub(r"(\bpublic boolean applyEffectTick\(\s*)" + param(QN + "ServerLevel") + C + param(QN + "LivingEntity") + C + param("int") + r"\s*\)(\s*\{)",
+        r"\1net.minecraft.world.entity.LivingEntity \3, int \4)\5 if (!(\3.level() instanceof net.minecraft.server.level.ServerLevel \2)) return true;"),
+    sub(r"(\bpublic void inventoryTick\(\s*" + param(QN + "ItemStack") + C + r")" + param(QN + "ServerLevel") + C + param(QN + "Entity") + C
+        + param(QN + "EquipmentSlot") + r"\s*\)(\s*\{)",
+        r"\1net.minecraft.world.level.Level \3_l, net.minecraft.world.entity.Entity \4, int slotId_, boolean selected_)\6 "
+        r"if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3)) return; "
+        r"net.minecraft.world.entity.EquipmentSlot \5 = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;"),
+    sub(r"(\bpublic void playerDestroy\(\s*)" + param(QN + "ServerLevel") + C + param(QN + "ServerPlayer") + r"(" + C + r")",
+        r"\1net.minecraft.world.level.Level \2, net.minecraft.world.entity.player.Player \3\4"),
+    sub(r"(\bpublic ItemStack pickupBlock\(\s*(?:@[\w.]+\s+)*)" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
+    sub(r"(\bpublic boolean emptyContents\(\s*(?:@[\w.]+\s+)*)" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
+    sub(r"(\bprotected void onExplosionHit\(\s*" + param("BlockState") + C + r")" + param(QN + "ServerLevel") + r"(" + C + r")",
+        r"\1net.minecraft.world.level.Level \3\4"),
+    sub(r"(\bprotected boolean hasClickedOutside\(\s*" + param("double") + C + param("double") + C + param("int") + C + param("int") + r")\s*\)",
+        r"\1, int button_)"),
+    sub(r"\bsuper\.hasClickedOutside\(((?:[^()]|\([^()]*\))*)\)", r"super.hasClickedOutside(\1, button_)"),
+    # Using an item: 1.21.1's use answers with the held stack too.
+    sub(r"(\bpublic )InteractionResult( use\(\s*" + param(QN + "Level") + C + param(QN + "Player") + C + param(QN + "InteractionHand") + r"\s*\)\s*\{)",
+        r"\1net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack>\2"),
+    sub(r"(\bpublic )boolean( releaseUsing\()", r"\1void\2"),
+]
+
+
+def method_bodies(text: str, signature: str, fn) -> str:
+    """{fn} applied to each method whose declaration matches {signature} (up to its opening brace), body and all."""
+    out, pos = [], 0
+    for m in re.compile(signature, re.S).finditer(text):
+        if m.start() < pos:
+            continue
+        depth, i = 0, m.end() - 1
+        while i < len(text):
+            ch = text[i]
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            elif ch == '"':                               # skip string literals
+                i += 1
+                while i < len(text) and text[i] != '"':
+                    i += 2 if text[i] == "\\" else 1
+            i += 1
+        out.append(text[pos:m.start()])
+        out.append(fn(text[m.start():i + 1]))
+        pos = i + 1
+    out.append(text[pos:])
+    return "".join(out)
+
+
+def use_holder(method: str) -> str:
+    """26.x's use returns an InteractionResult; 1.21.1's a holder of it and the held stack."""
+    names = re.search(r"use\(\s*" + param(QN + "Level") + C + param(QN + "Player") + C + param(QN + "InteractionHand"), method)
+    player, hand = names.group(2), names.group(3)
+    return re.sub(r"\breturn ([^;]+);", rf"return dev.groundburst.port.Results.holder(\1, {player}, {hand});", method)
+
+
+def item_result(method: str) -> str:
+    """26.x's useItemOn answers with an InteractionResult; 1.21.1's with an ItemInteractionResult."""
+    method = re.sub(r"\bprotected InteractionResult useItemOn\(", "protected net.minecraft.world.ItemInteractionResult useItemOn(", method, count=1)
+    method = re.sub(r"\bInteractionResult\.TRY_WITH_EMPTY_HAND\b", "net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION", method)
+    method = re.sub(r"\bInteractionResult\.PASS\b", "net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION", method)
+    method = re.sub(r"\bInteractionResult\.(SUCCESS|CONSUME|FAIL)\b", r"net.minecraft.world.ItemInteractionResult.\1", method)
+    return method
+
+
+def release_void(method: str) -> str:
+    return re.sub(r"\breturn (?:true|false);", "return;", method)
+
+
+BODIES = [
+    (r"\bpublic net\.minecraft\.world\.InteractionResultHolder<net\.minecraft\.world\.item\.ItemStack> use\([^)]*\)\s*\{", use_holder),
+    (r"\bprotected InteractionResult useItemOn\([^)]*\)\s*\{", item_result),
+    (r"\bpublic void releaseUsing\([^)]*\)\s*\{", release_void),
+]
+
+# Vanilla 1.21.1 classes whose codec() is abstract: a block extending one directly needs its own.
+CODEC_BASES = r"(?:BaseEntityBlock|HorizontalDirectionalBlock|DirectionalBlock|FaceAttachedHorizontalDirectionalBlock|BushBlock)"
+
+
+def block_codecs(text: str) -> str:
+    """Blocks give a codec in 1.21.1 (for the block type registry): this one, as it is."""
+    if re.search(r"\bcodec\(\)\s*\{", text):
+        return text
+    def add(m: re.Match) -> str:
+        return m.group(0) + (f"\n    @Override\n    protected com.mojang.serialization.MapCodec<? extends {m.group(2)}> codec() {{\n"
+                             f"        return com.mojang.serialization.MapCodec.unit(this);\n    }}\n")
+    return re.sub(r"(\n(?:public |protected |private )?(?:final )?class (\w+)(?:<[^{]*?>)? extends " + CODEC_BASES + r"\b[^{]*\{)", add, text)
+
+
+def pre_remove(text: str) -> str:
+    """26.x tells a block entity just before its block is removed (preRemoveSideEffects); 1.21.1 only removes it. The
+    topmost of the mod's classes to have it calls it from setRemoved, unless the chunk is being unloaded."""
+    if "preRemoveSideEffects" not in text or not re.search(r"\bextends BlockEntity\b", text):
+        return text
+    text = re.sub(r"@Override\s*\n(\s*public void preRemoveSideEffects\()", r"\1", text)
+    text = re.sub(r"\n\s*super\.preRemoveSideEffects\([^;]*\);", "", text)
+    hook = ("\n    private boolean unloading_;\n\n    @Override\n    public void onChunkUnloaded() {\n        super.onChunkUnloaded();\n"
+            "        this.unloading_ = true;\n    }\n\n    @Override\n    public void setRemoved() {\n"
+            "        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {\n"
+            "            preRemoveSideEffects(this.worldPosition, this.getBlockState());\n        }\n        super.setRemoved();\n    }\n")
+    end = text.rstrip().rfind("}")
+    return text[:end] + hook + text[end:]
+
+
+FUNCTIONS = [block_codecs, pre_remove]
+
+
 def port_imports(text: str) -> str:
     def repl(m: re.Match) -> str:
         name = m.group(2)
@@ -187,13 +369,31 @@ def port_java(text: str, path: str) -> str:
     text = port_imports(text)
     for pattern, repl in RULES:
         text = pattern.sub(repl, text)
+    for pattern, repl in SIGNATURES:
+        text = pattern.sub(repl, text)
+    for signature, fn in BODIES:
+        text = method_bodies(text, signature, fn)
+    for fn in FUNCTIONS:
+        text = fn(text)
     for fix in FILE_FIXES.get(path, []):
         text = fix(text)
     return text
 
 
 # Per-file fixes (a function of the text each), for what only one file does.
-FILE_FIXES: dict[str, list] = {}
+def after(anchor: str, insert: str):
+    def fix(text: str) -> str:
+        assert anchor in text, f"port.py: '{anchor}' is gone from main: update FILE_FIXES"
+        return text.replace(anchor, anchor + insert, 1)
+    return fix
+
+
+FILE_FIXES: dict[str, list] = {
+    "src/main/java/dev/groundburst/GroundBurst.java": [
+        after("modBus.addListener(GBBlockEntities::registerCapabilities);",
+              "\n        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers"),
+    ],
+}
 
 
 # --- resources ------------------------------------------------------------------------------------------------------------

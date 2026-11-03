@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /** A warhead's item: it carries its fuze (fitted at the Assembly Bench) and says which, with its setting and class. */
 public class WarheadItem extends BlockItem {
@@ -31,7 +31,7 @@ public class WarheadItem extends BlockItem {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         tooltip.accept(fuzeLine(stack.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT)).copy().withStyle(ChatFormatting.GRAY));
         SizeClass size = WarheadAssembly.sizeOf((ChargeBlock) getBlock());
         if (size != null) {

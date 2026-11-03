@@ -125,8 +125,7 @@ public final class GBArmor {
         }
 
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display,
-                java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
             var green = net.minecraft.ChatFormatting.GREEN;
             tooltip.accept(net.minecraft.network.chat.Component.translatable(TIP_RADIATION, Math.round(this.share * 100), Math.round(this.set * 100))
                     .withStyle(green));

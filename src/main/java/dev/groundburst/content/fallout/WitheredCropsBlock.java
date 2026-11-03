@@ -7,7 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -17,7 +17,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * wheat drawn through a dead tint, on farmland or any earth. They give nothing, and crumble away in time
  * ({@link #CRUMBLE_CHANCE} a random tick).
  */
-public class WitheredCropsBlock extends VegetationBlock {
+public class WitheredCropsBlock extends BushBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends WitheredCropsBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final float CRUMBLE_CHANCE = 1f / 30;
     private static final VoxelShape SHAPE = Block.column(16, 0, 10);
 

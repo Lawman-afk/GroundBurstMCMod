@@ -7,7 +7,7 @@ import dev.groundburst.registry.GBTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 /** Item pipes (DESIGN.md §6.5), three tiers like the fluid pipes and cables. */

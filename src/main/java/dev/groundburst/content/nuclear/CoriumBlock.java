@@ -32,7 +32,7 @@ public class CoriumBlock extends Block {
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState onState, Entity entity) {
         if (entity instanceof LivingEntity living && !living.fireImmune() && level instanceof ServerLevel server) {
-            living.hurtServer(server, level.damageSources().hotFloor(), 3.0f);
+            living.hurt(level.damageSources().hotFloor(), 3.0f);
             living.igniteForSeconds(4);
         }
         super.stepOn(level, pos, onState, entity);

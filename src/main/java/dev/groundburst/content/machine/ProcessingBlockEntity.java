@@ -99,7 +99,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     /** Input tanks only take fluids some recipe of this machine uses (checked on the server, where recipes live). */
     @Override
-    protected boolean acceptsFluid(int tank, net.neoforged.neoforge.transfer.fluid.FluidResource resource) {
+    protected boolean acceptsFluid(int tank, dev.groundburst.port.transfer.fluid.FluidResource resource) {
         if (!(this.level instanceof ServerLevel server)) {
             return true;
         }

@@ -998,7 +998,7 @@ final class BlastJob implements Blast {
                 dmg = p.edgeDamage() * (float) (1 - (d - p.lethal()) / Math.max(1e-3, p.damage() - p.lethal())) * exposure;
             }
             if (dmg > 0 && e instanceof LivingEntity) {
-                e.hurtServer(this.level, Blasts.damageSource(this.level, this.source, this.center), dmg);
+                e.hurt(Blasts.damageSource(this.level, this.source, this.center), dmg);
             }
             float falloff = (float) Math.max(0, 1 - d / Math.max(1, Math.max(p.damage(), p.lethal())));
             if (falloff > 0) {

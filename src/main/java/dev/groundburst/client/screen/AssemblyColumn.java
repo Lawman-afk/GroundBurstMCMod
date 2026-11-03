@@ -15,7 +15,7 @@ import net.minecraft.client.gui.Font;
 import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.world.item.ItemStack;
 
 /**

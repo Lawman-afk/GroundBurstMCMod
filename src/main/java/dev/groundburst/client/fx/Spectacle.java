@@ -150,7 +150,7 @@ public final class Spectacle {
         if (mc.level == null || mc.player == null) {
             return;
         }
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         BlastFx fx = new BlastFx(start, ticks, mc.level, eye);
         // Flash: in sight or not, and facing it or not.
         boolean seen = mc.level.clip(new ClipContext(eye, start.center(), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player))
@@ -789,7 +789,7 @@ public final class Spectacle {
         ticks++;
         trauma = Math.max(0, trauma - 0.035f);
         float q = quality();
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         EffectFx.tick(PUFFS, q, eye);
         for (var it = BLASTS.values().iterator(); it.hasNext(); ) {
             BlastFx fx = it.next();
@@ -913,7 +913,7 @@ public final class Spectacle {
     /** How far the sky turns fallout green where the camera is. */
     private static float falloutTint() {
         Minecraft mc = Minecraft.getInstance();
-        return mc.level == null ? 0 : FalloutFx.tint(mc.level, mc.gameRenderer.mainCamera().position());
+        return mc.level == null ? 0 : FalloutFx.tint(mc.level, mc.gameRenderer.getMainCamera().position());
     }
 
     private static float clamp(float v) {
@@ -921,28 +921,28 @@ public final class Spectacle {
     }
 
     private static void fogColor(ViewportEvent.ComputeFogColor event) {
-        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (v > 0) {
             Vector3f c = voided(event.getRed(), event.getGreen(), event.getBlue(), v);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
         }
-        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (st > 0) {
             Vector3f c = stormy(event.getRed(), event.getGreen(), event.getBlue(), st);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
         }
-        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (ft > 0) {
             Vector3f c = frosty(event.getRed(), event.getGreen(), event.getBlue(), ft);
             event.setRed(c.x);
             event.setGreen(c.y);
             event.setBlue(c.z);
         }
-        float bt = ParticleBeamFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float bt = ParticleBeamFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (bt > 0) {
             Vector3f c = glared(event.getRed(), event.getGreen(), event.getBlue(), bt);
             event.setRed(c.x);
@@ -967,11 +967,11 @@ public final class Spectacle {
 
     private static void extract(ExtractLevelRenderStateEvent event) {
         var sky = event.getRenderState().skyRenderState;
-        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float v = SingularityFx.voidTint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (v > 0 && sky.skyColor != null) {
             sky.skyColor = voided(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), v);
         }
-        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float st = StormFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (st > 0) {
             if (sky.skyColor != null) {
                 sky.skyColor = stormy(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), st);
@@ -980,7 +980,7 @@ public final class Spectacle {
             Vector3f c = stormy(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, st);
             event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
-        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float ft = FreezeFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (ft > 0) {
             if (sky.skyColor != null) {
                 sky.skyColor = frosty(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), ft * 0.8f);
@@ -989,7 +989,7 @@ public final class Spectacle {
             Vector3f c = frosty(ARGB.red(cloud) / 255f, ARGB.green(cloud) / 255f, ARGB.blue(cloud) / 255f, ft);
             event.getRenderState().cloudColor = ARGB.color(ARGB.alpha(cloud), (int) (c.x * 255), (int) (c.y * 255), (int) (c.z * 255));
         }
-        float bt = ParticleBeamFx.tint(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        float bt = ParticleBeamFx.tint(Minecraft.getInstance().gameRenderer.getMainCamera().position());
         if (bt > 0) {
             if (sky.skyColor != null) {
                 sky.skyColor = glared(sky.skyColor.x(), sky.skyColor.y(), sky.skyColor.z(), bt * 0.8f);

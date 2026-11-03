@@ -39,7 +39,7 @@ public class FrozenEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(ServerLevel level, LivingEntity mob, int amplification) {
+    public boolean applyEffectTick(net.minecraft.world.entity.LivingEntity mob, int amplification) { if (!(mob.level() instanceof net.minecraft.server.level.ServerLevel level)) return true;
         mob.setTicksFrozen(mob.getTicksRequiredToFreeze() + MARK);
         mob.setDeltaMovement(0, Math.min(0, mob.getDeltaMovement().y), 0);
         if (mob instanceof Mob m) {

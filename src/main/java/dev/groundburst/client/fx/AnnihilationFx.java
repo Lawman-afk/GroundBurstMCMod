@@ -96,7 +96,7 @@ public final class AnnihilationFx {
             return;
         }
         double now = Spectacle.now();
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         Vec3 c = start.center();
         double d = eye.distanceTo(c);
         // The flash: in sight or not (bounced light), faced or not, and fainter far off (but it is antimatter: blinding).

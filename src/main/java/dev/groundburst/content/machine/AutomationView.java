@@ -1,8 +1,8 @@
 package dev.groundburst.content.machine;
 
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.item.ItemResource;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * What pipes and hoppers see of a machine through one face: they may only insert into input slots and only extract

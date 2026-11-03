@@ -30,7 +30,7 @@ public class GlassPartBlock extends MultiblockPartBlock {
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
+    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 }

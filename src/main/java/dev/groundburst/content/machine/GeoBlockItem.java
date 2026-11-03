@@ -90,8 +90,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
     /** Blocks picked up with stored energy (capacitor banks) show it. */
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(net.minecraft.world.item.ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display,
-            Consumer<net.minecraft.network.chat.Component> builder, net.minecraft.world.item.TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         Integer stored = stack.get(dev.groundburst.registry.GBDataComponents.ENERGY.get());
         if (stored != null && getBlock() instanceof dev.groundburst.content.power.CapacitorBankBlock bank) {
             builder.accept(dev.groundburst.content.power.BatteryItem.chargeLine(stored, bank.tier().capacity()));

@@ -442,8 +442,8 @@ public final class GBLaunch {
         });
         // The Laser Designator's charge, filled by the Battery Charger (or any mod's charger) like a Battery's.
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> event.registerItem(
-                net.neoforged.neoforge.capabilities.Capabilities.Energy.ITEM,
-                (stack, access) -> new net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler(access,
+                dev.groundburst.port.transfer.Capabilities.Energy.ITEM,
+                (stack, access) -> new dev.groundburst.port.transfer.energy.ItemAccessEnergyHandler(access,
                         dev.groundburst.registry.GBDataComponents.ENERGY.get(), LaserDesignatorItem.CAPACITY, LaserDesignatorItem.TRANSFER),
                 LASER_DESIGNATOR.get()));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {

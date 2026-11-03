@@ -49,7 +49,7 @@ public class MultiblockPartBlock extends Block {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state) {
+    protected VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return state.getValue(FORMED) ? Shapes.empty() : super.getOcclusionShape(state);
     }
 
@@ -62,17 +62,17 @@ public class MultiblockPartBlock extends Block {
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+        
         Multiblocks.notifyChanged(level, pos);
     }
 
     /** Buckets on any formed part pour into (or sneaking, fill from) the controller's tanks. */
     @Override
-    protected InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+    protected net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
             net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
         if (!state.getValue(FORMED)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         return dev.groundburst.content.machine.MachineBlock.useFluidContainer(state, level, pos, player, hand);
     }

@@ -1,6 +1,6 @@
 package dev.groundburst.content.machine;
 
-import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
+import dev.groundburst.port.transfer.energy.SimpleEnergyHandler;
 
 /** A machine's FE buffer; marks the block entity dirty on change and lets machine logic draw energy directly. */
 public class MachineEnergy extends SimpleEnergyHandler {

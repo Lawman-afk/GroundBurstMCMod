@@ -2,9 +2,9 @@ package dev.groundburst.content.machine;
 
 import java.util.List;
 
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * What the outside world (pipes, other mods, buckets clicked on the block, item ports) sees of a machine's tanks:

@@ -448,11 +448,11 @@ final class ParticleBeamJob {
             double d = Math.hypot(e.getX() - this.x, e.getZ() - this.z) - e.getBbWidth() / 2;
             if (d <= ParticleBeams.CORE) {
                 e.igniteForSeconds(10);
-                e.hurtServer(this.level, beam, VAPORISE);
+                e.hurt(beam, VAPORISE);
             } else if (d <= reach && e.getY() <= this.y + 6) {
                 e.igniteForSeconds(6);
                 if (e instanceof LivingEntity && age % 10 == 0) {
-                    e.hurtServer(this.level, beam, SCALD);
+                    e.hurt(beam, SCALD);
                 }
             }
         }

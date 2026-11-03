@@ -275,8 +275,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    protected boolean hasClickedOutside(double mx, double my, int xo, int yo) {
-        return super.hasClickedOutside(mx, my, xo, yo) && (this.sideTab == null || !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my))
+    protected boolean hasClickedOutside(double mx, double my, int xo, int yo, int button_) {
+        return super.hasClickedOutside(mx, my, xo, yo, button_) && (this.sideTab == null || !this.sideTab.area(xo, yo, this.imageWidth).contains((int) mx, (int) my))
                 && (this.upgradeTab == null || !this.upgradeTab.contains(mx, my, xo, yo));
     }
 

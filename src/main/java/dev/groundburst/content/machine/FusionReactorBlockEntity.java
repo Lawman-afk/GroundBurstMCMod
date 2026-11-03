@@ -34,7 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
 
 /**
  * Fusion Reactor (DESIGN.md §7, §23.3): a 9x9x3 octagonal ring run from this controller. A game abstraction, not a

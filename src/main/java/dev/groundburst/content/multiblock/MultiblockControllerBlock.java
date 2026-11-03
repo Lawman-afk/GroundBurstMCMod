@@ -71,7 +71,7 @@ public class MultiblockControllerBlock extends MachineBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state) {
+    protected VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return hidden(state) ? Shapes.empty() : super.getOcclusionShape(state);
     }
 
@@ -102,7 +102,7 @@ public class MultiblockControllerBlock extends MachineBlock {
                 player.displayClientMessage(Component.translatable(STATUS, missing, wrong.size() - missing).withStyle(ChatFormatting.YELLOW), true);
             }
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 
     @Override

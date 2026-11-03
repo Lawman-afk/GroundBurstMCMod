@@ -25,7 +25,7 @@ public class GrenadeItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         float pitch = 0.95f + level.getRandom().nextFloat() * 0.1f;
         if (this.type == GrenadeType.TOXIN) {
@@ -46,6 +46,6 @@ public class GrenadeItem extends Item {
         player.awardStat(Stats.ITEM_USED.get(this));
         player.getCooldowns().addCooldown(stack, 10);
         stack.consume(1, player);
-        return InteractionResult.SUCCESS;
+        return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 }

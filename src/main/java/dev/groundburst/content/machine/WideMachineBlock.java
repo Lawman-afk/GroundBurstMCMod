@@ -17,7 +17,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -92,8 +92,7 @@ public class WideMachineBlock extends MachineBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-            BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         Part part = state.getValue(PART);
         Direction toPartner = part == Part.MAIN ? sideward(state.getValue(FACING)) : sideward(state.getValue(FACING)).getOpposite();
         if (direction == toPartner) {
@@ -106,7 +105,7 @@ public class WideMachineBlock extends MachineBlock {
                 return state.setValue(ACTIVE, neighbourState.getValue(ACTIVE));
             }
         }
-        return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);
+        return super.updateShape(state, direction, neighbourState, level, pos, neighbourPos);
     }
 
     @Override

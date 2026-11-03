@@ -29,7 +29,7 @@ public class GasBucketItem extends BucketItem {
     }
 
     @Override
-    public boolean emptyContents(@Nullable LivingEntity user, Level level, BlockPos pos, @Nullable BlockHitResult hitResult, @Nullable ItemStack containerItem) {
+    public boolean emptyContents(@Nullable net.minecraft.world.entity.player.Player user, Level level, BlockPos pos, @Nullable BlockHitResult hitResult, @Nullable ItemStack containerItem) {
         BlockState there = level.getBlockState(pos);
         if (!there.isAir() && !there.canBeReplaced()) {
             return false;

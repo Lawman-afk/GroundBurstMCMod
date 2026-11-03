@@ -60,7 +60,7 @@ public class ChargeRenderer implements BlockEntityRenderer<ChargeBlockEntity, Ch
             var bs = be.getBlockState();
             Vec3 corner = Vec3.atLowerCornerOf(be.getBlockPos());
             Vec3 from = dev.groundburst.content.ordnance.charge.Charges.laserStart(be.getBlockPos(), bs);
-            Vec3 dir = Vec3.atLowerCornerOf(bs.getValue(ChargeBlock.FACING).getUnitVec3i());
+            Vec3 dir = Vec3.atLowerCornerOf(bs.getValue(ChargeBlock.FACING).getNormal());
             double len = dev.groundburst.content.ordnance.charge.Charges.laserLength(be.getLevel(), be.getBlockPos(), bs);
             state.laserFrom = from.subtract(corner);
             state.laserTo = from.add(dir.scale(len)).subtract(corner);

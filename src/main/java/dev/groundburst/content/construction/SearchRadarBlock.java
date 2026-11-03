@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.redstone.Orientation;
+
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -30,6 +30,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * while it has a redstone signal; without one it rests, its front (the feed horn) the way it was placed facing.
  */
 public class SearchRadarBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends SearchRadarBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final BooleanProperty ACTIVE = MachineBlock.ACTIVE;
     static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 10, 15);
     private final Supplier<? extends BlockEntityType<?>> type;
@@ -53,7 +58,7 @@ public class SearchRadarBlock extends HorizontalDirectionalBlock implements Enti
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (level instanceof ServerLevel) {
             boolean powered = level.hasNeighborSignal(pos);
             if (powered != state.getValue(ACTIVE)) {

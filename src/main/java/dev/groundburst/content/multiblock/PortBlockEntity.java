@@ -10,9 +10,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.item.ItemResource;
 
 /**
  * A structure's port: once its structure forms it remembers the controller and hands automation one channel of it.
@@ -70,7 +70,7 @@ public class PortBlockEntity extends BlockEntity {
         return m == null || !isFluidPort() || m.tanks().isEmpty() ? null : m.fluidHandler();
     }
 
-    public net.neoforged.neoforge.transfer.energy.@Nullable EnergyHandler energy(@Nullable Direction side) {
+    public dev.groundburst.port.transfer.energy.@Nullable EnergyHandler energy(@Nullable Direction side) {
         MachineBlockEntity m = machine();
         return m == null || !isEnergyPort() ? null : m.energyFor(null);
     }

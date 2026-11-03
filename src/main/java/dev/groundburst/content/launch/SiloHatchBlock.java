@@ -44,12 +44,12 @@ public class SiloHatchBlock extends SpreadPartBlock {
 
     /** Shut, the doors keep the daylight out of the shaft (a formed part is otherwise see-through); open, it pours in. */
     @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
+    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return state.getValue(FORMED) && state.getValue(OPEN);
     }
 
     @Override
-    protected int getLightDampening(BlockState state) {
+    protected int getLightBlock(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return state.getValue(FORMED) && state.getValue(OPEN) ? 0 : 15;
     }
 }

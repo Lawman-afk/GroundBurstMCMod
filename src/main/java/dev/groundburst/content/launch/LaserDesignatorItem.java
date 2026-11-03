@@ -31,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -109,18 +109,18 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!works(stack, level)) {
             if (!level.isClientSide()) {
                 player.displayClientMessage(Component.translatable(knockedOut(stack, level) ? T_EMP : T_FLAT).withStyle(ChatFormatting.GRAY), true);
             }
-            return InteractionResult.FAIL;
+            return dev.groundburst.port.Results.holder(InteractionResult.FAIL, player, hand);
         }
         if (!level.isClientSide()) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBSounds.DESIGNATOR_ON.get(), SoundSource.PLAYERS, 0.6f, 1f);
         }
-        return ItemUtils.startUsingInstantly(level, player, hand);
+        return dev.groundburst.port.Results.holder(ItemUtils.startUsingInstantly(level, player, hand), player, hand);
     }
 
     /** Used on a Launch Control Station (its controller or a part): it takes the station's network. */
@@ -303,9 +303,9 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int remaining) {
+    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int remaining) {
         stopLasing(level, entity);
-        return true;
+        return;
     }
 
     @Override
@@ -327,7 +327,7 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
         if (level.getGameTime() % 20 == 0 && owner instanceof Player && EmpFields.inField(level, owner.position())) {
             stack.set(GBDataComponents.EMP_UNTIL.get(), level.getGameTime() + EMP_TICKS);
         }
@@ -339,7 +339,7 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         String code = LaunchCodesItem.code(stack);
         tooltip.accept(code.isEmpty() ? Component.translatable(T_NO_NETWORK).withStyle(ChatFormatting.GRAY)
                 : Component.translatable(T_NETWORK, code).withStyle(ChatFormatting.GOLD));

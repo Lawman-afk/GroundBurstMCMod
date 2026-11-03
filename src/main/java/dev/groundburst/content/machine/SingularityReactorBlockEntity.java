@@ -37,7 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
 
 /**
  * Singularity Reactor (DESIGN.md §7, §23.3): a 5x5x5 cage run from this controller. A game abstraction: a seed held in

@@ -41,6 +41,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * model (GeckoLib) is drawn by its block entity; it faces where its barrel rests (away from whoever places it).
  */
 public class GunBlock extends BaseEntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends GunBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private final Map<Direction, VoxelShape> shapes;
@@ -102,18 +107,18 @@ public class GunBlock extends BaseEntityBlock {
 
     /** With its shells in hand: load them (as many as its rack takes). Anything else: man it. */
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         if (!(stack.getItem() instanceof ShellItem)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
+            return net.minecraft.world.ItemInteractionResult.SUCCESS;
         }
         if (level.getBlockEntity(pos) instanceof GunBlockEntity gun) {
             if (gun.slotFor(stack) < 0) {
                 player.displayClientMessage(Component.translatable(GunBlockEntity.T_WRONG_SHELL), true);
-                return InteractionResult.CONSUME;
+                return net.minecraft.world.ItemInteractionResult.CONSUME;
             }
             int before = stack.getCount();
             ItemStack left = gun.load(stack);
@@ -122,12 +127,12 @@ public class GunBlock extends BaseEntityBlock {
                     player.setItemInHand(hand, left);
                 }
                 level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.BLOCKS, 0.8f, 0.8f);
-                return InteractionResult.SUCCESS_SERVER;
+                return net.minecraft.world.ItemInteractionResult.SUCCESS;
             }
             player.displayClientMessage(Component.translatable(GunBlockEntity.T_RACK_FULL), true);
-            return InteractionResult.CONSUME;
+            return net.minecraft.world.ItemInteractionResult.CONSUME;
         }
-        return InteractionResult.PASS;
+        return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
@@ -138,6 +143,6 @@ public class GunBlock extends BaseEntityBlock {
         if (level.getBlockEntity(pos) instanceof GunBlockEntity gun && player instanceof ServerPlayer serverPlayer && !player.isPassenger()) {
             gun.man(serverPlayer);
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 }

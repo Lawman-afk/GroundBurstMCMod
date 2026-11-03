@@ -16,10 +16,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.content.pipe.NetworkEndpoints;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.transaction.SnapshotJournal;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * A connected set of cables. Energy inserted into any cable is delivered immediately to the consumers touching

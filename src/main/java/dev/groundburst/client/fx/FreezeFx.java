@@ -143,7 +143,7 @@ public final class FreezeFx {
             return;
         }
         double now = Spectacle.now();
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         double d = eye.distanceTo(start.center());
         Cell old = ACTIVE.get(start.id());
         if (old != null && old.wind != null) {
@@ -618,7 +618,7 @@ public final class FreezeFx {
                 stop();
                 return;
             }
-            float k = this.cell.cold(now) * this.cell.depth(mc.gameRenderer.mainCamera().position(), now);
+            float k = this.cell.cold(now) * this.cell.depth(mc.gameRenderer.getMainCamera().position(), now);
             this.volume = Math.max(0.01f, 1.8f * k);
             this.pitch = 0.9f + 0.15f * k;
         }

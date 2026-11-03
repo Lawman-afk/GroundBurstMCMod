@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.redstone.Orientation;
+
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -43,6 +43,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * the door and moves it.
  */
 public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends SiloDoorBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final IntegerProperty U = IntegerProperty.create("u", 0, 14);
     public static final IntegerProperty GAP = IntegerProperty.create("gap", 0, 4);
     public static final BooleanProperty CENTER = BooleanProperty.create("center");
@@ -143,8 +148,8 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
 
     /** A block gone however it went (a player, a blast): the rest are told to look again (they go with it). */
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+        
         Direction facing = state.getValue(FACING);
         BlockPos c = state.getValue(CENTER) ? pos : centerOf(level, pos, state);
         if (c == null) {
@@ -188,7 +193,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
 
     // --- redstone -------------------------------------------------------------------------------------------------------------------
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (level instanceof ServerLevel) {
             BlockPos c = centerOf(level, pos, state);
             if (c != null && level.getBlockEntity(c) instanceof SiloDoorBlockEntity door) {

@@ -34,8 +34,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.LimitingEnergyHandler;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.energy.LimitingEnergyHandler;
 
 /**
  * Capacitor Bank (DESIGN.md §7), three tiers and a creative one (not craftable: always full, for testing). Stores FE: every face takes power in except the front, which only

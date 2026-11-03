@@ -46,8 +46,8 @@ public class FuelChannelBlock extends Block {
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+        
         Multiblocks.notifyChanged(level, pos);
     }
 
@@ -57,7 +57,7 @@ public class FuelChannelBlock extends Block {
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
+    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 }

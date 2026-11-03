@@ -32,7 +32,7 @@ public final class GBConstruction {
             IronBarsBlock::new, p -> metal(p, MapColor.METAL).strength(3f, 6f).sound(SoundType.CHAIN).noOcclusion());
     /** Coils of barbed wire, along a fence's top or on the ground: anything walking through is caught and scratched. */
     public static final WithItem<BarbedWireBlock> BARBED_WIRE = GBBlocks.register("barbed_wire", "Barbed Wire", TAB,
-            BarbedWireBlock::new, p -> metal(p, MapColor.METAL).strength(2f, 4f).sound(SoundType.CHAIN).noOcclusion().noCollision());
+            BarbedWireBlock::new, p -> metal(p, MapColor.METAL).strength(2f, 4f).sound(SoundType.CHAIN).noOcclusion().noCollission());
 
     // --- sheeting and plate -----------------------------------------------------------------------------------------------
     public static final WithItem<Block> CORRUGATED_STEEL = GBBlocks.register("corrugated_steel", "Corrugated Steel", TAB,
@@ -185,6 +185,6 @@ public final class GBConstruction {
 
     private static WithItem<WarningSignBlock> sign(String name, String english, MapColor colour) {
         return GBBlocks.register(name, english, TAB, WarningSignBlock::new,
-                p -> p.mapColor(colour).strength(1f, 3f).sound(SoundType.METAL).noOcclusion().noCollision());
+                p -> p.mapColor(colour).strength(1f, 3f).sound(SoundType.METAL).noOcclusion().noCollission());
     }
 }

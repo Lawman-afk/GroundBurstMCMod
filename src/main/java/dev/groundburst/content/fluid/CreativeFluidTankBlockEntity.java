@@ -13,10 +13,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.fluid.FluidStacksResourceHandler;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * Creative fluid tank (DESIGN.md §6.4): an endless source of whatever fluid was first poured in. It is always full;

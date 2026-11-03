@@ -31,14 +31,19 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.access.ItemAccess;
 
 /**
  * A horizontal-facing machine block (front = the side facing the player when placed). GeckoLib-rendered machines
  * use an invisible block model; the block entity renderer draws them.
  */
 public class MachineBlock extends BaseEntityBlock {
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends MachineBlock> codec() {
+        return com.mojang.serialization.MapCodec.unit(this);
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
@@ -103,7 +108,7 @@ public class MachineBlock extends BaseEntityBlock {
 
     /** Right-click with a full bucket or canister pours it in; sneak-right-click with an empty one fills it from a product tank. */
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return useFluidContainer(state, level, pos, player, hand);
     }
 
@@ -117,7 +122,7 @@ public class MachineBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         if (MachineFluidInteraction.use(machine, level, pos, player, hand)) {
-            return InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS;
         }
         // Nothing to pour or fill: sneaking does nothing, a plain click opens the machine.
         return player.isSecondaryUseActive() ? InteractionResult.CONSUME : InteractionResult.TRY_WITH_EMPTY_HAND;

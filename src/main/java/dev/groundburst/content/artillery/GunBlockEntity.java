@@ -811,9 +811,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     }
 
     /** Broken: its shells drop (its crewman's place goes with it). */
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        super.preRemoveSideEffects(pos, state);
+        public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level != null) {
             Containers.dropContents(this.level, pos, this.rack);
         }
@@ -821,5 +819,21 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
             dropTile(server);
             this.tiles.clear();
         }
+    }
+
+    private boolean unloading_;
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        this.unloading_ = true;
+    }
+
+    @Override
+    public void setRemoved() {
+        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {
+            preRemoveSideEffects(this.worldPosition, this.getBlockState());
+        }
+        super.setRemoved();
     }
 }

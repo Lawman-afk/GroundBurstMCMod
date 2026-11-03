@@ -26,10 +26,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.transaction.Transaction;
 
 /**
  * Battery Charger (DESIGN.md §8): charges whatever sits in its cradle (any item with the FE item capability, so other

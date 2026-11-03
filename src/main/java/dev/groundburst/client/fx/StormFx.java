@@ -198,7 +198,7 @@ public final class StormFx {
             channel(segments, new Vec3(c[i], c[i + 1], c[i + 2]), new Vec3(c[i + 3], c[i + 4], c[i + 5]), 0.14f, r, 0, 0.08, -1);
         }
         BOLTS.add(new Bolt(segments, now, STRIKE_COLOR));
-        Vec3 eye = mc.gameRenderer.mainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().position();
         double d = eye.distanceTo(foot);
         THUNDER.add(new Thunder(now + d / SOUND_SPEED, foot, d < NEAR, false));
         if (d < 400) {
@@ -485,7 +485,7 @@ public final class StormFx {
                 stop();
                 return;
             }
-            float k = this.cell.intensity(now) * this.cell.closeness(mc.gameRenderer.mainCamera().position());
+            float k = this.cell.intensity(now) * this.cell.closeness(mc.gameRenderer.getMainCamera().position());
             this.volume = Math.max(0.01f, 2.2f * k);
             this.pitch = 0.85f + 0.25f * this.cell.intensity(now);
         }

@@ -209,7 +209,7 @@ public class MissileEntity extends Entity {
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+    public boolean hurt(DamageSource source, float damage) { if (!(this.level() instanceof ServerLevel level)) return false;
         return false;
     }
 

@@ -1,7 +1,7 @@
 package dev.groundburst.content.machine;
 
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.energy.EnergyHandler;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * What a big reactor's Energy Port hands cables: power goes out of the reactor's output buffer, but only above a

@@ -11,7 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 
 /** A uranium fuel rod: once it has burned in a reactor, a bar under it shows the fuel it has left (see {@link FuelBurnup}). */
 public class FuelRodItem extends Item {
@@ -41,7 +41,7 @@ public class FuelRodItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip = tooltip_list::add;
         FuelBurnup burnup = stack.get(GBDataComponents.FUEL_BURNUP.get());
         if (burnup != null) {
             tooltip.accept(Component.translatable(BURNUP, (int) Math.floor(burnup.fraction() * 100)).withStyle(ChatFormatting.GRAY));

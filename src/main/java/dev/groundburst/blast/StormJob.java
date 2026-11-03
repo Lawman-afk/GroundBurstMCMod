@@ -289,8 +289,8 @@ final class StormJob {
             e.igniteForSeconds(2);
         }
         if (damage > 0 && e.isAlive()) {
-            e.damageCooldownTime = 0;
-            e.hurtServer(this.level, this.level.damageSources().lightningBolt(), damage);
+            e.invulnerableTime = 0;
+            e.hurt(this.level.damageSources().lightningBolt(), damage);
         }
     }
 

@@ -41,7 +41,7 @@ public final class GBOrdnance {
     /** The film of toxin a toxin grenade leaves on the ground. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<ToxicSludgeBlock> TOXIC_SLUDGE = dev.groundburst.registry.GBBlocks.blockOnly(
             "toxic_sludge", "Toxic Sludge", ToxicSludgeBlock::new,
-            p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollision().noOcclusion()
+            p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
                     .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
@@ -49,7 +49,7 @@ public final class GBOrdnance {
     /** The glowing residue a toxin SCUD spreads over the ground (DESIGN.md §19.5). */
     public static final net.neoforged.neoforge.registries.DeferredBlock<AnthraxResidueBlock> ANTHRAX_RESIDUE = dev.groundburst.registry.GBBlocks.blockOnly(
             "anthrax_residue", "Anthrax Residue", AnthraxResidueBlock::new,
-            p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollision().noOcclusion()
+            p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
                     .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
                     .lightLevel(s -> 10 - 2 * s.getValue(ToxicSludgeBlock.AGE)));
@@ -161,7 +161,7 @@ public final class GBOrdnance {
     /** Burning napalm from a napalm warhead. */
     public static final net.neoforged.neoforge.registries.DeferredBlock<NapalmFireBlock> NAPALM_FIRE = dev.groundburst.registry.GBBlocks.blockOnly(
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
-            p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollision().instabreak().noLootTable()
+            p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollission().instabreak().noLootTable()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY).sound(net.minecraft.world.level.block.SoundType.WOOL)
                     .lightLevel(s -> 15).emissiveRendering(s -> true));
 

@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.fluid.FluidStacksResourceHandler;
 
 /**
  * One block of a fluid tank. A tank is a box of these (see {@link FluidTankStructure}); its lowest north-west block is
@@ -191,11 +191,25 @@ public class FluidTankBlockEntity extends BlockEntity implements TankDisplay {
     }
 
     /** Breaking a block splits the tank: the rest re-forms (as a box if it still is one) and keeps its share of fluid. */
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        super.preRemoveSideEffects(pos, state);
+        public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level instanceof ServerLevel server) {
             FluidTankStructure.detach(server, pos, this);
         }
+    }
+
+    private boolean unloading_;
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        this.unloading_ = true;
+    }
+
+    @Override
+    public void setRemoved() {
+        if (!this.unloading_ && this.level != null && !this.level.isClientSide()) {
+            preRemoveSideEffects(this.worldPosition, this.getBlockState());
+        }
+        super.setRemoved();
     }
 }

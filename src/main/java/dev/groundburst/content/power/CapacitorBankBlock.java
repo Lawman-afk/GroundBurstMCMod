@@ -30,7 +30,7 @@ public class CapacitorBankBlock extends MachineBlock {
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { Direction direction = Direction.NORTH;
         return level.getBlockEntity(pos) instanceof CapacitorBankBlockEntity bank ? bank.signal() : 0;
     }
 }

@@ -76,7 +76,7 @@ public final class NeutronBurst {
             }
             double dose = (1 - Math.pow(d / reach, 2)) * shielding(level, at, body) * (1 - SUIT_SHARE * GBArmor.radiationProtection(e));
             if (dose >= LETHAL_DOSE) {
-                e.hurtServer(level, level.damageSources().source(GBEffects.RADIATION_DAMAGE), 1000);
+                e.hurt(level.damageSources().source(GBEffects.RADIATION_DAMAGE), 1000);
             } else if (dose > 0.001) {
                 // Taken at once, as rad (DESIGN.md §21.8): from SICK_DOSE (120 rad) it brings Radiation Sickness I and up.
                 dev.groundburst.content.radiation.Radiation.addDose(e, (float) (dose * RAD_PER_DOSE));

@@ -16,11 +16,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.content.pipe.NetworkEndpoints;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.transaction.SnapshotJournal;
+import dev.groundburst.port.transfer.transaction.TransactionContext;
 
 /**
  * A connected run of fluid pipes (pipes joined by sides in {@code normal} mode). Pipes hold nothing: whatever a

@@ -23,7 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+
 import net.minecraft.world.level.Level;
 
 /**
@@ -113,7 +113,7 @@ public class GeigerCounterItem extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+    public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level_l, net.minecraft.world.entity.Entity owner, int slotId_, boolean selected_) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) return; net.minecraft.world.entity.EquipmentSlot slot = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;
         if (!(owner instanceof Player player) || level.getGameTime() % 20 != 0 || !on(player, stack)) {
             return;
         }
@@ -128,9 +128,9 @@ public class GeigerCounterItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (!player.isSecondaryUseActive()) {
-            return InteractionResult.PASS;
+            return dev.groundburst.port.Results.holder(InteractionResult.PASS, player, hand);
         }
         ItemStack stack = player.getItemInHand(hand);
         int next = (stack.getOrDefault(GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM) + 1) % ALARMS.length;
@@ -139,7 +139,7 @@ public class GeigerCounterItem extends Item {
             player.displayClientMessage(Component.translatable(ALARM_SET, alarmText(ALARMS[next])), true);
         }
         level.playSound(player, player.getX(), player.getY(), player.getZ(), GBSounds.GEIGER_SWITCH.get(), SoundSource.PLAYERS, 0.7f, 1f);
-        return InteractionResult.SUCCESS;
+        return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 
     static Component alarmText(float threshold) {
@@ -164,7 +164,7 @@ public class GeigerCounterItem extends Item {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> builder_list, net.minecraft.world.item.TooltipFlag flag) { java.util.function.Consumer<net.minecraft.network.chat.Component> builder = builder_list::add;
         builder.accept(BatteryItem.chargeLine(stored(stack), CAPACITY));
         if (stored(stack) <= 0) {
             builder.accept(Component.translatable(DEAD).withColor(0xFFE0A040));

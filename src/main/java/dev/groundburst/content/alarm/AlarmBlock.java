@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.redstone.Orientation;
+
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -101,15 +101,15 @@ public class AlarmBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, @Nullable Orientation orientation, boolean movedByPiston) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos fromPos_, boolean movedByPiston) {
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
             be.setPowered(level.hasNeighborSignal(pos));
         }
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void onRemove(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, BlockState newState_, boolean movedByPiston) { super.onRemove(state, level_l, pos, newState_, movedByPiston); if (!(level_l instanceof net.minecraft.server.level.ServerLevel level) || state.is(newState_.getBlock())) return;
+        
         if (this.device.givesRedstone()) {
             level.updateNeighborsAt(pos, this);
         }
@@ -135,7 +135,7 @@ public class AlarmBlock extends Block implements EntityBlock {
 
     /** A Warning Beacon takes a dye: red, orange or yellow (amber), blue, green or white sets its colour. */
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         DyeColor dye = stack.get(DataComponents.DYE);
         int colour = dye == null || this.device != AlarmDevice.BEACON ? -1 : switch (dye) {
@@ -147,13 +147,13 @@ public class AlarmBlock extends Block implements EntityBlock {
             default -> -1;
         };
         if (colour < 0) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
             be.setOption(this.device.option("colour"), colour);
             level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1f, 1f);
         }
-        return InteractionResult.SUCCESS;
+        return net.minecraft.world.ItemInteractionResult.SUCCESS;
     }
 
     @Override

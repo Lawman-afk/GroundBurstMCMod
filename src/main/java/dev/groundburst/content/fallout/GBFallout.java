@@ -77,7 +77,7 @@ public final class GBFallout {
                     .isSuffocating((s, l, at) -> false).ignitedByLava()
                     .pushReaction(PushReaction.DESTROY).isRedstoneConductor((s, l, at) -> false));
     public static final WithItem<WitheredCropsBlock> WITHERED_CROPS = GBBlocks.register("withered_crops", "Withered Crops", GBTab.AFTERMATH,
-            WitheredCropsBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).noCollision().instabreak().randomTicks().sound(SoundType.CROP)
+            WitheredCropsBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).noCollission().instabreak().randomTicks().sound(SoundType.CROP)
                     .pushReaction(PushReaction.DESTROY).ignitedByLava());
 
     // --- frozen ground (slice 12e) ------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public final class GBFallout {
                     .sound(SoundType.POWDER_SNOW));
     /** A plant frozen solid: it melts away once warm. */
     public static final WithItem<FrozenPlantBlock> FROZEN_PLANT = GBBlocks.register("frozen_plant", "Frozen Plant", GBTab.AFTERMATH,
-            FrozenPlantBlock::new, p -> p.mapColor(MapColor.ICE).noCollision().instabreak().randomTicks().sound(SoundType.GLASS)
+            FrozenPlantBlock::new, p -> p.mapColor(MapColor.ICE).noCollission().instabreak().randomTicks().sound(SoundType.GLASS)
                     .offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
     /** Ice crystals grown round a cryo burst's middle: they glow faintly and melt where it is warm. */
     public static final WithItem<CryoCrystalBlock> CRYO_CRYSTAL = GBBlocks.register("cryo_crystal", "Cryo Crystal", GBTab.AFTERMATH,

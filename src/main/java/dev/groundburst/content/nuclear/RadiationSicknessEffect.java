@@ -28,13 +28,13 @@ public class RadiationSicknessEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(ServerLevel level, LivingEntity mob, int amplification) {
+    public boolean applyEffectTick(net.minecraft.world.entity.LivingEntity mob, int amplification) { if (!(mob.level() instanceof net.minecraft.server.level.ServerLevel level)) return true;
         int k = Math.max(0, Math.min(EXHAUSTION.length - 1, amplification));
         if (mob instanceof Player player) {
             player.causeFoodExhaustion(EXHAUSTION[k]);
         }
         if (DAMAGE_EVERY[k] > 0 && mob.tickCount % DAMAGE_EVERY[k] == 0) {
-            mob.hurtServer(level, level.damageSources().source(GBEffects.RADIATION_DAMAGE), 2);
+            mob.hurt(level.damageSources().source(GBEffects.RADIATION_DAMAGE), 2);
         }
         return true;
     }

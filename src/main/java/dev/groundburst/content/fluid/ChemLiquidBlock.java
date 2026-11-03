@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -36,22 +36,22 @@ public class ChemLiquidBlock extends LiquidBlock {
     }
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
-        super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        super.entityInside(state, level, pos, entity);
         if (!(level instanceof ServerLevel server) || !(entity instanceof LivingEntity living)) {
             return;
         }
         switch (this.hazard) {
             case ACID -> {
                 if (living.tickCount % 10 == 0) {
-                    living.hurtServer(server, new DamageSource(server.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(ACID)), 2f);
+                    living.hurt(new DamageSource(server.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(ACID)), 2f);
                 }
             }
             case FIRE -> living.igniteForSeconds(8f);
             case CRYO -> {
                 living.setTicksFrozen(Math.min(living.getTicksRequiredToFreeze() + 40, living.getTicksFrozen() + 4));
                 if (living.tickCount % 20 == 0) {
-                    living.hurtServer(server, server.damageSources().freeze(), 1f);
+                    living.hurt(server.damageSources().freeze(), 1f);
                 }
             }
             case TOXIC -> {

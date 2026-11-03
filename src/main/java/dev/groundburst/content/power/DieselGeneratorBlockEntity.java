@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.fluid.FluidResource;
 
 /**
  * Diesel Generator (DESIGN.md §7): burns liquid fuel piped into its tank for 180 FE/t and pushes power into

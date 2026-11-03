@@ -15,7 +15,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -76,8 +76,7 @@ public class TallMachineBlock extends MachineBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-            BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { net.minecraft.world.level.LevelAccessor ticks = level; net.minecraft.util.RandomSource random = level.getRandom();
         DoubleBlockHalf half = state.getValue(HALF);
         if (direction.getAxis() == Direction.Axis.Y && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
             boolean partner = neighbourState.is(this) && neighbourState.getValue(HALF) != half;
@@ -89,7 +88,7 @@ public class TallMachineBlock extends MachineBlock {
                 return state.setValue(FACING, neighbourState.getValue(FACING)).setValue(ACTIVE, neighbourState.getValue(ACTIVE));
             }
         }
-        return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);
+        return super.updateShape(state, direction, neighbourState, level, pos, neighbourPos);
     }
 
     @Override

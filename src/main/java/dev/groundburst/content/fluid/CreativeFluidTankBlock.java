@@ -18,12 +18,12 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.ResourceHandlerUtil;
+import dev.groundburst.port.transfer.access.ItemAccess;
+import dev.groundburst.port.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.transaction.Transaction;
 
 /**
  * Creative fluid tank (DESIGN.md §6.4): looks like a single fluid tank in a violet creative frame and never runs dry
@@ -55,20 +55,20 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
+    protected boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
         return true;
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (ItemAccess.forPlayerInteraction(player, hand).getCapability(Capabilities.Fluid.ITEM) == null) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
+            return net.minecraft.world.ItemInteractionResult.SUCCESS;
         }
         if (!(level.getBlockEntity(pos) instanceof CreativeFluidTankBlockEntity be)) {
-            return InteractionResult.PASS;
+            return net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
         ResourceHandler<FluidResource> item = ItemAccess.forPlayerInteraction(player, hand).oneByOne().getCapability(Capabilities.Fluid.ITEM);
         CreativeFluidTankBlockEntity.Tank tank = be.tank();
@@ -77,7 +77,7 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
             // Pouring in a different fluid swaps the tank over to it; the same fluid has nowhere to go (it is full).
             FluidResource held = item.size() > 0 ? item.getResource(0) : FluidResource.EMPTY;
             if (held.isEmpty() || held.equals(tank.getResource(0))) {
-                return InteractionResult.CONSUME;
+                return net.minecraft.world.ItemInteractionResult.CONSUME;
             }
             tank.clear();
         }
@@ -85,12 +85,12 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
             int moved = drawOut ? ResourceHandlerUtil.move(tank, item, r -> true, Integer.MAX_VALUE, tx)
                     : ResourceHandlerUtil.move(item, tank, r -> true, Integer.MAX_VALUE, tx);
             if (moved <= 0) {
-                return InteractionResult.CONSUME;
+                return net.minecraft.world.ItemInteractionResult.CONSUME;
             }
             tx.commit();
         }
         level.playSound(null, pos, drawOut ? SoundEvents.BUCKET_FILL : SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1f, 1f);
-        return InteractionResult.SUCCESS_SERVER;
+        return net.minecraft.world.ItemInteractionResult.SUCCESS;
     }
 
     @Override

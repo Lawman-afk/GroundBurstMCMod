@@ -230,7 +230,7 @@ public final class Charges {
         switch (kind) {
             case C4 -> {
                 // Against the face it is stuck to; four stacked make a blast 1.6 times as wide (4.5 n^1/3).
-                Vec3 at = c.add(Vec3.atLowerCornerOf(facing.getOpposite().getUnitVec3i()).scale(0.35));
+                Vec3 at = c.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()).scale(0.35));
                 Blasts.detonate(level, at, Blasts.profile("c4"), by, (float) Math.cbrt(count));
             }
             case TIMED_BOMB -> Blasts.detonate(level, c.add(0, -0.2, 0), Blasts.profile("timed_bomb"), by, 1f);
@@ -510,8 +510,8 @@ public final class Charges {
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(reach))) {
             double d = e.position().distanceTo(c);
             if (d <= reach && !level.canSeeSky(BlockPos.containing(e.getEyePosition()))) {
-                e.damageCooldownTime = 0;
-                e.hurtServer(level, Blasts.damageSource(level, by, c), THERMOBARIC_INDOOR_DAMAGE * (float) (1 - d / reach));
+                e.invulnerableTime = 0;
+                e.hurt(Blasts.damageSource(level, by, c), THERMOBARIC_INDOOR_DAMAGE * (float) (1 - d / reach));
             }
         }
     }
@@ -650,14 +650,14 @@ public final class Charges {
     public static final double CLAYMORE_HALF_ANGLE = 30;
 
     public static Vec3 laserStart(BlockPos pos, BlockState state) {
-        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i());
+        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getNormal());
         return Vec3.atBottomCenterOf(pos).add(0, 4.5 / 16, 0).add(dir.scale(0.1));    // its lens
     }
 
     /** How far the claymore's laser reaches before something solid stops it. */
     public static double laserLength(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
         Vec3 from = laserStart(pos, state);
-        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i());
+        Vec3 dir = Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getNormal());
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
         for (double d = 0.4; d < LASER_RANGE; d += 0.25) {
             Vec3 p = from.add(dir.scale(d));
@@ -678,7 +678,7 @@ public final class Charges {
             case PRESSURE -> new AABB(pos.getX() + 0.15, pos.getY(), pos.getZ() + 0.15, pos.getX() + 0.85, pos.getY() + 0.4, pos.getZ() + 0.85);
             case TRIPWIRE -> {
                 Vec3 from = laserStart(pos, state);
-                Vec3 to = from.add(Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getUnitVec3i()).scale(laserLength(level, pos, state)));
+                Vec3 to = from.add(Vec3.atLowerCornerOf(state.getValue(ChargeBlock.FACING).getNormal()).scale(laserLength(level, pos, state)));
                 yield new AABB(from, to).inflate(0.05);
             }
             case NONE -> null;
@@ -692,7 +692,7 @@ public final class Charges {
      * several times: lethal out to about half their 10-block reach.
      */
     private static void claymore(ServerLevel level, BlockPos pos, Direction facing, @Nullable Entity by) {
-        Vec3 dir = Vec3.atLowerCornerOf(facing.getUnitVec3i());
+        Vec3 dir = Vec3.atLowerCornerOf(facing.getNormal());
         Vec3 front = Vec3.atBottomCenterOf(pos).add(0, 0.25, 0).add(dir.scale(0.25));
         level.sendParticles(ParticleTypes.EXPLOSION, front.x, front.y, front.z, 1, 0, 0, 0, 0);
         level.sendParticles(ParticleTypes.LARGE_SMOKE, front.x, front.y, front.z, 8, 0.2, 0.1, 0.2, 0.03);
@@ -736,10 +736,10 @@ public final class Charges {
             }
         }
         Blasts.detonate(level, Vec3.atCenterOf(pos), Blasts.profile("breaching_charge"), by, 1f);
-        Vec3 push = Vec3.atLowerCornerOf(into.getUnitVec3i());
+        Vec3 push = Vec3.atLowerCornerOf(into.getNormal());
         AABB through = new AABB(Vec3.atCenterOf(pos), Vec3.atCenterOf(pos.relative(into, BREACH_DEPTH + 4))).inflate(1.5);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, through)) {
-            e.hurtServer(level, Blasts.damageSource(level, by, Vec3.atCenterOf(pos)), 6f);
+            e.hurt(Blasts.damageSource(level, by, Vec3.atCenterOf(pos)), 6f);
             e.push(push.x * 1.2, push.y * 1.2 + 0.25, push.z * 1.2);
         }
     }
@@ -760,7 +760,7 @@ public final class Charges {
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(1))) {
             if (!e.fireImmune()) {
                 e.igniteForSeconds(5);
-                e.hurtServer(level, level.damageSources().inFire(), 2f);
+                e.hurt(level.damageSources().inFire(), 2f);
             }
         }
         if (burned < THERMITE_FLARE || (burned - THERMITE_FLARE) % THERMITE_STEP != 0) {

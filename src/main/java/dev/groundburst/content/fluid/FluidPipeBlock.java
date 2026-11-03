@@ -6,10 +6,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import dev.groundburst.port.transfer.Capabilities;
+import dev.groundburst.port.transfer.ResourceHandler;
+import dev.groundburst.port.transfer.ResourceHandlerUtil;
+import dev.groundburst.port.transfer.fluid.FluidResource;
 
 /**
  * A fluid pipe (DESIGN.md §6.4), in three tiers. Sides, the Wrench and pulling work as for every {@link PipeBlock};
