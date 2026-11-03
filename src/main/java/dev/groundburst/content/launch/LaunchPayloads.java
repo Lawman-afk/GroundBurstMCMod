@@ -27,8 +27,8 @@ public final class LaunchPayloads {
     private LaunchPayloads() {}
 
     private static LaunchComputerBlockEntity computer(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH
-                && player.level().getBlockEntity(pos) instanceof LaunchComputerBlockEntity c) {
+        if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, pos, REACH)
+                && dev.groundburst.content.machine.Carried.blockEntity(player.level(), pos, LaunchComputerBlockEntity.class) instanceof LaunchComputerBlockEntity c) {
             return c;
         }
         return null;
@@ -46,8 +46,8 @@ public final class LaunchPayloads {
         }
 
         public static void handle(Watch p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(p.pos()))) <= REACH
-                    && player.level().getBlockEntity(p.pos()) instanceof ScreenWatched c) {
+            if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), ScreenWatched.class) instanceof ScreenWatched c) {
                 if (p.open()) {
                     c.addViewer(player);
                 } else {
@@ -134,13 +134,13 @@ public final class LaunchPayloads {
 
         public static void handle(MapRequest p, IPayloadContext context) {
             int scale = p.scale();
-            if (!(context.player() instanceof ServerPlayer player) || player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(p.pos()))) > REACH
-                    || !(player.level().getBlockEntity(p.pos()) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
+            if (!(context.player() instanceof ServerPlayer player) || !dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    || !(dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), MapSource.class) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
                 return;
             }
             boolean bounded = c.boundedMap();
             ServerLevel level = (ServerLevel) player.level();
-            BlockPos at = dev.groundburst.content.machine.Frames.toWorld(level, p.pos());   // where it is in the world (DESIGN.md §17.16)
+            BlockPos at = BlockPos.containing(dev.groundburst.content.machine.Carried.centre(level, p.pos()));   // where it is in the world (DESIGN.md §17.16)
             TerrainSurvey survey = TerrainSurvey.of(level);
             int span = TerrainSurvey.TILE * scale;
             for (long t : p.tiles()) {

@@ -134,8 +134,10 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
         int bars = bars(stored);
         if (bars != this.syncedBars) {
             this.syncedBars = bars;
-            level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
+            syncToClients();
+            if (!carried()) {
+                level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
+            }
         }
         return this.net != 0;
     }

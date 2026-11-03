@@ -28,8 +28,8 @@ public final class AssemblyPayloads {
         }
 
         public static void handle(FuzeSetting p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(p.pos()))) <= REACH
-                    && player.level().getBlockEntity(p.pos()) instanceof AssemblyBenchBlockEntity bench) {
+            if (context.player() instanceof ServerPlayer player && dev.groundburst.content.machine.Carried.near(player, p.pos(), REACH)
+                    && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), AssemblyBenchBlockEntity.class) instanceof AssemblyBenchBlockEntity bench) {
                 bench.setFuzeValue(p.value());
             }
         }

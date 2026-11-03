@@ -21,7 +21,9 @@ public enum MachineStatus {
     OVERHEATING("Core overheating"),
     CRITICAL("CORE CRITICAL: SCRAM now"),
     CHARGING("Charging up"),
-    NO_CORE("No singularity core");
+    NO_CORE("No singularity core"),
+    /** Carried by a contraption, it waits to be set down (a reactor: its core is in the world's blocks). */
+    CARRIED("Held while carried");
 
     private final String translationKey;
 
@@ -37,7 +39,7 @@ public enum MachineStatus {
     public int lampColor() {
         return switch (this) {
             case RUNNING -> 0xFF4AFF6A;
-            case IDLE, NO_RECIPE, BUFFER_FULL, NEED_FLUID, OVERHEATING, CHARGING, NO_CORE -> 0xFFFFB020;
+            case IDLE, NO_RECIPE, BUFFER_FULL, NEED_FLUID, OVERHEATING, CHARGING, NO_CORE, CARRIED -> 0xFFFFB020;
             default -> 0xFFFF3A2A;
         };
     }

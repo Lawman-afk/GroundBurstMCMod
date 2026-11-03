@@ -58,7 +58,7 @@ public class IndustrialPressBlockEntity extends ProcessingBlockEntity implements
     protected void onSlotChanged(int slot) {
         super.onSlotChanged(slot);
         if ((slot == catalystSlot() || slot < 0) && this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            syncToClients();
         }
     }
 

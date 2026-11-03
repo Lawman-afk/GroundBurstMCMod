@@ -49,7 +49,7 @@ public class DecontaminationShowerBlockEntity extends MachineBlockEntity impleme
 
     /** The booth's inside: both blocks, inset from the walls. */
     private AABB booth() {
-        return new AABB(this.worldPosition).expandTowards(0, 1, 0).deflate(0.1, 0.05, 0.1);
+        return new AABB(worldBlockPos()).expandTowards(0, 1, 0).deflate(0.1, 0.05, 0.1);   // where it is (DESIGN.md §17.16)
     }
 
     @Override
@@ -87,10 +87,10 @@ public class DecontaminationShowerBlockEntity extends MachineBlockEntity impleme
 
     private void spray(ServerLevel level) {
         double x = this.worldPosition.getX() + 0.5, y = this.worldPosition.getY() + 1.85, z = this.worldPosition.getZ() + 0.5;
-        level.sendParticles(ParticleTypes.FALLING_WATER, x, y, z, 6, 0.22, 0.02, 0.22, 0);
+        particles(level, ParticleTypes.FALLING_WATER, x, y, z, 6, 0.22, 0.02, 0.22, 0);
         if (level.getGameTime() % 4 == 0) {
-            level.sendParticles(ParticleTypes.SPLASH, x, this.worldPosition.getY() + 0.1, z, 4, 0.25, 0.02, 0.25, 0.05);
-            level.sendParticles(ParticleTypes.CLOUD, x, this.worldPosition.getY() + 0.9, z, 1, 0.2, 0.4, 0.2, 0.002);   // foam
+            particles(level, ParticleTypes.SPLASH, x, this.worldPosition.getY() + 0.1, z, 4, 0.25, 0.02, 0.25, 0.05);
+            particles(level, ParticleTypes.CLOUD, x, this.worldPosition.getY() + 0.9, z, 1, 0.2, 0.4, 0.2, 0.002);   // foam
         }
     }
 

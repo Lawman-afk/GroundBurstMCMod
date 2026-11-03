@@ -40,7 +40,7 @@ public class FuelChannelBlock extends Block {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (!oldState.is(this)) {
+        if (!oldState.is(this) && !movedByPiston) {           // moved with its structure: its controller sees to it
             Multiblocks.notifyChanged(level, pos);
         }
     }
@@ -48,7 +48,9 @@ public class FuelChannelBlock extends Block {
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        Multiblocks.notifyChanged(level, pos);
+        if (!movedByPiston) {                                 // carried off with its structure (a Create contraption, a ship)
+            Multiblocks.notifyChanged(level, pos);
+        }
     }
 
     @Override

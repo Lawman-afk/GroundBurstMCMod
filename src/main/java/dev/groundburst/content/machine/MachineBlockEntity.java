@@ -41,7 +41,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
  * Shared base of every powered machine: FE buffer, item slots, fluid tanks, redstone control, the EMP hook, ACTIVE
  * block state upkeep, client sync of GUI values (and of tank levels for models that show them), and save/load.
  */
-public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider {
+public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Clearable {
     // Sync slots shared by every machine menu. Ints are sent as shorts by vanilla, so 32-bit values use two.
     public static final int DATA_ENERGY_LO = 0, DATA_ENERGY_HI = 1, DATA_CAPACITY_LO = 2, DATA_CAPACITY_HI = 3,
             DATA_REDSTONE = 4, DATA_STATUS = 5, DATA_SIDE_ITEMS = 6, DATA_SIDE_FLAGS = 7,
@@ -366,6 +366,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Taken out of the world by something that moves it ({@code frame}: where it is now), or back (null). */
     public void carry(@Nullable Frame frame) {
+        if (frame == null && this.carrier != null && this.level instanceof ServerLevel server) {
+            Carried.gone(server, this.worldPosition);
+        }
         this.carrier = frame;
     }
 
@@ -449,6 +452,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
      * reaches it, it pushes nothing out and its block state is left alone; an EMP where it is now still knocks it out.
      */
     public void carriedTick(ServerLevel level) {
+        Carried.seen(level, this);                          // its screens and packets find it by its key
         if (isEmpDisabled()) {
             this.status = MachineStatus.EMP;
             if (!this.emped) {
@@ -462,7 +466,19 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             return;
         }
         this.emped = false;
+        if (!runsCarried()) {
+            this.status = MachineStatus.CARRIED;
+            return;
+        }
         tickMachine(level);
+    }
+
+    /**
+     * Whether it works while carried (most do, on what they hold and the power they are given); a reactor waits to be set
+     * down, as its core is made of the world's blocks round it (fuel channels lit, blocks it melts).
+     */
+    protected boolean runsCarried() {
+        return true;
     }
 
     /**
@@ -877,5 +893,15 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             Containers.dropContents(this.level, pos, this.inventory);
             Containers.dropContents(this.level, pos, this.upgrade);
         }
+    }
+
+    /**
+     * Emptied before its block goes without being broken (/setblock, a structure placed over it, a Sable ship taking
+     * it aboard after saving it): nothing then drops (it would be had twice).
+     */
+    @Override
+    public void clearContent() {
+        this.inventory.clearContent();
+        this.upgrade.clearContent();
     }
 }

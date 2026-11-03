@@ -23,8 +23,8 @@ final class StructureMachines {
     /** Checks the pattern and forms or un-forms the structure (parts and controller) when that changed. */
     static void revalidate(MachineBlockEntity machine, MultiblockController controller) {
         Level level = machine.getLevel();
-        if (level == null || level.isClientSide() || machine.isRemoved()) {
-            return;
+        if (level == null || level.isClientSide() || machine.isRemoved() || machine.carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         BlockPos pos = machine.getBlockPos();
         boolean complete = controller.definition().check(level, pos, controller.controllerFacing()).isEmpty();

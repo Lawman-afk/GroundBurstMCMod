@@ -38,7 +38,7 @@ public class WaterPumpBlockEntity extends MachineBlockEntity implements Animated
     protected boolean tickMachine(ServerLevel level) {
         // A pump always pushes what it holds: it is the source end of a pipe run.
         pushFluids(level);
-        if (!level.getFluidState(this.worldPosition.below()).isSourceOfType(Fluids.WATER)) {
+        if (!level.getFluidState(inWorld(this.worldPosition.below())).isSourceOfType(Fluids.WATER)) {   // under where it is now
             this.status = MachineStatus.NO_WATER;
             return false;
         }

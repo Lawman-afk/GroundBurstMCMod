@@ -1114,6 +1114,7 @@
   "groundburst.stats.yield": "Yield",
   "groundburst.stats.yield_value": "%s",
   "groundburst.status.buffer_full": "Energy buffer full",
+  "groundburst.status.carried": "Held while carried",
   "groundburst.status.charging": "Charging up",
   "groundburst.status.critical": "CORE CRITICAL: SCRAM now",
   "groundburst.status.emp": "Disabled by EMP",

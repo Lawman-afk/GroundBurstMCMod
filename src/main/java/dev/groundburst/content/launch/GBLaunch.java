@@ -448,6 +448,7 @@ public final class GBLaunch {
                 LASER_DESIGNATOR.get()));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             Launches.clear();
+            dev.groundburst.content.machine.Carried.clear();
             Designators.clear();
             LaserDesignatorItem.clear();
             dev.groundburst.content.defence.Interceptors.clear();

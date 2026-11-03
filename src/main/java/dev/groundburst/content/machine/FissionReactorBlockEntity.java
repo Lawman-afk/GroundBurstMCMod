@@ -257,8 +257,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     /** Checks the box and forms, re-forms (it changed size or shape) or un-forms the reactor. */
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         this.planned = null;
         FissionCore.Scan scan = FissionCore.scan(this.level, this.worldPosition, controllerFacing());
@@ -800,7 +800,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     /** Tells clients what the renderer and the GUI read from the block entity (the box, the rods, the coolant, the plan). */
     private void sync() {
         if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            syncToClients();
         }
     }
 
@@ -932,5 +932,11 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         }
         this.energyPort = null;
         this.planned = null;
+    }
+
+    /** A reactor waits to be set down while a contraption carries it (DESIGN.md §17.16). */
+    @Override
+    protected boolean runsCarried() {
+        return false;
     }
 }

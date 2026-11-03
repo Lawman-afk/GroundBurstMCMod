@@ -9,7 +9,6 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.content.machine.MachineBlockEntity;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -24,15 +23,9 @@ import net.minecraft.world.level.Level;
 public final class Launches {
     /** How far a Launch Computer reaches its silos, blocks. */
     public static final int LINK_RANGE = 256;
-    /** A carried launch site its carrier has not ticked for this long has gone (unloaded, set down), ticks. */
-    private static final int CARRIED_GONE = 4;
     private static final Map<ResourceKey<Level>, LongOpenHashSet> SILOS = new HashMap<>();
     /** Each mapper (by its block) and where it is in the world. */
     private static final Map<ResourceKey<Level>, Long2LongOpenHashMap> MAPPERS = new HashMap<>();
-    private static final Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Carried>> CARRIED = new HashMap<>();
-
-    /** A carried launch site and when its carrier last ticked it. */
-    private record Carried(LaunchSite site, long seen) {}
 
     private Launches() {}
 
@@ -47,10 +40,6 @@ public final class Launches {
      */
     public static void track(ServerLevel level, LaunchSite site) {
         track(level, site.getBlockPos());
-        if (site instanceof MachineBlockEntity m && m.carried()) {
-            CARRIED.computeIfAbsent(level.dimension(), k -> new Long2ObjectOpenHashMap<>())
-                    .put(site.getBlockPos().asLong(), new Carried(site, level.getGameTime()));
-        }
         LaunchNetwork.of(level).tickSite(level, site);
     }
 
@@ -59,24 +48,11 @@ public final class Launches {
         if (set != null) {
             set.remove(pos.asLong());
         }
-        Long2ObjectOpenHashMap<Carried> carried = CARRIED.get(level.dimension());
-        if (carried != null) {
-            carried.remove(pos.asLong());
-        }
     }
 
-    /** The launch site a carrier is carrying with its key at {@code pos}, if it ticked it just now. */
+    /** The launch site a carrier (a contraption) is carrying with its key at {@code pos}, if it ticked it just now. */
     public static @Nullable LaunchSite carried(ServerLevel level, BlockPos pos) {
-        Long2ObjectOpenHashMap<Carried> carried = CARRIED.get(level.dimension());
-        Carried c = carried == null ? null : carried.get(pos.asLong());
-        if (c == null) {
-            return null;
-        }
-        if (level.getGameTime() - c.seen > CARRIED_GONE || !(c.site instanceof MachineBlockEntity m) || !m.carried()) {
-            carried.remove(pos.asLong());
-            return null;
-        }
-        return c.site;
+        return dev.groundburst.content.machine.Carried.at(level, pos) instanceof LaunchSite site ? site : null;
     }
 
     /** The launch site with its key at {@code pos}: the one standing there, or one carried from there. */
@@ -90,7 +66,6 @@ public final class Launches {
     static void clear() {
         SILOS.clear();
         MAPPERS.clear();
-        CARRIED.clear();
     }
 
     /**

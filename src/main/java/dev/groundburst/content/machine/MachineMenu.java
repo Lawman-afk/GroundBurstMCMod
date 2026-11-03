@@ -86,7 +86,8 @@ public class MachineMenu extends AbstractContainerMenu {
     /** Client-side constructor: the block entity is found from the position sent by the server. */
     public static MachineMenu client(MenuType<?> type, int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf, MachineLayout layout) {
         BlockPos pos = buf.readBlockPos();
-        if (!(playerInventory.player.level().getBlockEntity(pos) instanceof MachineBlockEntity machine)) {
+        // Standing there, or carried from there by a contraption (DESIGN.md §17.16: the copy the client draws).
+        if (!(Carried.blockEntity(playerInventory.player.level(), pos, MachineBlockEntity.class) instanceof MachineBlockEntity machine)) {
             throw new IllegalStateException("No machine at " + pos);
         }
         return new MachineMenu(type, containerId, playerInventory, machine, layout, new SimpleContainerData(machine.data().getCount()));
@@ -219,6 +220,11 @@ public class MachineMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
+        if (this.machine.carried()) {                          // on a contraption: in reach of where it is now
+            return !this.machine.isRemoved()
+                    && player.position().distanceTo(this.machine.inWorld(net.minecraft.world.phys.Vec3.atCenterOf(this.machine.getBlockPos())))
+                    <= player.blockInteractionRange() + 4;
+        }
         return Container.stillValidBlockEntity(this.machine, player);
     }
 

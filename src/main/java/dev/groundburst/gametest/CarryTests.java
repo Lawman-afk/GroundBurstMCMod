@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,6 +38,8 @@ final class CarryTests {
         GBGameTests.testOpenSky("carried_cruise_launcher_fires_from_where_it_is", GBGameTests.FLOOR_16, 40, CarryTests::carried);
         GBGameTests.testOpenSky("carried_launch_silo_lifts_off_where_it_is", GBGameTests.FLOOR_16, 40, CarryTests::carriedSilo);
         GBGameTests.test("moved_launcher_keeps_its_network", GBGameTests.FLOOR_16, 40, CarryTests::moved);
+        GBGameTests.test("pipe_set_down_keeps_its_pull_side", GBGameTests.FLOOR_16, 20, CarryTests::pipeKeepsPull);
+        GBGameTests.test("machine_emptied_before_a_move_drops_nothing", GBGameTests.FLOOR_16, 20, CarryTests::clearedDropsNothing);
     }
 
     /**
@@ -133,6 +136,44 @@ final class CarryTests {
             silo.carry(null);
             helper.succeed();
         });
+    }
+
+    /**
+     * An item pipe pulling from a chest, set down by something that moved them both (as Create does: block by block, a
+     * mover's placement, the pipe before the chest): it still pulls once the chest is down.
+     */
+    private static void pipeKeepsPull(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pipe = helper.absolutePos(new BlockPos(4, 1, 4)), chest = pipe.east();
+        BlockState pulling = dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get().defaultBlockState()
+                .setValue(dev.groundburst.content.pipe.PipeBlock.SIDES.get(Direction.EAST), dev.groundburst.content.pipe.PipeBlock.Mode.PULL);
+        int moved = net.minecraft.world.level.block.Block.UPDATE_ALL | net.minecraft.world.level.block.Block.UPDATE_MOVE_BY_PISTON;
+        level.setBlock(pipe, pulling, moved);
+        helper.assertTrue(dev.groundburst.content.pipe.PipeBlock.mode(level.getBlockState(pipe), Direction.EAST) == dev.groundburst.content.pipe.PipeBlock.Mode.PULL,
+                "set down before the chest, it keeps its pull side: " + level.getBlockState(pipe));
+        level.setBlock(chest, Blocks.CHEST.defaultBlockState(), moved);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(dev.groundburst.content.pipe.PipeBlock.mode(level.getBlockState(pipe), Direction.EAST) == dev.groundburst.content.pipe.PipeBlock.Mode.PULL,
+                    "and once the chest is down: " + level.getBlockState(pipe));
+            helper.succeed();
+        });
+    }
+
+    /**
+     * A loaded machine emptied before its block goes without breaking (Sable does this, after saving it, as it takes a ship
+     * aboard): nothing drops, so nothing is had twice.
+     */
+    private static void clearedDropsNothing(GameTestHelper helper) {
+        LaunchTests.floor(helper);
+        ServerLevel level = helper.getLevel();
+        LaunchSiloBlockEntity silo = LaunchTests.silo(helper, new BlockPos(5, 1, 3));
+        silo.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
+        BlockPos at = silo.getBlockPos();
+        ((net.minecraft.world.Clearable) silo).clearContent();            // as Sable does (Clearable.tryClear on 1.21.1)
+        level.setBlock(at, Blocks.AIR.defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        var dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(at).inflate(3));
+        helper.assertTrue(dropped.isEmpty(), "nothing dropped: " + dropped);
+        helper.succeed();
     }
 
     /**

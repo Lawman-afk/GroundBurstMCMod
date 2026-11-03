@@ -156,6 +156,9 @@ public abstract class PipeBlock extends Block {
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
             BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+        if (!(level.getBlockState(pos).getBlock() instanceof PipeBlock)) {
+            return state;                                  // asked about a pipe not yet here (another mod setting blocks down): as it was
+        }
         return state.setValue(SIDES.get(direction), refresh(level, pos, state, direction));
     }
 
@@ -180,10 +183,14 @@ public abstract class PipeBlock extends Block {
         }
     }
 
-    /** However it was placed (by a player, a command, a structure), work out its connections. */
+    /**
+     * However it was placed (by a player, a command, a structure), work out its connections; but one set down by
+     * something that moved it (a Create contraption, a Sable ship) keeps its sides as they were (its pull and switched-off
+     * sides with them), the blocks round it perhaps not set down yet: their own updates fix what changed.
+     */
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (!oldState.is(this)) {
+        if (!oldState.is(this) && !movedByPiston) {
             BlockState connected = connections(level, pos, state);
             if (connected != state) {
                 level.setBlock(pos, connected, Block.UPDATE_ALL);

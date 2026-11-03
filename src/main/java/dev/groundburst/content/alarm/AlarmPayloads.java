@@ -33,7 +33,7 @@ public final class AlarmPayloads {
 
         public static void handle(Settings p, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player && near(player, p.pos())
-                    && player.level().getBlockEntity(p.pos()) instanceof AlarmBlockEntity be) {
+                    && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), AlarmBlockEntity.class) instanceof AlarmBlockEntity be) {
                 be.applySettings(p.channel(), p.options().stream().mapToInt(Integer::intValue).toArray());
             }
         }
@@ -52,13 +52,13 @@ public final class AlarmPayloads {
 
         public static void handle(Panel p, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player && near(player, p.pos())
-                    && player.level().getBlockEntity(p.pos()) instanceof AlarmBlockEntity be) {
+                    && dev.groundburst.content.machine.Carried.blockEntity(player.level(), p.pos(), AlarmBlockEntity.class) instanceof AlarmBlockEntity be) {
                 be.panel(p.action());
             }
         }
     }
 
     private static boolean near(ServerPlayer player, BlockPos pos) {
-        return player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH;
+        return dev.groundburst.content.machine.Carried.near(player, pos, REACH);
     }
 }
