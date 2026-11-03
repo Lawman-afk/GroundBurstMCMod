@@ -115,6 +115,16 @@ neoForge {
             systemProperty 'groundburst.createCheck', 'true'
         }
 
+        // A test world for 1.21.1 with Create and Create Aeronautics (with -PwithCreate): a command post, a row of loaded
+        // launchers on its network, artillery, launchers on Create contraptions and Create Aeronautics ships, targets;
+        // built, photographed (run/screenshots/range_*.png) and saved as run/saves/"Ground Burst Test Range"
+        // (dev.groundburst.compat.TestRange).
+        testRange {
+            client()
+            programArguments.addAll '--width', '1280', '--height', '720'
+            systemProperty 'groundburst.testRange', 'true'
+        }
+
         server {
             server()
             programArgument '--nogui'

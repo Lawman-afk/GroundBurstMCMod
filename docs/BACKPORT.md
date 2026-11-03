@@ -113,6 +113,20 @@ nothing touches either mod's classes unless it is installed.
   out of it (players' copies agree, nothing spilled), a mortar shell bursts on its rim, and it is set down with only
   what was left. A second ship: a shell's blast beside it breaks its near side and shoves it off, and a shell fired at
   it bursts on it. Pictures: run/screenshots/create_*.png. 39 of 39.
+- **Test world**: `gradlew runTestRange -PwithCreate` builds "Ground Burst Test Range" in the dev client and saves it to
+  run/saves (copy that folder into the 1.21.1 instance's saves; it plays there as is): a flat world 64 layers deep (the
+  ground at y 0) with a command post at the spawn (Launch Control Station, Launch Computer, Radar Array, an armory of
+  missiles, shells and explosives), one of each launcher loaded and charged north of it (Launch Silo, Cruise Missile
+  Launcher, Vertical Launch Battery, Launch Complex, Missile Silo) with the mortar and the howitzer, and on Create: a
+  Cruise Missile Launcher turning on a bearing, a Launch Silo a sticky piston raises out of a pit (a lever on a gearshift
+  by the pit lowers and raises it); on Create Aeronautics: a missile boat on the lake and an airship over the airfield
+  (held up by levitite under a balloon), each with a Cruise Missile Launcher aboard; target ships, a target town 420
+  blocks north with a windmill on a bearing. Every launcher and the radar are on the station's network; the player
+  starts with a Laser Designator and Launch Codes for it. It checks as it builds (the ships float or hover where they
+  were made, the pit silo goes down and up again and forms each time) and photographs itself
+  (run/screenshots/range_*.png). Code: `TestRange`, `RangeGround`, `RangeShips`, `create/RangeCreate`. Create gotchas:
+  a plain mechanical piston pushes but does not pull (a sticky one does); redstone links left with empty frequencies did
+  not reach each other here, so the lever drives the piston through shafts and a gearbox instead.
 - **Not yet**: reactors are held while carried; nothing passes between a contraption and the world's blocks round it
   (pipes, cables, redstone); the particle beam, the cryo freeze and a singularity's pull do not reach ships or
   contraptions.
