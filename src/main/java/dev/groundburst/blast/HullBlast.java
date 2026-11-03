@@ -63,6 +63,16 @@ final class HullBlast {
         this.energy = profile.crater() * BlastJob.cost(6f);
     }
 
+    /**
+     * A sphere that erases whatever of a hull it reaches as it grows to {@code radius}, as an antimatter annihilation or a
+     * singularity's horizon does the world's (they shove nothing): every block but those nothing breaks.
+     */
+    static HullBlast erasing(ServerLevel level, Vec3 center, float radius) {
+        BlastProfile all = new BlastProfile(radius, radius, 0, 0, 0, BlastProfile.EntityZones.NONE, 1, 1, 0, 0, 0, 0, TerrainTable.CONVENTIONAL,
+                java.util.Optional.of(false), java.util.Optional.empty(), java.util.Optional.empty());
+        return new HullBlast(level, center, all, true, null, 0, level.getRandom());
+    }
+
     /** The front has reached {@code r} blocks: the hulls' blocks within it are dealt with. */
     void reach(float r) {
         float to = Math.min(r, this.reach);

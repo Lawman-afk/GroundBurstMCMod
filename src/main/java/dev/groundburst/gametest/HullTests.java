@@ -29,6 +29,7 @@ final class HullTests {
         GBGameTests.testOpenSky("blast_shoves_a_hull_away", GBGameTests.FLOOR_16, 20, HullTests::shoves);
         GBGameTests.testOpenSky("blast_leaves_a_hull_out_of_reach", GBGameTests.FLOOR_16, 20, HullTests::outOfReach);
         GBGameTests.testOpenSky("flight_strikes_a_hull_where_it_is_seen", GBGameTests.FLOOR_16, 20, HullTests::clips);
+        GBGameTests.testOpenSky("annihilation_erases_a_hull_inside_it", GBGameTests.FLOOR_16, 80, HullTests::annihilated);
     }
 
     /** Where the bursts are (the hull shows its blocks round it). */
@@ -179,6 +180,29 @@ final class HullTests {
         helper.assertTrue(kept(helper, C.offset(0, 0, -5)).isAir(), "the near one is broken");
         helper.assertTrue(hull.pushedAt == null, "a blast with no shock shoves nothing");
         helper.succeed();
+    }
+
+    /**
+     * An antimatter sphere of radius 4 erases what the hull shows inside it, obsidian too (nothing holds against
+     * annihilation), and leaves what it shows outside.
+     */
+    private static void annihilated(GameTestHelper helper) {
+        Stored hull = new Stored(helper);
+        put(helper, C.offset(3, 0, 0), Blocks.OBSIDIAN);
+        put(helper, C.offset(0, 0, 6), Blocks.STONE);
+        Vec3 burst = helper.absoluteVec(Vec3.atCenterOf(C));
+        Hulls.Finder finder = (level, center, radius, out) -> {
+            if (level == hull.level && center.distanceTo(burst) < 1) {
+                out.accept(hull);
+            }
+        };
+        Hulls.addFinder(finder);
+        dev.groundburst.blast.Annihilations.start(helper.getLevel(), burst, 4, null);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(kept(helper, C.offset(3, 0, 0)).isAir(), "the obsidian it shows inside the sphere is erased");
+            helper.assertTrue(kept(helper, C.offset(0, 0, 6)).is(Blocks.STONE), "the stone it shows outside stands");
+            Hulls.removeFinder(finder);
+        });
     }
 
     /** A line through the place the hull shows a block strikes the block's near face there (where it is seen, not kept). */
