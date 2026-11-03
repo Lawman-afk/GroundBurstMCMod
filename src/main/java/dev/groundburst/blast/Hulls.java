@@ -53,6 +53,11 @@ public final class Hulls {
         /** The place in the level a block of its own really stands at, or null when it is held off the level (a contraption's). */
         @Nullable BlockPos inLevel(BlockPos local);
 
+        /** Whether it will not let a blast break its block at a place of its own (a train's wheels), as bedrock is not broken. */
+        default boolean holds(BlockPos local, BlockState state) {
+            return false;
+        }
+
         /** Breaks its block at a place of its own, as a blast breaks the world's: nothing dropped, nothing it held let out. */
         void destroy(BlockPos local);
 

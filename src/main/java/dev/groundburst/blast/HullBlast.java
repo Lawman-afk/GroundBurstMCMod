@@ -187,7 +187,7 @@ final class HullBlast {
         /** Whether the blast may break it: not bedrock and the like, not in the protected spawn. */
         private boolean breakable(Hulls.Hull hull, BlockPos pos, BlockState state) {
             BlockPos inLevel = hull.inLevel(pos);
-            if (state.getDestroySpeed(HullBlast.this.level, inLevel != null ? inLevel : pos) < 0) {
+            if (state.getDestroySpeed(HullBlast.this.level, inLevel != null ? inLevel : pos) < 0 || hull.holds(pos, state)) {
                 return false;
             }
             if (HullBlast.this.protectedCenter == null) {
