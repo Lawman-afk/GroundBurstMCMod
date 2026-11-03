@@ -118,10 +118,8 @@ public class FieldManualScreen extends Screen {
                     rebuild();
                     return;
                 }
-                ManualPages.TextPage intro = new ManualPages.TextPage(ManualText.lines(this.font, ch.text(), ManualPages.W));
-                intro.setTitle(this.font, ch.title());
-                out.add(intro);
-                // The introduction fills the left page; the entries start on the right one.
+                // The introduction (over more than one page if it is long), then the entries on the page after it.
+                out.addAll(ManualPages.intro(this.font, ch));
                 out.addAll(ManualPages.entryLists(Component.translatable(ManualStrings.ENTRIES).getString(), Manual.entriesOf(ch.id()), ManualPages.H));
             }
             case ENTRY -> {

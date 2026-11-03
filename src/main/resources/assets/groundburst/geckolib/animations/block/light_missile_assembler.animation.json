@@ -132,7 +132,7 @@
             }
           }
         },
-        "chain_rope0": {
+        "chain": {
           "scale": {
             "0": {
               "vector": [
@@ -224,7 +224,7 @@
             ]
           }
         },
-        "chain_rope0": {
+        "chain": {
           "scale": {
             "0": [
               1.0,

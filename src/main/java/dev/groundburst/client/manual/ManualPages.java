@@ -955,6 +955,16 @@ final class ManualPages {
     }
 
     // --- layout ----------------------------------------------------------------------------------------------------------
+    /** A chapter's introduction: its title, then its text, running on over as many pages as it needs. */
+    static List<Page> intro(Font font, Manual.Chapter chapter) {
+        List<FlowPage> pages = new ArrayList<>();
+        FlowPage first = new FlowPage();
+        first.setTitle(font, chapter.title());
+        pages.add(first);
+        flow(pages, ManualText.lines(font, chapter.text(), W));
+        return new ArrayList<>(pages);
+    }
+
     /** Lays out an entry's pages: each spec's picture or recipes, then its text, flowing down the pages. */
     static List<Page> entry(Font font, Manual.Entry entry) {
         List<FlowPage> pages = new ArrayList<>();

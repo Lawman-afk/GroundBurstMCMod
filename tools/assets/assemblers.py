@@ -183,7 +183,7 @@ def paint_hook(S: M.Surfacer, tex: Tex, ropes: list[str], blocks: list[str]) -> 
 
 
 def drop(anim: Animation, hook: str, rope: str, rest_len: float, keys: dict[float, float]) -> None:
-    """Lowers a hook by keys[t] pixels (its rope paying out in step)."""
+    """Lowers a hook by keys[t] pixels, its rope (the bone that holds its falls, pivoted at their top) paying out in step."""
     anim.move(hook, {t: (0, -v, 0) for t, v in keys.items()}, easing="easeInOutSine")
     anim.scale(rope, {t: (1, (rest_len + v) / rest_len, 1) for t, v in keys.items()}, easing="easeInOutSine")
 
@@ -285,7 +285,7 @@ def light() -> None:
     a, b = c["tail"] - c["at"][0] - T, c["tail"] - c["at"][1] - T
     work.move("trolley", {0: (0, 0, 0), 2.2: (0, 0, a), 4.0: (0, 0, a), 6.0: (0, 0, b), 7.8: (0, 0, b), 9.6: (0, 0, 0), 10: (0, 0, 0)},
               easing="easeInOutSine")
-    drop(work, "hook", "chain_rope0", 4, {0: 0, 2.4: 0, 3.0: 3, 3.6: 0, 6.2: 0, 6.8: 3, 7.4: 0, 10: 0})
+    drop(work, "hook", "chain", 4, {0: 0, 2.4: 0, 3.0: 3, 3.6: 0, 6.2: 0, 6.8: 3, 7.4: 0, 10: 0})
     print(save_animations("light_missile_assembler", [work, rest_pose([work])]))
 
 
@@ -406,9 +406,8 @@ def medium() -> None:
     work.move("jib_trolley", {0: (0, 0, 0), 1.4: (rack_t, 0, 0), 2.6: (rack_t, 0, 0), 4.2: (tail_t, 0, 0), 5.4: (tail_t, 0, 0),
                               7.0: (rack_t, 0, 0), 8.2: (rack_t, 0, 0), 9.6: (nose_t, 0, 0), 10.8: (nose_t, 0, 0), 12: (0, 0, 0)},
               easing="easeInOutSine")
-    drop(work, "jib_hook", "jib_rope0", 19, {0: 0, 1.5: 0, 2.0: 9, 2.5: 0, 4.3: 0, 4.8: 5, 5.3: 0, 7.1: 0, 7.6: 3, 8.1: 0, 9.7: 0, 10.2: 5,
+    drop(work, "jib_hook", "jib_rope", 19, {0: 0, 1.5: 0, 2.0: 9, 2.5: 0, 4.3: 0, 4.8: 5, 5.3: 0, 7.1: 0, 7.6: 3, 8.1: 0, 9.7: 0, 10.2: 5,
                                                10.7: 0, 12: 0})
-    work.scale("jib_rope1", {t: v for t, v in work.bones["jib_rope0"]["scale"].items()}, easing="easeInOutSine")
     print(save_animations("medium_missile_assembler", [work, rest_pose([work])]))
 
 
@@ -527,9 +526,8 @@ def heavy() -> None:
                         10.8: (0, 0, cart_z), 12.0: (0, 0, nose_z), 13.0: (0, 0, nose_z), 15: (0, 0, 0)}, easing="easeInOutSine")
     work.move("gantry_trolley", {0: (0, 0, 0), 2.0: (0, 0, 0), 2.8: (-21, 0, 0), 4.0: (-21, 0, 0), 4.8: (0, 0, 0), 8.2: (0, 0, 0),
                                  8.8: (-21, 0, 0), 10.0: (-21, 0, 0), 10.8: (0, 0, 0), 15: (0, 0, 0)}, easing="easeInOutSine")
-    drop(work, "gantry_hook", "gantry_rope0", 40.5, {0: 0, 2.8: 0, 3.4: 13, 4.0: 0, 6.0: 0, 6.5: 3, 7.0: 0, 8.8: 0, 9.4: 13, 10.0: 0,
+    drop(work, "gantry_hook", "gantry_rope", 40.5, {0: 0, 2.8: 0, 3.4: 13, 4.0: 0, 6.0: 0, 6.5: 3, 7.0: 0, 8.8: 0, 9.4: 13, 10.0: 0,
                                                     12.0: 0, 12.5: 3, 13.0: 0, 15: 0})
-    work.scale("gantry_rope1", {t: v for t, v in work.bones["gantry_rope0"]["scale"].items()}, easing="easeInOutSine")
     print(save_animations("heavy_missile_assembler", [work, rest_pose([work])]))
 
 
@@ -646,8 +644,7 @@ def strategic() -> None:
     # comes up with it, the trolley runs in over the stand and lowers it onto the stack.
     work = Animation("working", 12.0, loop=True)
     work.move("tower_trolley", {0: (0, 0, 0), 2.0: (21, 0, 0), 6.6: (21, 0, 0), 8.0: (0, 0, 0), 12: (0, 0, 0)}, easing="easeInOutSine")
-    drop(work, "tower_hook", "tower_rope0", 16, {0: 0, 2.2: 0, 4.0: 134, 4.6: 134, 6.4: 0, 8.2: 0, 9.2: 4, 10.0: 4, 11.0: 0, 12: 0})
-    work.scale("tower_rope1", {t: v for t, v in work.bones["tower_rope0"]["scale"].items()}, easing="easeInOutSine")
+    drop(work, "tower_hook", "tower_rope", 16, {0: 0, 2.2: 0, 4.0: 134, 4.6: 134, 6.4: 0, 8.2: 0, 9.2: 4, 10.0: 4, 11.0: 0, 12: 0})
     idle = rest_pose([work])
     # The platforms (their own controller): folded up against the side beams while the stand is empty, down round
     # the missile while one stands there.

@@ -97,9 +97,16 @@ final class ArtilleryTerrain {
         return t == null ? Double.NaN : t.height(bx, bz);
     }
 
+    /** When a tile was last asked for, and where the aim was a moment ago (it asks only once the aim settles). */
+    private static long lastAsked;
+    private static Vec3 settling = Vec3.ZERO;
+    private static int settled;
+
     /**
      * Each tick of the strategic view: asks for the tiles round the aim that the game has not loaded, or had last
-     * {@link #FRESH} ticks ago (one a tick; the one in hand is drawn until the new one comes).
+     * {@link #FRESH} ticks ago: one every few ticks, and only once the aim has come to rest (each tile has its 64 chunks
+     * loaded, or made, on the server: an aim swept across the map would ask for dozens; the one in hand is drawn until
+     * the new one comes).
      */
     static void tick(Minecraft mc, GunBlockEntity gun) {
         BlockPos at = ArtilleryClient.gunPos();
@@ -108,6 +115,15 @@ final class ArtilleryTerrain {
         }
         Vec3 c = ArtilleryClient.cursor();
         long now = mc.level.getGameTime();
+        if (Math.hypot(c.x - settling.x, c.z - settling.z) > 24) {
+            settling = c;
+            settled = 0;
+        } else {
+            settled++;
+        }
+        if (settled < 6 || now - lastAsked < 4) {
+            return;
+        }
         Vec3 base = gun.socket();
         int[] best = null;
         double nearest = Double.MAX_VALUE;
@@ -129,8 +145,9 @@ final class ArtilleryTerrain {
                 }
             }
         }
-        if (best != null) {                                    // the nearest to the aim first, one a tick (the gun queues them)
+        if (best != null) {                                    // the nearest to the aim first (the gun queues them)
             ASKED.put(key(best[0], best[1]), now);
+            lastAsked = now;
             ClientPacketDistributor.sendToServer(new ArtilleryPayloads.TerrainRequest(at, best[0], best[1]));
         }
     }
@@ -176,13 +193,21 @@ final class ArtilleryTerrain {
         return out;
     }
 
+    /**
+     * How many samples a side one cell of a tile takes, drawn from {@code distance} blocks off: every sample near the
+     * camera, coarser further off (a strategic view looks down on a dozen tiles at once; drawn whole, every frame, they
+     * cost half a million vertices). A cell never runs over a chunk's edge, so a drawn chunk still hides it.
+     */
+    static int cellSamples(double distance) {
+        return distance < 96 ? 1 : distance < 192 ? 2 : distance < 384 ? 4 : 8;
+    }
+
     /** The mapped tiles drawn as solid ground where the game draws none of its own. */
     static void submit(SubmitCustomGeometryEvent event, ClientLevel level, Vec3 camera) {
         if (TILES.isEmpty()) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
-        int per = 16 / S;
         event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderTypes.entitySolid(ArtilleryClient.RETICLE), (pose, b) -> {
             for (Tile t : TILES.values()) {
                 boolean[] shown = drawnChunks(mc, t);
@@ -193,44 +218,60 @@ final class ArtilleryTerrain {
                 if (all) {
                     continue;
                 }
-                for (int j = 0; j < N; j++) {
-                    for (int i = 0; i < N; i++) {
-                        int x = t.ox() + i * S, z = t.oz() + j * S;
-                        if (shown[(j / per) * CHUNKS + i / per]) {
+                double mid = t.height(t.ox() + T / 2, t.oz() + T / 2);
+                double dy = Double.isNaN(mid) ? 0 : camera.y - mid;
+                int k = cellSamples(Math.sqrt(Math.pow(t.ox() + T / 2.0 - camera.x, 2) + Math.pow(t.oz() + T / 2.0 - camera.z, 2) + dy * dy));
+                int cells = N / k, size = S * k;
+                for (int j = 0; j < cells; j++) {
+                    for (int i = 0; i < cells; i++) {
+                        int x = t.ox() + i * size, z = t.oz() + j * size;
+                        if (shown[((j * size) >> 4) * CHUNKS + ((i * size) >> 4)]) {
                             continue;
                         }
-                        short h = t.heights()[j * N + i];
+                        int h = cellHeight(t, i, j, k);
                         if (h == ArtilleryPayloads.UNKNOWN) {
                             continue;
                         }
-                        int col = 0xFF000000 | t.colours()[j * N + i];
-                        top(b, pose, x, h, z, camera, col);
+                        int col = 0xFF000000 | cellColour(t, i, j, k);
+                        top(b, pose, x, h, z, size, camera, col);
                         // Its sides where the ground beside it is lower (east and south; west and north from those).
-                        side(b, pose, t, i + 1, j, x + S, z, x + S, z + S, h, camera, col, 1, 0);
-                        side(b, pose, t, i - 1, j, x, z + S, x, z, h, camera, col, -1, 0);
-                        side(b, pose, t, i, j + 1, x + S, z + S, x, z + S, h, camera, col, 0, 1);
-                        side(b, pose, t, i, j - 1, x, z, x + S, z, h, camera, col, 0, -1);
+                        side(b, pose, t, i + 1, j, k, x + size, z, x + size, z + size, h, camera, col, 1, 0);
+                        side(b, pose, t, i - 1, j, k, x, z + size, x, z, h, camera, col, -1, 0);
+                        side(b, pose, t, i, j + 1, k, x + size, z + size, x, z + size, h, camera, col, 0, 1);
+                        side(b, pose, t, i, j - 1, k, x, z, x + size, z, h, camera, col, 0, -1);
                     }
                 }
             }
         });
     }
 
-    private static void top(VertexConsumer b, PoseStack.Pose pose, int x, int y, int z, Vec3 camera, int col) {
-        v(b, pose, x, y, z, camera, col, 0, 1, 0);
-        v(b, pose, x, y, z + S, camera, col, 0, 1, 0);
-        v(b, pose, x + S, y, z + S, camera, col, 0, 1, 0);
-        v(b, pose, x + S, y, z, camera, col, 0, 1, 0);
+    /** A cell's height: its middle sample's (UNKNOWN if that one is). */
+    private static int cellHeight(Tile t, int i, int j, int k) {
+        int si = Math.min(N - 1, i * k + k / 2), sj = Math.min(N - 1, j * k + k / 2);
+        return t.heights()[sj * N + si];
     }
 
-    /** The wall from this sample's top down to its neighbour's ({@code ni}, {@code nj}) where that is lower. */
-    private static void side(VertexConsumer b, PoseStack.Pose pose, Tile t, int ni, int nj, int x0, int z0, int x1, int z1, int h, Vec3 camera, int col,
-            int nx, int nz) {
+    private static int cellColour(Tile t, int i, int j, int k) {
+        int si = Math.min(N - 1, i * k + k / 2), sj = Math.min(N - 1, j * k + k / 2);
+        return t.colours()[sj * N + si];
+    }
+
+    private static void top(VertexConsumer b, PoseStack.Pose pose, int x, int y, int z, int size, Vec3 camera, int col) {
+        v(b, pose, x, y, z, camera, col, 0, 1, 0);
+        v(b, pose, x, y, z + size, camera, col, 0, 1, 0);
+        v(b, pose, x + size, y, z + size, camera, col, 0, 1, 0);
+        v(b, pose, x + size, y, z, camera, col, 0, 1, 0);
+    }
+
+    /** The wall from this cell's top down to its neighbour's (cell {@code ni}, {@code nj}) where that is lower. */
+    private static void side(VertexConsumer b, PoseStack.Pose pose, Tile t, int ni, int nj, int k, int x0, int z0, int x1, int z1, int h, Vec3 camera,
+            int col, int nx, int nz) {
+        int cells = N / k;
         int low;
-        if (ni < 0 || nj < 0 || ni >= N || nj >= N) {
-            low = h - 1;
+        if (ni < 0 || nj < 0 || ni >= cells || nj >= cells) {
+            low = h - 2 * k;                                   // a skirt at the tile's edge, deeper where its cells are coarser
         } else {
-            short n = t.heights()[nj * N + ni];
+            int n = cellHeight(t, ni, nj, k);
             low = n == ArtilleryPayloads.UNKNOWN ? h - 1 : n;
         }
         if (low >= h) {

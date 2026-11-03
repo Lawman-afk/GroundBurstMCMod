@@ -288,123 +288,7 @@
             }
           }
         },
-        "gantry_rope0": {
-          "scale": {
-            "0": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "2.8": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "3.4": {
-              "vector": [
-                1.0,
-                1.3209876543209877,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "4": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "6": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "6.5": {
-              "vector": [
-                1.0,
-                1.0740740740740742,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "7": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "8.8": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "9.4": {
-              "vector": [
-                1.0,
-                1.3209876543209877,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "10": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "12": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "12.5": {
-              "vector": [
-                1.0,
-                1.0740740740740742,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "13": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "15": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            }
-          }
-        },
-        "gantry_rope1": {
+        "gantry_rope": {
           "scale": {
             "0": {
               "vector": [
@@ -553,16 +437,7 @@
             ]
           }
         },
-        "gantry_rope0": {
-          "scale": {
-            "0": [
-              1.0,
-              1.0,
-              1.0
-            ]
-          }
-        },
-        "gantry_rope1": {
+        "gantry_rope": {
           "scale": {
             "0": [
               1.0,

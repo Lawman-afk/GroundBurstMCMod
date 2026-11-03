@@ -132,91 +132,7 @@
             }
           }
         },
-        "tower_rope0": {
-          "scale": {
-            "0": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "2.2": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "4": {
-              "vector": [
-                1.0,
-                9.375,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "4.6": {
-              "vector": [
-                1.0,
-                9.375,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "6.4": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "8.2": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "9.2": {
-              "vector": [
-                1.0,
-                1.25,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "10": {
-              "vector": [
-                1.0,
-                1.25,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "11": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            },
-            "12": {
-              "vector": [
-                1.0,
-                1.0,
-                1.0
-              ],
-              "easing": "easeInOutSine"
-            }
-          }
-        },
-        "tower_rope1": {
+        "tower_rope": {
           "scale": {
             "0": {
               "vector": [
@@ -324,16 +240,7 @@
             ]
           }
         },
-        "tower_rope0": {
-          "scale": {
-            "0": [
-              1.0,
-              1.0,
-              1.0
-            ]
-          }
-        },
-        "tower_rope1": {
+        "tower_rope": {
           "scale": {
             "0": [
               1.0,
