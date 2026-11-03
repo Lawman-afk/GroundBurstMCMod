@@ -4,8 +4,8 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `f94c2cd4` (2026-11-03: version 0.6.0, the finished artillery, and the fixes after the
-  first play of this branch).
+- **Last brought up to:** `main` at `d81db058` (2026-11-03: version 0.7.0, released for both versions:
+  `groundburst-mc1.21.1-0.7.0.jar` is this branch's).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional).
 - **Test instance:** a separate 1.21.1 CurseForge instance, named by `deploy_instance_dir_1_21_1` in your own
   `~/.gradle/gradle.properties` (never `deploy_instance_dir`, which is main's 26.3 instance).
@@ -44,7 +44,7 @@ keeps the game from pausing when its window is behind another).
 
 ## Where it stands (2026-11-03)
 
-It compiles, runs and is deployed to the 1.21.1 instance: `runGameTestServer` loads every registry and all the data
+Released as 0.7.0, beside main's 26.3 build. It compiles, runs and is deployed to the 1.21.1 instance: `runGameTestServer` loads every registry and all the data
 (recipes, tags, loot, world generation) with no errors and passes its four tests, and `runPortCheck` shows the
 machines, the Field Manual, a blast and a particle beam drawing as they should. Fixed after the first play:
 

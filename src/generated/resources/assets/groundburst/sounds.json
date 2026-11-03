@@ -100,16 +100,6 @@
     ],
     "subtitle": "subtitles.groundburst.antimatter.near"
   },
-  "artillery.atomic_fire": {
-    "sounds": [
-      {
-        "attenuation_distance": 384,
-        "name": "groundburst:artillery/atomic_fire",
-        "stream": true
-      }
-    ],
-    "subtitle": "subtitles.groundburst.artillery.atomic_fire"
-  },
   "artillery.howitzer_fire": {
     "sounds": [
       {

@@ -52,7 +52,6 @@ Licensed CC0 1.0 (public domain) (https://creativecommons.org/publicdomain/zero/
   "Paint mixer machine" by pedrgloria, https://freesound.org/people/pedrgloria/sounds/645117/
   "thunder.mp3" by pyer75, https://freesound.org/people/pyer75/sounds/191992/
   "K-55 Artillery.flac" by qubodup, https://freesound.org/people/qubodup/sounds/184365/
-  "Artillery Gunfire" by qubodup, https://freesound.org/people/qubodup/sounds/239137/
   "Rocket Launch.flac" by qubodup, https://freesound.org/people/qubodup/sounds/182794/
   "Truck Engine Idle Loops.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187564/
   "M-327 Mortar Shots.flac" by qubodup, https://freesound.org/people/qubodup/sounds/187542/

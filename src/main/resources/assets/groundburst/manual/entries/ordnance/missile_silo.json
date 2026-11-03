@@ -1,7 +1,7 @@
 {
   "title": "Missile Silo",
   "icon": "groundburst:missile_silo",
-  "order": 14,
+  "order": 13,
   "items": [
     "groundburst:missile_silo",
     "groundburst:silo_hatch",

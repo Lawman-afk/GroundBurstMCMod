@@ -28,7 +28,7 @@ public final class PortCheck {
     private static final boolean ON = Boolean.getBoolean("groundburst.portCheck");
     private static final String WORLD = "port_check";
     private static final List<String> BLOCKS = List.of("assembly_bench", "combustion_generator", "arc_furnace", "capacitor_bank",
-            "air_raid_siren", "alert_display", "c4", "he_warhead", "atomic_cannon", "barbed_wire", "corrugated_steel", "dead_grass_block",
+            "air_raid_siren", "alert_display", "c4", "he_warhead", "howitzer", "barbed_wire", "corrugated_steel", "dead_grass_block",
             "cryo_crystal", "chain_link_fence", "emergency_light");
     private static boolean started;
     private static int ticks = -1;
@@ -103,7 +103,7 @@ public final class PortCheck {
                     int x = (i % 5) * 3 - 6, z = (i / 5) * 4;
                     command(mc, "setblock " + x + " -60 " + z + " " + GroundBurst.MODID + ":" + BLOCKS.get(i));
                 }
-                for (String item : List.of("geiger_counter", "dosimeter_badge", "napalm_bucket", "atomic_cannon", "frag_grenade",
+                for (String item : List.of("geiger_counter", "dosimeter_badge", "napalm_bucket", "howitzer", "frag_grenade",
                         "laser_designator", "argon_bucket", "chlorine_bucket")) {
                     command(mc, "give @s " + GroundBurst.MODID + ":" + item);
                 }

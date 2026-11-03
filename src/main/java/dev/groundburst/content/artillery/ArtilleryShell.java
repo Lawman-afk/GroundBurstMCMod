@@ -165,8 +165,6 @@ public class ArtilleryShell extends Projectile {
                 Blasts.detonate(level, at, Blasts.profile(calibre.key + "_shell_incendiary"), owner);
                 napalm(level, at, calibre.napalm, this.random);
             }
-            case NUCLEAR -> dev.groundburst.content.ordnance.charge.Charges.impact(level,
-                    dev.groundburst.content.ordnance.charge.ChargeKind.TACTICAL_NUCLEAR_WARHEAD, BlockPos.containing(at), owner);
             case SMOKE -> canisters(level, at, v, owner, new ItemStack(GBOrdnance.SMOKE_GRENADE.get()), SMOKE_CANISTERS, SMOKE_SPACING);
             case CHEMICAL -> canisters(level, at, v, owner, new ItemStack(GBOrdnance.GAS_GRENADE.get()), GAS_CANISTERS, 2.5);
             case CRYO -> {

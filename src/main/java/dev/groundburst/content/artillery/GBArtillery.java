@@ -16,7 +16,6 @@ import dev.groundburst.registry.GBSounds;
 import dev.groundburst.registry.GBTab;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,8 +31,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /**
- * Artillery (DESIGN.md §20.1): crewed guns aimed from a strategic view, World of Tanks' way: the 81 mm Mortar, the
- * 155 mm Howitzer and the Atomic Cannon, their shells, the shells in flight and the crewman's place.
+ * Artillery (DESIGN.md §20.1): crewed guns aimed from a strategic view, World of Tanks' way: the 81 mm Mortar and the
+ * 155 mm Howitzer, their shells, the shells in flight and the crewman's place.
  */
 public final class GBArtillery {
     // --- the guns' figures (GunSpec has what each means) ---------------------------------------------------------------
@@ -48,19 +47,13 @@ public final class GBArtillery {
             MortarBlockEntity.BLOOM, MortarBlockEntity.MAX_BLOOM, 0.06,
             MortarBlockEntity.SOCKET_Y, MortarBlockEntity.SOCKET_BACK, MortarBlockEntity.TUBE, 0.75, 0.45, GBSounds.MORTAR_FIRE::get, 6f, 1f);
     /**
-     * The 155 mm Howitzer (after the M777): seven charges, each reaching two thirds further than the one before (79 to 800
-     * blocks at 45 degrees), the high arc (45 to 70 degrees), 64 to 800 blocks, 30 degrees either side of its front.
+     * The 155 mm Howitzer (after the M777): seven charges, each reaching half as far again as the one before (79 to 800
+     * blocks at 45 degrees), the high arc (45 to 70 degrees), 64 to 600 blocks (about as far as a player sees at the
+     * longest render distance, so its target is near what can be drawn), 30 degrees either side of its front.
      */
     public static final GunSpec HOWITZER_SPEC = new GunSpec("howitzer", Calibre.HOWITZER, List.of(ShellType.HE, ShellType.INCENDIARY), 8,
-            new double[] {1.987, 2.408, 2.924, 3.550, 4.301, 5.215, 6.325}, 45, 70, 10, 64, 800, 30, 1f, 4.0, 1f, 100, 1.0, 60, 4, 6, 0.08,
+            new double[] {1.987, 2.408, 2.924, 3.550, 4.301, 5.215, 6.325}, 45, 70, 10, 64, 600, 30, 1f, 4.0, 1f, 100, 1.0, 60, 4, 6, 0.08,
             21.0 / 16, 0, 72.0 / 16, 1.2, 1.5, GBSounds.HOWITZER_FIRE::get, 12f, 2.5f);
-    /**
-     * The Atomic Cannon (after the M65 "Atomic Annie"): three charges (375, 750 and 1,500 blocks at 45 degrees), laid 15
-     * to 55 degrees (the high arc where it can, else the low), 300 to 1,500 blocks, 20 degrees either side.
-     */
-    public static final GunSpec ATOMIC_SPEC = new GunSpec("atomic_cannon", Calibre.ATOMIC,
-            List.of(ShellType.HE, ShellType.INCENDIARY, ShellType.NUCLEAR), 4, new double[] {4.330, 6.124, 8.660}, 15, 55, 5, 300, 1500, 20,
-            0.5f, 8.0, 0.6f, 300, 0.8, 100, 3, 5, 0.1, 30.0 / 16, 0, 120.0 / 16, 2.6, 2.2, GBSounds.ATOMIC_FIRE::get, 16f, 4f);
 
     // --- the guns -------------------------------------------------------------------------------------------------------
     public static final WithItem<GunBlock> MORTAR = gun("mortar", "81 mm Mortar", Shapes.or(Block.box(2, 0, 2, 14, 3, 14), Block.box(6, 3, 5, 10, 12, 11)),
@@ -71,14 +64,10 @@ public final class GBArtillery {
             () -> GBArtillery.HOWITZER_ENTITY.get(), BarrelGunBlockEntity::howitzer, BarrelGunBlockEntity.restPose(HOWITZER_SPEC), 6f);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelGunBlockEntity>> HOWITZER_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("howitzer", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(BarrelGunBlockEntity::howitzer, HOWITZER.block().get()).build(null));
-    public static final WithItem<GunBlock> ATOMIC_CANNON = gun("atomic_cannon", "Atomic Cannon", Block.box(0, 0, 0, 16, 16, 16),
-            () -> GBArtillery.ATOMIC_ENTITY.get(), BarrelGunBlockEntity::atomicCannon, BarrelGunBlockEntity.restPose(ATOMIC_SPEC), 10f);
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelGunBlockEntity>> ATOMIC_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("atomic_cannon", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(BarrelGunBlockEntity::atomicCannon, ATOMIC_CANNON.block().get()).build(null));
 
     /** Every gun's block, for the lists that name them all. */
     public static List<WithItem<GunBlock>> guns() {
-        return List.of(MORTAR, HOWITZER, ATOMIC_CANNON);
+        return List.of(MORTAR, HOWITZER);
     }
 
     // --- the shells -------------------------------------------------------------------------------------------------------
@@ -123,14 +112,10 @@ public final class GBArtillery {
                     + "grows with range, blooms as it fires and while it is laid round, and shrinks back over two seconds, so a "
                     + "steady crew shoots closest.");
     public static final String INFO_HOWITZER = GBLang.add(GroundBurst.MODID + ".jei.info.howitzer",
-            "The 155 mm Howitzer reaches 64 to 800 blocks, 30 degrees either side of where it is placed facing. It is crewed and "
+            "The 155 mm Howitzer reaches 64 to 600 blocks, 30 degrees either side of where it is placed facing. It is crewed and "
                     + "aimed as the mortar is (scroll out or V for the strategic view; far ground the game has not loaded is shown "
                     + "as the gun's map of it), fires HE and incendiary shells (8 of each in its rack) every five seconds, and is "
                     + "steadier than the mortar: a narrower circle that takes three seconds to settle.");
-    public static final String INFO_ATOMIC = GBLang.add(GroundBurst.MODID + ".jei.info.atomic_cannon",
-            "The Atomic Cannon throws 280 mm shells 300 to 1,500 blocks, 20 degrees either side of where it is placed facing: HE, "
-                    + "incendiary, and the nuclear shell, a tactical nuclear burst wherever it lands. Crewed and aimed as the other "
-                    + "guns are; it takes fifteen seconds to load and five to settle, and its rack holds 4 of each.");
 
     private GBArtillery() {}
 
@@ -148,12 +133,12 @@ public final class GBArtillery {
 
     private static Map<Calibre, Map<ShellType, DeferredItem<ShellItem>>> shells() {
         Map<Calibre, Map<ShellType, DeferredItem<ShellItem>>> out = new EnumMap<>(Calibre.class);
-        for (GunSpec g : List.of(MORTAR_SPEC, HOWITZER_SPEC, ATOMIC_SPEC)) {
+        for (GunSpec g : List.of(MORTAR_SPEC, HOWITZER_SPEC)) {
             Map<ShellType, DeferredItem<ShellItem>> kinds = new EnumMap<>(ShellType.class);
             for (ShellType t : g.shells()) {
                 Calibre c = g.calibre();
                 kinds.put(t, GBItems.register(c.item(t), c.english + " " + t.english + " Shell", GBTab.ORDNANCE, p -> new ShellItem(p, c, t),
-                        p -> t == ShellType.NUCLEAR ? p.stacksTo(4).rarity(Rarity.RARE) : p.stacksTo(c == Calibre.MORTAR ? 16 : c == Calibre.HOWITZER ? 8 : 4)));
+                        p -> p.stacksTo(c == Calibre.MORTAR ? 16 : 8)));
             }
             out.put(g.calibre(), kinds);
         }
@@ -164,7 +149,6 @@ public final class GBArtillery {
         modBus.addListener((RegisterCapabilitiesEvent event) -> {
             event.registerBlockEntity(Capabilities.Item.BLOCK, MORTAR_ENTITY.get(), (be, side) -> be.rack());
             event.registerBlockEntity(Capabilities.Item.BLOCK, HOWITZER_ENTITY.get(), (be, side) -> be.rack());
-            event.registerBlockEntity(Capabilities.Item.BLOCK, ATOMIC_ENTITY.get(), (be, side) -> be.rack());
         });
         modBus.addListener((RegisterTicketControllersEvent event) -> event.register(TICKETS));
     }
