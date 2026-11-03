@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gas_dispenser"
+        "recipe": "groundburst:gas_dispenser"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

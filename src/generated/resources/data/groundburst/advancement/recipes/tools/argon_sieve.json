@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:argon_sieve"
+        "recipe": "groundburst:argon_sieve"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

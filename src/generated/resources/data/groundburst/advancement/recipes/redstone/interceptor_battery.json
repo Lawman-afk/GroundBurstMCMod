@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:interceptor_battery"
+        "recipe": "groundburst:interceptor_battery"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:missile_erector"
+        "recipe": "groundburst:missile_erector"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

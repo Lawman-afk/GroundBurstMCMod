@@ -27,6 +27,8 @@ public class GroundBurstClient {
         dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's
         dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'
         dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code
+        dev.groundburst.port.render.FreeRotationModels.register(modBus);   // models turned by any angle
+        dev.groundburst.port.PortCheck.register();   // gradlew runPortCheck
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         MachineClientHooks.clientTick = MachineSounds::tick;

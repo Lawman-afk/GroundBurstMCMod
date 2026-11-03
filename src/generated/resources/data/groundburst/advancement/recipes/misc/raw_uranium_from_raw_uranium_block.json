@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:raw_uranium_from_raw_uranium_block"
+        "recipe": "groundburst:raw_uranium_from_raw_uranium_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

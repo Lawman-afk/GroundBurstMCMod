@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/smoke_warhead",
     "w": "groundburst:block/smoke_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bell-1_0",
       "from": [

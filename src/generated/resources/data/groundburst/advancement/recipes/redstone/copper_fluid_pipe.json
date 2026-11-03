@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:copper_fluid_pipe"
+        "recipe": "groundburst:copper_fluid_pipe"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

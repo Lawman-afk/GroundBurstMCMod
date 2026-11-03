@@ -152,7 +152,7 @@ public final class GBResources {
     }
 
     private static WithItem<AmethystClusterBlock> crystal(String name, String english, float height, float width, int light, SoundType sound) {
-        return GBBlocks.register(name, english, GBTab.RESOURCES, props -> new AmethystClusterBlock(height, width, props),
+        return GBBlocks.register(name, english, GBTab.RESOURCES, props -> new AmethystClusterBlock(height, (16 - (width)) / 2, props),
                 p -> p.mapColor(MapColor.COLOR_PURPLE).forceSolidOn().noOcclusion().sound(sound).strength(1.5f)
                         .lightLevel(s -> light).pushReaction(PushReaction.DESTROY));
     }

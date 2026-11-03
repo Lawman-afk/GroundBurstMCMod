@@ -8,7 +8,129 @@
     "particle": "groundburst:block/missile/cryo_warhead_cruise",
     "w": "groundburst:block/cryo_warhead"
   },
-  "elements": [
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        45,
+        30
+      ],
+      "translation": [
+        -3.986,
+        6.207,
+        0
+      ],
+      "scale": [
+        0.7771,
+        0.7771,
+        0.7771
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0.0,
+        6.839,
+        -0.207
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0.0,
+        6.839,
+        -0.207
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.0,
+        8.471,
+        0.834
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -25,
+        0
+      ],
+      "translation": [
+        1.0,
+        7.787,
+        -0.145
+      ],
+      "scale": [
+        0.35,
+        0.35,
+        0.35
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        155,
+        0
+      ],
+      "translation": [
+        1.0,
+        7.787,
+        -0.145
+      ],
+      "scale": [
+        0.35,
+        0.35,
+        0.35
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.0,
+        8.471,
+        0.834
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    }
+  },
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bbell-1_0",
       "from": [
@@ -8857,126 +8979,5 @@
         }
       }
     }
-  ],
-  "display": {
-    "gui": {
-      "rotation": [
-        30,
-        45,
-        30
-      ],
-      "translation": [
-        -3.986,
-        6.207,
-        0
-      ],
-      "scale": [
-        0.7771,
-        0.7771,
-        0.7771
-      ]
-    },
-    "ground": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "translation": [
-        0.0,
-        6.839,
-        -0.207
-      ],
-      "scale": [
-        0.5,
-        0.5,
-        0.5
-      ]
-    },
-    "fixed": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "translation": [
-        0.0,
-        6.839,
-        -0.207
-      ],
-      "scale": [
-        0.5,
-        0.5,
-        0.5
-      ]
-    },
-    "thirdperson_righthand": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "translation": [
-        0.0,
-        8.471,
-        0.834
-      ],
-      "scale": [
-        0.4,
-        0.4,
-        0.4
-      ]
-    },
-    "firstperson_righthand": {
-      "rotation": [
-        0,
-        -25,
-        0
-      ],
-      "translation": [
-        1.0,
-        7.787,
-        -0.145
-      ],
-      "scale": [
-        0.35,
-        0.35,
-        0.35
-      ]
-    },
-    "firstperson_lefthand": {
-      "rotation": [
-        0,
-        155,
-        0
-      ],
-      "translation": [
-        1.0,
-        7.787,
-        -0.145
-      ],
-      "scale": [
-        0.35,
-        0.35,
-        0.35
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "translation": [
-        0.0,
-        8.471,
-        0.834
-      ],
-      "scale": [
-        0.4,
-        0.4,
-        0.4
-      ]
-    }
-  }
+  ]
 }

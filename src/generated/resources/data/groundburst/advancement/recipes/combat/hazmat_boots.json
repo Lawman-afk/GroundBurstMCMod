@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:hazmat_boots"
+        "recipe": "groundburst:hazmat_boots"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

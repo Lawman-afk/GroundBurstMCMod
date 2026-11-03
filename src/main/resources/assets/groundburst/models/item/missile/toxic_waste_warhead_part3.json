@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/toxic_waste_warhead",
     "w": "groundburst:block/toxic_waste_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "head_base0_0",
       "from": [

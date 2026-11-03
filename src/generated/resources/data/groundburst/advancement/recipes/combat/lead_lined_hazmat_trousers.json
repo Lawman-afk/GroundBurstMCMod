@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:lead_lined_hazmat_trousers"
+        "recipe": "groundburst:lead_lined_hazmat_trousers"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

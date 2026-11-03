@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:inertial_guidance_unit"
+        "recipe": "groundburst:inertial_guidance_unit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

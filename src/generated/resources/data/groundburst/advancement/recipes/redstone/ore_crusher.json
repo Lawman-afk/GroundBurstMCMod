@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:ore_crusher"
+        "recipe": "groundburst:ore_crusher"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

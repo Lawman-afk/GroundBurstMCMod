@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cruise_launcher"
+        "recipe": "groundburst:cruise_launcher"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

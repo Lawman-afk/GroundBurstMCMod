@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/nuclear_missile_warhead",
     "w": "groundburst:block/nuclear_missile_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "ebell0-1_0",
       "from": [

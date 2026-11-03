@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:steel_panel_from_steel_plate_stonecutting"
+        "recipe": "groundburst:steel_panel_from_steel_plate_stonecutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

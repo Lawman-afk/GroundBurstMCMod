@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:wrench"
+        "recipe": "groundburst:wrench"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

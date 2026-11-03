@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:scud_storm"
+        "recipe": "groundburst:scud_storm"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

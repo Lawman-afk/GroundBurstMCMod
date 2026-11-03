@@ -1,19 +1,64 @@
 {
   "values": [
-    "#c:dusts/sulfur",
-    "#c:dusts/saltpeter",
-    "#c:dusts/uranium",
-    "#c:dusts/lithium",
-    "#c:dusts/tungsten",
-    "#c:dusts/lead",
-    "#c:dusts/rare_earth",
-    "#c:dusts/cobalt",
-    "#c:dusts/iron",
-    "#c:dusts/gold",
-    "#c:dusts/copper",
-    "#c:dusts/cinnabar",
-    "#c:dusts/fluorite",
-    "#c:dusts/lithium_6",
-    "#c:dusts/depleted_uranium"
+    {
+      "id": "#c:dusts/sulfur",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/saltpeter",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/uranium",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/lithium",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/tungsten",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/lead",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/rare_earth",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/cobalt",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/iron",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/gold",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/copper",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/cinnabar",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/fluorite",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/lithium_6",
+      "required": false
+    },
+    {
+      "id": "#c:dusts/depleted_uranium",
+      "required": false
+    }
   ]
 }

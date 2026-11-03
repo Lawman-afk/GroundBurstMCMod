@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cryo_grenade"
+        "recipe": "groundburst:cryo_grenade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

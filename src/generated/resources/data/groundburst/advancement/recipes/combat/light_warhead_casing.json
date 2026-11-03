@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:light_warhead_casing"
+        "recipe": "groundburst:light_warhead_casing"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

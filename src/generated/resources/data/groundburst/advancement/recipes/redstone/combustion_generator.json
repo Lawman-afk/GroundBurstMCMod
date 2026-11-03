@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:combustion_generator"
+        "recipe": "groundburst:combustion_generator"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

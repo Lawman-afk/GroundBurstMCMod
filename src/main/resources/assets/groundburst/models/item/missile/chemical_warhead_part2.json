@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/chemical_warhead",
     "w": "groundburst:block/chemical_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "body-1_0",
       "from": [

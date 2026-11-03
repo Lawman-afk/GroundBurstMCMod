@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gantry_frame"
+        "recipe": "groundburst:gantry_frame"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:chain_link_fence"
+        "recipe": "groundburst:chain_link_fence"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:pressurized_fluid_pipe"
+        "recipe": "groundburst:pressurized_fluid_pipe"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

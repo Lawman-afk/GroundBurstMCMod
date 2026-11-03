@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:large_silo_door"
+        "recipe": "groundburst:large_silo_door"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

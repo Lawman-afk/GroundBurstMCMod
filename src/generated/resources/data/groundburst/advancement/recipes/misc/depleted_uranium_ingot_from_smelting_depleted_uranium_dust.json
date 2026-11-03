@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:depleted_uranium_ingot_from_smelting_depleted_uranium_dust"
+        "recipe": "groundburst:depleted_uranium_ingot_from_smelting_depleted_uranium_dust"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:advanced_capacitor_bank"
+        "recipe": "groundburst:advanced_capacitor_bank"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

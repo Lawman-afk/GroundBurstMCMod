@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:toxin_grenade"
+        "recipe": "groundburst:toxin_grenade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

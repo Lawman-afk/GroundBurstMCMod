@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:quantum_balanced_chip"
+        "recipe": "groundburst:quantum_balanced_chip"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

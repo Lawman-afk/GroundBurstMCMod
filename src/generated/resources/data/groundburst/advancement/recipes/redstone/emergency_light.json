@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:emergency_light"
+        "recipe": "groundburst:emergency_light"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

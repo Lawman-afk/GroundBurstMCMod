@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:molotov_cocktail"
+        "recipe": "groundburst:molotov_cocktail"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

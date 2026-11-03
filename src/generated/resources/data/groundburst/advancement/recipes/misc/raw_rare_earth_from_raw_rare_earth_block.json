@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:raw_rare_earth_from_raw_rare_earth_block"
+        "recipe": "groundburst:raw_rare_earth_from_raw_rare_earth_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:liquid_fuel_stage"
+        "recipe": "groundburst:liquid_fuel_stage"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

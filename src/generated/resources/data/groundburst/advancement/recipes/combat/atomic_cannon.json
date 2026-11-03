@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:atomic_cannon"
+        "recipe": "groundburst:atomic_cannon"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

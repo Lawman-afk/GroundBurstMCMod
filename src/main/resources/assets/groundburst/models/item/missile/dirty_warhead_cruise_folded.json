@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/dirty_warhead_cruise",
     "w": "groundburst:block/dirty_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bbell-1_0",
       "from": [

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:charcoal_from_charred_log"
+        "recipe": "groundburst:charcoal_from_charred_log"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

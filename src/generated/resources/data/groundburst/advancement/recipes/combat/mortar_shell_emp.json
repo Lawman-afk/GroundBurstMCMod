@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:mortar_shell_emp"
+        "recipe": "groundburst:mortar_shell_emp"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

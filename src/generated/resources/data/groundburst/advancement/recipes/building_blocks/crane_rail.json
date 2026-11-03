@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:crane_rail"
+        "recipe": "groundburst:crane_rail"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

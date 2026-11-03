@@ -1,6 +1,12 @@
 {
   "values": [
-    "#c:nuggets/enriched_uranium",
-    "#c:nuggets/plutonium"
+    {
+      "id": "#c:nuggets/enriched_uranium",
+      "required": false
+    },
+    {
+      "id": "#c:nuggets/plutonium",
+      "required": false
+    }
   ]
 }

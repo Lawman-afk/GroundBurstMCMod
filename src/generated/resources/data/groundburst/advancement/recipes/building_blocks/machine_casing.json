@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:machine_casing"
+        "recipe": "groundburst:machine_casing"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

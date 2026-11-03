@@ -8,7 +8,129 @@
     "particle": "groundburst:block/missile/neutron_warhead",
     "w": "groundburst:block/neutron_warhead"
   },
-  "elements": [
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        45,
+        30
+      ],
+      "translation": [
+        -1.106,
+        1.793,
+        0
+      ],
+      "scale": [
+        0.5255,
+        0.5255,
+        0.5255
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0.0,
+        2.698,
+        0.0
+      ],
+      "scale": [
+        0.4532,
+        0.4532,
+        0.4532
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0.0,
+        2.698,
+        0.0
+      ],
+      "scale": [
+        0.4532,
+        0.4532,
+        0.4532
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.0,
+        5.158,
+        1.0
+      ],
+      "scale": [
+        0.3626,
+        0.3626,
+        0.3626
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -25,
+        0
+      ],
+      "translation": [
+        1.0,
+        4.888,
+        0.0
+      ],
+      "scale": [
+        0.3172,
+        0.3172,
+        0.3172
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        155,
+        0
+      ],
+      "translation": [
+        1.0,
+        4.888,
+        0.0
+      ],
+      "scale": [
+        0.3172,
+        0.3172,
+        0.3172
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.0,
+        5.158,
+        1.0
+      ],
+      "scale": [
+        0.3626,
+        0.3626,
+        0.3626
+      ]
+    }
+  },
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bell-1_0",
       "from": [
@@ -7951,126 +8073,5 @@
         }
       }
     }
-  ],
-  "display": {
-    "gui": {
-      "rotation": [
-        30,
-        45,
-        30
-      ],
-      "translation": [
-        -1.106,
-        1.793,
-        0
-      ],
-      "scale": [
-        0.5255,
-        0.5255,
-        0.5255
-      ]
-    },
-    "ground": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "translation": [
-        0.0,
-        2.698,
-        0.0
-      ],
-      "scale": [
-        0.4532,
-        0.4532,
-        0.4532
-      ]
-    },
-    "fixed": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "translation": [
-        0.0,
-        2.698,
-        0.0
-      ],
-      "scale": [
-        0.4532,
-        0.4532,
-        0.4532
-      ]
-    },
-    "thirdperson_righthand": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "translation": [
-        0.0,
-        5.158,
-        1.0
-      ],
-      "scale": [
-        0.3626,
-        0.3626,
-        0.3626
-      ]
-    },
-    "firstperson_righthand": {
-      "rotation": [
-        0,
-        -25,
-        0
-      ],
-      "translation": [
-        1.0,
-        4.888,
-        0.0
-      ],
-      "scale": [
-        0.3172,
-        0.3172,
-        0.3172
-      ]
-    },
-    "firstperson_lefthand": {
-      "rotation": [
-        0,
-        155,
-        0
-      ],
-      "translation": [
-        1.0,
-        4.888,
-        0.0
-      ],
-      "scale": [
-        0.3172,
-        0.3172,
-        0.3172
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "translation": [
-        0.0,
-        5.158,
-        1.0
-      ],
-      "scale": [
-        0.3626,
-        0.3626,
-        0.3626
-      ]
-    }
-  }
+  ]
 }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gps_guidance_unit"
+        "recipe": "groundburst:gps_guidance_unit"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

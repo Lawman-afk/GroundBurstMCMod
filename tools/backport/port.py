@@ -366,6 +366,8 @@ RULES = [
     sub(r"\bSheets\.cutoutBlockItemSheet\(\)", "Sheets.cutoutBlockSheet()"),
     sub(r"\b\w+\.gameRenderer\.gameRenderState\(\)\.windowRenderState\.appropriateLineWidth\b", "2.0F"),
     sub(r"\bLightTexture\.max\(", "dev.groundburst.port.Lights.max("),
+    # A crystal cluster: 26.x gives its width, 1.21.1 how far its box is inset from each side.
+    sub(r"\bnew AmethystClusterBlock\(((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+), ", r"new AmethystClusterBlock(\1, (16 - (\2)) / 2, "),
     # Consumables: 1.21.1's food (dev.groundburst.port.Consumable).
     sub(r"\.component\(DataComponents\.CONSUMABLE, ", ".food("),
     sub(r"\bnet\.minecraft\.client\.renderer\.item\.ItemStackRenderState\b", "dev.groundburst.port.render.ItemStackRenderState"),
@@ -823,12 +825,20 @@ FILE_FIXES: dict[str, list] = {
         after("container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);",
               "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"
               "\n        dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'"
-              "\n        dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code"),
+              "\n        dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code"
+              "\n        dev.groundburst.port.render.FreeRotationModels.register(modBus);   // models turned by any angle"
+              "\n        dev.groundburst.port.PortCheck.register();   // gradlew runPortCheck"),
     ],
+    # Items and blocks: their properties made when they are registered, as 26.x's registers make them (they may name
+    # other registered things, an effect, a block).
     "src/main/java/dev/groundburst/registry/GBItems.java": [
-        swap("ITEMS.registerItem(name, factory, properties);", "ITEMS.registerItem(name, factory, properties.apply(new Item.Properties()));"),
-        swap("ITEMS.registerSimpleBlockItem(block, properties);", "ITEMS.registerSimpleBlockItem(block, properties.apply(new Item.Properties()));"),
-        swap("Item.Properties::useBlockDescriptionPrefix)", "new Item.Properties())"),
+        swap("ITEMS.registerItem(name, factory, properties);", "ITEMS.register(name, () -> factory.apply(properties.apply(new Item.Properties())));"),
+        swap("ITEMS.registerSimpleBlockItem(block, properties);",
+             "ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), properties.apply(new Item.Properties())));"),
+        swap("(DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.registerItem(block.getId().getPath(),\n"
+             "                props -> factory.apply(block.get(), props), Item.Properties::useBlockDescriptionPrefix);",
+             "(DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.register(block.getId().getPath(),\n"
+             "                () -> factory.apply(block.get(), new Item.Properties()));"),
     ],
     "src/main/java/dev/groundburst/blast/GBBlast.java": [
         swap("BlastManager.of(player.level())", "BlastManager.of((net.minecraft.server.level.ServerLevel) player.level())"),
@@ -837,7 +847,7 @@ FILE_FIXES: dict[str, list] = {
         swap('tag.get().getStringOr("Status", "")', 'dev.groundburst.port.Nbt.getStringOr(tag.get(), "Status", "")'),
     ],
     "src/main/java/dev/groundburst/registry/GBBlocks.java": [
-        swap("BLOCKS.registerBlock(name, factory, properties);", "BLOCKS.registerBlock(name, factory, properties.apply(BlockBehaviour.Properties.of()));"),
+        swap("BLOCKS.registerBlock(name, factory, properties);", "BLOCKS.register(name, () -> factory.apply(properties.apply(BlockBehaviour.Properties.of())));"),
     ],
     # Fuel: 1.21.1 asks the stack its burn time (26.x reads the item's cooking-fuel component through a loot context).
     "src/main/java/dev/groundburst/content/power/CombustionGeneratorBlockEntity.java": [
@@ -856,6 +866,10 @@ FILE_FIXES: dict[str, list] = {
              "        return source == null ? 0xFFFFFF : source.colorAsTerrainParticle(state, level, at) & 0xFFFFFF;",
              "int color = Minecraft.getInstance().getBlockColors().getColor(state, level, at, 0);\n"
              "        return color == -1 ? 0xFFFFFF : color & 0xFFFFFF;"),
+    ],
+    # JEI 19's string subtypes: none is "", not null.
+    "src/main/java/dev/groundburst/compat/jei/GBJeiPlugin.java": [
+        swap("return spec != null ? spec.look() : null;", "return spec != null ? spec.look() : \"\";"),
     ],
     # Standalone models: 1.21.1 registers them by location and hands back a baked model.
     "src/main/java/dev/groundburst/client/render/FissionSections.java": [
@@ -931,12 +945,244 @@ def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
     path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid/(\w+)\.png$", r"\1/textures/models/armor/\2_layer_1.png", path)
     path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid_leggings/(\w+)\.png$",
                   r"\1/textures/models/armor/\2_layer_2.png", path)
+    # 1.21.1 takes only lower-case names in a pack (the sound credits).
+    path = re.sub(r"^(src/main/resources/assets/\w+/sounds)/CREDITS\.txt$", r"\1/credits.txt", path)
+    # 26.x's configured features: 1.21.1's worldgen/configured_feature.
+    path = re.sub(r"^(src/(?:main|generated)/resources/data/\w+/worldgen)/feature/", r"\1/configured_feature/", path)
     if re.match(r"^src/(main|generated)/resources/data/\w+/recipe/.*\.json$", path):
         data = port_recipe(data)
+        if data is None:
+            return None                              # it needs one of 26.x's items
+    if re.match(r"^src/(main|generated)/resources/data/\w+/advancement/.*\.json$", path):
+        data = port_advancement(data)
     # 26.x's item model definitions: made into 1.21.1's item models by item_models (below).
     if re.match(r"^src/(main|generated)/resources/assets/\w+/items/.*\.json$", path):
         return None
+    if re.match(r"^src/(main|generated)/resources/assets/\w+/models/.*\.json$", path):
+        data = port_model(data)
+    if re.match(r"^src/(main|generated)/resources/data/\w+/loot_table/.*\.json$", path):
+        data = port_loot(data)
+    if re.match(r"^src/(main|generated)/resources/data/\w+/worldgen/biome/.*\.json$", path):
+        data = port_biome(data)
+    if re.match(r"^src/(main|generated)/resources/data/\w+/worldgen/configured_feature/.*\.json$", path):
+        data = port_feature(data)
+    if re.match(r"^src/(main|generated)/resources/data/\w+/tags/.*\.json$", path):
+        data = port_tag(data)
     return path, data
+
+
+VANILLA_ANGLES = {0, 22.5, -22.5, 45, -45}
+
+
+# Vanilla parents whose blocks 1.21.1 draws in a see-through layer by name (not by their models): a model of the mod's
+# on one of them names the layer itself.
+PARENT_LAYERS = {"minecraft:block/grass_block": "minecraft:cutout_mipped", "minecraft:block/leaves": "minecraft:cutout_mipped",
+                 "minecraft:block/cross": "minecraft:cutout", "minecraft:block/tinted_cross": "minecraft:cutout"}
+
+
+def port_model(data: bytes) -> bytes:
+    """A block or item model whose parts turn by angles 1.21.1 will not read (it takes multiples of 22.5 up to 45): its
+    parts moved where only this branch's loader reads them (dev.groundburst.port.render.FreeRotationModels). One on a
+    see-through vanilla parent (grass, leaves, a cross) names its layer (PARENT_LAYERS)."""
+    m = json.loads(data)
+    if m.get("parent") in PARENT_LAYERS and "render_type" not in m:
+        m["render_type"] = PARENT_LAYERS[m["parent"]]
+        data = (json.dumps(m, indent=2) + "\n").encode("utf-8")
+    # 26.x's bar templates are 1.21.1's iron bars' models (the same parts and texture names).
+    if isinstance(m.get("parent"), str) and m["parent"].startswith("minecraft:block/template_bars_"):
+        m["parent"] = m["parent"].replace("minecraft:block/template_bars_", "minecraft:block/iron_bars_")
+        data = (json.dumps(m, indent=2) + "\n").encode("utf-8")
+    elements = m.get("elements")
+    if not isinstance(elements, list) or "loader" in m:
+        return data
+    if all(float(e.get("rotation", {}).get("angle", 0)) in VANILLA_ANGLES for e in elements):
+        return data
+    m["loader"] = "groundburst:free_rotation"
+    m["groundburst:elements"] = m.pop("elements")
+    return (json.dumps(m, indent=2) + "\n").encode("utf-8")
+
+
+def vanilla_ids(java: str, pattern: str) -> set[str]:
+    """Ids 1.21.1 registers, read from its sources (build/mcsrc): {pattern} captures each name in {java}."""
+    src = ROOT / "build" / "mcsrc" / java
+    return {"minecraft:" + n for n in re.findall(pattern, src.read_text(encoding="utf-8"))} if src.exists() else set()
+
+
+ENTITY_TYPES = None
+
+
+def port_biome(data: bytes) -> bytes:
+    """26.x keeps a biome's sky, fog, music, ambient particles and mob spawns as environment attributes; 1.21.1 as its
+    effects and spawners (a mob 1.21.1 lacks is left out)."""
+    global ENTITY_TYPES
+    if ENTITY_TYPES is None:
+        ENTITY_TYPES = vanilla_ids("net/minecraft/world/entity/EntityType.java", r'register\(\s*"([a-z0-9_]+)"')
+    b = json.loads(data)
+    attrs = b.pop("attributes", {})
+    effects = b.get("effects", {})
+
+    def colour(v):
+        return int(v.lstrip("#"), 16) if isinstance(v, str) else v
+
+    for key in list(effects):
+        effects[key] = colour(effects[key])
+    effects.pop("dry_foliage_color", None)                    # 26.x's
+    for attr, key in (("minecraft:visual/sky_color", "sky_color"), ("minecraft:visual/fog_color", "fog_color"),
+                      ("minecraft:visual/water_fog_color", "water_fog_color")):
+        if attr in attrs:
+            effects[key] = colour(attrs[attr])
+    effects.setdefault("sky_color", 7907327)
+    effects.setdefault("fog_color", 12638463)
+    effects.setdefault("water_color", 4159204)
+    effects.setdefault("water_fog_color", 329011)
+    particles = attrs.get("minecraft:visual/ambient_particles")
+    if particles:
+        effects["particle"] = {"options": particles[0]["particle"], "probability": particles[0]["probability"]}
+    if "minecraft:audio/background_music" in attrs and attrs.get("minecraft:audio/music_volume", 1) == 0:
+        # No music: 1.21.1 has no silence, so the music is an empty sound that waits long between plays.
+        effects["music"] = {"sound": "minecraft:intentionally_empty", "min_delay": 12000, "max_delay": 24000, "replace_current_music": True}
+    b["effects"] = effects
+    spawns = attrs.get("minecraft:gameplay/natural_mob_spawns", {}).get("argument", {})
+    spawners = {}
+    for category, entries in spawns.get("spawns_by_category", {}).items():
+        out = []
+        for e in entries:
+            if ENTITY_TYPES and e["type"] not in ENTITY_TYPES:
+                continue
+            count = e.get("count", 1)
+            lo, hi = (count["min_inclusive"], count["max_inclusive"]) if isinstance(count, dict) else (count, count)
+            out.append({"type": e["type"], "weight": e["weight"], "minCount": lo, "maxCount": hi})
+        spawners[category] = out
+    b["spawners"] = spawners
+    b["spawn_costs"] = spawns.get("spawn_costs", {})
+    if b.get("carvers") == []:
+        b["carvers"] = {}
+    return (json.dumps(b, indent=2) + "\n").encode("utf-8")
+
+
+# 26.x's named predicates the mod's loot tables use, as 1.21.1 writes them out.
+NAMED_CONDITIONS = {
+    "minecraft:tool/can_silk_touch": {"condition": "minecraft:match_tool", "predicate": {
+        "predicates": {"minecraft:enchantments": [{"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}},
+    "minecraft:tool/can_shear": {"condition": "minecraft:match_tool", "predicate": {"items": "minecraft:shears"}},
+}
+
+
+def loot_condition(c):
+    """A 26.x loot condition (a named predicate, or {"type", ...}) as 1.21.1 writes one ({"condition", ...})."""
+    if isinstance(c, str):
+        if c in NAMED_CONDITIONS:
+            return json.loads(json.dumps(NAMED_CONDITIONS[c]))
+        return {"condition": "minecraft:reference", "name": c}
+    if not isinstance(c, dict) or "condition" in c:
+        return c
+    c = dict(c)
+    kind = c.pop("type")
+    out = {"condition": kind}
+    if kind == "minecraft:match_block":                      # 1.21.1's block state property: one block
+        out["condition"] = "minecraft:block_state_property"
+        out["block"] = c.pop("blocks")
+        if "state" in c:
+            out["properties"] = c.pop("state")
+    if kind in ("minecraft:any_of", "minecraft:all_of"):
+        out["terms"] = [loot_condition(t) for t in c.pop("terms")]
+    if kind == "minecraft:inverted":
+        out["term"] = loot_condition(c.pop("term"))
+    out.update(c)
+    return port_loot_object(out)
+
+
+def loot_function(f):
+    """A 26.x loot function ({"type", ...}) as 1.21.1 writes one ({"function", ...})."""
+    if not isinstance(f, dict) or "function" in f:
+        return port_loot_object(f)
+    f = dict(f)
+    out = {"function": f.pop("type")}
+    out.update(f)
+    return port_loot_object(out)
+
+
+def port_loot_object(o):
+    """26.x's single "condition" and its "modifier" list, wherever they sit (pools, entries, functions), as 1.21.1's
+    "conditions" and "functions"."""
+    if isinstance(o, list):
+        return [port_loot_object(x) for x in o]
+    if not isinstance(o, dict):
+        return o
+    out = {}
+    for k, v in o.items():
+        # A pool's, an entry's or a function's own condition (a condition's "condition" is its 1.21.1 kind: kept).
+        if k == "condition" and (isinstance(v, dict) or (isinstance(v, str) and ("type" in o or "rolls" in o or "entries" in o or "name" in o or "function" in o))):
+            out.setdefault("conditions", []).append(loot_condition(v))
+        elif k == "conditions" and isinstance(v, list):
+            out.setdefault("conditions", []).extend(loot_condition(x) for x in v)
+        elif k == "modifier":
+            out.setdefault("functions", []).extend(loot_function(x) for x in (v if isinstance(v, list) else [v]))
+        elif k == "functions" and isinstance(v, list):
+            out.setdefault("functions", []).extend(loot_function(x) for x in v)
+        else:
+            out[k] = port_loot_object(v)
+    return out
+
+
+def port_loot(data: bytes) -> bytes:
+    t = json.loads(data)
+    new = port_loot_object(t)
+    if new == t:
+        return data
+    return (json.dumps(new, indent=2) + "\n").encode("utf-8")
+
+
+def block_state(v):
+    """A block state as 1.21.1 writes one ({"Name", "Properties"}), from 26.x's ("name", "name[a=b]" or {"id", ...})."""
+    if isinstance(v, str):
+        m = re.fullmatch(r"([^\[]+)(?:\[(.*)\])?", v)
+        props = dict(p.split("=", 1) for p in m.group(2).split(",")) if m.group(2) else {}
+        return {"Name": m.group(1), **({"Properties": props} if props else {})}
+    if isinstance(v, dict) and "id" in v and "Name" not in v:
+        props = v.get("properties", v.get("Properties", {}))
+        return {"Name": v["id"], **({"Properties": props} if props else {})}
+    return v
+
+
+def state_provider(v):
+    """A block state provider as 1.21.1 writes one (26.x writes a plain state for the simple provider)."""
+    if isinstance(v, dict) and "type" in v:
+        return v
+    return {"type": "minecraft:simple_state_provider", "state": block_state(v)}
+
+
+def port_feature(data: bytes) -> bytes:
+    """26.x writes a configured feature's settings beside its type; 1.21.1 under "config", with full block states."""
+    f = json.loads(data)
+    config = {k: v for k, v in f.items() if k != "type"}
+    if isinstance(config.get("blocks"), dict):                  # a geode's
+        blocks = config["blocks"]
+        for key in list(blocks):
+            if key.endswith("_provider"):
+                blocks[key] = state_provider(blocks[key])
+        if "inner_placements" in blocks:
+            blocks["inner_placements"] = [block_state(s) for s in blocks["inner_placements"]]
+    for target in config.get("targets", []) if isinstance(config.get("targets"), list) else []:   # an ore's
+        if "state" in target:
+            target["state"] = block_state(target["state"])
+    return (json.dumps({"type": f["type"], "config": config}, indent=2) + "\n").encode("utf-8")
+
+
+def port_tag(data: bytes) -> bytes:
+    """A tag's entries from outside the mod (vanilla's, other mods' and the common tags) made optional: 26.x has blocks,
+    items and tags 1.21.1 lacks, and one missing required entry fails the whole tag."""
+    t = json.loads(data)
+    values, changed = [], False
+    for v in t.get("values", []):
+        if isinstance(v, str) and not v.lstrip("#").startswith("groundburst:"):
+            v = {"id": v, "required": False}
+            changed = True
+        values.append(v)
+    if not changed:
+        return data                                  # as main has it
+    t["values"] = values
+    return (json.dumps(t, indent=2) + "\n").encode("utf-8")
 
 
 # --- item models ----------------------------------------------------------------------------------------------------------
@@ -1011,7 +1257,7 @@ def item_models(files: list[str]) -> dict[str, bytes]:
             r = model["model"]
             if r == own:                             # the item's own model file is about to be the item model: keep it apart
                 kept = f"src/main/resources/assets/{ns}/models/item/{name}_own.json"
-                out[kept] = read_main(dest)
+                out[kept] = port_model(read_main(dest))
                 return f"{ns}:item/{name}_own"
             return r
 
@@ -1098,7 +1344,51 @@ def sized(entries, convert):
     return [{**e, "ingredient": convert(e["ingredient"])} if isinstance(e, dict) and "ingredient" in e else e for e in entries]
 
 
-def port_recipe(data: bytes) -> bytes:
+# 26.x's names for things 1.21.1 has under another.
+ITEM_ALIASES = {"minecraft:iron_chain": "minecraft:chain"}
+VANILLA_ITEMS = None
+
+
+def vanilla_items() -> set[str]:
+    """1.21.1's items (and blocks, a few more than have items), read from its sources: enough to tell 26.x's new ones."""
+    global VANILLA_ITEMS
+    if VANILLA_ITEMS is None:
+        blocks_src = (ROOT / "build" / "mcsrc" / "net/minecraft/world/level/block/Blocks.java").read_text(encoding="utf-8")
+        items_src = (ROOT / "build" / "mcsrc" / "net/minecraft/world/item/Items.java").read_text(encoding="utf-8")
+        blocks = dict(re.findall(r'public static final Block (\w+) = register\(\s*"([a-z0-9_]+)"', blocks_src))
+        VANILLA_ITEMS = {"minecraft:" + b for b in blocks.values()} | {"minecraft:" + i for i in re.findall(r'registerItem\(\s*"([a-z0-9_]+)"', items_src)}
+    return VANILLA_ITEMS
+
+
+def missing_items(value) -> list[str]:
+    """The vanilla items named in a recipe that 1.21.1 lacks."""
+    out = []
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if k in ("item", "id") and isinstance(v, str) and v.startswith("minecraft:") and v not in vanilla_items():
+                out.append(v)
+            else:
+                out.extend(missing_items(v))
+    elif isinstance(value, list):
+        for v in value:
+            out.extend(missing_items(v))
+    return out
+
+
+def port_advancement(data: bytes) -> bytes:
+    """A recipe's unlock: 26.x names its recipes, 1.21.1 one recipe."""
+    a = json.loads(data)
+    for criterion in a.get("criteria", {}).values():
+        c = criterion.get("conditions", {})
+        if criterion.get("trigger") == "minecraft:recipe_unlocked" and "recipes" in c and "recipe" not in c:
+            r = c.pop("recipes")
+            c["recipe"] = r[0] if isinstance(r, list) else r
+    return (json.dumps(a, indent=2) + "\n").encode("utf-8")
+
+
+def port_recipe(data: bytes) -> bytes | None:
+    for old, new in ITEM_ALIASES.items():
+        data = data.replace(f'"{old}"'.encode(), f'"{new}"'.encode())
     r = json.loads(data)
     if "key" in r:
         r["key"] = {k: ingredient(v) for k, v in r["key"].items()}
@@ -1112,6 +1402,8 @@ def port_recipe(data: bytes) -> bytes:
         r["inputs"] = sized(r["inputs"], ingredient)
     if isinstance(r.get("fluids"), list):
         r["fluids"] = sized(r["fluids"], fluid_ingredient)
+    if missing_items(r):
+        return None
     return (json.dumps(r, indent=2) + "\n").encode("utf-8")
 
 
@@ -1216,6 +1508,9 @@ def main() -> None:
             continue
         out = port_file(path)
         if out is None:
+            if path in OWN:                               # this branch's own (its build files): never touched
+                kept += 1
+                continue
             stale = ROOT / path
             if stale.exists() and (path.startswith("src/") or path.startswith("tools/")) and not path.startswith("tools/backport"):
                 stale.unlink()

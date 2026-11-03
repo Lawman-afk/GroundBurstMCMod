@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/tsar_warhead",
     "w": "groundburst:block/tsar_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "inter2-1_0",
       "from": [

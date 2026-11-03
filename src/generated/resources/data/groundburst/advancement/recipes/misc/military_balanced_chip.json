@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:military_balanced_chip"
+        "recipe": "groundburst:military_balanced_chip"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

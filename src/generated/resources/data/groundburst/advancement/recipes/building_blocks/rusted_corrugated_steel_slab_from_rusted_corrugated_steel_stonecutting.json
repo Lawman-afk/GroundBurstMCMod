@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:rusted_corrugated_steel_slab_from_rusted_corrugated_steel_stonecutting"
+        "recipe": "groundburst:rusted_corrugated_steel_slab_from_rusted_corrugated_steel_stonecutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

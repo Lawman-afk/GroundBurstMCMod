@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:pressure_vessel"
+        "recipe": "groundburst:pressure_vessel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:remote_detonator"
+        "recipe": "groundburst:remote_detonator"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

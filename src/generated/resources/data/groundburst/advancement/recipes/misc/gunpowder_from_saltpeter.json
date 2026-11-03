@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gunpowder_from_saltpeter"
+        "recipe": "groundburst:gunpowder_from_saltpeter"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

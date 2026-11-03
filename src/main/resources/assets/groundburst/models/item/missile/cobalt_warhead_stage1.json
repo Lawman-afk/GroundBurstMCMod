@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/cobalt_warhead",
     "w": "groundburst:block/cobalt_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bell-1_0",
       "from": [

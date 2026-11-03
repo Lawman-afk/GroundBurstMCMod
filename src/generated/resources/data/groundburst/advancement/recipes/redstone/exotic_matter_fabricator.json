@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:exotic_matter_fabricator"
+        "recipe": "groundburst:exotic_matter_fabricator"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

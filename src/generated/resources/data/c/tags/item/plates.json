@@ -1,8 +1,20 @@
 {
   "values": [
-    "#c:plates/steel",
-    "#c:plates/copper",
-    "#c:plates/lead",
-    "#c:plates/tungsten"
+    {
+      "id": "#c:plates/steel",
+      "required": false
+    },
+    {
+      "id": "#c:plates/copper",
+      "required": false
+    },
+    {
+      "id": "#c:plates/lead",
+      "required": false
+    },
+    {
+      "id": "#c:plates/tungsten",
+      "required": false
+    }
   ]
 }

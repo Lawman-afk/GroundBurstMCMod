@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cobalt_jacket"
+        "recipe": "groundburst:cobalt_jacket"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

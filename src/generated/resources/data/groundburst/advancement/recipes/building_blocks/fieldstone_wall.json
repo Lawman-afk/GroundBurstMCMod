@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:fieldstone_wall"
+        "recipe": "groundburst:fieldstone_wall"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

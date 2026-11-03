@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:gantry_arm"
+        "recipe": "groundburst:gantry_arm"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

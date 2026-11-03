@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:vertical_launch_battery"
+        "recipe": "groundburst:vertical_launch_battery"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

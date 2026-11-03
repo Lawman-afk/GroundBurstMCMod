@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:toxin_tank"
+        "recipe": "groundburst:toxin_tank"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

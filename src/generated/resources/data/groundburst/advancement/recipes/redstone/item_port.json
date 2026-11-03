@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:item_port"
+        "recipe": "groundburst:item_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

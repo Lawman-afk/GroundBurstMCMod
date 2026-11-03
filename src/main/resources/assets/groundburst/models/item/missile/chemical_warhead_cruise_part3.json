@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/chemical_warhead_cruise",
     "w": "groundburst:block/chemical_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "wing-1",
       "from": [

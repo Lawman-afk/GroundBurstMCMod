@@ -1,17 +1,21 @@
 {
   "type": "minecraft:block",
-  "modifier": {
-    "type": "minecraft:copy_components",
-    "include": [
-      "groundburst:energy"
-    ],
-    "source": "block_entity"
-  },
+  "functions": [
+    {
+      "function": "minecraft:copy_components",
+      "include": [
+        "groundburst:energy"
+      ],
+      "source": "block_entity"
+    }
+  ],
   "pools": [
     {
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      },
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",

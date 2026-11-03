@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:silo_hatch"
+        "recipe": "groundburst:silo_hatch"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/boosted_fission_warhead",
     "w": "groundburst:block/boosted_fission_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "inter-1_0",
       "from": [

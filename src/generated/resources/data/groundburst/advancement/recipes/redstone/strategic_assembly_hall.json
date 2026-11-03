@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:strategic_assembly_hall"
+        "recipe": "groundburst:strategic_assembly_hall"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cluster_dispenser"
+        "recipe": "groundburst:cluster_dispenser"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:machine_frame"
+        "recipe": "groundburst:machine_frame"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

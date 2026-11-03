@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:alert_display"
+        "recipe": "groundburst:alert_display"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

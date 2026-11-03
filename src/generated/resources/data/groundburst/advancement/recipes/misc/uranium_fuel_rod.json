@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:uranium_fuel_rod"
+        "recipe": "groundburst:uranium_fuel_rod"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

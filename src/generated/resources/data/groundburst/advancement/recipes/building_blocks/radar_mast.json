@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:radar_mast"
+        "recipe": "groundburst:radar_mast"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

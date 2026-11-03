@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:mortar_shell_cryo"
+        "recipe": "groundburst:mortar_shell_cryo"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

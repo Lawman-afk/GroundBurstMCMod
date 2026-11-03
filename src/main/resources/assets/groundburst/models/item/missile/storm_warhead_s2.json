@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/storm_warhead",
     "w": "groundburst:block/storm_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "inter2-1_0",
       "from": [

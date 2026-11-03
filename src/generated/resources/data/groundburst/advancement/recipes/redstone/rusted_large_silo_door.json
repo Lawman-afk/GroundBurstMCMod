@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:rusted_large_silo_door"
+        "recipe": "groundburst:rusted_large_silo_door"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

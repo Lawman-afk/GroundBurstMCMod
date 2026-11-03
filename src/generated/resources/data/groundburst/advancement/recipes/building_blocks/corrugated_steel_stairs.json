@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:corrugated_steel_stairs"
+        "recipe": "groundburst:corrugated_steel_stairs"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

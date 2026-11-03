@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/template_bars_side",
+  "parent": "minecraft:block/iron_bars_side",
   "textures": {
     "bars": "groundburst:block/barbed_wire",
     "edge": "groundburst:block/barbed_wire",

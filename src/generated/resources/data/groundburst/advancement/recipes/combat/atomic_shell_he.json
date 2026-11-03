@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:atomic_shell_he"
+        "recipe": "groundburst:atomic_shell_he"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

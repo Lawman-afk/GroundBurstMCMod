@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:clean_room"
+        "recipe": "groundburst:clean_room"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

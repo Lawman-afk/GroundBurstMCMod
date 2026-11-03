@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:medium_missile_body"
+        "recipe": "groundburst:medium_missile_body"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

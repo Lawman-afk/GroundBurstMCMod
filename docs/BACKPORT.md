@@ -4,7 +4,7 @@ The mod is made on Minecraft 26.3 (branch `main`). This branch, `1.21.1`, carrie
 NeoForge 21.1 for players still on that version. It is not kept in step with every change: it is brought up to `main`
 every once in a while, as a whole.
 
-- **Last brought up to:** `main` at `c7c644b6` (2026-11-03: version 0.6.0 and the finished artillery).
+- **Last brought up to:** `main` at `5a2c6e1b` (2026-11-03: version 0.6.0, the finished artillery and its fixes).
 - **Toolchain:** Minecraft 1.21.1, NeoForge 21.1.265, Java 21, GeckoLib 4.9.3, JEI 19.70 (optional).
 - **Test instance:** a separate 1.21.1 CurseForge instance, named by `deploy_instance_dir_1_21_1` in your own
   `~/.gradle/gradle.properties` (never `deploy_instance_dir`, which is main's 26.3 instance).
@@ -20,35 +20,34 @@ code is not ported by hand file by file. `tools/backport/port.py` turns main's s
 2. **Compatibility classes** in `dev.groundburst.port`: small stand-ins with main's API over 1.21.1's (a `ValueOutput`
    over a `CompoundTag`, for example), so the code that uses them needs no change at all. They exist only on this
    branch.
-3. **Resource moves**: GeckoLib 4 reads `geo/` and `animations/` (GeckoLib 5 reads `geckolib/models/` and
-   `geckolib/animations/`); recipe ingredients are objects in 1.21.1 (`{"item": ...}`), not strings.
-4. **Hand edits**, where no rule is worth writing (the client's rendering, which 26.x rebuilt round render states and
-   submit nodes). The files edited by hand are listed in `tools/backport/manual.txt`.
+3. **Resource conversions**: GeckoLib 4 reads `geo/` and `animations/` (GeckoLib 5 reads `geckolib/models/` and
+   `geckolib/animations/`); recipe ingredients are objects in 1.21.1 (`{"item": ...}`), not strings, and a recipe that
+   needs one of 26.x's new items is left out; 26.x's item model definitions (`assets/*/items/`) become 1.21.1's item
+   models (`port.py`'s `item_models`: GeckoLib items on `builtin/entity`, the Geiger counter's GUI and hand models as
+   NeoForge's separate transforms, the missile's looks as custom model data overrides, the dosimeter's stages as
+   overrides on its dose, buckets on NeoForge's fluid container loader), with what they need from code in
+   `ItemModelTable`; configured features get back their `config`, the wasteland biome its effects and spawners, the
+   tags' outside entries become optional, the armour textures move to `textures/models/armor/`.
+4. **Hand edits**, where no rule is worth writing (some of the client's rendering, which 26.x rebuilt round render
+   states and submit nodes; the recipes; armour materials). The files edited by hand are listed in
+   `tools/backport/manual.txt`.
+
+`tools/backport/compile.ps1` (run with PowerShell 7) compiles and sorts the errors; `errs.py <words>` prints a file's
+errors with their lines. `gradlew runGameTestServer` loads everything on a server (one smoke test,
+`dev.groundburst.port.SmokeTest`); `gradlew runPortCheck` opens a world, sets the mod's blocks out, opens the Field
+Manual, sets a blast off, screenshots each into `run/screenshots/port_*.png` and quits (`dev.groundburst.port.PortCheck`).
 
 ## Where it stands (2026-11-03)
 
-Begun: the build, `port.py` and the compatibility classes for saving (`ValueInput`/`ValueOutput`), the screens' drawing
-(`GuiGraphicsExtractor`, its 2D pose stack, `ARGB`), item use results, and NeoForge 26.x's transfer API (resource
-handlers, transactions, item access, energy) bridged both ways to 1.21.1's item, fluid and energy handlers. The rules
-cover renamed names and the overridden methods whose signatures changed (tooltips, shape updates, neighbour changes,
-block removal, light, effects, item use). It does not compile yet: 1,208 errors in 170 files (from 4,490), nearly all in
-what is still to come:
+It compiles, and the server side runs: `runGameTestServer` loads every registry and all the data (recipes, tags, loot,
+world generation) with no errors and passes its test. Still to do:
 
-1. **Client rendering** (the most): the GeckoLib 4 renderers (`MachineGeoRenderer`, `VariantGeoModel`, `GeoBlockItem`,
-   `LaunchStationRenderer`: procedural bones through the model's custom animations, the glowmask layer, missiles drawn
-   at bones); the entity renderers (grenade, interceptor, missile, shell, shrapnel) and block entity renderers (alert
-   display, charge, fission reactor, fluid tank, ice shell) from 26.x's render states to 1.21.1's direct rendering, best
-   through stand-in base classes; 26.x's custom geometry event as one posted from `RenderLevelStageEvent` (artillery,
-   laser, Spectacle, multiblock preview); `FxRenderTypes` as 1.21.1 render types; particles, fluid models and tints,
-   item properties (the Geiger counter), the Field Manual's picture-in-picture views (structure, item preview).
-2. **Screens' input**: 26.x's `MouseButtonEvent`/`KeyEvent` methods as 1.21.1's `mouseClicked(x, y, button)` and kin;
-   cursors.
-3. **Content**: armour materials (`GBArmor`), the machines' recipes (26.x's recipe displays and placement info), saved
-   data (`SavedDataType` as `SavedData.Factory`), the sites' structure pieces, the JEI plugin (JEI 19's API).
-4. **Resources**: 26.x's item model definitions (`assets/*/items/`) as 1.21.1's item models: block items parented to
-   their block models, GeckoLib items on `builtin/entity`, the missile looks as custom-model-data overrides; any other
-   26.x-only JSON.
-5. Then run it (client and server), fix what breaks, port the GameTests, and deploy to a 1.21.1 instance.
+1. **The client in play**: run `runPortCheck` and the client by hand, and fix what draws wrong (GeckoLib machines and
+   items, the blast effects, the Field Manual's 3D views, the artillery's aim view, JEI).
+2. **Kept simpler than main**: consumables (Rad-Away, potassium iodide, the injector) are eaten as food with no
+   nourishment; mouse cursors stay the arrow; flash particles are not tinted.
+3. **GameTests**: main's 362 are not ported yet.
+4. Deploy to the 1.21.1 instance (`gradlew build`) and play it through.
 
 ## Bringing it up to main
 

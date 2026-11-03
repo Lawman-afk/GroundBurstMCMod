@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:special_weapons_assembler"
+        "recipe": "groundburst:special_weapons_assembler"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

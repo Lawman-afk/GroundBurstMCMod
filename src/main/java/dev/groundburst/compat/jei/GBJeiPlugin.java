@@ -79,7 +79,7 @@ public final class GBJeiPlugin implements IModPlugin {
     public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
         registration.registerSubtypeInterpreter(dev.groundburst.content.assembly.GBAssembly.MISSILE.get(), (stack, context) -> {
             var spec = dev.groundburst.content.assembly.MissileItem.spec(stack);
-            return spec != null ? spec.look() : null;
+            return spec != null ? spec.look() : "";
         });
     }
 

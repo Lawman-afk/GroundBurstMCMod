@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:launch_box"
+        "recipe": "groundburst:launch_box"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

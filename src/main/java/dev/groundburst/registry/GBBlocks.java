@@ -23,7 +23,7 @@ public final class GBBlocks {
 
     public static <B extends Block> DeferredBlock<B> blockOnly(String name, String english,
             Function<BlockBehaviour.Properties, ? extends B> factory, UnaryOperator<BlockBehaviour.Properties> properties) {
-        DeferredBlock<B> block = BLOCKS.registerBlock(name, factory, properties.apply(BlockBehaviour.Properties.of()));
+        DeferredBlock<B> block = BLOCKS.register(name, () -> factory.apply(properties.apply(BlockBehaviour.Properties.of())));
         GBLang.add("block." + GroundBurst.MODID + "." + name, english);
         return block;
     }

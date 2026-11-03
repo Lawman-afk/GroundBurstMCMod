@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:launch_silo"
+        "recipe": "groundburst:launch_silo"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

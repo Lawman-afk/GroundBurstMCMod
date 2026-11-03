@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:cryo_core"
+        "recipe": "groundburst:cryo_core"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

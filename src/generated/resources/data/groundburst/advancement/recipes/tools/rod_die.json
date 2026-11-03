@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:rod_die"
+        "recipe": "groundburst:rod_die"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

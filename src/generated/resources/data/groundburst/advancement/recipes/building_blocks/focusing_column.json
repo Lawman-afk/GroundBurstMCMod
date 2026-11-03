@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:focusing_column"
+        "recipe": "groundburst:focusing_column"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

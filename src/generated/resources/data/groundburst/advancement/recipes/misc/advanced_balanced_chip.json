@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:advanced_balanced_chip"
+        "recipe": "groundburst:advanced_balanced_chip"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

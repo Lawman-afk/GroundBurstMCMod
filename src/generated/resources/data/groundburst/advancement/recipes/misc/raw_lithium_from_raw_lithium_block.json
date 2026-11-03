@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:raw_lithium_from_raw_lithium_block"
+        "recipe": "groundburst:raw_lithium_from_raw_lithium_block"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:plutonium_nugget_from_plutonium_ingot"
+        "recipe": "groundburst:plutonium_nugget_from_plutonium_ingot"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

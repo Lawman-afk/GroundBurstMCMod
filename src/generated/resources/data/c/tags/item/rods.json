@@ -1,6 +1,12 @@
 {
   "values": [
-    "#c:rods/steel",
-    "#c:rods/tungsten"
+    {
+      "id": "#c:rods/steel",
+      "required": false
+    },
+    {
+      "id": "#c:rods/tungsten",
+      "required": false
+    }
   ]
 }

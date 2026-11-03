@@ -37,7 +37,6 @@ import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.cache.texture.AutoGlowingTexture;
 import software.bernie.geckolib.model.DefaultedBlockGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
@@ -320,11 +319,12 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     // --- the glowmask -------------------------------------------------------------------------------------------------------
     /**
-     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models that have one:
-     * GeckoLib does not check, and a missing one would draw as the missing texture.
+     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models whose mask has a
+     * lit pixel: GeckoLib 4 fails on a missing mask (it would draw as the missing texture) and throws on an empty one
+     * (some masks are empty, for a look with its lights out).
      */
     private static final class GlowLayer<A extends GeoAnimatable> extends AutoGlowingGeoLayer<A> {
-        private static final Map<ResourceLocation, Boolean> EXISTS = new ConcurrentHashMap<>();
+        private static final Map<ResourceLocation, Boolean> GLOWS = new ConcurrentHashMap<>();
 
         GlowLayer(GeoRenderer<A> renderer) {
             super(renderer);
@@ -333,10 +333,30 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         @Override
         public void render(PoseStack poseStack, A animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource,
                 @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-            ResourceLocation glow = AutoGlowingTexture.getEmissiveResource(getTextureResource(animatable));
-            if (EXISTS.computeIfAbsent(glow, id -> Minecraft.getInstance().getResourceManager().getResource(id).isPresent())) {
+            if (GLOWS.computeIfAbsent(getTextureResource(animatable), GlowLayer::glows)) {
                 super.render(poseStack, animatable, bakedModel, renderType, bufferSource, buffer, partialTick, packedLight, packedOverlay);
             }
+        }
+
+        /** Whether {@code texture}'s glow mask is there and lights at least one pixel (GeckoLib 4 reads any non-zero one). */
+        private static boolean glows(ResourceLocation texture) {
+            ResourceLocation mask = software.bernie.geckolib.cache.texture.GeoAbstractTexture.appendToPath(texture, "_glowmask");
+            var resource = Minecraft.getInstance().getResourceManager().getResource(mask);
+            if (resource.isEmpty()) {
+                return false;
+            }
+            try (java.io.InputStream in = resource.get().open(); com.mojang.blaze3d.platform.NativeImage image = com.mojang.blaze3d.platform.NativeImage.read(in)) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    for (int y = 0; y < image.getHeight(); y++) {
+                        if (image.getPixelRGBA(x, y) != 0) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (java.io.IOException e) {
+                return false;
+            }
+            return false;
         }
     }
 

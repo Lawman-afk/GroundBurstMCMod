@@ -8,7 +8,8 @@
     "particle": "groundburst:block/missile/tactical_nuclear_warhead",
     "w": "groundburst:block/tactical_nuclear_warhead"
   },
-  "elements": [
+  "loader": "groundburst:free_rotation",
+  "groundburst:elements": [
     {
       "name": "bell-1_0",
       "from": [

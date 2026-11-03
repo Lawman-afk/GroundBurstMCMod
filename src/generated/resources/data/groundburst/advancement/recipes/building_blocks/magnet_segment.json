@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:magnet_segment"
+        "recipe": "groundburst:magnet_segment"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

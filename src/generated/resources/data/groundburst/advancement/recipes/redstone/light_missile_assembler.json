@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:light_missile_assembler"
+        "recipe": "groundburst:light_missile_assembler"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

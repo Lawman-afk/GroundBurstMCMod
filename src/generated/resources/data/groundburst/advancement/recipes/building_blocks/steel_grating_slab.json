@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "groundburst:steel_grating_slab"
+        "recipe": "groundburst:steel_grating_slab"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
