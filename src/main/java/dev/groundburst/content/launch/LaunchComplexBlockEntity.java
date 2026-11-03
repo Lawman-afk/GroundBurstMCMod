@@ -72,10 +72,10 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
         if (left <= DELUGE_TICKS) {
             // The deluge: water sprayed into the trench and over the deck round the missile.
             Vec3 c = Vec3.atBottomCenterOf(pad);
-            level.sendParticles(ParticleTypes.SPLASH, c.x, c.y + 0.2, c.z, 40, 1.4, 0.2, 1.4, 0.3);
-            level.sendParticles(ParticleTypes.FALLING_WATER, c.x, c.y + 0.6, c.z, 12, 1.2, 0.3, 1.2, 0);
+            particles(level, ParticleTypes.SPLASH, c.x, c.y + 0.2, c.z, 40, 1.4, 0.2, 1.4, 0.3);
+            particles(level, ParticleTypes.FALLING_WATER, c.x, c.y + 0.6, c.z, 12, 1.2, 0.3, 1.2, 0);
             if (left % 20 == 0) {
-                level.playSound(null, pad, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, 2f, 0.6f);
+                playSound(level, pad, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, 2f, 0.6f);
             }
         }
     }
@@ -95,12 +95,12 @@ public class LaunchComplexBlockEntity extends LaunchSiloBlockEntity {
             Vec3 mouth = trenchMouth();
             Direction out = controllerFacing().getCounterClockWise();
             for (int i = 0; i < 3; i++) {
-                level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, mouth.x, mouth.y, mouth.z, 0,
+                particles(level, ParticleTypes.CAMPFIRE_COSY_SMOKE, mouth.x, mouth.y, mouth.z, 0,
                         out.getStepX() * 0.5, 0.06, out.getStepZ() * 0.5, 1);
             }
-            level.sendParticles(ParticleTypes.CLOUD, mouth.x, mouth.y + 0.5, mouth.z, 8, 1.2, 0.8, 1.2, 0.08);
+            particles(level, ParticleTypes.CLOUD, mouth.x, mouth.y + 0.5, mouth.z, 8, 1.2, 0.8, 1.2, 0.08);
             Vec3 c = Vec3.atBottomCenterOf(padCentre());
-            level.sendParticles(ParticleTypes.POOF, c.x, c.y + 0.3, c.z, 10, 2.2, 0.3, 2.2, 0.05);
+            particles(level, ParticleTypes.POOF, c.x, c.y + 0.3, c.z, 10, 2.2, 0.3, 2.2, 0.05);
             running = true;
         }
         return running;

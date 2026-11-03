@@ -108,8 +108,8 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -143,7 +143,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
         // The anti-missile defence's eyes (DESIGN.md §18.2): batteries engage what it tracks at their full reach.
         LaunchNetwork.of(level).tickRadar(level, this, working());
         if (this.powered) {
-            dev.groundburst.content.defence.Interception.radarWorking(level, this.worldPosition);
+            dev.groundburst.content.defence.Interception.radarWorking(level, this.worldPosition, worldBlockPos());
         } else {
             dev.groundburst.content.defence.Interception.radarStopped(level, this.worldPosition);
         }
@@ -155,7 +155,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
                 level.updateNeighbourForOutputSignal(this.worldPosition, getBlockState().getBlock());
             }
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(Vec3.atCenterOf(this.worldPosition)) < 16) {
+                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     send(level, p, tracks);
                 } else {
                     this.viewers.remove(id);
@@ -185,7 +185,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
         if (!isFormed() || !this.powered) {
             return out;
         }
-        Vec3 c = Vec3.atCenterOf(this.worldPosition);
+        Vec3 c = inWorld(Vec3.atCenterOf(this.worldPosition));     // where it is in the world (DESIGN.md §17.16)
         for (Flights.Flight f : Flights.of(level).all()) {
             Vec3 p = f.position(), t = f.target();
             if (Math.abs(p.x - c.x) > RANGE || Math.abs(p.z - c.z) > RANGE) {
@@ -199,7 +199,7 @@ public class RadarArrayBlockEntity extends MachineBlockEntity implements Animate
     }
 
     private void send(ServerLevel level, ServerPlayer player, List<LaunchPayloads.Track> tracks) {
-        PacketDistributor.sendToPlayer(player, new LaunchPayloads.Radar(this.worldPosition, isFormed(), this.powered,
+        PacketDistributor.sendToPlayer(player, new LaunchPayloads.Radar(this.worldPosition, worldBlockPos(), isFormed(), this.powered,
                 (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), tracks));
     }
 

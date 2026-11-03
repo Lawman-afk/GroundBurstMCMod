@@ -129,8 +129,11 @@ final class ArtilleryTests {
     /**
      * Fired 590 blocks over ground the server has not loaded (as its longest shots are), the howitzer's shells still spread
      * over its circle: nearly all land off the aim, none outside the circle (stretched along the line of fire). Once they
-     * went out unscattered, the trace of where they would land giving up where the ground was not loaded. (Under open sky:
-     * its steep shot would meet a test's barrier roof a few blocks up, and be spread round that.)
+     * went out unscattered, the trace of where they would land giving up where the ground was not loaded. The circle is
+     * round where the gun's trace says the shot comes down, as the gun works it out: where the ground is not loaded, the
+     * point it is laid on; where the trace meets something loaded first (another test's floor or barrier box far off, or
+     * its own barrier roof, hence the open sky), there. Each shot's point is checked inside the circle and its shell's
+     * curve through it (the point lies on the ground there, which may be another test's floor).
      */
     private static void farScatter(GameTestHelper helper) {
         GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.HOWITZER.block().get());
@@ -141,21 +144,29 @@ final class ArtilleryTests {
             a.layForTest(target);                                // fully aimed again before each shot
             Vec3 muzzle = a.muzzle(a.yaw(), a.elevation());
             Vec3 u = Ballistics.velocity(GBArtillery.HOWITZER_SPEC.charges()[a.charge()], a.yaw(), a.elevation());
-            Ballistics.Fall laid = Ballistics.flightTo(muzzle, u, target);
-            double r = a.radius(Math.hypot(target.x - muzzle.x, target.z - muzzle.z));
+            Ballistics.Fall laid = Ballistics.fall(level, muzzle, u, null, GunBlockEntity.MAX_FLIGHT);
+            if (laid == null) {
+                laid = Ballistics.flightTo(muzzle, u, target);
+            }
+            Vec3 centre = laid.at();
+            double r = a.radius(Math.hypot(centre.x - muzzle.x, centre.z - muzzle.z));
             a.shootForTest(level, ShellType.HE);
             List<ArtilleryShell> shells = level.getEntitiesOfClass(ArtilleryShell.class, new AABB(muzzle, muzzle).inflate(4));
             helper.assertTrue(shells.size() == 1, "one shell away: " + shells.size());
             ArtilleryShell shell = shells.get(0);
             Vec3 v = shell.getDeltaMovement();
             shell.discard();                                     // (it would fly 590 blocks, keeping the ground loaded)
-            // Where it comes down at the target's height, on its own curve.
-            double dy = muzzle.y - target.y, t = (v.y + Math.sqrt(v.y * v.y + 2 * Ballistics.G * dy)) / Ballistics.G;
-            Vec3 land = new Vec3(muzzle.x + v.x * t, target.y, muzzle.z + v.z * t);
-            double across = Math.abs(land.x - target.x), along = Math.abs(land.z - target.z);
+            // The point it was spread to, inside the circle; and its shell sent there, on its own curve.
+            Vec3 spread = a.lastSpreadForTest();
+            helper.assertTrue(spread != null, "spread over the circle");
+            double across = Math.abs(spread.x - centre.x), along = Math.abs(spread.z - centre.z);
             double stretch = laid.stretch();
-            helper.assertTrue(Math.pow(across / r, 2) + Math.pow(along / (r * stretch), 2) <= 1.05,
+            helper.assertTrue(Math.pow(across / r, 2) + Math.pow(along / (r * stretch), 2) <= 1.0001,
                     "inside its circle (" + r + " across, " + r * stretch + " along): " + across + ", " + along);
+            Vec3 w = v.subtract(0, Ballistics.G / 2, 0);          // its curve's velocity (the shell starts half a tick's gravity up)
+            double dy = muzzle.y - spread.y, t = (w.y + Math.sqrt(w.y * w.y + 2 * Ballistics.G * dy)) / Ballistics.G;
+            double missed = Math.hypot(muzzle.x + w.x * t - spread.x, muzzle.z + w.z * t - spread.z);
+            helper.assertTrue(missed < 0.6, "the shell sent to that point: " + missed + " off");
             off += Math.hypot(across, along) > 0.25 ? 1 : 0;
         }
         helper.assertTrue(off >= 13, "they spread: " + off + " of 16 off the aim");

@@ -2964,6 +2964,45 @@ as it stands ashore (Aegis Ashore).
   - GameTests: a canister gone stops it forming; the first missile lit below the deck, out above it by the time the
     fourth has gone.
 
+### 17.16 Launchers on moving structures: Create and Create Aeronautics (2026-11-03; the user's request)
+The user: "Is it possible to now make the 1.21.1 version compatible with create? And get launchers to work on create
+moving entities? And even better, to work with create aeronautics contraptions." Create (6.0.10) and Create Aeronautics
+(1.3.2, on Sable 2.0.6) exist only for Minecraft 1.21.1, so the support for them is the 1.21.1 build's (its branch's
+docs/BACKPORT.md); what it needs from the launchers is here in main, where every frame is the world's.
+
+**Two ways another mod moves blocks:**
+- *Sable* (Create Aeronautics' airships, planes, cars and boats: "sub-levels"): the blocks stay real blocks, their block
+  entities ticking, in a plot of their own far off in the same level, drawn (heard, collided with) where the ship is. A
+  launcher aboard works as anywhere; only its block positions are the plot's.
+- *Create's contraptions* (trains, bearings, pistons, gantries, pulleys, minecart contraptions): the blocks leave the
+  world while they move; the contraption keeps each one's saved data and draws a copy of it on the client. Nothing ticks
+  unless its block has a movement behaviour.
+
+**A frame** (`Frame`, `Frames`): where a block really is. The world's maps a block's coordinates to themselves; a ship's
+maps its plot to where the ship is now; a contraption's maps the place a block was taken from to where the contraption
+has it now. Every launcher works in its own coordinates and turns them into the world's where they meet the world: where
+a missile lights and the way a cruise missile heads (`Frame.heading`), the reach to a target, the strike and timing a
+station plans with, its sounds and particles (`MachineBlockEntity.playSound`, `particles`), an interceptor's solution
+and its turret's turn, an EMP over it. Network members report where they are (`Member.at`, on the station's map), as do
+the computers' silos (`Silo.at`) and the computers and stations themselves (`Scope.at`, the middle of their survey); a
+radar covers and shows the sky round where it is; a screen's packets reach to where its block is.
+
+**Carried** (`MachineBlockEntity.carried`): a block entity something has taken out of the world (a contraption) runs from
+its carrier's tick (`carriedTick`, never the world's): no redstone reaches it, it pushes nothing out, checks no structure
+round it (it was formed when taken) and sets no blocks; its changes go to its carrier to save and its looks to the
+carrier to show (`takeCarriedChange`, `takeCarriedSync`). It keeps its key, the place it was taken from, so its network
+and computers find it (`Launches.carried`, `Launches.site`) and order it as before; it fires on its own stored power.
+
+**Moved** (`placed_at`): a machine that loads at another place than it was saved at has been moved by another mod (a
+contraption set it down, a ship took it aboard or let it go): a structure points its parts at its controller again, and
+a launcher's network membership (its place on the list, orders, missiles in the air) and the computers follow it to its
+new key (`LaunchSite.moved`, `LaunchNetwork.moved`; not while the old place still holds it: then it was a copy).
+
+GameTests (`CarryTests`): a Cruise Missile Launcher carried in a frame turned a quarter and moved off fires from its
+box's tail where that is in the world, heading the way its boxes now point, and the computers find it by its key and
+near where it is; a Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and
+forms again.
+
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up
   from its middle, a **Large Radar Dish** on top (one item placing a 3×3 dish: a middle block that draws it all and
@@ -4697,6 +4736,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-03 | **Launchers on moving structures** (the user: make the 1.21.1 version work with Create, launchers on Create's moving contraptions, "even better" on Create Aeronautics'): §17.16. A launcher works in its own block coordinates and turns them into the world's through its frame wherever it meets the world (where it lights, the way it heads, reach, sounds, maps), so one on a Sable ship needs nothing more; one on a Create contraption is carried: a copy run from the contraption's tick, kept at the place it was taken from so its network still orders it. Main carries the frames (every one the world's here); the 1.21.1 build adds Create and Sable, both optional. A machine that loads somewhere else has been moved: its structure and network follow it. The howitzer's far-scatter test now checks each shot's point inside the circle and the shell's curve through it (it had worked out the landing from the shell's first velocity, which carries half a tick of gravity, so a shot near the circle's far edge came out past it, and other tests' floors far off could lie under the point). |
 | 2026-11-03 | Version **0.7.0** (the user's request: the jar files, the changelog, the CurseForge description and GitHub updated), for Minecraft 26.3 and, for the first time, 1.21.1 (`groundburst-0.7.0.jar` and `groundburst-mc1.21.1-0.7.0.jar`, from the branch `1.21.1`): the 155 mm Howitzer, the 1.21.1 build, and the fixes since 0.6.0. CHANGELOG's Unreleased became 0.7.0 (the howitzer, a Minecraft 1.21.1 section with what is simpler there, the changes); README and the CurseForge description name both versions and their requirements, and show the howitzer firing (`docs/screenshots/howitzer.jpg`, from fx_howitzer_27). No GitHub release, as before. |
 | 2026-11-03 | **The Atomic Cannon removed** (the user: "just to annoying to use with the loading problem") and **the howitzer's reach cut by 200 blocks, to 600** ("to encourage use of max chunks, and not go further"): far ground is what the gun has to map and load, so the guns now stop near what a player at the longest render distance sees. The cannon, its 280 mm calibre and shells, the nuclear shell type, its model, sound (and the recording only it used), Field Manual page, JEI page and tests went; its "scatters over ground not loaded" test now fires the howitzer 590 blocks, under open sky (its steep shot would meet a test's barrier roof). Never in a release, so no world that had one needs care. |
 | 2026-11-03 | After the user's first play of the 1.21.1 backport (the user: every fix in both versions, "this isnt content updating this is fixing"). In both: a Field Manual chapter's introduction runs on over as many pages as it needs, its entries after it (the Superweapons one ran off its page); the missile assemblers' ropes pay out as their hooks lower (their animations scaled the ropes' cubes by name, which animates nothing; the bones that hold the ropes now); moving the Atomic Cannon's circle no longer lags the game: the far ground's map is asked for only once the aim comes to rest, the gun makes the newest tile first with 8 at most waiting, and a tile is drawn coarser the further off it is (§20.1). On 1.21.1 only (its branch's docs/BACKPORT.md): the crash with the gas machines (transactions shared between the client's thread and the server's), the Wrench (it threw on every use), the buckets' colours, glow masks lit black (GeckoLib 4 lights the base texture under a mask), clear rectangles round smoke (its clear corners wrote depth). The Particle Uplink Cannon's beam carves on both: in the user's world it had followed their Laser Designator while they lased, as it should (§19.6), and a moving beam digs about 3 deep where one held still digs 8. |

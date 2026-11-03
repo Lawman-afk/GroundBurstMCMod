@@ -165,8 +165,7 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
                     this.reload = 0;
                     this.inventory.getItem(slot).shrink(1);
                     this.ready++;
-                    Vec3 c = middle();
-                    level.playSound(null, c.x, c.y, c.z, GBSounds.ASSEMBLY_CLANK.get(), SoundSource.BLOCKS, 0.5f, 1.3f);
+                    playSound(level, middle(), GBSounds.ASSEMBLY_CLANK.get(), SoundSource.BLOCKS, 0.5f, 1.3f);
                 }
             }
         }
@@ -188,7 +187,7 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
 
     /** One look at the sky: each missile coming down within reach that wants more of its volley, as many as it can fire this look. */
     private void engage(ServerLevel level) {
-        Vec3 middle = middle();
+        Vec3 middle = inWorld(middle());                           // where it is in the world (DESIGN.md §17.16)
         this.radar = Interception.tracked(level, middle);
         int seen = 0, fired = 0;
         for (Flights.Flight f : Flights.of(level).all()) {
@@ -204,7 +203,7 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
             while (fired < PER_LOOK && this.ready > 0 && this.energy.stored() >= LAUNCH_ENERGY
                     && Interceptors.assigned(level, f.id()) < Interception.volley(f.body())) {
                 int cell = ORDER[this.cursor % CELLS];
-                Vec3 from = cellTop(cell);
+                Vec3 from = inWorld(cellTop(cell));
                 Interception.Solution s = Interception.solve(f, from, reach);
                 if (s == null) {
                     break;                                         // it cannot meet this one in time
@@ -232,9 +231,7 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
 
     private void sync() {
         setChanged();
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     /** A point {@code x}, {@code y}, {@code z} model pixels from the controller's block's foot (as drawn facing north), in the world. */
@@ -341,8 +338,8 @@ public class InterceptorComplexBlockEntity extends MachineBlockEntity implements
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {

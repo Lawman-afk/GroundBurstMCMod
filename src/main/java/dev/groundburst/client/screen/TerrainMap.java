@@ -89,8 +89,11 @@ public final class TerrainMap {
         Minecraft.getInstance().getTextureManager().release(this.id);
     }
 
-    /** Asks the computer for the tiles in a view centred on x/z at {@code zoom} blocks a pixel that it has not sent lately. */
-    public void request(BlockPos computer, double x, double z, int zoom) {
+    /**
+     * Asks the computer for the tiles in a view centred on x/z at {@code zoom} blocks a pixel that it has not sent lately
+     * ({@code at}: where the computer is in the world, DESIGN.md §17.16).
+     */
+    public void request(BlockPos computer, BlockPos at, double x, double z, int zoom) {
         sameLevel(Minecraft.getInstance().level);
         int span = TerrainSurvey.TILE * zoom;
         int tx0 = Math.floorDiv((int) Math.floor(x - this.w * zoom / 2.0), span), tx1 = Math.floorDiv((int) Math.floor(x + this.w * zoom / 2.0), span);
@@ -99,7 +102,7 @@ public final class TerrainMap {
         List<Long> want = new ArrayList<>();
         for (int tz = tz0; tz <= tz1; tz++) {
             for (int tx = tx0; tx <= tx1; tx++) {
-                double cx = tx * span + span / 2.0 - computer.getX(), cz = tz * span + span / 2.0 - computer.getZ();
+                double cx = tx * span + span / 2.0 - at.getX(), cz = tz * span + span / 2.0 - at.getZ();
                 if (this.bounded && (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span)) {
                     continue;                                // beyond the survey: nothing to ask for
                 }
@@ -119,13 +122,20 @@ public final class TerrainMap {
         }
     }
 
-    /** Draws the view centred on x/z at {@code zoom} blocks a pixel at x0/y0 (redrawing the texture only when needed). */
-    public void draw(GuiGraphicsExtractor g, int x0, int y0, BlockPos computer, double x, double z, int zoom) {
-        if (x != this.drawnX || z != this.drawnZ || zoom != this.drawnZoom || generation != this.drawnGeneration) {
-            redraw(computer, x, z, zoom);
+    /**
+     * Draws the view centred on x/z at {@code zoom} blocks a pixel at x0/y0 (redrawing the texture only when needed);
+     * {@code at}: where the computer is in the world, the middle of its survey.
+     */
+    public void draw(GuiGraphicsExtractor g, int x0, int y0, BlockPos at, double x, double z, int zoom) {
+        if (x != this.drawnX || z != this.drawnZ || zoom != this.drawnZoom || generation != this.drawnGeneration || !at.equals(this.drawnAt)) {
+            this.drawnAt = at.immutable();
+            redraw(at, x, z, zoom);
         }
         g.blit(this.id, x0, y0, x0 + this.w, y0 + this.h, 0, 1, 0, 1);
     }
+
+    /** The middle of the survey last drawn round (it moves with a computer a ship carries). */
+    private BlockPos drawnAt = BlockPos.ZERO;
 
     private void redraw(BlockPos computer, double cx, double cz, int zoom) {
         this.drawnX = cx;

@@ -101,6 +101,12 @@ public class RadarArrayScreen extends Screen {
         return latest != null && latest.pos().equals(this.pos) ? latest : null;
     }
 
+    /** Where the array is in the world (on a ship, DESIGN.md §17.16): the scope's middle. */
+    private BlockPos centre() {
+        LaunchPayloads.Radar r = radar();
+        return r == null ? this.pos : r.at();
+    }
+
     private List<LaunchPayloads.Track> tracks() {
         LaunchPayloads.Radar r = radar();
         return r == null ? List.of() : r.tracks();
@@ -162,7 +168,7 @@ public class RadarArrayScreen extends Screen {
     }
 
     private double distance(LaunchPayloads.Track t) {
-        return Math.hypot(t.x() - this.pos.getX(), t.z() - this.pos.getZ());
+        return Math.hypot(t.x() - centre().getX(), t.z() - centre().getZ());
     }
 
     // --- drawing ------------------------------------------------------------------------------------------------------------
@@ -206,7 +212,7 @@ public class RadarArrayScreen extends Screen {
         double sweep = (now / PERIOD) * 2 * Math.PI;
         if (!Double.isNaN(this.lastSweep) && sweep > this.lastSweep) {
             for (LaunchPayloads.Track t : r.tracks()) {
-                double a = Math.atan2(t.z() - this.pos.getZ(), t.x() - this.pos.getX());
+                double a = Math.atan2(t.z() - centre().getZ(), t.x() - centre().getX());
                 double from = this.lastSweep, rel = Math.floorMod((long) Math.floor((a - from) * 1e6), (long) Math.floor(2 * Math.PI * 1e6)) / 1e6;
                 if (rel <= sweep - from) {
                     this.painted.put(t.id(), new Painted(t.x(), t.z(), now, t.incoming()));
@@ -223,7 +229,7 @@ public class RadarArrayScreen extends Screen {
         this.painted.values().removeIf(p -> now - p.time() > PERIOD * 1.5);
         for (var e : this.painted.entrySet()) {
             Painted p = e.getValue();
-            int x = cx + (int) ((p.x() - this.pos.getX()) * k), y = cy + (int) ((p.z() - this.pos.getZ()) * k);
+            int x = cx + (int) ((p.x() - centre().getX()) * k), y = cy + (int) ((p.z() - centre().getZ()) * k);
             double fade = Math.max(0, 1 - (now - p.time()) / PERIOD);
             int alpha = (int) (60 + 195 * fade);
             int colour = (p.incoming() ? 0xFF4A3A : 0xFFB040) | alpha << 24;
@@ -234,8 +240,8 @@ public class RadarArrayScreen extends Screen {
         LaunchPayloads.Track sel = selectedTrack();
         Painted p = sel == null ? null : this.painted.get(sel.id());
         if (sel != null && p != null) {
-            int x = cx + (int) ((p.x() - this.pos.getX()) * k), y = cy + (int) ((p.z() - this.pos.getZ()) * k);
-            int tx = cx + (int) ((sel.targetX() - this.pos.getX()) * k), ty = cy + (int) ((sel.targetZ() - this.pos.getZ()) * k);
+            int x = cx + (int) ((p.x() - centre().getX()) * k), y = cy + (int) ((p.z() - centre().getZ()) * k);
+            int tx = cx + (int) ((sel.targetX() - centre().getX()) * k), ty = cy + (int) ((sel.targetZ() - centre().getZ()) * k);
             Phosphor.line(g, x, y, tx, ty, sel.incoming() ? 0x99FF4A3A : 0x88FFB040, 2);
             Phosphor.cross(g, tx, ty, 2, sel.incoming() ? RED : AMBER);
         }

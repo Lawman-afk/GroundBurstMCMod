@@ -64,7 +64,7 @@ final class AlarmTests {
         receiver.applySettings(9101, new int[] {0, 0});                // a radius of 64, steady redstone
         AlarmBlockEntity siren = device(helper, GBAlarms.SIREN, new BlockPos(12, 1, 8), 9101);
         BlockPos radar = helper.absolutePos(new BlockPos(8, 1, 1));
-        helper.onEachTick(() -> Interception.radarWorking(level, radar));
+        helper.onEachTick(() -> Interception.radarWorking(level, radar, radar));
         Vec3 target = helper.absoluteVec(new Vec3(6.5, 1, 8.5));
         Flights.Flight[] f = new Flights.Flight[1];
         var spec = new dev.groundburst.content.assembly.MissileSpec(new ItemStack(dev.groundburst.content.ordnance.GBOrdnance.HE_WARHEAD.item().get()),

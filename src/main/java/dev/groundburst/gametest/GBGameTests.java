@@ -107,6 +107,7 @@ public final class GBGameTests {
         ConstructionTests.register();
         ManualContentTests.register();
         ArtilleryTests.register();
+        CarryTests.register();
     }
 
     private GBGameTests() {}

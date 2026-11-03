@@ -117,13 +117,15 @@ public final class LaunchNetwork extends SavedData {
                 Orders.CODEC.fieldOf("orders").forGetter(m -> m.orders), Codec.BOOL.fieldOf("lost").forGetter(m -> m.lost),
                 Codec.INT.listOf().fieldOf("box").forGetter(m -> List.of(m.minCX, m.minCZ, m.maxCX, m.maxCZ)),
                 UUIDUtil.CODEC.listOf().fieldOf("flights").forGetter(m -> List.copyOf(m.flights)),
-                Mark.CODEC.optionalFieldOf("mark").forGetter(m -> Optional.ofNullable(m.mark)))
-                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark) -> {
+                Mark.CODEC.optionalFieldOf("mark").forGetter(m -> Optional.ofNullable(m.mark)),
+                BlockPos.CODEC.optionalFieldOf("at").forGetter(m -> m.at.equals(m.pos) ? Optional.empty() : Optional.of(m.at)))
+                .apply(i, (pos, role, kind, report, orders, lost, box, flights, mark, at) -> {
                     Member m = new Member(pos, Role.valueOf(role), kind);
                     m.report = report;
                     m.orders = orders;
                     m.lost = lost;
                     m.mark = mark.orElse(null);
+                    m.at = at.orElse(pos).immutable();
                     if (box.size() == 4) {
                         m.minCX = box.get(0);
                         m.minCZ = box.get(1);
@@ -134,7 +136,10 @@ public final class LaunchNetwork extends SavedData {
                     return m;
                 }));
 
+        /** Its key: where its controller stands (a Sable ship's plot; where a contraption took it from). */
         public final BlockPos pos;
+        /** Where it was in the world when it last reported (its key, unless a ship or a contraption carries it). */
+        BlockPos at;
         public final Role role;
         /** Its controller's block id (its name on the station). */
         public final String kind;
@@ -154,14 +159,31 @@ public final class LaunchNetwork extends SavedData {
 
         Member(BlockPos pos, Role role, String kind) {
             this.pos = pos.immutable();
+            this.at = this.pos;
             this.role = role;
             this.kind = kind;
             this.minCX = this.maxCX = pos.getX() >> 4;
             this.minCZ = this.maxCZ = pos.getZ() >> 4;
         }
 
+        /** The same member at a new key (moved by another mod), all else as it was. */
+        Member movedTo(BlockPos to) {
+            Member m = new Member(to, this.role, this.kind);
+            m.report = this.report;
+            m.orders = this.orders;
+            m.lost = this.lost;
+            m.mark = this.mark;
+            m.flights.addAll(this.flights);
+            return m;
+        }
+
         public Report report() {
             return this.report;
+        }
+
+        /** Where it is in the world, as it last reported (DESIGN.md §17.16). */
+        public BlockPos at() {
+            return this.at;
         }
 
         /** The point it was designated on and the face there (a designator's sight shows it), while it is still aimed there. */
@@ -202,7 +224,7 @@ public final class LaunchNetwork extends SavedData {
         public boolean canArm(@Nullable BlockPos aim) {
             return this.role == Role.LAUNCHER && !this.lost && aim != null
                     && this.report.readiness == LaunchSiloBlockEntity.Readiness.READY.ordinal()
-                    && Math.hypot(aim.getX() - this.pos.getX(), aim.getZ() - this.pos.getZ()) <= this.report.range;
+                    && Math.hypot(aim.getX() - this.at.getX(), aim.getZ() - this.at.getZ()) <= this.report.range;
         }
     }
 
@@ -408,15 +430,58 @@ public final class LaunchNetwork extends SavedData {
             unlink(level, pos);
         }
         Member m = new Member(pos, role, BuiltInRegistries.BLOCK.getKey(be.getBlockState().getBlock()).toString());
+        m.at = worldPos(be);
         if (be instanceof MultiblockController c) {
             box(m, c);
         }
         n.members.put(pos.asLong(), m);
         this.memberOf.put(pos.asLong(), id);
         report(level, m, be);
-        log(level, n, EventKind.LINKED, pos, m.kind, pos.getX(), pos.getZ(), 0);
+        log(level, n, EventKind.LINKED, pos, m.kind, m.at.getX(), m.at.getZ(), 0);
         setDirty();
         return old != null ? LinkResult.MOVED : LinkResult.LINKED;
+    }
+
+    /** Where a member's block entity is in the world (DESIGN.md §17.16). */
+    private static BlockPos worldPos(BlockEntity be) {
+        return be instanceof dev.groundburst.content.machine.MachineBlockEntity mb ? mb.worldBlockPos().immutable() : be.getBlockPos().immutable();
+    }
+
+    /**
+     * A member loaded at a new place (moved by another mod: a Create contraption set it down, a Sable ship took it
+     * aboard or let it go; {@link LaunchSite#moved}): it stays on its network, in its place on the list, at its new key.
+     */
+    public void moved(ServerLevel level, BlockPos from, BlockPos to) {
+        if (from.equals(to)) {
+            return;
+        }
+        Network n = networkOf(from);
+        Member old = n == null ? null : n.members.get(from.asLong());
+        if (old == null || networkOf(to) != null) {
+            return;                                        // not a member, or something already holds the new place
+        }
+        if (level.isLoaded(from) && level.getBlockEntity(from) instanceof BlockEntity there
+                && (old.role == Role.LAUNCHER ? there instanceof LaunchSite : there instanceof RadarArrayBlockEntity)) {
+            return;                                        // still standing there: this is a copy, not the member
+        }
+        sleep(level, old);
+        Member m = old.movedTo(to);
+        Long2ObjectLinkedOpenHashMap<Member> kept = new Long2ObjectLinkedOpenHashMap<>();
+        for (var e : n.members.long2ObjectEntrySet()) {
+            kept.put(e.getLongKey() == from.asLong() ? to.asLong() : e.getLongKey(), e.getLongKey() == from.asLong() ? m : e.getValue());
+        }
+        n.members.clear();
+        n.members.putAll(kept);
+        this.memberOf.remove(from.asLong());
+        this.memberOf.put(to.asLong(), n.id);
+        BlockEntity be = level.getBlockEntity(to);
+        if (be != null) {
+            m.at = worldPos(be);
+            if (be instanceof MultiblockController c) {
+                box(m, c);
+            }
+        }
+        setDirty();
     }
 
     /** The chunks a structure covers. */
@@ -447,7 +512,7 @@ public final class LaunchNetwork extends SavedData {
         this.memberOf.remove(pos.asLong());
         if (m != null) {
             sleep(level, m);
-            log(level, n, EventKind.UNLINKED, pos, m.kind, pos.getX(), pos.getZ(), 0);
+            log(level, n, EventKind.UNLINKED, pos, m.kind, m.at.getX(), m.at.getZ(), 0);
             for (UUID f : m.flights) {
                 this.lastSeen.remove(f);
                 this.lastEta.remove(f);
@@ -464,7 +529,7 @@ public final class LaunchNetwork extends SavedData {
     boolean memberNear(int x, int z, int range) {
         for (Network n : this.networks.values()) {
             for (Member m : n.members.values()) {
-                if (Math.abs(m.pos.getX() - x) <= range && Math.abs(m.pos.getZ() - z) <= range) {
+                if (Math.abs(m.at.getX() - x) <= range && Math.abs(m.at.getZ() - z) <= range) {
                     return true;
                 }
             }
@@ -518,9 +583,11 @@ public final class LaunchNetwork extends SavedData {
         } else {
             return;
         }
-        boolean changed = !sameState(r, m.report) || m.lost;
+        BlockPos at = worldPos(be);
+        boolean changed = !sameState(r, m.report) || m.lost || !at.equals(m.at);
         m.report = r;
         m.lost = false;
+        m.at = at;
         if (changed) {
             setDirty();                                    // the seen time alone is not worth a save
         }
@@ -567,7 +634,7 @@ public final class LaunchNetwork extends SavedData {
         if (ms.isEmpty()) {
             return;
         }
-        List<BlockPos> from = ms.stream().map(m -> m.pos).toList();
+        List<BlockPos> from = ms.stream().map(m -> m.at).toList();
         List<int[]> points = points(from, x, z, pattern, spacing);
         for (int i = 0; i < ms.size(); i++) {
             Member m = ms.get(i);
@@ -575,7 +642,7 @@ public final class LaunchNetwork extends SavedData {
                 continue;                                  // counting down: its target is set
             }
             int[] p = points.get(i);
-            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.pos.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by);
+            m.orders = new Orders(Optional.of(new BlockPos(p[0], m.at.getY(), p[1])), m.orders.arm, m.orders.launchAt, m.orders.by);
             // Out of reach of its new aim: it will not stay armed.
             if (m.willBeArmed() && !m.canArm(m.orders.aim.get())) {
                 m.orders = new Orders(m.orders.aim, 0, m.orders.launchAt, m.orders.by);
@@ -776,7 +843,7 @@ public final class LaunchNetwork extends SavedData {
      */
     public boolean designate(ServerLevel level, long id, Member m, BlockPos spot, @Nullable Mark mark) {
         Network n = this.networks.get(id);
-        BlockPos aim = new BlockPos(spot.getX(), m.pos.getY(), spot.getZ());
+        BlockPos aim = new BlockPos(spot.getX(), m.at.getY(), spot.getZ());
         if (n == null || !designatable(m) || firing(m) || !m.canArm(aim)) {
             return false;
         }
@@ -837,6 +904,9 @@ public final class LaunchNetwork extends SavedData {
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */
     private static @Nullable BlockEntity present(ServerLevel level, Member m) {
+        if (m.role == Role.LAUNCHER && Launches.carried(level, m.pos) instanceof BlockEntity carried) {
+            return carried;                                // carried by a contraption (DESIGN.md §17.16)
+        }
         if (!level.isLoaded(m.pos) || !level.shouldTickBlocksAt(ChunkPos.pack(m.pos.getX() >> 4, m.pos.getZ() >> 4))) {
             return null;
         }
@@ -939,7 +1009,7 @@ public final class LaunchNetwork extends SavedData {
                         apply(level, m, site);
                     } else if (m.awake && be == null && now - m.wokeAt > NO_ANSWER && m.orders.launchAt >= 0 && now > m.orders.launchAt) {
                         // Woken and never there: it does not answer (its orders fail, it is let go).
-                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.pos.getX(), m.pos.getZ(), -1);
+                        log(level, n, EventKind.FAILED, m.pos, m.kind, m.at.getX(), m.at.getZ(), -1);
                         m.orders = Orders.NONE;
                         sleep(level, m);
                     } else {
@@ -947,13 +1017,13 @@ public final class LaunchNetwork extends SavedData {
                     }
                 }
                 // Contact lost: its chunk is loaded and it is not there.
-                if (check && level.isLoaded(m.pos) && !m.lost) {
+                if (check && level.isLoaded(m.pos) && !m.lost && !(m.role == Role.LAUNCHER && Launches.carried(level, m.pos) != null)) {
                     BlockEntity here = level.getBlockEntity(m.pos);
                     boolean there = m.role == Role.LAUNCHER ? here instanceof LaunchSite : here instanceof RadarArrayBlockEntity;
                     if (!there) {
                         m.lost = true;
                         m.orders = Orders.NONE;
-                        log(level, n, EventKind.NO_CONTACT, m.pos, m.kind, m.pos.getX(), m.pos.getZ(), 0);
+                        log(level, n, EventKind.NO_CONTACT, m.pos, m.kind, m.at.getX(), m.at.getZ(), 0);
                         setDirty();
                     }
                 }
@@ -986,7 +1056,7 @@ public final class LaunchNetwork extends SavedData {
                         Vec3 at = this.lastSeen.remove(id);
                         Integer eta = this.lastEta.remove(id);
                         boolean down = eta == null || eta <= LANDED;
-                        int x = at == null ? m.pos.getX() : Mth.floor(at.x), z = at == null ? m.pos.getZ() : Mth.floor(at.z);
+                        int x = at == null ? m.at.getX() : Mth.floor(at.x), z = at == null ? m.at.getZ() : Mth.floor(at.z);
                         log(level, n, down ? EventKind.IMPACT : EventKind.LOST, m.pos, m.kind, x, z, 0);
                         setDirty();
                     }

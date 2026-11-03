@@ -27,7 +27,7 @@ public final class LaunchPayloads {
     private LaunchPayloads() {}
 
     private static LaunchComputerBlockEntity computer(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(Vec3.atCenterOf(pos)) <= REACH
+        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH
                 && player.level().getBlockEntity(pos) instanceof LaunchComputerBlockEntity c) {
             return c;
         }
@@ -46,7 +46,7 @@ public final class LaunchPayloads {
         }
 
         public static void handle(Watch p, IPayloadContext context) {
-            if (context.player() instanceof ServerPlayer player && player.position().distanceTo(Vec3.atCenterOf(p.pos())) <= REACH
+            if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(p.pos()))) <= REACH
                     && player.level().getBlockEntity(p.pos()) instanceof ScreenWatched c) {
                 if (p.open()) {
                     c.addViewer(player);
@@ -134,17 +134,18 @@ public final class LaunchPayloads {
 
         public static void handle(MapRequest p, IPayloadContext context) {
             int scale = p.scale();
-            if (!(context.player() instanceof ServerPlayer player) || player.position().distanceTo(Vec3.atCenterOf(p.pos())) > REACH
+            if (!(context.player() instanceof ServerPlayer player) || player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(p.pos()))) > REACH
                     || !(player.level().getBlockEntity(p.pos()) instanceof MapSource c) || !c.mapping() || !TerrainSurvey.validScale(scale)) {
                 return;
             }
             boolean bounded = c.boundedMap();
             ServerLevel level = (ServerLevel) player.level();
+            BlockPos at = dev.groundburst.content.machine.Frames.toWorld(level, p.pos());   // where it is in the world (DESIGN.md §17.16)
             TerrainSurvey survey = TerrainSurvey.of(level);
             int span = TerrainSurvey.TILE * scale;
             for (long t : p.tiles()) {
                 int tx = net.minecraft.world.level.ChunkPos.getX(t), tz = net.minecraft.world.level.ChunkPos.getZ(t);
-                double cx = tx * span + span / 2.0 - p.pos().getX(), cz = tz * span + span / 2.0 - p.pos().getZ();
+                double cx = tx * span + span / 2.0 - at.getX(), cz = tz * span + span / 2.0 - at.getZ();
                 if (bounded && (Math.abs(cx) > TerrainSurvey.RANGE + span || Math.abs(cz) > TerrainSurvey.RANGE + span)) {
                     continue;
                 }
@@ -169,13 +170,15 @@ public final class LaunchPayloads {
     }
 
     /**
-     * A linked silo: where, its readiness ({@link LaunchSiloBlockEntity.Readiness} ordinal), its countdown (-1: none),
-     * whether it is armed, and its target if it has one.
+     * A linked silo: its key ({@code pos}, its controller's block) and where it is in the world ({@code at}: on a ship or a
+     * contraption, DESIGN.md §17.16), its readiness ({@link LaunchSiloBlockEntity.Readiness} ordinal), its countdown (-1:
+     * none), whether it is armed, and its target if it has one.
      */
-    public record Silo(BlockPos pos, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ, int range,
-            int kind, LaunchSite.Strike strike) {
+    public record Silo(BlockPos pos, BlockPos at, int readiness, int countdown, boolean armed, boolean hasTarget, int targetX, int targetZ,
+            int range, int kind, LaunchSite.Strike strike) {
         public static final StreamCodec<FriendlyByteBuf, Silo> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
+            buf.writeBlockPos(s.at());
             buf.writeVarInt(s.readiness());
             buf.writeVarInt(s.countdown() + 1);
             buf.writeBoolean(s.armed());
@@ -188,7 +191,7 @@ public final class LaunchPayloads {
             buf.writeFloat(s.strike().reach());
             buf.writeFloat(s.strike().along());
             buf.writeFloat(s.strike().across());
-        }, buf -> new Silo(buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
+        }, buf -> new Silo(buf.readBlockPos(), buf.readBlockPos(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(), buf.readBoolean(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat())));
     }
@@ -212,16 +215,20 @@ public final class LaunchPayloads {
                 buf.readVarInt(), buf.readVarInt(), buf.readBoolean()));
     }
 
-    /** The Radar Array's state for its screen, sent while it is open. */
-    public record Radar(BlockPos pos, boolean formed, boolean powered, int energy, List<Track> tracks) implements CustomPacketPayload {
+    /**
+     * The Radar Array's state for its screen, sent while it is open: {@code pos} its block, {@code at} where that is in the
+     * world (on a ship, DESIGN.md §17.16).
+     */
+    public record Radar(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, List<Track> tracks) implements CustomPacketPayload {
         public static final Type<Radar> TYPE = GBNetwork.type("radar_tracks");
         public static final StreamCodec<RegistryFriendlyByteBuf, Radar> CODEC = StreamCodec.of((buf, r) -> {
             buf.writeBlockPos(r.pos());
+            buf.writeBlockPos(r.at());
             buf.writeBoolean(r.formed());
             buf.writeBoolean(r.powered());
             buf.writeVarInt(r.energy());
             Track.CODEC.apply(ByteBufCodecs.list()).encode(buf, r.tracks());
-        }, buf -> new Radar(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(),
+        }, buf -> new Radar(buf.readBlockPos(), buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(),
                 Track.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override
@@ -242,18 +249,19 @@ public final class LaunchPayloads {
         }, buf -> new Contact(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readFloat(), buf.readVarInt(), buf.readVarInt()));
     }
 
-    /** The computer's state for its screen, sent while it is open. */
-    public record Scope(BlockPos pos, boolean formed, boolean powered, int energy, List<Silo> silos, List<Contact> contacts)
+    /** The computer's state for its screen, sent while it is open ({@code at}: where it is in the world, DESIGN.md §17.16). */
+    public record Scope(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, List<Silo> silos, List<Contact> contacts)
             implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("launch_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
+            buf.writeBlockPos(s.at());
             buf.writeBoolean(s.formed());
             buf.writeBoolean(s.powered());
             buf.writeVarInt(s.energy());
             Silo.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.silos());
             Contact.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.contacts());
-        }, buf -> new Scope(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(),
+        }, buf -> new Scope(buf.readBlockPos(), buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(),
                 Silo.CODEC.apply(ByteBufCodecs.list()).decode(buf), Contact.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 
         @Override

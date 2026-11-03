@@ -29,7 +29,7 @@ public final class StationPayloads {
     private StationPayloads() {}
 
     private static @Nullable LaunchStationBlockEntity station(IPayloadContext context, BlockPos pos) {
-        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(Vec3.atCenterOf(pos)) <= REACH
+        if (context.player() instanceof ServerPlayer player && player.position().distanceTo(dev.groundburst.content.machine.Frames.toWorld(player.level(), Vec3.atCenterOf(pos))) <= REACH
                 && player.level().getBlockEntity(pos) instanceof LaunchStationBlockEntity s) {
             return s;
         }
@@ -137,18 +137,19 @@ public final class StationPayloads {
 
     // --- the scope ---------------------------------------------------------------------------------------------------------
     /**
-     * A member as the screen sees it: where; launcher or radar; its controller's block id; what it last reported
+     * A member as the screen sees it: its key ({@code pos}) and where it is in the world ({@code at}: a ship or a
+     * contraption may carry it, DESIGN.md §17.16); launcher or radar; its controller's block id; what it last reported
      * (readiness, countdown, armed, target, range, strike, what it holds, its timing); its orders still waiting (arm -1:
      * none; aim pending; launch at, game time or -1); whether it reported lately, is out of contact, a radar is working;
      * ticks until its soonest missile in the air comes down (-1: none).
      */
-    public record MemberView(BlockPos pos, int role, String kind, int readiness, int countdown, boolean armed, int pendingArm, boolean hasTarget,
+    public record MemberView(BlockPos pos, BlockPos at, int role, String kind, int readiness, int countdown, boolean armed, int pendingArm, boolean hasTarget,
             int targetX, int targetZ, boolean pendingAim, int range, LaunchSite.Strike strike, ItemStack shown, LaunchSite.Timing timing,
             boolean contact, boolean lost, long launchAt, boolean working, int inFlight) {
         public static MemberView of(LaunchNetwork.Member m, long now, int inFlight) {
             LaunchNetwork.Report r = m.report();
             BlockPos aim = m.aim().orElse(null);
-            return new MemberView(m.pos, m.role.ordinal(), m.kind, r.readiness(), r.countdown(), r.armed(), m.orders().arm(), aim != null,
+            return new MemberView(m.pos, m.at(), m.role.ordinal(), m.kind, r.readiness(), r.countdown(), r.armed(), m.orders().arm(), aim != null,
                     aim == null ? 0 : aim.getX(), aim == null ? 0 : aim.getZ(), m.orders().aim().isPresent(), r.range(), r.strike(), r.shown(),
                     r.timing(), m.inContact(now), m.lost(), m.orders().launchAt(), r.working(), inFlight);
         }
@@ -164,6 +165,7 @@ public final class StationPayloads {
 
         static final StreamCodec<RegistryFriendlyByteBuf, MemberView> CODEC = StreamCodec.of((buf, m) -> {
             buf.writeBlockPos(m.pos());
+            buf.writeBlockPos(m.at());
             buf.writeVarInt(m.role());
             buf.writeUtf(m.kind());
             buf.writeVarInt(m.readiness());
@@ -191,7 +193,7 @@ public final class StationPayloads {
             buf.writeVarLong(m.launchAt() + 1);
             buf.writeBoolean(m.working());
             buf.writeVarInt(m.inFlight() + 1);
-        }, buf -> new MemberView(buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
+        }, buf -> new MemberView(buf.readBlockPos(), buf.readBlockPos(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt() - 1, buf.readBoolean(),
                 buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
                 new LaunchSite.Strike(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat()), ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
                 new LaunchSite.Timing(buf.readVarInt(), buf.readBoolean(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readBoolean()),
@@ -236,11 +238,12 @@ public final class StationPayloads {
             LaunchNetwork.EventKind.values().length - 1)], buf.readBlockPos(), buf.readUtf(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt() - 1));
 
     /** The station's state for its screen, sent while it is open: its network's members, the missiles in the air, its log. */
-    public record Scope(BlockPos pos, boolean formed, boolean powered, int energy, String code, long now, List<MemberView> members,
+    public record Scope(BlockPos pos, BlockPos at, boolean formed, boolean powered, int energy, String code, long now, List<MemberView> members,
             List<ContactView> contacts, List<LaunchNetwork.Event> log, List<SpotView> spots) implements CustomPacketPayload {
         public static final Type<Scope> TYPE = GBNetwork.type("station_scope");
         public static final StreamCodec<RegistryFriendlyByteBuf, Scope> CODEC = StreamCodec.of((buf, s) -> {
             buf.writeBlockPos(s.pos());
+            buf.writeBlockPos(s.at());
             buf.writeBoolean(s.formed());
             buf.writeBoolean(s.powered());
             buf.writeVarInt(s.energy());
@@ -250,7 +253,7 @@ public final class StationPayloads {
             ContactView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.contacts());
             EVENT.apply(ByteBufCodecs.list()).encode(buf, s.log());
             SpotView.CODEC.apply(ByteBufCodecs.list()).encode(buf, s.spots());
-        }, buf -> new Scope(buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarLong(),
+        }, buf -> new Scope(buf.readBlockPos(), buf.readBlockPos(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarLong(),
                 MemberView.CODEC.apply(ByteBufCodecs.list()).decode(buf), ContactView.CODEC.apply(ByteBufCodecs.list()).decode(buf),
                 EVENT.apply(ByteBufCodecs.list()).decode(buf), SpotView.CODEC.apply(ByteBufCodecs.list()).decode(buf)));
 

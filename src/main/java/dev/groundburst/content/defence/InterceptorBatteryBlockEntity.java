@@ -152,7 +152,7 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
                 this.reload = 0;
                 store.shrink(1);
                 this.ready++;
-                level.playSound(null, this.worldPosition.above(), GBSounds.ASSEMBLY_CLANK.get(), SoundSource.BLOCKS, 0.6f, 1.5f);
+                playSound(level, this.worldPosition.above(), GBSounds.ASSEMBLY_CLANK.get(), SoundSource.BLOCKS, 0.6f, 1.5f);
                 sync();
             }
         }
@@ -170,7 +170,7 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
 
     /** One look at the sky: a missile coming down within reach that wants another interceptor, and one that can meet it, fired. */
     private void engage(ServerLevel level) {
-        Vec3 from = launcher();
+        Vec3 from = inWorld(launcher());                           // where it is in the world (DESIGN.md §17.16)
         this.radar = Interception.tracked(level, from);
         int seen = 0;
         for (Flights.Flight f : Flights.of(level).all()) {
@@ -201,8 +201,8 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
     }
 
     private void fire(ServerLevel level, Flights.Flight f, Interception.Solution s, boolean tracked) {
-        Vec3 from = launcher();
-        Vec3 d = s.at().subtract(from);
+        Vec3 from = inWorld(launcher());
+        Vec3 d = frame().directionToLocal(s.at().subtract(from));  // its turret turns in its own frame
         this.aimYaw = (float) Math.toDegrees(Math.atan2(d.x, d.z));
         this.aimPitch = (float) Math.clamp(Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z))), MIN_PITCH, MAX_PITCH);
         this.aimUntil = level.getGameTime() + Math.max(HOLD_AIM, s.ticks() + 20);      // while its interceptor flies, and a moment
@@ -216,9 +216,7 @@ public class InterceptorBatteryBlockEntity extends MachineBlockEntity implements
 
     private void sync() {
         setChanged();
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     @Override

@@ -143,6 +143,12 @@ public class LaunchComputerScreen extends Screen {
         return latest != null && latest.pos().equals(this.pos) ? latest : null;
     }
 
+    /** Where the computer is in the world (on a ship, DESIGN.md §17.16): the middle of its survey. */
+    private BlockPos here() {
+        LaunchPayloads.Scope s = scope();
+        return s == null ? this.pos : s.at();
+    }
+
     private boolean on() {
         LaunchPayloads.Scope s = scope();
         return s != null && s.formed() && s.powered();
@@ -189,8 +195,8 @@ public class LaunchComputerScreen extends Screen {
 
     /** Keeps the view over the surveyed ground. */
     private void clampView() {
-        this.viewX = Mth.clamp(this.viewX, this.pos.getX() - TerrainSurvey.RANGE, this.pos.getX() + TerrainSurvey.RANGE);
-        this.viewZ = Mth.clamp(this.viewZ, this.pos.getZ() - TerrainSurvey.RANGE, this.pos.getZ() + TerrainSurvey.RANGE);
+        this.viewX = Mth.clamp(this.viewX, here().getX() - TerrainSurvey.RANGE, here().getX() + TerrainSurvey.RANGE);
+        this.viewZ = Mth.clamp(this.viewZ, here().getZ() - TerrainSurvey.RANGE, here().getZ() + TerrainSurvey.RANGE);
     }
 
     @Override
@@ -210,8 +216,8 @@ public class LaunchComputerScreen extends Screen {
         this.launchButton = addRenderableWidget(Button.builder(Component.translatable(T_LAUNCH, 0),
                 b -> ClientPacketDistributor.sendToServer(new LaunchPayloads.Launch(this.pos))).bounds(x, top() + LAUNCH_Y, CW, 18).build());
         addRenderableWidget(Button.builder(Component.translatable(T_CENTRE), b -> {
-            this.viewX = this.pos.getX() + 0.5;
-            this.viewZ = this.pos.getZ() + 0.5;
+            this.viewX = here().getX() + 0.5;
+            this.viewZ = here().getZ() + 0.5;
         }).bounds(mapX() + MAP - 44, mapY() + MAP + 2, 44, 14).build());
     }
 
@@ -262,7 +268,7 @@ public class LaunchComputerScreen extends Screen {
     }
 
     private static double range(LaunchPayloads.Silo silo) {
-        return Math.sqrt(Mth.square(silo.targetX() - silo.pos().getX()) + Mth.square(silo.targetZ() - silo.pos().getZ()));
+        return Math.sqrt(Mth.square(silo.targetX() - silo.at().getX()) + Mth.square(silo.targetZ() - silo.at().getZ()));
     }
 
     @Override
@@ -281,7 +287,7 @@ public class LaunchComputerScreen extends Screen {
         }
         boolean on = on();
         if (on && this.map != null) {
-            this.map.request(this.pos, this.viewX, this.viewZ, zoom());
+            this.map.request(this.pos, here(), this.viewX, this.viewZ, zoom());
         }
         int armed = (int) silos.stream().filter(LaunchPayloads.Silo::armed).count();
         if (this.setButton != null && this.armButton != null && this.launchButton != null) {
@@ -396,11 +402,11 @@ public class LaunchComputerScreen extends Screen {
             g.text(this.font, off, x0 + MAP / 2 - this.font.width(off) / 2, y0 + MAP / 2 - 4, RED);
             return;
         }
-        this.map.draw(g, x0, y0, this.pos, this.viewX, this.viewZ, zoom());
+        this.map.draw(g, x0, y0, here(), this.viewX, this.viewZ, zoom());
         g.enableScissor(x0, y0, x1, y1);
         // The edge of the surveyed ground.
-        int ex0 = screenX(this.pos.getX() - TerrainSurvey.RANGE), ex1 = screenX(this.pos.getX() + TerrainSurvey.RANGE);
-        int ez0 = screenY(this.pos.getZ() - TerrainSurvey.RANGE), ez1 = screenY(this.pos.getZ() + TerrainSurvey.RANGE);
+        int ex0 = screenX(here().getX() - TerrainSurvey.RANGE), ex1 = screenX(here().getX() + TerrainSurvey.RANGE);
+        int ez0 = screenY(here().getZ() - TerrainSurvey.RANGE), ez1 = screenY(here().getZ() + TerrainSurvey.RANGE);
         Phosphor.line(g, ex0, ez0, ex1, ez0, DIM, 3);
         Phosphor.line(g, ex0, ez1, ex1, ez1, DIM, 3);
         Phosphor.line(g, ex0, ez0, ex0, ez1, DIM, 3);
@@ -416,12 +422,12 @@ public class LaunchComputerScreen extends Screen {
             }
         }
         // The computer, each silo and its target (the picked silo's bright; armed silos joined to theirs by a red line).
-        int cx = screenX(this.pos.getX() + 0.5), cz = screenY(this.pos.getZ() + 0.5);
+        int cx = screenX(here().getX() + 0.5), cz = screenY(here().getZ() + 0.5);
         g.fill(cx - 2, cz - 2, cx + 3, cz + 3, WHITE);
         g.fill(cx - 1, cz - 1, cx + 2, cz + 2, 0xFF061A0C);
         for (LaunchPayloads.Silo silo : s.silos()) {
             boolean picked = silo.pos().equals(this.selected);
-            int sx = screenX(silo.pos().getX() + 0.5), sz = screenY(silo.pos().getZ() + 0.5);
+            int sx = screenX(silo.at().getX() + 0.5), sz = screenY(silo.at().getZ() + 0.5);
             if (silo.hasTarget()) {
                 int tx = screenX(silo.targetX() + 0.5), tz = screenY(silo.targetZ() + 0.5);
                 if (silo.armed() || picked) {
@@ -462,7 +468,7 @@ public class LaunchComputerScreen extends Screen {
         }
         Phosphor.ring(g, tx, tz, Math.max(1, reach), picked ? RED : 0xCC7A2418);
         if (k.along() / scale >= 1.5) {
-            double dx = silo.targetX() - silo.pos().getX(), dz = silo.targetZ() - silo.pos().getZ(), d = Math.sqrt(dx * dx + dz * dz);
+            double dx = silo.targetX() - silo.at().getX(), dz = silo.targetZ() - silo.at().getZ(), d = Math.sqrt(dx * dx + dz * dz);
             Phosphor.ellipse(g, tx, tz, (k.along() + k.reach()) / scale, (k.across() + k.reach()) / scale,
                     d > 1e-6 ? dx / d : 1, d > 1e-6 ? dz / d : 0, picked ? 0xCCFF4A3A : 0x997A2418, 3);
         }

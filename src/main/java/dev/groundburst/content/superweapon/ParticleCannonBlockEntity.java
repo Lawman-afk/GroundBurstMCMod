@@ -216,7 +216,7 @@ public class ParticleCannonBlockEntity extends SuperweaponBlockEntity {
         setRaised(p == Phase.COUNTDOWN || p == Phase.FIRING || p == Phase.IDLE && charged());
         if (p == Phase.IDLE && charged() && level.getGameTime() % 50 == 0) {
             Vec3 core = launchPoint(0);
-            level.playSound(null, core.x, core.y, core.z, GBSounds.PARTICLE_CHARGED.get(), SoundSource.BLOCKS, 1.4f,
+            playSound(level, core, GBSounds.PARTICLE_CHARGED.get(), SoundSource.BLOCKS, 1.4f,
                     0.9f + level.getRandom().nextFloat() * 0.2f);
         }
     }
@@ -227,11 +227,11 @@ public class ParticleCannonBlockEntity extends SuperweaponBlockEntity {
         int every = ticks > COUNTDOWN - 60 ? 2 : ticks > COUNTDOWN / 2 ? 4 : 8;
         if (ticks % every == 0) {
             Vec3 core = launchPoint(0);
-            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, core.x, core.y, core.z, 6, 0.6, 0.6, 0.6, 0.25);
+            particles(level, ParticleTypes.ELECTRIC_SPARK, core.x, core.y, core.z, 6, 0.6, 0.6, 0.6, 0.25);
         }
         if (ticks % 40 == 0) {
             Vec3 core = launchPoint(0);
-            level.playSound(null, core.x, core.y, core.z, GBSounds.PARTICLE_CHARGED.get(), SoundSource.BLOCKS, 2f, 1.1f + ticks / (float) COUNTDOWN * 0.4f);
+            playSound(level, core, GBSounds.PARTICLE_CHARGED.get(), SoundSource.BLOCKS, 2f, 1.1f + ticks / (float) COUNTDOWN * 0.4f);
         }
     }
 
@@ -242,7 +242,7 @@ public class ParticleCannonBlockEntity extends SuperweaponBlockEntity {
             var random = level.getRandom();
             double a = random.nextInt(8) * Math.PI / 4;
             Vec3 tip = modelPoint(PIT_RIGHT + Math.cos(a) * 50, 26, PIT_BACK + Math.sin(a) * 50);
-            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, tip.x, tip.y, tip.z, 3, 0.1, 0.1, 0.1, 0.1);
+            particles(level, ParticleTypes.ELECTRIC_SPARK, tip.x, tip.y, tip.z, 3, 0.1, 0.1, 0.1, 0.1);
         }
     }
 

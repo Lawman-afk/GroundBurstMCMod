@@ -74,10 +74,11 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
 
     /** A silo this computer runs (it formed and powered, the silo within its reach), or null. */
     private @Nullable LaunchSite linked(ServerLevel level, BlockPos silo) {
-        if (!isFormed() || !this.powered || silo.distSqr(this.worldPosition) > (double) Launches.LINK_RANGE * Launches.LINK_RANGE) {
+        if (!isFormed() || !this.powered) {
             return null;
         }
-        return level.getBlockEntity(silo) instanceof LaunchSite s ? s : null;
+        LaunchSite s = Launches.site(level, silo);      // standing there, or carried from there (DESIGN.md §17.16)
+        return s != null && s.worldBlockPos().distSqr(worldBlockPos()) <= (double) Launches.LINK_RANGE * Launches.LINK_RANGE ? s : null;
     }
 
     /** Aims one silo. */
@@ -98,7 +99,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
             return 0;
         }
         int n = 0;
-        for (LaunchSite s : Launches.silosNear(level, this.worldPosition)) {
+        for (LaunchSite s : Launches.silosNear(level, worldBlockPos())) {
             if (s.launchArmed(level, by)) {
                 n++;
             }
@@ -150,8 +151,8 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -175,7 +176,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         if ((level.getGameTime() + this.worldPosition.hashCode()) % RECHECK_INTERVAL == 0) {
             revalidate();
         }
-        Launches.trackMapper(level, this.worldPosition);       // the terrain survey maps the ground round it
+        Launches.trackMapper(level, this.worldPosition, worldBlockPos());   // the terrain survey maps the ground round it
         if (!isFormed()) {
             this.status = MachineStatus.INCOMPLETE;
             this.powered = false;
@@ -183,14 +184,14 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
         } else {
             if (!this.surveyed) {
                 this.surveyed = true;
-                TerrainSurvey.of(level).surveyAround(level, this.worldPosition, 16);
+                TerrainSurvey.of(level).surveyAround(level, worldBlockPos(), 16);
             }
             this.powered = this.energy.consume(RADAR_USE);
             this.status = this.powered ? MachineStatus.RUNNING : MachineStatus.NO_POWER;
         }
         if (!this.viewers.isEmpty() && level.getGameTime() % SCOPE_INTERVAL == 0) {
             for (UUID id : List.copyOf(this.viewers)) {
-                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(Vec3.atCenterOf(this.worldPosition)) < 16) {
+                if (level.getPlayerByUUID(id) instanceof ServerPlayer p && p.position().distanceTo(inWorld(Vec3.atCenterOf(this.worldPosition))) < 16) {
                     sendScope(level, p);
                 } else {
                     this.viewers.remove(id);
@@ -217,15 +218,15 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
     private void sendScope(ServerLevel level, ServerPlayer player) {
         List<LaunchPayloads.Silo> silos = new ArrayList<>();
         if (isFormed()) {
-            for (LaunchSite s : Launches.silosNear(level, this.worldPosition)) {
+            for (LaunchSite s : Launches.silosNear(level, worldBlockPos())) {
                 BlockPos t = s.target();
-                silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.readiness().ordinal(), s.countdown(), s.armed(), t != null,
+                silos.add(new LaunchPayloads.Silo(s.getBlockPos(), s.worldBlockPos(), s.readiness().ordinal(), s.countdown(), s.armed(), t != null,
                         t == null ? 0 : t.getX(), t == null ? 0 : t.getZ(), s.range(), s.siteKind().ordinal(), s.strike(level)));
             }
         }
         List<LaunchPayloads.Contact> contacts = new ArrayList<>();
         if (this.powered) {
-            Vec3 c = Vec3.atCenterOf(this.worldPosition);
+            Vec3 c = inWorld(Vec3.atCenterOf(this.worldPosition));
             for (Flights.Flight f : Flights.of(level).all()) {
                 Vec3 p = f.position();
                 if (Math.abs(p.x - c.x) <= RADAR_RANGE && Math.abs(p.z - c.z) <= RADAR_RANGE) {
@@ -233,7 +234,7 @@ public class LaunchComputerBlockEntity extends MachineBlockEntity implements Ani
                 }
             }
         }
-        PacketDistributor.sendToPlayer(player, new LaunchPayloads.Scope(this.worldPosition, isFormed(), this.powered,
+        PacketDistributor.sendToPlayer(player, new LaunchPayloads.Scope(this.worldPosition, worldBlockPos(), isFormed(), this.powered,
                 (int) ((long) this.energy.stored() * 100 / Math.max(1, this.energy.capacity())), silos, contacts));
     }
 

@@ -273,8 +273,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     /** Its countdown, its first missile's ignition, then that missile's flight. */
     @Override
     public Timing timing() {
-        return new Timing(COUNTDOWN + 1 + dev.groundburst.content.launch.MissileEntity.IGNITION, false, this.worldPosition.getX() + 0.5,
-                this.worldPosition.getZ() + 0.5, 0);
+        BlockPos at = worldBlockPos();
+        return new Timing(COUNTDOWN + 1 + dev.groundburst.content.launch.MissileEntity.IGNITION, false, at.getX() + 0.5, at.getZ() + 0.5, 0);
     }
 
     @Override
@@ -282,7 +282,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         if (!retargetable()) {
             return false;
         }
-        this.target = new BlockPos(x, this.worldPosition.getY(), z);
+        this.target = new BlockPos(x, worldBlockPos().getY(), z);
         if (this.armed && !inRange(this.target)) {
             this.armed = false;
         }
@@ -295,8 +295,10 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         return this.phase == Phase.IDLE;
     }
 
+    /** Whether {@code at} is within its reach of where it is now (DESIGN.md §17.16). */
     private boolean inRange(BlockPos at) {
-        return Math.hypot(at.getX() - this.worldPosition.getX(), at.getZ() - this.worldPosition.getZ()) <= range();
+        BlockPos here = worldBlockPos();
+        return Math.hypot(at.getX() - here.getX(), at.getZ() - here.getZ()) <= range();
     }
 
     @Override
@@ -325,7 +327,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         enter(Phase.COUNTDOWN);
         setRaised(true);
         announce(level, Announcement.LAUNCHED);
-        level.playSound(null, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 6f, 1f);
+        playSound(level, this.worldPosition, GBLaunch.SIREN.get(), SoundSource.BLOCKS, 6f, 1f);
         return true;
     }
 
@@ -344,9 +346,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     }
 
     private void sync() {
-        if (this.level != null && !this.level.isClientSide()) {
-            this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        syncToClients();
     }
 
     /** For GameTests: charge it fully at once. */
@@ -422,7 +422,7 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         this.phaseTicks++;
         int left = COUNTDOWN - this.phaseTicks;
         if (left > 0 && left % 20 == 0) {
-            level.playSound(null, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 3f,
+            playSound(level, this.worldPosition, dev.groundburst.content.ordnance.GBOrdnance.BOMB_BEEP.get(), SoundSource.BLOCKS, 3f,
                     left <= 60 ? 1.4f : 1f);
         }
         onCountdown(level, this.phaseTicks);
@@ -475,8 +475,9 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         RandomSource random = level.getRandom();
         double r = spread() * Math.sqrt(random.nextDouble()), a = random.nextDouble() * Math.PI * 2;
         Vec3 aim = Vec3.atBottomCenterOf(this.target).add(Math.cos(a) * r, 0, Math.sin(a) * r);
+        // It lights where its launcher is in the world (a ship or a contraption may carry it, DESIGN.md §17.16).
         dev.groundburst.content.launch.LaunchNetwork.launched(level, this.worldPosition,
-                Flights.launch(level, from, aim, warhead(), body(), true, by, 0));
+                Flights.launch(level, inWorld(from), aim, warhead(), body(), true, by, 0));
         this.firedThisStrike = true;
         onFire(level, index, from);
         setChanged();
@@ -581,8 +582,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
 
     @Override
     public void revalidate() {
-        if (this.level == null || this.level.isClientSide() || isRemoved()) {
-            return;
+        if (this.level == null || this.level.isClientSide() || isRemoved() || carried()) {
+            return;                                          // carried: no world round it to check (DESIGN.md §17.16)
         }
         boolean complete = definition().check(this.level, this.worldPosition, controllerFacing()).isEmpty();
         if (complete != isFormed()) {
@@ -618,6 +619,12 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
         if (this.level instanceof ServerLevel server) {
             Launches.track(server, this.worldPosition);
         }
+    }
+
+    @Override
+    protected void onMoved(ServerLevel level, BlockPos from) {
+        super.onMoved(level, from);
+        LaunchSite.moved(level, from, this);
     }
 
     @Override
