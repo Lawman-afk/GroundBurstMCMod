@@ -59,16 +59,21 @@ final class CryoTests {
         helper.setBlock(at, fluid);
     }
 
+    /** The freeze test's pools, 6 off where it strikes (beyond its spires' reach). */
+    private static final BlockPos WATER_POOL = new BlockPos(8, 1, 2), LAVA_POOL = new BlockPos(2, 1, 8);
+
     /**
-     * Its front runs out over the plot: still water 4 off freezes to cryo ice, a pool of lava crusts to obsidian, the grass
-     * 5 to 7 off is laid with cryo snow (most of it: it lies in drifts); a pig at its heart dies, one 7 off freezes solid but lives; glass in the heart
-     * shatters; a spire of ice stands at the middle; and a pillar's top 8.5 over where it struck (its cold climbs 6) is
-     * spared, grass still and no snow.
+     * Its front runs out over the plot: still water 6 off freezes to cryo ice, a pool of lava 6 off crusts to obsidian, the
+     * grass 5 to 7 off is laid with cryo snow (most of it: it lies in drifts); a pig at its heart dies, one 7 off freezes
+     * solid but lives; glass in the heart shatters; a spire of ice stands at the middle; and a pillar's top 8.5 over where
+     * it struck (its cold climbs 6) is spared, grass still and no snow. The pools lie beyond the spires' reach: a spire
+     * bursts up from two blocks down, taking liquids with it, and its ring leans out to about 5.3 blocks at this size
+     * (nearer, a spire that happened to rise by a pool turned it to ice or roofed it over before the front got there).
      */
     private static void freezes(GameTestHelper helper) {
         grass(helper);
-        pool(helper, new BlockPos(12, 1, 8), Blocks.WATER.defaultBlockState());
-        pool(helper, new BlockPos(8, 1, 12), Blocks.LAVA.defaultBlockState());
+        pool(helper, WATER_POOL, Blocks.WATER.defaultBlockState());
+        pool(helper, LAVA_POOL, Blocks.LAVA.defaultBlockState());
         for (int y = 1; y <= 8; y++) {
             helper.setBlock(new BlockPos(2, y, 2), Blocks.STONE);
         }
@@ -80,12 +85,15 @@ final class CryoTests {
         Vec3 at = freeze(helper, 400);
         helper.succeedWhen(() -> {
             helper.assertTrue(Freezes.settledAt(helper.getLevel(), at), "its front has run out and its spires grown");
-            BlockState water = helper.getBlockState(new BlockPos(12, 1, 8));
+            BlockState water = helper.getBlockState(WATER_POOL);
             helper.assertTrue(water.is(GBFallout.CRYO_ICE.block().get()) && water.getValue(CryoIceBlock.SOURCE), "the still water froze: " + water);
-            helper.assertTrue(helper.getBlockState(new BlockPos(8, 1, 12)).is(Blocks.OBSIDIAN), "the lava crusted over");
-            int snowed = 0, ring = 0;                     // (snow lies in drifts: most of the open grass 5 to 7 off)
+            helper.assertTrue(helper.getBlockState(LAVA_POOL).is(Blocks.OBSIDIAN), "the lava crusted over: " + helper.getBlockState(LAVA_POOL));
+            int snowed = 0, ring = 0;                     // (snow lies in drifts: most of the open grass 5 to 7 off, the pools aside)
             for (BlockPos p : BlockPos.betweenClosed(1, 1, 1, 15, 1, 15)) {
                 double d = Math.hypot(p.getX() - 8, p.getZ() - 8);
+                if (p.distManhattan(WATER_POOL) <= 1 || p.distManhattan(LAVA_POOL) <= 1) {
+                    continue;
+                }
                 if (d >= 5 && d <= 7 && helper.getBlockState(p.below()).isFaceSturdy(helper.getLevel(), helper.absolutePos(p.below()), net.minecraft.core.Direction.UP)
                         && !helper.getBlockState(p.below()).is(Blocks.STONE)) {
                     ring++;

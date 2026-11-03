@@ -405,6 +405,10 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
         Vec3 muzzle = muzzle(this.yaw, this.elevation);
         Vec3 u = Ballistics.velocity(speed, this.yaw, this.elevation);
         Ballistics.Fall fall = Ballistics.fall(level, muzzle, u, null, MAX_FLIGHT);
+        if (fall == null && this.laid != null) {
+            // Over ground the server has not loaded (most long shots): where it is laid, its flight worked out to there.
+            fall = Ballistics.flightTo(muzzle, u, this.laid);
+        }
         Vec3 launch = u;
         if (fall != null) {
             Vec3 laidOn = fall.at();

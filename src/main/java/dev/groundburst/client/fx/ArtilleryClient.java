@@ -500,8 +500,7 @@ public final class ArtilleryClient {
                 return null;
             }
             // Over ground the client has not loaded (a far gun): where it is laid, its flight worked out to there.
-            double hs = Math.hypot(u.x, u.z), t = hs < 1e-6 ? 0 : Math.hypot(on.x - muzzle.x, on.z - muzzle.z) / hs;
-            fall = new Ballistics.Fall(on, t, Ballistics.velocityAt(u, t));
+            fall = Ballistics.flightTo(muzzle, u, on);
         }
         double range = Math.hypot(fall.at().x - muzzle.x, fall.at().z - muzzle.z);
         GunBlockEntity.Solution want = m.solve(cursor);

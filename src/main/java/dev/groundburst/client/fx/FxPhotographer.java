@@ -328,6 +328,9 @@ public final class FxPhotographer {
                 new Scene("howitzer", "howitzer", 15, 8, List.of(20, 26, 27, 30, 40)),
                 new Scene("atomic_cannon", "atomic_cannon", 24, 10, List.of(20, 26, 27, 31, 45)),
                 new Scene("howitzer_view", "howitzer_view", 8, 12, List.of(60, 150, 228, 236, 330, 470)),
+                // The same over the edge of the ground the client has loaded, at a player's render distance (12 chunks):
+                // a hut on each side of it, 170 and 215 blocks off, the aim between them at 190.
+                new Scene("howitzer_edge", "howitzer_edge", 8, 12, List.of(40, 80, 160, 240)),
                 // The ammunition factories at work, their parts loaded: the Arms Dealer laying a Toxin SCUD out section by
                 // section on its trestles under its hoist; the War Factory its Nuclear Missile under its gantry crane.
                 // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
@@ -1903,8 +1906,8 @@ public final class FxPhotographer {
             clock = 0;
             site++;
             mc.gui.setScreen(null);                        // a screen a scene opened stays shut for the next
-            mc.options.renderDistance().set(24);
-            if (scene.name().equals("designator_far")) {
+            mc.options.renderDistance().set(scene.name().equals("howitzer_edge") ? 12 : 24);
+            if (scene.name().equals("designator_far") || scene.name().equals("howitzer_edge")) {
                 mc.options.broadcastOptions();             // the server sends a player only as far as it said it sees when it joined
             }
             Scene s = scene;
@@ -2016,10 +2019,15 @@ public final class FxPhotographer {
                     }
                     return;
                 }
-                if (s.profile().equals("howitzer_view")) {
+                if (s.profile().equals("howitzer_view") || s.profile().equals("howitzer_edge")) {
                     mortarAt = gun(level, x, ground, net.minecraft.core.Direction.EAST,
                             dev.groundburst.content.artillery.GBArtillery.HOWITZER.block().get(), dev.groundburst.content.artillery.Calibre.HOWITZER);
-                    hut(level, x + 600, ground);
+                    if (s.profile().equals("howitzer_edge")) {
+                        hut(level, x + 170, ground);
+                        hut(level, x + 215, ground);
+                    } else {
+                        hut(level, x + 600, ground);
+                    }
                     ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                     player.setGameMode(GameType.CREATIVE);
                     if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.GunBlockEntity g) {
@@ -2507,6 +2515,10 @@ public final class FxPhotographer {
             int x = site * 1200;
             ArtilleryClient.photoView(new Vec3(x + 600.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 90);
         }
+        if (scene.profile().equals("howitzer_edge") && step >= 0 && clock == 8 && mc.level != null) {
+            int x = site * 1200;
+            ArtilleryClient.photoView(new Vec3(x + 190.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 48);
+        }
         if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 230 && mortarAt != null) {
             var at = mortarAt;
             server.execute(() -> {
@@ -2854,7 +2866,7 @@ public final class FxPhotographer {
             step++;
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
-            if (scene.profile().equals("mortar_view") || scene.profile().equals("howitzer_view")) {
+            if (scene.profile().equals("mortar_view") || scene.profile().equals("howitzer_view") || scene.profile().equals("howitzer_edge")) {
                 ArtilleryClient.photoLeave();
                 server.execute(() -> {
                     ServerPlayer player = server.getPlayerList().getPlayers().getFirst();

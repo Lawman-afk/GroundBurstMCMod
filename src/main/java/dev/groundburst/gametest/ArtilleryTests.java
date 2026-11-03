@@ -49,6 +49,7 @@ final class ArtilleryTests {
         GBGameTests.test("howitzer_shell_bursts_incendiary", GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.HOWITZER, ShellType.INCENDIARY));
         GBGameTests.test("howitzer_lays_within_its_traverse", GBGameTests.FLOOR_16, 20, ArtilleryTests::traverse);
         GBGameTests.test("atomic_cannon_lays_its_high_and_low_arcs", GBGameTests.FLOOR_16, 20, ArtilleryTests::atomicArcs);
+        GBGameTests.test("atomic_cannon_scatters_over_ground_not_loaded", GBGameTests.FLOOR_16, 20, ArtilleryTests::farScatter);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -123,6 +124,41 @@ final class ArtilleryTests {
         helper.assertTrue(!h.solve(at.apply(40.0, 0.0)).reachable(), "too near");
         helper.assertTrue(!h.solve(at.apply(820.0, 0.0)).reachable(), "too far");
         helper.assertTrue(h.solve(at.apply(790.0, 0.0)).reachable(), "790 blocks is in reach");
+        helper.succeed();
+    }
+
+    /**
+     * Fired 1,000 blocks over ground the server has not loaded (as most of its shots are), the Atomic Cannon's shells still
+     * spread over its circle: nearly all land off the aim, none outside the circle (stretched along the line of fire). Once
+     * they went out unscattered, the trace of where they would land giving up where the ground was not loaded.
+     */
+    private static void farScatter(GameTestHelper helper) {
+        GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.ATOMIC_CANNON.block().get());
+        var level = helper.getLevel();
+        Vec3 target = a.socket().add(0, 0, -1000);
+        int off = 0;
+        for (int i = 0; i < 16; i++) {
+            a.layForTest(target);                                // fully aimed again before each shot
+            Vec3 muzzle = a.muzzle(a.yaw(), a.elevation());
+            Vec3 u = Ballistics.velocity(GBArtillery.ATOMIC_SPEC.charges()[a.charge()], a.yaw(), a.elevation());
+            Ballistics.Fall laid = Ballistics.flightTo(muzzle, u, target);
+            double r = a.radius(Math.hypot(target.x - muzzle.x, target.z - muzzle.z));
+            a.shootForTest(level, ShellType.HE);
+            List<ArtilleryShell> shells = level.getEntitiesOfClass(ArtilleryShell.class, new AABB(muzzle, muzzle).inflate(4));
+            helper.assertTrue(shells.size() == 1, "one shell away: " + shells.size());
+            ArtilleryShell shell = shells.get(0);
+            Vec3 v = shell.getDeltaMovement();
+            shell.discard();                                     // (it would fly a kilometre, keeping the ground loaded)
+            // Where it comes down at the target's height, on its own curve.
+            double dy = muzzle.y - target.y, t = (v.y + Math.sqrt(v.y * v.y + 2 * Ballistics.G * dy)) / Ballistics.G;
+            Vec3 land = new Vec3(muzzle.x + v.x * t, target.y, muzzle.z + v.z * t);
+            double across = Math.abs(land.x - target.x), along = Math.abs(land.z - target.z);
+            double stretch = laid.stretch();
+            helper.assertTrue(Math.pow(across / r, 2) + Math.pow(along / (r * stretch), 2) <= 1.05,
+                    "inside its circle (" + r + " across, " + r * stretch + " along): " + across + ", " + along);
+            off += Math.hypot(across, along) > 0.25 ? 1 : 0;
+        }
+        helper.assertTrue(off >= 13, "they spread: " + off + " of 16 off the aim");
         helper.succeed();
     }
 
