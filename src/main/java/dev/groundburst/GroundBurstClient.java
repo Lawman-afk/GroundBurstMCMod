@@ -121,8 +121,6 @@ public class GroundBurstClient {
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.artillery.GBArtillery.MORTAR_ENTITY.get(), 2));
         event.registerBlockEntityRenderer(dev.groundburst.content.artillery.GBArtillery.HOWITZER_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.artillery.GBArtillery.HOWITZER_ENTITY.get(), 4, 6));
-        event.registerBlockEntityRenderer(dev.groundburst.content.artillery.GBArtillery.ATOMIC_ENTITY.get(),
-                ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.artillery.GBArtillery.ATOMIC_ENTITY.get(), 7, 10));
         event.registerBlockEntityRenderer(dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(),
                 ctx -> new MachineGeoRenderer<>(ctx, dev.groundburst.content.launch.GBLaunch.COMPLEX_ENTITY.get(), 14, 4));
         // The hall: 13 blocks deep behind its controller, its crane 6 up.

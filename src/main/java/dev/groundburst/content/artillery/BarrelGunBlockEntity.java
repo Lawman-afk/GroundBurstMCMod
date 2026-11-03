@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * A gun with a long barrel on trunnions (DESIGN.md §20.1): the 155 mm Howitzer and the Atomic Cannon. Its model's
+ * A gun with a long barrel on trunnions (DESIGN.md §20.1): the 155 mm Howitzer. Its model's
  * "traverse" bone (the top carriage) turns about its pivot, its "barrel" bone (the cradle and the barrel, built level
  * pointing over its front) is raised about the trunnions, and the "recoil" bone in it (the barrel itself) runs back
  * along its axis as it fires and returns.
@@ -25,10 +25,6 @@ public class BarrelGunBlockEntity extends GunBlockEntity {
 
     public static BarrelGunBlockEntity howitzer(BlockPos pos, BlockState state) {
         return new BarrelGunBlockEntity(GBArtillery.HOWITZER_ENTITY.get(), pos, state, GBArtillery.HOWITZER_SPEC, 14, 24);
-    }
-
-    public static BarrelGunBlockEntity atomicCannon(BlockPos pos, BlockState state) {
-        return new BarrelGunBlockEntity(GBArtillery.ATOMIC_ENTITY.get(), pos, state, GBArtillery.ATOMIC_SPEC, 22, 40);
     }
 
     @Override

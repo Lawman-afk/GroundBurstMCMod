@@ -3493,9 +3493,10 @@ disabled by EMP.
 
 ### 20.1 Artillery (2026-11-02; the user's plan)
 The user's choice: three guns, built in turn and each shown to them before the next: an 81 mm mortar, a 155 mm towed
-howitzer and an Atomic Cannon. Crewed, and aimed as World of Tanks aims its artillery, with its kind of inaccuracy. The
-mortar fires HE, smoke, incendiary, chemical, cryo and EMP shells; the larger guns HE and incendiary (the Atomic Cannon
-nuclear shells too).
+howitzer and an Atomic Cannon (built, then removed at the user's wish on 2026-11-03: waiting on far ground to load
+made it too annoying to use; the howitzer's reach was cut to 600 blocks at the same time, near what a player's longest
+view draws). Crewed, and aimed as World of Tanks aims its artillery, with its kind of inaccuracy. The mortar fires HE,
+smoke, incendiary, chemical, cryo and EMP shells; the howitzer HE and incendiary.
 
 **World of Tanks' aiming, researched** (the WoT wiki's pages on accuracy, aiming and the strategic view, and players'
 write-ups of the dispersion model):
@@ -3556,44 +3557,38 @@ write-ups of the dispersion model):
 - The chunks a shell is in and is about to enter are kept ticking while it flies (beyond the simulation distance it
   would stop in the air).
 
-**One gun, three sizes** (2026-11-03): what the guns share is `GunBlockEntity` (crew, rack, laying, solution, spread,
-firing, its state sent to the crewman) read from a `GunSpec` record: shells, rack size, charges, elevations, ranges,
-traverse limit, traverse, range and elevation rates, reload, accuracy, aim time, bloom, the socket and tube, the crew's
-place, the fire sound and the smoke. `GunBlock` places any of them facing the way the player looks; a `Calibre` (81, 155
-or 280 mm) names each gun's shells (`<calibre>_shell_<type>`), sets their fragments, napalm and whistle. `MortarBlockEntity`
-keeps the bipod's bones; `BarrelGunBlockEntity` is the barrel guns' (a `traverse` bone turned, a `barrel` raised, a
-`recoil` run back along it and returned).
+**One gun, two sizes** (2026-11-03; three until the Atomic Cannon went): what the guns share is `GunBlockEntity` (crew,
+rack, laying, solution, spread, firing, its state sent to the crewman) read from a `GunSpec` record: shells, rack size,
+charges, elevations, ranges, traverse limit, traverse, range and elevation rates, reload, accuracy, aim time, bloom, the
+socket and tube, the crew's place, the fire sound and the smoke. `GunBlock` places any of them facing the way the player
+looks; a `Calibre` (81 or 155 mm) names each gun's shells (`<calibre>_shell_<type>`), sets their fragments, napalm and
+whistle. `MortarBlockEntity` keeps the bipod's bones; `BarrelGunBlockEntity` is the barrel gun's (a `traverse` bone
+turned, a `barrel` raised, a `recoil` run back along it and returned).
 
 **The 155 mm Howitzer** (`groundburst:howitzer`; after the M777): a two-wheeled carriage on split trails spread behind
 it, spades down, the long barrel in its cradle with a muzzle brake, recuperator cylinders over it, the breech at the
 back. The model (`tools/assets/heavy_guns.py`, GeckoLib) is drawn larger than its one block (about 4.5 wide, 9 long).
-- *Fire*: HE and incendiary shells (8 of each in its rack); seven charges, each reaching two thirds further than the
+- *Fire*: HE and incendiary shells (8 of each in its rack); seven charges, each reaching about half as far again as the
   one before (79 to 800 blocks at 45 degrees); always the high arc, 45 to 70 degrees, so its shells come down steeply;
-  64 to 800 blocks; 30 degrees either side of its front (a towed gun is turned on its trails only so far); 20 degrees
-  and 80 blocks a second; 5 s to reload.
-- *Dispersion*: 1 block per 100 fully aimed (8 at 800 blocks), aim time 3 s, firing blooms it fourfold (sixfold at
+  64 to 600 blocks (800 until 2026-11-03, when the user cut it by 200 to keep its targets near what a player's longest
+  render distance draws: the top charge now reaches its last 50 blocks only steeply); 30 degrees either side of its
+  front (a towed gun is turned on its trails only so far); 20 degrees and 80 blocks a second; 5 s to reload.
+- *Dispersion*: 1 block per 100 fully aimed (6 at 600 blocks), aim time 3 s, firing blooms it fourfold (sixfold at
   most), laying 0.08.
 - *Shells*: HE a blast a little under an HE warhead's (a crater about 5 round) with 32 fragments; incendiary napalm 9
   round. Made from an HE charge (or a napalm canister), a dense steel plate and gunpowder.
 - *Sound*: two takes from a K-55's rounds (a 155 mm self-propelled gun), a deeper thump and a slow shove of air under
   each, heard 256 blocks.
 
-**The Atomic Cannon** (`groundburst:atomic_cannon`; after the M65 "Atomic Annie"): the 280 mm gun on a long girder
-carriage slung between two tractors, a turntable under the gun. Drawn about 7 wide and 15 long over its block.
-- *Fire*: HE, incendiary and nuclear shells (4 of each in its rack); three charges (375, 750 and 1,500 blocks at 45
-  degrees); laid 15 to 55 degrees, the high arc where one of its charges reaches, else the low (flatter and faster:
-  a hill in the way blocks it, and the reticle turns red); 300 to 1,500 blocks; 20 degrees either side; 10 degrees and
-  160 blocks a second; 15 s to reload.
-- *Dispersion*: 0.8 blocks per 100 fully aimed (12 at 1,500 blocks), aim time 5 s, firing blooms it threefold (fivefold
-  at most), laying 0.1.
-- *Shells*: HE a blast a little under a heavy warhead's with 48 fragments; incendiary napalm 13 round; nuclear a
-  Tactical Nuclear Warhead's full yield where it lands (its crater, fallout and plume). The nuclear shell is a Tactical
-  Fission Core, two dense steel plates, a military circuit and gunpowder.
-- *Sound*: a heavy gun's boom slowed to 0.7, its next round slower still under it, a falling whump and a slow shove,
-  the K-55's crack on top and the boom coming back off far ground; heard 384 blocks.
+**The Atomic Cannon** (`groundburst:atomic_cannon`; after the M65 "Atomic Annie"; built 2026-11-03 and removed the same
+day at the user's wish, before any release had it): a 280 mm gun on a girder carriage slung between two tractors,
+reaching 300 to 1,500 blocks with HE, incendiary and a nuclear shell (a Tactical Nuclear Warhead's full yield). Nearly
+all of its shots fell on ground no player had loaded, so aiming meant waiting on the far ground's map and its
+chunks; the user found it too annoying to use. Its block, the 280 mm calibre and its three shells, the nuclear shell
+type, its model, sound (and the recording only it used) and Field Manual page went with it.
 
 **The far ground's map**: the client draws only the chunks it has loaded, a few hundred blocks at most, and the
-howitzer reaches 800 and the cannon 1,500. In the strategic view the client asks its gun for a map of the ground it is
+howitzer reaches 600 (the Atomic Cannon, while it was in, 1,500). In the strategic view the client asks its gun for a map of the ground it is
 looking over, 128-block tiles (a sample every 2 blocks: the height of the top that blocks motion, and its map colour);
 the gun loads those chunks (tickets, not ticking) and sends each tile once it is in (`ArtilleryPayloads.Terrain`).
 Wherever the game draws no ground of its own, the map is drawn as solid columns of its colours with darker sides,
@@ -4702,6 +4697,8 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-03 | Version **0.7.0** (the user's request: the jar files, the changelog, the CurseForge description and GitHub updated), for Minecraft 26.3 and, for the first time, 1.21.1 (`groundburst-0.7.0.jar` and `groundburst-mc1.21.1-0.7.0.jar`, from the branch `1.21.1`): the 155 mm Howitzer, the 1.21.1 build, and the fixes since 0.6.0. CHANGELOG's Unreleased became 0.7.0 (the howitzer, a Minecraft 1.21.1 section with what is simpler there, the changes); README and the CurseForge description name both versions and their requirements, and show the howitzer firing (`docs/screenshots/howitzer.jpg`, from fx_howitzer_27). No GitHub release, as before. |
+| 2026-11-03 | **The Atomic Cannon removed** (the user: "just to annoying to use with the loading problem") and **the howitzer's reach cut by 200 blocks, to 600** ("to encourage use of max chunks, and not go further"): far ground is what the gun has to map and load, so the guns now stop near what a player at the longest render distance sees. The cannon, its 280 mm calibre and shells, the nuclear shell type, its model, sound (and the recording only it used), Field Manual page, JEI page and tests went; its "scatters over ground not loaded" test now fires the howitzer 590 blocks, under open sky (its steep shot would meet a test's barrier roof). Never in a release, so no world that had one needs care. |
 | 2026-11-03 | After the user's first play of the 1.21.1 backport (the user: every fix in both versions, "this isnt content updating this is fixing"). In both: a Field Manual chapter's introduction runs on over as many pages as it needs, its entries after it (the Superweapons one ran off its page); the missile assemblers' ropes pay out as their hooks lower (their animations scaled the ropes' cubes by name, which animates nothing; the bones that hold the ropes now); moving the Atomic Cannon's circle no longer lags the game: the far ground's map is asked for only once the aim comes to rest, the gun makes the newest tile first with 8 at most waiting, and a tile is drawn coarser the further off it is (§20.1). On 1.21.1 only (its branch's docs/BACKPORT.md): the crash with the gas machines (transactions shared between the client's thread and the server's), the Wrench (it threw on every use), the buckets' colours, glow masks lit black (GeckoLib 4 lights the base texture under a mask), clear rectangles round smoke (its clear corners wrote depth). The Particle Uplink Cannon's beam carves on both: in the user's world it had followed their Laser Designator while they lased, as it should (§19.6), and a moving beam digs about 3 deep where one held still digs 8. |
 | 2026-11-03 | After the user's look at the guns: shells scatter over the circle at every range (they were laid dead on whenever the ground where they land was not loaded on the server: the fall trace gave up there; now the flight is worked out to the laid point, as the client already drew it, and a GameTest fires the Atomic Cannon over unloaded ground); the strategic view fills with the gun's map wherever the renderer draws no ground (the never-drawn outer ring of loaded chunks showed as sky), the map's walls wound to face out. The Cryo ICBM's GameTest moved its pools out of the spires' reach (a ring spire, bursting up from two blocks down and taking liquids with it, now and then turned the lava pool to ice or roofed it: the flake). |
 | 2026-11-03 | **The 1.21.1 backport runs** (the user, having remade the test instance as 1.21.1: "begin the proper backport", the newest changes in it): brought up to main with the artillery and its fixes; it compiles, the server loads every registry and all the data, and the client draws the mod (a port check run sets the blocks out, opens the Field Manual and sets a blast off, photographing each). Where it is kept simpler than main, for now: the Rad-Away, potassium iodide and the Anti-Rad Injector are eaten as food that fills nothing (1.21.1 has no consumable component), the mouse cursor stays the arrow, the flash particles are not tinted, and three grinding recipes on 26.x's sulfur and cinnabar are left out. 26.x's block models turn their parts by any angle where 1.21.1 reads only multiples of 22.5 up to 45, so the branch reads those models through a model loader of its own (its baker turns them as 26.x's does). Main's GameTests are not ported yet (the branch has one test that starts the server). |

@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Assemble it. Launch it. Watch the horizon.</b><br>
-  A Minecraft mod for NeoForge 26.3 ·
+  A Minecraft mod for NeoForge 26.3 and 1.21.1 ·
   <a href="https://www.curseforge.com/minecraft/mc-mods/ground-burst">Download on CurseForge</a>
 </p>
 
@@ -23,10 +23,10 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
-- **Artillery:** an 81 mm mortar, a towed 155 mm howitzer that reaches 800 blocks and an Atomic Cannon that throws
-  a nuclear shell 1,500, all crewed and aimed from a strategic view over the battlefield, as artillery is aimed in
-  *World of Tanks*: an aiming circle on the ground that blooms as the gun fires and turns and settles as you wait. HE,
-  smoke, incendiary, chemical, cryo and EMP shells for the mortar; HE and incendiary for the big guns.
+- **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
+  strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
+  blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
+  mortar; HE and incendiary for the howitzer.
 - **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex, a
   cruise missile launcher and a Vertical Launch Battery sunk into the ground that ripples sixteen missiles out of its
   cells onto one area. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
@@ -76,40 +76,49 @@ What changed in each version is in the [changelog](CHANGELOG.md).
     <td><img src="docs/screenshots/particle_beam.jpg" width="380" alt="The particle beam burning down through the night onto a meadow, fires round its foot"><br>The particle beam, steered across a meadow at night</td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/howitzer.jpg" width="380" alt="A 155 mm howitzer on its split trails firing a shell high over the desert"><br>The 155 mm Howitzer fires</td>
     <td><img src="docs/screenshots/mortar.jpg" width="380" alt="A mortar's strategic view over a hut struck by its shell, the aiming readout below"><br>The mortar's strategic view: a shell lands on target</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/cryo_icbm.jpg" width="380" alt="Spires of ice standing over snowed-over trees after a Cryo ICBM"><br>Spires of ice after a Cryo ICBM</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/launch.jpg" width="380" alt="A missile lifting off from its launch silo in a cloud of exhaust"><br>Lift-off from a Launch Silo</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/scud_strike.jpg" width="380" alt="A SCUD strike throwing up fire, smoke and blocks of sand"><br>The SCUD Storm strikes</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/vertical_launch_battery.jpg" width="380" alt="Missiles climbing out of a Vertical Launch Battery's cells in a column of smoke"><br>The Vertical Launch Battery's ripple</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/laser_designator.jpg" width="380" alt="The Laser Designator's sight on a target, its range and coordinates shown"><br>Calling fire with the Laser Designator</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/launch_control_station.jpg" width="380" alt="A Launch Control Station console with two missile silos behind it"><br>The Launch Control Station</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/alarms.jpg" width="380" alt="A wall of alarm devices at night with rotating beacons on top"><br>The alarm system at night</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/missiles.jpg" width="380" alt="Seven nuclear missiles standing in a row on sand"><br>The nuclear missiles, from tactical to Tsar</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/crater.jpg" width="380" alt="Smoke rising from a fresh crater ringed with fires"><br>A tactical nuclear warhead's crater</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/radar_outpost.jpg" width="380" alt="A radar outpost on a green hill above the sea"><br>A Radar Outpost</td>
-    <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station among chorus plants on an End island"><br>The Exotic Research Station</td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/research_station.jpg" width="380" alt="A domed research station among chorus plants on an End island"><br>The Exotic Research Station</td>
     <td><img src="docs/screenshots/silo_cutaway.jpg" width="380" alt="A cut-away view of an abandoned silo with its missile in the shaft"><br>An abandoned silo, cut away</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/field_manual.jpg" width="380" alt="The Field Manual open at its contents page"><br>The Field Manual</td>
   </tr>
 </table>
 
 ## Requirements
 
-- Minecraft 26.3 with NeoForge 26.3.0.92 or newer
-- [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib) 5.5.7 or newer (required)
-- [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional)
+Ground Burst comes in two files, one for each version of Minecraft; take the one for yours:
+
+- **Minecraft 26.3**: NeoForge 26.3.0.92 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
+  5.5.7 or newer (required)
+- **Minecraft 1.21.1**: NeoForge 21.1.265 or newer, and [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib)
+  4.9.3 or newer (required). A few things are simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad
+  Injector are used as food is (with no nourishment), the pointer stays an arrow over the mod's screens, and flash
+  particles are not tinted.
+- [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) (optional) on either
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 
@@ -136,7 +145,8 @@ You need JDK 25. Then:
 ```
 
 The jar lands in `build/libs/`. Other useful tasks: `runClient` (a development client), `runGameTestServer` (the
-GameTests) and `runData` (data generation). The models, textures and sounds are generated by the Python scripts in
+GameTests) and `runData` (data generation). The 1.21.1 build is made from the `1.21.1` branch with JDK 21: its
+[`docs/BACKPORT.md`](https://github.com/Lawman-afk/GroundBurstMCMod/blob/1.21.1/docs/BACKPORT.md) says how. The models, textures and sounds are generated by the Python scripts in
 `tools/` (set up a virtual environment with `pip install -r tools/requirements.txt`).
 
 ## Licence

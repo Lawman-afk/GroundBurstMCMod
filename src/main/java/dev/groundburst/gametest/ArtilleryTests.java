@@ -48,8 +48,7 @@ final class ArtilleryTests {
         GBGameTests.test("howitzer_shell_bursts_he", GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.HOWITZER, ShellType.HE));
         GBGameTests.test("howitzer_shell_bursts_incendiary", GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.HOWITZER, ShellType.INCENDIARY));
         GBGameTests.test("howitzer_lays_within_its_traverse", GBGameTests.FLOOR_16, 20, ArtilleryTests::traverse);
-        GBGameTests.test("atomic_cannon_lays_its_high_and_low_arcs", GBGameTests.FLOOR_16, 20, ArtilleryTests::atomicArcs);
-        GBGameTests.test("atomic_cannon_scatters_over_ground_not_loaded", GBGameTests.FLOOR_16, 20, ArtilleryTests::farScatter);
+        GBGameTests.testOpenSky("howitzer_scatters_over_ground_not_loaded", GBGameTests.FLOOR_16, 20, ArtilleryTests::farScatter);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -105,7 +104,7 @@ final class ArtilleryTests {
     /**
      * The howitzer, facing north, reaches 30 degrees either side: a point 400 blocks off 20 degrees round is in reach
      * (on the high arc, 45 to 70 degrees, with the lowest charge that reaches), one 45 degrees round is not, nor one
-     * nearer than 64 or further than 800.
+     * nearer than 64 or further than 600.
      */
     private static void traverse(GameTestHelper helper) {
         GunBlockEntity h = gun(helper, new BlockPos(8, 2, 8), GBArtillery.HOWITZER.block().get());
@@ -122,25 +121,26 @@ final class ArtilleryTests {
         }
         helper.assertTrue(!h.solve(at.apply(400.0, 45.0)).reachable(), "45 degrees round is beyond its traverse");
         helper.assertTrue(!h.solve(at.apply(40.0, 0.0)).reachable(), "too near");
-        helper.assertTrue(!h.solve(at.apply(820.0, 0.0)).reachable(), "too far");
-        helper.assertTrue(h.solve(at.apply(790.0, 0.0)).reachable(), "790 blocks is in reach");
+        helper.assertTrue(!h.solve(at.apply(620.0, 0.0)).reachable(), "too far");
+        helper.assertTrue(h.solve(at.apply(590.0, 0.0)).reachable(), "590 blocks is in reach");
         helper.succeed();
     }
 
     /**
-     * Fired 1,000 blocks over ground the server has not loaded (as most of its shots are), the Atomic Cannon's shells still
-     * spread over its circle: nearly all land off the aim, none outside the circle (stretched along the line of fire). Once
-     * they went out unscattered, the trace of where they would land giving up where the ground was not loaded.
+     * Fired 590 blocks over ground the server has not loaded (as its longest shots are), the howitzer's shells still spread
+     * over its circle: nearly all land off the aim, none outside the circle (stretched along the line of fire). Once they
+     * went out unscattered, the trace of where they would land giving up where the ground was not loaded. (Under open sky:
+     * its steep shot would meet a test's barrier roof a few blocks up, and be spread round that.)
      */
     private static void farScatter(GameTestHelper helper) {
-        GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.ATOMIC_CANNON.block().get());
+        GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.HOWITZER.block().get());
         var level = helper.getLevel();
-        Vec3 target = a.socket().add(0, 0, -1000);
+        Vec3 target = a.socket().add(0, 0, -590);
         int off = 0;
         for (int i = 0; i < 16; i++) {
             a.layForTest(target);                                // fully aimed again before each shot
             Vec3 muzzle = a.muzzle(a.yaw(), a.elevation());
-            Vec3 u = Ballistics.velocity(GBArtillery.ATOMIC_SPEC.charges()[a.charge()], a.yaw(), a.elevation());
+            Vec3 u = Ballistics.velocity(GBArtillery.HOWITZER_SPEC.charges()[a.charge()], a.yaw(), a.elevation());
             Ballistics.Fall laid = Ballistics.flightTo(muzzle, u, target);
             double r = a.radius(Math.hypot(target.x - muzzle.x, target.z - muzzle.z));
             a.shootForTest(level, ShellType.HE);
@@ -148,7 +148,7 @@ final class ArtilleryTests {
             helper.assertTrue(shells.size() == 1, "one shell away: " + shells.size());
             ArtilleryShell shell = shells.get(0);
             Vec3 v = shell.getDeltaMovement();
-            shell.discard();                                     // (it would fly a kilometre, keeping the ground loaded)
+            shell.discard();                                     // (it would fly 590 blocks, keeping the ground loaded)
             // Where it comes down at the target's height, on its own curve.
             double dy = muzzle.y - target.y, t = (v.y + Math.sqrt(v.y * v.y + 2 * Ballistics.G * dy)) / Ballistics.G;
             Vec3 land = new Vec3(muzzle.x + v.x * t, target.y, muzzle.z + v.z * t);
@@ -159,27 +159,6 @@ final class ArtilleryTests {
             off += Math.hypot(across, along) > 0.25 ? 1 : 0;
         }
         helper.assertTrue(off >= 13, "they spread: " + off + " of 16 off the aim");
-        helper.succeed();
-    }
-
-    /**
-     * The Atomic Cannon is laid 15 to 55 degrees: 1,450 blocks off on the high arc of its biggest charge, 1,000 off on a
-     * low arc (the high one would be steeper than it goes); the curve passes through each.
-     */
-    private static void atomicArcs(GameTestHelper helper) {
-        GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.ATOMIC_CANNON.block().get());
-        Vec3 base = a.socket();
-        for (double range : new double[] {1450, 1000, 420}) {
-            Vec3 target = base.add(0, 0, -range);
-            GunBlockEntity.Solution s = a.solve(target);
-            helper.assertTrue(s.reachable() && s.elevation() >= 15 - 1e-3 && s.elevation() <= 55 + 1e-3, range + " blocks: " + s);
-            Vec3 muzzle = a.muzzle(s.yaw(), s.elevation());
-            Vec3 u = Ballistics.velocity(GBArtillery.ATOMIC_SPEC.charges()[s.charge()], s.yaw(), s.elevation());
-            double t = Math.hypot(target.x - muzzle.x, target.z - muzzle.z) / Math.hypot(u.x, u.z);
-            helper.assertTrue(Ballistics.point(muzzle, u, t).distanceTo(target) < 0.1, "the curve passes through " + range);
-        }
-        helper.assertTrue(a.solve(base.add(0, 0, -1000)).elevation() < 45, "1,000 blocks on a low arc");
-        helper.assertTrue(!a.solve(base.add(0, 0, -250)).reachable(), "nearer than 300 is out of reach");
         helper.succeed();
     }
 

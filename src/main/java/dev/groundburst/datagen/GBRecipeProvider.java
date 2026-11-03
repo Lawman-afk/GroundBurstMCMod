@@ -287,45 +287,22 @@ public class GBRecipeProvider extends RecipeProvider {
                     .unlockedBy(getHasName(grenade), has(grenade)).save(output);
         }
         // The 155 mm Howitzer: a long barrel (dense steel), its carriage and trails (plates and rods), recoil gear (a
-        // pressure vessel), a sight; the Atomic Cannon: a 280 mm barrel round a howitzer's carriage, a military circuit.
+        // pressure vessel), a sight.
         shaped(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.HOWITZER.item(), 1)
                 .define('D', GBParts.DENSE_STEEL_PLATE).define('P', GBTags.commonItem("plates/steel")).define('R', GBParts.STEEL_ROD)
                 .define('V', GBParts.PRESSURE_VESSEL).define('G', Items.GLASS_PANE)
                 .pattern("DDG").pattern("PVP").pattern("R R")
                 .unlockedBy(getHasName(GBParts.DENSE_STEEL_PLATE), has(GBParts.DENSE_STEEL_PLATE)).save(output);
-        shaped(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.ATOMIC_CANNON.item(), 1)
-                .define('H', dev.groundburst.content.artillery.GBArtillery.HOWITZER.item()).define('D', GBParts.DENSE_STEEL_PLATE)
-                .define('M', GBParts.MILITARY_CIRCUIT).define('V', GBParts.PRESSURE_VESSEL)
-                .pattern("DDD").pattern("VHV").pattern("DMD")
-                .unlockedBy(getHasName(dev.groundburst.content.artillery.GBArtillery.HOWITZER.item()),
-                        has(dev.groundburst.content.artillery.GBArtillery.HOWITZER.item())).save(output);
-        // Their shells: HE from an HE charge, incendiary from a napalm canister, each in a dense steel case with
-        // gunpowder; the nuclear shell round a tactical fission core.
-        var heShell = java.util.Map.of(dev.groundburst.content.artillery.Calibre.HOWITZER, 2, dev.groundburst.content.artillery.Calibre.ATOMIC, 1);
-        for (var c : java.util.List.of(dev.groundburst.content.artillery.Calibre.HOWITZER, dev.groundburst.content.artillery.Calibre.ATOMIC)) {
-            boolean big = c == dev.groundburst.content.artillery.Calibre.ATOMIC;
-            var he = shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.shell(c, dev.groundburst.content.artillery.ShellType.HE),
-                    heShell.get(c)).requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE).requires(GBParts.DENSE_STEEL_PLATE)
-                    .requires(Items.GUNPOWDER).requires(Items.GUNPOWDER);
-            if (big) {
-                he.requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE).requires(GBParts.DENSE_STEEL_PLATE);
-            }
-            he.unlockedBy(getHasName(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE), has(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE))
-                    .save(output);
-            var inc = shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.shell(c, dev.groundburst.content.artillery.ShellType.INCENDIARY),
-                    heShell.get(c)).requires(GBChemicals.NAPALM_CANISTER).requires(GBParts.DENSE_STEEL_PLATE).requires(Items.GUNPOWDER)
-                    .requires(Items.GUNPOWDER);
-            if (big) {
-                inc.requires(GBChemicals.NAPALM_CANISTER).requires(GBParts.DENSE_STEEL_PLATE);
-            }
-            inc.unlockedBy(getHasName(GBChemicals.NAPALM_CANISTER), has(GBChemicals.NAPALM_CANISTER)).save(output);
-        }
-        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.shell(dev.groundburst.content.artillery.Calibre.ATOMIC,
-                dev.groundburst.content.artillery.ShellType.NUCLEAR), 1)
-                .requires(dev.groundburst.content.assembly.GBAssembly.TACTICAL_FISSION_CORE).requires(GBParts.DENSE_STEEL_PLATE)
-                .requires(GBParts.DENSE_STEEL_PLATE).requires(GBParts.MILITARY_CIRCUIT).requires(Items.GUNPOWDER).requires(Items.GUNPOWDER)
-                .unlockedBy(getHasName(dev.groundburst.content.assembly.GBAssembly.TACTICAL_FISSION_CORE),
-                        has(dev.groundburst.content.assembly.GBAssembly.TACTICAL_FISSION_CORE)).save(output);
+        // Its shells: HE from an HE charge, incendiary from a napalm canister, each in a dense steel case with gunpowder.
+        var howitzer = dev.groundburst.content.artillery.Calibre.HOWITZER;
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.shell(howitzer, dev.groundburst.content.artillery.ShellType.HE), 2)
+                .requires(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE).requires(GBParts.DENSE_STEEL_PLATE)
+                .requires(Items.GUNPOWDER).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE), has(dev.groundburst.content.assembly.GBAssembly.HE_CHARGE))
+                .save(output);
+        shapeless(RecipeCategory.COMBAT, dev.groundburst.content.artillery.GBArtillery.shell(howitzer, dev.groundburst.content.artillery.ShellType.INCENDIARY), 2)
+                .requires(GBChemicals.NAPALM_CANISTER).requires(GBParts.DENSE_STEEL_PLATE).requires(Items.GUNPOWDER).requires(Items.GUNPOWDER)
+                .unlockedBy(getHasName(GBChemicals.NAPALM_CANISTER), has(GBChemicals.NAPALM_CANISTER)).save(output);
     }
 
     /** Thrown explosives (DESIGN.md §14). */

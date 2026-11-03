@@ -322,11 +322,10 @@ public final class FxPhotographer {
                 new Scene("mortar_close", "mortar", 3, 16, List.of(20, 26)),
                 new Scene("mortar_impact", "mortar_impact", 30, 10, List.of(98, 104, 111, 119, 135, 170, 260)),
                 new Scene("mortar_view", "mortar_view", 5, 12, List.of(40, 110, 116, 160, 197, 240)),
-                // The 155 mm Howitzer and the Atomic Cannon side on, laid on points 400 and 1,000 blocks off and fired
-                // at clock 25 (HE). The howitzer's strategic view over a hut 600 blocks off, beyond the ground the client
+                // The 155 mm Howitzer side on, laid on a point 400 blocks off and fired at clock 25 (HE). Its strategic
+                // view over a hut 560 blocks off, beyond the ground the client
                 // loads (drawn from the gun's map of it): laid out to it, settled, fired at clock 230, the arc, the burst.
                 new Scene("howitzer", "howitzer", 15, 8, List.of(20, 26, 27, 30, 40)),
-                new Scene("atomic_cannon", "atomic_cannon", 24, 10, List.of(20, 26, 27, 31, 45)),
                 new Scene("howitzer_view", "howitzer_view", 8, 12, List.of(60, 150, 228, 236, 330, 470)),
                 // The same over the edge of the ground the client has loaded, at a player's render distance (12 chunks):
                 // a hut on each side of it, 170 and 215 blocks off, the aim between them at 190.
@@ -2009,13 +2008,11 @@ public final class FxPhotographer {
                 if (s.profile().equals("mortar_impact")) {
                     return;                                // the shells come down in tick()
                 }
-                if (s.profile().equals("howitzer") || s.profile().equals("atomic_cannon")) {
-                    boolean big = s.profile().equals("atomic_cannon");
+                if (s.profile().equals("howitzer")) {
                     mortarAt = gun(level, x, ground, net.minecraft.core.Direction.NORTH,
-                            (big ? dev.groundburst.content.artillery.GBArtillery.ATOMIC_CANNON : dev.groundburst.content.artillery.GBArtillery.HOWITZER).block().get(),
-                            big ? dev.groundburst.content.artillery.Calibre.ATOMIC : dev.groundburst.content.artillery.Calibre.HOWITZER);
+                            dev.groundburst.content.artillery.GBArtillery.HOWITZER.block().get(), dev.groundburst.content.artillery.Calibre.HOWITZER);
                     if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.GunBlockEntity g) {
-                        g.layForTest(new Vec3(x + 0.5, ground, big ? -999.5 : -399.5));
+                        g.layForTest(new Vec3(x + 0.5, ground, -399.5));
                     }
                     return;
                 }
@@ -2026,7 +2023,7 @@ public final class FxPhotographer {
                         hut(level, x + 170, ground);
                         hut(level, x + 215, ground);
                     } else {
-                        hut(level, x + 600, ground);
+                        hut(level, x + 560, ground);
                     }
                     ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                     player.setGameMode(GameType.CREATIVE);
@@ -2502,7 +2499,7 @@ public final class FxPhotographer {
                 }
             });
         }
-        if ((scene.profile().equals("mortar") || scene.profile().equals("howitzer") || scene.profile().equals("atomic_cannon"))
+        if ((scene.profile().equals("mortar") || scene.profile().equals("howitzer"))
                 && step >= 0 && clock == 25 && mortarAt != null) {
             var at = mortarAt;
             server.execute(() -> {
@@ -2513,7 +2510,7 @@ public final class FxPhotographer {
         }
         if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 8 && mc.level != null) {
             int x = site * 1200;
-            ArtilleryClient.photoView(new Vec3(x + 600.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 90);
+            ArtilleryClient.photoView(new Vec3(x + 560.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 90);
         }
         if (scene.profile().equals("howitzer_edge") && step >= 0 && clock == 8 && mc.level != null) {
             int x = site * 1200;

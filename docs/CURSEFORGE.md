@@ -13,10 +13,10 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 - **Explosives:** grenades, Molotov cocktails, placed charges with a remote detonator, landmines, bouncing mines and
   claymores.
-- **Artillery:** an 81 mm mortar, a towed 155 mm howitzer that reaches 800 blocks and an Atomic Cannon that throws
-  a nuclear shell 1,500, all crewed and aimed from a strategic view over the battlefield, as artillery is aimed in
-  *World of Tanks*: an aiming circle on the ground that blooms as the gun fires and turns and settles as you wait. HE,
-  smoke, incendiary, chemical, cryo and EMP shells for the mortar; HE and incendiary for the big guns.
+- **Artillery:** an 81 mm mortar and a towed 155 mm howitzer that reaches 600 blocks, both crewed and aimed from a
+  strategic view over the battlefield, as artillery is aimed in *World of Tanks*: an aiming circle on the ground that
+  blooms as the gun fires and turns and settles as you wait. HE, smoke, incendiary, chemical, cryo and EMP shells for the
+  mortar; HE and incendiary for the howitzer.
 - **24 warheads and the missiles to carry them**, assembled from parts and launched from silos, a launch complex, a
   cruise missile launcher and a Vertical Launch Battery sunk into the ground that ripples sixteen missiles out of its
   cells onto one area. Missiles fly for real, with staging and re-entry, and a radar array tracks them.
@@ -57,6 +57,9 @@ watch real craters, mushroom clouds and radioactive fallout reshape the world.
 
 ![The particle beam burning down through the night onto a meadow, fires round its foot](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/particle_beam.jpg)
 *The particle beam, steered across a meadow at night*
+
+![A 155 mm howitzer on its split trails firing a shell high over the desert](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/howitzer.jpg)
+*The 155 mm Howitzer fires*
 
 ![A mortar's strategic view over a hut struck by its shell, the aiming readout below](https://raw.githubusercontent.com/Lawman-afk/GroundBurstMCMod/main/docs/screenshots/mortar.jpg)
 *The mortar's strategic view: a shell lands on target*
@@ -101,9 +104,13 @@ made.
 
 ## Requirements
 
-- Minecraft 26.3 with NeoForge 26.3.0.92 or newer
-- **GeckoLib** 5.5.7 or newer (required)
-- **JEI** (optional)
+Ground Burst comes in two files, one for each version of Minecraft; take the one for yours:
+
+- **Minecraft 26.3**: NeoForge 26.3.0.92 or newer, and **GeckoLib** 5.5.7 or newer (required)
+- **Minecraft 1.21.1**: NeoForge 21.1.265 or newer, and **GeckoLib** 4.9.3 or newer (required). A few things are
+  simpler on it: Rad-Away, Potassium Iodide Tablets and the Anti-Rad Injector are used as food is (with no
+  nourishment), the pointer stays an arrow over the mod's screens, and flash particles are not tinted.
+- **JEI** (optional) on either
 
 Install it on the server and on every player's game: it adds blocks and items, so both sides need it.
 

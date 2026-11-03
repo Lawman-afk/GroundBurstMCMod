@@ -30,7 +30,6 @@ public class ShellRenderer extends EntityRenderer<ArtilleryShell, ShellRenderer.
         return switch (c) {
             case MORTAR -> 0.8f;
             case HOWITZER -> 1.1f;
-            case ATOMIC -> 1.6f;
         };
     }
 

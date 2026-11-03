@@ -12,8 +12,7 @@ package dev.groundburst.content.artillery;
  */
 public enum Calibre {
     MORTAR("mortar", "81 mm", 20, 6, 1.0f),
-    HOWITZER("howitzer", "155 mm", 32, 9, 0.8f),
-    ATOMIC("atomic", "280 mm", 48, 13, 0.62f);
+    HOWITZER("howitzer", "155 mm", 32, 9, 0.8f);
 
     public final String key;
     public final String english;

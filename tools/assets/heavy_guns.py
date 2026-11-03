@@ -1,17 +1,13 @@
-"""Artillery (DESIGN.md §20.1): the 155 mm Howitzer and the Atomic Cannon (GeckoLib), and their shells (3D items).
+"""Artillery (DESIGN.md §20.1): the 155 mm Howitzer (GeckoLib) and its shells (3D items).
 
 - 155 mm Howitzer (after the M777, in firing position): the bottom carriage on its octagonal firing base, its wheels
   raised either side, two split trails spread back to spades dug into the ground; the top carriage on it (bone
   "traverse") with the trunnion cheeks, handwheels and the sight; the cradle under the barrel (bone "barrel", raised
   about the trunnions) with its recoil cylinders; the barrel itself (bone "recoil", running back as it fires): breech
   ring and block, the thick chamber section, the long tube and the double-baffle muzzle brake.
-- Atomic Cannon (after the M65 "Atomic Annie", lowered to fire): a long box-girder carriage on the ground between its
-  two tractors (the front one facing out ahead, the rear one out behind: cabs, bonnets, wheels), a turntable at its
-  middle; the top carriage (bone "traverse"), the cradle with its two big recoil cylinders (bone "barrel") and the
-  280 mm barrel (bone "recoil": breech, chamber, tube, a swelled muzzle).
 - Shells (items, and the shell in flight): a long artillery shell standing on its base: a boat-tail, a copper driving
-  band, the body in its kind's paint (HE olive with a yellow band, incendiary olive with a red band, nuclear white with
-  yellow and black bands), an ogive nose and a fuze.
+  band, the body in its kind's paint (HE olive with a yellow band, incendiary olive with a red band), an ogive nose and
+  a fuze.
 
 BarrelGunBlockEntity and GBArtillery have the same figures (trunnion height, barrel length). Pixels: x right, y up, z
 back from the block's bottom middle; front = north. Round parts along the barrel are built upright in a bone turned to
@@ -184,143 +180,6 @@ def paint_howitzer(g: GeoModel, p: SS.Parts) -> Tex:
 
 
 # =========================================================================================================================
-# The Atomic Cannon
-# =========================================================================================================================
-A_TRUNNION, A_MUZZLE, A_BREECH = 30.0, 120.0, 16.0
-A_REST = 5.0
-
-
-def tractor(g: GeoModel, p: SS.Parts, name: str, dz: int) -> None:
-    """A tractor at one end of the carriage, facing out ({dz} -1: ahead, +1: behind): its cab, its bonnet and its
-    bumper, a pair of wheels under each."""
-    z0 = 86 * dz
-    def zr(a, b):
-        lo, hi = sorted((z0 + a * dz, z0 + b * dz))
-        return lo, hi
-    c0, c1 = zr(0, 24)
-    g.box(f"{name}_cab", (-10, 6, c0), (10, 27, c1), faces=ALL, bone="frame")
-    h0, h1 = zr(24, 42)
-    g.box(f"{name}_bonnet", (-8, 6, h0), (8, 19, h1), faces=ALL, bone="frame")
-    b0, b1 = zr(42, 44)
-    g.box(f"{name}_bumper", (-10, 6, b0), (10, 10, b1), faces=ALL, bone="frame")
-    g.box(f"{name}_grille", (-6, 10, b0), (6, 18, b1), faces=ALL, bone="frame")
-    s0, s1 = zr(-6, 0)
-    g.box(f"{name}_coupling", (-6, 4, s0), (6, 12, s1), faces=ALL, bone="frame")
-    g.box(f"{name}_stack", (8.6, 19, c0 + 2 if dz < 0 else c1 - 4), (10.6, 33, c0 + 4 if dz < 0 else c1 - 2), faces=ALL, bone="frame")
-    p.add("cab", f"{name}_cab")
-    p.add("bonnet", f"{name}_bonnet")
-    p.add("bumper", f"{name}_bumper", f"{name}_coupling")
-    p.add("grille", f"{name}_grille")
-    p.add("stack", f"{name}_stack")
-    for i, zz in enumerate((8, 32)):
-        wz = z0 + zz * dz
-        for side, sx in (("w", -1), ("e", 1)):
-            wheel(g, p, f"{name}_wheel{i}{side}", sx * 11.0, 6.0, wz, 6.0, 4.0, "frame", -sx)
-
-
-def build_atomic() -> tuple[GeoModel, SS.Parts]:
-    g = GeoModel("atomic_cannon", tex_size=(512, 512))
-    SS.ROUND.clear()
-    p = SS.Parts()
-    g.bone("frame")
-    # --- the carriage girder on the ground, its turntable, its tractors (fixed) ----------------------------------------
-    g.box("girder", (-9, 0, -84), (9, 14, 84), faces=ALL, bone="frame")
-    g.box("girder_deck", (-11, 14, -40), (11, 16, 40), faces=ALL, bone="frame")
-    p.add("girder", "girder", "girder_deck")
-    turntable = PC.prism(g, "turntable", 12.5, 16, 18, 0, 0, "frame", sides=16, caps=("up",))
-    SS.ROUND.extend(turntable)
-    p.add("turntable", turntable)
-    tractor(g, p, "front", -1)
-    tractor(g, p, "rear", 1)
-    # --- the top carriage (turned) ------------------------------------------------------------------------------------
-    g.bone("traverse", pivot=(0, 18, 0), parent="frame")
-    g.box("saddle", (-11, 18, -18), (11, 24, 20), faces=("north", "south", "east", "west", "up"), bone="traverse")
-    for side, sx in (("w", -1), ("e", 1)):
-        x0, x1 = (-10.0, -7.0) if sx < 0 else (7.0, 10.0)
-        g.box(f"cheek_{side}", (x0, 24, -10), (x1, 35, 10), faces=ALL, bone="traverse")
-        hx0, hx1 = (-11.6, -10.0) if sx < 0 else (10.0, 11.6)
-        g.box(f"trunnion_{side}", (hx0, A_TRUNNION - 2.2, -2.2), (hx1, A_TRUNNION + 2.2, 2.2), faces=ALL, bone="traverse")
-        p.add("cheek", f"cheek_{side}")
-        p.add("trunnion", f"trunnion_{side}")
-    g.box("layer_seat", (-14, 24, 10), (-10, 27, 14), faces=ALL, bone="traverse")
-    g.box("handwheel", (-12.4, 26, 2), (-11.6, 31, 7), faces=ALL, bone="traverse")
-    p.add("handwheel", "handwheel", "layer_seat")
-    # --- the cradle and its two big recoil cylinders (raised) -------------------------------------------------------------
-    g.bone("barrel", pivot=(0, A_TRUNNION, 0), parent="traverse")
-    g.box("cradle", (-5.4, A_TRUNNION - 6.6, -52), (5.4, A_TRUNNION - 3.0, 14), faces=ALL, bone="barrel")
-    g.box("cradle_ring", (-5.6, A_TRUNNION - 5.0, -55), (5.6, A_TRUNNION + 5.0, -51), faces=ALL, bone="barrel")
-    for side, sx in (("w", -1), ("e", 1)):
-        g.box(f"recoil_cyl_{side}", (sx * 3.4 - 1.9, A_TRUNNION + 3.6, -48), (sx * 3.4 + 1.9, A_TRUNNION + 7.4, 10), faces=ALL, bone="barrel")
-        p.add("cylinder", f"recoil_cyl_{side}")
-    p.add("cradle", "cradle", "cradle_ring")
-    # --- the barrel (runs back as it fires) ------------------------------------------------------------------------------
-    g.bone("recoil", pivot=(0, A_TRUNNION, 0), parent="barrel")
-    tube = tube_bone(g, "tube", (0, A_TRUNNION, 0), "recoil")
-    round_along(g, p, "breech_ring", "breech_ring", 4.8, -A_BREECH, -7, A_TRUNNION, tube, stagger="full")
-    round_along(g, p, "chamber", "chamber", 4.1, -7, 36, A_TRUNNION, tube, caps=("up",))
-    round_along(g, p, "tube", "barrel_tube", 3.2, 36, A_MUZZLE - 8, A_TRUNNION, tube, caps=())
-    round_along(g, p, "swell", "swell", 3.7, A_MUZZLE - 8, A_MUZZLE, A_TRUNNION, tube, caps=("up", "down"), stagger="full")
-    g.box("breech_block", (-3.6, A_TRUNNION - 3.6, A_BREECH), (3.6, A_TRUNNION + 3.6, A_BREECH + 3.0), faces=ALL, bone="recoil")
-    p.add("breech", "breech_block")
-    while True:
-        try:
-            g.layout()
-            break
-        except ValueError:
-            g.tex_w *= 2
-            g.tex_h = g.tex_w
-    return g, p
-
-
-def paint_atomic(g: GeoModel, p: SS.Parts) -> Tex:
-    """Olive drab carriage, tractors and barrel; dark steel at the breech and the muzzle; black glass in the cabs; steel
-    bumpers and grilles; black tyres on steel hubs; the turntable bare steel; white stars on the cab doors."""
-    k = K.Kit(g, {}, seed=947, ao_reach=3.0, turned=True)
-    W.round_faces(k.S, SS.ROUND, top=True, bottom=False, foot=True)
-    S = k.S
-    tex = Tex(g.tex_w, g.tex_h)
-    S.paint(tex, p["girder"] + p["cheek"] + p["cradle"] + p["cab"] + p["bonnet"], OD)
-    S.overlay(tex, p["girder"], lambda f, img: M.seams(f, img, every=16, axis="u", light=False) if f.d in ("east", "west") else None)
-    S.overlay(tex, p["girder"], lambda f, img: M.rivets(f, img, every=4, inset=1) if f.d in ("east", "west") else None)
-    S.paint(tex, ["saddle"], OD)
-    S.paint(tex, p["turntable"] + p["trunnion"] + p["handwheel"], STEEL)
-    S.paint(tex, p["cylinder"], OD_DARK)
-    S.paint(tex, p["bumper"] + p["grille"], STEEL)
-    S.overlay(tex, p["grille"], lambda f, img: M.darken(img, (np.floor(f.Y) % 2) == 0, 0.55) if f.d in ("north", "south") else None)
-    S.paint(tex, p["stack"], DARK)
-    S.paint(tex, p["tyre"], RUBBER)
-    S.paint(tex, p["hub"], STEEL)
-
-    def windows(f, img):                                       # the cab's glass: its front and back, and its doors' upper half
-        if f.Y.min() is None:
-            return
-        upper = f.Y >= 16
-        if f.d in ("north", "south"):
-            M.paste(img, k.on(f, GLASS), upper & (np.abs(f.X) < 8.5))
-        elif f.d in ("east", "west"):
-            M.paste(img, k.on(f, GLASS), upper & (f.Y < 25))
-    S.overlay(tex, p["cab"], windows)
-
-    def star(f, img):                                          # a white star on each door, under its window
-        if f.d not in ("east", "west"):
-            return
-        zc = float(np.mean(f.Z))
-        u = f.Z - zc
-        v = f.Y - 12
-        r = np.hypot(u, v)
-        a = np.arctan2(v, u)
-        edge = 3.2 * (0.55 + 0.45 * np.cos(5 * (a - math.pi / 2)) ** 2)
-        img[(r < edge) & (r < 3.4), :3] = (214, 214, 204)
-    S.overlay(tex, p["cab"], star)
-    S.paint(tex, p["breech_ring"] + p["breech"], DARK)
-    S.paint(tex, p["chamber"] + p["tube"], OD)
-    S.paint(tex, p["swell"], DARK)
-    S.overlay(tex, p["swell"], lambda f, img: img.__setitem__((np.hypot(f.X, f.Z) < 2.4) & (f.d == "up"), (*P.BLACK_PAINT.deep[:3], 255))
-              if f.d == "up" else None)
-    return tex
-
-
-# =========================================================================================================================
 def animations(rest: float) -> list[Animation]:
     """Idle: nothing (the block entity lays it). Rest: its barrel raised as it rests (the previews' pose)."""
     idle = Animation("idle", 0.05, loop="hold_on_last_frame")
@@ -360,14 +219,6 @@ def howitzer() -> None:
     item_files("howitzer", display(0.16, 0.0))
 
 
-def atomic_cannon() -> None:
-    g, p = build_atomic()
-    for path in g.save(paint_atomic(g, p)):
-        print(path)
-    print(save_animations("atomic_cannon", animations(A_REST)))
-    item_files("atomic_cannon", display(0.085, 0.0))
-
-
 # =========================================================================================================================
 # The shells
 # =========================================================================================================================
@@ -375,7 +226,6 @@ def atomic_cannon() -> None:
 BIG = {
     "he": (M.painted(A.OD_RAMP, tone=0.55, wear=0.06), [(M.YELLOW_PAINT_RAMP, 9.5, 10.5)]),
     "incendiary": (M.painted(A.OD_RAMP, tone=0.55, wear=0.06), [(M.RED_PAINT_RAMP, 9.5, 10.5)]),
-    "nuclear": (M.white_paint(tone=0.78, wear=0.04), [(M.YELLOW_PAINT_RAMP, 9.0, 10.0), (M.BLACK_RAMP, 10.0, 11.0)]),
 }
 
 
@@ -385,7 +235,7 @@ def big_shell(calibre: str, kind: str) -> None:
     name = f"{calibre}_shell_{kind}"
     m = BlockModel(name, tex_size=(64, 64), kind="item", render_type="minecraft:cutout")
     m.open_ok = set()
-    R = 2.4 if calibre == "atomic" else 2.0
+    R = 2.0
     groups: dict[str, list[str]] = {}
     lips: dict[str, tuple[bool, bool]] = {}
 
@@ -419,7 +269,7 @@ def big_shell(calibre: str, kind: str) -> None:
         band = M.painted(ramp, tone=0.6, wear=0.05)
         k.overlay(t, groups["body"], lambda f, img, y0=y0, y1=y1, band=band: M.paste(img, k.on(f, band), (f.Y >= y0) & (f.Y < y1))
                   if f.d in SIDES else None)
-    k.overlay(t, groups["body"], lambda f, img: W.stencil(f, img, [6.2, 4.6], (222, 222, 210, 255) if kind != "nuclear" else (30, 30, 30, 255),
+    k.overlay(t, groups["body"], lambda f, img: W.stencil(f, img, [6.2, 4.6], (222, 222, 210, 255),
                                                        width=4, pattern="xx.x"))
     k.paint(t, groups["fuze"], W.metal(P.BRASS, 0.55))
     m.fit_display(gui_rotation=(0, 0, -45), gui_margin=0.5)
@@ -440,10 +290,8 @@ def big_shell(calibre: str, kind: str) -> None:
 
 def main() -> None:
     howitzer()
-    atomic_cannon()
-    for calibre, kinds in (("howitzer", ("he", "incendiary")), ("atomic", ("he", "incendiary", "nuclear"))):
-        for kind in kinds:
-            big_shell(calibre, kind)
+    for kind in ("he", "incendiary"):
+        big_shell("howitzer", kind)
     print("heavy guns written")
 
 

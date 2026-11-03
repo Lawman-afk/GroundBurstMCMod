@@ -997,14 +997,14 @@ A shell coming in **whistles** for its last two seconds. Each is a grenade in a 
 
 entry("ordnance/howitzer", "155 mm Howitzer", "howitzer", ["howitzer", "howitzer_shell_he", "howitzer_shell_incendiary"], [
     text("""
-The **155 mm Howitzer** is a towed field gun with four times the mortar's reach: **64 to 800 blocks**. It fires only ahead, **30 degrees either side** of the way it was placed facing, so place it pointing at the ground you mean to shell. Load it and man it as the [mortar](ordnance/mortar) is: right-click it with shells (its rack holds 8 of each kind), with anything else to stand at its breech; **Shift** steps away.
+The **155 mm Howitzer** is a towed field gun with three times the mortar's reach: **64 to 600 blocks**. It fires only ahead, **30 degrees either side** of the way it was placed facing, so place it pointing at the ground you mean to shell. Load it and man it as the [mortar](ordnance/mortar) is: right-click it with shells (its rack holds 8 of each kind), with anything else to stand at its breech; **Shift** steps away.
 
 It is aimed the same way, from the gun view or the strategic view, and laid at its own pace: it swings 20 degrees a second and walks its aim 80 blocks a second in range. It picks the lowest of its **seven charges** that reaches and always fires the high arc (45 to 70 degrees), so its shells come down steeply behind hills.
 """),
     text("""
-**Steadier, slower.** Fully aimed, its circle's radius is 1 block for every 100 of range (8 blocks at its longest); it takes **three seconds** to settle and **five** to reload.
+**Steadier, slower.** Fully aimed, its circle's radius is 1 block for every 100 of range (6 blocks at its longest); it takes **three seconds** to settle and **five** to reload.
 
-Ground the game has not loaded, far beyond your own view, is drawn in the strategic view from the gun's own **map** of it, so you can see what you aim at 800 blocks away. A shell keeps the ground it flies over loaded until it lands.
+Ground the game has not loaded, far beyond your own view, is drawn in the strategic view from the gun's own **map** of it, so you can see what you aim at 600 blocks away. A shell keeps the ground it flies over loaded until it lands.
 """),
     table([
         ["HE", "blast a little under an HE warhead's + 32 fragments"],
@@ -1012,26 +1012,6 @@ Ground the game has not loaded, far beyond your own view, is drawn in the strate
     ], "Shells"),
     craft("howitzer"),
     craft("howitzer_shell_he", "Its HE shell is an HE charge in a dense steel case; the incendiary shell is a napalm canister in one."),
-])
-
-entry("ordnance/atomic_cannon", "Atomic Cannon", "atomic_cannon", ["atomic_cannon", "atomic_shell_he", "atomic_shell_incendiary", "atomic_shell_nuclear"], [
-    text("""
-The **Atomic Cannon** is a 280 mm gun slung between two tractors, built round a [howitzer](ordnance/howitzer). It throws its shells **300 to 1,500 blocks**, **20 degrees either side** of the way it was placed facing, and it fires the **nuclear shell**: a tactical nuclear burst wherever it lands.
-
-It is crewed and aimed as the other guns are, and laid **15 to 55 degrees**: on the high arc where one of its three charges reaches, else on a low one, flatter and faster, which a hill in the way can stop (the circle turns red). It swings 10 degrees a second.
-"""),
-    text("""
-**Slow and heavy.** It reloads in **fifteen seconds** and takes **five** to settle; fully aimed, its circle's radius is 0.8 blocks for every 100 of range (12 blocks at its longest). Its rack holds 4 of each shell.
-
-The nuclear shell is a [Tactical Nuclear Warhead](ordnance/nuclear)'s full yield: a crater 42 blocks round, wrecking everything to 60 blocks. Even at the cannon's shortest range its crew is well clear of the blast, but the ground round the burst stays [radioactive](safety/radiation) for a day, 90 blocks round, and its [fallout plume](safety/fallout) drifts off downwind.
-"""),
-    table([
-        ["HE", "blast a little under a heavy warhead's + 48 fragments"],
-        ["Incendiary", "napalm 13 blocks round"],
-        ["Nuclear", "a tactical nuclear burst"],
-    ], "Shells"),
-    craft("atomic_cannon"),
-    craft("atomic_shell_nuclear", "The nuclear shell is a Tactical Fission Core in a dense steel case with a military circuit for its fuze."),
 ])
 
 entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "singularity_core", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [

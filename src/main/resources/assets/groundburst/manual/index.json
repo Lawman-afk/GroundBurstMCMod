@@ -61,7 +61,6 @@
     "ordnance/mines",
     "ordnance/mortar",
     "ordnance/howitzer",
-    "ordnance/atomic_cannon",
     "ordnance/assembly",
     "ordnance/missiles",
     "ordnance/missile_assemblers",

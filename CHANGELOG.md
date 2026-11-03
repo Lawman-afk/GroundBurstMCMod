@@ -1,22 +1,23 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 — 2026-11-03
 
-The rest of the artillery: a towed 155 mm howitzer that reaches 800 blocks, and the Atomic Cannon, which throws a
-nuclear shell 1,500 blocks.
+A towed 155 mm howitzer that reaches 600 blocks, and the first build of Ground Burst for Minecraft 1.21.1.
 
 ### Artillery
-- **155 mm Howitzer**: a towed field gun on split trails that reaches **64 to 800 blocks**, 30 degrees either side of
+- **155 mm Howitzer**: a towed field gun on split trails that reaches **64 to 600 blocks**, 30 degrees either side of
   the way it is placed facing. It fires **HE** (a blast a little under an HE warhead's, with 32 fragments) and
   **incendiary** shells (napalm 9 blocks round), always on the high arc, so they come down steeply behind hills. It is
   steadier than the mortar (a narrower circle that settles in three seconds) and reloads in five.
-- **Atomic Cannon**: a 280 mm gun slung between two tractors, built round a howitzer. It reaches **300 to 1,500 blocks**,
-  20 degrees either side, on the high arc where it can and on a flatter, faster low arc where it cannot, and fires
-  **HE**, **incendiary** and the **nuclear shell**: a tactical nuclear burst wherever it lands, made from a Tactical
-  Fission Core. Fifteen seconds to load.
-- Both are crewed and aimed as the mortar is. Ground too far off for the game to draw is filled in, in the strategic
-  view, from the gun's own map of it, so you can see what you are aiming at a kilometre away.
-- Each has its own firing sound, from recordings of real guns.
+- It is crewed and aimed as the mortar is. Ground too far off for the game to draw is filled in, in the strategic view,
+  from the gun's own map of it, so you can see what you are aiming at 600 blocks away.
+- Its firing sound is made from recordings of a real 155 mm gun.
+
+### Minecraft 1.21.1
+- Ground Burst now comes for **Minecraft 1.21.1** too (NeoForge 21.1.265 or newer, GeckoLib 4.9.3 or newer), as a
+  file of its own with everything in this version. A few things are simpler on it: Rad-Away, Potassium Iodide Tablets
+  and the Anti-Rad Injector are used as food is (with no nourishment), the pointer stays an arrow over the mod's
+  screens, and flash particles are not tinted.
 
 ### Changes
 - The mortar's crewman now **stands** at it: the gun view starts at normal eye height, not a block off the ground.
@@ -25,7 +26,12 @@ nuclear shell 1,500 blocks.
   at the gun's own pace, from wherever it was, even when the gun changes its propellant charge on the way.
 - A gun manned beside a wall or under a roof starts aimed within its range instead of jumping out to it.
 - Shells now **scatter over the aiming circle at every range**: a shot landing on ground the server had not loaded (most
-  long shots, every Atomic Cannon shot) went out unscattered and came down dead on the aim.
+  long shots) went out unscattered and came down dead on the aim.
+- Moving the aim over far ground in the strategic view **no longer lags the game**: the gun maps the far ground only
+  once the aim comes to rest, the newest piece first, and the map is drawn in less detail further off.
+- The Field Manual's chapter introductions **run on to the next page** when they are long (the Superweapons chapter's
+  ran off its page).
+- The missile assemblers' hook cables now **pay out as the hooks lower**, on all four assemblers.
 
 ## 0.6.0 — 2026-11-02
 
