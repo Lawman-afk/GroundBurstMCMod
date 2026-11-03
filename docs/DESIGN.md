@@ -3514,8 +3514,9 @@ write-ups of the dispersion model):
 - *Model* (GeckoLib): a round baseplate, the tube on its ball socket, a bipod with its elevating screw and traverse
   handwheel, a sight. Bones: `traverse` (turned about the socket), `tube` (raised), `bipod` (its legs leaned to meet the
   tube's collar), `screw` (the elevating screw, stretched), `recoil` (the tube's kick into the baseplate as it fires).
-- *Crewing*: right-click it (with anything it does not take) to man it: you sit beside it on an invisible seat
-  (`GunSeat`); Shift gets up. Manned, it follows where you look (the gun view) or the cursor (the strategic view); 1 to 6
+- *Crewing*: right-click it (with anything it does not take) to man it: you stand at it, on an invisible place
+  (`GunSeat`, whose rider stands with its feet on the ground, so the gun view is at a standing player's eye height;
+  at first it sat, which dropped the view to about a block); Shift steps away. Manned, it follows where you look (the gun view) or the cursor (the strategic view); 1 to 6
   pick the shell (HE, smoke, incendiary, chemical, cryo, EMP; the hotbar does not change); left click fires; the mouse
   wheel out (or V) goes up into the strategic view, in at its lowest comes back down.
 - *Loading*: right-click it with shells to put them in its rack (six slots, one a kind, 16 in each); hoppers and pipes
@@ -3524,16 +3525,27 @@ write-ups of the dispersion model):
   3.16 blocks a tick: 50, 100, 150 and 200 blocks at 45 degrees on the flat), the lowest that reaches picked for each
   aim (so short flights at short ranges); 16 to 200 blocks. Shells fly true parabolas (gravity 0.05 blocks a tick
   squared, no drag; launched half a tick's gravity up so their ticks lie on the curve), so the aim is solved exactly for
-  any height. It turns 40 degrees a second and elevates 20; 2.5 s to reload.
+  any height. 2.5 s to reload.
+- *Laying* (as WoT's reticle follows the cursor): the gun is laid on a point on the ground, the *laid point*, which
+  slides toward the aim each tick: its bearing at most the gun's traverse rate (the mortar 40 degrees a second), its
+  range at most its range rate (the mortar 40 blocks a second), kept within its traverse and its ranges; the elevation
+  and charge are solved for the laid point each tick. At first the gun itself was turned and elevated toward the aim's
+  solution, and as it passed from one charge to the next the point its elevation reached (with the new charge) jumped
+  hundreds of blocks and crept back: the user saw the aim "teleport" to far distances. The laid point never jumps; the
+  client eases the circle after it at one and a half times its pace.
 - *Dispersion* (WoT's model): 1.6 blocks per 100 of range fully aimed (the circle's radius); aim time 2 s (the circle
   shrinks to a third each 2 s, to its least); firing blooms it fourfold (at most sixfold, as it is when just manned);
-  laying the gun blooms it to the root of 1 + (0.06 w)^2 for w degrees a second. A shot falls where the tube points
+  laying the gun blooms it to the root of 1 + (0.06 w)^2, w the laid point's pace (degrees a second, a block of range
+  a second counting half a degree). A shot falls where the tube points
   when it fires, spread over the circle laid on the ground (stretched along the line of fire by 1 / sin of its
   descent): normally, sigma half the radius, a shot outside rolled again evenly inside.
 - *Strategic view* (client): a camera over the aim looking down 75 degrees along the line of fire (its bearing set as
-  you go up); the mouse moves the cursor over the ground, the wheel the height (24 to 96 over it). On the terrain the
-  oval (white while it shrinks, green fully aimed, red out of range or blocked), the cursor's cross and the shell's arc;
-  a readout of the rack, the reload, range, charge, elevation and time of flight.
+  you go up); the mouse moves the cursor over the ground, the wheel the height (24 over it up to an eighth of the gun's
+  range, at least 96 and at most 200; it starts at a fifth of the distance to the aim, at least 48). On the terrain the
+  oval as a dashed line (white while it shrinks, green fully aimed, red out of range or blocked), the cursor's cross
+  and the shell's arc, dashed too; a readout of the rack, the reload, range, charge, elevation and time of flight. The
+  line is one ribbon whose dark edge is in its texture (`reticle.png`): at first a darker, wider ribbon lay under it at
+  the same height, and the two fought for depth, so half the circle showed dark.
 - *Shells* (16 a stack; a grenade, a steel plate and gunpowder each): on impact HE is a blast between dynamite's and
   C4's with 20 fragments; smoke three smoke canisters' clouds in a line across the line of fire (a screen some 14 wide,
   30 s); incendiary a small burst and napalm fire over most of the ground within 6, anything alive there set alight;
@@ -3541,6 +3553,52 @@ write-ups of the dispersion model):
   16 round for 20 s. The incoming whistle in a shell's last two seconds; the launch from the M-327 recording.
 - The chunks a shell is in and is about to enter are kept ticking while it flies (beyond the simulation distance it
   would stop in the air).
+
+**One gun, three sizes** (2026-11-03): what the guns share is `GunBlockEntity` (crew, rack, laying, solution, spread,
+firing, its state sent to the crewman) read from a `GunSpec` record: shells, rack size, charges, elevations, ranges,
+traverse limit, traverse, range and elevation rates, reload, accuracy, aim time, bloom, the socket and tube, the crew's
+place, the fire sound and the smoke. `GunBlock` places any of them facing the way the player looks; a `Calibre` (81, 155
+or 280 mm) names each gun's shells (`<calibre>_shell_<type>`), sets their fragments, napalm and whistle. `MortarBlockEntity`
+keeps the bipod's bones; `BarrelGunBlockEntity` is the barrel guns' (a `traverse` bone turned, a `barrel` raised, a
+`recoil` run back along it and returned).
+
+**The 155 mm Howitzer** (`groundburst:howitzer`; after the M777): a two-wheeled carriage on split trails spread behind
+it, spades down, the long barrel in its cradle with a muzzle brake, recuperator cylinders over it, the breech at the
+back. The model (`tools/assets/heavy_guns.py`, GeckoLib) is drawn larger than its one block (about 4.5 wide, 9 long).
+- *Fire*: HE and incendiary shells (8 of each in its rack); seven charges, each reaching two thirds further than the
+  one before (79 to 800 blocks at 45 degrees); always the high arc, 45 to 70 degrees, so its shells come down steeply;
+  64 to 800 blocks; 30 degrees either side of its front (a towed gun is turned on its trails only so far); 20 degrees
+  and 80 blocks a second; 5 s to reload.
+- *Dispersion*: 1 block per 100 fully aimed (8 at 800 blocks), aim time 3 s, firing blooms it fourfold (sixfold at
+  most), laying 0.08.
+- *Shells*: HE a blast a little under an HE warhead's (a crater about 5 round) with 32 fragments; incendiary napalm 9
+  round. Made from an HE charge (or a napalm canister), a dense steel plate and gunpowder.
+- *Sound*: two takes from a K-55's rounds (a 155 mm self-propelled gun), a deeper thump and a slow shove of air under
+  each, heard 256 blocks.
+
+**The Atomic Cannon** (`groundburst:atomic_cannon`; after the M65 "Atomic Annie"): the 280 mm gun on a long girder
+carriage slung between two tractors, a turntable under the gun. Drawn about 7 wide and 15 long over its block.
+- *Fire*: HE, incendiary and nuclear shells (4 of each in its rack); three charges (375, 750 and 1,500 blocks at 45
+  degrees); laid 15 to 55 degrees, the high arc where one of its charges reaches, else the low (flatter and faster:
+  a hill in the way blocks it, and the reticle turns red); 300 to 1,500 blocks; 20 degrees either side; 10 degrees and
+  160 blocks a second; 15 s to reload.
+- *Dispersion*: 0.8 blocks per 100 fully aimed (12 at 1,500 blocks), aim time 5 s, firing blooms it threefold (fivefold
+  at most), laying 0.1.
+- *Shells*: HE a blast a little under a heavy warhead's with 48 fragments; incendiary napalm 13 round; nuclear a
+  Tactical Nuclear Warhead's full yield where it lands (its crater, fallout and plume). The nuclear shell is a Tactical
+  Fission Core, two dense steel plates, a military circuit and gunpowder.
+- *Sound*: a heavy gun's boom slowed to 0.7, its next round slower still under it, a falling whump and a slow shove,
+  the K-55's crack on top and the boom coming back off far ground; heard 384 blocks.
+
+**The far ground's map**: the client draws only the chunks it has loaded, a few hundred blocks at most, and the
+howitzer reaches 800 and the cannon 1,500. In the strategic view the client asks its gun for a map of the ground it is
+looking over, 128-block tiles (a sample every 2 blocks: the height of the top that blocks motion, and its map colour);
+the gun loads those chunks (tickets, not ticking) and sends each tile once it is in (`ArtilleryPayloads.Terrain`).
+Where the client has no chunk, the map is drawn as solid columns of its colours with darker sides, and its heights
+place the cursor, the circle and the arc. The client asks for the tile nearest the aim first, one a tick; the gun
+makes one at a time and queues the rest (up to 24: at first it dropped every request while it made one, so a single
+tile came in thirteen seconds and the rest of the view was sky). A tile older than 30 s is asked for again, so craters
+show. Tiles are kept while they are near the cursor, and the gun drops its tickets when no one is crewing it.
 ---
 
 ## 21. Aftermath systems
@@ -4631,6 +4689,7 @@ No open decisions right now. New ones get added here as they come up.
 ## 30. Decision log
 | Date | Decision |
 |---|---|
+| 2026-11-03 | **The artillery finished** (the user, after their look at the mortar: fix it, then "finish off the artillery" and begin a 1.21.1 backport). The mortar: its crewman stands (feet on the ground, not seated, so the gun view starts at eye height; it had dropped to about a block); its circle and arc are one dashed line in one colour, the dark edge in the line's texture (a second, darker ribbon under it at the same height had fought it for depth and shown as a dark half); the gun is laid on a point on the ground that slides toward the aim at the gun's pace (the aim had jumped far out whenever the elevation passed from one charge to the next, then crept back), and a gun just manned starts laid within its ranges and traverse. The three guns share one block entity read from a `GunSpec` and a `Calibre` for each size of shell. The **155 mm Howitzer** (after the M777; 64 to 800 blocks, 30 degrees either side, the high arc only, HE and incendiary) and the **Atomic Cannon** (after the M65; 300 to 1,500 blocks, 20 degrees either side, the high arc where it can and the low where it must, HE, incendiary and a nuclear shell with a tactical warhead's full yield) built (§20.1). They reach beyond what a client loads, so the strategic view draws the far ground from a map the gun makes of it (heights and map colours, 128-block tiles). Their firing sounds from two more CC0 recordings (a K-55's 155 mm rounds, a heavy gun's boom slowed), credited. |
 | 2026-11-02 | Version **0.6.0** (the user's request: the jar, the changelog and GitHub updated): the Particle Uplink Cannon, the Cryo ICBM, the 81 mm Mortar, the superweapons' balance and the heightmap fix. CHANGELOG's Unreleased became 0.6.0 with an intro (the cannon, the cryo, the mortar, then the changes); README and the CurseForge description given four screenshots (the cannon firing, its beam at night, the mortar's strategic view, the ice spires); "More special weapons" off Planned (the Cryo Bomb was the plan's last). No GitHub release, as before. |
 | 2026-11-02 | **Artillery** (the user: "carry on to artillery"; their answers): all three guns, built in turn and each shown before the next (an 81 mm mortar, a 155 mm towed howitzer, an Atomic Cannon); the mortar fires HE, smoke, incendiary, chemical, cryo and EMP shells, the larger guns HE and incendiary (and the Atomic Cannon nuclear); crewed, aimed from a strategic view as World of Tanks aims its artillery, with WoT's dispersion (a circle two sigma wide, growing with range, blooming as it fires and turns, shrinking over its aim time; no shot outside it). The mortar first (§20.1). |
 | 2026-11-02 | After the user's look at the cannon, balancing the three superweapons (harder to use than the pack's other weapons): the particle beam burns four times as long (48 s; it draws 1,000 FE/t now, so whatever can charge the cannon keeps its beam burning); the SCUD Storm's salvo spreads wider (24 blocks, from 16) and each SCUD reaches further (blast radii x1.25, residue 30 from 21, cloud 22 from 16); a Laser Designator commands every superweapon (the SCUD Storm and the Nuclear Missile had been left out: no laser-guided missile in them; their missiles still come down where designated, without homing). Uplink Wall's top and bottom are plain concrete (the sides' blue band sat along one edge of them). |

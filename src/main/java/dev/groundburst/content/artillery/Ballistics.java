@@ -58,6 +58,16 @@ public final class Ballistics {
         return Math.toDegrees(Math.atan((v2 + Math.sqrt(disc)) / (G * horizontal)));
     }
 
+    /** The low-arc elevation (degrees) for the same, or NaN. */
+    public static double lowAngle(double speed, double horizontal, double dy) {
+        double v2 = speed * speed;
+        double disc = v2 * v2 - G * (G * horizontal * horizontal + 2 * dy * v2);
+        if (disc < 0 || horizontal < 1e-6) {
+            return Double.NaN;
+        }
+        return Math.toDegrees(Math.atan((v2 - Math.sqrt(disc)) / (G * horizontal)));
+    }
+
     /** The world yaw from {@code from} to {@code to}, degrees as {@code atan2(dx, dz)}. */
     public static float yaw(Vec3 from, Vec3 to) {
         return (float) Math.toDegrees(Math.atan2(to.x - from.x, to.z - from.z));

@@ -24,8 +24,8 @@ vertex colour in game (so they are mostly greyscale) and seen at any size. They 
   it (scrolled down the beam in game, tinted white or blue by vertex colour).
 - ``textures/fx/particle_flare.png`` (128x128): the glare where the beam touches and over the cannon's pit: a hot round
   middle in a soft glow, thin rays of light out of it.
-- ``textures/fx/reticle.png`` (16x16): an artillery reticle's line (DESIGN.md §20.1), v across it: solid white through its
-  middle, its edges a pixel soft (tinted white, green or red by vertex colour; a wider one drawn dark under it).
+- ``textures/fx/reticle.png`` (16x16): an artillery reticle's line (DESIGN.md §20.1), v across it: white through its middle
+  with a dark edge either side (tinted white, green or red by vertex colour, the edge staying dark).
 """
 from __future__ import annotations
 
@@ -251,12 +251,16 @@ def cloudlet(seed: int) -> np.ndarray:
 
 
 def reticle() -> Image.Image:
-    """A clean line: opaque through the middle of v, falling off smoothly over its outer quarter each side."""
+    """A line with a dark edge of its own, so one ribbon reads on bright ground and dark (a second, darker ribbon under
+    it fought it for depth): white through the middle of v, dark either side, soft at its very edge. Its middle (u, v
+    0.5) is solid white, for the far ground's map to fill with."""
     w, h = 16, 16
     v = np.abs((np.arange(h) + 0.5) / h * 2 - 1)[:, None] * np.ones((1, w))
-    edge = np.clip((1 - v) / 0.3, 0, 1)
+    core = np.clip((0.5 - v) / 0.12, 0, 1)
+    core = core * core * (3 - 2 * core)
+    edge = np.clip((1 - v) / 0.22, 0, 1)
     alpha = edge * edge * (3 - 2 * edge)
-    rgb = np.ones((h, w, 3))
+    rgb = (0.14 + 0.86 * core)[..., None] * np.ones((h, w, 3))
     return Image.fromarray((np.concatenate([rgb, alpha[..., None]], -1) * 255).astype(np.uint8), "RGBA")
 
 

@@ -1,7 +1,7 @@
 {
   "title": "Assembly Bench",
   "icon": "groundburst:assembly_bench",
-  "order": 4,
+  "order": 6,
   "items": [
     "groundburst:assembly_bench",
     "groundburst:he_charge",

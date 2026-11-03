@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "groundburst:block/howitzer"
+    },
+    "facing=east": {
+      "model": "groundburst:block/howitzer"
+    },
+    "facing=south": {
+      "model": "groundburst:block/howitzer"
+    },
+    "facing=west": {
+      "model": "groundburst:block/howitzer"
+    }
+  }
+}

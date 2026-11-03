@@ -170,6 +170,8 @@
     "groundburst:arms_dealer",
     "groundburst:war_factory",
     "groundburst:mortar",
+    "groundburst:howitzer",
+    "groundburst:atomic_cannon",
     "groundburst:copper_fluid_pipe",
     "groundburst:fluid_pipe",
     "groundburst:pressurized_fluid_pipe",

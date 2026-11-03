@@ -1,7 +1,7 @@
 {
   "title": "Vertical Launch Battery",
   "icon": "groundburst:vertical_launch_battery",
-  "order": 14,
+  "order": 16,
   "items": [
     "groundburst:vertical_launch_battery",
     "groundburst:strike_cell",

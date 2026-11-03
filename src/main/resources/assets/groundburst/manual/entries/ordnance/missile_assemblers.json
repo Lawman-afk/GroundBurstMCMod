@@ -1,7 +1,7 @@
 {
   "title": "Missile Assemblers",
   "icon": "groundburst:light_missile_assembler",
-  "order": 6,
+  "order": 8,
   "items": [
     "groundburst:light_missile_assembler",
     "groundburst:medium_missile_assembler",

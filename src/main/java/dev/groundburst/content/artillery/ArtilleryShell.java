@@ -50,15 +50,11 @@ public class ArtilleryShell extends Projectile {
     /** Client hook, each tick a shell flies (its whistle, set by the client). */
     public static Consumer<ArtilleryShell> clientHook = s -> {};
 
-    /** HE: the fragments it throws. */
-    public static final int FRAGMENTS = 20;
     /** Smoke: canisters in a line across the line of fire, this far apart. */
     public static final int SMOKE_CANISTERS = 3;
     public static final double SMOKE_SPACING = 4.5;
     /** Chemical: chlorine canisters. */
     public static final int GAS_CANISTERS = 2;
-    /** Incendiary: napalm over the ground out to this. */
-    public static final float NAPALM_RADIUS = 6;
     /** Cryo and EMP: how far round, for how long. */
     public static final float CRYO_RADIUS = 7, EMP_RADIUS = 16;
     public static final int CRYO_TICKS = 240, EMP_TICKS = 400;
@@ -69,11 +65,11 @@ public class ArtilleryShell extends Projectile {
         super(type, level);
     }
 
-    /** A shell of {@code type} away from {@code at} on the curve with launch velocity {@code u}. */
-    public static ArtilleryShell launch(ServerLevel level, Vec3 at, Vec3 u, ShellType type, @Nullable Entity owner) {
+    /** A {@code calibre} shell of {@code type} away from {@code at} on the curve with launch velocity {@code u}. */
+    public static ArtilleryShell launch(ServerLevel level, Vec3 at, Vec3 u, Calibre calibre, ShellType type, @Nullable Entity owner) {
         ArtilleryShell s = new ArtilleryShell(GBArtillery.SHELL.get(), level);
         s.setOwner(owner);
-        s.entityData.set(TYPE, type.ordinal());
+        s.entityData.set(TYPE, calibre.ordinal() * 16 + type.ordinal());
         s.setPos(at);
         s.setDeltaMovement(u.add(0, Ballistics.G / 2, 0));     // half a tick's gravity up: its ticks lie on the curve
         s.orient();
@@ -85,7 +81,11 @@ public class ArtilleryShell extends Projectile {
     }
 
     public ShellType type() {
-        return ShellType.of(this.entityData.get(TYPE));
+        return ShellType.of(this.entityData.get(TYPE) & 15);
+    }
+
+    public Calibre calibre() {
+        return Calibre.of(this.entityData.get(TYPE) >> 4);
     }
 
     @Override
@@ -155,15 +155,18 @@ public class ArtilleryShell extends Projectile {
     /** What it holds, let out at {@code at} (it came in at velocity {@code v}). */
     private void burst(ServerLevel level, Vec3 at, Vec3 v) {
         Entity owner = getOwner();
+        Calibre calibre = calibre();
         switch (type()) {
             case HE -> {
-                Blasts.detonate(level, at, Blasts.profile("mortar_shell_he"), owner);
-                fragments(level, at, owner, this.random);
+                Blasts.detonate(level, at, Blasts.profile(calibre.key + "_shell_he"), owner);
+                fragments(level, at, owner, this.random, calibre.fragments);
             }
             case INCENDIARY -> {
-                Blasts.detonate(level, at, Blasts.profile("mortar_shell_incendiary"), owner);
-                napalm(level, at, NAPALM_RADIUS, this.random);
+                Blasts.detonate(level, at, Blasts.profile(calibre.key + "_shell_incendiary"), owner);
+                napalm(level, at, calibre.napalm, this.random);
             }
+            case NUCLEAR -> dev.groundburst.content.ordnance.charge.Charges.impact(level,
+                    dev.groundburst.content.ordnance.charge.ChargeKind.TACTICAL_NUCLEAR_WARHEAD, BlockPos.containing(at), owner);
             case SMOKE -> canisters(level, at, v, owner, new ItemStack(GBOrdnance.SMOKE_GRENADE.get()), SMOKE_CANISTERS, SMOKE_SPACING);
             case CHEMICAL -> canisters(level, at, v, owner, new ItemStack(GBOrdnance.GAS_GRENADE.get()), GAS_CANISTERS, 2.5);
             case CRYO -> {
@@ -185,9 +188,9 @@ public class ArtilleryShell extends Projectile {
     }
 
     /** HE: fragments flung out evenly, more sideways than up (as a frag grenade's). */
-    static void fragments(ServerLevel level, Vec3 at, @Nullable Entity owner, RandomSource r) {
-        for (int i = 0; i < FRAGMENTS; i++) {
-            double y = 1 - 2 * (i + 0.5) / FRAGMENTS;
+    static void fragments(ServerLevel level, Vec3 at, @Nullable Entity owner, RandomSource r, int count) {
+        for (int i = 0; i < count; i++) {
+            double y = 1 - 2 * (i + 0.5) / count;
             double ring = Math.sqrt(1 - y * y);
             double a = i * 2.39996 + r.nextDouble() * 0.3;
             Vec3 dir = new Vec3(Math.cos(a) * ring, Math.abs(y) * 0.6 + 0.05, Math.sin(a) * ring).normalize();
@@ -278,7 +281,7 @@ public class ArtilleryShell extends Projectile {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putInt("shell", type().ordinal());
+        output.putInt("shell", this.entityData.get(TYPE));
     }
 
     @Override

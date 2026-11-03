@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * Bump {@link #PROTOCOL_VERSION} whenever a payload's wire format changes.
  */
 public final class GBNetwork {
-    public static final String PROTOCOL_VERSION = "20";
+    public static final String PROTOCOL_VERSION = "21";
 
     private GBNetwork() {}
 
@@ -133,6 +133,12 @@ public final class GBNetwork {
         registrar.playToClient(dev.groundburst.content.artillery.ArtilleryPayloads.State.TYPE,
                 dev.groundburst.content.artillery.ArtilleryPayloads.State.CODEC,
                 (payload, context) -> dev.groundburst.content.artillery.ArtilleryPayloads.stateHook.accept(payload));
+        registrar.playToServer(dev.groundburst.content.artillery.ArtilleryPayloads.TerrainRequest.TYPE,
+                dev.groundburst.content.artillery.ArtilleryPayloads.TerrainRequest.CODEC,
+                dev.groundburst.content.artillery.ArtilleryPayloads.TerrainRequest::handle);
+        registrar.playToClient(dev.groundburst.content.artillery.ArtilleryPayloads.Terrain.TYPE,
+                dev.groundburst.content.artillery.ArtilleryPayloads.Terrain.CODEC,
+                (payload, context) -> dev.groundburst.content.artillery.ArtilleryPayloads.terrainHook.accept(payload));
         registrar.playToServer(dev.groundburst.content.ordnance.charge.ChargePayloads.DetonatorFrequency.TYPE,
                 dev.groundburst.content.ordnance.charge.ChargePayloads.DetonatorFrequency.CODEC,
                 dev.groundburst.content.ordnance.charge.ChargePayloads.DetonatorFrequency::handle);

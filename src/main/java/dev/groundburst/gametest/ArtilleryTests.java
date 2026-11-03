@@ -6,7 +6,9 @@ import dev.groundburst.content.artillery.ArtilleryShell;
 import dev.groundburst.content.artillery.Ballistics;
 import dev.groundburst.content.artillery.GBArtillery;
 import dev.groundburst.content.artillery.GunSeat;
-import dev.groundburst.content.artillery.MortarBlock;
+import dev.groundburst.content.artillery.Calibre;
+import dev.groundburst.content.artillery.GunBlock;
+import dev.groundburst.content.artillery.GunBlockEntity;
 import dev.groundburst.content.artillery.MortarBlockEntity;
 import dev.groundburst.content.artillery.ShellType;
 import dev.groundburst.content.effect.EffectSystems;
@@ -40,9 +42,13 @@ final class ArtilleryTests {
         GBGameTests.test("artillery_spread_stays_in_its_circle", GBGameTests.FLOOR_16, 20, ArtilleryTests::spread);
         GBGameTests.test("mortar_is_manned_laid_blooms_and_fires", GBGameTests.FLOOR_16, 260, ArtilleryTests::crewed);
         GBGameTests.testOpenSky("mortar_shell_flies_to_where_it_was_aimed", GBGameTests.FLOOR_16, 200, ArtilleryTests::flight);
-        for (ShellType t : ShellType.values()) {
-            GBGameTests.test("mortar_shell_bursts_" + t.key, GBGameTests.FLOOR_16, 100, helper -> burst(helper, t));
+        for (ShellType t : GBArtillery.MORTAR_SPEC.shells()) {
+            GBGameTests.test("mortar_shell_bursts_" + t.key, GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.MORTAR, t));
         }
+        GBGameTests.test("howitzer_shell_bursts_he", GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.HOWITZER, ShellType.HE));
+        GBGameTests.test("howitzer_shell_bursts_incendiary", GBGameTests.FLOOR_16, 100, helper -> burst(helper, Calibre.HOWITZER, ShellType.INCENDIARY));
+        GBGameTests.test("howitzer_lays_within_its_traverse", GBGameTests.FLOOR_16, 20, ArtilleryTests::traverse);
+        GBGameTests.test("atomic_cannon_lays_its_high_and_low_arcs", GBGameTests.FLOOR_16, 20, ArtilleryTests::atomicArcs);
     }
 
     private static void floor(GameTestHelper helper) {
@@ -82,10 +88,63 @@ final class ArtilleryTests {
     }
 
     private static MortarBlockEntity mortar(GameTestHelper helper, BlockPos rel) {
-        helper.setBlock(rel, GBArtillery.MORTAR.block().get().defaultBlockState().setValue(MortarBlock.FACING, Direction.NORTH));
+        helper.setBlock(rel, GBArtillery.MORTAR.block().get().defaultBlockState().setValue(GunBlock.FACING, Direction.NORTH));
         var be = helper.getBlockEntity(rel, MortarBlockEntity.class);
         helper.assertTrue(be != null, "a mortar");
         return be;
+    }
+
+    private static GunBlockEntity gun(GameTestHelper helper, BlockPos rel, net.minecraft.world.level.block.Block block) {
+        helper.setBlock(rel, block.defaultBlockState().setValue(GunBlock.FACING, Direction.NORTH));
+        var be = helper.getBlockEntity(rel, GunBlockEntity.class);
+        helper.assertTrue(be != null, "a gun");
+        return be;
+    }
+
+    /**
+     * The howitzer, facing north, reaches 30 degrees either side: a point 400 blocks off 20 degrees round is in reach
+     * (on the high arc, 45 to 70 degrees, with the lowest charge that reaches), one 45 degrees round is not, nor one
+     * nearer than 64 or further than 800.
+     */
+    private static void traverse(GameTestHelper helper) {
+        GunBlockEntity h = gun(helper, new BlockPos(8, 2, 8), GBArtillery.HOWITZER.block().get());
+        Vec3 base = h.socket();
+        java.util.function.BiFunction<Double, Double, Vec3> at = (range, turn) -> {
+            double b = Math.toRadians(h.frontYaw() + turn);
+            return base.add(Math.sin(b) * range, 0, Math.cos(b) * range);
+        };
+        GunBlockEntity.Solution s = h.solve(at.apply(400.0, 20.0));
+        helper.assertTrue(s.reachable() && s.elevation() >= 45 - 1e-3 && s.elevation() <= 70 + 1e-3, "400 blocks, 20 degrees round: " + s);
+        for (int k = 0; k < s.charge(); k++) {
+            double c = GBArtillery.HOWITZER_SPEC.charges()[k];
+            helper.assertTrue(c * c / Ballistics.G < 400 * 1.05, "a lower charge would have reached: " + k);
+        }
+        helper.assertTrue(!h.solve(at.apply(400.0, 45.0)).reachable(), "45 degrees round is beyond its traverse");
+        helper.assertTrue(!h.solve(at.apply(40.0, 0.0)).reachable(), "too near");
+        helper.assertTrue(!h.solve(at.apply(820.0, 0.0)).reachable(), "too far");
+        helper.assertTrue(h.solve(at.apply(790.0, 0.0)).reachable(), "790 blocks is in reach");
+        helper.succeed();
+    }
+
+    /**
+     * The Atomic Cannon is laid 15 to 55 degrees: 1,450 blocks off on the high arc of its biggest charge, 1,000 off on a
+     * low arc (the high one would be steeper than it goes); the curve passes through each.
+     */
+    private static void atomicArcs(GameTestHelper helper) {
+        GunBlockEntity a = gun(helper, new BlockPos(8, 2, 8), GBArtillery.ATOMIC_CANNON.block().get());
+        Vec3 base = a.socket();
+        for (double range : new double[] {1450, 1000, 420}) {
+            Vec3 target = base.add(0, 0, -range);
+            GunBlockEntity.Solution s = a.solve(target);
+            helper.assertTrue(s.reachable() && s.elevation() >= 15 - 1e-3 && s.elevation() <= 55 + 1e-3, range + " blocks: " + s);
+            Vec3 muzzle = a.muzzle(s.yaw(), s.elevation());
+            Vec3 u = Ballistics.velocity(GBArtillery.ATOMIC_SPEC.charges()[s.charge()], s.yaw(), s.elevation());
+            double t = Math.hypot(target.x - muzzle.x, target.z - muzzle.z) / Math.hypot(u.x, u.z);
+            helper.assertTrue(Ballistics.point(muzzle, u, t).distanceTo(target) < 0.1, "the curve passes through " + range);
+        }
+        helper.assertTrue(a.solve(base.add(0, 0, -1000)).elevation() < 45, "1,000 blocks on a low arc");
+        helper.assertTrue(!a.solve(base.add(0, 0, -250)).reachable(), "nearer than 300 is out of reach");
+        helper.succeed();
     }
 
     /**
@@ -170,15 +229,33 @@ final class ArtilleryTests {
         m.load(new ItemStack(GBArtillery.MORTAR_SHELLS.get(ShellType.HE).get(), 1));
         Vec3 target = m.socket().add(0, 0, -60);
         m.aim(crew, target);
-        MortarBlockEntity.Solution s = m.solve(target);
+        GunBlockEntity.Solution s = m.solve(target);
         helper.assertTrue(s.reachable() && s.charge() == 1, "60 blocks: the second charge: " + s);
+        Vec3 base = m.socket();
+        double[] last = {m.laid() == null ? Double.NaN : Math.hypot(m.laid().x - base.x, m.laid().z - base.z)};
+        Vec3[] prev = {m.laid()};
+        helper.onEachTick(() -> {
+            Vec3 l = m.laid();
+            if (l != null && prev[0] != null) {
+                double step = Math.hypot(l.x - prev[0].x, l.z - prev[0].z);
+                double most = GBArtillery.MORTAR_SPEC.rangeRate() + Math.toRadians(GBArtillery.MORTAR_SPEC.traverseRate())
+                        * Math.hypot(l.x - base.x, l.z - base.z) + 0.01;
+                helper.assertTrue(step <= most, "it slides, never jumps: " + step + " in a tick");
+            }
+            prev[0] = l;
+        });
+        helper.assertTrue(last[0] >= MortarBlockEntity.MIN_RANGE - 1e-6 && last[0] <= MortarBlockEntity.MAX_RANGE + 1e-6,
+                "manned, it is laid within its ranges: " + last[0]);
         helper.runAfterDelay(4, () -> {
-            helper.assertTrue(m.elevation() > MortarBlockEntity.REST_ELEVATION + 2 && m.elevation() < s.elevation(), "being laid: " + m.elevation());
-            helper.assertTrue(m.dispersion() > 2.5f, "it blooms while it turns: " + m.dispersion());
+            Vec3 l = m.laid();
+            double r = Math.hypot(l.x - base.x, l.z - base.z);
+            helper.assertTrue(Math.abs(r - 60) < Math.abs(last[0] - 60) - 6, "laid toward the aim at its pace: " + r + " from " + last[0]);
+            helper.assertTrue(m.dispersion() > 2.5f, "it blooms while it is laid: " + m.dispersion());
         });
         int[] shots = {0};
         helper.runAfterDelay(110, () -> {
-            helper.assertTrue(Math.abs(m.elevation() - s.elevation()) < 0.01f, "laid: " + m.elevation() + " for " + s.elevation());
+            helper.assertTrue(m.laid().distanceTo(target) < 0.01 && Math.abs(m.elevation() - s.elevation()) < 0.01f,
+                    "laid on the aim: " + m.laid() + ", " + m.elevation() + " for " + s.elevation());
             helper.assertTrue(m.dispersion() < 1.01f, "settled to its least: " + m.dispersion());
             shots[0] = m.shots();
             m.fire(crew);
@@ -216,7 +293,7 @@ final class ArtilleryTests {
         double e = Ballistics.highAngle(speed, Math.hypot(target.x - from.x, target.z - from.z), target.y - from.y);
         helper.assertTrue(!Double.isNaN(e) && e > 45, "a high arc there: " + e);
         Vec3 u = Ballistics.velocity(speed, Ballistics.yaw(from, target), e);
-        ArtilleryShell shell = ArtilleryShell.launch(level, from, u, ShellType.SMOKE, null);
+        ArtilleryShell shell = ArtilleryShell.launch(level, from, u, Calibre.MORTAR, ShellType.SMOKE, null);
         Vec3[] last = {from};
         helper.onEachTick(() -> {
             if (!shell.isRemoved()) {
@@ -233,12 +310,12 @@ final class ArtilleryTests {
     }
 
     /** Each shell, dropped onto a stone floor, bursts with what it holds. */
-    private static void burst(GameTestHelper helper, ShellType type) {
+    private static void burst(GameTestHelper helper, Calibre calibre, ShellType type) {
         floor(helper);
         var level = helper.getLevel();
         Vec3 at = helper.absoluteVec(new Vec3(8.5, 2.0, 8.5));
         Pig pig = type == ShellType.CRYO ? helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(10, 2, 8)) : null;
-        ArtilleryShell.launch(level, at.add(0, 3, 0), new Vec3(0, -0.6, 0), type, null);
+        ArtilleryShell.launch(level, at.add(0, 3, 0), new Vec3(0, -0.6, 0), calibre, type, null);
         helper.succeedWhen(() -> {
             AABB around = new AABB(at, at).inflate(9);
             switch (type) {
@@ -251,7 +328,7 @@ final class ArtilleryTests {
                             fires++;
                         }
                     }
-                    helper.assertTrue(fires >= 12, "napalm over the ground round it: " + fires);
+                    helper.assertTrue(fires >= (calibre == Calibre.MORTAR ? 12 : 20), "napalm over the ground round it: " + fires);
                 }
                 case SMOKE, CHEMICAL -> {
                     List<ThrownExplosive> c = level.getEntitiesOfClass(ThrownExplosive.class, around);

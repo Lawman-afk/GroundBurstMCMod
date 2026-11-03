@@ -969,14 +969,14 @@ Place it facing the way you are looking. Armed, it shows a red **laser tripwire*
 entry("ordnance/mortar", "81 mm Mortar", "mortar", ["mortar", "mortar_shell_he", "mortar_shell_smoke", "mortar_shell_incendiary",
                                                    "mortar_shell_chemical", "mortar_shell_cryo", "mortar_shell_emp"], [
     text("""
-The **81 mm Mortar** lobs shells high over walls, hills and trees onto ground **16 to 200 blocks** away. Place it facing where you mean to fire (its tube rests that way), then **right-click it with shells** to load its rack, 16 of each kind (hoppers and pipes load it too). Right-click it with anything else to **man it**: you sit beside it, and **Shift** gets you up.
+The **81 mm Mortar** lobs shells high over walls, hills and trees onto ground **16 to 200 blocks** away. Place it facing where you mean to fire (its tube rests that way), then **right-click it with shells** to load its rack, 16 of each kind (hoppers and pipes load it too). Right-click it with anything else to **man it**: you stand at it, and **Shift** steps away.
 
 Manned, it is laid on where you aim, and turns and elevates **at its own pace**: a big swing takes a few seconds. It picks the propellant charge for you, the lowest that reaches (four of them, 50 to 200 blocks), so its shells always come down steeply. It fires from its rack first, then from your own inventory; in creative, without end.
 """),
     text("""
 **Aiming.** In the gun view it follows where you look. **Scroll out** (or press **V**) for the **strategic view**: a camera high over the ground looking down along your line of fire. The mouse moves your aim over the ground, the wheel the camera's height; scroll back in at its lowest (or V) to come down. **1 to 6** pick the shell, **left click** fires.
 
-On the ground lies the **aiming circle**: where the tube points now, as wide as a shot's spread. It is **white** while it shrinks, **green** when fully aimed, and **red** when your aim is out of range or the shell's path is blocked (a ridge, a roof). From above you also see the shell's arc. The readout shows your rack, the reload, the range, the charge, the elevation and the flight time.
+On the ground lies the dashed **aiming circle**: where the tube is laid now, as wide as a shot's spread. It slides over the ground toward your aim as the gun is laid. It is **white** while it shrinks, **green** when fully aimed, and **red** when your aim is out of range or the shell's path is blocked (a ridge, a roof). From above you also see the shell's arc. The readout shows your rack, the reload, the range, the charge, the elevation and the flight time.
 """),
     text("""
 **Spread.** A shell falls somewhere inside the circle, never outside it, most often near its middle. The circle grows with range (fully aimed, its radius is 1.6 blocks for every 100), is **four times wider** just after a shot, blooms while the gun turns, and shrinks back to a third every **two seconds**. It reloads in 2.5 s: a steady crew that waits for green lands its shells closest; firing as fast as it loads walks them round the target.
@@ -993,6 +993,45 @@ A shell coming in **whistles** for its last two seconds. Each is a grenade in a 
     ], "Shells"),
     craft("mortar"),
     craft("mortar_shell_he", "Every shell is made the same way from its grenade: smoke, incendiary, chemical (the poison gas grenade), cryo and EMP."),
+])
+
+entry("ordnance/howitzer", "155 mm Howitzer", "howitzer", ["howitzer", "howitzer_shell_he", "howitzer_shell_incendiary"], [
+    text("""
+The **155 mm Howitzer** is a towed field gun with four times the mortar's reach: **64 to 800 blocks**. It fires only ahead, **30 degrees either side** of the way it was placed facing, so place it pointing at the ground you mean to shell. Load it and man it as the [mortar](ordnance/mortar) is: right-click it with shells (its rack holds 8 of each kind), with anything else to stand at its breech; **Shift** steps away.
+
+It is aimed the same way, from the gun view or the strategic view, and laid at its own pace: it swings 20 degrees a second and walks its aim 80 blocks a second in range. It picks the lowest of its **seven charges** that reaches and always fires the high arc (45 to 70 degrees), so its shells come down steeply behind hills.
+"""),
+    text("""
+**Steadier, slower.** Fully aimed, its circle's radius is 1 block for every 100 of range (8 blocks at its longest); it takes **three seconds** to settle and **five** to reload.
+
+Ground the game has not loaded, far beyond your own view, is drawn in the strategic view from the gun's own **map** of it, so you can see what you aim at 800 blocks away. A shell keeps the ground it flies over loaded until it lands.
+"""),
+    table([
+        ["HE", "blast a little under an HE warhead's + 32 fragments"],
+        ["Incendiary", "napalm 9 blocks round"],
+    ], "Shells"),
+    craft("howitzer"),
+    craft("howitzer_shell_he", "Its HE shell is an HE charge in a dense steel case; the incendiary shell is a napalm canister in one."),
+])
+
+entry("ordnance/atomic_cannon", "Atomic Cannon", "atomic_cannon", ["atomic_cannon", "atomic_shell_he", "atomic_shell_incendiary", "atomic_shell_nuclear"], [
+    text("""
+The **Atomic Cannon** is a 280 mm gun slung between two tractors, built round a [howitzer](ordnance/howitzer). It throws its shells **300 to 1,500 blocks**, **20 degrees either side** of the way it was placed facing, and it fires the **nuclear shell**: a tactical nuclear burst wherever it lands.
+
+It is crewed and aimed as the other guns are, and laid **15 to 55 degrees**: on the high arc where one of its three charges reaches, else on a low one, flatter and faster, which a hill in the way can stop (the circle turns red). It swings 10 degrees a second.
+"""),
+    text("""
+**Slow and heavy.** It reloads in **fifteen seconds** and takes **five** to settle; fully aimed, its circle's radius is 0.8 blocks for every 100 of range (12 blocks at its longest). Its rack holds 4 of each shell.
+
+The nuclear shell is a [Tactical Nuclear Warhead](ordnance/nuclear)'s full yield: a crater 42 blocks round, wrecking everything to 60 blocks. Even at the cannon's shortest range its crew is well clear of the blast, but the ground round the burst stays [radioactive](safety/radiation) for a day, 90 blocks round, and its [fallout plume](safety/fallout) drifts off downwind.
+"""),
+    table([
+        ["HE", "blast a little under a heavy warhead's + 48 fragments"],
+        ["Incendiary", "napalm 13 blocks round"],
+        ["Nuclear", "a tactical nuclear burst"],
+    ], "Shells"),
+    craft("atomic_cannon"),
+    craft("atomic_shell_nuclear", "The nuclear shell is a Tactical Fission Core in a dense steel case with a military circuit for its fuze."),
 ])
 
 entry("ordnance/assembly", "Assembly Bench", "assembly_bench", ["assembly_bench", "he_charge", "heavy_he_charge", "thermobaric_charge", "cluster_dispenser", "penetrator_charge", "incendiary_charge", "massive_ordnance_charge", "gas_dispenser", "smoke_dispenser", "cryo_dispenser", "emp_dispenser", "toxic_waste_tank", "chemical_agent_canister", "tactical_fission_core", "fission_core", "boosted_fission_core", "neutron_core", "dirty_payload", "antimatter_trap", "singularity_core", "light_warhead_casing", "medium_warhead_casing", "heavy_warhead_casing", "strategic_warhead_casing", "impact_fuze", "barometric_fuze"], [

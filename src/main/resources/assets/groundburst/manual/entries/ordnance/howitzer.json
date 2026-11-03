@@ -1,0 +1,45 @@
+{
+  "title": "155 mm Howitzer",
+  "icon": "groundburst:howitzer",
+  "order": 4,
+  "items": [
+    "groundburst:howitzer",
+    "groundburst:howitzer_shell_he",
+    "groundburst:howitzer_shell_incendiary"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "The **155 mm Howitzer** is a towed field gun with four times the mortar's reach: **64 to 800 blocks**. It fires only ahead, **30 degrees either side** of the way it was placed facing, so place it pointing at the ground you mean to shell. Load it and man it as the [mortar](ordnance/mortar) is: right-click it with shells (its rack holds 8 of each kind), with anything else to stand at its breech; **Shift** steps away.\n\nIt is aimed the same way, from the gun view or the strategic view, and laid at its own pace: it swings 20 degrees a second and walks its aim 80 blocks a second in range. It picks the lowest of its **seven charges** that reaches and always fires the high arc (45 to 70 degrees), so its shells come down steeply behind hills."
+    },
+    {
+      "type": "text",
+      "text": "**Steadier, slower.** Fully aimed, its circle's radius is 1 block for every 100 of range (8 blocks at its longest); it takes **three seconds** to settle and **five** to reload.\n\nGround the game has not loaded, far beyond your own view, is drawn in the strategic view from the gun's own **map** of it, so you can see what you aim at 800 blocks away. A shell keeps the ground it flies over loaded until it lands."
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "HE",
+          "blast a little under an HE warhead's + 32 fragments"
+        ],
+        [
+          "Incendiary",
+          "napalm 9 blocks round"
+        ]
+      ],
+      "text": "",
+      "title": "Shells"
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:howitzer",
+      "text": ""
+    },
+    {
+      "type": "crafting",
+      "item": "groundburst:howitzer_shell_he",
+      "text": "Its HE shell is an HE charge in a dense steel case; the incendiary shell is a napalm canister in one."
+    }
+  ]
+}

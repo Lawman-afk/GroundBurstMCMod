@@ -100,6 +100,29 @@
     ],
     "subtitle": "subtitles.groundburst.antimatter.near"
   },
+  "artillery.atomic_fire": {
+    "sounds": [
+      {
+        "attenuation_distance": 384,
+        "name": "groundburst:artillery/atomic_fire",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.groundburst.artillery.atomic_fire"
+  },
+  "artillery.howitzer_fire": {
+    "sounds": [
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:artillery/howitzer_fire1"
+      },
+      {
+        "attenuation_distance": 256,
+        "name": "groundburst:artillery/howitzer_fire2"
+      }
+    ],
+    "subtitle": "subtitles.groundburst.artillery.howitzer_fire"
+  },
   "artillery.mortar_fire": {
     "sounds": [
       {

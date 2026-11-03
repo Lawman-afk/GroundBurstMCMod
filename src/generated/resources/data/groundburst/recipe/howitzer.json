@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "groundburst:dense_steel_plate",
+    "G": "minecraft:glass_pane",
+    "P": "#c:plates/steel",
+    "R": "groundburst:steel_rod",
+    "V": "groundburst:pressure_vessel"
+  },
+  "pattern": [
+    "DDG",
+    "PVP",
+    "R R"
+  ],
+  "result": {
+    "id": "groundburst:howitzer"
+  }
+}

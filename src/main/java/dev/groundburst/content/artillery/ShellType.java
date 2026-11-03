@@ -1,9 +1,10 @@
 package dev.groundburst.content.artillery;
 
 /**
- * What an artillery shell holds (DESIGN.md §20.1). The 81 mm Mortar fires all six; the bigger guns HE and incendiary.
+ * What an artillery shell holds (DESIGN.md §20.1). The 81 mm Mortar fires all but nuclear; the 155 mm Howitzer HE and
+ * incendiary; the Atomic Cannon HE, incendiary and nuclear.
  *
- * @param key     its items' id ({@code mortar_shell_<key>})
+ * @param key     its items' id ({@code <calibre>_shell_<key>})
  * @param english its short name ("HE", "Smoke", ...)
  * @param colour  its readout's colour, as its band is painted
  */
@@ -19,7 +20,9 @@ public enum ShellType {
     /** Cryo: a freeze round where it lands. */
     CRYO("cryo", "Cryo", 0x8AD8FF),
     /** EMP: a field round where it lands that shuts machines down. */
-    EMP("emp", "EMP", 0xA890FF);
+    EMP("emp", "EMP", 0xA890FF),
+    /** Nuclear: a tactical nuclear burst (the Atomic Cannon's). */
+    NUCLEAR("nuclear", "Nuclear", 0xFFD040);
 
     public final String key;
     public final String english;

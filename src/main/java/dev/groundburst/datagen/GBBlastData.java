@@ -164,6 +164,15 @@ public final class GBBlastData {
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
         ctx.register(Blasts.profile("mortar_shell_incendiary"), profile(0.4f, 1.5f, 2.5f, 6, 6, 2, 5, 4, 0.7f, 0f, 0.1f, 0.1f, 12, 5, 0.8f,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));
+        // The 155 mm shell a little under an HE warhead; the 280 mm one a little under a heavy warhead.
+        ctx.register(Blasts.profile("howitzer_shell_he"), visual(profile(2.2f, 5, 8, 7, 0, 6.5f, 13, 4, 0.7f, 0.12f, 0.3f, 0.4f, 45, 14, 2.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)), "he"));
+        ctx.register(Blasts.profile("howitzer_shell_incendiary"), profile(0.6f, 2, 3.5f, 9, 9, 3, 7, 4, 0.7f, 0f, 0.1f, 0.1f, 16, 6, 1.0f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
+        ctx.register(Blasts.profile("atomic_shell_he"), visual(profile(4, 10, 16, 13, 0, 11, 22, 3, 0.72f, 0.15f, 0.3f, 0.5f, 70, 22, 2.8f,
+                TerrainTable.CONVENTIONAL, Optional.empty()), "heavy"));
+        ctx.register(Blasts.profile("atomic_shell_incendiary"), profile(1, 3, 5, 13, 13, 4, 10, 4, 0.7f, 0f, 0.1f, 0.1f, 22, 8, 1.4f,
+                TerrainTable.CONVENTIONAL, Optional.of(true)));
         // GameTest profiles (smooth, so their shapes are predictable): a crater-only charge, and a slow one that must take several ticks.
         ctx.register(Blasts.profile("test/crater_only"), profile(0, 6, 0, 0, 0, 0, 0, 4, 1.0f, 0f, 0f, 0f, 0, 0, 0,
                 TerrainTable.CONVENTIONAL, Optional.of(true)));

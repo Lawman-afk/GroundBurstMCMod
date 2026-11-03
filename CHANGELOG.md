@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+The rest of the artillery: a towed 155 mm howitzer that reaches 800 blocks, and the Atomic Cannon, which throws a
+nuclear shell 1,500 blocks.
+
+### Artillery
+- **155 mm Howitzer**: a towed field gun on split trails that reaches **64 to 800 blocks**, 30 degrees either side of
+  the way it is placed facing. It fires **HE** (a blast a little under an HE warhead's, with 32 fragments) and
+  **incendiary** shells (napalm 9 blocks round), always on the high arc, so they come down steeply behind hills. It is
+  steadier than the mortar (a narrower circle that settles in three seconds) and reloads in five.
+- **Atomic Cannon**: a 280 mm gun slung between two tractors, built round a howitzer. It reaches **300 to 1,500 blocks**,
+  20 degrees either side, on the high arc where it can and on a flatter, faster low arc where it cannot, and fires
+  **HE**, **incendiary** and the **nuclear shell**: a tactical nuclear burst wherever it lands, made from a Tactical
+  Fission Core. Fifteen seconds to load.
+- Both are crewed and aimed as the mortar is. Far ground the game has not loaded is drawn in the strategic view from the
+  gun's own map of it, so you can see what you are aiming at a kilometre away.
+- Each has its own firing sound, from recordings of real guns.
+
+### Changes
+- The mortar's crewman now **stands** at it: the gun view starts at normal eye height, not a block off the ground.
+- The aiming circle is a **dashed line in one colour**; half of it showed darker.
+- The aim no longer jumps to far-off ranges as the gun is laid: the circle **slides over the ground** toward your aim
+  at the gun's own pace, from wherever it was, even when the gun changes its propellant charge on the way.
+- A gun manned beside a wall or under a roof starts aimed within its range instead of jumping out to it.
+
 ## 0.6.0 — 2026-11-02
 
 The USA's superweapon from *Command & Conquer: Generals*, a deep freeze as the fourth special weapon, and the first of

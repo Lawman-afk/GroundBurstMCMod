@@ -159,6 +159,10 @@ public final class GBSounds {
             register("artillery.mortar_fire", "Mortar fires", variants("artillery/mortar_fire", 2), false, 128);
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELL_INCOMING =
             register("artillery.shell_incoming", "Shell whistles in", List.of("artillery/shell_incoming"), false, 64);
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOWITZER_FIRE =
+            register("artillery.howitzer_fire", "Howitzer fires", variants("artillery/howitzer_fire", 2), false, 256);
+    public static final DeferredHolder<SoundEvent, SoundEvent> ATOMIC_FIRE =
+            register("artillery.atomic_fire", "Atomic Cannon fires", List.of("artillery/atomic_fire"), true, 384);
     // The base alarm system (DESIGN.md §18.6): the Air-Raid Siren's two signals, the Klaxon's five tones, the Alarm Bell
     // (all loops, played while they sound), and the Missile Warning Receiver's attention tone.
     public static final DeferredHolder<SoundEvent, SoundEvent> ALARM_SIREN_WAIL =

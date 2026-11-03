@@ -322,6 +322,12 @@ public final class FxPhotographer {
                 new Scene("mortar_close", "mortar", 3, 16, List.of(20, 26)),
                 new Scene("mortar_impact", "mortar_impact", 30, 10, List.of(98, 104, 111, 119, 135, 170, 260)),
                 new Scene("mortar_view", "mortar_view", 5, 12, List.of(40, 110, 116, 160, 197, 240)),
+                // The 155 mm Howitzer and the Atomic Cannon side on, laid on points 400 and 1,000 blocks off and fired
+                // at clock 25 (HE). The howitzer's strategic view over a hut 600 blocks off, beyond the ground the client
+                // loads (drawn from the gun's map of it): laid out to it, settled, fired at clock 230, the arc, the burst.
+                new Scene("howitzer", "howitzer", 15, 8, List.of(20, 26, 27, 30, 40)),
+                new Scene("atomic_cannon", "atomic_cannon", 24, 10, List.of(20, 26, 27, 31, 45)),
+                new Scene("howitzer_view", "howitzer_view", 8, 12, List.of(60, 150, 228, 236, 330, 470)),
                 // The ammunition factories at work, their parts loaded: the Arms Dealer laying a Toxin SCUD out section by
                 // section on its trestles under its hoist; the War Factory its Nuclear Missile under its gantry crane.
                 // Both from above, close: the Arms Dealer from its front, over its wall into the yard; the War Factory
@@ -1104,12 +1110,18 @@ public final class FxPhotographer {
 
     /** An 81 mm Mortar at (x, z 0) on the ground, facing {@code facing}, its rack full of HE. */
     private static net.minecraft.core.BlockPos mortar(ServerLevel level, int x, int ground, net.minecraft.core.Direction facing) {
+        return gun(level, x, ground, facing, dev.groundburst.content.artillery.GBArtillery.MORTAR.block().get(),
+                dev.groundburst.content.artillery.Calibre.MORTAR);
+    }
+
+    /** A gun ({@code block}, firing {@code calibre}'s shells) at (x, z 0) on the ground, facing {@code facing}, four HE in its rack. */
+    private static net.minecraft.core.BlockPos gun(ServerLevel level, int x, int ground, net.minecraft.core.Direction facing,
+            net.minecraft.world.level.block.Block block, dev.groundburst.content.artillery.Calibre calibre) {
         var at = new net.minecraft.core.BlockPos(x, ground, 0);
-        level.setBlockAndUpdate(at, dev.groundburst.content.artillery.GBArtillery.MORTAR.block().get().defaultBlockState()
-                .setValue(dev.groundburst.content.artillery.MortarBlock.FACING, facing));
-        if (level.getBlockEntity(at) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
-            m.load(new net.minecraft.world.item.ItemStack(dev.groundburst.content.artillery.GBArtillery.MORTAR_SHELLS.get(
-                    dev.groundburst.content.artillery.ShellType.HE).get(), 16));
+        level.setBlockAndUpdate(at, block.defaultBlockState().setValue(dev.groundburst.content.artillery.GunBlock.FACING, facing));
+        if (level.getBlockEntity(at) instanceof dev.groundburst.content.artillery.GunBlockEntity g) {
+            g.load(new net.minecraft.world.item.ItemStack(dev.groundburst.content.artillery.GBArtillery.shell(calibre,
+                    dev.groundburst.content.artillery.ShellType.HE).get(), 4));
         }
         return at;
     }
@@ -1994,6 +2006,27 @@ public final class FxPhotographer {
                 if (s.profile().equals("mortar_impact")) {
                     return;                                // the shells come down in tick()
                 }
+                if (s.profile().equals("howitzer") || s.profile().equals("atomic_cannon")) {
+                    boolean big = s.profile().equals("atomic_cannon");
+                    mortarAt = gun(level, x, ground, net.minecraft.core.Direction.NORTH,
+                            (big ? dev.groundburst.content.artillery.GBArtillery.ATOMIC_CANNON : dev.groundburst.content.artillery.GBArtillery.HOWITZER).block().get(),
+                            big ? dev.groundburst.content.artillery.Calibre.ATOMIC : dev.groundburst.content.artillery.Calibre.HOWITZER);
+                    if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.GunBlockEntity g) {
+                        g.layForTest(new Vec3(x + 0.5, ground, big ? -999.5 : -399.5));
+                    }
+                    return;
+                }
+                if (s.profile().equals("howitzer_view")) {
+                    mortarAt = gun(level, x, ground, net.minecraft.core.Direction.EAST,
+                            dev.groundburst.content.artillery.GBArtillery.HOWITZER.block().get(), dev.groundburst.content.artillery.Calibre.HOWITZER);
+                    hut(level, x + 600, ground);
+                    ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                    player.setGameMode(GameType.CREATIVE);
+                    if (level.getBlockEntity(mortarAt) instanceof dev.groundburst.content.artillery.GunBlockEntity g) {
+                        g.man(player);
+                    }
+                    return;
+                }
                 if (s.profile().equals("mortar_view")) {
                     mortarAt = mortar(level, x, ground, net.minecraft.core.Direction.EAST);
                     hut(level, x + 70, ground);
@@ -2461,11 +2494,25 @@ public final class FxPhotographer {
                 }
             });
         }
-        if (scene.profile().equals("mortar") && step >= 0 && clock == 25 && mortarAt != null) {
+        if ((scene.profile().equals("mortar") || scene.profile().equals("howitzer") || scene.profile().equals("atomic_cannon"))
+                && step >= 0 && clock == 25 && mortarAt != null) {
             var at = mortarAt;
             server.execute(() -> {
-                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.artillery.MortarBlockEntity m) {
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.artillery.GunBlockEntity m) {
                     m.shootForTest(server.overworld(), dev.groundburst.content.artillery.ShellType.HE);
+                }
+            });
+        }
+        if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 8 && mc.level != null) {
+            int x = site * 1200;
+            ArtilleryClient.photoView(new Vec3(x + 600.5, mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0), 0.5), 90);
+        }
+        if (scene.profile().equals("howitzer_view") && step >= 0 && clock == 230 && mortarAt != null) {
+            var at = mortarAt;
+            server.execute(() -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                if (server.overworld().getBlockEntity(at) instanceof dev.groundburst.content.artillery.GunBlockEntity m) {
+                    m.fire(player);
                 }
             });
         }
@@ -2481,7 +2528,7 @@ public final class FxPhotographer {
                 int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, tx, tz);
                 Vec3 to = new Vec3(tx + 0.5, y, tz + 0.5), from = new Vec3(tx + 0.5, y + 1, tz + 40.5);
                 double e = dev.groundburst.content.artillery.Ballistics.highAngle(2.24, 40, to.y - from.y);
-                dev.groundburst.content.artillery.ArtilleryShell.launch(level, from, dev.groundburst.content.artillery.Ballistics.velocity(2.24, 180, e),
+                dev.groundburst.content.artillery.ArtilleryShell.launch(level, from, dev.groundburst.content.artillery.Ballistics.velocity(2.24, 180, e), dev.groundburst.content.artillery.Calibre.MORTAR,
                         types.get(i), null);
             });
         }
@@ -2807,7 +2854,7 @@ public final class FxPhotographer {
             step++;
         }
         if (step >= scene.moments().size() && clock > scene.moments().getLast() + 10) {
-            if (scene.profile().equals("mortar_view")) {
+            if (scene.profile().equals("mortar_view") || scene.profile().equals("howitzer_view")) {
                 ArtilleryClient.photoLeave();
                 server.execute(() -> {
                     ServerPlayer player = server.getPlayerList().getPlayers().getFirst();

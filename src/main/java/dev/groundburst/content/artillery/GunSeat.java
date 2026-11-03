@@ -16,13 +16,14 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Where a gun's crewman sits (DESIGN.md §20.1): an invisible seat beside the gun. It goes as soon as nobody sits in it
- * or its gun is gone; Shift gets up, as from any seat.
+ * Where a gun's crewman stands (DESIGN.md §20.1): an invisible place beside the gun that holds them there (standing, at
+ * their own eye height: they ride it, but not sitting). It goes as soon as nobody is in it or its gun is gone; Shift
+ * steps away, as from any seat.
  */
 public class GunSeat extends Entity {
     private static final EntityDataAccessor<BlockPos> GUN = SynchedEntityData.defineId(GunSeat.class, EntityDataSerializers.BLOCK_POS);
-    /** How far down from the seat its rider is put: enough to sit them on the ground rather than over it. */
-    private static final double SINK = 0.5;
+    /** A rider is held this far up from the place: a player's own riding drop (Avatar.DEFAULT_VEHICLE_ATTACHMENT), so their feet are on the ground. */
+    private static final double LIFT = 0.6;
 
     public GunSeat(EntityType<? extends GunSeat> type, Level level) {
         super(type, level);
@@ -54,7 +55,7 @@ public class GunSeat extends Entity {
     public void tick() {
         super.tick();
         if (level() instanceof ServerLevel server && (this.tickCount > 5 && getPassengers().isEmpty()
-                || !(server.getBlockEntity(gun()) instanceof MortarBlockEntity))) {
+                || !(server.getBlockEntity(gun()) instanceof GunBlockEntity))) {
             ejectPassengers();
             discard();
         }
@@ -62,7 +63,13 @@ public class GunSeat extends Entity {
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
-        return new Vec3(0, -SINK, 0);
+        return new Vec3(0, LIFT, 0);
+    }
+
+    /** Its crewman stands at the gun: drawn standing, not sitting. */
+    @Override
+    public boolean shouldRiderSit() {
+        return false;
     }
 
     @Override

@@ -34,6 +34,18 @@ DEFAULT = dict(shots=[("iso front", 30, 225, None, None, None), ("iso front-left
                       ("low front", 8, 200, None, None, None), ("from above", 80, 180, None, None, None)])
 
 PRESETS = {
+    "howitzer": dict(
+        shots=[("iso front", 25, 225, None, None, 0), ("iso back", 25, 45, None, None, 0),
+               ("side", 5, 270, None, None, 0), ("from above", 75, 180, None, None, 0),
+               ("breech and cradle", 20, 135, (0, 20, 6), 18, 0), ("carriage and wheel", 15, 240, (-10, 8, -3), 16, 0),
+               ("muzzle brake", 30, 210, (0, 32, -66), 10, 0), ("trail spades", 30, 30, (0, 3, 55), 24, 0)],
+        anim="rest"),
+    "atomic_cannon": dict(
+        shots=[("iso front", 25, 225, None, None, 0), ("iso back", 25, 45, None, None, 0),
+               ("side", 5, 270, None, None, 0), ("from above", 75, 180, None, None, 0),
+               ("breech and cradle", 20, 135, (0, 30, 6), 28, 0), ("front tractor", 15, 230, (0, 14, -110), 36, 0),
+               ("muzzle", 30, 210, (0, 42, -118), 14, 0), ("turntable", 35, 150, (0, 20, 0), 30, 0)],
+        anim="rest"),
     "mortar": dict(
         shots=[("iso front", 25, 225, None, None, 0), ("iso back", 25, 45, None, None, 0),
                ("side", 5, 270, None, None, 0), ("from above", 75, 180, None, None, 0),
