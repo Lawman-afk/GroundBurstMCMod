@@ -536,7 +536,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** Whether an EMP field is over it (DESIGN.md §21.4; where it is in the world): then it does nothing at all. */
     protected boolean isEmpDisabled() {
-        return this.level != null && dev.groundburst.content.effect.EmpFields.inField(this.level, worldBlockPos());
+        return this.level != null && dev.groundburst.content.effect.EmpFields.any(this.level)
+                && dev.groundburst.content.effect.EmpFields.inField(this.level, worldBlockPos());
     }
 
     /** Whether its redstone setting holds it stopped right now (never while carried: no redstone reaches it). */

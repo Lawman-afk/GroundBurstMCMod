@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Minecraft 1.21.1: Create and Create Aeronautics
+Both are optional; with either installed, Ground Burst's launchers work on the structures they move.
+- **Create**: launchers ride Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys and
+  minecart contraptions). Glue or attach any part of a formed launcher and the whole structure moves with it (Create may
+  now move the mod's blocks, which pistons still may not). Aim, arm and fire it as always from a Launch Computer, a
+  Launch Control Station or a Laser Designator: it counts down and launches from wherever the contraption has it, its
+  missiles heading the way it points, on the power and missiles it was loaded with. Set down again, it forms where it
+  lands and stays on its network. Missile launchers, superweapons and both interceptor launchers all work this way.
+- **Create Aeronautics** (Sable ships, planes, cars and boats): a launcher aboard works as it does on the ground. Its
+  missiles leave from where the ship is, the way the ship points them, and computers, stations, designators and radars
+  see it where the ship has taken it. A Launch Computer, Control Station or Radar Array aboard a ship works there too.
+- Not yet: blasts do not damage ships' or contraptions' blocks, and a launcher's own screen cannot be opened while a
+  Create contraption carries it.
+
 ## 0.7.0 — 2026-11-03
 
 A towed 155 mm howitzer that reaches 600 blocks, and the first build of Ground Burst for Minecraft 1.21.1.

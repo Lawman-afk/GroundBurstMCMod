@@ -3000,8 +3000,34 @@ new key (`LaunchSite.moved`, `LaunchNetwork.moved`; not while the old place stil
 
 GameTests (`CarryTests`): a Cruise Missile Launcher carried in a frame turned a quarter and moved off fires from its
 box's tail where that is in the world, heading the way its boxes now point, and the computers find it by its key and
-near where it is; a Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and
-forms again.
+near where it is; a Launch Silo carried off the same way lifts off from where its pad is, on the power it carried; a
+Launch Silo on a network, picked up and set down six blocks off, keeps its place on its network and forms again.
+
+**In the 1.21.1 build** (`dev.groundburst.compat`, its own files; both mods optional, declared so in its mods.toml):
+- *Sable* (`SableFrames`): a block in a sub-level's plot stands in its ship's frame, the ship's pose read afresh each
+  time (through Sable Companion, Sable's small API, which Sable carries). Sable already draws, sounds and collides the
+  launcher where the ship is; with the frame its missiles leave from there, the way the ship points them, and its
+  network, computers and radars see it there. Assembling a ship moves its blocks into the plot (a move: the network
+  follows).
+- *Create* (`CreateCompat`): Create may move every block of ours (pistons still may not: most of our structures are
+  immovable to them, which Create would otherwise respect); a formed structure's blocks hold to one another and a
+  two-block machine's halves to each other, so moving any part of a launcher takes all of it. Every launcher's
+  controller (the five missile launchers, the three superweapons, both interceptor launchers) has a movement behaviour
+  (`CarriedLauncher`): on the server it makes the launcher from the contraption's saved copy at the place it was taken
+  from, carries it in the contraption's frame (`ContraptionFrame`, itself taken through a ship's frame when the
+  contraption is aboard one), ticks it with the contraption, saves its changes back into the contraption's copy (so it
+  is set down as it is) and sends clients its looks (`CarriedSync`: the boxes rising, the missile gone). Set down, it is
+  moved: it forms again where it lands and its network follows.
+- *Not carried*: Launch Computers, Control Stations and Radar Arrays on a contraption (they work aboard a Sable ship);
+  a carried launcher's screen (aim, arm and fire it from a computer, a station or a designator); power and reloading
+  while carried (it fires on what it was loaded and charged with). Blasts do not yet reach ships' or contraptions'
+  blocks: a missile flies through a ship and bursts where it was aimed.
+- *Checked* by `gradlew runCreateCheck -PwithCreate` (`CreateCheck`: Create 6.0.10, Sable 2.0.6, Create Aeronautics
+  1.3.2 in a dev client): a Cruise Missile Launcher on a mechanical bearing turned by a creative motor is carried, fires
+  from its box's tail where the bearing has it and heads the way its boxes point (-36 degrees, built facing 180); one
+  made into a ship (`/sable assemble area`) and turned 30 degrees is aboard, still on its network, and fires heading 150;
+  the bearing stopped at a quarter turn sets the first down two blocks off facing east, formed, on its network, its
+  missiles gone and its power spent. 7 of 7, pictures in run/screenshots/create_*.png.
 
 ### 17.7 As built: the Radar Array (2026-10-21, ahead of Phase 10)
 - `radar_array`: a 3×3 Machine Casing deck (controller front middle, Energy Port back middle), three Radar Masts up

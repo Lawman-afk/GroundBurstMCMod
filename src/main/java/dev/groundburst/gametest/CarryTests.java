@@ -35,6 +35,7 @@ final class CarryTests {
 
     static void register() {
         GBGameTests.testOpenSky("carried_cruise_launcher_fires_from_where_it_is", GBGameTests.FLOOR_16, 40, CarryTests::carried);
+        GBGameTests.testOpenSky("carried_launch_silo_lifts_off_where_it_is", GBGameTests.FLOOR_16, 40, CarryTests::carriedSilo);
         GBGameTests.test("moved_launcher_keeps_its_network", GBGameTests.FLOOR_16, 40, CarryTests::moved);
     }
 
@@ -98,6 +99,38 @@ final class CarryTests {
                 Flights.of(level).cancelForTest(level, x);
             }
             be.carry(null);
+            helper.succeed();
+        });
+    }
+
+    /** A Launch Silo carried off in a turned frame lifts its missile off from where its pad is now, on its stored power. */
+    private static void carriedSilo(GameTestHelper helper) {
+        LaunchTests.floor(helper);
+        ServerLevel level = helper.getLevel();
+        LaunchSiloBlockEntity silo = LaunchTests.silo(helper, new BlockPos(5, 1, 3));
+        silo.inventory().setItem(LaunchSiloBlockEntity.SLOT_MISSILE, LaunchTests.missile());
+        silo.energy().generate(LaunchSiloBlockEntity.LAUNCH_COST);
+        Turned frame = new Turned(Vec3.atCenterOf(silo.getBlockPos()), new Vec3(-6, 3, 11));
+        silo.carry(frame);
+        BlockPos target = silo.worldBlockPos().offset(-300, 0, 120);
+        Vec3 aim = Vec3.atBottomCenterOf(target);
+        java.util.function.Predicate<Flights.Flight> bound = f -> Math.hypot(f.target().x - aim.x, f.target().z - aim.z) < 2.01;
+        helper.assertTrue(silo.launch(level, target, null), "it counts down, carried");
+        silo.skipCountdownForTest();
+        helper.onEachTick(() -> {
+            if (silo.carried()) {
+                silo.carriedTick(level);
+            }
+        });
+        helper.runAfterDelay(3, () -> {
+            List<Flights.Flight> ours = Flights.of(level).all().stream().filter(bound).toList();
+            helper.assertTrue(ours.size() == 1, "its missile is lit: " + ours.size());
+            Vec3 pad = frame.toWorld(Vec3.atBottomCenterOf(silo.padCentre()));
+            helper.assertTrue(ours.getFirst().position().distanceTo(pad) < 1e-6, "on its pad where that is in the world: "
+                    + ours.getFirst().position() + " vs " + pad);
+            helper.assertTrue(silo.energy().stored() == 0, "on the power it carried: " + silo.energy().stored());
+            Flights.of(level).cancelForTest(level, ours.getFirst());
+            silo.carry(null);
             helper.succeed();
         });
     }
