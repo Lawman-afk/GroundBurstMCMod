@@ -101,7 +101,15 @@ public class ArtilleryShell extends Projectile {
         Vec3 from = position(), to = from.add(v);
         HitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
         if (hit.getType() != HitResult.Type.MISS) {
-            to = hit.getLocation();
+            // (a ship's block, where another mod lets the world's clip see it, is hit in its plot: where it is seen)
+            to = dev.groundburst.content.machine.Frames.toWorld(level(), hit.getLocation());
+        }
+        if (level() instanceof ServerLevel server) {
+            Vec3 hull = dev.groundburst.blast.Hulls.clip(server, from, to);   // a ship or a moving contraption in its way
+            if (hull != null) {
+                to = hull;
+                hit = new net.minecraft.world.phys.BlockHitResult(hull, net.minecraft.core.Direction.UP, net.minecraft.core.BlockPos.containing(hull), false);
+            }
         }
         EntityHitResult struck = ProjectileUtil.getEntityHitResult(level(), this, from, to, getBoundingBox().expandTowards(v).inflate(1),
                 this::canHitEntity);
@@ -110,10 +118,10 @@ public class ArtilleryShell extends Projectile {
         }
         if (hit.getType() != HitResult.Type.MISS && !net.neoforged.neoforge.event.EventHooks.onProjectileImpact(this, hit)) {
             if (level() instanceof ServerLevel server) {
-                Vec3 at = hit.getLocation().subtract(v.normalize().scale(0.15));
+                Vec3 at = (hit instanceof EntityHitResult ? hit.getLocation() : to).subtract(v.normalize().scale(0.15));
                 burst(server, at, v);
             } else {
-                setPos(hit.getLocation());                          // stop where it struck until the server's word
+                setPos(hit instanceof EntityHitResult ? hit.getLocation() : to);   // stop where it struck until the server's word
                 setDeltaMovement(Vec3.ZERO);
             }
             return;
