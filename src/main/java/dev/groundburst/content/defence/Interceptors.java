@@ -156,8 +156,7 @@ public final class Interceptors {
                 killed = true;
                 Blasts.detonate(level, where, KILL, null);
                 if (kind != null && kind.nuclear()) {
-                    level.sendParticles(net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF), true, true,
-                            where.x, where.y, where.z, 3, 0.5, 0.5, 0.5, 0);
+                    dev.groundburst.port.Particles.send(level, ParticleTypes.FLASH, true, where.x, where.y, where.z, 3, 0.5, 0.5, 0.5, 0);
                 }
             }
         }

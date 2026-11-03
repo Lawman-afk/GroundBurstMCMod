@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:deuterium_canister"
+      "ingredient": {
+        "item": "groundburst:deuterium_canister"
+      }
     }
   ],
   "outputs": [

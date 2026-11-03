@@ -100,7 +100,7 @@ public final class GBFallout {
     /** Snow a Cryo ICBM's front laid (DESIGN.md §16.16): vanilla's snow, but it thaws a layer at a time where snow would not lie. */
     public static final WithItem<CryoSnowBlock> CRYO_SNOW = GBBlocks.register("cryo_snow", "Cryo Snow", GBTab.AFTERMATH, CryoSnowBlock::new,
             p -> p.mapColor(MapColor.SNOW).replaceable().forceSolidOff().randomTicks().strength(0.1f).requiresCorrectToolForDrops()
-                    .sound(SoundType.SNOW).isViewBlocking((s, l, pos, box) -> s.getValue(CryoSnowBlock.LAYERS) >= 8)
+                    .sound(SoundType.SNOW).isViewBlocking((s, l, pos) -> s.getValue(CryoSnowBlock.LAYERS) >= 8)
                     .pushReaction(PushReaction.DESTROY));
     /** Water a Cryo ICBM's front froze in an instant: milky ice that thaws where snow would not lie (DESIGN.md §16.16). */
     public static final WithItem<CryoIceBlock> CRYO_ICE = GBBlocks.register("cryo_ice", "Cryo Ice", GBTab.AFTERMATH, CryoIceBlock::new,
@@ -141,7 +141,7 @@ public final class GBFallout {
 
     private static BlockBehaviour.Properties ash(BlockBehaviour.Properties p, MapColor colour) {
         return p.mapColor(colour).replaceable().forceSolidOff().strength(0.1f).sound(SoundType.SAND)
-                .isViewBlocking((s, l, pos, box) -> s.getValue(AshLayerBlock.LAYERS) >= 8).pushReaction(PushReaction.DESTROY);
+                .isViewBlocking((s, l, pos) -> s.getValue(AshLayerBlock.LAYERS) >= 8).pushReaction(PushReaction.DESTROY);
     }
 
     private static BlockBehaviour.Properties charred(BlockBehaviour.Properties p) {

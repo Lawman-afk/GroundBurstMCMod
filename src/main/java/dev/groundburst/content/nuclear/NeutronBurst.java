@@ -66,7 +66,7 @@ public final class NeutronBurst {
     public static void burst(ServerLevel level, Vec3 at, @Nullable Entity by, float scale) {
         float reach = Math.max(4, LETHAL_RADIUS * scale);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(reach))) {
-            if (e.is(EntityTypeTags.UNDEAD) || e instanceof Player p && (p.isCreative() || p.isSpectator())) {
+            if (e.getType().is(EntityTypeTags.UNDEAD) || e instanceof Player p && (p.isCreative() || p.isSpectator())) {
                 continue;
             }
             Vec3 body = e.getBoundingBox().getCenter();

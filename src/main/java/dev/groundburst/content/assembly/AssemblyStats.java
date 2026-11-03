@@ -182,7 +182,7 @@ public final class AssemblyStats {
     }
 
     private static Optional<BlastProfile> profile(RegistryAccess registries, String id) {
-        return registries.lookupOrThrow(BlastProfile.REGISTRY).getOptional(Blasts.profile(id));
+        return registries.registryOrThrow(BlastProfile.REGISTRY).getOptional(Blasts.profile(id));
     }
 
     /**

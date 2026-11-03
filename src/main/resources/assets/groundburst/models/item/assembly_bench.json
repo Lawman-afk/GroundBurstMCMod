@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "builtin/entity",
   "textures": {
     "particle": "groundburst:block/machine_particle"
   },
@@ -123,5 +123,6 @@
         0.26
       ]
     }
-  }
+  },
+  "gui_light": "side"
 }

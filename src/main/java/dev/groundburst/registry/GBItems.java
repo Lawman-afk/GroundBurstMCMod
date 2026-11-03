@@ -31,7 +31,7 @@ public final class GBItems {
 
     public static <I extends Item> DeferredItem<I> register(String name, String english, GBTab tab,
             Function<Item.Properties, ? extends I> factory, UnaryOperator<Item.Properties> properties) {
-        DeferredItem<I> item = ITEMS.registerItem(name, factory, properties);
+        DeferredItem<I> item = ITEMS.registerItem(name, factory, properties.apply(new Item.Properties()));
         GBLang.add("item." + GroundBurst.MODID + "." + name, english);
         addToTab(item, tab);
         return item;
@@ -51,7 +51,7 @@ public final class GBItems {
 
     /** Registers the item form of a block. The block's English name is recorded by {@link GBBlocks}. */
     public static DeferredItem<BlockItem> blockItem(DeferredBlock<? extends Block> block, GBTab tab, UnaryOperator<Item.Properties> properties) {
-        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(block, properties);
+        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(block, properties.apply(new Item.Properties()));
         addToTab(item, tab);
         return item;
     }
@@ -61,7 +61,7 @@ public final class GBItems {
     public static <B extends Block> DeferredItem<BlockItem> blockItem(DeferredBlock<B> block, GBTab tab,
             java.util.function.BiFunction<B, Item.Properties, ? extends BlockItem> factory) {
         DeferredItem<BlockItem> item = (DeferredItem<BlockItem>) (DeferredItem<?>) ITEMS.registerItem(block.getId().getPath(),
-                props -> factory.apply(block.get(), props), Item.Properties::useBlockDescriptionPrefix);
+                props -> factory.apply(block.get(), props), new Item.Properties());
         addToTab(item, tab);
         return item;
     }

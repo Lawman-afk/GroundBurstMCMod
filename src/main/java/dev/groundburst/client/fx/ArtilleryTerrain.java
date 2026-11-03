@@ -148,7 +148,7 @@ final class ArtilleryTerrain {
             return false;
         }
         int y = surfaceY == Integer.MIN_VALUE ? level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z) : surfaceY;
-        return mc.levelRenderer.isSectionCompiledAndVisible(new BlockPos(x, Math.max(level.getMinBuildHeight(), y - 1), z), 0);
+        return mc.levelRenderer.isSectionCompiled(new BlockPos(x, Math.max(level.getMinBuildHeight(), y - 1), z));
     }
 
     /** Whether the game draws all of a tile's ground (each chunk's middle), so it needs no map. */

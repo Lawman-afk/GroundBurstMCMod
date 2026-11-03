@@ -1,6 +1,8 @@
 {
   "type": "groundburst:cryo_condensing",
-  "catalyst": "groundburst:nitrogen_membrane",
+  "catalyst": {
+    "item": "groundburst:nitrogen_membrane"
+  },
   "energy_per_tick": 100,
   "fluid_outputs": [
     {

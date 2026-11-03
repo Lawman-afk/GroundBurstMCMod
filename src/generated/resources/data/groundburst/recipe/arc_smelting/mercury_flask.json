@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 4,
-      "ingredient": "#c:dusts/cinnabar"
+      "ingredient": {
+        "tag": "c:dusts/cinnabar"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:empty_canister"
+      "ingredient": {
+        "item": "groundburst:empty_canister"
+      }
     }
   ],
   "outputs": [

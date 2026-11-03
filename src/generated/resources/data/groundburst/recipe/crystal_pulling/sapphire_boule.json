@@ -4,17 +4,23 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:argon"
+      "ingredient": {
+        "tag": "c:argon"
+      }
     }
   ],
   "inputs": [
     {
       "count": 4,
-      "ingredient": "groundburst:alumina"
+      "ingredient": {
+        "item": "groundburst:alumina"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:tungsten_crucible"
+      "ingredient": {
+        "item": "groundburst:tungsten_crucible"
+      }
     }
   ],
   "outputs": [

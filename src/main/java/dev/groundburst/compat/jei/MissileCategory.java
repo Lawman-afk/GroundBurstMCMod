@@ -20,7 +20,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
     /** One warhead's missile (or its cruise missile), and the assembler that builds it. */
     record Recipe(ItemStack warhead, AssemblerClass assembler, boolean cruise) {}
 
-    static final IRecipeType<Recipe> TYPE = IRecipeType.create(GroundBurst.id("missile_assembly"), Recipe.class);
+    static final RecipeType<Recipe> TYPE = new RecipeType<>(GroundBurst.id("missile_assembly"), Recipe.class);
     private static final int WIDTH = 156, HEIGHT = 48;
 
     MissileCategory(IGuiHelper gui) {
@@ -75,19 +75,19 @@ final class MissileCategory extends AbstractRecipeCategory<MissileCategory.Recip
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
         SizeClass size = recipe.assembler().size;
-        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 1, 5).setStandardSlotBackground()
-                .add(GBAssemblers.controller(recipe.assembler()).item().get());
-        builder.addInputSlot(23, 5).setStandardSlotBackground().add(recipe.warhead());
-        builder.addInputSlot(41, 5).setStandardSlotBackground().add(GBAssembly.BODIES.get(size.ordinal()).get());
+        builder.addSlot(RecipeIngredientRole.CATALYST, 1, 5).setStandardSlotBackground()
+                .addIngredientsUnsafe(dev.groundburst.port.Jei.of(GBAssemblers.controller(recipe.assembler()).item().get()));
+        builder.addInputSlot(23, 5).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.warhead()));
+        builder.addInputSlot(41, 5).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(GBAssembly.BODIES.get(size.ordinal()).get()));
         builder.addInputSlot(59, 5).setStandardSlotBackground()
                 .addItemStacks(motors(recipe).stream().map(m -> new ItemStack(GBAssembly.MOTORS.get(m.ordinal()).get())).toList());
         builder.addInputSlot(77, 5).setStandardSlotBackground()
                 .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get()),
                         new ItemStack(GBAssembly.LASER_GUIDANCE.get())))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addInputSlot(95, 5).setStandardSlotBackground().add(GBAssembly.HARDENED_ELECTRONICS.get())
+        builder.addInputSlot(95, 5).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(GBAssembly.HARDENED_ELECTRONICS.get()))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addOutputSlot(136, 5).setOutputSlotBackground().add(output(recipe));
+        builder.addOutputSlot(136, 5).setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(output(recipe)));
     }
 
     @Override

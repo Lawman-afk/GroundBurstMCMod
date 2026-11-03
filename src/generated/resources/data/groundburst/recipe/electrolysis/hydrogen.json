@@ -1,6 +1,8 @@
 {
   "type": "groundburst:electrolysis",
-  "catalyst": "groundburst:proton_exchange_membrane",
+  "catalyst": {
+    "item": "groundburst:proton_exchange_membrane"
+  },
   "energy_per_tick": 60,
   "fluid_outputs": [
     {
@@ -11,7 +13,9 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "time": 200

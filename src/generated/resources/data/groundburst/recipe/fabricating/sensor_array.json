@@ -4,19 +4,27 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:circuits/advanced"
+      "ingredient": {
+        "tag": "c:circuits/advanced"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:glass_blocks/colorless"
+      "ingredient": {
+        "tag": "c:glass_blocks/colorless"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:dusts/rare_earth"
+      "ingredient": {
+        "tag": "c:dusts/rare_earth"
+      }
     },
     {
       "count": 2,
-      "ingredient": "#c:wires/gold"
+      "ingredient": {
+        "tag": "c:wires/gold"
+      }
     }
   ],
   "outputs": [

@@ -22,7 +22,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
-import mezz.jei.api.recipe.types.IRecipeHolderType;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
@@ -39,7 +39,7 @@ import net.minecraft.world.level.ItemLike;
  */
 @JeiPlugin
 public final class GBJeiPlugin implements IModPlugin {
-    private static final Map<ProcessingKind, IRecipeHolderType<ProcessingRecipe>> TYPES = new EnumMap<>(ProcessingKind.class);
+    private static final Map<ProcessingKind, RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>>> TYPES = new EnumMap<>(ProcessingKind.class);
 
     /** The machine that runs each kind of recipe (kinds without a machine yet are left out). */
     private static Map<ProcessingKind, ItemLike> machines() {
@@ -61,8 +61,8 @@ public final class GBJeiPlugin implements IModPlugin {
         return m;
     }
 
-    private static IRecipeHolderType<ProcessingRecipe> type(ProcessingKind kind) {
-        return TYPES.computeIfAbsent(kind, k -> IRecipeHolderType.create(GBRecipes.type(k)));
+    private static RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> type(ProcessingKind kind) {
+        return TYPES.computeIfAbsent(kind, k -> RecipeType.createFromVanilla(GBRecipes.type(k)));
     }
 
     @Override
@@ -253,14 +253,14 @@ public final class GBJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        machines().forEach((kind, machine) -> registration.addCraftingStation(type(kind), machine));
-        registration.addCraftingStation(AssemblyCategory.TYPE, dev.groundburst.content.assembly.GBAssembly.ASSEMBLY_BENCH.item().get());
+        machines().forEach((kind, machine) -> registration.addRecipeCatalysts(type(kind), machine));
+        registration.addRecipeCatalysts(AssemblyCategory.TYPE, dev.groundburst.content.assembly.GBAssembly.ASSEMBLY_BENCH.item().get());
         for (var c : dev.groundburst.content.assembler.AssemblerClass.values()) {
-            registration.addCraftingStation(MissileCategory.TYPE, dev.groundburst.content.assembler.GBAssemblers.controller(c).item().get());
+            registration.addRecipeCatalysts(MissileCategory.TYPE, dev.groundburst.content.assembler.GBAssemblers.controller(c).item().get());
         }
-        registration.addCraftingStation(StrategicCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.item().get());
-        registration.addCraftingStation(SpecialWeaponsCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item().get());
-        registration.addCraftingStation(AmmoFactoryCategory.TYPE, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item().get(),
+        registration.addRecipeCatalysts(StrategicCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.HALL_CONTROLLER.item().get());
+        registration.addRecipeCatalysts(SpecialWeaponsCategory.TYPE, dev.groundburst.content.strategic.GBStrategic.SPECIAL_CONTROLLER.item().get());
+        registration.addRecipeCatalysts(AmmoFactoryCategory.TYPE, dev.groundburst.content.superweapon.GBSuperweapons.ARMS_DEALER_CONTROLLER.item().get(),
                 dev.groundburst.content.superweapon.GBSuperweapons.WAR_FACTORY_CONTROLLER.item().get());
     }
 

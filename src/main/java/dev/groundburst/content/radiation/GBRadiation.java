@@ -27,7 +27,7 @@ public final class GBRadiation {
 
     /** The dose and dose rate of a living thing ({@link RadiationState}); a player's goes to them alone. */
     public static final Supplier<AttachmentType<RadiationState>> STATE = ATTACHMENTS.register("radiation",
-            () -> AttachmentType.builder(() -> RadiationState.NONE).serialize(RadiationState.CODEC)
+            () -> AttachmentType.builder(() -> RadiationState.NONE).serialize(RadiationState.CODEC.codec())
                     .sync((holder, to) -> holder == to, RadiationState.STREAM_CODEC).build());
 
     /** A dose rate in RAD/h: a block's a block away, or one item's to whoever carries it. */

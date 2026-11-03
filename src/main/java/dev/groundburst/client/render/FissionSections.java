@@ -11,7 +11,7 @@ import com.mojang.math.Axis;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.machine.FissionCore;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import dev.groundburst.port.render.BlockStateModelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -19,8 +19,6 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 
 /**
  * The formed Fission Reactor's sections (DESIGN.md §7.2): the vessel FissionReactorRenderer draws over a reactor of any
@@ -47,7 +45,6 @@ public final class FissionSections {
         DRIVE, DRIVE_ROD, PORT_ITEM, PORT_FLUID, PORT_ENERGY, PORT_ITEM_TOP, PORT_FLUID_TOP, PORT_ENERGY_TOP, CONSOLE;
 
         private final String id = "fission_" + name().toLowerCase(Locale.ROOT);
-        private final StandaloneModelKey<BlockStateModelPart> key = new StandaloneModelKey<>(() -> GroundBurst.MODID + ":" + this.id);
 
         public ResourceLocation model() {
             return ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "block/" + this.id);
@@ -59,7 +56,9 @@ public final class FissionSections {
         }
 
         public @Nullable BlockStateModelPart part() {
-            return Minecraft.getInstance().getModelManager().getStandaloneModel(this.key);
+            var models = Minecraft.getInstance().getModelManager();
+            var baked = models.getModel(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model()));
+            return baked == models.getMissingModel() ? null : new BlockStateModelPart(baked, null, 0);
         }
     }
 
@@ -73,23 +72,23 @@ public final class FissionSections {
     public record Piece(Section section, int x, int y, int z, int turns, boolean flip, int light) {
         /** Moves a pose (at the controller block) onto this piece; the drive rods sit {@code rodDrop} blocks down. */
         public void place(PoseStack.Pose pose, float rodDrop) {
-            pose.translate(this.x, this.y - (this.section == Section.DRIVE_ROD ? rodDrop : 0), this.z);
+            pose.pose().translate(this.x, this.y - (this.section == Section.DRIVE_ROD ? rodDrop : 0), this.z);
             if (this.flip) {
-                pose.translate(0.5f, 0.5f, 0.5f);
-                pose.mulPose(Axis.XP.rotationDegrees(180));
-                pose.translate(-0.5f, -0.5f, -0.5f);
+                pose.pose().translate(0.5f, 0.5f, 0.5f);
+                dev.groundburst.port.render.Poses.rotate(pose, Axis.XP.rotationDegrees(180));
+                pose.pose().translate(-0.5f, -0.5f, -0.5f);
             }
             if (this.turns != 0) {
-                pose.translate(0.5f, 0, 0.5f);
-                pose.mulPose(Axis.YP.rotationDegrees(-90f * this.turns));
-                pose.translate(-0.5f, 0, -0.5f);
+                pose.pose().translate(0.5f, 0, 0.5f);
+                dev.groundburst.port.render.Poses.rotate(pose, Axis.YP.rotationDegrees(-90f * this.turns));
+                pose.pose().translate(-0.5f, 0, -0.5f);
             }
         }
     }
 
-    public static void register(ModelEvent.RegisterStandalone event) {
+    public static void register(ModelEvent.RegisterAdditional event) {
         for (Section s : Section.values()) {
-            event.register(s.key, SimpleUnbakedStandaloneModel.simpleModelWrapper(s.model()));
+            event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(s.model()));
         }
     }
 
@@ -114,9 +113,9 @@ public final class FissionSections {
         BlockState state = level.getBlockState(pos);
         boolean glass = FissionCore.glass(state);
         int port = FissionCore.port(state);
-        int light = LightTexture.getLightCoords(level, pos);
+        int light = net.minecraft.client.renderer.LevelRenderer.getLightColor(level, pos);
         for (Direction d : outward) {
-            light = LightTexture.max(light, LightTexture.getLightCoords(level, pos.relative(d)));
+            light = dev.groundburst.port.Lights.max(light, net.minecraft.client.renderer.LevelRenderer.getLightColor(level, pos.relative(d)));
         }
         int x = pos.getX() - origin.getX(), y = pos.getY() - origin.getY(), z = pos.getZ() - origin.getZ();
         if (sides.size() == 2) {

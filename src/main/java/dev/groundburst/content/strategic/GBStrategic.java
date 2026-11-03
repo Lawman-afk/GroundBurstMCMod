@@ -37,16 +37,16 @@ public final class GBStrategic {
             "ICBM Assembly Hall", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.HALL_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StrategicAssemblyBlockEntity>> HALL_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("strategic_assembly_hall", () -> new BlockEntityType<>(StrategicAssemblyBlockEntity::new,
-                    HALL_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("strategic_assembly_hall", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(StrategicAssemblyBlockEntity::new,
+                    HALL_CONTROLLER.block().get()).build(null));
     /** The Special Weapons Assembler (DESIGN.md §16.15): the exotic weapons' own assembler, a containment bay. */
     public static final WithItem<MultiblockControllerBlock> SPECIAL_CONTROLLER = GBBlocks.register("special_weapons_assembler",
             "Special Weapons Assembler", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.SPECIAL_ENTITY),
             p -> p.mapColor(MapColor.COLOR_PURPLE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpecialWeaponsBlockEntity>> SPECIAL_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("special_weapons_assembler", () -> new BlockEntityType<>(SpecialWeaponsBlockEntity::new,
-                    SPECIAL_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("special_weapons_assembler", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(SpecialWeaponsBlockEntity::new,
+                    SPECIAL_CONTROLLER.block().get()).build(null));
 
     // --- the parts only the hall uses ---
     public static final DeferredItem<StrategicPart> FUSION_SECONDARY = part("fusion_secondary", "Fusion Secondary",

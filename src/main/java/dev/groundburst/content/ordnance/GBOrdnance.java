@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /** Ordnance (DESIGN.md §14): thrown explosives so far (Phase 6 slice 6a), their entities, sounds, damage types and the toxin's sludge. */
 public final class GBOrdnance {
-    public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(GroundBurst.MODID);
+    public static final dev.groundburst.port.EntityRegister ENTITIES = new dev.groundburst.port.EntityRegister(GroundBurst.MODID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<ThrownExplosive>> THROWN_EXPLOSIVE = ENTITIES.registerEntityType(
             "thrown_explosive", ThrownExplosive::new, MobCategory.MISC, b -> b.sized(0.3f, 0.3f).clientTrackingRange(6).updateInterval(5));
@@ -43,7 +43,7 @@ public final class GBOrdnance {
             "toxic_sludge", "Toxic Sludge", ToxicSludgeBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
-                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
+                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering((s, level_, pos_) -> true)
                     .lightLevel(s -> 7 - s.getValue(ToxicSludgeBlock.AGE)));
 
     /** The glowing residue a toxin SCUD spreads over the ground (DESIGN.md §19.5). */
@@ -51,7 +51,7 @@ public final class GBOrdnance {
             "anthrax_residue", "Anthrax Residue", AnthraxResidueBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GREEN).replaceable().noCollission().noOcclusion()
                     .instabreak().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
-                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering(s -> true)
+                    .sound(net.minecraft.world.level.block.SoundType.SLIME_BLOCK).emissiveRendering((s, level_, pos_) -> true)
                     .lightLevel(s -> 10 - 2 * s.getValue(ToxicSludgeBlock.AGE)));
 
     // --- placed charges (slice 6b) ---
@@ -163,11 +163,11 @@ public final class GBOrdnance {
             "napalm_fire", "Napalm Fire", NapalmFireBlock::new,
             p -> p.mapColor(net.minecraft.world.level.material.MapColor.FIRE).replaceable().noCollission().instabreak().noLootTable()
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY).sound(net.minecraft.world.level.block.SoundType.WOOL)
-                    .lightLevel(s -> 15).emissiveRendering(s -> true));
+                    .lightLevel(s -> 15).emissiveRendering((s, level_, pos_) -> true));
 
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<dev.groundburst.content.ordnance.charge.ChargeBlockEntity>> CHARGE =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("charge", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("charge", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     dev.groundburst.content.ordnance.charge.ChargeBlockEntity::new, C4.block().get(), BREACHING_CHARGE.block().get(),
                     THERMITE_CHARGE.block().get(), TIMED_BOMB.block().get(), LANDMINE.block().get(), BOUNCING_MINE.block().get(),
                     CLAYMORE.block().get(), HE_WARHEAD.block().get(), HEAVY_WARHEAD.block().get(), THERMOBARIC_WARHEAD.block().get(),
@@ -178,7 +178,7 @@ public final class GBOrdnance {
                     BOOSTED_FISSION_WARHEAD.block().get(), NEUTRON_WARHEAD.block().get(), DIRTY_WARHEAD.block().get(),
                     THERMONUCLEAR_WARHEAD.block().get(), COBALT_WARHEAD.block().get(), TSAR_WARHEAD.block().get(),
                     SCUD_STORM_WARHEAD.block().get(), NUCLEAR_MISSILE_WARHEAD.block().get(), ANTIMATTER_WARHEAD.block().get(),
-                    SINGULARITY_WARHEAD.block().get(), STORM_WARHEAD.block().get(), CRYOGENIC_WARHEAD.block().get()));
+                    SINGULARITY_WARHEAD.block().get(), STORM_WARHEAD.block().get(), CRYOGENIC_WARHEAD.block().get()).build(null));
     public static final DeferredItem<dev.groundburst.content.ordnance.charge.RemoteDetonatorItem> REMOTE_DETONATOR = GBItems.register("remote_detonator",
             "Remote Detonator", GBTab.ORDNANCE, dev.groundburst.content.ordnance.charge.RemoteDetonatorItem::new, p -> p.stacksTo(1));
 

@@ -112,11 +112,11 @@ public final class GBFluids {
     /** Expandable fluid tank: blocks join into tanks up to 3x3x5 (see {@link FluidTankStructure}). */
     public static final GBBlocks.WithItem<FluidTankBlock> FLUID_TANK = GBBlocks.register("fluid_tank", "Fluid Tank", GBTab.MACHINES,
             FluidTankBlock::new, p -> p.mapColor(MapColor.METAL).strength(3f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
+                    .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
     /** Creative-only endless source of whatever fluid is poured in (see {@link CreativeFluidTankBlockEntity}). */
     public static final GBBlocks.WithItem<CreativeFluidTankBlock> CREATIVE_FLUID_TANK = GBBlocks.register("creative_fluid_tank", "Creative Fluid Tank",
             GBTab.MACHINES, CreativeFluidTankBlock::new, p -> p.mapColor(MapColor.COLOR_PURPLE).strength(3f, 8f).requiresCorrectToolForDrops()
-                    .sound(SoundType.METAL).noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
+                    .sound(SoundType.METAL).noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
 
     private GBFluids() {}
 
@@ -210,7 +210,7 @@ public final class GBFluids {
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
         DeferredBlock<GasCloudBlock> cloud = GBBlocks.blockOnly(name, english, p -> new GasCloudBlock(p, hazard),
                 p -> p.mapColor(MapColor.NONE).replaceable().noCollission().noOcclusion().strength(0f).pushReaction(PushReaction.DESTROY)
-                        .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
+                        .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
         h.gasBucket = GBItems.register(name + "_bucket", english + " Bucket", GBTab.RESOURCES,
                 p -> new GasBucketItem(h.source.get(), cloud, p), p -> p.craftRemainder(Items.BUCKET).stacksTo(1));
         ChemFluid fluid = new ChemFluid(name, Look.GAS, color, hazard, type, h.source, h.flowing, null, cloud, h.gasBucket, canister,

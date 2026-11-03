@@ -80,7 +80,7 @@ public final class TerrainMap {
         this.w = w;
         this.h = h;
         this.bounded = bounded;
-        this.texture = new DynamicTexture(() -> "Ground Burst terrain map", w, h, true);
+        this.texture = new DynamicTexture(w, h, true);
         this.id = GroundBurst.id(texture);
         Minecraft.getInstance().getTextureManager().register(this.id, this.texture);
     }
@@ -148,7 +148,7 @@ public final class TerrainMap {
                     int si = Math.floorMod(wx, span) / zoom, sj = Math.floorMod(wz, span) / zoom;
                     packed = tile.colours()[sj * TerrainSurvey.TILE + si] & 0xFF;
                 }
-                img.setPixel(i, j, phosphor(packed, inSurvey, wx, wz, j));
+                img.setPixelRGBA(i, j, dev.groundburst.port.ARGB.toABGR(phosphor(packed, inSurvey, wx, wz, j)));
             }
         }
         this.texture.upload();

@@ -13,7 +13,7 @@ import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +26,7 @@ final class AssemblyCategory extends AbstractRecipeCategory<AssemblyCategory.Rec
     /** One warhead: its core and the casing it takes. */
     record Recipe(ComponentItems.PayloadCore core, ComponentItems.Casing casing) {}
 
-    static final IRecipeType<Recipe> TYPE = IRecipeType.create(GroundBurst.id("assembly"), Recipe.class);
+    static final RecipeType<Recipe> TYPE = new RecipeType<>(GroundBurst.id("assembly"), Recipe.class);
     private static final String T_INFO = WarheadAssembly.JEI_INFO, T_ANY_FUZE = WarheadAssembly.JEI_ANY_FUZE;
     private static final int WIDTH = 130, HEIGHT = 40;
 
@@ -42,12 +42,12 @@ final class AssemblyCategory extends AbstractRecipeCategory<AssemblyCategory.Rec
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addInputSlot(1, 5).setStandardSlotBackground().add(recipe.core());
-        builder.addInputSlot(19, 5).setStandardSlotBackground().add(recipe.casing());
+        builder.addInputSlot(1, 5).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.core()));
+        builder.addInputSlot(19, 5).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.casing()));
         builder.addInputSlot(37, 5).setStandardSlotBackground()
                 .addItemStacks(GBAssembly.FUZES.stream().map(f -> new ItemStack(f.get())).toList())
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(T_ANY_FUZE).withStyle(ChatFormatting.GRAY)));
-        builder.addOutputSlot(100, 5).setOutputSlotBackground().add(recipe.core().warhead());
+        builder.addOutputSlot(100, 5).setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.core().warhead()));
     }
 
     @Override

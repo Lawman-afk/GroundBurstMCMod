@@ -4,15 +4,21 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:military_circuit"
+      "ingredient": {
+        "item": "groundburst:military_circuit"
+      }
     },
     {
       "count": 2,
-      "ingredient": "groundburst:quantum_chip"
+      "ingredient": {
+        "item": "groundburst:quantum_chip"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:superconducting_coil"
+      "ingredient": {
+        "item": "groundburst:superconducting_coil"
+      }
     }
   ],
   "outputs": [

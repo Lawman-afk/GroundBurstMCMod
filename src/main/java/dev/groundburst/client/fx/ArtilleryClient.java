@@ -75,7 +75,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class ArtilleryClient {
     public static final KeyMapping VIEW = new KeyMapping(GBLang.add("key." + GroundBurst.MODID + ".artillery_view", "Artillery: strategic view"),
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYBOARD, InputConstants.KEY_V, ManualHotkey.CATEGORY);
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_V, ManualHotkey.CATEGORY);
 
     private static final String T_HINT_GUN = GBLang.add(GroundBurst.MODID + ".artillery.hint_gun",
             "[%s] or scroll out: strategic view   [Shift] leave");
@@ -123,7 +123,7 @@ public final class ArtilleryClient {
 
     public static void register(IEventBus modBus) {
         modBus.addListener((RegisterKeyMappingsEvent e) -> e.register(VIEW));
-        modBus.addListener((RegisterGuiLayersEvent e) -> e.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("artillery"), ArtilleryClient::hud));
+        modBus.addListener((RegisterGuiLayersEvent e) -> e.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("artillery"), (gg_, dt_) -> ArtilleryClient.hud(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_)));
         ArtilleryPayloads.stateHook = s -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level != null && mc.level.isLoaded(s.gun()) && mc.level.getBlockEntity(s.gun()) instanceof GunBlockEntity m) {
@@ -425,7 +425,7 @@ public final class ArtilleryClient {
      */
     private static void angles(ViewportEvent.ComputeCameraAngles event) {
         Minecraft mc = Minecraft.getInstance();
-        if (!strategic || eye == null || event.getCamera().entity() != eye || mc.player == null || mc.level == null || gun == null) {
+        if (!strategic || eye == null || event.getCamera().getEntity() != eye || mc.player == null || mc.level == null || gun == null) {
             return;
         }
         LocalPlayer p = mc.player;
@@ -531,7 +531,7 @@ public final class ArtilleryClient {
             laid = null;
             return;
         }
-        float partial = mc.isPaused() ? 1 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 1 : mc.getTimer().getGameTimeDeltaPartialTick(false);
         laid = lay(mc, m, partial);
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         ClientLevel level = mc.level;

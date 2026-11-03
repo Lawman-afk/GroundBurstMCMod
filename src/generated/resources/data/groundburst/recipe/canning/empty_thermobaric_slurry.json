@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:thermobaric_slurry_canister"
+      "ingredient": {
+        "item": "groundburst:thermobaric_slurry_canister"
+      }
     }
   ],
   "outputs": [

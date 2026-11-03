@@ -10,13 +10,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:sulfuric_acid"
+      "ingredient": {
+        "tag": "c:sulfuric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:yellowcake"
+      "ingredient": {
+        "item": "groundburst:yellowcake"
+      }
     }
   ],
   "time": 400

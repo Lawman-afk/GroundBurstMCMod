@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:photoresist_canister"
+      "ingredient": {
+        "item": "groundburst:photoresist_canister"
+      }
     }
   ],
   "outputs": [

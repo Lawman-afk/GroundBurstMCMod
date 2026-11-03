@@ -56,7 +56,7 @@ public class GunBlock extends BaseEntityBlock {
     public GunBlock(Properties properties, VoxelShape shape, Supplier<? extends BlockEntityType<? extends GunBlockEntity>> type,
             BiFunction<BlockPos, BlockState, ? extends GunBlockEntity> factory) {
         super(properties);
-        this.shapes = Shapes.rotateHorizontal(shape);
+        this.shapes = dev.groundburst.port.Shapes2.rotateHorizontal(shape);
         this.type = type;
         this.factory = factory;
         registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:napalm_canister"
+      "ingredient": {
+        "item": "groundburst:napalm_canister"
+      }
     }
   ],
   "outputs": [

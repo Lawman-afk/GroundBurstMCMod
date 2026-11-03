@@ -34,11 +34,11 @@ public final class GBManual {
 
     private static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
-        if (!GBServerConfig.GIVE_MANUAL.get() || player.getPersistentData().getBooleanOr(GIVEN, false)) {
+        if (!GBServerConfig.GIVE_MANUAL.get() || dev.groundburst.port.Nbt.getBooleanOr(player.getPersistentData(), GIVEN, false)) {
             return;
         }
         player.getPersistentData().putBoolean(GIVEN, true);
-        player.getInventory().placeItemBackInInventory(new ItemStack(FIELD_MANUAL.get()), net.minecraft.util.Prediction.SERVER_ONLY);
+        player.getInventory().placeItemBackInInventory(new ItemStack(FIELD_MANUAL.get()));
     }
 
     public static final class FieldManualItem extends Item {

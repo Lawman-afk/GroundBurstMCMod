@@ -197,8 +197,8 @@ public final class GBAssemblers {
     private static DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileAssemblerBlockEntity>> entity(AssemblerClass c,
             java.util.function.Supplier<DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileAssemblerBlockEntity>>> self,
             WithItem<MultiblockControllerBlock> block) {
-        return GBBlockEntities.BLOCK_ENTITIES.register(c.id, () -> new BlockEntityType<>(
-                (pos, state) -> new MissileAssemblerBlockEntity(self.get().get(), pos, state, c), block.block().get()));
+        return GBBlockEntities.BLOCK_ENTITIES.register(c.id, () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                (pos, state) -> new MissileAssemblerBlockEntity(self.get().get(), pos, state, c), block.block().get()).build(null));
     }
 
     private static DeferredItem<StructureSpawnerItem> spawner(AssemblerClass c, java.util.function.Supplier<MultiblockDefinition> definition) {

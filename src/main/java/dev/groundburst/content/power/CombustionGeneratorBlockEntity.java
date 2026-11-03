@@ -22,8 +22,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.component.CookingFuel;
+import dev.groundburst.port.ItemStackTemplate;
+
 import net.minecraft.world.level.block.state.BlockState;
 import dev.groundburst.port.ValueInput;
 import dev.groundburst.port.ValueOutput;
@@ -31,7 +31,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -54,7 +54,7 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
 
     @Override
     protected boolean isItemValid(int slot, ItemStack stack) {
-        return stack.has(DataComponents.COOKING_FUEL);
+        return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
     }
 
     @Override
@@ -84,13 +84,14 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
         if (fuel.isEmpty()) {
             return;
         }
-        int duration = ResolvableInt.getFromItem(fuel, DataComponents.COOKING_FUEL, CookingFuel::burnTime, lootContext(level, fuel), 0);
+        int duration = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);
         if (duration <= 0) {
             return;
         }
         this.burn = duration;
         this.burnTotal = duration;
-        ItemStackTemplate remainder = fuel.getCraftingRemainder();
+        ItemStack remainderStack = fuel.getCraftingRemainingItem();
+        ItemStackTemplate remainder = remainderStack.isEmpty() ? null : ItemStackTemplate.fromNonEmptyStack(remainderStack);
         ItemStack left = fuel.copyWithCount(fuel.getCount() - 1);
         if (remainder != null) {
             if (left.isEmpty()) {
@@ -102,16 +103,7 @@ public class CombustionGeneratorBlockEntity extends MachineBlockEntity implement
         this.inventory.setItem(0, left);
     }
 
-    private LootContext lootContext(ServerLevel level, ItemStack fuel) {
-        return new LootContext.Builder(new LootParams.Builder(level)
-                .withParameter(LootContextParams.BLOCK_STATE, getBlockState())
-                .withParameter(LootContextParams.BLOCK_ENTITY, this)
-                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
-                .withParameter(LootContextParams.CONTAINER, this.inventory)
-                .withOptionalParameter(net.neoforged.neoforge.common.loot.NeoForgeLootContextParams.QUERIED_STACK, fuel)
-                .create(LootContextParamSets.CONTAINER_PROCESS))
-                .create(Optional.empty());
-    }
+
 
     @Override
     public java.util.List<net.minecraft.network.chat.Component> readout(MachineMenu menu) {

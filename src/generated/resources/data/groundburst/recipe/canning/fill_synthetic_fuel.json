@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:synthetic_fuel"
+      "ingredient": {
+        "tag": "c:synthetic_fuel"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:empty_canister"
+      "ingredient": {
+        "item": "groundburst:empty_canister"
+      }
     }
   ],
   "outputs": [

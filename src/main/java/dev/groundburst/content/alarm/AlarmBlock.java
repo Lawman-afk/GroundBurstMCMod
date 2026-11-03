@@ -137,7 +137,7 @@ public class AlarmBlock extends Block implements EntityBlock {
     @Override
     protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        DyeColor dye = stack.get(DataComponents.DYE);
+        DyeColor dye = dev.groundburst.port.Stacks.dye(stack);
         int colour = dye == null || this.device != AlarmDevice.BEACON ? -1 : switch (dye) {
             case RED -> 0;
             case ORANGE, YELLOW -> 1;

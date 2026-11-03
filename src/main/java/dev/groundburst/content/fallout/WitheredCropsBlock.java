@@ -24,7 +24,7 @@ public class WitheredCropsBlock extends BushBlock {
     }
 
     public static final float CRUMBLE_CHANCE = 1f / 30;
-    private static final VoxelShape SHAPE = Block.column(16, 0, 10);
+    private static final VoxelShape SHAPE = dev.groundburst.port.Shapes2.column(16, 0, 10);
 
     public WitheredCropsBlock(Properties properties) {
         super(properties);
@@ -32,7 +32,7 @@ public class WitheredCropsBlock extends BushBlock {
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.is(Blocks.FARMLAND) || state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS) || state.is(GBFallout.SCORCHED_EARTH.block().get());
+        return state.is(Blocks.FARMLAND) || state.is(BlockTags.DIRT) || state.is(BlockTags.DIRT) || state.is(GBFallout.SCORCHED_EARTH.block().get());
     }
 
     @Override

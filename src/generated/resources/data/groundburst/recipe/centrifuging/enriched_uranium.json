@@ -4,7 +4,9 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:uranium_hexafluoride"
+      "ingredient": {
+        "tag": "c:uranium_hexafluoride"
+      }
     }
   ],
   "outputs": [

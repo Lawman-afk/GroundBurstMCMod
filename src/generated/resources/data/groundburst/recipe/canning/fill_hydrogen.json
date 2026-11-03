@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:hydrogen"
+      "ingredient": {
+        "tag": "c:hydrogen"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:empty_gas_canister"
+      "ingredient": {
+        "item": "groundburst:empty_gas_canister"
+      }
     }
   ],
   "outputs": [

@@ -135,7 +135,7 @@ public class AssemblyBenchScreen extends MachineScreen {
      * pixel a whole number of screen pixels on the screen-pixel grid (so no row is dropped), cut to {@code width}.
      */
     static void smallLabel(GuiGraphicsExtractor g, net.minecraft.client.gui.Font font, int left, int top, Component label, boolean bright, int width) {
-        int gs = Math.max(1, net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = Math.max(1, gs * 2 / 3) / (float) gs;
         g.pose().pushMatrix();
         g.pose().translate(left + 34, Math.round((top + SETTING_Y + (FIELD_H - 8 * scale) / 2f) * gs) / (float) gs);
@@ -178,7 +178,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     @Override
     public boolean keyPressed(int key_, int scancode_, int modifiers_) { KeyEvent event = new KeyEvent(key_, scancode_, modifiers_);
         if (this.field != null && this.field.visible && this.field.isFocused() && !event.isEscape()) {
-            return this.field.keyPressed(event) || this.field.canConsumeInput() || super.keyPressed(event.key(), event.scancode(), event.modifiers());
+            return this.field.keyPressed(event.key(), event.scancode(), event.modifiers()) || this.field.canConsumeInput() || super.keyPressed(event.key(), event.scancode(), event.modifiers());
         }
         return super.keyPressed(event.key(), event.scancode(), event.modifiers());
     }

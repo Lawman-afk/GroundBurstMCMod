@@ -1,11 +1,15 @@
 {
   "type": "groundburst:pressing",
-  "catalyst": "groundburst:canister_die",
+  "catalyst": {
+    "item": "groundburst:canister_die"
+  },
   "energy_per_tick": 40,
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:plates/steel"
+      "ingredient": {
+        "tag": "c:plates/steel"
+      }
     }
   ],
   "outputs": [

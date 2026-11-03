@@ -10,11 +10,15 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:deuterium"
+      "ingredient": {
+        "tag": "c:deuterium"
+      }
     },
     {
       "amount": 500,
-      "ingredient": "#c:liquid_oxygen"
+      "ingredient": {
+        "tag": "c:liquid_oxygen"
+      }
     }
   ],
   "time": 300

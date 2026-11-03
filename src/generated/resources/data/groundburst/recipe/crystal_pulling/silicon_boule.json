@@ -4,17 +4,23 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:argon"
+      "ingredient": {
+        "tag": "c:argon"
+      }
     }
   ],
   "inputs": [
     {
       "count": 4,
-      "ingredient": "groundburst:polysilicon"
+      "ingredient": {
+        "item": "groundburst:polysilicon"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:quartz_crucible"
+      "ingredient": {
+        "item": "groundburst:quartz_crucible"
+      }
     }
   ],
   "outputs": [

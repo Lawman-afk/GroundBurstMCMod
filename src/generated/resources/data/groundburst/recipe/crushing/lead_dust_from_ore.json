@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/lead"
+      "ingredient": {
+        "tag": "c:ores/lead"
+      }
     }
   ],
   "outputs": [

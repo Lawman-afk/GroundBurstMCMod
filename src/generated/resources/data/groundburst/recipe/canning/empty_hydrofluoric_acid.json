@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:hydrofluoric_acid_canister"
+      "ingredient": {
+        "item": "groundburst:hydrofluoric_acid_canister"
+      }
     }
   ],
   "outputs": [

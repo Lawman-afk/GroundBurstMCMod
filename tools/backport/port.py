@@ -79,10 +79,13 @@ DROP_LINES = [re.compile(p) for p in (
     r"^\s*GBDataGen\.register\(modBus\);\s*$",
     r"^\s*GBGameTests\.register\(modBus\);\s*$",
     r"^import dev\.groundburst\.(datagen|gametest)\.\w+;\s*$",
+    r"^\s*\w+\.registerCategory\(\w+\);\s*$",                         # 1.21.1's key categories are names, not registered
 )]
-# Whole statements removed (they may run over several lines): hooks into the dropped tools.
+# Whole statements removed (they may run over several lines): hooks into the dropped tools, and 26.x's
+# picture-in-picture renderers (1.21.1 draws those views straight into the screen: dev.groundburst.port.render.PictureInPicture).
 DROP_STATEMENTS = [re.compile(p, re.M) for p in (
     r"^[ \t]*dev\.groundburst\.client\.fx\.FxPhotographer\.\w+ = [^;]*;[ \t]*\r?\n",
+    r"^[ \t]*modBus\.addListener\(\((?:net\.neoforged\.neoforge\.client\.event\.)?RegisterPictureInPictureRenderersEvent \w+\) ->[^;]*;[ \t]*\r?\n",
 )]
 
 # Imports: 26.x class -> 1.21.1 class (or this branch's stand-in); None drops the import.
@@ -124,6 +127,43 @@ IMPORTS = {
     "net.minecraft.client.input.KeyEvent": "dev.groundburst.port.input.KeyEvent",
     "net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent": "dev.groundburst.port.render.ExtractLevelRenderStateEvent",
     "net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent": "dev.groundburst.port.render.SubmitCustomGeometryEvent",
+    # Recipes: 26.x's results are templates and its recipes show through displays (stand-ins built from 1.21.1's recipes).
+    "net.minecraft.world.item.ItemStackTemplate": "dev.groundburst.port.ItemStackTemplate",
+    "net.neoforged.neoforge.fluids.FluidStackTemplate": "dev.groundburst.port.FluidStackTemplate",
+    "net.minecraft.util.context.ContextMap": "dev.groundburst.port.ContextMap",
+    "net.minecraft.world.item.crafting.display.RecipeDisplay": "dev.groundburst.port.recipe.RecipeDisplay",
+    "net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay": "dev.groundburst.port.recipe.ShapedCraftingRecipeDisplay",
+    "net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay": "dev.groundburst.port.recipe.ShapelessCraftingRecipeDisplay",
+    "net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay": "dev.groundburst.port.recipe.FurnaceRecipeDisplay",
+    "net.minecraft.world.item.crafting.display.SlotDisplay": "dev.groundburst.port.recipe.SlotDisplay",
+    "net.minecraft.world.item.crafting.display.SlotDisplayContext": "dev.groundburst.port.recipe.SlotDisplayContext",
+    "net.minecraft.util.TriState": "net.neoforged.neoforge.common.util.TriState",
+    "net.minecraft.world.entity.EntitySpawnReason": "net.minecraft.world.entity.MobSpawnType",
+    "net.neoforged.neoforge.registries.NewDatapackRegistryEvent": "net.neoforged.neoforge.registries.DataPackRegistryEvent",
+    "net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent": "dev.groundburst.port.net.RegisterClientPayloadHandlersEvent",
+    "net.minecraft.world.item.ItemUseAnimation": "net.minecraft.world.item.UseAnim",
+    "net.minecraft.tags.BlockItemTagId": "dev.groundburst.port.BlockItemTagId",
+    "net.minecraft.core.component.DataComponentGetter": None,
+    "net.minecraft.world.attribute.EnvironmentAttributes": None,
+    "net.minecraft.world.item.component.CookingFuel": None,
+    "net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt": None,
+    "com.mojang.blaze3d.platform.cursor.CursorTypes": "dev.groundburst.port.CursorTypes",
+    "com.mojang.blaze3d.vertex.QuadInstance": "dev.groundburst.port.render.QuadInstance",
+    "net.minecraft.client.color.block.BlockTintSource": "net.minecraft.client.color.block.BlockColor",
+    "net.minecraft.client.renderer.block.BlockAndTintGetter": "net.minecraft.world.level.BlockAndTintGetter",
+    "net.neoforged.neoforge.client.event.AddClientReloadListenersEvent": None,
+    "net.minecraft.world.item.component.Consumable": "dev.groundburst.port.Consumable",
+    "net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect": "dev.groundburst.port.ApplyStatusEffectsConsumeEffect",
+    "net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty": None,
+    "net.minecraft.world.entity.ItemOwner": None,
+    "net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent": None,
+    "net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent": None,
+    "net.minecraft.client.renderer.block.dispatch.BlockStateModel": "dev.groundburst.port.render.BlockStateModel",
+    "net.minecraft.client.renderer.block.dispatch.BlockStateModelPart": "dev.groundburst.port.render.BlockStateModelPart",
+    "net.minecraft.client.resources.model.geometry.BakedQuad": "net.minecraft.client.renderer.block.model.BakedQuad",
+    # JEI 27 -> 19
+    "mezz.jei.api.recipe.types.IRecipeType": "mezz.jei.api.recipe.RecipeType",
+    "mezz.jei.api.recipe.types.IRecipeHolderType": "mezz.jei.api.recipe.RecipeType",
     # GeckoLib 5 -> 4
     "com.geckolib.animatable.manager.AnimatableManager": "software.bernie.geckolib.animation.AnimatableManager",
     "com.geckolib.cache.model.GeoBone": "software.bernie.geckolib.cache.object.GeoBone",
@@ -189,6 +229,9 @@ RULES = [
     # Dust takes its colour as a vector in 1.21.1.
     sub(r"\bnew (?:net\.minecraft\.core\.particles\.)?DustParticleOptions\(((?:[^,()]|\([^()]*\))+), ",
         r"new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(\1).toVector3f(), "),
+    # Block entity types: built with 1.21.1's builder (26.x constructs them from the factory and the blocks).
+    sub(r"\bnew (?:net\.minecraft\.world\.level\.block\.entity\.)?BlockEntityType<>\(((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*)\)",
+        r"net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(\1).build(null)"),
     # Items and blocks name their own registry key in 26.x (Properties.setId); 1.21.1 has no such step.
     sub(r"\.setId\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)", ""),
     # --- saving: main's ValueOutput / ValueInput over 1.21.1's CompoundTag (dev.groundburst.port) -----------------------
@@ -233,6 +276,145 @@ RULES = [
     # 1.21.1's container screens draw their panel in renderBg, called from renderBackground (which main's code overrides).
     sub(r"(\bclass \w+(?:<[^{]*?>)? extends AbstractContainerScreen<[^{]*\{)",
         r"\1\n    @Override\n    protected void renderBg(net.minecraft.client.gui.GuiGraphics gg_, float partial_, int mouseX_, int mouseY_) {}\n"),
+    # --- renamed or reshaped since 1.21.1 ------------------------------------------------------------------------------------
+    sub(r"\bMobEffects\.NAUSEA\b", "MobEffects.CONFUSION"),
+    sub(r"\bMobEffects\.MINING_FATIGUE\b", "MobEffects.DIG_SLOWDOWN"),
+    sub(r"\bMobEffects\.SLOWNESS\b", "MobEffects.MOVEMENT_SLOWDOWN"),
+    sub(r"\bMobEffects\.HASTE\b", "MobEffects.DIG_SPEED"),
+    sub(r"\bMobEffects\.SPEED\b", "MobEffects.MOVEMENT_SPEED"),
+    sub(r"\bMobEffects\.STRENGTH\b", "MobEffects.DAMAGE_BOOST"),
+    sub(r"\bMobEffects\.INSTANT_HEALTH\b", "MobEffects.HEAL"),
+    sub(r"\bMobEffects\.INSTANT_DAMAGE\b", "MobEffects.HARM"),
+    sub(r"\bMobEffects\.JUMP_BOOST\b", "MobEffects.JUMP"),
+    sub(r"\bMobEffects\.RESISTANCE\b", "MobEffects.DAMAGE_RESISTANCE"),
+    sub(r"\.getDeltaTracker\(\)", ".getTimer()"),
+    sub(r"\.preventsBlockDrops\(\)", ".getAbilities().instabuild"),
+    sub(r"\b(?:net\.minecraft\.world\.phys\.shapes\.)?Shapes\.rotateHorizontal\(", "dev.groundburst.port.Shapes2.rotateHorizontal("),
+    sub(r"\.recipeAccess\(\)\.recipeMap\(\)\.byType\(", ".getRecipeManager().byType("),
+    sub(r"\.recipeAccess\(\)", ".getRecipeManager()"),
+    sub(r"\.identifier\(\)", ".location()"),
+    sub(r"\bTags\.EntityType\.", "Tags.EntityTypes."),
+    sub(r"\.typeHolder\(\)\.is\(", ".getType().is("),
+    sub(r"(\b\w+)\.is\(EntityTypeTags\.", r"\1.getType().is(EntityTypeTags."),
+    sub(r"\bBlockTags\.GRASS_BLOCKS\b", "BlockTags.DIRT"),          # 1.21.1's dirt tag still holds the grass blocks
+    sub(r"\bBlockTags\.MUD\b", "net.minecraft.world.level.block.Blocks.MUD"),
+    sub(r"\bBlockTags\.MOSS_BLOCKS\b", "net.minecraft.world.level.block.Blocks.MOSS_BLOCK"),
+    sub(r"(\w+)\.is\(BlockTags\.ICE_MELTS_WHEN_DESTROYED_ABOVE\)", r"\1.blocksMotion()"),
+    sub(r"\s*\|\|\s*\w+\.is\(Blocks\.BUSH\)", ""),                     # 26.x's bush block
+    sub(r"\s*\|\s*Block\.UPDATE_SKIP_(?:BLOCK_ENTITY_SIDEEFFECTS|ON_PLACE)\b", ""),
+    sub(r"\.getRespawnData\(\)\.pos\(\)", ".getSharedSpawnPos()"),
+    sub(r"\.spawnProtectionRadius\(\)", ".getSpawnProtectionRadius()"),
+    sub(r"\.requires\(Commands\.hasPermission\(([^()]+)\)\)", r".requires(source_ -> source_.hasPermission(\1))"),
+    sub(r"\bResourceKeyArgument\.getRegistryKey\(", "dev.groundburst.port.Args.getRegistryKey("),
+    sub(r"\.needsSync\b", ".hurtMarked"),
+    sub(r"((?:\w+\.)*\w+)\.canSpreadFireAround\([^()]*\)", r"\1.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)"),
+    sub(r"\b(?:net\.minecraft\.client\.)?Minecraft\.getInstance\(\)\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
+    sub(r"\b(?:this\.)?minecraft\.has(Shift|Control|Alt)Down\(\)", r"net.minecraft.client.gui.screens.Screen.has\1Down()"),
+    sub(r"\bnew DynamicTexture\(\(\) -> \"[^\"]*\", ", "new DynamicTexture("),
+    # 26.x's images take ARGB colours, 1.21.1's ABGR.
+    sub(r"\.setPixel\(((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+), ((?:[^()]|\((?:[^()]|\([^()]*\))*\))+)\)",
+        r".setPixelRGBA(\1, \2, dev.groundburst.port.ARGB.toABGR(\3))"),
+    sub(r"(\b\w+)\.getPixel\(((?:[^()]|\([^()]*\))*)\)", r"dev.groundburst.port.ARGB.toABGR(\1.getPixelRGBA(\2))"),
+    sub(r"\.isViewBlocking\(\((\w+), (\w+), (\w+), \w+\) -> ", r".isViewBlocking((\1, \2, \3) -> "),
+    sub(r"\.emissiveRendering\((\w+) -> ", r".emissiveRendering((\1, level_, pos_) -> "),
+    sub(r"\.coldEnoughToSnow\(((?:[^,()]|\([^()]*\))+), (?:[^()]|\([^()]*\))+\)", r".coldEnoughToSnow(\1)"),
+    sub(r"\.warmEnoughToRain\(((?:[^,()]|\([^()]*\))+), (?:[^()]|\([^()]*\))+\)", r".warmEnoughToRain(\1)"),
+    sub(r"\.getPos\(\)\.pack\(\)", ".getPos().toLong()"),
+    sub(r"\.markUnsaved\(\)", ".setUnsaved(true)"),
+    sub(r"\.isSolidRender\(\)", ".isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO)"),
+    sub(r"\.snapTo\(", ".moveTo("),
+    sub(r"((?:net\.minecraft\.client\.)?Minecraft\.getInstance\(\)|\b\w+)\.getWindow\(\)\.getGuiScale\(\)", r"((int) \1.getWindow().getGuiScale())"),
+    sub(r"\.lookupOrThrow\(([^()]+)\)\.getOptional\(", r".registryOrThrow(\1).getOptional("),
+    sub(r"\.lookupOrThrow\(([^()]+)\)\.getValue\(", r".registryOrThrow(\1).get("),
+    sub(r"\.getStructureTemplateManager\(\)", ".getStructureManager()"),
+    sub(r"\bNewDatapackRegistryEvent\b", "DataPackRegistryEvent.NewRegistry"),
+    sub(r"\.worldRegistry\(", ".dataPackRegistry("),
+    sub(r"\.create\(([^,()]+), EntitySpawnReason\.\w+\)", r".create(\1)"),
+    sub(r"\bEntitySpawnReason\.", "MobSpawnType."),
+    sub(r"\bItemUseAnimation\b", "UseAnim"),
+    sub(r"\bDeferredRegister\.Entities\b", "dev.groundburst.port.EntityRegister"),
+    sub(r"\bDeferredRegister\.createEntities\(", "new dev.groundburst.port.EntityRegister("),
+    # A server player's level is a server level in 26.x.
+    sub(r"\bServerLevel (\w+) = (\w+)\.level\(\);", r"ServerLevel \1 = (ServerLevel) \2.level();"),
+    # HUD layers: 26.x's draw through the extractor (dev.groundburst.port.GuiGraphicsExtractor).
+    sub(r"\.register(Above|Below)\(([^,()]+(?:\([^()]*\))?), ([^,()]+(?:\([^()]*\))?), (\w+)::(\w+)\)",
+        r".register\1(\2, \3, (gg_, dt_) -> \4.\5(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_))"),
+    sub(r"\.register(Above|Below)All\(([^,()]+(?:\([^()]*\))?), (\w+)::(\w+)\)",
+        r".register\1All(\2, (gg_, dt_) -> \3.\4(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_))"),
+    # Client-bound payloads: 1.21.1 takes the handler with the codec (the client's, registered later: dev.groundburst.port.net).
+    sub(r"\.playToClient\(([\w.]+)\.TYPE, ([\w.]+)\.CODEC\)",
+        r".playToClient(\1.TYPE, \2.CODEC, dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.handler(\1.TYPE))"),
+    # A bundle's or a container's contents: 26.x's are templates, 1.21.1's stacks.
+    sub(r"\bfor \(ItemStackTemplate (\w+) : ((?:[^()]|\([^()]*\))+)\)", r"for (ItemStackTemplate \1 : ItemStackTemplate.of(\2))"),
+    # Attachments: 26.x serializes them with a map codec.
+    sub(r"(AttachmentType\.builder\([^;]*?)\.serialize\(([\w.]+)\)", r"\1.serialize(\2.codec())"),
+    sub(r"\.getRecipeManager\(\)\.byType\(", ".getRecipeManager().getAllRecipesFor("),
+    sub(r"\.addCraftingStation\(", ".addRecipeCatalysts("),
+    # Key mappings: 1.21.1's categories are translation keys (26.x's KeyMapping.Category of an id: key.category.<ns>.<path>).
+    sub(r"\bnew KeyMapping\.Category\(((?:[^()]|\([^()]*\))+)\)", r"dev.groundburst.port.input.KeyEvent.category(\1)"),
+    sub(r"\bKeyMapping\.Category\b", "String"),
+    sub(r"(\b[A-Z_]+)\.matches\((\w+)\)", r"\1.matches(\2.key(), \2.scancode())"),
+    sub(r"(\b\w+)\.getKeyEvent\(\)", r"new dev.groundburst.port.input.KeyEvent(\1.getKeyCode(), \1.getScanCode(), \1.getModifiers())"),
+    sub(r"\.getHoveredSlot\(\)", ".getSlotUnderMouse()"),
+    # A block state's particle sprite (26.x: its model set's particle material).
+    sub(r"\.getModelManager\(\)\.getBlockStateModelSet\(\)\.get\(((?:[^()]|\([^()]*\))+)\)\.particleMaterial\(\)\.sprite\(\)",
+        r".getBlockRenderer().getBlockModelShaper().getParticleIcon(\1)"),
+    # Block models' parts and quads (dev.groundburst.port.render: BlockStateModel, BlockStateModelPart, QuadInstance).
+    sub(r"\b(?:\w+(?:\.\w+\(\))*)\.getModelManager\(\)\.getBlockStateModelSet\(\)\.get\(", "dev.groundburst.port.render.BlockStateModel.of("),
+    sub(r"(\b\w+)\.putBakedQuad\(", r"dev.groundburst.port.render.QuadInstance.put(\1, "),
+    sub(r"\bRenderType\.itemTranslucent\(", "RenderType.itemEntityTranslucentCull("),
+    sub(r"\bSheets\.cutoutBlockItemSheet\(\)", "Sheets.cutoutBlockSheet()"),
+    sub(r"\b\w+\.gameRenderer\.gameRenderState\(\)\.windowRenderState\.appropriateLineWidth\b", "2.0F"),
+    sub(r"\bLightTexture\.max\(", "dev.groundburst.port.Lights.max("),
+    # Consumables: 1.21.1's food (dev.groundburst.port.Consumable).
+    sub(r"\.component\(DataComponents\.CONSUMABLE, ", ".food("),
+    sub(r"\bnet\.minecraft\.client\.renderer\.item\.ItemStackRenderState\b", "dev.groundburst.port.render.ItemStackRenderState"),
+    sub(r"\bnet\.minecraft\.util\.Util\b", "net.minecraft.Util"),
+    sub(r"\bprotected void applyImplicitComponents\(DataComponentGetter (\w+)\)",
+        r"protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput \1)"),
+    sub(r"\bLightTexture\.getLightCoords\(", "net.minecraft.client.renderer.LevelRenderer.getLightColor("),
+    sub(r"\bInputConstants\.Type\.KEYBOARD\b", "InputConstants.Type.KEYSYM"),
+    sub(r"\.getCamera\(\)\.entity\(\)", ".getCamera().getEntity()"),
+    sub(r"\.getCamera\(\)\.position\(\)", ".getCamera().getPosition()"),
+    sub(r"\.startRiding\(((?:[^,()]|\([^()]*\))+), (true|false), (?:true|false)\)", r".startRiding(\1, \2)"),
+    sub(r"\.isSectionCompiledAndVisible\(((?:[^()]|\([^()]*\))+), [^,()]+\)", r".isSectionCompiled(\1)"),
+    sub(r"\bDirection\.getApproximateNearest\(", "Direction.getNearest("),
+    sub(r"\bFogType\.ATMOSPHERIC\b", "FogType.NONE"),
+    sub(r"\.getSelectedSlot\(\)", ".selected"),
+    sub(r"\bcontext\.font\(\)", "context.getFont()"),
+    sub(r"\bnet\.minecraft\.client\.renderer\.rendertype\.RenderTypes?\b", "net.minecraft.client.renderer.RenderType"),
+    sub(r"\bBuiltInRegistries\.(\w+)\.getValue\(", r"BuiltInRegistries.\1.get("),
+    sub(r"(\b\w+)\.get\(DataComponents\.DYE\)", r"dev.groundburst.port.Stacks.dye(\1)"),
+    sub(r"\bsuper\.getOcclusionShape\((\w+)\)", r"super.getOcclusionShape(\1, level_, pos_)"),
+    sub(r"\bsuper\.propagatesSkylightDown\((\w+)\)", r"super.propagatesSkylightDown(\1, level_, pos_)"),
+    sub(r"\bsuper\.getLightDampening\((\w+)\)", r"super.getLightBlock(\1, level_, pos_)"),
+    # 26.x's flash takes a colour; 1.21.1's is plain.
+    sub(r"\b(?:net\.minecraft\.core\.particles\.)?ColorParticleOption\.create\(ParticleTypes\.FLASH, [^()]*\)", "ParticleTypes.FLASH"),
+    sub(r"\bBlock\.column\(", "dev.groundburst.port.Shapes2.column("),
+    sub(r"(\b\w+(?:\.\w+\(\))*\.getPersistentData\(\))\.(get(?:String|Int|Long|Float|Double|Boolean)Or)\(", r"dev.groundburst.port.Nbt.\2(\1, "),
+    sub(r"\.placeItemBackInInventory\(((?:[^()]|\([^()]*\))+), net\.minecraft\.util\.Prediction\.\w+\)", r".placeItemBackInInventory(\1)"),
+    sub(r"\.getCooldowns\(\)\.(addCooldown|isOnCooldown|removeCooldown)\((\w+)\b(?!\.)", r".getCooldowns().\1(\2.getItem()"),
+    sub(r"\bModConfig\.Type\.SYNCED\b", "ModConfig.Type.SERVER"),
+    sub(r"\bModConfig\.Type\.LOCAL\b", "ModConfig.Type.COMMON"),
+    sub(r"\(net\.neoforged\.neoforge\.client\.event\.AddClientReloadListenersEvent (\w+)\) -> \1\.addListener\(\s*(?:[^,()]|\([^()]*\))+,\s*",
+        r"(net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent \1) -> \1.registerReloadListener("),
+    sub(r"\(AddClientReloadListenersEvent (\w+)\) -> \1\.addListener\(\s*(?:[^,()]|\([^()]*\))+,\s*",
+        r"(net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent \1) -> \1.registerReloadListener("),
+    sub(r"(\w+)\.biomeResolver\(\)\.getNoiseBiome\(((?:[^()]|\([^()]*\))+)\)", r"\1.biomeSource().getNoiseBiome(\2, \1.randomState().sampler())"),
+    sub(r"\bRotation\.LEGACY_CODEC\b", "dev.groundburst.port.LegacyCodecs.ROTATION"),
+    sub(r"(\b\w+)\.environmentAttributes\(\)\.getValue\(EnvironmentAttributes\.WATER_EVAPORATES, [^()]*\)", r"\1.dimensionType().ultraWarm()"),
+    sub(r"(\b\w+)\.getLightDampening\(\)", r"\1.getLightBlock(level, pos)"),         # (a block's own state, in its place)
+    sub(r"(\bthis\.\w+)\.keyPressed\((\w+)\)", r"\1.keyPressed(\2.key(), \2.scancode(), \2.modifiers())"),
+    # An ingredient's contents.
+    sub(r"((?:this\.)?(?:\w+\.)*(?:ingredient\(\)|catalyst\(\)\.get\(\)))\.items\(\)", r"dev.groundburst.port.Ingredients.items(\1)"),
+    sub(r"((?:this\.)?(?:\w+\.)*ingredient\(\))\.fluids\(\)", r"dev.groundburst.port.Ingredients.fluids(\1)"),
+    # JEI 19's recipe types (26.x's JEI: IRecipeType, IRecipeHolderType).
+    sub(r"\bIRecipeType\.create\(", "new RecipeType<>("),
+    sub(r"\bIRecipeType<", "RecipeType<"),
+    sub(r"\bIRecipeHolderType<(\w+)>", r"RecipeType<net.minecraft.world.item.crafting.RecipeHolder<\1>>"),
+    sub(r"\bIRecipeHolderType\.create\(", "RecipeType.createFromVanilla("),
+    sub(r"\bRecipeIngredientRole\.CRAFTING_STATION\b", "RecipeIngredientRole.CATALYST"),
+    sub(r"\bnew (?:net\.minecraft\.world\.item\.component\.)?DyedItemColor\(((?:[^(),]|\([^()]*\))+)\)", r"new net.minecraft.world.item.component.DyedItemColor(\1, true)"),
 ]
 
 
@@ -292,10 +474,14 @@ SIGNATURES = [
         r"net.minecraft.world.entity.EquipmentSlot \5 = selected_ ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : null;"),
     sub(r"(\bpublic void playerDestroy\(\s*)" + param(QN + "ServerLevel") + C + param(QN + "ServerPlayer") + r"(" + C + r")",
         r"\1net.minecraft.world.level.Level \2, net.minecraft.world.entity.player.Player \3\4"),
-    sub(r"(\bpublic ItemStack pickupBlock\(\s*(?:@[\w.]+\s+)*)" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
-    sub(r"(\bpublic boolean emptyContents\(\s*(?:@[\w.]+\s+)*)" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
-    sub(r"(\bprotected void onExplosionHit\(\s*" + param("BlockState") + C + r")" + param(QN + "ServerLevel") + r"(" + C + r")",
-        r"\1net.minecraft.world.level.Level \3\4"),
+    # (A type-use annotation goes before the simple name of a qualified type: none is kept.)
+    sub(r"(\bpublic ItemStack pickupBlock\(\s*)(?:@[\w.]+\s+)*" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
+    sub(r"(\bpublic boolean emptyContents\(\s*)(?:@[\w.]+\s+)*" + QN + r"LivingEntity(\s+\w+)", r"\1net.minecraft.world.entity.player.Player\2"),
+    sub(r"(\bprotected void onExplosionHit\(\s*)" + param("BlockState") + C + param(QN + "ServerLevel") + C + param("BlockPos") + C
+        + param(QN + "Explosion") + C + param(QN + r"BiConsumer<[^>]*>") + r"\s*\)(\s*\{)",
+        r"\1BlockState \2, net.minecraft.world.level.Level \3_l, BlockPos \4, net.minecraft.world.level.Explosion \5, "
+        r"java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> \6)\7 "
+        r"if (!(\3_l instanceof net.minecraft.server.level.ServerLevel \3)) { super.onExplosionHit(\2, \3_l, \4, \5, \6); return; }"),
     sub(r"(\bprotected boolean hasClickedOutside\(\s*" + param("double") + C + param("double") + C + param("int") + C + param("int") + r")\s*\)",
         r"\1, int button_)"),
     sub(r"\bsuper\.hasClickedOutside\(((?:[^()]|\([^()]*\))*)\)", r"super.hasClickedOutside(\1, button_)"),
@@ -341,8 +527,9 @@ def use_holder(method: str) -> str:
 
 
 def item_result(method: str) -> str:
-    """26.x's useItemOn answers with an InteractionResult; 1.21.1's with an ItemInteractionResult."""
-    method = re.sub(r"\bprotected InteractionResult useItemOn\(", "protected net.minecraft.world.ItemInteractionResult useItemOn(", method, count=1)
+    """26.x's useItemOn answers with an InteractionResult; 1.21.1's with an ItemInteractionResult. (So do the helpers
+    that answer for it: those that may try the empty hand.)"""
+    method = re.sub(r"\bInteractionResult (\w+)\(", r"net.minecraft.world.ItemInteractionResult \1(", method, count=1)
     method = re.sub(r"\bInteractionResult\.TRY_WITH_EMPTY_HAND\b", "net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION", method)
     method = re.sub(r"\bInteractionResult\.PASS\b", "net.minecraft.world.ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION", method)
     method = re.sub(r"\bInteractionResult\.(SUCCESS|CONSUME|FAIL)\b", r"net.minecraft.world.ItemInteractionResult.\1", method)
@@ -353,9 +540,14 @@ def release_void(method: str) -> str:
     return re.sub(r"\breturn (?:true|false);", "return;", method)
 
 
+def try_empty_hand(method: str) -> str:
+    return item_result(method) if "TRY_WITH_EMPTY_HAND" in method else method
+
+
 BODIES = [
     (r"\bpublic net\.minecraft\.world\.InteractionResultHolder<net\.minecraft\.world\.item\.ItemStack> use\([^)]*\)\s*\{", use_holder),
     (r"\bprotected InteractionResult useItemOn\([^)]*\)\s*\{", item_result),
+    (r"\b(?:public |protected |private )?(?:static )?InteractionResult \w+\([^)]*\)\s*\{", try_empty_hand),
     (r"\bpublic void releaseUsing\([^)]*\)\s*\{", release_void),
 ]
 
@@ -398,7 +590,162 @@ def saved_data(text: str) -> str:
     return text[:end] + hook + text[end:]
 
 
-FUNCTIONS = [block_codecs, pre_remove, saved_data]
+def calls(text: str, start: str, fn) -> str:
+    """Each call matching {start} (up to its opening parenthesis), its whole argument list found by matching brackets
+    (over lines, past strings), replaced by fn(match, args)."""
+    out, pos = [], 0
+    for m in re.compile(start).finditer(text):
+        if m.start() < pos:
+            continue
+        depth, i = 1, m.end()
+        while i < len(text) and depth:
+            ch = text[i]
+            if ch in "([{":
+                depth += 1
+            elif ch in ")]}":
+                depth -= 1
+            elif ch == '"':
+                i += 1
+                while i < len(text) and text[i] != '"':
+                    i += 2 if text[i] == "\\" else 1
+            i += 1
+        out.append(text[pos:m.start()])
+        out.append(fn(m, text[m.end():i - 1]))
+        pos = i
+    out.append(text[pos:])
+    return "".join(out)
+
+
+def top_level_commas(args: str) -> int:
+    depth, n, i = 0, 0, 0
+    while i < len(args):
+        ch = args[i]
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            n += 1
+        elif ch == '"':
+            i += 1
+            while i < len(args) and args[i] != '"':
+                i += 2 if args[i] == "\\" else 1
+        i += 1
+    return n
+
+
+def wide_composites(text: str) -> str:
+    """26.x builds stream codecs of up to twelve fields; 1.21.1's stop at six (dev.groundburst.port.StreamCodecs)."""
+    def fix(m: re.Match, args: str) -> str:
+        fields = top_level_commas(args) // 2
+        name = "dev.groundburst.port.StreamCodecs.composite(" if fields > 6 else m.group(0)
+        return name + args + ")"
+    return calls(text, r"\bStreamCodec\.composite\(", fix)
+
+
+def overlay_messages(text: str) -> str:
+    """26.x's overlay message is 1.21.1's client message shown over the hotbar."""
+    return calls(text, r"\.sendOverlayMessage\(", lambda m, args: f".displayClientMessage({args}, true)")
+
+
+def split_args(args: str) -> list[str]:
+    """A call's arguments, split at its own commas."""
+    parts, cur, depth, i = [], [], 0, 0
+    while i < len(args):
+        ch = args[i]
+        if ch == '"':
+            j = i + 1
+            while j < len(args) and args[j] != '"':
+                j += 2 if args[j] == "\\" else 1
+            cur.append(args[i:j + 1])
+            i = j + 1
+            continue
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append("".join(cur))
+            cur = []
+            i += 1
+            continue
+        cur.append(ch)
+        i += 1
+    parts.append("".join(cur))
+    return parts
+
+
+def fill_biomes(m: re.Match, args: str) -> str:
+    """26.x's biome resolver is given a quart position; 1.21.1's a climate sampler too (and the fill takes one)."""
+    lam = re.match(r"\s*\((\w+), (\w+), (\w+)\) ->", args)
+    if not lam or len(split_args(args)) != 1:
+        return m.group(0) + args + ")"
+    return f".fillBiomesFromNoise(({lam.group(1)}, {lam.group(2)}, {lam.group(3)}, sampler_) ->{args[lam.end():]}, null)"
+
+
+def call_fixes(text: str) -> str:
+    """Calls whose arguments changed, too deep for a pattern."""
+    text = calls(text, r"\.isSectionCompiledAndVisible\(", lambda m, a: f".isSectionCompiled({split_args(a)[0].strip()})")
+    text = calls(text, r"\.placeItemBackInInventory\(",
+                 lambda m, a: f".placeItemBackInInventory({split_args(a)[0].strip()})" if "Prediction" in a else m.group(0) + a + ")")
+    text = calls(text, r"\.fillBiomesFromNoise\(", fill_biomes)
+    # 26.x sends particles to everyone, forced (seen from far) or not; 1.21.1 forces them player by player.
+    def particles(m: re.Match, a: str) -> str:
+        p = split_args(a)
+        if len(p) == 11 and p[1].strip() in ("true", "false") and p[2].strip() in ("true", "false"):
+            return f"dev.groundburst.port.Particles.send({m.group(1)}, {p[0].strip()}, {p[1].strip()}, {', '.join(x.strip() for x in p[3:])})"
+        return m.group(0) + a + ")"
+    text = calls(text, r"(\b\w+)\.sendParticles\(", particles)
+    # JEI 19's slots take stacks (26.x's JEI adds an item, stack, ingredient or fluid with one method: dev.groundburst.port.Jei).
+    if "mezz.jei" in text:
+        text = calls(text, r"(Background\(\)\s*|\bslot)\.add\(",
+                     lambda m, a: f"{m.group(1)}.addIngredientsUnsafe(dev.groundburst.port.Jei.of({a}))")
+    return text
+
+
+COLOURED = {"DYED_TERRACOTTA": "TERRACOTTA"}
+
+
+def coloured_blocks(text: str) -> str:
+    """26.x keeps a colour's blocks in families (Blocks.CONCRETE.pick(DyeColor.GRAY)); 1.21.1 has each by name."""
+    return re.sub(r"\bBlocks\.([A-Z_]+)\.pick\(DyeColor\.([A-Z_]+)\)",
+                  lambda m: f"Blocks.{m.group(2)}_{COLOURED.get(m.group(1), m.group(1))}", text)
+
+
+NBT_READS = r"get(?:String|Int|Long|Float|Double|Boolean)Or|getCompoundOrEmpty|read|store"
+
+
+def declared_types(text: str) -> str:
+    """Calls on variables of types whose methods changed, found by their declarations: a chunk position's x and z are
+    fields in 1.21.1 (and it packs to a long with toLong), a compound tag's reads with defaults and codec reads and writes
+    are this branch's (dev.groundburst.port.Nbt), and a pose moves through its matrix."""
+    for name in set(re.findall(r"\bChunkPos (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.([xz])\(\)", rf"{name}.\1", text)
+        text = re.sub(rf"\b{name}\.pack\(\)", rf"{name}.toLong()", text)
+    for name in set(re.findall(r"\bCompoundTag (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.({NBT_READS})\(", rf"dev.groundburst.port.Nbt.\1({name}, ", text)
+    for name in set(re.findall(r"\bOptional<CompoundTag> (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.get\(\)\.({NBT_READS})\(", rf"dev.groundburst.port.Nbt.\1({name}.get(), ", text)
+    for name in set(re.findall(r"\b(?:PoseStack\.)?Pose (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.translate\(", rf"{name}.pose().translate(", text)
+        text = re.sub(rf"\b{name}\.(?:rotate|mulPose)\(", rf"dev.groundburst.port.render.Poses.rotate({name}, ", text)
+        text = re.sub(rf"\b{name}\.scale\(", rf"dev.groundburst.port.render.Poses.scale({name}, ", text)
+        text = re.sub(rf"\b{name}\.set\(", rf"dev.groundburst.port.render.Poses.set({name}, ", text)
+    for name in set(re.findall(r"\bIngredient (\w+)\b", text)):
+        text = re.sub(rf"\b{name}\.items\(\)", rf"dev.groundburst.port.Ingredients.items({name})", text)
+    return text
+
+
+def screen_size(text: str) -> str:
+    """26.x's container screens are given their panel's size; 1.21.1's set it after."""
+    if "extends AbstractContainerScreen" not in text:
+        return text
+    return re.sub(r"\bsuper\((\w+), (\w+), (\w+), ((?:[^,()]|\([^()]*\))+), ((?:[^,()]|\([^()]*\))+)\);",
+                  r"super(\1, \2, \3);\n        this.imageWidth = \4;\n        this.imageHeight = \5;", text)
+
+
+FUNCTIONS = [block_codecs, pre_remove, saved_data, declared_types, screen_size, wide_composites, overlay_messages, coloured_blocks,
+             call_fixes]
 
 
 def port_imports(text: str) -> str:
@@ -448,14 +795,128 @@ def after(anchor: str, insert: str):
     return fix
 
 
+def swap(old: str, new: str):
+    def fix(text: str) -> str:
+        assert old in text, f"port.py: '{old}' is gone from main: update FILE_FIXES"
+        return text.replace(old, new)
+    return fix
+
+
+def replace_method(signature: str, new: str):
+    """Replaces the method whose declaration begins with {signature} (to its closing brace) with {new}."""
+    def fix(text: str) -> str:
+        assert signature in text, f"port.py: '{signature}' is gone from main: update FILE_FIXES"
+        return method_bodies(text, re.escape(signature) + r"[^{]*\{", lambda method: new)
+    return fix
+
+
+def drop_method(signature: str):
+    """Removes the method whose declaration begins with {signature} (and its javadoc's blank line)."""
+    def fix(text: str) -> str:
+        assert signature in text, f"port.py: '{signature}' is gone from main: update FILE_FIXES"
+        return method_bodies(text, r"\n[ \t]*" + re.escape(signature) + r"[^{]*\{", lambda method: "\n")
+    return fix
+
+
 FILE_FIXES: dict[str, list] = {
     "src/main/java/dev/groundburst/GroundBurstClient.java": [
         after("container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);",
-              "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"),
+              "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"
+              "\n        dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'"
+              "\n        dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code"),
+    ],
+    "src/main/java/dev/groundburst/registry/GBItems.java": [
+        swap("ITEMS.registerItem(name, factory, properties);", "ITEMS.registerItem(name, factory, properties.apply(new Item.Properties()));"),
+        swap("ITEMS.registerSimpleBlockItem(block, properties);", "ITEMS.registerSimpleBlockItem(block, properties.apply(new Item.Properties()));"),
+        swap("Item.Properties::useBlockDescriptionPrefix)", "new Item.Properties())"),
+    ],
+    "src/main/java/dev/groundburst/blast/GBBlast.java": [
+        swap("BlastManager.of(player.level())", "BlastManager.of((net.minecraft.server.level.ServerLevel) player.level())"),
+    ],
+    "src/main/java/dev/groundburst/blast/BlastChunks.java": [
+        swap('tag.get().getStringOr("Status", "")', 'dev.groundburst.port.Nbt.getStringOr(tag.get(), "Status", "")'),
+    ],
+    "src/main/java/dev/groundburst/registry/GBBlocks.java": [
+        swap("BLOCKS.registerBlock(name, factory, properties);", "BLOCKS.registerBlock(name, factory, properties.apply(BlockBehaviour.Properties.of()));"),
+    ],
+    # Fuel: 1.21.1 asks the stack its burn time (26.x reads the item's cooking-fuel component through a loot context).
+    "src/main/java/dev/groundburst/content/power/CombustionGeneratorBlockEntity.java": [
+        swap("return stack.has(DataComponents.COOKING_FUEL);",
+             "return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;"),
+        swap("int duration = ResolvableInt.getFromItem(fuel, DataComponents.COOKING_FUEL, CookingFuel::burnTime, lootContext(level, fuel), 0);",
+             "int duration = fuel.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);"),
+        swap("ItemStackTemplate remainder = fuel.getCraftingRemainder();",
+             "ItemStack remainderStack = fuel.getCraftingRemainingItem();\n"
+             "        ItemStackTemplate remainder = remainderStack.isEmpty() ? null : ItemStackTemplate.fromNonEmptyStack(remainderStack);"),
+        drop_method("private LootContext lootContext(ServerLevel level, ItemStack fuel)"),
+    ],
+    # A block's tint: 1.21.1's block colours answer it straight (26.x's give a tint source).
+    "src/main/java/dev/groundburst/client/fx/Debris.java": [
+        swap("BlockTintSource source = Minecraft.getInstance().getBlockColors().getTintSource(state, 0);\n"
+             "        return source == null ? 0xFFFFFF : source.colorAsTerrainParticle(state, level, at) & 0xFFFFFF;",
+             "int color = Minecraft.getInstance().getBlockColors().getColor(state, level, at, 0);\n"
+             "        return color == -1 ? 0xFFFFFF : color & 0xFFFFFF;"),
+    ],
+    # Standalone models: 1.21.1 registers them by location and hands back a baked model.
+    "src/main/java/dev/groundburst/client/render/FissionSections.java": [
+        swap("        private final StandaloneModelKey<BlockStateModelPart> key = new StandaloneModelKey<>(() -> GroundBurst.MODID + \":\" + this.id);\n", ""),
+        swap("return Minecraft.getInstance().getModelManager().getStandaloneModel(this.key);",
+             "var models = Minecraft.getInstance().getModelManager();\n"
+             "            var baked = models.getModel(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model()));\n"
+             "            return baked == models.getMissingModel() ? null : new BlockStateModelPart(baked, null, 0);"),
+        swap("public static void register(ModelEvent.RegisterStandalone event) {", "public static void register(ModelEvent.RegisterAdditional event) {"),
+        swap("event.register(s.key, SimpleUnbakedStandaloneModel.simpleModelWrapper(s.model()));",
+             "event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(s.model()));"),
+        swap("import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;\n", ""),
+        swap("import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;\n", ""),
+    ],
+    # The dosimeter's dose: an item property 1.21.1's model overrides read (dev.groundburst.port.render.ItemModels).
+    "src/main/java/dev/groundburst/client/radiation/RadiationClient.java": [
+        swap('modBus.addListener((RegisterRangeSelectItemModelPropertyEvent event) -> event.register(GroundBurst.id("dose"), Dose.CODEC));',
+             'dev.groundburst.port.render.ItemModels.property(GroundBurst.id("dose"), Dose::get);'),
+        replace_method("public record Dose() implements RangeSelectItemModelProperty",
+                       "public record Dose() {\n"
+                       "        public static float get(ItemStack stack, @Nullable ClientLevel level, net.minecraft.world.entity.@Nullable LivingEntity owner, int seed) {\n"
+                       "            Player local = Minecraft.getInstance().player;\n"
+                       "            if (local == null || owner != null && owner != local) {\n"
+                       "                return 0;\n"
+                       "            }\n"
+                       "            return state(local).dose();\n"
+                       "        }\n"
+                       "    }"),
+    ],
+    # Block tints: 1.21.1's block colour handlers (26.x's tint sources).
+    "src/main/java/dev/groundburst/client/fallout/FalloutClient.java": [
+        swap("modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {", "modBus.addListener((RegisterColorHandlersEvent.Block event) -> {"),
+        swap("event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor), "),
+        swap("event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), ", "event.register(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor), "),
+        swap("event.register(List.of(net.minecraft.client.color.block.BlockTintSources.constant(FROZEN_PLANT)), ",
+             "event.register((state, level, pos, tintIndex) -> FROZEN_PLANT, "),
+        replace_method("static BlockTintSource dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome)",
+                       "static BlockColor dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome) {\n"
+                       "        return (state, level, pos, tintIndex) -> level == null || pos == null ? colour\n"
+                       "                : ARGB.srgbLerp(BIOME_SHARE, colour, 0xFF000000 | biome.applyAsInt(level, pos));\n"
+                       "    }"),
+    ],
+    "src/main/java/dev/groundburst/registry/GBCreativeTabs.java": [
+        swap("previous = holder.key();", "previous = holder.getKey();"),
+    ],
+    "src/main/java/dev/groundburst/content/construction/BarbedWireBlock.java": [
+        swap("entity.isClientAuthoritative() ? entity.getKnownMovement() : entity.oldPosition().subtract(entity.position())",
+             "new Vec3(entity.getX() - entity.xOld, entity.getY() - entity.yOld, entity.getZ() - entity.zOld)"),
+    ],
+    "src/main/java/dev/groundburst/content/ordnance/GrenadeItem.java": [
+        swap("ThrownExplosive thrown = Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack,\n"
+             "                    player, 0f, this.type.speed, 1.0f);",
+             "ThrownExplosive thrown = new ThrownExplosive(server, player, stack.copyWithCount(1));\n"
+             "            thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, this.type.speed, 1.0f);\n"
+             "            server.addFreshEntity(thrown);"),
     ],
     "src/main/java/dev/groundburst/GroundBurst.java": [
         after("modBus.addListener(GBBlockEntities::registerCapabilities);",
               "\n        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers"),
+        after("GBItems.ITEMS.register(modBus);",
+              "\n        dev.groundburst.content.gear.GBArmor.register(modBus);   // 1.21.1's armour materials are a registry"),
     ],
 }
 
@@ -466,9 +927,153 @@ def port_resource(path: str, data: bytes) -> tuple[str, bytes] | None:
     # GeckoLib 4 reads geo/ and animations/ (GeckoLib 5: geckolib/models/ and geckolib/animations/).
     path = re.sub(r"^(src/main/resources/assets/\w+)/geckolib/models/", r"\1/geo/", path)
     path = re.sub(r"^(src/main/resources/assets/\w+)/geckolib/animations/", r"\1/animations/", path)
+    # Armour: 1.21.1 draws a suit from textures/models/armor/<name>_layer_1 (body) and _layer_2 (legs).
+    path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid/(\w+)\.png$", r"\1/textures/models/armor/\2_layer_1.png", path)
+    path = re.sub(r"^(src/main/resources/assets/\w+)/textures/entity/equipment/humanoid_leggings/(\w+)\.png$",
+                  r"\1/textures/models/armor/\2_layer_2.png", path)
     if re.match(r"^src/(main|generated)/resources/data/\w+/recipe/.*\.json$", path):
         data = port_recipe(data)
+    # 26.x's item model definitions: made into 1.21.1's item models by item_models (below).
+    if re.match(r"^src/(main|generated)/resources/assets/\w+/items/.*\.json$", path):
+        return None
     return path, data
+
+
+# --- item models ----------------------------------------------------------------------------------------------------------
+VANILLA_JAR = ROOT / "build" / "moddev" / "artifacts" / "neoforge-21.1.265-client-extra-aka-minecraft-resources.jar"
+LOOK_RANGE = 16_777_213              # dev.groundburst.port.Looks: below 2^24, so every look's number is exact as a float
+
+
+def java_hash(s: str) -> int:
+    h = 0
+    for ch in s.encode("utf-16-be").decode("utf-16-be"):
+        for unit in ([ord(ch)] if ord(ch) < 0x10000 else [0xD800 + ((ord(ch) - 0x10000) >> 10), 0xDC00 + ((ord(ch) - 0x10000) & 0x3FF)]):
+            h = (31 * h + unit) & 0xFFFFFFFF
+    return h - (1 << 32) if h >= 1 << 31 else h
+
+
+def look_id(look: str) -> int:
+    """dev.groundburst.port.Looks.id: a missile look's custom model data number."""
+    return java_hash(look) % LOOK_RANGE + 1
+
+
+def model_json(ref: str) -> dict | None:
+    ns, path = ref.split(":", 1) if ":" in ref else ("minecraft", ref)
+    try:
+        if ns == "minecraft":
+            import zipfile
+            with zipfile.ZipFile(VANILLA_JAR) as jar:
+                return json.loads(jar.read(f"assets/minecraft/models/{path}.json"))
+        return json.loads(read_main(f"src/main/resources/assets/{ns}/models/{path}.json"))
+    except (KeyError, FileNotFoundError):
+        return None
+
+
+def resolved(ref: str, key: str):
+    """A model's {key} (textures, display...), its own or the nearest parent's."""
+    for _ in range(16):
+        m = model_json(ref)
+        if m is None:
+            return None
+        if key in m:
+            return m[key]
+        if "parent" not in m:
+            return None
+        ref = m["parent"]
+    return None
+
+
+def item_models(files: list[str]) -> dict[str, bytes]:
+    """1.21.1's item models (models/item/<name>.json), from main's item model definitions (items/<name>.json):
+      - a plain model: that model (or the item's own model file, when it names it);
+      - GeckoLib's special model: builtin/entity, keeping the base model's textures and display;
+      - a select on the display context: NeoForge's separate transforms;
+      - a select on custom model data (the missile's looks): overrides on dev.groundburst.port.Looks's numbers;
+      - a range dispatch: overrides on the property's thresholds; a condition on using the item: an override on
+        groundburst:using_item.
+    What the models need from code (constant tints, the properties and their items) goes into ItemModelTable.java."""
+    out: dict[str, bytes] = {}
+    tints: dict[str, list[int]] = {}
+    props: dict[str, list[str]] = {}
+    present = set(files)
+    for path in files:
+        m = re.fullmatch(r"src/main/resources/assets/(\w+)/items/(.+)\.json", path)
+        if not m:
+            continue
+        ns, name = m.groups()
+        item_id, own = f"{ns}:{name}", f"{ns}:item/{name}"
+        dest = f"src/main/resources/assets/{ns}/models/item/{name}.json"
+        root = json.loads(read_main(path))["model"]
+        kind = root["type"].removeprefix("minecraft:")
+
+        def ref(model: dict) -> str:
+            assert model["type"].removeprefix("minecraft:") == "model", f"{path}: a {model['type']} inside a {kind}"
+            r = model["model"]
+            if r == own:                             # the item's own model file is about to be the item model: keep it apart
+                kept = f"src/main/resources/assets/{ns}/models/item/{name}_own.json"
+                out[kept] = read_main(dest)
+                return f"{ns}:item/{name}_own"
+            return r
+
+        if kind == "model":
+            if root.get("tints"):
+                tints[item_id] = [(t["value"] | 0xFF000000) if t["type"] == "minecraft:constant" else -1 for t in root["tints"]]
+            if root["model"] == own and dest in present:
+                continue                             # main's own model is the item's
+            model = {"parent": root["model"]}
+        elif kind == "neoforge:fluid_container":
+            # NeoForge 21.1's bucket model loader takes the same settings.
+            model = {"parent": "neoforge:item/bucket", "loader": "neoforge:fluid_container"}
+            model.update({k: v for k, v in root.items() if k != "type"})
+        elif kind == "special":
+            model = {"parent": "builtin/entity"}
+            for key in ("textures", "display", "gui_light"):
+                v = resolved(root["base"], key)
+                if v is not None:
+                    model[key] = v
+        elif kind == "select" and root["property"] == "minecraft:display_context":
+            perspectives = {}
+            for case in root["cases"]:
+                for when in case["when"] if isinstance(case["when"], list) else [case["when"]]:
+                    perspectives[when] = {"parent": ref(case["model"])}
+            model = {"loader": "neoforge:separate_transforms", "base": {"parent": ref(root["fallback"])}, "perspectives": perspectives}
+        elif kind == "select" and root["property"] == "minecraft:custom_model_data":
+            looks = [(look_id(w), ref(case["model"]), w) for case in root["cases"]
+                     for w in (case["when"] if isinstance(case["when"], list) else [case["when"]])]
+            ids = [i for i, _, _ in looks]
+            assert len(ids) == len(set(ids)), f"{path}: two looks share a number (dev.groundburst.port.Looks)"
+            model = {"parent": ref(root["fallback"]),
+                     "overrides": [{"predicate": {"custom_model_data": i}, "model": r} for i, r, _ in sorted(looks)]}
+        elif kind == "range_dispatch":
+            scale = root.get("scale", 1)
+            props.setdefault(root["property"], []).append(item_id)
+            entries = sorted((e["threshold"] / scale, ref(e["model"])) for e in root["entries"])
+            model = {"parent": ref(root["fallback"]),
+                     "overrides": [{"predicate": {root["property"]: t}, "model": r} for t, r in entries]}
+        elif kind == "condition" and root["property"] == "minecraft:using_item":
+            props.setdefault("groundburst:using_item", []).append(item_id)
+            model = {"parent": ref(root["on_false"]),
+                     "overrides": [{"predicate": {"groundburst:using_item": 1}, "model": ref(root["on_true"])}]}
+        else:
+            raise SystemExit(f"port.py: {path}: no 1.21.1 item model for a {kind} on {root.get('property')}")
+        out[dest] = (json.dumps(model, indent=2) + "\n").encode("utf-8")
+    out["src/main/java/dev/groundburst/port/render/ItemModelTable.java"] = item_model_table(tints, props).encode("utf-8")
+    return out
+
+
+def item_model_table(tints: dict[str, list[int]], props: dict[str, list[str]]) -> str:
+    def hexes(values: list[int]) -> str:
+        return ", ".join(f"0x{v & 0xFFFFFFFF:08X}" for v in values)
+    tint_rows = ",\n".join(f'            Map.entry("{k}", new int[] {{{hexes(v)}}})' for k, v in sorted(tints.items()))
+    prop_rows = ",\n".join(f'            Map.entry("{k}", List.of({", ".join(chr(34) + i + chr(34) for i in v)}))' for k, v in sorted(props.items()))
+    return ("package dev.groundburst.port.render;\n\nimport java.util.List;\nimport java.util.Map;\n\n"
+            "/**\n * Written by tools/backport/port.py from main's item model definitions (assets/&lt;ns&gt;/items): what this branch's\n"
+            " * item models need from code ({@link ItemModels}). Not edited by hand.\n */\n"
+            "final class ItemModelTable {\n    private ItemModelTable() {}\n\n"
+            "    /** Items tinted a constant colour, ARGB per tint index. */\n"
+            f"    static final Map<String, int[]> TINTS = Map.ofEntries(\n{tint_rows});\n\n"
+            "    /** The item properties the models' overrides read, and the items that have them. */\n"
+            f"    static final Map<String, List<String>> PROPERTIES = Map.ofEntries(\n{prop_rows});\n}}\n")
 
 
 def ingredient(v):
@@ -480,15 +1085,33 @@ def ingredient(v):
     return v
 
 
+def fluid_ingredient(v):
+    """A 26.x fluid ingredient ("minecraft:water", "#c:argon", or a list of them) as NeoForge 21.1 writes it."""
+    if isinstance(v, str):
+        return {"tag": v[1:]} if v.startswith("#") else {"fluid": v}
+    if isinstance(v, list):
+        return [fluid_ingredient(x) for x in v]
+    return v
+
+
+def sized(entries, convert):
+    return [{**e, "ingredient": convert(e["ingredient"])} if isinstance(e, dict) and "ingredient" in e else e for e in entries]
+
+
 def port_recipe(data: bytes) -> bytes:
     r = json.loads(data)
     if "key" in r:
         r["key"] = {k: ingredient(v) for k, v in r["key"].items()}
     if "ingredients" in r:
         r["ingredients"] = [ingredient(v) for v in r["ingredients"]]
-    for k in ("ingredient", "base", "addition", "template"):
+    for k in ("ingredient", "base", "addition", "template", "catalyst"):
         if k in r:
             r[k] = ingredient(r[k])
+    # The machines' own: counted item inputs and fluid inputs.
+    if isinstance(r.get("inputs"), list):
+        r["inputs"] = sized(r["inputs"], ingredient)
+    if isinstance(r.get("fluids"), list):
+        r["fluids"] = sized(r["fluids"], fluid_ingredient)
     return (json.dumps(r, indent=2) + "\n").encode("utf-8")
 
 
@@ -560,6 +1183,9 @@ def sync(new: str) -> None:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(checkout_eol(dest, data_new))
     BASE = new
+    for dest, data in item_models(main_files()).items():   # every item model again: they come from several of main's files
+        (ROOT / dest).parent.mkdir(parents=True, exist_ok=True)
+        (ROOT / dest).write_bytes(checkout_eol(dest, data))
     (HERE / "base.txt").write_text(f"{new}   main's commit this branch is brought up to (docs/BACKPORT.md)\n", encoding="utf-8")
     print(f"{len(changes)} of main's files changed since {old[:8]}; now at {new[:8]}")
     for c in conflicts:
@@ -577,7 +1203,17 @@ def main() -> None:
         return
     files = args or main_files()
     written = kept = dropped = 0
+    derived = item_models(main_files())
+    for dest, data in derived.items():
+        target = ROOT / dest
+        target.parent.mkdir(parents=True, exist_ok=True)
+        data = checkout_eol(dest, data)
+        if not target.exists() or target.read_bytes() != data:
+            target.write_bytes(data)
+            written += 1
     for path in files:
+        if path in derived:
+            continue
         out = port_file(path)
         if out is None:
             stale = ROOT / path

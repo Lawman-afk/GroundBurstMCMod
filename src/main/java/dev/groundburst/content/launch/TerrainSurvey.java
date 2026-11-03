@@ -99,7 +99,7 @@ public final class TerrainSurvey extends SavedData {
 
     /** A chunk about to unload: survey it now, as it is. */
     void chunkUnloading(ServerLevel level, LevelChunk chunk) {
-        long c = chunk.getPos().pack();
+        long c = chunk.getPos().toLong();
         if (inRange(level, c)) {
             record(level, c, sample(chunk));
         }

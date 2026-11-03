@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:trichlorosilane_canister"
+      "ingredient": {
+        "item": "groundburst:trichlorosilane_canister"
+      }
     }
   ],
   "outputs": [

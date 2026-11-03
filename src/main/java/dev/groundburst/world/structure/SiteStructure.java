@@ -117,8 +117,8 @@ public class SiteStructure extends Structure {
         int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
         int middle = height(context, x, z);
         // The wrong land: no need to read its ground (the biome is checked again where the site's origin ends up).
-        if (!context.validBiome().test(context.biomeResolver().getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(middle),
-                QuartPos.fromBlock(z)))) {
+        if (!context.validBiome().test(context.biomeSource().getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(middle),
+                QuartPos.fromBlock(z), context.randomState().sampler()))) {
             return Optional.empty();
         }
         StructureTemplateManager templates = context.structureTemplateManager();

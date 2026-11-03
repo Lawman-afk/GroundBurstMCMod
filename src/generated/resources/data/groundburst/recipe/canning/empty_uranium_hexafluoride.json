@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:uf6_canister"
+      "ingredient": {
+        "item": "groundburst:uf6_canister"
+      }
     }
   ],
   "outputs": [

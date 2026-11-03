@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/rare_earth"
+      "ingredient": {
+        "tag": "c:ores/rare_earth"
+      }
     }
   ],
   "outputs": [

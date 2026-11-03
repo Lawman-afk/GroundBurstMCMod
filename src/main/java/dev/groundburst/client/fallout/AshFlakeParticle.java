@@ -3,24 +3,25 @@ package dev.groundburst.client.fallout;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 
 /**
  * A flake of fallout ash (DESIGN.md §21.8, slice 12b): it sinks slowly, carried along by the wind it was given (its
  * spawner's x and z speeds, blocks a tick), fluttering and turning as it goes, and settles where it lands.
  */
-public class AshFlakeParticle extends SingleQuadParticle {
+public class AshFlakeParticle extends TextureSheetParticle {
     private final double driftX, driftZ;
     private final float phase, spin;
     private int settled;
 
     AshFlakeParticle(ClientLevel level, double x, double y, double z, TextureAtlasSprite sprite, double driftX, double driftZ) {
-        super(level, x, y, z, sprite);
+        super(level, x, y, z);
+        this.setSprite(sprite);
         this.driftX = driftX;
         this.driftZ = driftZ;
         this.lifetime = 160 + this.random.nextInt(80);
@@ -39,8 +40,8 @@ public class AshFlakeParticle extends SingleQuadParticle {
     }
 
     @Override
-    protected Layer getLayer() {
-        return Layer.OPAQUE;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
     @Override
@@ -77,8 +78,8 @@ public class AshFlakeParticle extends SingleQuadParticle {
 
         @Override
         public Particle createParticle(SimpleParticleType options, ClientLevel level, double x, double y, double z, double xAux, double yAux,
-                double zAux, RandomSource random) {
-            return new AshFlakeParticle(level, x, y, z, this.sprites.get(random), xAux, zAux);
+                double zAux) {
+            return new AshFlakeParticle(level, x, y, z, this.sprites.get(level.random), xAux, zAux);
         }
     }
 }

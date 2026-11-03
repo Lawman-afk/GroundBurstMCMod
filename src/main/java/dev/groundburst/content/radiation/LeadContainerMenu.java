@@ -69,7 +69,7 @@ public class LeadContainerMenu extends AbstractContainerMenu {
                 });
             }
         }
-        int locked = hand == InteractionHand.MAIN_HAND ? inventory.getSelectedSlot() : -1;
+        int locked = hand == InteractionHand.MAIN_HAND ? inventory.selected : -1;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));

@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/uranium"
+      "ingredient": {
+        "tag": "c:ores/uranium"
+      }
     }
   ],
   "outputs": [

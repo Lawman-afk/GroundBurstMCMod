@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:heavy_water_canister"
+      "ingredient": {
+        "item": "groundburst:heavy_water_canister"
+      }
     }
   ],
   "outputs": [

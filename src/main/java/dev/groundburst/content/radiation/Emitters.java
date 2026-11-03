@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
+import dev.groundburst.port.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -89,13 +89,13 @@ public final class Emitters {
         }
         var bundle = stack.get(net.minecraft.core.component.DataComponents.BUNDLE_CONTENTS);
         if (bundle != null) {
-            for (ItemStackTemplate inside : bundle.items()) {
+            for (ItemStackTemplate inside : ItemStackTemplate.of(bundle.items())) {
                 sum += radioactivity(inside.item().value()) * inside.count();
             }
         }
         var container = stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
         if (container != null) {
-            for (ItemStackTemplate inside : container.nonEmptyItems()) {
+            for (ItemStackTemplate inside : ItemStackTemplate.of(container.nonEmptyItems())) {
                 sum += radioactivity(inside.item().value()) * inside.count();
             }
         }

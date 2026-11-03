@@ -113,7 +113,7 @@ public abstract class SpreadPartBlock extends MultiblockPartBlock {
         if (!level.isClientSide() && state.getValue(PART) == Part.EDGE) {
             BlockPos c = centerOf(level, pos);
             if (c != null) {
-                level.destroyBlock(c, !player.preventsBlockDrops(), player);
+                level.destroyBlock(c, !player.getAbilities().instabuild, player);
             }
         }
         return super.playerWillDestroy(level, pos, state, player);

@@ -189,7 +189,7 @@ public class GasCloudBlock extends Block implements BucketPickup {
 
     // --- buckets ----------------------------------------------------------------------------------------------------------
     @Override
-    public ItemStack pickupBlock(@Nullable net.minecraft.world.entity.player.Player user, LevelAccessor level, BlockPos pos, BlockState state) {
+    public ItemStack pickupBlock(net.minecraft.world.entity.player.Player user, LevelAccessor level, BlockPos pos, BlockState state) {
         ChemFluid gas = fluid();
         if (state.getValue(VOLUME) < MAX || gas == null) {
             return ItemStack.EMPTY;

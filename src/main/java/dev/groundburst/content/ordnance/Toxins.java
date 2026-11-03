@@ -45,7 +45,7 @@ public final class Toxins {
         }
         int nausea = Math.round(nauseaTicks * keep);
         if (nausea > 0) {
-            entity.addEffect(new MobEffectInstance(MobEffects.NAUSEA, nausea, 0));
+            entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, nausea, 0));
         }
     }
 }

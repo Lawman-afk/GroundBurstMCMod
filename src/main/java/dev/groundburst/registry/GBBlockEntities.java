@@ -25,58 +25,58 @@ public final class GBBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, GroundBurst.MODID);
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OreCrusherBlockEntity>> ORE_CRUSHER =
-            BLOCK_ENTITIES.register("ore_crusher", () -> new BlockEntityType<>(OreCrusherBlockEntity::new, GBMachines.ORE_CRUSHER.block().get()));
+            BLOCK_ENTITIES.register("ore_crusher", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(OreCrusherBlockEntity::new, GBMachines.ORE_CRUSHER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CombustionGeneratorBlockEntity>> COMBUSTION_GENERATOR =
-            BLOCK_ENTITIES.register("combustion_generator", () -> new BlockEntityType<>(CombustionGeneratorBlockEntity::new, GBMachines.COMBUSTION_GENERATOR.block().get()));
+            BLOCK_ENTITIES.register("combustion_generator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(CombustionGeneratorBlockEntity::new, GBMachines.COMBUSTION_GENERATOR.block().get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ArcFurnaceBlockEntity>> ARC_FURNACE =
-            BLOCK_ENTITIES.register("arc_furnace", () -> new BlockEntityType<>(ArcFurnaceBlockEntity::new, GBMachines.ARC_FURNACE.block().get()));
+            BLOCK_ENTITIES.register("arc_furnace", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ArcFurnaceBlockEntity::new, GBMachines.ARC_FURNACE.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<IndustrialPressBlockEntity>> INDUSTRIAL_PRESS =
-            BLOCK_ENTITIES.register("industrial_press", () -> new BlockEntityType<>(IndustrialPressBlockEntity::new, GBMachines.INDUSTRIAL_PRESS.block().get()));
+            BLOCK_ENTITIES.register("industrial_press", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(IndustrialPressBlockEntity::new, GBMachines.INDUSTRIAL_PRESS.block().get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ElectrolyticSeparatorBlockEntity>> ELECTROLYTIC_SEPARATOR =
-            BLOCK_ENTITIES.register("electrolytic_separator", () -> new BlockEntityType<>(ElectrolyticSeparatorBlockEntity::new, GBMachines.ELECTROLYTIC_SEPARATOR.block().get()));
+            BLOCK_ENTITIES.register("electrolytic_separator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ElectrolyticSeparatorBlockEntity::new, GBMachines.ELECTROLYTIC_SEPARATOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.WaterPumpBlockEntity>> WATER_PUMP =
-            BLOCK_ENTITIES.register("water_pump", () -> new BlockEntityType<>(dev.groundburst.content.machine.WaterPumpBlockEntity::new, GBMachines.WATER_PUMP.block().get()));
+            BLOCK_ENTITIES.register("water_pump", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.WaterPumpBlockEntity::new, GBMachines.WATER_PUMP.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.fluid.FluidTankBlockEntity>> FLUID_TANK =
-            BLOCK_ENTITIES.register("fluid_tank", () -> new BlockEntityType<>(dev.groundburst.content.fluid.FluidTankBlockEntity::new,
-                    dev.groundburst.content.fluid.GBFluids.FLUID_TANK.block().get()));
+            BLOCK_ENTITIES.register("fluid_tank", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.fluid.FluidTankBlockEntity::new,
+                    dev.groundburst.content.fluid.GBFluids.FLUID_TANK.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.fluid.CreativeFluidTankBlockEntity>> CREATIVE_FLUID_TANK =
-            BLOCK_ENTITIES.register("creative_fluid_tank", () -> new BlockEntityType<>(dev.groundburst.content.fluid.CreativeFluidTankBlockEntity::new,
-                    dev.groundburst.content.fluid.GBFluids.CREATIVE_FLUID_TANK.block().get()));
+            BLOCK_ENTITIES.register("creative_fluid_tank", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.fluid.CreativeFluidTankBlockEntity::new,
+                    dev.groundburst.content.fluid.GBFluids.CREATIVE_FLUID_TANK.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CryogenicCondenserBlockEntity>> CRYOGENIC_CONDENSER =
-            BLOCK_ENTITIES.register("cryogenic_condenser", () -> new BlockEntityType<>(CryogenicCondenserBlockEntity::new, GBMachines.CRYOGENIC_CONDENSER.block().get()));
+            BLOCK_ENTITIES.register("cryogenic_condenser", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(CryogenicCondenserBlockEntity::new, GBMachines.CRYOGENIC_CONDENSER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CrystalPullerBlockEntity>> CRYSTAL_PULLER =
-            BLOCK_ENTITIES.register("crystal_puller", () -> new BlockEntityType<>(dev.groundburst.content.machine.CrystalPullerBlockEntity::new,
-                    GBMachines.CRYSTAL_PULLER.block().get()));
+            BLOCK_ENTITIES.register("crystal_puller", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.CrystalPullerBlockEntity::new,
+                    GBMachines.CRYSTAL_PULLER.block().get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CircuitFabricatorBlockEntity>> CIRCUIT_FABRICATOR =
-            BLOCK_ENTITIES.register("circuit_fabricator", () -> new BlockEntityType<>(dev.groundburst.content.machine.CircuitFabricatorBlockEntity::new,
-                    GBMachines.CIRCUIT_FABRICATOR.block().get()));
+            BLOCK_ENTITIES.register("circuit_fabricator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.CircuitFabricatorBlockEntity::new,
+                    GBMachines.CIRCUIT_FABRICATOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.GasCentrifugeBlockEntity>> GAS_CENTRIFUGE =
-            BLOCK_ENTITIES.register("gas_centrifuge", () -> new BlockEntityType<>(dev.groundburst.content.machine.GasCentrifugeBlockEntity::new,
-                    GBMachines.GAS_CENTRIFUGE.block().get()));
+            BLOCK_ENTITIES.register("gas_centrifuge", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.GasCentrifugeBlockEntity::new,
+                    GBMachines.GAS_CENTRIFUGE.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.FusionFuelSynthesizerBlockEntity>> FUSION_FUEL_SYNTHESIZER =
-            BLOCK_ENTITIES.register("fusion_fuel_synthesizer", () -> new BlockEntityType<>(dev.groundburst.content.machine.FusionFuelSynthesizerBlockEntity::new,
-                    GBMachines.FUSION_FUEL_SYNTHESIZER.block().get()));
+            BLOCK_ENTITIES.register("fusion_fuel_synthesizer", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.FusionFuelSynthesizerBlockEntity::new,
+                    GBMachines.FUSION_FUEL_SYNTHESIZER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CanningMachineBlockEntity>> CANNING_MACHINE =
-            BLOCK_ENTITIES.register("canning_machine", () -> new BlockEntityType<>(dev.groundburst.content.machine.CanningMachineBlockEntity::new,
-                    GBMachines.CANNING_MACHINE.block().get()));
+            BLOCK_ENTITIES.register("canning_machine", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.CanningMachineBlockEntity::new,
+                    GBMachines.CANNING_MACHINE.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.ExoticMatterFabricatorBlockEntity>> EXOTIC_MATTER_FABRICATOR =
-            BLOCK_ENTITIES.register("exotic_matter_fabricator", () -> new BlockEntityType<>(dev.groundburst.content.machine.ExoticMatterFabricatorBlockEntity::new,
-                    GBMachines.EXOTIC_MATTER_FABRICATOR.block().get()));
+            BLOCK_ENTITIES.register("exotic_matter_fabricator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.ExoticMatterFabricatorBlockEntity::new,
+                    GBMachines.EXOTIC_MATTER_FABRICATOR.block().get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.DieselGeneratorBlockEntity>> DIESEL_GENERATOR =
-            BLOCK_ENTITIES.register("diesel_generator", () -> new BlockEntityType<>(dev.groundburst.content.power.DieselGeneratorBlockEntity::new,
-                    GBMachines.DIESEL_GENERATOR.block().get()));
+            BLOCK_ENTITIES.register("diesel_generator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.power.DieselGeneratorBlockEntity::new,
+                    GBMachines.DIESEL_GENERATOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.RtgBlockEntity>> RTG =
-            BLOCK_ENTITIES.register("rtg", () -> new BlockEntityType<>(dev.groundburst.content.power.RtgBlockEntity::new, GBMachines.RTG.block().get()));
+            BLOCK_ENTITIES.register("rtg", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.power.RtgBlockEntity::new, GBMachines.RTG.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.BatteryChargerBlockEntity>> BATTERY_CHARGER =
-            BLOCK_ENTITIES.register("battery_charger", () -> new BlockEntityType<>(dev.groundburst.content.power.BatteryChargerBlockEntity::new,
-                    GBMachines.BATTERY_CHARGER.block().get()));
+            BLOCK_ENTITIES.register("battery_charger", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.power.BatteryChargerBlockEntity::new,
+                    GBMachines.BATTERY_CHARGER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.DecontaminationShowerBlockEntity>> DECONTAMINATION_SHOWER =
-            BLOCK_ENTITIES.register("decontamination_shower", () -> new BlockEntityType<>(dev.groundburst.content.machine.DecontaminationShowerBlockEntity::new,
-                    GBMachines.DECONTAMINATION_SHOWER.block().get()));
+            BLOCK_ENTITIES.register("decontamination_shower", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.DecontaminationShowerBlockEntity::new,
+                    GBMachines.DECONTAMINATION_SHOWER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.CapacitorBankBlockEntity>> CAPACITOR_BANK = bank(0);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.CapacitorBankBlockEntity>> ADVANCED_CAPACITOR_BANK = bank(1);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.CapacitorBankBlockEntity>> SUPERCONDUCTING_CAPACITOR_BANK = bank(2);
@@ -87,9 +87,9 @@ public final class GBBlockEntities {
     private static DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.CapacitorBankBlockEntity>> bank(int ordinal) {
         var tier = dev.groundburst.content.power.CapacitorBankBlockEntity.Tier.values()[ordinal];
         DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.power.CapacitorBankBlockEntity>>[] self = new DeferredHolder[1];
-        self[0] = BLOCK_ENTITIES.register(tier.id(), () -> new BlockEntityType<>(
+        self[0] = BLOCK_ENTITIES.register(tier.id(), () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                 (pos, state) -> new dev.groundburst.content.power.CapacitorBankBlockEntity(self[0].get(), tier, pos, state),
-                GBMachines.CAPACITOR_BANKS.get(ordinal).block().get()));
+                GBMachines.CAPACITOR_BANKS.get(ordinal).block().get()).build(null));
         return self[0];
     }
 
@@ -104,25 +104,25 @@ public final class GBBlockEntities {
     }
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChemicalPlantBlockEntity>> CHEMICAL_PLANT =
-            BLOCK_ENTITIES.register("chemical_plant", () -> new BlockEntityType<>(ChemicalPlantBlockEntity::new, GBMachines.CHEMICAL_PLANT.block().get()));
+            BLOCK_ENTITIES.register("chemical_plant", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ChemicalPlantBlockEntity::new, GBMachines.CHEMICAL_PLANT.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.CleanRoomBlockEntity>> CLEAN_ROOM =
-            BLOCK_ENTITIES.register("clean_room", () -> new BlockEntityType<>(dev.groundburst.content.machine.CleanRoomBlockEntity::new,
-                    GBMachines.CLEAN_ROOM.block().get()));
+            BLOCK_ENTITIES.register("clean_room", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.CleanRoomBlockEntity::new,
+                    GBMachines.CLEAN_ROOM.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.FusionReactorBlockEntity>> FUSION_REACTOR =
-            BLOCK_ENTITIES.register("fusion_reactor", () -> new BlockEntityType<>(dev.groundburst.content.machine.FusionReactorBlockEntity::new,
-                    GBMachines.FUSION_REACTOR.block().get()));
+            BLOCK_ENTITIES.register("fusion_reactor", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.FusionReactorBlockEntity::new,
+                    GBMachines.FUSION_REACTOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.SingularityReactorBlockEntity>> SINGULARITY_REACTOR =
-            BLOCK_ENTITIES.register("singularity_reactor", () -> new BlockEntityType<>(dev.groundburst.content.machine.SingularityReactorBlockEntity::new,
-                    GBMachines.SINGULARITY_REACTOR.block().get()));
+            BLOCK_ENTITIES.register("singularity_reactor", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.SingularityReactorBlockEntity::new,
+                    GBMachines.SINGULARITY_REACTOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.FissionReactorBlockEntity>> FISSION_REACTOR =
-            BLOCK_ENTITIES.register("fission_reactor", () -> new BlockEntityType<>(dev.groundburst.content.machine.FissionReactorBlockEntity::new,
-                    GBMachines.FISSION_REACTOR.block().get()));
+            BLOCK_ENTITIES.register("fission_reactor", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.FissionReactorBlockEntity::new,
+                    GBMachines.FISSION_REACTOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<dev.groundburst.content.machine.ParticleAcceleratorBlockEntity>> PARTICLE_ACCELERATOR =
-            BLOCK_ENTITIES.register("particle_accelerator", () -> new BlockEntityType<>(dev.groundburst.content.machine.ParticleAcceleratorBlockEntity::new,
-                    GBMachines.PARTICLE_ACCELERATOR.block().get()));
+            BLOCK_ENTITIES.register("particle_accelerator", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(dev.groundburst.content.machine.ParticleAcceleratorBlockEntity::new,
+                    GBMachines.PARTICLE_ACCELERATOR.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> ITEM_PORT =
-            BLOCK_ENTITIES.register("item_port", () -> new BlockEntityType<>(PortBlockEntity::new, GBMultiblocks.ITEM_PORT.block().get(),
-                    GBMultiblocks.ENERGY_PORT.block().get(), GBMultiblocks.FLUID_PORT.block().get()));
+            BLOCK_ENTITIES.register("item_port", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(PortBlockEntity::new, GBMultiblocks.ITEM_PORT.block().get(),
+                    GBMultiblocks.ENERGY_PORT.block().get(), GBMultiblocks.FLUID_PORT.block().get()).build(null));
 
     private GBBlockEntities() {}
 

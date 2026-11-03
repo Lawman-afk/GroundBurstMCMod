@@ -213,23 +213,34 @@ final class Adapters {
         if (h == null) {
             return null;
         }
-        class ItemView extends FluidView implements IFluidHandlerItem {
-            ItemView() {
-                super(h);
-            }
+        return new ItemView(h, access);
+    }
 
-            @Override
-            public ItemStack getContainer() {
-                return access.stack();
-            }
+    private static final class ItemView extends FluidView implements IFluidHandlerItem {
+        private final ItemAccess.StackAccess access;
+
+        ItemView(ResourceHandler<FluidResource> h, ItemAccess.StackAccess access) {
+            super(h);
+            this.access = access;
         }
-        return new ItemView();
+
+        @Override
+        public ItemStack getContainer() {
+            return this.access.stack();
+        }
     }
 
     /** One of the mod's items holding energy, as 1.21.1's energy handler: changed in place, as 1.21.1 expects. */
     static @Nullable IEnergyStorage energyItem(ItemStack stack) {
         ItemAccess here = new InPlaceAccess(stack);
         return energyStorage(here.getCapability(Capabilities.Energy.ITEM));
+    }
+
+    /** Sets a stack's components to exactly {@code patch} over its item's own (1.21.1 keeps the map's restore inside). */
+    private static void restore(ItemStack stack, DataComponentPatch patch) {
+        if (stack.getComponents() instanceof net.minecraft.core.component.PatchedDataComponentMap map) {
+            map.restorePatch(patch);
+        }
     }
 
     /** A stack whose item stays the same, changed in place: its components swapped, its count kept. */
@@ -243,7 +254,7 @@ final class Adapters {
 
             @Override
             protected void revertToSnapshot(DataComponentPatch snapshot) {
-                InPlaceAccess.this.stack.restorePatch(snapshot);
+                restore(InPlaceAccess.this.stack, snapshot);
             }
         };
 
@@ -278,7 +289,7 @@ final class Adapters {
             }
             try (Transaction t = Transaction.open(transaction)) {
                 this.journal.updateSnapshots(t);
-                this.stack.restorePatch(newResource.getComponentsPatch());
+                restore(this.stack, newResource.getComponentsPatch());
                 t.commit();
             }
             return amount;

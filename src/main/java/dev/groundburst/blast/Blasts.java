@@ -39,20 +39,20 @@ public final class Blasts {
 
     /** As {@link #detonate(ServerLevel, Vec3, ResourceKey, Entity)}, with every radius scaled by {@code scale} too (stacked C4). */
     public static @Nullable Blast detonate(ServerLevel level, Vec3 center, ResourceKey<BlastProfile> key, @Nullable Entity source, float scale) {
-        Optional<BlastProfile> found = level.registryAccess().lookupOrThrow(BlastProfile.REGISTRY).getOptional(key);
+        Optional<BlastProfile> found = level.registryAccess().registryOrThrow(BlastProfile.REGISTRY).getOptional(key);
         if (found.isEmpty()) {
             return null;
         }
         BlastProfile profile = found.get().scaled(GBServerConfig.RADIUS_MULTIPLIER.get().floatValue() * scale, GBServerConfig.MAX_RADIUS.get());
         boolean terrain = GBServerConfig.DESTROY_BLOCKS.get()
-                && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().identifier().toString());
+                && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().location().toString());
         BlockPos spawn = null;
         int spawnRadius = 0;
         if (GBServerConfig.PROTECT_SPAWN.get() && level.dimension() == Level.OVERWORLD) {
-            spawn = level.getRespawnData().pos();
-            spawnRadius = level.getServer() instanceof DedicatedServer server ? server.spawnProtectionRadius() : 16;
+            spawn = level.getSharedSpawnPos();
+            spawnRadius = level.getServer() instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
         }
-        BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.identifier(), level.getGameTime(), center, profile,
+        BlastJob job = new BlastJob(level, java.util.UUID.randomUUID(), key.location(), level.getGameTime(), center, profile,
                 level.getRandom().nextLong(), source, terrain, spawn, spawnRadius);
         // Sound and visuals are the clients' (ClientBlasts, Spectacle), from the blast_start packet.
         BlastManager.of(level).add(job);

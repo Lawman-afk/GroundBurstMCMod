@@ -2,18 +2,15 @@ package dev.groundburst.client.screen;
 
 import org.jspecify.annotations.Nullable;
 
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import dev.groundburst.port.render.PictureInPicture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import dev.groundburst.port.render.SubmitNodeCollector;
-import dev.groundburst.port.render.ItemStackRenderState;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -26,10 +23,18 @@ public final class ItemPreview {
     private ItemPreview() {}
 
     public record State(ItemStack stack, float[] size, float[] centre, float yaw, float pitch, int x0, int y0, int x1, int y1, float scale,
-            @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
-        public State(ItemStack stack, float[] size, float[] centre, float yaw, float pitch, int x0, int y0, int x1, int y1, float scale,
-                @Nullable ScreenRectangle scissorArea) {
-            this(stack, size, centre, yaw, pitch, x0, y0, x1, y1, scale, scissorArea, PictureInPictureRenderState.getBounds(x0, y0, x1, y1, scissorArea));
+            @Nullable ScreenRectangle scissorArea) implements PictureInPicture {
+        @Override
+        public void drawView(PoseStack pose, MultiBufferSource.BufferSource buffers) {
+            Minecraft mc = Minecraft.getInstance();
+            // Screen y runs down; turn it the right way up, then tip it toward the viewer and spin it.
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-this.pitch));
+            pose.mulPose(Axis.YP.rotationDegrees(this.yaw));
+            pose.scale(this.size[0], this.size[1], this.size[0]);
+            pose.translate(-this.centre[0], -this.centre[1], -this.centre[2]);
+            mc.getItemRenderer().renderStatic(this.stack, ItemDisplayContext.NONE, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose,
+                    buffers, mc.level, 0);
         }
     }
 
@@ -54,38 +59,5 @@ public final class ItemPreview {
             tall = Math.max(tall, 2 * half * Math.cos(a) + 2 * r * Math.abs(Math.sin(a)));
         }
         return (float) Math.min(w / (2 * r), h / tall);
-    }
-
-    public static final class Renderer extends PictureInPictureRenderer<State> {
-        private final ItemStackRenderState item = new ItemStackRenderState();
-
-        @Override
-        public Class<State> getRenderStateClass() {
-            return State.class;
-        }
-
-        @Override
-        protected float getTranslateY(int height, int guiScale) {
-            return height / 2.0F;
-        }
-
-        @Override
-        protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector collector) {
-            Minecraft mc = Minecraft.getInstance();
-            mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
-            // Screen y runs down; turn it the right way up, then tip it toward the viewer and spin it.
-            pose.mulPose(Axis.ZP.rotationDegrees(180));
-            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
-            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
-            pose.scale(state.size()[0], state.size()[1], state.size()[0]);
-            pose.translate(-state.centre()[0], -state.centre()[1], -state.centre()[2]);
-            dev.groundburst.port.render.ItemModelResolver.INSTANCE.updateForTopItem(this.item, state.stack(), ItemDisplayContext.NONE, mc.level, null, 0);
-            this.item.submit(pose, collector, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
-        }
-
-        @Override
-        protected String getTextureLabel() {
-            return "groundburst item preview";
-        }
     }
 }

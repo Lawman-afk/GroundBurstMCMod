@@ -15,9 +15,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.item.component.Consumable;
-import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.UseAnim;
+import dev.groundburst.port.Consumable;
+import dev.groundburst.port.ApplyStatusEffectsConsumeEffect;
 import net.neoforged.bus.api.IEventBus;
 import dev.groundburst.port.transfer.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -36,18 +36,18 @@ public final class RadiationItems {
 
     /** Rad-Away: an IV bag hung and run in (1.6 s): 150 rad drawn out over 30 s. */
     public static final DeferredItem<Item> RAD_AWAY = GBItems.register("rad_away", "Rad-Away", GBTab.GEAR, Item::new,
-            p -> p.stacksTo(16).component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(1.6f)
-                    .animation(ItemUseAnimation.DRINK).sound(SoundEvents.HONEY_DRINK).hasConsumeParticles(false)
+            p -> p.stacksTo(16).food(Consumable.builder().consumeSeconds(1.6f)
+                    .animation(UseAnim.DRINK).sound(SoundEvents.HONEY_DRINK).hasConsumeParticles(false)
                     .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.RAD_AWAY, 600))).build()));
     /** Potassium Iodide: a tablet (0.8 s): half the dose taken up for 10 minutes. */
     public static final DeferredItem<Item> POTASSIUM_IODIDE = GBItems.register("potassium_iodide", "Potassium Iodide Tablets", GBTab.GEAR,
-            Item::new, p -> p.stacksTo(32).component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(0.8f)
-                    .animation(ItemUseAnimation.EAT).sound(SoundEvents.GENERIC_EAT).hasConsumeParticles(false)
+            Item::new, p -> p.stacksTo(32).food(Consumable.builder().consumeSeconds(0.8f)
+                    .animation(UseAnim.EAT).sound(SoundEvents.GENERIC_EAT).hasConsumeParticles(false)
                     .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(GBEffects.POTASSIUM_IODIDE, 12_000))).build()));
     /** The Anti-Rad Injector: pressed to the thigh (0.6 s): 400 rad off at once, a minute's weakness. */
     public static final DeferredItem<AntiRadInjectorItem> ANTI_RAD_INJECTOR = GBItems.register("anti_rad_injector", "Anti-Rad Injector",
-            GBTab.GEAR, AntiRadInjectorItem::new, p -> p.stacksTo(8).component(DataComponents.CONSUMABLE, Consumable.builder()
-                    .consumeSeconds(0.6f).animation(ItemUseAnimation.NONE).sound(Holder.direct(SoundEvents.EMPTY))
+            GBTab.GEAR, AntiRadInjectorItem::new, p -> p.stacksTo(8).food(Consumable.builder()
+                    .consumeSeconds(0.6f).animation(UseAnim.NONE).sound(Holder.direct(SoundEvents.EMPTY))
                     .soundAfterConsume(GBSounds.MEDICAL_INJECTOR).hasConsumeParticles(false)
                     .onConsume(new ApplyStatusEffectsConsumeEffect(List.of(new MobEffectInstance(MobEffects.WEAKNESS, 1_200)))).build()));
 

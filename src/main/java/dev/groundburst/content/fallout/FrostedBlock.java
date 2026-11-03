@@ -24,7 +24,7 @@ public class FrostedBlock extends Block {
 
     /** Whether frost holds at {@code pos} (a biome cold enough for snow to lie). */
     public static boolean cold(ServerLevel level, BlockPos pos) {
-        return level.getBiome(pos).value().coldEnoughToSnow(pos, level.getSeaLevel());
+        return level.getBiome(pos).value().coldEnoughToSnow(pos);
     }
 
     @Override

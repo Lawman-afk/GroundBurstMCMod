@@ -66,15 +66,15 @@ public final class GBArtillery {
     public static final WithItem<GunBlock> MORTAR = gun("mortar", "81 mm Mortar", Shapes.or(Block.box(2, 0, 2, 14, 3, 14), Block.box(6, 3, 5, 10, 12, 11)),
             () -> GBArtillery.MORTAR_ENTITY.get(), MortarBlockEntity::new, MortarBlockEntity.restPose(), 3f);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("mortar", () -> new BlockEntityType<>(MortarBlockEntity::new, MORTAR.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("mortar", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(MortarBlockEntity::new, MORTAR.block().get()).build(null));
     public static final WithItem<GunBlock> HOWITZER = gun("howitzer", "155 mm Howitzer", Shapes.or(Block.box(0, 0, 0, 16, 6, 16), Block.box(3, 6, 3, 13, 16, 13)),
             () -> GBArtillery.HOWITZER_ENTITY.get(), BarrelGunBlockEntity::howitzer, BarrelGunBlockEntity.restPose(HOWITZER_SPEC), 6f);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelGunBlockEntity>> HOWITZER_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("howitzer", () -> new BlockEntityType<>(BarrelGunBlockEntity::howitzer, HOWITZER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("howitzer", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(BarrelGunBlockEntity::howitzer, HOWITZER.block().get()).build(null));
     public static final WithItem<GunBlock> ATOMIC_CANNON = gun("atomic_cannon", "Atomic Cannon", Block.box(0, 0, 0, 16, 16, 16),
             () -> GBArtillery.ATOMIC_ENTITY.get(), BarrelGunBlockEntity::atomicCannon, BarrelGunBlockEntity.restPose(ATOMIC_SPEC), 10f);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelGunBlockEntity>> ATOMIC_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("atomic_cannon", () -> new BlockEntityType<>(BarrelGunBlockEntity::atomicCannon, ATOMIC_CANNON.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("atomic_cannon", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(BarrelGunBlockEntity::atomicCannon, ATOMIC_CANNON.block().get()).build(null));
 
     /** Every gun's block, for the lists that name them all. */
     public static List<WithItem<GunBlock>> guns() {

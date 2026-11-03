@@ -191,7 +191,7 @@ public final class Designators {
         Hit hit;
         if (creature != null) {
             Entity e = creature.getEntity();
-            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), Direction.getApproximateNearest(eye.subtract(creature.getLocation())), e);
+            hit = new Hit(e.getBoundingBox().getCenter(), creature.getLocation(), Direction.getNearest(eye.subtract(creature.getLocation())), e);
         } else if (block.getType() != HitResult.Type.MISS) {
             hit = new Hit(block.getLocation(), block.getLocation(), block.getDirection(), null);
         } else {

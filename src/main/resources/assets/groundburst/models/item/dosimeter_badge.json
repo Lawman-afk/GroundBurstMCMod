@@ -1,0 +1,35 @@
+{
+  "parent": "groundburst:item/dosimeter_badge_0",
+  "overrides": [
+    {
+      "predicate": {
+        "groundburst:dose": 100.0
+      },
+      "model": "groundburst:item/dosimeter_badge_1"
+    },
+    {
+      "predicate": {
+        "groundburst:dose": 200.0
+      },
+      "model": "groundburst:item/dosimeter_badge_2"
+    },
+    {
+      "predicate": {
+        "groundburst:dose": 400.0
+      },
+      "model": "groundburst:item/dosimeter_badge_3"
+    },
+    {
+      "predicate": {
+        "groundburst:dose": 600.0
+      },
+      "model": "groundburst:item/dosimeter_badge_4"
+    },
+    {
+      "predicate": {
+        "groundburst:dose": 1000.0
+      },
+      "model": "groundburst:item/dosimeter_badge_5"
+    }
+  ]
+}

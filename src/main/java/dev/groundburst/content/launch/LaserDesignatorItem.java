@@ -28,7 +28,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -104,8 +104,8 @@ public class LaserDesignatorItem extends Item {
     }
 
     @Override
-    public ItemUseAnimation getUseAnimation(ItemStack stack) {
-        return ItemUseAnimation.SPYGLASS;
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.SPYGLASS;
     }
 
     @Override
@@ -181,7 +181,7 @@ public class LaserDesignatorItem extends Item {
      */
     public static void click(ServerPlayer player, boolean disarm) {
         ItemStack stack = player.getUseItem();
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
         if (!player.isUsingItem() || !(stack.getItem() instanceof LaserDesignatorItem) || !works(stack, level)) {
             return;
         }
@@ -227,7 +227,7 @@ public class LaserDesignatorItem extends Item {
     /** The mouse wheel while zoomed (its holder's client sends it): picks the next (1) or the previous (-1) launcher. */
     public static void scroll(ServerPlayer player, int step) {
         ItemStack stack = player.getUseItem();
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
         if (!player.isUsingItem() || !(stack.getItem() instanceof LaserDesignatorItem) || step == 0) {
             return;
         }

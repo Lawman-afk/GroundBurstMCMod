@@ -21,7 +21,9 @@ public class LeadContainerScreen extends AbstractContainerScreen<LeadContainerMe
     private static final int TEXT = 0xFFE6E2D2;
 
     public LeadContainerScreen(LeadContainerMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 176, 173);
+        super(menu, inventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 173;
     }
 
     @Override

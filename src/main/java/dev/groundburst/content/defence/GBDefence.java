@@ -51,8 +51,8 @@ public final class GBDefence {
                     .pushReaction(PushReaction.BLOCK),
             (block, props) -> new GeoBlockItem(block, props, GroundBurst.id("interceptor_battery")));
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, BlockEntityType<InterceptorBatteryBlockEntity>> BATTERY_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("interceptor_battery", () -> new BlockEntityType<>(InterceptorBatteryBlockEntity::new,
-                    BATTERY.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("interceptor_battery", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(InterceptorBatteryBlockEntity::new,
+                    BATTERY.block().get()).build(null));
 
     /** An interceptor missile: the battery's ammunition, four to its cells. */
     public static final DeferredItem<InterceptorMissile> INTERCEPTOR_MISSILE = GBItems.register("interceptor_missile", "Interceptor Missile",
@@ -68,8 +68,8 @@ public final class GBDefence {
             p -> p.mapColor(MapColor.COLOR_GREEN).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<InterceptorComplexBlockEntity>> COMPLEX_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("interceptor_complex", () -> new BlockEntityType<>(InterceptorComplexBlockEntity::new,
-                    COMPLEX_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("interceptor_complex", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(InterceptorComplexBlockEntity::new,
+                    COMPLEX_CONTROLLER.block().get()).build(null));
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color) {
         return GBBlocks.register(id, english, GBTab.MISSILES, MultiblockPartBlock::new,

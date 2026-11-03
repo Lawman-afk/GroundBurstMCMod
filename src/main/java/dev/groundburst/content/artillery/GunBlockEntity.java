@@ -272,7 +272,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
             return false;
         }
         GunSeat seat = GunSeat.place(level, this.worldPosition, seat(), -frontYaw());
-        if (!player.startRiding(seat, true, true)) {
+        if (!player.startRiding(seat, true)) {
             seat.discard();
             return false;
         }

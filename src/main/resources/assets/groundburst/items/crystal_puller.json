@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundburst:item/crystal_puller",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

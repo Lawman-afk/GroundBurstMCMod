@@ -25,6 +25,8 @@ public class GroundBurstClient {
     public GroundBurstClient(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);
         dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's
+        dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.post(modBus);   // and its payload handlers'
+        dev.groundburst.port.render.ItemModels.register(modBus);   // what 1.21.1's item models need from code
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         MachineClientHooks.clientTick = MachineSounds::tick;
@@ -32,13 +34,10 @@ public class GroundBurstClient {
         MultiblockPreview.register();
         modBus.addListener(GroundBurstClient::registerScreens);
         dev.groundburst.client.manual.ManualHotkey.register(modBus);
-        modBus.addListener((net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent e) ->
-                e.register(dev.groundburst.client.screen.ItemPreview.State.class, dev.groundburst.client.screen.ItemPreview.Renderer::new));
         modBus.addListener(GroundBurstClient::registerRenderers);
         modBus.addListener(dev.groundburst.client.render.FissionSections::register);
         // Each missile's shape (its stages, engines and sections), read with its models (tools/assets/missiles.py).
-        modBus.addListener((net.neoforged.neoforge.client.event.AddClientReloadListenersEvent e) -> e.addListener(
-                dev.groundburst.GroundBurst.id("missile_shapes"), new dev.groundburst.client.render.MissileShapes.Loader()));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new dev.groundburst.client.render.MissileShapes.Loader()));
         dev.groundburst.client.render.IceShellRenderer.register(modBus);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::register);
         modBus.addListener(dev.groundburst.client.render.GBFluidModels::registerTints);

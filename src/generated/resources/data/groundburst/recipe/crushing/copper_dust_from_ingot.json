@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ingots/copper"
+      "ingredient": {
+        "tag": "c:ingots/copper"
+      }
     }
   ],
   "outputs": [

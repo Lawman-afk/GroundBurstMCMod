@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 4,
-      "ingredient": "#c:gems/exotic_matter"
+      "ingredient": {
+        "tag": "c:gems/exotic_matter"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:neodymium_magnet"
+      "ingredient": {
+        "item": "groundburst:neodymium_magnet"
+      }
     }
   ],
   "outputs": [

@@ -20,14 +20,14 @@ import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import dev.groundburst.port.RenderPipelines;
-import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
+
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import dev.groundburst.port.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.ItemOwner;
+
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent;
+
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -78,10 +78,10 @@ public final class RadiationClient {
             return player == null ? null : state(player);
         };
         modBus.addListener((RegisterGuiLayersEvent event) -> {
-            event.registerAbove(VanillaGuiLayers.HOTBAR, GroundBurst.id("radiation_meter"), RadiationClient::meter);
-            event.registerBelow(VanillaGuiLayers.HOTBAR, GroundBurst.id("radiation_sickness"), RadiationClient::vignette);
+            event.registerAbove(VanillaGuiLayers.HOTBAR, GroundBurst.id("radiation_meter"), (gg_, dt_) -> RadiationClient.meter(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_));
+            event.registerBelow(VanillaGuiLayers.HOTBAR, GroundBurst.id("radiation_sickness"), (gg_, dt_) -> RadiationClient.vignette(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_));
         });
-        modBus.addListener((RegisterRangeSelectItemModelPropertyEvent event) -> event.register(GroundBurst.id("dose"), Dose.CODEC));
+        dev.groundburst.port.render.ItemModels.property(GroundBurst.id("dose"), Dose::get);
         modBus.addListener((RegisterMenuScreensEvent event) -> event.register(RadiationItems.LEAD_CONTAINER_MENU.get(), LeadContainerScreen::new));
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick(Minecraft.getInstance()));
     }
@@ -180,7 +180,7 @@ public final class RadiationClient {
 
     /** The needle, eased toward the reading, trembling a little at high rates like a real movement on a busy tube. */
     private static void drawNeedle(GuiGraphicsExtractor g, int x, int y, float rate) {
-        long now = net.minecraft.util.Util.getMillis();
+        long now = net.minecraft.Util.getMillis();
         float dt = Math.min(0.25f, (now - lastFrame) / 1000f);
         lastFrame = now;
         float target = (float) Mth.clamp(Math.log10(Math.max(rate, 1e-3)), LOG_MIN, LOG_MAX);
@@ -239,24 +239,13 @@ public final class RadiationClient {
     }
 
     /** The {@code groundburst:dose} item model property: the dose its holder has taken (the local player's), rad. */
-    public record Dose() implements RangeSelectItemModelProperty {
-        public static final MapCodec<Dose> CODEC = MapCodec.unit(new Dose());
-
-        @Override
-        public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
+    public record Dose() {
+        public static float get(ItemStack stack, @Nullable ClientLevel level, net.minecraft.world.entity.@Nullable LivingEntity owner, int seed) {
             Player local = Minecraft.getInstance().player;
-            if (local == null) {
-                return 0;
-            }
-            if (owner != null && owner.asLivingEntity() != local) {
+            if (local == null || owner != null && owner != local) {
                 return 0;
             }
             return state(local).dose();
-        }
-
-        @Override
-        public MapCodec<? extends RangeSelectItemModelProperty> type() {
-            return CODEC;
         }
     }
 }

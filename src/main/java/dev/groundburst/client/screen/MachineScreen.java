@@ -49,7 +49,9 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     private final @Nullable UpgradeTab upgradeTab;
 
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, menu.layout().width(), menu.layout().height());
+        super(menu, inventory, title);
+        this.imageWidth = menu.layout().width();
+        this.imageHeight = menu.layout().height();
         this.layout = menu.layout();
         this.sideTab = menu.machine().hasSideConfig() ? new SideConfigTab(menu) : null;
         this.upgradeTab = menu.machine().acceptsUpgrades() ? new UpgradeTab(menu) : null;
@@ -101,7 +103,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         for (MachineLayout.Gauge gauge : gauges) {
             MachineLayout.Rect d = gauge.dump();
             if (d != null && d.contains(mouseX - x, mouseY - y)) {
-                g.fill(x + d.x() + 1, y + d.y() + 1, x + d.x() + d.w() - 1, y + d.y() + d.h() - 1, Minecraft.getInstance().hasShiftDown() ? 0x50FFFFFF : 0x20FFFFFF);
+                g.fill(x + d.x() + 1, y + d.y() + 1, x + d.x() + d.w() - 1, y + d.y() + d.h() - 1, net.minecraft.client.gui.screens.Screen.hasShiftDown() ? 0x50FFFFFF : 0x20FFFFFF);
             }
         }
 

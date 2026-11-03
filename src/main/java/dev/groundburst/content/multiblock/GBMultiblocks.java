@@ -22,7 +22,7 @@ public final class GBMultiblocks {
                     .pushReaction(PushReaction.BLOCK));
     public static final WithItem<GlassPartBlock> REACTOR_GLASS = GBBlocks.register("reactor_glass", "Reactor Glass", GBTab.MACHINES,
             GlassPartBlock::new, p -> p.mapColor(MapColor.COLOR_GRAY).strength(3f, 12f).requiresCorrectToolForDrops().sound(SoundType.GLASS)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK));
+                    .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK));
     public static final WithItem<PortBlock> ITEM_PORT = GBBlocks.register("item_port", "Item Port", GBTab.MACHINES,
             PortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .pushReaction(PushReaction.BLOCK));
@@ -38,7 +38,7 @@ public final class GBMultiblocks {
     /** Stood anywhere in a Fission Reactor's core, one fuel rod a channel (DESIGN.md §7.2). */
     public static final WithItem<FuelChannelBlock> FUEL_CHANNEL = GBBlocks.register("fuel_channel", "Fuel Channel", GBTab.MACHINES,
             FuelChannelBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK)
+                    .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK)
                     .lightLevel(s -> s.getValue(FuelChannelBlock.LIT) ? 10 : 0));
     public static final WithItem<MultiblockPartBlock> STEEL_PLATING = part("steel_plating", "Steel Plating", MapColor.METAL);
     public static final WithItem<MultiblockPartBlock> MAGNET_SEGMENT = part("magnet_segment", "Accelerator Magnet Segment", MapColor.COLOR_RED);

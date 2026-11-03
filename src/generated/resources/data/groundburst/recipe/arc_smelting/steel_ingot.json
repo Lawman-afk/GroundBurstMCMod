@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ingots/iron"
+      "ingredient": {
+        "tag": "c:ingots/iron"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#minecraft:coals"
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
     }
   ],
   "outputs": [

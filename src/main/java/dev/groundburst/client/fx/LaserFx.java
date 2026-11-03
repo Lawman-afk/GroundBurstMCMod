@@ -117,7 +117,7 @@ public final class LaserFx {
         if (level == null) {
             return;
         }
-        float partial = mc.isPaused() ? 1 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 1 : mc.getTimer().getGameTimeDeltaPartialTick(false);
         List<Beam> beams = new ArrayList<>();
         for (AbstractClientPlayer p : level.players()) {
             if (lasing(p)) {

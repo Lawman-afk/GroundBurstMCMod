@@ -242,7 +242,7 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         Vec3 centre = chamberCentre();
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, centre.x, centre.y, centre.z, 160, 1.2, 1.2, 1.2, 0.4);
         level.sendParticles(ParticleTypes.SONIC_BOOM, centre.x, centre.y, centre.z, 1, 0, 0, 0, 0);
-        level.sendParticles(net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.FLASH, 0xFFC7A0FF), centre.x, centre.y, centre.z, 1, 0, 0, 0, 0);
+        level.sendParticles(ParticleTypes.FLASH, centre.x, centre.y, centre.z, 1, 0, 0, 0, 0);
         level.playSound(null, centre.x, centre.y, centre.z, GBSounds.SINGULARITY_COLLAPSE.get(), SoundSource.BLOCKS, 3.0f, 1.0f);
         for (Player player : level.players()) {
             if (player.distanceToSqr(centre) < 48 * 48) {

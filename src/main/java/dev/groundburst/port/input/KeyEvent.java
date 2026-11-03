@@ -17,4 +17,9 @@ public record KeyEvent(int key, int scancode, int modifiers) {
     public boolean hasControlDown() {
         return Screen.hasControlDown();
     }
+
+    /** 26.x's key mapping category of {@code id}, as 1.21.1 names one: its translation key. */
+    public static String category(net.minecraft.resources.ResourceLocation id) {
+        return "key.category." + id.getNamespace() + "." + id.getPath();
+    }
 }

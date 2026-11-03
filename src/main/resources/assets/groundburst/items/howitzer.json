@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundburst:item/howitzer",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

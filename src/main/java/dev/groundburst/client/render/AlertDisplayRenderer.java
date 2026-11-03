@@ -53,7 +53,7 @@ public class AlertDisplayRenderer extends dev.groundburst.port.render.StateBlock
     private final Font font;
 
     public AlertDisplayRenderer(BlockEntityRendererProvider.Context context) {
-        this.font = context.font();
+        this.font = context.getFont();
     }
 
     @Override

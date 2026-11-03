@@ -29,7 +29,7 @@ public class ToxicSoilBlock extends Block {
 
     /** Whether the gas or a residue can turn {@code state} into toxic soil. */
     public static boolean soil(BlockState state) {
-        return state.is(BlockTags.DIRT) && !state.is(GBFallout.TOXIC_SOIL.block().get()) || state.is(BlockTags.GRASS_BLOCKS)
+        return state.is(BlockTags.DIRT) && !state.is(GBFallout.TOXIC_SOIL.block().get()) || state.is(BlockTags.DIRT)
                 || state.is(Blocks.FARMLAND) || state.is(Blocks.MYCELIUM) || state.is(Blocks.PODZOL) || state.is(Blocks.DIRT_PATH);
     }
 

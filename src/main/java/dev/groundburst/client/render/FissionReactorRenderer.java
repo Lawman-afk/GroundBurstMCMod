@@ -6,7 +6,7 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
+import dev.groundburst.port.render.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import dev.groundburst.client.render.FissionSections.Piece;
@@ -16,7 +16,7 @@ import dev.groundburst.content.machine.MachineBlock;
 import dev.groundburst.content.machine.MachineTank;
 import net.minecraft.client.renderer.Sheets;
 import dev.groundburst.port.render.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import dev.groundburst.port.render.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import dev.groundburst.port.render.BlockEntityRenderState;
 import dev.groundburst.port.render.ModelFeatureRenderer;
@@ -25,7 +25,7 @@ import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.material.Fluid;
@@ -48,7 +48,7 @@ public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlo
     private static final float ROD_TRAVEL = 0.5f;
     /** The panes and the coolant: see-through, sorted far to near when drawn, and back faces culled (the coolant's far
      *  sides would otherwise lie on the walls' linings across the core and flicker against them). */
-    private static final RenderType TRANSLUCENT = RenderType.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final RenderType TRANSLUCENT = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
     private static final Direction[] DIRECTIONS = Direction.values();
 
     public static class State extends BlockEntityRenderState {
@@ -116,7 +116,7 @@ public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlo
         }
         List<Piece> pieces = List.copyOf(state.pieces);                        // drawn later, after this state may be reused
         float drop = state.rodDrop;
-        collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockItemSheet(), (pose, buffer) -> sections(pose, buffer, pieces, drop, false));
+        collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockSheet(), (pose, buffer) -> sections(pose, buffer, pieces, drop, false));
         Fluid fluid = state.fluid;
         TextureAtlasSprite sprite = fluid != null ? FluidVisuals.still(fluid) : null;
         float x0 = state.x0, x1 = state.x1, z0 = state.z0, z1 = state.z1, y0 = state.y0;
@@ -167,16 +167,16 @@ public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlo
             if (part == null) {
                 continue;
             }
-            pose.set(base);
+            dev.groundburst.port.render.Poses.set(pose, base);
             piece.place(pose, drop);
             instance.setLightCoords(piece.light());
             for (Direction d : DIRECTIONS) {
                 for (BakedQuad quad : part.getQuads(d)) {
-                    buffer.putBakedQuad(pose, quad, instance);
+                    dev.groundburst.port.render.QuadInstance.put(buffer, pose, quad, instance);
                 }
             }
             for (BakedQuad quad : part.getQuads(null)) {
-                buffer.putBakedQuad(pose, quad, instance);
+                dev.groundburst.port.render.QuadInstance.put(buffer, pose, quad, instance);
             }
         }
     }

@@ -4,15 +4,21 @@
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:plates/tungsten"
+      "ingredient": {
+        "tag": "c:plates/tungsten"
+      }
     },
     {
       "count": 2,
-      "ingredient": "groundburst:superconducting_coil"
+      "ingredient": {
+        "item": "groundburst:superconducting_coil"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:glass_blocks/colorless"
+      "ingredient": {
+        "tag": "c:glass_blocks/colorless"
+      }
     }
   ],
   "outputs": [

@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundburst:item/air_raid_siren",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

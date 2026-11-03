@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/saltpeter"
+      "ingredient": {
+        "tag": "c:ores/saltpeter"
+      }
     }
   ],
   "outputs": [

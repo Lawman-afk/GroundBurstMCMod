@@ -4,11 +4,15 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:trichlorosilane"
+      "ingredient": {
+        "tag": "c:trichlorosilane"
+      }
     },
     {
       "amount": 1000,
-      "ingredient": "#c:hydrogen"
+      "ingredient": {
+        "tag": "c:hydrogen"
+      }
     }
   ],
   "outputs": [

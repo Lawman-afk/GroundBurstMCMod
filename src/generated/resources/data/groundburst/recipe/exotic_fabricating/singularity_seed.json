@@ -4,15 +4,21 @@
   "inputs": [
     {
       "count": 4,
-      "ingredient": "groundburst:stabilised_exotic_matter"
+      "ingredient": {
+        "item": "groundburst:stabilised_exotic_matter"
+      }
     },
     {
       "count": 4,
-      "ingredient": "#c:storage_blocks/tungsten"
+      "ingredient": {
+        "tag": "c:storage_blocks/tungsten"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:quantum_circuit"
+      "ingredient": {
+        "item": "groundburst:quantum_circuit"
+      }
     }
   ],
   "outputs": [

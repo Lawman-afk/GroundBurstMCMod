@@ -4,3 +4,15 @@ src/main/java/dev/groundburst/client/render/MachineGeoRenderer.java
 src/main/java/dev/groundburst/client/render/VariantGeoModel.java
 src/main/java/dev/groundburst/content/machine/GeoBlockItem.java
 src/main/java/dev/groundburst/client/render/LaunchStationRenderer.java
+src/main/java/dev/groundburst/content/gear/GBArmor.java
+src/main/java/dev/groundburst/content/recipe/ProcessingRecipe.java
+src/main/java/dev/groundburst/content/recipe/GBRecipes.java
+src/main/java/dev/groundburst/client/recipe/ClientRecipes.java
+src/main/java/dev/groundburst/world/GBWorldgen.java
+src/main/java/dev/groundburst/world/ConfigToggleFilter.java
+src/main/java/dev/groundburst/client/manual/StructureView.java
+src/main/java/dev/groundburst/client/screen/ItemPreview.java
+src/main/java/dev/groundburst/client/fallout/AshFlakeParticle.java
+src/main/java/dev/groundburst/client/render/GBFluidModels.java
+src/main/java/dev/groundburst/client/render/FluidVisuals.java
+src/main/java/dev/groundburst/client/render/IceShellRenderer.java

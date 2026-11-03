@@ -10,11 +10,15 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:hydrogen"
+      "ingredient": {
+        "tag": "c:hydrogen"
+      }
     },
     {
       "amount": 1000,
-      "ingredient": "#c:chlorine"
+      "ingredient": {
+        "tag": "c:chlorine"
+      }
     }
   ],
   "time": 200

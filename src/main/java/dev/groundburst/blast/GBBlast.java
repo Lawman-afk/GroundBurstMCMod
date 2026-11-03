@@ -21,7 +21,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 
 /** Wiring for the explosion engine: the blast profile registry, the tick hooks and the {@code /groundburst blast} command. */
 public final class GBBlast {
@@ -32,7 +32,7 @@ public final class GBBlast {
     private GBBlast() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((NewDatapackRegistryEvent event) -> event.worldRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
+        modBus.addListener((DataPackRegistryEvent.NewRegistry event) -> event.dataPackRegistry(BlastProfile.REGISTRY, BlastProfile.CODEC, BlastProfile.CODEC));
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast", "%1$s was blown to pieces");
         GBLang.add("death.attack." + GroundBurst.MODID + ".blast.player", "%1$s was blown to pieces by %2$s");
         GBLang.add("death.attack." + GroundBurst.MODID + ".annihilated", "%1$s was annihilated");
@@ -69,7 +69,7 @@ public final class GBBlast {
         // Players arriving while blasts run are told about them (sound timing, the shockwave in slice 5c).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-                BlastManager.of(player.level()).syncTo(player);
+                BlastManager.of((net.minecraft.server.level.ServerLevel) player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
@@ -79,7 +79,7 @@ public final class GBBlast {
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-                BlastManager.of(player.level()).syncTo(player);
+                BlastManager.of((net.minecraft.server.level.ServerLevel) player.level()).syncTo(player);
                 Annihilations.syncTo(player);
                 Singularities.syncTo(player);
                 Storms.syncTo(player);
@@ -92,7 +92,7 @@ public final class GBBlast {
     /** {@code /groundburst blast <profile> [<position>]}: sets off a blast (for testing and for map makers). */
     private static void commands(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal(GroundBurst.MODID)
-                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .requires(source_ -> source_.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("blast")
                         .then(Commands.argument("profile", ResourceKeyArgument.key(BlastProfile.REGISTRY))
                                 .executes(ctx -> blast(ctx, ctx.getSource().getPosition()))
@@ -101,11 +101,11 @@ public final class GBBlast {
     }
 
     private static int blast(CommandContext<CommandSourceStack> ctx, Vec3 at) throws CommandSyntaxException {
-        ResourceKey<BlastProfile> key = ResourceKeyArgument.getRegistryKey(ctx, "profile", BlastProfile.REGISTRY, UNKNOWN_PROFILE);
+        ResourceKey<BlastProfile> key = dev.groundburst.port.Args.getRegistryKey(ctx, "profile", BlastProfile.REGISTRY, UNKNOWN_PROFILE);
         if (Blasts.detonate(ctx.getSource().getLevel(), at, key, ctx.getSource().getEntity()) == null) {
-            throw UNKNOWN_PROFILE.create(key.identifier());
+            throw UNKNOWN_PROFILE.create(key.location());
         }
-        ctx.getSource().sendSuccess(() -> Component.translatable(STARTED, key.identifier().toString(),
+        ctx.getSource().sendSuccess(() -> Component.translatable(STARTED, key.location().toString(),
                 Math.round(at.x), Math.round(at.y), Math.round(at.z)), true);
         return 1;
     }

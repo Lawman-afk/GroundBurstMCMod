@@ -23,7 +23,7 @@ public class FrozenPlantBlock extends BushBlock {
     }
 
     public static final float MELT_CHANCE = 1f / 8;
-    private static final VoxelShape SHAPE = Block.column(12, 0, 13);
+    private static final VoxelShape SHAPE = dev.groundburst.port.Shapes2.column(12, 0, 13);
 
     public FrozenPlantBlock(Properties properties) {
         super(properties);

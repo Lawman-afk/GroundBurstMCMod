@@ -72,7 +72,7 @@ public class MultiblockControllerBlock extends MachineBlock {
 
     @Override
     protected VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
-        return hidden(state) ? Shapes.empty() : super.getOcclusionShape(state);
+        return hidden(state) ? Shapes.empty() : super.getOcclusionShape(state, level_, pos_);
     }
 
     /**

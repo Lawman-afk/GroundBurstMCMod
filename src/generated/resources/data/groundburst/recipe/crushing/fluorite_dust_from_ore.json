@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/fluorite"
+      "ingredient": {
+        "tag": "c:ores/fluorite"
+      }
     }
   ],
   "outputs": [

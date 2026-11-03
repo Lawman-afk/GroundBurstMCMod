@@ -86,7 +86,7 @@ public final class Frost {
         }
         crystals(level, c, radius, random);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius))) {
-            if (e.position().distanceTo(centre) > radius || e.typeHolder().is(Tags.EntityType.BOSSES) || e.isSpectator()
+            if (e.position().distanceTo(centre) > radius || e.getType().is(Tags.EntityTypes.BOSSES) || e.isSpectator()
                     || e instanceof Player pl && pl.isCreative()) {
                 continue;
             }
@@ -108,7 +108,7 @@ public final class Frost {
     /** Small plants it freezes solid: grass, ferns, flowers, saplings (a tall plant's upper half just goes). */
     public static boolean plant(BlockState s) {
         return s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.LARGE_FERN)
-                || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.SAPLINGS) || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(Blocks.BUSH);
+                || s.is(BlockTags.SMALL_FLOWERS) || s.is(BlockTags.SAPLINGS) || s.is(Blocks.SWEET_BERRY_BUSH);
     }
 
     /** Open to the air above (or under the snow it lays). */

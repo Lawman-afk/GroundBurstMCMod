@@ -136,7 +136,7 @@ public final class Spectacle {
 
     static double now() {
         Minecraft mc = Minecraft.getInstance();
-        return ticks + (mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        return ticks + (mc.isPaused() ? 0 : mc.getTimer().getGameTimeDeltaPartialTick(false));
     }
 
     static void addTrauma(float amount) {
@@ -1050,7 +1050,7 @@ public final class Spectacle {
         StormFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         FreezeFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
         ParticleBeamFx.submit(collector, poseStack, camera.pos, camera.orientation, now);
-        float partial = mc.isPaused() ? 0 : mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        float partial = mc.isPaused() ? 0 : mc.getTimer().getGameTimeDeltaPartialTick(false);
         FalloutFx.submit(collector, poseStack, level, camera.pos, camera.orientation, partial);   // high and far: drawn first
         for (BlastFx fx : BLASTS.values()) {
             if (fx.mushroom != null) {

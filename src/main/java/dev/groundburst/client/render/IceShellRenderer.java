@@ -5,16 +5,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.effect.FrozenEffect;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import dev.groundburst.port.ContextKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -23,26 +19,21 @@ import net.neoforged.neoforge.common.NeoForge;
  * counter the effect holds far above powder snow's ({@link FrozenEffect#iceBound}).
  */
 public final class IceShellRenderer {
-    private static final ContextKey<Boolean> ICE_BOUND = new ContextKey<>(GroundBurst.id("ice_bound"));
     private static final ResourceLocation TEXTURE = GroundBurst.id("textures/entity/ice_shell.png");
     /** How much bigger than the creature the ice is, each side and over its head. */
     private static final float MARGIN = 0.32f, HEADROOM = 0.15f;   // wide enough for heads that stick out past the hitbox
 
     private IceShellRenderer() {}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterRenderStateModifiersEvent event) -> event.registerEntityModifier((Class) LivingEntityRenderer.class,
-                (entity, state) -> ((LivingEntityRenderState) state).setRenderData(ICE_BOUND, FrozenEffect.iceBound((LivingEntity) entity))));
-        NeoForge.EVENT_BUS.addListener((RenderLivingEvent.Post<?, ?, ?> event) -> {
-            LivingEntityRenderState state = event.getRenderState();
-            if (!Boolean.TRUE.equals(state.getRenderData(ICE_BOUND))) {
+        NeoForge.EVENT_BUS.addListener((RenderLivingEvent.Post<?, ?> event) -> {
+            LivingEntity entity = event.getEntity();
+            if (!FrozenEffect.iceBound(entity)) {
                 return;
             }
-            float hw = state.boundingBoxWidth / 2 + MARGIN, h = state.boundingBoxHeight + HEADROOM;
-            int light = state.lightCoords;
-            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderType.entityTranslucent(TEXTURE),
-                    (pose, buffer) -> cube(pose, buffer, -hw, -0.02f, -hw, hw, h, hw, light));
+            float hw = entity.getBbWidth() / 2 + MARGIN, h = entity.getBbHeight() + HEADROOM;
+            VertexConsumer buffer = event.getMultiBufferSource().getBuffer(RenderType.entityTranslucent(TEXTURE));
+            cube(event.getPoseStack().last(), buffer, -hw, -0.02f, -hw, hw, h, hw, event.getPackedLight());
         });
     }
 

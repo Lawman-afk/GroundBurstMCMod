@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "minecraft:potent_sulfur"
+      "ingredient": {
+        "item": "minecraft:potent_sulfur"
+      }
     }
   ],
   "outputs": [

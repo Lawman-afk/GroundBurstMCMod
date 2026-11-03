@@ -9,7 +9,7 @@ import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import dev.groundburst.port.CursorTypes;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.manual.ManualStrings;

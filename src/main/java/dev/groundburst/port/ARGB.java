@@ -87,4 +87,9 @@ public final class ARGB {
         return color(alpha(color), Mth.clamp((int) (red(color) * scale), 0, 255), Mth.clamp((int) (green(color) * scale), 0, 255),
                 Mth.clamp((int) (blue(color) * scale), 0, 255));
     }
+
+    /** ARGB as 1.21.1's images keep it (ABGR), or back: red and blue change places. */
+    public static int toABGR(int color) {
+        return (color & 0xFF00FF00) | (color >> 16 & 0xFF) | (color & 0xFF) << 16;
+    }
 }

@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "minecraft:gravel"
+      "ingredient": {
+        "item": "minecraft:gravel"
+      }
     }
   ],
   "outputs": [

@@ -7,10 +7,10 @@ import dev.groundburst.content.fallout.GBFallout;
 import dev.groundburst.content.fallout.Plumes;
 import dev.groundburst.content.fallout.Wind;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import dev.groundburst.port.ARGB;
 import net.minecraft.util.RandomSource;
@@ -49,10 +49,10 @@ public final class FalloutClient {
     private FalloutClient() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) -> {
-            event.register(List.of(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor)), GBFallout.DEAD_GRASS_BLOCK.block().get());
-            event.register(List.of(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor)), GBFallout.FROSTED_GRASS_BLOCK.block().get());
-            event.register(List.of(net.minecraft.client.color.block.BlockTintSources.constant(FROZEN_PLANT)), GBFallout.FROZEN_PLANT.block().get());
+        modBus.addListener((RegisterColorHandlersEvent.Block event) -> {
+            event.register(dead(DEAD_GRASS, BiomeColors::getAverageGrassColor), GBFallout.DEAD_GRASS_BLOCK.block().get());
+            event.register(dead(FROSTED_GRASS, BiomeColors::getAverageGrassColor), GBFallout.FROSTED_GRASS_BLOCK.block().get());
+            event.register((state, level, pos, tintIndex) -> FROZEN_PLANT, GBFallout.FROZEN_PLANT.block().get());
         });
         modBus.addListener((RegisterParticleProvidersEvent event) ->
                 event.registerSpriteSet(GBFallout.FALLOUT_ASH_PARTICLE.get(), AshFlakeParticle.Provider::new));
@@ -123,22 +123,8 @@ public final class FalloutClient {
      * a little as live ground does). Break particles keep their texture's colour (the grass block's particle is plain
      * dirt).
      */
-    static BlockTintSource dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome) {
-        return new BlockTintSource() {
-            @Override
-            public int color(BlockState state) {
-                return colour;
-            }
-
-            @Override
-            public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-                return ARGB.srgbLerp(BIOME_SHARE, colour, 0xFF000000 | biome.applyAsInt(level, pos));
-            }
-
-            @Override
-            public int colorAsTerrainParticle(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-                return -1;
-            }
-        };
+    static BlockColor dead(int colour, ToIntBiFunction<BlockAndTintGetter, BlockPos> biome) {
+        return (state, level, pos, tintIndex) -> level == null || pos == null ? colour
+                : ARGB.srgbLerp(BIOME_SHARE, colour, 0xFF000000 | biome.applyAsInt(level, pos));
     }
 }

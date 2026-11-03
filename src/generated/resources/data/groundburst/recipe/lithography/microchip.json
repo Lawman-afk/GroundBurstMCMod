@@ -4,25 +4,35 @@
   "fluids": [
     {
       "amount": 250,
-      "ingredient": "#c:photoresist"
+      "ingredient": {
+        "tag": "c:photoresist"
+      }
     },
     {
       "amount": 250,
-      "ingredient": "#c:hydrofluoric_acid"
+      "ingredient": {
+        "tag": "c:hydrofluoric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:silicon_wafer"
+      "ingredient": {
+        "item": "groundburst:silicon_wafer"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:red_phosphorus"
+      "ingredient": {
+        "item": "groundburst:red_phosphorus"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:plastic_sheet"
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
     }
   ],
   "outputs": [

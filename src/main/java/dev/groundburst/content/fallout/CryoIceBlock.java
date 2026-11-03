@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -56,7 +56,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightDampening()
+        if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightBlock(level, pos)
                 || random.nextFloat() < THAW_CHANCE && !FrostedBlock.cold(level, pos)) {
             melt(state, level, pos);
         }
@@ -64,7 +64,7 @@ public class CryoIceBlock extends HalfTransparentBlock {
 
     /** It melts: back to water if it was still water (but where water boils away), else away. */
     protected void melt(BlockState state, Level level, BlockPos pos) {
-        if (!state.getValue(SOURCE) || level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+        if (!state.getValue(SOURCE) || level.dimensionType().ultraWarm()) {
             level.removeBlock(pos, false);
             return;
         }
@@ -79,11 +79,11 @@ public class CryoIceBlock extends HalfTransparentBlock {
             ItemStack destroyedWith) {
         super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
         if (!state.getValue(SOURCE) || EnchantmentHelper.hasTag(destroyedWith, EnchantmentTags.PREVENTS_ICE_MELTING)
-                || level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+                || level.dimensionType().ultraWarm()) {
             return;
         }
         BlockState below = level.getBlockState(pos.below());
-        if (below.is(BlockTags.ICE_MELTS_WHEN_DESTROYED_ABOVE) || below.liquid()) {
+        if (below.blocksMotion() || below.liquid()) {
             level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
         }
     }

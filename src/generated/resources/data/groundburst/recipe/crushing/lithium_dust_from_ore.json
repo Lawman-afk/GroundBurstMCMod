@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/lithium"
+      "ingredient": {
+        "tag": "c:ores/lithium"
+      }
     }
   ],
   "outputs": [

@@ -10,11 +10,15 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:synthetic_fuel"
+      "ingredient": {
+        "tag": "c:synthetic_fuel"
+      }
     },
     {
       "amount": 1000,
-      "ingredient": "#c:liquid_oxygen"
+      "ingredient": {
+        "tag": "c:liquid_oxygen"
+      }
     }
   ],
   "time": 300

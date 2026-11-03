@@ -10,21 +10,29 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:chlorine"
+      "ingredient": {
+        "tag": "c:chlorine"
+      }
     },
     {
       "amount": 500,
-      "ingredient": "#c:sulfuric_acid"
+      "ingredient": {
+        "tag": "c:sulfuric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 2,
-      "ingredient": "minecraft:spider_eye"
+      "ingredient": {
+        "item": "minecraft:spider_eye"
+      }
     },
     {
       "count": 1,
-      "ingredient": "minecraft:poisonous_potato"
+      "ingredient": {
+        "item": "minecraft:poisonous_potato"
+      }
     }
   ],
   "time": 300

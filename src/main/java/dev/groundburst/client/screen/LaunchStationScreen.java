@@ -521,7 +521,7 @@ public class LaunchStationScreen extends Screen {
             List<StationPayloads.MemberView> ms = members();
             if (row < ms.size()) {
                 BlockPos p = ms.get(row).pos();
-                if (Minecraft.getInstance().hasShiftDown()) {
+                if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
                     if (!this.picked.remove(p)) {
                         this.picked.add(p);
                     }
@@ -616,7 +616,7 @@ public class LaunchStationScreen extends Screen {
         if (key != null && T_KIND.containsKey(key.getPath())) {
             return Component.translatable(T_KIND.get(key.getPath()));
         }
-        return key == null ? Component.literal(id) : BuiltInRegistries.BLOCK.getValue(key).getName();
+        return key == null ? Component.literal(id) : BuiltInRegistries.BLOCK.get(key).getName();
     }
 
     private static String clock(int ticks) {
@@ -820,7 +820,7 @@ public class LaunchStationScreen extends Screen {
 
     /** Small type (as the list's), drawn on whole screen pixels. */
     private void label(GuiGraphicsExtractor g, String text, int x, int y, int color) {
-        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = Math.max(1, gs * 2 / 3) / (float) gs;
         g.pose().pushMatrix();
         g.pose().translate(x, Math.round(y * gs) / (float) gs);
@@ -870,7 +870,7 @@ public class LaunchStationScreen extends Screen {
         }
         boolean bar = ms.size() > ROWS;
         int textW = CW - 6 - (bar ? 4 : 0);
-        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = Math.max(1, gs * 2 / 3) / (float) gs;
         int room = (int) (textW / scale);
         List<StationPayloads.ContactView> contacts = s == null ? List.of() : s.contacts();
@@ -920,7 +920,7 @@ public class LaunchStationScreen extends Screen {
         }
         java.util.Collections.reverse(log);                            // newest first
         this.logScroll = Mth.clamp(this.logScroll, 0, Math.max(0, log.size() - ROWS));
-        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = Math.max(1, gs * 2 / 3) / (float) gs;
         int room = (int) ((CW - 6) / scale);
         for (int i = 0; i < ROWS && this.logScroll + i < log.size(); i++) {

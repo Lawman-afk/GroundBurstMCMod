@@ -39,18 +39,18 @@ public final class GBAlarms {
     public static final WithItem<AlarmBlock> RELAY = block(AlarmDevice.RELAY, "Alarm Relay", AlarmBlock::new, 0);
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AlarmBlockEntity>> ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("alarm_device", () -> new BlockEntityType<>(
+            GBBlockEntities.BLOCK_ENTITIES.register("alarm_device", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new AlarmBlockEntity(GBAlarms.ENTITY.get(), pos, state), RECEIVER.block().get(), PANEL.block().get(),
-                    MONITOR.block().get(), KLAXON.block().get(), BELL.block().get(), LIGHT.block().get(), RELAY.block().get()));
+                    MONITOR.block().get(), KLAXON.block().get(), BELL.block().get(), LIGHT.block().get(), RELAY.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AlarmBlockEntity>> DISPLAY_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.DISPLAY.id, () -> new BlockEntityType<>(
-                    (pos, state) -> new AlarmBlockEntity(GBAlarms.DISPLAY_ENTITY.get(), pos, state), DISPLAY.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.DISPLAY.id, () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new AlarmBlockEntity(GBAlarms.DISPLAY_ENTITY.get(), pos, state), DISPLAY.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AlarmBlockEntity.Animated>> SIREN_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.SIREN.id, () -> new BlockEntityType<>(
-                    (pos, state) -> new AlarmBlockEntity.Animated(GBAlarms.SIREN_ENTITY.get(), pos, state), SIREN.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.SIREN.id, () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new AlarmBlockEntity.Animated(GBAlarms.SIREN_ENTITY.get(), pos, state), SIREN.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AlarmBlockEntity.Animated>> BEACON_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.BEACON.id, () -> new BlockEntityType<>(
-                    (pos, state) -> new AlarmBlockEntity.Animated(GBAlarms.BEACON_ENTITY.get(), pos, state), BEACON.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register(AlarmDevice.BEACON.id, () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new AlarmBlockEntity.Animated(GBAlarms.BEACON_ENTITY.get(), pos, state), BEACON.block().get()).build(null));
 
     /** JEI's page on the alarm system. */
     public static final String INFO = GBLang.add(GroundBurst.MODID + ".jei.info.alarms",

@@ -14,9 +14,9 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import dev.groundburst.port.input.KeyEvent;
 import net.minecraft.world.inventory.Slot;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
+
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
@@ -27,24 +27,22 @@ import net.neoforged.neoforge.common.NeoForge;
  * line for it: the manual's first entry explains the key.
  */
 public final class ManualHotkey {
-    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(GroundBurst.id("groundburst"));
-    public static final KeyMapping KEY = new KeyMapping(ManualStrings.KEY, KeyConflictContext.GUI, InputConstants.Type.KEYBOARD, InputConstants.KEY_H, CATEGORY);
+    public static final String CATEGORY = dev.groundburst.port.input.KeyEvent.category(GroundBurst.id("groundburst"));
+    public static final KeyMapping KEY = new KeyMapping(ManualStrings.KEY, KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_H, CATEGORY);
 
     private ManualHotkey() {}
 
     public static void register(IEventBus modBus) {
         modBus.addListener((RegisterKeyMappingsEvent e) -> {
-            e.registerCategory(CATEGORY);
             e.register(KEY);
         });
-        modBus.addListener((RegisterPictureInPictureRenderersEvent e) -> e.register(StructureView.State.class, StructureView.Renderer::new));
-        modBus.addListener((AddClientReloadListenersEvent e) -> e.addListener(GroundBurst.id("field_manual"), new Manual.Loader()));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(new Manual.Loader()));
         NeoForge.EVENT_BUS.addListener(ManualHotkey::keyInScreen);
         GBManual.open = ManualHotkey::open;
     }
 
     public static boolean matches(KeyEvent event) {
-        return !KEY.isUnbound() && KEY.matches(event);
+        return !KEY.isUnbound() && KEY.matches(event.key(), event.scancode());
     }
 
     /** Opens the book (at an entry, or where it was left), returning to the current screen when it closes. */
@@ -55,11 +53,11 @@ public final class ManualHotkey {
     }
 
     private static void keyInScreen(ScreenEvent.KeyPressed.Pre event) {
-        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen) || !matches(event.getKeyEvent())
+        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen) || !matches(new dev.groundburst.port.input.KeyEvent(event.getKeyCode(), event.getScanCode(), event.getModifiers()))
                 || screen.getFocused() instanceof net.minecraft.client.gui.components.EditBox) {
             return;
         }
-        Slot slot = screen.getHoveredSlot();
+        Slot slot = screen.getSlotUnderMouse();
         if (slot == null || !slot.hasItem()) {
             return;
         }

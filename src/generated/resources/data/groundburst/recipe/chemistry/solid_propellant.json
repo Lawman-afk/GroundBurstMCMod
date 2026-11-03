@@ -4,21 +4,29 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:sulfuric_acid"
+      "ingredient": {
+        "tag": "c:sulfuric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:dusts/saltpeter"
+      "ingredient": {
+        "tag": "c:dusts/saltpeter"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:dusts/iron"
+      "ingredient": {
+        "tag": "c:dusts/iron"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:slime_balls"
+      "ingredient": {
+        "tag": "c:slime_balls"
+      }
     }
   ],
   "outputs": [

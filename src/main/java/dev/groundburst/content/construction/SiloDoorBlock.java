@@ -140,7 +140,7 @@ public class SiloDoorBlock extends HorizontalDirectionalBlock implements EntityB
         if (!level.isClientSide() && !state.getValue(CENTER)) {
             BlockPos c = centerOf(level, pos, state);
             if (c != null) {
-                level.destroyBlock(c, !player.preventsBlockDrops(), player);
+                level.destroyBlock(c, !player.getAbilities().instabuild, player);
             }
         }
         return super.playerWillDestroy(level, pos, state, player);

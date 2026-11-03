@@ -4,17 +4,23 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:nitric_acid"
+      "ingredient": {
+        "tag": "c:nitric_acid"
+      }
     },
     {
       "amount": 500,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#minecraft:coals"
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
     }
   ],
   "outputs": [

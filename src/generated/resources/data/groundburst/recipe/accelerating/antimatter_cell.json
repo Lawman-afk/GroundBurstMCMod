@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:containment_cell"
+      "ingredient": {
+        "item": "groundburst:containment_cell"
+      }
     }
   ],
   "outputs": [

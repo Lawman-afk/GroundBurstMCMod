@@ -37,7 +37,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * the Missile Silo dug into the ground, its concrete and its hatch (Phase 9 slice 9b).
  */
 public final class GBLaunch {
-    public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(GroundBurst.MODID);
+    public static final dev.groundburst.port.EntityRegister ENTITIES = new dev.groundburst.port.EntityRegister(GroundBurst.MODID);
 
     // --- component blocks (used to build the two structures) ---
     public static final WithItem<MultiblockPartBlock> LAUNCH_PAD = part("launch_pad", "Launch Pad", MapColor.COLOR_GRAY, SoundType.STONE, false);
@@ -106,8 +106,8 @@ public final class GBLaunch {
             GBTab.MISSILES, p -> new LaunchStationBlock(p, GBLaunch.STATION_ENTITY),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchStationBlockEntity>> STATION_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("launch_control_station", () -> new BlockEntityType<>(LaunchStationBlockEntity::new,
-                    STATION_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("launch_control_station", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(LaunchStationBlockEntity::new,
+                    STATION_CONTROLLER.block().get()).build(null));
     /** The Laser Designator (DESIGN.md §17.13): lase a spot for laser-guided missiles, or call fire on it. */
     public static final DeferredItem<LaserDesignatorItem> LASER_DESIGNATOR = GBItems.register("laser_designator", "Laser Designator",
             GBTab.MISSILES, LaserDesignatorItem::new);
@@ -115,25 +115,25 @@ public final class GBLaunch {
     public static final DeferredItem<LaunchCodesItem> LAUNCH_CODES = GBItems.register("launch_codes", "Launch Codes", GBTab.MISSILES,
             LaunchCodesItem::new, p -> p.stacksTo(16));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadarArrayBlockEntity>> RADAR_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("radar_array", () -> new BlockEntityType<>(RadarArrayBlockEntity::new,
-                    RADAR_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("radar_array", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(RadarArrayBlockEntity::new,
+                    RADAR_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchSiloBlockEntity>> SILO_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("launch_silo", () -> new BlockEntityType<>(LaunchSiloBlockEntity::new, SILO_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("launch_silo", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(LaunchSiloBlockEntity::new, SILO_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComplexBlockEntity>> COMPLEX_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("launch_complex", () -> new BlockEntityType<>(LaunchComplexBlockEntity::new,
-                    COMPLEX_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("launch_complex", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(LaunchComplexBlockEntity::new,
+                    COMPLEX_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MissileSiloBlockEntity>> MISSILE_SILO_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("missile_silo", () -> new BlockEntityType<>(MissileSiloBlockEntity::new,
-                    MISSILE_SILO_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("missile_silo", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(MissileSiloBlockEntity::new,
+                    MISSILE_SILO_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CruiseLauncherBlockEntity>> CRUISE_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("cruise_launcher", () -> new BlockEntityType<>(CruiseLauncherBlockEntity::new,
-                    CRUISE_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("cruise_launcher", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(CruiseLauncherBlockEntity::new,
+                    CRUISE_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<VerticalLaunchBatteryBlockEntity>> VLS_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("vertical_launch_battery", () -> new BlockEntityType<>(VerticalLaunchBatteryBlockEntity::new,
-                    VLS_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("vertical_launch_battery", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(VerticalLaunchBatteryBlockEntity::new,
+                    VLS_CONTROLLER.block().get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchComputerBlockEntity>> COMPUTER_ENTITY =
-            GBBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> new BlockEntityType<>(LaunchComputerBlockEntity::new,
-                    COMPUTER_CONTROLLER.block().get()));
+            GBBlockEntities.BLOCK_ENTITIES.register("launch_computer", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(LaunchComputerBlockEntity::new,
+                    COMPUTER_CONTROLLER.block().get()).build(null));
 
     // --- the missile ---
     public static final DeferredHolder<EntityType<?>, EntityType<MissileEntity>> MISSILE = ENTITIES.registerEntityType("missile", MissileEntity::new,
@@ -464,7 +464,7 @@ public final class GBLaunch {
         // The terrain survey hears about chunks coming and going (it maps those near a Launch Computer).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
             if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
-                TerrainSurvey.of(level).chunkLoaded(e.getChunk().getPos().pack());
+                TerrainSurvey.of(level).chunkLoaded(e.getChunk().getPos().toLong());
             }
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {

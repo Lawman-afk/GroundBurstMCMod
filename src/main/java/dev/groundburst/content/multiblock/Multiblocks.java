@@ -24,10 +24,10 @@ public final class Multiblocks {
         ChunkPos center = new ChunkPos(pos);
         for (int cx = -1; cx <= 1; cx++) {
             for (int cz = -1; cz <= 1; cz++) {
-                if (!level.hasChunk(center.x() + cx, center.z() + cz)) {
+                if (!level.hasChunk(center.x + cx, center.z + cz)) {
                     continue;
                 }
-                for (BlockEntity be : level.getChunk(center.x() + cx, center.z() + cz).getBlockEntities().values()) {
+                for (BlockEntity be : level.getChunk(center.x + cx, center.z + cz).getBlockEntities().values()) {
                     if (be instanceof MultiblockController controller && !be.isRemoved() && controller.covers(pos)) {
                         out.add(controller);
                     }

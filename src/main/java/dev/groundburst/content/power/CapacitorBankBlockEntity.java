@@ -19,7 +19,7 @@ import dev.groundburst.registry.GBMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentGetter;
+
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -181,7 +181,7 @@ public class CapacitorBankBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
+    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
         super.applyImplicitComponents(components);
         int stored = components.getOrDefault(GBDataComponents.ENERGY.get(), 0);
         if (stored > 0) {

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:liquid_oxygen_canister"
+      "ingredient": {
+        "item": "groundburst:liquid_oxygen_canister"
+      }
     }
   ],
   "outputs": [

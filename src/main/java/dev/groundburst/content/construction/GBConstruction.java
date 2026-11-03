@@ -106,13 +106,13 @@ public final class GBConstruction {
             p -> metal(p, MapColor.TERRACOTTA_BROWN).strength(4f, 8f).noOcclusion());
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SearchRadarBlockEntity>> SEARCH_RADAR_ENTITY =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
-                    (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_ENTITY.get(), pos, state), SEARCH_RADAR.block().get()));
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_ENTITY.get(), pos, state), SEARCH_RADAR.block().get()).build(null));
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,
             net.minecraft.world.level.block.entity.BlockEntityType<SearchRadarBlockEntity>> SEARCH_RADAR_WRECK_ENTITY =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar_wreck", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("search_radar_wreck", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SearchRadarBlockEntity(GBConstruction.SEARCH_RADAR_WRECK_ENTITY.get(), pos, state),
-                    SEARCH_RADAR_WRECK.block().get()));
+                    SEARCH_RADAR_WRECK.block().get()).build(null));
 
     // --- the missile wreck ---------------------------------------------------------------------------------------------------------
     /** A missile broken in three where it came down, as the Crashed Missile sites have it; its model runs some eight blocks on
@@ -121,8 +121,8 @@ public final class GBConstruction {
             p -> new MissileWreckBlock(p, () -> GBConstruction.MISSILE_WRECK_ENTITY.get()),
             p -> metal(p, MapColor.SNOW).strength(4f, 8f).noOcclusion());
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<PropBlockEntity>> MISSILE_WRECK_ENTITY =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("missile_wreck", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
-                    (pos, state) -> new PropBlockEntity(GBConstruction.MISSILE_WRECK_ENTITY.get(), pos, state), MISSILE_WRECK.block().get()));
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("missile_wreck", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new PropBlockEntity(GBConstruction.MISSILE_WRECK_ENTITY.get(), pos, state), MISSILE_WRECK.block().get()).build(null));
 
     // --- the silo door ------------------------------------------------------------------------------------------------------------
     /** Two leaves over a 7x7 opening that slide apart onto rails on a redstone signal; for show (DESIGN.md §22.2). */
@@ -132,12 +132,12 @@ public final class GBConstruction {
     public static final WithItem<SiloDoorBlock> RUSTED_LARGE_SILO_DOOR = GBBlocks.register("rusted_large_silo_door", "Rusted Large Silo Door",
             TAB, p -> new SiloDoorBlock(p, () -> GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get()), GBConstruction::door);
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> LARGE_SILO_DOOR_ENTITY =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("large_silo_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
-                    (pos, state) -> new SiloDoorBlockEntity(GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), pos, state), LARGE_SILO_DOOR.block().get()));
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("large_silo_door", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    (pos, state) -> new SiloDoorBlockEntity(GBConstruction.LARGE_SILO_DOOR_ENTITY.get(), pos, state), LARGE_SILO_DOOR.block().get()).build(null));
     public static final net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<SiloDoorBlockEntity>> RUSTED_LARGE_SILO_DOOR_ENTITY =
-            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("rusted_large_silo_door", () -> new net.minecraft.world.level.block.entity.BlockEntityType<>(
+            dev.groundburst.registry.GBBlockEntities.BLOCK_ENTITIES.register("rusted_large_silo_door", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     (pos, state) -> new SiloDoorBlockEntity(GBConstruction.RUSTED_LARGE_SILO_DOOR_ENTITY.get(), pos, state),
-                    RUSTED_LARGE_SILO_DOOR.block().get()));
+                    RUSTED_LARGE_SILO_DOOR.block().get()).build(null));
     /** The doors (their loot is the middle's alone). */
     public static final List<WithItem<SiloDoorBlock>> DOORS = List.of(LARGE_SILO_DOOR, RUSTED_LARGE_SILO_DOOR);
 
@@ -168,7 +168,7 @@ public final class GBConstruction {
 
     private static Properties seeThrough(Properties p) {
         return p.noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor((s, l, at) -> false).isSuffocating((s, l, at) -> false)
-                .isViewBlocking((s, l, at, box) -> false);
+                .isViewBlocking((s, l, at) -> false);
     }
 
     private static Properties radome(Properties p) {

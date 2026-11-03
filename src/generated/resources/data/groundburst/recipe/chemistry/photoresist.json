@@ -10,21 +10,29 @@
   "fluids": [
     {
       "amount": 250,
-      "ingredient": "#c:nitric_acid"
+      "ingredient": {
+        "tag": "c:nitric_acid"
+      }
     },
     {
       "amount": 1000,
-      "ingredient": "#c:synthetic_fuel"
+      "ingredient": {
+        "tag": "c:synthetic_fuel"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:plastic_sheet"
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#minecraft:coals"
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
     }
   ],
   "time": 300

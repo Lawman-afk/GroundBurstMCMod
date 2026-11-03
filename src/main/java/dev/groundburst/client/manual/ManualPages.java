@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import dev.groundburst.port.CursorTypes;
 
 import dev.groundburst.client.recipe.ClientRecipes;
 import dev.groundburst.client.render.FluidVisuals;
@@ -24,16 +24,16 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.context.ContextMap;
+import dev.groundburst.port.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import dev.groundburst.port.recipe.FurnaceRecipeDisplay;
+import dev.groundburst.port.recipe.RecipeDisplay;
+import dev.groundburst.port.recipe.ShapedCraftingRecipeDisplay;
+import dev.groundburst.port.recipe.ShapelessCraftingRecipeDisplay;
+import dev.groundburst.port.recipe.SlotDisplay;
+import dev.groundburst.port.recipe.SlotDisplayContext;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
@@ -455,19 +455,19 @@ final class ManualPages {
         void draw(Ctx c, int x, int y) {
             int i = 0;
             for (var in : this.recipe.inputs()) {
-                List<ItemStack> stacks = in.ingredient().items().map(h -> new ItemStack(h, in.count())).toList();
+                List<ItemStack> stacks = dev.groundburst.port.Ingredients.items(in.ingredient()).map(h -> new ItemStack(h, in.count())).toList();
                 slot(c, cycle(stacks, c.time() + i * 7), x + (i % IN_COLS) * 18, y + (i / IN_COLS) * 18, true);
                 i++;
             }
             for (var fluid : this.recipe.fluids()) {
-                List<Fluid> fluids = fluid.ingredient().fluids().stream().map(h -> h.value()).toList();
+                List<Fluid> fluids = dev.groundburst.port.Ingredients.fluids(fluid.ingredient()).stream().map(h -> h.value()).toList();
                 fluidSlot(c, fluids.isEmpty() ? Fluids.WATER : fluids.get((int) ((c.time() / 20) % fluids.size())), fluid.amount(),
                         x + (i % IN_COLS) * 18, y + (i / IN_COLS) * 18);
                 i++;
             }
             int ay = y + 2;
             if (this.recipe.catalyst().isPresent()) {
-                List<ItemStack> cat = this.recipe.catalyst().get().items().map(ItemStack::new).toList();
+                List<ItemStack> cat = dev.groundburst.port.Ingredients.items(this.recipe.catalyst().get()).map(ItemStack::new).toList();
                 slot(c, cycle(cat, c.time()), x + 58, y, true);
                 ay = y + 20;
             }
@@ -497,7 +497,7 @@ final class ManualPages {
         boolean click(Ctx c, int x, int y, double mx, double my) {
             int i = 0;
             for (var in : this.recipe.inputs()) {
-                List<ItemStack> stacks = in.ingredient().items().map(h -> new ItemStack(h, in.count())).toList();
+                List<ItemStack> stacks = dev.groundburst.port.Ingredients.items(in.ingredient()).map(h -> new ItemStack(h, in.count())).toList();
                 if (slotClick(c, cycle(stacks, c.time() + i * 7), x + (i % IN_COLS) * 18, y + (i / IN_COLS) * 18, mx, my)) {
                     return true;
                 }
@@ -558,7 +558,7 @@ final class ManualPages {
         float yaw = 225, pitch = 30;
         int layer = -1;
         boolean dragging;
-        long lastDrag, lastFrame = net.minecraft.util.Util.getMillis();
+        long lastDrag, lastFrame = net.minecraft.Util.getMillis();
 
         StructurePage(MultiblockDefinition def) {
             super(VIEW_H + 18);
@@ -571,7 +571,7 @@ final class ManualPages {
         void drawGraphic(Ctx c, int x, int y) {
             c.g().fill(x, y, x + W, y + VIEW_H, PANEL);
             c.g().outline(x, y, W, VIEW_H, 0xFF14161A);
-            long now = net.minecraft.util.Util.getMillis();
+            long now = net.minecraft.Util.getMillis();
             if (!this.dragging && now - this.lastDrag > 3000) {
                 this.yaw += (now - this.lastFrame) * 0.012f;       // a slow turn while it is left alone
             }
@@ -630,7 +630,7 @@ final class ManualPages {
             }
             this.yaw += (float) dx * 1.5f;
             this.pitch = (float) Math.max(5, Math.min(85, this.pitch + dy));
-            this.lastDrag = net.minecraft.util.Util.getMillis();
+            this.lastDrag = net.minecraft.Util.getMillis();
             return true;
         }
 

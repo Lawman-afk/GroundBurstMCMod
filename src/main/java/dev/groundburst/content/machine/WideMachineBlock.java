@@ -53,7 +53,7 @@ public class WideMachineBlock extends MachineBlock {
     public WideMachineBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type,
             boolean geckoRendered, VoxelShape mainShape, VoxelShape sideShape) {
         super(properties, type, geckoRendered, mainShape);
-        this.sideShapes = Shapes.rotateHorizontal(sideShape);
+        this.sideShapes = dev.groundburst.port.Shapes2.rotateHorizontal(sideShape);
         registerDefaultState(defaultBlockState().setValue(PART, Part.MAIN));
     }
 
@@ -112,7 +112,7 @@ public class WideMachineBlock extends MachineBlock {
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         // Breaking the side half in creative or with the wrong tool: remove the main half (which holds the loot table)
         // without drops. Otherwise the main half breaks through updateShape and drops normally.
-        if (!level.isClientSide() && (player.preventsBlockDrops() || !player.hasCorrectToolForDrops(state)) && state.getValue(PART) == Part.SIDE) {
+        if (!level.isClientSide() && (player.getAbilities().instabuild || !player.hasCorrectToolForDrops(state)) && state.getValue(PART) == Part.SIDE) {
             BlockPos main = base(pos, state);
             BlockState mainState = level.getBlockState(main);
             if (mainState.is(this) && mainState.getValue(PART) == Part.MAIN) {

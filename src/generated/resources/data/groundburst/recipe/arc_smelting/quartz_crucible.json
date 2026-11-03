@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:gems/quartz"
+      "ingredient": {
+        "tag": "c:gems/quartz"
+      }
     },
     {
       "count": 4,
-      "ingredient": "#c:sands/colorless"
+      "ingredient": {
+        "tag": "c:sands/colorless"
+      }
     }
   ],
   "outputs": [

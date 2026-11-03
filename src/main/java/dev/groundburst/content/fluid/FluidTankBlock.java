@@ -124,8 +124,8 @@ public class FluidTankBlock extends Block implements EntityBlock {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof FluidTankBlockEntity be) {
             FluidTankBlockEntity c = be.controllerEntity();
             var f = c.tank().fluid();
-            player.sendOverlayMessage(Component.translatable(STATUS, c.width(), c.width(), c.height(), NUM.format(f.getAmount()),
-                    NUM.format(c.tank().capacity()), f.isEmpty() ? Component.translatable(EMPTY) : f.getHoverName()));
+            player.displayClientMessage(Component.translatable(STATUS, c.width(), c.width(), c.height(), NUM.format(f.getAmount()),
+                    NUM.format(c.tank().capacity()), f.isEmpty() ? Component.translatable(EMPTY) : f.getHoverName()), true);
         }
         return InteractionResult.SUCCESS;
     }

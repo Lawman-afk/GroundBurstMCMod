@@ -105,7 +105,7 @@ public final class DesignatorPayloads {
     public record Status(Pick pick, int homing, String network, int charge, int result, int count, List<Aim> aims, int picked)
             implements CustomPacketPayload {
         public static final Type<Status> TYPE = GBNetwork.type("designator_status");
-        public static final StreamCodec<RegistryFriendlyByteBuf, Status> CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, Status> CODEC = dev.groundburst.port.StreamCodecs.composite(
                 Pick.CODEC, Status::pick, ByteBufCodecs.VAR_INT, Status::homing,
                 ByteBufCodecs.STRING_UTF8, Status::network, ByteBufCodecs.VAR_INT, Status::charge, ByteBufCodecs.VAR_INT, Status::result,
                 ByteBufCodecs.VAR_INT, Status::count, Aim.CODEC.apply(ByteBufCodecs.list()), Status::aims,

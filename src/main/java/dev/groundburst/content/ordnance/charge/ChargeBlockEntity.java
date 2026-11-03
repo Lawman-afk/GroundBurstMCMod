@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 import dev.groundburst.content.assembly.FuzeSettings;
 import dev.groundburst.content.ordnance.GBOrdnance;
 import dev.groundburst.registry.GBDataComponents;
-import net.minecraft.core.component.DataComponentGetter;
+
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -340,7 +340,7 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
+    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
         super.applyImplicitComponents(components);
         if (kind().bomb) {
             setFuze(components.getOrDefault(GBDataComponents.FUZE.get(), FuzeSettings.IMPACT));

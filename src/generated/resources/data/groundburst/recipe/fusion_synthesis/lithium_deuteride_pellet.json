@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:deuterium"
+      "ingredient": {
+        "tag": "c:deuterium"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:dusts/lithium_6"
+      "ingredient": {
+        "tag": "c:dusts/lithium_6"
+      }
     }
   ],
   "outputs": [

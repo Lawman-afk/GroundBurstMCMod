@@ -113,7 +113,7 @@ public final class DesignatorScope {
             statusAge = 0;
         };
         modBus.addListener((RegisterGuiLayersEvent event) ->
-                event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("designator_scope"), DesignatorScope::draw));
+                event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, GroundBurst.id("designator_scope"), (gg_, dt_) -> DesignatorScope.draw(new dev.groundburst.port.GuiGraphicsExtractor(gg_), dt_)));
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> {
             if (statusAge < Integer.MAX_VALUE) {
                 statusAge++;

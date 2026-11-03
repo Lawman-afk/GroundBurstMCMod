@@ -41,7 +41,7 @@ public class TallMachineBlock extends MachineBlock {
     public TallMachineBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type,
             boolean geckoRendered, VoxelShape lowerShape, VoxelShape upperShape) {
         super(properties, type, geckoRendered, lowerShape);
-        this.upperShapes = net.minecraft.world.phys.shapes.Shapes.rotateHorizontal(upperShape);
+        this.upperShapes = dev.groundburst.port.Shapes2.rotateHorizontal(upperShape);
         registerDefaultState(defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER));
     }
 
@@ -95,7 +95,7 @@ public class TallMachineBlock extends MachineBlock {
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         // Breaking the upper half in creative or with the wrong tool: remove the lower half (which holds the loot
         // table) without drops. Otherwise the lower half breaks through updateShape and drops normally, like a door.
-        if (!level.isClientSide() && (player.preventsBlockDrops() || !player.hasCorrectToolForDrops(state)) && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
+        if (!level.isClientSide() && (player.getAbilities().instabuild || !player.hasCorrectToolForDrops(state)) && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             BlockPos below = pos.below();
             BlockState lower = level.getBlockState(below);
             if (lower.is(this) && lower.getValue(HALF) == DoubleBlockHalf.LOWER) {

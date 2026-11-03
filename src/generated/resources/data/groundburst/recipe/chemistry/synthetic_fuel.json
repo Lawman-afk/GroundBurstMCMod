@@ -10,13 +10,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#minecraft:coals"
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
     }
   ],
   "time": 240

@@ -36,15 +36,16 @@ public class GrenadeItem extends Item {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBOrdnance.GRENADE_PIN.get(), SoundSource.PLAYERS, 0.8f, pitch);
         }
         if (level instanceof ServerLevel server) {
-            ThrownExplosive thrown = Projectile.spawnProjectileFromRotation((l, owner, item) -> new ThrownExplosive(l, owner, item), server, stack,
-                    player, 0f, this.type.speed, 1.0f);
+            ThrownExplosive thrown = new ThrownExplosive(server, player, stack.copyWithCount(1));
+            thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, this.type.speed, 1.0f);
+            server.addFreshEntity(thrown);
             if (this.type.lit()) {
                 // The lit fuse (or rag) fizzes where it is, following it through the air.
                 server.playSound(null, thrown, GBOrdnance.DYNAMITE_LIGHT.get(), SoundSource.PLAYERS, 0.8f, pitch);
             }
         }
         player.awardStat(Stats.ITEM_USED.get(this));
-        player.getCooldowns().addCooldown(stack, 10);
+        player.getCooldowns().addCooldown(stack.getItem(), 10);
         stack.consume(1, player);
         return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }

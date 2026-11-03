@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
+import dev.groundburst.port.render.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import dev.groundburst.GroundBurst;
@@ -19,13 +19,13 @@ import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import dev.groundburst.port.render.BlockStateModel;
+import dev.groundburst.port.render.BlockStateModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -54,7 +54,7 @@ public final class MultiblockPreview {
     private static final String NOTHING = GBLang.add(GroundBurst.MODID + ".holo_projector.nothing", "No unfinished structure in range");
     private static final int WRONG_COLOR = 0xFFFF4030;
     /** Ghosts: see-through, back faces culled (an open model such as a Fuel Channel's frame reads as its shape). */
-    private static final RenderType GHOST = RenderType.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final RenderType GHOST = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final float INSET = 0.02f;
 
@@ -121,10 +121,10 @@ public final class MultiblockPreview {
             double range2 = (double) HoloProjectorItem.RANGE * HoloProjectorItem.RANGE;
             for (int cx = -r; cx <= r; cx++) {
                 for (int cz = -r; cz <= r; cz++) {
-                    if (!level.hasChunk(center.x() + cx, center.z() + cz)) {
+                    if (!level.hasChunk(center.x + cx, center.z + cz)) {
                         continue;
                     }
-                    for (BlockEntity be : level.getChunk(center.x() + cx, center.z() + cz).getBlockEntities().values()) {
+                    for (BlockEntity be : level.getChunk(center.x + cx, center.z + cz).getBlockEntities().values()) {
                         if (be instanceof MultiblockController c && !c.isFormed() && !PINNED.contains(be.getBlockPos())
                                 && be.getBlockPos().distToCenterSqr(player.position()) <= range2) {
                             shown.add(c);
@@ -163,7 +163,7 @@ public final class MultiblockPreview {
         Minecraft mc = Minecraft.getInstance();
         PoseStack poseStack = event.getPoseStack();
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
-        float lineWidth = mc.gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
+        float lineWidth = 2.0F;
         // Pulse between faint and half-visible over two seconds, tinted a cool hologram blue.
         double t = (System.currentTimeMillis() % 2000L) / 2000.0;
         int alpha = (int) (90 + 70 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2)));
@@ -175,7 +175,7 @@ public final class MultiblockPreview {
             if (ghost.wrong()) {
                 event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), RenderType.lines(), WRONG_COLOR, lineWidth * 2, false);
             } else {
-                BlockStateModel model = mc.getModelManager().getBlockStateModelSet().get(ghost.state());
+                BlockStateModel model = dev.groundburst.port.render.BlockStateModel.of(ghost.state());
                 List<BlockStateModelPart> parts = new ArrayList<>();
                 model.collectParts(RandomSource.create(ghost.pos().asLong()), parts);
                 TextureAtlasSprite sprite = model.particleMaterial().sprite();
@@ -193,9 +193,9 @@ public final class MultiblockPreview {
     private static void ghost(VertexConsumer buffer, PoseStack.Pose base, List<BlockStateModelPart> parts, TextureAtlasSprite sprite, int tint) {
         PoseStack.Pose pose = base.copy();
         float k = 1 - 2 * INSET;
-        pose.translate(0.5f, 0.5f, 0.5f);
-        pose.scale(k, k, k);
-        pose.translate(-0.5f, -0.5f, -0.5f);
+        pose.pose().translate(0.5f, 0.5f, 0.5f);
+        dev.groundburst.port.render.Poses.scale(pose, k, k, k);
+        pose.pose().translate(-0.5f, -0.5f, -0.5f);
         QuadInstance instance = new QuadInstance();
         instance.setColor(tint);
         instance.setLightCoords(LightTexture.FULL_BRIGHT);
@@ -203,12 +203,12 @@ public final class MultiblockPreview {
         for (BlockStateModelPart part : parts) {
             for (Direction d : DIRECTIONS) {
                 for (BakedQuad quad : part.getQuads(d)) {
-                    buffer.putBakedQuad(pose, quad, instance);
+                    dev.groundburst.port.render.QuadInstance.put(buffer, pose, quad, instance);
                     drawn = true;
                 }
             }
             for (BakedQuad quad : part.getQuads(null)) {
-                buffer.putBakedQuad(pose, quad, instance);
+                dev.groundburst.port.render.QuadInstance.put(buffer, pose, quad, instance);
                 drawn = true;
             }
         }

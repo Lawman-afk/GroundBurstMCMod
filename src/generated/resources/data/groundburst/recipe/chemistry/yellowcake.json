@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:sulfuric_acid"
+      "ingredient": {
+        "tag": "c:sulfuric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:dusts/uranium"
+      "ingredient": {
+        "tag": "c:dusts/uranium"
+      }
     }
   ],
   "outputs": [

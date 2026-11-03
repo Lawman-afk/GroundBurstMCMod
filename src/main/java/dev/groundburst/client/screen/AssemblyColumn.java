@@ -2,7 +2,7 @@ package dev.groundburst.client.screen;
 
 import java.util.List;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import dev.groundburst.port.CursorTypes;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.assembly.AssemblyStats;
@@ -37,7 +37,7 @@ final class AssemblyColumn {
     private boolean dragging;
     private long lastDrag, lastFrame = Util.getMillis();
     /** The last subject measured, and its model's bounds (blocks, as drawn with no GUI pose). */
-    private final net.minecraft.client.renderer.item.ItemStackRenderState measure = new net.minecraft.client.renderer.item.ItemStackRenderState();
+    private final dev.groundburst.port.render.ItemStackRenderState measure = new dev.groundburst.port.render.ItemStackRenderState();
     private ItemStack measured = ItemStack.EMPTY;
     private net.minecraft.world.phys.AABB bounds = new net.minecraft.world.phys.AABB(0, 0, 0, 0, 0, 0);
 
@@ -107,7 +107,7 @@ final class AssemblyColumn {
      * each font pixel a whole number of screen pixels on the screen-pixel grid, like the screens' setting rows.
      */
     private void drawStats(GuiGraphicsExtractor g, Font font, int leftPos, int topPos, List<AssemblyStats.Stat> stats, Component emptyHint) {
-        int gs = Math.max(1, net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = Math.max(1, gs * 2 / 3) / (float) gs;
         float step = (float) Math.ceil(font.lineHeight * scale * gs) / gs;
         float left = leftPos + this.statsX + 3, right = leftPos + this.statsX + this.statsW - 3;

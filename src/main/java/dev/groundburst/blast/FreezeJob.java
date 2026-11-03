@@ -429,7 +429,7 @@ final class FreezeJob {
             if (e.getY() - this.center.y > this.climb && e.position().distanceTo(this.center) > this.core) {
                 continue;
             }
-            boolean boss = e.typeHolder().is(Tags.EntityType.BOSSES);
+            boolean boss = e.getType().is(Tags.EntityTypes.BOSSES);
             e.invulnerableTime = 0;
             if (e.position().distanceTo(this.center) <= this.core) {
                 DamageSource frozen = this.level.damageSources().source(Freezes.FLASH_FROZEN, null, source);

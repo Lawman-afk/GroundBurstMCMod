@@ -35,7 +35,7 @@ public class BarbedWireBlock extends IronBarsBlock {
         }
         entity.makeStuckInBlock(state, new Vec3(0.6, 0.7, 0.6));
         if (level instanceof ServerLevel serverLevel) {
-            Vec3 movement = entity.isClientAuthoritative() ? entity.getKnownMovement() : entity.oldPosition().subtract(entity.position());
+            Vec3 movement = new Vec3(entity.getX() - entity.xOld, entity.getY() - entity.yOld, entity.getZ() - entity.zOld);
             if (Math.abs(movement.x()) >= 0.003 || Math.abs(movement.z()) >= 0.003) {
                 entity.hurt(level.damageSources().sweetBerryBush(), 1.0F);
             }

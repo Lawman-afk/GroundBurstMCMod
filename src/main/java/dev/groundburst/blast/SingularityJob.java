@@ -50,7 +50,7 @@ final class SingularityJob {
     /** Blocks torn a tick at most (so it eats, not erases), and how many of them clients are told of. */
     private static final int TEAR_PER_TICK = 1500, TOLD_PER_TICK = 120;
     /** Torn blocks: neighbours told, no drops, containers' contents gone with them. */
-    private static final int TEAR_FLAGS = Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS;
+    private static final int TEAR_FLAGS = Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** How hard a fluid holds against the pull. */
     private static final double FLUID_HOLD = 0.5;
@@ -185,7 +185,7 @@ final class SingularityJob {
                 continue;                                  // a player's own client pulls it (it moves its own player)
             }
             e.addDeltaMovement(Singularities.pullOn(to, gm));
-            e.needsSync = true;
+            e.hurtMarked = true;
         }
     }
 

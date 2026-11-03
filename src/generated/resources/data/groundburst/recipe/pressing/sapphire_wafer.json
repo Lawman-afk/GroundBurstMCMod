@@ -1,11 +1,15 @@
 {
   "type": "groundburst:pressing",
-  "catalyst": "groundburst:diamond_wire_saw",
+  "catalyst": {
+    "item": "groundburst:diamond_wire_saw"
+  },
   "energy_per_tick": 40,
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:sapphire_boule"
+      "ingredient": {
+        "item": "groundburst:sapphire_boule"
+      }
     }
   ],
   "outputs": [

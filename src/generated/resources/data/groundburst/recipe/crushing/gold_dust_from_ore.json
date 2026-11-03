@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ores/gold"
+      "ingredient": {
+        "tag": "c:ores/gold"
+      }
     }
   ],
   "outputs": [

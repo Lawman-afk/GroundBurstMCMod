@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:tritium_canister"
+      "ingredient": {
+        "item": "groundburst:tritium_canister"
+      }
     }
   ],
   "outputs": [

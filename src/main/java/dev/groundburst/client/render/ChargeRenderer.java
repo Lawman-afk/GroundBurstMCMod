@@ -42,7 +42,7 @@ public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntity
     private final Font font;
 
     public ChargeRenderer(BlockEntityRendererProvider.Context context) {
-        this.font = context.font();
+        this.font = context.getFont();
     }
 
     @Override
@@ -100,7 +100,7 @@ public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntity
         float x0 = (float) Math.min(a.x, b.x) - BEAM, x1 = (float) Math.max(a.x, b.x) + BEAM;
         float y0 = (float) Math.min(a.y, b.y) - BEAM, y1 = (float) Math.max(a.y, b.y) + BEAM;
         float z0 = (float) Math.min(a.z, b.z) - BEAM, z1 = (float) Math.max(a.z, b.z) + BEAM;
-        collector.submitCustomGeometry(poseStack, net.minecraft.client.renderer.rendertype.RenderType.debugQuads(), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, net.minecraft.client.renderer.RenderType.debugQuads(), (pose, buffer) -> {
             float[][] faces = {
                     {x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0}, {x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1},
                     {x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0}, {x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1},

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:nitric_acid_canister"
+      "ingredient": {
+        "item": "groundburst:nitric_acid_canister"
+      }
     }
   ],
   "outputs": [

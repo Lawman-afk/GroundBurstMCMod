@@ -10,13 +10,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:dusts/sulfur"
+      "ingredient": {
+        "tag": "c:dusts/sulfur"
+      }
     }
   ],
   "time": 200

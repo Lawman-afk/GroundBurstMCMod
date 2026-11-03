@@ -4,22 +4,18 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
 import dev.groundburst.content.machine.MachineBlock;
 import dev.groundburst.content.multiblock.MultiblockDefinition;
+import dev.groundburst.port.render.PictureInPicture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import dev.groundburst.port.render.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockModelRenderState;
-import net.minecraft.client.renderer.block.model.BlockDisplayContext;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -33,10 +29,24 @@ public final class StructureView {
     public record Block(BlockState state, int x, int y, int z) {}
 
     public record State(List<Block> blocks, int[] size, float yaw, float pitch, int layer, int x0, int y0, int x1, int y1, float scale,
-            @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
-        public State(List<Block> blocks, int[] size, float yaw, float pitch, int layer, int x0, int y0, int x1, int y1, float scale,
-                @Nullable ScreenRectangle scissorArea) {
-            this(blocks, size, yaw, pitch, layer, x0, y0, x1, y1, scale, scissorArea, PictureInPictureRenderState.getBounds(x0, y0, x1, y1, scissorArea));
+            @Nullable ScreenRectangle scissorArea) implements PictureInPicture {
+        @Override
+        public void drawView(PoseStack pose, MultiBufferSource.BufferSource buffers) {
+            Minecraft mc = Minecraft.getInstance();
+            // Screen y runs down; turn the world the right way up, then tip it toward the viewer and spin it.
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-this.pitch));
+            pose.mulPose(Axis.YP.rotationDegrees(this.yaw));
+            pose.translate(-this.size[0] / 2.0F, -this.size[1] / 2.0F, -this.size[2] / 2.0F);
+            for (Block b : this.blocks) {
+                if (this.layer >= 0 && b.y() != this.layer) {
+                    continue;
+                }
+                pose.pushPose();
+                pose.translate(b.x(), b.y(), b.z());
+                mc.getBlockRenderer().renderSingleBlock(b.state(), pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                pose.popPose();
+            }
         }
     }
 
@@ -70,47 +80,5 @@ public final class StructureView {
         double across = Math.sqrt((double) size[0] * size[0] + (double) size[2] * size[2]);
         double tall = size[1] * Math.cos(Math.toRadians(30)) + across * Math.sin(Math.toRadians(30));
         return (float) Math.min(w / (across + 0.3), h / (tall + 0.3));
-    }
-
-    public static final class Renderer extends PictureInPictureRenderer<State> {
-        private static final BlockDisplayContext CONTEXT = BlockDisplayContext.create();
-        private final BlockModelRenderState block = new BlockModelRenderState();
-
-        @Override
-        public Class<State> getRenderStateClass() {
-            return State.class;
-        }
-
-        @Override
-        protected float getTranslateY(int height, int guiScale) {
-            return height / 2.0F;
-        }
-
-        @Override
-        protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector collector) {
-            Minecraft mc = Minecraft.getInstance();
-            mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
-            int[] size = state.size();
-            // Screen y runs down; turn the world the right way up, then tip it toward the viewer and spin it.
-            pose.mulPose(Axis.ZP.rotationDegrees(180));
-            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
-            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
-            pose.translate(-size[0] / 2.0F, -size[1] / 2.0F, -size[2] / 2.0F);
-            for (Block b : state.blocks()) {
-                if (state.layer() >= 0 && b.y() != state.layer()) {
-                    continue;
-                }
-                pose.pushPose();
-                pose.translate(b.x(), b.y(), b.z());
-                mc.getBlockModelResolver().update(this.block, b.state(), CONTEXT);
-                this.block.submit(pose, collector, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
-                pose.popPose();
-            }
-        }
-
-        @Override
-        protected String getTextureLabel() {
-            return "groundburst structure view";
-        }
     }
 }

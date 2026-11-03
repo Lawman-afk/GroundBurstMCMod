@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:gems/fluorite"
+      "ingredient": {
+        "tag": "c:gems/fluorite"
+      }
     }
   ],
   "outputs": [

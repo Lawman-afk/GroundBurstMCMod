@@ -62,6 +62,7 @@ public class GroundBurst {
         dev.groundburst.content.fluid.GBFluids.register(modBus);
         GBBlocks.BLOCKS.register(modBus);
         GBItems.ITEMS.register(modBus);
+        dev.groundburst.content.gear.GBArmor.register(modBus);   // 1.21.1's armour materials are a registry
         GBBlockEntities.BLOCK_ENTITIES.register(modBus);
         dev.groundburst.registry.GBDataComponents.COMPONENTS.register(modBus);
         GBMenus.MENUS.register(modBus);
@@ -91,8 +92,8 @@ public class GroundBurst {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(dev.groundburst.content.machine.MachineFluidInteraction::onRightClickBlock);
 
         GBLang.add(MODID + ".configuration.title", "Ground Burst Settings");
-        modContainer.registerConfig(ModConfig.Type.SYNCED, GBServerConfig.SPEC);
-        modContainer.registerConfig(ModConfig.Type.LOCAL, GBCommonConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, GBServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, GBCommonConfig.SPEC);
     }
 
     public static ResourceLocation id(String path) {

@@ -274,8 +274,7 @@ public class ChargeBlock extends Block implements EntityBlock {
 
     /** Caught in a vanilla explosion (TNT, a creeper): it goes off too, a moment later. */
     @Override
-    protected void onExplosionHit(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, Explosion explosion,
-            java.util.function.BiConsumer<ItemStack, BlockPos> onHit) {
+    protected void onExplosionHit(BlockState state, net.minecraft.world.level.Level level_l, BlockPos pos, net.minecraft.world.level.Explosion explosion, java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> onHit) { if (!(level_l instanceof net.minecraft.server.level.ServerLevel level)) { super.onExplosionHit(state, level_l, pos, explosion, onHit); return; }
         Charges.caughtInBlast(level, pos, state);
         super.onExplosionHit(state, level, pos, explosion, onHit);
     }

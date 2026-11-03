@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
@@ -141,7 +141,7 @@ final class StormJob {
             Vec3 push = Storms.windOn(e.position().subtract(this.center), this.radius, k);
             if (push != Vec3.ZERO) {
                 e.addDeltaMovement(push.scale(2));
-                e.needsSync = true;
+                e.hurtMarked = true;
             }
         }
     }
@@ -233,7 +233,7 @@ final class StormJob {
     private void hit(BlockPos at, @Nullable LivingEntity target) {
         Vec3 foot = target != null ? target.position() : Vec3.atBottomCenterOf(at);
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this.level, EntitySpawnReason.TRIGGERED);
+        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this.level);
         if (bolt != null) {
             bolt.setPos(foot);
             bolt.setVisualOnly(true);                              // never added: only what it does to those it hits
@@ -305,7 +305,7 @@ final class StormJob {
         } else if (s.is(BlockTags.LEAVES)) {
             this.level.setBlockAndUpdate(top, Blocks.AIR.defaultBlockState());
         }
-        if (this.random.nextFloat() < 0.4f && this.level.canSpreadFireAround(at)) {
+        if (this.random.nextFloat() < 0.4f && this.level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)) {
             BlockState fire = BaseFireBlock.getState(this.level, at);
             if (this.level.getBlockState(at).isAir() && fire.canSurvive(this.level, at)) {
                 this.level.setBlockAndUpdate(at, fire);

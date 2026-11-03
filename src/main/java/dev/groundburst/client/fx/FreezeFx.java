@@ -261,10 +261,10 @@ public final class FreezeFx {
 
     /** The whiteout: the fog drawn in round the camera in a freeze's cold, thickest near its heart. */
     private static void fog(ViewportEvent.RenderFog event) {
-        if (event.getType() != FogType.ATMOSPHERIC || ACTIVE.isEmpty()) {
+        if (event.getType() != FogType.NONE || ACTIVE.isEmpty()) {
             return;
         }
-        float[] k = deepest(event.getCamera().position(), Spectacle.now());
+        float[] k = deepest(event.getCamera().getPosition(), Spectacle.now());
         if (k[0] <= 0.01f) {
             return;
         }

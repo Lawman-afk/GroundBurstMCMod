@@ -37,7 +37,7 @@ public final class GBCreativeTabs {
                     .displayItems((parameters, output) -> GBItems.contents(tab).forEach(item -> output.accept(item.get())))
                     .build());
             BY_TAB.put(tab, holder);
-            previous = holder.key();
+            previous = holder.getKey();
         }
     }
 

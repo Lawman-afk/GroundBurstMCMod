@@ -56,7 +56,7 @@ public final class EffectSystems {
         NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent e) -> {
             LivingEntity mob = e.getEntity();
             if (mob.level() instanceof ServerLevel level && mob.hasEffect(FROZEN) && !(mob instanceof Player)
-                    && !mob.typeHolder().is(Tags.EntityType.BOSSES) && mob.getMaxHealth() <= Frost.SHATTER_MAX_HEALTH
+                    && !mob.getType().is(Tags.EntityTypes.BOSSES) && mob.getMaxHealth() <= Frost.SHATTER_MAX_HEALTH
                     && e.getAmount() >= Frost.SHATTER_DAMAGE) {
                 e.setAmount(mob.getHealth() + mob.getAbsorptionAmount() + 100);
                 Frost.shatter(level, mob);

@@ -10,13 +10,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:hydrogen_chloride"
+      "ingredient": {
+        "tag": "c:hydrogen_chloride"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:silicon"
+      "ingredient": {
+        "item": "groundburst:silicon"
+      }
     }
   ],
   "time": 300

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:liquid_rocket_fuel_canister"
+      "ingredient": {
+        "item": "groundburst:liquid_rocket_fuel_canister"
+      }
     }
   ],
   "outputs": [

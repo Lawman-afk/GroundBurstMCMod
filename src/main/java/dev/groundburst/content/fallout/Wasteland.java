@@ -25,7 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -307,7 +307,7 @@ public final class Wasteland {
             }
             int floor = low - DEPTH;
             boolean[] any = {false};
-            chunk.fillBiomesFromNoise((qx, qy, qz) -> {
+            chunk.fillBiomesFromNoise((qx, qy, qz, sampler_) -> {
                 Holder<Biome> now = chunk.getNoiseBiome(qx, qy, qz);
                 double bx = QuartPos.toBlock(qx) + 2, bz = QuartPos.toBlock(qz) + 2;
                 if (QuartPos.toBlock(qy) + 3 >= floor && inside(bx, bz) && !now.is(BIOME)) {
@@ -315,9 +315,9 @@ public final class Wasteland {
                     return wasteland;
                 }
                 return now;
-            });
+            }, null);
             if (any[0]) {
-                chunk.markUnsaved();
+                chunk.setUnsaved(true);
             }
             return any[0];
         }
@@ -376,7 +376,7 @@ public final class Wasteland {
         static @Nullable Lake start(ServerLevel level, Vec3 centre, float crater, @Nullable LongSet existing) {
             int cx = Mth.floor(centre.x), cz = Mth.floor(centre.z);
             BlockPos middle = new BlockPos(cx, Mth.floor(centre.y), cz);
-            if (level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, middle)) {
+            if (level.dimensionType().ultraWarm()) {
                 return null;                                   // water boils away here (the Nether)
             }
             boolean rains = level.dimension() == Level.OVERWORLD && level.getBiome(middle).value().hasPrecipitation();

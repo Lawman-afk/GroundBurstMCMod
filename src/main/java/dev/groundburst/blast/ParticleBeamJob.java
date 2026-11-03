@@ -110,12 +110,12 @@ final class ParticleBeamJob {
         this.y = ground(Mth.floor(this.x), Mth.floor(this.z), aim.getY());
         this.from = from == null ? new Vec3(this.x, this.y, this.z) : from;
         this.terrain = !dry && GBServerConfig.DESTROY_BLOCKS.get()
-                && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().identifier().toString());
+                && !GBServerConfig.PROTECTED_DIMENSIONS.get().contains(level.dimension().location().toString());
         BlockPos spawnAt = null;
         int spawnR = 0;
         if (GBServerConfig.PROTECT_SPAWN.get() && level.dimension() == Level.OVERWORLD) {
-            spawnAt = level.getRespawnData().pos();
-            spawnR = level.getServer() instanceof DedicatedServer server ? server.spawnProtectionRadius() : 16;
+            spawnAt = level.getSharedSpawnPos();
+            spawnR = level.getServer() instanceof DedicatedServer server ? server.getSpawnProtectionRadius() : 16;
         }
         this.spawn = spawnAt;
         this.spawnRadius = spawnR;
@@ -373,7 +373,7 @@ final class ParticleBeamJob {
         if (TerrainTable.sand(s)) {
             return GBFallout.GLASSED_SAND.block().get().defaultBlockState();
         }
-        if (TerrainTable.earth(s) || s.is(Blocks.CLAY) || s.is(BlockTags.MUD)) {
+        if (TerrainTable.earth(s) || s.is(Blocks.CLAY) || s.is(net.minecraft.world.level.block.Blocks.MUD)) {
             return GBFallout.SCORCHED_EARTH.block().get().defaultBlockState();
         }
         return TerrainTable.NUCLEAR_TABLE.scorched(s);

@@ -33,7 +33,7 @@ public class DecontaminationShowerBlockEntity extends MachineBlockEntity impleme
     public static final int ENERGY_PER_TICK = 20;
     public static final int WATER_PER_TICK = 10;
     /** Effects the shower washes off. */
-    public static final List<Holder<MobEffect>> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.NAUSEA);
+    public static final List<Holder<MobEffect>> WASHED = List.of(MobEffects.POISON, MobEffects.WITHER, MobEffects.CONFUSION);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 

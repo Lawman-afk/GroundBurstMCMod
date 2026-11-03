@@ -1,11 +1,15 @@
 {
   "type": "groundburst:pressing",
-  "catalyst": "groundburst:plate_die",
+  "catalyst": {
+    "item": "groundburst:plate_die"
+  },
   "energy_per_tick": 40,
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ingots/steel"
+      "ingredient": {
+        "tag": "c:ingots/steel"
+      }
     }
   ],
   "outputs": [

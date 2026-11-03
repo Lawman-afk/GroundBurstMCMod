@@ -9,7 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.RenderType;
@@ -57,7 +57,7 @@ final class Debris {
         Chunk(BlockState state, int tint, RandomSource r, double x, double y, double z, double vx, double vy, double vz, float size) {
             this.state = state;
             this.tint = tint;
-            this.sprite = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(state).particleMaterial().sprite();
+            this.sprite = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(state);
             // A random corner of the texture, as big as the chunk is (a chunk is a piece of a block, not a tiny block).
             float frac = Math.max(0.25f, Math.min(1, size));
             float fu = r.nextFloat() * (1 - frac), fv = r.nextFloat() * (1 - frac);
@@ -105,8 +105,8 @@ final class Debris {
 
     /** The tint a chunk of this block shows (grass and leaves green, most blocks white). */
     static int tint(BlockState state, ClientLevel level, BlockPos at) {
-        BlockTintSource source = Minecraft.getInstance().getBlockColors().getTintSource(state, 0);
-        return source == null ? 0xFFFFFF : source.colorAsTerrainParticle(state, level, at) & 0xFFFFFF;
+        int color = Minecraft.getInstance().getBlockColors().getColor(state, level, at, 0);
+        return color == -1 ? 0xFFFFFF : color & 0xFFFFFF;
     }
 
     void add(Chunk c, float quality) {
@@ -234,7 +234,7 @@ final class Debris {
                 continue;
             }
             this.pos.set(Math.floor(x), Math.floor(y), Math.floor(z));
-            int light = LightTexture.getLightCoords(level, this.pos);
+            int light = net.minecraft.client.renderer.LevelRenderer.getLightColor(level, this.pos);
             float angle = c.prevAngle + (c.angle - c.prevAngle) * partial;
             drawn.add(new float[] {(float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z), c.size * shrink, c.ax, c.ay, c.az,
                     angle, c.u0, c.v0, c.u1, c.v1, Float.intBitsToFloat(light), Float.intBitsToFloat(0xFF000000 | c.tint)});
@@ -246,9 +246,9 @@ final class Debris {
             Quaternionf q = new Quaternionf();
             for (float[] d : drawn) {
                 PoseStack.Pose local = pose.copy();
-                local.translate(d[0], d[1], d[2]);
-                local.rotate(q.identity().rotateAxis(d[7], d[4], d[5], d[6]));
-                local.scale(d[3], d[3], d[3]);
+                local.pose().translate(d[0], d[1], d[2]);
+                dev.groundburst.port.render.Poses.rotate(local, q.identity().rotateAxis(d[7], d[4], d[5], d[6]));
+                dev.groundburst.port.render.Poses.scale(local, d[3], d[3], d[3]);
                 cube(buffer, local, d[8], d[9], d[10], d[11], Float.floatToRawIntBits(d[12]), Float.floatToRawIntBits(d[13]));
             }
         });

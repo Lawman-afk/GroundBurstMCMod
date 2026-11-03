@@ -96,7 +96,7 @@ final class BlastChunks {
                     wanted.add(key);
                 } else if (k == null && this.asked.add(key)) {
                     this.level.getChunkSource().chunkMap.read(new ChunkPos(cx, cz)).thenAccept(tag -> this.known.put(key,
-                            tag.isPresent() && tag.get().getStringOr("Status", "").endsWith("full") ? Known.EXISTS : Known.MISSING))
+                            tag.isPresent() && dev.groundburst.port.Nbt.getStringOr(tag.get(), "Status", "").endsWith("full") ? Known.EXISTS : Known.MISSING))
                             .exceptionally(error -> {
                                 this.known.put(key, Known.MISSING);       // unreadable: treat as not there
                                 return null;

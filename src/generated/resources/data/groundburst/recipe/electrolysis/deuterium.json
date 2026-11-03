@@ -10,7 +10,9 @@
   "fluids": [
     {
       "amount": 8000,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "time": 400

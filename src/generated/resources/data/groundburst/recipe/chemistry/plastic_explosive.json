@@ -4,15 +4,21 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:rdx_crystals"
+      "ingredient": {
+        "item": "groundburst:rdx_crystals"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:plastic_sheet"
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:slime_balls"
+      "ingredient": {
+        "tag": "c:slime_balls"
+      }
     }
   ],
   "outputs": [

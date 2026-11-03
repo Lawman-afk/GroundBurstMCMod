@@ -27,7 +27,7 @@ public class DeadGrassBlock extends Block {
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos above = pos.above();
         BlockState over = level.getBlockState(above);
-        if (over.isSolidRender()) {
+        if (over.isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO)) {
             level.setBlockAndUpdate(pos, Blocks.DIRT.defaultBlockState());
             return;
         }

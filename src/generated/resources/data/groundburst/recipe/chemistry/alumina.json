@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:sulfuric_acid"
+      "ingredient": {
+        "tag": "c:sulfuric_acid"
+      }
     }
   ],
   "inputs": [
     {
       "count": 4,
-      "ingredient": "minecraft:clay_ball"
+      "ingredient": {
+        "item": "minecraft:clay_ball"
+      }
     }
   ],
   "outputs": [

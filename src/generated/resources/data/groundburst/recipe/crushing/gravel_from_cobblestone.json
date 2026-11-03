@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "minecraft:cobblestone"
+      "ingredient": {
+        "item": "minecraft:cobblestone"
+      }
     }
   ],
   "outputs": [

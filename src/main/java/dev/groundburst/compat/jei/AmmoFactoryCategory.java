@@ -11,7 +11,7 @@ import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * three, the arrow, the round; how long it takes and the power it draws under them.
  */
 final class AmmoFactoryCategory extends AbstractRecipeCategory<AmmoFactoryBlockEntity.Kind> {
-    static final IRecipeType<AmmoFactoryBlockEntity.Kind> TYPE = IRecipeType.create(GroundBurst.id("ammo_factory"), AmmoFactoryBlockEntity.Kind.class);
+    static final RecipeType<AmmoFactoryBlockEntity.Kind> TYPE = new RecipeType<>(GroundBurst.id("ammo_factory"), AmmoFactoryBlockEntity.Kind.class);
     static final String TITLE = GBSuperweapons.JEI_AMMO_TITLE, INFO = GBSuperweapons.JEI_AMMO_INFO;
     private static final int WIDTH = 150, HEIGHT = 52;
 
@@ -37,9 +37,9 @@ final class AmmoFactoryCategory extends AbstractRecipeCategory<AmmoFactoryBlockE
     public void setRecipe(IRecipeLayoutBuilder builder, AmmoFactoryBlockEntity.Kind kind, IFocusGroup focuses) {
         for (int i = 0; i < kind.inputs.size(); i++) {
             AmmoFactoryBlockEntity.Input in = kind.inputs.get(i);
-            builder.addInputSlot(1 + (i % 3) * 18, 1 + (i / 3) * 20).setStandardSlotBackground().add(new ItemStack(in.item().get(), in.count()));
+            builder.addInputSlot(1 + (i % 3) * 18, 1 + (i / 3) * 20).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(new ItemStack(in.item().get(), in.count())));
         }
-        builder.addOutputSlot(100, 11).setOutputSlotBackground().add(new ItemStack(kind.output()));
+        builder.addOutputSlot(100, 11).setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(new ItemStack(kind.output())));
     }
 
     @Override

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:irradiated_li6_target_rod"
+      "ingredient": {
+        "item": "groundburst:irradiated_li6_target_rod"
+      }
     }
   ],
   "outputs": [

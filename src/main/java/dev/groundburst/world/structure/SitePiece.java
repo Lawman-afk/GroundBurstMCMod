@@ -54,12 +54,12 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     }
 
     public SitePiece(StructureTemplateManager templates, CompoundTag tag) {
-        super(GBStructures.SITE_PIECE.get(), tag, templates, id -> settings(tag.read("Rot", Rotation.LEGACY_CODEC).orElse(Rotation.NONE),
-                tag.getFloatOr("Integrity", 1), tag.getStringOr("Weathering", Weathering.NONE)));
-        this.terrain = tag.read("Terrain", TerrainAdjustment.CODEC).orElse(TerrainAdjustment.NONE);
-        this.integrity = tag.getFloatOr("Integrity", 1);
-        this.weathering = tag.getStringOr("Weathering", Weathering.NONE);
-        this.ground = tag.getIntOr("Ground", this.boundingBox.minY());
+        super(GBStructures.SITE_PIECE.get(), tag, templates, id -> settings(dev.groundburst.port.Nbt.read(tag, "Rot", dev.groundburst.port.LegacyCodecs.ROTATION).orElse(Rotation.NONE),
+                dev.groundburst.port.Nbt.getFloatOr(tag, "Integrity", 1), dev.groundburst.port.Nbt.getStringOr(tag, "Weathering", Weathering.NONE)));
+        this.terrain = dev.groundburst.port.Nbt.read(tag, "Terrain", TerrainAdjustment.CODEC).orElse(TerrainAdjustment.NONE);
+        this.integrity = dev.groundburst.port.Nbt.getFloatOr(tag, "Integrity", 1);
+        this.weathering = dev.groundburst.port.Nbt.getStringOr(tag, "Weathering", Weathering.NONE);
+        this.ground = dev.groundburst.port.Nbt.getIntOr(tag, "Ground", this.boundingBox.minY());
     }
 
     static StructurePlaceSettings settings(Rotation rotation, float integrity, String weathering) {
@@ -75,8 +75,8 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     @Override
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
-        tag.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
-        tag.store("Terrain", TerrainAdjustment.CODEC, this.terrain);
+        dev.groundburst.port.Nbt.store(tag, "Rot", dev.groundburst.port.LegacyCodecs.ROTATION, this.placeSettings.getRotation());
+        dev.groundburst.port.Nbt.store(tag, "Terrain", TerrainAdjustment.CODEC, this.terrain);
         tag.putFloat("Integrity", this.integrity);
         tag.putString("Weathering", this.weathering);
         tag.putInt("Ground", this.ground);
@@ -128,7 +128,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
                     y--;
                 }
                 BlockState ground = level.getBlockState(at.set(x, y, z));
-                BlockState fill = ground.is(net.minecraft.tags.BlockTags.DIRT) || !ground.isSolidRender() ? Blocks.DIRT.defaultBlockState() : ground;
+                BlockState fill = ground.is(net.minecraft.tags.BlockTags.DIRT) || !ground.isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO) ? Blocks.DIRT.defaultBlockState() : ground;
                 for (int k = y + 1; k < base; k++) {
                     level.setBlock(at.set(x, k, z), fill, 2);
                 }
@@ -156,7 +156,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
             default -> 0;
         } : 0;
         ArmorStand stand = new ArmorStand(level.getLevel(), at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
-        stand.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, yaw(this.placeSettings.getRotation()) + facing, 0);
+        stand.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, yaw(this.placeSettings.getRotation()) + facing, 0);
         var set = switch (kind) {
             case "hazmat" -> GBArmor.HAZMAT_SET;
             case "lead" -> GBArmor.LEAD_HAZMAT_SET;
@@ -179,7 +179,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
             for (int k = 1; k < 4; k++) {
                 ItemStack piece = new ItemStack(wear[k]);
                 piece.set(net.minecraft.core.component.DataComponents.DYED_COLOR,
-                        new net.minecraft.world.item.component.DyedItemColor(cloth[random.nextInt(cloth.length)]));
+                        new net.minecraft.world.item.component.DyedItemColor(cloth[random.nextInt(cloth.length)], true));
                 stand.setItemSlot(slots[k], piece);
             }
         }

@@ -4,29 +4,41 @@
   "fluids": [
     {
       "amount": 500,
-      "ingredient": "#c:photoresist"
+      "ingredient": {
+        "tag": "c:photoresist"
+      }
     },
     {
       "amount": 500,
-      "ingredient": "#c:hydrofluoric_acid"
+      "ingredient": {
+        "tag": "c:hydrofluoric_acid"
+      }
     },
     {
       "amount": 1000,
-      "ingredient": "#c:argon"
+      "ingredient": {
+        "tag": "c:argon"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:sapphire_wafer"
+      "ingredient": {
+        "item": "groundburst:sapphire_wafer"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:stabilised_exotic_matter"
+      "ingredient": {
+        "item": "groundburst:stabilised_exotic_matter"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:ceramic_package"
+      "ingredient": {
+        "item": "groundburst:ceramic_package"
+      }
     }
   ],
   "outputs": [

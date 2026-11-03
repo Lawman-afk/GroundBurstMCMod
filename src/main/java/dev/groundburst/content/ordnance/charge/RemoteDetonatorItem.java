@@ -73,7 +73,7 @@ public class RemoteDetonatorItem extends Item {
             player.displayClientMessage(n > 0 ? Component.translatable(FIRED, n).withStyle(ChatFormatting.RED)
                     : Component.translatable(NOTHING, f).withStyle(ChatFormatting.GRAY), true);
         }
-        player.getCooldowns().addCooldown(stack, 10);
+        player.getCooldowns().addCooldown(stack.getItem(), 10);
         return dev.groundburst.port.Results.holder(InteractionResult.SUCCESS, player, hand);
     }
 

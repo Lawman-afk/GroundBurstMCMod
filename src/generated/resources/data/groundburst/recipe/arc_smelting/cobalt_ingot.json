@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 8,
-      "ingredient": "#c:dusts/cobalt"
+      "ingredient": {
+        "tag": "c:dusts/cobalt"
+      }
     }
   ],
   "outputs": [

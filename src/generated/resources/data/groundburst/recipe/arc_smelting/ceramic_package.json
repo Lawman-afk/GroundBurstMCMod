@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 2,
-      "ingredient": "minecraft:clay_ball"
+      "ingredient": {
+        "item": "minecraft:clay_ball"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:wires/gold"
+      "ingredient": {
+        "tag": "c:wires/gold"
+      }
     }
   ],
   "outputs": [

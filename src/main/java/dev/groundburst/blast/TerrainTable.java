@@ -87,7 +87,7 @@ public enum TerrainTable {
      * wood charred.
      */
     private static @Nullable BlockState burnt(BlockState state) {
-        if (earth(state) || state.is(Blocks.DIRT_PATH) || state.is(BlockTags.MUD)) {
+        if (earth(state) || state.is(Blocks.DIRT_PATH) || state.is(net.minecraft.world.level.block.Blocks.MUD)) {
             return GBFallout.SCORCHED_EARTH.block().get().defaultBlockState();
         }
         if (rock(state)) {
@@ -97,7 +97,7 @@ public enum TerrainTable {
             return GBFallout.GLASSED_SAND.block().get().defaultBlockState();
         }
         if (state.is(BlockTags.LOGS) && state.hasProperty(RotatedPillarBlock.AXIS)) {
-            String path = state.getBlock().builtInRegistryHolder().key().identifier().getPath();
+            String path = state.getBlock().builtInRegistryHolder().key().location().getPath();
             RotatedPillarBlock charred = path.endsWith("_wood") || path.endsWith("_hyphae") ? GBFallout.CHARRED_WOOD.block().get()
                     : GBFallout.CHARRED_LOG.block().get();
             return charred.defaultBlockState().setValue(RotatedPillarBlock.AXIS, state.getValue(RotatedPillarBlock.AXIS));
@@ -140,6 +140,6 @@ public enum TerrainTable {
 
     /** Earth: dirt, grass blocks (grass, podzol, mycelium, and dead grass), moss, farmland. */
     static boolean earth(BlockState state) {
-        return state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS) || state.is(BlockTags.MOSS_BLOCKS) || state.is(Blocks.FARMLAND);
+        return state.is(BlockTags.DIRT) || state.is(BlockTags.DIRT) || state.is(net.minecraft.world.level.block.Blocks.MOSS_BLOCK) || state.is(Blocks.FARMLAND);
     }
 }

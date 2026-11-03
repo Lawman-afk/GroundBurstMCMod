@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:raw_materials/gold"
+      "ingredient": {
+        "tag": "c:raw_materials/gold"
+      }
     }
   ],
   "outputs": [

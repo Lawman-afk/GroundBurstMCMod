@@ -1,6 +1,11 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "groundburst:item/geiger_counter"
+  "loader": "neoforge:separate_transforms",
+  "base": {
+    "parent": "groundburst:item/geiger_counter_in_hand"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "groundburst:item/geiger_counter_own"
+    }
   }
 }

@@ -4,19 +4,27 @@
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:circuits/advanced"
+      "ingredient": {
+        "tag": "c:circuits/advanced"
+      }
     },
     {
       "count": 2,
-      "ingredient": "groundburst:rad_hard_microchip"
+      "ingredient": {
+        "item": "groundburst:rad_hard_microchip"
+      }
     },
     {
       "count": 2,
-      "ingredient": "#c:wires/gold"
+      "ingredient": {
+        "tag": "c:wires/gold"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:gems/diamond"
+      "ingredient": {
+        "tag": "c:gems/diamond"
+      }
     }
   ],
   "outputs": [

@@ -54,6 +54,16 @@ public final class GuiGraphicsExtractor {
 
     public void requestCursor(Object cursorType) {}
 
+    /** 26.x draws a 3D view into a texture and the texture into the screen; 1.21.1 draws the view straight in. */
+    public void submitPictureInPictureRenderState(dev.groundburst.port.render.PictureInPicture view) {
+        view.draw(this.g);
+    }
+
+    /** The area 26.x clips a picture-in-picture view to (1.21.1's views clip to their own bounds). */
+    public net.minecraft.client.gui.navigation.@Nullable ScreenRectangle peekScissorStack() {
+        return null;
+    }
+
     public void enableScissor(int x0, int y0, int x1, int y1) {
         this.g.enableScissor(x0, y0, x1, y1);
     }
@@ -148,6 +158,12 @@ public final class GuiGraphicsExtractor {
     public void blit(RenderPipeline pipeline, ResourceLocation texture, int x, int y, float u, float v, int width, int height,
             int srcWidth, int srcHeight, int textureWidth, int textureHeight, int color) {
         tinted(color, () -> this.g.blit(texture, x, y, width, height, u, v, srcWidth, srcHeight, textureWidth, textureHeight));
+    }
+
+    /** A texture's UV rectangle (as fractions of it) stretched over (x0, y0)-(x1, y1). */
+    public void blit(ResourceLocation texture, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1) {
+        final int s = 1 << 16;   // 1.21.1's blit takes the texture's size in whole pixels: a large one keeps the fractions
+        this.g.blit(texture, x0, y0, x1 - x0, y1 - y0, u0 * s, v0 * s, Math.round((u1 - u0) * s), Math.round((v1 - v0) * s), s, s);
     }
 
     public void blitSprite(RenderPipeline pipeline, ResourceLocation sprite, int x, int y, int width, int height) {

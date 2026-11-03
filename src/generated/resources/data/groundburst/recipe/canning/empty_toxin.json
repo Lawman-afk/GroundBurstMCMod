@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:toxin_canister"
+      "ingredient": {
+        "item": "groundburst:toxin_canister"
+      }
     }
   ],
   "outputs": [

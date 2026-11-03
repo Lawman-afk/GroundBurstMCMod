@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "groundburst:item/ore_crusher",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

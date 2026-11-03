@@ -4,11 +4,15 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:dusts/iron"
+      "ingredient": {
+        "tag": "c:dusts/iron"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#minecraft:coals"
+      "ingredient": {
+        "tag": "minecraft:coals"
+      }
     }
   ],
   "outputs": [

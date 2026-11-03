@@ -493,7 +493,7 @@ public class LaunchComputerScreen extends Screen {
         int textW = CW - 6 - (bar ? 4 : 0);
         // The rows are drawn in small type so whole messages fit; widths below are in that type's units. Each font
         // pixel is drawn a whole number of screen pixels on the screen-pixel grid, or rows of it would be dropped.
-        int gs = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        int gs = Math.max(1, ((int) Minecraft.getInstance().getWindow().getGuiScale()));
         float scale = listTextScale(gs);
         int room = (int) (textW / scale);
         for (int i = 0; i < ROWS && this.scroll + i < silos.size(); i++) {

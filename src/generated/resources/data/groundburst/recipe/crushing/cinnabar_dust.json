@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "minecraft:cinnabar"
+      "ingredient": {
+        "item": "minecraft:cinnabar"
+      }
     }
   ],
   "outputs": [

@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:sulfuric_acid_canister"
+      "ingredient": {
+        "item": "groundburst:sulfuric_acid_canister"
+      }
     }
   ],
   "outputs": [

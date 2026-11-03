@@ -13,7 +13,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeHolderType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -21,7 +21,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.fluids.FluidStackTemplate;
+import dev.groundburst.port.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 /**
@@ -33,7 +33,7 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
     private static final int WIDTH = 150, HEIGHT = 66;
     private static final NumberFormat NUM = NumberFormat.getIntegerInstance(Locale.ROOT);
 
-    ProcessingCategory(IRecipeHolderType<ProcessingRecipe> type, ItemLike machine, IGuiHelper gui) {
+    ProcessingCategory(RecipeType<net.minecraft.world.item.crafting.RecipeHolder<ProcessingRecipe>> type, ItemLike machine, IGuiHelper gui) {
         super(type, machine.asItem().getDefaultInstance().getHoverName(), gui.createDrawableItemLike(machine), WIDTH, HEIGHT);
     }
 
@@ -49,15 +49,15 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
         for (SizedFluidIngredient fluid : recipe.fluids()) {
             IRecipeSlotBuilder slot = builder.addInputSlot(cellX(cell), cellY(cell)).setStandardSlotBackground();
             // Tags hold flowing variants too; showing them would make the slot blink through an invisible fluid.
-            for (var f : fluid.ingredient().fluids()) {
+            for (var f : dev.groundburst.port.Ingredients.fluids(fluid.ingredient())) {
                 if (f.value().isSource(f.value().defaultFluidState())) {
-                    slot.add(f.value(), fluid.amount());
+                    slot.addIngredientsUnsafe(dev.groundburst.port.Jei.of(f.value(), fluid.amount()));
                 }
             }
             cell++;
         }
         if (recipe.catalyst().isPresent()) {
-            builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, cellX(cell), cellY(cell)).setStandardSlotBackground().add(recipe.catalyst().get())
+            builder.addSlot(RecipeIngredientRole.CATALYST, cellX(cell), cellY(cell)).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.catalyst().get()))
                     .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(MachineText.RECIPE_NOT_CONSUMED).withStyle(ChatFormatting.GRAY)));
             cell++;
         }
@@ -66,7 +66,7 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
         int x = 77;
         for (ProcessingRecipe.Output out : recipe.outputs()) {
             IRecipeSlotBuilder slot = builder.addOutputSlot(x, y);
-            slot.setOutputSlotBackground().add(out.item());
+            slot.setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(out.item()));
             if (out.chance() < 1f) {
                 int pct = Math.round(out.chance() * 100);
                 slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(MachineText.RECIPE_CHANCE, pct).withStyle(ChatFormatting.GOLD)));
@@ -74,7 +74,7 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
             x += 26;
         }
         for (FluidStackTemplate out : recipe.fluidOutputs()) {
-            builder.addOutputSlot(x, y).setOutputSlotBackground().add(out.fluid().value(), out.amount());
+            builder.addOutputSlot(x, y).setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(out.fluid().value(), out.amount()));
             x += 26;
         }
     }
@@ -109,6 +109,6 @@ final class ProcessingCategory extends AbstractRecipeCategory<RecipeHolder<Proce
     }
 
     private static List<ItemStack> stacks(Ingredient ingredient, int count) {
-        return ingredient.items().map(item -> new ItemStack(item, count)).toList();
+        return dev.groundburst.port.Ingredients.items(ingredient).map(item -> new ItemStack(item, count)).toList();
     }
 }

@@ -14,7 +14,7 @@ import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +28,7 @@ final class SpecialWeaponsCategory extends AbstractRecipeCategory<SpecialWeapons
     /** One weapon the assembler builds, from its core. */
     record Recipe(ItemStack core) {}
 
-    static final IRecipeType<Recipe> TYPE = IRecipeType.create(GroundBurst.id("special_weapons"), Recipe.class);
+    static final RecipeType<Recipe> TYPE = new RecipeType<>(GroundBurst.id("special_weapons"), Recipe.class);
     private static final int WIDTH = 150, HEIGHT = 50;
 
     SpecialWeaponsCategory(IGuiHelper gui) {
@@ -47,15 +47,15 @@ final class SpecialWeaponsCategory extends AbstractRecipeCategory<SpecialWeapons
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
-        builder.addInputSlot(19, 1).setStandardSlotBackground().add(recipe.core());
-        builder.addInputSlot(1, 21).setStandardSlotBackground().add(GBStrategic.INTERCONTINENTAL_BOOSTER.get());
+        builder.addInputSlot(19, 1).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(recipe.core()));
+        builder.addInputSlot(1, 21).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(GBStrategic.INTERCONTINENTAL_BOOSTER.get()));
         builder.addInputSlot(19, 21).setStandardSlotBackground()
                 .addItemStacks(List.of(new ItemStack(GBAssembly.INERTIAL_GUIDANCE.get()), new ItemStack(GBAssembly.GPS_GUIDANCE.get()),
                         new ItemStack(GBAssembly.LASER_GUIDANCE.get())))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addInputSlot(37, 21).setStandardSlotBackground().add(GBAssembly.HARDENED_ELECTRONICS.get())
+        builder.addInputSlot(37, 21).setStandardSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(GBAssembly.HARDENED_ELECTRONICS.get()))
                 .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(WarheadAssembly.JEI_OPTIONAL).withStyle(ChatFormatting.GRAY)));
-        builder.addOutputSlot(100, 11).setOutputSlotBackground().add(output(recipe));
+        builder.addOutputSlot(100, 11).setOutputSlotBackground().addIngredientsUnsafe(dev.groundburst.port.Jei.of(output(recipe)));
     }
 
     @Override

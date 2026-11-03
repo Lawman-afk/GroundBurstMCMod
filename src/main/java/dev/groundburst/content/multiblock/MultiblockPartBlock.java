@@ -50,7 +50,7 @@ public class MultiblockPartBlock extends Block {
 
     @Override
     protected VoxelShape getOcclusionShape(BlockState state, net.minecraft.world.level.BlockGetter level_, BlockPos pos_) {
-        return state.getValue(FORMED) ? Shapes.empty() : super.getOcclusionShape(state);
+        return state.getValue(FORMED) ? Shapes.empty() : super.getOcclusionShape(state, level_, pos_);
     }
 
     @Override

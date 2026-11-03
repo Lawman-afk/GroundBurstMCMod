@@ -4,15 +4,21 @@
   "inputs": [
     {
       "count": 2,
-      "ingredient": "#c:wires/copper"
+      "ingredient": {
+        "tag": "c:wires/copper"
+      }
     },
     {
       "count": 2,
-      "ingredient": "#c:dusts/redstone"
+      "ingredient": {
+        "tag": "c:dusts/redstone"
+      }
     },
     {
       "count": 1,
-      "ingredient": "groundburst:plastic_sheet"
+      "ingredient": {
+        "item": "groundburst:plastic_sheet"
+      }
     }
   ],
   "outputs": [

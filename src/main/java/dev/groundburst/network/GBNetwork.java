@@ -23,9 +23,9 @@ public final class GBNetwork {
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
         // Blast sync (DESIGN.md §12): handled on the client by BlastSounds (and the Spectacle effects).
-        registrar.playToClient(dev.groundburst.blast.BlastPayloads.Start.TYPE, dev.groundburst.blast.BlastPayloads.Start.CODEC);
-        registrar.playToClient(dev.groundburst.blast.BlastPayloads.Front.TYPE, dev.groundburst.blast.BlastPayloads.Front.CODEC);
-        registrar.playToClient(dev.groundburst.blast.BlastPayloads.End.TYPE, dev.groundburst.blast.BlastPayloads.End.CODEC);
+        registrar.playToClient(dev.groundburst.blast.BlastPayloads.Start.TYPE, dev.groundburst.blast.BlastPayloads.Start.CODEC, dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.handler(dev.groundburst.blast.BlastPayloads.Start.TYPE));
+        registrar.playToClient(dev.groundburst.blast.BlastPayloads.Front.TYPE, dev.groundburst.blast.BlastPayloads.Front.CODEC, dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.handler(dev.groundburst.blast.BlastPayloads.Front.TYPE));
+        registrar.playToClient(dev.groundburst.blast.BlastPayloads.End.TYPE, dev.groundburst.blast.BlastPayloads.End.CODEC, dev.groundburst.port.net.RegisterClientPayloadHandlersEvent.handler(dev.groundburst.blast.BlastPayloads.End.TYPE));
         // Annihilations (DESIGN.md §16.3): an antimatter warhead's sphere, drawn on the client by AnnihilationFx.
         registrar.playToClient(dev.groundburst.blast.AnnihilationPayloads.Start.TYPE, dev.groundburst.blast.AnnihilationPayloads.Start.CODEC,
                 (payload, context) -> dev.groundburst.blast.AnnihilationPayloads.startHook.accept(payload));

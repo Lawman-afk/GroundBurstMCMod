@@ -10,17 +10,23 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:synthetic_fuel"
+      "ingredient": {
+        "tag": "c:synthetic_fuel"
+      }
     }
   ],
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:rdx_crystals"
+      "ingredient": {
+        "item": "groundburst:rdx_crystals"
+      }
     },
     {
       "count": 1,
-      "ingredient": "#c:dusts/iron"
+      "ingredient": {
+        "tag": "c:dusts/iron"
+      }
     }
   ],
   "time": 300

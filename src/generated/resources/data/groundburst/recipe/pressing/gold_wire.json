@@ -1,11 +1,15 @@
 {
   "type": "groundburst:pressing",
-  "catalyst": "groundburst:wire_die",
+  "catalyst": {
+    "item": "groundburst:wire_die"
+  },
   "energy_per_tick": 40,
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ingots/gold"
+      "ingredient": {
+        "tag": "c:ingots/gold"
+      }
     }
   ],
   "outputs": [

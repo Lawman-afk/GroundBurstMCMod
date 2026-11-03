@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:ingots/depleted_uranium"
+      "ingredient": {
+        "tag": "c:ingots/depleted_uranium"
+      }
     }
   ],
   "outputs": [

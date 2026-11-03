@@ -10,7 +10,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "groundburst:synthetic_fuel_canister"
+      "ingredient": {
+        "item": "groundburst:synthetic_fuel_canister"
+      }
     }
   ],
   "outputs": [

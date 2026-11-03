@@ -136,7 +136,7 @@ final class Puffs {
             int color = lerpRgb(p.color0, p.color1, (float) Math.pow(u, p.kind == Kind.GLOW || p.kind == Kind.FIRE ? 0.8 : 0.6));
             if (p.kind.lit) {
                 pos.set(Math.floor(at[0]), Math.floor(at[1]), Math.floor(at[2]));
-                int coords = LightTexture.getLightCoords(level, pos);
+                int coords = net.minecraft.client.renderer.LevelRenderer.getLightColor(level, pos);
                 float world = Math.max(0.07f, Math.max(LightTexture.sky(coords) / 15f, LightTexture.block(coords) / 15f * 0.7f));
                 // Out from the plume's axis and up: the plume's sunny side and top are lit, its far side in shade.
                 float nx = 0, nz = 0;

@@ -60,8 +60,8 @@ public final class GBStructures {
      */
     public static net.minecraft.world.level.levelgen.structure.BoundingBox preview(net.minecraft.server.level.ServerLevel level, String name,
             int variant, net.minecraft.core.BlockPos origin, boolean ground, @org.jspecify.annotations.Nullable Integer cutZ) {
-        SiteStructure site = (SiteStructure) level.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(structure(name));
-        var templates = level.getStructureTemplateManager();
+        SiteStructure site = (SiteStructure) level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(structure(name));
+        var templates = level.getStructureManager();
         java.util.List<SitePiece> pieces = new java.util.ArrayList<>();
         for (SiteStructure.Part part : site.variants().get(variant).parts()) {
             pieces.add(new SitePiece(templates, part, origin.offset(part.offset()), net.minecraft.world.level.block.Rotation.NONE, origin.getY()));

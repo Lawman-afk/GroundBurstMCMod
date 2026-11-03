@@ -82,8 +82,7 @@ final class BlastJob implements Blast {
     static final float AIR_COST = 0.05f;
     static final float FLUID_COST = 0.6f;
     /** Block set flags: tell clients, skip neighbour shape updates, drops, block-entity side effects and on-place hooks. */
-    static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS
-            | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS | Block.UPDATE_SKIP_ON_PLACE;
+    static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     /** How far down from the fireball's height the ground pass looks for a column's ground. */
     private static final int GROUND_SCAN = 64;
@@ -594,7 +593,7 @@ final class BlastJob implements Blast {
         if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.GRAVELS) || state.is(Tags.Blocks.COBBLESTONES)) {
             return 0;
         }
-        if (state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS)) {          // (26.3 took grass blocks out of the dirt tag)
+        if (state.is(BlockTags.DIRT) || state.is(BlockTags.DIRT)) {          // (26.3 took grass blocks out of the dirt tag)
             return 2;
         }
         if (state.is(BlockTags.SAND)) {

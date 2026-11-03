@@ -56,7 +56,7 @@ public class MachineBlock extends BaseEntityBlock {
         super(properties);
         this.type = type;
         this.geckoRendered = geckoRendered;
-        this.shapes = net.minecraft.world.phys.shapes.Shapes.rotateHorizontal(shape);
+        this.shapes = dev.groundburst.port.Shapes2.rotateHorizontal(shape);
         registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
     }
 
@@ -113,19 +113,19 @@ public class MachineBlock extends BaseEntityBlock {
     }
 
     /** Shared with formed multiblock parts, which pass the click on to their controller. */
-    public static InteractionResult useFluidContainer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+    public static net.minecraft.world.ItemInteractionResult useFluidContainer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
         MachineBlockEntity machine = MachineFluidInteraction.machineAt(level, pos, state);
         if (machine == null || machine.tanks().isEmpty() || !MachineFluidInteraction.isFluidContainer(player, hand)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
+            return net.minecraft.world.ItemInteractionResult.SUCCESS;
         }
         if (MachineFluidInteraction.use(machine, level, pos, player, hand)) {
-            return InteractionResult.SUCCESS;
+            return net.minecraft.world.ItemInteractionResult.SUCCESS;
         }
         // Nothing to pour or fill: sneaking does nothing, a plain click opens the machine.
-        return player.isSecondaryUseActive() ? InteractionResult.CONSUME : InteractionResult.TRY_WITH_EMPTY_HAND;
+        return player.isSecondaryUseActive() ? net.minecraft.world.ItemInteractionResult.CONSUME : net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

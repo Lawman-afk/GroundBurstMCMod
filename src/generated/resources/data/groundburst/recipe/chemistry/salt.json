@@ -4,13 +4,17 @@
   "fluids": [
     {
       "amount": 1000,
-      "ingredient": "#c:water"
+      "ingredient": {
+        "tag": "c:water"
+      }
     }
   ],
   "inputs": [
     {
       "count": 4,
-      "ingredient": "minecraft:dried_kelp"
+      "ingredient": {
+        "item": "minecraft:dried_kelp"
+      }
     }
   ],
   "outputs": [

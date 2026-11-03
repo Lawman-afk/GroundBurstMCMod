@@ -44,8 +44,8 @@ public final class Weathering {
                 turn(rules, Blocks.LANTERN, 0.4f, Blocks.AIR);
                 turn(rules, Blocks.SPRUCE_PLANKS, 0.06f, Blocks.AIR);
                 turn(rules, Blocks.OAK_PLANKS, 0.06f, Blocks.AIR);
-                turn(rules, Blocks.CONCRETE.pick(DyeColor.LIGHT_GRAY), 0.08f, Blocks.CONCRETE_POWDER.pick(DyeColor.LIGHT_GRAY));
-                turn(rules, Blocks.CONCRETE.pick(DyeColor.GRAY), 0.06f, Blocks.DYED_TERRACOTTA.pick(DyeColor.CYAN));
+                turn(rules, Blocks.LIGHT_GRAY_CONCRETE, 0.08f, Blocks.LIGHT_GRAY_CONCRETE_POWDER);
+                turn(rules, Blocks.GRAY_CONCRETE, 0.06f, Blocks.CYAN_TERRACOTTA);
             }
             case END -> {
                 turn(rules, Blocks.GLASS_PANE, 0.3f, Blocks.AIR);

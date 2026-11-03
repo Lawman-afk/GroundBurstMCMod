@@ -4,7 +4,9 @@
   "inputs": [
     {
       "count": 1,
-      "ingredient": "#c:dusts/tungsten"
+      "ingredient": {
+        "tag": "c:dusts/tungsten"
+      }
     }
   ],
   "outputs": [

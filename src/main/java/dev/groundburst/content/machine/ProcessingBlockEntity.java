@@ -104,7 +104,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
             return true;
         }
         FluidStack probe = resource.toStack(1000);
-        for (RecipeHolder<ProcessingRecipe> holder : server.recipeAccess().recipeMap().byType(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : server.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
             for (var fluid : holder.value().fluids()) {
                 if (fluid.ingredient().test(probe)) {
                     return true;
@@ -116,7 +116,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
 
     /** True if some recipe of this machine's kind uses the item as an ingredient (or as its catalyst). */
     private boolean usedByRecipe(ServerLevel level, ItemStack stack, boolean asCatalyst) {
-        for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : level.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
             if (asCatalyst) {
                 if (recipe.catalyst().isPresent() && recipe.catalyst().get().test(stack)) {
@@ -185,7 +185,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
         if (this.cached != null && this.cached.value().matches(input, level)) {
             return Optional.of(this.cached);
         }
-        Optional<RecipeHolder<ProcessingRecipe>> found = level.recipeAccess().getRecipeFor(GBRecipes.type(this.kind), input, level);
+        Optional<RecipeHolder<ProcessingRecipe>> found = level.getRecipeManager().getRecipeFor(GBRecipes.type(this.kind), input, level);
         this.cached = found.orElse(null);
         return found;
     }
@@ -232,7 +232,7 @@ public abstract class ProcessingBlockEntity extends MachineBlockEntity {
      * counts once one of its fluids is in a tank (a separator with a single bucket of water).
      */
     private boolean shortOfFluid(ServerLevel level, MachineRecipeInput input) {
-        for (RecipeHolder<ProcessingRecipe> holder : level.recipeAccess().recipeMap().byType(GBRecipes.type(this.kind))) {
+        for (RecipeHolder<ProcessingRecipe> holder : level.getRecipeManager().getAllRecipesFor(GBRecipes.type(this.kind))) {
             ProcessingRecipe recipe = holder.value();
             if (recipe.fluids().isEmpty() || recipe.assignSlots(input) == null || !recipe.catalystFits(input.catalyst())) {
                 continue;

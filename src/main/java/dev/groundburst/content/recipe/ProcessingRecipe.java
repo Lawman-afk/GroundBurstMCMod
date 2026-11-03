@@ -7,22 +7,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import dev.groundburst.port.FluidStackTemplate;
+import dev.groundburst.port.ItemStackTemplate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 /**
@@ -49,7 +48,7 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     public record Output(ItemStackTemplate item, float chance) {
         public static final Codec<Output> CODEC = RecordCodecBuilder.create(i -> i.group(
                 ItemStackTemplate.CODEC.fieldOf("item").forGetter(Output::item),
-                ExtraCodecs.floatRange(0, 1).optionalFieldOf("chance", 1f).forGetter(Output::chance)
+                Codec.floatRange(0, 1).optionalFieldOf("chance", 1f).forGetter(Output::chance)
         ).apply(i, Output::new));
         public static final StreamCodec<RegistryFriendlyByteBuf, Output> STREAM_CODEC = StreamCodec.composite(
                 ItemStackTemplate.STREAM_CODEC, Output::item, ByteBufCodecs.FLOAT, Output::chance, Output::new);
@@ -58,8 +57,8 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     static MapCodec<ProcessingRecipe> codec(ProcessingKind kind) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 SizedIngredient.NESTED_CODEC.listOf(0, 9).optionalFieldOf("inputs", List.of()).forGetter(ProcessingRecipe::inputs),
-                Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
-                SizedFluidIngredient.CODEC.listOf(0, 4).optionalFieldOf("fluids", List.of()).forGetter(ProcessingRecipe::fluids),
+                Ingredient.CODEC_NONEMPTY.optionalFieldOf("catalyst").forGetter(ProcessingRecipe::catalyst),
+                SizedFluidIngredient.NESTED_CODEC.listOf(0, 4).optionalFieldOf("fluids", List.of()).forGetter(ProcessingRecipe::fluids),
                 Output.CODEC.listOf(0, 9).optionalFieldOf("outputs", List.of()).forGetter(ProcessingRecipe::outputs),
                 FluidStackTemplate.CODEC.listOf(0, 4).optionalFieldOf("fluid_outputs", List.of()).forGetter(ProcessingRecipe::fluidOutputs),
                 ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(ProcessingRecipe::time),
@@ -68,9 +67,9 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     }
 
     static StreamCodec<RegistryFriendlyByteBuf, ProcessingRecipe> streamCodec(ProcessingKind kind) {
-        return StreamCodec.composite(
+        return net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs.composite(
                 SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::inputs,
-                Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, ProcessingRecipe::catalyst,
+                ByteBufCodecs.optional(Ingredient.CONTENTS_STREAM_CODEC), ProcessingRecipe::catalyst,
                 SizedFluidIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluids,
                 Output.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::outputs,
                 FluidStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list()), ProcessingRecipe::fluidOutputs,
@@ -143,9 +142,28 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
         return assignment;
     }
 
-    @Override
     public ItemStack assemble(MachineRecipeInput input) {
         return this.outputs.isEmpty() ? ItemStack.EMPTY : this.outputs.getFirst().item().create();
+    }
+
+    @Override
+    public ItemStack assemble(MachineRecipeInput input, HolderLookup.Provider registries) {
+        return assemble(input);
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
+        return this.outputs.isEmpty() ? ItemStack.EMPTY : this.outputs.getFirst().item().create();
+    }
+
+    @Override
+    public boolean isIncomplete() {
+        return false;   // 1.21.1 counts a recipe with no ingredient list as incomplete; these keep their own
     }
 
     @Override
@@ -154,7 +172,7 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     }
 
     @Override
-    public String group() {
+    public String getGroup() {
         return "";
     }
 
@@ -171,15 +189,5 @@ public record ProcessingRecipe(ProcessingKind kind, List<SizedIngredient> inputs
     @Override
     public RecipeType<? extends Recipe<MachineRecipeInput>> getType() {
         return GBRecipes.type(this.kind);
-    }
-
-    @Override
-    public PlacementInfo placementInfo() {
-        return PlacementInfo.NOT_PLACEABLE;
-    }
-
-    @Override
-    public RecipeBookCategory recipeBookCategory() {
-        return GBRecipes.MACHINE_CATEGORY.get();
     }
 }

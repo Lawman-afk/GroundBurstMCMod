@@ -69,7 +69,7 @@ public final class Radiation {
 
     /** Whether radiation does nothing to {@code body}: the undead, armour stands, players in creative or spectator. */
     public static boolean immune(LivingEntity body) {
-        return body.is(EntityTypeTags.UNDEAD) || body instanceof ArmorStand || body instanceof Player p && (p.isCreative() || p.isSpectator());
+        return body.getType().is(EntityTypeTags.UNDEAD) || body instanceof ArmorStand || body instanceof Player p && (p.isCreative() || p.isSpectator());
     }
 
     public static RadiationState state(LivingEntity body) {
@@ -181,14 +181,14 @@ public final class Radiation {
         RandomSource random = body.getRandom();
         body.addEffect(new MobEffectInstance(GBEffects.RADIATION_SICKNESS, 60, Math.min(3, stage - 1), false, true, true));
         if (random.nextInt(40) == 0) {
-            body.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 140, 0, false, false, true));
+            body.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 140, 0, false, false, true));
         }
         if (stage >= 2) {
             body.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false, true));
-            body.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 60, 0, false, false, true));
+            body.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 60, 0, false, false, true));
         }
         if (stage >= 3) {
-            body.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, stage >= 4 ? 1 : 0, false, false, true));
+            body.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, stage >= 4 ? 1 : 0, false, false, true));
         }
         if (stage >= 4 && random.nextInt(15) == 0) {
             body.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 0, false, false, true));
