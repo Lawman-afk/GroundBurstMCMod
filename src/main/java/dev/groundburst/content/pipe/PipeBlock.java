@@ -162,6 +162,27 @@ public abstract class PipeBlock extends Block {
         return state.setValue(SIDES.get(direction), refresh(level, pos, state, direction));
     }
 
+
+    /** Turned (a Create contraption set down turned, a structure placed turned): each side's setting turns with it. */
+    @Override
+    protected BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+        BlockState out = state;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(SIDES.get(rotation.rotate(d)), state.getValue(SIDES.get(d)));
+        }
+        return out;
+    }
+
+    /** Mirrored: each side's setting moves to its mirror side. */
+    @Override
+    protected BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+        BlockState out = state;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(SIDES.get(mirror.mirror(d)), state.getValue(SIDES.get(d)));
+        }
+        return out;
+    }
+
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int mask = 0;

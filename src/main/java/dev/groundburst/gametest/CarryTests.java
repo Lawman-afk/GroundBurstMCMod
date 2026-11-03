@@ -39,6 +39,7 @@ final class CarryTests {
         GBGameTests.testOpenSky("carried_launch_silo_lifts_off_where_it_is", GBGameTests.FLOOR_16, 40, CarryTests::carriedSilo);
         GBGameTests.test("moved_launcher_keeps_its_network", GBGameTests.FLOOR_16, 40, CarryTests::moved);
         GBGameTests.test("pipe_set_down_keeps_its_pull_side", GBGameTests.FLOOR_16, 20, CarryTests::pipeKeepsPull);
+        GBGameTests.test("pipe_turned_turns_its_sides", GBGameTests.FLOOR_16, 5, CarryTests::pipeTurns);
         GBGameTests.test("machine_emptied_before_a_move_drops_nothing", GBGameTests.FLOOR_16, 20, CarryTests::clearedDropsNothing);
     }
 
@@ -157,6 +158,24 @@ final class CarryTests {
                     "and once the chest is down: " + level.getBlockState(pipe));
             helper.succeed();
         });
+    }
+
+    /** A pipe turned a quarter (a contraption set down turned): its pull and switched-off sides turn with it; mirrored, they swap. */
+    private static void pipeTurns(GameTestHelper helper) {
+        var sides = dev.groundburst.content.pipe.PipeBlock.SIDES;
+        BlockState state = dev.groundburst.content.pipe.GBPipes.ITEM_PIPE.block().get().defaultBlockState()
+                .setValue(sides.get(Direction.EAST), dev.groundburst.content.pipe.PipeBlock.Mode.PULL)
+                .setValue(sides.get(Direction.NORTH), dev.groundburst.content.pipe.PipeBlock.Mode.DISABLED)
+                .setValue(sides.get(Direction.UP), dev.groundburst.content.pipe.PipeBlock.Mode.NORMAL);
+        BlockState turned = state.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
+        helper.assertTrue(turned.getValue(sides.get(Direction.SOUTH)) == dev.groundburst.content.pipe.PipeBlock.Mode.PULL
+                && turned.getValue(sides.get(Direction.EAST)) == dev.groundburst.content.pipe.PipeBlock.Mode.DISABLED
+                && turned.getValue(sides.get(Direction.UP)) == dev.groundburst.content.pipe.PipeBlock.Mode.NORMAL
+                && turned.getValue(sides.get(Direction.NORTH)) == dev.groundburst.content.pipe.PipeBlock.Mode.NONE, "turned a quarter: " + turned);
+        BlockState mirrored = state.mirror(net.minecraft.world.level.block.Mirror.FRONT_BACK);
+        helper.assertTrue(mirrored.getValue(sides.get(Direction.WEST)) == dev.groundburst.content.pipe.PipeBlock.Mode.PULL
+                && mirrored.getValue(sides.get(Direction.NORTH)) == dev.groundburst.content.pipe.PipeBlock.Mode.DISABLED, "mirrored: " + mirrored);
+        helper.succeed();
     }
 
     /**

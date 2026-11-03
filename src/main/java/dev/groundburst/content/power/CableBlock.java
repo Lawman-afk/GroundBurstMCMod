@@ -131,7 +131,30 @@ public class CableBlock extends Block {
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
             BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+        if (!(level.getBlockState(pos).getBlock() instanceof CableBlock)) {
+            return state;                                  // asked about a cable not yet here (another mod setting blocks down): as it was
+        }
         return state.setValue(SIDES.get(direction), refresh(level, pos, state, direction));
+    }
+
+    /** Turned (a Create contraption set down turned, a structure placed turned): each side's setting turns with it. */
+    @Override
+    protected BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+        BlockState out = state;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(SIDES.get(rotation.rotate(d)), state.getValue(SIDES.get(d)));
+        }
+        return out;
+    }
+
+    /** Mirrored: each side's setting moves to its mirror side. */
+    @Override
+    protected BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+        BlockState out = state;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(SIDES.get(mirror.mirror(d)), state.getValue(SIDES.get(d)));
+        }
+        return out;
     }
 
     @Override
@@ -155,10 +178,15 @@ public class CableBlock extends Block {
         }
     }
 
-    /** However it was placed (by a player, a command, a structure), work out its connections. */
+    /**
+     * However it was placed (by a player, a command, a structure), work out its connections; one set down by something
+     * that moved it keeps its sides as they were until the blocks round it are down (their updates fix what changed).
+     */
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        if (!oldState.is(state.getBlock())) {
+        if (!oldState.is(state.getBlock()) && movedByPiston) {
+            CableNetwork.invalidate(level);
+        } else if (!oldState.is(state.getBlock())) {
             BlockState connected = connections(level, pos, state);
             if (connected != state) {
                 level.setBlock(pos, connected, Block.UPDATE_ALL);
