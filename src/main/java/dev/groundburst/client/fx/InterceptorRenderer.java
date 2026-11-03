@@ -44,7 +44,7 @@ public class InterceptorRenderer extends EntityRenderer<InterceptorEntity, Inter
 
     @Override
     public void extractRenderState(InterceptorEntity entity, State state, float partialTicks) {
-        super.extractRenderState(entity, state, partialTicks);
+        super.render(entity.unwrap(), state, partialTicks);
         if (this.look.isEmpty()) {
             this.look = new ItemStack(GBDefence.INTERCEPTOR_MISSILE.get());   // (made on first use: items are bound late)
         }

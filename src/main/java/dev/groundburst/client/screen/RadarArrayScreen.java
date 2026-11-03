@@ -25,13 +25,13 @@ import dev.groundburst.content.launch.RadarArrayBlock;
 import dev.groundburst.content.launch.RadarArrayBlockEntity;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Radar Array's screen (DESIGN.md §18.1, early): a sweeping green radar scope of the 2048 blocks round the array
@@ -59,7 +59,7 @@ public class RadarArrayScreen extends Screen {
     private static LaunchPayloads.@Nullable Radar latest;
 
     public static void register() {
-        RadarArrayBlock.screenHook = pos -> Minecraft.getInstance().gui.setScreen(new RadarArrayScreen(pos));
+        RadarArrayBlock.screenHook = pos -> Minecraft.getInstance().setScreen(new RadarArrayScreen(pos));
         LaunchPayloads.radarHook = radar -> latest = radar;
     }
 
@@ -117,12 +117,12 @@ public class RadarArrayScreen extends Screen {
 
     @Override
     protected void init() {
-        ClientPacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, true));
+        PacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, true));
     }
 
     @Override
     public void onClose() {
-        ClientPacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, false));
+        PacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, false));
         super.onClose();
     }
 
@@ -167,8 +167,8 @@ public class RadarArrayScreen extends Screen {
 
     // --- drawing ------------------------------------------------------------------------------------------------------------
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         g.fill(left(), top(), left() + W, top() + H, PANEL);
         g.outline(left(), top(), W, H, EDGE);
         drawScope(g, partial);
@@ -274,8 +274,8 @@ public class RadarArrayScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         LaunchPayloads.Radar r = radar();
         g.text(this.font, this.title, left() + 8, top() + 4, TEXT);
         if (r != null) {

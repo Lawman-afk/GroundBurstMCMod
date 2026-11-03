@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:nuclear_waste",
-    "groundburst:nuclear_waste",
-    "groundburst:nuclear_waste",
-    "groundburst:nuclear_waste",
-    "groundburst:he_charge",
-    "groundburst:lead_plate"
+    {
+      "item": "groundburst:nuclear_waste"
+    },
+    {
+      "item": "groundburst:nuclear_waste"
+    },
+    {
+      "item": "groundburst:nuclear_waste"
+    },
+    {
+      "item": "groundburst:nuclear_waste"
+    },
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    }
   ],
   "result": {
     "id": "groundburst:dirty_payload"

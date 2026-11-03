@@ -7,9 +7,9 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.defence.Interception;
@@ -28,15 +28,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -395,8 +395,8 @@ public class AlarmBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("channel", this.channel);
         output.putIntArray("options", this.options.clone());
         output.putBoolean("powered", this.powered);
@@ -411,8 +411,8 @@ public class AlarmBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.channel = input.getIntOr("channel", 0);
         input.getIntArray("options").ifPresent(a -> System.arraycopy(a, 0, this.options, 0, Math.min(a.length, this.options.length)));
         this.powered = input.getBooleanOr("powered", false);
@@ -507,7 +507,7 @@ public class AlarmBlockEntity extends BlockEntity {
 
         /** The beacon's lens in its colour. */
         @Override
-        public @Nullable Identifier textureVariant() {
+        public @Nullable ResourceLocation textureVariant() {
             return device() == AlarmDevice.BEACON
                     ? GroundBurst.id("textures/block/warning_beacon_" + COLOURS[Math.clamp(option("colour"), 0, COLOURS.length - 1)] + ".png") : null;
         }

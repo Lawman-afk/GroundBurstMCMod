@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "P": "#c:plates/steel",
-    "R": "groundburst:steel_rod"
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "item": "groundburst:steel_rod"
+    }
   },
   "pattern": [
     "RPR",

@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:magnet_segment",
-    "groundburst:military_circuit"
+    {
+      "item": "groundburst:magnet_segment"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:accelerator_injector"

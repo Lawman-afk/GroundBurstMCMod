@@ -2,15 +2,33 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:interceptor_battery",
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:crt_display",
-    "groundburst:crt_display",
-    "groundburst:superconducting_coil",
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate"
+    {
+      "item": "groundburst:interceptor_battery"
+    },
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
   ],
   "result": {
     "id": "groundburst:interceptor_complex"

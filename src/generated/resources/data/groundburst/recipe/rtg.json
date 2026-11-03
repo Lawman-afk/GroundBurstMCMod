@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "A": "#c:circuits/advanced",
-    "L": "#c:plates/lead",
-    "T": "#c:plates/tungsten",
-    "W": "#c:wires/copper"
+    "A": {
+      "tag": "c:circuits/advanced"
+    },
+    "L": {
+      "tag": "c:plates/lead"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    },
+    "W": {
+      "tag": "c:wires/copper"
+    }
   },
   "pattern": [
     "LTL",

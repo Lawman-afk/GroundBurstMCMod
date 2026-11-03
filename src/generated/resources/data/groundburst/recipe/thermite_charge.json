@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "minecraft:terracotta",
-    "#c:dusts/iron",
-    "#c:dusts/iron",
-    "minecraft:gunpowder",
-    "#c:dusts/redstone"
+    {
+      "item": "minecraft:terracotta"
+    },
+    {
+      "tag": "c:dusts/iron"
+    },
+    {
+      "tag": "c:dusts/iron"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "tag": "c:dusts/redstone"
+    }
   ],
   "result": {
     "id": "groundburst:thermite_charge"

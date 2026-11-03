@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:emp_grenade",
-    "#c:plates/steel",
-    "minecraft:gunpowder"
+    {
+      "item": "groundburst:emp_grenade"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "id": "groundburst:mortar_shell_emp"

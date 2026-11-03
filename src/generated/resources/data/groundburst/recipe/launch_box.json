@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "groundburst:servo"
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:servo"
+    }
   ],
   "result": {
     "id": "groundburst:launch_box"

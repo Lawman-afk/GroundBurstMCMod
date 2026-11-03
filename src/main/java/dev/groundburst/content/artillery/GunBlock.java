@@ -112,7 +112,7 @@ public class GunBlock extends BaseEntityBlock {
         }
         if (level.getBlockEntity(pos) instanceof GunBlockEntity gun) {
             if (gun.slotFor(stack) < 0) {
-                player.sendOverlayMessage(Component.translatable(GunBlockEntity.T_WRONG_SHELL));
+                player.displayClientMessage(Component.translatable(GunBlockEntity.T_WRONG_SHELL), true);
                 return InteractionResult.CONSUME;
             }
             int before = stack.getCount();
@@ -124,7 +124,7 @@ public class GunBlock extends BaseEntityBlock {
                 level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.BLOCKS, 0.8f, 0.8f);
                 return InteractionResult.SUCCESS_SERVER;
             }
-            player.sendOverlayMessage(Component.translatable(GunBlockEntity.T_RACK_FULL));
+            player.displayClientMessage(Component.translatable(GunBlockEntity.T_RACK_FULL), true);
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;

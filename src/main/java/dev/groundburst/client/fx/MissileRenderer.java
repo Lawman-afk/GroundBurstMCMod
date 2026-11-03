@@ -52,7 +52,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
 
     @Override
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
-        super.extractRenderState(entity, state, partialTicks);
+        super.render(entity.unwrap(), state, partialTicks);
         // What is left of it, drawn by its own model (the one on its launcher, its spent stages gone).
         String id = entity.folded() ? dev.groundburst.content.assembly.MissileParts.folded(entity.look())
                 : dev.groundburst.content.assembly.MissileParts.flight(entity.look(), entity.dropped());

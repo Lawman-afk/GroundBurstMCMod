@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "minecraft:bucket",
-    "F": "groundburst:machine_frame",
-    "M": "groundburst:electric_motor",
-    "P": "groundburst:fluid_pipe",
-    "V": "groundburst:pressure_vessel"
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "item": "groundburst:fluid_pipe"
+    },
+    "V": {
+      "item": "groundburst:pressure_vessel"
+    }
   },
   "pattern": [
     " M ",

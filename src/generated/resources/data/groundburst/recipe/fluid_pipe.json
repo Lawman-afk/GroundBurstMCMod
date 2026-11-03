@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "G": "#c:glass_blocks/colorless",
-    "P": "#c:plates/steel"
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    }
   },
   "pattern": [
     "PPP",

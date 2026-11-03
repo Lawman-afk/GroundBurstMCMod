@@ -288,8 +288,8 @@ final class FreezeJob {
      */
     private int heart(int x, int z, double d, int top) {
         double h = Math.sqrt(Math.max(0, this.core * this.core - d * d));
-        int y0 = Math.max(this.level.getMinY(), (int) Math.floor(this.center.y - h));
-        int y1 = Math.min(Math.min(this.level.getMaxY() - 1, (int) Math.ceil(this.center.y + h)), top - 1);
+        int y0 = Math.max(this.level.getMinBuildHeight(), (int) Math.floor(this.center.y - h));
+        int y1 = Math.min(Math.min((this.level.getMaxBuildHeight() - 1) - 1, (int) Math.ceil(this.center.y + h)), top - 1);
         if (y1 < y0) {
             return 0;
         }
@@ -409,7 +409,7 @@ final class FreezeJob {
     }
 
     private AABB box(double reach) {
-        return new AABB(this.center.x - reach, this.level.getMinY(), this.center.z - reach, this.center.x + reach, this.level.getMaxY(),
+        return new AABB(this.center.x - reach, this.level.getMinBuildHeight(), this.center.z - reach, this.center.x + reach, (this.level.getMaxBuildHeight() - 1),
                 this.center.z + reach);
     }
 
@@ -429,7 +429,7 @@ final class FreezeJob {
             if (e.getY() - this.center.y > this.climb && e.position().distanceTo(this.center) > this.core) {
                 continue;
             }
-            boolean boss = e.typeHolder().is(Tags.EntityTypes.BOSSES);
+            boolean boss = e.typeHolder().is(Tags.EntityType.BOSSES);
             e.damageCooldownTime = 0;
             if (e.position().distanceTo(this.center) <= this.core) {
                 DamageSource frozen = this.level.damageSources().source(Freezes.FLASH_FROZEN, null, source);
@@ -576,7 +576,7 @@ final class FreezeJob {
      */
     private void layer(Spire sp, int i) {
         int y = sp.foot - 2 + i;
-        if (y < this.level.getMinY() || y >= this.level.getMaxY()) {
+        if (y < this.level.getMinBuildHeight() || y >= (this.level.getMaxBuildHeight() - 1)) {
             return;
         }
         double up = Math.max(0, i - 2);

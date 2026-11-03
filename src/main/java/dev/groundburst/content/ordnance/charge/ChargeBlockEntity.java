@@ -21,8 +21,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 
 /**
  * A placed charge's fuze (DESIGN.md §9.4): its frequency, and whether a trigger (a detonator on that frequency, or
@@ -297,8 +297,8 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putString("mode", this.mode.name());
         output.putInt("frequency", this.frequency);
         output.putInt("timer", this.timer);
@@ -316,8 +316,8 @@ public class ChargeBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.mode = input.getString("mode").map(s -> s.equals("TIMER") ? Mode.TIMER : Mode.REMOTE).orElse(this.mode);
         this.frequency = input.getIntOr("frequency", 0);
         this.timer = input.getIntOr("timer", this.timer);

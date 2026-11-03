@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.machine.AnimatedMachine;

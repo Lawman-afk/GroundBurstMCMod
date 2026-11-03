@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "groundburst:pressure_vessel",
-    "#c:dyes/green"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "tag": "c:dyes/green"
+    }
   ],
   "result": {
     "count": 2,

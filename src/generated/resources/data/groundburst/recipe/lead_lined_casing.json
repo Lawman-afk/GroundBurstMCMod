@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": "#c:concretes",
-    "D": "groundburst:dense_steel_plate",
-    "L": "#c:plates/lead"
+    "C": {
+      "tag": "c:concretes"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "L": {
+      "tag": "c:plates/lead"
+    }
   },
   "pattern": [
     "LDL",

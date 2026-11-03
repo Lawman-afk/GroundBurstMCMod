@@ -2,8 +2,8 @@ package dev.groundburst.content.machine;
 
 import java.util.List;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.registry.GBBlockEntities;
 import dev.groundburst.registry.GBMenus;

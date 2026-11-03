@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "groundburst:superconducting_coil",
-    "E": "minecraft:ender_eye",
-    "F": "groundburst:machine_frame",
-    "M": "groundburst:military_circuit",
-    "T": "#c:plates/tungsten"
+    "C": {
+      "item": "groundburst:superconducting_coil"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "M": {
+      "item": "groundburst:military_circuit"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    }
   },
   "pattern": [
     "CEC",

@@ -64,7 +64,7 @@ public class AlertDisplayRenderer implements BlockEntityRenderer<AlarmBlockEntit
     @Override
     public void extractRenderState(AlarmBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
+        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
         state.yaw = ((AlarmBlock) be.getBlockState().getBlock()).facing(be.getBlockState()).toYRot();
         long now = be.getLevel() == null ? 0 : be.getLevel().getGameTime();
         boolean bright = now % 20 < 12;                                // the title flashes in an alert

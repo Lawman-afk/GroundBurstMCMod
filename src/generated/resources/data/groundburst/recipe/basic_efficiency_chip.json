@@ -1,10 +1,18 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundburst:basic_circuit",
-    "groundburst:capacitor",
-    "#c:wires/copper",
-    "#c:wires/copper"
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "groundburst:capacitor"
+    },
+    {
+      "tag": "c:wires/copper"
+    },
+    {
+      "tag": "c:wires/copper"
+    }
   ],
   "result": {
     "id": "groundburst:basic_efficiency_chip"

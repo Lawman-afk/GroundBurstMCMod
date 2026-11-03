@@ -41,7 +41,6 @@ public final class ManualHotkey {
         modBus.addListener((AddClientReloadListenersEvent e) -> e.addListener(GroundBurst.id("field_manual"), new Manual.Loader()));
         NeoForge.EVENT_BUS.addListener(ManualHotkey::keyInScreen);
         GBManual.open = ManualHotkey::open;
-        ManualPhotographer.register();
     }
 
     public static boolean matches(KeyEvent event) {
@@ -51,8 +50,8 @@ public final class ManualHotkey {
     /** Opens the book (at an entry, or where it was left), returning to the current screen when it closes. */
     public static void open(@Nullable String entry) {
         Minecraft mc = Minecraft.getInstance();
-        Screen current = mc.gui.screen() instanceof FieldManualScreen ? null : mc.gui.screen();
-        mc.gui.setScreen(new FieldManualScreen(current, entry));
+        Screen current = mc.screen instanceof FieldManualScreen ? null : mc.screen;
+        mc.setScreen(new FieldManualScreen(current, entry));
     }
 
     private static void keyInScreen(ScreenEvent.KeyPressed.Pre event) {

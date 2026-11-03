@@ -3,7 +3,7 @@ package dev.groundburst.world.structure;
 import dev.groundburst.content.gear.GBArmor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -124,7 +124,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
                     continue;
                 }
                 int y = base - 1;
-                while (y > level.getMinY() + 1 && y > base - FOUNDATION && open(level.getBlockState(at.set(x, y, z)))) {
+                while (y > level.getMinBuildHeight() + 1 && y > base - FOUNDATION && open(level.getBlockState(at.set(x, y, z)))) {
                     y--;
                 }
                 BlockState ground = level.getBlockState(at.set(x, y, z));
@@ -240,7 +240,7 @@ public class SitePiece extends TemplateStructurePiece implements PieceBeardifier
     }
 
     /** For previews and tests: the template this piece places. */
-    public Identifier templateId() {
-        return Identifier.parse(this.templateName);
+    public ResourceLocation templateId() {
+        return ResourceLocation.parse(this.templateName);
     }
 }

@@ -188,7 +188,7 @@ public final class GBFluids {
         h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
         h.block = GBBlocks.blockOnly(name, english, p -> new ChemLiquidBlock(h.source.get(), hazard, p),
-                p -> p.mapColor(mapColor).replaceable().noCollision().strength(100f).pushReaction(PushReaction.POPPED)
+                p -> p.mapColor(mapColor).replaceable().noCollision().strength(100f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().liquid().sound(SoundType.EMPTY).lightLevel(s -> hazard == Hazard.FIRE ? 3 : 0));
         h.bucket = GBItems.register(name + "_bucket", english + " Bucket", GBTab.RESOURCES, p -> new BucketItem(h.source.get(), p),
                 p -> p.craftRemainder(Items.BUCKET).stacksTo(1));
@@ -209,7 +209,7 @@ public final class GBFluids {
         h.source = FLUIDS.register(name, () -> new BaseFlowingFluid.Source(props));
         h.flowing = FLUIDS.register("flowing_" + name, () -> new BaseFlowingFluid.Flowing(props));
         DeferredBlock<GasCloudBlock> cloud = GBBlocks.blockOnly(name, english, p -> new GasCloudBlock(p, hazard),
-                p -> p.mapColor(MapColor.NONE).replaceable().noCollision().noOcclusion().strength(0f).pushReaction(PushReaction.POPPED)
+                p -> p.mapColor(MapColor.NONE).replaceable().noCollision().noOcclusion().strength(0f).pushReaction(PushReaction.DESTROY)
                         .noLootTable().sound(SoundType.EMPTY).isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false));
         h.gasBucket = GBItems.register(name + "_bucket", english + " Bucket", GBTab.RESOURCES,
                 p -> new GasBucketItem(h.source.get(), cloud, p), p -> p.craftRemainder(Items.BUCKET).stacksTo(1));

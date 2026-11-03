@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:toxin_canister",
-    "groundburst:toxin_canister",
-    "groundburst:toxin_canister",
-    "#c:plates/steel"
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "item": "groundburst:toxin_canister"
+    },
+    {
+      "tag": "c:plates/steel"
+    }
   ],
   "result": {
     "id": "groundburst:toxic_waste_tank"

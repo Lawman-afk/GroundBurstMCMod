@@ -13,15 +13,15 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.manual.ManualStrings;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 
@@ -31,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
  * returns to the last view; bookmarks sit on the book's right edge.
  */
 public class FieldManualScreen extends Screen {
-    static final Identifier TEXTURE = GroundBurst.id("textures/gui/manual/book.png");
+    static final ResourceLocation TEXTURE = GroundBurst.id("textures/gui/manual/book.png");
     static final int TEX_W = 512, TEX_H = 512;
     static final int BOOK_W = 320, BOOK_H = 200;
     /** Content origins of the two pages, relative to the book. */
@@ -227,18 +227,18 @@ public class FieldManualScreen extends Screen {
 
     // --- drawing -------------------------------------------------------------------------------------------------------
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.left, this.top, 0, 0, BOOK_W, BOOK_H, TEX_W, TEX_H);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
         if (this.builtFor != Manual.generation()) {
             rebuild();
         }
         this.hovered = null;
-        super.extractRenderState(g, mouseX, mouseY, partial);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         ManualPages.Ctx c = ctx(g, mouseX, mouseY);
         int s = this.view.spread();
         for (int side = 0; side < 2; side++) {
@@ -474,7 +474,7 @@ public class FieldManualScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.gui.setScreen(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 
     // --- the home page -------------------------------------------------------------------------------------------------

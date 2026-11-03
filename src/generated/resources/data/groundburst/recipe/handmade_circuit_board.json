@@ -1,10 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "C": "#c:ingots/copper",
-    "G": "#c:nuggets/gold",
-    "P": "minecraft:paper",
-    "R": "#c:dusts/redstone"
+    "C": {
+      "tag": "c:ingots/copper"
+    },
+    "G": {
+      "tag": "c:nuggets/gold"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
   },
   "pattern": [
     "CRC",

@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "B": "groundburst:battery",
-    "C": "groundburst:military_circuit",
-    "G": "#c:glass_panes/colorless",
-    "P": "#c:plates/steel",
-    "R": "minecraft:redstone_torch",
-    "S": "groundburst:sensor_array"
+    "B": {
+      "item": "groundburst:battery"
+    },
+    "C": {
+      "item": "groundburst:military_circuit"
+    },
+    "G": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "groundburst:sensor_array"
+    }
   },
   "pattern": [
     "GSR",

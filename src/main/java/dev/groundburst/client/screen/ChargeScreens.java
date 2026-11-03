@@ -10,14 +10,14 @@ import dev.groundburst.content.ordnance.charge.ChargePayloads;
 import dev.groundburst.content.ordnance.charge.RemoteDetonatorItem;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The placed-charge screens (DESIGN.md §9.4): fuze settings (Remote frequency or Timer), the timed bomb's defuse panel
@@ -54,7 +54,7 @@ public final class ChargeScreens {
 
     public static void register() {
         ChargeBlock.screenHook = ChargeScreens::open;
-        RemoteDetonatorItem.frequencyHook = hand -> Minecraft.getInstance().gui.setScreen(new Frequency(hand));
+        RemoteDetonatorItem.frequencyHook = hand -> Minecraft.getInstance().setScreen(new Frequency(hand));
     }
 
     private static void open(BlockPos pos) {
@@ -63,7 +63,7 @@ public final class ChargeScreens {
         if (be == null) {
             return;
         }
-        mc.gui.setScreen(be.kind() == ChargeKind.TIMED_BOMB && be.counting() ? new Defuse(pos) : new Settings(pos, be));
+        mc.setScreen(be.kind() == ChargeKind.TIMED_BOMB && be.counting() ? new Defuse(pos) : new Settings(pos, be));
     }
 
     private static Component chosen(String key, boolean chosen) {
@@ -184,7 +184,7 @@ public final class ChargeScreens {
         private void send(int action) {
             if (!this.sent) {
                 this.sent = true;
-                ClientPacketDistributor.sendToServer(new ChargePayloads.Settings(this.pos, this.timer,
+                PacketDistributor.sendToServer(new ChargePayloads.Settings(this.pos, this.timer,
                         this.frequencyBox == null ? this.frequency : parse(this.frequencyBox.getValue(), this.frequency, 0, ChargeKind.MAX_FREQUENCY),
                         this.secondsBox == null ? this.seconds : parse(this.secondsBox.getValue(), this.seconds, 1, ChargeKind.MAX_TIMER), action));
             }
@@ -197,14 +197,14 @@ public final class ChargeScreens {
         }
 
         @Override
-        public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractBackground(g, mouseX, mouseY, partial);
+        public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
             panel(g, (this.width - W) / 2, top(), W, this.height);
         }
 
         @Override
-        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractRenderState(g, mouseX, mouseY, partial);
+        public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.render(g.unwrap(), mouseX, mouseY, partial);
             int x = (this.width - W) / 2, top = top();
             centred(g, this.font, this.title, this.width / 2, top + 8, TEXT);
             Component state = Component.translatable(this.armed ? T_STATE_ARMED : T_STATE_SAFE);
@@ -253,7 +253,7 @@ public final class ChargeScreens {
             for (int i = 0; i < this.wires.length; i++) {
                 int wire = i;
                 this.wires[i] = addRenderableWidget(Button.builder(Component.translatable(T_WIRES[i]),
-                        b -> ClientPacketDistributor.sendToServer(new ChargePayloads.CutWire(this.pos, wire)))
+                        b -> PacketDistributor.sendToServer(new ChargePayloads.CutWire(this.pos, wire)))
                         .bounds(x + 12 + i * 52, y + 88, 50, 20).build());
             }
         }
@@ -271,8 +271,8 @@ public final class ChargeScreens {
         }
 
         @Override
-        public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractBackground(g, mouseX, mouseY, partial);
+        public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
             int x = (this.width - W) / 2, y = (this.height - H) / 2;
             panel(g, x, y, W, H);
             ChargeBlockEntity be = bomb();
@@ -289,8 +289,8 @@ public final class ChargeScreens {
         }
 
         @Override
-        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractRenderState(g, mouseX, mouseY, partial);
+        public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.render(g.unwrap(), mouseX, mouseY, partial);
             int y = (this.height - H) / 2;
             ChargeBlockEntity be = bomb();
             int ticks = be == null ? 0 : Math.max(0, be.countdown());
@@ -331,21 +331,21 @@ public final class ChargeScreens {
         @Override
         public void onClose() {
             if (this.box != null) {
-                ClientPacketDistributor.sendToServer(new ChargePayloads.DetonatorFrequency(this.hand == InteractionHand.MAIN_HAND,
+                PacketDistributor.sendToServer(new ChargePayloads.DetonatorFrequency(this.hand == InteractionHand.MAIN_HAND,
                         parse(this.box.getValue(), 0, 0, ChargeKind.MAX_FREQUENCY)));
             }
             super.onClose();
         }
 
         @Override
-        public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractBackground(g, mouseX, mouseY, partial);
+        public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
             panel(g, (this.width - W) / 2, (this.height - H) / 2, W, H);
         }
 
         @Override
-        public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            super.extractRenderState(g, mouseX, mouseY, partial);
+        public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+            super.render(g.unwrap(), mouseX, mouseY, partial);
             centred(g, this.font, this.title, this.width / 2, (this.height - H) / 2 + 8, TEXT);
         }
 

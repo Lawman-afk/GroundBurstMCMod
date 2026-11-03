@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": "groundburst:superconducting_coil",
-    "D": "groundburst:dense_steel_plate",
-    "W": "#c:wires/copper"
+    "C": {
+      "item": "groundburst:superconducting_coil"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "W": {
+      "tag": "c:wires/copper"
+    }
   },
   "pattern": [
     "DCD",

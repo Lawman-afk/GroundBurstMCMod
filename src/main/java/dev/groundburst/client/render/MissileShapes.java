@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import dev.groundburst.GroundBurst;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -88,7 +88,7 @@ public final class MissileShapes {
         }
     }
 
-    private static final Identifier FILE = GroundBurst.id("missiles.json");
+    private static final ResourceLocation FILE = GroundBurst.id("missiles.json");
     private static volatile Map<String, Shape> table = Map.of();
 
     private MissileShapes() {}

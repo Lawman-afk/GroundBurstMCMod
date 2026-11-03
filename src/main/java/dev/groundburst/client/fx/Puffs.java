@@ -14,8 +14,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -32,7 +32,7 @@ import net.minecraft.world.phys.Vec3;
  * smoke and the mushroom cloud sort together in one batch: no hard edges where they meet).
  */
 final class Puffs {
-    static final Identifier SHEET = GroundBurst.id("textures/fx/puffs.png");
+    static final ResourceLocation SHEET = GroundBurst.id("textures/fx/puffs.png");
     /** Rows of cells in the sheet (four to a row). */
     static final int ROWS = 5;
     /** The first of the mushroom cloud's four cloudlet cells. */
@@ -136,8 +136,8 @@ final class Puffs {
             int color = lerpRgb(p.color0, p.color1, (float) Math.pow(u, p.kind == Kind.GLOW || p.kind == Kind.FIRE ? 0.8 : 0.6));
             if (p.kind.lit) {
                 pos.set(Math.floor(at[0]), Math.floor(at[1]), Math.floor(at[2]));
-                int coords = LightCoordsUtil.getLightCoords(level, pos);
-                float world = Math.max(0.07f, Math.max(LightCoordsUtil.sky(coords) / 15f, LightCoordsUtil.block(coords) / 15f * 0.7f));
+                int coords = LightTexture.getLightCoords(level, pos);
+                float world = Math.max(0.07f, Math.max(LightTexture.sky(coords) / 15f, LightTexture.block(coords) / 15f * 0.7f));
                 // Out from the plume's axis and up: the plume's sunny side and top are lit, its far side in shade.
                 float nx = 0, nz = 0;
                 if (!Double.isNaN(p.axisX)) {
@@ -203,7 +203,7 @@ final class Puffs {
     }
 
     static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

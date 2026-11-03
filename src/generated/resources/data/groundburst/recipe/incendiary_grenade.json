@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:napalm_canister",
-    "groundburst:steel_plate",
-    "minecraft:gunpowder"
+    {
+      "item": "groundburst:napalm_canister"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "count": 2,

@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "G": "#c:glass_blocks/colorless",
-    "L": "#c:plates/lead"
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "L": {
+      "tag": "c:plates/lead"
+    }
   },
   "pattern": [
     "LGL",

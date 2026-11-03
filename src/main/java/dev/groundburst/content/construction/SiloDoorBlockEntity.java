@@ -4,8 +4,8 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
 import dev.groundburst.registry.GBSounds;
@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 
 /**
  * The Large Silo Door's middle (DESIGN.md §22.2): it moves the leaves toward open while the door has a redstone signal
@@ -152,8 +152,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("door_pos", this.position);
         output.putBoolean("wanted", this.wanted);
         output.putBoolean("stuck", this.stuck);
@@ -162,8 +162,8 @@ public class SiloDoorBlockEntity extends BlockEntity implements AnimatedMachine 
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.position = Mth.clamp(input.getIntOr("door_pos", 0), 0, TRAVEL);
         this.wanted = input.getBooleanOr("wanted", false);
         this.stuck = input.getBooleanOr("stuck", false);

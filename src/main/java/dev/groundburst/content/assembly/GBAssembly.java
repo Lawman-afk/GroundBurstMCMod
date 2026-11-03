@@ -141,7 +141,7 @@ public final class GBAssembly {
             GBTab.ORDNANCE, p -> new WideMachineBlock(p, GBAssembly.BENCH_ENTITY, true,
                     Shapes.or(Block.box(0, 0, 0, 16, 15, 16)), Shapes.or(Block.box(0, 0, 0, 16, 15, 16))),
             p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                    .pushReaction(PushReaction.IMMOVEABLE),
+                    .pushReaction(PushReaction.BLOCK),
             (block, props) -> new GeoBlockItem(block, props, GroundBurst.id("assembly_bench"), 0.5f));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AssemblyBenchBlockEntity>> BENCH_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("assembly_bench", () -> new BlockEntityType<>(AssemblyBenchBlockEntity::new,

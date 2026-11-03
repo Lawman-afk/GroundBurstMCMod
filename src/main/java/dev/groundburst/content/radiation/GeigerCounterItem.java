@@ -136,7 +136,7 @@ public class GeigerCounterItem extends Item {
         int next = (stack.getOrDefault(GBDataComponents.GEIGER_ALARM.get(), DEFAULT_ALARM) + 1) % ALARMS.length;
         stack.set(GBDataComponents.GEIGER_ALARM.get(), next);
         if (!level.isClientSide()) {
-            player.sendOverlayMessage(Component.translatable(ALARM_SET, alarmText(ALARMS[next])));
+            player.displayClientMessage(Component.translatable(ALARM_SET, alarmText(ALARMS[next])), true);
         }
         level.playSound(player, player.getX(), player.getY(), player.getZ(), GBSounds.GEIGER_SWITCH.get(), SoundSource.PLAYERS, 0.7f, 1f);
         return InteractionResult.SUCCESS;

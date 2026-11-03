@@ -2,13 +2,27 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "#groundburst:basic_circuits",
-    "F": "groundburst:machine_frame",
-    "G": "#c:glass_blocks/colorless",
-    "H": "groundburst:heating_element",
-    "M": "groundburst:electric_motor",
-    "P": "#c:plates/steel",
-    "V": "groundburst:pressure_vessel"
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "H": {
+      "item": "groundburst:heating_element"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "V": {
+      "item": "groundburst:pressure_vessel"
+    }
   },
   "pattern": [
     "PMP",

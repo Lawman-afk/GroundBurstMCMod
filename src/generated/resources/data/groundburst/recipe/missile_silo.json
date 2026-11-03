@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:crt_display",
-    "groundburst:reinforced_concrete",
-    "groundburst:reinforced_concrete",
-    "minecraft:lever"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "item": "minecraft:lever"
+    }
   ],
   "result": {
     "id": "groundburst:missile_silo"

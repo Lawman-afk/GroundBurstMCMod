@@ -13,12 +13,12 @@ import dev.groundburst.content.machine.MachineText;
 import dev.groundburst.content.machine.MachineMenu;
 import dev.groundburst.content.machine.ProcessingBlockEntity;
 import dev.groundburst.content.power.CombustionGeneratorBlockEntity;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -31,6 +31,9 @@ import net.minecraft.world.entity.player.Inventory;
  * arrow or fuel flame, status lamp, redstone button and (for generators) a CRT readout, all with tooltips.
  */
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
+    @Override
+    protected void renderBg(net.minecraft.client.gui.GuiGraphics gg_, float partial_, int mouseX_, int mouseY_) {}
+
     private static final int TEXT = 0xFFE6E2D2;
     private static final int CRT_TEXT = 0xFFFFB84A;
     private static final float CRT_SCALE = 0.75f;
@@ -55,8 +58,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         int x = this.leftPos;
         int y = this.topPos;
         g.blit(RenderPipelines.GUI_TEXTURED, pageLayout().texture(), x, y, 0, 0, this.imageWidth, this.imageHeight, pageLayout().textureWidth(), 256);
@@ -166,7 +169,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+    protected void renderLabels(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
         // Long names shrink to fit between the left edge and the status lamp rather than running under it.
         int room = this.layout.status().x() - 6 - this.titleLabelX;
         int width = this.font.width(this.title);
@@ -278,8 +281,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         if (this.sideTab != null) {
             this.sideTab.render(g, this.font, this.leftPos, this.topPos, this.imageWidth, mouseX, mouseY);
         }

@@ -2,7 +2,9 @@
   "type": "minecraft:blasting",
   "cookingtime": 100,
   "experience": 0.3,
-  "ingredient": "#c:dusts/uranium",
+  "ingredient": {
+    "tag": "c:dusts/uranium"
+  },
   "result": {
     "id": "groundburst:uranium_ingot"
   }

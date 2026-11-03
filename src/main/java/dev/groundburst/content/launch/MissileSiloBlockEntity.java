@@ -22,8 +22,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -326,8 +326,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
 
     // --- saving -------------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("door_pos", this.doorPos);
         output.putBoolean("doors_wanted", this.doorsWanted);
         output.putLong("door_since", this.doorSince);
@@ -338,8 +338,8 @@ public class MissileSiloBlockEntity extends LaunchSiloBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.doorPos = input.getIntOr("door_pos", 0);
         this.doorsWanted = input.getBooleanOr("doors_wanted", false);
         this.doorSince = input.getLongOr("door_since", 0L);

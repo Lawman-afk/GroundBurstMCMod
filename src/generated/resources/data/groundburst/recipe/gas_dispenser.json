@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:gas_grenade",
-    "groundburst:gas_grenade",
-    "groundburst:gas_grenade",
-    "groundburst:gas_grenade",
-    "#c:plates/steel",
-    "groundburst:advanced_circuit"
+    {
+      "item": "groundburst:gas_grenade"
+    },
+    {
+      "item": "groundburst:gas_grenade"
+    },
+    {
+      "item": "groundburst:gas_grenade"
+    },
+    {
+      "item": "groundburst:gas_grenade"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:gas_dispenser"

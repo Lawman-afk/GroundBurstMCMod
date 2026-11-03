@@ -70,7 +70,7 @@ public final class GasGrid {
 
     /** Whether gas can be in (and pass through) a block: air, plants, and low blocks; not solids, fluids, doors, walls or panes. */
     public static boolean passable(ServerLevel level, BlockPos pos) {
-        if (!level.isLoaded(pos) || pos.getY() < level.getMinY() || pos.getY() > level.getMaxY()) {
+        if (!level.isLoaded(pos) || pos.getY() < level.getMinBuildHeight() || pos.getY() > (level.getMaxBuildHeight() - 1)) {
             return false;
         }
         BlockState state = level.getBlockState(pos);

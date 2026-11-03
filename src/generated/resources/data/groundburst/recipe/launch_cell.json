@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "D": "groundburst:dense_steel_plate",
-    "F": "groundburst:machine_frame",
-    "S": "groundburst:servo",
-    "T": "groundburst:tungsten_plate"
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "S": {
+      "item": "groundburst:servo"
+    },
+    "T": {
+      "item": "groundburst:tungsten_plate"
+    }
   },
   "pattern": [
     "DSD",

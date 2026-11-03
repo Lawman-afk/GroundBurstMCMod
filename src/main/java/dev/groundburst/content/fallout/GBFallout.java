@@ -75,10 +75,10 @@ public final class GBFallout {
             DeadLeavesBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.2f).randomTicks().sound(SoundType.GRASS).noOcclusion()
                     .isValidSpawn(Blocks::ocelotOrParrot)
                     .isSuffocating((s, l, at) -> false).ignitedByLava()
-                    .pushReaction(PushReaction.POPPED).isRedstoneConductor((s, l, at) -> false));
+                    .pushReaction(PushReaction.DESTROY).isRedstoneConductor((s, l, at) -> false));
     public static final WithItem<WitheredCropsBlock> WITHERED_CROPS = GBBlocks.register("withered_crops", "Withered Crops", GBTab.AFTERMATH,
             WitheredCropsBlock::new, p -> p.mapColor(MapColor.COLOR_BROWN).noCollision().instabreak().randomTicks().sound(SoundType.CROP)
-                    .pushReaction(PushReaction.POPPED).ignitedByLava());
+                    .pushReaction(PushReaction.DESTROY).ignitedByLava());
 
     // --- frozen ground (slice 12e) ------------------------------------------------------------------------------------------
     /** Stone a cryo burst froze: rimed white; it thaws back to stone where snow would not lie. */
@@ -92,20 +92,20 @@ public final class GBFallout {
     /** A plant frozen solid: it melts away once warm. */
     public static final WithItem<FrozenPlantBlock> FROZEN_PLANT = GBBlocks.register("frozen_plant", "Frozen Plant", GBTab.AFTERMATH,
             FrozenPlantBlock::new, p -> p.mapColor(MapColor.ICE).noCollision().instabreak().randomTicks().sound(SoundType.GLASS)
-                    .offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.POPPED));
+                    .offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
     /** Ice crystals grown round a cryo burst's middle: they glow faintly and melt where it is warm. */
     public static final WithItem<CryoCrystalBlock> CRYO_CRYSTAL = GBBlocks.register("cryo_crystal", "Cryo Crystal", GBTab.AFTERMATH,
             CryoCrystalBlock::new, p -> p.mapColor(MapColor.ICE).strength(0.5f).noOcclusion().sound(SoundType.AMETHYST_CLUSTER)
-                    .lightLevel(s -> 4).friction(0.98f).pushReaction(PushReaction.POPPED));
+                    .lightLevel(s -> 4).friction(0.98f).pushReaction(PushReaction.DESTROY));
     /** Snow a Cryo ICBM's front laid (DESIGN.md §16.16): vanilla's snow, but it thaws a layer at a time where snow would not lie. */
     public static final WithItem<CryoSnowBlock> CRYO_SNOW = GBBlocks.register("cryo_snow", "Cryo Snow", GBTab.AFTERMATH, CryoSnowBlock::new,
             p -> p.mapColor(MapColor.SNOW).replaceable().forceSolidOff().randomTicks().strength(0.1f).requiresCorrectToolForDrops()
                     .sound(SoundType.SNOW).isViewBlocking((s, l, pos, box) -> s.getValue(CryoSnowBlock.LAYERS) >= 8)
-                    .pushReaction(PushReaction.POPPED));
+                    .pushReaction(PushReaction.DESTROY));
     /** Water a Cryo ICBM's front froze in an instant: milky ice that thaws where snow would not lie (DESIGN.md §16.16). */
     public static final WithItem<CryoIceBlock> CRYO_ICE = GBBlocks.register("cryo_ice", "Cryo Ice", GBTab.AFTERMATH, CryoIceBlock::new,
             p -> p.mapColor(MapColor.ICE).friction(0.98f).randomTicks().strength(0.5f).sound(SoundType.GLASS).noOcclusion()
-                    .isValidSpawn((s, l, pos, type) -> type == net.minecraft.world.entity.EntityTypes.POLAR_BEAR)
+                    .isValidSpawn((s, l, pos, type) -> type == net.minecraft.world.entity.EntityType.POLAR_BEAR)
                     .isRedstoneConductor((s, l, pos) -> false));
 
     // --- toxic ground (slice 12e) -------------------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ public final class GBFallout {
 
     private static BlockBehaviour.Properties ash(BlockBehaviour.Properties p, MapColor colour) {
         return p.mapColor(colour).replaceable().forceSolidOff().strength(0.1f).sound(SoundType.SAND)
-                .isViewBlocking((s, l, pos, box) -> s.getValue(AshLayerBlock.LAYERS) >= 8).pushReaction(PushReaction.POPPED);
+                .isViewBlocking((s, l, pos, box) -> s.getValue(AshLayerBlock.LAYERS) >= 8).pushReaction(PushReaction.DESTROY);
     }
 
     private static BlockBehaviour.Properties charred(BlockBehaviour.Properties p) {

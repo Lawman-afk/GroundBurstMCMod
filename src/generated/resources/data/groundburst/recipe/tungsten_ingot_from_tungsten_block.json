@@ -1,7 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "#c:storage_blocks/tungsten"
+    {
+      "tag": "c:storage_blocks/tungsten"
+    }
   ],
   "result": {
     "count": 9,

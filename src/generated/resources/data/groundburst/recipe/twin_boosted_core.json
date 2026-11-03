@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:boosted_fission_core",
-    "groundburst:boosted_fission_core",
-    "groundburst:tritium_canister",
-    "groundburst:tritium_canister",
-    "groundburst:military_circuit",
-    "groundburst:dense_steel_plate"
+    {
+      "item": "groundburst:boosted_fission_core"
+    },
+    {
+      "item": "groundburst:boosted_fission_core"
+    },
+    {
+      "item": "groundburst:tritium_canister"
+    },
+    {
+      "item": "groundburst:tritium_canister"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
   ],
   "result": {
     "id": "groundburst:twin_boosted_core"

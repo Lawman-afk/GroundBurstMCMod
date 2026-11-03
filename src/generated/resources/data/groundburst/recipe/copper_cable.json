@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "#c:ingots/copper",
-    "K": "minecraft:dried_kelp"
+    "C": {
+      "tag": "c:ingots/copper"
+    },
+    "K": {
+      "item": "minecraft:dried_kelp"
+    }
   },
   "pattern": [
     "KKK",

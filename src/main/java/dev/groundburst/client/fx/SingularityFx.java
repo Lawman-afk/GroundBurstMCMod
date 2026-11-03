@@ -20,9 +20,9 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Block;
@@ -47,7 +47,7 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  */
 public final class SingularityFx {
-    static final Identifier DISC = GroundBurst.id("textures/fx/accretion.png");
+    static final ResourceLocation DISC = GroundBurst.id("textures/fx/accretion.png");
     /** Ticks a hole is kept after it has gone, and its last flash lasts. */
     private static final int AFTER = 40, FLASH = 10;
     /** How far into the implosion's sound its thud comes, ticks (it ends as the horizon closes). */
@@ -469,7 +469,7 @@ public final class SingularityFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float[] p, int color) {
-        b.addVertex(pose, p[0], p[1], p[2]).setColor(color).setUv(p[3], p[4]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, p[0], p[1], p[2]).setColor(color).setUv(p[3], p[4]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

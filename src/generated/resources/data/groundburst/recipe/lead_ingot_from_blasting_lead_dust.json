@@ -2,7 +2,9 @@
   "type": "minecraft:blasting",
   "cookingtime": 100,
   "experience": 0.3,
-  "ingredient": "#c:dusts/lead",
+  "ingredient": {
+    "tag": "c:dusts/lead"
+  },
   "result": {
     "id": "groundburst:lead_ingot"
   }

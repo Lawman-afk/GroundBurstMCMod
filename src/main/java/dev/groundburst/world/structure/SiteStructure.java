@@ -10,7 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Rotation;
@@ -57,9 +57,9 @@ public class SiteStructure extends Structure {
      * A template of the site: where its corner sits from the origin (before turning), how the ground meets it, the
      * share of its blocks that survive ({@code integrity}, less for a ruin), and its weathering ({@link Weathering}).
      */
-    public record Part(Identifier template, BlockPos offset, TerrainAdjustment terrain, float integrity, String weathering) {
+    public record Part(ResourceLocation template, BlockPos offset, TerrainAdjustment terrain, float integrity, String weathering) {
         public static final Codec<Part> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Identifier.CODEC.fieldOf("template").forGetter(Part::template),
+                ResourceLocation.CODEC.fieldOf("template").forGetter(Part::template),
                 BlockPos.CODEC.fieldOf("offset").forGetter(Part::offset),
                 TerrainAdjustment.CODEC.optionalFieldOf("terrain", TerrainAdjustment.NONE).forGetter(Part::terrain),
                 Codec.floatRange(0, 1).optionalFieldOf("integrity", 1f).forGetter(Part::integrity),
@@ -122,7 +122,7 @@ public class SiteStructure extends Structure {
             return Optional.empty();
         }
         StructureTemplateManager templates = context.structureTemplateManager();
-        int floor = context.heightAccessor().getMinY();
+        int floor = context.heightAccessor().getMinBuildHeight();
         if (this.placement == Placement.FLOATING) {
             if (middle <= floor + 1) {
                 return Optional.empty();                   // the bare void: only over an island

@@ -10,8 +10,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -105,14 +105,14 @@ public class CreativeFluidTankBlockEntity extends BlockEntity implements TankDis
 
     // --- sync and persistence ----------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         this.tank.serialize(output.child("tank"));
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.tank.deserialize(input.childOrEmpty("tank"));
     }
 

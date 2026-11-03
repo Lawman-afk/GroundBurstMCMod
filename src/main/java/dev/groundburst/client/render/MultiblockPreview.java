@@ -21,8 +21,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -30,7 +29,7 @@ import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.ChunkPos;
@@ -55,7 +54,7 @@ public final class MultiblockPreview {
     private static final String NOTHING = GBLang.add(GroundBurst.MODID + ".holo_projector.nothing", "No unfinished structure in range");
     private static final int WRONG_COLOR = 0xFFFF4030;
     /** Ghosts: see-through, back faces culled (an open model such as a Fuel Channel's frame reads as its shape). */
-    private static final RenderType GHOST = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final RenderType GHOST = RenderType.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final float INSET = 0.02f;
 
@@ -93,11 +92,11 @@ public final class MultiblockPreview {
         }
         if (rangeLayers == 0) {
             layer = 0;
-            player.sendOverlayMessage(Component.translatable(NOTHING));
+            player.displayClientMessage(Component.translatable(NOTHING), true);
             return;
         }
         layer = (layer + 1) % (rangeLayers + 1);
-        player.sendOverlayMessage(layer == 0 ? Component.translatable(LAYER_ALL) : Component.translatable(LAYER_ONE, layer, rangeLayers));
+        player.displayClientMessage(layer == 0 ? Component.translatable(LAYER_ALL) : Component.translatable(LAYER_ONE, layer, rangeLayers), true);
     }
 
     private static boolean holdingProjector(LocalPlayer player) {
@@ -117,7 +116,7 @@ public final class MultiblockPreview {
         }
         boolean projecting = holdingProjector(player);
         if (projecting) {
-            ChunkPos center = ChunkPos.containing(player.blockPosition());
+            ChunkPos center = new ChunkPos(player.blockPosition());
             int r = HoloProjectorItem.RANGE / 16 + 1;
             double range2 = (double) HoloProjectorItem.RANGE * HoloProjectorItem.RANGE;
             for (int cx = -r; cx <= r; cx++) {
@@ -174,7 +173,7 @@ public final class MultiblockPreview {
             poseStack.pushPose();
             poseStack.translate(offset.x, offset.y, offset.z);
             if (ghost.wrong()) {
-                event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), RenderTypes.lines(), WRONG_COLOR, lineWidth * 2, false);
+                event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), RenderType.lines(), WRONG_COLOR, lineWidth * 2, false);
             } else {
                 BlockStateModel model = mc.getModelManager().getBlockStateModelSet().get(ghost.state());
                 List<BlockStateModelPart> parts = new ArrayList<>();
@@ -199,7 +198,7 @@ public final class MultiblockPreview {
         pose.translate(-0.5f, -0.5f, -0.5f);
         QuadInstance instance = new QuadInstance();
         instance.setColor(tint);
-        instance.setLightCoords(LightCoordsUtil.FULL_BRIGHT);
+        instance.setLightCoords(LightTexture.FULL_BRIGHT);
         boolean drawn = false;
         for (BlockStateModelPart part : parts) {
             for (Direction d : DIRECTIONS) {
@@ -232,7 +231,7 @@ public final class MultiblockPreview {
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int color, float nx, float ny, float nz,
             float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz,
             float u0, float v0, float u1, float v1) {
-        int light = LightCoordsUtil.FULL_BRIGHT;
+        int light = LightTexture.FULL_BRIGHT;
         buffer.addVertex(pose, ax, ay, az).setColor(color).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
         buffer.addVertex(pose, bx, by, bz).setColor(color).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
         buffer.addVertex(pose, cx, cy, cz).setColor(color).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);

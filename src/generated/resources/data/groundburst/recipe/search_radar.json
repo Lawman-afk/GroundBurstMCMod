@@ -1,10 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "L": "groundburst:lattice_frame",
-    "P": "groundburst:steel_plate",
-    "R": "minecraft:redstone",
-    "S": "groundburst:steel_rod"
+    "L": {
+      "item": "groundburst:lattice_frame"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "groundburst:steel_rod"
+    }
   },
   "pattern": [
     "PPP",

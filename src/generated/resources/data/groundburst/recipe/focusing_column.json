@@ -2,13 +2,27 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:superconducting_coil",
-    "groundburst:superconducting_coil",
-    "groundburst:sapphire_boule",
-    "groundburst:quantum_circuit",
-    "groundburst:electric_motor"
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:sapphire_boule"
+    },
+    {
+      "item": "groundburst:quantum_circuit"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    }
   ],
   "result": {
     "id": "groundburst:focusing_column"

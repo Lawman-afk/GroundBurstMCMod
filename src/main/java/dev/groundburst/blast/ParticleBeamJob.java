@@ -289,7 +289,7 @@ final class ParticleBeamJob {
 
     /** A column within its melt: heated, eaten down from its top as deep as its heat says, its new bottom and sides melted. */
     private void melt(int cx, int cz, double d) {
-        long key = ChunkPos.pack(cx, cz);
+        long key = ChunkPos.asLong(cx, cz);
         if (!this.tops.containsKey(key)) {
             scorch(cx, cz);                                       // what stands on it burns first
             this.tops.put(key, ground(cx, cz, (int) Math.floor(this.y)) - 1);
@@ -381,14 +381,14 @@ final class ParticleBeamJob {
 
     /** A column round it, once: leaves and plants on it burn away, logs char, its ground is scorched. */
     private void scorch(int cx, int cz) {
-        long key = ChunkPos.pack(cx, cz);
+        long key = ChunkPos.asLong(cx, cz);
         if (!this.scorched.add(key)) {
             return;
         }
         BlockPos.MutableBlockPos p = this.at;
         int top = ground(cx, cz, (int) Math.floor(this.y)) - 1;
         int y = top;
-        for (; y > top - 16 && y > this.level.getMinY(); y--) {
+        for (; y > top - 16 && y > this.level.getMinBuildHeight(); y--) {
             p.set(cx, y, cz);
             BlockState s = this.level.getBlockState(p);
             if (s.isAir()) {
@@ -442,7 +442,7 @@ final class ParticleBeamJob {
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
         DamageSource beam = this.level.damageSources().source(ParticleBeams.PARTICLE_BEAM, null, source);
         float reach = ParticleBeams.FIRE;
-        AABB box = new AABB(this.x - reach, this.y - ParticleBeams.MAX_DEPTH - 2, this.z - reach, this.x + reach, this.level.getMaxY() + 1,
+        AABB box = new AABB(this.x - reach, this.y - ParticleBeams.MAX_DEPTH - 2, this.z - reach, this.x + reach, (this.level.getMaxBuildHeight() - 1) + 1,
                 this.z + reach);
         for (Entity e : this.level.getEntities((Entity) null, box, e -> e.isAlive() && !spared(e))) {
             double d = Math.hypot(e.getX() - this.x, e.getZ() - this.z) - e.getBbWidth() / 2;

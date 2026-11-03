@@ -1,8 +1,12 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "minecraft:book",
-    "minecraft:gunpowder"
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "id": "groundburst:field_manual"

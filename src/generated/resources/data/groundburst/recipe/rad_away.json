@@ -1,11 +1,21 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundburst:plastic_sheet",
-    "minecraft:water_bucket",
-    "minecraft:sugar",
-    "minecraft:charcoal",
-    "minecraft:charcoal"
+    {
+      "item": "groundburst:plastic_sheet"
+    },
+    {
+      "item": "minecraft:water_bucket"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "minecraft:charcoal"
+    },
+    {
+      "item": "minecraft:charcoal"
+    }
   ],
   "result": {
     "count": 2,

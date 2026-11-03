@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "B": "groundburst:battery",
-    "C": "#groundburst:basic_circuits",
-    "G": "minecraft:glass_pane",
-    "S": "groundburst:steel_plate",
-    "W": "groundburst:copper_wire"
+    "B": {
+      "item": "groundburst:battery"
+    },
+    "C": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "S": {
+      "item": "groundburst:steel_plate"
+    },
+    "W": {
+      "item": "groundburst:copper_wire"
+    }
   },
   "pattern": [
     "SGS",

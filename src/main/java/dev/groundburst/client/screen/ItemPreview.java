@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -80,7 +80,7 @@ public final class ItemPreview {
             pose.scale(state.size()[0], state.size()[1], state.size()[0]);
             pose.translate(-state.centre()[0], -state.centre()[1], -state.centre()[2]);
             mc.getItemModelResolver().updateForTopItem(this.item, state.stack(), ItemDisplayContext.NONE, mc.level, null, 0);
-            this.item.submit(pose, collector, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
+            this.item.submit(pose, collector, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
         }
 
         @Override

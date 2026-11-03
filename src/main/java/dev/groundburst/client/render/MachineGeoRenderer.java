@@ -1,17 +1,17 @@
 package dev.groundburst.client.render;
 
-import com.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.constant.dataticket.DataTicket;
-import com.geckolib.renderer.GeoBlockRenderer;
-import com.geckolib.renderer.base.BoneSnapshots;
-import com.geckolib.renderer.base.GeoRenderState;
-import com.geckolib.renderer.base.RenderPassInfo;
+import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.renderer.GeoBlockRenderer;
+import software.bernie.geckolib.renderer.base.BoneSnapshots;
+import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.base.RenderPassInfo;
 import com.google.common.reflect.TypeToken;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,7 +22,7 @@ import dev.groundburst.content.machine.AnimatedMachine;
 import dev.groundburst.content.machine.MachineBlockEntity;
 import dev.groundburst.content.machine.MachineTank;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -76,7 +76,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void tryRotateByBlockstate(com.geckolib.renderer.base.RenderPassInfo pass, PoseStack pose) {
+    protected void tryRotateByBlockstate(software.bernie.geckolib.renderer.base.RenderPassInfo pass, PoseStack pose) {
         if (!this.standing) {
             super.tryRotateByBlockstate(pass, pose);
             return;
@@ -95,7 +95,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     }
 
     /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
-    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, com.geckolib.model.GeoModel<T> model, int height, int reach) {
+    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, software.bernie.geckolib.model.GeoModel<T> model, int height, int reach) {
         super(context, model);
         this.height = height;
         this.reach = reach;
@@ -106,8 +106,8 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void withGlow() {
         // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
-        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
-        withRenderLayer((com.geckolib.renderer.layer.GeoRenderLayer) new MissileLayer(this));
+        withRenderLayer((software.bernie.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
+        withRenderLayer((software.bernie.geckolib.renderer.layer.GeoRenderLayer) new MissileLayer(this));
     }
 
     /**
@@ -116,13 +116,13 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
      * tail, so the machines' models carry no missile of their own. The item states are resolved when the frame's state is
      * taken.
      */
-    private static final class MissileLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends com.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
-        MissileLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
+    private static final class MissileLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends software.bernie.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
+        MissileLayer(software.bernie.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
             super(renderer);
         }
 
         @Override
-        public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<com.geckolib.cache.model.GeoBone, com.geckolib.renderer.base.PerBoneRender<R>> consumer) {
+        public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<software.bernie.geckolib.cache.object.GeoBone, software.bernie.geckolib.renderer.base.PerBoneRender<R>> consumer) {
             List<ShownMissile> all = pass.getGeckolibData(MISSILE);
             if (all == null || all.isEmpty() || !pass.willRender()) {
                 return;
@@ -183,17 +183,17 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
      * GeckoLib does not check, and a missing one would draw as the missing texture. (Until this, no renderer drew the
      * glowmasks the machine models were made with.)
      */
-    private static final class GlowLayer<A extends GeoAnimatable, O, R extends com.geckolib.renderer.base.GeoRenderState>
-            extends com.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer<A, O, R> {
-        private static final java.util.Map<net.minecraft.resources.Identifier, Boolean> EXISTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final class GlowLayer<A extends GeoAnimatable, O, R extends software.bernie.geckolib.renderer.base.GeoRenderState>
+            extends software.bernie.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer<A, O, R> {
+        private static final java.util.Map<net.minecraft.resources.ResourceLocation, Boolean> EXISTS = new java.util.concurrent.ConcurrentHashMap<>();
 
-        GlowLayer(com.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
+        GlowLayer(software.bernie.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
             super(renderer);
         }
 
         @Override
         public void submitRenderTask(RenderPassInfo<R> pass, SubmitNodeCollector collector) {
-            net.minecraft.resources.Identifier glow = getTextureResource(pass.renderState());
+            net.minecraft.resources.ResourceLocation glow = getTextureResource(pass.renderState());
             if (EXISTS.computeIfAbsent(glow, id -> net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(id).isPresent())) {
                 super.submitRenderTask(pass, collector);
             }
@@ -209,7 +209,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             new TypeToken<java.util.Map<String, float[]>>() {});
     private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundburst_missile", new TypeToken<List<ShownMissile>>() {});
     /** The texture a model is drawn in this frame instead of its own ({@link AnimatedMachine#textureVariant}). */
-    static final DataTicket<net.minecraft.resources.Identifier> TEXTURE = DataTicket.create("groundburst_texture", net.minecraft.resources.Identifier.class);
+    static final DataTicket<net.minecraft.resources.ResourceLocation> TEXTURE = DataTicket.create("groundburst_texture", net.minecraft.resources.ResourceLocation.class);
 
     @Override
     public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
@@ -219,7 +219,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
             ((GeoRenderState) renderState).addGeckolibData(BONE_ROTATIONS, machine.boneRotations(partialTick));
             offsets = machine.boneOffsets(partialTick);
-            net.minecraft.resources.Identifier texture = machine.textureVariant();
+            net.minecraft.resources.ResourceLocation texture = machine.textureVariant();
             if (texture != null) {
                 ((GeoRenderState) renderState).addGeckolibData(TEXTURE, texture);
             }
@@ -344,7 +344,7 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             float x0 = b.x0() / 16f, x1 = b.x1() / 16f, z0 = b.z0() / 16f, z1 = b.z1() / 16f;
             float y0 = b.y0() / 16f, y1 = (b.y0() + (b.y1() - b.y0()) * tank.fill()) / 16f;
             int c = tank.color();
-            renderTasks.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+            renderTasks.submitCustomGeometry(poseStack, RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
                 float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
                 quad(buffer, pose, c, light, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, u0, v0, u1, v1);
                 // Sides tiled in one-block pieces so tall tanks keep the texture's scale.

@@ -1,8 +1,12 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundburst:quantum_speed_chip",
-    "groundburst:quantum_efficiency_chip"
+    {
+      "item": "groundburst:quantum_speed_chip"
+    },
+    {
+      "item": "groundburst:quantum_efficiency_chip"
+    }
   ],
   "result": {
     "count": 2,

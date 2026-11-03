@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:frag_grenade",
-    "#c:plates/steel",
-    "minecraft:stone_pressure_plate",
-    "minecraft:gunpowder"
+    {
+      "item": "groundburst:frag_grenade"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:stone_pressure_plate"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "id": "groundburst:bouncing_mine"

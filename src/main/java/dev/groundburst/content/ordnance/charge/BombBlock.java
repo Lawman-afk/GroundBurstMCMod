@@ -48,7 +48,7 @@ public class BombBlock extends ChargeBlock implements Fallable {
     /** Nothing under it: it falls, carrying its fuze settings (the falling block entity does not keep them by itself). */
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!FallingBlock.isFree(level.getBlockState(pos.below())) || pos.getY() < level.getMinY()) {
+        if (!FallingBlock.isFree(level.getBlockState(pos.below())) || pos.getY() < level.getMinBuildHeight()) {
             return;
         }
         ChargeBlockEntity be = at(level, pos);

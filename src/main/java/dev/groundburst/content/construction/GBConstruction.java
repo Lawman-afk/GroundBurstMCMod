@@ -163,7 +163,7 @@ public final class GBConstruction {
     }
 
     private static Properties door(Properties p) {
-        return metal(p, MapColor.METAL).strength(6f, 24f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.IMMOVEABLE);
+        return metal(p, MapColor.METAL).strength(6f, 24f).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK);
     }
 
     private static Properties seeThrough(Properties p) {

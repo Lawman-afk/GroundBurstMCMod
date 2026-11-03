@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "F": "groundburst:machine_frame",
-    "G": "#c:glass_blocks/colorless",
-    "H": "groundburst:handmade_circuit_board",
-    "S": "groundburst:servo"
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "H": {
+      "item": "groundburst:handmade_circuit_board"
+    },
+    "S": {
+      "item": "groundburst:servo"
+    }
   },
   "pattern": [
     " G ",

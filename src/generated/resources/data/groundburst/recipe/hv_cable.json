@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "F": "groundburst:tungsten_filament",
-    "I": "groundburst:insulated_cable",
-    "T": "#c:plates/tungsten"
+    "F": {
+      "item": "groundburst:tungsten_filament"
+    },
+    "I": {
+      "item": "groundburst:insulated_cable"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    }
   },
   "pattern": [
     "III",

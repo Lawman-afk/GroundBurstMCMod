@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "A": "#c:circuits/advanced",
-    "D": "groundburst:dense_steel_plate",
-    "F": "groundburst:machine_frame",
-    "S": "groundburst:servo"
+    "A": {
+      "tag": "c:circuits/advanced"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "S": {
+      "item": "groundburst:servo"
+    }
   },
   "pattern": [
     "DSD",

@@ -52,7 +52,7 @@ public class RemoteDetonatorItem extends Item {
         }
         if (!context.getLevel().isClientSide()) {
             context.getItemInHand().set(GBDataComponents.FREQUENCY.get(), be.frequency());
-            player.sendOverlayMessage(Component.translatable(LINKED, be.frequency()));
+            player.displayClientMessage(Component.translatable(LINKED, be.frequency()), true);
         }
         return InteractionResult.SUCCESS;
     }
@@ -70,8 +70,8 @@ public class RemoteDetonatorItem extends Item {
             int f = frequency(stack);
             level.playSound(null, player.getX(), player.getY(), player.getZ(), GBOrdnance.DETONATOR_CLICK.get(), SoundSource.PLAYERS, 0.8f, 1f);
             int n = Charges.remote(server, player.getEyePosition(), f, player);
-            player.sendOverlayMessage(n > 0 ? Component.translatable(FIRED, n).withStyle(ChatFormatting.RED)
-                    : Component.translatable(NOTHING, f).withStyle(ChatFormatting.GRAY));
+            player.displayClientMessage(n > 0 ? Component.translatable(FIRED, n).withStyle(ChatFormatting.RED)
+                    : Component.translatable(NOTHING, f).withStyle(ChatFormatting.GRAY), true);
         }
         player.getCooldowns().addCooldown(stack, 10);
         return InteractionResult.SUCCESS;

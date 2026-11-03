@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": "#c:concretes",
-    "R": "#c:rods/steel"
+    "C": {
+      "tag": "c:concretes"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     "CCC",

@@ -2,7 +2,7 @@ package dev.groundburst.content.superweapon;
 
 import java.util.List;
 
-import com.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.RawAnimation;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.blast.ParticleBeams;
@@ -27,8 +27,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -274,14 +274,14 @@ public class ParticleCannonBlockEntity extends SuperweaponBlockEntity {
 
     // --- saving -------------------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("beam", this.beam);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.beam = input.getIntOr("beam", 0);
     }
 

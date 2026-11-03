@@ -1,10 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "M": "groundburst:neodymium_magnet",
-    "P": "#c:plates/steel",
-    "R": "#c:rods/steel",
-    "W": "#c:wires/copper"
+    "M": {
+      "item": "groundburst:neodymium_magnet"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    },
+    "W": {
+      "tag": "c:wires/copper"
+    }
   },
   "pattern": [
     "WPW",

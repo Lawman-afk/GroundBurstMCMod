@@ -19,26 +19,26 @@ import net.neoforged.neoforge.registries.DeferredItem;
 public final class GBMultiblocks {
     public static final WithItem<MultiblockPartBlock> MACHINE_CASING = GBBlocks.register("machine_casing", "Machine Casing", GBTab.MACHINES,
             MultiblockPartBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
     public static final WithItem<GlassPartBlock> REACTOR_GLASS = GBBlocks.register("reactor_glass", "Reactor Glass", GBTab.MACHINES,
             GlassPartBlock::new, p -> p.mapColor(MapColor.COLOR_GRAY).strength(3f, 12f).requiresCorrectToolForDrops().sound(SoundType.GLASS)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.IMMOVEABLE));
+                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK));
     public static final WithItem<PortBlock> ITEM_PORT = GBBlocks.register("item_port", "Item Port", GBTab.MACHINES,
             PortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
 
     // Slice 7 structural blocks.
     public static final WithItem<MultiblockPartBlock> LEAD_LINED_CASING = part("lead_lined_casing", "Lead-Lined Casing", MapColor.COLOR_GRAY);
     public static final WithItem<FluidPortBlock> FLUID_PORT = GBBlocks.register("fluid_port", "Fluid Port", GBTab.MACHINES,
             FluidPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
     public static final WithItem<EnergyPortBlock> ENERGY_PORT = GBBlocks.register("energy_port", "Energy Port", GBTab.MACHINES,
             EnergyPortBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
     /** Stood anywhere in a Fission Reactor's core, one fuel rod a channel (DESIGN.md §7.2). */
     public static final WithItem<FuelChannelBlock> FUEL_CHANNEL = GBBlocks.register("fuel_channel", "Fuel Channel", GBTab.MACHINES,
             FuelChannelBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.IMMOVEABLE)
+                    .noOcclusion().isViewBlocking((s, l, pos, box) -> false).isSuffocating((s, l, pos) -> false).pushReaction(PushReaction.BLOCK)
                     .lightLevel(s -> s.getValue(FuelChannelBlock.LIT) ? 10 : 0));
     public static final WithItem<MultiblockPartBlock> STEEL_PLATING = part("steel_plating", "Steel Plating", MapColor.METAL);
     public static final WithItem<MultiblockPartBlock> MAGNET_SEGMENT = part("magnet_segment", "Accelerator Magnet Segment", MapColor.COLOR_RED);
@@ -59,7 +59,7 @@ public final class GBMultiblocks {
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color) {
         return GBBlocks.register(id, english, GBTab.MACHINES, MultiblockPartBlock::new,
-                p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+                p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     }
 
     /**
@@ -229,7 +229,7 @@ public final class GBMultiblocks {
                 dev.groundburst.content.defence.GBDefence.COMPLEX);
     }
 
-    public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.Identifier id) {
+    public static @org.jspecify.annotations.Nullable MultiblockDefinition byId(net.minecraft.resources.ResourceLocation id) {
         for (MultiblockDefinition def : all()) {
             if (def.id().equals(id)) {
                 return def;

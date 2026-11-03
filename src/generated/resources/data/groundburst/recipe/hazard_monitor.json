@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:steel_plate",
-    "groundburst:steel_plate",
-    "groundburst:basic_circuit",
-    "groundburst:geiger_counter",
-    "minecraft:glass_pane"
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "groundburst:geiger_counter"
+    },
+    {
+      "item": "minecraft:glass_pane"
+    }
   ],
   "result": {
     "id": "groundburst:hazard_monitor"

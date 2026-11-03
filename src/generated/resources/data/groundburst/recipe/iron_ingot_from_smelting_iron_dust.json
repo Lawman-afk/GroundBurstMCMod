@@ -2,7 +2,9 @@
   "type": "minecraft:smelting",
   "cookingtime": 200,
   "experience": 0.3,
-  "ingredient": "#c:dusts/iron",
+  "ingredient": {
+    "tag": "c:dusts/iron"
+  },
   "result": {
     "id": "minecraft:iron_ingot"
   }

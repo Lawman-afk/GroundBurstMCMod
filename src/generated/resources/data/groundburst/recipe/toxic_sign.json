@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundburst:steel_plate",
-    "#c:dyes/orange",
-    "minecraft:black_dye"
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "tag": "c:dyes/orange"
+    },
+    {
+      "item": "minecraft:black_dye"
+    }
   ],
   "result": {
     "count": 3,

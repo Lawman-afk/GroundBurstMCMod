@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "B": "minecraft:iron_bars",
-    "P": "#c:plates/steel"
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    }
   },
   "pattern": [
     "PBP",

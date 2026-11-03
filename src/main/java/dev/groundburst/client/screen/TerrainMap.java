@@ -13,14 +13,14 @@ import dev.groundburst.GroundBurst;
 import dev.groundburst.content.launch.LaunchPayloads;
 import dev.groundburst.content.launch.TerrainSurvey;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Launch Computer's terrain map (DESIGN.md §17.3): the server's terrain survey ({@link TerrainSurvey}) in tiles,
@@ -68,7 +68,7 @@ public final class TerrainMap {
     /** Whether the map stops at the survey round its source (a computer's; a station's maps the whole dimension). */
     private final boolean bounded;
     private final DynamicTexture texture;
-    private final Identifier id;
+    private final ResourceLocation id;
     private double drawnX = Double.NaN, drawnZ;
     private int drawnZoom, drawnGeneration = -1;
 
@@ -110,12 +110,12 @@ public final class TerrainMap {
                 if ((tile == null || age > (tile.partial() ? RETRY : REFRESH)) && (asked == null || t - asked > RETRY)
                         && want.size() < LaunchPayloads.MapRequest.MAX_TILES) {
                     ASKED.put(k, t);
-                    want.add(ChunkPos.pack(tx, tz));
+                    want.add(ChunkPos.asLong(tx, tz));
                 }
             }
         }
         if (!want.isEmpty()) {
-            ClientPacketDistributor.sendToServer(new LaunchPayloads.MapRequest(computer, zoom, want));
+            PacketDistributor.sendToServer(new LaunchPayloads.MapRequest(computer, zoom, want));
         }
     }
 

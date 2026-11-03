@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "F": "groundburst:machine_frame",
-    "P": "#c:plates/steel"
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    }
   },
   "pattern": [
     " P ",

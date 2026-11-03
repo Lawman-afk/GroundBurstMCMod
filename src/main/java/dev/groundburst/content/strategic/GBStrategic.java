@@ -32,10 +32,10 @@ public final class GBStrategic {
     /** The hall's two long girders: its travelling crane runs along them. */
     public static final WithItem<MultiblockPartBlock> CRANE_RAIL = GBBlocks.register("crane_rail", "Crane Rail", GBTab.MISSILES,
             MultiblockPartBlock::new, p -> p.mapColor(MapColor.COLOR_YELLOW).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE).noOcclusion());
+                    .pushReaction(PushReaction.BLOCK).noOcclusion());
     public static final WithItem<MultiblockControllerBlock> HALL_CONTROLLER = GBBlocks.register("strategic_assembly_hall",
             "ICBM Assembly Hall", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.HALL_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StrategicAssemblyBlockEntity>> HALL_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("strategic_assembly_hall", () -> new BlockEntityType<>(StrategicAssemblyBlockEntity::new,
                     HALL_CONTROLLER.block().get()));
@@ -43,7 +43,7 @@ public final class GBStrategic {
     public static final WithItem<MultiblockControllerBlock> SPECIAL_CONTROLLER = GBBlocks.register("special_weapons_assembler",
             "Special Weapons Assembler", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBStrategic.SPECIAL_ENTITY),
             p -> p.mapColor(MapColor.COLOR_PURPLE).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SpecialWeaponsBlockEntity>> SPECIAL_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("special_weapons_assembler", () -> new BlockEntityType<>(SpecialWeaponsBlockEntity::new,
                     SPECIAL_CONTROLLER.block().get()));

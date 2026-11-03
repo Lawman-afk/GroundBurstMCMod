@@ -1,8 +1,12 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "D": "groundburst:dense_steel_plate",
-    "R": "#c:rods/steel"
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     " D ",

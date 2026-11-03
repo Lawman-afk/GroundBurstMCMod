@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "C": "minecraft:clay_ball",
-    "L": "groundburst:salt",
-    "R": "#c:rods/steel"
+    "C": {
+      "item": "minecraft:clay_ball"
+    },
+    "L": {
+      "item": "groundburst:salt"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     "RCR",

@@ -539,7 +539,7 @@ public final class Charges {
             BlockPos next = at.below();
             BlockState s = level.getBlockState(next);
             int cost = s.getBlock().getExplosionResistance() >= BREACH_MAX_RESISTANCE ? BUNKER_HARD_COST : 1;
-            if (next.getY() < level.getMinY() || s.getDestroySpeed(level, next) < 0 || cost > left) {
+            if (next.getY() < level.getMinBuildHeight() || s.getDestroySpeed(level, next) < 0 || cost > left) {
                 Blasts.detonate(level, Vec3.atCenterOf(at), Blasts.profile("bunker_buster_warhead"), by, bombScale);
                 return;
             }

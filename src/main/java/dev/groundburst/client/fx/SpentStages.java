@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -130,7 +130,7 @@ final class SpentStages {
             }
             BlockPos at = BlockPos.containing(s.x, s.y, s.z);
             boolean landed = level.isLoaded(at) && !level.getBlockState(at).getCollisionShape(level, at).isEmpty();
-            if (landed || s.age > LIFE || s.y < level.getMinY()) {
+            if (landed || s.age > LIFE || s.y < level.getMinBuildHeight()) {
                 if (landed) {
                     land(level, s, puffs, now, quality);
                 }
@@ -171,7 +171,7 @@ final class SpentStages {
     static void submit(SubmitNodeCollector collector, PoseStack poseStack, ClientLevel level, Vec3 camera, float partial) {
         for (Stage s : STAGES) {
             double x = s.xo + (s.x - s.xo) * partial, y = s.yo + (s.y - s.yo) * partial, z = s.zo + (s.z - s.zo) * partial;
-            int light = LightCoordsUtil.getLightCoords(level, BlockPos.containing(x, y, z));
+            int light = LightTexture.getLightCoords(level, BlockPos.containing(x, y, z));
             poseStack.pushPose();
             poseStack.translate(x - camera.x, y - camera.y, z - camera.z);
             poseStack.rotate(Axis.YP.rotationDegrees(s.yawO + (s.yaw - s.yawO) * partial));

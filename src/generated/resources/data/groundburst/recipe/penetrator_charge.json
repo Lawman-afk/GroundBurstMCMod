@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:he_charge",
-    "groundburst:tungsten_rod",
-    "groundburst:tungsten_rod",
-    "groundburst:tungsten_carbide_ingot",
-    "groundburst:tungsten_carbide_ingot",
-    "groundburst:advanced_circuit"
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "item": "groundburst:tungsten_rod"
+    },
+    {
+      "item": "groundburst:tungsten_rod"
+    },
+    {
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:penetrator_charge"

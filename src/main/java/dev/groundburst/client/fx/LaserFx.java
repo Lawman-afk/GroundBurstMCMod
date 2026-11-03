@@ -19,8 +19,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -36,7 +36,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * far as we see; another player's goes to the spot the server traced for it ({@link DesignatorPayloads.Beam}).
  */
 public final class LaserFx {
-    static final Identifier LASER = GroundBurst.id("textures/fx/laser.png");
+    static final ResourceLocation LASER = GroundBurst.id("textures/fx/laser.png");
     /** The texture's parts: the beam's cross-section along the top third, the spot and the ring in the two cells below. */
     private static final float V_BEAM = 1 / 3f;
     private static final int BEAM = 0xFF3020, SPOT = 0xFF5A3C, RING = 0xFF3A28, CORE = 0xFF2010;
@@ -240,8 +240,8 @@ public final class LaserFx {
         if (level.getChunkSource().getChunk(a.getX() >> 4, a.getZ() >> 4, net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false) == null) {
             return a.getY();
         }
-        net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos(a.getX(), Math.min(level.getMaxY(), a.getY() + 96), a.getZ());
-        int floor = Math.max(level.getMinY(), a.getY() - 96);
+        net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos(a.getX(), Math.min((level.getMaxBuildHeight() - 1), a.getY() + 96), a.getZ());
+        int floor = Math.max(level.getMinBuildHeight(), a.getY() - 96);
         for (; p.getY() > floor; p.move(net.minecraft.core.Direction.DOWN)) {
             var state = level.getBlockState(p);
             if (!state.getCollisionShape(level, p).isEmpty() || !state.getFluidState().isEmpty()) {
@@ -344,7 +344,7 @@ public final class LaserFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

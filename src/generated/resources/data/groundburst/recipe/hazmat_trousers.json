@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "P": "groundburst:plastic_sheet"
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    }
   },
   "pattern": [
     "PPP",

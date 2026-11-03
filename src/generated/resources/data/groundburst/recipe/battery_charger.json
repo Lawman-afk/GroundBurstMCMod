@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "#groundburst:basic_circuits",
-    "C": "groundburst:capacitor",
-    "F": "groundburst:machine_frame"
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "C": {
+      "item": "groundburst:capacitor"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    }
   },
   "pattern": [
     "CBC",

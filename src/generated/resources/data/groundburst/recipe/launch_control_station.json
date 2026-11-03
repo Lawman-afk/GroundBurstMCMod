@@ -2,14 +2,30 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:crt_display",
-    "groundburst:crt_display",
-    "groundburst:crt_display",
-    "groundburst:military_circuit",
-    "groundburst:antenna",
-    "minecraft:lever",
-    "minecraft:lever"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:antenna"
+    },
+    {
+      "item": "minecraft:lever"
+    },
+    {
+      "item": "minecraft:lever"
+    }
   ],
   "result": {
     "id": "groundburst:launch_control_station"

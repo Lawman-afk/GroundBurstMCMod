@@ -14,8 +14,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -49,8 +49,8 @@ public final class FissionSections {
         private final String id = "fission_" + name().toLowerCase(Locale.ROOT);
         private final StandaloneModelKey<BlockStateModelPart> key = new StandaloneModelKey<>(() -> GroundBurst.MODID + ":" + this.id);
 
-        public Identifier model() {
-            return Identifier.fromNamespaceAndPath(GroundBurst.MODID, "block/" + this.id);
+        public ResourceLocation model() {
+            return ResourceLocation.fromNamespaceAndPath(GroundBurst.MODID, "block/" + this.id);
         }
 
         /** See-through panes, drawn with the coolant (sorted with it) rather than with the vessel. */
@@ -114,9 +114,9 @@ public final class FissionSections {
         BlockState state = level.getBlockState(pos);
         boolean glass = FissionCore.glass(state);
         int port = FissionCore.port(state);
-        int light = LightCoordsUtil.getLightCoords(level, pos);
+        int light = LightTexture.getLightCoords(level, pos);
         for (Direction d : outward) {
-            light = LightCoordsUtil.max(light, LightCoordsUtil.getLightCoords(level, pos.relative(d)));
+            light = LightTexture.max(light, LightTexture.getLightCoords(level, pos.relative(d)));
         }
         int x = pos.getX() - origin.getX(), y = pos.getY() - origin.getY(), z = pos.getZ() - origin.getZ();
         if (sides.size() == 2) {

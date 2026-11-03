@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "H": "groundburst:hazmat_boots",
-    "L": "groundburst:lead_plate"
+    "H": {
+      "item": "groundburst:hazmat_boots"
+    },
+    "L": {
+      "item": "groundburst:lead_plate"
+    }
   },
   "pattern": [
     " L ",

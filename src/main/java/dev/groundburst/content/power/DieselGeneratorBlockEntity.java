@@ -2,8 +2,8 @@ package dev.groundburst.content.power;
 
 import java.util.List;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.fluid.GBFluids;
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -19,7 +19,7 @@ import dev.groundburst.registry.GBSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
@@ -29,8 +29,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 /**
@@ -72,7 +72,7 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     }
 
     private static TagKey<Fluid> common(String path) {
-        return TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath("c", path));
+        return TagKey.create(Registries.FLUID, ResourceLocation.fromNamespaceAndPath("c", path));
     }
 
     /** FE per mB of this fluid as diesel fuel, or 0 if it does not burn here. */
@@ -182,16 +182,16 @@ public class DieselGeneratorBlockEntity extends MachineBlockEntity implements An
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("burn", this.burn);
         output.putInt("burn_total", this.burnTotal);
         output.putInt("fuel_value", this.fuelValue);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.burn = input.getIntOr("burn", 0);
         this.burnTotal = input.getIntOr("burn_total", 0);
         this.fuelValue = input.getIntOr("fuel_value", 0);

@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "P": "groundburst:plastic_sheet",
-    "Y": "#c:dyes/yellow"
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "Y": {
+      "tag": "c:dyes/yellow"
+    }
   },
   "pattern": [
     "P P",

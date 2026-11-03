@@ -11,15 +11,15 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import dev.groundburst.GroundBurst;
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Util;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
@@ -64,7 +64,7 @@ final class FxRenderTypes {
     static final OitPipelineSet OIT_FIRE = OitPipelineSet.builder(GroundBurst.id("fire"),
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withCull(false)).build();
 
-    private static final Identifier CLOUD_SHADER = GroundBurst.id("core/fx_cloud");
+    private static final ResourceLocation CLOUD_SHADER = GroundBurst.id("core/fx_cloud");
     static final RenderPipeline CLOUD_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_NO_LIGHTMAP_SNIPPET, RenderPipelines.EYES_SNIPPET)
             .withLocation(GroundBurst.id("pipeline/cloud"))
             .withFragmentShader(CLOUD_SHADER)
@@ -76,11 +76,11 @@ final class FxRenderTypes {
             RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET, RenderPipelines.EYES_SNIPPET).withFragmentShader(CLOUD_SHADER).withCull(false))
             .build();
 
-    private static final Function<Identifier, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_cloud",
+    private static final Function<ResourceLocation, RenderType> CLOUD = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_cloud",
             RenderSetup.builder(CLOUD_PIPELINE).setOitPipelines(OIT_CLOUD).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
-    private static final Function<Identifier, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_fire",
+    private static final Function<ResourceLocation, RenderType> FIRE = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_fire",
             RenderSetup.builder(FIRE_PIPELINE).setOitPipelines(OIT_FIRE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
-    private static final Function<Identifier, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
+    private static final Function<ResourceLocation, RenderType> GLOW = Util.memoize(texture -> RenderType.create(GroundBurst.MODID + "_glow",
             RenderSetup.builder(GLOW_PIPELINE).setOitPipelines(OIT_GLOW).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup()));
 
     private FxRenderTypes() {}
@@ -111,17 +111,17 @@ final class FxRenderTypes {
     }
 
     /** Blended, unlit, two-sided, with this texture. */
-    static RenderType fire(Identifier texture) {
+    static RenderType fire(ResourceLocation texture) {
         return FIRE.apply(texture);
     }
 
     /** Blended, unlit, two-sided, seen far beyond the render distance, with this texture. */
-    static RenderType cloud(Identifier texture) {
+    static RenderType cloud(ResourceLocation texture) {
         return CLOUD.apply(texture);
     }
 
     /** Additive, unlit, two-sided, with this texture. */
-    static RenderType glow(Identifier texture) {
+    static RenderType glow(ResourceLocation texture) {
         return GLOW.apply(texture);
     }
 }

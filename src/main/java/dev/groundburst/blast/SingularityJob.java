@@ -102,8 +102,8 @@ final class SingularityJob {
         this.life = Math.max(1, life);
         this.startTick = level.getGameTime();
         this.by = by == null ? null : by.getUUID();
-        this.minY = level.getMinY();
-        this.maxY = level.getMaxY();
+        this.minY = level.getMinBuildHeight();
+        this.maxY = (level.getMaxBuildHeight() - 1);
         this.reach = Singularities.reach(seed, feed, 0, 0, this.life, this.max);
         this.chunks = new BlastChunks(level, this.owner, this.center, (float) (this.max * SWEEP_SHARE) + 2, GBServerConfig.GENERATE_CHUNKS.get(), h -> {});
     }

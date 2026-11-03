@@ -1,9 +1,9 @@
 package dev.groundburst.content.machine;
 
-import com.geckolib.animatable.GeoBlockEntity;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.AnimationController;
-import com.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -47,7 +47,7 @@ public interface AnimatedMachine extends GeoBlockEntity {
      * The texture to draw the model in instead of its own (null: its own): the Warning Beacon's colour. Its glowmask is
      * the texture's {@code _glowmask}. Only for a renderer made with a {@code VariantGeoModel}.
      */
-    default net.minecraft.resources.@org.jspecify.annotations.Nullable Identifier textureVariant() {
+    default net.minecraft.resources.@org.jspecify.annotations.Nullable ResourceLocation textureVariant() {
         return null;
     }
 

@@ -2,7 +2,9 @@
   "type": "minecraft:smelting",
   "cookingtime": 200,
   "experience": 0.3,
-  "ingredient": "#c:dusts/depleted_uranium",
+  "ingredient": {
+    "tag": "c:dusts/depleted_uranium"
+  },
   "result": {
     "id": "groundburst:depleted_uranium_ingot"
   }

@@ -48,7 +48,7 @@ public final class GBLaunch {
     /** The Radar Array's crown: one item that places a 3x3 dish. */
     public static final WithItem<LargeRadarDishBlock> LARGE_RADAR_DISH = GBBlocks.register("large_radar_dish", "Large Radar Dish", GBTab.MISSILES,
             LargeRadarDishBlock::new, p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE).noOcclusion());
+                    .pushReaction(PushReaction.BLOCK).noOcclusion());
     public static final WithItem<MultiblockPartBlock> ANTENNA = part("antenna", "Antenna", MapColor.METAL, SoundType.METAL, true);
     /** The Launch Complex's flame trench: the steel wedge under the missile that turns its exhaust out of the trench. */
     public static final WithItem<MultiblockPartBlock> FLAME_DEFLECTOR = part("flame_deflector", "Flame Deflector", MapColor.COLOR_GRAY, SoundType.METAL, false);
@@ -62,7 +62,7 @@ public final class GBLaunch {
     /** The same striped yellow and black: the Missile Silo's top ring (a part, hidden while formed). */
     public static final WithItem<MultiblockPartBlock> HAZARD_CONCRETE = GBBlocks.register("hazard_concrete", "Hazard Concrete", GBTab.MISSILES,
             MultiblockPartBlock::new, p -> p.mapColor(MapColor.COLOR_YELLOW).strength(15f, 1200f).requiresCorrectToolForDrops()
-                    .sound(SoundType.STONE).pushReaction(PushReaction.IMMOVEABLE));
+                    .sound(SoundType.STONE).pushReaction(PushReaction.BLOCK));
     /**
      * The Cruise Missile Launcher's boxes (slice 9c): an armored box a cruise missile is fired from, two side by side on
      * its back row (a part, hidden while formed: the model draws the boxes).
@@ -71,25 +71,25 @@ public final class GBLaunch {
     /** The Missile Silo's lid: one item that places a 3x3 hatch. */
     public static final WithItem<SiloHatchBlock> SILO_HATCH = GBBlocks.register("silo_hatch", "Silo Hatch", GBTab.MISSILES, SiloHatchBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(15f, 1200f).requiresCorrectToolForDrops().sound(SoundType.NETHERITE_BLOCK)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
 
     // --- controllers ---
     public static final WithItem<MultiblockControllerBlock> SILO_CONTROLLER = GBBlocks.register("launch_silo", "Launch Silo Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.SILO_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<MultiblockControllerBlock> COMPLEX_CONTROLLER = GBBlocks.register("launch_complex", "Launch Complex Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.COMPLEX_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<MultiblockControllerBlock> MISSILE_SILO_CONTROLLER = GBBlocks.register("missile_silo", "Missile Silo Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.MISSILE_SILO_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 1200f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 1200f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<MultiblockControllerBlock> CRUISE_CONTROLLER = GBBlocks.register("cruise_launcher", "Cruise Missile Launcher Controller",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.CRUISE_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     /** The Vertical Launch Battery (DESIGN.md §17.15): sixteen Strike Cells rippling a volley onto one area. */
     public static final WithItem<MultiblockControllerBlock> VLS_CONTROLLER = GBBlocks.register("vertical_launch_battery",
             "Vertical Launch Battery Controller", GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBLaunch.VLS_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     /** One Mk 41 cell: a Light or Medium missile's canister under an armoured hatch. */
     public static final WithItem<MultiblockPartBlock> STRIKE_CELL = part("strike_cell", "Strike Cell", MapColor.COLOR_GRAY, SoundType.METAL, false);
     /** A cell's length of canister under its Strike Cell: five of them make the cell deep enough for a Medium missile. */
@@ -97,14 +97,14 @@ public final class GBLaunch {
             SoundType.METAL, false);
     public static final WithItem<LaunchComputerBlock> COMPUTER_CONTROLLER = GBBlocks.register("launch_computer", "Launch Computer",
             GBTab.MISSILES, p -> new LaunchComputerBlock(p, GBLaunch.COMPUTER_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final WithItem<RadarArrayBlock> RADAR_CONTROLLER = GBBlocks.register("radar_array", "Radar Array",
             GBTab.MISSILES, p -> new RadarArrayBlock(p, GBLaunch.RADAR_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     /** The Launch Control Station (DESIGN.md §17.12): its network's launchers anywhere in the dimension. */
     public static final WithItem<LaunchStationBlock> STATION_CONTROLLER = GBBlocks.register("launch_control_station", "Launch Control Station",
             GBTab.MISSILES, p -> new LaunchStationBlock(p, GBLaunch.STATION_ENTITY),
-            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+            p -> p.mapColor(MapColor.METAL).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchStationBlockEntity>> STATION_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("launch_control_station", () -> new BlockEntityType<>(LaunchStationBlockEntity::new,
                     STATION_CONTROLLER.block().get()));
@@ -477,7 +477,7 @@ public final class GBLaunch {
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color, SoundType sound, boolean see) {
         return GBBlocks.register(id, english, GBTab.MISSILES, MultiblockPartBlock::new, p -> {
-            p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(sound).pushReaction(PushReaction.IMMOVEABLE);
+            p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(sound).pushReaction(PushReaction.BLOCK);
             return see ? p.noOcclusion() : p;
         });
     }

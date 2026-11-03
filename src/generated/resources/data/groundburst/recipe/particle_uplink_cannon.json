@@ -2,14 +2,30 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:quantum_circuit",
-    "groundburst:crt_display",
-    "groundburst:sensor_array",
-    "#c:dyes/blue",
-    "minecraft:lever"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:quantum_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "tag": "c:dyes/blue"
+    },
+    {
+      "item": "minecraft:lever"
+    }
   ],
   "result": {
     "id": "groundburst:particle_uplink_cannon"

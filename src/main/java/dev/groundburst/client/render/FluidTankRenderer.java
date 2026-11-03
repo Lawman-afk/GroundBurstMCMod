@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -44,7 +44,7 @@ public class FluidTankRenderer<T extends BlockEntity & TankDisplay> implements B
     @Override
     public void extractRenderState(T be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
+        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
         state.fluid = null;
         if (!be.drawsContents() || be.getLevel() == null) {
             return;
@@ -80,7 +80,7 @@ public class FluidTankRenderer<T extends BlockEntity & TankDisplay> implements B
         }
         int c = state.color, light = state.lightCoords;
         float fy0 = y0, fy1 = y1;
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
             float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
             // Top and bottom surfaces, tiled one block at a time.
             for (float xa = x0; xa < x1 - 1e-4f; xa = Math.min(x1, (float) Math.floor(xa) + 1f)) {

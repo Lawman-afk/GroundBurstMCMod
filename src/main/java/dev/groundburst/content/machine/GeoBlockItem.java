@@ -4,18 +4,18 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.GeoItem;
-import com.geckolib.animatable.client.GeoRenderProvider;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.model.DefaultedBlockGeoModel;
-import com.geckolib.renderer.GeoItemRenderer;
-import com.geckolib.renderer.base.BoneSnapshots;
-import com.geckolib.renderer.base.GeoRenderState;
-import com.geckolib.renderer.base.RenderPassInfo;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.client.GeoRenderProvider;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.model.DefaultedBlockGeoModel;
+import software.bernie.geckolib.renderer.GeoItemRenderer;
+import software.bernie.geckolib.renderer.base.BoneSnapshots;
+import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.base.RenderPassInfo;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 
@@ -27,7 +27,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
             "workpiece", "bar0", "bar1", "bar2", "bar3", "bar4", "bar5", "bar6", "bar7", "lens_spot", "lens_full", "beam");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private final Identifier modelId;
+    private final ResourceLocation modelId;
     /** Blocks to shift the model east so it is centred (a two-block-wide machine drawn from its main half: 0.5). */
     private final float centreX;
     /**
@@ -36,11 +36,11 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
      */
     private java.util.Map<String, float[]> pose = java.util.Map.of();
 
-    public GeoBlockItem(Block block, Properties properties, Identifier modelId) {
+    public GeoBlockItem(Block block, Properties properties, ResourceLocation modelId) {
         this(block, properties, modelId, 0);
     }
 
-    public GeoBlockItem(Block block, Properties properties, Identifier modelId, float centreX) {
+    public GeoBlockItem(Block block, Properties properties, ResourceLocation modelId, float centreX) {
         super(block, properties);
         this.modelId = modelId;
         this.centreX = centreX;
@@ -54,7 +54,7 @@ public class GeoBlockItem extends BlockItem implements GeoItem {
 
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
-        Identifier id = this.modelId;
+        ResourceLocation id = this.modelId;
         float shift = this.centreX;
         java.util.Map<String, float[]> turned = this.pose;
         consumer.accept(new GeoRenderProvider() {

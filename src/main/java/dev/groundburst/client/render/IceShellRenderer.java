@@ -7,9 +7,9 @@ import dev.groundburst.GroundBurst;
 import dev.groundburst.content.effect.FrozenEffect;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.IEventBus;
@@ -24,7 +24,7 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class IceShellRenderer {
     private static final ContextKey<Boolean> ICE_BOUND = new ContextKey<>(GroundBurst.id("ice_bound"));
-    private static final Identifier TEXTURE = GroundBurst.id("textures/entity/ice_shell.png");
+    private static final ResourceLocation TEXTURE = GroundBurst.id("textures/entity/ice_shell.png");
     /** How much bigger than the creature the ice is, each side and over its head. */
     private static final float MARGIN = 0.32f, HEADROOM = 0.15f;   // wide enough for heads that stick out past the hitbox
 
@@ -41,7 +41,7 @@ public final class IceShellRenderer {
             }
             float hw = state.boundingBoxWidth / 2 + MARGIN, h = state.boundingBoxHeight + HEADROOM;
             int light = state.lightCoords;
-            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderTypes.entityTranslucent(TEXTURE),
+            event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderType.entityTranslucent(TEXTURE),
                     (pose, buffer) -> cube(pose, buffer, -hw, -0.02f, -hw, hw, h, hw, light));
         });
     }

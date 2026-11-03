@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "#c:nuggets/enriched_uranium"
+    "#": {
+      "tag": "c:nuggets/enriched_uranium"
+    }
   },
   "pattern": [
     "###",

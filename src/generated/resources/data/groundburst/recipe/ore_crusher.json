@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "G": "minecraft:grindstone",
-    "I": "#c:ingots/iron",
-    "P": "minecraft:piston",
-    "S": "minecraft:stonecutter"
+    "G": {
+      "item": "minecraft:grindstone"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "S": {
+      "item": "minecraft:stonecutter"
+    }
   },
   "pattern": [
     "ISI",

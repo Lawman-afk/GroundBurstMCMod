@@ -47,7 +47,7 @@ public record ChemFluid(String name, Look look, int color, Hazard hazard,
     /** The common tag other mods use for this fluid, e.g. {@code c:sulfuric_acid}; recipes take it, not our fluid. */
     public net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> commonTag() {
         return net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.FLUID,
-                net.minecraft.resources.Identifier.fromNamespaceAndPath("c", this.name));
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("c", this.name));
     }
 
     public boolean isGas() {

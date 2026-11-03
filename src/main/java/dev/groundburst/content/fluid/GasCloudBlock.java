@@ -125,7 +125,7 @@ public class GasCloudBlock extends Block implements BucketPickup {
         BlockPos up = pos.above();
         BlockState above = level.getBlockState(up);
         // Rise into empty space, or top up the gas above.
-        if (up.getY() < level.getMaxY() && isRoom(above)) {
+        if (up.getY() < (level.getMaxBuildHeight() - 1) && isRoom(above)) {
             int room = above.is(this) ? MAX - above.getValue(VOLUME) : MAX;
             if (room > 0) {
                 int moved = Math.min(room, volume);

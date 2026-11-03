@@ -686,7 +686,7 @@ public final class LaunchNetwork extends SavedData {
             longest = Math.max(longest, e);
         }
         // Together: all planned a little ahead, so the far members can be woken in time; at once: now.
-        boolean anyAsleep = armed.stream().anyMatch(m -> !m.inContact(now) || !level.shouldTickBlocksAt(ChunkPos.pack(m.pos.getX() >> 4, m.pos.getZ() >> 4)));
+        boolean anyAsleep = armed.stream().anyMatch(m -> !m.inContact(now) || !level.shouldTickBlocksAt(ChunkPos.asLong(m.pos.getX() >> 4, m.pos.getZ() >> 4)));
         long base = now + (together && anyAsleep ? LEAD : 0);
         Optional<UUID> who = Optional.ofNullable(by == null ? null : by.getUUID());
         for (Member m : armed) {
@@ -837,7 +837,7 @@ public final class LaunchNetwork extends SavedData {
 
     /** Whether a member's launcher is there and ticking (its chunk loaded and running). */
     private static @Nullable BlockEntity present(ServerLevel level, Member m) {
-        if (!level.isLoaded(m.pos) || !level.shouldTickBlocksAt(ChunkPos.pack(m.pos.getX() >> 4, m.pos.getZ() >> 4))) {
+        if (!level.isLoaded(m.pos) || !level.shouldTickBlocksAt(ChunkPos.asLong(m.pos.getX() >> 4, m.pos.getZ() >> 4))) {
             return null;
         }
         return level.getBlockEntity(m.pos);

@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -103,7 +103,7 @@ public final class StructureView {
                 pose.pushPose();
                 pose.translate(b.x(), b.y(), b.z());
                 mc.getBlockModelResolver().update(this.block, b.state(), CONTEXT);
-                this.block.submit(pose, collector, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
+                this.block.submit(pose, collector, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
                 pose.popPose();
             }
         }

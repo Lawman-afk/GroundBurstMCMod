@@ -50,10 +50,10 @@ public final class ChargePayloads {
                     be.arm(level, player);
                     String key = be.kind().sensor != ChargeKind.Sensor.NONE && !be.kind().remote ? ChargeBlock.MSG_ARMED_MINE
                             : be.mode() == ChargeBlockEntity.Mode.TIMER ? ChargeBlock.MSG_ARMED_TIMER : ChargeBlock.MSG_ARMED;
-                    player.sendOverlayMessage(Component.translatable(key, be.frequency(), be.timer()).withStyle(ChatFormatting.RED));
+                    player.displayClientMessage(Component.translatable(key, be.frequency(), be.timer()).withStyle(ChatFormatting.RED), true);
                 } else if (p.action() == SAFE && be.armed()) {
-                    player.sendOverlayMessage(be.disarm(level) ? Component.translatable(ChargeBlock.MSG_SAFE).withStyle(ChatFormatting.GREEN)
-                            : Component.translatable(ChargeBlock.MSG_MUST_DEFUSE).withStyle(ChatFormatting.GOLD));
+                    player.displayClientMessage(be.disarm(level) ? Component.translatable(ChargeBlock.MSG_SAFE).withStyle(ChatFormatting.GREEN)
+                            : Component.translatable(ChargeBlock.MSG_MUST_DEFUSE).withStyle(ChatFormatting.GOLD), true);
                 }
             }
         }

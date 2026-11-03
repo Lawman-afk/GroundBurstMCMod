@@ -170,7 +170,7 @@ public final class Wasteland {
             for (int z = SectionPos.blockToSectionCoord(cz - r); z <= SectionPos.blockToSectionCoord(cz + r); z++) {
                 double nx = Mth.clamp(cx, x * 16, x * 16 + 16), nz = Mth.clamp(cz, z * 16, z * 16 + 16);
                 if ((nx - cx) * (nx - cx) + (nz - cz) * (nz - cz) <= (double) radius * radius) {
-                    list.add(ChunkPos.pack(x, z));
+                    list.add(ChunkPos.asLong(x, z));
                 }
             }
         }

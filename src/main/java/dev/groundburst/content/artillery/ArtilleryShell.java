@@ -33,8 +33,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -122,7 +122,7 @@ public class ArtilleryShell extends Projectile {
         orient();
         if (level() instanceof ServerLevel server) {
             hold(server);
-            if (getY() < level().getMinY() - 64 || this.tickCount > 1200) {
+            if (getY() < level().getMinBuildHeight() - 64 || this.tickCount > 1200) {
                 discard();
             }
         } else {
@@ -246,9 +246,9 @@ public class ArtilleryShell extends Projectile {
     /** Keeps the chunk it is in and the one it reaches in a few ticks ticking; lets the ones behind it go. */
     private void hold(ServerLevel level) {
         LongOpenHashSet want = new LongOpenHashSet();
-        want.add(ChunkPos.pack(Mth.floor(getX()) >> 4, Mth.floor(getZ()) >> 4));
+        want.add(ChunkPos.asLong(Mth.floor(getX()) >> 4, Mth.floor(getZ()) >> 4));
         Vec3 ahead = position().add(getDeltaMovement().scale(6));
-        want.add(ChunkPos.pack(Mth.floor(ahead.x) >> 4, Mth.floor(ahead.z) >> 4));
+        want.add(ChunkPos.asLong(Mth.floor(ahead.x) >> 4, Mth.floor(ahead.z) >> 4));
         for (long c : want) {
             if (this.held.add(c)) {
                 GBArtillery.TICKETS.forceChunk(level, getUUID(), ChunkPos.getX(c), ChunkPos.getZ(c), true, true);
@@ -279,14 +279,14 @@ public class ArtilleryShell extends Projectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+        super.addAdditionalSaveData(output.tag());
         output.putInt("shell", this.entityData.get(TYPE));
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+        super.readAdditionalSaveData(input.tag());
         this.entityData.set(TYPE, input.getIntOr("shell", 0));
     }
 }

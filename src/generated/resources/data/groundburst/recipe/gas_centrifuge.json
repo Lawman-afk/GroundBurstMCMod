@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "A": "#c:circuits/advanced",
-    "D": "groundburst:dense_steel_plate",
-    "F": "groundburst:machine_frame",
-    "M": "groundburst:electric_motor",
-    "R": "#c:rods/tungsten"
+    "A": {
+      "tag": "c:circuits/advanced"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "R": {
+      "tag": "c:rods/tungsten"
+    }
   },
   "pattern": [
     "DRD",

@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundburst:corrugated_steel"
+    "#": {
+      "item": "groundburst:corrugated_steel"
+    }
   },
   "pattern": [
     "###"

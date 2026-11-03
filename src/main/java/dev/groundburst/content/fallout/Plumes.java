@@ -169,7 +169,7 @@ public final class Plumes extends SavedData {
 
     /** A layer of Fallout Ash on whatever is uppermost at (x, z), if it is loaded and ash can lie there. */
     public static void settle(ServerLevel level, int x, int z) {
-        BlockPos column = new BlockPos(x, level.getMinY(), z);
+        BlockPos column = new BlockPos(x, level.getMinBuildHeight(), z);
         if (!level.isLoaded(column) || dev.groundburst.blast.BlastManager.of(level).forming(x + 0.5, z + 0.5)) {
             return;                                        // not yet where a crater is still being dug: it would hang in the air
         }

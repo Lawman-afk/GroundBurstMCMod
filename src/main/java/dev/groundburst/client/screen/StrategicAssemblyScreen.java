@@ -11,7 +11,7 @@ import dev.groundburst.content.strategic.GBStrategic;
 import dev.groundburst.content.strategic.StrategicAssembly;
 import dev.groundburst.content.strategic.StrategicAssemblyBlockEntity;
 import dev.groundburst.registry.GBLang;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -73,8 +73,8 @@ public class StrategicAssemblyScreen extends MachineScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         ItemStack subject = subject();
         var level = net.minecraft.client.Minecraft.getInstance().level;
         List<AssemblyStats.Stat> stats = subject.isEmpty() || level == null ? List.of() : AssemblyStats.missile(subject, level.registryAccess());

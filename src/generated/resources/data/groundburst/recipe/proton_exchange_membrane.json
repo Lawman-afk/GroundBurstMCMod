@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "P": "groundburst:plastic_sheet",
-    "R": "#c:rods/steel",
-    "W": "#c:wires/gold"
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    },
+    "W": {
+      "tag": "c:wires/gold"
+    }
   },
   "pattern": [
     "RPR",

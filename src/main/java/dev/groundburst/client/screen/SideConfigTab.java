@@ -13,12 +13,12 @@ import dev.groundburst.content.machine.SideConfig;
 import dev.groundburst.content.machine.SideConfig.Face;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 
 /**
@@ -30,7 +30,7 @@ import net.minecraft.sounds.SoundEvents;
  * shows both halves unfolded side by side: its top, front, bottom and back once per half, and its two end faces.
  */
 final class SideConfigTab {
-    private static final Identifier TEXTURE = GroundBurst.id("textures/gui/machine/side_config.png");
+    private static final ResourceLocation TEXTURE = GroundBurst.id("textures/gui/machine/side_config.png");
     // Sprite positions, mirrored from tools/assets/gui.py.
     private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 112, PANEL_H = 112;
     private static final int FRAME_U = 120, ICON_U = 140, FRONT_U = 160, CHANNEL_U = 120, CHANNEL_ON_V = 24, CHANNEL_OFF_V = 40;

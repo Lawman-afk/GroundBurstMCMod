@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "G": "#c:glass_blocks/colorless",
-    "P": "#c:plates/steel",
-    "R": "#c:rods/steel"
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     "RPR",

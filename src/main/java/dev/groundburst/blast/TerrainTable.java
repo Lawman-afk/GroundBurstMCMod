@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.fallout.GBFallout;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -26,23 +26,23 @@ public enum TerrainTable {
     /** Nuclear and other big blasts: as conventional, but the ground is scorched harder. */
     NUCLEAR_TABLE(GroundBurst.id("nuclear"), true);
 
-    public static final Identifier CONVENTIONAL = GroundBurst.id("conventional");
-    public static final Identifier NUCLEAR = GroundBurst.id("nuclear");
-    private static final Map<Identifier, TerrainTable> BY_ID = Map.of(CONVENTIONAL, CONVENTIONAL_TABLE, NUCLEAR, NUCLEAR_TABLE);
+    public static final ResourceLocation CONVENTIONAL = GroundBurst.id("conventional");
+    public static final ResourceLocation NUCLEAR = GroundBurst.id("nuclear");
+    private static final Map<ResourceLocation, TerrainTable> BY_ID = Map.of(CONVENTIONAL, CONVENTIONAL_TABLE, NUCLEAR, NUCLEAR_TABLE);
 
-    private final Identifier id;
+    private final ResourceLocation id;
     private final boolean harsh;
 
-    TerrainTable(Identifier id, boolean harsh) {
+    TerrainTable(ResourceLocation id, boolean harsh) {
         this.id = id;
         this.harsh = harsh;
     }
 
-    public Identifier id() {
+    public ResourceLocation id() {
         return id;
     }
 
-    public static TerrainTable byId(Identifier id) {
+    public static TerrainTable byId(ResourceLocation id) {
         return BY_ID.getOrDefault(id, CONVENTIONAL_TABLE);
     }
 
@@ -130,12 +130,12 @@ public enum TerrainTable {
 
     /** Rock: the overworld's stone (stone, granite, diorite, andesite, tuff, deepslate) and cobblestone. */
     static boolean rock(BlockState state) {
-        return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.BlockItems.COBBLESTONES.block());
+        return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.COBBLESTONES);
     }
 
     /** Sand and sandstone (a desert's ground is sandstone a few blocks down, and flat worlds' is on top). */
     static boolean sand(BlockState state) {
-        return state.is(BlockTags.SAND) || state.is(Tags.BlockItems.SANDSTONE_BLOCKS.block());
+        return state.is(BlockTags.SAND) || state.is(Tags.Blocks.SANDSTONE_BLOCKS);
     }
 
     /** Earth: dirt, grass blocks (grass, podzol, mycelium, and dead grass), moss, farmland. */

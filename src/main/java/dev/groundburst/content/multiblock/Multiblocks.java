@@ -21,7 +21,7 @@ public final class Multiblocks {
 
     public static List<MultiblockController> controllersCovering(Level level, BlockPos pos) {
         List<MultiblockController> out = new ArrayList<>();
-        ChunkPos center = ChunkPos.containing(pos);
+        ChunkPos center = new ChunkPos(pos);
         for (int cx = -1; cx <= 1; cx++) {
             for (int cz = -1; cz <= 1; cz++) {
                 if (!level.hasChunk(center.x() + cx, center.z() + cz)) {

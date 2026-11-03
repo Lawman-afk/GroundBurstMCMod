@@ -86,7 +86,7 @@ public final class Frost {
         }
         crystals(level, c, radius, random);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(centre, centre).inflate(radius))) {
-            if (e.position().distanceTo(centre) > radius || e.typeHolder().is(Tags.EntityTypes.BOSSES) || e.isSpectator()
+            if (e.position().distanceTo(centre) > radius || e.typeHolder().is(Tags.EntityType.BOSSES) || e.isSpectator()
                     || e instanceof Player pl && pl.isCreative()) {
                 continue;
             }

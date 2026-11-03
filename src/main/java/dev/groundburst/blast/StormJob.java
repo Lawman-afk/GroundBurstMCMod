@@ -15,7 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -74,7 +74,7 @@ final class StormJob {
         this.center = center;
         this.radius = Math.max(4, radius);
         this.life = Math.max(1, life);
-        this.cloudY = Math.min(level.getMaxY() - 6, center.y + Storms.CLOUD_HEIGHT * Math.max(0.3, this.radius / Storms.RADIUS));
+        this.cloudY = Math.min((level.getMaxBuildHeight() - 1) - 6, center.y + Storms.CLOUD_HEIGHT * Math.max(0.3, this.radius / Storms.RADIUS));
         this.startTick = level.getGameTime();
         this.by = by == null ? null : by.getUUID();
         this.blasts = blasts;
@@ -116,8 +116,8 @@ final class StormJob {
     }
 
     private AABB box() {
-        return new AABB(this.center.x - this.radius, this.level.getMinY(), this.center.z - this.radius,
-                this.center.x + this.radius, this.level.getMaxY(), this.center.z + this.radius);
+        return new AABB(this.center.x - this.radius, this.level.getMinBuildHeight(), this.center.z - this.radius,
+                this.center.x + this.radius, (this.level.getMaxBuildHeight() - 1), this.center.z + this.radius);
     }
 
     private boolean inside(Vec3 p) {
@@ -233,7 +233,7 @@ final class StormJob {
     private void hit(BlockPos at, @Nullable LivingEntity target) {
         Vec3 foot = target != null ? target.position() : Vec3.atBottomCenterOf(at);
         Entity source = this.by == null ? null : this.level.getEntity(this.by);
-        LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(this.level, EntitySpawnReason.TRIGGERED);
+        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this.level, EntitySpawnReason.TRIGGERED);
         if (bolt != null) {
             bolt.setPos(foot);
             bolt.setVisualOnly(true);                              // never added: only what it does to those it hits

@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:he_charge",
-    "groundburst:he_charge",
-    "groundburst:rdx_crystals",
-    "groundburst:rdx_crystals",
-    "groundburst:plastic_explosive"
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "item": "groundburst:rdx_crystals"
+    },
+    {
+      "item": "groundburst:rdx_crystals"
+    },
+    {
+      "item": "groundburst:plastic_explosive"
+    }
   ],
   "result": {
     "id": "groundburst:heavy_he_charge"

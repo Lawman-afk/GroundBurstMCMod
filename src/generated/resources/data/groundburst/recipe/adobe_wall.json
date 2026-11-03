@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "minecraft:mud_bricks",
-    "minecraft:mud_bricks",
-    "#c:sands",
-    "#c:sands",
-    "minecraft:wheat"
+    {
+      "item": "minecraft:mud_bricks"
+    },
+    {
+      "item": "minecraft:mud_bricks"
+    },
+    {
+      "tag": "c:sands"
+    },
+    {
+      "tag": "c:sands"
+    },
+    {
+      "item": "minecraft:wheat"
+    }
   ],
   "result": {
     "count": 4,

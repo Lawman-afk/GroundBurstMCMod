@@ -5,8 +5,8 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.fluid.ChemFluid;
 import dev.groundburst.content.fluid.GBFluids;
@@ -32,8 +32,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 
 /**
@@ -224,7 +224,7 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     private void announce(ServerLevel level) {
         for (Player player : level.players()) {
             if (player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(this.worldPosition)) < 48 * 48) {
-                player.sendOverlayMessage(Component.translatable(MachineText.PLASMA_LOST).withStyle(net.minecraft.ChatFormatting.GOLD));
+                player.displayClientMessage(Component.translatable(MachineText.PLASMA_LOST).withStyle(net.minecraft.ChatFormatting.GOLD), true);
             }
         }
     }
@@ -296,16 +296,16 @@ public class FusionReactorBlockEntity extends MachineBlockEntity implements Anim
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         this.ignition.serialize(output.child("ignition"));
         output.putBoolean("lit", this.lit);
         output.putFloat("gas_debt", this.gasDebt);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.ignition.deserialize(input.childOrEmpty("ignition"));
         this.lit = input.getBooleanOr("lit", false);
         this.gasDebt = input.getFloatOr("gas_debt", 0);

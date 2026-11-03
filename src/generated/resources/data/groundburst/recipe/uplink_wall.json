@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "C": "minecraft:white_concrete",
-    "P": "#c:plates/steel"
+    "C": {
+      "item": "minecraft:white_concrete"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    }
   },
   "pattern": [
     "CCC",

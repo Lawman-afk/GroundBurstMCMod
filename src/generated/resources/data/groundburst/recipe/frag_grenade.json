@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "G": "minecraft:gunpowder",
-    "N": "minecraft:iron_nugget",
-    "P": "groundburst:steel_plate"
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
+    "P": {
+      "item": "groundburst:steel_plate"
+    }
   },
   "pattern": [
     "NPN",

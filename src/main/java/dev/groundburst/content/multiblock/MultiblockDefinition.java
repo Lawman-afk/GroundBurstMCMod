@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,8 +25,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *                you can walk on), as written for a controller facing north: by column and row on every layer
  *                ({@link #cutKey(int, int)}), or on one layer ({@link #cutKey(int, int, int)}, see {@link #layerCuts})
  */
-public record MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend, Map<Long, PartCut> cuts) {
-    public MultiblockDefinition(Identifier id, String[][] layers, Map<Character, Entry> legend) {
+public record MultiblockDefinition(ResourceLocation id, String[][] layers, Map<Character, Entry> legend, Map<Long, PartCut> cuts) {
+    public MultiblockDefinition(ResourceLocation id, String[][] layers, Map<Character, Entry> legend) {
         this(id, layers, legend, Map.of());
     }
 
@@ -100,7 +100,7 @@ public record MultiblockDefinition(Identifier id, String[][] layers, Map<Charact
      * tick (pushing power out of their ports) and every frame (previews, hidden model parts), and laying a pattern out
      * from scratch scans it for the controller once per cell.
      */
-    private static final Map<Identifier, List<Cell>[]> RELATIVE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, List<Cell>[]> RELATIVE = new java.util.concurrent.ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     private List<Cell> relative(Direction facing) {

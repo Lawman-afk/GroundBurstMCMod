@@ -26,8 +26,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -505,8 +505,8 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
 
     // --- saving --------------------------------------------------------------------------------------------------------
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());
+        super.addAdditionalSaveData(output.tag());
         output.store("item", ItemStack.CODEC, getItem());
         output.putInt("fuse", this.fuse);
         output.putBoolean("smoking", smoking());
@@ -515,8 +515,8 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());
+        super.readAdditionalSaveData(input.tag());
         input.read("item", ItemStack.CODEC).ifPresent(this::setItem);
         this.fuse = input.getIntOr("fuse", type().fuse);
         this.entityData.set(SMOKING, input.getBooleanOr("smoking", false));

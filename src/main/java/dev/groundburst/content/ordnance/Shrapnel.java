@@ -11,8 +11,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -92,10 +92,10 @@ public class Shrapnel extends Projectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {}
+    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueOutput output = new ValueOutput(tag_, this.registryAccess());}
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {}
+    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag_) { ValueInput input = new ValueInput(tag_, this.registryAccess());}
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {

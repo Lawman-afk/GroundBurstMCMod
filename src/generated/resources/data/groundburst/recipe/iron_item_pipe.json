@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "G": "#c:glass_blocks/colorless",
-    "H": "minecraft:hopper",
-    "I": "#c:ingots/iron"
+    "G": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
   },
   "pattern": [
     "III",

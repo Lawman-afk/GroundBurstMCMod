@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "#c:wires/copper",
-    "#c:wires/copper",
-    "#c:wires/copper",
-    "groundburst:basic_circuit",
-    "minecraft:redstone",
-    "#c:plates/steel"
+    {
+      "tag": "c:wires/copper"
+    },
+    {
+      "tag": "c:wires/copper"
+    },
+    {
+      "tag": "c:wires/copper"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "tag": "c:plates/steel"
+    }
   ],
   "result": {
     "count": 2,

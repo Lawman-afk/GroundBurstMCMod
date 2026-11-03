@@ -107,6 +107,5 @@ public final class GBStructures {
     public static void register(IEventBus modBus) {
         TYPES.register(modBus);
         PIECES.register(modBus);
-        WorldSurvey.register();
     }
 }

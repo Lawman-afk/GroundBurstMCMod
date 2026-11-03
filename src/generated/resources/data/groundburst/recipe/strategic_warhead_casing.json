@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:heavy_warhead_casing",
-    "groundburst:lead_plate",
-    "groundburst:lead_plate",
-    "groundburst:lead_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate"
+    {
+      "item": "groundburst:heavy_warhead_casing"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
   ],
   "result": {
     "id": "groundburst:strategic_warhead_casing"

@@ -11,11 +11,11 @@ import dev.groundburst.registry.GBLang;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +29,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -41,7 +41,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * (which the game would otherwise drop while an item is in use) goes to the server here.
  */
 public final class DesignatorScope {
-    static final Identifier EYEPIECE = GroundBurst.id("textures/gui/designator_scope.png");
+    static final ResourceLocation EYEPIECE = GroundBurst.id("textures/gui/designator_scope.png");
     private static final int EYEPIECE_SIZE = 512;
     /** The eyepiece's opening, as a share of its texture's side (the texture's own). */
     private static final float APERTURE = 0.44f;
@@ -160,7 +160,7 @@ public final class DesignatorScope {
      * sent to the server, which arms, launches or (sneaking) disarms the designator's launcher.
      */
     private static void clicks(Minecraft mc) {
-        if (mc.player == null || mc.level == null || mc.gui.screen() != null || !LaserFx.lasing(mc.player)) {
+        if (mc.player == null || mc.level == null || mc.screen != null || !LaserFx.lasing(mc.player)) {
             return;
         }
         boolean clicked = false;
@@ -170,7 +170,7 @@ public final class DesignatorScope {
         long now = mc.level.getGameTime();
         if (clicked && now - clickedAt >= CLICK_GAP) {
             boolean disarm = mc.player.isShiftKeyDown();
-            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Click(disarm));
+            PacketDistributor.sendToServer(new DesignatorPayloads.Click(disarm));
             clickedAt = now;
             DesignatorPayloads.Status s = status();
             clickedDisarm = disarm;
@@ -181,7 +181,7 @@ public final class DesignatorScope {
     /** The mouse wheel while zoomed: down the next laser-guided launcher, up the one before (the server keeps the pick). */
     static void scroll(Minecraft mc, double delta) {
         if (delta != 0 && mc.player != null) {
-            ClientPacketDistributor.sendToServer(new DesignatorPayloads.Scroll(delta < 0 ? 1 : -1));
+            PacketDistributor.sendToServer(new DesignatorPayloads.Scroll(delta < 0 ? 1 : -1));
         }
     }
 

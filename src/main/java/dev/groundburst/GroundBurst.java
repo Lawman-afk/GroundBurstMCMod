@@ -23,7 +23,7 @@ import dev.groundburst.registry.GBItems;
 import dev.groundburst.registry.GBLang;
 import dev.groundburst.registry.GBSounds;
 import dev.groundburst.world.GBWorldgen;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -98,7 +98,7 @@ public class GroundBurst {
         modContainer.registerConfig(ModConfig.Type.LOCAL, GBCommonConfig.SPEC);
     }
 
-    public static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(MODID, path);
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

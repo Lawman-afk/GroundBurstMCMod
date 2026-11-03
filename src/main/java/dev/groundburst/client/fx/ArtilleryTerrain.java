@@ -10,14 +10,14 @@ import dev.groundburst.content.artillery.ArtilleryPayloads;
 import dev.groundburst.content.artillery.GunBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The far ground's map (DESIGN.md §20.1): where a gun reaches further than its crewman's game has loaded, its strategic
@@ -113,14 +113,14 @@ final class ArtilleryTerrain {
         }
         if (best != null) {                                    // the nearest to the aim first, one a tick (the gun queues them)
             ASKED.put(key(best[0], best[1]), now);
-            ClientPacketDistributor.sendToServer(new ArtilleryPayloads.TerrainRequest(at, best[0], best[1]));
+            PacketDistributor.sendToServer(new ArtilleryPayloads.TerrainRequest(at, best[0], best[1]));
         }
     }
 
     /** Whether the game has all of a tile's chunks loaded (its corners and middle, as a cheap test). */
     private static boolean loaded(ClientLevel level, int ox, int oz) {
         for (int[] p : new int[][] {{0, 0}, {T - 1, 0}, {0, T - 1}, {T - 1, T - 1}, {T / 2, T / 2}}) {
-            if (!level.isLoaded(new BlockPos(ox + p[0], level.getMinY(), oz + p[1]))) {
+            if (!level.isLoaded(new BlockPos(ox + p[0], level.getMinBuildHeight(), oz + p[1]))) {
                 return false;
             }
         }
@@ -132,7 +132,7 @@ final class ArtilleryTerrain {
         if (TILES.isEmpty()) {
             return;
         }
-        event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderTypes.entitySolid(ArtilleryClient.RETICLE), (pose, b) -> {
+        event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderType.entitySolid(ArtilleryClient.RETICLE), (pose, b) -> {
             for (Tile t : TILES.values()) {
                 if (loaded(level, t.ox(), t.oz())) {
                     continue;
@@ -140,7 +140,7 @@ final class ArtilleryTerrain {
                 for (int j = 0; j < N; j++) {
                     for (int i = 0; i < N; i++) {
                         int x = t.ox() + i * S, z = t.oz() + j * S;
-                        if (level.isLoaded(new BlockPos(x, level.getMinY(), z))) {
+                        if (level.isLoaded(new BlockPos(x, level.getMinBuildHeight(), z))) {
                             continue;
                         }
                         short h = t.heights()[j * N + i];
@@ -194,6 +194,6 @@ final class ArtilleryTerrain {
 
     private static void v(VertexConsumer b, PoseStack.Pose pose, double x, double y, double z, Vec3 camera, int col, float nx, float ny, float nz) {
         b.addVertex(pose, (float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z)).setColor(col).setUv(0.5f, 0.5f)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT).setNormal(pose, nx, ny, nz);
+                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, nx, ny, nz);
     }
 }

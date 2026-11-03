@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundburst:radome_panel"
+    "#": {
+      "item": "groundburst:radome_panel"
+    }
   },
   "pattern": [
     "###"

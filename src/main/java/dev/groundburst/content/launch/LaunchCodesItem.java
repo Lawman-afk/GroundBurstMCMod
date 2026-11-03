@@ -88,7 +88,7 @@ public class LaunchCodesItem extends Item {
         }
         if (level instanceof ServerLevel server) {
             Component message = use(server, stack, be, player.isSecondaryUseActive());
-            player.sendOverlayMessage(message);
+            player.displayClientMessage(message, true);
             server.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.4f, 1.6f);
         }
         return InteractionResult.SUCCESS;

@@ -46,8 +46,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
@@ -688,7 +688,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
         sync();
         for (Player player : level.players()) {
             if (player.distanceToSqr(Vec3.atCenterOf(this.worldPosition)) < 48 * 48) {
-                player.sendOverlayMessage(Component.translatable(MachineText.SCRAM_MESSAGE).withStyle(net.minecraft.ChatFormatting.RED));
+                player.displayClientMessage(Component.translatable(MachineText.SCRAM_MESSAGE).withStyle(net.minecraft.ChatFormatting.RED), true);
             }
         }
     }
@@ -709,7 +709,7 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
                     .withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD);
             for (Player player : level.players()) {
                 if (player.distanceToSqr(Vec3.atCenterOf(this.worldPosition)) < 64 * 64) {
-                    player.sendOverlayMessage(message);
+                    player.displayClientMessage(message, true);
                 }
             }
         }
@@ -884,8 +884,8 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("insertion", this.insertion);
         output.putFloat("heat", this.heat);
         output.putFloat("breed0", this.breed[0]);
@@ -907,13 +907,13 @@ public class FissionReactorBlockEntity extends MachineBlockEntity implements Mul
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
         // Sized first, so the saved energy and coolant load into buffers big enough for them.
         int[] c = input.getIntArray("core").orElse(null);
         this.core = c != null && c.length == 5
                 ? new FissionCore(this.worldPosition, controllerFacing(), c[0], c[1], c[2], c[3], c[4], input.getLongOr("channels", 0L)) : null;
         size(input.getIntOr("sized_for", this.core == null ? 0 : this.core.channelCount()));
-        super.loadAdditional(input);
+        super.loadAdditional(input.tag(), input.lookup());
         this.insertion = input.getIntOr("insertion", 100);
         this.heat = input.getFloatOr("heat", AMBIENT);
         this.breed[0] = input.getFloatOr("breed0", 0);

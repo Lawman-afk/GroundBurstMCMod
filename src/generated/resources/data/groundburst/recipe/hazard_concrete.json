@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:reinforced_concrete",
-    "groundburst:reinforced_concrete",
-    "groundburst:reinforced_concrete",
-    "groundburst:reinforced_concrete",
-    "#c:dyes/yellow",
-    "#c:dyes/black"
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "item": "groundburst:reinforced_concrete"
+    },
+    {
+      "tag": "c:dyes/yellow"
+    },
+    {
+      "tag": "c:dyes/black"
+    }
   ],
   "result": {
     "count": 4,

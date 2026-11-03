@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "minecraft:paper",
-    "#c:nuggets/gold",
-    "#c:dyes/red"
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "tag": "c:nuggets/gold"
+    },
+    {
+      "tag": "c:dyes/red"
+    }
   ],
   "result": {
     "count": 2,

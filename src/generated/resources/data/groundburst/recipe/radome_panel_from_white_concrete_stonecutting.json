@@ -1,6 +1,8 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": "minecraft:white_concrete",
+  "ingredient": {
+    "item": "minecraft:white_concrete"
+  },
   "result": {
     "id": "groundburst:radome_panel"
   }

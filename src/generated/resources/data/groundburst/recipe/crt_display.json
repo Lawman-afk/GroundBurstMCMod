@@ -1,11 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "B": "#groundburst:basic_circuits",
-    "G": "#c:glass_panes/colorless",
-    "L": "#c:dusts/glowstone",
-    "P": "#c:plates/steel",
-    "R": "#c:dusts/redstone"
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "G": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "L": {
+      "tag": "c:dusts/glowstone"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
   },
   "pattern": [
     " G ",

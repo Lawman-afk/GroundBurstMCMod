@@ -26,7 +26,7 @@ import dev.groundburst.content.launch.TerrainSurvey;
 import dev.groundburst.registry.GBLang;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,7 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Launch Computer's screen (DESIGN.md §17.3, basic version): on the left a green phosphor map of the ground round the
@@ -89,7 +89,7 @@ public class LaunchComputerScreen extends Screen {
     private static LaunchPayloads.@Nullable Scope latest;
 
     public static void register() {
-        LaunchComputerBlock.screenHook = pos -> Minecraft.getInstance().gui.setScreen(new LaunchComputerScreen(pos));
+        LaunchComputerBlock.screenHook = pos -> Minecraft.getInstance().setScreen(new LaunchComputerScreen(pos));
         LaunchPayloads.scopeHook = scope -> latest = scope;
         TerrainMap.register();
     }
@@ -195,7 +195,7 @@ public class LaunchComputerScreen extends Screen {
 
     @Override
     protected void init() {
-        ClientPacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, true));
+        PacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, true));
         if (this.map == null) {
             this.map = new TerrainMap(MAP, MAP);
         }
@@ -208,7 +208,7 @@ public class LaunchComputerScreen extends Screen {
         this.setButton = addRenderableWidget(Button.builder(Component.translatable(T_SET), b -> sendTarget()).bounds(x, top() + SET_Y, CW, 16).build());
         this.armButton = addRenderableWidget(Button.builder(Component.translatable(T_ARM), b -> toggleArm()).bounds(x, top() + ARM_Y, CW, 16).build());
         this.launchButton = addRenderableWidget(Button.builder(Component.translatable(T_LAUNCH, 0),
-                b -> ClientPacketDistributor.sendToServer(new LaunchPayloads.Launch(this.pos))).bounds(x, top() + LAUNCH_Y, CW, 18).build());
+                b -> PacketDistributor.sendToServer(new LaunchPayloads.Launch(this.pos))).bounds(x, top() + LAUNCH_Y, CW, 18).build());
         addRenderableWidget(Button.builder(Component.translatable(T_CENTRE), b -> {
             this.viewX = this.pos.getX() + 0.5;
             this.viewZ = this.pos.getZ() + 0.5;
@@ -222,7 +222,7 @@ public class LaunchComputerScreen extends Screen {
         }
         try {
             int x = Integer.parseInt(this.xBox.getValue().trim()), z = Integer.parseInt(this.zBox.getValue().trim());
-            ClientPacketDistributor.sendToServer(new LaunchPayloads.Target(this.pos, silo.pos(), x, z));
+            PacketDistributor.sendToServer(new LaunchPayloads.Target(this.pos, silo.pos(), x, z));
         } catch (NumberFormatException ignored) {
             // not numbers: nothing to set
         }
@@ -242,13 +242,13 @@ public class LaunchComputerScreen extends Screen {
             this.xBox.setValue(Integer.toString(x));
             this.zBox.setValue(Integer.toString(z));
         }
-        ClientPacketDistributor.sendToServer(new LaunchPayloads.Target(this.pos, silo.pos(), x, z));
+        PacketDistributor.sendToServer(new LaunchPayloads.Target(this.pos, silo.pos(), x, z));
     }
 
     private void toggleArm() {
         LaunchPayloads.Silo silo = selectedSilo();
         if (silo != null) {
-            ClientPacketDistributor.sendToServer(new LaunchPayloads.Arm(this.pos, silo.pos(), !silo.armed()));
+            PacketDistributor.sendToServer(new LaunchPayloads.Arm(this.pos, silo.pos(), !silo.armed()));
         }
     }
 
@@ -363,7 +363,7 @@ public class LaunchComputerScreen extends Screen {
 
     @Override
     public void onClose() {
-        ClientPacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, false));
+        PacketDistributor.sendToServer(new LaunchPayloads.Watch(this.pos, false));
         super.onClose();
     }
 
@@ -378,8 +378,8 @@ public class LaunchComputerScreen extends Screen {
 
     // --- drawing ------------------------------------------------------------------------------------------------------------
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         g.fill(left(), top(), left() + W, top() + H, PANEL);
         g.outline(left(), top(), W, H, EDGE);
         drawMap(g, mouseX, mouseY);
@@ -541,8 +541,8 @@ public class LaunchComputerScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         int x = col();
         LaunchPayloads.Scope s = scope();
         // Header: the title over the map, the missiles in the air at the map's right, the power at the far right.

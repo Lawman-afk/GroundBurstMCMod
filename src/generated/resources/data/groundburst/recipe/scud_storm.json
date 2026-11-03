@@ -2,13 +2,27 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:crt_display",
-    "groundburst:sensor_array",
-    "groundburst:chemical_agent_canister",
-    "minecraft:lever"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:chemical_agent_canister"
+    },
+    {
+      "item": "minecraft:lever"
+    }
   ],
   "result": {
     "id": "groundburst:scud_storm"

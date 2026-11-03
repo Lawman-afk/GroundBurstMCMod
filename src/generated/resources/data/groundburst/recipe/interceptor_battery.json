@@ -2,15 +2,33 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:servo",
-    "groundburst:servo",
-    "groundburst:steel_plate",
-    "groundburst:steel_plate",
-    "groundburst:steel_plate",
-    "groundburst:steel_plate",
-    "groundburst:military_circuit",
-    "groundburst:sensor_array"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    }
   ],
   "result": {
     "id": "groundburst:interceptor_battery"

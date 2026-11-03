@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:charred_wood"
+    {
+      "item": "groundburst:charred_wood"
+    }
   ],
   "result": {
     "count": 4,

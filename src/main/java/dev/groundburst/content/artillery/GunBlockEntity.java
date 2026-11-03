@@ -4,8 +4,8 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.machine.AnimatedMachine;
@@ -31,8 +31,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -260,7 +260,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     /** A line over {@code player}'s hotbar (none for a player with no connection: a test's). */
     protected static void tell(ServerPlayer player, Component line) {
         if (player.connection != null) {
-            player.sendOverlayMessage(line);
+            player.displayClientMessage(line, true);
         }
     }
 
@@ -616,7 +616,7 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
                 n[i] = count(crewman, i);
             }
             Vec3 l = this.laid == null ? Vec3.ZERO : this.laid;
-            PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(this.worldPosition), new ArtilleryPayloads.State(this.worldPosition,
+            PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(this.worldPosition), new ArtilleryPayloads.State(this.worldPosition,
                     this.yaw, this.elevation, this.charge, this.dispersion, this.reload, this.selected, this.reachable, this.shots,
                     crewman == null ? -1 : crewman.getId(), n, this.laid != null, l.x, l.y, l.z));
             this.dirty = false;
@@ -787,8 +787,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         this.rack.serialize(output.child("rack"));
         if (!Float.isNaN(this.yaw)) {
             output.putFloat("yaw", this.yaw);
@@ -800,8 +800,8 @@ public abstract class GunBlockEntity extends BlockEntity implements AnimatedMach
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.rack.deserialize(input.childOrEmpty("rack"));
         this.yaw = input.getFloatOr("yaw", Float.NaN);
         this.elevation = Mth.clamp(input.getFloatOr("elevation", this.spec.restElevation()), this.spec.minElevation(), this.spec.maxElevation());

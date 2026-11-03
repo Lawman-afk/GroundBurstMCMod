@@ -1,7 +1,7 @@
 package dev.groundburst.content.machine;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.recipe.ProcessingKind;
 import dev.groundburst.registry.GBBlockEntities;

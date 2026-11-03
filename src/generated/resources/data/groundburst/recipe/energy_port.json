@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:insulated_cable",
-    "#c:dusts/redstone"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:insulated_cable"
+    },
+    {
+      "tag": "c:dusts/redstone"
+    }
   ],
   "result": {
     "id": "groundburst:energy_port"

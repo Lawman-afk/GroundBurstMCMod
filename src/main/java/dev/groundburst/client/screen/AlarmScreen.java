@@ -14,13 +14,13 @@ import dev.groundburst.content.alarm.Alarms;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * An alarm device's settings (DESIGN.md §18.6): its channel, its own choices (each a button that steps through them),
@@ -75,7 +75,7 @@ public final class AlarmScreen extends Screen {
     private static void open(BlockPos pos) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null && mc.level.getBlockEntity(pos) instanceof AlarmBlockEntity be) {
-            mc.gui.setScreen(new AlarmScreen(pos, be));
+            mc.setScreen(new AlarmScreen(pos, be));
         }
     }
 
@@ -155,7 +155,7 @@ public final class AlarmScreen extends Screen {
 
     private void panel(int action) {
         send();
-        ClientPacketDistributor.sendToServer(new AlarmPayloads.Panel(this.pos, action));
+        PacketDistributor.sendToServer(new AlarmPayloads.Panel(this.pos, action));
         if (this.soundButton != null && (action == AlarmBlockEntity.SOUND || action == AlarmBlockEntity.STOP)) {
             this.soundButton.setMessage(Component.translatable(action == AlarmBlockEntity.SOUND ? T_STOP : T_SOUND));
         }
@@ -177,7 +177,7 @@ public final class AlarmScreen extends Screen {
         for (int v : this.options) {
             opts.add(v);
         }
-        ClientPacketDistributor.sendToServer(new AlarmPayloads.Settings(this.pos, channelValue(), opts));
+        PacketDistributor.sendToServer(new AlarmPayloads.Settings(this.pos, channelValue(), opts));
     }
 
     @Override
@@ -195,16 +195,16 @@ public final class AlarmScreen extends Screen {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         int x = (this.width - W) / 2, top = top();
         g.fill(x, top, x + W, top + this.panelHeight, PANEL);
         g.outline(x, top, W, this.panelHeight, EDGE);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         int x = (this.width - W) / 2, top = top();
         g.text(this.font, this.title, x + (W - this.font.width(this.title)) / 2, top + 8, TEXT);
         g.text(this.font, Component.translatable(T_CHANNEL), x + 10, top + 24 + 5, DIM);

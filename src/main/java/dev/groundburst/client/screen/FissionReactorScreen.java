@@ -3,9 +3,9 @@ package dev.groundburst.client.screen;
 import dev.groundburst.content.machine.FissionCore;
 import dev.groundburst.content.machine.FissionReactorBlockEntity;
 import dev.groundburst.content.machine.MachineMenu;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -59,8 +59,8 @@ public class FissionReactorScreen extends MachineScreen {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractBackground(g, mouseX, mouseY, partial);
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderBackground(g.unwrap(), mouseX, mouseY, partial);
         int x0 = this.leftPos, y0 = this.topPos;
         if (!formed()) {
             plan(g, x0, y0, mouseX, mouseY);
@@ -120,8 +120,8 @@ public class FissionReactorScreen extends MachineScreen {
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        super.extractLabels(g, mouseX, mouseY);
+    protected void renderLabels(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.renderLabels(g.unwrap(), mouseX, mouseY);
         if (formed()) {
             return;
         }
@@ -160,7 +160,7 @@ public class FissionReactorScreen extends MachineScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
         // Our tooltips first: the screen keeps the first one set in a frame (an item's replaces it).
         int mx = mouseX - this.leftPos, my = mouseY - this.topPos;
         Component tip = null;
@@ -184,7 +184,7 @@ public class FissionReactorScreen extends MachineScreen {
         if (tip != null) {
             g.setTooltipForNextFrame(this.font, java.util.List.of(tip), java.util.Optional.empty(), mouseX, mouseY);
         }
-        super.extractRenderState(g, mouseX, mouseY, partial);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
     }
 
     @Override

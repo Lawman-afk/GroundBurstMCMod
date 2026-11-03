@@ -58,7 +58,7 @@ public class StructureSpawnerItem extends Item {
         }
         if (!player.hasInfiniteMaterials()) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.translatable(CREATIVE_ONLY).withStyle(ChatFormatting.RED));
+                player.displayClientMessage(Component.translatable(CREATIVE_ONLY).withStyle(ChatFormatting.RED), true);
             }
             return InteractionResult.FAIL;
         }
@@ -74,7 +74,7 @@ public class StructureSpawnerItem extends Item {
     private InteractionResult blocked(Level level, Player player, BlockPos controller, Direction facing) {
         BlockPos at = firstObstruction(level, controller, facing);
         if (at != null) {
-            player.sendOverlayMessage(Component.translatable(BLOCKED, at.getX(), at.getY(), at.getZ()).withStyle(ChatFormatting.RED));
+            player.displayClientMessage(Component.translatable(BLOCKED, at.getX(), at.getY(), at.getZ()).withStyle(ChatFormatting.RED), true);
         }
         return InteractionResult.FAIL;
     }

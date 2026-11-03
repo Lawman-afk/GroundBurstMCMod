@@ -1,6 +1,6 @@
 package dev.groundburst.client.screen;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 
 /** Drawing for the green phosphor screens (the Launch Computer's map, the Radar Array's scope): colours and simple shapes. */
 public final class Phosphor {

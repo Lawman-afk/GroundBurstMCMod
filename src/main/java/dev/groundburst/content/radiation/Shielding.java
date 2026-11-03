@@ -42,7 +42,7 @@ public final class Shielding {
         if (s.getBlock() instanceof LiquidBlock) {
             return LIQUID;
         }
-        if (s.is(Tags.BlockItems.GLASS_BLOCKS.block())) {
+        if (s.is(Tags.Blocks.GLASS_BLOCKS)) {
             return GLASS;
         }
         if (s.is(BlockTags.LOGS) || s.is(BlockTags.PLANKS)) {

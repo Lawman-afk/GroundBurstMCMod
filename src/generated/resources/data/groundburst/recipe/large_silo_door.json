@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "groundburst:reinforced_concrete",
-    "D": "groundburst:dense_steel_plate",
-    "P": "minecraft:piston"
+    "C": {
+      "item": "groundburst:reinforced_concrete"
+    },
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
   },
   "pattern": [
     "DDD",

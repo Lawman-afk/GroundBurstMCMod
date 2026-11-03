@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "G": "minecraft:glass_pane",
-    "I": "#c:ingots/steel",
-    "P": "#c:plates/steel",
-    "R": "groundburst:steel_rod"
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "tag": "c:ingots/steel"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "item": "groundburst:steel_rod"
+    }
   },
   "pattern": [
     " IG",

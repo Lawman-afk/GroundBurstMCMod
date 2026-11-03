@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:emp_grenade",
-    "groundburst:emp_grenade",
-    "groundburst:emp_grenade",
-    "groundburst:emp_grenade",
-    "#c:plates/steel",
-    "groundburst:advanced_circuit"
+    {
+      "item": "groundburst:emp_grenade"
+    },
+    {
+      "item": "groundburst:emp_grenade"
+    },
+    {
+      "item": "groundburst:emp_grenade"
+    },
+    {
+      "item": "groundburst:emp_grenade"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:emp_dispenser"

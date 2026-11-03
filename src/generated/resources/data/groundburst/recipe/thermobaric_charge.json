@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:thermobaric_slurry_canister",
-    "groundburst:thermobaric_slurry_canister",
-    "groundburst:rdx_crystals",
-    "#c:plates/steel"
+    {
+      "item": "groundburst:thermobaric_slurry_canister"
+    },
+    {
+      "item": "groundburst:thermobaric_slurry_canister"
+    },
+    {
+      "item": "groundburst:rdx_crystals"
+    },
+    {
+      "tag": "c:plates/steel"
+    }
   ],
   "result": {
     "id": "groundburst:thermobaric_charge"

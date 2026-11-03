@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "M": "groundburst:machine_casing",
-    "T": "#c:plates/tungsten"
+    "M": {
+      "item": "groundburst:machine_casing"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    }
   },
   "pattern": [
     "TMT",

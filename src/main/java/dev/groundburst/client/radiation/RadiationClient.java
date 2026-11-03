@@ -16,14 +16,14 @@ import dev.groundburst.registry.GBSounds;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
+import net.minecraft.resources.ResourceLocation;
+import dev.groundburst.port.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -47,8 +47,8 @@ import net.neoforged.neoforge.common.NeoForge;
  */
 public final class RadiationClient {
     /** The HUD's sheet: the meter (dial over readout), and the dose strip. */
-    static final Identifier HUD = GroundBurst.id("textures/gui/geiger_hud.png");
-    static final Identifier VIGNETTE = GroundBurst.id("textures/gui/radiation_vignette.png");
+    static final ResourceLocation HUD = GroundBurst.id("textures/gui/geiger_hud.png");
+    static final ResourceLocation VIGNETTE = GroundBurst.id("textures/gui/radiation_vignette.png");
     static final int SHEET_W = 128, SHEET_H = 128;
     /** The meter: dial ({@link #DIAL_H} high) over the readout window, in the sheet at 0, 0. */
     static final int METER_W = 80, DIAL_H = 48, READOUT_H = 14, METER_H = DIAL_H + READOUT_H;

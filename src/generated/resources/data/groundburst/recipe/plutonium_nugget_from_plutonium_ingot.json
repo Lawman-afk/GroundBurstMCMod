@@ -1,7 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "#c:ingots/plutonium"
+    {
+      "tag": "c:ingots/plutonium"
+    }
   ],
   "result": {
     "count": 9,

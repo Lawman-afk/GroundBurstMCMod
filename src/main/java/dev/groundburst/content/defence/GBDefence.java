@@ -48,7 +48,7 @@ public final class GBDefence {
                     Shapes.or(Block.box(0, 0, 0, 16, 2, 16), Block.box(1, 2, 1, 15, 16, 15)),
                     Block.box(2, 0, 2, 14, 13, 14)),
             p -> p.mapColor(MapColor.COLOR_GREEN).strength(5f, 10f).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                    .pushReaction(PushReaction.IMMOVEABLE),
+                    .pushReaction(PushReaction.BLOCK),
             (block, props) -> new GeoBlockItem(block, props, GroundBurst.id("interceptor_battery")));
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, BlockEntityType<InterceptorBatteryBlockEntity>> BATTERY_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("interceptor_battery", () -> new BlockEntityType<>(InterceptorBatteryBlockEntity::new,
@@ -66,14 +66,14 @@ public final class GBDefence {
     public static final WithItem<MultiblockControllerBlock> COMPLEX_CONTROLLER = GBBlocks.register("interceptor_complex", "Interceptor Complex",
             GBTab.MISSILES, p -> new MultiblockControllerBlock(p, GBDefence.COMPLEX_ENTITY),
             p -> p.mapColor(MapColor.COLOR_GREEN).strength(5f, 12f).requiresCorrectToolForDrops().sound(SoundType.METAL)
-                    .pushReaction(PushReaction.IMMOVEABLE));
+                    .pushReaction(PushReaction.BLOCK));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<InterceptorComplexBlockEntity>> COMPLEX_ENTITY =
             GBBlockEntities.BLOCK_ENTITIES.register("interceptor_complex", () -> new BlockEntityType<>(InterceptorComplexBlockEntity::new,
                     COMPLEX_CONTROLLER.block().get()));
 
     private static WithItem<MultiblockPartBlock> part(String id, String english, MapColor color) {
         return GBBlocks.register(id, english, GBTab.MISSILES, MultiblockPartBlock::new,
-                p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE));
+                p -> p.mapColor(color).strength(4f, 8f).requiresCorrectToolForDrops().sound(SoundType.METAL).pushReaction(PushReaction.BLOCK));
     }
 
     /**

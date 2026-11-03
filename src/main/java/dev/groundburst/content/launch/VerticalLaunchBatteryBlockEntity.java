@@ -9,8 +9,8 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.assembly.MissileItem;
@@ -41,8 +41,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -692,8 +692,8 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putString("phase", this.phase.name());
         output.putInt("phase_ticks", this.phaseTicks);
         output.putBoolean("armed", this.armed);
@@ -718,8 +718,8 @@ public class VerticalLaunchBatteryBlockEntity extends MachineBlockEntity impleme
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         try {
             this.phase = Phase.valueOf(input.getStringOr("phase", Phase.IDLE.name()));
         } catch (IllegalArgumentException e) {

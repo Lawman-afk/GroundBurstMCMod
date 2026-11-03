@@ -28,7 +28,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -37,11 +37,11 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -60,7 +60,7 @@ import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -93,7 +93,7 @@ public final class ArtilleryClient {
     private static final String T_BLOCKED = GBLang.add(GroundBurst.MODID + ".artillery.blocked", "BLOCKED");
     private static final String T_LOADING = GBLang.add(GroundBurst.MODID + ".artillery.loading", "LOADING");
 
-    static final Identifier RETICLE = GroundBurst.id("textures/fx/reticle.png");
+    static final ResourceLocation RETICLE = GroundBurst.id("textures/fx/reticle.png");
     private static final int WHITE = 0xFFF0F0E8, GREY = 0xFF9A9E96, AMBER = 0xFFE8B030, GREEN = 0xFF7CE070, RED = 0xFFF05040;
     private static final int RING_WHITE = 0xF8F4F4EE, RING_GREEN = 0xF880F078, RING_RED = 0xF8FF5040;
     /** The strategic camera: how far over the ground (blocks; a far gun's goes higher), how steeply it looks down (degrees). */
@@ -140,7 +140,7 @@ public final class ArtilleryClient {
         NeoForge.EVENT_BUS.addListener(ArtilleryClient::angles);
         NeoForge.EVENT_BUS.addListener(ArtilleryClient::submit);
         NeoForge.EVENT_BUS.addListener((InputEvent.MouseScrollingEvent e) -> {
-            if (gun != null && Minecraft.getInstance().gui.screen() == null) {
+            if (gun != null && Minecraft.getInstance().screen == null) {
                 e.setCanceled(true);
                 scroll(Minecraft.getInstance(), e.getScrollDeltaY());
             }
@@ -160,7 +160,7 @@ public final class ArtilleryClient {
             if (gun == null) {
                 return;
             }
-            Identifier n = e.getName();
+            ResourceLocation n = e.getName();
             if (n.equals(VanillaGuiLayers.HOTBAR) || n.equals(VanillaGuiLayers.SELECTED_ITEM_NAME) || strategic && n.equals(VanillaGuiLayers.CROSSHAIR)) {
                 e.setCanceled(true);
             }
@@ -234,7 +234,7 @@ public final class ArtilleryClient {
 
     /** The ground's top at (x, z): the client's own, else the far ground's map, else {@code fallback}. */
     static double ground(ClientLevel level, double x, double z, double fallback) {
-        if (level.isLoaded(new BlockPos(Mth.floor(x), level.getMinY(), Mth.floor(z)))) {
+        if (level.isLoaded(new BlockPos(Mth.floor(x), level.getMinBuildHeight(), Mth.floor(z)))) {
             return level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x), Mth.floor(z));
         }
         double h = ArtilleryTerrain.height(x, z);
@@ -258,10 +258,10 @@ public final class ArtilleryClient {
         if (m == null || p == null) {
             return;
         }
-        boolean free = mc.gui.screen() == null;
+        boolean free = mc.screen == null;
         for (int i = 0; i < m.spec.shells().size() && i < mc.options.keyHotbarSlots.length; i++) {
             while (mc.options.keyHotbarSlots[i].consumeClick()) {
-                ClientPacketDistributor.sendToServer(new ArtilleryPayloads.Select(gun, i));
+                PacketDistributor.sendToServer(new ArtilleryPayloads.Select(gun, i));
             }
         }
         for (int i = m.spec.shells().size(); i < mc.options.keyHotbarSlots.length; i++) {
@@ -289,7 +289,7 @@ public final class ArtilleryClient {
             }
         }
         if (fire && free) {
-            ClientPacketDistributor.sendToServer(new ArtilleryPayloads.Fire(gun));
+            PacketDistributor.sendToServer(new ArtilleryPayloads.Fire(gun));
         }
         if (!strategic && free) {
             if (held && Math.abs(Mth.wrapDegrees(p.getYRot() - heldYaw)) + Math.abs(p.getXRot() - heldPitch) > 0.4f) {
@@ -303,7 +303,7 @@ public final class ArtilleryClient {
             }
         }
         if (sent == null || cursor.distanceToSqr(sent) > 0.0025) {
-            ClientPacketDistributor.sendToServer(new ArtilleryPayloads.Aim(gun, cursor));
+            PacketDistributor.sendToServer(new ArtilleryPayloads.Aim(gun, cursor));
             sent = cursor;
         }
         if (m.firedAt() != seenFired) {
@@ -364,7 +364,7 @@ public final class ArtilleryClient {
         GunBlockEntity m = gunEntity(mc);
         height = m == null ? 48 : (float) Mth.clamp(Math.hypot(dx, dz) / 5, 48, high(m));
         held = true;
-        eye = new Marker(EntityTypes.MARKER, mc.level);
+        eye = new Marker(EntityType.MARKER, mc.level);
         place(eye);
         neutralYaw = p.getYRot();
         neutralPitch = Mth.clamp(p.getXRot(), -60, 60);
@@ -435,7 +435,7 @@ public final class ArtilleryClient {
         p.yRotO = neutralYaw;
         p.xRotO = neutralPitch;
         GunBlockEntity m = gunEntity(mc);
-        if (m != null && mc.gui.screen() == null && (dYaw != 0 || dPitch != 0)) {
+        if (m != null && mc.screen == null && (dYaw != 0 || dPitch != 0)) {
             double k = height / 72.0;
             double yr = Math.toRadians(bearing);
             double fx = -Math.sin(yr), fz = Math.cos(yr);                // forward (as the camera looks), and its right
@@ -617,7 +617,7 @@ public final class ArtilleryClient {
     /** The top of whatever stands at (x, z), plants and all (the reticle lies over them); the far ground's map beyond. */
     private static double surface(ClientLevel level, double x, double z, double fallback) {
         int bx = Mth.floor(x), bz = Mth.floor(z);
-        if (!level.isLoaded(new BlockPos(bx, level.getMinY(), bz))) {
+        if (!level.isLoaded(new BlockPos(bx, level.getMinBuildHeight(), bz))) {
             double h = ArtilleryTerrain.height(x, z);
             return Double.isNaN(h) ? fallback : h;
         }
@@ -633,7 +633,7 @@ public final class ArtilleryClient {
 
     static void vertex(VertexConsumer b, PoseStack.Pose pose, Vec3 p, Vec3 camera, float u, float v, int colour) {
         b.addVertex(pose, (float) (p.x - camera.x), (float) (p.y - camera.y), (float) (p.z - camera.z)).setColor(colour).setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
     }
 
     // --- the readout ---------------------------------------------------------------------------------------------------

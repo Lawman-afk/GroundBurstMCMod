@@ -95,7 +95,7 @@ public final class Ballistics {
         Vec3 prev = from;
         for (int n = 1; n <= maxTicks; n++) {
             Vec3 p = point(from, u, n);
-            if (p.y < level.getMinY() - 16 || !level.isLoaded(BlockPos.containing(p))) {
+            if (p.y < level.getMinBuildHeight() - 16 || !level.isLoaded(BlockPos.containing(p))) {
                 return null;
             }
             BlockHitResult hit = level.clip(new ClipContext(prev, p, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, ctx));
@@ -112,7 +112,7 @@ public final class Ballistics {
     /** The top of what stands at (x, z) (where a shell would come down on it), or {@code fallback} if not loaded. */
     public static double ground(Level level, double x, double z, double fallback) {
         int bx = (int) Math.floor(x), bz = (int) Math.floor(z);
-        if (!level.isLoaded(new BlockPos(bx, level.getMinY(), bz))) {
+        if (!level.isLoaded(new BlockPos(bx, level.getMinBuildHeight(), bz))) {
             return fallback;
         }
         return level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz);

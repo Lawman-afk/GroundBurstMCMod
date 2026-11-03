@@ -54,7 +54,7 @@ public class ShellRenderer extends EntityRenderer<ArtilleryShell, ShellRenderer.
 
     @Override
     public void extractRenderState(ArtilleryShell entity, State state, float partialTicks) {
-        super.extractRenderState(entity, state, partialTicks);
+        super.render(entity.unwrap(), state, partialTicks);
         Calibre c = entity.calibre();
         ItemStack look = this.looks.computeIfAbsent(c.ordinal() * 16 + entity.type().ordinal(), k -> {
             var item = GBArtillery.shell(c, entity.type());

@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "L": "minecraft:leather",
-    "P": "groundburst:plastic_sheet"
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    }
   },
   "pattern": [
     "P P",

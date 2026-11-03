@@ -17,12 +17,12 @@ import dev.groundburst.content.recipe.ProcessingKind;
 import dev.groundburst.content.recipe.ProcessingRecipe;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.GuiGraphicsExtractor;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
@@ -756,13 +756,13 @@ final class ManualPages {
 
     // --- image, table, links ---------------------------------------------------------------------------------------------
     static final class ImagePage extends GraphicPage {
-        final Identifier image;
+        final ResourceLocation image;
         final int iw, ih, dw, dh;
 
         /** Photos are at most this tall, so their caption fits under them. */
         static final int MAX_H = 96;
 
-        ImagePage(Identifier image, int iw, int ih) {
+        ImagePage(ResourceLocation image, int iw, int ih) {
             super(Math.round(ih * scale(iw, ih)) + 8);
             this.image = image;
             this.iw = iw;

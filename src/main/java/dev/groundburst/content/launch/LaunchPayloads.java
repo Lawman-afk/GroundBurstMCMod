@@ -117,7 +117,7 @@ public final class LaunchPayloads {
 
     /**
      * The screen asks for map tiles round the computer (see {@link TerrainSurvey#tile}): at {@code scale} (one of
-     * {@link TerrainSurvey#SCALES} blocks a sample), each tile packed as ChunkPos.pack(tx, tz). Only a formed, powered computer maps, and only within
+     * {@link TerrainSurvey#SCALES} blocks a sample), each tile packed as ChunkPos.asLong(tx, tz). Only a formed, powered computer maps, and only within
      * its survey range; a few dozen tiles at a time.
      */
     public record MapRequest(BlockPos pos, int scale, List<Long> tiles) implements CustomPacketPayload {

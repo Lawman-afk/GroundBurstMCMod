@@ -23,9 +23,9 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -48,8 +48,8 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  */
 public final class StormFx {
-    static final Identifier BOLT = GroundBurst.id("textures/fx/bolt.png");
-    static final Identifier RAIN = Identifier.withDefaultNamespace("textures/environment/rain.png");
+    static final ResourceLocation BOLT = GroundBurst.id("textures/fx/bolt.png");
+    static final ResourceLocation RAIN = ResourceLocation.withDefaultNamespace("textures/environment/rain.png");
     private static final double SOUND_SPEED = 17.15, VIRTUAL_DISTANCE = 8;
     /** Ticks a bolt shows, its brightness each of them (it flickers, and strikes again down the same channel). */
     private static final float[] FLICKER = {1, 0.35f, 0.95f, 0.4f, 0.65f, 0.35f, 0.22f, 0.12f, 0.05f};
@@ -459,7 +459,7 @@ public final class StormFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

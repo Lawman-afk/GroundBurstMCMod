@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:electric_motor",
-    "#c:plates/steel",
-    "minecraft:paper",
-    "minecraft:paper"
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:paper"
+    }
   ],
   "result": {
     "id": "groundburst:fan_filter_unit"

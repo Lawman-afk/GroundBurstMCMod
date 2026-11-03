@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "groundburst:steel_plate",
-    "#c:dyes/yellow",
-    "minecraft:redstone"
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "tag": "c:dyes/yellow"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
   ],
   "result": {
     "count": 3,

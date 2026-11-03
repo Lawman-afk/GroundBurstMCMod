@@ -13,7 +13,7 @@ import dev.groundburst.content.assembly.Fuze;
 import dev.groundburst.content.assembly.WarheadAssembly;
 import dev.groundburst.content.machine.MachineMenu;
 import dev.groundburst.registry.GBLang;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
@@ -21,7 +21,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Ordnance Assembly Bench's screen (DESIGN.md §10): core, casing, fuze; the fitted fuze's setting under the readout
@@ -76,7 +76,7 @@ public class AssemblyBenchScreen extends MachineScreen {
     /** A number typed into the setting: sent as it is typed (the bench keeps it within the fuze's range). */
     private void changed(String text) {
         if (!text.isEmpty() && text.chars().allMatch(Character::isDigit) && this.field != null && this.field.isFocused()) {
-            ClientPacketDistributor.sendToServer(new AssemblyPayloads.FuzeSetting(bench().getBlockPos(), Integer.parseInt(text)));
+            PacketDistributor.sendToServer(new AssemblyPayloads.FuzeSetting(bench().getBlockPos(), Integer.parseInt(text)));
         }
     }
 
@@ -117,8 +117,8 @@ public class AssemblyBenchScreen extends MachineScreen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
+    public void render(net.minecraft.client.gui.GuiGraphics gg_, int mouseX, int mouseY, float partial) { GuiGraphicsExtractor g = new GuiGraphicsExtractor(gg_);
+        super.render(g.unwrap(), mouseX, mouseY, partial);
         Fuze fuze = bench().fittedFuze();
         boolean bright = fuze != null && fuze.setting != Fuze.Setting.NONE;
         Component label = fuze == null ? Component.translatable(T_NO_FUZE) : !bright ? Component.translatable(T_NO_SETTING)

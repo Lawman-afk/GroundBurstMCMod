@@ -866,7 +866,7 @@ public final class Flights extends SavedData {
 
         private static long chunk(Vec3 p) {
             BlockPos b = BlockPos.containing(p);
-            return ChunkPos.pack(b.getX() >> 4, b.getZ() >> 4);
+            return ChunkPos.asLong(b.getX() >> 4, b.getZ() >> 4);
         }
 
         /** It hits: its warhead goes off where it hit (a bunker buster bores in first; an empty one does nothing). */

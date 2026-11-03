@@ -1,7 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "#c:storage_blocks/raw_lead"
+    {
+      "tag": "c:storage_blocks/raw_lead"
+    }
   ],
   "result": {
     "count": 9,

@@ -12,12 +12,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -234,7 +234,7 @@ final class Debris {
                 continue;
             }
             this.pos.set(Math.floor(x), Math.floor(y), Math.floor(z));
-            int light = LightCoordsUtil.getLightCoords(level, this.pos);
+            int light = LightTexture.getLightCoords(level, this.pos);
             float angle = c.prevAngle + (c.angle - c.prevAngle) * partial;
             drawn.add(new float[] {(float) (x - camera.x), (float) (y - camera.y), (float) (z - camera.z), c.size * shrink, c.ax, c.ay, c.az,
                     angle, c.u0, c.v0, c.u1, c.v1, Float.intBitsToFloat(light), Float.intBitsToFloat(0xFF000000 | c.tint)});
@@ -242,7 +242,7 @@ final class Debris {
         if (drawn.isEmpty()) {
             return;
         }
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
             Quaternionf q = new Quaternionf();
             for (float[] d : drawn) {
                 PoseStack.Pose local = pose.copy();

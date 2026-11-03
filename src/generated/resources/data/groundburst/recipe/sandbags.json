@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "minecraft:sand",
-    "minecraft:sand",
-    "minecraft:sand",
-    "minecraft:sand",
-    "minecraft:string"
+    {
+      "item": "minecraft:sand"
+    },
+    {
+      "item": "minecraft:sand"
+    },
+    {
+      "item": "minecraft:sand"
+    },
+    {
+      "item": "minecraft:sand"
+    },
+    {
+      "item": "minecraft:string"
+    }
   ],
   "result": {
     "count": 4,

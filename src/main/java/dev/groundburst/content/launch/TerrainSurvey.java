@@ -129,7 +129,7 @@ public final class TerrainSurvey extends SavedData {
         for (int x = cx - chunkRadius; x <= cx + chunkRadius; x++) {
             for (int z = cz - chunkRadius; z <= cz + chunkRadius; z++) {
                 if (level.getChunkSource().getChunkNow(x, z) != null) {
-                    chunkLoaded(ChunkPos.pack(x, z));
+                    chunkLoaded(ChunkPos.asLong(x, z));
                 }
             }
         }
@@ -155,7 +155,7 @@ public final class TerrainSurvey extends SavedData {
         for (int j = 0; j < TILE; j++) {
             for (int i = 0; i < TILE; i++) {
                 int x = x0 + i * scale, z = z0 + j * scale;
-                long c = ChunkPos.pack(x >> 4, z >> 4);
+                long c = ChunkPos.asLong(x >> 4, z >> 4);
                 byte[] d = local.containsKey(c) ? local.get(c) : chunkData(level, c, fresh, partial);
                 local.put(c, d);
                 if (d != null) {
@@ -192,7 +192,7 @@ public final class TerrainSurvey extends SavedData {
      */
     static byte[] sample(LevelChunk chunk) {
         byte[] out = new byte[256];
-        int minX = chunk.getPos().getMinBlockX(), minZ = chunk.getPos().getMinBlockZ(), minY = chunk.getMinY();
+        int minX = chunk.getPos().getMinBlockX(), minZ = chunk.getPos().getMinBlockZ(), minY = chunk.getMinBuildHeight();
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         int[] above = new int[16];
         for (int z = 0; z < 16; z++) {

@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:crt_display",
-    "groundburst:advanced_circuit",
-    "groundburst:advanced_circuit",
-    "groundburst:sensor_array",
-    "groundburst:sensor_array"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:crt_display"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    }
   ],
   "result": {
     "id": "groundburst:radar_array"

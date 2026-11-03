@@ -2,15 +2,33 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:advanced_circuit",
-    "groundburst:pressure_vessel",
-    "groundburst:pressure_vessel",
-    "groundburst:electric_motor",
-    "groundburst:electric_motor",
-    "groundburst:tungsten_carbide_ingot",
-    "groundburst:dense_steel_plate"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    },
+    {
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    }
   ],
   "result": {
     "id": "groundburst:heavy_missile_assembler"

@@ -28,7 +28,7 @@ public class ShrapnelRenderer extends EntityRenderer<Shrapnel, ShrapnelRenderer.
 
     @Override
     public void extractRenderState(Shrapnel entity, State state, float partialTicks) {
-        super.extractRenderState(entity, state, partialTicks);
+        super.render(entity.unwrap(), state, partialTicks);
         state.vx = (float) entity.getDeltaMovement().x;
         state.vy = (float) entity.getDeltaMovement().y;
         state.vz = (float) entity.getDeltaMovement().z;

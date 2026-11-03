@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:launch_silo",
-    "groundburst:machine_casing",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:dense_steel_plate",
-    "groundburst:lead_plate"
+    {
+      "item": "groundburst:launch_silo"
+    },
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:lead_plate"
+    }
   ],
   "result": {
     "id": "groundburst:launch_complex"

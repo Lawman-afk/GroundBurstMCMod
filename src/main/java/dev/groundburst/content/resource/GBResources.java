@@ -101,7 +101,7 @@ public final class GBResources {
     public static final WithItem<BuddingVoidstoneBlock> BUDDING_VOIDSTONE = GBBlocks.register("budding_voidstone", "Budding Voidstone",
             GBTab.RESOURCES, BuddingVoidstoneBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(3f, 9f).randomTicks().sound(SoundType.DEEPSLATE)
-                    .pushReaction(PushReaction.IMMOVEABLE).lightLevel(s -> 2));
+                    .pushReaction(PushReaction.BLOCK).lightLevel(s -> 2));
     public static final WithItem<AmethystClusterBlock> SMALL_EXOTIC_BUD = crystal("small_exotic_bud", "Small Exotic Bud", 3f, 8f, 2, SoundType.SMALL_AMETHYST_BUD);
     public static final WithItem<AmethystClusterBlock> LARGE_EXOTIC_BUD = crystal("large_exotic_bud", "Large Exotic Bud", 5f, 10f, 4, SoundType.LARGE_AMETHYST_BUD);
     public static final WithItem<AmethystClusterBlock> EXOTIC_CRYSTAL_CLUSTER = crystal("exotic_crystal_cluster", "Exotic Crystal Cluster", 7f, 10f, 6, SoundType.AMETHYST_CLUSTER);
@@ -154,6 +154,6 @@ public final class GBResources {
     private static WithItem<AmethystClusterBlock> crystal(String name, String english, float height, float width, int light, SoundType sound) {
         return GBBlocks.register(name, english, GBTab.RESOURCES, props -> new AmethystClusterBlock(height, width, props),
                 p -> p.mapColor(MapColor.COLOR_PURPLE).forceSolidOn().noOcclusion().sound(sound).strength(1.5f)
-                        .lightLevel(s -> light).pushReaction(PushReaction.POPPED));
+                        .lightLevel(s -> light).pushReaction(PushReaction.DESTROY));
     }
 }

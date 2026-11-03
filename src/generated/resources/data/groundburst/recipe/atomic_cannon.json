@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "D": "groundburst:dense_steel_plate",
-    "H": "groundburst:howitzer",
-    "M": "groundburst:military_circuit",
-    "V": "groundburst:pressure_vessel"
+    "D": {
+      "item": "groundburst:dense_steel_plate"
+    },
+    "H": {
+      "item": "groundburst:howitzer"
+    },
+    "M": {
+      "item": "groundburst:military_circuit"
+    },
+    "V": {
+      "item": "groundburst:pressure_vessel"
+    }
   },
   "pattern": [
     "DDD",

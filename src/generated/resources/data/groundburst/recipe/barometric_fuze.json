@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "#c:plates/steel",
-    "groundburst:advanced_circuit",
-    "groundburst:copper_plate"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:advanced_circuit"
+    },
+    {
+      "item": "groundburst:copper_plate"
+    }
   ],
   "result": {
     "count": 2,

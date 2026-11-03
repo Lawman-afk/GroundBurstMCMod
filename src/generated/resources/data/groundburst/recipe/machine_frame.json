@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "C": "#groundburst:basic_circuits",
-    "P": "#c:plates/steel",
-    "R": "#c:rods/steel"
+    "C": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     "RPR",

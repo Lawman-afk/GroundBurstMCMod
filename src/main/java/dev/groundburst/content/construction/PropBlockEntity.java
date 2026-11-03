@@ -1,7 +1,7 @@
 package dev.groundburst.content.construction;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
 import net.minecraft.core.BlockPos;

@@ -80,8 +80,8 @@ final class AnnihilationJob {
         this.radiusSq = (double) radius * radius;
         this.rimSq = Math.max(0, radius - 1.8) * Math.max(0, radius - 1.8);
         this.maxShell = (int) Math.floor(radius);
-        this.minY = level.getMinY();
-        this.maxY = level.getMaxY();
+        this.minY = level.getMinBuildHeight();
+        this.maxY = (level.getMaxBuildHeight() - 1);
         this.ceiling = this.minY - 1;
         this.chunks = new BlastChunks(level, this.owner, this.center, radius + 1, GBServerConfig.GENERATE_CHUNKS.get(),
                 h -> this.ceiling = Math.max(this.ceiling, h));

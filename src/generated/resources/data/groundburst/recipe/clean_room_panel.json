@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "#c:plates/steel",
-    "groundburst:plastic_sheet",
-    "groundburst:plastic_sheet",
-    "#c:dyes/white"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:plastic_sheet"
+    },
+    {
+      "item": "groundburst:plastic_sheet"
+    },
+    {
+      "tag": "c:dyes/white"
+    }
   ],
   "result": {
     "count": 2,

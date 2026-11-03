@@ -113,7 +113,7 @@ public class LaserDesignatorItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (!works(stack, level)) {
             if (!level.isClientSide()) {
-                player.sendOverlayMessage(Component.translatable(knockedOut(stack, level) ? T_EMP : T_FLAT).withStyle(ChatFormatting.GRAY));
+                player.displayClientMessage(Component.translatable(knockedOut(stack, level) ? T_EMP : T_FLAT).withStyle(ChatFormatting.GRAY), true);
             }
             return InteractionResult.FAIL;
         }
@@ -136,7 +136,7 @@ public class LaserDesignatorItem extends Item {
             if (n != null) {
                 boolean same = n.code().equals(LaunchCodesItem.code(stack));
                 stack.set(GBDataComponents.LAUNCH_CODES.get(), n.code());
-                player.sendOverlayMessage(Component.translatable(same ? T_SAME : T_LINKED, n.code()).withStyle(ChatFormatting.GOLD));
+                player.displayClientMessage(Component.translatable(same ? T_SAME : T_LINKED, n.code()).withStyle(ChatFormatting.GOLD), true);
                 server.playSound(null, context.getClickedPos(), GBSounds.DESIGNATOR_LOCK.get(), SoundSource.PLAYERS, 0.4f, 1.2f);
             }
         }

@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ClipContext;
@@ -36,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  */
 public final class AnnihilationFx {
-    static final Identifier SURFACE = GroundBurst.id("textures/fx/annihilation.png");
+    static final ResourceLocation SURFACE = GroundBurst.id("textures/fx/annihilation.png");
     /** Ticks the sphere takes to fade once erasing is done; ticks the void glows violet after that. */
     private static final int FADE = 20, AFTERGLOW = 200;
     /** Blocks a tick sound covers (343 m/s); past this the far sound plays; nearer than this a sound is heard in full. */

@@ -20,15 +20,14 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -49,7 +48,7 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
     private static final float ROD_TRAVEL = 0.5f;
     /** The panes and the coolant: see-through, sorted far to near when drawn, and back faces culled (the coolant's far
      *  sides would otherwise lie on the walls' linings across the core and flicker against them). */
-    private static final RenderType TRANSLUCENT = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+    private static final RenderType TRANSLUCENT = RenderType.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
     private static final Direction[] DIRECTIONS = Direction.values();
 
     public static class State extends BlockEntityRenderState {
@@ -72,7 +71,7 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
     @Override
     public void extractRenderState(FissionReactorBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
+        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
         state.fluid = null;
         state.pieces.clear();
         FissionCore core = be.core();
@@ -122,7 +121,7 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
         TextureAtlasSprite sprite = fluid != null ? FluidVisuals.still(fluid) : null;
         float x0 = state.x0, x1 = state.x1, z0 = state.z0, z1 = state.z1, y0 = state.y0;
         float y1 = y0 + (state.y1 - state.y0) * state.fill;
-        int c = state.color, light = state.glowing ? LightCoordsUtil.FULL_BRIGHT : state.lightCoords;
+        int c = state.color, light = state.glowing ? LightTexture.FULL_BRIGHT : state.lightCoords;
         collector.submitCustomGeometry(poseStack, TRANSLUCENT, (pose, buffer) -> {
             sections(pose, buffer, pieces, drop, true);
             if (sprite == null) {

@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:tactical_fission_core",
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:military_circuit",
-    "minecraft:gunpowder",
-    "minecraft:gunpowder"
+    {
+      "item": "groundburst:tactical_fission_core"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "id": "groundburst:atomic_shell_nuclear"

@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -105,7 +105,7 @@ final class BlastJob implements Blast {
 
     final ServerLevel level;
     final UUID id;
-    final Identifier profileId;
+    final ResourceLocation profileId;
     /** Game time it went off (clients use it to time the sound of a blast they learn of late). */
     final long startTick;
     /** Short id for the client packets of this session. */
@@ -158,7 +158,7 @@ final class BlastJob implements Blast {
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private int blocksChanged;
 
-    BlastJob(ServerLevel level, UUID id, Identifier profileId, long startTick, Vec3 center, BlastProfile profile, long seed,
+    BlastJob(ServerLevel level, UUID id, ResourceLocation profileId, long startTick, Vec3 center, BlastProfile profile, long seed,
             @Nullable Entity source, boolean terrain, @Nullable BlockPos protectedCenter, int protectedRadius) {
         this.level = level;
         this.id = id;
@@ -238,12 +238,12 @@ final class BlastJob implements Blast {
     }
 
     /** A saved blast. */
-    record State(UUID id, Identifier profileId, BlastProfile profile, Vec3 center, long seed, boolean terrain,
+    record State(UUID id, ResourceLocation profileId, BlastProfile profile, Vec3 center, long seed, boolean terrain,
             Optional<BlockPos> protectedCenter, int protectedRadius, int shell, int age, String phase, java.nio.ByteBuffer rays,
             java.util.stream.LongStream rim, float entityRadius, int ceiling, long startTick) {
         static final Codec<State> CODEC = RecordCodecBuilder.create(i -> i.group(
                 UUIDUtil.CODEC.fieldOf("id").forGetter(State::id),
-                Identifier.CODEC.fieldOf("profile_id").forGetter(State::profileId),
+                ResourceLocation.CODEC.fieldOf("profile_id").forGetter(State::profileId),
                 BlastProfile.CODEC.fieldOf("profile").forGetter(State::profile),
                 Vec3.CODEC.fieldOf("center").forGetter(State::center),
                 Codec.LONG.fieldOf("seed").forGetter(State::seed),
@@ -314,7 +314,7 @@ final class BlastJob implements Blast {
 
     /** The top of the highest block in the loaded chunks within {@code radius} of {@code center} (horizontally). */
     private static int highestBlock(ServerLevel level, Vec3 center, float radius) {
-        int top = level.getMinY();
+        int top = level.getMinBuildHeight();
         int r = (int) Math.ceil(radius) + 1;
         int cx0 = ((int) Math.floor(center.x) - r) >> 4, cx1 = ((int) Math.floor(center.x) + r) >> 4;
         int cz0 = ((int) Math.floor(center.z) - r) >> 4, cz1 = ((int) Math.floor(center.z) + r) >> 4;
@@ -394,7 +394,7 @@ final class BlastJob implements Blast {
     private boolean runShell(int r, long deadline, int budget) {
         RayField f = this.rays;
         int startChanges = this.blocksChanged;
-        int maxY = this.level.getMaxY(), minY = this.level.getMinY();
+        int maxY = (this.level.getMaxBuildHeight() - 1), minY = this.level.getMinBuildHeight();
         float crater = this.profile.crater(), core = this.profile.core();
         while (this.cursor < f.size) {
             if ((this.cursor & 255) == 0 && (System.nanoTime() > deadline || this.blocksChanged - startChanges >= budget)) {
@@ -510,12 +510,12 @@ final class BlastJob implements Blast {
     }
 
     private void groundColumn(int x, int z, float dist) {
-        this.pos.set(x, this.level.getMinY(), z);
+        this.pos.set(x, this.level.getMinBuildHeight(), z);
         if (!this.level.isLoaded(this.pos)) {
             return;
         }
         int top = this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
-        if (top < this.level.getMinY()) {
+        if (top < this.level.getMinBuildHeight()) {
             return;
         }
         BlastProfile p = this.profile;
@@ -525,11 +525,11 @@ final class BlastJob implements Blast {
         // floor under the roof (and a wall at the fireball's height stands in the way of what is behind it).
         int from = Math.min(top, (int) Math.floor(eye));
         top = from;
-        while (top >= this.level.getMinY() && from - top < GROUND_SCAN
+        while (top >= this.level.getMinBuildHeight() && from - top < GROUND_SCAN
                 && !Heightmap.Types.MOTION_BLOCKING.isOpaque().test(this.level.getBlockState(this.pos.set(x, top, z)))) {
             top--;
         }
-        if (top < this.level.getMinY() || from - top >= GROUND_SCAN) {
+        if (top < this.level.getMinBuildHeight() || from - top >= GROUND_SCAN) {
             return;
         }
         double az = Math.atan2(z + 0.5 - this.center.z, x + 0.5 - this.center.x);
@@ -591,7 +591,7 @@ final class BlastJob implements Blast {
         if (state.is(Blocks.DEEPSLATE) || state.is(BlockTags.DEEPSLATE_ORE_REPLACEABLES)) {
             return 1;
         }
-        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.BlockItems.GRAVELS.block()) || state.is(Tags.BlockItems.COBBLESTONES.block())) {
+        if (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Tags.Blocks.GRAVELS) || state.is(Tags.Blocks.COBBLESTONES)) {
             return 0;
         }
         if (state.is(BlockTags.DIRT) || state.is(BlockTags.GRASS_BLOCKS)) {          // (26.3 took grass blocks out of the dirt tag)

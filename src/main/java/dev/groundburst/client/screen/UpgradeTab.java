@@ -10,12 +10,12 @@ import dev.groundburst.content.machine.UpgradeChipItem;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderPipelines;
+import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 
@@ -26,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
  * much faster, how much more efficient (after the user's look: no lines on the power drawn a tick or a job).
  */
 final class UpgradeTab {
-    private static final Identifier TEXTURE = GroundBurst.id("textures/gui/machine/upgrades.png");
+    private static final ResourceLocation TEXTURE = GroundBurst.id("textures/gui/machine/upgrades.png");
     // Sprite positions, mirrored from tools/assets/gui.py (upgrades_texture).
     /** (The panel just wider than its longest line, "Efficiency: normal": after the user's look, 112 was too wide.) */
     private static final int TAB_W = 24, TAB_H = 26, PANEL_V = 32, PANEL_W = 82, PANEL_H = 64;

@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:he_charge",
-    "groundburst:dense_steel_plate",
-    "minecraft:gunpowder",
-    "minecraft:gunpowder"
+    {
+      "item": "groundburst:he_charge"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
   ],
   "result": {
     "count": 2,

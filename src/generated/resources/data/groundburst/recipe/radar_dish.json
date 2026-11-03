@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "groundburst:sensor_array",
-    "groundburst:servo",
-    "#c:wires/copper"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:servo"
+    },
+    {
+      "tag": "c:wires/copper"
+    }
   ],
   "result": {
     "id": "groundburst:radar_dish"

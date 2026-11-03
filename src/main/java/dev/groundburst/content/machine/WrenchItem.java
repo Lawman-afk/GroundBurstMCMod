@@ -86,7 +86,7 @@ public class WrenchItem extends Item {
         }
         if (block instanceof MultiblockControllerBlock || block instanceof WideMachineBlock) {
             if (!level.isClientSide() && player != null) {
-                player.sendOverlayMessage(Component.translatable(block instanceof WideMachineBlock ? FIXED_WIDE : FIXED).withStyle(ChatFormatting.YELLOW));
+                player.displayClientMessage(Component.translatable(block instanceof WideMachineBlock ? FIXED_WIDE : FIXED).withStyle(ChatFormatting.YELLOW), true);
             }
             return InteractionResult.SUCCESS;
         }
@@ -135,7 +135,7 @@ public class WrenchItem extends Item {
                 case NONE -> PipeBlock.Mode.NONE;
             };
             if (next == PipeBlock.Mode.NONE) {
-                player.sendOverlayMessage(Component.translatable(NOTHING, d.getSerializedName()));
+                player.displayClientMessage(Component.translatable(NOTHING, d.getSerializedName()), true);
                 return;
             }
         }
@@ -149,7 +149,7 @@ public class WrenchItem extends Item {
             case PULL -> MODE_PULL;
             default -> MODE_OFF;
         };
-        player.sendOverlayMessage(Component.translatable(PIPE_MODE, d.getSerializedName(), Component.translatable(mode)));
+        player.displayClientMessage(Component.translatable(PIPE_MODE, d.getSerializedName(), Component.translatable(mode)), true);
         level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.6f, 1.6f);
     }
 
@@ -158,7 +158,7 @@ public class WrenchItem extends Item {
         BlockState there = level.getBlockState(other);
         CableBlock.Side current = CableBlock.side(state, d);
         if (current == CableBlock.Side.NONE && !(there.getBlock() instanceof CableBlock)) {
-            player.sendOverlayMessage(Component.translatable(NOTHING, d.getSerializedName()));
+            player.displayClientMessage(Component.translatable(NOTHING, d.getSerializedName()), true);
             return;
         }
         CableBlock.Side next = current == CableBlock.Side.DISABLED ? CableBlock.Side.CONNECTED : CableBlock.Side.DISABLED;
@@ -171,7 +171,7 @@ public class WrenchItem extends Item {
         level.invalidateCapabilities(pos);
         CableNetwork.invalidate(level);
         boolean on = CableBlock.side(level.getBlockState(pos), d) == CableBlock.Side.CONNECTED;
-        player.sendOverlayMessage(Component.translatable(CABLE_MODE, d.getSerializedName(), Component.translatable(on ? MODE_ON : MODE_OFF)));
+        player.displayClientMessage(Component.translatable(CABLE_MODE, d.getSerializedName(), Component.translatable(on ? MODE_ON : MODE_OFF)), true);
         level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.6f, 1.6f);
     }
 

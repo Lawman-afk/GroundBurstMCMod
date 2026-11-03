@@ -2,8 +2,8 @@ package dev.groundburst.content.machine;
 
 import java.util.Set;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.multiblock.GBMultiblocks;
 import dev.groundburst.content.multiblock.MultiblockController;

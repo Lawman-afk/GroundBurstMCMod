@@ -2,8 +2,8 @@ package dev.groundburst.content.power;
 
 import java.util.List;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.machine.AnimatedMachine;
 import dev.groundburst.content.machine.MachineBlockEntity;
@@ -26,8 +26,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 
 /**
  * RTG, radioisotope thermoelectric generator (DESIGN.md §7): a steady 40 FE/t from a radioisotope fuel slug. The
@@ -139,15 +139,15 @@ public class RtgBlockEntity extends MachineBlockEntity implements AnimatedMachin
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("decay", this.decay);
         output.putInt("decay_total", this.decayTotal);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.decay = input.getIntOr("decay", 0);
         this.decayTotal = input.getIntOr("decay_total", 0);
     }

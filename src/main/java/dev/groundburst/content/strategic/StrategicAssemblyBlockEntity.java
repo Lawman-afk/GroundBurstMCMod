@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.GroundBurst;
 import dev.groundburst.content.assembly.AssemblyStats;
@@ -44,8 +44,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 
 /**
  * The ICBM Assembly Hall (DESIGN.md §15.2, Phase 8 slice 8c): a long crane hall over two cradles that builds a
@@ -480,8 +480,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
 
     // --- saving -----------------------------------------------------------------------------------------------------------
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putInt("progress", this.progress);
         output.putInt("total", this.total);
         output.putInt("laid", this.laid);
@@ -490,8 +490,8 @@ public class StrategicAssemblyBlockEntity extends MachineBlockEntity implements 
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.progress = input.getIntOr("progress", 0);
         this.total = input.getIntOr("total", 0);
         this.laid = input.getIntOr("laid", 0);

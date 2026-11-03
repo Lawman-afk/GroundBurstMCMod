@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:tactical_fission_core",
-    "groundburst:tritium_canister",
-    "groundburst:tritium_canister",
-    "groundburst:tungsten_carbide_ingot",
-    "groundburst:military_circuit"
+    {
+      "item": "groundburst:tactical_fission_core"
+    },
+    {
+      "item": "groundburst:tritium_canister"
+    },
+    {
+      "item": "groundburst:tritium_canister"
+    },
+    {
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:neutron_core"

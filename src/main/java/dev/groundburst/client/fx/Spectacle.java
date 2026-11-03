@@ -18,9 +18,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.resources.ResourceLocation;
+import dev.groundburst.port.ARGB;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -56,8 +56,8 @@ import net.neoforged.neoforge.common.NeoForge;
  * </ul>
  */
 public final class Spectacle {
-    static final Identifier FIREBALL = GroundBurst.id("textures/fx/fireball.png");
-    static final Identifier SHOCK = GroundBurst.id("textures/fx/shock.png");
+    static final ResourceLocation FIREBALL = GroundBurst.id("textures/fx/fireball.png");
+    static final ResourceLocation SHOCK = GroundBurst.id("textures/fx/shock.png");
     private static final int LAT = 14, LON = 28;
     /** Smoky orange-brown the sky and fog shift toward (scaled to the sky's own brightness). */
     private static final Vector3fc SMOKE_SKY = new Vector3f(1.0f, 0.62f, 0.38f);
@@ -1157,7 +1157,7 @@ public final class Spectacle {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 }

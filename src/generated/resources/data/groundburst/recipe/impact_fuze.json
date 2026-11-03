@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "#c:plates/steel",
-    "minecraft:gunpowder",
-    "minecraft:stone_pressure_plate"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:stone_pressure_plate"
+    }
   ],
   "result": {
     "count": 2,

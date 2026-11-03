@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "groundburst:basic_circuit",
-    "M": "groundburst:electric_motor",
-    "P": "#c:plates/steel",
-    "W": "groundburst:copper_wire",
-    "Y": "#c:dyes/yellow"
+    "C": {
+      "item": "groundburst:basic_circuit"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "W": {
+      "item": "groundburst:copper_wire"
+    },
+    "Y": {
+      "tag": "c:dyes/yellow"
+    }
   },
   "pattern": [
     "PYP",

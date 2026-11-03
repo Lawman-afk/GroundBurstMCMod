@@ -7,8 +7,8 @@ import java.util.Set;
 import dev.groundburst.GroundBurst;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 
 /**
  * Per-face automation settings of a machine (DESIGN.md §8 "side configuration"). Faces are relative to the machine's

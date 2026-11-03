@@ -21,9 +21,9 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -48,7 +48,7 @@ import net.neoforged.neoforge.common.NeoForge;
  * (The frost on a player's own screen is vanilla's freezing overlay: the server freezes them.)
  */
 public final class FreezeFx {
-    static final Identifier SNOW = Identifier.withDefaultNamespace("textures/environment/snow.png");
+    static final ResourceLocation SNOW = ResourceLocation.withDefaultNamespace("textures/environment/snow.png");
     private static final double SOUND_SPEED = 17.15, VIRTUAL_DISTANCE = 8;
     /** Ticks its cold takes to clear on the client once the server has ended it. */
     private static final int CLEAR = 60;
@@ -448,7 +448,7 @@ public final class FreezeFx {
                 double az = (i + RANDOM.nextFloat()) / count * 2 * Math.PI;
                 double x = o.x + Math.cos(az) * at, z = o.z + Math.sin(az) * at;
                 int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(x), (int) Math.floor(z));
-                if (ground - o.y > c.start.climb() || ground <= level.getMinY() + 1) {
+                if (ground - o.y > c.start.climb() || ground <= level.getMinBuildHeight() + 1) {
                     continue;                                       // a hilltop the cold air never reaches
                 }
                 // (each sits clear of the ground by a third of its size: a billboard cut by the ground reads as a dome)
@@ -592,7 +592,7 @@ public final class FreezeFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

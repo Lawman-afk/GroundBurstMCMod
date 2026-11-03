@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:dense_steel_plate",
-    "groundburst:tungsten_carbide_ingot",
-    "minecraft:gray_concrete",
-    "minecraft:gray_concrete"
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:dense_steel_plate"
+    },
+    {
+      "item": "groundburst:tungsten_carbide_ingot"
+    },
+    {
+      "item": "minecraft:gray_concrete"
+    },
+    {
+      "item": "minecraft:gray_concrete"
+    }
   ],
   "result": {
     "id": "groundburst:flame_deflector"

@@ -19,7 +19,7 @@ import com.google.gson.JsonParser;
 import dev.groundburst.GroundBurst;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -52,11 +52,11 @@ public final class Manual {
     public record CraftingSpec(Item item, boolean smelting, String text) implements PageSpec {}
 
     /** Machine recipes of {@code kind}, optionally only those making {@code item} or the fluid {@code fluid}. */
-    public record MachineSpec(String kind, @Nullable Item item, @Nullable Identifier fluid, String text) implements PageSpec {}
+    public record MachineSpec(String kind, @Nullable Item item, @Nullable ResourceLocation fluid, String text) implements PageSpec {}
 
-    public record StructureSpec(Identifier structure, String text) implements PageSpec {}
+    public record StructureSpec(ResourceLocation structure, String text) implements PageSpec {}
 
-    public record ImageSpec(Identifier image, int width, int height, String text) implements PageSpec {}
+    public record ImageSpec(ResourceLocation image, int width, int height, String text) implements PageSpec {}
 
     public record TableSpec(@Nullable String title, List<List<String>> rows, String text) implements PageSpec {}
 
@@ -116,7 +116,7 @@ public final class Manual {
         @Override
         protected Data prepare(ResourceManager manager, ProfilerFiller profiler) {
             List<Chapter> chapters = new ArrayList<>();
-            for (Map.Entry<Identifier, Resource> file : CHAPTERS.listMatchingResources(manager).entrySet()) {
+            for (Map.Entry<ResourceLocation, Resource> file : CHAPTERS.listMatchingResources(manager).entrySet()) {
                 if (!file.getKey().getNamespace().equals(GroundBurst.MODID)) {
                     continue;
                 }
@@ -130,7 +130,7 @@ public final class Manual {
             }
             chapters.sort(Comparator.comparingInt(Chapter::order));
             Map<String, Entry> entries = new LinkedHashMap<>();
-            for (Map.Entry<Identifier, Resource> file : ENTRIES.listMatchingResources(manager).entrySet()) {
+            for (Map.Entry<ResourceLocation, Resource> file : ENTRIES.listMatchingResources(manager).entrySet()) {
                 if (!file.getKey().getNamespace().equals(GroundBurst.MODID)) {
                     continue;
                 }
@@ -183,9 +183,9 @@ public final class Manual {
             case "crafting" -> new CraftingSpec(item(json, "item"), false, text);
             case "smelting" -> new CraftingSpec(item(json, "item"), true, text);
             case "machine" -> new MachineSpec(string(json, "kind", ""), json.has("item") ? item(json, "item") : null,
-                    json.has("fluid") ? Identifier.parse(json.get("fluid").getAsString()) : null, text);
-            case "structure" -> new StructureSpec(Identifier.parse(string(json, "structure", "")), text);
-            case "image" -> new ImageSpec(Identifier.parse(string(json, "image", "")), integer(json, "width"), integer(json, "height"), text);
+                    json.has("fluid") ? ResourceLocation.parse(json.get("fluid").getAsString()) : null, text);
+            case "structure" -> new StructureSpec(ResourceLocation.parse(string(json, "structure", "")), text);
+            case "image" -> new ImageSpec(ResourceLocation.parse(string(json, "image", "")), integer(json, "width"), integer(json, "height"), text);
             case "table" -> {
                 List<List<String>> rows = new ArrayList<>();
                 for (JsonElement row : array(json, "rows")) {
@@ -225,7 +225,7 @@ public final class Manual {
     }
 
     private static Item item(String id) {
-        return BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).orElseGet(() -> {
+        return BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id)).orElseGet(() -> {
             GroundBurst.LOGGER.error("Field Manual: unknown item {}", id);
             return Items.BARRIER;
         });

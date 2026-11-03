@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:military_circuit",
-    "groundburst:sensor_array",
-    "groundburst:copper_wire",
-    "#c:plates/steel"
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:copper_wire"
+    },
+    {
+      "tag": "c:plates/steel"
+    }
   ],
   "result": {
     "id": "groundburst:gps_guidance_unit"

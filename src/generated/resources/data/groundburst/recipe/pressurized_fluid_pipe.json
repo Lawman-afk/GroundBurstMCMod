@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "P": "groundburst:fluid_pipe",
-    "S": "groundburst:plastic_sheet",
-    "T": "#c:plates/tungsten"
+    "P": {
+      "item": "groundburst:fluid_pipe"
+    },
+    "S": {
+      "item": "groundburst:plastic_sheet"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    }
   },
   "pattern": [
     "TPT",

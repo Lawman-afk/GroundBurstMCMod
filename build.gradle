@@ -28,7 +28,10 @@ repositories {
                 url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
             }
         }
-        filter { includeGroup 'com.geckolib' }
+        filter {
+            includeGroup 'com.geckolib'
+            includeGroup 'software.bernie.geckolib'
+        }
     }
     exclusiveContent {
         forRepository {
@@ -45,7 +48,8 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    // The Minecraft version in the name, so the backport's jar is never taken for main's.
+    archivesName = "${mod_id}-mc${minecraft_version}"
 }
 
 // The licence travels in the jar (MIT asks for its notice in every copy; it also points to the sound credits).
@@ -56,8 +60,8 @@ tasks.named('jar', Jar) {
     }
 }
 
-// Mojang ships Java 25 to end users in 26.3, so the mod targets Java 25.
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+// Minecraft 1.21.1 runs on Java 21, so the backport targets Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {
     version = project.neo_version
@@ -160,8 +164,12 @@ configurations {
 }
 
 dependencies {
+    // Main's nullness annotations (Minecraft 26.x carries JSpecify; 1.21.1 does not): compile only, as at run time the
+    // missing annotation classes are simply ignored.
+    compileOnly "org.jspecify:jspecify:1.0.0"
+
     // Animated models (missiles, launchers, silo doors, radar dishes, guns, machines). The one hard dependency.
-    implementation "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
 
     // JEI integration (optional at runtime): compile against the API, run the full mod in the dev client.
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
@@ -192,6 +200,8 @@ neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // Every error at once while porting (javac stops at 100).
+    options.compilerArgs += ['-Xmaxerrs', '5000']
 }
 
 idea {
@@ -202,8 +212,9 @@ idea {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder `deploy_instance_dir`
-// names (set in your own ~/.gradle/gradle.properties); without one the jar just stays in build/libs.
+// Deployment: every `build` ends with the fresh jar in a CurseForge test instance, the folder
+// `deploy_instance_dir_1_21_1` names (set in your own ~/.gradle/gradle.properties; a 1.21.1 instance, not main's
+// `deploy_instance_dir`); without one the jar just stays in build/libs.
 // ---------------------------------------------------------------------------------------------
 
 abstract class DeployToInstance extends DefaultTask {
@@ -234,10 +245,10 @@ abstract class DeployToInstance extends DefaultTask {
             String where = dir == null ? "(no default folder on this system)" : "${dir.parentFile}"
             if (required.get()) {
                 throw new GradleException("CurseForge instance not found at ${where}. " +
-                        "Set deploy_instance_dir in gradle.properties or pass -Pdeploy_instance_dir=<path>.")
+                        "Set deploy_instance_dir_1_21_1 in gradle.properties or pass -Pdeploy_instance_dir_1_21_1=<path>.")
             }
             // Anyone else building the mod has no test instance: the jar stays in build/libs.
-            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir to deploy it).")
+            logger.lifecycle("No CurseForge instance at ${where}: the jar was not deployed (set deploy_instance_dir_1_21_1 to deploy it).")
             return
         }
         dir.mkdirs()
@@ -286,19 +297,19 @@ configurations {
 }
 
 dependencies {
-    deployDependencies "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    deployDependencies "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
 }
 
-var instanceDir = providers.gradleProperty('deploy_instance_dir')
+var instanceDir = providers.gradleProperty('deploy_instance_dir_1_21_1')
         .filter { !it.isBlank() }
 
 var deployToInstance = tasks.register('deployToInstance', DeployToInstance) {
     group = 'deployment'
-    description = 'Copies the built mod jar into the CurseForge test instance (deploy_instance_dir), replacing older builds.'
+    description = 'Copies the built mod jar into the 1.21.1 CurseForge test instance (deploy_instance_dir_1_21_1), replacing older builds.'
     jarFile = tasks.named('jar', Jar).flatMap { it.archiveFile }
     modsDir = layout.dir(instanceDir.map { new File(it, 'mods') })
     modId = project.mod_id
-    required = providers.gradleProperty('deploy_instance_dir').map { !it.isBlank() }.orElse(false)
+    required = providers.gradleProperty('deploy_instance_dir_1_21_1').map { !it.isBlank() }.orElse(false)
     dependencyJars.from(configurations.deployDependencies)
     outputs.upToDateWhen { false }
 }

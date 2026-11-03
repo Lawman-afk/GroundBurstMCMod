@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "G": "minecraft:glass",
-    "L": "minecraft:redstone_lamp",
-    "M": "groundburst:electric_motor",
-    "P": "#c:plates/steel",
-    "R": "#c:dyes/red"
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "L": {
+      "item": "minecraft:redstone_lamp"
+    },
+    "M": {
+      "item": "groundburst:electric_motor"
+    },
+    "P": {
+      "tag": "c:plates/steel"
+    },
+    "R": {
+      "tag": "c:dyes/red"
+    }
   },
   "pattern": [
     "RGR",

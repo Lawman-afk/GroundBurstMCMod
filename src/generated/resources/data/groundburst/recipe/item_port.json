@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:machine_casing",
-    "minecraft:hopper"
+    {
+      "item": "groundburst:machine_casing"
+    },
+    {
+      "item": "minecraft:hopper"
+    }
   ],
   "result": {
     "id": "groundburst:item_port"

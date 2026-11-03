@@ -3,7 +3,7 @@ package dev.groundburst.config;
 import java.util.List;
 
 import dev.groundburst.registry.GBLang;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -189,6 +189,6 @@ public final class GBServerConfig {
     private GBServerConfig() {}
 
     private static boolean isIdentifier(Object value) {
-        return value instanceof String s && Identifier.tryParse(s) != null;
+        return value instanceof String s && ResourceLocation.tryParse(s) != null;
     }
 }

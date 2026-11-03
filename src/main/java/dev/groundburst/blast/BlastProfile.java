@@ -7,7 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import dev.groundburst.GroundBurst;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 
 /**
@@ -34,7 +34,7 @@ import net.minecraft.resources.ResourceKey;
  * @param visual      the client visual preset (Phase 5, slice 5c); by default chosen by the crater's size
  */
 public record BlastProfile(float core, float crater, float structural, float scorch, float fire, EntityZones entities,
-        float frontSpeed, float craterDepth, float lobes, float streaks, float ejecta, float drops, Identifier terrain, Optional<Boolean> instant,
+        float frontSpeed, float craterDepth, float lobes, float streaks, float ejecta, float drops, ResourceLocation terrain, Optional<Boolean> instant,
         Optional<String> sound, Optional<String> visual) {
 
     public static final ResourceKey<Registry<BlastProfile>> REGISTRY = ResourceKey.createRegistryKey(GroundBurst.id("blast_profile"));
@@ -70,7 +70,7 @@ public record BlastProfile(float core, float crater, float structural, float sco
             Codec.FLOAT.optionalFieldOf("streaks", 0.3f).forGetter(BlastProfile::streaks),
             Codec.FLOAT.optionalFieldOf("ejecta", 0.4f).forGetter(BlastProfile::ejecta),
             Codec.FLOAT.optionalFieldOf("drops", 0f).forGetter(BlastProfile::drops),
-            Identifier.CODEC.optionalFieldOf("terrain", TerrainTable.CONVENTIONAL).forGetter(BlastProfile::terrain),
+            ResourceLocation.CODEC.optionalFieldOf("terrain", TerrainTable.CONVENTIONAL).forGetter(BlastProfile::terrain),
             Codec.BOOL.optionalFieldOf("instant").forGetter(BlastProfile::instant),
             Codec.STRING.optionalFieldOf("sound").forGetter(BlastProfile::sound),
             Codec.STRING.optionalFieldOf("visual").forGetter(BlastProfile::visual)

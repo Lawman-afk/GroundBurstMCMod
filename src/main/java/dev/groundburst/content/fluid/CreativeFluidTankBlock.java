@@ -98,10 +98,10 @@ public class CreativeFluidTankBlock extends Block implements EntityBlock {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CreativeFluidTankBlockEntity be) {
             if (player.isSecondaryUseActive()) {
                 be.tank().clear();
-                player.sendOverlayMessage(Component.translatable(CLEARED));
+                player.displayClientMessage(Component.translatable(CLEARED), true);
             } else {
                 var f = be.tank().fluid();
-                player.sendOverlayMessage(Component.translatable(STATUS, f.isEmpty() ? Component.translatable(FluidTankBlock.EMPTY) : f.getHoverName()));
+                player.displayClientMessage(Component.translatable(STATUS, f.isEmpty() ? Component.translatable(FluidTankBlock.EMPTY) : f.getHoverName()), true);
             }
         }
         return InteractionResult.SUCCESS;

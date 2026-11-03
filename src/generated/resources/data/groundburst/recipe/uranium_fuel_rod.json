@@ -1,11 +1,21 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "#c:ingots/uranium",
-    "#c:ingots/uranium",
-    "#c:ingots/uranium",
-    "#c:rods/steel",
-    "#c:rods/steel"
+    {
+      "tag": "c:ingots/uranium"
+    },
+    {
+      "tag": "c:ingots/uranium"
+    },
+    {
+      "tag": "c:ingots/uranium"
+    },
+    {
+      "tag": "c:rods/steel"
+    },
+    {
+      "tag": "c:rods/steel"
+    }
   ],
   "result": {
     "id": "groundburst:uranium_fuel_rod"

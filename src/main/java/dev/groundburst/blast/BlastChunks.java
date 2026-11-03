@@ -85,7 +85,7 @@ final class BlastChunks {
                 if (d[0] > this.outer || !disk && d[1] < r - BEHIND || d[0] > r + AHEAD) {
                     continue;
                 }
-                long key = ChunkPos.pack(cx, cz);
+                long key = ChunkPos.asLong(cx, cz);
                 net.minecraft.world.level.chunk.LevelChunk chunk = this.level.getChunkSource().getChunkNow(cx, cz);
                 boolean loaded = chunk != null;
                 if (loaded && this.measured.add(key)) {

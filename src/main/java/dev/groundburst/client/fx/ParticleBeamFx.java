@@ -21,9 +21,9 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -42,8 +42,8 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  */
 public final class ParticleBeamFx {
-    static final Identifier BEAM = GroundBurst.id("textures/fx/particle_beam.png");
-    static final Identifier FLARE = GroundBurst.id("textures/fx/particle_flare.png");
+    static final ResourceLocation BEAM = GroundBurst.id("textures/fx/particle_beam.png");
+    static final ResourceLocation FLARE = GroundBurst.id("textures/fx/particle_flare.png");
     /** The beams' colours: the white-hot core, the blue halo round it, the coil twisting down it. */
     private static final int CORE_RGB = 0xF2F6FF, HALO_RGB = 0x6E9CFF, COIL_RGB = 0xB4CCFF, FLARE_RGB = 0xE4EEFF;
     /** The glare's colour in the sky and fog round a beam. */
@@ -575,7 +575,7 @@ public final class ParticleBeamFx {
     }
 
     private static void vertex(VertexConsumer b, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color) {
-        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightCoordsUtil.FULL_BRIGHT)
+        b.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
                 .setNormal(pose, 0, 1, 0);
     }
 

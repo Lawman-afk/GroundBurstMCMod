@@ -29,7 +29,7 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
 
 /**
@@ -66,7 +66,7 @@ public final class GBJeiPlugin implements IModPlugin {
     }
 
     @Override
-    public Identifier getPluginUid() {
+    public ResourceLocation getPluginUid() {
         return GroundBurst.id("jei_plugin");
     }
 
@@ -249,12 +249,6 @@ public final class GBJeiPlugin implements IModPlugin {
         runtime.getIngredientManager().removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 dev.groundburst.content.ordnance.GBOrdnance.WARHEADS.stream().filter(w -> w.block().get().kind.wholeWeapon())
                         .map(w -> new net.minecraft.world.item.ItemStack(w.item().get())).toList());
-        dev.groundburst.client.fx.FxPhotographer.showAssemblyRecipes = () -> runtime.getRecipesGui().showTypes(List.of(AssemblyCategory.TYPE, MissileCategory.TYPE));
-        dev.groundburst.client.fx.FxPhotographer.showHallRecipes = () -> runtime.getRecipesGui().showTypes(List.of(StrategicCategory.TYPE));
-        dev.groundburst.client.fx.FxPhotographer.showSpecialRecipes = () -> runtime.getRecipesGui().showTypes(List.of(SpecialWeaponsCategory.TYPE));
-        dev.groundburst.client.fx.FxPhotographer.jeiFilter = text -> runtime.getIngredientFilter().setFilterText(text);
-        dev.groundburst.client.fx.FxPhotographer.jeiRecipesFor = stack -> runtime.getRecipesGui().show(runtime.getJeiHelpers().getFocusFactory()
-                .createFocus(mezz.jei.api.recipe.RecipeIngredientRole.OUTPUT, mezz.jei.api.constants.VanillaTypes.ITEM_STACK, stack));
     }
 
     @Override

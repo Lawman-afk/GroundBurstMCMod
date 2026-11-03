@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "#groundburst:basic_circuits",
-    "F": "groundburst:machine_frame",
-    "G": "minecraft:glass",
-    "K": "minecraft:cauldron",
-    "P": "#c:plates/copper",
-    "W": "#c:wires/gold"
+    "B": {
+      "tag": "groundburst:basic_circuits"
+    },
+    "F": {
+      "item": "groundburst:machine_frame"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "K": {
+      "item": "minecraft:cauldron"
+    },
+    "P": {
+      "tag": "c:plates/copper"
+    },
+    "W": {
+      "tag": "c:wires/gold"
+    }
   },
   "pattern": [
     "WGW",

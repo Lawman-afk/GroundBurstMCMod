@@ -1,7 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "R": "groundburst:steel_rod"
+    "R": {
+      "item": "groundburst:steel_rod"
+    }
   },
   "pattern": [
     "RRR",

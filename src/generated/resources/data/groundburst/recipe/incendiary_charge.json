@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:napalm_canister",
-    "groundburst:napalm_canister",
-    "groundburst:napalm_canister",
-    "#c:plates/steel"
+    {
+      "item": "groundburst:napalm_canister"
+    },
+    {
+      "item": "groundburst:napalm_canister"
+    },
+    {
+      "item": "groundburst:napalm_canister"
+    },
+    {
+      "tag": "c:plates/steel"
+    }
   ],
   "result": {
     "id": "groundburst:incendiary_charge"

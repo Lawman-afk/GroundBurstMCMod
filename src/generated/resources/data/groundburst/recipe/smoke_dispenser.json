@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:smoke_grenade",
-    "groundburst:smoke_grenade",
-    "groundburst:smoke_grenade",
-    "groundburst:smoke_grenade",
-    "#c:plates/steel",
-    "groundburst:basic_circuit"
+    {
+      "item": "groundburst:smoke_grenade"
+    },
+    {
+      "item": "groundburst:smoke_grenade"
+    },
+    {
+      "item": "groundburst:smoke_grenade"
+    },
+    {
+      "item": "groundburst:smoke_grenade"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:smoke_dispenser"

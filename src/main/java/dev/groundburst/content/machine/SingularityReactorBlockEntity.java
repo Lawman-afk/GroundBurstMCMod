@@ -5,8 +5,8 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import dev.groundburst.content.multiblock.GBMultiblocks;
 import dev.groundburst.content.multiblock.MultiblockController;
@@ -34,8 +34,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import dev.groundburst.port.ValueInput;
+import dev.groundburst.port.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 
@@ -246,7 +246,7 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
         level.playSound(null, centre.x, centre.y, centre.z, GBSounds.SINGULARITY_COLLAPSE.get(), SoundSource.BLOCKS, 3.0f, 1.0f);
         for (Player player : level.players()) {
             if (player.distanceToSqr(centre) < 48 * 48) {
-                player.sendOverlayMessage(Component.translatable(MachineText.COLLAPSE_MESSAGE).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE));
+                player.displayClientMessage(Component.translatable(MachineText.COLLAPSE_MESSAGE).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE), true);
             }
         }
     }
@@ -371,15 +371,15 @@ public class SingularityReactorBlockEntity extends MachineBlockEntity implements
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueOutput output = new ValueOutput(tag_, registries_);
+        super.saveAdditional(output.tag(), output.lookup());
         output.putBoolean("engaged", this.engaged);
         output.putInt("mass", this.mass);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) { ValueInput input = new ValueInput(tag_, registries_);
+        super.loadAdditional(input.tag(), input.lookup());
         this.engaged = input.getBooleanOr("engaged", false);
         this.mass = input.getIntOr("mass", 0);
     }

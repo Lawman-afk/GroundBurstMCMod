@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:plastic_explosive",
-    "#c:plates/steel",
-    "minecraft:string",
-    "minecraft:string",
-    "groundburst:basic_circuit"
+    {
+      "item": "groundburst:plastic_explosive"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    }
   ],
   "result": {
     "id": "groundburst:breaching_charge"

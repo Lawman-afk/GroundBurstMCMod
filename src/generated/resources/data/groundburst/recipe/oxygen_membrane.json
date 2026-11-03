@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "C": "minecraft:clay_ball",
-    "L": "minecraft:lapis_lazuli",
-    "R": "#c:rods/steel"
+    "C": {
+      "item": "minecraft:clay_ball"
+    },
+    "L": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "R": {
+      "tag": "c:rods/steel"
+    }
   },
   "pattern": [
     "RCR",

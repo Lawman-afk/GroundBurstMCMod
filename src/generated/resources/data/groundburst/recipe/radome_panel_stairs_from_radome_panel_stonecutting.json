@@ -1,6 +1,8 @@
 {
   "type": "minecraft:stonecutting",
-  "ingredient": "groundburst:radome_panel",
+  "ingredient": {
+    "item": "groundburst:radome_panel"
+  },
   "result": {
     "id": "groundburst:radome_panel_stairs"
   }

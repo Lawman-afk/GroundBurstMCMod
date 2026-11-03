@@ -84,7 +84,7 @@ public final class Meltdown {
     /** Drops molten corium down from {@code from} (at most {@code depth} blocks) onto the first solid floor. */
     private static void pour(ServerLevel level, BlockPos from, int depth, BlockState corium) {
         BlockPos.MutableBlockPos at = from.mutable();
-        for (int i = 0; i < depth && at.getY() > level.getMinY(); i++) {
+        for (int i = 0; i < depth && at.getY() > level.getMinBuildHeight(); i++) {
             BlockState below = level.getBlockState(at.below());
             if (!below.getFluidState().isEmpty()) {
                 return;                                    // it would sink: no corium on water

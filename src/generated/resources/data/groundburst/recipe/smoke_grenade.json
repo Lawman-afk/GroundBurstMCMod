@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:steel_plate",
-    "#c:dusts/saltpeter",
-    "#c:dusts/saltpeter",
-    "minecraft:charcoal"
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "tag": "c:dusts/saltpeter"
+    },
+    {
+      "tag": "c:dusts/saltpeter"
+    },
+    {
+      "item": "minecraft:charcoal"
+    }
   ],
   "result": {
     "count": 2,

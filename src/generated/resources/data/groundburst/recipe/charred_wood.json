@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "L": "groundburst:charred_log"
+    "L": {
+      "item": "groundburst:charred_log"
+    }
   },
   "pattern": [
     "LL",

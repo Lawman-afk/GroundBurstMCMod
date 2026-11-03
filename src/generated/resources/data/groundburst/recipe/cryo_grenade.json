@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:liquid_nitrogen_canister",
-    "#c:plates/steel",
-    "minecraft:iron_nugget",
-    "minecraft:iron_nugget",
-    "minecraft:snowball"
+    {
+      "item": "groundburst:liquid_nitrogen_canister"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:iron_nugget"
+    },
+    {
+      "item": "minecraft:iron_nugget"
+    },
+    {
+      "item": "minecraft:snowball"
+    }
   ],
   "result": {
     "count": 2,

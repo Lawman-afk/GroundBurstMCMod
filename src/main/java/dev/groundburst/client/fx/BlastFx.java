@@ -61,7 +61,7 @@ final class BlastFx {
         Vec3 c = start.center();
         BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos((int) Math.floor(c.x), 0, (int) Math.floor(c.z));
         int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, at.getX(), at.getZ());
-        this.ground = top > c.y + crater() || top <= level.getMinY() ? c.y - 0.5 : top;
+        this.ground = top > c.y + crater() || top <= level.getMinBuildHeight() ? c.y - 0.5 : top;
         at.setY((int) Math.floor(this.ground) - 1);
         this.earth = earthColor(level, at);
         // Where the crater's floor will be: under a burst at or near the ground the cloud's stem stands on it (the burst

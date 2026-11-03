@@ -1,7 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "T": "#c:plates/tungsten"
+    "T": {
+      "tag": "c:plates/tungsten"
+    }
   },
   "pattern": [
     "T T",

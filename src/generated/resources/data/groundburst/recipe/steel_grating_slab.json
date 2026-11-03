@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundburst:steel_grating"
+    "#": {
+      "item": "groundburst:steel_grating"
+    }
   },
   "pattern": [
     "###"

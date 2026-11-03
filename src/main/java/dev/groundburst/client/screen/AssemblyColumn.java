@@ -12,7 +12,7 @@ import dev.groundburst.content.assembly.SizeClass;
 import dev.groundburst.registry.GBDataComponents;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Util;

@@ -77,12 +77,12 @@ public final class Withering {
      * under them dies. Anything else (ground, a trunk, a roof) ends it: what is under it is spared.
      */
     public static void wither(ServerLevel level, int x, int z, int flags) {
-        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, level.getMinY(), z);
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos(x, level.getMinBuildHeight(), z);
         if (!level.isLoaded(at)) {
             return;
         }
         int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
-        for (int y = top; y > top - DEPTH && y >= level.getMinY(); y--) {
+        for (int y = top; y > top - DEPTH && y >= level.getMinBuildHeight(); y--) {
             at.setY(y);
             BlockState s = level.getBlockState(at);
             if (s.isAir() || s.is(GBFallout.DEAD_LEAVES.block().get()) || s.is(GBFallout.WITHERED_CROPS.block().get()) || s.is(Blocks.DEAD_BUSH)) {

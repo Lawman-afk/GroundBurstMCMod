@@ -40,7 +40,7 @@ public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRend
 
     @Override
     public void extractRenderState(ThrownExplosive entity, State state, float partialTicks) {
-        super.extractRenderState(entity, state, partialTicks);
+        super.render(entity.unwrap(), state, partialTicks);
         this.items.updateForNonLiving(state.item, entity.getItem(), ItemDisplayContext.GROUND, entity);
         Vec3 v = entity.getDeltaMovement();
         if (v.horizontalDistanceSqr() > 1e-4) {

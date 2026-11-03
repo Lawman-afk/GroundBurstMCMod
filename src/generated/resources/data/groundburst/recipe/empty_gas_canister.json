@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "minecraft:glass"
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "minecraft:glass"
+    }
   ],
   "result": {
     "id": "groundburst:empty_gas_canister"

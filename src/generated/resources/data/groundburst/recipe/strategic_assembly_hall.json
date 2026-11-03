@@ -2,15 +2,33 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:lead_lined_casing",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:military_circuit",
-    "groundburst:superconducting_coil",
-    "groundburst:superconducting_coil",
-    "groundburst:sensor_array",
-    "groundburst:tungsten_plate",
-    "groundburst:crt_display"
+    {
+      "item": "groundburst:lead_lined_casing"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:military_circuit"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:superconducting_coil"
+    },
+    {
+      "item": "groundburst:sensor_array"
+    },
+    {
+      "item": "groundburst:tungsten_plate"
+    },
+    {
+      "item": "groundburst:crt_display"
+    }
   ],
   "result": {
     "id": "groundburst:strategic_assembly_hall"

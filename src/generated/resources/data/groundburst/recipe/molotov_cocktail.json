@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:synthetic_fuel_canister",
-    "minecraft:glass_bottle",
-    "minecraft:glass_bottle",
-    "minecraft:string",
-    "minecraft:string"
+    {
+      "item": "groundburst:synthetic_fuel_canister"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "minecraft:string"
+    }
   ],
   "result": {
     "count": 2,

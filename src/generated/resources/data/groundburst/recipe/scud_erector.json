@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    "#c:rods/steel",
-    "#c:rods/steel",
-    "#c:plates/steel",
-    "#c:plates/steel",
-    "groundburst:pressure_vessel",
-    "groundburst:electric_motor"
+    {
+      "tag": "c:rods/steel"
+    },
+    {
+      "tag": "c:rods/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "tag": "c:plates/steel"
+    },
+    {
+      "item": "groundburst:pressure_vessel"
+    },
+    {
+      "item": "groundburst:electric_motor"
+    }
   ],
   "result": {
     "id": "groundburst:scud_erector"

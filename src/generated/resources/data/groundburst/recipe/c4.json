@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    "groundburst:plastic_explosive",
-    "groundburst:plastic_explosive",
-    "groundburst:basic_circuit",
-    "#c:wires/copper"
+    {
+      "item": "groundburst:plastic_explosive"
+    },
+    {
+      "item": "groundburst:plastic_explosive"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "tag": "c:wires/copper"
+    }
   ],
   "result": {
     "count": 2,

@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    "groundburst:steel_plate",
-    "groundburst:basic_circuit",
-    "minecraft:stone_button",
-    "minecraft:stone_button",
-    "minecraft:redstone"
+    {
+      "item": "groundburst:steel_plate"
+    },
+    {
+      "item": "groundburst:basic_circuit"
+    },
+    {
+      "item": "minecraft:stone_button"
+    },
+    {
+      "item": "minecraft:stone_button"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
   ],
   "result": {
     "id": "groundburst:alarm_panel"

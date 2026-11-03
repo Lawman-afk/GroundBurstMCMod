@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "groundburst:copper_cable",
-    "G": "#c:wires/gold",
-    "P": "groundburst:plastic_sheet"
+    "C": {
+      "item": "groundburst:copper_cable"
+    },
+    "G": {
+      "tag": "c:wires/gold"
+    },
+    "P": {
+      "item": "groundburst:plastic_sheet"
+    }
   },
   "pattern": [
     "CCC",

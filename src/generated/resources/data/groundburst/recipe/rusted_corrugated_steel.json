@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "#": "groundburst:corrugated_steel",
-    "W": "minecraft:water_bucket"
+    "#": {
+      "item": "groundburst:corrugated_steel"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    }
   },
   "pattern": [
     "###",

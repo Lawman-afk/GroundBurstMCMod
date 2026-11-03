@@ -95,11 +95,11 @@ public class MultiblockControllerBlock extends MachineBlock {
             }
             Component problem = controller.problem(level);
             if (problem != null) {
-                player.sendOverlayMessage(problem.copy().withStyle(ChatFormatting.YELLOW));
+                player.displayClientMessage(problem.copy().withStyle(ChatFormatting.YELLOW), true);
             } else {
                 List<MultiblockDefinition.Mismatch> wrong = controller.mismatches(level);
                 long missing = wrong.stream().filter(MultiblockDefinition.Mismatch::empty).count();
-                player.sendOverlayMessage(Component.translatable(STATUS, missing, wrong.size() - missing).withStyle(ChatFormatting.YELLOW));
+                player.displayClientMessage(Component.translatable(STATUS, missing, wrong.size() - missing).withStyle(ChatFormatting.YELLOW), true);
             }
         }
         return InteractionResult.SUCCESS_SERVER;
