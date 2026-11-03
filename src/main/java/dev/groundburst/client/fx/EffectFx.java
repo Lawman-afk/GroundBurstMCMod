@@ -21,7 +21,7 @@ final class EffectFx {
     private record Emp(Vec3 centre, float radius, double start, double end, boolean pulse) {}
 
     /** A storm strike's pulse: motes of electric blue. */
-    private static final net.minecraft.core.particles.DustParticleOptions PULSE = new net.minecraft.core.particles.DustParticleOptions(0x6FD2FF, 1.3f);
+    private static final net.minecraft.core.particles.DustParticleOptions PULSE = new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x6FD2FF).toVector3f(), 1.3f);
 
     private static List<GasPayloads.Cell> gas = List.of();
     private static double gasX, gasZ;

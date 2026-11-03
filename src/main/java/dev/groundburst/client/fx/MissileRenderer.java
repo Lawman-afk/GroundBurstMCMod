@@ -5,13 +5,13 @@ import com.mojang.math.Axis;
 
 import dev.groundburst.content.launch.GBLaunch;
 import dev.groundburst.content.launch.MissileEntity;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.EntityRenderState;
+import dev.groundburst.port.render.ItemModelResolver;
+import dev.groundburst.port.render.ItemStackRenderState;
+import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * entity's position, pointed along its flight: upright on the pad and climbing, tipping over the top of its arc, nose
  * down at the end. Lit full bright (the exhaust glares off it).
  */
-public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRenderer.State> {
+public class MissileRenderer extends dev.groundburst.port.render.StateEntityRenderer<MissileEntity, MissileRenderer.State> {
     /** The item model is 2 blocks tall; the missile is 6. */
     private static final float SCALE = 4;
     private static final int FULL_BRIGHT = 15728880;
@@ -42,7 +42,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
 
     public MissileRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.items = context.getItemModelResolver();
+        this.items = dev.groundburst.port.render.ItemModelResolver.INSTANCE;
     }
 
     @Override
@@ -52,28 +52,28 @@ public class MissileRenderer extends EntityRenderer<MissileEntity, MissileRender
 
     @Override
     public void extractRenderState(MissileEntity entity, State state, float partialTicks) {
-        super.render(entity.unwrap(), state, partialTicks);
+        super.extractRenderState(entity, state, partialTicks);
         // What is left of it, drawn by its own model (the one on its launcher, its spent stages gone).
         String id = entity.folded() ? dev.groundburst.content.assembly.MissileParts.folded(entity.look())
                 : dev.groundburst.content.assembly.MissileParts.flight(entity.look(), entity.dropped());
         ItemStack look = this.looks.computeIfAbsent(id, key -> {
             ItemStack s = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
             s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
-                    new net.minecraft.world.item.component.CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(key), java.util.List.of()));
+                    new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
             return s;
         });
         var shape = dev.groundburst.client.render.MissileShapes.get(entity.look());
         state.lift = shape == null ? 0.5f : shape.lift();          // (the plain missile with no warhead: its tail at its y 0)
         this.items.updateForNonLiving(state.item, look, ItemDisplayContext.NONE, entity);
-        state.yaw = entity.getYRot(partialTicks);
+        state.yaw = entity.getViewYRot(partialTicks);
         state.tilt = entity.tilt(partialTicks);
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
-        poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.rotate(Axis.XP.rotationDegrees(state.tilt));
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(state.tilt));
         poseStack.scale(SCALE, SCALE, SCALE);
         poseStack.translate(0, state.lift, 0);          // the item model is drawn about its middle; stand it on its tail
         state.item.submit(poseStack, collector, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);

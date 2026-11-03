@@ -108,6 +108,22 @@ IMPORTS = {
     "net.minecraft.world.entity.InsideBlockEffectApplier": None,
     "net.minecraft.world.item.component.TooltipDisplay": None,
     "net.minecraft.world.level.block.VegetationBlock": "net.minecraft.world.level.block.BushBlock",
+    # 26.x's render states and submit nodes: this branch's stand-ins over 1.21.1's direct rendering (dev.groundburst.port.render)
+    "net.minecraft.client.renderer.SubmitNodeCollector": "dev.groundburst.port.render.SubmitNodeCollector",
+    "net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState": "dev.groundburst.port.render.BlockEntityRenderState",
+    "net.minecraft.client.renderer.entity.state.EntityRenderState": "dev.groundburst.port.render.EntityRenderState",
+    "net.minecraft.client.renderer.feature.ModelFeatureRenderer": "dev.groundburst.port.render.ModelFeatureRenderer",
+    "net.minecraft.client.renderer.item.ItemModelResolver": "dev.groundburst.port.render.ItemModelResolver",
+    "net.minecraft.client.renderer.item.ItemStackRenderState": "dev.groundburst.port.render.ItemStackRenderState",
+    "net.minecraft.client.renderer.state.level.CameraRenderState": "dev.groundburst.port.render.CameraRenderState",
+    "net.minecraft.client.renderer.state.level.SkyRenderState": "dev.groundburst.port.render.SkyRenderState",
+    "net.minecraft.client.renderer.state.level.LevelRenderState": "dev.groundburst.port.render.LevelRenderState",
+    "net.minecraft.util.context.ContextKey": "dev.groundburst.port.ContextKey",
+    "net.minecraft.world.level.saveddata.SavedDataType": "dev.groundburst.port.SavedDataType",
+    "net.minecraft.client.input.MouseButtonEvent": "dev.groundburst.port.input.MouseButtonEvent",
+    "net.minecraft.client.input.KeyEvent": "dev.groundburst.port.input.KeyEvent",
+    "net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent": "dev.groundburst.port.render.ExtractLevelRenderStateEvent",
+    "net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent": "dev.groundburst.port.render.SubmitCustomGeometryEvent",
     # GeckoLib 5 -> 4
     "com.geckolib.animatable.manager.AnimatableManager": "software.bernie.geckolib.animation.AnimatableManager",
     "com.geckolib.cache.model.GeoBone": "software.bernie.geckolib.cache.object.GeoBone",
@@ -120,6 +136,9 @@ RULES = [
     sub(r"\bcom\.geckolib\.", "software.bernie.geckolib."),
     sub(r"\bsoftware\.bernie\.geckolib\.cache\.model\.", "software.bernie.geckolib.cache.object."),
     sub(r"\bsoftware\.bernie\.geckolib\.animatable\.manager\.AnimatableManager\b", "software.bernie.geckolib.animation.AnimatableManager"),
+    # GeckoLib 4's controllers are given their animatable, and their handlers its state.
+    sub(r"\bnew AnimationController<(\w*)>\(\"", r'new AnimationController<\1>(this, "'),
+    sub(r"\btest\.animatable\(\)", "test.getAnimatable()"),
     sub(r"\bEntityTypes\.", "EntityType."),
     sub(r"\bRenderTypes\.", "RenderType."),
     sub(r"\bLightCoordsUtil\.", "LightTexture."),
@@ -142,6 +161,16 @@ RULES = [
     sub(r"\.gui\.screen\(\)", ".screen"),
     sub(r"\.gui\.setScreen\(", ".setScreen("),
     sub(r"\.mainCamera\(\)", ".getMainCamera()"),
+    sub(r"\.getMainCamera\(\)\.position\(\)", ".getMainCamera().getPosition()"),
+    sub(r"\bget([XY])Rot\((\w+)\)", r"getView\1Rot(\2)"),
+    # Renderers: 26.x's take a state and submit it; the stand-in bases do both in 1.21.1's render call.
+    sub(r"\bextends EntityRenderer<(\w+), ([\w.]+)>", r"extends dev.groundburst.port.render.StateEntityRenderer<\1, \2>"),
+    sub(r"\bimplements BlockEntityRenderer<([^<>{]+(?:<[^<>{]*>)?[^<>{]*),\s*([\w.]+)>", r"extends dev.groundburst.port.render.StateBlockEntityRenderer<\1, \2>"),
+    sub(r"\bBlockEntityRenderer\.super\.", "super."),
+    sub(r"\b[\w.]*(?:\(\))?\.getItemModelResolver\(\)", "dev.groundburst.port.render.ItemModelResolver.INSTANCE"),
+    # The pose stack turns by quaternions in both; 26.x's rotate is 1.21.1's mulPose.
+    sub(r"\.rotate\(((?:com\.mojang\.math\.)?Axis\.|new (?:org\.joml\.)?Quaternionf)", r".mulPose(\1"),
+    sub(r"\.rotateDegrees\(((?:[^,()]|\([^()]*\))+),\s*((?:[^()]|\([^()]*\))+)\)", r".mulPose(\1.rotationDegrees(\2))"),
     sub(r"\.damageCooldownTime\b", ".invulnerableTime"),
     sub(r"\bInteractionResult\.SUCCESS_SERVER\b", "InteractionResult.SUCCESS"),
     sub(r"\.getUnitVec3i\(\)", ".getNormal()"),
@@ -153,8 +182,13 @@ RULES = [
         r"\1hurt(DamageSource \3, float \4)\5 if (!(this.level() instanceof ServerLevel \2)) return false;"),
     sub(r"\bsuper\.hurtServer\(\w+, ", "super.hurt("),
     sub(r"\.hurtServer\((?:[^,()]|\([^()]*\))+, ", ".hurt("),
+    # A missile's look: a string in 26.x's custom model data, a number in 1.21.1's (dev.groundburst.port.Looks).
+    sub(r"\bnew (?:net\.minecraft\.world\.item\.component\.)?CustomModelData\(\s*(?:java\.util\.)?List\.of\(\),\s*(?:java\.util\.)?List\.of\(\),\s*"
+        r"(?:java\.util\.)?List\.of\(((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\),\s*(?:java\.util\.)?List\.of\(\)\)",
+        r"new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(\1))"),
     # Dust takes its colour as a vector in 1.21.1.
-    sub(r"\bnew DustParticleOptions\(((?:[^,()]|\([^()]*\))+), ", r"new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(\1).toVector3f(), "),
+    sub(r"\bnew (?:net\.minecraft\.core\.particles\.)?DustParticleOptions\(((?:[^,()]|\([^()]*\))+), ",
+        r"new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(\1).toVector3f(), "),
     # Items and blocks name their own registry key in 26.x (Properties.setId); 1.21.1 has no such step.
     sub(r"\.setId\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)", ""),
     # --- saving: main's ValueOutput / ValueInput over 1.21.1's CompoundTag (dev.groundburst.port) -----------------------
@@ -173,13 +207,29 @@ RULES = [
     # --- screens: 26.x extracts what a screen draws, 1.21.1 renders it (the graphics wrapped: GuiGraphicsExtractor) --------
     sub(r"(\bpublic void )extractRenderState\(GuiGraphicsExtractor (\w+), (int \w+, int \w+, float \w+)\)(\s*\{)",
         r"\1render(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractRenderState\((\w+), ", r"super.render(\1.unwrap(), "),
+    sub(r"\bsuper\.extractRenderState\((\w+), (\w+, \w+, \w+)\)", r"super.render(\1.unwrap(), \2)"),
     sub(r"(\bpublic void )extractBackground\(GuiGraphicsExtractor (\w+), (int \w+, int \w+, float \w+)\)(\s*\{)",
         r"\1renderBackground(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractBackground\((\w+), ", r"super.renderBackground(\1.unwrap(), "),
+    sub(r"\bsuper\.extractBackground\((\w+), (\w+, \w+, \w+)\)", r"super.renderBackground(\1.unwrap(), \2)"),
     sub(r"(\bprotected void )extractLabels\(GuiGraphicsExtractor (\w+), (int \w+, int \w+)\)(\s*\{)",
         r"\1renderLabels(net.minecraft.client.gui.GuiGraphics gg_, \3)\4 GuiGraphicsExtractor \2 = new GuiGraphicsExtractor(gg_);"),
-    sub(r"\bsuper\.extractLabels\((\w+), ", r"super.renderLabels(\1.unwrap(), "),
+    sub(r"\bsuper\.extractLabels\((\w+), (\w+, \w+)\)", r"super.renderLabels(\1.unwrap(), \2)"),
+    # Saved data: 26.x's storage takes the type; the stand-in builds 1.21.1's factory with the level (dev.groundburst.port).
+    sub(r"((?:\w|\.|\(\))+)\.getDataStorage\(\)\.computeIfAbsent\((\w+)\)", r"\2.get(\1)"),
+    sub(r"((?:\w|\.|\(\))+)\.getDataStorage\(\)\.get\((\w+)\)", r"\2.find(\1)"),
+    # Screens' input: 26.x hands an event, 1.21.1 the position and button (or key); the event made from them.
+    sub(r"(\bpublic boolean )mouseClicked\(MouseButtonEvent (\w+), boolean (\w+)\)(\s*\{)",
+        r"\1mouseClicked(double mouseX_, double mouseY_, int button_)\4 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean \3 = false;"),
+    sub(r"\bsuper\.mouseClicked\((\w+), \w+\)", r"super.mouseClicked(\1.x(), \1.y(), \1.button())"),
+    sub(r"(\bpublic boolean )mouseReleased\(MouseButtonEvent (\w+)\)(\s*\{)",
+        r"\1mouseReleased(double mouseX_, double mouseY_, int button_)\3 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_);"),
+    sub(r"\bsuper\.mouseReleased\((\w+)\)", r"super.mouseReleased(\1.x(), \1.y(), \1.button())"),
+    sub(r"(\bpublic boolean )mouseDragged\(MouseButtonEvent (\w+), double (\w+), double (\w+)\)(\s*\{)",
+        r"\1mouseDragged(double mouseX_, double mouseY_, int button_, double \3, double \4)\5 MouseButtonEvent \2 = new MouseButtonEvent(mouseX_, mouseY_, button_);"),
+    sub(r"\bsuper\.mouseDragged\((\w+), (\w+), (\w+)\)", r"super.mouseDragged(\1.x(), \1.y(), \1.button(), \2, \3)"),
+    sub(r"(\bpublic boolean )keyPressed\(KeyEvent (\w+)\)(\s*\{)",
+        r"\1keyPressed(int key_, int scancode_, int modifiers_)\3 KeyEvent \2 = new KeyEvent(key_, scancode_, modifiers_);"),
+    sub(r"\bsuper\.keyPressed\((\w+)\)", r"super.keyPressed(\1.key(), \1.scancode(), \1.modifiers())"),
     # 1.21.1's container screens draw their panel in renderBg, called from renderBackground (which main's code overrides).
     sub(r"(\bclass \w+(?:<[^{]*?>)? extends AbstractContainerScreen<[^{]*\{)",
         r"\1\n    @Override\n    protected void renderBg(net.minecraft.client.gui.GuiGraphics gg_, float partial_, int mouseX_, int mouseY_) {}\n"),
@@ -338,7 +388,17 @@ def pre_remove(text: str) -> str:
     return text[:end] + hook + text[end:]
 
 
-FUNCTIONS = [block_codecs, pre_remove]
+def saved_data(text: str) -> str:
+    """1.21.1's saved data saves itself (26.x's is saved by its type's codec): it does so through its TYPE."""
+    if not re.search(r"\bextends SavedData\b", text) or re.search(r"\bCompoundTag save\(", text):
+        return text
+    end = text.rstrip().rfind("}")
+    hook = ("\n    @Override\n    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {\n"
+            "        return TYPE.save(this, tag_, registries_);\n    }\n")
+    return text[:end] + hook + text[end:]
+
+
+FUNCTIONS = [block_codecs, pre_remove, saved_data]
 
 
 def port_imports(text: str) -> str:
@@ -389,6 +449,10 @@ def after(anchor: str, insert: str):
 
 
 FILE_FIXES: dict[str, list] = {
+    "src/main/java/dev/groundburst/GroundBurstClient.java": [
+        after("container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);",
+              "\n        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's"),
+    ],
     "src/main/java/dev/groundburst/GroundBurst.java": [
         after("modBus.addListener(GBBlockEntities::registerCapabilities);",
               "\n        dev.groundburst.port.transfer.Capabilities.register(modBus);   // the bridge to 1.21.1's handlers"),
@@ -454,11 +518,62 @@ def port_file(path: str) -> tuple[str, bytes] | None:
     return path, data
 
 
+def sync(new: str) -> None:
+    """Brings this branch up to main's commit {new} from the one in base.txt: each file main changed since is ported again;
+    one edited by hand here (manual.txt) gets main's change merged into it (a three-way merge of ported text: the old
+    port, the new port, and the file as it is here), conflicts left marked for a person; a file main deleted goes."""
+    global BASE
+    old = BASE
+    new = git("rev-parse", new).decode("utf-8").strip()
+    changes = git("diff", "--name-status", "--no-renames", old, new).decode("utf-8").splitlines()
+    conflicts = []
+    for line in changes:
+        status, path = line.split("\t", 1)
+        if status.startswith("D"):
+            BASE = old
+            out = port_file(path)
+            if out is not None and (ROOT / out[0]).exists() and out[0] not in MANUAL:
+                (ROOT / out[0]).unlink()
+            continue
+        BASE = new
+        out_new = port_file(path)
+        if out_new is None:
+            continue
+        dest, data_new = out_new
+        target = ROOT / dest
+        if dest in MANUAL and target.exists():
+            BASE = old
+            try:
+                out_old = port_file(path)
+            except FileNotFoundError:
+                out_old = None
+            base_file = ROOT / "build" / "port-merge" / (dest + ".base")
+            theirs_file = ROOT / "build" / "port-merge" / (dest + ".main")
+            base_file.parent.mkdir(parents=True, exist_ok=True)
+            base_file.write_bytes(checkout_eol(dest, out_old[1]) if out_old else b"")
+            theirs_file.write_bytes(checkout_eol(dest, data_new))
+            r = subprocess.run(["git", "merge-file", "-L", "here", "-L", "port of old main", "-L", "port of new main",
+                                str(target), str(base_file), str(theirs_file)], capture_output=True)
+            if r.returncode != 0:
+                conflicts.append(dest)
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(checkout_eol(dest, data_new))
+    BASE = new
+    (HERE / "base.txt").write_text(f"{new}   main's commit this branch is brought up to (docs/BACKPORT.md)\n", encoding="utf-8")
+    print(f"{len(changes)} of main's files changed since {old[:8]}; now at {new[:8]}")
+    for c in conflicts:
+        print("  conflict to resolve by hand:", c)
+
+
 def main() -> None:
     args = sys.argv[1:]
     if args and args[0] == "--show":
         out = port_file(args[1])
         sys.stdout.write("(dropped)\n" if out is None else out[1].decode("utf-8"))
+        return
+    if args and args[0] == "--sync":
+        sync(args[1] if len(args) > 1 else "main")
         return
     files = args or main_files()
     written = kept = dropped = 0

@@ -32,7 +32,7 @@ public class ToxicSludgeBlock extends Block {
     /** Ticks a stage lasts (plus up to 10 s more, so a splash dries out unevenly). */
     public static final int STAGE_TICKS = 600;
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 1, 16);
-    private static final DustParticleOptions FUME = new DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x9CE84C).toVector3f(), 1.2f);
+    private static final DustParticleOptions FUME = new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x9CE84C).toVector3f(), 1.2f);
 
     public ToxicSludgeBlock(Properties properties) {
         super(properties);

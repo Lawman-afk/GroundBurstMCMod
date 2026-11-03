@@ -445,7 +445,7 @@ public class ThrownExplosive extends Projectile implements ItemSupplier {
             }
         }
         float spread = radius * 0.4f;
-        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0x8CE040, 1.6f), at.x, at.y + 0.3, at.z, (int) (60 * spread / 1.4f),
+        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(net.minecraft.world.phys.Vec3.fromRGB24(0x8CE040).toVector3f(), 1.6f), at.x, at.y + 0.3, at.z, (int) (60 * spread / 1.4f),
                 spread, 0.3, spread, 0.05);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME, at.x, at.y + 0.3, at.z, (int) (30 * spread / 1.4f),
                 spread * 0.6, 0.3, spread * 0.6, 0.2);

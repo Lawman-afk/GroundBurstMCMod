@@ -9,12 +9,12 @@ import dev.groundburst.content.ordnance.charge.ChargeBlock;
 import dev.groundburst.content.ordnance.charge.ChargeBlockEntity;
 import dev.groundburst.content.ordnance.charge.ChargeKind;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.BlockEntityRenderState;
+import dev.groundburst.port.render.ModelFeatureRenderer;
+import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
  * What the charges draw beyond their models (DESIGN.md §14): the timed bomb's clock face (the time left in glowing red
  * digits while it counts down, its set time in dim green otherwise), and an armed claymore's red laser tripwire.
  */
-public class ChargeRenderer implements BlockEntityRenderer<ChargeBlockEntity, ChargeRenderer.State> {
+public class ChargeRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<ChargeBlockEntity, ChargeRenderer.State> {
     /** The display's face, 2.4 px in from the block's front, and its middle 4 px up (see tools/assets/charges.py). */
     private static final float FACE = 0.5f - 2.4f / 16f + 0.003f, MIDDLE_Y = 4f / 16f, SCALE = 0.016f;
     private static final int LIT = 15728880;
@@ -53,7 +53,7 @@ public class ChargeRenderer implements BlockEntityRenderer<ChargeBlockEntity, Ch
     @Override
     public void extractRenderState(ChargeBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
+        super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
         state.text = null;
         state.laserFrom = null;
         if (be.kind() == ChargeKind.CLAYMORE && be.armed() && be.getLevel() != null) {
@@ -86,7 +86,7 @@ public class ChargeRenderer implements BlockEntityRenderer<ChargeBlockEntity, Ch
         poseStack.pushPose();
         poseStack.translate(0.5, MIDDLE_Y, 0.5);
         // Text faces +z (south, yaw 0); turn it to face the way the bomb does (Minecraft's yaw runs clockwise).
-        poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
         poseStack.translate(0, 0, FACE);
         poseStack.scale(SCALE, -SCALE, SCALE);
         var line = Component.literal(state.text).getVisualOrderText();

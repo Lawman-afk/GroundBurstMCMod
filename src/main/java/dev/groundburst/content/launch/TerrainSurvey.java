@@ -22,7 +22,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import dev.groundburst.port.SavedDataType;
 
 /**
  * The ground round the Launch Computers as a map (DESIGN.md §17.3): for every chunk loaded within {@link #RANGE} blocks
@@ -83,7 +83,7 @@ public final class TerrainSurvey extends SavedData {
     private TerrainSurvey() {}
 
     public static TerrainSurvey of(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return TYPE.get(level);
     }
 
     private static boolean inRange(ServerLevel level, long chunk) {
@@ -224,5 +224,10 @@ public final class TerrainSurvey extends SavedData {
             }
         }
         return out;
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+        return TYPE.save(this, tag_, registries_);
     }
 }

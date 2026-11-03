@@ -5,14 +5,14 @@ import org.joml.Vector3f;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import dev.groundburst.content.ordnance.Shrapnel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.EntityRenderState;
+import dev.groundburst.port.render.CameraRenderState;
 
 /** A shrapnel fragment as a short glowing streak along its flight, turned to face the camera (an additive spark). */
-public class ShrapnelRenderer extends EntityRenderer<Shrapnel, ShrapnelRenderer.State> {
+public class ShrapnelRenderer extends dev.groundburst.port.render.StateEntityRenderer<Shrapnel, ShrapnelRenderer.State> {
     public static class State extends EntityRenderState {
         public float vx, vy, vz;
     }
@@ -28,7 +28,7 @@ public class ShrapnelRenderer extends EntityRenderer<Shrapnel, ShrapnelRenderer.
 
     @Override
     public void extractRenderState(Shrapnel entity, State state, float partialTicks) {
-        super.render(entity.unwrap(), state, partialTicks);
+        super.extractRenderState(entity, state, partialTicks);
         state.vx = (float) entity.getDeltaMovement().x;
         state.vy = (float) entity.getDeltaMovement().y;
         state.vz = (float) entity.getDeltaMovement().z;

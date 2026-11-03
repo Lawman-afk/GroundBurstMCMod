@@ -16,15 +16,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import dev.groundburst.port.render.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The far ground's map (DESIGN.md §20.1): where a gun reaches further than its crewman's game has loaded, its strategic
- * view asks the server for the ground round its aim, a tile at a time ({@link ArtilleryPayloads#TILE} blocks square,
- * sampled every {@link ArtilleryPayloads#STEP}), and draws it as solid ground where nothing else is: each sample a
- * column top in its map colour, its sides where the ground steps. Seen from above it reads as the land is, if not as a
- * loaded world does (no mobs, no block detail). The aim's height over it comes from it too.
+ * The far ground's map (DESIGN.md §20.1): where a gun reaches further than its crewman's game draws, its strategic view
+ * asks the server for the ground round its aim, a tile at a time ({@link ArtilleryPayloads#TILE} blocks square, sampled
+ * every {@link ArtilleryPayloads#STEP}), and draws it as solid ground where the game draws none: each sample a column top
+ * in its map colour, its sides where the ground steps. That is wherever the game has not loaded the ground, and also the
+ * outer ring of what it has, which it never draws (a chunk is drawn once its neighbours are in), nor any loaded ground
+ * beyond its render distance from the camera. Seen from above it reads as the land is, if not as a loaded world does (no
+ * mobs, no block detail). The aim's height over it comes from it too.
  */
 final class ArtilleryTerrain {
     private static final int T = ArtilleryPayloads.TILE, S = ArtilleryPayloads.STEP, N = ArtilleryPayloads.SAMPLES;
@@ -50,13 +52,29 @@ final class ArtilleryTerrain {
         ArtilleryPayloads.terrainHook = t -> {
             long key = key(t.ox(), t.oz());
             var mc = Minecraft.getInstance();
-            TILES.put(key, new Tile(t.ox(), t.oz(), t.heights(), t.colours(), mc.level == null ? 0 : mc.level.getGameTime()));
+            TILES.put(key, new Tile(t.ox(), t.oz(), t.heights(), soften(t.colours()), mc.level == null ? 0 : mc.level.getGameTime()));
             ASKED.remove(key);
             if (TILES.size() > KEEP) {
                 Vec3 c = ArtilleryClient.cursor();
                 TILES.keySet().stream().max(java.util.Comparator.comparingDouble(k -> dist(TILES.get(k), c))).ifPresent(TILES::remove);
             }
         };
+    }
+
+    /**
+     * Map colours are a map's vivid palette: softened toward the ground as the game draws it (a quarter of the way to grey,
+     * a little darker), so the map meets the near ground without a seam of brighter colour (sand: 240,229,167 against
+     * 219,212,173 drawn; softened, 222,214,171).
+     */
+    private static int[] soften(int[] colours) {
+        int[] out = new int[colours.length];
+        for (int i = 0; i < colours.length; i++) {
+            int c = colours[i];
+            float r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255, l = 0.299f * r + 0.587f * g + 0.114f * b;
+            out[i] = Math.round((r + (l - r) * 0.25f) * 0.94f) << 16 | Math.round((g + (l - g) * 0.25f) * 0.94f) << 8
+                    | Math.round((b + (l - b) * 0.25f) * 0.94f);
+        }
+        return out;
     }
 
     static void clear() {
@@ -95,7 +113,7 @@ final class ArtilleryTerrain {
         double nearest = Double.MAX_VALUE;
         for (int x = Math.floorDiv(Mth.floor(c.x) - AROUND, T) * T; x <= c.x + AROUND; x += T) {
             for (int z = Math.floorDiv(Mth.floor(c.z) - AROUND, T) * T; z <= c.z + AROUND; z += T) {
-                if (Math.hypot(x + T / 2.0 - base.x, z + T / 2.0 - base.z) > gun.spec.maxRange() + T || loaded(mc.level, x, z)) {
+                if (Math.hypot(x + T / 2.0 - base.x, z + T / 2.0 - base.z) > gun.spec.maxRange() + T || allDrawn(mc, x, z)) {
                     continue;
                 }
                 long key = key(x, z);
@@ -117,30 +135,68 @@ final class ArtilleryTerrain {
         }
     }
 
-    /** Whether the game has all of a tile's chunks loaded (its corners and middle, as a cheap test). */
-    private static boolean loaded(ClientLevel level, int ox, int oz) {
-        for (int[] p : new int[][] {{0, 0}, {T - 1, 0}, {0, T - 1}, {T - 1, T - 1}, {T / 2, T / 2}}) {
-            if (!level.isLoaded(new BlockPos(ox + p[0], level.getMinBuildHeight(), oz + p[1]))) {
-                return false;
+    /** Chunks along a tile's side. */
+    private static final int CHUNKS = T / 16;
+
+    /**
+     * Whether the game draws the ground at (x, z): its chunk loaded and the section holding its surface built and on
+     * show (the renderer's own test; false for the loaded ring it never draws, and for anything past its reach).
+     */
+    private static boolean drawn(Minecraft mc, int x, int z, int surfaceY) {
+        ClientLevel level = mc.level;
+        if (level == null || !level.isLoaded(new BlockPos(x, level.getMinBuildHeight(), z))) {
+            return false;
+        }
+        int y = surfaceY == Integer.MIN_VALUE ? level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z) : surfaceY;
+        return mc.levelRenderer.isSectionCompiledAndVisible(new BlockPos(x, Math.max(level.getMinBuildHeight(), y - 1), z), 0);
+    }
+
+    /** Whether the game draws all of a tile's ground (each chunk's middle), so it needs no map. */
+    private static boolean allDrawn(Minecraft mc, int ox, int oz) {
+        for (int i = 0; i < CHUNKS; i++) {
+            for (int j = 0; j < CHUNKS; j++) {
+                if (!drawn(mc, ox + i * 16 + 8, oz + j * 16 + 8, Integer.MIN_VALUE)) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    /** The mapped tiles drawn as solid ground where the game has none of its own. */
+    /** Which of a tile's chunks the game draws this frame (tested once a chunk, at its middle's mapped height). */
+    private static boolean[] drawnChunks(Minecraft mc, Tile t) {
+        boolean[] out = new boolean[CHUNKS * CHUNKS];
+        int per = 16 / S;
+        for (int i = 0; i < CHUNKS; i++) {
+            for (int j = 0; j < CHUNKS; j++) {
+                short h = t.heights()[Math.min(N - 1, j * per + per / 2) * N + Math.min(N - 1, i * per + per / 2)];
+                out[j * CHUNKS + i] = drawn(mc, t.ox() + i * 16 + 8, t.oz() + j * 16 + 8, h == ArtilleryPayloads.UNKNOWN ? Integer.MIN_VALUE : h);
+            }
+        }
+        return out;
+    }
+
+    /** The mapped tiles drawn as solid ground where the game draws none of its own. */
     static void submit(SubmitCustomGeometryEvent event, ClientLevel level, Vec3 camera) {
         if (TILES.isEmpty()) {
             return;
         }
+        Minecraft mc = Minecraft.getInstance();
+        int per = 16 / S;
         event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderType.entitySolid(ArtilleryClient.RETICLE), (pose, b) -> {
             for (Tile t : TILES.values()) {
-                if (loaded(level, t.ox(), t.oz())) {
+                boolean[] shown = drawnChunks(mc, t);
+                boolean all = true;
+                for (boolean d : shown) {
+                    all &= d;
+                }
+                if (all) {
                     continue;
                 }
                 for (int j = 0; j < N; j++) {
                     for (int i = 0; i < N; i++) {
                         int x = t.ox() + i * S, z = t.oz() + j * S;
-                        if (level.isLoaded(new BlockPos(x, level.getMinBuildHeight(), z))) {
+                        if (shown[(j / per) * CHUNKS + i / per]) {
                             continue;
                         }
                         short h = t.heights()[j * N + i];
@@ -182,9 +238,9 @@ final class ArtilleryTerrain {
         }
         int dark = darker(col);
         v(b, pose, x0, h, z0, camera, dark, nx, 0, nz);
-        v(b, pose, x0, low, z0, camera, dark, nx, 0, nz);
-        v(b, pose, x1, low, z1, camera, dark, nx, 0, nz);
         v(b, pose, x1, h, z1, camera, dark, nx, 0, nz);
+        v(b, pose, x1, low, z1, camera, dark, nx, 0, nz);
+        v(b, pose, x0, low, z0, camera, dark, nx, 0, nz);
     }
 
     private static int darker(int col) {

@@ -16,8 +16,8 @@ import dev.groundburst.content.manual.ManualStrings;
 import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.KeyEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -356,7 +356,7 @@ public class FieldManualScreen extends Screen {
 
     // --- input ---------------------------------------------------------------------------------------------------------
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         double mx = event.x(), my = event.y();
         if (clickBookmarks(mx, my, event.button())) {
             return true;
@@ -393,11 +393,11 @@ public class FieldManualScreen extends Screen {
             back();
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(event.x(), event.y(), event.button());
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+    public boolean mouseDragged(double mouseX_, double mouseY_, int button_, double dx, double dy) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
         int s = this.view.spread();
         for (int side = 0; side < 2; side++) {
             int i = s * 2 + side;
@@ -405,17 +405,17 @@ public class FieldManualScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseDragged(event, dx, dy);
+        return super.mouseDragged(event.x(), event.y(), event.button(), dx, dy);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
+    public boolean mouseReleased(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
         for (ManualPages.Page p : this.pages) {
             if (p instanceof ManualPages.FlowPage fp) {
                 fp.release();
             }
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(event.x(), event.y(), event.button());
     }
 
     @Override
@@ -428,7 +428,7 @@ public class FieldManualScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(int key_, int scancode_, int modifiers_) { KeyEvent event = new KeyEvent(key_, scancode_, modifiers_);
         boolean typing = this.search != null && this.search.isFocused() && this.search.visible;
         if (!typing) {
             switch (event.key()) {
@@ -455,7 +455,7 @@ public class FieldManualScreen extends Screen {
                 }
             }
         }
-        return super.keyPressed(event);
+        return super.keyPressed(event.key(), event.scancode(), event.modifiers());
     }
 
     private boolean in(double mx, double my, int x, int y, int w, int h) {

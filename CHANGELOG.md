@@ -14,8 +14,8 @@ nuclear shell 1,500 blocks.
   20 degrees either side, on the high arc where it can and on a flatter, faster low arc where it cannot, and fires
   **HE**, **incendiary** and the **nuclear shell**: a tactical nuclear burst wherever it lands, made from a Tactical
   Fission Core. Fifteen seconds to load.
-- Both are crewed and aimed as the mortar is. Far ground the game has not loaded is drawn in the strategic view from the
-  gun's own map of it, so you can see what you are aiming at a kilometre away.
+- Both are crewed and aimed as the mortar is. Ground too far off for the game to draw is filled in, in the strategic
+  view, from the gun's own map of it, so you can see what you are aiming at a kilometre away.
 - Each has its own firing sound, from recordings of real guns.
 
 ### Changes
@@ -24,6 +24,8 @@ nuclear shell 1,500 blocks.
 - The aim no longer jumps to far-off ranges as the gun is laid: the circle **slides over the ground** toward your aim
   at the gun's own pace, from wherever it was, even when the gun changes its propellant charge on the way.
 - A gun manned beside a wall or under a roof starts aimed within its range instead of jumping out to it.
+- Shells now **scatter over the aiming circle at every range**: a shot landing on ground the server had not loaded (most
+  long shots, every Atomic Cannon shot) went out unscattered and came down dead on the aim.
 
 ## 0.6.0 — 2026-11-02
 

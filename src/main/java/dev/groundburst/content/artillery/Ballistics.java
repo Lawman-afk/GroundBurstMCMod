@@ -87,6 +87,15 @@ public final class Ballistics {
     }
 
     /**
+     * The flight from {@code from} with launch velocity {@code u} worked out to {@code at} (on its curve, or near it), as if
+     * it came down there: for ground not loaded, where {@link #fall} cannot trace it.
+     */
+    public static Fall flightTo(Vec3 from, Vec3 u, Vec3 at) {
+        double hs = Math.hypot(u.x, u.z), t = hs < 1e-6 ? 0 : Math.hypot(at.x - from.x, at.z - from.z) / hs;
+        return new Fall(at, t, velocityAt(u, t));
+    }
+
+    /**
      * Follows the curve from {@code from} (launch velocity {@code u}) tick by tick for up to {@code maxTicks}: where it
      * first meets a block or fluid. Null if it never does, or reaches ground that is not loaded first.
      */

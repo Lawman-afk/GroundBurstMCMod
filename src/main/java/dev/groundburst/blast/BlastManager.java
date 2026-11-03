@@ -16,7 +16,7 @@ import dev.groundburst.config.GBServerConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import dev.groundburst.port.SavedDataType;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -68,7 +68,7 @@ public final class BlastManager extends SavedData {
     }
 
     public static BlastManager of(ServerLevel level) {
-        return BY_LEVEL.computeIfAbsent(level, l -> l.getDataStorage().computeIfAbsent(TYPE));
+        return BY_LEVEL.computeIfAbsent(level, l -> TYPE.get(l));
     }
 
     /** Start of a server tick: a fresh budget. */
@@ -198,5 +198,10 @@ public final class BlastManager extends SavedData {
         if (this.level != null) {
             PacketDistributor.sendToPlayersInDimension(this.level, payload);
         }
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+        return TYPE.save(this, tag_, registries_);
     }
 }

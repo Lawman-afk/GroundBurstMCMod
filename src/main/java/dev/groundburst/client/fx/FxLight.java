@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4fc;
 
-import net.minecraft.client.renderer.state.level.SkyRenderState;
+import dev.groundburst.port.render.SkyRenderState;
 
 /**
  * How the sky lights smoke this frame (DESIGN.md §12.2): smoke, dust and cloud puffs are drawn unlit with a colour

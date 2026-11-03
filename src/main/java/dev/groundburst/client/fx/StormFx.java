@@ -17,7 +17,7 @@ import dev.groundburst.registry.GBSounds;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -198,7 +198,7 @@ public final class StormFx {
             channel(segments, new Vec3(c[i], c[i + 1], c[i + 2]), new Vec3(c[i + 3], c[i + 4], c[i + 5]), 0.14f, r, 0, 0.08, -1);
         }
         BOLTS.add(new Bolt(segments, now, STRIKE_COLOR));
-        Vec3 eye = mc.gameRenderer.getMainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         double d = eye.distanceTo(foot);
         THUNDER.add(new Thunder(now + d / SOUND_SPEED, foot, d < NEAR, false));
         if (d < 400) {
@@ -485,7 +485,7 @@ public final class StormFx {
                 stop();
                 return;
             }
-            float k = this.cell.intensity(now) * this.cell.closeness(mc.gameRenderer.getMainCamera().position());
+            float k = this.cell.intensity(now) * this.cell.closeness(mc.gameRenderer.getMainCamera().getPosition());
             this.volume = Math.max(0.01f, 2.2f * k);
             this.pitch = 0.85f + 0.25f * this.cell.intensity(now);
         }

@@ -12,7 +12,7 @@ import dev.groundburst.content.radiation.RadiationSource;
 import dev.groundburst.content.radiation.RadiationSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 

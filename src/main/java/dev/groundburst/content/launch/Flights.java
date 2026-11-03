@@ -30,7 +30,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import dev.groundburst.port.SavedDataType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -94,7 +94,7 @@ public final class Flights extends SavedData {
     private Flights() {}
 
     public static Flights of(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return TYPE.get(level);
     }
 
     /** The missiles in the air. */
@@ -898,4 +898,9 @@ public final class Flights extends SavedData {
         }
     }
 
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+        return TYPE.save(this, tag_, registries_);
+    }
 }

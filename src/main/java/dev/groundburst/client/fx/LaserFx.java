@@ -24,7 +24,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import dev.groundburst.port.render.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**

@@ -19,7 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import dev.groundburst.port.SavedDataType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -70,7 +70,7 @@ public final class Wind extends SavedData {
     }
 
     public static Wind of(ServerLevel level) {
-        return BY_LEVEL.computeIfAbsent(level, l -> l.getDataStorage().computeIfAbsent(TYPE));
+        return BY_LEVEL.computeIfAbsent(level, l -> TYPE.get(l));
     }
 
     static void register() {
@@ -165,5 +165,10 @@ public final class Wind extends SavedData {
         public Type<Sync> type() {
             return TYPE;
         }
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+        return TYPE.save(this, tag_, registries_);
     }
 }

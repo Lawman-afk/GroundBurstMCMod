@@ -58,10 +58,10 @@ public interface AnimatedMachine extends GeoBlockEntity {
 
     @Override
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<AnimatedMachine>("main", 4, test -> {
-            BlockEntity be = (BlockEntity) test.animatable();
+        controllers.add(new AnimationController<AnimatedMachine>(this, "main", 4, test -> {
+            BlockEntity be = (BlockEntity) test.getAnimatable();
             boolean active = be.getBlockState().hasProperty(MachineBlock.ACTIVE) && be.getBlockState().getValue(MachineBlock.ACTIVE);
-            return test.setAndContinue(active ? WORKING : ((AnimatedMachine) test.animatable()).idleAnimation());
+            return test.setAndContinue(active ? WORKING : ((AnimatedMachine) test.getAnimatable()).idleAnimation());
         }));
     }
 }

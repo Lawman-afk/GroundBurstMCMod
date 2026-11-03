@@ -27,7 +27,7 @@ import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
 import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -140,7 +140,7 @@ public class RadarArrayScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         if (inList(event.x(), event.y())) {
             int row = this.scroll + (int) ((event.y() - top() - LIST_Y) / ROW);
             List<LaunchPayloads.Track> tracks = tracks();
@@ -149,7 +149,7 @@ public class RadarArrayScreen extends Screen {
             }
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(event.x(), event.y(), event.button());
     }
 
     @Override

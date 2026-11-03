@@ -15,7 +15,7 @@ import dev.groundburst.content.machine.ProcessingBlockEntity;
 import dev.groundburst.content.power.CombustionGeneratorBlockEntity;
 import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
 import dev.groundburst.port.RenderPipelines;
@@ -335,7 +335,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         if (this.sideTab != null && this.sideTab.click(event.x(), event.y(), event.button(), this.leftPos, this.topPos, this.imageWidth)) {
             return true;
         }
@@ -363,7 +363,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(event.x(), event.y(), event.button());
     }
 
 }

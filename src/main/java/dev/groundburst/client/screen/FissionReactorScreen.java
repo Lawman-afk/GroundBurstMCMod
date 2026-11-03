@@ -4,7 +4,7 @@ import dev.groundburst.content.machine.FissionCore;
 import dev.groundburst.content.machine.FissionReactorBlockEntity;
 import dev.groundburst.content.machine.MachineMenu;
 import dev.groundburst.port.GuiGraphicsExtractor;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import dev.groundburst.port.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -188,7 +188,7 @@ public class FissionReactorScreen extends MachineScreen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         int button = planButtonAt((int) event.x() - this.leftPos, (int) event.y() - this.topPos);
         if (button >= 0 && this.minecraft != null && this.minecraft.gameMode != null) {
             this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId,
@@ -196,6 +196,6 @@ public class FissionReactorScreen extends MachineScreen {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(event.x(), event.y(), event.button());
     }
 }

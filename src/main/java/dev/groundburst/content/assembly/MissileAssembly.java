@@ -139,8 +139,7 @@ public final class MissileAssembly {
         out.set(GBDataComponents.MISSILE.get(), spec);
         // The item picks its model (its warhead's own missile, or that warhead's cruise missile) by this, like the missile
         // in flight and on its launcher.
-        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(MissileParts.look(spec.look())),
-                List.of()));
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.look(spec.look()))));
         return out;
     }
 

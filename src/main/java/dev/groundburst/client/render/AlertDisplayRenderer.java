@@ -11,12 +11,12 @@ import dev.groundburst.content.alarm.AlarmBlockEntity;
 import dev.groundburst.content.alarm.Alarms;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.BlockEntityRenderState;
+import dev.groundburst.port.render.ModelFeatureRenderer;
+import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * an attack's missiles and the time to the first impact, the radiation's dose rate, the gas, or an alarm. Drawn lit on
  * the screen's face, 3 px out from the wall.
  */
-public class AlertDisplayRenderer implements BlockEntityRenderer<AlarmBlockEntity, AlertDisplayRenderer.State> {
+public class AlertDisplayRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<AlarmBlockEntity, AlertDisplayRenderer.State> {
     private static final String T_CLEAR = GBLang.add(GroundBurst.MODID + ".display.clear", "ALL CLEAR");
     private static final String T_CHANNEL = GBLang.add(GroundBurst.MODID + ".display.channel", "CHANNEL %s");
     private static final String T_ATTACK = GBLang.add(GroundBurst.MODID + ".display.attack", "ATTACK");
@@ -64,7 +64,7 @@ public class AlertDisplayRenderer implements BlockEntityRenderer<AlarmBlockEntit
     @Override
     public void extractRenderState(AlarmBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
+        super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
         state.yaw = ((AlarmBlock) be.getBlockState().getBlock()).facing(be.getBlockState()).toYRot();
         long now = be.getLevel() == null ? 0 : be.getLevel().getGameTime();
         boolean bright = now % 20 < 12;                                // the title flashes in an alert
@@ -119,7 +119,7 @@ public class AlertDisplayRenderer implements BlockEntityRenderer<AlarmBlockEntit
         poseStack.pushPose();
         poseStack.translate(0.5, MIDDLE_Y, 0.5);
         // Text faces +z (south, yaw 0); turn it to face the way the display does (Minecraft's yaw runs clockwise).
-        poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-state.yaw));
         poseStack.translate(0, 0, FACE);                            // back to the screen, a hair in front of it
         int lines = 1 + (state.line1 != null ? 1 : 0) + (state.line2 != null ? 1 : 0);
         float height = 9 * TITLE + (lines - 1) * 10;                  // text pixels, top to bottom

@@ -609,18 +609,18 @@ public class CruiseLauncherBlockEntity extends MachineBlockEntity implements Ani
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         AnimatedMachine.super.registerControllers(controllers);
-        controllers.add(new AnimationController<CruiseLauncherBlockEntity>("boxes", 0, test -> {
-            CruiseLauncherBlockEntity be = test.animatable();
+        controllers.add(new AnimationController<CruiseLauncherBlockEntity>(this, "boxes", 0, test -> {
+            CruiseLauncherBlockEntity be = test.getAnimatable();
             if (be.raised) {
                 be.clientSawRaised = true;
                 return test.setAndContinue(RAISE);
             }
             return test.setAndContinue(be.clientSawRaised ? LOWER : LOWERED);
         }));
-        controllers.add(new AnimationController<CruiseLauncherBlockEntity>("cover_a", 0,
-                test -> test.setAndContinue(test.animatable().firedA ? OPEN_A : SHUT_A)));
-        controllers.add(new AnimationController<CruiseLauncherBlockEntity>("cover_b", 0,
-                test -> test.setAndContinue(test.animatable().firedB ? OPEN_B : SHUT_B)));
+        controllers.add(new AnimationController<CruiseLauncherBlockEntity>(this, "cover_a", 0,
+                test -> test.setAndContinue(test.getAnimatable().firedA ? OPEN_A : SHUT_A)));
+        controllers.add(new AnimationController<CruiseLauncherBlockEntity>(this, "cover_b", 0,
+                test -> test.setAndContinue(test.getAnimatable().firedB ? OPEN_B : SHUT_B)));
     }
 
     // --- saving -----------------------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@ package dev.groundburst.client.render;
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 
 import dev.groundburst.GroundBurst;
@@ -11,18 +12,16 @@ import dev.groundburst.content.launch.LaunchStationBlockEntity;
 import dev.groundburst.registry.GBLang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.network.chat.Component;
-import software.bernie.geckolib.constant.dataticket.DataTicket;
-import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.base.RenderPassInfo;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
 
 /**
  * The Launch Control Station (DESIGN.md §17.12): its model, and on its big screen the network's state written in the
  * phosphor's green: LAUNCH CONTROL, the network's code, how many are linked and armed, and the soonest countdown (red,
- * flashing), the missiles in the air and the first to come down (amber), or STANDBY.
+ * flashing), the missiles in the air and the first to come down (amber), or STANDBY. (The 1.21.1 backport's: the text is
+ * drawn after the model, the pose already turned with the block.)
  */
 public class LaunchStationRenderer extends MachineGeoRenderer<LaunchStationBlockEntity> {
     private static final String P = GroundBurst.MODID + ".station.screen.";
@@ -38,19 +37,15 @@ public class LaunchStationRenderer extends MachineGeoRenderer<LaunchStationBlock
     private static final int LIT = 15728880;
     private static final int GREEN = 0xFF46E04A, DIM_GREEN = 0xFF2C8A30, AMBER = 0xFFFFB428, RED = 0xFFFF3A24, DARK_RED = 0xFF8A1A10;
 
-    /** What the screen says this frame (null lines: blank). */
-    private record Text(Component title, Component code, Component counts, Component status, int statusColor) {}
-
-    private static final DataTicket<Text> TEXT = DataTicket.create("groundburst_station_text", Text.class);
-
     public LaunchStationRenderer(BlockEntityRendererProvider.Context context) {
         super(context, GBLaunch.STATION_ENTITY.get(), 3, 1);
     }
 
     @Override
-    public void addRenderData(LaunchStationBlockEntity be, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
-        super.addRenderData(be, relatedObject, renderState, partialTick);
-        if (!be.isFormed() || !be.shownPowered() || be.getLevel() == null) {
+    public void postRender(PoseStack pose, LaunchStationBlockEntity be, BakedGeoModel model, MultiBufferSource buffers, @Nullable VertexConsumer buffer,
+            boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.postRender(pose, be, model, buffers, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        if (isReRender || !be.isFormed() || !be.shownPowered() || be.getLevel() == null) {
             return;
         }
         long now = be.getLevel().getGameTime();
@@ -67,44 +62,29 @@ public class LaunchStationRenderer extends MachineGeoRenderer<LaunchStationBlock
             status = Component.translatable(T_STANDBY);
             color = DIM_GREEN;
         }
-        ((GeoRenderState) renderState).addGeckolibData(TEXT, new Text(Component.translatable(T_TITLE), Component.translatable(T_NET, be.shownCode()),
-                Component.translatable(T_COUNTS, be.linked(), be.armedCount()), status, color));
-    }
-
-    @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void postRenderPass(RenderPassInfo renderPassInfo, SubmitNodeCollector renderTasks) {
-        super.postRenderPass(renderPassInfo, renderTasks);
-        Text text = (Text) renderPassInfo.getGeckolibData(TEXT);
-        if (text == null) {
-            return;
-        }
         Font font = Minecraft.getInstance().font;
-        PoseStack pose = renderPassInfo.poseStack();
         pose.pushPose();
-        pose.translate(0.5, 0, 0.5);
-        tryRotateByBlockstate(renderPassInfo, pose);
         // Text faces +z; the screen faces the model's front (-z): turned round, then back to the screen's face.
-        pose.rotate(Axis.YP.rotationDegrees(180));
+        pose.mulPose(Axis.YP.rotationDegrees(180));
         pose.translate(0, MIDDLE_Y, -FACE);
         pose.scale(SCALE, -SCALE, SCALE);
         float height = 9 * TITLE + 3 * 10 + 2;
         float y = -height / 2;
         pose.pushPose();
         pose.scale(TITLE, TITLE, 1);
-        line(renderTasks, font, pose, text.title(), y / TITLE, AMBER);
+        line(buffers, font, pose, Component.translatable(T_TITLE), y / TITLE, AMBER);
         pose.popPose();
         y += 9 * TITLE + 3;
-        line(renderTasks, font, pose, text.code(), y, GREEN);
+        line(buffers, font, pose, Component.translatable(T_NET, be.shownCode()), y, GREEN);
         y += 10;
-        line(renderTasks, font, pose, text.counts(), y, GREEN);
+        line(buffers, font, pose, Component.translatable(T_COUNTS, be.linked(), be.armedCount()), y, GREEN);
         y += 10;
-        line(renderTasks, font, pose, text.status(), y, text.statusColor());
+        line(buffers, font, pose, status, y, color);
         pose.popPose();
     }
 
-    private static void line(SubmitNodeCollector collector, Font font, PoseStack pose, Component text, float y, int color) {
+    private static void line(MultiBufferSource buffers, Font font, PoseStack pose, Component text, float y, int color) {
         var seq = text.getVisualOrderText();
-        collector.submitText(pose, -font.width(seq) / 2f, y, seq, false, Font.DisplayMode.POLYGON_OFFSET, LIT, color, 0, 0);
+        font.drawInBatch(seq, -font.width(seq) / 2f, y, color, false, pose.last().pose(), buffers, Font.DisplayMode.POLYGON_OFFSET, 0, LIT);
     }
 }

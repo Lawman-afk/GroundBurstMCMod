@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
 import dev.groundburst.content.ordnance.ThrownExplosive;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.EntityRenderState;
+import dev.groundburst.port.render.ItemModelResolver;
+import dev.groundburst.port.render.ItemStackRenderState;
+import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * rate set by its speed (vanilla's thrown-item renderer would turn it to face the camera, like a snowball sprite).
  * Stuck or at rest it lies still.
  */
-public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRenderer.State> {
+public class GrenadeRenderer extends dev.groundburst.port.render.StateEntityRenderer<ThrownExplosive, GrenadeRenderer.State> {
     public static class State extends EntityRenderState {
         public final ItemStackRenderState item = new ItemStackRenderState();
         public float yaw, spin;
@@ -30,7 +30,7 @@ public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRend
 
     public GrenadeRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.items = context.getItemModelResolver();
+        this.items = dev.groundburst.port.render.ItemModelResolver.INSTANCE;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRend
 
     @Override
     public void extractRenderState(ThrownExplosive entity, State state, float partialTicks) {
-        super.render(entity.unwrap(), state, partialTicks);
+        super.extractRenderState(entity, state, partialTicks);
         this.items.updateForNonLiving(state.item, entity.getItem(), ItemDisplayContext.GROUND, entity);
         Vec3 v = entity.getDeltaMovement();
         if (v.horizontalDistanceSqr() > 1e-4) {
@@ -55,8 +55,8 @@ public class GrenadeRenderer extends EntityRenderer<ThrownExplosive, GrenadeRend
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
         poseStack.translate(0, 0.15, 0);
-        poseStack.rotate(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.rotate(Axis.XP.rotationDegrees(state.spin));
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(state.spin));
         state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);

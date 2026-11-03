@@ -13,7 +13,7 @@ import dev.groundburst.content.multiblock.MultiblockDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
@@ -92,9 +92,9 @@ public final class StructureView {
             mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
             int[] size = state.size();
             // Screen y runs down; turn the world the right way up, then tip it toward the viewer and spin it.
-            pose.rotateDegrees(Axis.ZP, 180);
-            pose.rotateDegrees(Axis.XP, -state.pitch());
-            pose.rotateDegrees(Axis.YP, state.yaw());
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
+            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
             pose.translate(-size[0] / 2.0F, -size[1] / 2.0F, -size[2] / 2.0F);
             for (Block b : state.blocks()) {
                 if (state.layer() >= 0 && b.y() != state.layer()) {

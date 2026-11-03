@@ -36,7 +36,7 @@ import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -507,7 +507,7 @@ public class LaunchStationScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         int tab = tabAt(event.x(), event.y());
         if (tab >= 0) {
             this.showLog = tab == 1;
@@ -547,27 +547,27 @@ public class LaunchStationScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(event.x(), event.y(), event.button());
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+    public boolean mouseDragged(double mouseX_, double mouseY_, int button_, double dx, double dy) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
         if (this.panning) {
             this.viewX -= dx * zoom();
             this.viewZ -= dy * zoom();
             clampView();
             return true;
         }
-        return super.mouseDragged(event, dx, dy);
+        return super.mouseDragged(event.x(), event.y(), event.button(), dx, dy);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
+    public boolean mouseReleased(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
         if (this.panning && event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             this.panning = false;
             return true;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(event.x(), event.y(), event.button());
     }
 
     @Override

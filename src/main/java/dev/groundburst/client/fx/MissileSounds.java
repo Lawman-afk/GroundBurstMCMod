@@ -71,7 +71,7 @@ final class MissileSounds {
             place();
             this.volume = Math.max(0.01f, this.loudness * this.fade * (this.reentry ? 0.4f + 0.6f * this.missile.reentry() : 1));
             // Doppler: higher coming toward the listener, lower going away.
-            Vec3 ear = Minecraft.getInstance().gameRenderer.getMainCamera().position();
+            Vec3 ear = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             double d = ear.distanceTo(this.missile.position());
             if (this.lastDistance >= 0) {
                 double closing = this.lastDistance - d;

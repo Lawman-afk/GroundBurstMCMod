@@ -24,6 +24,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public class GroundBurstClient {
     public GroundBurstClient(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, GBClientConfig.SPEC);
+        dev.groundburst.port.render.RenderBridge.register();   // 26.x's render events, posted from 1.21.1's
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         MachineClientHooks.clientTick = MachineSounds::tick;

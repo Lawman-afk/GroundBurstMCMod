@@ -15,13 +15,13 @@ import dev.groundburst.content.machine.FissionReactorBlockEntity;
 import dev.groundburst.content.machine.MachineBlock;
 import dev.groundburst.content.machine.MachineTank;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import dev.groundburst.port.render.BlockEntityRenderState;
+import dev.groundburst.port.render.ModelFeatureRenderer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.groundburst.port.render.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -40,7 +40,7 @@ import net.minecraft.world.phys.Vec3;
  * windows) with the coolant, from the floor up to the tank's level; while the core runs the water glows Cherenkov blue,
  * lit whatever the light round it. The panes go in one batch with the water, which is sorted far to near when drawn.
  */
-public class FissionReactorRenderer implements BlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> {
+public class FissionReactorRenderer extends dev.groundburst.port.render.StateBlockEntityRenderer<FissionReactorBlockEntity, FissionReactorRenderer.State> {
     /** Clear of the walls' inner faces (far enough not to fight them in the depth buffer from afar). */
     private static final float INSET = 0.01f;
     private static final int CHERENKOV = 0x5CD2FF;
@@ -71,7 +71,7 @@ public class FissionReactorRenderer implements BlockEntityRenderer<FissionReacto
     @Override
     public void extractRenderState(FissionReactorBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.render(be.unwrap(), state, partialTicks, cameraPosition, breakProgress);
+        super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
         state.fluid = null;
         state.pieces.clear();
         FissionCore core = be.core();

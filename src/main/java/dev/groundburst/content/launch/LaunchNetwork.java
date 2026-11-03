@@ -32,7 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
+import dev.groundburst.port.SavedDataType;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -286,12 +286,12 @@ public final class LaunchNetwork extends SavedData {
     private LaunchNetwork() {}
 
     public static LaunchNetwork of(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(TYPE);
+        return TYPE.get(level);
     }
 
     /** A dimension's networks if it has any (null: none, and none are made). */
     static @Nullable LaunchNetwork ifAny(ServerLevel level) {
-        return level.getDataStorage().get(TYPE);
+        return TYPE.find(level);
     }
 
     // --- networks and stations -------------------------------------------------------------------------------------------
@@ -1030,5 +1030,10 @@ public final class LaunchNetwork extends SavedData {
                 }
             }
         }
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag_, net.minecraft.core.HolderLookup.Provider registries_) {
+        return TYPE.save(this, tag_, registries_);
     }
 }

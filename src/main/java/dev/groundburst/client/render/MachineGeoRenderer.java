@@ -1,48 +1,70 @@
 package dev.groundburst.client.render;
 
-import software.bernie.geckolib.animatable.GeoAnimatable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
-import software.bernie.geckolib.constant.dataticket.DataTicket;
-import software.bernie.geckolib.renderer.GeoBlockRenderer;
-import software.bernie.geckolib.renderer.base.BoneSnapshots;
-import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.base.RenderPassInfo;
-import com.google.common.reflect.TypeToken;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 
 import dev.groundburst.content.launch.MissileCarrier;
 import dev.groundburst.content.machine.AnimatedMachine;
 import dev.groundburst.content.machine.MachineBlockEntity;
 import dev.groundburst.content.machine.MachineTank;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.world.level.material.Fluid;
-
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.cache.texture.AutoGlowingTexture;
+import software.bernie.geckolib.model.DefaultedBlockGeoModel;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.renderer.GeoBlockRenderer;
+import software.bernie.geckolib.renderer.GeoRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import software.bernie.geckolib.util.RenderUtil;
 
 /**
  * GeckoLib machine renderer whose culling box covers the whole model, including the upper half of tall machines. A
  * model whose texture has a {@code _glowmask} draws it lit, whatever the light round it ({@link GlowLayer}). A machine
- * holding a missile ({@link MissileCarrier}) has it drawn from the missile's own model ({@link MissileLayer}).
+ * holding a missile ({@link MissileCarrier}) has it drawn from the missile's own model, at its bone.
+ * <p>
+ * The 1.21.1 backport's, for GeckoLib 4 (main's is GeckoLib 5's, built on its render passes): a machine's bones are
+ * moved, scaled, turned and hidden as each is drawn ({@link #renderRecursively}), after GeckoLib has posed them from
+ * the animation; the tanks are drawn after the model, already turned with the block.
  */
-public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T, BlockEntityRenderState> {
+public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends GeoBlockRenderer<T> {
     private final int height;
     private final int reach;
     private final int depth;
+    /** Whether its model stands on its base pointing up, turned to point the way its block faces (any of six). */
+    private boolean standing;
+
+    // What the block entity being drawn asks of its bones this frame (one is drawn at a time).
+    private Map<String, float[]> scales = Map.of(), offsets = Map.of(), rotations = Map.of();
+    private Set<String> hidden = Set.of();
+    private Map<String, List<ShownMissile>> missiles = Map.of();
 
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height) {
         this(context, type, height, 0);
@@ -55,15 +77,21 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
 
     /** {@code depth}: how many blocks the model reaches down below its controller (the Missile Silo's shaft). */
     public MachineGeoRenderer(BlockEntityRendererProvider.Context context, BlockEntityType<? extends T> type, int height, int reach, int depth) {
-        super(context, type);
+        super(new DefaultedBlockGeoModel<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)));
         this.height = height;
         this.reach = reach;
         this.depth = depth;
-        withGlow();
+        addRenderLayer(new GlowLayer<>(this));
     }
 
-    /** Whether its model stands on its base pointing up, turned to point the way its block faces (any of six). */
-    private boolean standing;
+    /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
+    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, GeoModel<T> model, int height, int reach) {
+        super(model);
+        this.height = height;
+        this.reach = reach;
+        this.depth = reach > 0 ? 1 : 0;
+        addRenderLayer(new GlowLayer<>(this));
+    }
 
     /**
      * Its model is built standing on its base, pointing up (a Warning Beacon): turned about the block's middle to point
@@ -75,155 +103,46 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void tryRotateByBlockstate(software.bernie.geckolib.renderer.base.RenderPassInfo pass, PoseStack pose) {
+    protected void rotateBlock(Direction facing, PoseStack pose) {
         if (!this.standing) {
-            super.tryRotateByBlockstate(pass, pose);
+            super.rotateBlock(facing, pose);
             return;
         }
-        net.minecraft.core.Direction d = (net.minecraft.core.Direction) pass.getOrDefaultGeckolibData(DIRECTION_FACING, net.minecraft.core.Direction.UP);
         pose.translate(0, 0.5, 0);
-        switch (d) {
-            case DOWN -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(180));
-            case NORTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));
-            case SOUTH -> pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(90));
-            case EAST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(-90));
-            case WEST -> pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(90));
+        switch (facing) {
+            case DOWN -> pose.mulPose(Axis.XP.rotationDegrees(180));
+            case NORTH -> pose.mulPose(Axis.XP.rotationDegrees(-90));
+            case SOUTH -> pose.mulPose(Axis.XP.rotationDegrees(90));
+            case EAST -> pose.mulPose(Axis.ZP.rotationDegrees(-90));
+            case WEST -> pose.mulPose(Axis.ZP.rotationDegrees(90));
             default -> { }
         }
         pose.translate(0, -0.5, 0);
     }
 
-    /** With a model of its own (a {@link VariantGeoModel}: textures chosen by the block entity). */
-    public MachineGeoRenderer(BlockEntityRendererProvider.Context context, software.bernie.geckolib.model.GeoModel<T> model, int height, int reach) {
-        super(context, model);
-        this.height = height;
-        this.reach = reach;
-        this.depth = reach > 0 ? 1 : 0;
-        withGlow();
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void withGlow() {
-        // Raw: GeckoLib's layer wants a GeoRenderState, which this renderer's state only becomes at runtime (see below).
-        withRenderLayer((software.bernie.geckolib.renderer.layer.GeoRenderLayer) new GlowLayer(this));
-        withRenderLayer((software.bernie.geckolib.renderer.layer.GeoRenderLayer) new MissileLayer(this));
-    }
-
-    /**
-     * The missile a launcher, an assembler or the hall holds ({@link MissileCarrier}): drawn from its own item model (one
-     * per warhead, a quarter of the world's size) at the model's bone at its
-     * tail, so the machines' models carry no missile of their own. The item states are resolved when the frame's state is
-     * taken.
-     */
-    private static final class MissileLayer<A extends GeoAnimatable, O, R extends GeoRenderState> extends software.bernie.geckolib.renderer.layer.GeoRenderLayer<A, O, R> {
-        MissileLayer(software.bernie.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
-            super(renderer);
-        }
-
-        @Override
-        public void addPerBoneRender(RenderPassInfo<R> pass, java.util.function.BiConsumer<software.bernie.geckolib.cache.object.GeoBone, software.bernie.geckolib.renderer.base.PerBoneRender<R>> consumer) {
-            List<ShownMissile> all = pass.getGeckolibData(MISSILE);
-            if (all == null || all.isEmpty() || !pass.willRender()) {
-                return;
-            }
-            // One render per bone, drawing every missile at it (in the bone's frame, as it is animated: a rack raised).
-            java.util.Map<String, List<ShownMissile>> byBone = new java.util.LinkedHashMap<>();
-            for (ShownMissile s : all) {
-                byBone.computeIfAbsent(s.bone(), k -> new ArrayList<>()).add(s);
-            }
-            byBone.forEach((name, shownHere) -> pass.model().getBone(name).ifPresent(bone -> consumer.accept(bone, (info, b, collector) -> {
-                for (ShownMissile shown : shownHere) {
-                    PoseStack pose = info.poseStack();
-                    pose.pushPose();
-                    pose.scale(4, 4, 4);                               // the item model is a quarter of the world's size
-                    if (shown.lying()) {
-                        pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(-90));      // its nose toward the model's front
-                    }
-                    pose.rotate(com.mojang.math.Axis.YP.rotationDegrees(shown.turn()));
-                    pose.translate(0, shown.lift(), 0);                // drawn about its middle: its tail at the bone
-                    for (net.minecraft.client.renderer.item.ItemStackRenderState item : shown.items()) {
-                        item.submit(pose, collector, info.packedLight(), OverlayTexture.NO_OVERLAY, 0);
-                    }
-                    pose.popPose();
-                }
-            })));
-        }
-    }
-
-    /**
-     * A missile to draw this frame: its looks resolved to item states, where and how it lies, and how far its item model
-     * is lifted to stand its tail at the bone (MissileShapes; the plain missile's tail is at its y 0).
-     */
-    record ShownMissile(List<net.minecraft.client.renderer.item.ItemStackRenderState> items, String bone, boolean lying, float turn, float lift) {}
-
-    /** The Missile item for a look (its custom model data), one per look. */
-    private static final java.util.Map<String, net.minecraft.world.item.ItemStack> LOOKS = new java.util.HashMap<>();
-
-    private static ShownMissile resolve(MissileCarrier.Shown shown, net.minecraft.world.level.Level level) {
-        var resolver = net.minecraft.client.Minecraft.getInstance().getItemModelResolver();
-        List<net.minecraft.client.renderer.item.ItemStackRenderState> items = new ArrayList<>();
-        for (String look : shown.looks()) {
-            net.minecraft.world.item.ItemStack stack = LOOKS.computeIfAbsent(look, key -> {
-                var s = new net.minecraft.world.item.ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
-                s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                        List.of(), List.of(), List.of(key), List.of()));
-                return s;
-            });
-            var state = new net.minecraft.client.renderer.item.ItemStackRenderState();
-            resolver.updateForTopItem(state, stack, net.minecraft.world.item.ItemDisplayContext.NONE, level instanceof net.minecraft.client.multiplayer.ClientLevel cl ? cl : null, null, 0);
-            items.add(state);
-        }
-        var shape = MissileShapes.get(shown.warhead());
-        return new ShownMissile(items, shown.bone(), shown.lying(), shown.turn(), shape == null ? 0.5f : shape.lift());
-    }
-
-    /**
-     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models that have one:
-     * GeckoLib does not check, and a missing one would draw as the missing texture. (Until this, no renderer drew the
-     * glowmasks the machine models were made with.)
-     */
-    private static final class GlowLayer<A extends GeoAnimatable, O, R extends software.bernie.geckolib.renderer.base.GeoRenderState>
-            extends software.bernie.geckolib.renderer.layer.builtin.AutoGlowingGeoLayer<A, O, R> {
-        private static final java.util.Map<net.minecraft.resources.ResourceLocation, Boolean> EXISTS = new java.util.concurrent.ConcurrentHashMap<>();
-
-        GlowLayer(software.bernie.geckolib.renderer.base.GeoRenderer<A, O, R> renderer) {
-            super(renderer);
-        }
-
-        @Override
-        public void submitRenderTask(RenderPassInfo<R> pass, SubmitNodeCollector collector) {
-            net.minecraft.resources.ResourceLocation glow = getTextureResource(pass.renderState());
-            if (EXISTS.computeIfAbsent(glow, id -> net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(id).isPresent())) {
-                super.submitRenderTask(pass, collector);
-            }
-        }
-    }
-
-    private static final DataTicket<Set<String>> HIDDEN_BONES = DataTicket.create("groundburst_hidden_bones", new TypeToken<Set<String>>() {});
-    private static final DataTicket<java.util.Map<String, float[]>> BONE_SCALES = DataTicket.create("groundburst_bone_scales",
-            new TypeToken<java.util.Map<String, float[]>>() {});
-    private static final DataTicket<java.util.Map<String, float[]>> BONE_OFFSETS = DataTicket.create("groundburst_bone_offsets",
-            new TypeToken<java.util.Map<String, float[]>>() {});
-    private static final DataTicket<java.util.Map<String, float[]>> BONE_ROTATIONS = DataTicket.create("groundburst_bone_rotations",
-            new TypeToken<java.util.Map<String, float[]>>() {});
-    private static final DataTicket<List<ShownMissile>> MISSILE = DataTicket.create("groundburst_missile", new TypeToken<List<ShownMissile>>() {});
-    /** The texture a model is drawn in this frame instead of its own ({@link AnimatedMachine#textureVariant}). */
-    static final DataTicket<net.minecraft.resources.ResourceLocation> TEXTURE = DataTicket.create("groundburst_texture", net.minecraft.resources.ResourceLocation.class);
-
+    // --- this frame's bones --------------------------------------------------------------------------------------------
     @Override
-    public void addRenderData(T animatable, @Nullable Void relatedObject, BlockEntityRenderState renderState, float partialTick) {
-        java.util.Map<String, float[]> offsets = java.util.Map.of();
-        if (animatable instanceof AnimatedMachine machine) {
-            ((GeoRenderState) renderState).addGeckolibData(HIDDEN_BONES, machine.hiddenBones());
-            ((GeoRenderState) renderState).addGeckolibData(BONE_SCALES, machine.boneScales());
-            ((GeoRenderState) renderState).addGeckolibData(BONE_ROTATIONS, machine.boneRotations(partialTick));
-            offsets = machine.boneOffsets(partialTick);
-            net.minecraft.resources.ResourceLocation texture = machine.textureVariant();
-            if (texture != null) {
-                ((GeoRenderState) renderState).addGeckolibData(TEXTURE, texture);
-            }
+    public void actuallyRender(PoseStack poseStack, T animatable, BakedGeoModel model, @Nullable RenderType renderType, MultiBufferSource bufferSource,
+            @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        if (!isReRender) {
+            frame(animatable, partialTick);
         }
+        super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
+    private void frame(T animatable, float partialTick) {
+        Map<String, float[]> offsets = Map.of();
+        if (animatable instanceof AnimatedMachine machine) {
+            this.hidden = machine.hiddenBones();
+            this.scales = machine.boneScales();
+            this.rotations = machine.boneRotations(partialTick);
+            offsets = machine.boneOffsets(partialTick);
+        } else {
+            this.hidden = Set.of();
+            this.scales = Map.of();
+            this.rotations = Map.of();
+        }
+        this.missiles = Map.of();
         if (animatable instanceof MissileCarrier carrier && animatable.getLevel() != null) {
             String held = carrier.gripsFor();
             if (held != null) {
@@ -231,21 +150,95 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
             }
             List<MissileCarrier.Shown> shownAll = carrier.shownMissiles();
             if (!shownAll.isEmpty()) {
-                List<ShownMissile> resolved = new ArrayList<>(shownAll.size());
+                Map<String, List<ShownMissile>> byBone = new LinkedHashMap<>();
                 MissileCarrier.Cradles cradles = carrier.cradles();
                 for (MissileCarrier.Shown shown : shownAll) {
-                    resolved.add(resolve(shown, animatable.getLevel()));
+                    byBone.computeIfAbsent(shown.bone(), k -> new ArrayList<>()).add(resolve(shown));
                     MissileShapes.Shape shape = MissileShapes.get(shown.warhead());
                     if (shown.lying() && cradles != null && shape != null) {
-                        offsets = new java.util.HashMap<>(offsets);
+                        offsets = new HashMap<>(offsets);
                         offsets.put(shown.bone(), new float[] {0, onCradles(cradles, shape) - cradles.axisY(), 0});
                     }
                 }
-                ((GeoRenderState) renderState).addGeckolibData(MISSILE, resolved);
+                this.missiles = byBone;
             }
         }
-        ((GeoRenderState) renderState).addGeckolibData(BONE_OFFSETS, offsets);
-        captureTank(animatable, (GeoRenderState) renderState);
+        this.offsets = offsets;
+    }
+
+    @Override
+    public void renderRecursively(PoseStack poseStack, T animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
+            VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        String name = bone.getName();
+        if (this.hidden.contains(name)) {
+            return;
+        }
+        float[] s = this.scales.get(name);
+        if (s != null) {
+            bone.updateScale(s[0], s[1], s[2]);
+        }
+        float[] o = this.offsets.get(name);
+        if (o != null) {
+            bone.updatePosition(o[0], o[1], o[2]);
+        }
+        float[] r = this.rotations.get(name);
+        if (r != null) {                                   // over its bind pose, as GeckoLib 5's snapshots are set
+            var bind = bone.getInitialSnapshot();
+            bone.updateRotation(bind.getRotX() + r[0], bind.getRotY() + r[1], bind.getRotZ() + r[2]);
+        }
+        List<ShownMissile> here = this.missiles.get(name);
+        if (here != null && !isReRender) {
+            drawMissiles(poseStack, bone, here, bufferSource, packedLight, animatable);
+        }
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
+    // --- missiles -----------------------------------------------------------------------------------------------------------
+    /**
+     * A missile to draw this frame: its looks as items, how it lies, and how far its item model is lifted to stand its
+     * tail at the bone (MissileShapes; the plain missile's tail is at its y 0).
+     */
+    record ShownMissile(List<ItemStack> items, boolean lying, float turn, float lift) {}
+
+    /** The Missile item for a look (its custom model data), one per look. */
+    private static final Map<String, ItemStack> LOOKS = new HashMap<>();
+
+    private static ShownMissile resolve(MissileCarrier.Shown shown) {
+        List<ItemStack> items = new ArrayList<>();
+        for (String look : shown.looks()) {
+            items.add(LOOKS.computeIfAbsent(look, key -> {
+                var s = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
+                s.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
+                        new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(key)));
+                return s;
+            }));
+        }
+        var shape = MissileShapes.get(shown.warhead());
+        return new ShownMissile(items, shown.lying(), shown.turn(), shape == null ? 0.5f : shape.lift());
+    }
+
+    /** Every missile at a bone, in the bone's frame as it is animated (a rack raised), from its pivot. */
+    private static void drawMissiles(PoseStack pose, GeoBone bone, List<ShownMissile> shownHere, MultiBufferSource buffers, int light, BlockEntity be) {
+        pose.pushPose();
+        RenderUtil.translateMatrixToBone(pose, bone);
+        RenderUtil.translateToPivotPoint(pose, bone);
+        RenderUtil.rotateMatrixAroundBone(pose, bone);
+        RenderUtil.scaleMatrixForBone(pose, bone);
+        for (ShownMissile shown : shownHere) {
+            pose.pushPose();
+            pose.scale(4, 4, 4);                               // the item model is a quarter of the world's size
+            if (shown.lying()) {
+                pose.mulPose(Axis.XP.rotationDegrees(-90));    // its nose toward the model's front
+            }
+            pose.mulPose(Axis.YP.rotationDegrees(shown.turn()));
+            pose.translate(0, shown.lift(), 0);                // drawn about its middle: its tail at the bone
+            for (ItemStack item : shown.items()) {
+                Minecraft.getInstance().getItemRenderer().renderStatic(item, ItemDisplayContext.NONE, light, OverlayTexture.NO_OVERLAY, pose, buffers,
+                        be.getLevel(), 0);
+            }
+            pose.popPose();
+        }
+        pose.popPose();
     }
 
     /** Where a lying missile's axis is, resting on its cradles' saddles by its own girth where they hold it (model px). */
@@ -261,12 +254,11 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
      * The arms that hold a standing missile, fitted to it (DESIGN.md §10.4): each arm's collar slides to its hold on the
      * missile and its clamp moves in or out to the missile's skin there, the inner beam sliding in its sleeve.
      */
-    private static java.util.Map<String, float[]> withGrips(java.util.Map<String, float[]> offsets, List<MissileCarrier.Grip> grips,
-            MissileShapes.@Nullable Shape shape) {
+    private static Map<String, float[]> withGrips(Map<String, float[]> offsets, List<MissileCarrier.Grip> grips, MissileShapes.@Nullable Shape shape) {
         if (grips.isEmpty() || shape == null) {
             return offsets;
         }
-        java.util.Map<String, float[]> out = new java.util.HashMap<>(offsets);
+        Map<String, float[]> out = new HashMap<>(offsets);
         for (MissileCarrier.Grip grip : grips) {
             float h = shape.holdHeight(grip.hold());
             float r = shape.skinRadius(h);
@@ -276,89 +268,45 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         return out;
     }
 
-    // Raw type: GeckoLib injects GeoRenderState into BlockEntityRenderState at runtime, which javac cannot see here.
+    // --- tanks ------------------------------------------------------------------------------------------------------------
+    /** Draws each tank's fluid (its own still texture, translucent) after the model, turned with the block. */
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void adjustModelBonesForRender(RenderPassInfo renderPassInfo, BoneSnapshots snapshots) {
-        java.util.Map<String, float[]> scales = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_SCALES);
-        if (scales != null) {
-            scales.forEach((bone, s) -> snapshots.ifPresent(bone, snapshot -> snapshot.setScale(s[0], s[1], s[2])));
-        }
-        java.util.Map<String, float[]> offsets = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_OFFSETS);
-        if (offsets != null) {
-            offsets.forEach((bone, o) -> snapshots.ifPresent(bone, snapshot -> snapshot.setTranslation(o[0], o[1], o[2])));
-        }
-        java.util.Map<String, float[]> rotations = (java.util.Map<String, float[]>) renderPassInfo.getGeckolibData(BONE_ROTATIONS);
-        if (rotations != null) {
-            rotations.forEach((bone, r) -> snapshots.ifPresent(bone, snapshot -> snapshot.setRotation(r[0], r[1], r[2])));
-        }
-        Set<String> hidden = (Set<String>) renderPassInfo.getGeckolibData(HIDDEN_BONES);
-        if (hidden != null) {
-            for (String bone : hidden) {
-                snapshots.ifPresent(bone, snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
-            }
-        }
-    }
-
-    /** What one tank window shows this frame: fluid, fill fraction, tint and the box to fill. */
-    private record TankSnapshot(Fluid fluid, float fill, int color, MachineBlockEntity.TankRender box) {}
-
-    private static final DataTicket<List<TankSnapshot>> TANKS = DataTicket.create("groundburst_tanks", new TypeToken<List<TankSnapshot>>() {});
-
-    private static void captureTank(BlockEntity be, GeoRenderState state) {
-        if (!(be instanceof MachineBlockEntity machine) || !machine.showsTanks() || be.getLevel() == null) {
+    public void postRender(PoseStack poseStack, T animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer,
+            boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        if (isReRender || !(animatable instanceof MachineBlockEntity machine) || !machine.showsTanks() || animatable.getLevel() == null) {
             return;
         }
-        List<TankSnapshot> shown = new ArrayList<>();
-        for (MachineBlockEntity.TankRender r : machine.tankRenders()) {
-            MachineTank tank = machine.tank(r.tank());
+        VertexConsumer out = null;
+        for (MachineBlockEntity.TankRender box : machine.tankRenders()) {
+            MachineTank tank = machine.tank(box.tank());
             if (tank.amount() <= 0) {
                 continue;
             }
             Fluid fluid = tank.fluid().getFluid();
             float fill = Math.min(1f, tank.amount() / (float) tank.capacity());
-            int tint = FluidVisuals.tintInWorld(fluid, be.getLevel(), be.getBlockPos());
-            shown.add(new TankSnapshot(fluid, fill, 0xD0000000 | (tint & 0xFFFFFF), r));
+            int tint = FluidVisuals.tintInWorld(fluid, animatable.getLevel(), animatable.getBlockPos());
+            int c = 0xD0000000 | (tint & 0xFFFFFF);
+            if (out == null) {
+                out = bufferSource.getBuffer(RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS));
+            }
+            // The pose is the model's here: GeckoLib has put it at the block's middle and turned it with the block.
+            PoseStack.Pose pose = poseStack.last();
+            TextureAtlasSprite sprite = FluidVisuals.still(fluid);
+            float x0 = box.x0() / 16f, x1 = box.x1() / 16f, z0 = box.z0() / 16f, z1 = box.z1() / 16f;   // (centred on the block)
+            float y0 = box.y0() / 16f, y1 = (box.y0() + (box.y1() - box.y0()) * fill) / 16f;
+            float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
+            quad(out, pose, c, packedLight, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, u0, v0, u1, v1);
+            // Sides tiled in one-block pieces so tall tanks keep the texture's scale.
+            for (float ya = y0; ya < y1 - 1e-4f; ya += 1f) {
+                float yb = Math.min(y1, ya + 1f);
+                float vb = v0 + (v1 - v0) * (yb - ya);
+                quad(out, pose, c, packedLight, 0, 0, -1, x1, yb, z0, x1, ya, z0, x0, ya, z0, x0, yb, z0, u0, v0, u1, vb);
+                quad(out, pose, c, packedLight, 0, 0, 1, x0, yb, z1, x0, ya, z1, x1, ya, z1, x1, yb, z1, u0, v0, u1, vb);
+                quad(out, pose, c, packedLight, -1, 0, 0, x0, yb, z0, x0, ya, z0, x0, ya, z1, x0, yb, z1, u0, v0, u1, vb);
+                quad(out, pose, c, packedLight, 1, 0, 0, x1, yb, z1, x1, ya, z1, x1, ya, z0, x1, yb, z0, u0, v0, u1, vb);
+            }
         }
-        if (!shown.isEmpty()) {
-            state.addGeckolibData(TANKS, shown);
-        }
-    }
-
-    /** Draws each tank's fluid (its own still texture, translucent) after the model, turned with the block. */
-    @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void postRenderPass(RenderPassInfo renderPassInfo, SubmitNodeCollector renderTasks) {
-        List<TankSnapshot> tanks = (List<TankSnapshot>) renderPassInfo.getGeckolibData(TANKS);
-        if (tanks == null) {
-            return;
-        }
-        PoseStack poseStack = renderPassInfo.poseStack();
-        int light = ((BlockEntityRenderState) renderPassInfo.renderState()).lightCoords;
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0, 0.5);
-        tryRotateByBlockstate(renderPassInfo, poseStack);
-        for (TankSnapshot tank : tanks) {
-            TextureAtlasSprite sprite = FluidVisuals.still(tank.fluid());
-            MachineBlockEntity.TankRender b = tank.box();
-            float x0 = b.x0() / 16f, x1 = b.x1() / 16f, z0 = b.z0() / 16f, z1 = b.z1() / 16f;
-            float y0 = b.y0() / 16f, y1 = (b.y0() + (b.y1() - b.y0()) * tank.fill()) / 16f;
-            int c = tank.color();
-            renderTasks.submitCustomGeometry(poseStack, RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, buffer) -> {
-                float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
-                quad(buffer, pose, c, light, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, u0, v0, u1, v1);
-                // Sides tiled in one-block pieces so tall tanks keep the texture's scale.
-                for (float ya = y0; ya < y1 - 1e-4f; ya += 1f) {
-                    float yb = Math.min(y1, ya + 1f);
-                    float vb = v0 + (v1 - v0) * (yb - ya);
-                    quad(buffer, pose, c, light, 0, 0, -1, x1, yb, z0, x1, ya, z0, x0, ya, z0, x0, yb, z0, u0, v0, u1, vb);
-                    quad(buffer, pose, c, light, 0, 0, 1, x0, yb, z1, x0, ya, z1, x1, ya, z1, x1, yb, z1, u0, v0, u1, vb);
-                    quad(buffer, pose, c, light, -1, 0, 0, x0, yb, z0, x0, ya, z0, x0, ya, z1, x0, yb, z1, u0, v0, u1, vb);
-                    quad(buffer, pose, c, light, 1, 0, 0, x1, yb, z1, x1, ya, z1, x1, ya, z0, x1, yb, z0, u0, v0, u1, vb);
-                }
-            });
-        }
-        poseStack.popPose();
     }
 
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose, int color, int light, float nx, float ny, float nz,
@@ -370,6 +318,29 @@ public class MachineGeoRenderer<T extends BlockEntity & GeoAnimatable> extends G
         buffer.addVertex(pose, dx, dy, dz).setColor(color).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
     }
 
+    // --- the glowmask -------------------------------------------------------------------------------------------------------
+    /**
+     * GeckoLib's auto-glow layer (the model's {@code <texture>_glowmask.png} drawn lit), only for models that have one:
+     * GeckoLib does not check, and a missing one would draw as the missing texture.
+     */
+    private static final class GlowLayer<A extends GeoAnimatable> extends AutoGlowingGeoLayer<A> {
+        private static final Map<ResourceLocation, Boolean> EXISTS = new ConcurrentHashMap<>();
+
+        GlowLayer(GeoRenderer<A> renderer) {
+            super(renderer);
+        }
+
+        @Override
+        public void render(PoseStack poseStack, A animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource,
+                @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
+            ResourceLocation glow = AutoGlowingTexture.getEmissiveResource(getTextureResource(animatable));
+            if (EXISTS.computeIfAbsent(glow, id -> Minecraft.getInstance().getResourceManager().getResource(id).isPresent())) {
+                super.render(poseStack, animatable, bakedModel, renderType, bufferSource, buffer, partialTick, packedLight, packedOverlay);
+            }
+        }
+    }
+
+    // --- how far and how much -------------------------------------------------------------------------------------------
     /**
      * How far off it is drawn: vanilla's 64 blocks for a machine of one block, further the further its model reaches
      * (a Search Radar's reflector, a silo door's rails: a landmark of a site should not pop in at 64 blocks).

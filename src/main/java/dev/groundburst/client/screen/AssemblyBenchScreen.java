@@ -16,8 +16,8 @@ import dev.groundburst.registry.GBLang;
 import dev.groundburst.port.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
+import dev.groundburst.port.input.KeyEvent;
+import dev.groundburst.port.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -159,27 +159,27 @@ public class AssemblyBenchScreen extends MachineScreen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_); boolean doubleClick = false;
         return this.column.mouseClicked(this.leftPos, this.topPos, event.x(), event.y(), this.menu.getCarried().isEmpty())
-                || super.mouseClicked(event, doubleClick);
+                || super.mouseClicked(event.x(), event.y(), event.button());
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
-        return this.column.mouseDragged(dx, dy) || super.mouseDragged(event, dx, dy);
+    public boolean mouseDragged(double mouseX_, double mouseY_, int button_, double dx, double dy) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
+        return this.column.mouseDragged(dx, dy) || super.mouseDragged(event.x(), event.y(), event.button(), dx, dy);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        return this.column.mouseReleased() || super.mouseReleased(event);
+    public boolean mouseReleased(double mouseX_, double mouseY_, int button_) { MouseButtonEvent event = new MouseButtonEvent(mouseX_, mouseY_, button_);
+        return this.column.mouseReleased() || super.mouseReleased(event.x(), event.y(), event.button());
     }
 
     /** While the setting is being typed in, keys go to it (so "E" does not close the screen). */
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(int key_, int scancode_, int modifiers_) { KeyEvent event = new KeyEvent(key_, scancode_, modifiers_);
         if (this.field != null && this.field.visible && this.field.isFocused() && !event.isEscape()) {
-            return this.field.keyPressed(event) || this.field.canConsumeInput() || super.keyPressed(event);
+            return this.field.keyPressed(event) || this.field.canConsumeInput() || super.keyPressed(event.key(), event.scancode(), event.modifiers());
         }
-        return super.keyPressed(event);
+        return super.keyPressed(event.key(), event.scancode(), event.modifiers());
     }
 }

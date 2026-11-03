@@ -10,8 +10,8 @@ import dev.groundburst.content.assembly.MissileParts;
 import dev.groundburst.content.launch.MissileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import dev.groundburst.port.render.SubmitNodeCollector;
+import dev.groundburst.port.render.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
@@ -41,7 +41,7 @@ final class SpentStages {
         int age;
 
         Stage(ItemStack look, float[] size, float lift) {
-            Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.item, look, ItemDisplayContext.NONE, null, null, 0);
+            dev.groundburst.port.render.ItemModelResolver.INSTANCE.updateForTopItem(this.item, look, ItemDisplayContext.NONE, null, null, 0);
             this.size = size;
             this.lift = lift;
         }
@@ -66,8 +66,7 @@ final class SpentStages {
             return;                                                // (the plain missile has one stage)
         }
         ItemStack look = new ItemStack(dev.groundburst.content.assembly.GBAssembly.MISSILE.get());
-        look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(
-                List.of(), List.of(), List.of(MissileParts.spentStage(missile.look(), k)), List.of()));
+        look.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA, new net.minecraft.world.item.component.CustomModelData(dev.groundburst.port.Looks.id(MissileParts.spentStage(missile.look(), k))));
         // The model is drawn about its own middle (item pixel 8): lifted to stand the stage's middle on its position. The
         // stage's middle is the world's pixels up from the tail; in the model, a quarter of that up from its tail.
         float middle = shape.stageMiddle(k);
@@ -174,8 +173,8 @@ final class SpentStages {
             int light = LightTexture.getLightCoords(level, BlockPos.containing(x, y, z));
             poseStack.pushPose();
             poseStack.translate(x - camera.x, y - camera.y, z - camera.z);
-            poseStack.rotate(Axis.YP.rotationDegrees(s.yawO + (s.yaw - s.yawO) * partial));
-            poseStack.rotate(Axis.XP.rotationDegrees(s.tiltO + (s.tilt - s.tiltO) * partial));
+            poseStack.mulPose(Axis.YP.rotationDegrees(s.yawO + (s.yaw - s.yawO) * partial));
+            poseStack.mulPose(Axis.XP.rotationDegrees(s.tiltO + (s.tilt - s.tiltO) * partial));
             poseStack.scale(SCALE * s.size[0], SCALE * s.size[1], SCALE * s.size[0]);
             poseStack.translate(0, s.lift, 0);
             s.item.submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, 0);

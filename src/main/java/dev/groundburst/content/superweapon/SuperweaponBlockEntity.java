@@ -759,8 +759,8 @@ public abstract class SuperweaponBlockEntity extends MachineBlockEntity implemen
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         AnimatedMachine.super.registerControllers(controllers);
-        controllers.add(new AnimationController<SuperweaponBlockEntity>("launchers", 0, test -> {
-            SuperweaponBlockEntity be = test.animatable();
+        controllers.add(new AnimationController<SuperweaponBlockEntity>(this, "launchers", 0, test -> {
+            SuperweaponBlockEntity be = test.getAnimatable();
             if (be.raised) {
                 be.clientSawRaised = true;
                 return test.setAndContinue(be.raisedAnimation());

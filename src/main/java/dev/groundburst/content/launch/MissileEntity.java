@@ -197,7 +197,7 @@ public class MissileEntity extends Entity {
 
     /** Degrees from straight up: 0 on the pad, 90 level, up to 180 diving straight down. */
     public float tilt(float partialTicks) {
-        return getXRot(partialTicks) + 90;
+        return getViewXRot(partialTicks) + 90;
     }
 
     @Override

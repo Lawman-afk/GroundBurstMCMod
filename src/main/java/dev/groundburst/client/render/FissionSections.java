@@ -76,12 +76,12 @@ public final class FissionSections {
             pose.translate(this.x, this.y - (this.section == Section.DRIVE_ROD ? rodDrop : 0), this.z);
             if (this.flip) {
                 pose.translate(0.5f, 0.5f, 0.5f);
-                pose.rotateDegrees(Axis.XP, 180);
+                pose.mulPose(Axis.XP.rotationDegrees(180));
                 pose.translate(-0.5f, -0.5f, -0.5f);
             }
             if (this.turns != 0) {
                 pose.translate(0.5f, 0, 0.5f);
-                pose.rotateDegrees(Axis.YP, -90f * this.turns);
+                pose.mulPose(Axis.YP.rotationDegrees(-90f * this.turns));
                 pose.translate(-0.5f, 0, -0.5f);
             }
         }

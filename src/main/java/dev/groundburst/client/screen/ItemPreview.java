@@ -9,8 +9,8 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import dev.groundburst.port.render.SubmitNodeCollector;
+import dev.groundburst.port.render.ItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.LightTexture;
@@ -74,12 +74,12 @@ public final class ItemPreview {
             Minecraft mc = Minecraft.getInstance();
             mc.gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
             // Screen y runs down; turn it the right way up, then tip it toward the viewer and spin it.
-            pose.rotateDegrees(Axis.ZP, 180);
-            pose.rotateDegrees(Axis.XP, -state.pitch());
-            pose.rotateDegrees(Axis.YP, state.yaw());
+            pose.mulPose(Axis.ZP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch()));
+            pose.mulPose(Axis.YP.rotationDegrees(state.yaw()));
             pose.scale(state.size()[0], state.size()[1], state.size()[0]);
             pose.translate(-state.centre()[0], -state.centre()[1], -state.centre()[2]);
-            mc.getItemModelResolver().updateForTopItem(this.item, state.stack(), ItemDisplayContext.NONE, mc.level, null, 0);
+            dev.groundburst.port.render.ItemModelResolver.INSTANCE.updateForTopItem(this.item, state.stack(), ItemDisplayContext.NONE, mc.level, null, 0);
             this.item.submit(pose, collector, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
         }
 

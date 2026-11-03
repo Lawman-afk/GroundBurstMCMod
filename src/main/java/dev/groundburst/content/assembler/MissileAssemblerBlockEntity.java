@@ -503,8 +503,8 @@ public class MissileAssemblerBlockEntity extends MachineBlockEntity implements A
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         AnimatedMachine.super.registerControllers(controllers);
         if (this.kind == AssemblerClass.STRATEGIC) {
-            controllers.add(new AnimationController<MissileAssemblerBlockEntity>("platforms", 0,
-                    test -> test.setAndContinue(test.animatable().laid > 0 ? PLATFORMS_IN : PLATFORMS_OUT)));
+            controllers.add(new AnimationController<MissileAssemblerBlockEntity>(this, "platforms", 0,
+                    test -> test.setAndContinue(test.getAnimatable().laid > 0 ? PLATFORMS_IN : PLATFORMS_OUT)));
         }
     }
 

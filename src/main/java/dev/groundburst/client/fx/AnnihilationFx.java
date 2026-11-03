@@ -13,7 +13,7 @@ import dev.groundburst.registry.GBSounds;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
@@ -96,7 +96,7 @@ public final class AnnihilationFx {
             return;
         }
         double now = Spectacle.now();
-        Vec3 eye = mc.gameRenderer.getMainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         Vec3 c = start.center();
         double d = eye.distanceTo(c);
         // The flash: in sight or not (bounced light), faced or not, and fainter far off (but it is antimatter: blinding).

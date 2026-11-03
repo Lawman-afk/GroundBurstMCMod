@@ -15,7 +15,7 @@ import dev.groundburst.registry.GBSounds;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -143,7 +143,7 @@ public final class FreezeFx {
             return;
         }
         double now = Spectacle.now();
-        Vec3 eye = mc.gameRenderer.getMainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         double d = eye.distanceTo(start.center());
         Cell old = ACTIVE.get(start.id());
         if (old != null && old.wind != null) {
@@ -618,7 +618,7 @@ public final class FreezeFx {
                 stop();
                 return;
             }
-            float k = this.cell.cold(now) * this.cell.depth(mc.gameRenderer.getMainCamera().position(), now);
+            float k = this.cell.cold(now) * this.cell.depth(mc.gameRenderer.getMainCamera().getPosition(), now);
             this.volume = Math.max(0.01f, 1.8f * k);
             this.pitch = 0.9f + 0.15f * k;
         }

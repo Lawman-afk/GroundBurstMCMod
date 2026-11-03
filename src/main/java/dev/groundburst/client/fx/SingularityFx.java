@@ -14,7 +14,7 @@ import dev.groundburst.registry.GBSounds;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import dev.groundburst.port.render.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -193,7 +193,7 @@ public final class SingularityFx {
             return;
         }
         Vec3 c = hole.center();
-        Vec3 ear = mc.gameRenderer.getMainCamera().position();
+        Vec3 ear = mc.gameRenderer.getMainCamera().getPosition();
         float q = Spectacle.quality();
         double k = hole.pullK(Spectacle.now());
         java.util.function.DoubleSupplier pull = () -> k * hole.boost(Spectacle.now());
@@ -237,7 +237,7 @@ public final class SingularityFx {
         double now = Spectacle.now();
         hole.grew(collapse.reach(), now - EASE);           // its last reach, at once
         hole.collapsed = now;
-        Vec3 eye = mc.gameRenderer.getMainCamera().position();
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         Vec3 c = hole.center();
         double d = eye.distanceTo(c);
         boolean seen = mc.level.clip(new ClipContext(eye, c, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player)).getType() == HitResult.Type.MISS;

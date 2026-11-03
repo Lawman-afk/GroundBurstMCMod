@@ -42,7 +42,7 @@ public class InterceptorEntity extends Entity {
 
     /** Degrees from straight up: 0 climbing out of its cell, 90 level. */
     public float tilt(float partialTicks) {
-        return getXRot(partialTicks) + 90;
+        return getViewXRot(partialTicks) + 90;
     }
 
     @Override
