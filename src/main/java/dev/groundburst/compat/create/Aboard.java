@@ -74,6 +74,14 @@ final class Aboard {
         this.machines.remove(local);
     }
 
+    /** Blocks broken out of it (a blast, {@link ContraptionHulls}): their machines forgotten, its pipe runs found afresh. */
+    void blocksGone(java.util.Collection<BlockPos> gone) {
+        for (BlockPos p : gone) {
+            this.machines.remove(p);
+        }
+        this.runs = null;
+    }
+
     /** Once a game tick (whichever of its machines ticks first): power shared, the pipes run. */
     void tick(ServerLevel level) {
         long now = level.getGameTime();

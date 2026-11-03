@@ -22,11 +22,13 @@ public final class GBCompat {
         event.enqueueWork(() -> {
             if (ModList.get().isLoaded("sable")) {
                 dev.groundburst.compat.sable.SableFrames.register();
-                GroundBurst.LOGGER.info("Sable found: launchers work aboard its sub-levels (Create Aeronautics' ships)");
+                dev.groundburst.compat.sable.SableHulls.register();
+                GroundBurst.LOGGER.info("Sable found: launchers work aboard its sub-levels (Create Aeronautics' ships), and blasts break and shove them");
             }
             if (ModList.get().isLoaded("create")) {
                 dev.groundburst.compat.create.CreateCompat.register();
-                GroundBurst.LOGGER.info("Create found: machines and launchers work on its moving contraptions");
+                dev.groundburst.compat.create.ContraptionHulls.register();
+                GroundBurst.LOGGER.info("Create found: machines and launchers work on its moving contraptions, and blasts break them");
             }
         });
     }
@@ -39,10 +41,16 @@ public final class GBCompat {
         }
     }
 
-    /** The carried machines' looks for clients (sent only where Create carries one; optional for clients without it). */
+    /**
+     * The carried machines' looks for clients, and the blocks a blast broke out of a contraption (sent only where Create
+     * carries something; optional for clients without it).
+     */
     @SubscribeEvent
     static void payloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("1").optional().playToClient(CarriedSync.TYPE, CarriedSync.CODEC,
+        var registrar = event.registrar("1").optional();
+        registrar.playToClient(CarriedSync.TYPE, CarriedSync.CODEC,
                 (payload, context) -> context.enqueueWork(() -> dev.groundburst.compat.create.CarriedSyncClient.apply(payload)));
+        registrar.playToClient(dev.groundburst.compat.create.BlocksGone.TYPE, dev.groundburst.compat.create.BlocksGone.CODEC,
+                (payload, context) -> context.enqueueWork(() -> dev.groundburst.compat.create.BlocksGoneClient.apply(payload)));
     }
 }

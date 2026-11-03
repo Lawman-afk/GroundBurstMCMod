@@ -63,6 +63,8 @@ final class AnnihilationJob {
     private final LongArrayList rim = new LongArrayList();
     private int rimCursor;
     private Phase phase = Phase.ERASE;
+    /** Its reach into other mods' ships and contraptions ({@link Hulls}): erased as the world is. */
+    private @Nullable HullBlast hulls;
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     /** Blocks erased so far (for the GameTests and the bench). */
     int erased;
@@ -109,6 +111,12 @@ final class AnnihilationJob {
         if (this.phase == Phase.ERASE) {
             float reach = reach();
             sweep(reach);
+            if (Hulls.any()) {
+                if (this.hulls == null) {
+                    this.hulls = HullBlast.erasing(this.level, this.center, this.radius);
+                }
+                this.hulls.reach(reach);
+            }
             while (this.phase == Phase.ERASE) {
                 if (this.shell > this.maxShell) {
                     sweep(this.radius);                    // anything dropped by the last ones annihilated

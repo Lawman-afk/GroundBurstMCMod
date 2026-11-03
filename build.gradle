@@ -170,6 +170,8 @@ dependencies {
     // installed (dev.groundburst.compat).
     compileOnly "maven.modrinth:create:${create_version}"
     compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
+    // Sable itself, for its physics: a blast shoves a ship as Sable shoves one for vanilla's explosions (compat/sable/SableHulls).
+    compileOnly "maven.modrinth:sable:${sable_version}"
     // -PwithCreate: the dev runs load Create, Sable and Create Aeronautics too (the createCheck run needs them).
     if (providers.gradleProperty('withCreate').isPresent()) {
         localRuntime "maven.modrinth:create:${create_version}"

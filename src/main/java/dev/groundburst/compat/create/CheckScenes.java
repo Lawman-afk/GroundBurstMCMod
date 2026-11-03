@@ -37,6 +37,28 @@ public final class CheckScenes {
         return null;
     }
 
+    /** A contraption by its entity's id, or null. */
+    public static @Nullable AbstractContraptionEntity byId(Level level, int id) {
+        return level.getEntity(id) instanceof AbstractContraptionEntity entity ? entity : null;
+    }
+
+    /** How many blocks a contraption holds (on the side its entity is from). */
+    public static int blocks(AbstractContraptionEntity entity) {
+        return entity.getContraption() == null ? -1 : entity.getContraption().getBlocks().size();
+    }
+
+    /** Whether a contraption still holds the block taken from {@code key}. */
+    public static boolean holds(AbstractContraptionEntity entity, BlockPos key) {
+        Contraption c = entity.getContraption();
+        return c != null && c.anchor != null && c.getBlocks().containsKey(key.subtract(c.anchor));
+    }
+
+    /** How many blocks the client's copy of a contraption holds (by its entity's id), or -1. */
+    public static int clientBlocks(int entityId) {
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        return level != null && level.getEntity(entityId) instanceof AbstractContraptionEntity entity ? blocks(entity) : -1;
+    }
+
     /** A right-click on the carried block with its key at {@code key}, as Create hands one on (either side). */
     public static boolean click(Player player, BlockPos key) {
         AbstractContraptionEntity entity = carrying(player.level(), key);

@@ -441,7 +441,104 @@ public final class CreateCheck {
                                 + silo.inventory().getItem(dev.groundburst.content.launch.LaunchSiloBlockEntity.SLOT_MISSILE)) + ")");
             });
             case 1015 -> shot(mc, "yard_set_down");
-            case 1025 -> {
+            // --- a wreck: a blast and a shell on a turning platform (a Create contraption) ---------------------------------
+            case 1030 -> onServer(mc, CreateCheck::buildWreck);
+            case 1031 -> onServer(mc, level -> {
+                level.setBlockAndUpdate(WRECK_HUB.below(), block("create:mechanical_bearing").setValue(BlockStateProperties.FACING, Direction.UP));
+                level.setBlockAndUpdate(WRECK_HUB.below(2), block("create:creative_motor").setValue(BlockStateProperties.FACING, Direction.UP));
+            });
+            case 1032 -> look(mc, new Vec3(-34.5, -52, -39.5), new Vec3(-19.5, -57, -39.5));
+            case 1050 -> onServer(mc, level -> {
+                var platform = dev.groundburst.compat.create.CheckScenes.carrying(level, WRECK_EDGE);
+                wreckEntity = platform == null ? -1 : platform.getId();
+                wreckBlocks = platform == null ? -1 : dev.groundburst.compat.create.CheckScenes.blocks(platform);
+                check(platform != null && wreckBlocks == 51 && dev.groundburst.content.machine.Carried.at(level, WRECK_GENERATOR) != null,
+                        "the bearing turns the platform with its chest and generator (" + wreckBlocks + " blocks)");
+            });
+            case 1060 -> onServer(mc, level -> dev.groundburst.blast.Blasts.detonate(level, WRECK_BURST, dev.groundburst.blast.Blasts.profile("test/small"), null));
+            case 1062 -> onServer(mc, level -> {
+                var platform = dev.groundburst.compat.create.CheckScenes.byId(level, wreckEntity);
+                int now = platform == null ? -1 : dev.groundburst.compat.create.CheckScenes.blocks(platform);
+                boolean gone = platform != null && !dev.groundburst.compat.create.CheckScenes.holds(platform, WRECK_CHEST)
+                        && !dev.groundburst.compat.create.CheckScenes.holds(platform, WRECK_GENERATOR)
+                        && !dev.groundburst.compat.create.CheckScenes.holds(platform, WRECK_HUB);
+                check(gone && now == wreckBlocks - 3 && dev.groundburst.compat.create.CheckScenes.holds(platform, WRECK_EDGE),
+                        "a blast over the hub broke the chest, the generator and the hub out of the turning platform, its rim kept ("
+                                + wreckBlocks + " -> " + now + " blocks)");
+                int items = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, WRECK_AREA).size();
+                check(items == 0, "nothing spilled: the chest's diamonds went with it (" + items + " items on the ground)");
+                check(dev.groundburst.content.machine.Carried.at(level, WRECK_GENERATOR) == null, "the generator broken aboard is no longer carried");
+                wreckBlocks = now;
+            });
+            case 1065 -> {
+                int seen = dev.groundburst.compat.create.CheckScenes.clientBlocks(wreckEntity);
+                check(seen == wreckBlocks, "players see the platform without them (the client's copy: " + seen + " blocks)");
+            }
+            case 1070 -> shot(mc, "wreck_blasted");
+            case 1075 -> onServer(mc, level -> dev.groundburst.content.artillery.ArtilleryShell.launch(level, new Vec3(-32.5, -57.2, -39.5),
+                    new Vec3(2.5, 0, 0), dev.groundburst.content.artillery.Calibre.MORTAR, dev.groundburst.content.artillery.ShellType.HE, null));
+            case 1086 -> onServer(mc, level -> {
+                var platform = dev.groundburst.compat.create.CheckScenes.byId(level, wreckEntity);
+                int now = platform == null ? -1 : dev.groundburst.compat.create.CheckScenes.blocks(platform);
+                boolean flying = !level.getEntitiesOfClass(dev.groundburst.content.artillery.ArtilleryShell.class, WRECK_AREA.inflate(16)).isEmpty();
+                check(platform != null && now < wreckBlocks && !flying, "a mortar shell fired at the platform's rim burst on it (" + wreckBlocks + " -> "
+                        + now + " blocks; shell still flying " + flying + ")");
+                wreckBlocks = now;
+            });
+            case 1088 -> onServer(mc, level -> level.setBlockAndUpdate(WRECK_HUB.below(2), Blocks.AIR.defaultBlockState()));   // the bearing stops
+            case 1130 -> onServer(mc, level -> {
+                int items = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, WRECK_AREA).size();
+                int placed = 0;
+                for (BlockPos p : BlockPos.betweenClosed(WRECK_HUB.offset(-5, 0, -5), WRECK_HUB.offset(5, 2, 5))) {
+                    placed += level.getBlockState(p).isAir() ? 0 : 1;
+                }
+                check(items == 0 && placed == wreckBlocks, "set down with just the blocks it had left, none where blocks were broken ("
+                        + placed + " of " + wreckBlocks + "; " + items + " items on the ground)");
+            });
+            case 1135 -> shot(mc, "wreck_set_down");
+            // --- a ship hit: a blast beside a Sable ship, then a shell into it -----------------------------------------------
+            case 1140 -> onServer(mc, level -> {
+                for (BlockPos p : BlockPos.betweenClosed(SHIP2_MIN, SHIP2_MAX)) {
+                    level.setBlockAndUpdate(p, Blocks.OAK_PLANKS.defaultBlockState());
+                }
+            });
+            case 1145 -> onServer(mc, level -> serverCommand(level.getServer(), "sable assemble area " + SHIP2_MIN.getX() + " " + SHIP2_MIN.getY() + " "
+                    + SHIP2_MIN.getZ() + " " + SHIP2_MAX.getX() + " " + SHIP2_MAX.getY() + " " + SHIP2_MAX.getZ()));
+            case 1150 -> look(mc, new Vec3(48.5, -55, 27.5), new Vec3(62, -59.5, 20));
+            case 1165 -> onServer(mc, level -> {
+                ship2 = dev.groundburst.compat.sable.SableScenes.shipIn(level, new net.minecraft.world.phys.AABB(SHIP2_MIN).minmax(
+                        new net.minecraft.world.phys.AABB(SHIP2_MAX)).inflate(1));
+                ship2Blocks = ship2 == null ? -1 : dev.groundburst.compat.sable.SableScenes.blocks(level, ship2);
+                ship2At = ship2 == null ? Vec3.ZERO : dev.groundburst.compat.sable.SableScenes.position(ship2);
+                GroundBurst.LOGGER.info("Create check: the second ship: {}, {} blocks", ship2 == null ? "none" : dev.groundburst.compat.sable.SableScenes.describe(ship2),
+                        ship2Blocks);
+                dev.groundburst.blast.Blasts.detonate(level, SHIP2_BURST, dev.groundburst.blast.Blasts.profile("mortar_shell_he"), null);
+            });
+            case 1167 -> onServer(mc, level -> {
+                int now = ship2 == null ? -1 : dev.groundburst.compat.sable.SableScenes.blocks(level, ship2);
+                check(ship2 != null && ship2Blocks == 50 && now > 0 && now < ship2Blocks, "a shell's blast beside the ship broke its near side (" + ship2Blocks
+                        + " -> " + now + " blocks)");
+                ship2Blocks = now;
+            });
+            case 1185 -> onServer(mc, level -> {
+                Vec3 at = ship2 == null ? Vec3.ZERO : dev.groundburst.compat.sable.SableScenes.position(ship2);
+                check(ship2 != null && at.x - ship2At.x > 0.2, "the shock shoved the ship east, away from the burst (moved " + at.subtract(ship2At) + ")");
+            });
+            case 1186 -> shot(mc, "ship_blasted");
+            case 1190 -> onServer(mc, level -> {
+                if (ship2 != null) {
+                    net.minecraft.world.phys.AABB box = dev.groundburst.compat.sable.SableScenes.box(ship2);
+                    Vec3 c = box.getCenter();
+                    dev.groundburst.content.artillery.ArtilleryShell.launch(level, new Vec3(box.minX - 10, c.y + 0.3, c.z), new Vec3(2.5, 0, 0),
+                            dev.groundburst.content.artillery.Calibre.MORTAR, dev.groundburst.content.artillery.ShellType.HE, null);
+                }
+            });
+            case 1205 -> onServer(mc, level -> {
+                int now = ship2 == null || dev.groundburst.compat.sable.SableScenes.gone(ship2) ? 0 : dev.groundburst.compat.sable.SableScenes.blocks(level, ship2);
+                check(ship2 != null && now < ship2Blocks, "a mortar shell fired at the ship burst on it (" + ship2Blocks + " -> " + now + " blocks)");
+            });
+            case 1206 -> shot(mc, "ship_shelled");
+            case 1215 -> {
                 GroundBurst.LOGGER.info("Create check: done, {} of {} checks OK", passed, checks);
                 mc.stop();
             }
@@ -469,6 +566,36 @@ public final class CreateCheck {
             FACTORY_COMPUTER = new BlockPos(-18, -58, 25), FACTORY_SEPARATOR = new BlockPos(-17, -58, 24),
             FACTORY_FLUID_PIPE = new BlockPos(-17, -58, 23), FACTORY_TANK = new BlockPos(-16, -58, 23);
     private static final net.minecraft.world.phys.AABB FACTORY_AREA = new net.minecraft.world.phys.AABB(-28, -62, 13, -9, -45, 34);
+
+    /** The wreck scene: a 7x7 stone platform on a fourth bearing (under its hub), a chest of diamonds and a generator on it. */
+    private static final BlockPos WRECK_HUB = new BlockPos(-20, -58, -40), WRECK_CHEST = new BlockPos(-19, -57, -40),
+            WRECK_GENERATOR = new BlockPos(-21, -57, -40), WRECK_EDGE = new BlockPos(-23, -58, -40);
+    /** A small blast three blocks over the hub: it reaches the chest, the generator and the hub, not the rim. */
+    private static final Vec3 WRECK_BURST = new Vec3(-19.5, -54.5, -39.5);
+    private static final net.minecraft.world.phys.AABB WRECK_AREA = new net.minecraft.world.phys.AABB(-30, -62, -50, -10, -45, -30);
+    private static int wreckEntity = -1, wreckBlocks;
+    /** The second ship: a 5x2x5 block of planks made a ship, and a shell's burst a block and a half off its west side. */
+    private static final BlockPos SHIP2_MIN = new BlockPos(60, -60, 18), SHIP2_MAX = new BlockPos(64, -59, 22);
+    private static final Vec3 SHIP2_BURST = new Vec3(58.5, -59.0, 20.5);
+    private static @Nullable Object ship2;
+    private static int ship2Blocks;
+    private static Vec3 ship2At = Vec3.ZERO;
+
+    /** The wreck's platform, glued: the hub over the bearing, a chest of ten diamonds east of it and a generator west. */
+    private static void buildWreck(ServerLevel level) {
+        for (BlockPos p : BlockPos.betweenClosed(WRECK_HUB.offset(-3, 0, -3), WRECK_HUB.offset(3, 0, 3))) {
+            level.setBlockAndUpdate(p, Blocks.STONE.defaultBlockState());
+        }
+        level.setBlockAndUpdate(WRECK_CHEST, Blocks.CHEST.defaultBlockState());
+        if (level.getBlockEntity(WRECK_CHEST) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+            chest.setItem(0, new ItemStack(net.minecraft.world.item.Items.DIAMOND, 10));
+        }
+        level.setBlockAndUpdate(WRECK_GENERATOR, block("groundburst:combustion_generator"));
+        if (level.getBlockEntity(WRECK_GENERATOR) instanceof dev.groundburst.content.machine.MachineBlockEntity generator) {
+            generator.inventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.COAL, 4));
+        }
+        dev.groundburst.compat.create.CheckScenes.glue(level, WRECK_HUB.offset(-3, 0, -3), WRECK_HUB.offset(3, 1, 3));
+    }
 
     /** The yard scene: a third bearing under the assembler's controller (its motor under that), a Launch Silo beside it. */
     private static final BlockPos YARD_ASSEMBLER = new BlockPos(-20, -58, -10);

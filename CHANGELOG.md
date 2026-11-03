@@ -3,18 +3,35 @@
 ## Unreleased
 
 ### Minecraft 1.21.1: Create and Create Aeronautics
-Both are optional; with either installed, Ground Burst's launchers work on the structures they move.
-- **Create**: launchers ride Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys and
-  minecart contraptions). Glue or attach any part of a formed launcher and the whole structure moves with it (Create may
-  now move the mod's blocks, which pistons still may not). Aim, arm and fire it as always from a Launch Computer, a
-  Launch Control Station or a Laser Designator: it counts down and launches from wherever the contraption has it, its
-  missiles heading the way it points, on the power and missiles it was loaded with. Set down again, it forms where it
-  lands and stays on its network. Missile launchers, superweapons and both interceptor launchers all work this way.
+Both are optional; with either installed, Ground Burst's machines work on the structures they move.
+- **Create**: every machine rides Create's moving contraptions (trains, mechanical bearings, pistons, gantries, pulleys
+  and minecart contraptions): launchers, missile assemblers, Launch Computers, Control Stations, Radar Arrays,
+  generators, capacitor banks and the processing machines. Glue or attach any part of a formed structure and the whole
+  of it moves (Create may now move the mod's blocks, which pistons still may not). Carried, a machine keeps working: an
+  assembler goes on building its missile, a generator burns its fuel.
+- **Menus on contraptions**: right-click a carried machine, or any block of a carried structure, to open its menu, or
+  its screen for a Launch Computer, Control Station or Radar Array.
+- **Power and pipes aboard**: a contraption's generators and capacitor banks power every machine on it, no cables
+  needed, each machine getting a fair share. Item and fluid pipes on a contraption keep working, moving things between
+  its machines, the launchers' Item Ports and Create's chests, vaults and tanks on it, as their Wrench settings say.
+- **Launchers**: aim, arm and fire one as always from a Launch Computer, a Launch Control Station or a Laser Designator:
+  it counts down and launches from wherever the contraption has it, its missiles heading the way it points. Set down
+  again, a structure forms where it lands and a launcher stays on its network. Missile launchers, superweapons and both
+  interceptor launchers all work this way.
+- **Blasts hit ships and contraptions**: a warhead's, a shell's, a bomb's or a charge's blast breaks the blocks of
+  Create Aeronautics ships and of Create's moving contraptions in its reach, just as it breaks the world's (dense blocks
+  still shield what is behind them), and shoves ships away, turning them by the side that faced it. Antimatter and
+  singularities erase whatever of them they reach. Missiles and shells hit ships and contraptions in their way instead
+  of passing through. A chest or a machine blown off a contraption goes with what it held; a train keeps its wheels.
 - **Create Aeronautics** (Sable ships, planes, cars and boats): a launcher aboard works as it does on the ground. Its
   missiles leave from where the ship is, the way the ship points them, and computers, stations, designators and radars
   see it where the ship has taken it. A Launch Computer, Control Station or Radar Array aboard a ship works there too.
-- Not yet: blasts do not damage ships' or contraptions' blocks, and a launcher's own screen cannot be opened while a
-  Create contraption carries it.
+- **Fixed**: a machine taken by a contraption (a missile assembler at work, a Launch Silo) dropped its items as it went
+  and still held them when set down, doubling them; now nothing drops and nothing is doubled. A pipe set to pull with
+  the Wrench lost that setting when a contraption set it down; it keeps it now, turned with the contraption (cables keep
+  theirs too).
+- Not yet: reactors pause while carried; pipes and cables on a contraption reach only what is on it, not the blocks round
+  it; the Particle Uplink Cannon's beam, the cryo freeze and a singularity's pull pass ships and contraptions by.
 
 ## 0.7.0 — 2026-11-03
 

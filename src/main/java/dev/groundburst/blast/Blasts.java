@@ -39,6 +39,8 @@ public final class Blasts {
 
     /** As {@link #detonate(ServerLevel, Vec3, ResourceKey, Entity)}, with every radius scaled by {@code scale} too (stacked C4). */
     public static @Nullable Blast detonate(ServerLevel level, Vec3 center, ResourceKey<BlastProfile> key, @Nullable Entity source, float scale) {
+        // Set off in a ship's plot (a charge aboard): it goes off where the ship is, and reaches the ship as a hull.
+        center = dev.groundburst.content.machine.Frames.toWorld(level, center);
         Optional<BlastProfile> found = level.registryAccess().registryOrThrow(BlastProfile.REGISTRY).getOptional(key);
         if (found.isEmpty()) {
             return null;

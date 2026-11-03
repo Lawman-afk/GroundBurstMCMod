@@ -124,6 +124,9 @@ final class SingularityJob {
         return this.reach;
     }
 
+    /** Its reach into other mods' ships and contraptions ({@link Hulls}). */
+    private @Nullable HullBlast hulls;
+
     /** Works within {@code deadline} and {@code blockBudget}; returns the blocks it changed. */
     int step(long deadline, int blockBudget) {
         int changed = 0;
@@ -137,6 +140,12 @@ final class SingularityJob {
             this.reach = Singularities.reach(this.seed, this.feed, this.mass, age, this.life, this.max);
             float h = Singularities.horizon(this.reach);
             drawIn(h, 1);
+            if (Hulls.any()) {                             // ships' and contraptions' blocks inside its horizon: gone
+                if (this.hulls == null) {
+                    this.hulls = HullBlast.erasing(this.level, this.center, Singularities.horizon(this.max));
+                }
+                this.hulls.reach(h);
+            }
             double sweep = SWEEP_SHARE * this.reach;
             if (this.chunks.prepare((int) Math.ceil(sweep), true)) {
                 changed = tear(h, sweep, deadline, Math.min(blockBudget, TEAR_PER_TICK));

@@ -765,10 +765,17 @@ public final class Flights extends SavedData {
                 boolean climbingOut = this.silo > 0 && to.y < this.start.y + this.silo + CLEAR_MOUTH;
                 boolean clear = this.plan != null ? this.age > ignition() + CruisePlan.BOOST_TICKS : s > 0.1;
                 if (clear && !climbingOut && level.hasChunkAt(BlockPos.containing(from)) && level.hasChunkAt(BlockPos.containing(to))) {
-                    BlockHitResult hit = level.clip(new ClipContext(from, to.add(v.normalize().scale(0.5)), ClipContext.Block.COLLIDER,
+                    Vec3 end = to.add(v.normalize().scale(0.5));
+                    BlockHitResult hit = level.clip(new ClipContext(from, end, ClipContext.Block.COLLIDER,
                             ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
-                    if (hit.getType() != HitResult.Type.MISS) {
-                        impact(level, hit.getLocation());
+                    // (a ship's block, where another mod lets the world's clip see it, is hit in its plot: where it is seen)
+                    Vec3 struck = hit.getType() != HitResult.Type.MISS ? dev.groundburst.content.machine.Frames.toWorld(level, hit.getLocation()) : null;
+                    Vec3 hull = dev.groundburst.blast.Hulls.clip(level, from, end);   // a ship or a moving contraption in its way
+                    if (hull != null && (struck == null || hull.distanceToSqr(from) < struck.distanceToSqr(from))) {
+                        struck = hull;
+                    }
+                    if (struck != null) {
+                        impact(level, struck);
                         return true;
                     }
                 }

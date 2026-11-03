@@ -135,6 +135,8 @@ final class BlastJob implements Blast {
     private int shell;
     private int cursor;
     private float entityRadius = -1;
+    /** Its reach into other mods' ships and contraptions, made when it first finds any can be found ({@link Hulls}). */
+    private @Nullable HullBlast hulls;
     private int age;
     private Phase phase = Phase.FRONT;
     private final Long2ObjectOpenHashMap<long[]> visited = new Long2ObjectOpenHashMap<>();
@@ -369,6 +371,13 @@ final class BlastJob implements Blast {
         }
         // The shock reaches entities at the profile's speed, however far behind the terrain work is.
         affectEntities(Math.min(Math.max(this.shell, target), outer));
+        if (Hulls.any()) {                                 // ships' and contraptions' blocks, as the shock reaches them
+            if (this.hulls == null) {
+                this.hulls = new HullBlast(this.level, this.center, this.profile, this.terrain, this.protectedCenter, this.protectedRadius,
+                        this.random);
+            }
+            this.hulls.reach(Math.min(Math.max(this.shell, target), outer));
+        }
         if (this.phase == Phase.FRONT && this.shell > work && target >= outer) {
             this.phase = Phase.CLEAN;
             this.rays = new RayField();                    // free the ray arrays
